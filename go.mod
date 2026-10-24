@@ -2,7 +2,10 @@ module github.com/dphaener/genesis
 
 go 1.25.14
 
-require github.com/rogpeppe/go-internal v1.14.1
+require (
+	github.com/oklog/ulid/v2 v2.1.2
+	github.com/rogpeppe/go-internal v1.14.1
+)
 
 require (
 	golang.org/x/sys v0.26.0 // indirect
