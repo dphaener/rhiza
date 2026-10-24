@@ -1,0 +1,43 @@
+# --record opens a record change set named after the command line, writes
+# the ops and lands it, all in one step. The current change set is not
+# touched, and there need not be one.
+
+exec genesis init
+
+# No current change set needed.
+exec genesis add capability store --record
+stdout '^Recorded and landed change set [0-9A-Z]{26} \(entry [0-9A-Z]{26}\)\.$'
+stdout '^- node [0-9A-Z]{26} \(store\)$'
+! exists .genesis/local/change
+exec genesis change ls
+stdout '^- [0-9A-Z]{26} landed record: add capability store$'
+
+# With a current change set, it stays current and unchanged.
+exec genesis change new Shape
+exec genesis add capability draft
+exec genesis set store --field statement='Keeps the log' --record --json
+stdout '"record": true'
+stdout '"change_set": "[0-9A-Z]{26}"'
+exec genesis change ls
+stdout '^- [0-9A-Z]{26} landed record: set store$'
+stdout ': Shape \(current\)$'
+exec genesis change show
+stdout -count=1 '^- node.create'
+! stdout 'node.update'
+
+# A record sees only landed nodes: one added in the current change set is
+# not there.
+! exec genesis set draft --field a=b --record --json
+stdout '"code": "not_found"'
+
+# A dry run opens nothing.
+exec genesis add capability api --record --dry-run
+stdout '^Dry run: would write 1 operation\(s\)'
+exec genesis change ls
+! stdout 'add capability api'
+
+# Errors still hold: a taken handle is a conflict.
+! exec genesis add capability store --record --json
+stdout '"code": "conflict"'
+
+fold-ok

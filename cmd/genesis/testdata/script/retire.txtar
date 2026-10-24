@@ -1,0 +1,43 @@
+# retire retires a node with a reason. A node added in the same change set
+# is dropped instead: its create goes, with the links added here that end at
+# it, and no node.retire is written.
+
+exec genesis init
+exec genesis change new Shape
+exec genesis add capability store --record
+
+# A landed node: a node.retire.
+exec genesis retire store --reason 'Folded into api'
+stdout '^Wrote entry [0-9A-Z]{26} to change set 01M5PWGDG0ABYZR1S1GQMF9KCV\.$'
+stdout '^- node [0-9A-Z]{26} \(store\)$'
+exec genesis change show --json
+stdout '"op": "node.retire"'
+stdout '"reason": "Folded into api"'
+
+# Its handle is free again, and retiring it twice is a conflict, exit 3.
+exec genesis add capability store
+! exec genesis retire 01M5PWGHD0R04H7R1ACFJCYMSD --reason again --json
+stdout '"code": "conflict"'
+stdout 'is retired'
+
+# A node added here is dropped, with its link.
+exec genesis add capability tmp
+exec genesis link tmp depends-on store
+exec genesis retire tmp --reason 'Not needed' --dry-run
+stdout '^Dry run: would write 0 operation\(s\) and drop 2'
+stdout -count=2 '^- drop [0-9A-Z]{26}$'
+exec genesis retire tmp --reason 'Not needed' --json
+stdout '"links": \['
+exec genesis change show
+! stdout '\(tmp\)'
+! stdout 'link.create'
+
+# --reason is required; unknown refs are not_found.
+! exec genesis retire store
+stderr 'reason'
+! exec genesis retire nosuch --reason x --json
+stdout '"code": "not_found"'
+! exec genesis retire 01M5PWG --reason x --json
+stdout '"code": "usage"'
+
+fold-ok
