@@ -36,6 +36,16 @@
 // Computing a view never fails and never panics. Whatever is wrong becomes a
 // Problem and the computation goes on.
 //
+// A view is built in layers on one engine. The as-is layer is the landed
+// change sets in their apply order (see order.go). To-be adds the accepted
+// change sets on top, in their own apply order; what-if adds the one change
+// set asked for, which must be draft, proposed or accepted (ErrState) and
+// among the input (ErrMissing). A link endpoint may name any change set in
+// the input, whatever its state. Change sets with no state (no valid open)
+// are in no view. An operation in an upper layer whose base a landed
+// operation has since superseded is stale like any other: it merges or
+// conflicts by the rules below. The problems are every layer's, each once.
+//
 // An operation is applied in these steps.
 //
 //  1. A create (node.create, link.create) needs an ID that is not already a
