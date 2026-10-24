@@ -1,0 +1,14 @@
+{
+  "actor": "01M5N90H2GJY06NWXYV2K3NJGP",
+  "after": [],
+  "at": "2026-10-23T21:00:04Z",
+  "body": {
+    "intent": "Rename the config file",
+    "kind": "intention"
+  },
+  "change_set": "01M5N90J1RW65PGTX0VGG8SZPE",
+  "for": "01M5N90G38R2N4SVAPVFCPFQ18",
+  "id": "01M5N90K10CPYQ18HXM016PSGG",
+  "type": "open",
+  "v": 1
+}

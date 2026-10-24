@@ -1,0 +1,15 @@
+{
+  "actor": "01M5N90G38BW7SMRGXEAAPDHTD",
+  "after": [
+    "01M5N90M08TB225B6J12G0EA9S"
+  ],
+  "at": "2026-10-23T21:00:06Z",
+  "body": {
+    "rule": "owner"
+  },
+  "change_set": "01M5N90H2G201QRKBVQC20FMF2",
+  "for": "01M5N90G38BW7SMRGXEAAPDHTD",
+  "id": "01M5N90MZG91ZPK6FBKMCA8HW4",
+  "type": "accept",
+  "v": 1
+}

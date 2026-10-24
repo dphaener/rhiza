@@ -1,0 +1,21 @@
+{
+  "actor": "01M5N90G38BW7SMRGXEAAPDHTD",
+  "after": [
+    "01M5N90J1RRS4R31ATV1M1T3C6"
+  ],
+  "at": "2026-10-23T21:00:04Z",
+  "body": {
+    "ops": [
+      {
+        "op": "add",
+        "path": "menu.md",
+        "text": "# Menu\n\nCoffee — €3\n"
+      }
+    ]
+  },
+  "change_set": "01M5N90H2G201QRKBVQC20FMF2",
+  "for": "01M5N90G38BW7SMRGXEAAPDHTD",
+  "id": "01M5N90K10T7MHW00PF4WWPSMM",
+  "type": "ops",
+  "v": 1
+}

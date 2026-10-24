@@ -1,0 +1,14 @@
+{
+  "actor": "01M5N90G3867WPF2CDYMRSXR19",
+  "after": [],
+  "at": "2026-10-23T21:00:04Z",
+  "body": {
+    "intent": "Fix the flaky test",
+    "kind": "intention"
+  },
+  "change_set": "01M5N90J1RYVQ22JTZVWA0KZ1B",
+  "for": "01M5N90G3867WPF2CDYMRSXR19",
+  "id": "01M5N90K10H85547123EPB3F58",
+  "type": "open",
+  "v": 1
+}
