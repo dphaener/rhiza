@@ -1,0 +1,51 @@
+{
+  "actor": "01M5N90G38G7AFW4E27T7BCX9E",
+  "after": [
+    "01M5N90J1RR10RKCX4RFT7ET4X"
+  ],
+  "at": "2026-10-23T21:00:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Export a report as CSV."
+        },
+        "handle": "csv-export",
+        "id": "01M5N90M082VD4GFF1D8X0JFWH",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5N90K101B4TAGQSP5T1JAHC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "People can share reports with tools outside Genesis."
+        },
+        "handle": "share-reports",
+        "id": "01M5N90NYRHAGNX9Y9BPR8FH8W",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M5N90MZG0Z6W6QWQYGVR0DXD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5N90K101B4TAGQSP5T1JAHC",
+        "id": "01M5N90QX83KEC0593ENJAKYSA",
+        "link": "01M5N90PY0K5J44C5VHY5P4GXJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5N90MZG0Z6W6QWQYGVR0DXD",
+        "type": "serves"
+      }
+    ]
+  },
+  "change_set": "01M5N90H2G3YDDE5P63Z14YBC0",
+  "for": "01M5N90G38G7AFW4E27T7BCX9E",
+  "id": "01M5N90RWGRDCTMYNSJN2CTRQ2",
+  "type": "ops",
+  "v": 1
+}

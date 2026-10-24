@@ -5,7 +5,21 @@
   ],
   "at": "2026-10-23T21:00:05Z",
   "body": {
-    "ops": []
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The config file is named genesis.toml."
+        },
+        "handle": "config-file-name",
+        "id": "01M5N90M080QWKJME640Y5XYJW",
+        "key": null,
+        "kind": "constraint",
+        "node": "01M5N90M080QWKJME63Z27K4C7",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
   },
   "change_set": "01M5N90J1RW65PGTX0VGG8SZPE",
   "for": "01M5N90G38R2N4SVAPVFCPFQ18",

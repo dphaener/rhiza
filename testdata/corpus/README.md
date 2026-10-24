@@ -24,7 +24,9 @@ format-2/        (later)
 - Format 1 may be amended until the first tagged release. After that, cases
   are only added, never edited or removed. The same holds for every later
   format from its first release.
-- The corpus holds only valid logs. Invalid inputs belong in table tests.
+- The corpus holds only valid logs, valid down to the typed body of every
+  entry and every operation inside them. Every case folds with zero
+  problems. Invalid inputs belong in table tests.
 - The files are fixtures, written once. Do not regenerate them.
 
 ## Tests
@@ -32,3 +34,8 @@ format-2/        (later)
 `internal/store/corpus_test.go` opens every case, reads its log and expects
 zero problems, checks every `.json` file is canonical, and checks that the
 format-1 cases use every entry type at least once.
+
+`internal/changeset/corpus_test.go` folds every case with
+`changeset.FoldLog`, expects zero problems, and checks each change set's
+final state (landed, rejected, withdrawn, superseded and so on). A new case
+fails that test until it is given an expectation there.
