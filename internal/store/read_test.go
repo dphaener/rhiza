@@ -319,3 +319,19 @@ func TestStoreReadLog(t *testing.T) {
 		t.Errorf("Entries = %+v\nwant %+v", got.Entries, want)
 	}
 }
+
+func TestStoreReadLogSymlinkedFolder(t *testing.T) {
+	root, s := mustInit(t)
+	target := filepath.Join(t.TempDir(), sCS)
+	if err := os.Mkdir(target, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(target, filepath.Join(root, Dir, LogDir, sCS)); err != nil {
+		t.Fatal(err)
+	}
+	got := s.ReadLog()
+	want := path.Join(LogDir, sCS)
+	if len(got.Problems) != 1 || got.Problems[0].Path != want || !errors.Is(got.Problems[0].Err, ErrStray) {
+		t.Fatalf("Problems = %v, want one ErrStray at %q", got.Problems, want)
+	}
+}

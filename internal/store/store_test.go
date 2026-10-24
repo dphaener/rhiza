@@ -269,6 +269,24 @@ func TestOpenErrors(t *testing.T) {
 			t.Fatal(err)
 		}
 	})
+	t.Run(".genesis is a file", func(t *testing.T) {
+		root := t.TempDir()
+		if err := os.WriteFile(filepath.Join(root, Dir), []byte("x"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := Open(root); !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), Dir) {
+			t.Fatalf("err = %v, want ErrInvalid naming %s", err, Dir)
+		}
+	})
+	t.Run("repo.json is a folder", func(t *testing.T) {
+		root := t.TempDir()
+		if err := os.MkdirAll(filepath.Join(root, Dir, RepoFile), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := Open(root); !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), RepoFile) {
+			t.Fatalf("err = %v, want ErrInvalid naming %s", err, RepoFile)
+		}
+	})
 }
 
 func TestOpenNotFound(t *testing.T) {

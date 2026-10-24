@@ -238,10 +238,17 @@ func Init(root string, gen *id.Generator) (*Store, error) {
 
 // Open opens the repository in root. It fails with ErrNotFound if there is
 // none, with ErrNewerFormat if repo.json is from a newer Genesis, and with
-// ErrInvalid if repo.json is not exactly a canonical format-1 description.
+// ErrInvalid if Dir is not a folder, repo.json is not a regular file, or
+// repo.json is not exactly a canonical format-1 description.
 func Open(root string) (*Store, error) {
 	s := &Store{root: root}
 	p := filepath.Join(s.dir(), RepoFile)
+	if err := statKind(s.dir(), "a folder", fs.FileMode.IsDir); err != nil {
+		return nil, err
+	}
+	if err := statKind(p, "a regular file", fs.FileMode.IsRegular); err != nil {
+		return nil, err
+	}
 	data, err := os.ReadFile(p)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
@@ -253,6 +260,23 @@ func Open(root string) (*Store, error) {
 		return nil, fmt.Errorf("%s: %w", p, err)
 	}
 	return s, nil
+}
+
+// statKind fails with ErrNotFound if nothing is at p, and with ErrInvalid
+// if what is there fails ok. Other errors, such as permission denied, pass
+// through unwrapped: they say nothing about the repository's content.
+func statKind(p, want string, ok func(fs.FileMode) bool) error {
+	fi, err := os.Stat(p)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return fmt.Errorf("%w: %s", ErrNotFound, p)
+		}
+		return err
+	}
+	if !ok(fi.Mode()) {
+		return fmt.Errorf("%w: %s: not %s", ErrInvalid, p, want)
+	}
+	return nil
 }
 
 // Write adds e to the log at log/<change_set>/<id>.json. It fails with

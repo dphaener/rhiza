@@ -84,7 +84,7 @@ func (r *reader) walk() {
 		}
 		p := path.Join(LogDir, name)
 		if !de.IsDir() {
-			r.problem(p, fmt.Errorf("%w: a file directly in %s, want only change set folders", ErrStray, LogDir))
+			r.problem(p, fmt.Errorf("%w: not a change set folder", ErrStray))
 			continue
 		}
 		cs, err := id.Parse(name)
