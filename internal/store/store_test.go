@@ -259,8 +259,12 @@ func TestOpenErrors(t *testing.T) {
 	}
 	t.Run("valid control", func(t *testing.T) {
 		root := t.TempDir()
-		os.Mkdir(filepath.Join(root, Dir), 0o755)
-		os.WriteFile(filepath.Join(root, Dir, RepoFile), []byte(valid), 0o644)
+		if err := os.Mkdir(filepath.Join(root, Dir), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(root, Dir, RepoFile), []byte(valid), 0o644); err != nil {
+			t.Fatal(err)
+		}
 		if _, err := Open(root); err != nil {
 			t.Fatal(err)
 		}
@@ -275,7 +279,9 @@ func TestOpenNotFound(t *testing.T) {
 	})
 	t.Run("no repo.json", func(t *testing.T) {
 		root := t.TempDir()
-		os.Mkdir(filepath.Join(root, Dir), 0o755)
+		if err := os.Mkdir(filepath.Join(root, Dir), 0o755); err != nil {
+			t.Fatal(err)
+		}
 		if _, err := Open(root); !errors.Is(err, ErrNotFound) {
 			t.Fatalf("err = %v, want ErrNotFound", err)
 		}

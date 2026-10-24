@@ -82,13 +82,13 @@ func Marshal(v any) ([]byte, error) {
 type kind int
 
 const (
-	kNull kind = iota
-	kTrue
-	kFalse
-	kInt
-	kString
-	kArray
-	kObject
+	kindNull kind = iota
+	kindTrue
+	kindFalse
+	kindInt
+	kindString
+	kindArray
+	kindObject
 )
 
 type value struct {
@@ -135,15 +135,15 @@ func (p *parser) value(depth int) (value, error) {
 		return p.array(depth + 1)
 	case c == '"':
 		s, err := p.string()
-		return value{kind: kString, str: s}, err
+		return value{kind: kindString, str: s}, err
 	case c == '-' || (c >= '0' && c <= '9'):
 		return p.number()
 	case c == 't':
-		return value{kind: kTrue}, p.literal("true")
+		return value{kind: kindTrue}, p.literal("true")
 	case c == 'f':
-		return value{kind: kFalse}, p.literal("false")
+		return value{kind: kindFalse}, p.literal("false")
 	case c == 'n':
-		return value{kind: kNull}, p.literal("null")
+		return value{kind: kindNull}, p.literal("null")
 	default:
 		return value{}, p.errorf("unexpected byte %q", c)
 	}
@@ -182,7 +182,7 @@ func (p *parser) number() (value, error) {
 	if err != nil {
 		return value{}, p.errorf("integer out of int64 range")
 	}
-	return value{kind: kInt, num: n}, nil
+	return value{kind: kindInt, num: n}, nil
 }
 
 func (p *parser) string() (string, error) {
@@ -282,7 +282,7 @@ func (p *parser) array(depth int) (value, error) {
 		return value{}, p.errorf("nesting deeper than %d", maxDepth)
 	}
 	p.pos++ // [
-	v := value{kind: kArray}
+	v := value{kind: kindArray}
 	p.skipSpace()
 	if p.pos < len(p.data) && p.data[p.pos] == ']' {
 		p.pos++
@@ -317,7 +317,7 @@ func (p *parser) object(depth int) (value, error) {
 	}
 	start := p.pos
 	p.pos++ // {
-	v := value{kind: kObject}
+	v := value{kind: kindObject}
 	p.skipSpace()
 	if p.pos < len(p.data) && p.data[p.pos] == '}' {
 		p.pos++
@@ -369,17 +369,17 @@ func (p *parser) object(depth int) (value, error) {
 
 func emit(buf *bytes.Buffer, v value, indent int) {
 	switch v.kind {
-	case kNull:
+	case kindNull:
 		buf.WriteString("null")
-	case kTrue:
+	case kindTrue:
 		buf.WriteString("true")
-	case kFalse:
+	case kindFalse:
 		buf.WriteString("false")
-	case kInt:
+	case kindInt:
 		buf.WriteString(strconv.FormatInt(v.num, 10))
-	case kString:
+	case kindString:
 		emitString(buf, v.str)
-	case kArray:
+	case kindArray:
 		if len(v.elems) == 0 {
 			buf.WriteString("[]")
 			return
@@ -394,7 +394,7 @@ func emit(buf *bytes.Buffer, v value, indent int) {
 		}
 		newline(buf, indent)
 		buf.WriteByte(']')
-	case kObject:
+	case kindObject:
 		if len(v.members) == 0 {
 			buf.WriteString("{}")
 			return
