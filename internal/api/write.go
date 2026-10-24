@@ -159,6 +159,20 @@ func (r WriteResponse) Human(w io.Writer) {
 // request never records an actor; if resolving records one, the edit is
 // built again over the new log.
 func runWrite(ctx *Ctx, opName, intent string, build func(writeBase) (edit, error)) (any, error) {
+	return runWriteOn(ctx, opName, intent, func(w *workspace, cs id.ID) (edit, error) {
+		b := writeBase{m: w.model(cs), ids: ctx.IDs}
+		if !cs.IsZero() {
+			c, _ := w.changeSet(cs)
+			b.ops = c.Ops
+		}
+		return build(b)
+	})
+}
+
+// runWriteOn is runWrite with a builder that gets the workspace and the
+// target change set (zero with --record) instead of a writeBase, for writes
+// such as apply that build in several steps.
+func runWriteOn(ctx *Ctx, opName, intent string, build func(w *workspace, cs id.ID) (edit, error)) (any, error) {
 	w, err := openCtxWorkspace(ctx)
 	if err != nil {
 		return nil, err
@@ -170,12 +184,7 @@ func runWrite(ctx *Ctx, opName, intent string, build func(writeBase) (edit, erro
 		}
 	}
 	buildEdit := func() (edit, error) {
-		b := writeBase{m: w.model(cs), ids: ctx.IDs}
-		if !cs.IsZero() {
-			c, _ := w.changeSet(cs)
-			b.ops = c.Ops
-		}
-		e, err := build(b)
+		e, err := build(w, cs)
 		if err != nil {
 			return edit{}, err
 		}
