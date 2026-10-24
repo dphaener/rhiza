@@ -1,0 +1,15 @@
+{
+  "actor": "01M5N90G38G7AFW4E27T7BCX9E",
+  "after": [],
+  "at": "2026-10-23T21:00:03Z",
+  "body": {
+    "intent": "Let people export reports as CSV",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M5N90H2G3YDDE5P63Z14YBC0",
+  "for": "01M5N90G38G7AFW4E27T7BCX9E",
+  "id": "01M5N90J1RR10RKCX4RFT7ET4X",
+  "type": "open",
+  "v": 1
+}

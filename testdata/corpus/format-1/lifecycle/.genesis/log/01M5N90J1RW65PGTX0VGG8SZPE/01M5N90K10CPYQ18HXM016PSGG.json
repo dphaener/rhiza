@@ -4,7 +4,8 @@
   "at": "2026-10-23T21:00:04Z",
   "body": {
     "intent": "Rename the config file",
-    "kind": "intention"
+    "kind": "intention",
+    "sources": []
   },
   "change_set": "01M5N90J1RW65PGTX0VGG8SZPE",
   "for": "01M5N90G38R2N4SVAPVFCPFQ18",

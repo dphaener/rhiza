@@ -4,7 +4,8 @@
   "at": "2026-10-23T21:00:04Z",
   "body": {
     "intent": "Fix the flaky test",
-    "kind": "intention"
+    "kind": "intention",
+    "sources": []
   },
   "change_set": "01M5N90J1RYVQ22JTZVWA0KZ1B",
   "for": "01M5N90G3867WPF2CDYMRSXR19",

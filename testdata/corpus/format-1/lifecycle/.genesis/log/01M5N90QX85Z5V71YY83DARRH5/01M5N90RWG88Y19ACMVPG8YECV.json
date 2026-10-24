@@ -4,7 +4,8 @@
   "at": "2026-10-23T21:00:10Z",
   "body": {
     "intent": "Bump the Go version",
-    "kind": "intention"
+    "kind": "intention",
+    "sources": []
   },
   "change_set": "01M5N90QX85Z5V71YY83DARRH5",
   "for": "01M5N90G38R2N4SVAPVFCPFQ18",

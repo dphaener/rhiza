@@ -4,7 +4,8 @@
   "at": "2026-10-23T21:00:17Z",
   "body": {
     "intent": "Write the README and the guide",
-    "kind": "intention"
+    "kind": "intention",
+    "sources": []
   },
   "change_set": "01M5N90YR0WXF4ZG59S98G7E98",
   "for": "01M5N90G38R2N4SVAPVFCPFQ18",

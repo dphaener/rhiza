@@ -5,6 +5,7 @@
   ],
   "at": "2026-10-23T21:00:07Z",
   "body": {
+    "reason": "The name config.toml is used by three tools.",
     "rule": "owner"
   },
   "change_set": "01M5N90J1RW65PGTX0VGG8SZPE",

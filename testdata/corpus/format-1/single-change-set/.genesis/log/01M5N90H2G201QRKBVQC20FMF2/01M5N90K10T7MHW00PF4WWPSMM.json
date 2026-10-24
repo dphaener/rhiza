@@ -5,11 +5,19 @@
   ],
   "at": "2026-10-23T21:00:04Z",
   "body": {
+    "drop": [],
     "ops": [
       {
-        "op": "add",
-        "path": "menu.md",
-        "text": "# Menu\n\nCoffee — €3\n"
+        "fields": {
+          "statement": "The landing page shows the café menu — coffee €3, crème brûlée €5."
+        },
+        "handle": "cafe-menu",
+        "id": "01M5N90K10P0XJ8GP5VW18CK5E",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5N90K10P0XJ8GP5VVZ5GDP6",
+        "op": "node.create",
+        "parent": null
       }
     ]
   },

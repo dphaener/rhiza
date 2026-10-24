@@ -5,7 +5,21 @@
   ],
   "at": "2026-10-23T21:00:05Z",
   "body": {
-    "ops": []
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Every test passes on every run, on every platform."
+        },
+        "handle": "stable-tests",
+        "id": "01M5N90M08WCMJZZCKXQ9MTCJY",
+        "key": null,
+        "kind": "constraint",
+        "node": "01M5N90M08WCMJZZCKXMZ91936",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
   },
   "change_set": "01M5N90J1RYVQ22JTZVWA0KZ1B",
   "for": "01M5N90G3867WPF2CDYMRSXR19",
