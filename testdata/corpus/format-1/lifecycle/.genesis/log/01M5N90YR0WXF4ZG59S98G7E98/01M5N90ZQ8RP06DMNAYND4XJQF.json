@@ -1,0 +1,14 @@
+{
+  "actor": "01M5N90G38R2N4SVAPVFCPFQ18",
+  "after": [],
+  "at": "2026-10-23T21:00:17Z",
+  "body": {
+    "intent": "Write the README and the guide",
+    "kind": "intention"
+  },
+  "change_set": "01M5N90YR0WXF4ZG59S98G7E98",
+  "for": "01M5N90G38R2N4SVAPVFCPFQ18",
+  "id": "01M5N90ZQ8RP06DMNAYND4XJQF",
+  "type": "open",
+  "v": 1
+}

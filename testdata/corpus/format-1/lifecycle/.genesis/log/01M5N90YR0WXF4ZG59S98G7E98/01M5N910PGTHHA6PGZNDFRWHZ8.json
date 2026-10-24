@@ -1,0 +1,15 @@
+{
+  "actor": "01M5N90G38R2N4SVAPVFCPFQ18",
+  "after": [
+    "01M5N90ZQ8RP06DMNAYND4XJQF"
+  ],
+  "at": "2026-10-23T21:00:18Z",
+  "body": {
+    "text": "Covers what the first draft did."
+  },
+  "change_set": "01M5N90YR0WXF4ZG59S98G7E98",
+  "for": "01M5N90G38R2N4SVAPVFCPFQ18",
+  "id": "01M5N910PGTHHA6PGZNDFRWHZ8",
+  "type": "note",
+  "v": 1
+}
