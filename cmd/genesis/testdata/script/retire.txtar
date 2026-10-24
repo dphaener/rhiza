@@ -8,7 +8,7 @@ exec genesis add capability store --record
 
 # A landed node: a node.retire.
 exec genesis retire store --reason 'Folded into api'
-stdout '^Wrote entry [0-9A-Z]{26} to change set 01M5PWGDG0ABYZR1S1GQMF9KCV\.$'
+stdout '^Wrote entry [0-9A-Z]{26} to change set 01M5PWGEF85Y185JZ2ZGCNH40N\.$'
 stdout '^- node [0-9A-Z]{26} \(store\)$'
 exec genesis change show --json
 stdout '"op": "node.retire"'
@@ -16,7 +16,7 @@ stdout '"reason": "Folded into api"'
 
 # Its handle is free again, and retiring it twice is a conflict, exit 3.
 exec genesis add capability store
-! exec genesis retire 01M5PWGHD0R04H7R1ACFJCYMSD --reason again --json
+! exec genesis retire 01M5PWGJC82P7YGZTWYFFZ0VJG --reason again --json
 stdout '"code": "conflict"'
 stdout 'is retired'
 

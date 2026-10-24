@@ -8,8 +8,8 @@ exec genesis add capability store --field a=1
 
 # On a node added here: the create is revised, no update appears.
 exec genesis set store --handle files --field b=2 --unset a
-stdout '^Wrote entry [0-9A-Z]{26} to change set 01M5PWGDG0ABYZR1S1GQMF9KCV\.$'
-stdout '^- node 01M5PWGHD0R04H7R1ACFJCYMSD \(files\)$'
+stdout '^Wrote entry [0-9A-Z]{26} to change set 01M5PWGEF85Y185JZ2ZGCNH40N\.$'
+stdout '^- node 01M5PWGJC82P7YGZTWYFFZ0VJG \(files\)$'
 exec genesis change show --json
 stdout '"handle": "files"'
 stdout '"b": "2"'
@@ -69,8 +69,8 @@ exec genesis set shared --field a=2
 exec genesis propose
 exec genesis accept
 exec genesis land
-exec genesis land --change 01M5PWGW4RMJ580CPWEPP3158J
-exec genesis change use 01M5PWGDG0ABYZR1S1GQMF9KCV
+exec genesis land --change 01M5PWGX40FB1RBRN9YHMNJW07
+exec genesis change use 01M5PWGEF85Y185JZ2ZGCNH40N
 ! exec genesis set shared --field a=3 --json
 stdout '"code": "conflict"'
 stdout 'conflicting landed changes'

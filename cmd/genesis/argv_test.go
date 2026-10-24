@@ -226,4 +226,16 @@ func TestCtxTestIDsFollowTheLog(t *testing.T) {
 	if now0 != "2026-10-24T12:00:00Z" || now1 != "2026-10-24T12:00:01Z" {
 		t.Errorf("clocks = %s, %s", now0, now1)
 	}
+	// repo.json counts as one more unit, so the first write after init
+	// does not reuse init's IDs.
+	if err := os.WriteFile(filepath.Join(dir, ".genesis", "repo.json"), []byte("{}"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	a2, now2 := first()
+	if a2 == a1 || a2 == a0 {
+		t.Errorf("repo.json added, same first ID %s", a2)
+	}
+	if now2 != "2026-10-24T12:00:02Z" {
+		t.Errorf("clock with repo.json = %s", now2)
+	}
 }

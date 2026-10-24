@@ -9,7 +9,7 @@ exec genesis add decision d1
 exec genesis add constraint c1
 
 exec genesis link log depends-on store
-stdout '^Wrote entry [0-9A-Z]{26} to change set 01M5PWGDG0ABYZR1S1GQMF9KCV\.$'
+stdout '^Wrote entry [0-9A-Z]{26} to change set 01M5PWGEF85Y185JZ2ZGCNH40N\.$'
 stdout '^- link [0-9A-Z]{26}$'
 ! stdout '^- node'
 exec genesis link log relates-to store --note 'Same data' --json

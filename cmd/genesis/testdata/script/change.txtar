@@ -49,19 +49,19 @@ stdout '^## Operations$'
 stdout '^No operations yet\.$'
 
 # change use switches back, by full ID or a unique prefix (any case).
-exec genesis change use 01M5PWGDG0ABYZR1S1GQMF9KCV
-stdout '^Current change set: 01M5PWGDG0ABYZR1S1GQMF9KCV: Try it$'
-grep '^01M5PWGDG0ABYZR1S1GQMF9KCV$' .genesis/local/change
+exec genesis change use 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^Current change set: 01M5PWGEF85Y185JZ2ZGCNH40N: Try it$'
+grep '^01M5PWGEF85Y185JZ2ZGCNH40N$' .genesis/local/change
 exec genesis change ls
 stdout ': Try it \(current\)$'
-exec genesis change use 01m5pwghd0r04 --json
-stdout '"change_set": "01M5PWGHD0R04H7R1ACFJCYMSD"'
+exec genesis change use 01m5pwgjc82p7 --json
+stdout '"change_set": "01M5PWGJC82P7YGZTWYFFZ0VJG"'
 stdout '"intent": "Other"'
 
 # A prefix matching several change sets is a usage error listing them.
-! exec genesis change use 01M5PWGDG0 --json
+! exec genesis change use 01M5PWGEF8 --json
 stdout '"code": "usage"'
-stdout '01M5PWGDG0ABYZR1S1GCH2EVRN, 01M5PWGDG0ABYZR1S1GQMF9KCV'
+stdout '01M5PWGEF85Y185JZ2ZAN43Q1G, 01M5PWGEF85Y185JZ2ZGCNH40N'
 
 # An unknown change set is not_found, exit 4.
 ! exec genesis change use ZZZZZZ --json
@@ -69,22 +69,22 @@ stdout '"code": "not_found"'
 stdout '"next": "genesis change ls"'
 
 # A landed change set cannot be current: conflict, exit 3.
-! exec genesis change use 01M5PWGDG0ABYZR1S1GCH2EVRN --json
+! exec genesis change use 01M5PWGEF85Y185JZ2ZAN43Q1G --json
 stdout '"code": "conflict"'
 stdout 'is landed; nothing can be written to it'
 stdout '"next": "genesis change new \\"<intent>\\""'
-! exec genesis change use 01M5PWGDG0ABYZR1S1GCH2EVRN
+! exec genesis change use 01M5PWGEF85Y185JZ2ZAN43Q1G
 stderr '^next: genesis change new "<intent>"$'
 
 # change show takes a ref or --change, and shows a landed one's operations.
-exec genesis change show 01M5PWGDG0ABYZR1S1GCH2EVRN
-stdout '^# Change set 01M5PWGDG0ABYZR1S1GCH2EVRN$'
+exec genesis change show 01M5PWGEF85Y185JZ2ZAN43Q1G
+stdout '^# Change set 01M5PWGEF85Y185JZ2ZAN43Q1G$'
 stdout '^- Intent: Record actor test@genesis.invalid$'
 stdout '^- Kind: record$'
 stdout '^- State: landed$'
 stdout '^- Entries: 3$'
 stdout '^- node.create [0-9A-Z]{26} \(test\)$'
-exec genesis change show --change 01M5PWGDG0ABYZR1S1GCH2EVRN --json
+exec genesis change show --change 01M5PWGEF85Y185JZ2ZAN43Q1G --json
 stdout '"op": "node.create"'
 stdout '"kind": "actor"'
 stdout '"state": "landed"'
@@ -94,7 +94,7 @@ stdout '"problems": \[\]'
 # Exactly one of a ref and --none.
 ! exec genesis change use
 stderr '^genesis: change use takes a change set or --none'
-! exec genesis change use 01M5PWGDG0ABYZR1S1GQMF9KCV --none
+! exec genesis change use 01M5PWGEF85Y185JZ2ZGCNH40N --none
 stderr 'not both or neither'
 
 # --none clears it; then change show has nothing to show.

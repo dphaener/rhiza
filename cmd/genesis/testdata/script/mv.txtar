@@ -11,7 +11,7 @@ exec genesis add capability log --parent store --record
 
 # A landed node: one node.move, replaced by the next mv.
 exec genesis mv log --root
-stdout '^Wrote entry [0-9A-Z]{26} to change set 01M5PWGDG0ABYZR1S1GQMF9KCV\.$'
+stdout '^Wrote entry [0-9A-Z]{26} to change set 01M5PWGEF85Y185JZ2ZGCNH40N\.$'
 stdout '^- node [0-9A-Z]{26} \(log\)$'
 exec genesis mv log --parent api --json
 stdout '"nodes": \['

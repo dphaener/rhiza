@@ -72,15 +72,15 @@ stdout ' landed record: R$'
 # withdraw of a change set named with --change leaves the current one alone.
 exec genesis change new W
 exec genesis change new Z
-exec genesis withdraw --change 01M5PWGS702G3VYA781BNZ0K7Q
-stdout '^Withdrew change set 01M5PWGS702G3VYA781BNZ0K7Q \(draft → withdrawn\)\.$'
+exec genesis withdraw --change 01M5PWGT68X5XKB54XFQMHKA0A
+stdout '^Withdrew change set 01M5PWGT68X5XKB54XFQMHKA0A \(draft → withdrawn\)\.$'
 ! stdout 'No current change set'
 exec genesis change ls
-stdout '^- 01M5PWGS702G3VYA781BNZ0K7Q withdrawn intention: W$'
+stdout '^- 01M5PWGT68X5XKB54XFQMHKA0A withdrawn intention: W$'
 stdout ': Z \(current\)$'
 
 # A terminal change set takes nothing more.
-! exec genesis land --change 01M5PWGS702G3VYA781BNZ0K7Q --json
+! exec genesis land --change 01M5PWGT68X5XKB54XFQMHKA0A --json
 stdout '"code": "conflict"'
 stdout '"next": "genesis change new \\"<intent>\\""'
 

@@ -14,6 +14,7 @@ import (
 
 	"github.com/dphaener/genesis/internal/api"
 	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/genesis/internal/store"
 )
 
 // newCtx fills an api.Ctx from the global flags and the environment. Flags
@@ -25,9 +26,11 @@ import (
 // tests only. Every genesis process starts afresh, so a plain fixed clock
 // and seed would make each run generate the same IDs as the last and a
 // second write would collide. In test mode both are therefore offset by N,
-// the number of entry files already in the repo's log: the clock reads
-// GENESIS_TEST_NOW + N seconds and the seed is GENESIS_TEST_SEED + N. That
-// stays deterministic, and every write changes N for the next run.
+// the number of entry files already in the repo's log, plus one once
+// .genesis/repo.json exists (so the first write after init does not draw
+// init's IDs): the clock reads GENESIS_TEST_NOW + N seconds and the seed is
+// GENESIS_TEST_SEED + N. That stays deterministic, and every write changes
+// N for the next run.
 func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, error) {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -49,7 +52,7 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 	if nowEnv == "" && seedEnv == "" {
 		return ctx, nil
 	}
-	n := countEntryFiles(ctx.Root)
+	n := testOffset(ctx.Root)
 	if nowEnv != "" {
 		t, err := time.Parse(time.RFC3339, nowEnv)
 		if err != nil {
@@ -68,6 +71,16 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 	}
 	ctx.IDs = id.NewGenerator(ctx.Now, rand.New(rand.NewSource(seed+int64(n))))
 	return ctx, nil
+}
+
+// testOffset is N for test mode: the entry files in the log, plus one if
+// .genesis/repo.json exists.
+func testOffset(root string) int {
+	n := countEntryFiles(root)
+	if fi, err := os.Stat(filepath.Join(root, ".genesis", store.RepoFile)); err == nil && !fi.IsDir() {
+		n++
+	}
+	return n
 }
 
 // countEntryFiles counts the *.json files in root/.genesis/log/*/, skipping

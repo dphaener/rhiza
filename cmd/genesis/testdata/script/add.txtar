@@ -14,13 +14,13 @@ exec genesis change new Shape
 
 # Human output names the entry, the change set and the node.
 exec genesis add capability store --field 'statement=Keeps the log'
-stdout '^Wrote entry 01M5PWGHD0R04H7R1ACKMBVYGT to change set 01M5PWGDG0ABYZR1S1GQMF9KCV\.$'
-stdout '^- node 01M5PWGHD0R04H7R1ACFJCYMSD \(store\)$'
+stdout '^Wrote entry 01M5PWGJC82P7YGZTWYN55E6YF to change set 01M5PWGEF85Y185JZ2ZGCNH40N\.$'
+stdout '^- node 01M5PWGJC82P7YGZTWYFFZ0VJG \(store\)$'
 
 # --json, with a parent, a JSON field and a position.
 exec genesis add capability log --parent store --json-field 'tags=["a","b"]' --json
 stdout '"entry": "[0-9A-Z]{26}"'
-stdout '"change_set": "01M5PWGDG0ABYZR1S1GQMF9KCV"'
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
 stdout '"nodes": \[\n    "[0-9A-Z]{26}"\n  \]'
 ! stdout '"links"'
 exec genesis add capability first --before store
@@ -30,7 +30,7 @@ stdout '"tags": \[\n          "a",'
 
 # A dry run prints the op and writes nothing.
 exec genesis add decision d1 --dry-run
-stdout '^Dry run: would write 1 operation\(s\) to change set 01M5PWGDG0ABYZR1S1GQMF9KCV; nothing was written\.$'
+stdout '^Dry run: would write 1 operation\(s\) to change set 01M5PWGEF85Y185JZ2ZGCNH40N; nothing was written\.$'
 stdout '^- \{"fields":\{\},"handle":"d1",.*"kind":"decision".*"op":"node.create"'
 exec genesis add decision d1 --dry-run --json
 stdout '"dry_run": true'
@@ -42,7 +42,7 @@ exec genesis change show
 # A taken handle is a conflict, exit 3.
 ! exec genesis add decision store --json
 stdout '"code": "conflict"'
-stdout 'handle \\"store\\" is taken by node 01M5PWGHD0R04H7R1ACFJCYMSD'
+stdout 'handle \\"store\\" is taken by node 01M5PWGJC82P7YGZTWYFFZ0VJG'
 
 # Bad requests are usage errors, exit 2.
 ! exec genesis add widget x --json
@@ -64,7 +64,7 @@ stdout '"code": "usage"'
 stdout 'matches [0-9] nodes'
 
 # Writes into a landed change set are a conflict, exit 3.
-! exec genesis add capability x --change 01M5PWGDG0ABYZR1S1GCH2EVRN --json
+! exec genesis add capability x --change 01M5PWGEF85Y185JZ2ZAN43Q1G --json
 stdout '"code": "conflict"'
 stdout 'is landed'
 
