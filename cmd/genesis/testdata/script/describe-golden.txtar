@@ -1,0 +1,1385 @@
+# describe --json must match the golden below byte for byte: it is the
+# public contract of every operation (names, summaries, request and response
+# schemas). When a request or response type changes on purpose, regenerate
+# it and review the diff:
+#
+#   go test ./cmd/genesis -run TestScripts/describe-golden -update
+#
+# or by hand: go build -o $TMPDIR/genesis-x ./cmd/genesis &&
+# $TMPDIR/genesis-x describe --json, pasted below the golden's header.
+
+exec genesis describe --json
+cmp stdout describe.golden.json
+! stderr .
+
+-- describe.golden.json --
+{
+  "operations": [
+    {
+      "name": "accept",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "description": "Why",
+            "type": "string"
+          },
+          "rule": {
+            "description": "The rule the decision is made under; default owner",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The change set moved",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "cleared_current": {
+            "description": "True if the move ended the current change set and cleared it",
+            "type": "boolean"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The entry written",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "from": {
+            "description": "The state before the move",
+            "type": "string"
+          },
+          "reason": {
+            "description": "The reason of an accept or reject",
+            "type": "string"
+          },
+          "rule": {
+            "description": "The rule of an accept or reject",
+            "type": "string"
+          },
+          "to": {
+            "description": "The state after the move",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change_set",
+          "from",
+          "to"
+        ],
+        "type": "object"
+      },
+      "summary": "Accept a proposed change set",
+      "write": true
+    },
+    {
+      "name": "add",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "after": {
+            "description": "Place it just after this sibling; default after the last one",
+            "type": "string"
+          },
+          "before": {
+            "description": "Place it just before this sibling",
+            "type": "string"
+          },
+          "fields": {
+            "description": "A text field, name=text",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "handle": {
+            "description": "The node's handle: lower-case words joined by single dashes, unique among live nodes",
+            "type": "string"
+          },
+          "json_fields": {
+            "description": "A JSON field, name=<json>",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "kind": {
+            "description": "The node's kind",
+            "enum": [
+              "intent",
+              "capability",
+              "constraint",
+              "decision",
+              "question",
+              "evidence",
+              "source",
+              "actor",
+              "anchor"
+            ],
+            "type": "string"
+          },
+          "parent": {
+            "description": "The parent node (capabilities and intents only, same kind); default a root",
+            "type": "string"
+          }
+        },
+        "required": [
+          "handle",
+          "kind"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The change set written to (with --record, the new record change set)",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "drop": {
+            "description": "Dry run only: the op IDs the entry would drop",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The ops entry written; absent in a dry run",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "links": {
+            "description": "The links the write created or retired, sorted",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "nodes": {
+            "description": "The nodes the write created or changed, sorted; link endpoints are not included",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ops": {
+            "description": "Dry run only: the ops the entry would carry, as canonical op JSON",
+            "items": {},
+            "type": "array"
+          },
+          "record": {
+            "description": "True if the write opened and landed a record change set",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "change_set",
+          "nodes"
+        ],
+        "type": "object"
+      },
+      "summary": "Add a node",
+      "write": true
+    },
+    {
+      "name": "apply",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "description": "A JSON file {\"writes\":[{\"op\":\"add\",...},...]}; each item is an add, set, mv, retire, link or unlink request plus \"op\" naming it. Refs may name nodes added by earlier items. - reads stdin",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The change set written to (with --record, the new record change set)",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "drop": {
+            "description": "Dry run only: the op IDs the entry would drop",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The ops entry written; absent in a dry run",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "links": {
+            "description": "The links the write created or retired, sorted",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "nodes": {
+            "description": "The nodes the write created or changed, sorted; link endpoints are not included",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ops": {
+            "description": "Dry run only: the ops the entry would carry, as canonical op JSON",
+            "items": {},
+            "type": "array"
+          },
+          "record": {
+            "description": "True if the write opened and landed a record change set",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "change_set",
+          "nodes"
+        ],
+        "type": "object"
+      },
+      "summary": "Apply many writes as one entry: a JSON file {\"writes\":[{\"op\":\"add\",...},...]} whose items are add, set, mv, retire, link or unlink requests plus \"op\"",
+      "write": true
+    },
+    {
+      "name": "change.ls",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_sets": {
+            "description": "Every change set, sorted by ID",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "current": {
+                  "description": "Whether it is the current change set",
+                  "type": "boolean"
+                },
+                "id": {
+                  "description": "The change set's ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "intent": {
+                  "description": "The change set's intent",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "intention or record; empty without a valid open",
+                  "type": "string"
+                },
+                "state": {
+                  "description": "The lifecycle state; empty without a valid open",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "current",
+                "id",
+                "intent",
+                "kind",
+                "state"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "problems": {
+            "description": "Everything wrong with the log and its change sets",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "change_sets",
+          "problems"
+        ],
+        "type": "object"
+      },
+      "summary": "List every change set with its kind, state and intent",
+      "write": false
+    },
+    {
+      "name": "change.new",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "intent": {
+            "description": "What the change set is for, in a sentence",
+            "type": "string"
+          },
+          "kind": {
+            "description": "intention (reviewed before it lands) or record (lands as is); default intention",
+            "enum": [
+              "intention",
+              "record"
+            ],
+            "type": "string"
+          },
+          "sources": {
+            "description": "A source node the change set comes from: an ID, ID prefix or handle",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "intent"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "actor": {
+            "description": "Who opened it; absent in a dry run before any actor is recorded",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "change_set": {
+            "description": "The new change set's ID",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The open entry's ID",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "intent": {
+            "description": "The change set's intent",
+            "type": "string"
+          },
+          "kind": {
+            "description": "intention or record",
+            "type": "string"
+          },
+          "sources": {
+            "description": "The source node IDs, sorted",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "change_set",
+          "entry",
+          "intent",
+          "kind"
+        ],
+        "type": "object"
+      },
+      "summary": "Open a change set and make it current",
+      "write": true
+    },
+    {
+      "name": "change.show",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "description": "The change set: a full ID or a unique prefix of 4+ characters; default --change, else the current one",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "applied": {
+            "description": "Every folded entry, in causal order",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "current": {
+            "description": "Whether it is the current change set",
+            "type": "boolean"
+          },
+          "decided": {
+            "additionalProperties": false,
+            "description": "The applied accept or reject, if any",
+            "properties": {
+              "actor": {
+                "description": "Who decided",
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": "string"
+              },
+              "entry": {
+                "description": "The accept or reject entry",
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": "string"
+              },
+              "for": {
+                "description": "Whom they decided for",
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": "string"
+              },
+              "reason": {
+                "description": "Why",
+                "type": "string"
+              },
+              "rule": {
+                "description": "The rule the decision was made under",
+                "type": "string"
+              },
+              "type": {
+                "description": "accept or reject",
+                "type": "string"
+              }
+            },
+            "required": [
+              "actor",
+              "entry",
+              "for",
+              "rule",
+              "type"
+            ],
+            "type": "object"
+          },
+          "heads": {
+            "description": "The entries a new entry would follow",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "description": "The change set's ID",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "intent": {
+            "description": "The change set's intent",
+            "type": "string"
+          },
+          "kind": {
+            "description": "intention or record; empty without a valid open",
+            "type": "string"
+          },
+          "ops": {
+            "description": "The current operations, as canonical op JSON, in change set order",
+            "items": {},
+            "type": "array"
+          },
+          "problems": {
+            "description": "Everything wrong with its entries",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sources": {
+            "description": "The source node IDs",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "state": {
+            "description": "The lifecycle state; empty without a valid open",
+            "type": "string"
+          },
+          "superseded_by": {
+            "description": "The change set that superseded it, if any",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "applied",
+          "current",
+          "heads",
+          "id",
+          "intent",
+          "kind",
+          "ops",
+          "problems",
+          "sources",
+          "state"
+        ],
+        "type": "object"
+      },
+      "summary": "Show a change set: its intent, state, operations and decision",
+      "write": false
+    },
+    {
+      "name": "change.use",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "none": {
+            "description": "Clear the current change set instead",
+            "type": "boolean"
+          },
+          "ref": {
+            "description": "The change set: a full ID or a unique prefix of 4+ characters",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The current change set; absent when cleared",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "dry_run": {
+            "description": "True if the current change set was left unchanged",
+            "type": "boolean"
+          },
+          "intent": {
+            "description": "Its intent",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "summary": "Set or clear the current change set",
+      "write": false
+    },
+    {
+      "name": "describe",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "description": "The operation to describe, such as change.new; every operation if empty",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "operations": {
+            "description": "The operations, sorted by name",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "description": "The operation name, its command path with dots",
+                  "type": "string"
+                },
+                "request": {
+                  "description": "The JSON Schema of the request"
+                },
+                "response": {
+                  "description": "The JSON Schema of the response"
+                },
+                "summary": {
+                  "description": "One line describing the operation",
+                  "type": "string"
+                },
+                "write": {
+                  "description": "Whether the operation appends to the log",
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "name",
+                "request",
+                "response",
+                "summary",
+                "write"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "operations"
+        ],
+        "type": "object"
+      },
+      "summary": "Describe operations: their arguments and request and response schemas",
+      "write": false
+    },
+    {
+      "name": "init",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "repo": {
+            "description": "The new repository's ID",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "root": {
+            "description": "The absolute path of the project root holding .genesis",
+            "type": "string"
+          }
+        },
+        "required": [
+          "repo",
+          "root"
+        ],
+        "type": "object"
+      },
+      "summary": "Create a Genesis repository in the current folder",
+      "write": false
+    },
+    {
+      "name": "land",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The change set moved",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "cleared_current": {
+            "description": "True if the move ended the current change set and cleared it",
+            "type": "boolean"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The entry written",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "from": {
+            "description": "The state before the move",
+            "type": "string"
+          },
+          "reason": {
+            "description": "The reason of an accept or reject",
+            "type": "string"
+          },
+          "rule": {
+            "description": "The rule of an accept or reject",
+            "type": "string"
+          },
+          "to": {
+            "description": "The state after the move",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change_set",
+          "from",
+          "to"
+        ],
+        "type": "object"
+      },
+      "summary": "Land the change set: an accepted intention, or a record",
+      "write": true
+    },
+    {
+      "name": "link",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "decision": {
+            "description": "The decision node behind an exempts link (exempts only, required there)",
+            "type": "string"
+          },
+          "from": {
+            "description": "The node the link starts at: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
+            "type": "string"
+          },
+          "note": {
+            "description": "Why; required on relates-to and exempts",
+            "type": "string"
+          },
+          "to": {
+            "description": "The node the link ends at",
+            "type": "string"
+          },
+          "type": {
+            "description": "What the link says",
+            "enum": [
+              "serves",
+              "constrains",
+              "exempts",
+              "depends-on",
+              "relates-to",
+              "decided-by",
+              "answers",
+              "blocks",
+              "supersedes",
+              "derived-from",
+              "discovered-from",
+              "implements",
+              "verifies",
+              "observes"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "type"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The change set written to (with --record, the new record change set)",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "drop": {
+            "description": "Dry run only: the op IDs the entry would drop",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The ops entry written; absent in a dry run",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "links": {
+            "description": "The links the write created or retired, sorted",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "nodes": {
+            "description": "The nodes the write created or changed, sorted; link endpoints are not included",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ops": {
+            "description": "Dry run only: the ops the entry would carry, as canonical op JSON",
+            "items": {},
+            "type": "array"
+          },
+          "record": {
+            "description": "True if the write opened and landed a record change set",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "change_set",
+          "nodes"
+        ],
+        "type": "object"
+      },
+      "summary": "Link two nodes",
+      "write": true
+    },
+    {
+      "name": "mv",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "after": {
+            "description": "Place it just after this sibling; default after the last one",
+            "type": "string"
+          },
+          "before": {
+            "description": "Place it just before this sibling",
+            "type": "string"
+          },
+          "parent": {
+            "description": "The new parent, of the same kind",
+            "type": "string"
+          },
+          "ref": {
+            "description": "The node: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
+            "type": "string"
+          },
+          "root": {
+            "description": "Make it a root instead",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ref"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The change set written to (with --record, the new record change set)",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "drop": {
+            "description": "Dry run only: the op IDs the entry would drop",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The ops entry written; absent in a dry run",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "links": {
+            "description": "The links the write created or retired, sorted",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "nodes": {
+            "description": "The nodes the write created or changed, sorted; link endpoints are not included",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ops": {
+            "description": "Dry run only: the ops the entry would carry, as canonical op JSON",
+            "items": {},
+            "type": "array"
+          },
+          "record": {
+            "description": "True if the write opened and landed a record change set",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "change_set",
+          "nodes"
+        ],
+        "type": "object"
+      },
+      "summary": "Move a capability or intent to another parent or position",
+      "write": true
+    },
+    {
+      "name": "propose",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The change set moved",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "cleared_current": {
+            "description": "True if the move ended the current change set and cleared it",
+            "type": "boolean"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The entry written",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "from": {
+            "description": "The state before the move",
+            "type": "string"
+          },
+          "reason": {
+            "description": "The reason of an accept or reject",
+            "type": "string"
+          },
+          "rule": {
+            "description": "The rule of an accept or reject",
+            "type": "string"
+          },
+          "to": {
+            "description": "The state after the move",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change_set",
+          "from",
+          "to"
+        ],
+        "type": "object"
+      },
+      "summary": "Propose the change set for review",
+      "write": true
+    },
+    {
+      "name": "reject",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "description": "Why",
+            "type": "string"
+          },
+          "rule": {
+            "description": "The rule the decision is made under; default owner",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The change set moved",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "cleared_current": {
+            "description": "True if the move ended the current change set and cleared it",
+            "type": "boolean"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The entry written",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "from": {
+            "description": "The state before the move",
+            "type": "string"
+          },
+          "reason": {
+            "description": "The reason of an accept or reject",
+            "type": "string"
+          },
+          "rule": {
+            "description": "The rule of an accept or reject",
+            "type": "string"
+          },
+          "to": {
+            "description": "The state after the move",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change_set",
+          "from",
+          "to"
+        ],
+        "type": "object"
+      },
+      "summary": "Reject a proposed change set",
+      "write": true
+    },
+    {
+      "name": "retire",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "description": "Why it is retired",
+            "type": "string"
+          },
+          "ref": {
+            "description": "The node: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason",
+          "ref"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The change set written to (with --record, the new record change set)",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "drop": {
+            "description": "Dry run only: the op IDs the entry would drop",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The ops entry written; absent in a dry run",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "links": {
+            "description": "The links the write created or retired, sorted",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "nodes": {
+            "description": "The nodes the write created or changed, sorted; link endpoints are not included",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ops": {
+            "description": "Dry run only: the ops the entry would carry, as canonical op JSON",
+            "items": {},
+            "type": "array"
+          },
+          "record": {
+            "description": "True if the write opened and landed a record change set",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "change_set",
+          "nodes"
+        ],
+        "type": "object"
+      },
+      "summary": "Retire a node",
+      "write": true
+    },
+    {
+      "name": "set",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "fields": {
+            "description": "Set a text field, name=text",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "handle": {
+            "description": "A new handle",
+            "type": "string"
+          },
+          "json_fields": {
+            "description": "Set a JSON field, name=<json>",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ref": {
+            "description": "The node: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
+            "type": "string"
+          },
+          "unset": {
+            "description": "Remove a field by name",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "ref"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The change set written to (with --record, the new record change set)",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "drop": {
+            "description": "Dry run only: the op IDs the entry would drop",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The ops entry written; absent in a dry run",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "links": {
+            "description": "The links the write created or retired, sorted",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "nodes": {
+            "description": "The nodes the write created or changed, sorted; link endpoints are not included",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ops": {
+            "description": "Dry run only: the ops the entry would carry, as canonical op JSON",
+            "items": {},
+            "type": "array"
+          },
+          "record": {
+            "description": "True if the write opened and landed a record change set",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "change_set",
+          "nodes"
+        ],
+        "type": "object"
+      },
+      "summary": "Change a node's handle or fields",
+      "write": true
+    },
+    {
+      "name": "unlink",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "description": "The link (a full ID or a unique prefix of 4+ characters), or the node it starts at when type and to follow",
+            "type": "string"
+          },
+          "to": {
+            "description": "The node the link ends at, with type",
+            "type": "string"
+          },
+          "type": {
+            "description": "The link type, with to",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ref"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The change set written to (with --record, the new record change set)",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "drop": {
+            "description": "Dry run only: the op IDs the entry would drop",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The ops entry written; absent in a dry run",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "links": {
+            "description": "The links the write created or retired, sorted",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "nodes": {
+            "description": "The nodes the write created or changed, sorted; link endpoints are not included",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ops": {
+            "description": "Dry run only: the ops the entry would carry, as canonical op JSON",
+            "items": {},
+            "type": "array"
+          },
+          "record": {
+            "description": "True if the write opened and landed a record change set",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "change_set",
+          "nodes"
+        ],
+        "type": "object"
+      },
+      "summary": "Retire a link",
+      "write": true
+    },
+    {
+      "name": "withdraw",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The change set moved",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "cleared_current": {
+            "description": "True if the move ended the current change set and cleared it",
+            "type": "boolean"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The entry written",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "from": {
+            "description": "The state before the move",
+            "type": "string"
+          },
+          "reason": {
+            "description": "The reason of an accept or reject",
+            "type": "string"
+          },
+          "rule": {
+            "description": "The rule of an accept or reject",
+            "type": "string"
+          },
+          "to": {
+            "description": "The state after the move",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change_set",
+          "from",
+          "to"
+        ],
+        "type": "object"
+      },
+      "summary": "Withdraw a change set that has not landed",
+      "write": true
+    }
+  ]
+}

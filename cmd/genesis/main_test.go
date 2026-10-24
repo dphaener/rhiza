@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -17,11 +18,17 @@ func TestMain(m *testing.M) {
 	})
 }
 
+// -update rewrites a script's archive file when a `cmp stdout <file>` fails,
+// e.g. describe-golden.txtar's golden after a request or response type
+// changes: go test ./cmd/genesis -run TestScripts/describe-golden -update
+var update = flag.Bool("update", false, "rewrite the archive files that cmp compares against")
+
 func TestScripts(t *testing.T) {
 	testscript.Run(t, testscript.Params{
-		Dir:   "testdata/script",
-		Setup: setup,
-		Cmds:  map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK},
+		Dir:           "testdata/script",
+		Setup:         setup,
+		Cmds:          map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK},
+		UpdateScripts: *update,
 	})
 }
 
