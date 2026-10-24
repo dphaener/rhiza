@@ -5,6 +5,7 @@ go 1.25.14
 require (
 	github.com/oklog/ulid/v2 v2.1.2
 	github.com/rogpeppe/go-internal v1.14.1
+	pgregory.net/rapid v1.3.0
 )
 
 require (
