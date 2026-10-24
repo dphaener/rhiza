@@ -1,0 +1,12 @@
+# git runs against the sandboxed global config, never the real one.
+exec git config --global user.name
+stdout '^Genesis Test$'
+
+exec git init
+exec git add hello.txt
+exec git commit -m first
+exec git log -1 '--format=%an <%ae>'
+stdout '^Genesis Test <test@genesis.invalid>$'
+
+-- hello.txt --
+hello
