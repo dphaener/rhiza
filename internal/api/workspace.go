@@ -34,9 +34,9 @@ const (
 	currentFile = "change"
 )
 
-// FindRoot walks up from dir to the first folder holding a .genesis entry
+// findRoot walks up from dir to the first folder holding a .genesis entry
 // and returns it. It reports false if no ancestor of dir has one.
-func FindRoot(dir string) (string, bool) {
+func findRoot(dir string) (string, bool) {
 	d, err := filepath.Abs(dir)
 	if err != nil {
 		return "", false

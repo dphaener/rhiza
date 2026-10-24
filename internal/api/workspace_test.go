@@ -120,12 +120,12 @@ func TestWorkspace(t *testing.T) {
 		if err := os.MkdirAll(sub, 0o755); err != nil {
 			t.Fatal(err)
 		}
-		got, ok := FindRoot(sub)
+		got, ok := findRoot(sub)
 		if !ok || got != w.root {
-			t.Fatalf("FindRoot = %q, %v; want %q", got, ok, w.root)
+			t.Fatalf("findRoot = %q, %v; want %q", got, ok, w.root)
 		}
-		if got, ok := FindRoot(t.TempDir()); ok {
-			t.Fatalf("FindRoot outside a repo = %q, true", got)
+		if got, ok := findRoot(t.TempDir()); ok {
+			t.Fatalf("findRoot outside a repo = %q, true", got)
 		}
 		if _, err := openWorkspace(t.TempDir(), time.Now, id.Default(), false); ExitCode(err) != 4 ||
 			AsError(err).Next != "genesis init" {
