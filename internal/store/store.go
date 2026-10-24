@@ -13,6 +13,10 @@
 // already there, and no method of this package changes an existing file.
 // A writer stages each file as a dot-prefixed .tmp file beside its final
 // name; readers skip those.
+//
+// ReadLog reads the whole log at once and never stops at a bad file: it
+// returns every valid entry, in (change set, ID) order, beside a Problem
+// for each file or folder that is stray, corrupt or from a newer format.
 package store
 
 import (
