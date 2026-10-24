@@ -7,8 +7,10 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/dphaener/genesis/internal/api"
+	"github.com/dphaener/genesis/internal/id"
 )
 
 type testRequest struct {
@@ -177,5 +179,51 @@ func TestFindRoot(t *testing.T) {
 	other := t.TempDir()
 	if got := findRoot(other); got != other {
 		t.Errorf("findRoot(no repo) = %s, want %s", got, other)
+	}
+}
+
+// In test mode each run offsets the clock and seed by the number of entry
+// files, so successive runs make different IDs, and the same log the same.
+func TestCtxTestIDsFollowTheLog(t *testing.T) {
+	dir := t.TempDir()
+	t.Chdir(dir)
+	env := map[string]string{"GENESIS_TEST_NOW": "2026-10-24T12:00:00Z", "GENESIS_TEST_SEED": "1"}
+	getenv := func(k string) string { return env[k] }
+	first := func() (id.ID, string) {
+		t.Helper()
+		ctx, err := newCtx(globals{}, nil, getenv)
+		if err != nil {
+			t.Fatal(err)
+		}
+		i, err := ctx.IDs.New()
+		if err != nil {
+			t.Fatal(err)
+		}
+		return i, ctx.Now().Format(time.RFC3339)
+	}
+	a0, now0 := first()
+	b0, _ := first()
+	if a0 != b0 {
+		t.Errorf("same log, different IDs: %s %s", a0, b0)
+	}
+	cs := filepath.Join(dir, ".genesis", "log", "CS")
+	if err := os.MkdirAll(cs, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"E1.json", ".tmp.json"} {
+		if err := os.WriteFile(filepath.Join(cs, name), []byte("{}"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	a1, now1 := first()
+	b1, _ := first()
+	if a1 == a0 {
+		t.Errorf("one more entry file, same first ID %s", a1)
+	}
+	if a1 != b1 {
+		t.Errorf("same log, different IDs: %s %s", a1, b1)
+	}
+	if now0 != "2026-10-24T12:00:00Z" || now1 != "2026-10-24T12:00:01Z" {
+		t.Errorf("clocks = %s, %s", now0, now1)
 	}
 }

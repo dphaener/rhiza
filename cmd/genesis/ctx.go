@@ -22,9 +22,19 @@ import (
 //
 // GENESIS_TEST_NOW (RFC 3339) fixes the clock and GENESIS_TEST_SEED (an
 // integer) seeds the ID entropy, so tests get stable output. They are for
-// tests only.
+// tests only. Every genesis process starts afresh, so a plain fixed clock
+// and seed would make each run generate the same IDs as the last and a
+// second write would collide. In test mode both are therefore offset by N,
+// the number of entry files already in the repo's log: the clock reads
+// GENESIS_TEST_NOW + N seconds and the seed is GENESIS_TEST_SEED + N. That
+// stays deterministic, and every write changes N for the next run.
 func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil, fmt.Errorf("working directory: %w", err)
+	}
 	ctx := &api.Ctx{
+		Root:      findRoot(wd),
 		ChangeRef: pick(g.change, g.changeSet, getenv("GENESIS_CHANGE")),
 		ActorRef:  pick(g.actor, g.actorSet, getenv("GENESIS_ACTOR")),
 		ForRef:    pick(g.forRef, g.forSet, getenv("GENESIS_FOR")),
@@ -35,30 +45,42 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		GitConfig: gitConfig,
 		Stdin:     stdin,
 	}
-	fixed := false
-	if s := getenv("GENESIS_TEST_NOW"); s != "" {
-		t, err := time.Parse(time.RFC3339, s)
+	nowEnv, seedEnv := getenv("GENESIS_TEST_NOW"), getenv("GENESIS_TEST_SEED")
+	if nowEnv == "" && seedEnv == "" {
+		return ctx, nil
+	}
+	n := countEntryFiles(ctx.Root)
+	if nowEnv != "" {
+		t, err := time.Parse(time.RFC3339, nowEnv)
 		if err != nil {
 			return nil, api.Usagef("GENESIS_TEST_NOW: %v", err)
 		}
+		t = t.Add(time.Duration(n) * time.Second)
 		ctx.Now = func() time.Time { return t }
-		fixed = true
 	}
-	if s := getenv("GENESIS_TEST_SEED"); s != "" {
-		seed, err := strconv.ParseInt(s, 10, 64)
-		if err != nil {
-			return nil, api.Usagef("GENESIS_TEST_SEED: not an integer: %q", s)
-		}
-		ctx.IDs = id.NewGenerator(ctx.Now, rand.New(rand.NewSource(seed)))
-	} else if fixed {
+	if seedEnv == "" {
 		ctx.IDs = id.NewGenerator(ctx.Now, crand.Reader)
+		return ctx, nil
 	}
-	wd, err := os.Getwd()
+	seed, err := strconv.ParseInt(seedEnv, 10, 64)
 	if err != nil {
-		return nil, fmt.Errorf("working directory: %w", err)
+		return nil, api.Usagef("GENESIS_TEST_SEED: not an integer: %q", seedEnv)
 	}
-	ctx.Root = findRoot(wd)
+	ctx.IDs = id.NewGenerator(ctx.Now, rand.New(rand.NewSource(seed+int64(n))))
 	return ctx, nil
+}
+
+// countEntryFiles counts the *.json files in root/.genesis/log/*/, skipping
+// names that start with "."; 0 if there is no log.
+func countEntryFiles(root string) int {
+	matches, _ := filepath.Glob(filepath.Join(root, ".genesis", "log", "*", "*.json"))
+	n := 0
+	for _, m := range matches {
+		if !strings.HasPrefix(filepath.Base(m), ".") && !strings.HasPrefix(filepath.Base(filepath.Dir(m)), ".") {
+			n++
+		}
+	}
+	return n
 }
 
 func pick(flag string, set bool, env string) string {
