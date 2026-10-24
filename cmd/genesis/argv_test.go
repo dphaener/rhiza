@@ -1,0 +1,181 @@
+package main
+
+import (
+	"os"
+	"path/filepath"
+	"reflect"
+	"slices"
+	"strings"
+	"testing"
+
+	"github.com/dphaener/genesis/internal/api"
+)
+
+type testRequest struct {
+	Kind   string   `json:"kind" arg:"0"`
+	Handle string   `json:"handle,omitempty" arg:"1"`
+	Parent string   `json:"parent,omitempty"`
+	Fields []string `json:"fields,omitempty" flag:"field"`
+	Force  bool     `json:"force,omitempty"`
+	Depth  int      `json:"depth,omitempty"`
+	Hidden string   `json:"hidden,omitempty" flag:"-"`
+}
+
+type testResponse struct{}
+
+var testOp = api.Operation{
+	Name:     "test.op",
+	Request:  reflect.TypeFor[testRequest](),
+	Response: reflect.TypeFor[testResponse](),
+	Run:      func(*api.Ctx, any) (any, error) { return testResponse{}, nil },
+}
+
+type restRequest struct {
+	Files []string `json:"files" arg:"0"`
+}
+
+var restOp = api.Operation{
+	Name:     "rest.op",
+	Request:  reflect.TypeFor[restRequest](),
+	Response: reflect.TypeFor[testResponse](),
+	Run:      func(*api.Ctx, any) (any, error) { return testResponse{}, nil },
+}
+
+func TestRequestFromArgs(t *testing.T) {
+	cases := []struct {
+		name string
+		op   api.Operation
+		args []string
+		want any
+	}{
+		{"positional", testOp, []string{"capability"}, testRequest{Kind: "capability"}},
+		{"two positionals", testOp, []string{"capability", "store"}, testRequest{Kind: "capability", Handle: "store"}},
+		{"flag space", testOp, []string{"c", "--parent", "p"}, testRequest{Kind: "c", Parent: "p"}},
+		{"flag equals", testOp, []string{"--parent=p=q", "c"}, testRequest{Kind: "c", Parent: "p=q"}},
+		{"repeated", testOp, []string{"c", "--field", "a=1", "--field=b=2"}, testRequest{Kind: "c", Fields: []string{"a=1", "b=2"}}},
+		{"bool", testOp, []string{"c", "--force"}, testRequest{Kind: "c", Force: true}},
+		{"bool false", testOp, []string{"c", "--force=false"}, testRequest{Kind: "c"}},
+		{"int", testOp, []string{"c", "--depth", "3"}, testRequest{Kind: "c", Depth: 3}},
+		{"dash value", testOp, []string{"c", "--parent", "-x"}, testRequest{Kind: "c", Parent: "-x"}},
+		{"double dash", testOp, []string{"--", "--weird"}, testRequest{Kind: "--weird"}},
+		{"stdin dash", testOp, []string{"-"}, testRequest{Kind: "-"}},
+		{"rest", restOp, []string{"a", "b", "c"}, restRequest{Files: []string{"a", "b", "c"}}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got, err := requestFromArgs(c.op, c.args)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !reflect.DeepEqual(got, c.want) {
+				t.Errorf("got %#v, want %#v", got, c.want)
+			}
+		})
+	}
+}
+
+func TestRequestFromArgsErrors(t *testing.T) {
+	cases := []struct {
+		name string
+		op   api.Operation
+		args []string
+		want string
+	}{
+		{"unknown flag", testOp, []string{"c", "--bogus"}, "unknown flag --bogus"},
+		{"hidden flag", testOp, []string{"c", "--hidden", "x"}, "unknown flag --hidden"},
+		{"short flag", testOp, []string{"c", "-x"}, "unknown flag -x"},
+		{"missing positional", testOp, nil, "missing <kind>"},
+		{"too many", testOp, []string{"a", "b", "c"}, "too many arguments"},
+		{"no value", testOp, []string{"c", "--parent"}, "--parent needs a value"},
+		{"twice", testOp, []string{"c", "--parent", "a", "--parent", "b"}, "--parent given more than once"},
+		{"bad bool", testOp, []string{"c", "--force=maybe"}, "--force"},
+		{"bad int", testOp, []string{"c", "--depth", "x"}, "--depth"},
+		{"missing rest", restOp, nil, "missing <files>"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			_, err := requestFromArgs(c.op, c.args)
+			if api.ExitCode(err) != 2 {
+				t.Fatalf("err = %v, exit %d, want 2", err, api.ExitCode(err))
+			}
+			if !strings.Contains(err.Error(), c.want) {
+				t.Errorf("err = %q, want it to contain %q", err, c.want)
+			}
+		})
+	}
+}
+
+func TestParseGlobals(t *testing.T) {
+	g, rest, err := parseGlobals([]string{"--json", "change", "--change", "C1", "new", "--actor=A", "x", "--dry-run", "--for", "F", "--record", "-h", "--", "--json"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := globals{json: true, dryRun: true, record: true, help: true, change: "C1", actor: "A", forRef: "F", changeSet: true, actorSet: true, forSet: true}
+	if g != want {
+		t.Errorf("globals = %+v, want %+v", g, want)
+	}
+	if !slices.Equal(rest, []string{"change", "new", "x", "--", "--json"}) {
+		t.Errorf("rest = %q", rest)
+	}
+	if _, _, err := parseGlobals([]string{"x", "--change"}); api.ExitCode(err) != 2 {
+		t.Errorf("--change without value: err = %v", err)
+	}
+}
+
+func TestMatchCommand(t *testing.T) {
+	o, n, ok := matchCommand([]string{"describe", "describe", "x"})
+	if !ok || o.Name != "describe" || n != 1 {
+		t.Errorf("matchCommand = %s, %d, %v", o.Name, n, ok)
+	}
+	if _, _, ok := matchCommand([]string{"nope"}); ok {
+		t.Error("matched nope")
+	}
+}
+
+func TestCtxFromEnv(t *testing.T) {
+	env := map[string]string{
+		"GENESIS_CHANGE":    "envchange",
+		"GENESIS_ACTOR":     "envactor",
+		"GENESIS_TEST_NOW":  "2026-10-24T12:00:00Z",
+		"GENESIS_TEST_SEED": "7",
+	}
+	getenv := func(k string) string { return env[k] }
+	ctx, err := newCtx(globals{change: "flagchange", changeSet: true, dryRun: true}, nil, getenv)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ctx.ChangeRef != "flagchange" || ctx.ActorRef != "envactor" || ctx.ForRef != "" || !ctx.DryRun {
+		t.Errorf("ctx refs = %q %q %q dry %v", ctx.ChangeRef, ctx.ActorRef, ctx.ForRef, ctx.DryRun)
+	}
+	if got := ctx.Now().Format("2006-01-02T15:04:05Z07:00"); got != "2026-10-24T12:00:00Z" {
+		t.Errorf("now = %s", got)
+	}
+	a, _ := ctx.IDs.New()
+	ctx2, _ := newCtx(globals{}, nil, getenv)
+	b, _ := ctx2.IDs.New()
+	if a != b {
+		t.Errorf("seeded IDs differ: %s %s", a, b)
+	}
+	env["GENESIS_TEST_NOW"] = "yesterday"
+	if _, err := newCtx(globals{}, nil, getenv); api.ExitCode(err) != 2 {
+		t.Errorf("bad GENESIS_TEST_NOW: err = %v", err)
+	}
+}
+
+func TestFindRoot(t *testing.T) {
+	dir := t.TempDir()
+	sub := filepath.Join(dir, "a", "b")
+	if err := os.MkdirAll(filepath.Join(dir, ".genesis"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(sub, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if got := findRoot(sub); got != dir {
+		t.Errorf("findRoot(sub) = %s, want %s", got, dir)
+	}
+	other := t.TempDir()
+	if got := findRoot(other); got != other {
+		t.Errorf("findRoot(no repo) = %s, want %s", got, other)
+	}
+}

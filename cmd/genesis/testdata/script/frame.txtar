@@ -1,0 +1,57 @@
+# No arguments: usage from the registry on stdout, exit 0.
+exec genesis
+stdout '^Usage:'
+stdout '^  describe +Describe operations'
+stdout '^  api call '
+stdout '^  version '
+stdout '--json'
+! stderr .
+
+# -h and --help print the same usage.
+exec genesis --help
+stdout '^Usage:'
+exec genesis -h
+stdout '^Usage:'
+
+# An unknown command: message and usage on stderr, exit 2.
+! exec genesis nope
+stderr '^genesis: unknown command "nope"$'
+stderr '^Usage:'
+! stdout .
+
+# With --json, anywhere on the line, the error is JSON on stdout only.
+! exec genesis nope --json
+stdout '"code": "usage"'
+stdout '"message": "unknown command \\"nope\\""'
+stdout '"next": "genesis --help"'
+! stderr .
+
+# An unknown flag on a command is a usage error with a next command.
+! exec genesis describe --bogus
+stderr '^genesis: describe: unknown flag --bogus$'
+stderr '^next: genesis describe describe$'
+! stdout .
+
+# Too many arguments.
+! exec genesis describe a b
+stderr 'too many arguments'
+
+# A global flag without its value.
+! exec genesis describe --change
+stderr '^genesis: flag --change needs a value$'
+
+# A command's --help describes it.
+exec genesis describe --help
+stdout '^## describe$'
+stdout 'genesis describe \[<op>\]'
+
+# Bad test clock.
+env GENESIS_TEST_NOW=yesterday
+! exec genesis describe
+stderr 'GENESIS_TEST_NOW'
+env GENESIS_TEST_NOW=
+
+# version still works.
+exec genesis version
+stdout '\Agenesis \S+\n\z'
+! stderr .

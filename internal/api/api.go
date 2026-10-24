@@ -59,6 +59,15 @@ type Ctx struct {
 	// Actor is who performs the call, For whom it acts for. Either may be
 	// zero when the caller leaves the choice to the operation.
 	Actor, For id.ID
+	// ChangeRef, ActorRef and ForRef are the raw refs the caller was given
+	// (the CLI's --change, --actor and --for, or GENESIS_CHANGE,
+	// GENESIS_ACTOR and GENESIS_FOR), empty if none. The CLI fills these
+	// and leaves ChangeSet, Actor and For zero; the workspace resolves the
+	// refs into them.
+	ChangeRef, ActorRef, ForRef string
+	// Record asks a write to open a record change set, write into it and
+	// land it in one step, leaving the current change set alone.
+	Record bool
 	// DryRun asks a write to build everything and write nothing.
 	DryRun bool
 	// Now is the clock.

@@ -1,0 +1,59 @@
+# describe lists every operation for people.
+exec genesis describe
+stdout '^## describe$'
+stdout '^    genesis describe \[<op>\]$'
+stdout '^- `<op>`: The operation to describe'
+! stderr .
+
+# --json gives each operation's name, summary and schemas.
+exec genesis describe --json
+stdout '"name": "describe"'
+stdout '"request": \{'
+stdout '"response": \{'
+cp stdout describe.json
+
+# api call reaches the same operation and prints the same bytes.
+exec genesis api call describe '{}'
+cmp stdout describe.json
+exec genesis api call describe
+cmp stdout describe.json
+stdin empty.json
+exec genesis api call describe -
+cmp stdout describe.json
+
+# One operation, by positional argument or by request.
+exec genesis describe describe --json
+cp stdout one.json
+exec genesis api call describe '{"op":"describe"}'
+cmp stdout one.json
+
+# Unknown request fields are a usage error, as JSON on stdout.
+! exec genesis api call describe '{"bogus":1}'
+stdout '"code": "usage"'
+stdout 'unknown field'
+! stderr .
+! exec genesis api call describe '{"bogus":1}' --json
+stdout '"code": "usage"'
+
+# Malformed JSON too.
+! exec genesis api call describe '{'
+stdout '"code": "usage"'
+
+# An unknown operation is not found, through both transports.
+! exec genesis describe nope
+stderr '^genesis: unknown operation "nope"$'
+stderr '^next: genesis describe$'
+! exec genesis api call nope '{}'
+stdout '"code": "not_found"'
+! exec genesis describe nope --json
+stdout '"code": "not_found"'
+stdout '"next": "genesis describe"'
+
+# api needs call and an operation.
+! exec genesis api
+stdout '"code": "usage"'
+! exec genesis api call
+stdout '"code": "usage"'
+
+-- empty.json --
+{}

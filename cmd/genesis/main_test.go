@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/dphaener/genesis/internal/changeset"
+	"github.com/dphaener/genesis/internal/store"
 	"github.com/rogpeppe/go-internal/testscript"
 )
 
@@ -17,8 +20,59 @@ func TestMain(m *testing.M) {
 func TestScripts(t *testing.T) {
 	testscript.Run(t, testscript.Params{
 		Dir:   "testdata/script",
-		Setup: hermeticGit,
+		Setup: setup,
+		Cmds:  map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK},
 	})
+}
+
+// Every script starts with a fixed clock and ID seed, so its output bytes
+// are stable. A script that wants the real clock or random IDs clears them
+// with `env GENESIS_TEST_NOW=` and `env GENESIS_TEST_SEED=`.
+const (
+	testNow  = "2026-10-24T12:00:00Z"
+	testSeed = "1"
+)
+
+func setup(env *testscript.Env) error {
+	env.Setenv("GENESIS_TEST_NOW", testNow)
+	env.Setenv("GENESIS_TEST_SEED", testSeed)
+	return hermeticGit(env)
+}
+
+// foldOK is the script command `fold-ok [dir]`: it reads the .genesis folder
+// dir (default $WORK/.genesis) with store.ReadLog, folds it with
+// changeset.FoldLog and prints every log and fold problem to stdout, one per
+// line. It fails if there is any; `! fold-ok` fails if there is none.
+func foldOK(ts *testscript.TestScript, neg bool, args []string) {
+	if len(args) > 1 {
+		ts.Fatalf("usage: fold-ok [dir]")
+	}
+	dir := ".genesis"
+	if len(args) == 1 {
+		dir = args[0]
+	}
+	dir = ts.MkAbs(dir)
+	var problems []string
+	if fi, err := os.Stat(dir); err != nil || !fi.IsDir() {
+		problems = append(problems, fmt.Sprintf("%s is not a folder", dir))
+	}
+	l := store.ReadLog(os.DirFS(dir))
+	_, foldProblems := changeset.FoldLog(l)
+	for _, p := range l.Problems {
+		problems = append(problems, fmt.Sprintf("log: %s: %v", p.Path, p.Err))
+	}
+	for _, p := range foldProblems {
+		problems = append(problems, "fold: "+p.String())
+	}
+	for _, p := range problems {
+		fmt.Fprintln(ts.Stdout(), p)
+	}
+	switch {
+	case neg && len(problems) == 0:
+		ts.Fatalf("fold-ok: %d entries, no problems", len(l.Entries))
+	case !neg && len(problems) > 0:
+		ts.Fatalf("fold-ok: %d problems", len(problems))
+	}
 }
 
 // testGitConfig is the global git config every script runs with.

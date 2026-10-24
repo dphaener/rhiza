@@ -1,6 +1,8 @@
 // Command genesis is the thin CLI over the domain packages under internal/.
-// It parses arguments, dispatches to a command and maps the result to an
-// exit code; the behaviour itself lives in internal/.
+// It is a generic frame over the operations in internal/api: it maps argv
+// to a request through the request type's struct tags, runs the operation,
+// renders the response as markdown or JSON and maps errors to exit codes.
+// It has no per-command code; only version, api call and help are its own.
 package main
 
 import (
@@ -8,17 +10,13 @@ import (
 	"io"
 	"os"
 	"runtime/debug"
+	"strings"
+
+	"github.com/dphaener/genesis/internal/api"
 )
 
 // version is set at build time with -ldflags "-X main.version=...".
 var version string
-
-const usage = `Usage:
-  genesis <command>
-
-Commands:
-  version    Print the genesis version
-`
 
 // versionString reports the ldflags version, else the module version from
 // the build info, else "dev".
@@ -34,21 +32,148 @@ func versionString() string {
 	return "dev"
 }
 
-func run(args []string, stdout, stderr io.Writer) int {
-	if len(args) == 0 {
-		fmt.Fprint(stdout, usage)
+const globalFlags = `Global flags:
+  --json          Print JSON instead of markdown
+  --dry-run       Build a write and print it; write nothing
+  --change <ref>  The change set to act on (env GENESIS_CHANGE)
+  --actor <ref>   Who performs the call (env GENESIS_ACTOR)
+  --for <ref>     Whom the call acts for (env GENESIS_FOR)
+  --record        Write in a record change set landed in one step
+  -h, --help      Show this help, or describe a command
+`
+
+// usage is the help text, generated from the registry.
+func usage() string {
+	type row struct{ name, summary string }
+	var rows []row
+	for _, o := range api.Operations() {
+		rows = append(rows, row{api.CommandPath(o.Name), o.Summary})
+	}
+	rows = append(rows,
+		row{"api call", "Call an operation with a JSON request; prints JSON"},
+		row{"version", "Print the genesis version"})
+	width := 0
+	for _, r := range rows {
+		width = max(width, len(r.name))
+	}
+	var b strings.Builder
+	b.WriteString("Usage:\n  genesis <command> [arguments] [flags]\n  genesis api call <operation> [<json>|-]\n\nCommands:\n")
+	for _, r := range rows {
+		fmt.Fprintf(&b, "  %-*s  %s\n", width, r.name, r.summary)
+	}
+	b.WriteString("\n" + globalFlags + "\nRun \"genesis describe <operation>\" for an operation's arguments.\n")
+	return b.String()
+}
+
+// run is the testable entry point: it returns the exit code.
+func run(args []string, stdin io.Reader, stdout, stderr io.Writer, getenv func(string) string) int {
+	g, rest, err := parseGlobals(args)
+	if err != nil {
+		return writeError(stdout, stderr, err, g.json)
+	}
+	words := commandWords(rest)
+	if len(words) == 0 {
+		if len(rest) > 0 && !g.help {
+			return writeError(stdout, stderr, api.Usagef("unknown flag %s", rest[0]).WithNext("genesis --help"), g.json)
+		}
+		fmt.Fprint(stdout, usage())
 		return 0
 	}
-	switch args[0] {
+	switch words[0] {
 	case "version":
+		if g.help {
+			fmt.Fprint(stdout, usage())
+			return 0
+		}
 		fmt.Fprintf(stdout, "genesis %s\n", versionString())
 		return 0
-	default:
-		fmt.Fprintf(stderr, "genesis: unknown command %q\n\n%s", args[0], usage)
+	case "api":
+		if g.help {
+			fmt.Fprint(stdout, usage())
+			return 0
+		}
+		return apiCall(g, rest[1:], stdin, stdout, stderr, getenv)
+	}
+	o, n, ok := matchCommand(words)
+	if !ok {
+		if g.json {
+			return writeError(stdout, stderr, api.Usagef("unknown command %q", words[0]).WithNext("genesis --help"), true)
+		}
+		fmt.Fprintf(stderr, "genesis: unknown command %q\n\n%s", words[0], usage())
 		return 2
 	}
+	if g.help {
+		return call(g, describeOp(), api.DescribeRequest{Op: o.Name}, stdin, stdout, stderr, getenv)
+	}
+	req, err := requestFromArgs(o, rest[n:])
+	if err != nil {
+		return writeError(stdout, stderr, err, g.json)
+	}
+	return call(g, o, req, stdin, stdout, stderr, getenv)
+}
+
+// apiCall runs `genesis api call <op> [<json>|-]`. Its output is always
+// JSON.
+func apiCall(g globals, args []string, stdin io.Reader, stdout, stderr io.Writer, getenv func(string) string) int {
+	g.json = true
+	if len(args) == 0 || args[0] != "call" {
+		return writeError(stdout, stderr, api.Usagef("usage: genesis api call <operation> [<json>|-]").WithNext("genesis describe"), true)
+	}
+	args = args[1:]
+	for _, a := range args {
+		if a != "-" && strings.HasPrefix(a, "-") {
+			return writeError(stdout, stderr, api.Usagef("api call: unknown flag %s", a), true)
+		}
+	}
+	if len(args) < 1 || len(args) > 2 {
+		return writeError(stdout, stderr, api.Usagef("usage: genesis api call <operation> [<json>|-]").WithNext("genesis describe"), true)
+	}
+	o, ok := api.Lookup(args[0])
+	if !ok {
+		return writeError(stdout, stderr, api.NotFoundf("unknown operation %q", args[0]).WithNext("genesis describe"), true)
+	}
+	var data []byte
+	if len(args) == 2 {
+		data = []byte(args[1])
+		if args[1] == "-" {
+			b, err := io.ReadAll(stdin)
+			if err != nil {
+				return writeError(stdout, stderr, fmt.Errorf("read stdin: %w", err), true)
+			}
+			data = b
+		}
+	}
+	req, err := api.DecodeRequest(o, data)
+	if err != nil {
+		return writeError(stdout, stderr, err, true)
+	}
+	return call(g, o, req, stdin, stdout, stderr, getenv)
+}
+
+// call runs o on req and prints the outcome.
+func call(g globals, o api.Operation, req any, stdin io.Reader, stdout, stderr io.Writer, getenv func(string) string) int {
+	ctx, err := newCtx(g, stdin, getenv)
+	if err != nil {
+		return writeError(stdout, stderr, err, g.json)
+	}
+	resp, err := o.Run(ctx, req)
+	if err == nil {
+		err = writeResponse(stdout, resp, g.json)
+	}
+	if err != nil {
+		return writeError(stdout, stderr, err, g.json)
+	}
+	return 0
+}
+
+func describeOp() api.Operation {
+	o, ok := api.Lookup("describe")
+	if !ok {
+		panic("genesis: no describe operation")
+	}
+	return o
 }
 
 func main() {
-	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
+	os.Exit(run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr, os.Getenv))
 }
