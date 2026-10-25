@@ -1,6 +1,7 @@
 package index
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"slices"
@@ -219,6 +220,62 @@ func (x *Index) Links(v View, node id.ID, dir Direction) ([]model.Link, error) {
 	}
 	slices.SortFunc(out, func(a, b model.Link) int { return id.Compare(a.ID, b.ID) })
 	return out, rows.Err()
+}
+
+// Link returns the link with ID i in view v, live or retired.
+func (x *Index) Link(v View, i id.ID) (model.Link, bool, error) {
+	if err := v.check(); err != nil {
+		return model.Link{}, false, err
+	}
+	rows, err := x.db.Query(linkSelect+` WHERE view = ? AND id = ?`, string(v), idText(i))
+	if err != nil {
+		return model.Link{}, false, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return model.Link{}, false, rows.Err()
+	}
+	l, err := scanLink(rows)
+	if err != nil {
+		return model.Link{}, false, err
+	}
+	return l, true, nil
+}
+
+// The neighbour queries: each is a range search of the nodes primary key,
+// one row read.
+const (
+	prevQuery = `SELECT id FROM nodes WHERE view = ? AND id < ? ORDER BY id DESC LIMIT 1`
+	nextQuery = `SELECT id FROM nodes WHERE view = ? AND id > ? ORDER BY id LIMIT 1`
+)
+
+// Neighbours returns the node IDs of view v just around i, live or retired:
+// prev the greatest below i and next the least above it, each zero when
+// there is none. i need not be a node of v.
+func (x *Index) Neighbours(v View, i id.ID) (prev, next id.ID, err error) {
+	if err := v.check(); err != nil {
+		return id.ID{}, id.ID{}, err
+	}
+	if prev, err = x.neighbour(prevQuery, v, i); err != nil {
+		return id.ID{}, id.ID{}, err
+	}
+	if next, err = x.neighbour(nextQuery, v, i); err != nil {
+		return id.ID{}, id.ID{}, err
+	}
+	return prev, next, nil
+}
+
+// neighbour runs one neighbour query; zero when it finds no row.
+func (x *Index) neighbour(query string, v View, i id.ID) (id.ID, error) {
+	var s string
+	err := x.db.QueryRow(query, string(v), idText(i)).Scan(&s)
+	if errors.Is(err, sql.ErrNoRows) {
+		return id.ID{}, nil
+	}
+	if err != nil {
+		return id.ID{}, err
+	}
+	return parseID(s), nil
 }
 
 // nodes runs a query selecting nodeSelect's columns and scans every row;

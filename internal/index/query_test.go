@@ -272,6 +272,111 @@ func TestLinks(t *testing.T) {
 	}
 }
 
+func TestNeighbours(t *testing.T) {
+	_, x := queryIndex(t)
+	for _, c := range []struct {
+		name       string
+		v          View
+		i          id.ID
+		prev, next id.ID
+	}{
+		{"first", AsIs, nd(1), id.ID{}, nd(2)},
+		{"middle", AsIs, nd(5), nd(4), nd(6)},
+		{"after a retired node", AsIs, nd(9), nd(8), nd(10)},
+		{"last", AsIs, nd(1000), nd(10), id.ID{}},
+		{"not in the view", AsIs, nd(11), nd(10), nd(1000)},
+		{"to-be has it", ToBe, nd(10), nd(9), nd(11)},
+		{"to-be, itself", ToBe, nd(11), nd(10), nd(1000)},
+		{"draft never stored", ToBe, nd(12), nd(11), nd(1000)},
+		{"zero", AsIs, id.ID{}, id.ID{}, nd(1)},
+		{"past the end", AsIs, nd(5000), nd(1000), id.ID{}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			prev, next, err := x.Neighbours(c.v, c.i)
+			if err != nil || prev != c.prev || next != c.next {
+				t.Fatalf("Neighbours = %s, %s, %v; want %s, %s", prev, next, err, c.prev, c.next)
+			}
+		})
+	}
+	if _, _, err := x.Neighbours(View("what"), nd(1)); err == nil {
+		t.Fatal("unknown view: no error")
+	}
+
+	f := newFixture(t)
+	empty := openT(t, f, f.dbPath(), nil)
+	for _, v := range []View{AsIs, ToBe} {
+		prev, next, err := empty.Neighbours(v, nd(1))
+		if err != nil || !prev.IsZero() || !next.IsZero() {
+			t.Fatalf("empty %s: Neighbours = %s, %s, %v", v, prev, next, err)
+		}
+	}
+}
+
+// TestNeighboursPlan: both neighbour queries are a range search of the
+// nodes primary key.
+func TestNeighboursPlan(t *testing.T) {
+	_, x := queryIndex(t)
+	for _, q := range []string{prevQuery, nextQuery} {
+		rows, err := x.db.Query(`EXPLAIN QUERY PLAN `+q, string(AsIs), idText(nd(5)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		var plan []string
+		for rows.Next() {
+			var a, b, c int
+			var detail string
+			if err := rows.Scan(&a, &b, &c, &detail); err != nil {
+				t.Fatal(err)
+			}
+			plan = append(plan, detail)
+		}
+		rows.Close()
+		if len(plan) != 1 || !strings.Contains(plan[0], "USING PRIMARY KEY (view=? AND id") {
+			t.Fatalf("plan of %s:\n%s", q, strings.Join(plan, "\n"))
+		}
+	}
+}
+
+func TestQueryLink(t *testing.T) {
+	f := newFixture(t)
+	cs := csID(1)
+	f.add(cs, changeset.Open{Kind: changeset.KindRecord, Intent: "seed"})
+	f.add(cs, changeset.Ops{Ops: []op.Op{
+		mkCap(1, 1, "a", 0, "i"),
+		mkCap(2, 2, "b", 0, "j"),
+		{ID: opID(3), Type: op.TypeLinkCreate, Link: ln(1), LinkType: op.LinkServes, From: nd(1), To: nd(2)},
+		{ID: opID(4), Type: op.TypeLinkCreate, Link: ln(2), LinkType: op.LinkRelatesTo, From: nd(2), To: nd(1), Note: "why"},
+		{ID: opID(5), Type: op.TypeLinkRetire, Link: ln(2), Base: opID(4)},
+	}})
+	f.add(cs, changeset.Land{})
+	x := openT(t, f, f.dbPath(), nil)
+	for _, c := range []struct {
+		name    string
+		i       id.ID
+		ok      bool
+		retired bool
+		from    id.ID
+	}{
+		{"live", ln(1), true, false, nd(1)},
+		{"retired", ln(2), true, true, nd(2)},
+		{"missing", ln(3), false, false, id.ID{}},
+		{"a node is no link", nd(1), false, false, id.ID{}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			l, ok, err := x.Link(AsIs, c.i)
+			if err != nil || ok != c.ok || l.Retired != c.retired || l.From != c.from {
+				t.Fatalf("Link = %+v, %v, %v", l, ok, err)
+			}
+		})
+	}
+	want := storedLinks(t, x, viewAsIs)
+	got, _, _ := x.Link(AsIs, ln(2))
+	same(t, "retired link", got, want[1])
+	if _, _, err := x.Link(View("what"), ln(1)); err == nil {
+		t.Fatal("unknown view: no error")
+	}
+}
+
 func TestQueryChangeSets(t *testing.T) {
 	f, x := queryIndex(t)
 	got, err := x.ChangeSets()
