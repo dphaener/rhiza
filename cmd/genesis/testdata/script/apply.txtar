@@ -1,0 +1,102 @@
+# apply reads many writes from a JSON file and writes them as one ops entry
+# in the current change set, or nothing at all. IDs are fixed (see
+# change.txtar); the first change set is 01M5PWGEF85Y185JZ2ZGCNH40N.
+
+exec genesis init
+exec genesis change new Shape
+
+# A parent and a child, a link and a field: one new entry (open + ops).
+exec genesis apply writes.json
+stdout '^Wrote entry [0-9A-Z]{26} to change set 01M5PWGEF85Y185JZ2ZGCNH40N\.$'
+stdout '^- node [0-9A-Z]{26} \(store\)$'
+stdout '^- node [0-9A-Z]{26} \(log\)$'
+stdout '^- link [0-9A-Z]{26}$'
+exec ls .genesis/log/01M5PWGEF85Y185JZ2ZGCNH40N
+stdout -count=2 '\.json$'
+fold-ok
+exec genesis change show
+stdout -count=3 '^- node.create'
+stdout -count=1 '^- link.create'
+! stdout 'node.update'
+exec genesis change show --json
+stdout '"statement": "Keeps the log"'
+
+# stdin, with --json.
+stdin more.json
+exec genesis apply - --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+stdout '"links": \['
+exec ls .genesis/log/01M5PWGEF85Y185JZ2ZGCNH40N
+stdout -count=3 '\.json$'
+fold-ok
+
+# An invalid item writes nothing; the error names the item.
+! exec genesis apply bad.json --json
+stdout '"code": "usage"'
+stdout 'writes\[1\]: '
+exec ls .genesis/log/01M5PWGEF85Y185JZ2ZGCNH40N
+stdout -count=3 '\.json$'
+exec genesis change show
+! stdout 'later'
+! exec genesis apply bad.json
+stderr '^genesis: writes\[1\]: add request: json: unknown field "nope"$'
+stderr '^next: genesis describe add$'
+
+# An unknown op is usage too.
+! exec genesis apply unknown.json --json
+stdout '"code": "usage"'
+stdout 'writes\[0\]: unknown op \\"frob\\"'
+
+# Writes that cancel out: nothing to write.
+! exec genesis apply cancel.json
+stderr 'nothing to write'
+
+# A missing file is usage.
+! exec genesis apply nosuch.json --json
+stdout '"code": "usage"'
+
+# --record lands the file in a record change set of its own.
+exec genesis apply record.json --record
+stdout '^Recorded and landed change set [0-9A-Z]{26} \(entry [0-9A-Z]{26}\)\.$'
+exec genesis change ls
+stdout '^- [0-9A-Z]{26} landed record: apply record.json$'
+fold-ok
+
+# describe documents the file format.
+exec genesis describe apply
+stdout '^Input: \{"writes":\[\.\.\.\]\}'
+exec genesis describe apply --json
+stdout '"oneOf"'
+stdout '"const": "add"'
+stdout '"const": "unlink"'
+
+-- writes.json --
+{"writes":[
+  {"op":"add","kind":"capability","handle":"store"},
+  {"op":"add","kind":"capability","handle":"log","parent":"store"},
+  {"op":"add","kind":"decision","handle":"d1"},
+  {"op":"link","from":"log","type":"decided-by","to":"d1"},
+  {"op":"set","ref":"store","fields":["statement=Keeps the log"]}
+]}
+-- more.json --
+{"writes":[
+  {"op":"add","kind":"decision","handle":"d2"},
+  {"op":"link","from":"store","type":"decided-by","to":"d2"}
+]}
+-- bad.json --
+{"writes":[
+  {"op":"add","kind":"decision","handle":"later"},
+  {"op":"add","kind":"decision","handle":"later-2","nope":1}
+]}
+-- unknown.json --
+{"writes":[{"op":"frob"}]}
+-- cancel.json --
+{"writes":[
+  {"op":"add","kind":"decision","handle":"gone"},
+  {"op":"retire","ref":"gone","reason":"never mind"}
+]}
+-- record.json --
+{"writes":[
+  {"op":"add","kind":"question","handle":"q1"},
+  {"op":"add","kind":"question","handle":"q2"}
+]}

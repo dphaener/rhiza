@@ -1,0 +1,64 @@
+# mv moves a capability or intent: --parent or --root, and --before or
+# --after a sibling (default after the last one). On a landed node it writes
+# a node.move, and a second mv replaces it (D9); on a node added here it
+# revises the node.create.
+
+exec genesis init
+exec genesis change new Shape
+exec genesis add capability store --record
+exec genesis add capability api --record
+exec genesis add capability log --parent store --record
+
+# A landed node: one node.move, replaced by the next mv.
+exec genesis mv log --root
+stdout '^Wrote entry [0-9A-Z]{26} to change set 01M5PWGEF85Y185JZ2ZGCNH40N\.$'
+stdout '^- node [0-9A-Z]{26} \(log\)$'
+exec genesis mv log --parent api --json
+stdout '"nodes": \['
+exec genesis change show --json
+stdout '"op": "node.move"'
+stdout '"key": "i"'
+! stdout '"parent": null'
+exec genesis change show
+stdout -count=1 '^- node.move '
+
+# Placing before a sibling.
+exec genesis mv api --before store
+exec genesis change show
+stdout -count=2 '^- node.move '
+
+# A node added here: its create is revised.
+exec genesis add capability new
+exec genesis mv new --parent store
+exec genesis change show
+stdout -count=1 '^- node.create .*\(new\)$'
+stdout -count=2 '^- node.move '
+
+# A dry run prints the move and writes nothing.
+exec genesis mv store --after api --dry-run
+stdout '^Dry run: would write 1 operation\(s\)'
+stdout '"op":"node.move"'
+exec genesis change show
+stdout -count=2 '^- node.move '
+
+# Usage errors, exit 2.
+exec genesis add decision d
+! exec genesis mv d --root --json
+stdout '"code": "usage"'
+stdout 'not in a tree'
+! exec genesis mv store --parent store
+stderr 'under itself or one of its descendants'
+! exec genesis mv store --root --parent api
+stderr 'not both'
+! exec genesis mv store
+stderr '^genesis: nothing to move'
+! exec genesis mv store --after new
+stderr 'not a sibling'
+! exec genesis mv 01M5PWG --root --json
+stdout '"code": "usage"'
+
+# Unknown ref, exit 4.
+! exec genesis mv nosuch --root --json
+stdout '"code": "not_found"'
+
+fold-ok

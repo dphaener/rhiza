@@ -1,0 +1,447 @@
+package api
+
+// This file holds the change set operations: change.new opens a change set
+// and makes it current, change.use sets or clears the current one, and
+// change.show and change.ls report change sets as their entries fold. None
+// of them writes nodes or links.
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"reflect"
+	"slices"
+	"strings"
+
+	"github.com/dphaener/genesis/internal/changeset"
+	"github.com/dphaener/genesis/internal/entry"
+	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/genesis/internal/store"
+)
+
+func init() {
+	register(Operation{
+		Name:     "change.new",
+		Summary:  "Open a change set and make it current",
+		Write:    true,
+		Request:  reflect.TypeFor[ChangeNewRequest](),
+		Response: reflect.TypeFor[ChangeNewResponse](),
+		Run:      runChangeNew,
+	})
+	register(Operation{
+		Name:     "change.use",
+		Summary:  "Set or clear the current change set",
+		Request:  reflect.TypeFor[ChangeUseRequest](),
+		Response: reflect.TypeFor[ChangeUseResponse](),
+		Run:      runChangeUse,
+	})
+	register(Operation{
+		Name:     "change.show",
+		Summary:  "Show a change set: its intent, state, operations and decision",
+		Request:  reflect.TypeFor[ChangeShowRequest](),
+		Response: reflect.TypeFor[ChangeShowResponse](),
+		Run:      runChangeShow,
+	})
+	register(Operation{
+		Name:     "change.ls",
+		Summary:  "List every change set with its kind, state and intent",
+		Request:  reflect.TypeFor[ChangeLsRequest](),
+		Response: reflect.TypeFor[ChangeLsResponse](),
+		Run:      runChangeLs,
+	})
+}
+
+// changeLsNext is the next command when a change set must be named.
+const changeLsNext = "genesis change ls"
+
+// ChangeNewRequest opens a change set.
+type ChangeNewRequest struct {
+	Intent  string   `json:"intent" arg:"0" desc:"What the change set is for, in a sentence"`
+	Kind    string   `json:"kind,omitempty" enum:"intention,record" desc:"intention (reviewed before it lands) or record (lands as is); default intention"`
+	Sources []string `json:"sources,omitempty" flag:"source" desc:"A source node the change set comes from: an ID, ID prefix or handle"`
+}
+
+// ChangeNewResponse names the new change set and its open entry.
+type ChangeNewResponse struct {
+	ChangeSet id.ID          `json:"change_set" desc:"The new change set's ID"`
+	Entry     id.ID          `json:"entry,omitzero" desc:"The open entry's ID; absent in a dry run"`
+	Kind      changeset.Kind `json:"kind" desc:"intention or record"`
+	Intent    string         `json:"intent" desc:"The change set's intent"`
+	Sources   []id.ID        `json:"sources,omitempty" desc:"The source node IDs, sorted"`
+	Actor     id.ID          `json:"actor,omitzero" desc:"Who opened it; absent in a dry run before any actor is recorded"`
+	DryRun    bool           `json:"dry_run,omitempty" desc:"True if nothing was written"`
+}
+
+// runChangeNew validates the request, resolves the sources and the actor
+// (recording one on first use), writes the open and makes the change set
+// current. ctx.ChangeSet and ctx.ChangeRef are ignored: a new change set is
+// not written into another one.
+func runChangeNew(ctx *Ctx, req any) (any, error) {
+	r := req.(ChangeNewRequest)
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return nil, err
+	}
+	kind := changeset.Kind(r.Kind)
+	if kind == "" {
+		kind = changeset.KindIntention
+	}
+	if !slices.Contains(changeset.Kinds(), kind) {
+		return nil, Usagef("unknown change set kind %q: want intention or record", r.Kind).
+			WithNext("genesis describe change.new")
+	}
+	current, err := w.current()
+	if err != nil {
+		return nil, err
+	}
+	m := w.model(current)
+	var sources []id.ID
+	for _, ref := range r.Sources {
+		n, err := m.Resolve(ref)
+		if err != nil {
+			return nil, err
+		}
+		if n.Kind != op.KindSource {
+			return nil, Usagef("%s is %s %s, not a source", ref, article(string(n.Kind)), n.Kind)
+		}
+		sources = append(sources, n.ID)
+	}
+	slices.SortFunc(sources, id.Compare)
+	sources = slices.Compact(sources)
+	open := changeset.Open{Kind: kind, Intent: r.Intent, Sources: sources}
+	if err := open.Validate(); err != nil {
+		return nil, Usagef("%s", err.Error()).WithNext("genesis describe change.new")
+	}
+	actor, forID, err := w.resolveActor(current, ctx)
+	if err != nil {
+		return nil, err
+	}
+	cs, e, err := w.openChangeSet(open, actor, forID)
+	if err != nil {
+		return nil, err
+	}
+	if err := w.setCurrent(cs); err != nil {
+		return nil, err
+	}
+	resp := ChangeNewResponse{ChangeSet: cs, Entry: e.ID, Kind: kind, Intent: r.Intent,
+		Sources: sources, Actor: actor, DryRun: ctx.DryRun}
+	if ctx.DryRun {
+		resp.Entry = id.ID{}
+	}
+	return resp, nil
+}
+
+// Human reports the new change set.
+func (r ChangeNewResponse) Human(w io.Writer) {
+	if r.DryRun {
+		fmt.Fprintf(w, "Would open change set %s (%s): %s\n\n", r.ChangeSet, r.Kind, r.Intent)
+		fmt.Fprintf(w, "This was a dry run: nothing was written and the current change set is unchanged.\n")
+		return
+	}
+	fmt.Fprintf(w, "Opened change set %s (%s): %s\n\n", r.ChangeSet, r.Kind, r.Intent)
+	fmt.Fprintf(w, "It is now the current change set; writes go into it.\n")
+}
+
+// ChangeUseRequest names the change set to make current, or asks to clear
+// it.
+type ChangeUseRequest struct {
+	Ref  string `json:"ref,omitempty" arg:"0" desc:"The change set: a full ID or a unique prefix of 4+ characters"`
+	None bool   `json:"none,omitempty" desc:"Clear the current change set instead"`
+}
+
+// ChangeUseResponse is the current change set after the call.
+type ChangeUseResponse struct {
+	ChangeSet id.ID  `json:"change_set,omitzero" desc:"The current change set; absent when cleared"`
+	Intent    string `json:"intent,omitempty" desc:"Its intent"`
+	DryRun    bool   `json:"dry_run,omitempty" desc:"True if the current change set was left unchanged"`
+}
+
+// runChangeUse sets or clears the current change set. A terminal change
+// set cannot be current: nothing can be written to it.
+func runChangeUse(ctx *Ctx, req any) (any, error) {
+	r := req.(ChangeUseRequest)
+	ref := strings.TrimSpace(r.Ref)
+	if (ref == "") == !r.None {
+		return nil, Usagef("change use takes a change set or --none, not both or neither").
+			WithNext("genesis change ls")
+	}
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if r.None {
+		if err := w.clearCurrent(); err != nil {
+			return nil, err
+		}
+		return ChangeUseResponse{DryRun: ctx.DryRun}, nil
+	}
+	cs, err := w.resolveChangeSet(ref)
+	if err != nil {
+		return nil, err
+	}
+	c, _ := w.changeSet(cs)
+	if c.State.Terminal() {
+		return nil, Conflictf("change set %s is %s; nothing can be written to it", cs, c.State).
+			WithNext(newEntryNext)
+	}
+	if err := w.setCurrent(cs); err != nil {
+		return nil, err
+	}
+	return ChangeUseResponse{ChangeSet: cs, Intent: c.Open.Intent, DryRun: ctx.DryRun}, nil
+}
+
+// Human reports the current change set.
+func (r ChangeUseResponse) Human(w io.Writer) {
+	switch {
+	case r.DryRun && r.ChangeSet.IsZero():
+		fmt.Fprintln(w, "Would clear the current change set. This was a dry run: nothing changed.")
+	case r.DryRun:
+		fmt.Fprintf(w, "Would make %s current: %s. This was a dry run: nothing changed.\n", r.ChangeSet, r.Intent)
+	case r.ChangeSet.IsZero():
+		fmt.Fprintln(w, "No current change set.")
+	default:
+		fmt.Fprintf(w, "Current change set: %s: %s\n", r.ChangeSet, r.Intent)
+	}
+}
+
+// ChangeShowRequest names the change set to show.
+type ChangeShowRequest struct {
+	Ref string `json:"ref,omitempty" arg:"0" desc:"The change set: a full ID or a unique prefix of 4+ characters; default --change, else the current one"`
+}
+
+// ChangeShowResponse is one change set as its entries fold.
+type ChangeShowResponse struct {
+	ID           id.ID             `json:"id" desc:"The change set's ID"`
+	Kind         changeset.Kind    `json:"kind" desc:"intention or record; empty without a valid open"`
+	Intent       string            `json:"intent" desc:"The change set's intent"`
+	Sources      []id.ID           `json:"sources" desc:"The source node IDs"`
+	State        changeset.State   `json:"state" desc:"The lifecycle state; empty without a valid open"`
+	Current      bool              `json:"current" desc:"Whether it is the current change set"`
+	Ops          []json.RawMessage `json:"ops" desc:"The current operations, as canonical op JSON, in change set order"`
+	Decided      *DecisionInfo     `json:"decided,omitempty" desc:"The applied accept or reject, if any"`
+	SupersededBy id.ID             `json:"superseded_by,omitzero" desc:"The change set that superseded it, if any"`
+	Heads        []id.ID           `json:"heads" desc:"The entries a new entry would follow"`
+	Applied      []id.ID           `json:"applied" desc:"Every folded entry, in causal order"`
+	Problems     []string          `json:"problems" desc:"Everything wrong with its entries"`
+}
+
+// DecisionInfo is an applied accept or reject.
+type DecisionInfo struct {
+	Type   entry.Type `json:"type" desc:"accept or reject"`
+	Entry  id.ID      `json:"entry" desc:"The accept or reject entry"`
+	Actor  id.ID      `json:"actor" desc:"Who decided"`
+	For    id.ID      `json:"for" desc:"Whom they decided for"`
+	Rule   string     `json:"rule" desc:"The rule the decision was made under"`
+	Reason string     `json:"reason,omitempty" desc:"Why"`
+}
+
+// runChangeShow folds the change set named by the request, else the one
+// effectiveChangeSet chooses from ctx.
+func runChangeShow(ctx *Ctx, req any) (any, error) {
+	r := req.(ChangeShowRequest)
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return nil, err
+	}
+	current, err := w.current()
+	if err != nil {
+		return nil, err
+	}
+	var cs id.ID
+	if ref := strings.TrimSpace(r.Ref); ref != "" {
+		cs, err = w.resolveChangeSet(ref)
+	} else {
+		cs, err = w.effectiveChangeSet(ctx)
+	}
+	if err != nil {
+		return nil, err
+	}
+	if cs.IsZero() {
+		return nil, Usagef("no change set: name one or make one current").WithNext(changeLsNext)
+	}
+	es := entriesOf(w.log(), cs)
+	if len(es) == 0 {
+		return nil, NotFoundf("no change set %s", cs).WithNext(changeLsNext)
+	}
+	c, problems := changeset.Fold(cs, es)
+	resp := ChangeShowResponse{
+		ID:           cs,
+		Kind:         c.Open.Kind,
+		Intent:       c.Open.Intent,
+		Sources:      orEmpty(c.Open.Sources),
+		State:        c.State,
+		Current:      cs == current,
+		Ops:          []json.RawMessage{},
+		SupersededBy: c.SupersededBy,
+		Heads:        orEmpty(c.Heads),
+		Applied:      orEmpty(c.Applied),
+		Problems:     foldProblems(problems),
+	}
+	for _, o := range c.Ops {
+		raw, err := op.Encode(o)
+		if err != nil {
+			return nil, Errorf("change set %s: op %s: %v", cs, o.ID, err)
+		}
+		resp.Ops = append(resp.Ops, raw)
+	}
+	if d := c.Decided; d != nil {
+		resp.Decided = &DecisionInfo{Type: d.Type, Entry: d.Entry, Actor: d.Actor, For: d.For, Rule: d.Rule, Reason: d.Reason}
+	}
+	return resp, nil
+}
+
+// Human shows the change set as a heading, a field list, its operations
+// and its problems.
+func (r ChangeShowResponse) Human(w io.Writer) {
+	fmt.Fprintf(w, "# Change set %s\n\n", r.ID)
+	fmt.Fprintf(w, "- Intent: %s\n", r.Intent)
+	fmt.Fprintf(w, "- Kind: %s\n", r.Kind)
+	state := string(r.State)
+	if r.Current {
+		state += " (current)"
+	}
+	fmt.Fprintf(w, "- State: %s\n", state)
+	if len(r.Sources) > 0 {
+		fmt.Fprintf(w, "- Sources: %s\n", joinIDs(r.Sources))
+	}
+	if d := r.Decided; d != nil {
+		line := fmt.Sprintf("- Decided: %s by %s under rule %s", d.Type, d.Actor, d.Rule)
+		if d.Reason != "" {
+			line += ": " + d.Reason
+		}
+		fmt.Fprintln(w, line)
+	}
+	if !r.SupersededBy.IsZero() {
+		fmt.Fprintf(w, "- Superseded by: %s\n", r.SupersededBy)
+	}
+	fmt.Fprintf(w, "- Heads: %s\n", joinIDs(r.Heads))
+	fmt.Fprintf(w, "- Entries: %d\n", len(r.Applied))
+	fmt.Fprintf(w, "\n## Operations\n\n")
+	if len(r.Ops) == 0 {
+		fmt.Fprintln(w, "No operations yet.")
+	}
+	for _, raw := range r.Ops {
+		o, err := op.Decode(raw)
+		if err != nil {
+			fmt.Fprintf(w, "- %s\n", raw)
+			continue
+		}
+		line := fmt.Sprintf("- %s %s", o.Type, o.Target())
+		if o.Handle != "" {
+			line += " (" + o.Handle + ")"
+		}
+		fmt.Fprintln(w, line)
+	}
+	writeProblems(w, r.Problems)
+}
+
+// ChangeLsRequest takes nothing.
+type ChangeLsRequest struct{}
+
+// ChangeLsResponse lists every change set in the log.
+type ChangeLsResponse struct {
+	ChangeSets []ChangeSetSummary `json:"change_sets" desc:"Every change set, sorted by ID"`
+	Problems   []string           `json:"problems" desc:"Everything wrong with the log and its change sets"`
+}
+
+// ChangeSetSummary is one line of change.ls.
+type ChangeSetSummary struct {
+	ID      id.ID           `json:"id" desc:"The change set's ID"`
+	Kind    changeset.Kind  `json:"kind" desc:"intention or record; empty without a valid open"`
+	State   changeset.State `json:"state" desc:"The lifecycle state; empty without a valid open"`
+	Intent  string          `json:"intent" desc:"The change set's intent"`
+	Current bool            `json:"current" desc:"Whether it is the current change set"`
+}
+
+// runChangeLs folds the whole log. Log and fold problems are listed beside
+// the change sets, never hidden.
+func runChangeLs(ctx *Ctx, _ any) (any, error) {
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return nil, err
+	}
+	current, err := w.current()
+	if err != nil {
+		return nil, err
+	}
+	l := w.log()
+	sets, problems := changeset.FoldLog(l)
+	resp := ChangeLsResponse{ChangeSets: []ChangeSetSummary{}, Problems: logProblems(l.Problems)}
+	resp.Problems = append(resp.Problems, foldProblems(problems)...)
+	for _, c := range sets {
+		resp.ChangeSets = append(resp.ChangeSets, ChangeSetSummary{
+			ID: c.ID, Kind: c.Open.Kind, State: c.State, Intent: c.Open.Intent, Current: c.ID == current,
+		})
+	}
+	return resp, nil
+}
+
+// Human lists the change sets, one per line, then any problems.
+func (r ChangeLsResponse) Human(w io.Writer) {
+	if len(r.ChangeSets) == 0 {
+		fmt.Fprintf(w, "No change sets yet.\n\nnext: %s\n", newEntryNext)
+	}
+	for _, c := range r.ChangeSets {
+		line := fmt.Sprintf("- %s %s %s: %s", c.ID, c.State, c.Kind, c.Intent)
+		if c.Current {
+			line += " (current)"
+		}
+		fmt.Fprintln(w, line)
+	}
+	writeProblems(w, r.Problems)
+}
+
+// writeProblems writes a Problems section, or nothing if there are none.
+func writeProblems(w io.Writer, problems []string) {
+	if len(problems) == 0 {
+		return
+	}
+	fmt.Fprintf(w, "\n## Problems\n\n")
+	for _, p := range problems {
+		fmt.Fprintf(w, "- %s\n", p)
+	}
+}
+
+// logProblems renders store problems as "log: <path>: <error>".
+func logProblems(ps []store.Problem) []string {
+	out := []string{}
+	for _, p := range ps {
+		out = append(out, fmt.Sprintf("log: %s: %v", p.Path, p.Err))
+	}
+	return out
+}
+
+// foldProblems renders fold problems as "fold: <change set>/<entry>:
+// <error>", or "fold: <change set>: <error>" for the change set as a whole.
+func foldProblems(ps []changeset.Problem) []string {
+	out := []string{}
+	for _, p := range ps {
+		where := p.ChangeSet.String()
+		if !p.Entry.IsZero() {
+			where += "/" + p.Entry.String()
+		}
+		out = append(out, fmt.Sprintf("fold: %s: %v", where, p.Err))
+	}
+	return out
+}
+
+// orEmpty returns ids, or an empty slice for nil, so required list fields
+// encode as [] rather than null.
+func orEmpty(ids []id.ID) []id.ID {
+	if ids == nil {
+		return []id.ID{}
+	}
+	return ids
+}
+
+func joinIDs(ids []id.ID) string {
+	if len(ids) == 0 {
+		return "none"
+	}
+	s := make([]string, len(ids))
+	for i, x := range ids {
+		s[i] = x.String()
+	}
+	return strings.Join(s, ", ")
+}

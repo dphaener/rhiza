@@ -1,0 +1,82 @@
+# set changes a node's handle or fields. On a node added in the same change
+# set it revises the node.create; on a landed node it writes a node.update,
+# and a second set merges into it (D9).
+
+exec genesis init
+exec genesis change new Shape
+exec genesis add capability store --field a=1
+
+# On a node added here: the create is revised, no update appears.
+exec genesis set store --handle files --field b=2 --unset a
+stdout '^Wrote entry [0-9A-Z]{26} to change set 01M5PWGEF85Y185JZ2ZGCNH40N\.$'
+stdout '^- node 01M5PWGJC82P7YGZTWYFFZ0VJG \(files\)$'
+exec genesis change show --json
+stdout '"handle": "files"'
+stdout '"b": "2"'
+! stdout '"a": "1"'
+! stdout 'node.update'
+
+# On a landed node: a node.update against its version, then merged.
+exec genesis add capability api --record
+exec genesis set api --field statement=Serves --json
+stdout '"nodes": \[\n    "[0-9A-Z]{26}"\n  \]'
+exec genesis set api --field owner=me --unset statement
+exec genesis change show --json
+stdout '"op": "node.update"'
+stdout '"owner": "me"'
+stdout '"unset": \[\n +"statement"\n +\]'
+! stdout '"statement": "Serves"'
+
+# A dry run prints the merged update and writes nothing.
+exec genesis set api --field x=1 --dry-run
+stdout '^Dry run: would write 1 operation\(s\)'
+stdout '"op":"node.update"'
+stdout '"x":"1"'
+exec genesis change show --json
+! stdout '"x": "1"'
+
+# A taken handle is a conflict, exit 3; keeping one's own is fine.
+! exec genesis set api --handle files --json
+stdout '"code": "conflict"'
+exec genesis set api --handle api
+
+# Unknown, ambiguous and empty requests.
+! exec genesis set nosuch --field a=b --json
+stdout '"code": "not_found"'
+! exec genesis set 01M5PWG --field a=b --json
+stdout '"code": "usage"'
+stdout 'matches [0-9] nodes'
+! exec genesis set api
+stderr '^genesis: nothing to change'
+! exec genesis set api --field a=1 --unset a
+stderr 'both set and unset'
+
+# No change set: usage with next.
+exec genesis change use --none
+! exec genesis set api --field a=b
+stderr '^next: genesis change new "<intent>"$'
+
+# A landed conflict: two intentions set the same landed node from the same
+# base and both land. Writes to it are then a conflict, exit 3, until a
+# change set resolves it.
+exec genesis add capability shared --record
+exec genesis change new A
+exec genesis set shared --field a=1
+exec genesis propose
+exec genesis accept
+exec genesis change new B
+exec genesis set shared --field a=2
+exec genesis propose
+exec genesis accept
+exec genesis land
+exec genesis land --change 01M5PWGX40FB1RBRN9YHMNJW07
+exec genesis change use 01M5PWGEF85Y185JZ2ZGCNH40N
+! exec genesis set shared --field a=3 --json
+stdout '"code": "conflict"'
+stdout 'conflicting landed changes'
+! exec genesis mv shared --root
+stderr 'resolving them must land first'
+! exec genesis retire shared --reason x --json
+stdout '"code": "conflict"'
+
+fold-ok

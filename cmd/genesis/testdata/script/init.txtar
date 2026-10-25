@@ -1,0 +1,45 @@
+# init creates .genesis with repo.json, an empty log and a .gitignore that
+# keeps local/ (the current change set) out of git.
+mkdir proj
+cd proj
+exec git init -q
+exec genesis init
+stdout '^Initialised a Genesis repository in .*proj \(repo [0-9A-Z]{26}\)\.$'
+stdout '^next: genesis change new "<intent>"$'
+! stderr .
+exists .genesis/repo.json
+exists .genesis/log
+cmp .genesis/.gitignore $WORK/want.gitignore
+fold-ok
+
+# A second init is a conflict: exit 3, with a next command.
+! exec genesis init
+stderr '^genesis: a Genesis repository already exists in '
+stderr '^next: genesis change ls$'
+! stdout .
+! exec genesis init --json
+stdout '"code": "conflict"'
+! stderr .
+
+# So is init in a folder below a repository: the root is found upwards.
+mkdir sub
+cd sub
+! exec genesis init --json
+stdout '"code": "conflict"'
+! exists .genesis
+
+# init writes no log entry, so --dry-run is a usage error and does nothing.
+mkdir $WORK/fresh
+cd $WORK/fresh
+! exec genesis init --dry-run --json
+stdout '"code": "usage"'
+! exists .genesis
+
+# --json gives the repo ID and the absolute root.
+exec genesis init --json
+stdout '"repo": "[0-9A-Z]{26}"'
+stdout '"root": "/.*fresh"'
+fold-ok
+
+-- want.gitignore --
+local/

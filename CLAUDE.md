@@ -13,8 +13,14 @@ Ruby, RSpec, Tailwind or ERB here.
 
 - Go, one binary: `genesis`. The future daemon is the same binary, not a
   second one.
-- Pure domain packages go under `internal/` (none exist yet). `cmd/genesis`
-  stays a thin CLI over them: argument parsing, output and exit codes only.
+- Pure domain packages go under `internal/`. `cmd/genesis` stays a thin CLI
+  over them: argument parsing, output and exit codes only.
+- Operations live in `internal/api`: transport-independent, one registry,
+  schemas reflected from the Go request/response types. Its interim model
+  (over `changeset.FoldLog`) is to be replaced by projection.
+- `cmd/genesis` is a generic frame: it maps argv to requests through the
+  request structs' tags (`arg`, `flag`, `desc`). `genesis <cmd> --json` and
+  `genesis api call <op>` reach the same handler and print the same bytes.
 
 ## Commands
 
@@ -37,6 +43,15 @@ Run `make check` before calling any change done.
   gives each script its own `HOME` and global git config.
 - No test touches the network, Rex, agents or `gh`.
 - Nothing binds a unix socket in the default test run.
+- Every script runs with `GENESIS_TEST_NOW` and `GENESIS_TEST_SEED` set, so
+  IDs and times are deterministic. Both are offset by the entries in the log
+  (plus one for `repo.json`), so each run draws fresh IDs and a `--dry-run`
+  predicts the next real run's.
+- The `fold-ok` script command checks that `.genesis` reads and folds with
+  no problems.
+- `describe-golden.txtar` holds `describe --json`. Regenerate it when a
+  request or response type changes:
+  `go test ./cmd/genesis -run TestScripts/describe-golden -update`.
 
 ## Binaries
 
