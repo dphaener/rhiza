@@ -15,8 +15,10 @@ import (
 	"github.com/dphaener/genesis/internal/index"
 )
 
-// readBudget is the most a read's median may take (D14).
-const readBudget = 25 * time.Millisecond
+// readBudget is the most a read's median may take, fresh workspace and
+// index open to answer: milestone 1's target for every read on the
+// 50,000-node model (D14, as revised).
+const readBudget = 50 * time.Millisecond
 
 // readBudgetRuns is how many fresh runs TestReadBudget times per read.
 const readBudgetRuns = 20
