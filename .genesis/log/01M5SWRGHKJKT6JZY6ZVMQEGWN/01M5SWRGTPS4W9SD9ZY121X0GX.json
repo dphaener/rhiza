@@ -1,0 +1,32 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWRGSMJ2GRWBBR1QKEWS6H"
+  ],
+  "at": "2026-10-25T16:02:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "9494cb7e8d26d6d93a0fe162851eccdad16894649d1b09eb74192ad271edf66d",
+          "summary": "The shipit work plan for task 7: the read commands show, tree, ls, why, log, roadmap and ready, each with --view and --json, served from the index. Decided (D1-D17, agent wording accepted by the owner): scope is the seven reads, with ls paged and find, change diff, events and paging elsewhere out; reads use the index only, with new queries where needed, and writes stay untouched; shared read plumbing in internal/api/read.go; why walks decided-by (including inherited from tree ancestors), derived-from and supersedes both ways, shows answered questions, then the change sets in the node's history, cycle-guarded; log lists the view's history of a node or link in apply order; a change set's links for roadmap and ready are the to-be links plus the link operations inside that change set; ready means accepted, every depends-on landed, and no open question blocking the change set, a node it touches or an ancestor, and it names the first ready one as next; roadmap groups proposed and accepted change sets by served intent in intent-tree order, then depends-on order, ties by ID, with a final no-intent group; tree, ls and show shapes; tests with each task; guardrails; finish at an open PR with green CI. Revised by the orchestrator under the owner's authorization: the default view (D2) became one rule shared with slice (draft or proposed change set gives what-if, accepted gives to-be, otherwise as-is), with roadmap and ready always defaulting to to-be (D17); and the read budget (D14) went from a 25 ms median to 50 ms, the milestone target, after CI measured about 25.5 ms, the 25 ms figures staying as benchmarks. Left open: speeding up roadmap and ready, and cursor paging on log, roadmap and why.",
+          "title": "Shipit plan, milestone 1 task 7: the reads"
+        },
+        "handle": "plan-task-7",
+        "id": "01M5SWRGTD75VQX2D5JN2QGJX9",
+        "key": null,
+        "kind": "source",
+        "node": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5SWRGHKJKT6JZY6ZVMQEGWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRGTPS4W9SD9ZY121X0GX",
+  "type": "ops",
+  "v": 1
+}

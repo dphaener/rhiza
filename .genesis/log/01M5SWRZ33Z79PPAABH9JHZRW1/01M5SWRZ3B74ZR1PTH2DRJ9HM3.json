@@ -1,0 +1,18 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:02:23Z",
+  "body": {
+    "intent": "Record what task 4 built (PR #4, merge 380f2f2): the capability tree, field-level conflicts, and the as-is, to-be and what-if overlays",
+    "kind": "record",
+    "sources": [
+      "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+      "01M5SWRGQCHRVACT3HFXCR5RAN"
+    ]
+  },
+  "change_set": "01M5SWRZ33Z79PPAABH9JHZRW1",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRZ3B74ZR1PTH2DRJ9HM3",
+  "type": "open",
+  "v": 1
+}

@@ -1,0 +1,116 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWRZ3B74ZR1PTH2DRJ9HM3"
+  ],
+  "at": "2026-10-25T16:02:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "built_in": "PR #4 (380f2f2)",
+          "statement": "Capabilities form one containment tree, in a stable sibling order, with one root per product."
+        },
+        "handle": "capability-tree",
+        "id": "01M5SWRZ575XMNYGZ08WQBDN30",
+        "key": "g",
+        "kind": "capability",
+        "node": "01M5SWRZ575XMNYGZ08SJDAHFN",
+        "op": "node.create",
+        "parent": "01M5SWRGZDB2NV1W7MBBRW2HNX"
+      },
+      {
+        "fields": {
+          "built_in": "PR #4 (380f2f2)",
+          "statement": "Conflicting changes between change sets are found at field level, both among landed ones and among those in flight."
+        },
+        "handle": "conflicts",
+        "id": "01M5SWRZ69FKFXS01D7Z1WRMF3",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5SWRZ69FKFXS01D7Y60C0S4",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "fields": {
+          "built_in": "PR #4 (380f2f2)",
+          "statement": "Every read can show the model as it is, as it will be once accepted change sets land, or as one change set would make it."
+        },
+        "handle": "overlays",
+        "id": "01M5SWRZ7A0WG4Q7K4J551TJZE",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5SWRZ7A0WG4Q7K4J2PX8YX1",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZ575XMNYGZ08SJDAHFN",
+        "id": "01M5SWRZ8CVX4XFC34CA21KTT2",
+        "link": "01M5SWRZ8CVX4XFC34C8FPYHZ7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZ575XMNYGZ08SJDAHFN",
+        "id": "01M5SWRZ9D65Y1CSMNDTDDQK3X",
+        "link": "01M5SWRZ9D65Y1CSMNDSDSJ7P6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGQCHRVACT3HFXCR5RAN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZ69FKFXS01D7Y60C0S4",
+        "id": "01M5SWRZAFHF9ZNB278CSGBMNK",
+        "link": "01M5SWRZAFHF9ZNB278AE00DPC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZ69FKFXS01D7Y60C0S4",
+        "id": "01M5SWRZBG3T9SDEC10FBM1CC3",
+        "link": "01M5SWRZBG3T9SDEC10DM879Z0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGQCHRVACT3HFXCR5RAN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZ7A0WG4Q7K4J2PX8YX1",
+        "id": "01M5SWRZCJCD6YW1JDMGNHYH02",
+        "link": "01M5SWRZCJCD6YW1JDMG8KDNBB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZ7A0WG4Q7K4J2PX8YX1",
+        "id": "01M5SWRZDMCM69ABDTAEA43458",
+        "link": "01M5SWRZDMCM69ABDTAAXFQAAW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGQCHRVACT3HFXCR5RAN",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M5SWRZ33Z79PPAABH9JHZRW1",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRZFCCJVC7GRA7XTF37CS",
+  "type": "ops",
+  "v": 1
+}

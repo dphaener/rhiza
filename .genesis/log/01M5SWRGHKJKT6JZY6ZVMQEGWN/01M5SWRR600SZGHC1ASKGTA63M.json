@@ -1,0 +1,4273 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWRGXV2KYGJREGSNXVSQ4E"
+  ],
+  "at": "2026-10-25T16:02:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Genesis keeps the model of a product, what it is, why it is that way and what is planned, inside its repo, so anyone can build quality software with agents."
+        },
+        "handle": "genesis",
+        "id": "01M5SWRGYQGD0QD427DNTS54XF",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "id": "01M5SWRGZ2QFE2F9X44VC6GBM4",
+        "link": "01M5SWRGZ2QFE2F9X44QXBCFQ6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Genesis describes a product as one model: a fixed set of node kinds, typed links between them, one tree of capabilities, with IDs and handles."
+        },
+        "handle": "model",
+        "id": "01M5SWRGZDB2NV1W7MBCMV808A",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRGZRHMZA7D6Y151A5XJ8",
+        "link": "01M5SWRGZRHMZA7D6Y14VCX62N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Genesis changes the model through change sets that are created, revised, proposed, accepted or rejected, landed, and rebased when they conflict."
+        },
+        "handle": "change-sets",
+        "id": "01M5SWRH04THTBE60MQN0TVKJ2",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5SWRH04THTBE60MQHT9H1ZJ",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH04THTBE60MQHT9H1ZJ",
+        "id": "01M5SWRH0EV9FJ8FK2JS39FM98",
+        "link": "01M5SWRH0EV9FJ8FK2JN7K94N2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Genesis remembers why: it walks back from any node to the decisions, change sets, sources and actors that shaped it."
+        },
+        "handle": "lineage",
+        "id": "01M5SWRH0SFXQJK9MEZNKFQV4F",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5SWRH0SFXQJK9MEZJ9DTX9K",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH0SFXQJK9MEZJ9DTX9K",
+        "id": "01M5SWRH13BABJ989J0GYDN8KA",
+        "link": "01M5SWRH13BABJ989J0ES3ECDJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Genesis reads the model back in the shape each reader needs: a node, the tree, lists, a slice for a task, the roadmap and what is ready, as it is, will be or would be."
+        },
+        "handle": "views",
+        "id": "01M5SWRH1E8SA4049QPJ7JZZ6A",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5SWRH1E8SA4049QPHPK0HXW",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH1E8SA4049QPHPK0HXW",
+        "id": "01M5SWRH1S0B4C9Z2RBFK2GWQB",
+        "link": "01M5SWRH1S0B4C9Z2RBEZ0B0BV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Genesis keeps the model true: it checks the log and its links, renders it as markdown, and finds where the model and the code drift apart."
+        },
+        "handle": "integrity",
+        "id": "01M5SWRH24XWT6HVZH2ARJNJJ8",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5SWRH24XWT6HVZH28QQEFYX",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH24XWT6HVZH28QQEFYX",
+        "id": "01M5SWRH2FCG73GHY2Y35VYD64",
+        "link": "01M5SWRH2FCG73GHY2Y1QQKXHP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Genesis teaches agents to use it: the guide in the binary, the skills, installing them, a session-start brief, and evals."
+        },
+        "handle": "guide",
+        "id": "01M5SWRH2T1D9HHQ2X73MGABED",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5SWRH2T1D9HHQ2X71NNVZJ9",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH2T1D9HHQ2X71NNVZJ9",
+        "id": "01M5SWRH361R72A8QW649SFBDB",
+        "link": "01M5SWRH361R72A8QW61GJJSDC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Anyone can build quality software with agents, using as little or as much of Genesis as they want."
+        },
+        "handle": "anyone-builds",
+        "id": "01M5SWRH3H0B4390HPATTG9B0V",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M5SWRH3H0B4390HPAR4X2TJ5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH3H0B4390HPAR4X2TJ5",
+        "id": "01M5SWRH3W88A2WVDQ1639J5EK",
+        "link": "01M5SWRH3W88A2WVDQ15X9XH2G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The model tells the truth about what the product is and why."
+        },
+        "handle": "model-tells-truth",
+        "id": "01M5SWRH47NMASCPTSSGZ4KYF7",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M5SWRH47NMASCPTSSF0FH022",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH47NMASCPTSSF0FH022",
+        "id": "01M5SWRH4KDW0QXCYJG3JHB21Y",
+        "link": "01M5SWRH4KDW0QXCYJG268V8T6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Agents get small, accurate context."
+        },
+        "handle": "small-accurate-context",
+        "id": "01M5SWRH4Y2B2HAFQV4JF99TD2",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M5SWRH4Y2B2HAFQV4H1YCTZ7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH4Y2B2HAFQV4H1YCTZ7",
+        "id": "01M5SWRH5AK3EPYWYCCSAX35RJ",
+        "link": "01M5SWRH5AK3EPYWYCCRTEFWGA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Power users and agents first; everyone else later."
+        },
+        "handle": "power-users-first",
+        "id": "01M5SWRH5N4AAVEDQ9ZNP40J00",
+        "key": "y",
+        "kind": "intent",
+        "node": "01M5SWRH5N4AAVEDQ9ZN8Z1JJ5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH5N4AAVEDQ9ZN8Z1JJ5",
+        "id": "01M5SWRH61746KY0MHG4CN2KX2",
+        "link": "01M5SWRH61746KY0MHG0YYJ42T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The log is append-only, and only the CLI writes it."
+        },
+        "handle": "log-append-only-cli-writes",
+        "id": "01M5SWRH6DG3K6CG17Q93N7NTH",
+        "key": null,
+        "kind": "constraint",
+        "node": "01M5SWRH6DG3K6CG17Q6T4205A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH6DG3K6CG17Q6T4205A",
+        "id": "01M5SWRH6S5B03Q3MFXCGSZBMK",
+        "link": "01M5SWRH6S5B03Q3MFX8TERG9E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "type": "constrains"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH6DG3K6CG17Q6T4205A",
+        "id": "01M5SWRH74P3NZ0VCK9HMNEMJC",
+        "link": "01M5SWRH74P3NZ0VCK9EG8X7XE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The same model always gives the same bytes."
+        },
+        "handle": "same-model-same-output",
+        "id": "01M5SWRH7GP0KWRQQFS8PEBR9G",
+        "key": null,
+        "kind": "constraint",
+        "node": "01M5SWRH7GP0KWRQQFS6TDYJ4Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH7GP0KWRQQFS6TDYJ4Z",
+        "id": "01M5SWRH7W5SA2NMPHTAZQ61YT",
+        "link": "01M5SWRH7W5SA2NMPHT9YYVTND",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "type": "constrains"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH7GP0KWRQQFS6TDYJ4Z",
+        "id": "01M5SWRH874HC2Q3J9JBCKNZC6",
+        "link": "01M5SWRH874HC2Q3J9JA4CWVYC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Nothing outside an adapter names an agent."
+        },
+        "handle": "agents-named-only-in-adapters",
+        "id": "01M5SWRH8KG25TTHFWG2SEB4RV",
+        "key": null,
+        "kind": "constraint",
+        "node": "01M5SWRH8KG25TTHFWG11BMPBX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH8KG25TTHFWG11BMPBX",
+        "id": "01M5SWRH8Z4YG9NCPMTRY24M88",
+        "link": "01M5SWRH8Z4YG9NCPMTRGVFE26",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "type": "constrains"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH8KG25TTHFWG11BMPBX",
+        "id": "01M5SWRH9BBS70QYMF4TB1DPRC",
+        "link": "01M5SWRH9BBS70QYMF4S68WV95",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Our state never lives in Rex."
+        },
+        "handle": "state-never-in-rex",
+        "id": "01M5SWRH9Q9329SGVWEYSZV9X9",
+        "key": null,
+        "kind": "constraint",
+        "node": "01M5SWRH9Q9329SGVWEW2VRHJA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH9Q9329SGVWEW2VRHJA",
+        "id": "01M5SWRHA3PA9H1YP3WB5XSA7K",
+        "link": "01M5SWRHA3PA9H1YP3W7PY7KSS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "type": "constrains"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH9Q9329SGVWEW2VRHJA",
+        "id": "01M5SWRHAFY4RWZ53HGTR8YS83",
+        "link": "01M5SWRHAFY4RWZ53HGRCRQS0B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Rex is required from the runtime up."
+        },
+        "handle": "rex-required-from-runtime",
+        "id": "01M5SWRHAVYE6QZS8YZ6M0HS78",
+        "key": null,
+        "kind": "constraint",
+        "node": "01M5SWRHAVYE6QZS8YZ49VMR61",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHAVYE6QZS8YZ49VMR61",
+        "id": "01M5SWRHB7YQS3E766VBXKYG8J",
+        "link": "01M5SWRHB7YQS3E766V9Y17ZY7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "type": "constrains"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHAVYE6QZS8YZ49VMR61",
+        "id": "01M5SWRHBKHK0K5GH129Z39M68",
+        "link": "01M5SWRHBKHK0K5GH126B42DSQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "No prompts without a terminal."
+        },
+        "handle": "no-prompts-without-tty",
+        "id": "01M5SWRHBZ06XYX78T9RQD46EX",
+        "key": null,
+        "kind": "constraint",
+        "node": "01M5SWRHBZ06XYX78T9N7VDA14",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHBZ06XYX78T9N7VDA14",
+        "id": "01M5SWRHCBTT8WD3991VMX3DTT",
+        "link": "01M5SWRHCBTT8WD3991RR2Y6BF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "type": "constrains"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHBZ06XYX78T9N7VDA14",
+        "id": "01M5SWRHCQH83DDRXANTECZ5Q7",
+        "link": "01M5SWRHCQH83DDRXANQ0XDM2B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Bypassed permissions only on a dedicated machine."
+        },
+        "handle": "bypass-only-on-dedicated",
+        "id": "01M5SWRHD34WXSYX7AWB12FMW5",
+        "key": null,
+        "kind": "constraint",
+        "node": "01M5SWRHD34WXSYX7AW8JN9RE9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHD34WXSYX7AW8JN9RE9",
+        "id": "01M5SWRHDF4TMXJAFSCWQBWB8H",
+        "link": "01M5SWRHDF4TMXJAFSCTT1R4H6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "type": "constrains"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHD34WXSYX7AW8JN9RE9",
+        "id": "01M5SWRHDWZ757BYXJ9TQCCKPA",
+        "link": "01M5SWRHDWZ757BYXJ9PZDP86B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "2. Agreed, tasks belong to the work layer and are disposable",
+          "quote_where": "founding conversation, A1, line 214",
+          "statement": "Tasks belong to the work layer and are disposable.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "tasks-are-disposable",
+        "id": "01M5SWRHE83GS6KHECZTGHRPQ5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHE83GS6KHECZSYENTSW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHE83GS6KHECZSYENTSW",
+        "id": "01M5SWRHEM7E73HD1K99RF22WS",
+        "link": "01M5SWRHEM7E73HD1K98Y99WCD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "3. Agreed, but custom kinds are down the roadmap",
+          "quote_where": "founding conversation, A1, line 215",
+          "statement": "The core kinds are fixed, and custom kinds are for later on the roadmap.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "fixed-core-kinds",
+        "id": "01M5SWRHF1WE1C8XY5N7KDZ6ZP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHF1WE1C8XY5N6YXGDNW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHF1WE1C8XY5N6YXGDNW",
+        "id": "01M5SWRHFEAPH41JDJKTV5T7ZY",
+        "link": "01M5SWRHFEAPH41JDJKSGG5ARE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to both, let's move on to A2",
+          "quote_where": "founding conversation, A1 confirmation, line 272",
+          "statement": "There is one containment tree of capabilities, with components (now) and journeys (later) as views built from links.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "one-capability-tree",
+        "id": "01M5SWRHFT5N19E8KT9RX1QA90",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHFT5N19E8KT9NSB2T3T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHFT5N19E8KT9NSB2T3T",
+        "id": "01M5SWRHG6BFE8ZBMTS49B398K",
+        "link": "01M5SWRHG6BFE8ZBMTS2TM90R6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to both, let's move on to A2",
+          "quote_where": "founding conversation, A1 confirmation, line 272",
+          "statement": "A feature is a capability that has children, with no separate kind, and parents carry summaries.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "feature-is-capability",
+        "id": "01M5SWRHGKGPPNB5R7TSW3VDM0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHGKGPPNB5R7TSG7D4CZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHGKGPPNB5R7TSG7D4CZ",
+        "id": "01M5SWRHH0D7YPZS01H4S5S42G",
+        "link": "01M5SWRHH0D7YPZS01H14VG6W7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to A3",
+          "quote_where": "founding conversation, A2, line 385",
+          "statement": "There are overlays on one as-is, and to-be and what-if are computed.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "overlays-on-as-is",
+        "id": "01M5SWRHHD53AB26W9NXS4Z3KA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHHD53AB26W9NW0JYHDB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHHD53AB26W9NW0JYHDB",
+        "id": "01M5SWRHHTCKBHTZT55REVZBC9",
+        "link": "01M5SWRHHTCKBHTZT55QWWG0SN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to A3",
+          "quote_where": "founding conversation, A2, line 385",
+          "statement": "A change set lands at ship, with evidence a separate property.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "land-at-ship",
+        "id": "01M5SWRHJ73TN2AFNVQF152V3Z",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHJ73TN2AFNVQBAB7KM9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHJ73TN2AFNVQBAB7KM9",
+        "id": "01M5SWRHJMXFBD7ZC4CEKBS95H",
+        "link": "01M5SWRHJMXFBD7ZC4CDA90M9J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to A3",
+          "quote_where": "founding conversation, A2, line 385",
+          "statement": "Change sets land whole, and large work is a sequence.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "land-whole",
+        "id": "01M5SWRHK14YYA1RH4B9J7N2HD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHK14YYA1RH4B91GE3GM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHK14YYA1RH4B91GE3GM",
+        "id": "01M5SWRHKEJG8V93W553M817JJ",
+        "link": "01M5SWRHKEJG8V93W54ZZC5C0M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to A3",
+          "quote_where": "founding conversation, A2, line 385",
+          "statement": "There are two kinds of change set, intention and record.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "two-change-set-kinds",
+        "id": "01M5SWRHKVJZ3P0XK7RNQV2MNW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHKVJZ3P0XK7RJEJFKJR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHKVJZ3P0XK7RJEJFKJR",
+        "id": "01M5SWRHM8B32JT6RHX7472YBH",
+        "link": "01M5SWRHM8B32JT6RHX4E778EZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "One quick interjection that I forgot to include, I think part of the initial \"power user\"\nexperience should follow the Rex model and include a CLI and ship with skills that tell agents how\nto use it.",
+          "quote_where": "founding conversation, A2 interjection, line 349",
+          "statement": "A CLI, with an agent guide that ships inside the binary, is part of the first power-user experience.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "cli-with-agent-guide",
+        "id": "01M5SWRHMP0CPJDAEJ1V8251MM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHMP0CPJDAEJ1QXTDN0D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHMP0CPJDAEJ1QXTDN0D",
+        "id": "01M5SWRHN30N4JBD0T88T4ZMM3",
+        "link": "01M5SWRHN30N4JBD0T86ZW32AJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "1. This has to be portable to many repositories and live inside of them. I.E. if I'm using it at\nwork, I have to work across 15-20 different repos that are all different products with different\nroadmaps. I don't think a database is the right choice here. I think an append-only log is the\nright choice. The SQLite index is an interesting idea, is that agent friendly and performant?",
+          "quote_where": "founding conversation, A3, line 469",
+          "statement": "The truth is an append-only operation log in text files.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "append-only-log",
+        "id": "01M5SWRHNH05CG624BKS9AJ7X2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHNH05CG624BKR0T9R5K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHNH05CG624BKR0T9R5K",
+        "id": "01M5SWRHNYNGD4NATCNN19GQW6",
+        "link": "01M5SWRHNYNGD4NATCNJ2AJK9P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "2. Yes it must, as I just described. 😄",
+          "quote_where": "founding conversation, A3, line 473",
+          "statement": "The log lives inside each product's repo and must work across many repos, each its own product and roadmap.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "log-in-product-repo",
+        "id": "01M5SWRHPCTGYR23WT2VQVYMPB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHPCTGYR23WT2RNHW7S3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHPCTGYR23WT2RNHW7S3",
+        "id": "01M5SWRHPTCZVNWTVZADEE932B",
+        "link": "01M5SWRHPTCZVNWTVZAB4Z73T6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "3. Yes",
+          "quote_where": "founding conversation, A3, line 474",
+          "statement": "Nodes get random IDs generated anywhere, plus handles you can rename.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "random-ids-and-handles",
+        "id": "01M5SWRHQ78BM2BHY454S0KFWP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHQ78BM2BHY454K8EMKX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHQ78BM2BHY454K8EMKX",
+        "id": "01M5SWRHQNJRF47TV3GE8DRZ15",
+        "link": "01M5SWRHQNJRF47TV3GB9RPNMA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "4. Yes, but I think raw conversations like this can be summarized and scrubbed by an agent, with a\nshipped skill.",
+          "quote_where": "founding conversation, A3, line 475",
+          "statement": "Only the CLI writes the log, with check in CI.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "only-cli-writes-log",
+        "id": "01M5SWRHR3F830CZFDYA2DZTJE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHR3F830CZFDY98X5RB4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHR3F830CZFDY98X5RB4",
+        "id": "01M5SWRHRHGBYYZ8ZWM88WK0X1",
+        "link": "01M5SWRHRHGBYYZ8ZWM61545MD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "1. This has to be portable to many repositories and live inside of them. I.E. if I'm using it at\nwork, I have to work across 15-20 different repos that are all different products with different\nroadmaps. I don't think a database is the right choice here. I think an append-only log is the\nright choice. The SQLite index is an interesting idea, is that agent friendly and performant?\n2. Yes it must, as I just described. 😄\n3. Yes\n4. Yes, but I think raw conversations like this can be summarized and scrubbed by an agent, with a\nshipped skill.\n\nYes I think rendered markdown should be comitted, it's useful and could prove useful in a future\nUI, a CI check is great, installable from the CLI or by an agent with a skill/CLI. Sources live in\nthe repo right? Didn't we already answer that? Or is this a different source?",
+          "quote_where": "founding conversation, A3, line 467",
+          "statement": "Rendered markdown is committed, and a CI check keeps it current, installed by the CLI or by an agent through the skill.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "rendered-markdown-committed",
+        "id": "01M5SWRHRZV9VGCSAH7E1GGEQG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHRZV9VGCSAH7AW16SBQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHRZV9VGCSAH7AW16SBQ",
+        "id": "01M5SWRHSDVBCKEBWB81SCMNH9",
+        "link": "01M5SWRHSDVBCKEBWB7Z825VCX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "I think it's easy enough to just always use a .<whatever_the_name_is> folder for storage inside the\nrepo and just global gitignore it if you don't want it comitted.",
+          "quote_where": "founding conversation, A3 follow-up, line 553",
+          "statement": "The model is always a dot-folder inside the repo; to keep it uncommitted, gitignore it (globally if you like), with no separate personal mode.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "always-a-dot-folder",
+        "id": "01M5SWRHSVAVH43MJ5H90CT488",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHSVAVH43MJ5H53A8JZR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHSVAVH43MJ5H53A8JZR",
+        "id": "01M5SWRHT95R8WWMQ7WYAJK05N",
+        "link": "01M5SWRHT95R8WWMQ7WXGR0PPY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to A5",
+          "quote_where": "founding conversation, A4, line 622",
+          "statement": "Anchors are a path plus an optional symbol and content fingerprint, checked by check.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "anchor-shape",
+        "id": "01M5SWRHTRBV02X2W8J1GWBKWQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHTRBV02X2W8HZ5AT5TT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHTRBV02X2W8HZ5AT5TT",
+        "id": "01M5SWRHV6DRWA3GF4S1ACX5NA",
+        "link": "01M5SWRHV6DRWA3GF4S14K0KDM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to A5",
+          "quote_where": "founding conversation, A4, line 622",
+          "statement": "Commits carry Change: <id> trailers, and a missing trailer flags an unclaimed change.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "change-trailers",
+        "id": "01M5SWRHVMNH35QRF5F9V94BMG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHVMNH35QRF5F89GN3K6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHVMNH35QRF5F89GN3K6",
+        "id": "01M5SWRHW32AB4S67Q75BSP1BN",
+        "link": "01M5SWRHW32AB4S67Q71TW1AV2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to A5",
+          "quote_where": "founding conversation, A4, line 622",
+          "statement": "Reconcile runs only on a deterministic trigger and always proposes a record change set.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "reconcile-on-trigger",
+        "id": "01M5SWRHWHFR62AN8PEDPDTQ6J",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHWHFR62AN8PEDKCK8YJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHWHFR62AN8PEDKCK8YJ",
+        "id": "01M5SWRHX0D6MZJBPQE3HDHCQA",
+        "link": "01M5SWRHX0D6MZJBPQDZV8NAVF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to A5",
+          "quote_where": "founding conversation, A4, line 622",
+          "statement": "CI fails on broken anchors, a corrupt log or stale rendered markdown.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "ci-fails-on",
+        "id": "01M5SWRHXEQ2NSNG5QKW22A058",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHXEQ2NSNG5QKRSV11P8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHXEQ2NSNG5QKRSV11P8",
+        "id": "01M5SWRHXWJPBEAW87ENW2TQWN",
+        "link": "01M5SWRHXWJPBEAW87EM3GTVD2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to A5",
+          "quote_where": "founding conversation, A4, line 622",
+          "statement": "CI warns on unclaimed changes, failing evidence and uncharted code.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "ci-warns-on",
+        "id": "01M5SWRHYB6XKVCSH2GF1033D9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHYB6XKVCSH2GEDM6ZFA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHYB6XKVCSH2GEDM6ZFA",
+        "id": "01M5SWRHYT74MR0HQQ9JEEZ8ZK",
+        "link": "01M5SWRHYT74MR0HQQ9G20VAYE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to B6",
+          "quote_where": "founding conversation, A5, line 686",
+          "statement": "There is one model per repo, with several roots for a monorepo.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "one-model-per-repo",
+        "id": "01M5SWRHZ9Z3CD8H5CXYCCVSFS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRHZ9Z3CD8H5CXVN7P8MA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRHZ9Z3CD8H5CXVN7P8MA",
+        "id": "01M5SWRHZRCGAS3S824MGNTFC7",
+        "link": "01M5SWRHZRCGAS3S824J97FCYA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to B6",
+          "quote_where": "founding conversation, A5, line 686",
+          "statement": "There is no home repo: each repo owns its part, a cross-repo change is a group of linked change sets, and the product view is built by the index.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "no-home-repo",
+        "id": "01M5SWRJ07H671EJRAGW2468JF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJ07H671EJRAGRSFRTD1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJ07H671EJRAGRSFRTD1",
+        "id": "01M5SWRJ0P9FTM6Z4EG54VJ8GC",
+        "link": "01M5SWRJ0P9FTM6Z4EG3FSJZCK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to B6",
+          "quote_where": "founding conversation, A5, line 686",
+          "statement": "Cross-repo links are by repo ID, resolved through a local registry, unresolved rather than broken when the repo is missing.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "links-by-repo-id",
+        "id": "01M5SWRJ1552P9PFYSNYHZMY38",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJ1552P9PFYSNY5P44Q5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJ1552P9PFYSNY5P44Q5",
+        "id": "01M5SWRJ1NFBB25TQAXDTYWMQX",
+        "link": "01M5SWRJ1NFBB25TQAXBQBN9TA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to B6",
+          "quote_where": "founding conversation, A5, line 686",
+          "statement": "Shared constraints come from standards repos plus a personal layer in the config folder.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "standards-and-personal-layer",
+        "id": "01M5SWRJ246XV8DYJJ3V0G1CBX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJ246XV8DYJJ3QTHJK17",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJ246XV8DYJJ3QTHJK17",
+        "id": "01M5SWRJ2MG9CDW4FC8JK5FRWS",
+        "link": "01M5SWRJ2MG9CDW4FC8G50P6WK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to B7",
+          "quote_where": "founding conversation, B6, line 749",
+          "statement": "Genesis has six layers, each usable alone, each depending only on the layers below.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "six-layers",
+        "id": "01M5SWRJ33K4HRNYVK39G442CD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJ33K4HRNYVK38FVN4K6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJ33K4HRNYVK38FVN4K6",
+        "id": "01M5SWRJ3JPS0D5T7REWCV58E8",
+        "link": "01M5SWRJ3JPS0D5T7REVB9QXRV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to B7",
+          "quote_where": "founding conversation, B6, line 749",
+          "statement": "The CLI works on files with no daemon, and the daemon does only continuous work (later serving the same API to the web).",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "cli-needs-no-daemon",
+        "id": "01M5SWRJ42W95BQT57K82GTPBC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJ42W95BQT57K6P75KTA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJ42W95BQT57K6P75KTA",
+        "id": "01M5SWRJ4H4EECNXNK1VRS74F2",
+        "link": "01M5SWRJ4H4EECNXNK1SA4Z8YC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to B7",
+          "quote_where": "founding conversation, B6, line 749",
+          "statement": "Layers 1-2 are built first, and their first use is bringing in this conversation.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "layers-1-2-first",
+        "id": "01M5SWRJ51XKREY4JGNZBBYTWK",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJ51XKREY4JGNXD967N0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJ51XKREY4JGNXD967N0",
+        "id": "01M5SWRJ5HPMJRRX6Q2FB3K3PB",
+        "link": "01M5SWRJ5HPMJRRX6Q2CG5BS0Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to B7",
+          "quote_where": "founding conversation, B6, line 749",
+          "statement": "There are hooks on model events from the start.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "hooks-from-the-start",
+        "id": "01M5SWRJ60KYSFGJ7325C5VBD9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJ60KYSFGJ732292W4HP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJ60KYSFGJ732292W4HP",
+        "id": "01M5SWRJ6GZ0Y7AGYMW6YH5CGH",
+        "link": "01M5SWRJ6GZ0Y7AGYMW428JDTM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Rex required",
+            "Rex optional, with afk's own host as the other path",
+            "Rex first, with a thin fallback (recommended)"
+          ],
+          "quote": "1. Rex is required",
+          "quote_where": "founding conversation, B7, line 817",
+          "statement": "Rex is required.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "rex-required",
+        "id": "01M5SWRJ700ZRMVTHJ60PH0MAH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJ700ZRMVTHJ5XZZYD3Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJ700ZRMVTHJ5XZZYD3Y",
+        "id": "01M5SWRJ7G44D56D79N1CPVA1V",
+        "link": "01M5SWRJ7G44D56D79MYEBJH28",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "2. tmux is not an option",
+          "quote_where": "founding conversation, B7, line 818",
+          "statement": "There is no tmux fallback.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "no-tmux-fallback",
+        "id": "01M5SWRJ80J64J1Q9VCQQSKQJF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJ80J64J1Q9VCNV7Y3A9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJ80J64J1Q9VCNV7Y3A9",
+        "id": "01M5SWRJ8G83GM2C0FJS2JP407",
+        "link": "01M5SWRJ8G83GM2C0FJP907A86",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "3. Yes",
+          "quote_where": "founding conversation, B7, line 819",
+          "statement": "Our state never lives in Rex: status comes from agent adapters into our files and is only shown through Rex.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "rex-holds-no-state",
+        "id": "01M5SWRJ90AVMW12YTHG7EZ1DK",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJ90AVMW12YTHEXE0QZ0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJ90AVMW12YTHEXE0QZ0",
+        "id": "01M5SWRJ9GG5X9FTGM55FS4ZTB",
+        "link": "01M5SWRJ9GG5X9FTGM51ZYN8BK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "4. Yes",
+          "quote_where": "founding conversation, B7, line 820",
+          "statement": "Rex extras are optional, installed by the CLI.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "rex-extras-optional",
+        "id": "01M5SWRJA04QVQ4D9CT2C478F4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJA04QVQ4D9CSZJEE614",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJA04QVQ4D9CSZJEE614",
+        "id": "01M5SWRJAHH5TMTWPC6AVW1JJ4",
+        "link": "01M5SWRJAHH5TMTWPC6AV2SFWP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to C",
+          "quote_where": "founding conversation, B8, line 876",
+          "statement": "Every log entry records an actor and who it acted for, from the first day.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "actor-on-every-entry",
+        "id": "01M5SWRJB1AAS1PC9PD0XKWGV6",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJB1AAS1PC9PCYZ0D5YA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJB1AAS1PC9PCYZ0D5YA",
+        "id": "01M5SWRJBHV256M1YK07X33ZET",
+        "link": "01M5SWRJBHV256M1YK04QADN4Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to C",
+          "quote_where": "founding conversation, B8, line 876",
+          "statement": "Actors are nodes: humans start from their git identity, and agents record agent, model, session and source.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "actors-are-nodes",
+        "id": "01M5SWRJC1B5GRY6YVT18R895Z",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJC1B5GRY6YVSYY7V4M8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJC1B5GRY6YVSYY7V4M8",
+        "id": "01M5SWRJCJQN9DQEY8ECPWHKE9",
+        "link": "01M5SWRJCJQN9DQEY8EAR8DAJJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to C",
+          "quote_where": "founding conversation, B8, line 876",
+          "statement": "There is no enforcement at first, but every accept or reject records who and under which rule.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "no-enforcement-at-first",
+        "id": "01M5SWRJD2RXXCTH06P99NVS79",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJD2RXXCTH06P6AHQ4VR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJD2RXXCTH06P6AHQ4VR",
+        "id": "01M5SWRJDJXSZA5BXFBDFA1J96",
+        "link": "01M5SWRJDJXSZA5BXFBCNM6A6T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to C",
+          "quote_where": "founding conversation, B8, line 876",
+          "statement": "There are no hidden nodes, and privacy comes from the personal layer.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "no-hidden-nodes",
+        "id": "01M5SWRJE248W7YJ0FT4R2PG3V",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJE248W7YJ0FT3T9SJ46",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJE248W7YJ0FT3T9SJ46",
+        "id": "01M5SWRJEKTZ4Z53TD7VKR7XHP",
+        "link": "01M5SWRJEKTZ4Z53TD7RFQ103D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "1. Yes",
+          "quote_where": "founding conversation, C9-C11, line 961",
+          "statement": "Genesis starts in a clean repo, with afk pieces ported on purpose and never copied in bulk.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "clean-repo",
+        "id": "01M5SWRJF3FB42Y9NJK9750B1V",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJF3FB42Y9NJK8HJ13AH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJF3FB42Y9NJK8HJ13AH",
+        "id": "01M5SWRJFMWMB993G41VFN5G5C",
+        "link": "01M5SWRJFMWMB993G41VB5XR02",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "2. M17 can continue",
+          "quote_where": "founding conversation, C9-C11, line 962",
+          "statement": "afk's M17 continues.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "afk-m17-continues",
+        "id": "01M5SWRJG5E0JZ6ZW3ZQ0HJ325",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJG5E0JZ6ZW3ZNCH1J07",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJG5E0JZ6ZW3ZNCH1J07",
+        "id": "01M5SWRJGN551753B6QHNZBX4N",
+        "link": "01M5SWRJGN551753B6QG97D5DQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "3. Yes",
+          "quote_where": "founding conversation, C9-C11, line 963",
+          "statement": "Genesis is written in Go, one binary that is also the daemon, a pure domain with a thin CLI.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "go-one-binary",
+        "id": "01M5SWRJH6G9M4B4AXV73XN376",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJH6G9M4B4AXV495ZEYQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJH6G9M4B4AXV495ZEYQ",
+        "id": "01M5SWRJHQGMT1YJ7N5TNBSW3S",
+        "link": "01M5SWRJHQGMT1YJ7N5QFHJWPN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "5. Yes!",
+          "quote_where": "founding conversation, C9-C11, line 966",
+          "statement": "Milestone 1 is built with Claude Code in Rex and shipit, and its first acceptance test is bringing in this conversation.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "built-with-claude-code",
+        "id": "01M5SWRJJ8YS5VYJD37AVD2X5P",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJJ8YS5VYJD3799T9NZ0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJJ8YS5VYJD3799T9NZ0",
+        "id": "01M5SWRJJS8KCPP01C72C5JA39",
+        "link": "01M5SWRJJS8KCPP01C6ZS979KK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes, Genesis it is, move on to the log format",
+          "quote_where": "founding conversation, naming, line 1042",
+          "statement": "The name is Genesis: the command is genesis, the folder .genesis/, the skill genesis, with no official short command.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "name-is-genesis",
+        "id": "01M5SWRJKATCAF6Q3K8VFHNX70",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJKATCAF6Q3K8TTHNYMH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJKATCAF6Q3K8TTHNYMH",
+        "id": "01M5SWRJKVRZ2QP5F7ZPPDVPNC",
+        "link": "01M5SWRJKVRZ2QP5F7ZJPVXGRR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the CLI commands",
+          "quote_where": "founding conversation, the log on disk, line 1151",
+          "statement": "The log is one immutable file per entry, a folder per change set, append-only enforced by check.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "file-per-entry",
+        "id": "01M5SWRJMC18M9RKDQGF6FDMSA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJMC18M9RKDQGEDNTE6R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJMC18M9RKDQGEDNTE6R",
+        "id": "01M5SWRJMXK6F25619P4F07375",
+        "link": "01M5SWRJMXK6F25619P43KA86Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the CLI commands",
+          "quote_where": "founding conversation, the log on disk, line 1151",
+          "statement": "Every entry has the envelope id, change_set, at, actor, for, after, type, body.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "entry-envelope",
+        "id": "01M5SWRJNFHPC6AW9AYVWC62T4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJNFHPC6AW9AYV4BVBWZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJNFHPC6AW9AYV4BVBWZ",
+        "id": "01M5SWRJP00D8FHSF3JQ9WMFT5",
+        "link": "01M5SWRJP00D8FHSF3JNMRV2T2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the CLI commands",
+          "quote_where": "founding conversation, the log on disk, line 1151",
+          "statement": "There are six operations, with field-level updates against base versions, fractional sibling order, and revisions by operation ID.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "six-operation-kinds",
+        "id": "01M5SWRJPHHRT86GJGM9EHM6CE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJPHHRT86GJGM5QC8J12",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJPHHRT86GJGM5QC8J12",
+        "id": "01M5SWRJQ33FBFZ4KYFE16FED5",
+        "link": "01M5SWRJQ33FBFZ4KYFCM5AZP4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the CLI commands",
+          "quote_where": "founding conversation, the log on disk, line 1151",
+          "statement": "Causal order comes from base versions: landed conflicts fail check and are fixed by a change set, and rebase is automatic when fields don't overlap.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "causal-order",
+        "id": "01M5SWRJQNBH9FJ36EAFVT9PFC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJQNBH9FJ36EAD6JW4P9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJQNBH9FJ36EAD6JW4P9",
+        "id": "01M5SWRJR7PZJDMCVG4BF6FRFC",
+        "link": "01M5SWRJR7PZJDMCVG47WMHVHW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the CLI commands",
+          "quote_where": "founding conversation, the log on disk, line 1151",
+          "statement": "Entries are canonical, versioned JSON, never compacted.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "canonical-json",
+        "id": "01M5SWRJRS80STPVH9RE1891JG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJRS80STPVH9RD0AJFN6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJRS80STPVH9RD0AJFN6",
+        "id": "01M5SWRJSBM0338MJ0AHSD30BY",
+        "link": "01M5SWRJSBM0338MJ0ADXGZFAE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the slice format",
+          "quote_where": "founding conversation, the CLI's commands, line 1221",
+          "statement": "The CLI takes Rex's shape: common verbs at the top, the rest under nouns.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "rex-command-shape",
+        "id": "01M5SWRJSXPVMMMVSSJJA1J475",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJSXPVMMMVSSJGM017AC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJSXPVMMMVSSJGM017AC",
+        "id": "01M5SWRJTFPJD291J48KEFHXPV",
+        "link": "01M5SWRJTFPJD291J48H2QGFBY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the slice format",
+          "quote_where": "founding conversation, the CLI's commands, line 1221",
+          "statement": "There is a current change set per worktree, overridden by --change or GENESIS_CHANGE, with --record as the one-step shortcut.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "change-set-per-worktree",
+        "id": "01M5SWRJV0VHXFWYTPEAW7XFFF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJV0VHXFWYTPE7GFZP38",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJV0VHXFWYTPE7GFZP38",
+        "id": "01M5SWRJVJ6593E4X0PAKAPPSG",
+        "link": "01M5SWRJVJ6593E4X0P9YZXMZG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the slice format",
+          "quote_where": "founding conversation, the CLI's commands, line 1221",
+          "statement": "apply is the agents' main way to write.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "apply-is-main-write",
+        "id": "01M5SWRJW4QJ1TG6P7FBVZ562P",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJW4QJ1TG6P7F9AEG284",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJW4QJ1TG6P7F9AEG284",
+        "id": "01M5SWRJWP124V0EZZYMY978ZC",
+        "link": "01M5SWRJWP124V0EZZYJ4RRB13",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the slice format",
+          "quote_where": "founding conversation, the CLI's commands, line 1221",
+          "statement": "why is the lineage verb.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "why-is-lineage-verb",
+        "id": "01M5SWRJX8EQTSCNJDB6J62A87",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJX8EQTSCNJDB45X7RHQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJX8EQTSCNJDB45X7RHQ",
+        "id": "01M5SWRJXTJW9J0PFCQD420ARP",
+        "link": "01M5SWRJXTJW9J0PFCQD3DZY55",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the slice format",
+          "quote_where": "founding conversation, the CLI's commands, line 1221",
+          "statement": "The CLI's rules are --view, --json, --dry-run, stable exit codes, next in errors, and no prompts without a terminal.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "cli-rules",
+        "id": "01M5SWRJYDQZ4CQ6DGRXBHW29Z",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJYDQZ4CQ6DGRVN5P3JJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJYDQZ4CQ6DGRVN5P3JJ",
+        "id": "01M5SWRJZ0MGYPFYZZ5E5S2NZJ",
+        "link": "01M5SWRJZ0MGYPFYZZ5BV56RQZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the agent guide",
+          "quote_where": "founding conversation, the slice format, line 1335",
+          "statement": "A slice has ten sections in a fixed order, with sources and history left to why.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "ten-slice-sections",
+        "id": "01M5SWRJZHKHPV3CQGGPFZSPJG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRJZHKHPV3CQGGNM5Z480",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJZHKHPV3CQGGNM5Z480",
+        "id": "01M5SWRK04AZ4WWAMCJM7MWSXR",
+        "link": "01M5SWRK04AZ4WWAMCJK2Z0MDW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the agent guide",
+          "quote_where": "founding conversation, the slice format, line 1335",
+          "statement": "Constraints, decisions and intents are inherited down the tree, with exemptions only by an explicit link to a decision.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "inherited-down-tree",
+        "id": "01M5SWRK0PF6DTEWBDFV2ZC8B9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRK0PF6DTEWBDFTEDJZRJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRK0PF6DTEWBDFTEDJZRJ",
+        "id": "01M5SWRK19ZDN53D454GRGKD91",
+        "link": "01M5SWRK19ZDN53D454G5TS8B2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the agent guide",
+          "quote_where": "founding conversation, the slice format, line 1335",
+          "statement": "A slice has a 4,000-token default budget, cuts in a fixed order, and focus, constraints and open questions are never cut.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "slice-token-budget",
+        "id": "01M5SWRK1V035XV1JRQD2EFWBP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRK1V035XV1JRQA0W9FZ6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRK1V035XV1JRQA0W9FZ6",
+        "id": "01M5SWRK2EE7H7TFSPED60SXBH",
+        "link": "01M5SWRK2EE7H7TFSPEBKJ5DCW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the agent guide",
+          "quote_where": "founding conversation, the slice format, line 1335",
+          "statement": "The same model gives the same bytes, and every item carries its handle and ID.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "same-model-same-bytes",
+        "id": "01M5SWRK31A8YWRRG856M8D175",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRK31A8YWRRG853559MVY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRK31A8YWRRG853559MVY",
+        "id": "01M5SWRK3KQ4B7JGHNYKZBBH45",
+        "link": "01M5SWRK3KQ4B7JGHNYKE7K289",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the agent guide",
+          "quote_where": "founding conversation, the slice format, line 1335",
+          "statement": "slice --change is the main way in for work.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "slice-change-way-in",
+        "id": "01M5SWRK46T069RTTSPHG3HA9M",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRK46T069RTTSPECVXZ7D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRK46T069RTTSPECVXZ7D",
+        "id": "01M5SWRK4SCQ0C3A760P1R1WDE",
+        "link": "01M5SWRK4SCQ0C3A760N1PAPGK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the next topic",
+          "quote_where": "founding conversation, the agent guide, line 1418",
+          "statement": "The guide has three layers (a ~100-token session start, a skill capped at ~2,000 tokens, topics on demand), all text in the binary.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "three-guide-layers",
+        "id": "01M5SWRK5DARPC64JQ53EP2PS0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRK5DARPC64JQ52SKVNSC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRK5DARPC64JQ52SKVNSC",
+        "id": "01M5SWRK60XN7SDZGWK7VMYVEQ",
+        "link": "01M5SWRK60XN7SDZGWK7K00QKN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the next topic",
+          "quote_where": "founding conversation, the agent guide, line 1418",
+          "statement": "The skill's contents are the vocabulary, the core loop, the hard rules and recipes.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "skill-contents",
+        "id": "01M5SWRK6KZFZERPDVXC4NQZ3F",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRK6KZFZERPDVXBD6HBD0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRK6KZFZERPDVXBD6HBD0",
+        "id": "01M5SWRK77DHZSCFKKEN5N0GZ9",
+        "link": "01M5SWRK77DHZSCFKKEJYT25AV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the next topic",
+          "quote_where": "founding conversation, the agent guide, line 1418",
+          "statement": "There are three skills: genesis, genesis-scrub and genesis-reconcile.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "three-skills",
+        "id": "01M5SWRK7TKS811CQYTD27VYX3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRK7TKS811CQYTCCNKY94",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRK7TKS811CQYTCCNKY94",
+        "id": "01M5SWRK8D7BQP29TAPM0626FP",
+        "link": "01M5SWRK8D7BQP29TAPJXMMT4G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the next topic",
+          "quote_where": "founding conversation, the agent guide, line 1418",
+          "statement": "The guide installs as a user-level Claude Code plugin by default, a marked block in AGENTS.md for other agents, with a version check in status.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "user-level-plugin",
+        "id": "01M5SWRK90J9C089XBE24HE46C",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRK90J9C089XBE0MKHH9F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRK90J9C089XBE0MKHH9F",
+        "id": "01M5SWRK9MP36JRKMD39BJNJCS",
+        "link": "01M5SWRK9MP36JRKMD37DQYM68",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the next topic",
+          "quote_where": "founding conversation, the agent guide, line 1418",
+          "statement": "A size-cap test runs on every build, and evals run before releases that change the guide.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "size-cap-and-evals",
+        "id": "01M5SWRKA6BFCQEGF5M84HCRN2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRKA6BFCQEGF5M4SCS2EK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRKA6BFCQEGF5M4SCS2EK",
+        "id": "01M5SWRKAT3RY2318MKC7PTGFY",
+        "link": "01M5SWRKAT3RY2318MK89G0BM0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the workflow engine",
+          "quote_where": "founding conversation, how a change set becomes work, line 1500",
+          "statement": "One change set is one PR, and larger work is a sequence.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "one-change-set-one-pr",
+        "id": "01M5SWRKBD18MWGYZTK6C09H6A",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRKBD18MWGYZTK5YEC7DW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRKBD18MWGYZTK5YEC7DW",
+        "id": "01M5SWRKC16CNGP76SZ5EAKYSP",
+        "link": "01M5SWRKC16CNGP76SZ5B99XMV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the workflow engine",
+          "quote_where": "founding conversation, how a change set becomes work, line 1500",
+          "statement": "There is no milestone kind; genesis roadmap is a view.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "no-milestone-kind",
+        "id": "01M5SWRKCMYWNWPCEEKZAZBZ1D",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRKCMYWNWPCEEKYAPK5WS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRKCMYWNWPCEEKYAPK5WS",
+        "id": "01M5SWRKD8WTHGP3NAWZPAA0SN",
+        "link": "01M5SWRKD8WTHGP3NAWW5VBRT8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the workflow engine",
+          "quote_where": "founding conversation, how a change set becomes work, line 1500",
+          "statement": "genesis ready is a pure function in layer 2 that says why each change set isn't ready.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "ready-pure-function",
+        "id": "01M5SWRKDWJ01Z4TDG9VNGCM74",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRKDWJ01Z4TDG9VJ7F90V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRKDWJ01Z4TDG9VJ7F90V",
+        "id": "01M5SWRKEGZQ9HEKJYCPFYQBPQ",
+        "link": "01M5SWRKEGZQ9HEKJYCPB4Z94T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the workflow engine",
+          "quote_where": "founding conversation, how a change set becomes work, line 1500",
+          "statement": "The contract for work: read with slice, write back only revisions within the intent, discovered-from proposals outside it, and questions, and land as the last commit.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "work-contract",
+        "id": "01M5SWRKF3TPXT2G8BYVH9380D",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRKF3TPXT2G8BYRGXQNQE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRKF3TPXT2G8BYRGXQNQE",
+        "id": "01M5SWRKFPWMPMB3A6660351H5",
+        "link": "01M5SWRKFPWMPMB3A6645WSYRA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the workflow engine",
+          "quote_where": "founding conversation, how a change set becomes work, line 1500",
+          "statement": "Work-layer state never enters the log.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "work-state-outside-log",
+        "id": "01M5SWRKGAYPACFPDK0J99A0G1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRKGAYPACFPDK0FXHSNH4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRKGAYPACFPDK0FXHSNH4",
+        "id": "01M5SWRKGZABZDD8QJ7R01D5JZ",
+        "link": "01M5SWRKGZABZDD8QJ7Q07YQTV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the agent adapter. Genesis should also be able to tell an agent how to\nwrite a custom workflow.",
+          "quote_where": "founding conversation, the workflow engine, line 1625",
+          "statement": "The engine orchestrates: agent steps are short, fresh sessions, and any step may be a whole agent-driven flow.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "engine-orchestrates",
+        "id": "01M5SWRKHJ7SB5CGRE48GG1WB6",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRKHJ7SB5CGRE47AJQ4AH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRKHJ7SB5CGRE47AJQ4AH",
+        "id": "01M5SWRKJ67ZK2YKGJTD4BN64G",
+        "link": "01M5SWRKJ67ZK2YKGJTCGSAY63",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the agent adapter. Genesis should also be able to tell an agent how to\nwrite a custom workflow.",
+          "quote_where": "founding conversation, the workflow engine, line 1625",
+          "statement": "Workflows have five step kinds, outcomes and visit limits, with waits only in the engine.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "five-step-kinds",
+        "id": "01M5SWRKJTTN98CSM308W45BZV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRKJTTN98CSM3087H6KXW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRKJTTN98CSM3087H6KXW",
+        "id": "01M5SWRKKE7Q4KJMJD9T7CMJ4H",
+        "link": "01M5SWRKKE7Q4KJMJD9P9QTV1V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the agent adapter. Genesis should also be able to tell an agent how to\nwrite a custom workflow.",
+          "quote_where": "founding conversation, the workflow engine, line 1625",
+          "statement": "Workflows are declarative TOML, with command steps as the way out and no scripting language for now.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "declarative-toml",
+        "id": "01M5SWRKM2R8FPWPK0C578Z7J3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRKM2R8FPWPK0C3E701E0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRKM2R8FPWPK0C3E701E0",
+        "id": "01M5SWRKMQNWCKCHE81RSFBVJA",
+        "link": "01M5SWRKMQNWCKCHE81R1GZ343",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the agent adapter. Genesis should also be able to tell an agent how to\nwrite a custom workflow.",
+          "quote_where": "founding conversation, the workflow engine, line 1625",
+          "statement": "Runs have a local journal and are started and resumed from the CLI without a daemon.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "run-journal",
+        "id": "01M5SWRKNB2DZ7H57TFBAHAY52",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRKNB2DZ7H57TF8T897N7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRKNB2DZ7H57TF8T897N7",
+        "id": "01M5SWRKNZKHS2HDNCPQEEK8MS",
+        "link": "01M5SWRKNZKHS2HDNCPP0J456N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the agent adapter. Genesis should also be able to tell an agent how to\nwrite a custom workflow.",
+          "quote_where": "founding conversation, the workflow engine, line 1625",
+          "statement": "Built-in workflows live in the binary and are replaced by name (personal, then repo, then built-in), with workflow fork.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "built-in-workflows-by-name",
+        "id": "01M5SWRKPMCMB090S9BV9PJREV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRKPMCMB090S9BSRDWYPE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRKPMCMB090S9BSRDWYPE",
+        "id": "01M5SWRKQ9V0DE7DVHSZ6MCE80",
+        "link": "01M5SWRKQ9V0DE7DVHSXTQ827G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, move on to the agent adapter. Genesis should also be able to tell an agent how to\nwrite a custom workflow.",
+          "quote_where": "founding conversation, the workflow engine, line 1625",
+          "statement": "Genesis can tell an agent how to write a custom workflow.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "explain-custom-workflows",
+        "id": "01M5SWRKQYRSW4EHEH7CFD50P4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRKQYRSW4EHEH7BH0APFD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRKQYRSW4EHEH7BH0APFD",
+        "id": "01M5SWRKRK1W8YATXVN0YYKRE1",
+        "link": "01M5SWRKRK1W8YATXVMXPTZAWH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all six, move on to where agents run",
+          "quote_where": "founding conversation, the agent adapter, line 1722",
+          "statement": "Workflow writing goes through a guide topic, workflow describe, new, check and --dry-run.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "workflow-writing-tools",
+        "id": "01M5SWRKS81P97A3DJ2CWFGD4Q",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRKS81P97A3DJ2C5B2T5S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRKS81P97A3DJ2C5B2T5S",
+        "id": "01M5SWRKSX6FZ645N21J281J8Q",
+        "link": "01M5SWRKSX6FZ645N21GPMHM9S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all six, move on to where agents run",
+          "quote_where": "founding conversation, the agent adapter, line 1722",
+          "statement": "Adapters declare capabilities, and a missing one degrades and is reported, never assumed.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "adapters-declare-capabilities",
+        "id": "01M5SWRKTJQTRF8BBM5V8XWBQE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRKTJQTRF8BBM5RN21VFF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRKTJQTRF8BBM5RN21VFF",
+        "id": "01M5SWRKV71YPC98W86YZCBAEQ",
+        "link": "01M5SWRKV71YPC98W86TZX0JA7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all six, move on to where agents run",
+          "quote_where": "founding conversation, the agent adapter, line 1722",
+          "statement": "There are built-in Go adapters (Claude Code first), and your own through a manifest plus an optional executable speaking a JSON protocol.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "built-in-go-adapters",
+        "id": "01M5SWRKVW3M6RPVH7CM2ANDZY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRKVW3M6RPVH7CH38G0ZJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRKVW3M6RPVH7CH38G0ZJ",
+        "id": "01M5SWRKWHXNAA834Z06ZYXW57",
+        "link": "01M5SWRKWHXNAA834Z054EPYJ6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all six, move on to where agents run",
+          "quote_where": "founding conversation, the agent adapter, line 1722",
+          "statement": "Status comes from hooks first, then OSC 7501 copied from Rex's events, then the process exiting.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "status-from-hooks-first",
+        "id": "01M5SWRKX5MFMP08NQ1WE15K0E",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRKX5MFMP08NQ1SNZ8DF0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRKX5MFMP08NQ1SNZ8DF0",
+        "id": "01M5SWRKXVY125E7MVA1C8R9CR",
+        "link": "01M5SWRKXVY125E7MVA02TKF3K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all six, move on to where agents run",
+          "quote_where": "founding conversation, the agent adapter, line 1722",
+          "statement": "Claude Code runs interactive in Rex by default, headless when a step asks, with an explicit permission mode, a known session ID, tokens from transcripts, and afk's usage probe.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "claude-code-adapter",
+        "id": "01M5SWRKYG58WPFJ2SXH2TGX7B",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRKYG58WPFJ2SXD35J4EW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRKYG58WPFJ2SXD35J4EW",
+        "id": "01M5SWRKZ6BT8K0F6J675MND9N",
+        "link": "01M5SWRKZ6BT8K0F6J639ZH0Q9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all six, move on to where agents run",
+          "quote_where": "founding conversation, the agent adapter, line 1722",
+          "statement": "GENESIS_ACTOR is set at launch, stamping every entry.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "actor-set-at-launch",
+        "id": "01M5SWRKZVB6P9F107Z6HZNYST",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRKZVB6P9F107Z5WCCDW0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRKZVB6P9F107Z5WCCDW0",
+        "id": "01M5SWRM0HZX5N3QA5ACPF05MY",
+        "link": "01M5SWRM0HZX5N3QA5AC5HB598",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, let's cover the remaining topics first",
+          "quote_where": "founding conversation, where agents run, line 1794",
+          "statement": "Agents run supervised on the Mac through layers 1-4, never bypassed.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "supervised-on-the-mac",
+        "id": "01M5SWRM16H3EGRN6S2D66K76Z",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRM16H3EGRN6S2A7MY88G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRM16H3EGRN6S2A7MY88G",
+        "id": "01M5SWRM1W5XJ3JPRMKA30B84A",
+        "link": "01M5SWRM1W5XJ3JPRMK892CXCX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, let's cover the remaining topics first",
+          "quote_where": "founding conversation, where agents run, line 1794",
+          "statement": "trust = \"dedicated\" | \"daily\" is set per machine, and bypassed permissions run only on dedicated machines.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "trust-per-machine",
+        "id": "01M5SWRM2JXHSGJANFHBGBDR1B",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRM2JXHSGJANFHA35SZFR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRM2JXHSGJANFHA35SZFR",
+        "id": "01M5SWRM377648YRM9JT9E5FCV",
+        "link": "01M5SWRM377648YRM9JSXJVYT1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, let's cover the remaining topics first",
+          "quote_where": "founding conversation, where agents run, line 1794",
+          "statement": "Layer 3 targets a Rex host by name, so moving to a hub is configuration.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "rex-host-by-name",
+        "id": "01M5SWRM3XV9ZFSAP6WT80VC45",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRM3XV9ZFSAP6WSRNDHFS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRM3XV9ZFSAP6WSRNDHFS",
+        "id": "01M5SWRM4KGG9J4DP39W1R7VTQ",
+        "link": "01M5SWRM4KGG9J4DP39TSMM6DT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, let's cover the remaining topics first",
+          "quote_where": "founding conversation, where agents run, line 1794",
+          "statement": "At layer 5, work runs on the Linux hub if Rex has arrived there, otherwise a macOS VM spike.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "linux-hub-at-layer-5",
+        "id": "01M5SWRM58RX5MQ2P82JDJDPQR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRM58RX5MQ2P82HC6YG1Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRM58RX5MQ2P82HC6YG1Q",
+        "id": "01M5SWRM5YXZVC7932BS624YP5",
+        "link": "01M5SWRM5YXZVC7932BRX87THW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to testing",
+          "quote_where": "founding conversation, remaining topic 1, the link types, line 1864",
+          "statement": "Only capabilities and intents have a parent, and authorship is only on entries.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "parent-and-authorship",
+        "id": "01M5SWRM6M7DGT8CKT82VHM98F",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRM6M7DGT8CKT7ZVKBP64",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRM6M7DGT8CKT7ZVKBP64",
+        "id": "01M5SWRM7AGKKRBFN5J1MWB1V5",
+        "link": "01M5SWRM7AGKKRBFN5J0E4SF8R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to testing",
+          "quote_where": "founding conversation, remaining topic 1, the link types, line 1864",
+          "statement": "There are fourteen link types, with inheritance as shown.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "fourteen-links",
+        "id": "01M5SWRM80Z6RHP1XBVPBRM8CB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRM80Z6RHP1XBVMNP2DBT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRM80Z6RHP1XBVMNP2DBT",
+        "id": "01M5SWRM8QK8KT2JV1T2VS4TYM",
+        "link": "01M5SWRM8QK8KT2JV1T24P53VP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to testing",
+          "quote_where": "founding conversation, remaining topic 1, the link types, line 1864",
+          "statement": "There is no proposes link, and decision options are fields.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "no-proposes-link",
+        "id": "01M5SWRM9D1FZ1Y00BKSTV6YWM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRM9D1FZ1Y00BKRGDM7EX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRM9D1FZ1Y00BKRGDM7EX",
+        "id": "01M5SWRMA466ZYRWM69GSG3VFD",
+        "link": "01M5SWRMA466ZYRWM69G534SWP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to testing",
+          "quote_where": "founding conversation, remaining topic 1, the link types, line 1864",
+          "statement": "Link types are fixed, endpoints are enforced by check, notes are required on relates-to and exempts, retired nodes flag their incoming links, and relates-to is watched.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "fixed-link-types",
+        "id": "01M5SWRMAT5G02PDV5VF2ECBKM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRMAT5G02PDV5VCF9V6A6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRMAT5G02PDV5VCF9V6A6",
+        "id": "01M5SWRMBH26M9JK79HHHFREFM",
+        "link": "01M5SWRMBH26M9JK79HFRZKZTP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all six, move on to the capability tree",
+          "quote_where": "founding conversation, remaining topic 2, testing, line 1944",
+          "statement": "The core has table and property tests (the six properties) and fuzzing on both parsers.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "table-and-property-tests",
+        "id": "01M5SWRMC79WBVK9QYR00XMAPY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRMC79WBVK9QYQWXXBJ8Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRMC79WBVK9QYQWXXBJ8Y",
+        "id": "01M5SWRMCYEK1SVM6T7DHRM567",
+        "link": "01M5SWRMCYEK1SVM6T7B3N9JXN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all six, move on to the capability tree",
+          "quote_where": "founding conversation, remaining topic 2, testing, line 1944",
+          "statement": "Golden files cover slices, rendered markdown and JSON, with JSON shapes a contract.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "golden-files",
+        "id": "01M5SWRMDN02F4TQGG6H74YW13",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRMDN02F4TQGG6EX1E7DT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRMDN02F4TQGG6EX1E7DT",
+        "id": "01M5SWRMEB7WF26HJEQG0PRZ4Z",
+        "link": "01M5SWRMEB7WF26HJEQD0DVF2K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all six, move on to the capability tree",
+          "quote_where": "founding conversation, remaining topic 2, testing, line 1944",
+          "statement": "testscript scenarios run against real git, with fakes for Rex, agents and gh, and live contract tests only by hand.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "testscript-scenarios",
+        "id": "01M5SWRMF1RF6ET331N0EJ9QJB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRMF1RF6ET331MYTQHSR1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRMF1RF6ET331MYTQHSR1",
+        "id": "01M5SWRMFRCQVCZAKRE9AQQJDT",
+        "link": "01M5SWRMFRCQVCZAKRE5KGDK5D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all six, move on to the capability tree",
+          "quote_where": "founding conversation, remaining topic 2, testing, line 1944",
+          "statement": "There is a tested performance budget on a generated 50,000-node model.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "performance-budget",
+        "id": "01M5SWRMGF8VE5N99PC20Z02C9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRMGF8VE5N99PC1X5M966",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRMGF8VE5N99PC1X5M966",
+        "id": "01M5SWRMH5SPHTQZGQ76BA1NJ6",
+        "link": "01M5SWRMH5SPHTQZGQ74WSEMA0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all six, move on to the capability tree",
+          "quote_where": "founding conversation, remaining topic 2, testing, line 1944",
+          "statement": "A permanent corpus holds every format version, which must always load.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "permanent-corpus",
+        "id": "01M5SWRMHWWA9AYEW85BG4KBYM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRMHWWA9AYEW857ZWZJ1D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRMHWWA9AYEW857ZWZJ1D",
+        "id": "01M5SWRMJKT7W4A83567FN7APB",
+        "link": "01M5SWRMJKT7W4A83565A0G3X8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all six, move on to the capability tree",
+          "quote_where": "founding conversation, remaining topic 2, testing, line 1944",
+          "statement": "Genesis checks itself in its own CI, and afk's habits carry over.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "checks-itself-in-ci",
+        "id": "01M5SWRMKAM1EA295F894CSQ3R",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRMKAM1EA295F857ZNG52",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRMKAM1EA295F857ZNG52",
+        "id": "01M5SWRMM1GEBFNYYDQ1ZDJ5BK",
+        "link": "01M5SWRMM1GEBFNYYDPYH8DYJ0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to the web UI",
+          "quote_where": "founding conversation, remaining topic 3, the capability tree, line 2033",
+          "statement": "The capability tree follows the conventions: user-facing areas, testable leaves, two to four levels, short handles, every leaf ending up with an anchor and evidence.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "tree-conventions",
+        "id": "01M5SWRMMRSQD91AJD1TNZ38FW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRMMRSQD91AJD1SM76BM9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRMMRSQD91AJD1SM76BM9",
+        "id": "01M5SWRMNF2TXKFPGY1FQYV648",
+        "link": "01M5SWRMNF2TXKFPGY1C987Q21",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to the web UI",
+          "quote_where": "founding conversation, remaining topic 3, the capability tree, line 2033",
+          "statement": "Genesis's first tree has the twelve areas as drawn.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "twelve-areas",
+        "id": "01M5SWRMP7JJDJPBYVVZVZDSA1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRMP7JJDJPBYVVY57DZ4T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRMP7JJDJPBYVVY57DZ4T",
+        "id": "01M5SWRMPYCMKKHWE1KFQKRKBV",
+        "link": "01M5SWRMPYCMKKHWE1KEEAXVQ0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to the web UI",
+          "quote_where": "founding conversation, remaining topic 3, the capability tree, line 2033",
+          "statement": "The root intents and constraints are as listed.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "root-intents-and-constraints",
+        "id": "01M5SWRMQNF6HMC6DNAJTHF4EY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRMQNF6HMC6DNAFFEPF9W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRMQNF6HMC6DNAFFEPF9W",
+        "id": "01M5SWRMRDD1ZG49EHHMWCZ38T",
+        "link": "01M5SWRMRDD1ZG49EHHMFQJXK9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all four, move on to the web UI",
+          "quote_where": "founding conversation, remaining topic 3, the capability tree, line 2033",
+          "statement": "The import is one landed record change set, the capabilities as accepted intention change sets in order, and leaves only when each is planned.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "import-shape",
+        "id": "01M5SWRMS4VNJSJWR6HXPCG3RE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRMS4VNJSJWR6HXN8KPM7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRMS4VNJSJWR6HXN8KPM7",
+        "id": "01M5SWRMSW99H1NGKRG2MHRGA1",
+        "link": "01M5SWRMSW99H1NGKRFZHN3QH6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all seven, move on to the review workflow",
+          "quote_where": "founding conversation, remaining topic 4, the web UI, line 2103",
+          "statement": "Commands are transport-independent operations with schemas, and genesis api call exists from the first day.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "transport-independent-ops",
+        "id": "01M5SWRMTMB3VV6AFA43MGQ8RJ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRMTMB3VV6AFA400X4GQ5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRMTMB3VV6AFA400X4GQ5",
+        "id": "01M5SWRMVBA2TJ9Q8X4885QVB9",
+        "link": "01M5SWRMVBA2TJ9Q8X47ZGHJRD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all seven, move on to the review workflow",
+          "quote_where": "founding conversation, remaining topic 4, the web UI, line 2103",
+          "statement": "There is a change feed: a sequence per repo, events --since and events --follow.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "change-feed-events",
+        "id": "01M5SWRMW33CKD14M6H8HB32MS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRMW33CKD14M6H716BBC8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRMW33CKD14M6H716BBC8",
+        "id": "01M5SWRMWVAMBDKBX1VMMVJZB2",
+        "link": "01M5SWRMWVAMBDKBX1VJ2W72J9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all seven, move on to the review workflow",
+          "quote_where": "founding conversation, remaining topic 4, the web UI, line 2103",
+          "statement": "References in text are stored by ID and shown by handle.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "references-by-id",
+        "id": "01M5SWRMXJ8PKYTXYE0YQGF82H",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRMXJ8PKYTXYE0VY667X9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRMXJ8PKYTXYE0VY667X9",
+        "id": "01M5SWRMYAMJ3XKCHP8W5BV92K",
+        "link": "01M5SWRMYAMJ3XKCHP8SJBYK6Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all seven, move on to the review workflow",
+          "quote_where": "founding conversation, remaining topic 4, the web UI, line 2103",
+          "statement": "Diffs are structured and field-level.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "field-level-diffs",
+        "id": "01M5SWRMZ2B4Q8P2QDVY61RTE3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRMZ2B4Q8P2QDVXVYAQ3T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRMZ2B4Q8P2QDVXVYAQ3T",
+        "id": "01M5SWRMZVESPKRJM3CF6B45BV",
+        "link": "01M5SWRMZVESPKRJM3CBTTSPWZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all seven, move on to the review workflow",
+          "quote_where": "founding conversation, remaining topic 4, the web UI, line 2103",
+          "statement": "Notes on a change set, an operation or a node are the discussion.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "notes-are-discussion",
+        "id": "01M5SWRN0J7Z85VZDPRTNM6HJW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRN0J7Z85VZDPRSXKD2ZZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRN0J7Z85VZDPRSXKD2ZZ",
+        "id": "01M5SWRN1ADEPN2KYTG74EY89P",
+        "link": "01M5SWRN1ADEPN2KYTG3GJPPX1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all seven, move on to the review workflow",
+          "quote_where": "founding conversation, remaining topic 4, the web UI, line 2103",
+          "statement": "Lists are paged with cursors.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "cursor-paged-lists",
+        "id": "01M5SWRN22A2D4BEDBZYKC3VJH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRN22A2D4BEDBZX7XYXB8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRN22A2D4BEDBZX7XYXB8",
+        "id": "01M5SWRN2T5QQFW4W2CE5RJXFM",
+        "link": "01M5SWRN2T5QQFW4W2CCE96XRT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all seven, move on to the review workflow",
+          "quote_where": "founding conversation, remaining topic 4, the web UI, line 2103",
+          "statement": "Writes take actor and change set explicitly, and the CLI's defaults are only conveniences.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "explicit-actor-and-change",
+        "id": "01M5SWRN3JPWD4FRYV9NRSG95G",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRN3JPWD4FRYV9J977JG3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRN3JPWD4FRYV9J977JG3",
+        "id": "01M5SWRN4BYTMQRA6ZNDQS5QXZ",
+        "link": "01M5SWRN4BYTMQRA6ZNC1STWXJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all seven, move on to milestone 1 scope",
+          "quote_where": "founding conversation, remaining topic 5, the review workflow, line 2189",
+          "statement": "Review runs code checks first, and agents only after they pass.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "code-checks-first",
+        "id": "01M5SWRN533TNXADMG66SFAT69",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRN533TNXADMG66PPY5T7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRN533TNXADMG66PPY5T7",
+        "id": "01M5SWRN5VTEXXFMSN3VNK0D12",
+        "link": "01M5SWRN5VTEXXFMSN3RXCAGEY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all seven, move on to milestone 1 scope",
+          "quote_where": "founding conversation, remaining topic 5, the review workflow, line 2189",
+          "statement": "Review has three agent checks: intent (with the constraint checklist), quality and qa (scenarios from the leaves).",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "three-agent-checks",
+        "id": "01M5SWRN6MJFYYEZ2DMEE7WB23",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRN6MJFYYEZ2DMDN9NS4J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRN6MJFYYEZ2DMDN9NS4J",
+        "id": "01M5SWRN7DZV25DQA2BH5W2DNM",
+        "link": "01M5SWRN7DZV25DQA2BDSYDVNJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all seven, move on to milestone 1 scope",
+          "quote_where": "founding conversation, remaining topic 5, the review workflow, line 2189",
+          "statement": "Critics run only on blockers and majors, attacking the finding, with the verdict computed in code.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "critics-on-serious-findings",
+        "id": "01M5SWRN854WJTWVK4WPAJ24AZ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRN854WJTWVK4WKANRMEQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRN854WJTWVK4WKANRMEQ",
+        "id": "01M5SWRN8Y2HXSJA3DNQAPC8XK",
+        "link": "01M5SWRN8Y2HXSJA3DNMC32X7N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all seven, move on to milestone 1 scope",
+          "quote_where": "founding conversation, remaining topic 5, the review workflow, line 2189",
+          "statement": "Re-review covers only what failed.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "re-review-failures-only",
+        "id": "01M5SWRN9QSDZCKQ84JNEJ3ZH8",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRN9QSDZCKQ84JHG3S49P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRN9QSDZCKQ84JHG3S49P",
+        "id": "01M5SWRNAG2N6N0RHAXJS4EX2Y",
+        "link": "01M5SWRNAG2N6N0RHAXFW6WS0B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all seven, move on to milestone 1 scope",
+          "quote_where": "founding conversation, remaining topic 5, the review workflow, line 2189",
+          "statement": "Review profiles are chosen by rule, and per-check stats report checks that never fire.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "review-profiles-by-rule",
+        "id": "01M5SWRNB8X50K31BMBJB5SAW8",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRNB8X50K31BMBGX95KTF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRNB8X50K31BMBGX95KTF",
+        "id": "01M5SWRNC1R5GHVGXJ5VX25CFS",
+        "link": "01M5SWRNC1R5GHVGXJ5TNYHK1X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all seven, move on to milestone 1 scope",
+          "quote_where": "founding conversation, remaining topic 5, the review workflow, line 2189",
+          "statement": "Review feeds the model: QA evidence as Evidence nodes, overruled findings as decisions, missing rules as proposed constraints.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "review-feeds-model",
+        "id": "01M5SWRNCSXEK47CQTD69FFGWN",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRNCSXEK47CQTD53AJSBQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRNCSXEK47CQTD53AJSBQ",
+        "id": "01M5SWRNDKZ0FP0TZ6YJVZADET",
+        "link": "01M5SWRNDKZ0FP0TZ6YJV0MF95",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all seven, move on to milestone 1 scope",
+          "quote_where": "founding conversation, remaining topic 5, the review workflow, line 2189",
+          "statement": "Review posts one summary on the PR.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "one-pr-summary",
+        "id": "01M5SWRNEBTFABH6SN20KRMHD0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRNEBTFABH6SN1Y543X6B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRNEBTFABH6SN1Y543X6B",
+        "id": "01M5SWRNF59BH94SCF186AJFNV",
+        "link": "01M5SWRNF59BH94SCF15CHBV43",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, create the repo",
+          "quote_where": "founding conversation, milestone 1 scope, line 2276",
+          "statement": "Milestone 1's scope is as listed, in and out.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "milestone-1-scope",
+        "id": "01M5SWRNFYDRAKQ0NYX5KCYKMM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRNFYDRAKQ0NYX1QKNGJZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRNFYDRAKQ0NYX1QKNGJZ",
+        "id": "01M5SWRNGQW4RQFNBREZC4S15Z",
+        "link": "01M5SWRNGQW4RQFNBREX5S7K41",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, create the repo",
+          "quote_where": "founding conversation, milestone 1 scope, line 2276",
+          "statement": "Milestone 1 has the five done points.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "five-done-points",
+        "id": "01M5SWRNHGHYC0YQFXDV02HBK1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRNHGHYC0YQFXDRQ1Y47W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRNHGHYC0YQFXDRQ1Y47W",
+        "id": "01M5SWRNJAYP777AZ1SCQXJB8F",
+        "link": "01M5SWRNJAYP777AZ1SAHWB0G6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, create the repo",
+          "quote_where": "founding conversation, milestone 1 scope, line 2276",
+          "statement": "Milestone 1 is the eleven tasks, in that order.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "eleven-tasks",
+        "id": "01M5SWRNK32GC26RVV2079BKME",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRNK32GC26RVV1ZF53HTJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRNK32GC26RVV1ZF53HTJ",
+        "id": "01M5SWRNKXBMPJEQ8KZNYF08MH",
+        "link": "01M5SWRNKXBMPJEQ8KZJN2E0T3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, create the repo",
+          "quote_where": "founding conversation, milestone 1 scope, line 2276",
+          "statement": "The temporary task list is ~/code/_genesis/milestone-1.md, retired by the import.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "temporary-task-list",
+        "id": "01M5SWRNMQQKXDM8A07QPRTWWA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRNMQQKXDM8A07N5P2PHC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRNMQQKXDM8A07N5P2PHC",
+        "id": "01M5SWRNNHR68V0ZB3RRRKNC03",
+        "link": "01M5SWRNNHR68V0ZB3RQD9F3V7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, create the repo",
+          "quote_where": "founding conversation, milestone 1 scope, line 2276",
+          "statement": "The repo is ~/code/genesis.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "repo-location",
+        "id": "01M5SWRNPA60KXFQB9DYRPK68M",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRNPA60KXFQB9DVJFE9EW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRNPA60KXFQB9DVJFE9EW",
+        "id": "01M5SWRNQ4B3WVDSJTVH83M72F",
+        "link": "01M5SWRNQ4B3WVDSJTVE7G556Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "yes to all five, create the repo",
+          "quote_where": "founding conversation, milestone 1 scope, line 2276",
+          "statement": "The repo has a private GitHub counterpart, genesis, on the owner's account.",
+          "wording": "the assistant's summary in the founding conversation"
+        },
+        "handle": "private-github-repo",
+        "id": "01M5SWRNQYV2S2F0JHYBMRKH35",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRNQYV2S2F0JHY9Q2VJ15",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRNQYV2S2F0JHY9Q2VJ15",
+        "id": "01M5SWRNRRF2C5FDZ9EFYKBS6Q",
+        "link": "01M5SWRNRRF2C5FDZ9ECFBYTBC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "Please listen for the tasks being done, you're the orchestrator here.",
+          "quote_where": "founding conversation, orchestration, line 2511",
+          "statement": "This session orchestrates milestone 1: it watches for merged PRs, checks each merge, updates milestone-1.md and this record, closes the finished tab, and opens tabs for the tasks the merge unblocks.",
+          "wording": "the orchestrator's summary in the founding conversation"
+        },
+        "handle": "session-orchestrates",
+        "id": "01M5SWRNSJW6J9ZQW0B2CNV366",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRNSJW6J9ZQW0B1HHSS7B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRNSJW6J9ZQW0B1HHSS7B",
+        "id": "01M5SWRNTC0CVE60HEGHQMNHHP",
+        "link": "01M5SWRNTC0CVE60HEGGGCBS9S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "Make sure to ensure that eveyrthing is fully close. Branches/worktrees gone, CI green, and new binary shipped.",
+          "quote_where": "founding conversation, orchestration, line 2527",
+          "statement": "A task is closed only when its branch is gone locally and on GitHub, its worktree is removed, CI is green on main, and the new binary is shipped.",
+          "wording": "the orchestrator's summary in the founding conversation"
+        },
+        "handle": "task-close-out",
+        "id": "01M5SWRNV6HP7PYPCB2ZYTJACT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRNV6HP7PYPCB2ZWBQG3J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRNV6HP7PYPCB2ZWBQG3J",
+        "id": "01M5SWRNW2TGYSZR5P9DRZB99A",
+        "link": "01M5SWRNW2TGYSZR5P9CRYY7J9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "You're supposed to perform the merge once CI is green",
+          "quote_where": "founding conversation, orchestration, line 2570",
+          "statement": "This session merges: task sessions stop once their PR is open and CI is green, and the orchestrator squash-merges it and then runs the close-out.",
+          "wording": "the orchestrator's summary in the founding conversation"
+        },
+        "handle": "orchestrator-merges",
+        "id": "01M5SWRNX365HMMTTS4A48NDA5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRNX365HMMTTS46627D1N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRNX365HMMTTS46627D1N",
+        "id": "01M5SWRNXXA35D25BSZJ5ZEVMA",
+        "link": "01M5SWRNXXA35D25BSZHF59161",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "This is great. I love the reviews. If you feel you need to interject with the decisions I made and update a plan, please do, and communicate with the other agents.",
+          "quote_where": "founding conversation, orchestration, line 2595",
+          "statement": "The orchestrator may amend a task's plan, including decisions the owner made in that task's interview, when they conflict with the founding decisions or with another task.",
+          "wording": "the orchestrator's summary in the founding conversation"
+        },
+        "handle": "orchestrator-amends-plans",
+        "id": "01M5SWRNYR3SM6S4GCZV0K6GT0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRNYR3SM6S4GCZQZQA43T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRNYR3SM6S4GCZQZQA43T",
+        "id": "01M5SWRNZJ5SM8V37ESA39V6F3",
+        "link": "01M5SWRNZJ5SM8V37ES8V6W07M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "This needs to be a feature in Genesis.",
+          "quote_where": "founding conversation, orchestration, line 2620",
+          "statement": "Orchestrated supervision becomes a Genesis capability under area 11, orchestration, imported by task 11 as an intention change set.",
+          "wording": "the orchestrator's summary in the founding conversation"
+        },
+        "handle": "supervision-is-a-capability",
+        "id": "01M5SWRP0DZA6FTKHQAHP45YK5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRP0DZA6FTKHQAEHQGHSB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRP0DZA6FTKHQAEHQGHSB",
+        "id": "01M5SWRP1879PP4CXTE88MJRCK",
+        "link": "01M5SWRP1879PP4CXTE5VJ9PV0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "Milestone 2 sounds fine.",
+          "quote_where": "founding conversation, orchestration, line 2651",
+          "statement": "Leaf 6 (interview answers as Decision nodes) is milestone 2's first change set, planned inside Genesis.",
+          "wording": "the orchestrator's summary in the founding conversation"
+        },
+        "handle": "leaf-6-in-milestone-2",
+        "id": "01M5SWRP22Y8H75NVQHDEA43K7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRP22Y8H75NVQHCNHBHZ6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRP22Y8H75NVQHCNHBHZ6",
+        "id": "01M5SWRP2XV3SC74472HDTMVAE",
+        "link": "01M5SWRP2XV3SC74472DH4F004",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "Those are from the ask user question tool, so none of them are my own words.",
+          "quote_where": "founding conversation, orchestration, line 2662",
+          "statement": "An answer picked from an agent's options is not the owner's words: it is a decision proposed by the agent and accepted by the owner, and only text the owner typed is quoted as the owner's.",
+          "wording": "the orchestrator's summary in the founding conversation"
+        },
+        "handle": "picked-options-not-owner-words",
+        "id": "01M5SWRP3QC9V19EWSW6MAAH4S",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRP3QC9V19EWSW3VFRS54",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRP3QC9V19EWSW3VFRS54",
+        "id": "01M5SWRP4J2CP9NFBHDAE6WV6P",
+        "link": "01M5SWRP4J2CP9NFBHD6JT1EJ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRP5DQENECXQEKD4ZPJ6M",
+        "link": "01M5SWRP5DQENECXQEKC40JR38",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHF1WE1C8XY5N6YXGDNW",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRP68HRZVN46HF31P2MJ0",
+        "link": "01M5SWRP68HRZVN46HF2N4G21Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHFT5N19E8KT9NSB2T3T",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRP739T0YH2WMCS5D0QVW",
+        "link": "01M5SWRP739T0YH2WMCNSDKD3F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHGKGPPNB5R7TSG7D4CZ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH1E8SA4049QPHPK0HXW",
+        "id": "01M5SWRP7Y1981W4ARD6CEF954",
+        "link": "01M5SWRP7Y1981W4ARD5X7PPXV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHHD53AB26W9NW0JYHDB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH04THTBE60MQHT9H1ZJ",
+        "id": "01M5SWRP8SZSHGANP6DA57B1M1",
+        "link": "01M5SWRP8SZSHGANP6D67V8QGF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHJ73TN2AFNVQBAB7KM9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH04THTBE60MQHT9H1ZJ",
+        "id": "01M5SWRP9M02FZZ2YHM4SGJT6W",
+        "link": "01M5SWRP9M02FZZ2YHM1YE0CH4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHK14YYA1RH4B91GE3GM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH04THTBE60MQHT9H1ZJ",
+        "id": "01M5SWRPAFSPHFVWJWH1MQK4C4",
+        "link": "01M5SWRPAFSPHFVWJWGY03Y5NP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHKVJZ3P0XK7RJEJFKJR",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH2T1D9HHQ2X71NNVZJ9",
+        "id": "01M5SWRPBAJ34E7EHAKMTCH9KS",
+        "link": "01M5SWRPBAJ34E7EHAKKZ8V2ZK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHMP0CPJDAEJ1QXTDN0D",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRPC5EJRQS39BMGT52AZ6",
+        "link": "01M5SWRPC5EJRQS39BMF360V6V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHNH05CG624BKR0T9R5K",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRPD0ZV5SZMQWDEYNAQBE",
+        "link": "01M5SWRPD0ZV5SZMQWDEY5G72C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHPCTGYR23WT2RNHW7S3",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRPDV56RS3RE8K1ZRS24A",
+        "link": "01M5SWRPDV56RS3RE8K0RH1Y4C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHQ78BM2BHY454K8EMKX",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH24XWT6HVZH28QQEFYX",
+        "id": "01M5SWRPEP76VEEQPXFRT9T7FW",
+        "link": "01M5SWRPEP76VEEQPXFNN6D3JF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHR3F830CZFDY98X5RB4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH24XWT6HVZH28QQEFYX",
+        "id": "01M5SWRPFG690YEQYXK3SMECCX",
+        "link": "01M5SWRPFG690YEQYXK0JTCRTP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHRZV9VGCSAH7AW16SBQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRPGE4N0DR7173K963P0M",
+        "link": "01M5SWRPGE4N0DR7173GEZMVF4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHSVAVH43MJ5H53A8JZR",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH24XWT6HVZH28QQEFYX",
+        "id": "01M5SWRPHDWRGX2YJE66S16NGY",
+        "link": "01M5SWRPHDWRGX2YJE630B4E9C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHTRBV02X2W8HZ5AT5TT",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH24XWT6HVZH28QQEFYX",
+        "id": "01M5SWRPJBJRJC3446G16EHKQA",
+        "link": "01M5SWRPJBJRJC3446G0N9P9XJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHVMNH35QRF5F89GN3K6",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH24XWT6HVZH28QQEFYX",
+        "id": "01M5SWRPK9VHPCQGBC28V8GM5H",
+        "link": "01M5SWRPK9VHPCQGBC28N7BC8W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHWHFR62AN8PEDKCK8YJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH24XWT6HVZH28QQEFYX",
+        "id": "01M5SWRPM88FTBQ8F3P3DJNYXS",
+        "link": "01M5SWRPM88FTBQ8F3P14EPB0K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHXEQ2NSNG5QKRSV11P8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH24XWT6HVZH28QQEFYX",
+        "id": "01M5SWRPN77DFC6ETT0ECW27WE",
+        "link": "01M5SWRPN77DFC6ETT0AJPPWC3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHYB6XKVCSH2GEDM6ZFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRPP5K2B2TH8Y2TQ4FBZZ",
+        "link": "01M5SWRPP5K2B2TH8Y2T3GW46S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHZ9Z3CD8H5CXVN7P8MA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "id": "01M5SWRPQ1D5GRBTRHM7B386JB",
+        "link": "01M5SWRPQ1D5GRBTRHM3BM3D6G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJ33K4HRNYVK38FVN4K6",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "id": "01M5SWRPQXAD3ZD38W2X92XZ8X",
+        "link": "01M5SWRPQXAD3ZD38W2SWHH6EN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJ42W95BQT57K6P75KTA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH0SFXQJK9MEZJ9DTX9K",
+        "id": "01M5SWRPRSK7HKEYGF0FDCE982",
+        "link": "01M5SWRPRSK7HKEYGF0E6BZQDY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJB1AAS1PC9PCYZ0D5YA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH0SFXQJK9MEZJ9DTX9K",
+        "id": "01M5SWRPSNPTMHATCHAT1PT7DA",
+        "link": "01M5SWRPSNPTMHATCHASFENFZA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJC1B5GRY6YVSYY7V4M8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH04THTBE60MQHT9H1ZJ",
+        "id": "01M5SWRPTHK191HHZF6MRTBQ1K",
+        "link": "01M5SWRPTHK191HHZF6MD4R4ZK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJD2RXXCTH06P6AHQ4VR",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRPVDPK9YBR298JPXHGMG",
+        "link": "01M5SWRPVDPK9YBR298JCQT55W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJE248W7YJ0FT3T9SJ46",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "id": "01M5SWRPW9CDDNC1TP105D08Q5",
+        "link": "01M5SWRPW9CDDNC1TP0WVWAK12",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJH6G9M4B4AXV495ZEYQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "id": "01M5SWRPX6W5RH32XPW5V286TB",
+        "link": "01M5SWRPX6W5RH32XPW4AHFBYA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJKATCAF6Q3K8TTHNYMH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRPY2G3AR61WACFG5E3NF",
+        "link": "01M5SWRPY2G3AR61WACE81JPPY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJMC18M9RKDQGEDNTE6R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRPYZ0KZCZT3M7THS8Z90",
+        "link": "01M5SWRPYZ0KZCZT3M7S40HM56",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJNFHPC6AW9AYV4BVBWZ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRPZTVB7AJ4Z0858PCEY4",
+        "link": "01M5SWRPZTVB7AJ4Z081V4TFE7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJPHHRT86GJGM5QC8J12",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH04THTBE60MQHT9H1ZJ",
+        "id": "01M5SWRQ0PE6C0CX985HSC8SQR",
+        "link": "01M5SWRQ0PE6C0CX985GNEZKFZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJQNBH9FJ36EAD6JW4P9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRQ1JAYE8F07YSQ9Y9KHP",
+        "link": "01M5SWRQ1JAYE8F07YSN6X9PVG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJRS80STPVH9RD0AJFN6",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "id": "01M5SWRQ2E6HXC19G67DSTEZYH",
+        "link": "01M5SWRQ2E6HXC19G67BD13C0E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJSXPVMMMVSSJGM017AC",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH04THTBE60MQHT9H1ZJ",
+        "id": "01M5SWRQ3AFWSGKDKH9HY4NHGM",
+        "link": "01M5SWRQ3AFWSGKDKH9GXF3DZ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJV0VHXFWYTPE7GFZP38",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH04THTBE60MQHT9H1ZJ",
+        "id": "01M5SWRQ47EMN8GBD8NTRNW2N1",
+        "link": "01M5SWRQ47EMN8GBD8NSNJCPC7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJW4QJ1TG6P7F9AEG284",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH0SFXQJK9MEZJ9DTX9K",
+        "id": "01M5SWRQ53FKWERGC6NCAPA1YG",
+        "link": "01M5SWRQ53FKWERGC6NBSG2GCR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJX8EQTSCNJDB45X7RHQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "id": "01M5SWRQ603K2G5BYVBKE07P1G",
+        "link": "01M5SWRQ603K2G5BYVBJZJBNQE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJYDQZ4CQ6DGRVN5P3JJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH1E8SA4049QPHPK0HXW",
+        "id": "01M5SWRQ6WKPVX8R1R2BT71Y6V",
+        "link": "01M5SWRQ6WKPVX8R1R29WQ220V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJZHKHPV3CQGGNM5Z480",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH1E8SA4049QPHPK0HXW",
+        "id": "01M5SWRQ7R9ST87BPWNWP0XV0C",
+        "link": "01M5SWRQ7R9ST87BPWNW0FZ64B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRK0PF6DTEWBDFTEDJZRJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH1E8SA4049QPHPK0HXW",
+        "id": "01M5SWRQ8MABXGNZWXG3X3XHAM",
+        "link": "01M5SWRQ8MABXGNZWXG089C774",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRK1V035XV1JRQA0W9FZ6",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH1E8SA4049QPHPK0HXW",
+        "id": "01M5SWRQ9H9TXG79Z22M721SX4",
+        "link": "01M5SWRQ9H9TXG79Z22JRY6E52",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRK31A8YWRRG853559MVY",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH1E8SA4049QPHPK0HXW",
+        "id": "01M5SWRQADHHCFBDC3GPZYF7HY",
+        "link": "01M5SWRQADHHCFBDC3GKXZAB0P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRK46T069RTTSPECVXZ7D",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH2T1D9HHQ2X71NNVZJ9",
+        "id": "01M5SWRQB9WHYRGGH8D963NAX0",
+        "link": "01M5SWRQB9WHYRGGH8D5J8Q5YG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRK5DARPC64JQ52SKVNSC",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH2T1D9HHQ2X71NNVZJ9",
+        "id": "01M5SWRQC565Y81REYAQKFE4YH",
+        "link": "01M5SWRQC565Y81REYAN2YW2GE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRK6KZFZERPDVXBD6HBD0",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH2T1D9HHQ2X71NNVZJ9",
+        "id": "01M5SWRQD18MBTH5KNJF88B8DE",
+        "link": "01M5SWRQD18MBTH5KNJCSXSQ7M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRK7TKS811CQYTCCNKY94",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH2T1D9HHQ2X71NNVZJ9",
+        "id": "01M5SWRQDYZNH2N4CVP0WC8QES",
+        "link": "01M5SWRQDYZNH2N4CVNZZFKZQY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRK90J9C089XBE0MKHH9F",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH2T1D9HHQ2X71NNVZJ9",
+        "id": "01M5SWRQES7X2D4TE4X442KK37",
+        "link": "01M5SWRQES7X2D4TE4X177HQFQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKA6BFCQEGF5M4SCS2EK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH1E8SA4049QPHPK0HXW",
+        "id": "01M5SWRQFPX5K5117NE5GJHV41",
+        "link": "01M5SWRQFPX5K5117NE4J399JZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKCMYWNWPCEEKYAPK5WS",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH1E8SA4049QPHPK0HXW",
+        "id": "01M5SWRQGJ4PKSTH5MHAWMS7E3",
+        "link": "01M5SWRQGJ4PKSTH5MH9ATC1AV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKDWJ01Z4TDG9VJ7F90V",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRQHF1FWG1M8Z2XS7K5PS",
+        "link": "01M5SWRQHF1FWG1M8Z2WHG3R2D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRM6M7DGT8CKT7ZVKBP64",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRQJBSPP15PSM4PCM5G19",
+        "link": "01M5SWRQJBSPP15PSM4JFBFTX6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRM80Z6RHP1XBVMNP2DBT",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRQK8VYAXY0QPHRX5WQ09",
+        "link": "01M5SWRQK8VYAXY0QPHNP2WDFY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRM9D1FZ1Y00BKRGDM7EX",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRQM5MQJ45RJ4MHHRBED3",
+        "link": "01M5SWRQM5MQJ45RJ4MEBKEG6A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRMAT5G02PDV5VCF9V6A6",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "id": "01M5SWRQN22BKSWNGJFN2Z3M0X",
+        "link": "01M5SWRQN22BKSWNGJFJ9GDPBF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRMC79WBVK9QYQWXXBJ8Y",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "id": "01M5SWRQNY9ZX7RPJQEDM0VJXA",
+        "link": "01M5SWRQNY9ZX7RPJQEBD9ZR7J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRMDN02F4TQGG6EX1E7DT",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "id": "01M5SWRQPXC9W88JDKPW6NEHKK",
+        "link": "01M5SWRQPXC9W88JDKPRJKNGKT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRMF1RF6ET331MYTQHSR1",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH1E8SA4049QPHPK0HXW",
+        "id": "01M5SWRQQW0YAZRHWSRY0VD8WM",
+        "link": "01M5SWRQQW0YAZRHWSRX5HMVN7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRMGF8VE5N99PC1X5M966",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRQRWNRRMBCA5G1MM418N",
+        "link": "01M5SWRQRWNRRMBCA5FZWS94EH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRMHWWA9AYEW857ZWZJ1D",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH24XWT6HVZH28QQEFYX",
+        "id": "01M5SWRQSTJDMSSG4077YZJD92",
+        "link": "01M5SWRQSTJDMSSG4074BHEF4C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRMKAM1EA295F857ZNG52",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRQTTGNE80F5S29JCK9YR",
+        "link": "01M5SWRQTTGNE80F5S27XT225Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRMMRSQD91AJD1SM76BM9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "id": "01M5SWRQVS5W8N10CQGB4RB1BN",
+        "link": "01M5SWRQVS5W8N10CQG9DVM2VD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRMP7JJDJPBYVVY57DZ4T",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "id": "01M5SWRQWSYAQNASETBMM3MW0S",
+        "link": "01M5SWRQWSYAQNASETBMFDY53S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRMQNF6HMC6DNAFFEPF9W",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH2T1D9HHQ2X71NNVZJ9",
+        "id": "01M5SWRQXR03Q8D6NC2BF9R2WQ",
+        "link": "01M5SWRQXR03Q8D6NC28E8V5HB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRMTMB3VV6AFA400X4GQ5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH1E8SA4049QPHPK0HXW",
+        "id": "01M5SWRQYSYZD8MHBRFT8J2RK7",
+        "link": "01M5SWRQYSYZD8MHBRFR2SHYEZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRMW33CKD14M6H716BBC8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGZDB2NV1W7MBBRW2HNX",
+        "id": "01M5SWRQZSAREERT0DSZ3WAAR7",
+        "link": "01M5SWRQZSAREERT0DSYGFYT5K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRMXJ8PKYTXYE0VY667X9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH04THTBE60MQHT9H1ZJ",
+        "id": "01M5SWRR0RZ337DAVCGTBWSE35",
+        "link": "01M5SWRR0RZ337DAVCGRH5NTPG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRMZ2B4Q8P2QDVXVYAQ3T",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH04THTBE60MQHT9H1ZJ",
+        "id": "01M5SWRR1R45Z2SM6M1KSKM8FZ",
+        "link": "01M5SWRR1R45Z2SM6M1JXASVAQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRN0J7Z85VZDPRSXKD2ZZ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH1E8SA4049QPHPK0HXW",
+        "id": "01M5SWRR2RRMFYK5TBW1F9JZS5",
+        "link": "01M5SWRR2RRMFYK5TBW0XH08AA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRN22A2D4BEDBZX7XYXB8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH04THTBE60MQHT9H1ZJ",
+        "id": "01M5SWRR3RG7P8Z4DV4E6TBB29",
+        "link": "01M5SWRR3RG7P8Z4DV4AXC6JG6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRN3JPWD4FRYV9J977JG3",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH0SFXQJK9MEZJ9DTX9K",
+        "id": "01M5SWRR4RPK1302V2639H902S",
+        "link": "01M5SWRR4RPK1302V261HQQEE9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRP3QC9V19EWSW3VFRS54",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWRGHKJKT6JZY6ZVMQEGWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRR600SZGHC1ASKGTA63M",
+  "type": "ops",
+  "v": 1
+}

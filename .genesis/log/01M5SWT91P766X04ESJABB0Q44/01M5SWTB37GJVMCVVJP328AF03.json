@@ -1,0 +1,305 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWT927YJ00Q350P2PVJQRK"
+  ],
+  "at": "2026-10-25T16:03:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Genesis carries out work: workflow definitions, runs, the built-in workflows, and writing your own."
+        },
+        "handle": "workflows",
+        "id": "01M5SWT95KQCW65MYWND5JEZVM",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5SWT95KQCW65MYWN9S7K9P3",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "fields": {
+          "statement": "Work is broken into disposable tasks made from change sets, outside the model's log."
+        },
+        "handle": "work-tasks",
+        "id": "01M5SWT97TWJHS7QK8M680YNPE",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5SWT97TWJHS7QK8M2J4JASM",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "fields": {
+          "statement": "A workflow is a declarative state machine of steps (agent, command, wait, workflow, foreach) with outcomes and visit limits."
+        },
+        "handle": "workflow-definitions",
+        "id": "01M5SWT9A05VXSMXQME5XZA2GG",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5SWT9A05VXSMXQME4CPJN2D",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "fields": {
+          "statement": "A run carries one workflow on one change set, with a local journal, started, resumed and dry-run from the CLI."
+        },
+        "handle": "workflow-runs",
+        "id": "01M5SWT9C9AN7E2283HCPGJ0ZY",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5SWT9C9AN7E2283H93ZNSKW",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "fields": {
+          "statement": "The binary ships the plan, build, review and ship workflows."
+        },
+        "handle": "built-in-workflows",
+        "id": "01M5SWT9EFKV8YB9VXVYN1M58V",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5SWT9EFKV8YB9VXVTRK4755",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "fields": {
+          "statement": "A built-in workflow is replaced by name from the user's or the repo's own file, or forked to edit."
+        },
+        "handle": "workflow-overrides",
+        "id": "01M5SWT9GPK3F87HZRVB8X737V",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5SWT9GPK3F87HZRV8V9XY8D",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "fields": {
+          "statement": "Genesis tells an agent how to write a custom workflow: a guide topic, workflow describe, new and check."
+        },
+        "handle": "workflow-authoring",
+        "id": "01M5SWT9JXJVYF0CXW2T6JDRMS",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5SWT9JXJVYF0CXW2QWBP2JY",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "fields": {
+          "statement": "Review runs code checks first, then intent, quality and qa agent checks, with critics only on serious findings and the verdict computed in code."
+        },
+        "handle": "review-workflow",
+        "id": "01M5SWT9N4ZE25X7Y1RN4FAGYQ",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5SWT9N4ZE25X7Y1RKFK7B0T",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "fields": {
+          "statement": "Every agent step records its tokens, so a workflow's cost is measured."
+        },
+        "handle": "token-ledger",
+        "id": "01M5SWT9QB221MTKX8YDBEHK0T",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M5SWT9QB221MTKX8YCMAN4W0",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT97TWJHS7QK8M2J4JASM",
+        "id": "01M5SWT9SJH74XE5MY8X10ZQFQ",
+        "link": "01M5SWT9SJH74XE5MY8SWG1HQA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHE83GS6KHECZSYENTSW",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT95KQCW65MYWN9S7K9P3",
+        "id": "01M5SWT9VR0RNJRMQVW71XT7JP",
+        "link": "01M5SWT9VR0RNJRMQVW66CX5HX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKBD18MWGYZTK5YEC7DW",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT95KQCW65MYWN9S7K9P3",
+        "id": "01M5SWT9XZ22ZSNK8Q51QK0JCP",
+        "link": "01M5SWT9XZ22ZSNK8Q4Z2G99BT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKF3TPXT2G8BYRGXQNQE",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT95KQCW65MYWN9S7K9P3",
+        "id": "01M5SWTA06WM6ZKQXN0D17TVZZ",
+        "link": "01M5SWTA06WM6ZKQXN09P7N82E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKGAYPACFPDK0FXHSNH4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT95KQCW65MYWN9S7K9P3",
+        "id": "01M5SWTA2DSTQQCYTSQ4108089",
+        "link": "01M5SWTA2DSTQQCYTSQ29YN8CD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKHJ7SB5CGRE47AJQ4AH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9A05VXSMXQME4CPJN2D",
+        "id": "01M5SWTA4N8PPK5ZF4VBQJ7Q65",
+        "link": "01M5SWTA4N8PPK5ZF4VBARNRY3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKJTTN98CSM3087H6KXW",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9A05VXSMXQME4CPJN2D",
+        "id": "01M5SWTA6W14Q6H16FQ7ENG9EP",
+        "link": "01M5SWTA6W14Q6H16FQ6YBACJW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKM2R8FPWPK0C3E701E0",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9C9AN7E2283H93ZNSKW",
+        "id": "01M5SWTA93GC5X69RBZE65HSW4",
+        "link": "01M5SWTA93GC5X69RBZB2KKAHD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKNB2DZ7H57TF8T897N7",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9GPK3F87HZRV8V9XY8D",
+        "id": "01M5SWTABACQMB7SD3MBZHCJ55",
+        "link": "01M5SWTABACQMB7SD3MA8PVV3Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKPMCMB090S9BSRDWYPE",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9JXJVYF0CXW2QWBP2JY",
+        "id": "01M5SWTADJF3CE9CM2T3E2VAF5",
+        "link": "01M5SWTADJF3CE9CM2SZP86847",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKQYRSW4EHEH7BH0APFD",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9JXJVYF0CXW2QWBP2JY",
+        "id": "01M5SWTAFTMT5NB5QACPS9PEWJ",
+        "link": "01M5SWTAFTMT5NB5QACNB38QW1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKS81P97A3DJ2C5B2T5S",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9N4ZE25X7Y1RKFK7B0T",
+        "id": "01M5SWTAJ1WASC1KT3856Y7799",
+        "link": "01M5SWTAJ1WASC1KT384M4G7MT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRN533TNXADMG66PPY5T7",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9N4ZE25X7Y1RKFK7B0T",
+        "id": "01M5SWTAM8HDQ80HX5KAENGSD8",
+        "link": "01M5SWTAM8HDQ80HX5K8YYZWJF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRN6MJFYYEZ2DMDN9NS4J",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9N4ZE25X7Y1RKFK7B0T",
+        "id": "01M5SWTAPF8B65399QHNHJMJEA",
+        "link": "01M5SWTAPF8B65399QHMTPV4X9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRN854WJTWVK4WKANRMEQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9N4ZE25X7Y1RKFK7B0T",
+        "id": "01M5SWTARP73YWT57S3XWCJA2A",
+        "link": "01M5SWTARP73YWT57S3TJNXV11",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRN9QSDZCKQ84JHG3S49P",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9N4ZE25X7Y1RKFK7B0T",
+        "id": "01M5SWTATY0HCA0HX8QSNYAQ85",
+        "link": "01M5SWTATY0HCA0HX8QRVQ2N04",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRNB8X50K31BMBGX95KTF",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9N4ZE25X7Y1RKFK7B0T",
+        "id": "01M5SWTAX6W22M3QYC4C1Z185A",
+        "link": "01M5SWTAX6W22M3QYC4B1Z63Y1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRNCSXEK47CQTD53AJSBQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9N4ZE25X7Y1RKFK7B0T",
+        "id": "01M5SWTAZE03W643R91EVF69T4",
+        "link": "01M5SWTAZE03W643R91CC6EWQG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRNEBTFABH6SN1Y543X6B",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWT91P766X04ESJABB0Q44",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWTB37GJVMCVVJP328AF03",
+  "type": "ops",
+  "v": 1
+}

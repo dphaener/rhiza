@@ -1,0 +1,32 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWRGVQCHV9775W057AQMJ7"
+  ],
+  "at": "2026-10-25T16:02:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "f2401364ce5381b5662b6e807eb1670270396d658b08fbc0dbefb5097e54bbec",
+          "summary": "The shipit work plan for task 9: genesis render, genesis check, genesis ci install, and Genesis checking its own committed .genesis/ in make check. Decided (D1-D14, agent wording accepted by the owner): render writes the as-is view only, an index page plus one page per live node at a handle path, retired nodes listed only in the index; render runs only when asked, and a stale render in check names genesis render as next; check fails on log read problems, fold problems other than concurrent lifecycle entries, as-is problems, link endpoint violations on live as-is links, stale rendered files and append-only violations, and only warns on concurrent entries and on problems that appear only in in-flight views; the append-only base is --base or the merge-base with origin/HEAD, origin/main or main, allowing only added files under .genesis/log and skipping the rule with a warning when there is no base; ci install writes a GitHub workflow and marks rendered/ as generated in .gitattributes, idempotently; Genesis's own .genesis/ is committed and make check runs check with a scratch binary, CI fetching full history; check always returns the full report and exits 1 only on a failure; node page layout; the link endpoint table in one table-tested place; any differing, missing or extra rendered file is stale; tests include golden rendered markdown, a determinism property and a corrupt-log fuzz target; guardrails keep core packages and writes untouched. Anchors and drift stayed out of milestone 1. Nothing left open in the plan.",
+          "title": "Shipit plan, milestone 1 task 9: integrity"
+        },
+        "handle": "plan-task-9",
+        "id": "01M5SWRGWEHYD4B2PN4GD2G9DC",
+        "key": null,
+        "kind": "source",
+        "node": "01M5SWRGWEHYD4B2PN4F734W14",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5SWRGHKJKT6JZY6ZVMQEGWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRGWRT59JZ7YG556EVJ9D",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,32 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWRGK24SPA3T86MR1RXAR1"
+  ],
+  "at": "2026-10-25T16:02:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "5c45d80082b961155e86c760cd4e821430ac6db5f2059f5c8b4615262b721914",
+          "summary": "The temporary task list for Genesis milestone 1, the only plan document Genesis was to have; task 11 brings it in as a Source and retires it, and the reasons behind it are in the founding conversation. Goal: the smallest Genesis that can take in the founding conversation and then plan its own next milestone from inside itself, so no PLAN.md ever exists in its repo. Go, one binary; built with Claude Code in Rex and shipit, one task per run and per PR, supervised on the Mac and never with permissions bypassed. In: the store (init, repo.json, IDs and handles, the log of immutable entries with the envelope, six operations, canonical JSON, append-only; change sets with revisions and the whole lifecycle; projection with as-is, to-be, what-if, causal order and conflict detection; the SQLite index per worktree, rebuilt incrementally); the writes (change new/use/show/ls, add, set, mv, retire, link, unlink, apply, --record, propose, accept, reject, withdraw, land); the reads (show, tree, ls, slice, why, log, roadmap, ready); integrity (render with committed markdown, check, ci install); agents (operations with schemas, describe, api call, --json, exit codes, next in errors, the guide, the genesis and genesis-scrub skills, guide install for Claude Code with the session-start hook, the size-cap test, source add); tests (testscript, golden files, property tests, the format-1 corpus, the 50,000-node generator and benchmark). Out, for milestone 2 or later: anchors, fingerprints, trailers and drift; reconcile; edit through $EDITOR; rebase; full-text find; repos and cross-repo links; hooks; the change feed; notes; the personal layer; AGENTS.md install; evals; every layer from runtime up. Done means: (1) the import: one landed record change set and the twelve areas as accepted intention change sets in the agreed order; (2) roadmap shows the founding plan, why gives back the owner's words and source, ready names the next change set, and its change slice fits 4,000 tokens with the root constraints; (3) make check, including genesis check on its own repo, passes in CI; (4) reads under 50 ms on the 50,000-node model; (5) milestone 2 planned and carried out inside Genesis. Tasks and merges: 1 the repo, Go module, make check, CI, testscript harness, CLAUDE.md (PR #1, 5a4b716); 2 IDs, canonical JSON, envelope, atomic writes, log reader, corpus (#2, 396505b); 3 operations, folding revisions, the lifecycle (#3, aea0f85); 4 projection and property tests (#4, 380f2f2); 5 the SQLite index, generator and benchmark (#7, ed8d292); 6 operations and the CLI frame plus every write (#5, 6d5c61e); 7 the reads (#10, 29e811d; #11, 3b5d1da); 8 slice (#9, a951e38); 9 render, check, ci install, self-check (#6, 8355823); 10 the guide, both skills, guide install, size cap, source add (#8, 3e17d7b); 11 the import, owner and agent, in progress when imported.",
+          "title": "Milestone 1 task list (temporary, retired by the import)"
+        },
+        "handle": "milestone-1",
+        "id": "01M5SWRGKRMVD1X8MV4DWZ2PMV",
+        "key": null,
+        "kind": "source",
+        "node": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5SWRGHKJKT6JZY6ZVMQEGWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRGKX2J7X6QKN2555P6HA",
+  "type": "ops",
+  "v": 1
+}

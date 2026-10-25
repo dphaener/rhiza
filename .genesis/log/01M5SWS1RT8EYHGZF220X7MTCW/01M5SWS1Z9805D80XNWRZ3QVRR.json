@@ -1,0 +1,50 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWS1S2X7QQNA7FF4WA848J"
+  ],
+  "at": "2026-10-25T16:02:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "built_in": "PR #7 (ed8d292)",
+          "statement": "Read commands answer in under 50 ms on a 50,000-node model, from an index kept per worktree and caught up incrementally."
+        },
+        "handle": "fast-reads",
+        "id": "01M5SWS1V2VF3MF5R7AAJX2HHC",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5SWS1V2VF3MF5R7A78C6JQA",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS1V2VF3MF5R7A78C6JQA",
+        "id": "01M5SWS1W7RXB7BW9W3A06Y6QY",
+        "link": "01M5SWS1W7RXB7BW9W370D4M1T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS1V2VF3MF5R7A78C6JQA",
+        "id": "01M5SWS1XCNS7N4WMTSZSZVSCY",
+        "link": "01M5SWS1XCNS7N4WMTSZCB2HKV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGRDB40TG5A8G8PGQ2FR",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M5SWS1RT8EYHGZF220X7MTCW",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWS1Z9805D80XNWRZ3QVRR",
+  "type": "ops",
+  "v": 1
+}

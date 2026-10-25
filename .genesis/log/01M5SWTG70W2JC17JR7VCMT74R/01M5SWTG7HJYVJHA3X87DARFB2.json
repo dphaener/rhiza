@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:03:13Z",
+  "body": {
+    "intent": "genesis check warns about a constraint that is linked to nothing.",
+    "kind": "intention",
+    "sources": [
+      "01M5SWRGJ7AZM5CYJAE32SGRYM"
+    ]
+  },
+  "change_set": "01M5SWTG70W2JC17JR7VCMT74R",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWTG7HJYVJHA3X87DARFB2",
+  "type": "open",
+  "v": 1
+}

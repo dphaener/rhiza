@@ -1,0 +1,281 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWS8MMMS3CN3M494B32D5E"
+  ],
+  "at": "2026-10-25T16:02:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "built_in": "PR #10 (29e811d)",
+          "statement": "genesis why walks back from a node through the decisions, change sets and sources that shaped it."
+        },
+        "handle": "why-walk",
+        "id": "01M5SWS8PX6B4YJZADM5PXTY8B",
+        "key": "9",
+        "kind": "capability",
+        "node": "01M5SWS8PX6B4YJZADM33YX1EP",
+        "op": "node.create",
+        "parent": "01M5SWRH0SFXQJK9MEZJ9DTX9K"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS8PX6B4YJZADM33YX1EP",
+        "id": "01M5SWS8RAK1ZSF3VG6048T31K",
+        "link": "01M5SWS8RAK1ZSF3VG5ZMMDQZJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS8PX6B4YJZADM33YX1EP",
+        "id": "01M5SWS8SP2Z24VTEK29T59RSX",
+        "link": "01M5SWS8SP2Z24VTEK268TC7SQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #10 (29e811d)",
+          "statement": "genesis log lists every change set that touched a node."
+        },
+        "handle": "change-history",
+        "id": "01M5SWS8V32C47860D6PGCYVP9",
+        "key": "e",
+        "kind": "capability",
+        "node": "01M5SWS8V32C47860D6NP4Q05V",
+        "op": "node.create",
+        "parent": "01M5SWRH0SFXQJK9MEZJ9DTX9K"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS8V32C47860D6NP4Q05V",
+        "id": "01M5SWS8WFMFGVDTXXXAVTAR1V",
+        "link": "01M5SWS8WFMFGVDTXXX9ZBZQMZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS8V32C47860D6NP4Q05V",
+        "id": "01M5SWS8XW9YHMYENAA3NKZCN7",
+        "link": "01M5SWS8XW9YHMYENAA0M5PDNQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #10 (29e811d)",
+          "statement": "genesis show prints one node with its fields and links."
+        },
+        "handle": "node-show",
+        "id": "01M5SWS8Z9K0A9Q9WJT04YX7X4",
+        "key": "9",
+        "kind": "capability",
+        "node": "01M5SWS8Z9K0A9Q9WJSZQGZF6F",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS8Z9K0A9Q9WJSZQGZF6F",
+        "id": "01M5SWS90N6JCMYJVH3G472C1Z",
+        "link": "01M5SWS90N6JCMYJVH3EH0XRT6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS8Z9K0A9Q9WJSZQGZF6F",
+        "id": "01M5SWS9229J44FK69ZWXBZT70",
+        "link": "01M5SWS9229J44FK69ZVTE21WM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #10 (29e811d)",
+          "statement": "genesis tree prints the capability tree."
+        },
+        "handle": "tree-view",
+        "id": "01M5SWS93EYTF11BYYMC2NCWNT",
+        "key": "e",
+        "kind": "capability",
+        "node": "01M5SWS93EYTF11BYYM9V8R37V",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS93EYTF11BYYM9V8R37V",
+        "id": "01M5SWS94VF9QPYD4TTVSAZWQ7",
+        "link": "01M5SWS94VF9QPYD4TTR304CPK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS93EYTF11BYYM9V8R37V",
+        "id": "01M5SWS9686KHV8WYVWQ2ZBTWQ",
+        "link": "01M5SWS9686KHV8WYVWNF2K4QF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #10 (29e811d)",
+          "statement": "genesis ls lists nodes filtered by kind, state and parent."
+        },
+        "handle": "node-list",
+        "id": "01M5SWS97NDCXX5FFS9JX2R7HA",
+        "key": "g",
+        "kind": "capability",
+        "node": "01M5SWS97NDCXX5FFS9FHK20P7",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS97NDCXX5FFS9FHK20P7",
+        "id": "01M5SWS999Q9J3H04971RPHYD2",
+        "link": "01M5SWS999Q9J3H049709R4M19",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS97NDCXX5FFS9FHK20P7",
+        "id": "01M5SWS9APH23ARSCM852F960B",
+        "link": "01M5SWS9APH23ARSCM82HB0A4J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #10 (29e811d)",
+          "statement": "genesis roadmap shows the plan: proposed and accepted change sets grouped by the intent they serve, in dependency order."
+        },
+        "handle": "roadmap",
+        "id": "01M5SWS9C5KVKS7DEVJ21H028H",
+        "key": "n",
+        "kind": "capability",
+        "node": "01M5SWS9C5KVKS7DEVJ08272NZ",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS9C5KVKS7DEVJ08272NZ",
+        "id": "01M5SWS9DJ1HQXBE46RCM9VH5X",
+        "link": "01M5SWS9DJ1HQXBE46RAWBAXXK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS9C5KVKS7DEVJ08272NZ",
+        "id": "01M5SWS9EZ2HRD8NNBYNJG0VWA",
+        "link": "01M5SWS9EZ2HRD8NNBYKW6RNNR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #10 (29e811d)",
+          "statement": "genesis ready says which change sets can start now and why the others can't, and names the next one."
+        },
+        "handle": "ready-next",
+        "id": "01M5SWS9GDHNEE81EEBE26HBM8",
+        "key": "p",
+        "kind": "capability",
+        "node": "01M5SWS9GDHNEE81EEBCQW1895",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS9GDHNEE81EEBCQW1895",
+        "id": "01M5SWS9HTG76R0Y71C3P5A8BS",
+        "link": "01M5SWS9HTG76R0Y71C04ZDYEJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS9GDHNEE81EEBCQW1895",
+        "id": "01M5SWS9K8YE42B1H2CCSEKZN3",
+        "link": "01M5SWS9K8YE42B1H2C9VAZXJZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #10 (29e811d)",
+          "statement": "Lists come a page at a time, in a stable order, with a cursor."
+        },
+        "handle": "paged-lists",
+        "id": "01M5SWS9MPCFK73B1XBXAJK61V",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5SWS9MPCFK73B1XBW9BQXDM",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS9MPCFK73B1XBW9BQXDM",
+        "id": "01M5SWS9P3VXH94BJ3E66FGEM7",
+        "link": "01M5SWS9P3VXH94BJ3E4HVWRHZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS9MPCFK73B1XBW9BQXDM",
+        "id": "01M5SWS9QHM6PE72R0RCF24WG2",
+        "link": "01M5SWS9QHM6PE72R0R9TC48E5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M5SWS8MAW49ZPJCV1B34RV89",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWS9SX1YMQ2Q3FH2NYNK39",
+  "type": "ops",
+  "v": 1
+}

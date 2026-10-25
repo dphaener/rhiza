@@ -1,0 +1,77 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWT0KR7R2KJSY7NM13SWGP"
+  ],
+  "at": "2026-10-25T16:02:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A capability is anchored to code by a path, an optional symbol and a content fingerprint, and check resolves every anchor."
+        },
+        "handle": "anchors",
+        "id": "01M5SWT0Q3DHFNA33D20T59E3F",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5SWT0Q3DHFNA33D1XP094VN",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "fields": {
+          "statement": "A changed content fingerprint on an anchor flags the capability for review."
+        },
+        "handle": "fingerprints",
+        "id": "01M5SWT0S5PN1WS8HSXFSSX5ZT",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5SWT0S5PN1WS8HSXEDY111W",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "fields": {
+          "statement": "Commits carry a Change trailer that links them to their change set, and a missing one flags an unclaimed change."
+        },
+        "handle": "commit-trailers",
+        "id": "01M5SWT0V78KEPDTYECW3QWRHF",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5SWT0V78KEPDTYECTARQAFS",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "fields": {
+          "statement": "genesis drift lists everything outstanding between the model and the code: broken anchors, failing or missing evidence, unclaimed changes and uncharted code."
+        },
+        "handle": "drift",
+        "id": "01M5SWT0X8BBJCWQAYV7TNG5GR",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M5SWT0X8BBJCWQAYV4QFY99Z",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "fields": {
+          "statement": "When a deterministic check points somewhere, an agent compares that area with the model and proposes a record change set."
+        },
+        "handle": "reconcile",
+        "id": "01M5SWT0ZA6P26E7KDBTYG49FQ",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M5SWT0ZA6P26E7KDBQY0J2V7",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      }
+    ]
+  },
+  "change_set": "01M5SWT0K9TV1RRVFBT28321K9",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWT12T921JZV1WCPBACVV8",
+  "type": "ops",
+  "v": 1
+}

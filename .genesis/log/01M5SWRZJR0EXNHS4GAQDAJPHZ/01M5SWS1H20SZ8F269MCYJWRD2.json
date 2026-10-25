@@ -1,0 +1,617 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWRZK0EAQEGPF80RS83Q7R"
+  ],
+  "at": "2026-10-25T16:02:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Pure package only (Recommended): Keeps clear of task 6's CLI work; reads (task 7), slice diffs (task 8) and rebase (milestone 2) build on it later.",
+          "statement": "Scope: pure domain package only. No CLI, no index, no rebase, no field-level diff",
+          "wording": "agent of milestone-1 task 4 (shipit plan), accepted by the owner"
+        },
+        "handle": "t4-d1-pure-package",
+        "id": "01M5SWRZMW2SNEMQJ5A1S03SXA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRZMW2SNEMQJ5A1HY6MAY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: internal/model (Recommended): Names the result (the model); reads like `model.AsIs(sets)`, which tasks 5–8 will call a lot.",
+          "statement": "Package `internal/model`: `AsIs`, `ToBe`, `WhatIf` over folded change sets return a `Model` and problems",
+          "wording": "agent of milestone-1 task 4 (shipit plan), accepted by the owner"
+        },
+        "handle": "t4-d2-internal-model",
+        "id": "01M5SWRZNZW55ATPZYC3C98KYF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRZNZW55ATPZYC2ZJGBAW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Base + existence edges (Recommended): Creates have no base, so without existence edges a child could be applied before its parent's create; IDs give a stable tie-break.",
+          "statement": "Causal order between change sets from base edges and existence edges (an op naming a node or link another change set created, as target, parent or endpoint); ties by change set ID; a cycle is reported and broken at the smallest ID",
+          "wording": "agent of milestone-1 task 4 (shipit plan), accepted by the owner"
+        },
+        "handle": "t4-d3-causal-order",
+        "id": "01M5SWRZQ1VHEA90VM4H01BB7A",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRZQ1VHEA90VM4EDE1Z4K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Field-level overlap (Recommended): Matches \"updates name fields; edits to different fields are not a real conflict\"; retire treated as touching every field.",
+          "statement": "Conflict = stale base and overlap: update vs an earlier write to the same field or the handle; move vs an earlier move; a retire, and any op after a retire, overlaps everything; link.retire vs link.retire. Non-overlapping stale ops merge silently",
+          "wording": "agent of milestone-1 task 4 (shipit plan), accepted by the owner"
+        },
+        "handle": "t4-d4-field-level-conflicts",
+        "id": "01M5SWRZR4YT228YN64VK99QMV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRZR4YT228YN64QN8PCBA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Apply, later wins (Recommended): \"Allow it, then repair it cheaply\": the model stays complete and the resolver writes against the current version.",
+          "statement": "A conflicting op still applies (later in apply order wins) and is reported",
+          "wording": "agent of milestone-1 task 4 (shipit plan), accepted by the owner"
+        },
+        "handle": "t4-d5-conflicting-op-applies",
+        "id": "01M5SWRZS724TD2NH5V3Y9JG4V",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRZS724TD2NH5V1HX716E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Skip the op, report (Recommended): Mirrors fold: never fails, deterministic, every broken rule becomes a Problem; dependants of a skipped create get their own problems.",
+          "statement": "Ops that break model rules are skipped and reported; projection never fails",
+          "wording": "agent of milestone-1 task 4 (shipit plan), accepted by the owner"
+        },
+        "handle": "t4-d6-skip-broken-ops",
+        "id": "01M5SWRZT90BCYY5SM0N6QD3YB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRZT90BCYY5SM0KQ4W2NQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Same rules, all layers (Recommended): One engine for all three views; a stale accepted change set shows its conflicts in to-be.",
+          "statement": "to-be = as-is + accepted change sets; what-if = as-is + one change set in draft, proposed or accepted; one engine, same rules; stale bases against as-is are conflicts",
+          "wording": "agent of milestone-1 task 4 (shipit plan), accepted by the owner"
+        },
+        "handle": "t4-d7-one-engine-views",
+        "id": "01M5SWRZVBXCF2ZSBC1Z0JE46R",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRZVBXCF2ZSBC1Z05ZQCY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Yes, field-level pairs (Recommended): A pure `Overlaps(sets)` using the same overlap rule; task 6's propose and task 7's reads can show it.",
+          "statement": "`Overlaps(sets)`: field-level overlapping pairs among proposed and accepted change sets",
+          "wording": "agent of milestone-1 task 4 (shipit plan), accepted by the owner"
+        },
+        "handle": "t4-d8-overlaps",
+        "id": "01M5SWRZWDRNMVNZ1JGM17RZKY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRZWDRNMVNZ1JGG9T9Y84",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Report, don't skip (Recommended): References by handle (task 7) need uniqueness; reporting keeps the model complete and lets check fail on it.",
+          "statement": "Duplicate handles are reported, not skipped",
+          "wording": "agent of milestone-1 task 4 (shipit plan), accepted by the owner"
+        },
+        "handle": "t4-d9-duplicate-handles",
+        "id": "01M5SWRZXG5MV51KDCGR5QQQGT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRZXG5MV51KDCGQ1F7JCG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: History + version (Recommended): Conflict detection needs the history anyway, and `why` (task 7) walks it; version in as-is is exactly the landed version writes need.",
+          "statement": "Nodes and links carry history (change set + op, in apply order), version (last applied op) and creator change set",
+          "wording": "agent of milestone-1 task 4 (shipit plan), accepted by the owner"
+        },
+        "handle": "t4-d10-node-history",
+        "id": "01M5SWRZYKVYWJPT3JZWV1TTGH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRZYKVYWJPT3JZV2ZWS4X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: TDD + properties + corpus (Recommended): Covers the two founding properties for this layer and keeps the corpus honest; no new fuzz target since there is no parser here.",
+          "statement": "Tests: TDD with table tests per rule; rapid properties (determinism, commutativity, no panic); the corpus projected",
+          "wording": "agent of milestone-1 task 4 (shipit plan), accepted by the owner"
+        },
+        "handle": "t4-d11-tdd-properties-corpus",
+        "id": "01M5SWRZZQ7ZS2J948K0PYDED5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRZZQ7ZS2J948JYS8K9PM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: All of those (Recommended): Keeps task 4 out of task 6's way and the package pure, like task 3.",
+          "statement": "Guardrails: no changes to `cmd/genesis` or other packages' exported APIs, no new deps, a pure package, no new corpus cases, no CONTEXT.md or docs/",
+          "wording": "agent of milestone-1 task 4 (shipit plan), accepted by the owner"
+        },
+        "handle": "t4-d12-task-4-guardrails",
+        "id": "01M5SWS00TC1W96TNJFG98WYNM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWS00TC1W96TNJFF5XPRR0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: All of those (Recommended): Agent-verifiable, mirrors task 3's bar, and the Example doubles as documentation of the landed-conflict story.",
+          "statement": "Acceptance: `make check`; table tests; rapid at default plus a 10,000-check evidence run; every corpus case projects with zero problems in every view; an Example of a conflict and its resolving change set",
+          "wording": "agent of milestone-1 task 4 (shipit plan), accepted by the owner"
+        },
+        "handle": "t4-d13-task-4-acceptance",
+        "id": "01M5SWS01YKNQYKBEDKCHH6VYD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWS01YKNQYKBEDK966BS9V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Rewrite the aspects (Recommended): Cleared once a later op written from the current version writes every aspect the conflict overlapped (e.g. D sets `statement` again). Precise: an unrelated edit doesn't hide it.",
+          "statement": "(Settled in review.) A landed conflict is repaired, and no longer reported, once later ops written from the target's current version have rewritten every aspect the conflicting op wrote. An unrelated edit does not clear it. A conflict whose op is a retirement, or whose target is retired, cannot be repaired this way (a retired target takes no more writes) and stays reported",
+          "wording": "agent of milestone-1 task 4 (shipit plan), accepted by the owner"
+        },
+        "handle": "t4-d14-conflict-repair",
+        "id": "01M5SWS032T0YCH3RKNK7QMXBY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWS032T0YCH3RKNK0Y1KMZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZMW2SNEMQJ5A1HY6MAY",
+        "id": "01M5SWS044A907YDGPX7AT2KYH",
+        "link": "01M5SWS044A907YDGPX4NHVAKJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGQCHRVACT3HFXCR5RAN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZMW2SNEMQJ5A1HY6MAY",
+        "id": "01M5SWS058W84E2NH8WF0VA8XE",
+        "link": "01M5SWS058W84E2NH8WBB9TWD0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZNZW55ATPZYC2ZJGBAW",
+        "id": "01M5SWS06BR9MS1Y9C4F9ZC0KX",
+        "link": "01M5SWS06BR9MS1Y9C4E9PFXFA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGQCHRVACT3HFXCR5RAN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZNZW55ATPZYC2ZJGBAW",
+        "id": "01M5SWS07EHJCX6TAJ7ZRH0E9R",
+        "link": "01M5SWS07EHJCX6TAJ7YQ70D7B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZ7A0WG4Q7K4J2PX8YX1",
+        "id": "01M5SWS08J74NNRGZ3AKXCKBB2",
+        "link": "01M5SWS08J74NNRGZ3AKAF3ZM9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRZNZW55ATPZYC2ZJGBAW",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZQ1VHEA90VM4EDE1Z4K",
+        "id": "01M5SWS09N5S2RRY1TWQ6X8M7M",
+        "link": "01M5SWS09N5S2RRY1TWK98542F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGQCHRVACT3HFXCR5RAN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZQ1VHEA90VM4EDE1Z4K",
+        "id": "01M5SWS0AS3XDNH61RQXP6RJY2",
+        "link": "01M5SWS0AS3XDNH61RQVAAX0F3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZ7A0WG4Q7K4J2PX8YX1",
+        "id": "01M5SWS0BW4RS6Y4CESD0S61N8",
+        "link": "01M5SWS0BW4RS6Y4CES9RE2FQA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRZQ1VHEA90VM4EDE1Z4K",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZR4YT228YN64QN8PCBA",
+        "id": "01M5SWS0D17FD75JF4T9CWESBK",
+        "link": "01M5SWS0D17FD75JF4T704CX3F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGQCHRVACT3HFXCR5RAN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZR4YT228YN64QN8PCBA",
+        "id": "01M5SWS0E5XTT8MMDEC2CFB18C",
+        "link": "01M5SWS0E5XTT8MMDEC1B16X2R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZ69FKFXS01D7Y60C0S4",
+        "id": "01M5SWS0F9V9FGMJ6DS7KDAGK0",
+        "link": "01M5SWS0F9V9FGMJ6DS4R03KTC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRZR4YT228YN64QN8PCBA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZS724TD2NH5V1HX716E",
+        "id": "01M5SWS0GCJMEJTF01X3HFAY6W",
+        "link": "01M5SWS0GCJMEJTF01X3ABR5NV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGQCHRVACT3HFXCR5RAN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZS724TD2NH5V1HX716E",
+        "id": "01M5SWS0HGGAHPVCBA523E61RS",
+        "link": "01M5SWS0HGGAHPVCBA50QDP2Q3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZ69FKFXS01D7Y60C0S4",
+        "id": "01M5SWS0JNHEDMMC9032ZRW58E",
+        "link": "01M5SWS0JNHEDMMC902ZXS4NA0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRZS724TD2NH5V1HX716E",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZT90BCYY5SM0KQ4W2NQ",
+        "id": "01M5SWS0KS5CT820444HEVY23A",
+        "link": "01M5SWS0KS5CT820444E2145BA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGQCHRVACT3HFXCR5RAN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZT90BCYY5SM0KQ4W2NQ",
+        "id": "01M5SWS0MYKVZY376H4822PRWE",
+        "link": "01M5SWS0MYKVZY376H456FJ2VT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZ7A0WG4Q7K4J2PX8YX1",
+        "id": "01M5SWS0P2K36V1QEP605GTC1B",
+        "link": "01M5SWS0P2K36V1QEP5YTC8SBW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRZT90BCYY5SM0KQ4W2NQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZVBXCF2ZSBC1Z05ZQCY",
+        "id": "01M5SWS0Q6HHWXQD0406JCCG3F",
+        "link": "01M5SWS0Q6HHWXQD0403CCHT07",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGQCHRVACT3HFXCR5RAN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZVBXCF2ZSBC1Z05ZQCY",
+        "id": "01M5SWS0RAEXB6MXHS3797DH7E",
+        "link": "01M5SWS0RAEXB6MXHS35X5ETM1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZ7A0WG4Q7K4J2PX8YX1",
+        "id": "01M5SWS0SFBBF59T059GCNGAHE",
+        "link": "01M5SWS0SFBBF59T059FDTXNE9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRZVBXCF2ZSBC1Z05ZQCY",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZWDRNMVNZ1JGG9T9Y84",
+        "id": "01M5SWS0TM46JYESHSHT7AKM5D",
+        "link": "01M5SWS0TM46JYESHSHRPDXW42",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGQCHRVACT3HFXCR5RAN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZWDRNMVNZ1JGG9T9Y84",
+        "id": "01M5SWS0VR2Z1W6530J733GTH0",
+        "link": "01M5SWS0VR2Z1W6530J35HY54G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZ69FKFXS01D7Y60C0S4",
+        "id": "01M5SWS0WWW7BQJVD3ZK9882F5",
+        "link": "01M5SWS0WWW7BQJVD3ZFNNCK88",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRZWDRNMVNZ1JGG9T9Y84",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZXG5MV51KDCGQ1F7JCG",
+        "id": "01M5SWS0Y0ZNSZ521TY7AD8ZTK",
+        "link": "01M5SWS0Y0ZNSZ521TY6JMFBBX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGQCHRVACT3HFXCR5RAN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZXG5MV51KDCGQ1F7JCG",
+        "id": "01M5SWS0Z4C4DTDRR9TN657FZK",
+        "link": "01M5SWS0Z4C4DTDRR9TMABZ7PZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRWBEA7AMS8YGCXPNBZMW",
+        "id": "01M5SWS109W1Q12YW8SFZ6TAJQ",
+        "link": "01M5SWS109W1Q12YW8SETH7M8N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRZXG5MV51KDCGQ1F7JCG",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZ575XMNYGZ08SJDAHFN",
+        "id": "01M5SWS11E73YR72NCZJHKVJR1",
+        "link": "01M5SWS11E73YR72NCZG2BBE9K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRZXG5MV51KDCGQ1F7JCG",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZYKVYWJPT3JZV2ZWS4X",
+        "id": "01M5SWS12JNNPYE2FA009DKHZN",
+        "link": "01M5SWS12JNNPYE2F9ZY5BTRX3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGQCHRVACT3HFXCR5RAN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZYKVYWJPT3JZV2ZWS4X",
+        "id": "01M5SWS13QCMK05V6TCYFCG0WR",
+        "link": "01M5SWS13QCMK05V6TCX098QDN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRH0SFXQJK9MEZJ9DTX9K",
+        "id": "01M5SWS14VA99RGC9C7WN5TBFG",
+        "link": "01M5SWS14VA99RGC9C7TXPSMW9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRZYKVYWJPT3JZV2ZWS4X",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZZQ7ZS2J948JYS8K9PM",
+        "id": "01M5SWS15Z1JPW591F62XMP0K4",
+        "link": "01M5SWS15Z1JPW591F61P9S9VN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGQCHRVACT3HFXCR5RAN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZZQ7ZS2J948JYS8K9PM",
+        "id": "01M5SWS1730G32Y883392BFBD7",
+        "link": "01M5SWS1730G32Y883374GJVDP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS00TC1W96TNJFF5XPRR0",
+        "id": "01M5SWS188Z3FFASMFDSJ9Z15T",
+        "link": "01M5SWS188Z3FFASMFDNK60ZTJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGQCHRVACT3HFXCR5RAN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS00TC1W96TNJFF5XPRR0",
+        "id": "01M5SWS19DVVRGSQRBE9JMZ4EJ",
+        "link": "01M5SWS19DVVRGSQRBE61HN3S2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS01YKNQYKBEDK966BS9V",
+        "id": "01M5SWS1AJFQENJ74SA7V0YPRK",
+        "link": "01M5SWS1AJFQENJ74SA684PXSN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGQCHRVACT3HFXCR5RAN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS01YKNQYKBEDK966BS9V",
+        "id": "01M5SWS1BQMYQF3XQVG3F2AVHW",
+        "link": "01M5SWS1BQMYQF3XQVG0NK8NVM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS032T0YCH3RKNK0Y1KMZ",
+        "id": "01M5SWS1CWQG8X2YD9HWY6GCJH",
+        "link": "01M5SWS1CWQG8X2YD9HVC093AE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGQCHRVACT3HFXCR5RAN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS032T0YCH3RKNK0Y1KMZ",
+        "id": "01M5SWS1E1JZ699VADE7JTAV8E",
+        "link": "01M5SWS1E1JZ699VADE4A1DE9N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZ69FKFXS01D7Y60C0S4",
+        "id": "01M5SWS1F629MVXB8CGKZRKXF8",
+        "link": "01M5SWS1F629MVXB8CGH25XMDH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWS032T0YCH3RKNK0Y1KMZ",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWRZJR0EXNHS4GAQDAJPHZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWS1H20SZ8F269MCYJWRD2",
+  "type": "ops",
+  "v": 1
+}

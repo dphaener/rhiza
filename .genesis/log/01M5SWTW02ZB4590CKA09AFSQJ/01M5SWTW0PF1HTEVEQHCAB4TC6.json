@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:03:25Z",
+  "body": {
+    "intent": "`genesis why` on a decision shows only the quotes that decision cites, not every quote of its Source, so a decision's lineage stays short.",
+    "kind": "intention",
+    "sources": [
+      "01M5SWRGJXREMK1PV5Y23DKTF8"
+    ]
+  },
+  "change_set": "01M5SWTW02ZB4590CKA09AFSQJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWTW0PF1HTEVEQHCAB4TC6",
+  "type": "open",
+  "v": 1
+}

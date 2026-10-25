@@ -1,0 +1,39 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWTWZEQS9G9SHFM039BS25"
+  ],
+  "at": "2026-10-25T16:03:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A change set cannot add capabilities under an area whose change set has not landed yet, so the follow-ups carry intent only."
+        },
+        "handle": "area-gap",
+        "id": "01M5SWTX3ASV3JJSJBEAQ6W6DG",
+        "key": null,
+        "kind": "question",
+        "node": "01M5SWTX3ASV3JJSJBE87GPN1J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWTX3ASV3JJSJBE87GPN1J",
+        "id": "01M5SWTX5YRREVSCWC0X6RSK4M",
+        "link": "01M5SWTX5YRREVSCWC0SEGHQYB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M5SWTWYT5VHBT9WFF9XN1MF1",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWTXAB2CZC5GBMK7GHVWWN",
+  "type": "ops",
+  "v": 1
+}

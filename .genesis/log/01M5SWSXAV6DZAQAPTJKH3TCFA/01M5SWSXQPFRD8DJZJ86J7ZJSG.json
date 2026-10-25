@@ -1,0 +1,65 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWSXBAR2PXC6YHGS6601NH"
+  ],
+  "at": "2026-10-25T16:02:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A change set is rebased onto newer landed work, automatically when the fields it touches don't overlap."
+        },
+        "handle": "rebase",
+        "id": "01M5SWSXEEWFRK2TD6AS0JW314",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5SWSXEEWFRK2TD6APF6867Q",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "fields": {
+          "statement": "A change set shows its changes as a structured, field-level diff."
+        },
+        "handle": "change-diff",
+        "id": "01M5SWSXGD35Q84M2HAH308RAK",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5SWSXGD35Q84M2HAG3MPPP7",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "fields": {
+          "statement": "genesis edit round-trips a node as markdown through $EDITOR."
+        },
+        "handle": "markdown-edit",
+        "id": "01M5SWSXJBG4NJ090D1HFY04SB",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5SWSXJBG4NJ090D1GQR4ANX",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "fields": {
+          "statement": "Notes attached to a change set, one of its operations or a node hold the discussion about a change."
+        },
+        "handle": "change-notes",
+        "id": "01M5SWSXMB3P4D5RJH5P93S5PT",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5SWSXMB3P4D5RJH5M1N4S3J",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      }
+    ]
+  },
+  "change_set": "01M5SWSXAV6DZAQAPTJKH3TCFA",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWSXQPFRD8DJZJ86J7ZJSG",
+  "type": "ops",
+  "v": 1
+}

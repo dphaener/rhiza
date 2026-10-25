@@ -1,0 +1,41 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWSZEXJMS7A87BXTR49VK0"
+  ],
+  "at": "2026-10-25T16:02:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "genesis find searches the model's text."
+        },
+        "handle": "text-search",
+        "id": "01M5SWSZJ3RPZB49RSWAMDGYP7",
+        "key": "gi",
+        "kind": "capability",
+        "node": "01M5SWSZJ3RPZB49RSW714256H",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      },
+      {
+        "fields": {
+          "statement": "A change feed lists what changed since a cursor and can stream changes as they happen."
+        },
+        "handle": "change-feed",
+        "id": "01M5SWSZM5XD3C2PXBA6XRXGK2",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5SWSZM5XD3C2PXBA5GYGT04",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      }
+    ]
+  },
+  "change_set": "01M5SWSZED0AS04VKMSB3ZVPSC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWSZQK52076DYFK2Z15C0M",
+  "type": "ops",
+  "v": 1
+}

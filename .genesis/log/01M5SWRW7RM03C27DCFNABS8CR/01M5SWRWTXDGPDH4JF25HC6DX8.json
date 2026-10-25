@@ -1,0 +1,215 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWRW7ZNJQ11ZVGA6XYTS3D"
+  ],
+  "at": "2026-10-25T16:02:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "built_in": "PR #3 (aea0f85)",
+          "statement": "Genesis describes a product with a fixed set of node kinds: capabilities, intents, constraints, decisions, questions, evidence, sources and actors."
+        },
+        "handle": "node-kinds",
+        "id": "01M5SWRW9KSAH3SXZQHKTBST36",
+        "key": "9",
+        "kind": "capability",
+        "node": "01M5SWRW9KSAH3SXZQHKJ34ANH",
+        "op": "node.create",
+        "parent": "01M5SWRGZDB2NV1W7MBBRW2HNX"
+      },
+      {
+        "fields": {
+          "built_in": "PR #3 (aea0f85)",
+          "statement": "Nodes are joined by a fixed set of typed links, such as serves, constrains, depends-on and decided-by, each with the endpoints it allows."
+        },
+        "handle": "typed-links",
+        "id": "01M5SWRWAHY54EYFTW9PCXGAEB",
+        "key": "e",
+        "kind": "capability",
+        "node": "01M5SWRWAHY54EYFTW9M7RVNYV",
+        "op": "node.create",
+        "parent": "01M5SWRGZDB2NV1W7MBBRW2HNX"
+      },
+      {
+        "fields": {
+          "built_in": "PR #3 (aea0f85)",
+          "statement": "Every node also has a short handle that people and agents use and that can be renamed."
+        },
+        "handle": "handles",
+        "id": "01M5SWRWBEA7AMS8YGCZP5HWRS",
+        "key": "n",
+        "kind": "capability",
+        "node": "01M5SWRWBEA7AMS8YGCXPNBZMW",
+        "op": "node.create",
+        "parent": "01M5SWRGZDB2NV1W7MBBRW2HNX"
+      },
+      {
+        "fields": {
+          "built_in": "PR #3 (aea0f85)",
+          "statement": "Every change to the model is one of six operations, with field-level updates against the version they were based on."
+        },
+        "handle": "six-operations",
+        "id": "01M5SWRWCCCDEFGN7TZ8HKSZQ1",
+        "key": "u",
+        "kind": "capability",
+        "node": "01M5SWRWCCCDEFGN7TZ56ZW4K9",
+        "op": "node.create",
+        "parent": "01M5SWRGZDB2NV1W7MBBRW2HNX"
+      },
+      {
+        "fields": {
+          "built_in": "PR #3 (aea0f85)",
+          "statement": "A change set moves through draft, proposed, accepted, rejected, withdrawn and landed, and only allowed moves are made."
+        },
+        "handle": "change-lifecycle",
+        "id": "01M5SWRWD98YVDEC1WY8AXHG4N",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5SWRWD98YVDEC1WY73TFN2R",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "fields": {
+          "built_in": "PR #3 (aea0f85)",
+          "statement": "A change set can be revised, and its latest revisions are what it holds."
+        },
+        "handle": "revisions",
+        "id": "01M5SWRWE6G4SCVTX74XVBBSBD",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5SWRWE6G4SCVTX74W7K3PW8",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRW9KSAH3SXZQHKJ34ANH",
+        "id": "01M5SWRWF4HGDP8QK2B0TCCR8P",
+        "link": "01M5SWRWF4HGDP8QK2B00R6M40",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRW9KSAH3SXZQHKJ34ANH",
+        "id": "01M5SWRWG2WFH9DHMZBW5ZK2G9",
+        "link": "01M5SWRWG2WFH9DHMZBT3BNGYR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGPFD3NEBM2VR9ARZXZE",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRWAHY54EYFTW9M7RVNYV",
+        "id": "01M5SWRWGZBP3DYZF2QW6S7R06",
+        "link": "01M5SWRWGZBP3DYZF2QV7RJ2MH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRWAHY54EYFTW9M7RVNYV",
+        "id": "01M5SWRWHXDX7GWEPF1XZ443CM",
+        "link": "01M5SWRWHXDX7GWEPF1XT7SQ24",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGPFD3NEBM2VR9ARZXZE",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRWBEA7AMS8YGCXPNBZMW",
+        "id": "01M5SWRWJVZ1SBE8FGGHAPAFA2",
+        "link": "01M5SWRWJVZ1SBE8FGGGRPGHYW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRWBEA7AMS8YGCXPNBZMW",
+        "id": "01M5SWRWKRWRD9KQM56WPR64YN",
+        "link": "01M5SWRWKRWRD9KQM56S35JRM5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGPFD3NEBM2VR9ARZXZE",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRWCCCDEFGN7TZ56ZW4K9",
+        "id": "01M5SWRWMQQ99CYY2EX1263B5R",
+        "link": "01M5SWRWMQQ99CYY2EWY1C64ZD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRWCCCDEFGN7TZ56ZW4K9",
+        "id": "01M5SWRWNN0Z0NA4MJNTFPYJ26",
+        "link": "01M5SWRWNN0Z0NA4MJNQ3X5FRB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGPFD3NEBM2VR9ARZXZE",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRWD98YVDEC1WY73TFN2R",
+        "id": "01M5SWRWPJWYN7RW4STZVPHXM7",
+        "link": "01M5SWRWPJWYN7RW4STZ6KJM4A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRWD98YVDEC1WY73TFN2R",
+        "id": "01M5SWRWQGKC60T3D4163BVAEQ",
+        "link": "01M5SWRWQGKC60T3D412SDXT7T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGPFD3NEBM2VR9ARZXZE",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRWE6G4SCVTX74W7K3PW8",
+        "id": "01M5SWRWRE32EAVCCYN1G4AEX4",
+        "link": "01M5SWRWRE32EAVCCYMZGBYKG4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRWE6G4SCVTX74W7K3PW8",
+        "id": "01M5SWRWSCEE33WHT0F0NKA9N5",
+        "link": "01M5SWRWSCEE33WHT0EYGBHQ92",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGPFD3NEBM2VR9ARZXZE",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M5SWRW7RM03C27DCFNABS8CR",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRWTXDGPDH4JF25HC6DX8",
+  "type": "ops",
+  "v": 1
+}

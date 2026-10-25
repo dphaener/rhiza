@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:03:02Z",
+  "body": {
+    "intent": "Area hooks: what remains is the whole area, with scripts on model events, hook commands, and custom node kinds.",
+    "kind": "intention",
+    "sources": [
+      "01M5SWRGJ7AZM5CYJAE32SGRYM"
+    ]
+  },
+  "change_set": "01M5SWT54GSWBT5V7M19YZ1WZ2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWT550KQZK3BE3T92F36AA",
+  "type": "open",
+  "v": 1
+}

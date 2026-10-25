@@ -1,0 +1,18 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:02:47Z",
+  "body": {
+    "intent": "Record what task 10 built (PR #8, merge 3e17d7b): the agent guide, the two skills, guide install, the session-start hook, the size cap, source add",
+    "kind": "record",
+    "sources": [
+      "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+      "01M5SWRGXHJD80QG3XVV3FXV2B"
+    ]
+  },
+  "change_set": "01M5SWSPTQXXCNN241H3NPEHR0",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWSPV44HAA4HZND09Y38W2",
+  "type": "open",
+  "v": 1
+}

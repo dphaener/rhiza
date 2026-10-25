@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [],
+  "at": "2026-10-25T16:02:08Z",
+  "body": {
+    "intent": "add actor claude-code-task-11",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M5SWRGFR9B1A1AHVJ9NRSVAN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRGFS3QE4V9M4Z5JWZX0V",
+  "type": "open",
+  "v": 1
+}

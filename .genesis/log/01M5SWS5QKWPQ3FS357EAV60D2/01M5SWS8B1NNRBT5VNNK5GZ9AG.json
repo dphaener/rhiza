@@ -1,0 +1,662 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWS5QXN315ES0309KDFBDS"
+  ],
+  "at": "2026-10-25T16:02:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Narrow seam + interim (Recommended): Writes depend on a small Model interface (resolve a ref, a node's version, sibling keys, as-is plus the current change set). Task 6 ships a minimal implementation built on FoldLog; task 4/7 swaps in real projection later. Some duplication, no blocking.",
+          "statement": "Writes depend on a narrow `api.Model` interface (resolve refs, node/link versions, sibling keys, handle lookup, actor by email), over as-is plus the current change set. Task 6 ships a minimal interim implementation on `FoldLog`; task 4/7 swaps in real projection later",
+          "wording": "agent of milestone-1 task 6 (shipit plan), accepted by the owner"
+        },
+        "handle": "t6-d1-narrow-model-seam",
+        "id": "01M5SWS5T3X051X5EMZHG9988R",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWS5T3X051X5EMZFT63AKS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS5T3X051X5EMZFT63AKS",
+        "id": "01M5SWS5VCAGRR2H70DWN7KFVX",
+        "link": "01M5SWS5VCAGRR2H70DSQARW36",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS5T3X051X5EMZFT63AKS",
+        "id": "01M5SWS5WPXSMB7WYP176JXK35",
+        "link": "01M5SWS5WPXSMB7WYP1573WTT1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS52HMX7W0SM2B3TMWKTY",
+        "id": "01M5SWS5Y08Y6BKAECDEEG9C5C",
+        "link": "01M5SWS5Y08Y6BKAECDARC3156",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWS5T3X051X5EMZFT63AKS",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Frame + writes + init (Recommended): describe, api call, --json, exit codes, next; init; change new|use|show|ls; add, set, mv, retire, link, unlink, apply, --record, --dry-run; propose, accept, reject, withdraw, land. Out: status, every read (show/tree/ls/why/log...), --view, render/check.",
+          "statement": "Scope: frame (`describe`, `api call`, `--json`, exit codes, `next`), `init`, `change new|use|show|ls`, `add`, `set`, `mv`, `retire`, `link`, `unlink`, `apply`, `--record`, `--dry-run`, `propose`, `accept`, `reject`, `withdraw`, `land`. OUT: `status`, every read, `--view`, render/check",
+          "wording": "agent of milestone-1 task 6 (shipit plan), accepted by the owner"
+        },
+        "handle": "t6-d2-frame-writes-init-scope",
+        "id": "01M5SWS5ZAP99Y29CYGB6C11B1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWS5ZAP99Y29CYG874DM64",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS5ZAP99Y29CYG874DM64",
+        "id": "01M5SWS60MNZRXE0PYDHXEJ69W",
+        "link": "01M5SWS60MNZRXE0PYDFPP8DVM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS5ZAP99Y29CYG874DM64",
+        "id": "01M5SWS61ZVDV5AG433VVREZA6",
+        "link": "01M5SWS61ZVDV5AG433T4Q23HK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: internal/api, dotted names (Recommended): A new pure package holds the registry: each operation has a name mirroring its command path (init, change.new, add, set, propose...), a request type, a response type, a schema and a handler. The CLI and `api call` both go through it; cmd/genesis only maps flags to requests.",
+          "statement": "Operations live in the new pure package `internal/api`. Names mirror command paths with dots (`init`, `change.new`, `add`, `propose`). The CLI and `api call` share the registry; `cmd/genesis` only maps argv to requests",
+          "wording": "agent of milestone-1 task 6 (shipit plan), accepted by the owner"
+        },
+        "handle": "t6-d3-api-registry",
+        "id": "01M5SWS639PBGJ02WV9S86ZE43",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWS639PBGJ02WV9RZK5P97",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS639PBGJ02WV9RZK5P97",
+        "id": "01M5SWS64KRGH6H0WVWYDFCERB",
+        "link": "01M5SWS64KRGH6H0WVWV82K31W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS639PBGJ02WV9RZK5P97",
+        "id": "01M5SWS65X5TWQBVH7K3BHAW5A",
+        "link": "01M5SWS65X5TWQBVH7K2AVWRZC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS5EQ31F1BKCQHR8JHF0F",
+        "id": "01M5SWS677TBY7CQ4R2RCZECDH",
+        "link": "01M5SWS677TBY7CQ4R2PYZNXRS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWS639PBGJ02WV9RZK5P97",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Reflected from Go types (Recommended): A small in-house generator turns request/response structs (json tags + a description tag) into JSON Schema, so schemas can't drift from the code. Golden-file test on `describe --json` output. No new dependency.",
+          "statement": "Schemas are reflected from Go request/response types by an in-house generator (`json` + `desc` tags), with a golden test of `describe` output. No new dependency",
+          "wording": "agent of milestone-1 task 6 (shipit plan), accepted by the owner"
+        },
+        "handle": "t6-d4-reflected-schemas",
+        "id": "01M5SWS68JVEJM8SY0HHRRFNMX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWS68JVEJM8SY0HH6RB0BS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS68JVEJM8SY0HH6RB0BS",
+        "id": "01M5SWS69W3Q429B0TNY5FZ89J",
+        "link": "01M5SWS69W3Q429B0TNXTPDVYB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS68JVEJM8SY0HH6RB0BS",
+        "id": "01M5SWS6B80G7V7MVTKQJQ8WHP",
+        "link": "01M5SWS6B80G7V7MVTKNVQC2FB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS5EQ31F1BKCQHR8JHF0F",
+        "id": "01M5SWS6CP3A6QP6VC771K0QZP",
+        "link": "01M5SWS6CP3A6QP6VC76WWVCYZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWS68JVEJM8SY0HH6RB0BS",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Flag/env, else git email (Recommended): --actor / GENESIS_ACTOR (a ref to an actor node) wins; otherwise the actor node whose email field equals `git config user.email`; if none exists, the first write records one itself in its own landed record change set. --for / GENESIS_FOR defaults to the actor.",
+          "statement": "Actor: `--actor`/`GENESIS_ACTOR` (a ref to an actor node), else the actor node whose `email` field equals `git config user.email`, else the first write records one in its own landed record change set. `--for`/`GENESIS_FOR` defaults to the actor",
+          "wording": "agent of milestone-1 task 6 (shipit plan), accepted by the owner"
+        },
+        "handle": "t6-d5-actor-lookup",
+        "id": "01M5SWS6E4PW4V8YH0TG224A4W",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWS6E4PW4V8YH0TEVCPX87",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS6E4PW4V8YH0TEVCPX87",
+        "id": "01M5SWS6FK3FA3ASCFE1EMVGHW",
+        "link": "01M5SWS6FK3FA3ASCFE0J6551W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS6E4PW4V8YH0TEVCPX87",
+        "id": "01M5SWS6H14VV6354G542K7T0M",
+        "link": "01M5SWS6H14VV6354G52Y9QKNG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS5ATK0DPJDW0M2EW38FT",
+        "id": "01M5SWS6JGP33W2A4SAWMWP5SC",
+        "link": "01M5SWS6JGP33W2A4SAWFNDN27",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWS6E4PW4V8YH0TEVCPX87",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: .genesis/local/, gitignored (Recommended): init writes .genesis/.gitignore ignoring local/; the current change set ID lives in .genesis/local/change. Each worktree has its own checkout, so it's per worktree. Works without git too.",
+          "statement": "The current change set lives in `.genesis/local/change`. `init` writes `.genesis/.gitignore` ignoring `local/`",
+          "wording": "agent of milestone-1 task 6 (shipit plan), accepted by the owner"
+        },
+        "handle": "t6-d6-current-change-file",
+        "id": "01M5SWS6KZYSQHTCTWZVW76WRG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWS6KZYSQHTCTWZS1SFVM9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS6KZYSQHTCTWZS1SFVM9",
+        "id": "01M5SWS6NEWQRSZWBTGJ3V1EJV",
+        "link": "01M5SWS6NEWQRSZWBTGG3HQJEA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS6KZYSQHTCTWZS1SFVM9",
+        "id": "01M5SWS6PXNCTAA8XJR6DHR41H",
+        "link": "01M5SWS6PXNCTAA8XJR3YDRJ43",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS4TY8DNWWMQ36WGXMEPS",
+        "id": "01M5SWS6RDQ7AXEC681KNJF7WW",
+        "link": "01M5SWS6RDQ7AXEC681J79WGFE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWS6KZYSQHTCTWZS1SFVM9",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: TDD, unit + testscript (Recommended): Unit tests in internal/api written first for each operation; testscript scenarios for every command (human and --json output, exit codes, next); a golden file for describe's schemas. Fixed clock and seeded IDs via env so outputs are stable.",
+          "statement": "TDD: unit tests in `internal/api` first, testscript per command, golden `describe`. Clock and IDs are fixed through test-only env vars",
+          "wording": "agent of milestone-1 task 6 (shipit plan), accepted by the owner"
+        },
+        "handle": "t6-d7-tdd-testscript",
+        "id": "01M5SWS6SW4JSC20GHPKB98NX2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWS6SW4JSC20GHPJ4CK732",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS6SW4JSC20GHPJ4CK732",
+        "id": "01M5SWS6VAJPD9YC2431TJQ32W",
+        "link": "01M5SWS6VAJPD9YC24318CDVZS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS6SW4JSC20GHPJ4CK732",
+        "id": "01M5SWS6WTT5W4X96MESRTCNQN",
+        "link": "01M5SWS6WTT5W4X96MEQ0SB6AZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: ID/prefix/handle, unique per repo (Recommended): A ref is a full ID, a unique ID prefix (4+ chars), or a handle of a live (not retired) node. Handles are unique across live nodes in the to-be view; `add` or a rename to a taken handle fails (exit 3). No match: exit 4. Several matches: exit 2, listing the candidates.",
+          "statement": "A ref is a full ID, a unique ID prefix (4+ chars), or the handle of a live node in the to-be view. Handles are unique across live nodes: `add` or a rename to a taken handle fails with exit 3. No match: exit 4. Several matches: exit 2, listing the candidates",
+          "wording": "agent of milestone-1 task 6 (shipit plan), accepted by the owner"
+        },
+        "handle": "t6-d8-ref-resolution",
+        "id": "01M5SWS6Y9WXF65KNC3HBEW24P",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWS6Y9WXF65KNC3HBCWXQN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS6Y9WXF65KNC3HBCWXQN",
+        "id": "01M5SWS6ZQ4CERCD0M6QFYD7BQ",
+        "link": "01M5SWS6ZQ4CERCD0M6P58YVAB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS6Y9WXF65KNC3HBCWXQN",
+        "id": "01M5SWS7168R0FQ1S55QNHCGHY",
+        "link": "01M5SWS7168R0FQ1S55P3YDF7H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRWBEA7AMS8YGCXPNBZMW",
+        "id": "01M5SWS72N2WSHKJQB5ZDERACK",
+        "link": "01M5SWS72N2WSHKJQB5WD7YM38",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWS6Y9WXF65KNC3HBCWXQN",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Revise the existing op (Recommended): One op per node per change set where possible: `set` on a node added in this change set revises its node.create; a second `set` merges into the existing node.update; a second `mv` replaces the move; `retire` of a node added here drops its create. Uses the revision-by-op-ID mechanism already in changeset.",
+          "statement": "When the current change set already touches the node, the write revises the existing op: `set` on a node added here revises its `node.create`; a second `set` merges into the existing `node.update`; a second `mv` replaces the move; `retire` of a node added here drops its create",
+          "wording": "agent of milestone-1 task 6 (shipit plan), accepted by the owner"
+        },
+        "handle": "t6-d9-revise-existing-op",
+        "id": "01M5SWS743JS3TYR6Q6PTGPDXH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWS743JS3TYR6Q6K869T27",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS743JS3TYR6Q6K869T27",
+        "id": "01M5SWS75J11BG6P2WB356YJWT",
+        "link": "01M5SWS75J11BG6P2WB1BAY7BD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS743JS3TYR6Q6K869T27",
+        "id": "01M5SWS771Y38W8CYZGDYTPVYA",
+        "link": "01M5SWS771Y38W8CYZGD04K7XK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRWE6G4SCVTX74W7K3PW8",
+        "id": "01M5SWS78FP6WB7855WBJ6W6C5",
+        "link": "01M5SWS78FP6WB7855W9HVJBF2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWS743JS3TYR6Q6K869T27",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: A list of write requests (Recommended): JSON: {\"writes\":[{\"op\":\"add\",...},{\"op\":\"link\",...}]}, each item the same request shape as the matching command's operation. Refs may name nodes added earlier in the file by handle. All of it becomes one ops entry, or nothing is written. '-' reads stdin.",
+          "statement": "`apply` reads `{\"writes\":[{\"op\":\"add\",...},...]}` made of the command request shapes. Refs may name nodes added earlier in the file. The whole file becomes one ops entry, or nothing is written. `-` reads stdin",
+          "wording": "agent of milestone-1 task 6 (shipit plan), accepted by the owner"
+        },
+        "handle": "t6-d10-apply-file-format",
+        "id": "01M5SWS79XT7Q0P33V4Z9YF7CP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWS79XT7Q0P33V4WE96472",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS79XT7Q0P33V4WE96472",
+        "id": "01M5SWS7BBHKAYPQ85GPVBP01E",
+        "link": "01M5SWS7BBHKAYPQ85GNR3D70G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS79XT7Q0P33V4WE96472",
+        "id": "01M5SWS7CT1J9RMPE6NBDYV85B",
+        "link": "01M5SWS7CT1J9RMPE6N9M7J2Q9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS56M04VB8N2Z5JGWF5HM",
+        "id": "01M5SWS7E95QN6SHS2DRY881NE",
+        "link": "01M5SWS7E95QN6SHS2DRRB9Y5F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWS79XT7Q0P33V4WE96472",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Unexported, inside internal/api (Recommended): api defines the Model interface; the interim implementation is unexported in internal/api. No new package name to clash with task 4's projection package, and swapping it later touches one constructor.",
+          "statement": "The interim model is unexported inside `internal/api`",
+          "wording": "agent of milestone-1 task 6 (shipit plan), accepted by the owner"
+        },
+        "handle": "t6-d11-interim-model-unexported",
+        "id": "01M5SWS7FRNWFCDFHYJA5HH2CB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWS7FRNWFCDFHYJ95PYXV6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS7FRNWFCDFHYJ95PYXV6",
+        "id": "01M5SWS7H5SW9PSHXB3B19CKCF",
+        "link": "01M5SWS7H5SW9PSHXB39BJYRJF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS7FRNWFCDFHYJ95PYXV6",
+        "id": "01M5SWS7JH8H211998SWPZCQ2C",
+        "link": "01M5SWS7JH8H211998SVD9R333",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS52HMX7W0SM2B3TMWKTY",
+        "id": "01M5SWS7KYGYAEV8P3HTA882AM",
+        "link": "01M5SWS7KYGYAEV8P3HRH7GG78",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWS7FRNWFCDFHYJ95PYXV6",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: JSON on stdout with --json (Recommended): With --json, stdout gets {\"error\":{\"code\":\"not_found\",\"message\":\"...\",\"next\":\"genesis change new \\\"...\\\"\"}} and nothing else, so an agent parses one stream. Without it, stderr gets `genesis: message` plus a `next: ...` line. Exit codes 0/1/2/3/4 either way.",
+          "statement": "Errors with `--json`: stdout gets `{\"error\":{\"code\",\"message\",\"next\"}}` and nothing else. Without `--json`: stderr gets `genesis: <message>` and a `next: <command>` line. Exit codes are 0/1/2/3/4 either way",
+          "wording": "agent of milestone-1 task 6 (shipit plan), accepted by the owner"
+        },
+        "handle": "t6-d12-error-shape",
+        "id": "01M5SWS7NABA97JA9ZGQZ43MP8",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWS7NABA97JA9ZGPZK8F4M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS7NABA97JA9ZGPZK8F4M",
+        "id": "01M5SWS7PPGHYPZW0V5CFPT0PB",
+        "link": "01M5SWS7PPGHYPZW0V5AWF7NMZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS7NABA97JA9ZGPZK8F4M",
+        "id": "01M5SWS7R2N3PE03GE66TV5E0Q",
+        "link": "01M5SWS7R2N3PE03GE64EDPJ0S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS5EQ31F1BKCQHR8JHF0F",
+        "id": "01M5SWS7SF6VJPS6MGVEQ84R86",
+        "link": "01M5SWS7SF6VJPS6MGVE8VDXM9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWS7NABA97JA9ZGPZK8F4M",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Current by default, rule=owner (Recommended): propose/accept/reject/withdraw/land act on --change or the current change set; accept/reject take --rule (default \"owner\") and --reason; an illegal move fails with exit 3 and next. A terminal move on the current change set clears it. --record opens, applies and lands in one entry chain and never changes the current one.",
+          "statement": "Lifecycle verbs act on `--change`/current. `accept`/`reject` take `--rule` (default `owner`) and `--reason`. An illegal move exits 3 with `next`. A terminal move on the current change set clears it. `--record` never changes the current change set",
+          "wording": "agent of milestone-1 task 6 (shipit plan), accepted by the owner"
+        },
+        "handle": "t6-d13-lifecycle-verbs",
+        "id": "01M5SWS7TVE183FWM8KQFSHPVX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWS7TVE183FWM8KNG0EE99",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS7TVE183FWM8KNG0EE99",
+        "id": "01M5SWS7W7Y9BEJYSH2WG8PDMT",
+        "link": "01M5SWS7W7Y9BEJYSH2RWS3QY0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS7TVE183FWM8KNG0EE99",
+        "id": "01M5SWS7XMJGYK73QXRNH9SHZP",
+        "link": "01M5SWS7XMJGYK73QXRJX01M6H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRWD98YVDEC1WY73TFN2R",
+        "id": "01M5SWS7Z0P5FVYFEFF8ZEN031",
+        "link": "01M5SWS7Z0P5FVYFEFF61X1PQF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWS7TVE183FWM8KNG0EE99",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS4YQY5FNN8MBQ5CHQ01M",
+        "id": "01M5SWS80CBQ14B3B3Q9FC9624",
+        "link": "01M5SWS80CBQ14B3B3Q6DVJNBM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWS7TVE183FWM8KNG0EE99",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's options, accepted by the owner (several picked): changeset/op/store: additive only: No behaviour changes in existing packages; at most small exported helpers (task 4 is editing nearby). Recommended. / No reads, no index, no --view: Nothing from tasks 5, 7, 8, 9: no show/tree/ls/why, no SQLite, no render/check. Recommended. / No new dependencies: Standard library plus what go.mod already has. Recommended. / Hermetic tests: No network, no real HOME/git config, no ~/bin binary; clock and IDs fixed through test-only env vars. Recommended.",
+          "statement": "Guardrails: `changeset`/`op`/`store` additive only; no reads, index, `--view`, render or check; no new dependencies; hermetic tests",
+          "wording": "agent of milestone-1 task 6 (shipit plan), accepted by the owner"
+        },
+        "handle": "t6-d14-guardrails",
+        "id": "01M5SWS81R5ZBV76HFHCSJKQTK",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWS81R5ZBV76HFHB38BPPE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS81R5ZBV76HFHB38BPPE",
+        "id": "01M5SWS834Z6V7H49WM09T7B5Y",
+        "link": "01M5SWS834Z6V7H49WKXJJG4TN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS81R5ZBV76HFHB38BPPE",
+        "id": "01M5SWS84H719G6NXXS1PP8XN1",
+        "link": "01M5SWS84H719G6NXXRZW3NP0R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: make check + scenario suite (Recommended): make check passes; a testscript scenario per command covers success, --json, --dry-run and each error exit code; one end-to-end scenario (init, change new, add, set, link, apply, propose, accept, land, --record) leaves a log that FoldLog folds with no problems; describe output matches its golden file.",
+          "statement": "Done: `make check`; testscript per command (success, `--json`, `--dry-run`, each error exit); one end-to-end scenario whose log `FoldLog` folds with no problems; `describe` golden",
+          "wording": "agent of milestone-1 task 6 (shipit plan), accepted by the owner"
+        },
+        "handle": "t6-d15-done",
+        "id": "01M5SWS85Y6CQCANKNY0RT0RW4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWS85Y6CQCANKNXZJHRPMK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS85Y6CQCANKNXZJHRPMK",
+        "id": "01M5SWS87BWE8HZMAEEMNSH5AJ",
+        "link": "01M5SWS87BWE8HZMAEEKKQAMTQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS85Y6CQCANKNXZJHRPMK",
+        "id": "01M5SWS88RW3GSB43JV7SC62Q2",
+        "link": "01M5SWS88RW3GSB43JV7MXZ7R9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M5SWS5QKWPQ3FS357EAV60D2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWS8B1NNRBT5VNNK5GZ9AG",
+  "type": "ops",
+  "v": 1
+}

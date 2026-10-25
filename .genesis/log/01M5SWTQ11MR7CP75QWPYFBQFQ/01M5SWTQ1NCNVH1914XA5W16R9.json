@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:03:20Z",
+  "body": {
+    "intent": "Genesis amends a running step and sends it a message.",
+    "kind": "intention",
+    "sources": [
+      "01M5SWRGJ7AZM5CYJAE32SGRYM"
+    ]
+  },
+  "change_set": "01M5SWTQ11MR7CP75QWPYFBQFQ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWTQ1NCNVH1914XA5W16R9",
+  "type": "open",
+  "v": 1
+}

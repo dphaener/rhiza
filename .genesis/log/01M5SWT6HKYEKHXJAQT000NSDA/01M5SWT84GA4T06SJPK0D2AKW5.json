@@ -1,0 +1,245 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWT6J3N3RAQGACMNX0WNPE"
+  ],
+  "at": "2026-10-25T16:03:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Genesis runs agents: sessions in Rex, an adapter per agent, their status, and how far each machine is trusted."
+        },
+        "handle": "runtime",
+        "id": "01M5SWT6NGS1S2AS5PZPKEV9KC",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5SWT6NGS1S2AS5PZN74E68P",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "fields": {
+          "statement": "Agent steps run as sessions in Rex windows, interactive by default and headless when a step asks."
+        },
+        "handle": "rex-sessions",
+        "id": "01M5SWT6QN894SDW5V7JS921F5",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5SWT6QN894SDW5V7GJNYK3H",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "fields": {
+          "statement": "A built-in adapter per agent, Claude Code first, declares what it can do, and a missing capability degrades and is reported."
+        },
+        "handle": "agent-adapters",
+        "id": "01M5SWT6SV13QH6EDSH7V57NGV",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5SWT6SV13QH6EDSH7HDJFCB",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "fields": {
+          "statement": "Users bring their own agent through a manifest and an optional executable speaking a JSON protocol."
+        },
+        "handle": "custom-adapters",
+        "id": "01M5SWT6W13FWH7W8AA39W2KEW",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5SWT6W13FWH7W8AA19SKBF9",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "fields": {
+          "statement": "Agent status comes from the agent's hooks, then Rex's events, then the process exiting, and is copied into Genesis's own files."
+        },
+        "handle": "agent-status",
+        "id": "01M5SWT6Y6BCPQ46RHC4BZGAE6",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5SWT6Y6BCPQ46RHC2GGPM9J",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "fields": {
+          "statement": "Each machine says whether it is dedicated or daily, and bypassed permissions run only on a dedicated one."
+        },
+        "handle": "machine-trust",
+        "id": "01M5SWT70BQK9XM0Z7PS1W6NVF",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5SWT70BQK9XM0Z7PRMVYTZ7",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "fields": {
+          "statement": "The runtime targets a Rex host by name, so moving work to a hub is configuration."
+        },
+        "handle": "rex-hosts",
+        "id": "01M5SWT72G27WGMS6AYAW4GV7N",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5SWT72G27WGMS6AY8XRATEJ",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "fields": {
+          "statement": "Every agent launched gets GENESIS_ACTOR, so each entry it writes is stamped with who and for whom."
+        },
+        "handle": "actor-stamping",
+        "id": "01M5SWT74MW73RE94XQXXRNDW1",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5SWT74MW73RE94XQVNWFJEQ",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "fields": {
+          "statement": "Optional Rex extras are installed by the CLI."
+        },
+        "handle": "rex-extras",
+        "id": "01M5SWT76TNYPHMT3DH3K4CQAB",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M5SWT76TNYPHMT3DH05XCNG4",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT6NGS1S2AS5PZN74E68P",
+        "id": "01M5SWT78ZBD9127C1TDFN5XM9",
+        "link": "01M5SWT78ZBD9127C1TC4SWVBY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJ700ZRMVTHJ5XZZYD3Y",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT6NGS1S2AS5PZN74E68P",
+        "id": "01M5SWT7B3QSY3664KZZT2FGGW",
+        "link": "01M5SWT7B3QSY3664KZWBXGQBF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJ80J64J1Q9VCNV7Y3A9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT6NGS1S2AS5PZN74E68P",
+        "id": "01M5SWT7DAC3D7H15RVKY4ZPWW",
+        "link": "01M5SWT7DAC3D7H15RVH9HSZFM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJ90AVMW12YTHEXE0QZ0",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT76TNYPHMT3DH05XCNG4",
+        "id": "01M5SWT7FERZW0Y133ABASRYES",
+        "link": "01M5SWT7FERZW0Y133AB9APGQQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJA04QVQ4D9CSZJEE614",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT6SV13QH6EDSH7HDJFCB",
+        "id": "01M5SWT7HM0NJ7QJE0FXE4XSYR",
+        "link": "01M5SWT7HM0NJ7QJE0FSZB67AE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKTJQTRF8BBM5RN21VFF",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT6NGS1S2AS5PZN74E68P",
+        "id": "01M5SWT7KRT5Y5S11KYXGDPF1Q",
+        "link": "01M5SWT7KRT5Y5S11KYX3JJ0KG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKVW3M6RPVH7CH38G0ZJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT6Y6BCPQ46RHC2GGPM9J",
+        "id": "01M5SWT7NXRP8QWCPR6D4Z6M0K",
+        "link": "01M5SWT7NXRP8QWCPR6D21KN9M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKX5MFMP08NQ1SNZ8DF0",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT6SV13QH6EDSH7HDJFCB",
+        "id": "01M5SWT7R3VZB0F9BNAHMSES6Q",
+        "link": "01M5SWT7R3VZB0F9BNAGXRP11S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKYG58WPFJ2SXD35J4EW",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT74MW73RE94XQVNWFJEQ",
+        "id": "01M5SWT7T85AXB2F7PPS6DNZZ0",
+        "link": "01M5SWT7T85AXB2F7PPQS1STDW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKZVB6P9F107Z5WCCDW0",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT6NGS1S2AS5PZN74E68P",
+        "id": "01M5SWT7WEH6YR93KEP6ZV5DZ4",
+        "link": "01M5SWT7WEH6YR93KEP62JRVEX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRM16H3EGRN6S2A7MY88G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT70BQK9XM0Z7PRMVYTZ7",
+        "id": "01M5SWT7YMAQ5ZA0QSQ562ZZPQ",
+        "link": "01M5SWT7YMAQ5ZA0QSQ2N9QJWH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRM2JXHSGJANFHA35SZFR",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT72G27WGMS6AY8XRATEJ",
+        "id": "01M5SWT80T6D5H9GXSE15YYTK8",
+        "link": "01M5SWT80T6D5H9GXSDXPM3H4S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRM3XV9ZFSAP6WSRNDHFS",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWT6HKYEKHXJAQT000NSDA",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWT84GA4T06SJPK0D2AKW5",
+  "type": "ops",
+  "v": 1
+}

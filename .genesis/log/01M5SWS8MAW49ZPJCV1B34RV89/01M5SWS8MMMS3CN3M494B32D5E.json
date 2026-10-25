@@ -1,0 +1,18 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:02:33Z",
+  "body": {
+    "intent": "Record what task 7 built (PR #10, merge 29e811d; PR #11, merge 3b5d1da): the reads: show, tree, ls, why, log, roadmap, ready",
+    "kind": "record",
+    "sources": [
+      "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+      "01M5SWRGTD75VQX2D5JHRJF0Q4"
+    ]
+  },
+  "change_set": "01M5SWS8MAW49ZPJCV1B34RV89",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWS8MMMS3CN3M494B32D5E",
+  "type": "open",
+  "v": 1
+}

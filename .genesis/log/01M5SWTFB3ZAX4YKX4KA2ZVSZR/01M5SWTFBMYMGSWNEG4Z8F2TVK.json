@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:03:12Z",
+  "body": {
+    "intent": "An incremental what-if folds one change set over the indexed as-is, so what-if reads meet the 50 ms target too.",
+    "kind": "intention",
+    "sources": [
+      "01M5SWRGJ7AZM5CYJAE32SGRYM"
+    ]
+  },
+  "change_set": "01M5SWTFB3ZAX4YKX4KA2ZVSZR",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWTFBMYMGSWNEG4Z8F2TVK",
+  "type": "open",
+  "v": 1
+}

@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:03:00Z",
+  "body": {
+    "intent": "Area guide: what remains is installing the guide into AGENTS.md, the reconcile skill, and guide evals.",
+    "kind": "intention",
+    "sources": [
+      "01M5SWRGJ7AZM5CYJAE32SGRYM"
+    ]
+  },
+  "change_set": "01M5SWT3KHRWGYHQZ4DWC4DQW6",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWT3M1Q2QJBBMRDX2DK96T",
+  "type": "open",
+  "v": 1
+}

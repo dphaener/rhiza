@@ -1,0 +1,657 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWSK21GP0X56JV17CZGV01"
+  ],
+  "at": "2026-10-25T16:02:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: As-is, page per node (Recommended): Only landed state. index.md (tree of capabilities and intents, then lists of every other kind) plus one page per live node at a handle path (capability/<ancestors>/<handle>.md, <kind>/<handle>.md); retired nodes listed in the index only. Only landing changes the output, so renders rarely go stale.",
+          "statement": "Render the **as-is** view only: `index.md` plus one page per **live** node at a handle path (`capability/<ancestor handles>/<handle>.md`, `intent/…` likewise, `<kind>/<handle>.md` otherwise); retired nodes listed in the index only",
+          "wording": "agent of milestone-1 task 9 (shipit plan), accepted by the owner"
+        },
+        "handle": "t9-d1-render-as-is",
+        "id": "01M5SWSK4R6VK9EN8XD3521FSM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSK4R6VK9EN8XCZWBV9J7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSK4R6VK9EN8XCZWBV9J7",
+        "id": "01M5SWSK6FZ141HGZATNG6Z9DV",
+        "link": "01M5SWSK6FZ141HGZATJTCGQ2P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGWEHYD4B2PN4F734W14",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSK4R6VK9EN8XCZWBV9J7",
+        "id": "01M5SWSK87VGCNW8CEV02NCYRX",
+        "link": "01M5SWSK87VGCNW8CETWV7N8WS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJ5Q19Z3R1QHDWWT6H32",
+        "id": "01M5SWSK9ZZ4DVXPC5T3Q2M4YE",
+        "link": "01M5SWSK9ZZ4DVXPC5SZVHWDD6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSK4R6VK9EN8XCZWBV9J7",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Explicit only (Recommended): Only `genesis render`; `check` reports stale markdown with next: `genesis render`. Leaves task 6's write code (and task 5's parallel work) untouched.",
+          "statement": "Render runs **explicitly** (`genesis render`) only; stale render in `check` says next `genesis render`",
+          "wording": "agent of milestone-1 task 9 (shipit plan), accepted by the owner"
+        },
+        "handle": "t9-d2-render-explicit",
+        "id": "01M5SWSKBQBHYSKBMJ0D6142B7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSKBQBHYSKBMJ09EXN00R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSKBQBHYSKBMJ09EXN00R",
+        "id": "01M5SWSKDFCNSX241HCDJ1N5V0",
+        "link": "01M5SWSKDFCNSX241HCBKQMD3N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGWEHYD4B2PN4F734W14",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSKBQBHYSKBMJ09EXN00R",
+        "id": "01M5SWSKF6KXKE2CMMJ3GFKX9P",
+        "link": "01M5SWSKF6KXKE2CMMJ0TP4RED",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJ5Q19Z3R1QHDWWT6H32",
+        "id": "01M5SWSKGXACP5AXBYTVXRYJYC",
+        "link": "01M5SWSKGXACP5AXBYTTKNNA1B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSKBQBHYSKBMJ09EXN00R",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Fail landed, warn in-flight (Recommended): FAIL: log read problems, fold problems except ErrConcurrent, any as-is problem (landed conflicts, skipped ops), endpoint violations on live as-is links, stale render, append-only violations. WARN: ErrConcurrent (an honest merge, unrepairable), problems only in to-be/what-if of in-flight change sets.",
+          "statement": "`check` **fails** on: log read problems, fold problems except `ErrConcurrent`, any as-is problem, endpoint violations on live as-is links, stale render, append-only violations. **Warns** on: `ErrConcurrent`, problems that appear only in to-be or what-if of in-flight change sets",
+          "wording": "agent of milestone-1 task 9 (shipit plan), accepted by the owner"
+        },
+        "handle": "t9-d3-check-fail-warn",
+        "id": "01M5SWSKJNX58GF1ZQ07XKW940",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSKJNX58GF1ZQ06GVM920",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSKJNX58GF1ZQ06GVM920",
+        "id": "01M5SWSKMJBH2XB2YWCM5W7WQ8",
+        "link": "01M5SWSKMJBH2XB2YWCJTA6Y1E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGWEHYD4B2PN4F734W14",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSKJNX58GF1ZQ06GVM920",
+        "id": "01M5SWSKPBW2SB9JQZNRK646KM",
+        "link": "01M5SWSKPBW2SB9JQZNQF08ZVW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJ0K067EMGMKBTA224AY",
+        "id": "01M5SWSKR23YMNGFMHEJ29EP0R",
+        "link": "01M5SWSKR23YMNGFMHEGY6AXA0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSKJNX58GF1ZQ06GVM920",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: --base, default origin/HEAD (Recommended): `--base <rev>`; default the merge-base of HEAD with origin/HEAD, else main. Diff base→working tree on .genesis/log: only added files allowed. No git or no base: the rule is skipped with a warning, not a failure.",
+          "statement": "Base: `--base <rev>`; default merge-base of `HEAD` with the first of `origin/HEAD`, `origin/main`, `main` that resolves; diff base → working tree on `.genesis/log`, only added files allowed; no git or no base → a warning and the rule is skipped",
+          "wording": "agent of milestone-1 task 9 (shipit plan), accepted by the owner"
+        },
+        "handle": "t9-d4-check-base",
+        "id": "01M5SWSKSYB1DRJ05F3M74DSX9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSKSYB1DRJ05F3KQ4PD1B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSKSYB1DRJ05F3KQ4PD1B",
+        "id": "01M5SWSKVVA902YNJA1P4X1CTZ",
+        "link": "01M5SWSKVVA902YNJA1JZNCGE0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGWEHYD4B2PN4F734W14",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSKSYB1DRJ05F3KQ4PD1B",
+        "id": "01M5SWSKXR30C2TXJ83PSKCEAE",
+        "link": "01M5SWSKXR30C2TXJ83KZK14E3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJ0K067EMGMKBTA224AY",
+        "id": "01M5SWSKZNDR2VX0SV7673ZDNZ",
+        "link": "01M5SWSKZNDR2VX0SV743SCG5R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSKSYB1DRJ05F3KQ4PD1B",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Workflow + gitattributes (Recommended): Writes .github/workflows/genesis.yml (checkout with fetch-depth 0, `go install github.com/dphaener/genesis/cmd/genesis@<this binary's version>`, `genesis check --base origin/$GITHUB_BASE_REF` on PRs) and adds `.genesis/rendered/** linguist-generated=true` to .gitattributes. Idempotent; an existing different workflow is a conflict unless --force.",
+          "statement": "`ci install` writes `.github/workflows/genesis.yml` and adds `.genesis/rendered/** linguist-generated=true` to `.gitattributes`; idempotent; a differing existing workflow is a conflict unless `--force`",
+          "wording": "agent of milestone-1 task 9 (shipit plan), accepted by the owner"
+        },
+        "handle": "t9-d5-ci-install-files",
+        "id": "01M5SWSM1DZ14RX3E1NXE066C5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSM1DZ14RX3E1NV2EAND4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSM1DZ14RX3E1NV2EAND4",
+        "id": "01M5SWSM36Y24GTNCJMS4PE0Y0",
+        "link": "01M5SWSM36Y24GTNCJMPVV7BNJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGWEHYD4B2PN4F734W14",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSM1DZ14RX3E1NV2EAND4",
+        "id": "01M5SWSM4ZN06PYSMQV958J8VG",
+        "link": "01M5SWSM4ZN06PYSMQV8Z11TT7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJAS69692APWAEWGAZMW",
+        "id": "01M5SWSM6RPRCHRMQVKD887SJ1",
+        "link": "01M5SWSM6RPRCHRMQVKCGZD4SP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSM1DZ14RX3E1NV2EAND4",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: make check runs it (Recommended): `genesis init` here and commit .genesis/ (repo.json, .gitignore, rendered/); `make check` builds a scratch binary in $TMPDIR and runs `check` with the same-commit build; ci.yml gets fetch-depth 0. `ci install` is not run on this repo (its install step would fetch a released binary, not this commit).",
+          "statement": "Genesis checks itself: `.genesis/` initialised and committed here (repo.json, .gitignore, rendered/); `make check` builds a scratch binary in a temp dir and runs `check`; `ci.yml` checkout uses `fetch-depth: 0`; `ci install` is not run on this repo",
+          "wording": "agent of milestone-1 task 9 (shipit plan), accepted by the owner"
+        },
+        "handle": "t9-d6-self-check",
+        "id": "01M5SWSM8G4KA5W45E6ZSKKN5P",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSM8G4KA5W45E6XFBSYK0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSM8G4KA5W45E6XFBSYK0",
+        "id": "01M5SWSMA71NQ3K5QPJJXW6KRM",
+        "link": "01M5SWSMA71NQ3K5QPJG7M9JZN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGWEHYD4B2PN4F734W14",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSM8G4KA5W45E6XFBSYK0",
+        "id": "01M5SWSMBZYASKT9WS9JB9HYEW",
+        "link": "01M5SWSMBZYASKT9WS9EFG6SM3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJNK2F1E8QPHF1TJHMPQ",
+        "id": "01M5SWSMDQFPEEEBJ91SBPA2RT",
+        "link": "01M5SWSMDQFPEEEBJ91R012G1Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSM8G4KA5W45E6XFBSYK0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Report + exit 1 (Recommended): The response is always the full report (findings with severity, code, path/IDs, message, next), human or --json; exit 0 with only warnings, 1 with any failure. The frame gains a small hook so a response can set a non-zero exit while still printing.",
+          "statement": "`check` always returns the full report (findings with severity, rule, path/IDs, message, next) as human text or `--json`; exit 0 when only warnings, 1 with any failure; the frame gains a hook for a response-set exit code",
+          "wording": "agent of milestone-1 task 9 (shipit plan), accepted by the owner"
+        },
+        "handle": "t9-d7-check-report",
+        "id": "01M5SWSMFJH43SX8T28XF10BZN",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSMFJH43SX8T28VMX4MCS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSMFJH43SX8T28VMX4MCS",
+        "id": "01M5SWSMHA66XZSZ54RSJWYWX0",
+        "link": "01M5SWSMHA66XZSZ54RQW0NGCS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGWEHYD4B2PN4F734W14",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSMFJH43SX8T28VMX4MCS",
+        "id": "01M5SWSMK3YX8VZTMME5GRE0XZ",
+        "link": "01M5SWSMK3YX8VZTMME34MC4TR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJ0K067EMGMKBTA224AY",
+        "id": "01M5SWSMMVWCQT8A7YQKVHY1GN",
+        "link": "01M5SWSMMVWCQT8A7YQJ0MCSYX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSMFJH43SX8T28VMX4MCS",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: TDD, tables + scripts + golden (Recommended): Table tests in the new pure packages first (render, check rules, endpoint table); testscript per command, with real git for append-only, merges and base resolution; golden rendered markdown; a determinism property (any read order gives the same bytes); a fuzz test that a corrupt log fails check cleanly and never panics.",
+          "statement": "Tests: TDD; table tests in the pure packages; testscript per command with real git; golden rendered markdown; determinism property (rapid); fuzz: corrupt log fails check cleanly, never panics",
+          "wording": "agent of milestone-1 task 9 (shipit plan), accepted by the owner"
+        },
+        "handle": "t9-d8-tests",
+        "id": "01M5SWSMPK730F0H1GN2JT6J0F",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSMPK730F0H1GN29AQSB4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSMPK730F0H1GN29AQSB4",
+        "id": "01M5SWSMRCSWFB30H8N33523V0",
+        "link": "01M5SWSMRCSWFB30H8MZP23JQ1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGWEHYD4B2PN4F734W14",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSMPK730F0H1GN29AQSB4",
+        "id": "01M5SWSMT4MST55Y9ECG654679",
+        "link": "01M5SWSMT4MST55Y9ECF7FF72J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Header, fields, links, history (Recommended): Title = handle; a line with kind, full ID, parent link; each field sorted by name as `## <name>` (string values as markdown, other JSON fenced); `## Links` out and in, grouped by type, with relative page links (retired endpoints as plain text); `## History`: the change sets that touched it, with ID and intent. Pages contain no timestamps beyond the log's.",
+          "statement": "Node page: title = handle; kind, full ID, parent link; each field sorted by name as `## <name>` (JSON strings as markdown, other JSON fenced); `## Links` out and in, grouped by type, relative page links (retired or change-set endpoints as plain text); `## History`: change sets that touched it, with ID and intent",
+          "wording": "agent of milestone-1 task 9 (shipit plan), accepted by the owner"
+        },
+        "handle": "t9-d9-node-page",
+        "id": "01M5SWSMVYSP3YZ5972ZHDPXJR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSMVYSP3YZ5972VQTAPSQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSMVYSP3YZ5972VQTAPSQ",
+        "id": "01M5SWSMXPDADXZH6ETGX291C3",
+        "link": "01M5SWSMXPDADXZH6ETF9CFA3M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGWEHYD4B2PN4F734W14",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSMVYSP3YZ5972VQTAPSQ",
+        "id": "01M5SWSMZE3EKZTN6DWR7TC4K8",
+        "link": "01M5SWSMZE3EKZTN6DWQWDHVSR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJ5Q19Z3R1QHDWWT6H32",
+        "id": "01M5SWSN1AYS8C39NEWQJ1FFSD",
+        "link": "01M5SWSN1AYS8C39NEWM9D38AC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSMVYSP3YZ5972VQTAPSQ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Yes, as listed (Recommended): Exactly the link-types topic's table, in one place in a pure package, table-tested row by row.",
+          "statement": "Endpoint table exactly as the link-types topic (below); \"anything\" = any node or a change set; \"change\" = a change set; one place, table-tested row by row",
+          "wording": "agent of milestone-1 task 9 (shipit plan), accepted by the owner"
+        },
+        "handle": "t9-d10-endpoint-table",
+        "id": "01M5SWSN3C0B8CTBHCVCZ0T2XK",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSN3C0B8CTBHCVATH4D6S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSN3C0B8CTBHCVATH4D6S",
+        "id": "01M5SWSN5DJCHNSMM9QT3T4CVJ",
+        "link": "01M5SWSN5DJCHNSMM9QT05CVEQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGWEHYD4B2PN4F734W14",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSN3C0B8CTBHCVATH4D6S",
+        "id": "01M5SWSN7F4ZN493D9PAC9V3Z8",
+        "link": "01M5SWSN7F4ZN493D9P9NG0EBB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJ0K067EMGMKBTA224AY",
+        "id": "01M5SWSN9FC31Y1YSEC5MYMV9D",
+        "link": "01M5SWSN9FC31Y1YSEC35WGJ0Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSN3C0B8CTBHCVATH4D6S",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRWAHY54EYFTW9M7RVNYV",
+        "id": "01M5SWSNBNF27Q3TCHW38PTSGA",
+        "link": "01M5SWSNBNF27Q3TCHW2JMGMNX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSN3C0B8CTBHCVATH4D6S",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Any byte or file differs (Recommended): Render in memory and compare with .genesis/rendered/ file by file: a different, missing or extra file is a failure naming each path. A missing rendered/ folder is a failure too.",
+          "statement": "Stale = any rendered file that differs, is missing or is extra, or a missing `rendered/` folder; each path named",
+          "wording": "agent of milestone-1 task 9 (shipit plan), accepted by the owner"
+        },
+        "handle": "t9-d11-stale-render",
+        "id": "01M5SWSNDKT1S6G65DVK9RSNA8",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSNDKT1S6G65DVFTMP9CN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSNDKT1S6G65DVFTMP9CN",
+        "id": "01M5SWSNFM1E46YB2PKWXWKT0K",
+        "link": "01M5SWSNFM1E46YB2PKVP3V64H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGWEHYD4B2PN4F734W14",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSNDKT1S6G65DVFTMP9CN",
+        "id": "01M5SWSNJDT805YK5D9P046NRF",
+        "link": "01M5SWSNJDT805YK5D9JPB2CHW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJ0K067EMGMKBTA224AY",
+        "id": "01M5SWSNMHC9CYY3S115TZM2EG",
+        "link": "01M5SWSNMHC9CYY3S1157BBG2J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSNDKT1S6G65DVFTMP9CN",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's options, accepted by the owner (several picked): Core pkgs untouched (Recommended): No edits to id/canon/entry/store/op/key/changeset/model; new code goes in new packages (e.g. internal/render, internal/check) plus new api ops. / Minimal api/frame edits (Recommended): workspace.go and write code untouched (task 5 runs in parallel); the only frame change is the exit-code hook. / No new dependencies (Recommended): Standard library and existing modules only; git through exec in cmd/genesis, passed in via Ctx. / Nothing from milestone 2 (Recommended): No anchors, fingerprints, trailers, drift, retired-endpoint flags, relates-to watching, auto-render, status, or reads.",
+          "statement": "Guardrails: core packages untouched; `workspace.go` and write code untouched; only frame change is the exit hook; no new dependencies; nothing from milestone 2",
+          "wording": "agent of milestone-1 task 9 (shipit plan), accepted by the owner"
+        },
+        "handle": "t9-d12-guardrails",
+        "id": "01M5SWSNPG60B1RXYJWT20FBQP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSNPG60B1RXYJWQFSTPVJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSNPG60B1RXYJWQFSTPVJ",
+        "id": "01M5SWSNRBF2661GFDPK5P209C",
+        "link": "01M5SWSNRBF2661GFDPFH71Y47",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGWEHYD4B2PN4F734W14",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSNPG60B1RXYJWQFSTPVJ",
+        "id": "01M5SWSNT6YARYKH93S5FKENWK",
+        "link": "01M5SWSNT6YARYKH93S58WM2EN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Yes, write the plan (Recommended): Generate the plan from decisions D1-D12 plus the defaults.",
+          "statement": "Defaults (confirmed): `render` removes files under `rendered/` it did not produce; `render --dry-run` and `check --dry-run` are usage errors (no log entry), like `init`; `render`/`check`/`ci install` outside a repo are not_found with next `genesis init`",
+          "wording": "agent of milestone-1 task 9 (shipit plan), accepted by the owner"
+        },
+        "handle": "t9-d13-defaults",
+        "id": "01M5SWSNW17CW1PT4BWYN0YH1Y",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSNW17CW1PT4BWVAESZC6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSNW17CW1PT4BWVAESZC6",
+        "id": "01M5SWSNXT3N8CQDKSG5FVCST0",
+        "link": "01M5SWSNXT3N8CQDKSG3ZM6ZNR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGWEHYD4B2PN4F734W14",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSNW17CW1PT4BWVAESZC6",
+        "id": "01M5SWSNZN66DRQ87JRGWP0HRH",
+        "link": "01M5SWSNZN66DRQ87JREYF75AG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJ5Q19Z3R1QHDWWT6H32",
+        "id": "01M5SWSP1DRW7Z7TAPAF4PCV7R",
+        "link": "01M5SWSP1DRW7Z7TAPADTVT8FR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSNW17CW1PT4BWVAESZC6",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJ0K067EMGMKBTA224AY",
+        "id": "01M5SWSP386ES3TPJYG10BYCE6",
+        "link": "01M5SWSP386ES3TPJYFZ0G0FHA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSNW17CW1PT4BWVAESZC6",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJAS69692APWAEWGAZMW",
+        "id": "01M5SWSP52RQ7R9BFA5BWHKHTR",
+        "link": "01M5SWSP52RQ7R9BFA581CM2RY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSNW17CW1PT4BWVAESZC6",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Yes, those criteria (Recommended): All checks are agent-run; no human step.",
+          "statement": "Acceptance: `make check` passes locally and in CI on the PR, including `genesis check` on this repo; testscripts for render, check (each failure and warning kind; real git for append-only, merges, base default) and ci install; golden rendered markdown and new JSON shapes (describe golden regenerated); determinism property and corrupt-log fuzz target pass",
+          "wording": "agent of milestone-1 task 9 (shipit plan), accepted by the owner"
+        },
+        "handle": "t9-d14-acceptance",
+        "id": "01M5SWSP6WC8R409WZ67KNQP20",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSP6WC8R409WZ66FGTCE2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSP6WC8R409WZ66FGTCE2",
+        "id": "01M5SWSP8Q9FT183FJCMC68F26",
+        "link": "01M5SWSP8Q9FT183FJCHJS4GF5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGWEHYD4B2PN4F734W14",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSP6WC8R409WZ66FGTCE2",
+        "id": "01M5SWSPAJ20JHQ46R7S6WW1HF",
+        "link": "01M5SWSPAJ20JHQ46R7QBQCYTE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJNK2F1E8QPHF1TJHMPQ",
+        "id": "01M5SWSPCCQ8DQ4Z2EFQPH3E7G",
+        "link": "01M5SWSPCCQ8DQ4Z2EFKSTHCNW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRRKBQAD30P8420A24171",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWSK1HH2VMB5RJ89DJ6YBX",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWSPFCA0AEW8BG5QFMC20H",
+  "type": "ops",
+  "v": 1
+}

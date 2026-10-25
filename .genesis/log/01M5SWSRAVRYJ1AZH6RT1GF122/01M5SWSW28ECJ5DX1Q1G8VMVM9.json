@@ -1,0 +1,708 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWSRB83Q1VS9ZFFS1Q62WZ"
+  ],
+  "at": "2026-10-25T16:02:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Add a minimal `status` (Recommended): A small `genesis status`: repo, current change set, open change sets that need attention, installed-guide version vs binary. The hook runs it, and it's the version check that was settled. Small scope creep beyond the milestone list.",
+          "statement": "Add a minimal `genesis status`: repo, current change set, change sets needing attention, installed guide version vs binary",
+          "wording": "agent of milestone-1 task 10 (shipit plan), accepted by the owner"
+        },
+        "handle": "t10-d1-minimal-status",
+        "id": "01M5SWSRE18RVNTERYHWZM947G",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSRE18RVNTERYHT9FHRTM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSRE18RVNTERYHT9FHRTM",
+        "id": "01M5SWSRFWS1QTHAGJNAJ76HHX",
+        "link": "01M5SWSRFWS1QTHAGJN6KJR9XE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSRE18RVNTERYHT9FHRTM",
+        "id": "01M5SWSRHP9KYEXSSAETYQ7YYY",
+        "link": "01M5SWSRHP9KYEXSSAES0MK4J2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQKVQWSQVYXS5B960MEH",
+        "id": "01M5SWSRKGTH63E466A8KYVT93",
+        "link": "01M5SWSRKGTH63E466A4ZZKHM9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSRE18RVNTERYHT9FHRTM",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Handle + JSON file + --raw (Recommended): `genesis source add <handle> <file.json> --raw <transcript>`. The file holds {title, summary, quotes:[{text, by, where}]}. --raw is hashed (sha256) and never stored; `--raw-sha256` covers raw material that's already gone. Writes through a change set or --record, so --dry-run works.",
+          "statement": "`genesis source add <handle> <file.json> --raw <path>` (or `--raw-sha256 <hex>`). The file is `{title, summary, quotes:[{text, by, where}]}`. Raw material is hashed (sha256) and never stored. It writes through a change set or `--record`, and `--dry-run` works",
+          "wording": "agent of milestone-1 task 10 (shipit plan), accepted by the owner"
+        },
+        "handle": "t10-d2-source-add-shape",
+        "id": "01M5SWSRN9QEWG4H8BDE7RM8MJ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSRN9QEWG4H8BDCZR2TR9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSRN9QEWG4H8BDCZR2TR9",
+        "id": "01M5SWSRQ4NKRXEFKTVHYVG6SD",
+        "link": "01M5SWSRQ4NKRXEFKTVGHPNP6K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSRN9QEWG4H8BDCZR2TR9",
+        "id": "01M5SWSRRY3W5Y5JP7ZY347YAQ",
+        "link": "01M5SWSRRY3W5Y5JP7ZY29C20J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSPY1SVF1745FJ2SZ8CD7",
+        "id": "01M5SWSRTS9EKG2EKVTV7CR6YH",
+        "link": "01M5SWSRTS9EKG2EKVTS302GA5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSRN9QEWG4H8BDCZR2TR9",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: bytes/4 estimate, caps per text (Recommended): tokens ≈ ceil(bytes/4). Caps: each skill ≤ 2,000, each topic ≤ 800, session-start output ≤ 100 (checked in a script). Deterministic and dependency-free, roughly right for English.",
+          "statement": "Size cap: tokens ≈ ceil(bytes/4); each skill ≤ 2,000, each topic ≤ 800, `status --hook` output ≤ 100",
+          "wording": "agent of milestone-1 task 10 (shipit plan), accepted by the owner"
+        },
+        "handle": "t10-d3-size-cap",
+        "id": "01M5SWSRWK78TY0EBMD7G5RRYF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSRWK78TY0EBMD63VBERB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSRWK78TY0EBMD63VBERB",
+        "id": "01M5SWSRYDFQ33EZX9HYYR220R",
+        "link": "01M5SWSRYDFQ33EZX9HXM58ATQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSRWK78TY0EBMD63VBERB",
+        "id": "01M5SWSS083K07BH2ZS938B7M4",
+        "link": "01M5SWSS083K07BH2ZS5Z0HXX8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQYW88MYKCKJHGS0YX98",
+        "id": "01M5SWSS23HZVK1E2H9Q7V41A9",
+        "link": "01M5SWSS23HZVK1E2H9N4539W8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSRWK78TY0EBMD63VBERB",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Tests with each task (Recommended): As in tasks 2–9: testscript scenarios for each command (human, --json, api call, exit codes, idempotence), Go unit tests for internal/guide, describe-golden regenerated, and `make check` green.",
+          "statement": "Tests with each task: testscript per command (human, `--json`, `api call`, exit codes, idempotence), Go unit tests, `describe-golden` regenerated, `make check` green",
+          "wording": "agent of milestone-1 task 10 (shipit plan), accepted by the owner"
+        },
+        "handle": "t10-d4-tests",
+        "id": "01M5SWSS3XPDMWFRPR9CMSP6M4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSS3XPDMWFRPR99TJ32CT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSS3XPDMWFRPR99TJ32CT",
+        "id": "01M5SWSS5QZVW6F2HQK3GQH4R0",
+        "link": "01M5SWSS5QZVW6F2HQK2AVV8YZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSS3XPDMWFRPR99TJ32CT",
+        "id": "01M5SWSS7JGB6XKDAJWZYDABYZ",
+        "link": "01M5SWSS7JGB6XKDAJWY01100E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: change-sets, apply, sources (Recommended): change-sets: lifecycle, record vs intention, --record. apply: the operations file format. sources: what a Source holds and how scrub feeds `source add`. These cover everything milestone 1 can do.",
+          "statement": "Topics: `change-sets`, `apply`, `sources`",
+          "wording": "agent of milestone-1 task 10 (shipit plan), accepted by the owner"
+        },
+        "handle": "t10-d5-topics",
+        "id": "01M5SWSS9D5QQQ6HZTFQAT4BG9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSS9D5QQQ6HZTFKJ64T1Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSS9D5QQQ6HZTFKJ64T1Z",
+        "id": "01M5SWSSB7F98FVSVHG1Z427F3",
+        "link": "01M5SWSSB7F98FVSVHG175HYSZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSS9D5QQQ6HZTFKJ64T1Z",
+        "id": "01M5SWSSD2GRC36C01GFTP554K",
+        "link": "01M5SWSSD2GRC36C01GFFZ9GJ3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQ8YXAQ763XWK5M7J24K",
+        "id": "01M5SWSSEYHP9C87JHPSST7433",
+        "link": "01M5SWSSEYHP9C87JHPQ4Z7685",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSS9D5QQQ6HZTFKJ64T1Z",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: guide [topic], skills as topics (Recommended): `genesis guide` prints the `genesis` skill. `genesis guide <name>` prints a topic or the `scrub` skill. `guide ls` lists names and sizes. An unknown name exits 4 with next `genesis guide ls`. --json gives {name, version, text}. Text is go:embed'd markdown in a pure `internal/guide` package.",
+          "statement": "`genesis guide [name]` prints the `genesis` skill (no name), a topic, or the `scrub` skill. `genesis guide ls` lists names and sizes. An unknown name exits 4 with next `genesis guide ls`. `--json` gives `{name, version, text}`. The text is go:embed'd markdown in a pure `internal/guide`",
+          "wording": "agent of milestone-1 task 10 (shipit plan), accepted by the owner"
+        },
+        "handle": "t10-d6-guide-command",
+        "id": "01M5SWSSGS8VB7WPB60CM1V94G",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSSGS8VB7WPB60BVR714K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSSGS8VB7WPB60BVR714K",
+        "id": "01M5SWSSJMPG0PAHM39DZ5VEFT",
+        "link": "01M5SWSSJMPG0PAHM39ADYW78M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSSGS8VB7WPB60BVR714K",
+        "id": "01M5SWSSMF7HP8T30XTSEBYPBJ",
+        "link": "01M5SWSSMF7HP8T30XTR1765V0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQ8YXAQ763XWK5M7J24K",
+        "id": "01M5SWSSPBNR3MDH9VDHRGRPN3",
+        "link": "01M5SWSSPBNR3MDH9VDDZ8JD00",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSSGS8VB7WPB60BVR714K",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Write the full M1 loop, test with allowlist (Recommended): The guide names slice/why/etc. as specified. A test checks that every `genesis <cmd>` in the guide text is a registered operation, with a pending allowlist that's emptied as 7 and 8 merge, so the guide can't name a command that doesn't exist.",
+          "statement": "The guide names the full milestone-1 loop. A test checks that every `genesis <cmd>` in the guide text is a registered operation, with a pending allowlist (`slice`, `why`, `log`, `roadmap`, `ready`, `show`, `tree`, `ls`)",
+          "wording": "agent of milestone-1 task 10 (shipit plan), accepted by the owner"
+        },
+        "handle": "t10-d7-full-loop-allowlist",
+        "id": "01M5SWSSR68ST37C75W1TVDX7W",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSSR68ST37C75VYQCGV38",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSSR68ST37C75VYQCGV38",
+        "id": "01M5SWSST2PT55GDZ0XV1Z3165",
+        "link": "01M5SWSST2PT55GDZ0XRSK5KDZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSSR68ST37C75VYQCGV38",
+        "id": "01M5SWSSVYG93BFH7NTMJF1BGD",
+        "link": "01M5SWSSVYG93BFH7NTJPZZZCM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQ8YXAQ763XWK5M7J24K",
+        "id": "01M5SWSSXT3ZGP2J2MZ95DXRGR",
+        "link": "01M5SWSSXT3ZGP2J2MZ7Y9NPFA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSSR68ST37C75VYQCGV38",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: `status --hook`: brief, silent outside, exit 0 (Recommended): Prints ≤100 tokens: Genesis in use, current change set, count needing attention, a version mismatch line with the update command. Outside a Genesis repo it prints nothing. It always exits 0 so it never disturbs a session. Plain `status` keeps normal exit codes (4 outside a repo).",
+          "statement": "`status --hook`: ≤ 100 tokens, prints nothing outside a Genesis repo, always exits 0. Plain `status` keeps normal exit codes",
+          "wording": "agent of milestone-1 task 10 (shipit plan), accepted by the owner"
+        },
+        "handle": "t10-d8-status-hook",
+        "id": "01M5SWSSZPXZ1B5V1RWK0KES7S",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSSZPXZ1B5V1RWG1JVS97",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSSZPXZ1B5V1RWG1JVS97",
+        "id": "01M5SWST1KM84VE076NKX4YS8A",
+        "link": "01M5SWST1KM84VE076NHH675XW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSSZPXZ1B5V1RWG1JVS97",
+        "id": "01M5SWST3GBKEBXZD6RSVD1QFK",
+        "link": "01M5SWST3GBKEBXZD6RRCXTAB1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQSBEVXDV0F9QEBEBN2C",
+        "id": "01M5SWST5CD6NP9T5QS63ZRHBM",
+        "link": "01M5SWST5CD6NP9T5QS27KNVAA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSSZPXZ1B5V1RWG1JVS97",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Yes, as listed (Recommended): No changes to internal/{op,changeset,model,entry,store,canon,id,key}: source add builds on api's runWrite. A small, isolated change to cmd/genesis/ctx.go (add a Home field), since task 5 may touch it too. Tests never touch the real ~/.claude, the network, or run `claude`. No AGENTS.md install, no genesis-reconcile skill, no evals. milestone-1.md is not edited.",
+          "statement": "Guardrails: no changes to `internal/{op,changeset,model,entry,store,canon,id,key}`; a small isolated `ctx.go` change; tests never touch the real `~/.claude` or the network, and never run `claude`; no `AGENTS.md`, no reconcile skill, no evals; `milestone-1.md` is untouched",
+          "wording": "agent of milestone-1 task 10 (shipit plan), accepted by the owner"
+        },
+        "handle": "t10-d9-guardrails",
+        "id": "01M5SWST79AB77JFKDRNMGVX19",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWST79AB77JFKDRMQ01N7Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWST79AB77JFKDRMQ01N7Y",
+        "id": "01M5SWST96RWE5F76S6T5TM3B2",
+        "link": "01M5SWST96RWE5F76S6T47AKS2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWST79AB77JFKDRMQ01N7Y",
+        "id": "01M5SWSTB28M1RKSRZCCY0H2DJ",
+        "link": "01M5SWSTB28M1RKSRZCBVDSN8S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Yes (Recommended): `make check` green (incl. genesis check on this repo). testscripts for guide/guide ls, guide install (user + --project, rerun unchanged, conflict + --force, HOME isolated), status and status --hook (inside/outside a repo), and source add (--record, --dry-run, hash, bad input). Size-cap and command-exists tests pass. describe-golden regenerated.",
+          "statement": "Definition of done (see Work Objectives)",
+          "wording": "agent of milestone-1 task 10 (shipit plan), accepted by the owner"
+        },
+        "handle": "t10-d10-done",
+        "id": "01M5SWSTCYQFQE86KMJSEVMN1S",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSTCYQFQE86KMJQJ4RQR3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSTCYQFQE86KMJQJ4RQR3",
+        "id": "01M5SWSTEV24PE90J8NR686608",
+        "link": "01M5SWSTEV24PE90J8NPE90C9M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSTCYQFQE86KMJQJ4RQR3",
+        "id": "01M5SWSTGQ9SHFYGMM6VGX5BGE",
+        "link": "01M5SWSTGQ9SHFYGMM6S6QSM9M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Skills-dir plugin (Recommended): Writes ~/.claude/skills/genesis/ (or <repo>/.claude/skills/genesis/ with --project): .claude-plugin/plugin.json (name, version), SKILL.md (/genesis), skills/genesis-scrub/SKILL.md, hooks/hooks.json. Genesis owns every file and never touches the user's settings. It's a newer Claude Code feature with no documented minimum version, but if the plugin part is blocked the root skill still loads.",
+          "statement": "Install a skills-directory plugin at `~/.claude/skills/genesis/` (or `<repo>/.claude/skills/genesis/` with `--project`): `.claude-plugin/plugin.json`, `SKILL.md`, `skills/genesis-scrub/SKILL.md`, `hooks/hooks.json`. No settings.json edits",
+          "wording": "agent of milestone-1 task 10 (shipit plan), accepted by the owner"
+        },
+        "handle": "t10-d11-skills-dir-plugin",
+        "id": "01M5SWSTJPGW7YVPTV1VFW1J2Q",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSTJPGW7YVPTV1SHF6C17",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSTJPGW7YVPTV1SHF6C17",
+        "id": "01M5SWSTMKTJ2D2D795101C8SE",
+        "link": "01M5SWSTMKTJ2D2D794ZC91T9Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSTJPGW7YVPTV1SHF6C17",
+        "id": "01M5SWSTPHBC3APBE4B37CJS25",
+        "link": "01M5SWSTPHBC3APBE4B259RQN4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQKVQWSQVYXS5B960MEH",
+        "id": "01M5SWSTRERANMTG4436DZ8EH6",
+        "link": "01M5SWSTRERANMTG4435HCXKT9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSTJPGW7YVPTV1SHF6C17",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Overwrite ours, conflict on foreign (Recommended): If plugin.json names `genesis` and carries Genesis's marker, rewrite every file atomically: upgrades just work, and same bytes are reported unchanged. A `genesis/` folder that isn't ours exits 3 with next `--force`. Files Genesis doesn't own inside the folder are left alone.",
+          "statement": "Re-install: a folder that is ours (plugin.json name `genesis` + Genesis marker) is rewritten atomically, and identical bytes are reported unchanged. A foreign folder exits 3 with next `--force`. Files we don't own are left alone",
+          "wording": "agent of milestone-1 task 10 (shipit plan), accepted by the owner"
+        },
+        "handle": "t10-d12-reinstall-rule",
+        "id": "01M5SWSTTBSS7KPMZJ45B3XRR0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSTTBSS7KPMZJ44MYB3AK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSTTBSS7KPMZJ44MYB3AK",
+        "id": "01M5SWSTW7B0RJFVWSHZWFT98N",
+        "link": "01M5SWSTW7B0RJFVWSHX2R5SWJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSTTBSS7KPMZJ44MYB3AK",
+        "id": "01M5SWSTY5X74FX42C4JR17QKS",
+        "link": "01M5SWSTY5X74FX42C4GSR681Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQKVQWSQVYXS5B960MEH",
+        "id": "01M5SWSV02HER435HPQ5261N5V",
+        "link": "01M5SWSV02HER435HPQ3CMPMAC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSTTBSS7KPMZJ44MYB3AK",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Exec form `genesis status --hook` via PATH (Recommended): {command: \"genesis\", args: [\"status\",\"--hook\"], timeout: 10}, no matcher (so it fires on startup, resume, clear and compact). Needs `genesis` on PATH, which `make install` provides, and survives rebuilds.",
+          "statement": "Hook: `{\"type\":\"command\",\"command\":\"genesis\",\"args\":[\"status\",\"--hook\"],\"timeout\":10}`, no matcher, resolved through PATH",
+          "wording": "agent of milestone-1 task 10 (shipit plan), accepted by the owner"
+        },
+        "handle": "t10-d13-hook-exec-form",
+        "id": "01M5SWSV1ZAMDFN9EZBGZF3EEQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSV1ZAMDFN9EZBG2TFZ53",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSV1ZAMDFN9EZBG2TFZ53",
+        "id": "01M5SWSV3XYAZ65C92P8G66160",
+        "link": "01M5SWSV3XYAZ65C92P6NM76JC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSV1ZAMDFN9EZBG2TFZ53",
+        "id": "01M5SWSV5T81JS4QE256XTHQBW",
+        "link": "01M5SWSV5T81JS4QE2549WGY5Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQSBEVXDV0F9QEBEBN2C",
+        "id": "01M5SWSV7QR2V391ZVQXY6NA93",
+        "link": "01M5SWSV7QR2V391ZVQTHRWS73",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSV1ZAMDFN9EZBG2TFZ53",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "Those are from the ask user question tool, so none of them are my own words.",
+          "quote_where": "founding conversation, orchestration: picked options are not the owner's words (## Owner, line 2662)",
+          "settled_by": "decided by the orchestrator under the owner's authorization, in its sign-off review of task 10; applied in PR #8 before merge",
+          "statement": "scrub.md: an option an agent wrote is never the owner's words. AskUserQuestion choices and \"(Recommended)\" picks were written by the agent; the owner only accepted them. Quote only what the owner typed (messages, typed answers, notes). Record a picked option as the agent's wording accepted by the owner (in a quote: `by` the agent, plus that the owner accepted it). Said in step 3 and in Rules of the scrub skill, and mirrored in genesis.md's \"Never paraphrase an owner's decision\" hard rule.",
+          "wording": "the orchestrator's review at sign-off, applied by task 10's agent"
+        },
+        "handle": "t10-fix1-only-typed-words",
+        "id": "01M5SWSV9NW2ETYXWM10DP0DCW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSV9NW2ETYXWM0X5G141V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSV9NW2ETYXWM0X5G141V",
+        "id": "01M5SWSVBKF29M1483SZ3ZKBTM",
+        "link": "01M5SWSVBKF29M1483SYBZ9C7D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSV9NW2ETYXWM0X5G141V",
+        "id": "01M5SWSVDG3R3JZ5WPGTF4TFEX",
+        "link": "01M5SWSVDG3R3JZ5WPGRSJECGB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQ3FV0ZDH2XRHW2Q1A7K",
+        "id": "01M5SWSVFE83VJFCX284D0MC2W",
+        "link": "01M5SWSVFE83VJFCX282YJCRKP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSV9NW2ETYXWM0X5G141V",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQEEDG8N3NJBEFFRYQZG",
+        "id": "01M5SWSVHCZEV2J9ECNQ6Y6WY5",
+        "link": "01M5SWSVHCZEV2J9ECNMXR6BB9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSV9NW2ETYXWM0X5G141V",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "authorized_by": "owner (the orchestrator decided under the owner's authorization)",
+          "settled_by": "decided by the orchestrator under the owner's authorization, in its sign-off review of task 10; applied in PR #8 before merge",
+          "statement": "genesis.md core loop: the work contract. Agents work on an accepted change set (`ready` requires it). The contract: read with `slice`; write back only revisions within the change set's intent; anything outside it becomes a new change set linked `discovered-from`, or a question; finish with `genesis land` as the last commit. This replaces \"Then `genesis propose`\" (propose stays for a draft the agent opens itself); change-sets.md agrees.",
+          "wording": "the orchestrator's review at sign-off, applied by task 10's agent"
+        },
+        "handle": "t10-fix2-work-contract",
+        "id": "01M5SWSVKBBK3P6K3AYYACVK6Z",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSVKBBK3P6K3AYTEM6AY3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSVKBBK3P6K3AYTEM6AY3",
+        "id": "01M5SWSVN9HFX98RRGYQ7GQG87",
+        "link": "01M5SWSVN9HFX98RRGYNBNK9AE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSVKBBK3P6K3AYTEM6AY3",
+        "id": "01M5SWSVQ73CCF8QHF58AYZWVA",
+        "link": "01M5SWSVQ73CCF8QHF57SJ79B5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQEEDG8N3NJBEFFRYQZG",
+        "id": "01M5SWSVS5DKT7S4SG0BAQVN1T",
+        "link": "01M5SWSVS5DKT7S4SG0B1Y15F3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSVKBBK3P6K3AYTEM6AY3",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "authorized_by": "owner (the orchestrator decided under the owner's authorization)",
+          "settled_by": "decided by the orchestrator under the owner's authorization, in its sign-off review of task 10; applied in PR #8 before merge",
+          "statement": "Fix the four minor review points from the sign-off review if each is small (task 10's agent fixed all four).",
+          "wording": "the orchestrator's review at sign-off, applied by task 10's agent"
+        },
+        "handle": "t10-fix3-minor-review-points",
+        "id": "01M5SWSVV4ASSCRHDXC0PKAN5V",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSVV4ASSCRHDXBZEKREZ3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSVV4ASSCRHDXBZEKREZ3",
+        "id": "01M5SWSVX3PGJNDRPX1F06F6G7",
+        "link": "01M5SWSVX3PGJNDRPX1DASQ5A6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSVV4ASSCRHDXBZEKREZ3",
+        "id": "01M5SWSVZ1BDSZD8VP6SW56K38",
+        "link": "01M5SWSVZ1BDSZD8VP6P174KQM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M5SWSRAVRYJ1AZH6RT1GF122",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWSW28ECJ5DX1Q1G8VMVM9",
+  "type": "ops",
+  "v": 1
+}

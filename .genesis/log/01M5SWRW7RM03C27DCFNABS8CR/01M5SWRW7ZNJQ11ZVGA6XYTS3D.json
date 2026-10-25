@@ -1,0 +1,18 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:02:20Z",
+  "body": {
+    "intent": "Record what task 3 built (PR #3, merge aea0f85): node kinds, typed links, handles, the six operations, the change set lifecycle and revisions",
+    "kind": "record",
+    "sources": [
+      "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+      "01M5SWRGPFD3NEBM2VR9ARZXZE"
+    ]
+  },
+  "change_set": "01M5SWRW7RM03C27DCFNABS8CR",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRW7ZNJQ11ZVGA6XYTS3D",
+  "type": "open",
+  "v": 1
+}
