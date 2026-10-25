@@ -1,0 +1,171 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWTC1TD4FP1YNRSFCKTAVD"
+  ],
+  "at": "2026-10-25T16:03:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Genesis works unattended: the daemon, the usage governor, shipping, the inbox and acceptance policy."
+        },
+        "handle": "orchestration",
+        "id": "01M5SWTC58PN8WNJRRM2FYBCDS",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5SWTC58PN8WNJRRM03630JS",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "fields": {
+          "statement": "A daemon runs work unattended and resumes runs, and later serves the same API to other surfaces."
+        },
+        "handle": "daemon",
+        "id": "01M5SWTC7GR3JTG6XZDREX38DB",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5SWTC7GR3JTG6XZDRBJPVVM",
+        "op": "node.create",
+        "parent": "01M5SWTC58PN8WNJRRM03630JS"
+      },
+      {
+        "fields": {
+          "statement": "The usage governor paces agents to keep a reserve of the owner's usage on every window."
+        },
+        "handle": "usage-governor",
+        "id": "01M5SWTC9RDZ6PDFHA1PXZ67NN",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5SWTC9RDZ6PDFHA1M25BGPK",
+        "op": "node.create",
+        "parent": "01M5SWTC58PN8WNJRRM03630JS"
+      },
+      {
+        "fields": {
+          "statement": "Finished work is shipped unattended: push, PR, CI, merge and deploy check."
+        },
+        "handle": "shipping",
+        "id": "01M5SWTCBZ9E5DEKJT4F43Z7C7",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5SWTCBZ9E5DEKJT4EZ8MBX6",
+        "op": "node.create",
+        "parent": "01M5SWTC58PN8WNJRRM03630JS"
+      },
+      {
+        "fields": {
+          "statement": "An inbox collects the questions and reasons that need the owner."
+        },
+        "handle": "inbox",
+        "id": "01M5SWTCE70D6MMV0QHMWRG9TK",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5SWTCE70D6MMV0QHK1W06DC",
+        "op": "node.create",
+        "parent": "01M5SWTC58PN8WNJRRM03630JS"
+      },
+      {
+        "fields": {
+          "statement": "The owner is notified when something needs them."
+        },
+        "handle": "notifications",
+        "id": "01M5SWTCGG54JMNZNRT0VQ8WV9",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5SWTCGG54JMNZNRSYQ2WAHH",
+        "op": "node.create",
+        "parent": "01M5SWTC58PN8WNJRRM03630JS"
+      },
+      {
+        "fields": {
+          "statement": "Acceptance policy decides which change sets are accepted without the owner."
+        },
+        "handle": "accept-policy",
+        "id": "01M5SWTCJQP64M9ZDHGVMFVMQ1",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5SWTCJQP64M9ZDHGT7GS7PT",
+        "op": "node.create",
+        "parent": "01M5SWTC58PN8WNJRRM03630JS"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWTC58PN8WNJRRM03630JS",
+        "id": "01M5SWTCMZ0KJFQBMTE5PZBJKH",
+        "link": "01M5SWTCMZ0KJFQBMTE590571D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRM58RX5MQ2P82HC6YG1Q",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWTC58PN8WNJRRM03630JS",
+        "id": "01M5SWTCQ7F6394PRD2NWSDGJW",
+        "link": "01M5SWTCQ7F6394PRD2MGSAD22",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRNSJW6J9ZQW0B1HHSS7B",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWTC58PN8WNJRRM03630JS",
+        "id": "01M5SWTCSFZCSRVCDR563G4X2K",
+        "link": "01M5SWTCSFZCSRVCDR55X76K3J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRNV6HP7PYPCB2ZWBQG3J",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWTC58PN8WNJRRM03630JS",
+        "id": "01M5SWTCVQSQ7192WHC1ZTMMF3",
+        "link": "01M5SWTCVQSQ7192WHBZAJKTPM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRNX365HMMTTS46627D1N",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWTC58PN8WNJRRM03630JS",
+        "id": "01M5SWTCY1M0MV583YN1VVQ5PV",
+        "link": "01M5SWTCY1M0MV583YMYZ7WJZ2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRNYR3SM6S4GCZQZQA43T",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWTC58PN8WNJRRM03630JS",
+        "id": "01M5SWTD09Q8DK1DTQGDPYN6TR",
+        "link": "01M5SWTD09Q8DK1DTQGASFWQ9W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRP0DZA6FTKHQAEHQGHSB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWTC58PN8WNJRRM03630JS",
+        "id": "01M5SWTD2HTPJT03PS76QCYB56",
+        "link": "01M5SWTD2HTPJT03PS733QQGJ5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRP22Y8H75NVQHCNHBHZ6",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWTC1923N3AB7MWA9D9Z2A",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWTD6BB8KZG1AJAM8VNBAC",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,542 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWRR9MRB0CPY2X8NNAMCVA"
+  ],
+  "at": "2026-10-25T16:02:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: version + usage (Recommended): `genesis version` prints a stamped version, no args prints a short usage, an unknown command exits non-zero. Stdlib only, enough for testscript to exercise; Task 6 replaces the dispatch.",
+          "statement": "`genesis version` prints a version. No args prints a short usage. An unknown command exits non-zero. Stdlib only.",
+          "wording": "agent of milestone-1 task 1 (shipit plan), accepted by the owner"
+        },
+        "handle": "t1-d1-version-usage",
+        "id": "01M5SWRRB4MXAZXNA68E7NPP6S",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRRB4MXAZXNA68AQDD2ZK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: cmd/genesis + internal/ (Recommended): `cmd/genesis/main.go` stays thin and domain packages go under `internal/`, which matches 'a pure domain with a thin CLI'. Installs with `go install .../cmd/genesis`.",
+          "statement": "`cmd/genesis/main.go` is the thin entry point. Domain packages go under `internal/` (none created now).",
+          "wording": "agent of milestone-1 task 1 (shipit plan), accepted by the owner"
+        },
+        "handle": "t1-d2-cmd-internal-layout",
+        "id": "01M5SWRRBWGNYS453JH0P3QV66",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRRBWGNYS453JGZENTBSS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: gofmt + go vet (Recommended): afk parity, zero extra tools in CI, nothing to keep pinned. You can add stronger linting later as its own change.",
+          "statement": "`make check` lints with a gofmt check + `go vet`. No golangci-lint.",
+          "wording": "agent of milestone-1 task 1 (shipit plan), accepted by the owner"
+        },
+        "handle": "t1-d3-gofmt-vet-lint",
+        "id": "01M5SWRRCMBDA02RBH29CC8Q1T",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRRCMBDA02RBH25XG8J2Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: go 1.25.14, like afk (Recommended): Same patch level as afk. Locally, Go 1.25.1 auto-downloads the 1.25.14 toolchain, and CI reads it from go.mod.",
+          "statement": "`module github.com/dphaener/genesis`, `go 1.25.14`.",
+          "wording": "agent of milestone-1 task 1 (shipit plan), accepted by the owner"
+        },
+        "handle": "t1-d4-go-module-version",
+        "id": "01M5SWRRDC0FWY0EWRBZZD69PY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRRDC0FWY0EWRBY8VVTS3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: In-process, hermetic git (Recommended): `testscript.Main` registers `genesis` in the test binary, so it is never the one on $PATH. Setup isolates HOME and the git config with a fixed identity, and scripts live in `cmd/genesis/testdata/script/*.txtar`.",
+          "statement": "testscript runs in-process via `testscript.Main`, with a hermetic HOME and git config (fixed identity). Scripts live in `cmd/genesis/testdata/script/*.txtar`.",
+          "wording": "agent of milestone-1 task 1 (shipit plan), accepted by the owner"
+        },
+        "handle": "t1-d5-testscript-in-process",
+        "id": "01M5SWRRE5H7M2JZ83M44P4T41",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRRE5H7M2JZ83M05NC94Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Gitignore all of .shipit/ (Recommended): The goal is that 'no PLAN.md ever exists in its repo'. shipit plans stay local and the record lives in Genesis itself, so the plan is not committed.",
+          "statement": "All of `.shipit/` is gitignored.",
+          "wording": "agent of milestone-1 task 1 (shipit plan), accepted by the owner"
+        },
+        "handle": "t1-d6-shipit-gitignored",
+        "id": "01M5SWRREXD097P2WGTMTS36NE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRREXD097P2WGTJ5NZQKP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Branch + gh pr create (Recommended): One feature branch off main (e.g. `task-1-repo`), one PR, and CI must go green on it before the ship gate. No stacking: tasks 2+ branch from main after merge.",
+          "statement": "Branch `task-1-repo` off `main`, `gh pr create`, and CI must be green on the PR. No git-spice.",
+          "wording": "agent of milestone-1 task 1 (shipit plan), accepted by the owner"
+        },
+        "handle": "t1-d7-branch-pr-ci",
+        "id": "01M5SWRRFMKD6K9F9AN9REWY42",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRRFMKD6K9F9AN7TS4AHQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: TDD via testscript (Recommended): Write the `version`/usage/unknown-command .txtar scenarios first, watch them fail, then make them pass. The scripts are the harness's own proof that it works.",
+          "statement": "TDD: the testscript scenarios are written and seen failing before the implementation.",
+          "wording": "agent of milestone-1 task 1 (shipit plan), accepted by the owner"
+        },
+        "handle": "t1-d8-tdd-testscript",
+        "id": "01M5SWRRGC8KR0RGRKYA2NCQAH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRRGC8KR0RGRKY6PR0P6X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: ldflags, fallback to buildinfo (Recommended): Makefile stamps `git describe --always --dirty` via -ldflags. Unstamped builds (`go install`, tests) fall back to debug.ReadBuildInfo, then \"dev\". Tests assert on the shape, not the exact value.",
+          "statement": "The version is stamped by the Makefile via `-ldflags \"-X main.version=$(git describe --always --dirty)\"`. Unstamped builds fall back to `debug.ReadBuildInfo` and then `\"dev\"`. Tests assert shape, not value.",
+          "wording": "agent of milestone-1 task 1 (shipit plan), accepted by the owner"
+        },
+        "handle": "t1-d9-version-stamping",
+        "id": "01M5SWRRH4RFHAJ90KPRB5VVRF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRRH4RFHAJ90KPR4S8JJ2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: afk set + install (Recommended): build (./genesis), install (built in place into ~/bin, never cp), test, vet, fmt, fmt-check, check, clean and help. This is afk's proven surface minus its plugin/js/shell targets.",
+          "statement": "Makefile targets: build, install (built in place into `$(PREFIX)`, default `~/bin`, never cp), test, vet, fmt, fmt-check, check, clean and help. `check` = everything CI runs.",
+          "wording": "agent of milestone-1 task 1 (shipit plan), accepted by the owner"
+        },
+        "handle": "t1-d10-makefile-targets",
+        "id": "01M5SWRRHWVZC2PG6R7J54ZN5W",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRRHWVZC2PG6R7EPZ82SJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Short: stack, commands, test rules (Recommended): Go/one binary/pure domain + thin CLI, the make commands, and the carried-over test habits (own binary, no network, no unix socket, testscript layout). It also covers build-in-place on arm64, and stays under ~60 lines.",
+          "statement": "A short `CLAUDE.md`: the Rails-rules disclaimer, stack/shape, commands, test habits and build-in-place on arm64.",
+          "wording": "agent of milestone-1 task 1 (shipit plan), accepted by the owner"
+        },
+        "handle": "t1-d11-short-claude-md",
+        "id": "01M5SWRRJKG476DMWVWP5653E4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRRJKG476DMWVWNXN2DE4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: One ubuntu-26.04 job (Recommended): afk's shape: on push to main and on PRs, checkout@v7, setup-go@v7 from go.mod, `make check`. Fast and cheap.",
+          "statement": "CI is one job on `ubuntu-26.04`, on push to `main` and on PRs: checkout@v7, setup-go@v7 (`go-version-file: go.mod`), `make check`.",
+          "wording": "agent of milestone-1 task 1 (shipit plan), accepted by the owner"
+        },
+        "handle": "t1-d12-ci-one-job",
+        "id": "01M5SWRRKBQAD30P8422F0CZDS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRRKBQAD30P8420A24171",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Yes, that OUT list (Recommended): Keeps Task 1 to the scaffolding. go-internal is the only module dependency, and Tasks 2+ add what they need.",
+          "statement": "OUT: domain packages, CLI libraries, `.genesis/` / `genesis check` in CI, release workflows. README gains only a dev-commands line. The only dependency is go-internal.",
+          "wording": "agent of milestone-1 task 1 (shipit plan), accepted by the owner"
+        },
+        "handle": "t1-d13-task-1-out-list",
+        "id": "01M5SWRRM2FMSPH3FR48BY27GT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRRM2FMSPH3FR45B8RQR1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Yes, a git scenario (Recommended): One script does `git init`, commits with the hermetic identity and asserts the author. That proves Task 2+ scripts can rely on real git without touching your ~/.gitconfig.",
+          "statement": "A testscript scenario proves hermetic real git (init, commit, assert the fixed author).",
+          "wording": "agent of milestone-1 task 1 (shipit plan), accepted by the owner"
+        },
+        "handle": "t1-d14-hermetic-git-scenario",
+        "id": "01M5SWRRMSJN8NKJQB1328S1JS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRRMSJN8NKJQB0Z945QJR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Yes, all four (Recommended): Each is a command with an observable result, with no human step. The fmt-failure check proves the gate actually gates.",
+          "statement": "Acceptance: `make check` exits 0; an unformatted .go file makes it fail; `make build && ./genesis version` prints the git-describe string; the PR's CI is green.",
+          "wording": "agent of milestone-1 task 1 (shipit plan), accepted by the owner"
+        },
+        "handle": "t1-d15-task-1-acceptance",
+        "id": "01M5SWRRNGTVF18DHYNABM7NQG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWRRNGTVF18DHYN793TCK0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRB4MXAZXNA68AQDD2ZK",
+        "id": "01M5SWRRP7NR28797N5CJ4RTQY",
+        "link": "01M5SWRRP7NR28797N58PM1BAJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGMNEQC0N78KXY7RJSH4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRB4MXAZXNA68AQDD2ZK",
+        "id": "01M5SWRRPZCEMNQZ4673PT9XNY",
+        "link": "01M5SWRRPZCEMNQZ46727SZP73",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRBWGNYS453JGZENTBSS",
+        "id": "01M5SWRRQQDWHXYAARHXP7B3HE",
+        "link": "01M5SWRRQQDWHXYAARHTF3A1AX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGMNEQC0N78KXY7RJSH4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRBWGNYS453JGZENTBSS",
+        "id": "01M5SWRRRFV448E4S5DTTHC12G",
+        "link": "01M5SWRRRFV448E4S5DT9XYJEP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRCMBDA02RBH25XG8J2Q",
+        "id": "01M5SWRRS6R23N252BQRC95Q3C",
+        "link": "01M5SWRRS6R23N252BQPTF52CW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGMNEQC0N78KXY7RJSH4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRCMBDA02RBH25XG8J2Q",
+        "id": "01M5SWRRT0QP77WJPCGGEDSC97",
+        "link": "01M5SWRRT0QP77WJPCGEZJ7TXP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRDC0FWY0EWRBY8VVTS3",
+        "id": "01M5SWRRTVG9KFZDDZ31KZFZWR",
+        "link": "01M5SWRRTVG9KFZDDZ2Z20R59P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGMNEQC0N78KXY7RJSH4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRDC0FWY0EWRBY8VVTS3",
+        "id": "01M5SWRRVN43VYQHVK171S3EQT",
+        "link": "01M5SWRRVN43VYQHVK16ESVNW4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRE5H7M2JZ83M05NC94Z",
+        "id": "01M5SWRRWF20AFKJF3GS5E8YYE",
+        "link": "01M5SWRRWF20AFKJF3GPBSZWVX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGMNEQC0N78KXY7RJSH4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRE5H7M2JZ83M05NC94Z",
+        "id": "01M5SWRRX91ZJ9SD5TME8ERH22",
+        "link": "01M5SWRRX91ZJ9SD5TMBEBPMGW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRREXD097P2WGTJ5NZQKP",
+        "id": "01M5SWRRY4SSX81N9F0ZGXMJN2",
+        "link": "01M5SWRRY4SSX81N9F0WXBTJ7C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGMNEQC0N78KXY7RJSH4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRREXD097P2WGTJ5NZQKP",
+        "id": "01M5SWRRZ3N98JEDYCRPKE3603",
+        "link": "01M5SWRRZ3N98JEDYCRNVK0E74",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRFMKD6K9F9AN7TS4AHQ",
+        "id": "01M5SWRRZX3FPSK2RSV077QQWC",
+        "link": "01M5SWRRZX3FPSK2RSTXER8PHQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGMNEQC0N78KXY7RJSH4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRFMKD6K9F9AN7TS4AHQ",
+        "id": "01M5SWRS0QFR0JNVZDBBRJX5MC",
+        "link": "01M5SWRS0QFR0JNVZDB83VPB35",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRGC8KR0RGRKY6PR0P6X",
+        "id": "01M5SWRS1FBBWC8Y70M291CNZX",
+        "link": "01M5SWRS1FBBWC8Y70KZ3N3Q77",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGMNEQC0N78KXY7RJSH4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRGC8KR0RGRKY6PR0P6X",
+        "id": "01M5SWRS272A2EBG58GC4ME94J",
+        "link": "01M5SWRS272A2EBG58GC0KPGD6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRH4RFHAJ90KPR4S8JJ2",
+        "id": "01M5SWRS2Z3JQYDT91AG9A195G",
+        "link": "01M5SWRS2Z3JQYDT91AFTZ4EZD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGMNEQC0N78KXY7RJSH4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRH4RFHAJ90KPR4S8JJ2",
+        "id": "01M5SWRS3QWRAJMM0M8NHAGWYN",
+        "link": "01M5SWRS3QWRAJMM0M8KE48W8Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRHWVZC2PG6R7EPZ82SJ",
+        "id": "01M5SWRS4GJMPGQ4ABAYRS1YSA",
+        "link": "01M5SWRS4GJMPGQ4ABAXM9EN31",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGMNEQC0N78KXY7RJSH4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRHWVZC2PG6R7EPZ82SJ",
+        "id": "01M5SWRS5829VK2EC33CK658EB",
+        "link": "01M5SWRS5829VK2EC339AQ7WZM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRJKG476DMWVWNXN2DE4",
+        "id": "01M5SWRS63KFZTAKBSKZF6QBVV",
+        "link": "01M5SWRS63KFZTAKBSKW6CDJTX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGMNEQC0N78KXY7RJSH4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRJKG476DMWVWNXN2DE4",
+        "id": "01M5SWRS6WA0Z5RH8PMYWAXK1K",
+        "link": "01M5SWRS6WA0Z5RH8PMYD9CM7K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRKBQAD30P8420A24171",
+        "id": "01M5SWRS7MHXGYS8JMRVMN7Z2P",
+        "link": "01M5SWRS7MHXGYS8JMRR688XWW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGMNEQC0N78KXY7RJSH4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRKBQAD30P8420A24171",
+        "id": "01M5SWRS8DY43M2B2D9FD2JBZG",
+        "link": "01M5SWRS8DY43M2B2D9DQ6VHZY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRM2FMSPH3FR45B8RQR1",
+        "id": "01M5SWRS96TJ69KM8DBP9YKTG4",
+        "link": "01M5SWRS96TJ69KM8DBNCS918D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGMNEQC0N78KXY7RJSH4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRM2FMSPH3FR45B8RQR1",
+        "id": "01M5SWRS9YDQ3S6V9VDCZGMH69",
+        "link": "01M5SWRS9YDQ3S6V9VDAADGZSX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRMSJN8NKJQB0Z945QJR",
+        "id": "01M5SWRSAQTMWFMYQDWJK1NNWT",
+        "link": "01M5SWRSAQTMWFMYQDWH6FHBHJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGMNEQC0N78KXY7RJSH4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRMSJN8NKJQB0Z945QJR",
+        "id": "01M5SWRSBHCARZ3PDCJ6MWG299",
+        "link": "01M5SWRSBHCARZ3PDCJ4HFGHDQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRNGTVF18DHYN793TCK0",
+        "id": "01M5SWRSCA0P0CSADXDE7TKTPX",
+        "link": "01M5SWRSCA0P0CSADXDA9CP8WW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGMNEQC0N78KXY7RJSH4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRRNGTVF18DHYN793TCK0",
+        "id": "01M5SWRSD3B7PTW5C1NC9R94G9",
+        "link": "01M5SWRSD3B7PTW5C1N9XAFDGK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M5SWRR9E9G71HBT66132P6Z8",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRSEB1PNMAPXHW791N5TX",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,53 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWT3M1Q2QJBBMRDX2DK96T"
+  ],
+  "at": "2026-10-25T16:03:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "genesis guide install writes the guide as a marked block in AGENTS.md for other agents."
+        },
+        "handle": "agents-md-install",
+        "id": "01M5SWT3QFSTHYJZ4CGQ541AQ5",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5SWT3QFSTHYJZ4CGNWW9D8T",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "fields": {
+          "statement": "Genesis ships a genesis-reconcile skill."
+        },
+        "handle": "reconcile-skill",
+        "id": "01M5SWT3SQK3KH5P945ZTV6ANP",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5SWT3SQK3KH5P945W6Z9NKV",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "fields": {
+          "statement": "Evals run before any release that changes the guide."
+        },
+        "handle": "guide-evals",
+        "id": "01M5SWT3W1RFMVWQ8PN2RXR4HS",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5SWT3W1RFMVWQ8PMZ2E8SQJ",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      }
+    ]
+  },
+  "change_set": "01M5SWT3KHRWGYHQZ4DWC4DQW6",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWT3ZZQHR8NXNGBY9Q2K7D",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:03:06Z",
+  "body": {
+    "intent": "Area workflows: what remains is the whole area, with work tasks, workflow definitions and runs, the built-in workflows, overrides, authoring, review and the token ledger.",
+    "kind": "intention",
+    "sources": [
+      "01M5SWRGJ7AZM5CYJAE32SGRYM"
+    ]
+  },
+  "change_set": "01M5SWT91P766X04ESJABB0Q44",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWT927YJ00Q350P2PVJQRK",
+  "type": "open",
+  "v": 1
+}

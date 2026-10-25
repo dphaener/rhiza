@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:03:17Z",
+  "body": {
+    "intent": "Genesis watches runs and passes their questions to the owner, with a recommendation drawn from slice and why.",
+    "kind": "intention",
+    "sources": [
+      "01M5SWRGJ7AZM5CYJAE32SGRYM"
+    ]
+  },
+  "change_set": "01M5SWTKV6SCGKDS1QJ9KN026T",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWTKVRY30QJ1XRPHMPR4PS",
+  "type": "open",
+  "v": 1
+}

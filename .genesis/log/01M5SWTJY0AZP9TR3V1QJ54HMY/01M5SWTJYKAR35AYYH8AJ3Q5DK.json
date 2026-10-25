@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:03:16Z",
+  "body": {
+    "intent": "planGather (behind roadmap and ready) and the index's fresh read get faster, so CI has headroom under 25 ms again.",
+    "kind": "intention",
+    "sources": [
+      "01M5SWRGJ7AZM5CYJAE32SGRYM"
+    ]
+  },
+  "change_set": "01M5SWTJY0AZP9TR3V1QJ54HMY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWTJYKAR35AYYH8AJ3Q5DK",
+  "type": "open",
+  "v": 1
+}

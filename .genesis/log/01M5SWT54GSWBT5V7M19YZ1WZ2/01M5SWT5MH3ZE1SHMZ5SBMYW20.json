@@ -1,0 +1,75 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWT550KQZK3BE3T92F36AA"
+  ],
+  "at": "2026-10-25T16:03:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Genesis runs scripts the user configures on model events, so the model can be wired to anything."
+        },
+        "handle": "hooks",
+        "id": "01M5SWT58AGAYF5DVMXAQ6DGYD",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5SWT589DVTV22JWM7V62Y1Q",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "fields": {
+          "statement": "Model events such as proposed, accepted, landed and drift found run scripts the user configures."
+        },
+        "handle": "model-event-hooks",
+        "id": "01M5SWT5AEW8ZEV2XPHFHFAJ0Y",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5SWT5AEW8ZEV2XPHEFJZNRP",
+        "op": "node.create",
+        "parent": "01M5SWT589DVTV22JWM7V62Y1Q"
+      },
+      {
+        "fields": {
+          "statement": "genesis hook ls lists hooks and genesis hook run runs one by hand to test it."
+        },
+        "handle": "hook-commands",
+        "id": "01M5SWT5CJM33MQT7VC72TDY4P",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5SWT5CJM33MQT7VC5AFCBDJ",
+        "op": "node.create",
+        "parent": "01M5SWT589DVTV22JWM7V62Y1Q"
+      },
+      {
+        "fields": {
+          "statement": "Users can add their own node kinds."
+        },
+        "handle": "custom-kinds",
+        "id": "01M5SWT5ERSEBAR3MK2TN6N1GT",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5SWT5ERSEBAR3MK2S2F8ZZS",
+        "op": "node.create",
+        "parent": "01M5SWT589DVTV22JWM7V62Y1Q"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT589DVTV22JWM7V62Y1Q",
+        "id": "01M5SWT5GX5MHXY0WKDFY36J1T",
+        "link": "01M5SWT5GX5MHXY0WKDDT4DHPP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJ60KYSFGJ732292W4HP",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWT54GSWBT5V7M19YZ1WZ2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWT5MH3ZE1SHMZ5SBMYW20",
+  "type": "ops",
+  "v": 1
+}

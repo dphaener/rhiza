@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:03:14Z",
+  "body": {
+    "intent": "Each core node kind has a field schema, so its fields are known and checked.",
+    "kind": "intention",
+    "sources": [
+      "01M5SWRGJ7AZM5CYJAE32SGRYM"
+    ]
+  },
+  "change_set": "01M5SWTH32C73BQET8E0708F9F",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWTH3PJA905K8YPZ259T3B",
+  "type": "open",
+  "v": 1
+}

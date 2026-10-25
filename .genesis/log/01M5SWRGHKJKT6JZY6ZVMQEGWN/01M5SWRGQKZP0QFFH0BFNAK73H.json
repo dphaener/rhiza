@@ -1,0 +1,32 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWRGPPXYB0S2GPGW0NX98B"
+  ],
+  "at": "2026-10-25T16:02:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "d6b1324d76b6d22cb390255979e129dce05652983deb9e793a997e6e8491bbde",
+          "summary": "The shipit work plan for task 4: a pure internal/model package that projects folded change sets into three views, as-is (landed), to-be (as-is plus accepted) and what-if (as-is plus one change set), orders change sets causally, detects conflicts and never fails. Decided (D1-D13, agent wording accepted by the owner): scope is the pure package only, no CLI, index, rebase or field-level diff; AsIs, ToBe and WhatIf return a Model and problems; causal order comes from base edges and existence edges, ties by change set ID, with cycles reported and broken at the smallest ID; a conflict is a stale base that overlaps an earlier write (same field or handle, a move against a move, anything against a retire), while non-overlapping stale operations merge silently; a conflicting operation still applies, later wins, and is reported; operations that break model rules are skipped and reported; to-be and what-if use the same engine and rules; Overlaps reports field-level overlapping pairs among in-flight change sets; duplicate handles are reported, not skipped; nodes and links carry their history, version and creating change set; tests are TDD with rapid determinism and commutativity properties and the corpus projected in every view; guardrails keep other packages' APIs unchanged. Settled later in review (D14): a landed conflict counts as repaired once later operations written from the current version rewrite every aspect the conflicting operation wrote, and a conflict involving a retirement stays reported. Endpoint kinds were left to task 9's check.",
+          "title": "Shipit plan, milestone 1 task 4: projection"
+        },
+        "handle": "plan-task-4",
+        "id": "01M5SWRGQCHRVACT3HG1ATPEAY",
+        "key": null,
+        "kind": "source",
+        "node": "01M5SWRGQCHRVACT3HFXCR5RAN",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5SWRGHKJKT6JZY6ZVMQEGWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRGQKZP0QFFH0BFNAK73H",
+  "type": "ops",
+  "v": 1
+}

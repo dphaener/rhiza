@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:02:57Z",
+  "body": {
+    "intent": "Area integrity: what remains is anchors to code with fingerprints, commit trailers, drift and reconcile.",
+    "kind": "intention",
+    "sources": [
+      "01M5SWRGJ7AZM5CYJAE32SGRYM"
+    ]
+  },
+  "change_set": "01M5SWT0K9TV1RRVFBT28321K9",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWT0KR7R2KJSY7NM13SWGP",
+  "type": "open",
+  "v": 1
+}

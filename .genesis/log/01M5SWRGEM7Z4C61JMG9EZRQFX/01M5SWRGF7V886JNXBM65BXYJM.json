@@ -1,0 +1,30 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M5SWRGEM7Z4C61JMGC2DE6XJ"
+  ],
+  "at": "2026-10-25T16:02:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "email": "darin.haener@hey.com",
+          "name": "Darin Haener"
+        },
+        "handle": "darin-haener",
+        "id": "01M5SWRGEM7Z4C61JMG7MBEW9R",
+        "key": null,
+        "kind": "actor",
+        "node": "01M5SWRGEM7Z4C61JMG4H61JD7",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5SWRGEM7Z4C61JMG9EZRQFX",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRGF7V886JNXBM65BXYJM",
+  "type": "ops",
+  "v": 1
+}

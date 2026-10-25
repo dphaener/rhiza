@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:02:55Z",
+  "body": {
+    "intent": "Area lineage: nothing is left to build; the change set keeps the area in the roadmap's order.",
+    "kind": "intention",
+    "sources": [
+      "01M5SWRGJ7AZM5CYJAE32SGRYM"
+    ]
+  },
+  "change_set": "01M5SWSYJP2DVCSAVSK7BD9DME",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWSYK5GH2DTEQ4FGPHTQA6",
+  "type": "open",
+  "v": 1
+}

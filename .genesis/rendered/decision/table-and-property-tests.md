@@ -1,0 +1,33 @@
+# table-and-property-tests
+
+decision · `01M5SWRMC79WBVK9QYQWXXBJ8Y`
+
+## quote
+
+yes to all six, move on to the capability tree
+
+## quote_where
+
+founding conversation, remaining topic 2, testing, line 1944
+
+## statement
+
+The core has table and property tests (the six properties) and fuzzing on both parsers.
+
+## wording
+
+the assistant's summary in the founding conversation
+
+## Links
+
+### Out
+
+- derived-from [founding-conversation](../source/founding-conversation.md)
+
+### In
+
+- decided-by [genesis](../capability/genesis.md)
+
+## History
+
+- `01M5SWRGHKJKT6JZY6ZVMQEGWN` Founding record: the Sources, the root intents and constraints, and the founding decisions

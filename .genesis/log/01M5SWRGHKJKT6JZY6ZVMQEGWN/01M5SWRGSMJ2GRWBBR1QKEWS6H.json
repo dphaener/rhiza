@@ -1,0 +1,32 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWRGRNYAWVYB7PF11AKV72"
+  ],
+  "at": "2026-10-25T16:02:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "7e50f7919ce365dc614bea84f2118127313f28121f3688d4a886dd8f8c1b679b",
+          "summary": "The shipit work plan for task 6: transport-independent operations with reflected JSON schemas in a new internal/api package, a thin generic CLI frame (describe, api call, --json, exit codes, next), and every milestone-1 write command over an interim model. Decided (D1-D15, agent wording accepted by the owner): writes depend on a narrow model interface, with a minimal unexported interim implementation over FoldLog until real projection is wired in; scope is the frame, init, change new/use/show/ls, add, set, mv, retire, link, unlink, apply, --record, --dry-run and the lifecycle verbs, with status, reads, --view, render and check out; operation names mirror command paths with dots and one registry serves the CLI and api call; schemas are reflected from Go types by an in-house generator, pinned by a describe golden; the actor comes from --actor or GENESIS_ACTOR, else the actor node matching git user.email, else one recorded by the first write in its own landed record change set, and the for defaults to the actor; the current change set is kept in .genesis/local/, gitignored; a reference is a full ID, a unique prefix of four or more characters, or a live handle, and handles are unique across live nodes; a write to a node the change set already touches revises the existing operation; apply reads a list of write requests and writes all or nothing; errors with --json go to stdout as {error: {code, message, next}}; accept and reject take --rule (default owner) and --reason; guardrails keep the core packages additive only and add no dependencies; TDD with unit tests, one testscript per command and an end-to-end fold. Left as a follow-up at sign-off: a write lock so concurrent writes cannot duplicate handles or actors.",
+          "title": "Shipit plan, milestone 1 task 6: the CLI frame and writes"
+        },
+        "handle": "plan-task-6",
+        "id": "01M5SWRGSC1YSW7SY99DVXFASE",
+        "key": null,
+        "kind": "source",
+        "node": "01M5SWRGSC1YSW7SY99DV753TK",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5SWRGHKJKT6JZY6ZVMQEGWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRGSMJ2GRWBBR1QKEWS6H",
+  "type": "ops",
+  "v": 1
+}

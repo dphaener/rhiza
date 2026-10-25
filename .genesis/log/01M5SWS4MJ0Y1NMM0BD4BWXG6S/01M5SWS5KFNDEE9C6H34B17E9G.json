@@ -1,0 +1,248 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWS4MVP80RVB780HTVH8VB"
+  ],
+  "at": "2026-10-25T16:02:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "built_in": "PR #5 (6d5c61e)",
+          "statement": "genesis init creates the model's folder inside a repo."
+        },
+        "handle": "repo-init",
+        "id": "01M5SWS4PZCV2JGC468BYQWSFG",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5SWS4PZCV2JGC4689HAND12",
+        "op": "node.create",
+        "parent": "01M5SWRGZDB2NV1W7MBBRW2HNX"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS4PZCV2JGC4689HAND12",
+        "id": "01M5SWS4RBFWX6M7PCWBQXDRXM",
+        "link": "01M5SWS4RBFWX6M7PCW85QDG0F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS4PZCV2JGC4689HAND12",
+        "id": "01M5SWS4SNM1RRSB0ZVGYTF9MV",
+        "link": "01M5SWS4SNM1RRSB0ZVFPVMYEA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #5 (6d5c61e)",
+          "statement": "Each worktree has a current change set that writes go into, overridden by --change or GENESIS_CHANGE."
+        },
+        "handle": "current-change",
+        "id": "01M5SWS4TY8DNWWMQ370DFQAK5",
+        "key": "u",
+        "kind": "capability",
+        "node": "01M5SWS4TY8DNWWMQ36WGXMEPS",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS4TY8DNWWMQ36WGXMEPS",
+        "id": "01M5SWS4W6405QXQRXPEC0V8TV",
+        "link": "01M5SWS4W6405QXQRXPB0Z34GZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS4TY8DNWWMQ36WGXMEPS",
+        "id": "01M5SWS4XF4E9VHVV7N9ZA1EDX",
+        "link": "01M5SWS4XF4E9VHVV7N7FN5HGC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #5 (6d5c61e)",
+          "statement": "A write with --record opens a record change set, applies the write and lands it in one step, for writing down what already is."
+        },
+        "handle": "record-shortcut",
+        "id": "01M5SWS4YQY5FNN8MBQ5RY10ZR",
+        "key": "v",
+        "kind": "capability",
+        "node": "01M5SWS4YQY5FNN8MBQ5CHQ01M",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS4YQY5FNN8MBQ5CHQ01M",
+        "id": "01M5SWS5009HYXMY9F4EZJWF9H",
+        "link": "01M5SWS5009HYXMY9F4DEACZR2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS4YQY5FNN8MBQ5CHQ01M",
+        "id": "01M5SWS519JA6XTH2FX30JPSPP",
+        "link": "01M5SWS519JA6XTH2FX19GBYTA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #5 (6d5c61e)",
+          "statement": "Writes add, set, move, retire, link and unlink nodes inside a change set, and every write can be dry-run first."
+        },
+        "handle": "model-writes",
+        "id": "01M5SWS52HMX7W0SM2B7E9WSY6",
+        "key": "vi",
+        "kind": "capability",
+        "node": "01M5SWS52HMX7W0SM2B3TMWKTY",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS52HMX7W0SM2B3TMWKTY",
+        "id": "01M5SWS53VAND40M5PF7WZ3RWC",
+        "link": "01M5SWS53VAND40M5PF5WKKQA0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS52HMX7W0SM2B3TMWKTY",
+        "id": "01M5SWS557SWV5SMB2PMA74GB9",
+        "link": "01M5SWS557SWV5SMB2PJ86X31S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #5 (6d5c61e)",
+          "statement": "An agent writes many operations at once from one apply file."
+        },
+        "handle": "apply-files",
+        "id": "01M5SWS56M04VB8N2Z5K6T69F5",
+        "key": "vr",
+        "kind": "capability",
+        "node": "01M5SWS56M04VB8N2Z5JGWF5HM",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS56M04VB8N2Z5JGWF5HM",
+        "id": "01M5SWS581J96ZVSD9VBMWR3AT",
+        "link": "01M5SWS581J96ZVSD9V9Q67C7Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS56M04VB8N2Z5JGWF5HM",
+        "id": "01M5SWS59E8H92330B16T9ZTMS",
+        "link": "01M5SWS59E8H92330B158K6F3Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #5 (6d5c61e)",
+          "statement": "Every entry names its actor and whom it acted for; humans start from their git identity and agents record agent, model and session."
+        },
+        "handle": "actors",
+        "id": "01M5SWS5ATK0DPJDW0M3V597KB",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5SWS5ATK0DPJDW0M2EW38FT",
+        "op": "node.create",
+        "parent": "01M5SWRH0SFXQJK9MEZJ9DTX9K"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS5ATK0DPJDW0M2EW38FT",
+        "id": "01M5SWS5C4GQ9EKWMWH5QB42WD",
+        "link": "01M5SWS5C4GQ9EKWMWH379FBJY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS5ATK0DPJDW0M2EW38FT",
+        "id": "01M5SWS5DD3G6G92HWD8AQW3PW",
+        "link": "01M5SWS5DD3G6G92HWD822DM8S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #5 (6d5c61e)",
+          "statement": "Every command is an operation with a published schema, given by describe, callable through api call, answering with --json, stable exit codes and a next step in every error."
+        },
+        "handle": "command-schemas",
+        "id": "01M5SWS5EQ31F1BKCQHSFM3PZ9",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5SWS5EQ31F1BKCQHR8JHF0F",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS5EQ31F1BKCQHR8JHF0F",
+        "id": "01M5SWS5G1XK0HEHCK3E1CRPM9",
+        "link": "01M5SWS5G1XK0HEHCK3BFPQE9A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS5EQ31F1BKCQHR8JHF0F",
+        "id": "01M5SWS5HB4786929S2CX76EMX",
+        "link": "01M5SWS5HB4786929S28ZS1Z5N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGSC1YSW7SY99DV753TK",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M5SWS4MJ0Y1NMM0BD4BWXG6S",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWS5KFNDEE9C6H34B17E9G",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:02:08Z",
+  "body": {
+    "intent": "Founding record: the Sources, the root intents and constraints, and the founding decisions",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M5SWRGHKJKT6JZY6ZVMQEGWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRGHKJKT6JZY6ZX84682K",
+  "type": "open",
+  "v": 1
+}

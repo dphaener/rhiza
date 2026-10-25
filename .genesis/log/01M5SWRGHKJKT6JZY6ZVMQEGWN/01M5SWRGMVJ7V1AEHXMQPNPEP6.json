@@ -1,0 +1,32 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWRGKX2J7X6QKN2555P6HA"
+  ],
+  "at": "2026-10-25T16:02:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "619b89f2d41f231169c63419862b23bfee059ba2328ae3aeb8d91e00a2b43cea",
+          "summary": "The shipit work plan for task 1: turn the repo into a Go module with a thin genesis binary, a testscript harness against hermetic real git, a make check gate, one CI job and a short CLAUDE.md, delivered as one PR with green CI. Decided (D1-D15, agent wording accepted by the owner in the interview): the binary only prints a version, a short usage with no arguments, and fails on an unknown command, stdlib only, with task 6 replacing the dispatch; cmd/genesis stays a thin entry point and domain packages go under internal/; make check lints with a gofmt check and go vet, no golangci-lint; the module declares go 1.25.14; testscript runs in-process with a hermetic HOME and git config, scripts in cmd/genesis/testdata/script; all of .shipit/ is gitignored; work on a branch with a PR whose CI must be green, no git-spice; TDD with scenarios seen failing first; the version is stamped by ldflags from git describe, falling back to build info and then dev; Makefile targets including install built in place, never copied; a short CLAUDE.md; CI is one Ubuntu job running make check; out of scope are domain packages, CLI libraries, .genesis/ and genesis check in CI, and release workflows; a scenario proves hermetic git; acceptance is make check passing, an unformatted file failing it, a stamped version, and green CI. Nothing was revised after approval and nothing was left open.",
+          "title": "Shipit plan, milestone 1 task 1: repo foundation"
+        },
+        "handle": "plan-task-1",
+        "id": "01M5SWRGMNEQC0N78KY07XEEVF",
+        "key": null,
+        "kind": "source",
+        "node": "01M5SWRGMNEQC0N78KXY7RJSH4",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5SWRGHKJKT6JZY6ZVMQEGWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRGMVJ7V1AEHXMQPNPEP6",
+  "type": "ops",
+  "v": 1
+}

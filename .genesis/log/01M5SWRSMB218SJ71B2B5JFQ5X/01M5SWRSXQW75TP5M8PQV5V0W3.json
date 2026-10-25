@@ -1,0 +1,116 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWRSMHBNMHXF3P3F2SPGFF"
+  ],
+  "at": "2026-10-25T16:02:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "built_in": "PR #2 (396505b)",
+          "statement": "Every node gets a random ID that can be generated anywhere without coordination."
+        },
+        "handle": "node-ids",
+        "id": "01M5SWRSP27Y0388YQB7Y4R6JB",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5SWRSP27Y0388YQB5G3XMBE",
+        "op": "node.create",
+        "parent": "01M5SWRGZDB2NV1W7MBBRW2HNX"
+      },
+      {
+        "fields": {
+          "built_in": "PR #2 (396505b)",
+          "statement": "The model is stored in the repo as an append-only log of immutable entries in canonical JSON, each recording who wrote it and for whom."
+        },
+        "handle": "operation-log",
+        "id": "01M5SWRSPVMK689DD23MFQ3M04",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5SWRSPVMK689DD23KH7KP0Z",
+        "op": "node.create",
+        "parent": "01M5SWRGZDB2NV1W7MBBRW2HNX"
+      },
+      {
+        "fields": {
+          "built_in": "PR #2 (396505b)",
+          "statement": "A log written in any earlier format version always loads."
+        },
+        "handle": "format-compat",
+        "id": "01M5SWRSQMEFCW9BVVD75Q5JZN",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5SWRSQMEFCW9BVVD6RFTASB",
+        "op": "node.create",
+        "parent": "01M5SWRGZDB2NV1W7MBBRW2HNX"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRSP27Y0388YQB5G3XMBE",
+        "id": "01M5SWRSREZ59AAVZMFWTPXXHA",
+        "link": "01M5SWRSREZ59AAVZMFRYPYEK9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRSP27Y0388YQB5G3XMBE",
+        "id": "01M5SWRSS7CKMJ7V02XMDHHC1J",
+        "link": "01M5SWRSS7CKMJ7V02XKQKV258",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGNF2CMZJE8MXG1JQT40",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRSPVMK689DD23KH7KP0Z",
+        "id": "01M5SWRST05E5Q5KNQ8YZDQGW6",
+        "link": "01M5SWRST05E5Q5KNQ8W1QDVGG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRSPVMK689DD23KH7KP0Z",
+        "id": "01M5SWRSTT8RMT8XRGK379YE7K",
+        "link": "01M5SWRSTT8RMT8XRGJZG1Z7K5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGNF2CMZJE8MXG1JQT40",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRSQMEFCW9BVVD6RFTASB",
+        "id": "01M5SWRSVK3RA6AY06CNM0ERC9",
+        "link": "01M5SWRSVK3RA6AY06CMQ5RQHH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRSQMEFCW9BVVD6RFTASB",
+        "id": "01M5SWRSWDE2VC1P4VXFJSZ3W7",
+        "link": "01M5SWRSWDE2VC1P4VXF941N9D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGNF2CMZJE8MXG1JQT40",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M5SWRSMB218SJ71B2B5JFQ5X",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRSXQW75TP5M8PQV5V0W3",
+  "type": "ops",
+  "v": 1
+}

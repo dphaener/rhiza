@@ -1,0 +1,50 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWSDM37DFSHJ8SBWNHPS54"
+  ],
+  "at": "2026-10-25T16:02:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "built_in": "PR #9 (a951e38)",
+          "statement": "genesis slice composes everything an agent needs for a node or a change set, in fixed sections, inherited down the tree, within a token budget, the same bytes every time."
+        },
+        "handle": "slice",
+        "id": "01M5SWSDPGJXS4HCMBFK9BYBHS",
+        "key": "h",
+        "kind": "capability",
+        "node": "01M5SWSDPGJXS4HCMBFGXRJD6Q",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSDPGJXS4HCMBFGXRJD6Q",
+        "id": "01M5SWSDR32MN58Q0MER5TTQ1A",
+        "link": "01M5SWSDR32MN58Q0MEQ7PXSFF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSDPGJXS4HCMBFGXRJD6Q",
+        "id": "01M5SWSDSN4CJTVMVZBKYPW9XT",
+        "link": "01M5SWSDSN4CJTVMVZBHEFC5NW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGVE8N122VSRM8K0ATGP",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M5SWSDKQHTK3500CSYNQAJYK",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWSDW8JF4ZEHG148ABK1MC",
+  "type": "ops",
+  "v": 1
+}

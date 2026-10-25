@@ -1,0 +1,13 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWS4C6X9KR67QRTGWQH8QM"
+  ],
+  "at": "2026-10-25T16:02:28Z",
+  "body": {},
+  "change_set": "01M5SWS22WXZMST7XXR9ZKY4EE",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWS4E9VMDA01HH48MV5M2Z",
+  "type": "propose",
+  "v": 1
+}

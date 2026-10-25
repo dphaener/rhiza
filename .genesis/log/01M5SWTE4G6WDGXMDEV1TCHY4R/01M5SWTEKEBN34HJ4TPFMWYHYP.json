@@ -1,0 +1,65 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWTE51AEYH4BNHR4MKVS2E"
+  ],
+  "at": "2026-10-25T16:03:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Genesis serves people who aren't at a CLI: a TUI, a web UI and phone."
+        },
+        "handle": "surfaces",
+        "id": "01M5SWTE8NXXQW4NAQD574E5CS",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5SWTE8NXXQW4NAQD348HF41",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "fields": {
+          "statement": "A terminal UI shows and works the model."
+        },
+        "handle": "tui",
+        "id": "01M5SWTEB0NDQ0QR3GMM4TDX5D",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5SWTEB0NDQ0QR3GMJK45C3X",
+        "op": "node.create",
+        "parent": "01M5SWTE8NXXQW4NAQD348HF41"
+      },
+      {
+        "fields": {
+          "statement": "A web UI lets people see the tree, the roadmap and lineage live, and propose, discuss and review changes in a browser."
+        },
+        "handle": "web-ui",
+        "id": "01M5SWTED9NWJNEHTESVNNRVSV",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5SWTED9NWJNEHTEST7SS1SF",
+        "op": "node.create",
+        "parent": "01M5SWTE8NXXQW4NAQD348HF41"
+      },
+      {
+        "fields": {
+          "statement": "The model can be followed and acted on from a phone."
+        },
+        "handle": "phone",
+        "id": "01M5SWTEFJK6XCVE22KS0PR3PB",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5SWTEFJK6XCVE22KR797FPM",
+        "op": "node.create",
+        "parent": "01M5SWTE8NXXQW4NAQD348HF41"
+      }
+    ]
+  },
+  "change_set": "01M5SWTE4G6WDGXMDEV1TCHY4R",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWTEKEBN34HJ4TPFMWYHYP",
+  "type": "ops",
+  "v": 1
+}

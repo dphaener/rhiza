@@ -1,0 +1,795 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWS9YNE9EN3XTZYYZ4H06T"
+  ],
+  "at": "2026-10-25T16:02:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: 7 reads + --view + paged ls (Recommended): show, tree, ls, why, log, roadmap, ready, each with --view and --json; ls takes --limit/--cursor (the one list that can reach 50k). find, change diff, events and paging on the other commands stay out.",
+          "statement": "Scope: `show`, `tree`, `ls`, `why`, `log`, `roadmap`, `ready`, each with `--view` and `--json`; `ls` is paged. Out: `find`, `change diff`, `events`, paging on other commands.",
+          "wording": "agent of milestone-1 task 7 (shipit plan), accepted by the owner"
+        },
+        "handle": "t7-d1-reads-scope",
+        "id": "01M5SWSA109MB1KHT2GRNB052N",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSA109MB1KHT2GNJXG6XY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSA109MB1KHT2GNJXG6XY",
+        "id": "01M5SWSA2F6ZPE5YPFX9WFK0PR",
+        "link": "01M5SWSA2F6ZPE5YPFX8W6RRD7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSA109MB1KHT2GNJXG6XY",
+        "id": "01M5SWSA3YGH443T720Q8K6S6W",
+        "link": "01M5SWSA3YGH443T720PP04R0F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "revised": "revised by the orchestrator under the owner's authorization: one default-view rule shared by the reads (task 7) and slice (task 8): the effective change set draft or proposed -> what-if of it; accepted -> to-be; none or landed -> as-is. Work happens on accepted change sets, so the main loop stays on the fast indexed to-be path; what-if stays outside the 50 ms budget. (The agent's accepted option had been: to-be in a change set, as-is otherwise.)",
+          "settled_by": "Agent's option, accepted by the owner: Literal: to-be or as-is (Recommended): to-be (landed + accepted) when a change set is current or given by --change / GENESIS_CHANGE, as-is otherwise. what-if:<cs> only when asked for, and exempt from the 50 ms budget. Fast; your draft's edits need --view what-if:<cs>.",
+          "statement": "Default view, one rule shared with task 8's `slice`: the effective change set (`--change`, `GENESIS_CHANGE`, or the current one) draft or proposed → what-if of it; accepted → to-be; none, landed or otherwise terminal → as-is (except D17). what-if stays exempt from the budget. (Revised by the owner's session after approval; the original rule was to-be in a change set, as-is otherwise.)",
+          "wording": "agent of milestone-1 task 7 (shipit plan), accepted by the owner"
+        },
+        "handle": "t7-d2-default-view",
+        "id": "01M5SWSA5C6GVZ9X2ZSJ27BHJR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSA5C6GVZ9X2ZSGZS54QP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSA5C6GVZ9X2ZSGZS54QP",
+        "id": "01M5SWSA6V18D5BZZSG3W1WS0K",
+        "link": "01M5SWSA6V18D5BZZSG13K4935",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSA5C6GVZ9X2ZSGZS54QP",
+        "id": "01M5SWSA89Y0ADT1F42SKM5EKV",
+        "link": "01M5SWSA89Y0ADT1F42SFAHCYP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSA5C6GVZ9X2ZSGZS54QP",
+        "id": "01M5SWSA9RQFQ0W9Z00R1BW73K",
+        "link": "01M5SWSA9RQFQ0W9Z00MQ9XR9J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZ7A0WG4Q7K4J2PX8YX1",
+        "id": "01M5SWSAB6HP99C87JJQ1CZK3T",
+        "link": "01M5SWSAB6HP99C87JJKCBMGZM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSA5C6GVZ9X2ZSGZS54QP",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: The index only (Recommended): Each read opens the worktree's SQLite index (catching up), and new index queries are added where needed (list by kind, subtree). The writes keep the interim api.Model; swapping that is not this task.",
+          "statement": "Reads use the index only (open + catch-up); new index queries where needed. Writes and the interim `api.Model` are untouched.",
+          "wording": "agent of milestone-1 task 7 (shipit plan), accepted by the owner"
+        },
+        "handle": "t7-d3-reads-use-index",
+        "id": "01M5SWSACMZXFX3G4TZ9WAYGAG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSACMZXFX3G4TZ7PRYEAY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSACMZXFX3G4TZ7PRYEAY",
+        "id": "01M5SWSAE30X02XHKJJQ7RAP0M",
+        "link": "01M5SWSAE30X02XHKJJNJAG2TS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSACMZXFX3G4TZ7PRYEAY",
+        "id": "01M5SWSAFHFTF2K5F6KVV64PPC",
+        "link": "01M5SWSAFHFTF2K5F6KRE3Q4AN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS1V2VF3MF5R7A78C6JQA",
+        "id": "01M5SWSAH0VVDXG1S8YQ8EQP60",
+        "link": "01M5SWSAH0VVDXG1S8YNQ5ZYK7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSACMZXFX3G4TZ7PRYEAY",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Own file, merge adapts (Recommended): Put the shared read plumbing in one new file (internal/api/read.go), with view as a request field on each read. Whichever of 7 and 8 merges second moves onto the other's helper. No cross-worktree coordination needed now.",
+          "statement": "The shared read plumbing lives in a new `internal/api/read.go`; the view is a request field on each read. Whichever of tasks 7 and 8 merges second adapts.",
+          "wording": "agent of milestone-1 task 7 (shipit plan), accepted by the owner"
+        },
+        "handle": "t7-d4-shared-read-plumbing",
+        "id": "01M5SWSAJE7NZGV9RTAF8JJ9GQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSAJE7NZGV9RTAE6A6NMZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSAJE7NZGV9RTAE6A6NMZ",
+        "id": "01M5SWSAKX1GNKMWYMGGMSK4P2",
+        "link": "01M5SWSAKX1GNKMWYMGFCB43V2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSAJE7NZGV9RTAE6A6NMZ",
+        "id": "01M5SWSANCF58ADXQJFRTCDQSA",
+        "link": "01M5SWSANCF58ADXQJFRDQTXE9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "revised": "revised by the orchestrator under the owner's authorization: why also walks supersedes, both ways (what a decision replaced and what replaced it), cycle-guarded.",
+          "settled_by": "Agent's option, accepted by the owner: Decisions, sources, change sets (Recommended): Transitively along decided-by (including those inherited from tree ancestors) and derived-from, with answers to show the question each decision settles. Then the change sets in the node's history, with their intent and open sources. Each decision and source is shown with all its fields (the owner's words, the summary, the quotes). Cycles are guarded.",
+          "statement": "`why`: transitive over `decided-by` (including those inherited from tree ancestors), `derived-from` and `supersedes` in both directions (what a decision replaced and what replaced it), with `answers` showing the question a decision settles; then the change sets of the node's history with intent and open sources; decisions and sources shown with all fields; cycle-guarded.",
+          "wording": "agent of milestone-1 task 7 (shipit plan), accepted by the owner"
+        },
+        "handle": "t7-d5-why-walk",
+        "id": "01M5SWSAPV93CMP7M1AASCMDXV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSAPV93CMP7M1AAA3N59T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSAPV93CMP7M1AAA3N59T",
+        "id": "01M5SWSARAYMV28MNXRWF2EKS3",
+        "link": "01M5SWSARAYMV28MNXRVRNGT1R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSAPV93CMP7M1AAA3N59T",
+        "id": "01M5SWSAST5F9S2ZAH735DD60W",
+        "link": "01M5SWSAST5F9S2ZAH6ZFQ6XDK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSAPV93CMP7M1AAA3N59T",
+        "id": "01M5SWSAV864902EP96RT8F59K",
+        "link": "01M5SWSAV864902EP96QMN0P0J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS8PX6B4YJZADM33YX1EP",
+        "id": "01M5SWSAWRZSPWCF0H8V1NYFC7",
+        "link": "01M5SWSAWRZSPWCF0H8TDAT0VM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSAPV93CMP7M1AAA3N59T",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: The view's history (Recommended): The change sets in the node's (or link's) history in the chosen view, in apply order, each with state, kind, intent, its ops on the target, and when and by whom it landed. In-flight ones appear under --view to-be or what-if. Fast: history is stored per node.",
+          "statement": "`log`: the view's history of the node or link, in apply order: each change set's state, kind, intent, its ops on the target, and its land time and actor.",
+          "wording": "agent of milestone-1 task 7 (shipit plan), accepted by the owner"
+        },
+        "handle": "t7-d6-log-history",
+        "id": "01M5SWSAY8TWAQYR15SW3FE3VW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSAY8TWAQYR15SV49PRXG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSAY8TWAQYR15SV49PRXG",
+        "id": "01M5SWSAZQNE9K2KD0P7J67M6C",
+        "link": "01M5SWSAZQNE9K2KD0P7E8MHEC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSAY8TWAQYR15SV49PRXG",
+        "id": "01M5SWSB15X20TB2A75DJJ30HM",
+        "link": "01M5SWSB15X20TB2A75C5RV1QN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS8V32C47860D6NP4Q05V",
+        "id": "01M5SWSB2N146F9PAZH92JR89X",
+        "link": "01M5SWSB2N146F9PAZH7EWJ8S5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSAY8TWAQYR15SV49PRXG",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: To-be + its own ops (Recommended): The links in to-be, plus the link.create ops inside the change set itself that start or end at it. A proposal can then declare what it serves and depends on from inside itself.",
+          "statement": "A change set's links for roadmap/ready (`serves`, `depends-on`, `blocks`) are the to-be links plus the `link.create` ops in the change set itself that start or end at it.",
+          "wording": "agent of milestone-1 task 7 (shipit plan), accepted by the owner"
+        },
+        "handle": "t7-d7-change-set-links",
+        "id": "01M5SWSB449B4QAS877D9YKN9Y",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSB449B4QAS8779Y2EGVX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSB449B4QAS8779Y2EGVX",
+        "id": "01M5SWSB5NHGPV33WV2F75NFYG",
+        "link": "01M5SWSB5NHGPV33WV2BKQ7MM0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSB449B4QAS8779Y2EGVX",
+        "id": "01M5SWSB75MDYRCK84BF5MFM53",
+        "link": "01M5SWSB75MDYRCK84BDD5EQFY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS9C5KVKS7DEVJ08272NZ",
+        "id": "01M5SWSB8M46VZ16WKTW64QT9T",
+        "link": "01M5SWSB8M46VZ16WKTVK1242T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSB449B4QAS8779Y2EGVX",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS9GDHNEE81EEBCQW1895",
+        "id": "01M5SWSBA4R49NHM4E90HYE61N",
+        "link": "01M5SWSBA4R49NHM4E8Z5NY2V4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSB449B4QAS8779Y2EGVX",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Accepted, deps landed, unblocked (Recommended): Ready means: accepted; every depends-on change set landed; and no open question blocks it or a node its ops touch (or one of that node's tree ancestors, since blocks is inherited). Open means live, with no live answers link. Lists every draft, proposed and accepted change set in roadmap order, each ready or with its reasons, and names the first ready one as next. Stacks are left out.",
+          "statement": "`ready`: accepted; every `depends-on` change set landed; no open question (live, with no live `answers` link to it) `blocks` the change set, a node its ops touch, or a tree ancestor of such a node. Lists every draft, proposed and accepted change set in roadmap order with ready or its reasons; names the first ready one as next. No stacks.",
+          "wording": "agent of milestone-1 task 7 (shipit plan), accepted by the owner"
+        },
+        "handle": "t7-d8-ready-rule",
+        "id": "01M5SWSBBMQ2FYNHKZ4SSX3H76",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSBBMQ2FYNHKZ4NTGGVDS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSBBMQ2FYNHKZ4NTGGVDS",
+        "id": "01M5SWSBD4JJ7GM0183KQ9KGJT",
+        "link": "01M5SWSBD4JJ7GM0183GWCCHMN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSBBMQ2FYNHKZ4NTGGVDS",
+        "id": "01M5SWSBEMR1MABMQRHN2E31W3",
+        "link": "01M5SWSBEMR1MABMQRHM4K67PP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS9GDHNEE81EEBCQW1895",
+        "id": "01M5SWSBG4BS6QMP2QC9GWC4DW",
+        "link": "01M5SWSBG4BS6QMP2QC7FGX6Y9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSBBMQ2FYNHKZ4NTGGVDS",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: By intent, tree order (Recommended): Proposed and accepted change sets, grouped under the intent each one serves (per D7). Groups follow the intent tree (roots by key, depth first, each shown with its path). Inside a group, depends-on order, ties by ID. Change sets that serve nothing go last under 'No intent'. Each line shows its state and whether it's ready (from ready's logic).",
+          "statement": "`roadmap`: proposed and accepted change sets grouped by the intent each serves (D7); groups in intent-tree order (roots by key, depth first, with the path); inside a group `depends-on` order, ties by ID; serving nothing → a last \"No intent\" group; each line shows state and a ready mark.",
+          "wording": "agent of milestone-1 task 7 (shipit plan), accepted by the owner"
+        },
+        "handle": "t7-d9-roadmap-grouping",
+        "id": "01M5SWSBHMSWBVTAJN4AXHY680",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSBHMSWBVTAJN4A86SBTY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSBHMSWBVTAJN4A86SBTY",
+        "id": "01M5SWSBK4RWJZBXTFG4AJNNXB",
+        "link": "01M5SWSBK4RWJZBXTFG2VGDZTH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSBHMSWBVTAJN4A86SBTY",
+        "id": "01M5SWSBMMGHPH55605VMVK1B5",
+        "link": "01M5SWSBMMGHPH55605R5SB3MD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS9C5KVKS7DEVJ08272NZ",
+        "id": "01M5SWSBP5DNDZMBMFDP6XTAFQ",
+        "link": "01M5SWSBP5DNDZMBMFDJR651JB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSBHMSWBVTAJN4A86SBTY",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Capability roots, whole depth (Recommended): With no ref: every capability root and its whole subtree. With a ref: that node's subtree (a capability or an intent). --kind intent shows the intent tree; --depth N cuts it off; retired nodes are hidden unless --retired. Read with one recursive index query, not one query per node.",
+          "statement": "`tree [ref]`: no ref → every capability root with its whole subtree; a ref → that node's subtree; `--kind intent` for the intent tree; `--depth N`; retired hidden unless `--retired`; one recursive index query.",
+          "wording": "agent of milestone-1 task 7 (shipit plan), accepted by the owner"
+        },
+        "handle": "t7-d10-tree-shape",
+        "id": "01M5SWSBQN4SJ041CJ109NGA4P",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSBQN4SJ041CJ0X05RQXS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSBQN4SJ041CJ0X05RQXS",
+        "id": "01M5SWSBS5YSZN4E0W21NXD1JC",
+        "link": "01M5SWSBS5YSZN4E0W21KKKT3T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSBQN4SJ041CJ0X05RQXS",
+        "id": "01M5SWSBTPB3C2PF9BA1QERDEJ",
+        "link": "01M5SWSBTPB3C2PF9B9ZMPS261",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS93EYTF11BYYM9V8R37V",
+        "id": "01M5SWSBW6A6NWVJNE3FE8SS6J",
+        "link": "01M5SWSBW6A6NWVJNE3DB5W2DW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSBQN4SJ041CJ0X05RQXS",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: kind, parent, retired; by ID (Recommended): --kind (repeatable), --parent <ref> (direct children), --retired to include retired nodes. Sorted by ID; --limit (default 100, max 1000) and an opaque --cursor; the response carries next_cursor when more remain. Nodes only, not links.",
+          "statement": "`ls`: `--kind` (repeatable), `--parent <ref>` (direct children), `--retired`; sorted by ID; `--limit` default 100, max 1000; opaque `--cursor`; `next_cursor` when more remain. Nodes only.",
+          "wording": "agent of milestone-1 task 7 (shipit plan), accepted by the owner"
+        },
+        "handle": "t7-d11-ls-filters-paging",
+        "id": "01M5SWSBXPYVVQYY0XBW1402ZJ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSBXPYVVQYY0XBV6N63Z4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSBXPYVVQYY0XBV6N63Z4",
+        "id": "01M5SWSBZ7R5X8N7VTD482FFCH",
+        "link": "01M5SWSBZ7R5X8N7VTD2HH4W2P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSBXPYVVQYY0XBV6N63Z4",
+        "id": "01M5SWSC0RQJH6T0YFJ9MDAC4K",
+        "link": "01M5SWSC0RQJH6T0YFJ8PRGKTA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS97NDCXX5FFS9FHK20P7",
+        "id": "01M5SWSC29JTFJ4RXGF9ZFT97S",
+        "link": "01M5SWSC29JTFJ4RXGF9KJNM8K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSBXPYVVQYY0XBV6N63Z4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS9MPCFK73B1XBW9BQXDM",
+        "id": "01M5SWSC3TKQG9X8JWPY0KAC88",
+        "link": "01M5SWSC3TKQG9X8JWPVV3BVZF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSBXPYVVQYY0XBV6N63Z4",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Node, fields, links, children (Recommended): Kind, handle, ID, tree path (ancestors), retired and reason, version and creating change set; every field (markdown text as is, other JSON canonical); links out and in, in, read backwards for incoming ('served by'), with the other end's handle; direct children. Links can also be shown by link ID.",
+          "statement": "`show <ref>`: kind, handle, ID, tree path, retired and reason, version, creating change set; every field; links out and in (incoming named backwards, with the other end's handle); direct children. A link ref shows the link.",
+          "wording": "agent of milestone-1 task 7 (shipit plan), accepted by the owner"
+        },
+        "handle": "t7-d12-show-shape",
+        "id": "01M5SWSC5B8740MBYAN9VD52DA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSC5B8740MBYAN876NRRB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSC5B8740MBYAN876NRRB",
+        "id": "01M5SWSC6WKBPP5ER5K3DCYSFD",
+        "link": "01M5SWSC6WKBPP5ER5K1G59FTD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSC5B8740MBYAN876NRRB",
+        "id": "01M5SWSC8CGYSBVZ9V2Y3VFSQS",
+        "link": "01M5SWSC8CGYSBVZ9V2VDPF2A6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS8Z9K0A9Q9WJSZQGZF6F",
+        "id": "01M5SWSC9XCW9ATWDP6DQ9FC4R",
+        "link": "01M5SWSC9XCW9ATWDP6A8WSY08",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSC5B8740MBYAN876NRRB",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Tests with each task (Recommended): Each task ships its own tests: unit tests in internal/api and internal/index for the logic (why's walk, ready's reasons, roadmap order, cursors); one testscript scenario per command, covering markdown and --json and the error exit codes; describe-golden regenerated. Same as tasks 5, 6 and 9.",
+          "statement": "Tests with each task: unit tests in `internal/api` and `internal/index`, one testscript per command (markdown, `--json`, error exit codes), `describe-golden` regenerated.",
+          "wording": "agent of milestone-1 task 7 (shipit plan), accepted by the owner"
+        },
+        "handle": "t7-d13-tests",
+        "id": "01M5SWSCBEF6JQAACHQJ522RKN",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSCBEF6JQAACHQF74GD97",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSCBEF6JQAACHQF74GD97",
+        "id": "01M5SWSCCZ0A43D9RJSQ3SSFXT",
+        "link": "01M5SWSCCZ0A43D9RJSPD9KDZX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSCBEF6JQAACHQF74GD97",
+        "id": "01M5SWSCEHYSJQQQ0V7WE8N0S2",
+        "link": "01M5SWSCEHYSJQQQ0V7SGSY4CR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "revised": "revised by the orchestrator under the owner's authorization, when CI ran roadmap and ready at about 25.5 ms: budget = 50 ms (done point 4, as slice uses). Keep the 25 ms numbers as benchmarks; speeding up planGather is a follow-up.",
+          "settled_by": "Agent's option, accepted by the owner: Per-command budget test (Recommended): One test in make check: on the generated 50k model with a fresh index, run each read op through the api (show, ls first page, tree of a deep subtree, why, log, roadmap, ready) in as-is and to-be. Each median must be under 25 ms over 20 runs, with room for CI. Skipped under -short. what-if is exempt (D2). A whole-tree `tree` is benchmarked, not budgeted.",
+          "statement": "Budget test in `make check`: on the generated 50k model with a fresh index, each read op through the api (show, ls first page, tree of a deep subtree, why, log, roadmap, ready) in as-is and to-be; median < 25 ms over 20 runs; skipped under `-short`. what-if exempt; whole-tree `tree` benchmarked, not budgeted. **Revised in review by the owner's session:** the budget is 50 ms (milestone done point 4, as slice uses), since the CI runner needs ~25.5 ms for roadmap/ready; the 25 ms numbers stay as benchmarks; speeding up planGather is a follow-up.",
+          "wording": "agent of milestone-1 task 7 (shipit plan), accepted by the owner"
+        },
+        "handle": "t7-d14-read-budget",
+        "id": "01M5SWSCG2YEVDXH7MTQDPE9H2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSCG2YEVDXH7MTN70MBWJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSCG2YEVDXH7MTN70MBWJ",
+        "id": "01M5SWSCHMQA15N9GVRTHH095W",
+        "link": "01M5SWSCHMQA15N9GVRQY2J9Q9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSCG2YEVDXH7MTN70MBWJ",
+        "id": "01M5SWSCK5WS1YFEBZ9AM5JBY9",
+        "link": "01M5SWSCK5WS1YFEBZ9771BSS6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSCG2YEVDXH7MTN70MBWJ",
+        "id": "01M5SWSCMP1CHDVEVQV2496N31",
+        "link": "01M5SWSCMP1CHDVEVQV22HD4KV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS1V2VF3MF5R7A78C6JQA",
+        "id": "01M5SWSCP84CTZQNV4MC6XDME9",
+        "link": "01M5SWSCP84CTZQNV4MA15GSF1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSCG2YEVDXH7MTN70MBWJ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's options, accepted by the owner (several picked): milestone-1.md and the plan docs: Don't edit ~/code/_genesis/milestone-1.md or the founding conversation. / Writes and the interim model: Leave the write operations and api.Model as they are (D3). / slice, guide, source add: No slice code (task 8) and no guide, skills or source add (task 10). / Index schema, unless needed: New index query methods are fine; bump SchemaVersion only if a query can't be served from the current tables, and say why in the PR.",
+          "statement": "Guardrails: no edits to `milestone-1.md` or the founding conversation; writes and the interim model untouched; no slice, guide, skill or `source add` code; index schema bump only if a query cannot be served from the current tables, justified in the PR.",
+          "wording": "agent of milestone-1 task 7 (shipit plan), accepted by the owner"
+        },
+        "handle": "t7-d15-guardrails",
+        "id": "01M5SWSCQXZ427SC44J4P1MXGM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSCQXZ427SC44J4HDGSQH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSCQXZ427SC44J4HDGSQH",
+        "id": "01M5SWSCSFZGC8CBY24M9TXHTJ",
+        "link": "01M5SWSCSFZGC8CBY24JFE39ES",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSCQXZ427SC44J4HDGSQH",
+        "id": "01M5SWSCV168M92QPEZ402M044",
+        "link": "01M5SWSCV168M92QPEZ19QM4P9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: PR open, CI green, stop (Recommended): make check passes locally, genesis render is committed, the branch is pushed with a PR, and I wait for CI to go green. The owner's main session merges and closes out. Matches your instructions.",
+          "statement": "Finish: `make check` green, `genesis render` committed if stale, branch pushed, PR open, CI green; then stop.",
+          "wording": "agent of milestone-1 task 7 (shipit plan), accepted by the owner"
+        },
+        "handle": "t7-d16-finish",
+        "id": "01M5SWSCWKJZGYQ7GJHWRTE8BK",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSCWKJZGYQ7GJHWCJZ02H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSCWKJZGYQ7GJHWCJZ02H",
+        "id": "01M5SWSCY4RCG5CNZ77HFV3GCA",
+        "link": "01M5SWSCY4RCG5CNZ77G5BDEZ1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSCWKJZGYQ7GJHWCJZ02H",
+        "id": "01M5SWSCZQ035PPWTNH2ZMAGKW",
+        "link": "01M5SWSCZQ035PPWTNH2VKQ8XD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Always to-be by default (Recommended): Both are questions about the plan (accepted and proposed work), so their default is to-be whether or not a change set is current. --view still overrides. This is a documented exception to D2.",
+          "statement": "`roadmap` and `ready` default to to-be whether or not a change set is in effect (they are questions about the plan); `--view` still overrides. A documented exception to D2.",
+          "wording": "agent of milestone-1 task 7 (shipit plan), accepted by the owner"
+        },
+        "handle": "t7-d17-plan-reads-to-be",
+        "id": "01M5SWSD1A1FMN4FDMR099B6P5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSD1A1FMN4FDMQXDP58G0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSD1A1FMN4FDMQXDP58G0",
+        "id": "01M5SWSD2VMVNTJK5C5YAGCBD3",
+        "link": "01M5SWSD2VMVNTJK5C5VHHTF7X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGTD75VQX2D5JHRJF0Q4",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSD1A1FMN4FDMQXDP58G0",
+        "id": "01M5SWSD4E5Y6JRZ92SG12TMVS",
+        "link": "01M5SWSD4E5Y6JRZ92SE7EY2RJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS9C5KVKS7DEVJ08272NZ",
+        "id": "01M5SWSD60ESD1JGY2S0YCZM3Z",
+        "link": "01M5SWSD60ESD1JGY2S0T5VN75",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSD1A1FMN4FDMQXDP58G0",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS9GDHNEE81EEBCQW1895",
+        "id": "01M5SWSD7J4EP2AF08JGNDSAYP",
+        "link": "01M5SWSD7J4EP2AF08JD7QW7S8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSD1A1FMN4FDMQXDP58G0",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWS9YBW0KGX13FGMDHMKTG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWSDA407XVV4DGF1ZWGAKZ",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,119 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWT1Z1FCMKFEZY59G5W72E"
+  ],
+  "at": "2026-10-25T16:02:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Genesis works across repos: a registry of local repos, links between their models, shared standards, and a personal layer."
+        },
+        "handle": "repos",
+        "id": "01M5SWT229QWMWWWJQJQ4SG4SP",
+        "key": "z9",
+        "kind": "capability",
+        "node": "01M5SWT229QWMWWWJQJNQA6EJ0",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "fields": {
+          "statement": "A machine-wide registry lists the repos cloned on the machine and resolves references to them."
+        },
+        "handle": "repo-registry",
+        "id": "01M5SWT24CGAJDEQQ8NATMN3GZ",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5SWT24CGAJDEQQ8N9KTA70K",
+        "op": "node.create",
+        "parent": "01M5SWT229QWMWWWJQJNQA6EJ0"
+      },
+      {
+        "fields": {
+          "statement": "Nodes link to nodes in other repos by repo ID, and a link to a repo that isn't cloned is unresolved rather than broken."
+        },
+        "handle": "cross-repo-links",
+        "id": "01M5SWT26FMERD3GQ4EGAA82B7",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5SWT26FMERD3GQ4EETEFP1J",
+        "op": "node.create",
+        "parent": "01M5SWT229QWMWWWJQJNQA6EJ0"
+      },
+      {
+        "fields": {
+          "statement": "A change across repos is a group of per-repo change sets linked by depends-on, each landing with its own repo's merge."
+        },
+        "handle": "cross-repo-changes",
+        "id": "01M5SWT28JRX2X68FKEZ13AKB7",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5SWT28JRX2X68FKEXVBZCEH",
+        "op": "node.create",
+        "parent": "01M5SWT229QWMWWWJQJNQA6EJ0"
+      },
+      {
+        "fields": {
+          "statement": "A standards repo holds shared constraints that other repos link to."
+        },
+        "handle": "standards-repos",
+        "id": "01M5SWT2AMFKYVAVQF43TRGZWN",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5SWT2AMFKYVAVQF408DSA35",
+        "op": "node.create",
+        "parent": "01M5SWT229QWMWWWJQJNQA6EJ0"
+      },
+      {
+        "fields": {
+          "statement": "A personal model in the user's config folder applies its constraints to every repo on the machine."
+        },
+        "handle": "personal-layer",
+        "id": "01M5SWT2CQY4FFS44ZH3HPHQJW",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5SWT2CQY4FFS44ZGZVZXTYQ",
+        "op": "node.create",
+        "parent": "01M5SWT229QWMWWWJQJNQA6EJ0"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT229QWMWWWJQJNQA6EJ0",
+        "id": "01M5SWT2EWF55RZSMDBCD97R9C",
+        "link": "01M5SWT2EWF55RZSMDBAQ2H59G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJ07H671EJRAGRSFRTD1",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT26FMERD3GQ4EETEFP1J",
+        "id": "01M5SWT2H5MRRPXJGW9BW8H03B",
+        "link": "01M5SWT2H5MRRPXJGW98YPV4E6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJ1552P9PFYSNY5P44Q5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT229QWMWWWJQJNQA6EJ0",
+        "id": "01M5SWT2KFYFTN1SAJS5M35A84",
+        "link": "01M5SWT2KFYFTN1SAJS298B5FW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJ246XV8DYJJ3QTHJK17",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWT1YJ5WCWCNKZT5P2XRTV",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWT2Q3RM4NTRD5Q7XYT3PR",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [],
+  "at": "2026-10-25T16:02:08Z",
+  "body": {
+    "intent": "Record actor darin.haener@hey.com",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M5SWRGEM7Z4C61JMG9EZRQFX",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRGEM7Z4C61JMGC2DE6XJ",
+  "type": "open",
+  "v": 1
+}

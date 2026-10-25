@@ -1,0 +1,32 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWRGMVJ7V1AEHXMQPNPEP6"
+  ],
+  "at": "2026-10-25T16:02:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "24abaf3007be2d1126e1c79098a2b4b8a1a7a9bf5481d1316314547c9532fe1b",
+          "summary": "The shipit work plan for task 2: the log's foundations as library packages (internal/id, canon, entry, store) plus a format-1 corpus, all test-first, with no new CLI commands. Decided (D1-D19, agent wording accepted by the owner): library only, with repo.json, Init and Open in the library and genesis init left to task 6; IDs are ULIDs in canonical upper-case Crockford base32, from oklog/ulid/v2; TDD with table tests, rapid properties and a fuzzed entry decoder; format 1 allows only integer JSON numbers; strings escape only what JSON requires, raw UTF-8, no HTML escaping, no normalisation, invalid UTF-8 rejected; reading is strict, so bytes must be exactly canonical and duplicate keys and unknown envelope fields are rejected; body is any JSON object, typed bodies being task 3's; writes are atomic and never overwrite (temp file, fsync, hard link, fsync the folder); the reader collects every per-file problem, keeps good entries and returns a stable order; the corpus may be amended until the first tagged release and is add-only after; the envelope rules (v, required ULIDs, UTC second-precision at, a sorted unique after list, nine entry types, an object body); repo.json's canonical shape, with Init refusing an existing .genesis/; no check between a ULID's time and at; the reader reports every stray file or folder under log/ and skips only dot-prefixed temp files; the corpus lives under testdata/corpus/format-1 and loads with zero problems. Out of scope: CLI commands, folding, handles, fractional keys, the index, projection, check. Nothing left open.",
+          "title": "Shipit plan, milestone 1 task 2: log foundation"
+        },
+        "handle": "plan-task-2",
+        "id": "01M5SWRGNF2CMZJE8MXHMSKA94",
+        "key": null,
+        "kind": "source",
+        "node": "01M5SWRGNF2CMZJE8MXG1JQT40",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5SWRGHKJKT6JZY6ZVMQEGWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRGNQ0SZFJPGC6RGE9QJS",
+  "type": "ops",
+  "v": 1
+}

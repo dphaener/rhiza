@@ -1,0 +1,248 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWSPV44HAA4HZND09Y38W2"
+  ],
+  "at": "2026-10-25T16:02:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "built_in": "PR #8 (3e17d7b)",
+          "statement": "genesis source add stores a Source: a scrubbed summary, verbatim quotes and the hash of the raw material."
+        },
+        "handle": "source-add",
+        "id": "01M5SWSPY1SVF1745FJ587W94W",
+        "key": "g",
+        "kind": "capability",
+        "node": "01M5SWSPY1SVF1745FJ2SZ8CD7",
+        "op": "node.create",
+        "parent": "01M5SWRH0SFXQJK9MEZJ9DTX9K"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSPY1SVF1745FJ2SZ8CD7",
+        "id": "01M5SWSPZT778KT9DEAFE19FDG",
+        "link": "01M5SWSPZT778KT9DEAES2DCP6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSPY1SVF1745FJ2SZ8CD7",
+        "id": "01M5SWSQ1NSTJ2T31320YXWYYF",
+        "link": "01M5SWSQ1NSTJ2T313209HGKM4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #8 (3e17d7b)",
+          "statement": "A raw conversation is scrubbed into a Source that keeps the owner's exact words and removes secrets and personal data."
+        },
+        "handle": "scrubbing",
+        "id": "01M5SWSQ3FV0ZDH2XRHZ2QQFM2",
+        "key": "h",
+        "kind": "capability",
+        "node": "01M5SWSQ3FV0ZDH2XRHW2Q1A7K",
+        "op": "node.create",
+        "parent": "01M5SWRH0SFXQJK9MEZJ9DTX9K"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQ3FV0ZDH2XRHW2Q1A7K",
+        "id": "01M5SWSQ5AEJRBTZAW3ETWVQQP",
+        "link": "01M5SWSQ5AEJRBTZAW3DXQMJKA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQ3FV0ZDH2XRHW2Q1A7K",
+        "id": "01M5SWSQ74RAN3YCHVTZ23WNX6",
+        "link": "01M5SWSQ74RAN3YCHVTXB546JN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #8 (3e17d7b)",
+          "statement": "genesis guide prints the agent guide and its topics from the binary."
+        },
+        "handle": "agent-guide",
+        "id": "01M5SWSQ8YXAQ763XWK6SHZ51H",
+        "key": "9",
+        "kind": "capability",
+        "node": "01M5SWSQ8YXAQ763XWK5M7J24K",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQ8YXAQ763XWK5M7J24K",
+        "id": "01M5SWSQASWDAT5RFEX9W71983",
+        "link": "01M5SWSQASWDAT5RFEX8V0YP89",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQ8YXAQ763XWK5M7J24K",
+        "id": "01M5SWSQCKNAV07DJJ94Z4FDEQ",
+        "link": "01M5SWSQCKNAV07DJJ94SP0WWE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #8 (3e17d7b)",
+          "statement": "Genesis ships the genesis and genesis-scrub skills."
+        },
+        "handle": "skills",
+        "id": "01M5SWSQEEDG8N3NJBEK9RNDBN",
+        "key": "e",
+        "kind": "capability",
+        "node": "01M5SWSQEEDG8N3NJBEFFRYQZG",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQEEDG8N3NJBEFFRYQZG",
+        "id": "01M5SWSQG89PX3WK24X05P9M3H",
+        "link": "01M5SWSQG89PX3WK24WWQPT0XS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQEEDG8N3NJBEFFRYQZG",
+        "id": "01M5SWSQJ2DXPCMT3HC62Y94JJ",
+        "link": "01M5SWSQJ2DXPCMT3HC3W3X8GT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #8 (3e17d7b)",
+          "statement": "genesis guide install installs the guide into Claude Code as a plugin, and status reports whether the installed version is current."
+        },
+        "handle": "guide-install",
+        "id": "01M5SWSQKVQWSQVYXS5CEX2KJ9",
+        "key": "g",
+        "kind": "capability",
+        "node": "01M5SWSQKVQWSQVYXS5B960MEH",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQKVQWSQVYXS5B960MEH",
+        "id": "01M5SWSQNMRMAB1VJERWFY5REK",
+        "link": "01M5SWSQNMRMAB1VJERVKG6EW5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQKVQWSQVYXS5B960MEH",
+        "id": "01M5SWSQQEYCF3QXPR59PQR7NV",
+        "link": "01M5SWSQQEYCF3QXPR56YS6HEM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #8 (3e17d7b)",
+          "statement": "A session-start hook gives an agent a short brief on the repo's model when its session begins."
+        },
+        "handle": "session-start",
+        "id": "01M5SWSQSBEVXDV0F9QG7J49QT",
+        "key": "h",
+        "kind": "capability",
+        "node": "01M5SWSQSBEVXDV0F9QEBEBN2C",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQSBEVXDV0F9QEBEBN2C",
+        "id": "01M5SWSQV6R07N256CV36XJC02",
+        "link": "01M5SWSQV6R07N256CV0FXM95C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQSBEVXDV0F9QEBEBN2C",
+        "id": "01M5SWSQX00E8K72Q7J5T2XAVK",
+        "link": "01M5SWSQX00E8K72Q7J2WQD1E6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #8 (3e17d7b)",
+          "statement": "The guide stays within its size caps, checked on every build."
+        },
+        "handle": "guide-size-cap",
+        "id": "01M5SWSQYW88MYKCKJHJCG4ARP",
+        "key": "hi",
+        "kind": "capability",
+        "node": "01M5SWSQYW88MYKCKJHGS0YX98",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQYW88MYKCKJHGS0YX98",
+        "id": "01M5SWSR0QKK0DG6ZTJDNF3Z3C",
+        "link": "01M5SWSR0QKK0DG6ZTJCKZ0ZBD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSQYW88MYKCKJHGS0YX98",
+        "id": "01M5SWSR2JCVN3C2NE193V7WJQ",
+        "link": "01M5SWSR2JCVN3C2NE16W8003J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGXHJD80QG3XVV3FXV2B",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M5SWSPTQXXCNN241H3NPEHR0",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWSR5KH6E17SR37S0FKTAQ",
+  "type": "ops",
+  "v": 1
+}

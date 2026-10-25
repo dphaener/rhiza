@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:03:19Z",
+  "body": {
+    "intent": "Genesis detects conflicting decisions across change sets in flight and surfaces them to the owner.",
+    "kind": "intention",
+    "sources": [
+      "01M5SWRGJ7AZM5CYJAE32SGRYM"
+    ]
+  },
+  "change_set": "01M5SWTNWB9GEJ5AA8R7K867KB",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWTNWY0H56XYCWHJPDNMXJ",
+  "type": "open",
+  "v": 1
+}

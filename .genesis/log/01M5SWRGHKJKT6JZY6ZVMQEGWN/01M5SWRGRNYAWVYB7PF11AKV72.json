@@ -1,0 +1,32 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWRGQKZP0QFFH0BFNAK73H"
+  ],
+  "at": "2026-10-25T16:02:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "d9ed4375ac9c0812930c2975abd858731b5cb150866aeefb00b12c47ffcb137f",
+          "summary": "The shipit work plan for task 5: a derived SQLite index per worktree, caught up from the log by reading only new entry files, holding the as-is and to-be views, plus a deterministic 50,000-node generator and a read budget test. Decided (D1-D15, agent wording accepted by the owner): a new internal/index package with no command wired and the api's interim model untouched; the pure-Go modernc.org/sqlite driver, so no cgo; the index lives in the user cache folder keyed by a hash of the worktree root; input-incremental catch-up that decodes only new entries, refolds touched change sets and recomputes a view whole when its inputs change, writing rows by diff; as-is and to-be are stored and what-if is computed on demand and benchmarked; freshness is judged by entry file names, and any vanished file forces a full rebuild; the generator is a Go package, deterministic from a seed, with a realistic mix of about 35,000 nodes and 15,000 links over about 500 change sets; a budget test in make check plus benchmarks; a schema version, rebuild on mismatch or corruption, and catch-up under an immediate transaction with WAL and a busy timeout; a minimal per-view query API; tests after implementation, including a property that any split into catch-up steps equals a scratch build; the fresh-read median must stay under 25 ms over 20 runs; no ADR. Revised after the plan: the orchestrator later raised the fresh-read budget to 50 ms, milestone 1's target, after CI on main failed at 27.4 ms (PR #11). Left open: a faster fresh read so CI has headroom under 25 ms again.",
+          "title": "Shipit plan, milestone 1 task 5: the SQLite index"
+        },
+        "handle": "plan-task-5",
+        "id": "01M5SWRGRDB40TG5A8GBZF9E4Z",
+        "key": null,
+        "kind": "source",
+        "node": "01M5SWRGRDB40TG5A8G8PGQ2FR",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5SWRGHKJKT6JZY6ZVMQEGWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRGRNYAWVYB7PF11AKV72",
+  "type": "ops",
+  "v": 1
+}

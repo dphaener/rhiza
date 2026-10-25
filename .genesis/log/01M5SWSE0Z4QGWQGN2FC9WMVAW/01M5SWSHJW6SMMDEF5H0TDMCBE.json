@@ -1,0 +1,772 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWSE1A2H83S8V5TPXDY68B"
+  ],
+  "at": "2026-10-25T16:02:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "revised": "revised by the orchestrator under the owner's authorization: change D1's default view so reads and slice share one rule across tasks 7 and 8. Effective change set draft or proposed -> what-if of it; accepted -> to-be; none or landed -> as-is. Work happens on accepted change sets, so the main loop stays on the fast indexed to-be path; what-if stays out of the 50 ms budget.",
+          "settled_by": "Agent's option, accepted by the owner: slice [ref] + --view (Recommended): `slice <ref>` slices one node; with no ref, slices the effective change set (--change / GENESIS_CHANGE / current). --view as-is|to-be|what-if defaults to what-if when that change set is in flight, else as-is. Matches the guide's two forms and reuses the global --change.",
+          "statement": "`slice [ref]`: a ref gives a node slice; no ref gives a change slice of the effective change set (`--change` / `GENESIS_CHANGE` / current; none is a usage error with next `genesis slice <ref>`). `--view as-is|to-be|what-if`. Default view (amended by the owner's orchestrator on 2026-10-24, shared with task 7's reads): the effective change set is draft or proposed → what-if of it; accepted → to-be; none or landed (or any other terminal state) → as-is. A node slice with what-if needs a draft or proposed change set.",
+          "wording": "agent of milestone-1 task 8 (shipit plan), accepted by the owner"
+        },
+        "handle": "t8-d1-slice-shape",
+        "id": "01M5SWSE3S9EMJG4FZQ8K6HR0H",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSE3S9EMJG4FZQ6TZV06Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSE3S9EMJG4FZQ6TZV06Q",
+        "id": "01M5SWSE5DG65JRCACA7E9839A",
+        "link": "01M5SWSE5DG65JRCACA6QSZTBS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGVE8N122VSRM8K0ATGP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSE3S9EMJG4FZQ6TZV06Q",
+        "id": "01M5SWSE70K9MSWCN7D5W1VXYA",
+        "link": "01M5SWSE70K9MSWCN7D1XJFXAK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSE3S9EMJG4FZQ6TZV06Q",
+        "id": "01M5SWSE8JW0G1AEDQ1ZA0KKT3",
+        "link": "01M5SWSE8JW0G1AEDQ1WKPXQSG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJ7AZM5CYJAE32SGRYM",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSDPGJXS4HCMBFGXRJD6Q",
+        "id": "01M5SWSEA48PFWPS4ZBXG85ZZP",
+        "link": "01M5SWSEA48PFWPS4ZBVQR25A3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSE3S9EMJG4FZQ6TZV06Q",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Budget as-is/to-be only (Recommended): Use stored views for as-is and to-be (accepted change sets live there), compute what-if on demand, and put the 50 ms budget test on as-is/to-be node and change slices. Fixing what-if/catch-up refolding stays the follow-up task 5 named. Keeps this PR off task 7's index work.",
+          "statement": "as-is and to-be read the stored views through the index; what-if uses `index.WhatIf` and slices the resulting `model.Model`. The 50 ms budget test covers only as-is/to-be. What-if speed stays a follow-up.",
+          "wording": "agent of milestone-1 task 8 (shipit plan), accepted by the owner"
+        },
+        "handle": "t8-d2-budget-stored-views",
+        "id": "01M5SWSEBQVG3HGBN8082D81AQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSEBQVG3HGBN807ZVKR8M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSEBQVG3HGBN807ZVKR8M",
+        "id": "01M5SWSED9PWFW60KW8NTPP17C",
+        "link": "01M5SWSED9PWFW60KW8KPDCSFZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGVE8N122VSRM8K0ATGP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSEBQVG3HGBN807ZVKR8M",
+        "id": "01M5SWSEEX1GEYXZHAT1D381AR",
+        "link": "01M5SWSEEX1GEYXZHASYR61T9B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSDPGJXS4HCMBFGXRJD6Q",
+        "id": "01M5SWSEGJNHF5E5QM0P3JC3VG",
+        "link": "01M5SWSEGJNHF5E5QM0M6889A1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSEBQVG3HGBN807ZVKR8M",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: The bytes actually printed (Recommended): Same cut algorithm for both formats; the size is estimated on the markdown or the canonical JSON being output, so `slice --change X --json` itself fits 4,000 tokens (done-point 2). JSON keeps the same items as markdown at each tier.",
+          "statement": "The budget is measured on the bytes actually printed (markdown, or canonical JSON with `--json`), with the same cut algorithm for both. JSON keeps the same items as markdown at every tier.",
+          "wording": "agent of milestone-1 task 8 (shipit plan), accepted by the owner"
+        },
+        "handle": "t8-d3-budget-printed-bytes",
+        "id": "01M5SWSEJ6BGKTFAF878A4R1VC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSEJ6BGKTFAF875P1J35F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSEJ6BGKTFAF875P1J35F",
+        "id": "01M5SWSEKS25C55SZ9R272WFZE",
+        "link": "01M5SWSEKS25C55SZ9QYQAP017",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGVE8N122VSRM8K0ATGP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSEJ6BGKTFAF875P1J35F",
+        "id": "01M5SWSENC0B7B4SNA6CV152ES",
+        "link": "01M5SWSENC0B7B4SNA69CY0KN2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSDPGJXS4HCMBFGXRJD6Q",
+        "id": "01M5SWSEPZQSZ2N9XYTJRH4W7S",
+        "link": "01M5SWSEPZQSZ2N9XYTG1VFSFS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSEJ6BGKTFAF875P1J35F",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: ceil(bytes / 4) (Recommended): Deterministic, cheap, the usual approximation for English and JSON; documented as an estimate. Slightly generous for text heavy with code.",
+          "statement": "tokens = ceil(bytes / 4).",
+          "wording": "agent of milestone-1 task 8 (shipit plan), accepted by the owner"
+        },
+        "handle": "t8-d4-token-estimate",
+        "id": "01M5SWSERJW3K4870TCK7F3DXZ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSERJW3K4870TCFE0G9H7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSERJW3K4870TCFE0G9H7",
+        "id": "01M5SWSET5Y8128HSZW1V1DDQW",
+        "link": "01M5SWSET5Y8128HSZVZXWCD9N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGVE8N122VSRM8K0ATGP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSERJW3K4870TCFE0G9H7",
+        "id": "01M5SWSEVRHJ82ZDMSTDDF80AQ",
+        "link": "01M5SWSEVRHJ82ZDMSTB3PYS51",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSDPGJXS4HCMBFGXRJD6Q",
+        "id": "01M5SWSEXC8CFWFVZP9ZXA1S75",
+        "link": "01M5SWSEXC8CFWFVZP9Z332K29",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSERJW3K4870TCFE0G9H7",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Linked to a tree root (Recommended): Only `constrains` links count: a constraint on a root capability or intent applies to everything under it, marked `from <root>`. An unlinked constraint applies nowhere. Matches the link table (\"constraint → capability, intent, or a root\") and keeps scope explicit.",
+          "statement": "Constraints apply only through `constrains` links. A constraint on a tree root applies below it, marked `from <root handle>`. An unlinked constraint applies nowhere.",
+          "wording": "agent of milestone-1 task 8 (shipit plan), accepted by the owner"
+        },
+        "handle": "t8-d5-constraints-via-links",
+        "id": "01M5SWSEYZNARXT5W4M5FVZT8T",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSEYZNARXT5W4M2H4KMQ8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSEYZNARXT5W4M2H4KMQ8",
+        "id": "01M5SWSF0KR19JWEAHNGTHPSS5",
+        "link": "01M5SWSF0KR19JWEAHNEV3R40N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGVE8N122VSRM8K0ATGP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSEYZNARXT5W4M2H4KMQ8",
+        "id": "01M5SWSF27VMAGVRFTNVVV0D0E",
+        "link": "01M5SWSF27VMAGVRFTNTVKSY5A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSDPGJXS4HCMBFGXRJD6Q",
+        "id": "01M5SWSF3V7WJ09Y3RA2FGCV9V",
+        "link": "01M5SWSF3V7WJ09Y3RA1BDDBB9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSEYZNARXT5W4M2H4KMQ8",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Shortest unique prefix, min 6 (Recommended): The shortest prefix (at least 6 characters) unique among the view's node IDs, so `genesis show <short>` always resolves. ULIDs made in one change set share ~10 timestamp characters, so these are often 11-13 long. Can change when a node with a close ID is added (the model changed, so the bytes may too).",
+          "statement": "The short ID is the shortest prefix, at least 6 characters, unique among the view's node IDs (live and retired).",
+          "wording": "agent of milestone-1 task 8 (shipit plan), accepted by the owner"
+        },
+        "handle": "t8-d6-short-ids",
+        "id": "01M5SWSF5E16R6CZPW8N7SD7BY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSF5E16R6CZPW8K3311BV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSF5E16R6CZPW8K3311BV",
+        "id": "01M5SWSF72JXFWDBMEX34FRV44",
+        "link": "01M5SWSF72JXFWDBMEX30AGV8T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGVE8N122VSRM8K0ATGP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSF5E16R6CZPW8K3311BV",
+        "id": "01M5SWSF8NAQERAHRVHE0ESXHE",
+        "link": "01M5SWSF8NAQERAHRVHDWK8YPV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSDPGJXS4HCMBFGXRJD6Q",
+        "id": "01M5SWSFA941TNS8JRKW6E09PN",
+        "link": "01M5SWSFA941TNS8JRKT5TE4KZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSF5E16R6CZPW8K3311BV",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: internal/slice over a reader (Recommended): A pure package that builds and renders a slice from a small reader interface (node, ancestors, children, links, change sets); one adapter over *index.Index and one over model.Model. The api op `slice` stays thin. Lets a property test check index-built slices against model-built ones byte for byte.",
+          "statement": "A pure `internal/slice` package over a `Reader` interface, with adapters over `model.Model` and `*index.Index`; the api op stays thin.",
+          "wording": "agent of milestone-1 task 8 (shipit plan), accepted by the owner"
+        },
+        "handle": "t8-d7-slice-package",
+        "id": "01M5SWSFBX30JCXD4563W1084F",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSFBX30JCXD4563CS6Q5Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSFBX30JCXD4563CS6Q5Y",
+        "id": "01M5SWSFDG4GNS4F1VKNZNA2HV",
+        "link": "01M5SWSFDG4GNS4F1VKMNH74Z2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGVE8N122VSRM8K0ATGP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSFBX30JCXD4563CS6Q5Y",
+        "id": "01M5SWSFF5HJM5A3932A0A0GB4",
+        "link": "01M5SWSFF5HJM5A39327ZTV1D4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSDPGJXS4HCMBFGXRJD6Q",
+        "id": "01M5SWSFGSXRRV1AYKWD2EWT79",
+        "link": "01M5SWSFGSXRRV1AYKWC2TA7YT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSFBX30JCXD4563CS6Q5Y",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Node-op targets + link endpoints (Recommended): The nodes its node.create/update/move/retire ops target, plus the node endpoints of links it creates or retires. Each is a Focus item showing its proposed change against as-is; the other sections are the de-duplicated union.",
+          "statement": "A change slice touches its node-op targets plus the node endpoints of the links it creates or retires. Each touched node is a Focus item; the other sections are the de-duplicated union.",
+          "wording": "agent of milestone-1 task 8 (shipit plan), accepted by the owner"
+        },
+        "handle": "t8-d8-change-slice-focus",
+        "id": "01M5SWSFJC185HRJMESBZF96KB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSFJC185HRJMES9NR16J4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSFJC185HRJMES9NR16J4",
+        "id": "01M5SWSFM01D2XJR1PQ0KPHM5S",
+        "link": "01M5SWSFM01D2XJR1PPXASG3ZE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGVE8N122VSRM8K0ATGP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSFJC185HRJMES9NR16J4",
+        "id": "01M5SWSFNMKP5XDQMZT11SH0AV",
+        "link": "01M5SWSFNMKP5XDQMZSY20G5ET",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSDPGJXS4HCMBFGXRJD6Q",
+        "id": "01M5SWSFQ7XJGWHWFYPSJB2YH2",
+        "link": "01M5SWSFQ7XJGWHWFYPQGVW9ZD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSFJC185HRJMES9NR16J4",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: statement + evidence status (Recommended): One-line items use `statement` (falling back to the handle). An evidence node's `status` field reads `verified` or `failing`; anything else, or no field, is `unverified`. A node's evidence status is failing > verified > unverified across its `verifies` links, `none` with no evidence. Focus shows every field.",
+          "statement": "Items read `statement`, falling back to the handle. An evidence node's `status` field is the JSON string `verified` or `failing`; anything else is `unverified`. A node's evidence status across live `verifies` links is failing > verified > unverified, and `none` with no evidence. Focus shows every field.",
+          "wording": "agent of milestone-1 task 8 (shipit plan), accepted by the owner"
+        },
+        "handle": "t8-d9-item-fields",
+        "id": "01M5SWSFRVKFM7BP5548NJW60M",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSFRVKFM7BP5547PKDBJN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSFRVKFM7BP5547PKDBJN",
+        "id": "01M5SWSFTFPJG29TD037X72GMS",
+        "link": "01M5SWSFTFPJG29TD0367ZHACD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGVE8N122VSRM8K0ATGP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSFRVKFM7BP5547PKDBJN",
+        "id": "01M5SWSFW3NG2JTYZFB00Q3DTN",
+        "link": "01M5SWSFW3NG2JTYZFAZ565NCW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSDPGJXS4HCMBFGXRJD6Q",
+        "id": "01M5SWSFXSPYMM30BQNFSB256H",
+        "link": "01M5SWSFXSPYMM30BQNFBT9DZ8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSFRVKFM7BP5547PKDBJN",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: full → brief → count, bottom-up (Recommended): Starting from section 10 and working upward (never Focus, Constraints or Open questions), shrink a section from full items (statement plus note and origin) to brief (`handle` `short` only), re-measure, then do a second pass from the bottom turning sections into counts. The footer names each shrunk section and the command to see it: `genesis tree <ref>` for children, otherwise the same slice with `--budget` set to the uncut size rounded up to the next 1,000.",
+          "statement": "Cuts go full → brief → count, from section 10 upward, never touching Focus, Constraints or Open questions. The footer names each shrunk section and its command: `genesis tree <ref>` for Children; anything else gets the same slice command with `--budget` set to the uncut size rounded up to the next 1,000.",
+          "wording": "agent of milestone-1 task 8 (shipit plan), accepted by the owner"
+        },
+        "handle": "t8-d10-cut-order",
+        "id": "01M5SWSFZE5XCHW0BND5Y7NF0K",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSFZE5XCHW0BND5TYD31W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSFZE5XCHW0BND5TYD31W",
+        "id": "01M5SWSG13389BG2B2GS82H6FS",
+        "link": "01M5SWSG13389BG2B2GQ4TYRJ0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGVE8N122VSRM8K0ATGP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSFZE5XCHW0BND5TYD31W",
+        "id": "01M5SWSG2RVJFJAQB6PM6ZKRWX",
+        "link": "01M5SWSG2RVJFJAQB6PJ9629HQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSDPGJXS4HCMBFGXRJD6Q",
+        "id": "01M5SWSG4CJATF9KJCJ2YPY4VQ",
+        "link": "01M5SWSG4CJATF9KJCJ06MCGPC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSFZE5XCHW0BND5TYD31W",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: TDD + goldens + property (Recommended): Table tests written first in internal/slice for each section, inheritance, exemptions and cuts; testscript goldens for markdown and --json of a node slice, a change slice and a cut slice; a rapid property test that index-built equals model-built and that output is deterministic; a 50 ms budget test on the generated 50k model; describe-golden regenerated.",
+          "statement": "TDD. Table tests in `internal/slice`; testscript goldens (markdown and `--json`: node, change, cut); a rapid property test that index-built equals model-built and that output is deterministic; a 50 ms budget test on the 50k model; `describe-golden.txtar` regenerated.",
+          "wording": "agent of milestone-1 task 8 (shipit plan), accepted by the owner"
+        },
+        "handle": "t8-d11-tests",
+        "id": "01M5SWSG61981EXRTWS00VZATB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSG61981EXRTWRXCHC8A5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSG61981EXRTWRXCHC8A5",
+        "id": "01M5SWSG7PSSD3FB2J886FJC7X",
+        "link": "01M5SWSG7PSSD3FB2J87JSTWXP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGVE8N122VSRM8K0ATGP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSG61981EXRTWRXCHC8A5",
+        "id": "01M5SWSG9BJ0E09PGD8GVNA216",
+        "link": "01M5SWSG9BJ0E09PGD8GBWSBHK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's options, accepted by the owner (several picked): No edits to task 7's reads: Don't add show/tree/ls/why/log/roadmap/ready, and keep the api's index wiring to one small helper in the slice op's file, so task 7's merge stays easy. / Index: add queries only: internal/index may gain read queries (such as ID neighbours for short IDs); no schema bump, no catch-up or what-if changes. / No new kinds/links/fields rules: No change to op, model, changeset, writes or check; field conventions are read-only in slice. / No milestone-1.md edits: Leave ~/code/_genesis alone, as asked.",
+          "statement": "Guardrails: none of task 7's reads. The api's index wiring is one small helper in `slice.go`. The index gains read queries only (no schema bump, no catch-up or what-if change). No changes to op, model, changeset, writes or check. No edits to `milestone-1.md`.",
+          "wording": "agent of milestone-1 task 8 (shipit plan), accepted by the owner"
+        },
+        "handle": "t8-d12-guardrails",
+        "id": "01M5SWSGB00K13JVCPJKTFHFEB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSGB00K13JVCPJHMPKTHQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSGB00K13JVCPJHMPKTHQ",
+        "id": "01M5SWSGCNAFC9N1N2ZDNFWE7X",
+        "link": "01M5SWSGCNAFC9N1N2ZAD9H4MB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGVE8N122VSRM8K0ATGP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSGB00K13JVCPJHMPKTHQ",
+        "id": "01M5SWSGEB245QZV95YX2YWCD5",
+        "link": "01M5SWSGEB245QZV95YS3EKNV4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Live, not superseded / unanswered (Recommended): Decisions: live, reached by `decided-by` from the node or an ancestor, and not the target of a live `supersedes` from a live decision. Open questions: live, with no live `answers` from a live decision. Blocking ones (`blocks` to the node or an ancestor) come first, then ones linked by `relates-to`.",
+          "statement": "Current decisions: live, reached by `decided-by` from the focus or an ancestor, and not the `to` of a live `supersedes` from a live decision. Open questions: live, with no live `answers` from a live decision. Blocking first (`blocks` → focus or an ancestor), then ones linked by `relates-to` to the focus.",
+          "wording": "agent of milestone-1 task 8 (shipit plan), accepted by the owner"
+        },
+        "handle": "t8-d13-current-decisions",
+        "id": "01M5SWSGG0WEC55QCYME11JHHZ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSGG0WEC55QCYMAVGQR3N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSGG0WEC55QCYMAVGQR3N",
+        "id": "01M5SWSGHNVMHYGE801S0D7JRV",
+        "link": "01M5SWSGHNVMHYGE801NSPAWG7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGVE8N122VSRM8K0ATGP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSGG0WEC55QCYMAVGQR3N",
+        "id": "01M5SWSGKBY489YYXFPSGZG4DX",
+        "link": "01M5SWSGKBY489YYXFPP70YNC5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSDPGJXS4HCMBFGXRJD6Q",
+        "id": "01M5SWSGN08AH7CRM1YZSWE47J",
+        "link": "01M5SWSGN08AH7CRM1YYMZ8N5Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSGG0WEC55QCYMAVGQR3N",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: depends-on both ways + relates-to; other in-flight sets (Recommended): Neighbours: live `depends-on` out (needs) and in (needed by), and `relates-to` either way with its note. In flight: every other draft, proposed or accepted change set whose ops target a Focus node, read from the index's entries; one line each: ID, state, intent.",
+          "statement": "Neighbours: live `depends-on` out (\"needs\") and in (\"needed by\"), and `relates-to` either way with its note. In flight: every other draft, proposed or accepted change set whose ops target a Focus node; ID, state, intent.",
+          "wording": "agent of milestone-1 task 8 (shipit plan), accepted by the owner"
+        },
+        "handle": "t8-d14-neighbours-in-flight",
+        "id": "01M5SWSGPN74V4GHPFQ4X2S1HE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSGPN74V4GHPFQ3MKRRW6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSGPN74V4GHPFQ3MKRRW6",
+        "id": "01M5SWSGRBBKV9AFZ2WCW0TXPZ",
+        "link": "01M5SWSGRBBKV9AFZ2WAWP2TSV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGVE8N122VSRM8K0ATGP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSGPN74V4GHPFQ3MKRRW6",
+        "id": "01M5SWSGT0A975KQ2QD2FVFX1A",
+        "link": "01M5SWSGT0A975KQ2QCZ0ZBNFX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSDPGJXS4HCMBFGXRJD6Q",
+        "id": "01M5SWSGVQKAWTAWJ7QY50N3CQ",
+        "link": "01M5SWSGVQKAWTAWJ7QY0AQAXK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSGPN74V4GHPFQ3MKRRW6",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Print it all, note it, exit 0 (Recommended): Those sections are never cut, so the slice is printed in full, every other section shrinks to a count, and the footer says the budget was exceeded and by how much. Exit 0: it's still the right answer.",
+          "statement": "When Focus, Constraints and Open questions alone exceed the budget, everything they hold is printed, every other section goes to a count, the footer says \"over budget by N tokens\", and the exit code is 0.",
+          "wording": "agent of milestone-1 task 8 (shipit plan), accepted by the owner"
+        },
+        "handle": "t8-d15-over-budget",
+        "id": "01M5SWSGXC0C2H2FSWJ3C817YN",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSGXC0C2H2FSWJ0A7C276",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSGXC0C2H2FSWJ0A7C276",
+        "id": "01M5SWSGZ219Y94Y0F1VSXF4FS",
+        "link": "01M5SWSGZ219Y94Y0F1SZYCRHH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGVE8N122VSRM8K0ATGP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSGXC0C2H2FSWJ0A7C276",
+        "id": "01M5SWSH0TFDD2RD98NPGQVNNX",
+        "link": "01M5SWSH0TFDD2RD98NP5SWP6D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSDPGJXS4HCMBFGXRJD6Q",
+        "id": "01M5SWSH2G7NWCZAK58QEEEZCP",
+        "link": "01M5SWSH2G7NWCZAK58NWXAK7F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSGXC0C2H2FSWJ0A7C276",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "settled_by": "Agent's option, accepted by the owner: Sections of typed items (Recommended): {view, change, budget, tokens, focus:[...], context:[...], ..., omitted:[{section, count, next}]}. Each item has full id, short, handle, kind, plus tier fields (statement, note, from, status); focus items carry every field and the proposed change. Shape pinned in describe-golden as a contract.",
+          "statement": "JSON: `{view, change, ref, budget, tokens, over_budget, focus, context, constraints, decisions, questions, anchors, evidence, children, neighbours, in_flight, omitted}`. Items are typed: id, short, handle, kind, statement, plus note, from, status and relation where they apply. Focus items carry every field and the proposed change. `omitted` is `[{section, count, tier, next}]`. Pinned by describe-golden.",
+          "wording": "agent of milestone-1 task 8 (shipit plan), accepted by the owner"
+        },
+        "handle": "t8-d16-json-shape",
+        "id": "01M5SWSH46GYVEFFY59F1TM6TZ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSH46GYVEFFY59CV5XJ3E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSH46GYVEFFY59CV5XJ3E",
+        "id": "01M5SWSH5W52GVT2NENN53B61K",
+        "link": "01M5SWSH5W52GVT2NENHDD8NV8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGVE8N122VSRM8K0ATGP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSH46GYVEFFY59CV5XJ3E",
+        "id": "01M5SWSH7J21FBEFBY89C1JCAE",
+        "link": "01M5SWSH7J21FBEFBY87YXW1GR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSDPGJXS4HCMBFGXRJD6Q",
+        "id": "01M5SWSH992F4QE8897AEWVVB1",
+        "link": "01M5SWSH992F4QE889786YQSYG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSH46GYVEFFY59CV5XJ3E",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "accepted_by": "owner",
+          "statement": "Default: a Focus item's proposed change against as-is (in to-be and what-if) is one of `new`, `retired: <reason>`, `moved: <old parent> → <new parent>`, or one line per changed field, `<field>: <as-is> → <proposed>`, each value cut to one line.",
+          "wording": "agent of milestone-1 task 8 (shipit plan), accepted by the owner"
+        },
+        "handle": "t8-d17-proposed-change",
+        "id": "01M5SWSHAZFD5MW2GTSC14264V",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SWSHAZFD5MW2GTSBRJZPBA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSHAZFD5MW2GTSBRJZPBA",
+        "id": "01M5SWSHCQH55PEZCW48B15YE5",
+        "link": "01M5SWSHCQH55PEZCW47NKMS08",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGVE8N122VSRM8K0ATGP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSHAZFD5MW2GTSBRJZPBA",
+        "id": "01M5SWSHEDFMV39Z2KKXPH2TNG",
+        "link": "01M5SWSHEDFMV39Z2KKX2HPBZ8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGJXREMK1PV5Y23DKTF8",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSDPGJXS4HCMBFGXRJD6Q",
+        "id": "01M5SWSHG3K7J5ZMC6XKA6GABG",
+        "link": "01M5SWSHG3K7J5ZMC6XHR94QG9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSHAZFD5MW2GTSBRJZPBA",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWSE0Z4QGWQGN2FC9WMVAW",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWSHJW6SMMDEF5H0TDMCBE",
+  "type": "ops",
+  "v": 1
+}

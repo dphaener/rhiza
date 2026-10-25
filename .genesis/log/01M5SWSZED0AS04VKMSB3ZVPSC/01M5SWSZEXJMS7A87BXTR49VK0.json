@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:02:56Z",
+  "body": {
+    "intent": "Area views: what remains is searching the model's text and a change feed since a cursor.",
+    "kind": "intention",
+    "sources": [
+      "01M5SWRGJ7AZM5CYJAE32SGRYM"
+    ]
+  },
+  "change_set": "01M5SWSZED0AS04VKMSB3ZVPSC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWSZEXJMS7A87BXTR49VK0",
+  "type": "open",
+  "v": 1
+}

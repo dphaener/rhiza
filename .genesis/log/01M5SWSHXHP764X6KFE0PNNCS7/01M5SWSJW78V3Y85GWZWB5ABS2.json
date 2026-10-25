@@ -1,0 +1,149 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWSHXY32E94Y6W9SBH8Y1J"
+  ],
+  "at": "2026-10-25T16:02:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "built_in": "PR #6 (8355823)",
+          "statement": "genesis check verifies the log is intact and append-only against the base branch, links have valid endpoints, and the rendered markdown is current."
+        },
+        "handle": "check",
+        "id": "01M5SWSJ0K067EMGMKBXYWXN3J",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5SWSJ0K067EMGMKBTA224AY",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJ0K067EMGMKBTA224AY",
+        "id": "01M5SWSJ29PRF92RK3X46ZAD6J",
+        "link": "01M5SWSJ29PRF92RK3X1Z2NX1J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJ0K067EMGMKBTA224AY",
+        "id": "01M5SWSJ40JW3P527ZEFB8NZZR",
+        "link": "01M5SWSJ40JW3P527ZED0PKPP6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGWEHYD4B2PN4F734W14",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #6 (8355823)",
+          "statement": "genesis render writes the model as committed markdown, the same bytes for the same model."
+        },
+        "handle": "render",
+        "id": "01M5SWSJ5Q19Z3R1QHDZJRNMNY",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5SWSJ5Q19Z3R1QHDWWT6H32",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJ5Q19Z3R1QHDWWT6H32",
+        "id": "01M5SWSJ7DQ7A0P80Q78YEPXD8",
+        "link": "01M5SWSJ7DQ7A0P80Q78GD133K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJ5Q19Z3R1QHDWWT6H32",
+        "id": "01M5SWSJ93MZA3DR2BHZJ929PR",
+        "link": "01M5SWSJ93MZA3DR2BHXJ71FHB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGWEHYD4B2PN4F734W14",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #6 (8355823)",
+          "statement": "genesis ci install sets up a repo's CI to run genesis check."
+        },
+        "handle": "ci-install",
+        "id": "01M5SWSJAS69692APWAF821JR6",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5SWSJAS69692APWAEWGAZMW",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJAS69692APWAEWGAZMW",
+        "id": "01M5SWSJED1P79JTRYHW3SGG6W",
+        "link": "01M5SWSJED1P79JTRYHVRA8TEB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJAS69692APWAEWGAZMW",
+        "id": "01M5SWSJHYS2PDKRX21N0AXQCE",
+        "link": "01M5SWSJHYS2PDKRX21H5JXE1R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGWEHYD4B2PN4F734W14",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "built_in": "PR #6 (8355823)",
+          "statement": "Genesis checks its own model in its own CI."
+        },
+        "handle": "self-check",
+        "id": "01M5SWSJNK2F1E8QPHF4JVRX7K",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5SWSJNK2F1E8QPHF1TJHMPQ",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJNK2F1E8QPHF1TJHMPQ",
+        "id": "01M5SWSJQKJT2YNS1K6P0DRHP3",
+        "link": "01M5SWSJQKJT2YNS1K6NP4FV9H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGKRMVD1X8MV4CS5HB3Q",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSJNK2F1E8QPHF1TJHMPQ",
+        "id": "01M5SWSJSCZHJ8CZ3N38B9VVBJ",
+        "link": "01M5SWSJSCZHJ8CZ3N36VX92QS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRGWEHYD4B2PN4F734W14",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M5SWSHXHP764X6KFE0PNNCS7",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWSJW78V3Y85GWZWB5ABS2",
+  "type": "ops",
+  "v": 1
+}

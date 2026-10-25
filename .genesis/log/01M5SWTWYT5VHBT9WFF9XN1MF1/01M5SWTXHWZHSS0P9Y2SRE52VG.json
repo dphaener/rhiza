@@ -1,0 +1,27 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWTXAB2CZC5GBMK7GHVWWN"
+  ],
+  "at": "2026-10-25T16:03:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M5SWTX3ASV3JJSJBE87GPN1J",
+        "id": "01M5SWTXENBED0ADW28X10R52K",
+        "link": "01M5SWTXENBED0ADW28WTE5T7K",
+        "note": "the orchestration leaves carry intent only because of this gap",
+        "op": "link.create",
+        "to": "01M5SWTC1923N3AB7MWA9D9Z2A",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M5SWTWYT5VHBT9WFF9XN1MF1",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWTXHWZHSS0P9Y2SRE52VG",
+  "type": "ops",
+  "v": 1
+}

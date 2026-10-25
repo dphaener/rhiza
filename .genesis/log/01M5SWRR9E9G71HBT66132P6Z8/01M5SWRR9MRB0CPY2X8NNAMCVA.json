@@ -1,0 +1,18 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:02:16Z",
+  "body": {
+    "intent": "Task 1's plan decisions (PR #1, merge 5a4b716), accepted by the owner",
+    "kind": "intention",
+    "sources": [
+      "01M5SWRGJXREMK1PV5Y23DKTF8",
+      "01M5SWRGMNEQC0N78KXY7RJSH4"
+    ]
+  },
+  "change_set": "01M5SWRR9E9G71HBT66132P6Z8",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRR9MRB0CPY2X8NNAMCVA",
+  "type": "open",
+  "v": 1
+}

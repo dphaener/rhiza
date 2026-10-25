@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:03:22Z",
+  "body": {
+    "intent": "Each interview answer is recorded as a Decision node in the task's change set, linked decided-by, with an answer picked from the agent's options recorded as the agent's wording accepted by the owner and only typed text quoted as the owner's. This is milestone 2's first change set, since the other five leaves read it.",
+    "kind": "intention",
+    "sources": [
+      "01M5SWRGJ7AZM5CYJAE32SGRYM"
+    ]
+  },
+  "change_set": "01M5SWTRWSW2931QVZENKYMNVQ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWTRXD7N0SGYQ2T0TNHRHB",
+  "type": "open",
+  "v": 1
+}

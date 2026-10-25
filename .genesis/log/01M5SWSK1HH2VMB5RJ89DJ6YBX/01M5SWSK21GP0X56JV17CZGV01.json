@@ -1,0 +1,18 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:02:43Z",
+  "body": {
+    "intent": "Task 9's plan decisions (PR #6, merge 8355823), accepted by the owner",
+    "kind": "intention",
+    "sources": [
+      "01M5SWRGJXREMK1PV5Y23DKTF8",
+      "01M5SWRGWEHYD4B2PN4F734W14"
+    ]
+  },
+  "change_set": "01M5SWSK1HH2VMB5RJ89DJ6YBX",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWSK21GP0X56JV17CZGV01",
+  "type": "open",
+  "v": 1
+}

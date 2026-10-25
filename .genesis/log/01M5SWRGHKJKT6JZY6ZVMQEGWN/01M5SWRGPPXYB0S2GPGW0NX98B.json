@@ -1,0 +1,32 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [
+    "01M5SWRGNQ0SZFJPGC6RGE9QJS"
+  ],
+  "at": "2026-10-25T16:02:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "b60de4f8c0a964c5d1eb3d1fded6f5319da91db66328af52704b51345426e35e",
+          "summary": "The shipit work plan for task 3: typed entry bodies, the six operations, folding a change set's entries in causal order into its current operations and lifecycle state, and fractional sibling keys, as pure packages (internal/key, op, changeset). Decided (D1-D16, agent wording accepted by the owner): pure domain packages only, no CLI, projection or index; each operation keeps one stable ID, a later ops entry replaces it by repeating the ID and drops operations through a drop list, and a replacement keeps its position, op type and target, a dropped ID never returning; ops entries are allowed in draft, proposed and accepted without resetting the state; a record change set lands from draft, proposed or accepted, an intention change set only from accepted; folding orders entries causally with ties by entry ID, skips and reports illegal entries and concurrent lifecycle entries, and never fails; bodies are strict like the envelope and the corpus is amended to match; node fields are free snake_case names to any JSON value, per-kind requirements deferred, the handle one slug segment; nine node kinds, with change sets not nodes but allowed as link endpoints; accept and reject bodies are {rule, reason}, the reason may be empty; tests are TDD with table tests, fuzzed body decoding, rapid properties and a clean corpus fold; guardrails keep the envelope and store APIs, add no dependencies and no filesystem or git access; no CONTEXT.md glossary. Per-kind field schemas were left for later.",
+          "title": "Shipit plan, milestone 1 task 3: change sets"
+        },
+        "handle": "plan-task-3",
+        "id": "01M5SWRGPFD3NEBM2VRC4ASRBT",
+        "key": null,
+        "kind": "source",
+        "node": "01M5SWRGPFD3NEBM2VR9ARZXZE",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5SWRGHKJKT6JZY6ZVMQEGWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWRGPPXYB0S2GPGW0NX98B",
+  "type": "ops",
+  "v": 1
+}

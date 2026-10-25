@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SWRGFR9B1A1AHVJ6JFY2M8",
+  "after": [],
+  "at": "2026-10-25T16:02:59Z",
+  "body": {
+    "intent": "Area repos: what remains is the whole area, with a repo registry, cross-repo links and changes, standards repos and a personal layer.",
+    "kind": "intention",
+    "sources": [
+      "01M5SWRGJ7AZM5CYJAE32SGRYM"
+    ]
+  },
+  "change_set": "01M5SWT1YJ5WCWCNKZT5P2XRTV",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SWT1Z1FCMKFEZY59G5W72E",
+  "type": "open",
+  "v": 1
+}
