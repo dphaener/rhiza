@@ -1,0 +1,136 @@
+# ready says which change sets can be worked on now and why the others
+# can't. A change set's serves and depends-on links are written inside it
+# (D7); the link command takes node refs only, so those entries are
+# written to the log by hand here.
+
+exec genesis init
+
+# Nothing in flight.
+exec genesis ready
+stdout '^Nothing is ready: no change set is in flight\.$'
+stdout '^next: genesis change new "<intent>"$'
+
+exec genesis add intent fast --record
+exec genesis add capability store --record
+
+# A serves fast, from inside A; a draft is not ready.
+exec genesis change new A
+cp a-serves.json .genesis/log/01M5PWGQ8GB4618G4RH2TV0ZAH/01M5PWGQ9A0000000000000001.json
+fold-ok
+exec genesis ready
+stdout '^Nothing is ready\.$'
+stdout '^01M5PWGQ8GB461 A: not accepted: draft$'
+stdout '^- \[draft\] 01M5PWGQ8GB461 A$'
+exec genesis propose
+exec genesis accept --reason ok
+
+# B depends on A, from inside B, and touches store.
+exec genesis change new B
+cp b-depends.json .genesis/log/01M5PWGV5G8W2RPXNBFMN118QF/01M5PWGV6A0000000000000001.json
+fold-ok
+exec genesis set store --field statement=Kept
+exec genesis propose
+exec genesis accept --reason ok
+
+# A is next; B waits for A to land. The current change set (B) does not
+# change the default view: it is to-be (D17).
+exec genesis ready
+stdout '^next: 01M5PWGQ8GB461 A$'
+stdout '^## Ready$'
+stdout '^- 01M5PWGQ8GB461 A$'
+stdout '^## Not ready$'
+stdout '^- \[accepted\] 01M5PWGV5G8W2R B$'
+stdout '^  - depends on 01M5PWGQ8GB461 \(accepted\)$'
+exec genesis ready --json
+stdout '"next": "01M5PWGQ8GB4618G4RH2TV0ZAH"'
+stdout '"view": "to-be"'
+stdout '"depends on 01M5PWGQ8GB461 \(accepted\)"'
+
+# Land A: B is next.
+exec genesis land --change 01M5PWGQ8GB4618G4RH2TV0ZAH
+exec genesis ready
+stdout '^next: 01M5PWGV5G8W2R B$'
+! stdout 'Not ready'
+
+# An open question blocking a node B touches stops it.
+exec genesis add question which-disk --record
+exec genesis link which-disk blocks store --record
+exec genesis ready
+stdout '^Nothing is ready\.$'
+stdout '^01M5PWGV5G8W2R B: blocked by question which-disk on store$'
+exec genesis ready --json
+! stdout '"next"'
+stdout '"ready": false'
+stdout '"reasons": \[\n *"blocked by question which-disk on store"'
+
+# Answered by a decision, it no longer blocks.
+exec genesis add decision ssd --record
+exec genesis link ssd answers which-disk --record
+exec genesis ready
+stdout '^next: 01M5PWGV5G8W2R B$'
+
+# --view overrides the default; api call prints the same bytes as --json.
+exec genesis ready --view as-is --json
+stdout '"view": "as-is"'
+cp stdout ready.json
+exec genesis api call ready '{"view":"as-is"}'
+cmp stdout ready.json
+! exec genesis ready --view what-if:ZZZZ
+stderr 'no change set'
+
+-- a-serves.json --
+{
+  "actor": "01M5PWGEF85Y185JZ2ZAN43Q1G",
+  "after": [
+    "01M5PWGQ8GB4618G4RH53T7SX9"
+  ],
+  "at": "2026-10-24T12:00:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M5PWGQ8GB4618G4RH2TV0ZAH",
+        "id": "01M5PWGQ9A0000000000000002",
+        "link": "01M5PWGQ9A0000000000000003",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5PWGEF85Y185JZ2ZMTJ11QP",
+        "type": "serves"
+      }
+    ]
+  },
+  "change_set": "01M5PWGQ8GB4618G4RH2TV0ZAH",
+  "for": "01M5PWGEF85Y185JZ2ZAN43Q1G",
+  "id": "01M5PWGQ9A0000000000000001",
+  "type": "ops",
+  "v": 1
+}
+-- b-depends.json --
+{
+  "actor": "01M5PWGEF85Y185JZ2ZAN43Q1G",
+  "after": [
+    "01M5PWGV5G8W2RPXNBFR7DHTED"
+  ],
+  "at": "2026-10-24T12:00:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M5PWGV5G8W2RPXNBFMN118QF",
+        "id": "01M5PWGV6A0000000000000002",
+        "link": "01M5PWGV6A0000000000000003",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5PWGQ8GB4618G4RH2TV0ZAH",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M5PWGV5G8W2RPXNBFMN118QF",
+  "for": "01M5PWGEF85Y185JZ2ZAN43Q1G",
+  "id": "01M5PWGV6A0000000000000001",
+  "type": "ops",
+  "v": 1
+}

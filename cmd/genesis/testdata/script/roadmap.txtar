@@ -1,0 +1,128 @@
+# roadmap shows the proposed and accepted change sets grouped by the intent
+# they serve, groups in intent-tree order and "No intent" last. A change
+# set's serves links are written inside it (D7); the link command takes
+# node refs only, so those entries are written to the log by hand here.
+
+exec genesis init
+exec genesis roadmap
+stdout '^# Roadmap$'
+stdout '^Nothing planned yet\.$'
+stdout '^next: genesis change new "<intent>"$'
+
+# Two root intents, grow (key i) before cheap (key r), and fast under grow.
+exec genesis add intent grow --record
+exec genesis add intent fast --parent grow --record
+exec genesis add intent cheap --record
+exec genesis add capability store --record
+
+# A serves cheap and stays proposed.
+exec genesis change new A
+cp a-serves.json .genesis/log/01M5PWGX40FB1RBRN9YHMNJW07/01M5PWGX5A0000000000000001.json
+exec genesis propose
+
+# B serves fast, touches store and is accepted.
+exec genesis change new B
+cp b-serves.json .genesis/log/01M5PWH01R1B9MDYF6J8XB3MQG/01M5PWH02A0000000000000001.json
+exec genesis set store --field statement=Kept
+exec genesis propose
+exec genesis accept --reason ok
+
+# C serves nothing; D is a draft, which the roadmap leaves out.
+exec genesis change new C
+exec genesis propose
+exec genesis change new D
+fold-ok
+
+exec genesis roadmap
+cmp stdout roadmap.md
+exec genesis roadmap --json
+stdout '"view": "to-be"'
+stdout '"path": \[\n *"grow"\n *\]'
+stdout '"handle": "cheap"'
+! stdout '"intent": "D"'
+cp stdout roadmap.json
+exec genesis api call roadmap '{}'
+cmp stdout roadmap.json
+
+# An open question blocking a node B touches: B is no longer ready.
+exec genesis add question which-disk --record
+exec genesis link which-disk blocks store --record
+exec genesis roadmap
+stdout '^- \[accepted\] 01M5PWH01R1B9M B$'
+! stdout '\[ready\]'
+
+# as-is has no accepted change set's ops, but the change sets' own ops
+# still group them.
+exec genesis roadmap --view as-is
+stdout '^## grow / fast$'
+
+-- roadmap.md --
+# Roadmap
+
+## grow / fast
+
+- [ready] 01M5PWH01R1B9M B
+
+## cheap
+
+- [proposed] 01M5PWGX40FB1R A
+
+## No intent
+
+- [proposed] 01M5PWH4Y0SRA0 C
+-- a-serves.json --
+{
+  "actor": "01M5PWGEF85Y185JZ2ZAN43Q1G",
+  "after": [
+    "01M5PWGX40FB1RBRN9YMPACB1N"
+  ],
+  "at": "2026-10-24T12:00:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M5PWGX40FB1RBRN9YHMNJW07",
+        "id": "01M5PWGX5A0000000000000002",
+        "link": "01M5PWGX5A0000000000000003",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5PWGQ8GB4618G4RH2TV0ZAH",
+        "type": "serves"
+      }
+    ]
+  },
+  "change_set": "01M5PWGX40FB1RBRN9YHMNJW07",
+  "for": "01M5PWGEF85Y185JZ2ZAN43Q1G",
+  "id": "01M5PWGX5A0000000000000001",
+  "type": "ops",
+  "v": 1
+}
+-- b-serves.json --
+{
+  "actor": "01M5PWGEF85Y185JZ2ZAN43Q1G",
+  "after": [
+    "01M5PWH01R1B9MDYF6J99FS48E"
+  ],
+  "at": "2026-10-24T12:00:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M5PWH01R1B9MDYF6J8XB3MQG",
+        "id": "01M5PWH02A0000000000000002",
+        "link": "01M5PWH02A0000000000000003",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5PWGMARA1WR6BD0MEF4Y76P",
+        "type": "serves"
+      }
+    ]
+  },
+  "change_set": "01M5PWH01R1B9MDYF6J8XB3MQG",
+  "for": "01M5PWGEF85Y185JZ2ZAN43Q1G",
+  "id": "01M5PWH02A0000000000000001",
+  "type": "ops",
+  "v": 1
+}
