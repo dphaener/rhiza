@@ -54,6 +54,13 @@ type Operation struct {
 	Run func(ctx *Ctx, req any) (any, error)
 }
 
+// Exiter is implemented by a response that sets the process exit code, such
+// as a check that failed. Callers print the response in full, as markdown or
+// JSON as usual, and then exit with ExitCode.
+type Exiter interface {
+	ExitCode() int
+}
+
 // Input describes a document an operation reads from a file or stdin.
 type Input struct {
 	// Summary is one line describing the document's format for people.
