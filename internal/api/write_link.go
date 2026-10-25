@@ -161,7 +161,7 @@ func buildUnlink(b writeBase, r UnlinkRequest) (edit, error) {
 		return edit{}, Conflictf("link %s is retired", k.ID)
 	}
 	if k.Conflict {
-		return edit{}, Conflictf("link %s has conflicting landed changes; a change set resolving them must land first", k.ID)
+		return edit{}, Conflictf("link %s has conflicting changes", k.ID).WithNext("genesis check")
 	}
 	var e edit
 	e.touchLink(k.ID)
@@ -170,7 +170,7 @@ func buildUnlink(b writeBase, r UnlinkRequest) (edit, error) {
 		return e, nil
 	}
 	if k.Version.IsZero() {
-		return edit{}, Errorf("link %s has no landed version to retire", k.ID)
+		return edit{}, Errorf("link %s has no version to retire", k.ID)
 	}
 	opID, err := b.newID()
 	if err != nil {

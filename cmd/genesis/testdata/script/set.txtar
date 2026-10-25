@@ -73,9 +73,10 @@ exec genesis land --change 01M5PWGX40FB1RBRN9YHMNJW07
 exec genesis change use 01M5PWGEF85Y185JZ2ZGCNH40N
 ! exec genesis set shared --field a=3 --json
 stdout '"code": "conflict"'
-stdout 'conflicting landed changes'
+stdout 'conflicting changes'
+stdout '"next": "genesis check"'
 ! exec genesis mv shared --root
-stderr 'resolving them must land first'
+stderr 'conflicting changes'
 ! exec genesis retire shared --reason x --json
 stdout '"code": "conflict"'
 

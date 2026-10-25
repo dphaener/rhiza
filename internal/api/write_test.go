@@ -458,7 +458,8 @@ func TestSet(t *testing.T) {
 		} {
 			_, err := callOp(t, ctx, name, req)
 			wantExit(t, err, 3)
-			if !strings.Contains(err.Error(), "resolv") {
+			wantNext(t, err, "genesis check")
+			if !strings.Contains(err.Error(), "conflicting changes") {
 				t.Errorf("%s message = %q", name, err)
 			}
 		}
@@ -700,5 +701,116 @@ func TestUnlink(t *testing.T) {
 		wantExit(t, err, 2)
 		_, err = callOp(t, ctx, "unlink", `{"ref":"ZZZZZZ"}`)
 		wantExit(t, err, 4)
+	})
+}
+
+// TestStackedWrites writes in a change set on top of the in-flight change
+// sets it depends on.
+func TestStackedWrites(t *testing.T) {
+	// in returns ctx writing into change set cs.
+	in := func(ctx *Ctx, cs id.ID) *Ctx {
+		c := *ctx
+		c.ChangeRef = cs.String()
+		return &c
+	}
+	at := func(t *testing.T, ctx *Ctx, cs id.ID, ref string) Node {
+		t.Helper()
+		n, err := ctxWorkspace(t, ctx).model(cs).Resolve(ref)
+		if err != nil {
+			t.Fatalf("resolve %s in %s: %v", ref, cs, err)
+		}
+		return n
+	}
+	// setup gives A, with capability base, and B, depending on A when dep.
+	setup := func(t *testing.T, dep bool) (ctx *Ctx, a, b id.ID) {
+		ctx = initCtx(t)
+		a = newChange(t, ctx, `{"intent":"A"}`).ChangeSet
+		mustWrite(t, ctx, "add", `{"kind":"capability","handle":"base","fields":["statement=Base"]}`)
+		b = newChange(t, ctx, `{"intent":"B"}`).ChangeSet
+		if dep {
+			planLink(t, ctx, op.LinkDependsOn, b, a)
+		}
+		return ctx, a, b
+	}
+
+	t.Run("SeesDependency", func(t *testing.T) {
+		ctx, a, b := setup(t, true)
+		created := onlyOp(t, opsOf(t, ctx, a))
+		base := at(t, ctx, b, "base")
+		if base.Version != created.ID || base.Conflict || base.Pending != nil {
+			t.Fatalf("base in B = %+v", base)
+		}
+		bc := in(ctx, b)
+		leaf := mustWrite(t, bc, "add", `{"kind":"capability","handle":"leaf","parent":"base"}`).Nodes[0]
+		if n := at(t, ctx, b, "leaf"); n.ID != leaf || n.Parent != base.ID {
+			t.Errorf("leaf = %+v", n)
+		}
+		mustWrite(t, bc, "add", `{"kind":"capability","handle":"other"}`)
+		mustWrite(t, bc, "link", `{"from":"leaf","type":"depends-on","to":"base"}`)
+		mustWrite(t, bc, "set", `{"ref":"base","fields":["statement=Changed"]}`)
+		mustWrite(t, bc, "mv", `{"ref":"base","parent":"other"}`)
+		mustWrite(t, bc, "retire", `{"ref":"base","reason":"Gone"}`)
+		var kinds []op.Type
+		for _, o := range opsOf(t, ctx, b) {
+			if o.Node == base.ID {
+				kinds = append(kinds, o.Type)
+				if o.Base != created.ID {
+					t.Errorf("%s base = %s, want A's create %s", o.Type, o.Base, created.ID)
+				}
+			}
+		}
+		if want := []op.Type{op.TypeNodeUpdate, op.TypeNodeMove, op.TypeNodeRetire}; !slices.Equal(kinds, want) {
+			t.Errorf("ops on base = %v, want %v", kinds, want)
+		}
+		// A's own view is unchanged.
+		if n := at(t, ctx, a, "base"); n.Retired || !n.Version.IsZero() || !n.Parent.IsZero() {
+			t.Errorf("base in A = %+v", n)
+		}
+	})
+
+	t.Run("NoDependencyNoView", func(t *testing.T) {
+		ctx, _, b := setup(t, false)
+		_, err := callOp(t, in(ctx, b), "add", `{"kind":"capability","handle":"leaf","parent":"base"}`)
+		wantExit(t, err, 4)
+		wantNext(t, err, lsNext)
+	})
+
+	t.Run("WithdrawnDependency", func(t *testing.T) {
+		ctx, a, b := setup(t, true)
+		move(t, in(ctx, a), "withdraw", `{}`)
+		_, err := callOp(t, in(ctx, b), "add", `{"kind":"capability","handle":"leaf","parent":"base"}`)
+		wantExit(t, err, 4)
+	})
+
+	t.Run("LandedDependency", func(t *testing.T) {
+		ctx, a, b := setup(t, true)
+		for _, s := range []string{"propose", "accept", "land"} {
+			move(t, in(ctx, a), s, `{}`)
+		}
+		base := at(t, ctx, b, "base")
+		mustWrite(t, in(ctx, b), "set", `{"ref":"base","fields":["statement=Changed"]}`)
+		var o op.Op
+		for _, x := range opsOf(t, ctx, b) {
+			if x.Node == base.ID {
+				o = x
+			}
+		}
+		if o.Type != op.TypeNodeUpdate || o.Base != base.Version || base.Version != onlyOp(t, opsOf(t, ctx, a)).ID {
+			t.Errorf("update = %+v, base %+v", o, base)
+		}
+	})
+
+	t.Run("Transitive", func(t *testing.T) {
+		ctx, a, b := setup(t, true)
+		mustWrite(t, in(ctx, b), "add", `{"kind":"capability","handle":"leaf","parent":"base"}`)
+		c := newChange(t, ctx, `{"intent":"C"}`).ChangeSet
+		planLink(t, ctx, op.LinkDependsOn, c, b)
+		cc := in(ctx, c)
+		mustWrite(t, cc, "add", `{"kind":"capability","handle":"x","parent":"base"}`)
+		mustWrite(t, cc, "add", `{"kind":"capability","handle":"y","parent":"leaf"}`)
+		r := mustWrite(t, cc, "set", `{"ref":"base","fields":["statement=C"]}`)
+		if o := opsOf(t, ctx, c); o[len(o)-1].Base != onlyOp(t, opsOf(t, ctx, a)).ID || r.ChangeSet != c {
+			t.Errorf("update = %+v", o[len(o)-1])
+		}
 	})
 }
