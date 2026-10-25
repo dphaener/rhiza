@@ -2,6 +2,10 @@
 
 intent · `01M5SZHJG0Q8A3HCM4J44AJMWT` · parent [anyone-builds](../anyone-builds.md)
 
+## milestone
+
+2
+
 ## statement
 
 Genesis runs the work: milestone 3 is built with Genesis orchestrating, not an orchestrator session.
@@ -22,8 +26,14 @@ Genesis runs the work: milestone 3 is built with Genesis orchestrating, not an o
 - decided-by [plan-leaves-after-stacking](../../decision/plan-leaves-after-stacking.md)
 - decided-by [m2-plan-authorship](../../decision/m2-plan-authorship.md)
 - decided-by [propose-intent-only](../../decision/propose-intent-only.md)
+- decided-by [m2cs2-milestone-field](../../decision/m2cs2-milestone-field.md)
 - derived-from [milestone-2-conversation](../../source/milestone-2-conversation.md)
+
+### In
+
+- serves change set `01M5SZHWVX0TTPM0TMNP5Y68CY` (Order and backlog: depends-on means only can't start before, and genesis roadmap shows milestone groups first, then the backlog.)
 
 ## History
 
 - `01M5SZHJ4AECQ3Z6PE60XFQZP6` Milestone 2 planning record: the conversation, the milestone-2 intent and its done points, and its decisions
+- `01M5SZHWVX0TTPM0TMNP5Y68CY` Order and backlog: depends-on means only can't start before, and genesis roadmap shows milestone groups first, then the backlog.
