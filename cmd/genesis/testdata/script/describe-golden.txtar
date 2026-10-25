@@ -1100,6 +1100,64 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "guide.install",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "agent": {
+            "description": "The agent to install the guide for: claude (Claude Code)",
+            "enum": [
+              "claude"
+            ],
+            "type": "string"
+          },
+          "force": {
+            "description": "Overwrite a folder genesis guide install did not write; other files in it are kept",
+            "type": "boolean"
+          },
+          "project": {
+            "description": "Install into this repository's .claude/skills/ instead of ~/.claude/skills/",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "agent"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dir": {
+            "description": "The plugin folder, absolute",
+            "type": "string"
+          },
+          "unchanged": {
+            "description": "The files that were already current",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "written": {
+            "description": "The files written: new, or different from what was on disk",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "dir",
+          "unchanged",
+          "written"
+        ],
+        "type": "object"
+      },
+      "summary": "Install the agent guide into Claude Code as a skills-directory plugin",
+      "write": false
+    },
+    {
       "name": "guide.ls",
       "request": {
         "additionalProperties": false,

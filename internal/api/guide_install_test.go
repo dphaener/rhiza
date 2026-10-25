@@ -1,0 +1,175 @@
+package api
+
+import (
+	"errors"
+	"os"
+	"path/filepath"
+	"slices"
+	"strings"
+	"testing"
+
+	"github.com/dphaener/genesis/internal/guide"
+)
+
+var pluginPaths = []string{pluginManifestPath, pluginSkillPath, pluginHooksPath, pluginScrubPath}
+
+func guideInstall(t *testing.T, ctx *Ctx, req string) GuideInstallResponse {
+	t.Helper()
+	resp, err := callOp(t, ctx, "guide.install", req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return resp.(GuideInstallResponse)
+}
+
+func writePath(t *testing.T, p, data string) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(p, []byte(data), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestYAMLQuote(t *testing.T) {
+	for _, tc := range []struct{ in, want string }{
+		{"plain", `"plain"`},
+		{"a: b", `"a: b"`},
+		{`say "hi" \ bye`, `"say \"hi\" \\ bye"`},
+		{"two\nlines\ttab", `"two\nlines\ttab"`},
+		{"bell\x07", `"bell\x07"`},
+		{"- dash # hash", `"- dash # hash"`},
+	} {
+		if got := yamlQuote(tc.in); got != tc.want {
+			t.Errorf("yamlQuote(%q) = %s, want %s", tc.in, got, tc.want)
+		}
+	}
+}
+
+func TestSkillFileFrontmatter(t *testing.T) {
+	for _, tc := range []struct{ name, text string }{{"genesis", "genesis"}, {"genesis-scrub", "scrub"}} {
+		b, err := skillFile(tc.name, tc.text)
+		if err != nil {
+			t.Fatal(err)
+		}
+		g, _ := guide.Lookup(tc.text)
+		want := "---\nname: " + tc.name + "\ndescription: " + yamlQuote(g.Description) + "\n---\n\n" + g.Body
+		if string(b) != want {
+			t.Errorf("skillFile(%s) differs from the frontmatter plus the text", tc.name)
+		}
+	}
+}
+
+func TestGuideInstall(t *testing.T) {
+	ctx := testCtx(t.TempDir())
+	ctx.Home = t.TempDir()
+	ctx.Version = "v1.2.3"
+	dir := filepath.Join(ctx.Home, ".claude", "skills", "genesis")
+
+	r := guideInstall(t, ctx, `{"agent":"claude"}`)
+	if r.Dir != dir || !slices.Equal(r.Written, pluginPaths) || len(r.Unchanged) != 0 {
+		t.Fatalf("first install = %+v", r)
+	}
+	if v, ok := installedVersion(dir); !ok || v != "v1.2.3" {
+		t.Errorf("installedVersion = %q, %v", v, ok)
+	}
+
+	r = guideInstall(t, ctx, `{"agent":"claude"}`)
+	if len(r.Written) != 0 || !slices.Equal(r.Unchanged, pluginPaths) {
+		t.Fatalf("second install = %+v", r)
+	}
+
+	ctx.Version = "v1.2.4"
+	r = guideInstall(t, ctx, `{"agent":"claude"}`)
+	if !slices.Equal(r.Written, []string{pluginManifestPath}) {
+		t.Fatalf("new version install = %+v", r)
+	}
+	if v, _ := installedVersion(dir); v != "v1.2.4" {
+		t.Errorf("installedVersion after upgrade = %q", v)
+	}
+}
+
+func TestGuideInstallForeign(t *testing.T) {
+	ctx := testCtx(t.TempDir())
+	ctx.Home = t.TempDir()
+	dir := filepath.Join(ctx.Home, ".claude", "skills", "genesis")
+	writePath(t, filepath.Join(dir, "SKILL.md"), "mine\n")
+	writePath(t, filepath.Join(dir, "extra.txt"), "keep\n")
+
+	_, err := callOp(t, ctx, "guide.install", `{"agent":"claude"}`)
+	var e *Error
+	if !errors.As(err, &e) || e.Code != CodeConflict || e.Next != "genesis guide install --agent claude --force" {
+		t.Fatalf("foreign install err = %v", err)
+	}
+	if b, _ := os.ReadFile(filepath.Join(dir, "SKILL.md")); string(b) != "mine\n" {
+		t.Errorf("SKILL.md touched: %q", b)
+	}
+	if _, ok := installedVersion(dir); ok {
+		t.Error("installedVersion ok on a foreign folder")
+	}
+
+	r := guideInstall(t, ctx, `{"agent":"claude","force":true}`)
+	if !slices.Equal(r.Written, pluginPaths) {
+		t.Fatalf("forced install = %+v", r)
+	}
+	if b, _ := os.ReadFile(filepath.Join(dir, "extra.txt")); string(b) != "keep\n" {
+		t.Errorf("extra.txt = %q", b)
+	}
+}
+
+func TestInstalledVersion(t *testing.T) {
+	for _, tc := range []struct {
+		name, manifest, version string
+		ok                      bool
+	}{
+		{"Ours", `{"name":"genesis","version":"v1","genesis":{"installed_by":"genesis guide install"}}`, "v1", true},
+		{"EmptyMarker", `{"name":"genesis","version":"v1","genesis":{}}`, "v1", true},
+		{"NoMarker", `{"name":"genesis","version":"v1"}`, "", false},
+		{"MarkerNotObject", `{"name":"genesis","version":"v1","genesis":"yes"}`, "", false},
+		{"OtherName", `{"name":"other","version":"v1","genesis":{}}`, "", false},
+		{"NotJSON", `{`, "", false},
+		{"Missing", "", "", false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			dir := t.TempDir()
+			if tc.manifest != "" {
+				writePath(t, filepath.Join(dir, filepath.FromSlash(pluginManifestPath)), tc.manifest)
+			}
+			v, ok := installedVersion(dir)
+			if v != tc.version || ok != tc.ok {
+				t.Errorf("installedVersion = %q, %v; want %q, %v", v, ok, tc.version, tc.ok)
+			}
+		})
+	}
+}
+
+func TestGuideInstallErrors(t *testing.T) {
+	ctx := testCtx(t.TempDir())
+	for _, tc := range []struct {
+		name, req string
+		dryRun    bool
+		code      Code
+		next      string
+	}{
+		{"OtherAgent", `{"agent":"agents-md"}`, false, CodeUsage, "genesis guide install --agent claude"},
+		{"NoHome", `{"agent":"claude"}`, false, CodeUsage, "genesis guide install --agent claude --project"},
+		{"ProjectNoRepo", `{"agent":"claude","project":true}`, false, CodeNotFound, "genesis init"},
+		{"DryRun", `{"agent":"claude","project":true}`, true, CodeUsage, "genesis guide install --agent claude --project"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx.DryRun = tc.dryRun
+			_, err := callOp(t, ctx, "guide.install", tc.req)
+			var e *Error
+			if !errors.As(err, &e) || e.Code != tc.code || e.Next != tc.next {
+				t.Fatalf("err = %v", err)
+			}
+		})
+	}
+	if _, err := os.Stat(filepath.Join(ctx.Root, ".claude")); err == nil {
+		t.Error("an error wrote .claude")
+	}
+	if strings.Contains(pluginDescription, "\n") {
+		t.Error("plugin description has a newline")
+	}
+}
