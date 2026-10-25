@@ -31,8 +31,10 @@
 //     it: "failing" if any fails, else "verified" if any is verified, else
 //     "unverified", and "none" with no evidence.
 //   - A short ID is the shortest prefix of an ID, at least 6 characters,
-//     unique among the view's node IDs, live and retired: one character more
-//     than it shares with the nearest ID on either side.
+//     unique in its namespace: one character more than it shares with the
+//     nearest ID on either side. A node's namespace is the view's node IDs,
+//     live and retired; a change set's is every change set ID in the log
+//     (Request.ChangeSets), since change sets resolve among themselves.
 //   - A one-line text has every run of white space, newlines included,
 //     written as one space.
 //
@@ -141,6 +143,9 @@ type Request struct {
 	// InFlight is the in-flight change sets; Change, when among them, is
 	// left out of the slice.
 	InFlight []InFlight
+	// ChangeSets is every change set ID in the log, sorted, for change set
+	// short IDs. Empty, they are 6 characters.
+	ChangeSets []id.ID
 }
 
 // Change is a change set as a slice shows it: the header of a change slice,
@@ -231,11 +236,7 @@ func (b *builder) build() (Slice, error) {
 	req := b.req
 	s := Slice{View: req.View}
 	if req.Change != nil {
-		short, err := b.short(req.Change.ID)
-		if err != nil {
-			return Slice{}, err
-		}
-		s.Change = &Change{ID: req.Change.ID, Short: short, State: req.Change.State, Intent: oneLine(req.Change.Open.Intent)}
+		s.Change = &Change{ID: req.Change.ID, Short: b.changeShort(req.Change.ID), State: req.Change.State, Intent: oneLine(req.Change.Open.Intent)}
 	}
 	var focus []model.Node
 	switch {

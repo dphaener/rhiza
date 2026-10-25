@@ -554,6 +554,33 @@ func TestBuild(t *testing.T) {
 		}
 	})
 
+	t.Run("short IDs of change sets are among change sets", func(t *testing.T) {
+		mk := func(s string) id.ID {
+			i, err := id.Parse(s + strings.Repeat("0", 26-len(s)))
+			if err != nil {
+				t.Fatal(err)
+			}
+			return i
+		}
+		a, b, far := mk("01JB7QAAAA"), mk("01JB7QAAAB"), mk("01K")
+		f := tree()
+		r := f.asIs(t)
+		req := Request{Focus: nd(3), View: "as-is", Change: &changeset.ChangeSet{ID: a, State: changeset.StateDraft},
+			InFlight:   []InFlight{{ID: b, State: changeset.StateProposed, Targets: []id.ID{nd(3)}}},
+			ChangeSets: []id.ID{a, b, far}}
+		s := build(t, r, r, req)
+		if s.Change.Short != "01JB7QAAAA" {
+			t.Errorf("header short = %q, want 10 characters", s.Change.Short)
+		}
+		if len(s.InFlight) != 1 || s.InFlight[0].Short != "01JB7QAAAB" {
+			t.Errorf("in flight = %+v, want short 01JB7QAAAB", s.InFlight)
+		}
+		req.ChangeSets = nil
+		if s := build(t, r, r, req); s.Change.Short != "01JB7Q" || s.InFlight[0].Short != "01JB7Q" {
+			t.Errorf("no change sets: shorts = %q, %q, want 6 characters", s.Change.Short, s.InFlight[0].Short)
+		}
+	})
+
 	t.Run("short IDs on items", func(t *testing.T) {
 		s := nodeSlice(t, tree(), 3)
 		r := tree().asIs(t)

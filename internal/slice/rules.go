@@ -88,6 +88,24 @@ func (b *builder) short(i id.ID) (string, error) {
 	return s, nil
 }
 
+// changeShort returns change set i's short ID among req.ChangeSets, which
+// are sorted. i need not be among them.
+func (b *builder) changeShort(i id.ID) string {
+	cs := b.req.ChangeSets
+	k, found := slices.BinarySearchFunc(cs, i, id.Compare)
+	var prev, next id.ID
+	if k > 0 {
+		prev = cs[k-1]
+	}
+	if found {
+		k++
+	}
+	if k < len(cs) {
+		next = cs[k]
+	}
+	return Short(i, prev, next)
+}
+
 // item returns n as an item, inherited from the handle from ("" for none).
 func (b *builder) item(n model.Node, from string) (Item, error) {
 	short, err := b.short(n.ID)
@@ -441,11 +459,7 @@ func (b *builder) inFlight(isFocus map[id.ID]bool) ([]Change, error) {
 		if b.req.Change != nil && c.ID == b.req.Change.ID || !slices.ContainsFunc(c.Targets, func(t id.ID) bool { return isFocus[t] }) {
 			continue
 		}
-		short, err := b.short(c.ID)
-		if err != nil {
-			return nil, err
-		}
-		out = append(out, Change{ID: c.ID, Short: short, State: c.State, Intent: oneLine(c.Intent)})
+		out = append(out, Change{ID: c.ID, Short: b.changeShort(c.ID), State: c.State, Intent: oneLine(c.Intent)})
 	}
 	slices.SortFunc(out, func(a, b Change) int { return id.Compare(a.ID, b.ID) })
 	return slices.CompactFunc(out, func(a, b Change) bool { return a.ID == b.ID }), nil
