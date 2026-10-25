@@ -107,6 +107,13 @@ type Ctx struct {
 	// GitConfig returns the value of a git config key such as
 	// "user.email", or an error if it is unset.
 	GitConfig func(key string) (string, error)
+	// Git runs git with args in Root and returns its standard output. It
+	// fails when git is missing or exits non-zero. Nil means no git: the
+	// operations that use it, such as check, skip what needs it.
+	Git func(args ...string) (string, error)
+	// Version is the running genesis's version, such as "v0.3.0" or
+	// "dev".
+	Version string
 	// Stdin is read by operations that accept "-" for a file.
 	Stdin io.Reader
 }
