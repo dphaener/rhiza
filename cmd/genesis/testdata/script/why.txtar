@@ -1,0 +1,60 @@
+# why walks back from a node: its decisions (and theirs), its sources and
+# the change sets of its history, every field printed in full.
+
+exec genesis init
+exec genesis change new Base
+exec genesis add capability store
+exec genesis add capability cache --parent store
+exec genesis add source talk --field 'summary=The owner said caching is the point.' --json-field 'quotes=["Keep it in memory, always."]'
+exec genesis add decision use-ram --field 'statement=We keep the hot set in RAM because disk is too slow for us.'
+exec genesis add decision old-way
+exec genesis link cache decided-by use-ram
+exec genesis link use-ram derived-from talk
+exec genesis link use-ram supersedes old-way
+exec genesis link store relates-to old-way --note 'not walked'
+exec genesis propose
+exec genesis accept --reason ok
+exec genesis land
+
+# Both texts appear in full, with how each was reached.
+exec genesis why cache
+stdout '^# Why cache$'
+stdout '^## Decisions$'
+stdout '^### use-ram$'
+stdout '^- cache decided by use-ram$'
+stdout '^- statement: We keep the hot set in RAM because disk is too slow for us\.$'
+stdout '^### old-way$'
+stdout '^- use-ram supersedes old-way$'
+stdout '^## Sources$'
+stdout '^- use-ram derived from talk$'
+stdout '^- summary: The owner said caching is the point\.$'
+stdout '"Keep it in memory, always\."'
+stdout '^## Change sets$'
+stdout '^- [0-9A-Z]{26} landed intention: Base$'
+
+# A child inherits its parent's decisions; relates-to is not walked.
+exec genesis link store decided-by old-way --record
+exec genesis why store
+stdout '^- store decided by old-way$'
+stdout '^- old-way superseded by use-ram$'
+! stdout 'relates'
+
+# --json carries the fields as JSON; old-way is now reached first as
+# inherited from store.
+exec genesis why cache --json
+stdout '"relation": "decided by"'
+stdout '"inherited": false'
+stdout '"inherited": true'
+stdout '"statement": "We keep the hot set in RAM because disk is too slow for us\."'
+stdout '"summary": "The owner said caching is the point\."'
+stdout '"view": "as-is"'
+
+# Nothing to say: None.
+exec genesis why talk
+stdout -count=2 '^None\.$'
+
+# An unknown ref is not_found, exit 4.
+! exec genesis why nosuch --json
+stdout '"code": "not_found"'
+stdout '"next": "genesis ls"'
+! exec genesis why nosuch

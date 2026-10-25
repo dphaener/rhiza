@@ -1,0 +1,58 @@
+# log lists the change sets that touched a node or a link, in apply order,
+# with the operations each applied to it and when and by whom it landed.
+
+exec genesis init
+exec genesis change new Base
+exec genesis add capability store
+exec genesis add decision d1
+exec genesis link store decided-by d1 --json
+stdout '"links": \[\n    "01M5PWGMARA1WR6BD0MEF4Y76P"'
+exec genesis propose
+exec genesis accept --reason ok
+exec genesis land
+
+exec genesis change new Rename
+exec genesis set store --field 'statement=Keeps things'
+exec genesis unlink store decided-by d1
+exec genesis propose
+exec genesis accept --reason ok
+
+# as-is: only the landed change set, with its land time and actor.
+exec genesis log store --view as-is
+stdout '^# Log store$'
+stdout -count=1 '^## [0-9A-Z]{26} '
+stdout '^## [0-9A-Z]{26} landed intention: Base$'
+stdout '^- Landed \d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ by [0-9A-Z]{26}$'
+stdout '^- node.create [0-9A-Z]{26}$'
+
+# to-be (the default, the accepted change set being current) adds its ops.
+exec genesis log store --view to-be
+stdout -count=2 '^## [0-9A-Z]{26} '
+stdout '^## [0-9A-Z]{26} accepted intention: Rename$'
+stdout '^- node.update [0-9A-Z]{26}$'
+exec genesis log store
+stdout '^- node.update [0-9A-Z]{26}$'
+
+# --json.
+exec genesis log store --view to-be --json
+stdout '"kind": "node"'
+stdout '"type": "node.update"'
+stdout '"state": "accepted"'
+stdout '"at": "\d{4}-'
+stdout '"view": "to-be"'
+
+# A link by an ID prefix (IDs are fixed): created, then retired.
+exec genesis log 01M5PWGMARA1WR6BD0MEF4 --view to-be
+stdout '^# Log link 01M5PWGMARA1WR6BD0MEF4Y76P$'
+stdout '^- link.create [0-9A-Z]{26}$'
+stdout '^- link.retire [0-9A-Z]{26}$'
+exec genesis log 01M5PWGMARA1WR6BD0MEF4 --json
+stdout '"kind": "link"'
+
+# Neither a node nor a link: not_found, exit 4.
+! exec genesis log nosuch --json
+stdout '"code": "not_found"'
+stdout '"message": "no node or link matches \\"nosuch\\""'
+stdout '"next": "genesis ls"'
+! exec genesis log nosuch
+stderr 'no node or link matches'
