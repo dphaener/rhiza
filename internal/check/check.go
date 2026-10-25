@@ -28,9 +28,13 @@
 //     of two branches leaves.
 //   - model fails on each as-is problem. A later change set repairs one; for
 //     a conflict, Next says how.
-//   - in-flight warns on each in-flight problem.
+//   - in-flight warns on each in-flight problem, Next on a conflict saying
+//     where to look, and on each op of an in-flight change set that rests on
+//     a dropped one (changeset.RestsOn).
 //   - link fails on each live as-is link whose Ends the endpoint table does
 //     not allow.
+//   - depends-on fails once on each depends-on loop among change sets
+//     (changeset.Cycles), whatever their states.
 //   - render fails on each rendered file that differs from what
 //     render.Render writes, is missing or is extra, and on a missing
 //     rendered folder.
@@ -71,13 +75,14 @@ const (
 	RuleModel      = "model"
 	RuleInFlight   = "in-flight"
 	RuleLink       = "link"
+	RuleDependsOn  = "depends-on"
 	RuleRender     = "render"
 	RuleAppendOnly = "append-only"
 )
 
 // Rules returns the rules in report order.
 func Rules() []string {
-	return []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleRender, RuleAppendOnly}
+	return []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleRender, RuleAppendOnly}
 }
 
 // Paths in findings are relative to the project root.
@@ -140,6 +145,7 @@ func Run(in Input) Report {
 	sets := c.fold()
 	asIs := c.model(sets)
 	c.links(asIs, sets)
+	c.dependsOn(sets)
 	c.render(asIs, sets)
 	c.appendOnly()
 
@@ -218,11 +224,13 @@ func (c *checker) model(sets []changeset.ChangeSet) model.Model {
 
 	_, toBe := model.ToBe(sets)
 	views := [][]model.Problem{toBe}
+	var inFlight []changeset.ChangeSet
 	for _, s := range sets {
 		switch s.State {
 		case changeset.StateDraft, changeset.StateProposed, changeset.StateAccepted:
 			_, ps := model.WhatIf(sets, s.ID)
 			views = append(views, ps)
+			inFlight = append(inFlight, s)
 		}
 	}
 	for _, ps := range views {
@@ -232,8 +240,21 @@ func (c *checker) model(sets []changeset.ChangeSet) model.Model {
 				continue
 			}
 			seen[k] = true
-			c.add(Finding{Severity: SeverityWarn, Rule: RuleInFlight, ChangeSet: str(p.ChangeSet), Op: str(p.Op),
-				Message: p.Err.Error()})
+			f := Finding{Severity: SeverityWarn, Rule: RuleInFlight, ChangeSet: str(p.ChangeSet), Op: str(p.Op),
+				Message: p.Err.Error()}
+			if errors.Is(p.Err, model.ErrConflict) && !p.ChangeSet.IsZero() {
+				f.Next = fmt.Sprintf("genesis slice --change %s --view what-if", p.ChangeSet)
+			}
+			c.add(f)
+		}
+	}
+	for _, s := range inFlight {
+		for _, x := range changeset.RestsOn(sets, s.ID) {
+			for _, o := range x.Ops {
+				c.add(Finding{Severity: SeverityWarn, Rule: RuleInFlight, ChangeSet: s.ID.String(), Op: o.String(),
+					Message: fmt.Sprintf("op rests on change set %s (%s)", x.ChangeSet, x.State),
+					Next:    "genesis change show " + s.ID.String()})
+			}
 		}
 	}
 	return asIs
@@ -284,6 +305,21 @@ func (c *checker) links(m model.Model, sets []changeset.ChangeSet) {
 			f.Op = str(l.History[0].Op)
 		}
 		c.add(f)
+	}
+}
+
+func (c *checker) dependsOn(sets []changeset.ChangeSet) {
+	for _, loop := range changeset.Cycles(sets) {
+		msg := fmt.Sprintf("change set %s depends on itself", loop[0])
+		if len(loop) > 1 {
+			names := make([]string, len(loop))
+			for i, cs := range loop {
+				names[i] = cs.String()
+			}
+			msg = "depends-on loop among change sets " + strings.Join(names, ", ")
+		}
+		c.add(Finding{Severity: SeverityFail, Rule: RuleDependsOn, ChangeSet: loop[0].String(), Message: msg,
+			Next: "genesis change show " + loop[0].String()})
 	}
 }
 

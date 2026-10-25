@@ -4,6 +4,7 @@ import (
 	"math/rand/v2"
 	"reflect"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/dphaener/genesis/internal/changeset"
@@ -422,5 +423,113 @@ func TestWhatIf(t *testing.T) {
 				sameView(t, "shuffled", m0, ps0, m, ps)
 			}
 		}
+	})
+}
+
+// dependsOn is op fid(n), a depends-on link ln(link) from change set from to
+// change set to.
+func dependsOn(n, link int, from, to id.ID) op.Op {
+	return op.Op{ID: fid(n), Type: op.TypeLinkCreate, Link: ln(link), LinkType: op.LinkDependsOn, From: from, To: to}
+}
+
+// entry is fixture log entry n, distinct from every fid and csID.
+func entry(n int) id.ID {
+	i := fid(n)
+	i[0] = 3
+	return i
+}
+
+// written records that each of ops was written by one entry, in order, as
+// the history of change set s.
+func written(s changeset.ChangeSet, at ...int) changeset.ChangeSet {
+	s.History = map[id.ID][]changeset.Revision{}
+	for i, o := range s.Ops {
+		s.History[o.ID] = []changeset.Revision{{Entry: entry(at[i]), Op: o}}
+	}
+	return s
+}
+
+func TestWhatIfDependencies(t *testing.T) {
+	draft := changeset.StateDraft
+	csD := csID(4)
+
+	t.Run("dependency's node is seen", func(t *testing.T) {
+		sets := []changeset.ChangeSet{
+			vSet(csA, draft, mkCap(1, 1, "n", 0, "")),
+			vSet(csB, draft, dependsOn(2, 1, csB, csA), set(3, 1, 1, "status", `"b"`)),
+		}
+		m, ps := WhatIf(sets, csB)
+		checkProblems(t, ps, nil)
+		if got := field(t, m, 1, "status"); got != `"b"` {
+			t.Errorf("status = %s, want B's", got)
+		}
+	})
+
+	t.Run("without the link the target is missing", func(t *testing.T) {
+		sets := []changeset.ChangeSet{
+			vSet(csA, draft, mkCap(1, 1, "n", 0, "")),
+			vSet(csB, draft, set(3, 1, 1, "status", `"b"`)),
+		}
+		m, ps := WhatIf(sets, csB)
+		checkProblems(t, ps, []want{{csB, 3, ErrMissing}})
+		if _, ok := m.Node(nd(1)); ok {
+			t.Errorf("node 1 is in the view without the dependency")
+		}
+	})
+
+	t.Run("withdrawn dependency leaves the problem", func(t *testing.T) {
+		sets := []changeset.ChangeSet{
+			vSet(csA, changeset.StateWithdrawn, mkCap(1, 1, "n", 0, "")),
+			vSet(csB, draft, dependsOn(2, 1, csB, csA), set(3, 1, 1, "status", `"b"`)),
+		}
+		m, ps := WhatIf(sets, csB)
+		checkProblems(t, ps, []want{{csB, 3, ErrMissing}})
+		if _, ok := m.Node(nd(1)); ok {
+			t.Errorf("node 1 of a withdrawn change set is in the view")
+		}
+	})
+
+	t.Run("transitive dependencies are seen in order", func(t *testing.T) {
+		// csD depends on csC, csC on csA; csB is no dependency.
+		sets := []changeset.ChangeSet{
+			vSet(csA, draft, mkCap(1, 1, "n", 0, "")),
+			vSet(csB, draft, set(9, 1, 1, "status", `"b"`)),
+			vSet(csC, changeset.StateProposed, dependsOn(2, 1, csC, csA), set(3, 1, 1, "status", `"c"`)),
+			vSet(csD, draft, dependsOn(4, 2, csD, csC), set(5, 1, 3, "owner", `"d"`)),
+		}
+		m, ps := WhatIf(sets, csD)
+		checkProblems(t, ps, nil)
+		x := mustNode(t, m, 1)
+		if string(x.Fields["status"]) != `"c"` || string(x.Fields["owner"]) != `"d"` {
+			t.Errorf("node 1 fields = %v, want csC's status and csD's owner", x.Fields)
+		}
+		if want := history(r(csA, 1), r(csC, 3), r(csD, 5)); !reflect.DeepEqual(x.History, want) {
+			t.Errorf("history = %v, want %v", x.History, want)
+		}
+	})
+
+	t.Run("revision under a later write is a conflict", func(t *testing.T) {
+		// csA wrote op 2 in entry 1, csB wrote op 4 on it in entry 2, then
+		// csA revised op 2's statement in entry 3.
+		old := set(2, 1, 1, "statement", `"old"`)
+		cur := set(2, 1, 1, "statement", `"new"`)
+		depA := written(vSet(csA, draft, mkCap(1, 1, "n", 0, ""), cur), 1, 1)
+		depA.History[cur.ID] = []changeset.Revision{{Entry: entry(1), Op: old}, {Entry: entry(3), Op: cur}}
+		depB := written(vSet(csB, draft, dependsOn(3, 1, csB, csA), set(4, 1, 2, "statement", `"b"`)), 2, 2)
+		m, ps := WhatIf([]changeset.ChangeSet{depA, depB}, csB)
+		checkProblems(t, ps, []want{{csB, 4, ErrConflict}})
+		if got := field(t, m, 1, "statement"); got != `"b"` {
+			t.Errorf("statement = %s, want B's", got)
+		}
+		for _, s := range []string{csA.String(), fid(2).String(), nd(1).String(), "field:statement"} {
+			if !strings.Contains(ps[0].Err.Error(), s) {
+				t.Errorf("problem %v does not name %s", ps[0], s)
+			}
+		}
+
+		// csB writing op 4 again, after the revision, clears it.
+		depB = written(depB, 4, 4)
+		_, ps = WhatIf([]changeset.ChangeSet{depA, depB}, csB)
+		checkProblems(t, ps, nil)
 	})
 }

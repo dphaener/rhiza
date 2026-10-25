@@ -1,6 +1,8 @@
 package api
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -8,6 +10,7 @@ import (
 	"github.com/dphaener/genesis/internal/changeset"
 	"github.com/dphaener/genesis/internal/entry"
 	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/genesis/internal/op"
 )
 
 // move runs a lifecycle operation and fails the test on error.
@@ -264,4 +267,180 @@ func TestLifecycleRecordFlag(t *testing.T) {
 	ctx.Record = true
 	_, err := callOp(t, ctx, "propose", `{}`)
 	wantExit(t, err, 2)
+}
+
+// stackedPair makes change sets A and B, accepted, with B depending on A
+// through a depends-on link written in B. It returns them with neither
+// current.
+func stackedPair(t *testing.T) (ctx *Ctx, a, b id.ID) {
+	t.Helper()
+	ctx = initCtx(t)
+	a = newChange(t, ctx, `{"intent":"A"}`).ChangeSet
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
+	b = newChange(t, ctx, `{"intent":"B"}`).ChangeSet
+	mustWrite(t, ctx, "link", fmt.Sprintf(`{"from":%q,"type":"depends-on","to":%q}`, b, a))
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"log"}`)
+	for _, cs := range []id.ID{a, b} {
+		ctx.ChangeRef = cs.String()
+		move(t, ctx, "propose", `{}`)
+		move(t, ctx, "accept", `{}`)
+	}
+	return ctx, a, b
+}
+
+// wantLandRefused lands cs and checks the refusal: exit 3, the message
+// starting with want, the next command, and no entry written.
+func wantLandRefused(t *testing.T, ctx *Ctx, cs id.ID, want, next string) {
+	t.Helper()
+	size := logSize(t, ctx)
+	c := *ctx
+	c.ChangeRef = cs.String()
+	_, err := callOp(t, &c, "land", `{}`)
+	wantExit(t, err, 3)
+	wantNext(t, err, next)
+	if e := AsError(err); !strings.HasPrefix(e.Message, want) {
+		t.Errorf("message = %q, want prefix %q", e.Message, want)
+	}
+	if got := logSize(t, ctx); got != size {
+		t.Errorf("log grew from %d to %d entries", size, got)
+	}
+}
+
+func TestLandDependencies(t *testing.T) {
+	t.Run("Accepted", func(t *testing.T) {
+		ctx, a, b := stackedPair(t)
+		want := "cannot land change set " + b.String() + ": it depends on " + a.String() + " (accepted)"
+		wantLandRefused(t, ctx, b, want, "genesis land --change "+shortID(a))
+		ctx.DryRun = true
+		wantLandRefused(t, ctx, b, want, "genesis land --change "+shortID(a))
+	})
+
+	t.Run("InOrder", func(t *testing.T) {
+		ctx, a, b := stackedPair(t)
+		ctx.ChangeRef = a.String()
+		move(t, ctx, "land", `{}`)
+		ctx.ChangeRef = b.String()
+		if r := move(t, ctx, "land", `{}`); r.To != changeset.StateLanded {
+			t.Errorf("land B = %+v", r)
+		}
+	})
+
+	t.Run("Withdrawn", func(t *testing.T) {
+		ctx, a, b := stackedPair(t)
+		ctx.ChangeRef = a.String()
+		move(t, ctx, "withdraw", `{}`)
+		wantLandRefused(t, ctx, b,
+			"cannot land change set "+b.String()+": it depends on "+a.String()+" (withdrawn)",
+			"genesis change show "+shortID(a))
+	})
+
+	t.Run("Proposed", func(t *testing.T) {
+		ctx := initCtx(t)
+		a := newChange(t, ctx, `{"intent":"A"}`).ChangeSet
+		move(t, ctx, "propose", `{}`)
+		b := newChange(t, ctx, `{"intent":"R","kind":"record"}`).ChangeSet
+		mustWrite(t, ctx, "link", fmt.Sprintf(`{"from":%q,"type":"depends-on","to":%q}`, b, a))
+		wantLandRefused(t, ctx, b,
+			"cannot land change set "+b.String()+": it depends on "+a.String()+" (proposed)",
+			"genesis change show "+shortID(a))
+	})
+
+	t.Run("NotInLog", func(t *testing.T) {
+		ctx := initCtx(t)
+		b := newChange(t, ctx, `{"intent":"R","kind":"record"}`).ChangeSet
+		w := ctxWorkspace(t, ctx)
+		actor, forID, err := w.resolveActor(b, ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		newID := func() id.ID {
+			v, err := w.ids.New()
+			if err != nil {
+				t.Fatal(err)
+			}
+			return v
+		}
+		ghost := newID()
+		o := op.Op{ID: newID(), Type: op.TypeLinkCreate, Link: newID(),
+			LinkType: op.LinkDependsOn, From: b, To: ghost}
+		if _, err := w.appendEntry(b, changeset.Ops{Ops: []op.Op{o}}, actor, forID); err != nil {
+			t.Fatal(err)
+		}
+		wantLandRefused(t, ctx, b,
+			"cannot land change set "+b.String()+": it depends on "+ghost.String()+" (not in the log)",
+			"genesis change show "+shortID(ghost))
+	})
+}
+
+func TestLandConflict(t *testing.T) {
+	ctx := initCtx(t)
+	recordWrite(t, ctx, "add", `{"kind":"decision","handle":"base","fields":["statement=Old"]}`)
+	b := newChange(t, ctx, `{"intent":"B"}`).ChangeSet
+	mustWrite(t, ctx, "set", `{"ref":"base","fields":["statement=Mine"]}`)
+	move(t, ctx, "propose", `{}`)
+	move(t, ctx, "accept", `{}`)
+	recordWrite(t, ctx, "set", `{"ref":"base","fields":["statement=Theirs"]}`)
+
+	want := "cannot land change set " + b.String() + ": model: conflict"
+	wantLandRefused(t, ctx, b, want, "genesis check")
+	ctx.DryRun = true
+	wantLandRefused(t, ctx, b, want, "genesis check")
+}
+
+// TestLandRevisedLanded: A revises in place a field B wrote; once A has
+// landed, land still refuses B (D13) until B writes the field again.
+func TestLandRevisedLanded(t *testing.T) {
+	ctx := initCtx(t)
+	a := newChange(t, ctx, `{"intent":"A"}`).ChangeSet
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"base","fields":["statement=Base"]}`)
+	b := newChange(t, ctx, `{"intent":"B"}`).ChangeSet
+	mustWrite(t, ctx, "link", fmt.Sprintf(`{"from":%q,"type":"depends-on","to":%q}`, b, a))
+	mustWrite(t, ctx, "set", `{"ref":"base","fields":["statement=FromB"]}`)
+	ctx.ChangeRef = a.String()
+	mustWrite(t, ctx, "set", `{"ref":"base","fields":["statement=Revised"]}`)
+	for _, cs := range []id.ID{a, b} {
+		ctx.ChangeRef = cs.String()
+		move(t, ctx, "propose", `{}`)
+		move(t, ctx, "accept", `{}`)
+	}
+	ctx.ChangeRef = a.String()
+	move(t, ctx, "land", `{}`)
+
+	want := "cannot land change set " + b.String() + ": model: conflict: change set " + a.String() + " revised op "
+	wantLandRefused(t, ctx, b, want, "genesis check")
+
+	ctx.ChangeRef = b.String()
+	mustWrite(t, ctx, "set", `{"ref":"base","fields":["statement=FromBAgain"]}`)
+	if r := move(t, ctx, "land", `{}`); r.To != changeset.StateLanded {
+		t.Errorf("land B = %+v", r)
+	}
+}
+
+// TestLandProblem: an op on a node that is not there is not a conflict, but
+// land refuses it all the same, pointing at the what-if view.
+func TestLandProblem(t *testing.T) {
+	ctx := initCtx(t)
+	b := newChange(t, ctx, `{"intent":"R","kind":"record"}`).ChangeSet
+	w := ctxWorkspace(t, ctx)
+	actor, forID, err := w.resolveActor(b, ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	newID := func() id.ID {
+		v, err := w.ids.New()
+		if err != nil {
+			t.Fatal(err)
+		}
+		return v
+	}
+	ghost, base := newID(), newID()
+	o := op.Op{ID: newID(), Type: op.TypeNodeUpdate, Node: ghost, Base: base,
+		Set: map[string]json.RawMessage{"statement": json.RawMessage(`"x"`)}}
+	if _, err := w.appendEntry(b, changeset.Ops{Ops: []op.Op{o}}, actor, forID); err != nil {
+		t.Fatal(err)
+	}
+	want := "cannot land change set " + b.String() + ": model: not found"
+	wantLandRefused(t, ctx, b, want, "genesis slice --change "+shortID(b)+" --view what-if")
+	ctx.DryRun = true
+	wantLandRefused(t, ctx, b, want, "genesis slice --change "+shortID(b)+" --view what-if")
 }

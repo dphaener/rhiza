@@ -1,13 +1,16 @@
 package api
 
 // This file holds the link writes: link creates a link between two live
-// nodes, or a node and a change set, or two change sets; unlink retires one, or drops it if this change set created it.
+// nodes, or a node and a change set, or two change sets, refusing a
+// depends-on between change sets that would close a loop; unlink retires
+// one, or drops it if this change set created it.
 
 import (
 	"reflect"
 	"slices"
 	"strings"
 
+	"github.com/dphaener/genesis/internal/changeset"
 	"github.com/dphaener/genesis/internal/id"
 	"github.com/dphaener/genesis/internal/op"
 )
@@ -57,18 +60,19 @@ type UnlinkRequest struct {
 	To   string `json:"to,omitempty" arg:"2" desc:"The node the link ends at, with type"`
 }
 
-// buildLink creates a link between two live nodes. An identical live link is
-// a conflict.
+// buildLink creates a link between two live nodes, or change sets, or one
+// of each. An identical live link is a conflict, and so is a depends-on
+// between change sets that would close a loop.
 func buildLink(b writeBase, r LinkRequest) (edit, error) {
 	t, err := linkType(r.Type, "link")
 	if err != nil {
 		return edit{}, err
 	}
-	from, err := linkEnd(b, r.From)
+	from, fromSet, err := linkEnd(b, r.From)
 	if err != nil {
 		return edit{}, err
 	}
-	to, err := linkEnd(b, r.To)
+	to, toSet, err := linkEnd(b, r.To)
 	if err != nil {
 		return edit{}, err
 	}
@@ -100,6 +104,10 @@ func buildLink(b writeBase, r LinkRequest) (edit, error) {
 	case AsError(err).Code != CodeNotFound:
 		return edit{}, err
 	}
+	if t == op.LinkDependsOn && fromSet && toSet && b.changeSets != nil && wouldCycle(b, from, to) {
+		return edit{}, Conflictf("depends-on from %s to %s would close a loop: %s already depends on %s", from, to, to, from).
+			WithNext("genesis change show " + shortID(to))
+	}
 	if o.Link, err = b.newID(); err != nil {
 		return edit{}, err
 	}
@@ -112,20 +120,47 @@ func buildLink(b writeBase, r LinkRequest) (edit, error) {
 }
 
 // linkEnd resolves one end of a new link: a writable node, or else a
-// change set in the log, such as either end of a discovered-from link. A
-// ref that is neither keeps the node's error.
-func linkEnd(b writeBase, ref string) (id.ID, error) {
+// change set in the log, such as either end of a discovered-from link,
+// reporting which. A ref that is neither keeps the node's error.
+func linkEnd(b writeBase, ref string) (id.ID, bool, error) {
 	n, err := writableNode(b, ref)
 	if err == nil {
-		return n.ID, nil
+		return n.ID, false, nil
 	}
 	if AsError(err).Code != CodeNotFound || b.changeSet == nil {
-		return id.ID{}, err
+		return id.ID{}, false, err
 	}
 	if cs, csErr := b.changeSet(ref); csErr == nil {
-		return cs, nil
+		return cs, true, nil
 	}
-	return id.ID{}, err
+	return id.ID{}, false, err
+}
+
+// wouldCycle reports whether change set from depending on change set to
+// would close a loop. The graph is every change set's dependencies in the
+// log, plus each depends-on link the change set being written holds, from
+// whichever change set, as it will count once that change set lands: so an
+// apply whose links together close a loop is refused at the one that does.
+func wouldCycle(b writeBase, from, to id.ID) bool {
+	sets := b.changeSets()
+	retired := map[id.ID]bool{}
+	for _, o := range b.ops {
+		if o.Type == op.TypeLinkRetire {
+			retired[o.Link] = true
+		}
+	}
+	// The written change set's links go in as one landed change set with
+	// no ID of its own, which nothing can depend on.
+	var held []op.Op
+	for _, o := range b.ops {
+		if o.Type == op.TypeLinkCreate && o.LinkType == op.LinkDependsOn && !retired[o.Link] {
+			held = append(held, o)
+		}
+	}
+	if len(held) > 0 {
+		sets = append(sets, changeset.ChangeSet{State: changeset.StateLanded, Ops: held})
+	}
+	return changeset.WouldCycle(sets, from, to)
 }
 
 // buildUnlink retires a link against its version, or drops it, with every
@@ -161,7 +196,7 @@ func buildUnlink(b writeBase, r UnlinkRequest) (edit, error) {
 		return edit{}, Conflictf("link %s is retired", k.ID)
 	}
 	if k.Conflict {
-		return edit{}, Conflictf("link %s has conflicting landed changes; a change set resolving them must land first", k.ID)
+		return edit{}, Conflictf("link %s has conflicting changes", k.ID).WithNext("genesis check")
 	}
 	var e edit
 	e.touchLink(k.ID)
@@ -170,7 +205,7 @@ func buildUnlink(b writeBase, r UnlinkRequest) (edit, error) {
 		return e, nil
 	}
 	if k.Version.IsZero() {
-		return edit{}, Errorf("link %s has no landed version to retire", k.ID)
+		return edit{}, Errorf("link %s has no version to retire", k.ID)
 	}
 	opID, err := b.newID()
 	if err != nil {

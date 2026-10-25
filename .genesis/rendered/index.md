@@ -21,6 +21,10 @@
     - [model-writes](capability/genesis/change-sets/model-writes.md)
     - [apply-files](capability/genesis/change-sets/apply-files.md)
     - [conflicts](capability/genesis/change-sets/conflicts.md)
+    - [dependent-writes](capability/genesis/change-sets/dependent-writes.md)
+    - [ordered-landing](capability/genesis/change-sets/ordered-landing.md)
+    - [dropped-dependencies](capability/genesis/change-sets/dropped-dependencies.md)
+    - [acyclic-dependencies](capability/genesis/change-sets/acyclic-dependencies.md)
   - [lineage](capability/genesis/lineage.md)
     - [why-walk](capability/genesis/lineage/why-walk.md)
     - [change-history](capability/genesis/lineage/change-history.md)
@@ -184,6 +188,7 @@
 - [repo-location](decision/repo-location.md)
 - [review-feeds-model](decision/review-feeds-model.md)
 - [review-profiles-by-rule](decision/review-profiles-by-rule.md)
+- [revised-in-place-conflicts](decision/revised-in-place-conflicts.md)
 - [rex-command-shape](decision/rex-command-shape.md)
 - [rex-extras-optional](decision/rex-extras-optional.md)
 - [rex-holds-no-state](decision/rex-holds-no-state.md)
@@ -389,8 +394,12 @@
 
 ## Evidence
 
+- [acyclic-dependencies-tests](evidence/acyclic-dependencies-tests.md)
 - [backlog-group-tested](evidence/backlog-group-tested.md)
+- [dependent-writes-tests](evidence/dependent-writes-tests.md)
+- [dropped-dependencies-tests](evidence/dropped-dependencies-tests.md)
 - [milestone-groups-tested](evidence/milestone-groups-tested.md)
+- [ordered-landing-tests](evidence/ordered-landing-tests.md)
 
 ## Sources
 
@@ -412,6 +421,7 @@
 ## Actors
 
 - [claude-code-24d8eb87](actor/claude-code-24d8eb87.md)
+- [claude-code-a7bf1047](actor/claude-code-a7bf1047.md)
 - [claude-code-orchestrator](actor/claude-code-orchestrator.md)
 - [claude-code-task-11](actor/claude-code-task-11.md)
 - [darin-haener](actor/darin-haener.md)

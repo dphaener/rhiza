@@ -24,15 +24,63 @@ func planID(n int) id.ID {
 	return i
 }
 
-// planFix builds planInputs by hand.
+// planFix builds planInputs by hand. Every change set's ops go in in.ops,
+// whatever its state; landed holds the landed stand-in's ops and history
+// any op's revisions other than the one each op gets by default.
 type planFix struct {
-	in planInputs
-	n  int
+	in      planInputs
+	n       int
+	landed  []op.Op
+	history map[id.ID][]changeset.Revision
 }
 
 func newPlanFix() *planFix {
 	return &planFix{in: planInputs{ops: map[id.ID][]op.Op{}, nodes: map[id.ID]gmodel.Node{},
-		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}, milestones: map[id.ID]bool{}}}
+		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}, milestones: map[id.ID]bool{}},
+		history: map[id.ID][]changeset.Revision{}}
+}
+
+// core fills in.sets from the change sets and their ops, as planGather
+// does, and runs the core. An op's history is one version written by the
+// entry with its own ID, unless f.history says otherwise.
+func (f *planFix) core() planResult {
+	f.in.sets = []changeset.ChangeSet{{State: changeset.StateLanded, Ops: f.landed}}
+	for _, c := range f.in.changeSets {
+		s := changeset.ChangeSet{ID: c.ID, State: c.State, Ops: f.in.ops[c.ID], History: map[id.ID][]changeset.Revision{}}
+		for _, o := range s.Ops {
+			s.History[o.ID] = []changeset.Revision{{Entry: o.ID, Op: o}}
+			if h, ok := f.history[o.ID]; ok {
+				s.History[o.ID] = h
+			}
+		}
+		f.in.sets = append(f.in.sets, s)
+	}
+	return planCore(f.in)
+}
+
+// dep adds a landed depends-on link from cs to to and returns its ID.
+func (f *planFix) dep(cs, to id.ID) id.ID {
+	l := f.next()
+	f.landed = append(f.landed, op.Op{ID: f.next(), Type: op.TypeLinkCreate, Link: l,
+		LinkType: op.LinkDependsOn, From: cs, To: to})
+	return l
+}
+
+// undep retires link l: landed, or in change set cs when cs is not zero.
+func (f *planFix) undep(cs, l id.ID) {
+	o := op.Op{ID: f.next(), Type: op.TypeLinkRetire, Link: l}
+	if cs.IsZero() {
+		f.landed = append(f.landed, o)
+		return
+	}
+	f.in.ops[cs] = append(f.in.ops[cs], o)
+}
+
+// add appends o to change set cs's ops with a fresh op ID, and returns it.
+func (f *planFix) add(cs id.ID, o op.Op) op.Op {
+	o.ID = f.next()
+	f.in.ops[cs] = append(f.in.ops[cs], o)
+	return o
 }
 
 func (f *planFix) next() id.ID {
@@ -69,10 +117,12 @@ func (f *planFix) link(t op.LinkType, from, to id.ID, retired bool) id.ID {
 	return i
 }
 
-// own adds a link.create op to change set cs.
-func (f *planFix) own(cs id.ID, t op.LinkType, from, to id.ID) {
-	f.in.ops[cs] = append(f.in.ops[cs], op.Op{ID: f.next(), Type: op.TypeLinkCreate, Link: f.next(),
+// own adds a link.create op to change set cs and returns the link's ID.
+func (f *planFix) own(cs id.ID, t op.LinkType, from, to id.ID) id.ID {
+	l := f.next()
+	f.in.ops[cs] = append(f.in.ops[cs], op.Op{ID: f.next(), Type: op.TypeLinkCreate, Link: l,
 		LinkType: t, From: from, To: to})
+	return l
 }
 
 // touch adds a node.update op on node to change set cs.
@@ -103,7 +153,7 @@ func (f *planFix) serve(cs id.ID, intents ...id.ID) {
 // verdict runs the core and returns cs's verdict.
 func (f *planFix) verdict(t *testing.T, cs id.ID) *planChangeSet {
 	t.Helper()
-	for _, p := range planCore(f.in).order {
+	for _, p := range f.core().order {
 		if p.info.ID == cs {
 			return p
 		}
@@ -126,7 +176,7 @@ func TestPlanReadyWithLandedDep(t *testing.T) {
 	f := newPlanFix()
 	landed := f.cs("L", changeset.StateLanded)
 	a := f.cs("A", changeset.StateAccepted)
-	f.link(op.LinkDependsOn, a, landed, false)
+	f.dep(a, landed)
 	p := f.verdict(t, a)
 	wantReasons(t, p)
 	if !reflect.DeepEqual(p.dependsOn, []id.ID{landed}) {
@@ -139,15 +189,81 @@ func TestPlanDependencyNotLanded(t *testing.T) {
 	a := f.cs("A", changeset.StateAccepted)
 	b := f.cs("B", changeset.StateAccepted)
 	gone := planID(999)
-	f.link(op.LinkDependsOn, b, a, false)
+	f.dep(b, a)
 	f.own(b, op.LinkDependsOn, b, gone)
 	wantReasons(t, f.verdict(t, b),
 		"depends on "+shortID(a)+" (accepted)",
 		"depends on "+shortID(gone)+" (not in the log)")
-	// A retired depends-on link does not count.
+	// A retired depends-on link does not count, retired where it landed or
+	// by the change set's own ops.
 	c := f.cs("C", changeset.StateAccepted)
-	f.link(op.LinkDependsOn, c, a, true)
+	f.undep(id.ID{}, f.dep(c, a))
+	f.undep(c, f.dep(c, b))
+	f.undep(c, f.own(c, op.LinkDependsOn, c, b))
 	wantReasons(t, f.verdict(t, c))
+}
+
+func TestPlanDependencyOnlyItsOwn(t *testing.T) {
+	// A depends-on link from B written inside a third change set does not
+	// make B depend (D1), though the to-be view has it.
+	f := newPlanFix()
+	a := f.cs("A", changeset.StateAccepted)
+	b := f.cs("B", changeset.StateAccepted)
+	c := f.cs("C", changeset.StateAccepted)
+	l := f.own(c, op.LinkDependsOn, b, a)
+	f.in.links = append(f.in.links, gmodel.Link{ID: l, Type: op.LinkDependsOn, From: b, To: a, Created: c})
+	if p := f.verdict(t, b); len(p.dependsOn) != 0 || len(p.reasons) != 0 {
+		t.Errorf("B: dependsOn %v, reasons %q", p.dependsOn, p.reasons)
+	}
+}
+
+func TestPlanRestsOnDropped(t *testing.T) {
+	// B updates a node withdrawn A created: rests-on comes after the
+	// depends-on reasons and before the blocking questions, and stays when
+	// B no longer depends on A.
+	f := newPlanFix()
+	a := f.cs("A", changeset.StateWithdrawn)
+	b := f.cs("B", changeset.StateProposed)
+	n := f.next()
+	created := f.add(a, op.Op{Type: op.TypeNodeCreate, Node: n, Kind: op.KindCapability})
+	l := f.own(b, op.LinkDependsOn, b, a)
+	f.add(b, op.Op{Type: op.TypeNodeUpdate, Node: n, Base: created.ID})
+	q := f.node(op.KindQuestion, "q", id.ID{}, "")
+	f.link(op.LinkBlocks, q, b, false)
+	wantReasons(t, f.verdict(t, b),
+		"not accepted: proposed",
+		"depends on "+shortID(a)+" (withdrawn)",
+		"rests on "+shortID(a)+" (withdrawn): 1 operations",
+		"blocked by question q on this change set")
+	f.undep(b, l)
+	wantReasons(t, f.verdict(t, b),
+		"not accepted: proposed",
+		"rests on "+shortID(a)+" (withdrawn): 1 operations",
+		"blocked by question q on this change set")
+}
+
+func TestPlanRevisedUnder(t *testing.T) {
+	// A revises in place, after B wrote it, a field B sets: one reason per
+	// dependency, counting B's ops, after the depends-on reasons.
+	f := newPlanFix()
+	a := f.cs("A", changeset.StateAccepted)
+	b := f.cs("B", changeset.StateAccepted)
+	n := f.next()
+	v1 := op.Op{Type: op.TypeNodeCreate, Node: n, Kind: op.KindCapability,
+		Fields: map[string]json.RawMessage{"statement": json.RawMessage(`"one"`)}}
+	created := f.add(a, v1)
+	v1.ID = created.ID
+	f.own(b, op.LinkDependsOn, b, a)
+	set := map[string]json.RawMessage{"statement": json.RawMessage(`"b"`)}
+	u := f.add(b, op.Op{Type: op.TypeNodeUpdate, Node: n, Base: created.ID, Set: set})
+	f.add(b, op.Op{Type: op.TypeNodeUpdate, Node: n, Base: u.ID, Set: set})
+	v2 := v1
+	v2.Fields = map[string]json.RawMessage{"statement": json.RawMessage(`"two"`)}
+	f.in.ops[a][0] = v2
+	f.history[created.ID] = []changeset.Revision{{Entry: created.ID, Op: v1}, {Entry: f.next(), Op: v2}}
+	wantReasons(t, f.verdict(t, b),
+		"depends on "+shortID(a)+" (accepted)",
+		shortID(a)+" revised under it: 2 operations")
 }
 
 func TestPlanNotAccepted(t *testing.T) {
@@ -155,7 +271,7 @@ func TestPlanNotAccepted(t *testing.T) {
 	a := f.cs("A", changeset.StateAccepted)
 	p := f.cs("P", changeset.StateProposed)
 	d := f.cs("D", changeset.StateDraft)
-	f.link(op.LinkDependsOn, p, a, false)
+	f.dep(p, a)
 	wantReasons(t, f.verdict(t, p), "not accepted: proposed", "depends on "+shortID(a)+" (accepted)")
 	wantReasons(t, f.verdict(t, d), "not accepted: draft")
 }
@@ -209,7 +325,7 @@ func TestPlanServesInsideChangeSet(t *testing.T) {
 	f.own(q, op.LinkServes, q, fast)
 	o := f.in.ops[q][0]
 	f.in.links = append(f.in.links, gmodel.Link{ID: o.Link, Type: o.LinkType, From: q, To: fast, Retired: true})
-	res := planCore(f.in)
+	res := f.core()
 	if len(res.groups) != 2 || res.groups[0].intent != fast || len(res.groups[0].members) != 1 ||
 		res.groups[0].members[0].info.ID != p || res.groups[0].backlog ||
 		!res.groups[1].intent.IsZero() || !res.groups[1].backlog || res.groups[1].members[0].info.ID != q {
@@ -240,8 +356,8 @@ func TestPlanTopologicalOrder(t *testing.T) {
 	for _, cs := range []id.ID{a, b, c} {
 		f.link(op.LinkServes, cs, i, false)
 	}
-	f.link(op.LinkDependsOn, a, c, false)
-	got := planGroupIDs(planCore(f.in))
+	f.dep(a, c)
+	got := planGroupIDs(f.core())
 	want := [][]id.ID{{i, b, c, a}}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("groups = %v, want %v", got, want)
@@ -253,9 +369,9 @@ func TestPlanCycle(t *testing.T) {
 	a := f.cs("A", changeset.StateAccepted)
 	b := f.cs("B", changeset.StateAccepted)
 	c := f.cs("C", changeset.StateAccepted)
-	f.link(op.LinkDependsOn, a, b, false)
-	f.link(op.LinkDependsOn, b, a, false)
-	res := planCore(f.in)
+	f.dep(a, b)
+	f.dep(b, a)
+	res := f.core()
 	if got, want := planGroupIDs(res), [][]id.ID{{{}, c, a, b}}; !reflect.DeepEqual(got, want) {
 		t.Errorf("groups = %v, want %v", got, want)
 	}
@@ -288,7 +404,7 @@ func TestPlanRoadmapGroupsAndReadyOrder(t *testing.T) {
 	f.serve(l, late)
 	f.serve(g, gone)
 	f.serve(e, early, plain)
-	res := planCore(f.in)
+	res := f.core()
 	want := [][]id.ID{{child, both}, {late, both, l}, {{}, alone, g, e}}
 	if got := planGroupIDs(res); !reflect.DeepEqual(got, want) {
 		t.Errorf("groups = %v, want %v", got, want)
@@ -323,7 +439,7 @@ func planOrderIDs(res planResult) []id.ID {
 // member IDs, the backlog's intent zero.
 func planWantGroups(t *testing.T, f *planFix, want ...[]id.ID) planResult {
 	t.Helper()
-	res := planCore(f.in)
+	res := f.core()
 	if got := planGroupIDs(res); !reflect.DeepEqual(got, want) {
 		t.Errorf("groups = %v, want %v", got, want)
 	}
@@ -453,9 +569,9 @@ func TestPlanBacklogOrder(t *testing.T) {
 	y := f.cs("Y", changeset.StateAccepted)
 	f.serve(a, plain)
 	f.serve(c, plain)
-	f.link(op.LinkDependsOn, a, c, false)
-	f.link(op.LinkDependsOn, x, y, false)
-	f.link(op.LinkDependsOn, y, x, false)
+	f.dep(a, c)
+	f.dep(x, y)
+	f.dep(y, x)
 	res := planWantGroups(t, f, []id.ID{{}, b, c, a, x, y})
 	wantReasons(t, res.order[3], "depends on "+shortID(y)+" (accepted)", planCycleReason)
 	wantReasons(t, res.order[4], "depends on "+shortID(x)+" (accepted)", planCycleReason)
@@ -479,7 +595,7 @@ func TestPlanNoBacklogGroup(t *testing.T) {
 	m = f.intent("m", id.ID{}, "a")
 	f.milestone(m)
 	f.cs("L", changeset.StateLanded)
-	if res := planCore(f.in); len(res.groups) != 0 || len(res.order) != 0 {
+	if res := f.core(); len(res.groups) != 0 || len(res.order) != 0 {
 		t.Errorf("groups = %v, order = %v", planGroupIDs(res), planOrderIDs(res))
 	}
 }
@@ -573,6 +689,130 @@ func TestReadyEndToEnd(t *testing.T) {
 	// as-is has none of B's ops, but its own ops still give its links.
 	if r = readyOf(t, ctx, `{"view":"as-is"}`); r.View != "as-is" || r.Next != b {
 		t.Errorf("as-is ready = %+v", r)
+	}
+}
+
+func TestReadyRestsOnEndToEnd(t *testing.T) {
+	// B depends on A and sets a field on the node A adds; A is withdrawn.
+	ctx := readCtx(t)
+	a := newChange(t, ctx, `{"intent":"A"}`).ChangeSet
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"base","fields":["statement=Base"]}`)
+	b := newChange(t, ctx, `{"intent":"B"}`).ChangeSet
+	planLink(t, ctx, op.LinkDependsOn, b, a)
+	mustWrite(t, ctx, "set", `{"ref":"base","fields":["statement=Changed"]}`)
+	ca := *ctx
+	ca.ChangeRef = a.String()
+	move(t, &ca, "withdraw", `{}`)
+	r := readyOf(t, ctx, `{}`)
+	if len(r.ChangeSets) != 1 || r.ChangeSets[0].ID != b {
+		t.Fatalf("ready = %+v", r)
+	}
+	want := []string{"not accepted: draft", "depends on " + shortID(a) + " (withdrawn)",
+		"rests on " + shortID(a) + " (withdrawn): 1 operations"}
+	if !reflect.DeepEqual(r.ChangeSets[0].Reasons, want) {
+		t.Errorf("B reasons = %q, want %q", r.ChangeSets[0].Reasons, want)
+	}
+}
+
+func TestReadyRestsOnBaseEndToEnd(t *testing.T) {
+	// A sets a field on a landed node, and B, depending on A, sets it again
+	// on A's version: B's op names A only by its base, an op ID. C, also
+	// withdrawn, is unrelated.
+	ctx := readCtx(t)
+	recordWrite(t, ctx, "add", `{"kind":"capability","handle":"base"}`)
+	cc := newChange(t, ctx, `{"intent":"C"}`).ChangeSet
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"other"}`)
+	a := newChange(t, ctx, `{"intent":"A"}`).ChangeSet
+	mustWrite(t, ctx, "set", `{"ref":"base","fields":["statement=FromA"]}`)
+	b := newChange(t, ctx, `{"intent":"B"}`).ChangeSet
+	planLink(t, ctx, op.LinkDependsOn, b, a)
+	mustWrite(t, ctx, "set", `{"ref":"base","fields":["statement=FromB"]}`)
+	c := *ctx
+	c.ChangeRef = cc.String()
+	move(t, &c, "withdraw", `{}`)
+
+	// With only C dropped, nothing B names is left over: C is not read.
+	mayRest := func() bool {
+		t.Helper()
+		r, err := openReader(ctx, "ready", "", toBeView)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer r.Close()
+		in, err := planGather(r)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var flying []changeset.ChangeSet
+		for _, s := range in.sets {
+			if planInFlight(s.State) {
+				flying = append(flying, s)
+			}
+		}
+		may, err := planMayRest(r, in.changeSets, flying)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return may
+	}
+	if mayRest() {
+		t.Errorf("may rest with A in flight, want not")
+	}
+	if r := readyOf(t, ctx, `{}`); len(r.ChangeSets) != 2 {
+		t.Fatalf("ready = %+v", r)
+	}
+
+	c.ChangeRef = a.String()
+	move(t, &c, "withdraw", `{}`)
+	if !mayRest() {
+		t.Errorf("may not rest with A withdrawn, want may")
+	}
+	r := readyOf(t, ctx, `{}`)
+	if len(r.ChangeSets) != 1 || r.ChangeSets[0].ID != b {
+		t.Fatalf("ready = %+v", r)
+	}
+	want := []string{"not accepted: draft", "depends on " + shortID(a) + " (withdrawn)",
+		"rests on " + shortID(a) + " (withdrawn): 1 operations"}
+	if !reflect.DeepEqual(r.ChangeSets[0].Reasons, want) {
+		t.Errorf("B reasons = %q, want %q", r.ChangeSets[0].Reasons, want)
+	}
+}
+
+func TestReadyRevisedLandedEndToEnd(t *testing.T) {
+	// B depends on M, M on A. B sets the statement of A's base; A then
+	// revises it in place, and A and M land. B still went under A's
+	// revision (D13), found through the landed M.
+	ctx := readCtx(t)
+	a := newChange(t, ctx, `{"intent":"A"}`).ChangeSet
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"base","fields":["statement=Base"]}`)
+	m := newChange(t, ctx, `{"intent":"M"}`).ChangeSet
+	planLink(t, ctx, op.LinkDependsOn, m, a)
+	b := newChange(t, ctx, `{"intent":"B"}`).ChangeSet
+	planLink(t, ctx, op.LinkDependsOn, b, m)
+	mustWrite(t, ctx, "set", `{"ref":"base","fields":["statement=FromB"]}`)
+	c := *ctx
+	c.ChangeRef = a.String()
+	mustWrite(t, &c, "set", `{"ref":"base","fields":["statement=Revised"]}`)
+	for _, cs := range []id.ID{a, m} {
+		c.ChangeRef = cs.String()
+		move(t, &c, "propose", `{}`)
+		move(t, &c, "accept", `{}`)
+		move(t, &c, "land", `{}`)
+	}
+	r := readyOf(t, ctx, `{}`)
+	if len(r.ChangeSets) != 1 || r.ChangeSets[0].ID != b {
+		t.Fatalf("ready = %+v", r)
+	}
+	want := []string{"not accepted: draft", shortID(a) + " revised under it: 1 operations"}
+	if !reflect.DeepEqual(r.ChangeSets[0].Reasons, want) {
+		t.Errorf("B reasons = %q, want %q", r.ChangeSets[0].Reasons, want)
+	}
+
+	// B writing the statement again clears it.
+	mustWrite(t, ctx, "set", `{"ref":"base","fields":["statement=FromBAgain"]}`)
+	r = readyOf(t, ctx, `{}`)
+	if want := []string{"not accepted: draft"}; !reflect.DeepEqual(r.ChangeSets[0].Reasons, want) {
+		t.Errorf("B reasons after rewrite = %q, want %q", r.ChangeSets[0].Reasons, want)
 	}
 }
 

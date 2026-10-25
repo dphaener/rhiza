@@ -7,7 +7,8 @@
 //     links. A Model is one computed view of it.
 //   - A view is the model under a choice of change sets. As-is is the landed
 //     change sets applied. To-be is as-is plus every accepted change set.
-//     What-if is as-is plus one in-flight change set, for review.
+//     What-if is as-is plus one in-flight change set and the in-flight
+//     change sets it depends on, for review.
 //   - The apply order is the order operations are applied in: change set by
 //     change set, each change set's operations in their own order.
 //   - Every operation except a create names a base: the version of its
@@ -44,9 +45,11 @@
 // change sets in their apply order (see order.go). To-be adds the accepted
 // change sets on top, in their own apply order; what-if adds the one change
 // set asked for, which must be draft, proposed or accepted (ErrState) and
-// among the input (ErrMissing). A link endpoint may name any change set in
-// the input, whatever its state. Change sets with no state (no valid open)
-// are in no view. An operation in an upper layer whose base a landed
+// among the input (ErrMissing), with the in-flight change sets it depends
+// on, all in their own apply order. A dependency's revision in place or
+// drop under one of its ops is an ErrConflict on that op. A link endpoint
+// may name any change set in the input, whatever its state. Change sets
+// with no state (no valid open) are in no view. An operation in an upper layer whose base a landed
 // operation has since superseded is stale like any other: it merges or
 // conflicts by the rules below. The problems are every layer's, each once.
 // The change set IDs in the input are assumed unique, as FoldLog returns

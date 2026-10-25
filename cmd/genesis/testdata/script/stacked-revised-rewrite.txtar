@@ -1,0 +1,47 @@
+# Revised in place, then rewritten (D13). A's in-place revision overlaps the
+# field B wrote, a conflict; B writing the field again, after the revision,
+# clears it.
+
+exec genesis init
+
+# A adds base; B depends on A and sets base's statement.
+exec genesis change new A
+stdout 'change set 01M5PWGEF85Y185JZ2ZGCNH40N '
+exec genesis add capability base --field statement=Base --field owner=a
+exec genesis change new B
+stdout 'change set 01M5PWGKBGYFZMTH8Y8AF1G8GN '
+exec genesis link 01M5PWGKBGYFZMTH8Y8AF1G8GN depends-on 01M5PWGEF85Y185JZ2ZGCNH40N
+exec genesis set base --field statement=FromB
+
+# A revises the statement: a conflict on B's op.
+exec genesis set base --field statement=Revised --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec genesis render
+exec genesis check
+stdout '^warn in-flight change set 01M5PWGKBGYFZMTH8Y8AF1G8GN, op 01M5PWGNA0MVZ1H5AXG5VQ0BY9: model: conflict: change set 01M5PWGEF85Y185JZ2ZGCNH40N revised op 01M5PWGJC82P7YGZTWYJ3Y88Z9 '
+exec genesis ready --json
+stdout '"01M5PWGEF85Y18 revised under it: 1 operations"'
+
+# B sets the statement again, having seen Revised: the conflict is gone.
+exec genesis show base --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
+stdout '^FromB$'
+exec genesis set base --field statement=FromBAgain
+fold-ok
+exec genesis check
+stdout '^ok$'
+! stdout 'conflict'
+exec genesis ready --json
+! stdout 'revised under it'
+
+# A lands, then B.
+exec genesis propose
+exec genesis accept --reason ok
+exec genesis propose --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec genesis accept --reason ok --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec genesis land --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec genesis land --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
+fold-ok
+exec genesis show base
+stdout '^FromBAgain$'
+exec genesis render
+exec genesis check
+stdout '^ok$'

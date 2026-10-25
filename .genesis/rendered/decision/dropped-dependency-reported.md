@@ -24,6 +24,10 @@ the orchestrator's proposal in the milestone-2 conversation, accepted by the own
 
 - derived-from [milestone-2-conversation](../source/milestone-2-conversation.md)
 
+### In
+
+- decided-by [dropped-dependencies](../capability/genesis/change-sets/dropped-dependencies.md)
+
 ## History
 
 - `01M5SZHJ4AECQ3Z6PE60XFQZP6` Milestone 2 planning record: the conversation, the milestone-2 intent and its done points, and its decisions

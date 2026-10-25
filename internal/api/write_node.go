@@ -214,7 +214,7 @@ func buildSet(b writeBase, r SetRequest) (edit, error) {
 		}
 	} else {
 		if n.Version.IsZero() {
-			return edit{}, Errorf("node %s has no landed version to change", n.ID)
+			return edit{}, Errorf("node %s has no version to change", n.ID)
 		}
 		opID, err := b.newID()
 		if err != nil {
@@ -276,7 +276,7 @@ func buildMv(b writeBase, r MvRequest) (edit, error) {
 		o.Parent, o.Key = parent, k
 	} else {
 		if n.Version.IsZero() {
-			return edit{}, Errorf("node %s has no landed version to move", n.ID)
+			return edit{}, Errorf("node %s has no version to move", n.ID)
 		}
 		opID, err := b.newID()
 		if err != nil {
@@ -317,7 +317,7 @@ func buildRetire(b writeBase, r RetireRequest) (edit, error) {
 		return e, nil
 	}
 	if n.Version.IsZero() {
-		return edit{}, Errorf("node %s has no landed version to retire", n.ID)
+		return edit{}, Errorf("node %s has no version to retire", n.ID)
 	}
 	opID, err := b.newID()
 	if err != nil {
@@ -328,7 +328,7 @@ func buildRetire(b writeBase, r RetireRequest) (edit, error) {
 }
 
 // writableNode resolves ref to a node a write may change: not retired and
-// without a landed conflict.
+// without conflicting heads.
 func writableNode(b writeBase, ref string) (Node, error) {
 	n, err := b.m.Resolve(ref)
 	if err != nil {
@@ -338,7 +338,7 @@ func writableNode(b writeBase, ref string) (Node, error) {
 		return Node{}, Conflictf("node %s (%s) is retired", n.ID, n.Handle)
 	}
 	if n.Conflict {
-		return Node{}, Conflictf("node %s (%s) has conflicting landed changes; a change set resolving them must land first", n.ID, n.Handle)
+		return Node{}, Conflictf("node %s (%s) has conflicting changes", n.ID, n.Handle).WithNext("genesis check")
 	}
 	return n, nil
 }

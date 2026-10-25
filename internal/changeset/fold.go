@@ -149,6 +149,15 @@ type ChangeSet struct {
 	// Ops are the change set's current operations: in the order their IDs
 	// were first written, replacements in place, dropped ones removed.
 	Ops []op.Op
+	// History holds, for each current op ID, every version of the op that
+	// was written, in fold order, each with the entry that wrote it. The
+	// last version is the one in Ops. Drops holds, for each dropped op ID,
+	// the entry that dropped it, the entry that first wrote it and the last
+	// version before the drop. Only ops entries that applied contribute.
+	// Both live in memory only: they are worked out from the log, never
+	// written to it, and are nil when empty.
+	History map[id.ID][]Revision
+	Drops   map[id.ID]Revision
 	// Decided is the applied accept or reject, nil when there is none.
 	Decided *Decision
 	// SupersededBy is the applied supersede's by, zero unless the state is
@@ -165,6 +174,17 @@ type ChangeSet struct {
 	// ErrRevision), which were folded but changed nothing; it excludes
 	// entries that left the graph.
 	Applied []id.ID
+}
+
+// Revision is one version of an op, as written by an ops entry.
+type Revision struct {
+	// Entry is the ops entry that wrote the version, or that dropped the op.
+	Entry id.ID
+	// First is set in a Drops record only: the entry that first wrote the
+	// dropped op, so that a reader can tell whether it existed at a given
+	// entry. It is zero in History, whose first element says the same.
+	First id.ID
+	Op    op.Op
 }
 
 // Problem is one thing wrong with a change set's entries. Entry is zero for
@@ -428,7 +448,8 @@ func Fold(cs id.ID, entries []entry.Entry) (ChangeSet, []Problem) {
 	out.Open = rootNode.body.(Open)
 	out.OpenEntry = root
 	out.State = StateDraft
-	rev := revision{pos: map[id.ID]int{}, dropped: map[id.ID]bool{}}
+	rev := revision{pos: map[id.ID]int{}, dropped: map[id.ID]bool{},
+		history: map[id.ID][]Revision{}, drops: map[id.ID]Revision{}}
 	for _, n := range order[1:] {
 		if err := f.apply(&out, &rev, n); err != nil {
 			f.report(n.e.ID, err)
@@ -436,6 +457,12 @@ func Fold(cs id.ID, entries []entry.Entry) (ChangeSet, []Problem) {
 	}
 	if len(rev.ops) > 0 {
 		out.Ops = rev.ops
+	}
+	if len(rev.history) > 0 {
+		out.History = rev.history
+	}
+	if len(rev.drops) > 0 {
+		out.Drops = rev.drops
 	}
 
 	listed := map[id.ID]bool{}
@@ -505,7 +532,7 @@ func (f *folder) apply(out *ChangeSet, rev *revision, n *node) error {
 		if err := rev.check(b); err != nil {
 			return err
 		}
-		rev.apply(b)
+		rev.apply(n.e.ID, b)
 	case Propose:
 		if from != StateDraft {
 			return transition(n.e.Type, from)
@@ -555,6 +582,9 @@ type revision struct {
 	pos map[id.ID]int
 	// dropped holds every dropped op ID.
 	dropped map[id.ID]bool
+	// history and drops are ChangeSet.History and ChangeSet.Drops.
+	history map[id.ID][]Revision
+	drops   map[id.ID]Revision
 }
 
 // check reports the first rule b breaks against the current ops. Body
@@ -587,9 +617,10 @@ func (r *revision) check(b Ops) error {
 	return nil
 }
 
-// apply applies b, which check accepted.
-func (r *revision) apply(b Ops) {
+// apply applies b, written by entry eid, which check accepted.
+func (r *revision) apply(eid id.ID, b Ops) {
 	for _, o := range b.Ops {
+		r.history[o.ID] = append(r.history[o.ID], Revision{Entry: eid, Op: o})
 		if i, ok := r.pos[o.ID]; ok {
 			r.ops[i] = o
 			continue
@@ -602,6 +633,8 @@ func (r *revision) apply(b Ops) {
 	}
 	for _, x := range b.Drop {
 		r.dropped[x] = true
+		r.drops[x] = Revision{Entry: eid, First: r.history[x][0].Entry, Op: r.ops[r.pos[x]]}
+		delete(r.history, x)
 	}
 	r.ops = slices.DeleteFunc(r.ops, func(o op.Op) bool { return r.dropped[o.ID] })
 	clear(r.pos)

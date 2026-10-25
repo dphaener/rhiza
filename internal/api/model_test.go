@@ -390,6 +390,63 @@ func TestModel(t *testing.T) {
 			t.Error("a node with no create exists")
 		}
 	})
+
+	// A change set sees the in-flight change sets it depends on, a
+	// dependency before its dependents whatever their IDs.
+	t.Run("Dependencies", func(t *testing.T) {
+		b := newLogBuilder(t)
+		c := b.create(op.KindCapability, "base", statement("A"))
+		u := b.update(c.Node, c.ID, statement("B"))
+		depB := b.draft(u) // B's ID sorts before A's
+		depA := b.draft(c)
+		top := b.changeSet(changeset.KindIntention)
+		other := b.changeSet(changeset.KindIntention)
+		b.landed(
+			op.Op{ID: b.id(), Type: op.TypeLinkCreate, Link: b.id(), LinkType: op.LinkDependsOn, From: depB, To: depA},
+			op.Op{ID: b.id(), Type: op.TypeLinkCreate, Link: b.id(), LinkType: op.LinkDependsOn, From: top, To: depB},
+		)
+
+		n, err := b.model(top).Resolve("base")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if n.Version != u.ID || n.Conflict || n.Pending != nil || string(n.Fields["statement"]) != `"B"` {
+			t.Errorf("transitive: %+v", n)
+		}
+		n, err = b.model(depB).Resolve("base")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if n.Version != c.ID || n.Conflict || !slices.Equal(n.Pending, []id.ID{u.ID}) || string(n.Fields["statement"]) != `"B"` {
+			t.Errorf("direct: %+v", n)
+		}
+		if n, err := b.model(depA).Resolve("base"); err != nil || !n.Version.IsZero() || !slices.Equal(n.Pending, []id.ID{c.ID}) {
+			t.Errorf("own create: %+v, %v", n, err)
+		}
+		for _, cs := range []id.ID{other, {}} {
+			if _, err := b.model(cs).Resolve("base"); ExitCode(err) != 4 {
+				t.Errorf("no dependency (%s): %v, want not found", cs, err)
+			}
+		}
+	})
+
+	t.Run("DependencyCycle", func(t *testing.T) {
+		b := newLogBuilder(t)
+		c := b.create(op.KindCapability, "base", nil)
+		u := b.update(c.Node, c.ID, statement("B"))
+		depA := b.draft(c)
+		depB := b.draft(u)
+		top := b.changeSet(changeset.KindIntention)
+		b.landed(
+			op.Op{ID: b.id(), Type: op.TypeLinkCreate, Link: b.id(), LinkType: op.LinkDependsOn, From: depA, To: depB},
+			op.Op{ID: b.id(), Type: op.TypeLinkCreate, Link: b.id(), LinkType: op.LinkDependsOn, From: depB, To: depA},
+			op.Op{ID: b.id(), Type: op.TypeLinkCreate, Link: b.id(), LinkType: op.LinkDependsOn, From: top, To: depB},
+		)
+		n, err := b.model(top).Resolve("base")
+		if err != nil || n.Version != u.ID || string(n.Fields["statement"]) != `"B"` {
+			t.Errorf("cycle: %+v, %v", n, err)
+		}
+	})
 }
 
 func commonPrefix(a, b string) string {

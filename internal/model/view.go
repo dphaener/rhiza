@@ -2,6 +2,8 @@ package model
 
 import (
 	"fmt"
+	"slices"
+	"strings"
 
 	"github.com/dphaener/genesis/internal/changeset"
 	"github.com/dphaener/genesis/internal/id"
@@ -23,10 +25,14 @@ func ToBe(sets []changeset.ChangeSet) (Model, []Problem) {
 	return b.finish()
 }
 
-// WhatIf returns the what-if view of change set cs: as-is, then cs on top.
-// When cs is not among sets the result is as-is plus an ErrMissing problem
-// on cs; when it is not draft, proposed or accepted, as-is plus an ErrState
-// problem on cs.
+// WhatIf returns the what-if view of change set cs: as-is, then cs and the
+// change sets it depends on that are in flight (changeset.Closure) on top,
+// in their own apply order, so its dependencies come first. A problem in a
+// dependency's own ops is reported on that dependency. Each op of cs that
+// a dependency's revision in place or drop has gone under
+// (changeset.Revised) is an ErrConflict problem on cs. When cs is not among
+// sets the result is as-is plus an ErrMissing problem on cs; when it is not
+// draft, proposed or accepted, as-is plus an ErrState problem on cs.
 func WhatIf(sets []changeset.ChangeSet, cs id.ID) (Model, []Problem) {
 	b := asIs(sets)
 	i := -1
@@ -44,9 +50,30 @@ func WhatIf(sets []changeset.ChangeSet, cs id.ID) (Model, []Problem) {
 		b.problems = append(b.problems, Problem{ChangeSet: cs,
 			Err: fmt.Errorf("%w: change set %s is %q, not draft, proposed or accepted", ErrState, cs, sets[i].State)})
 	default:
-		applySets(b, sets[i:i+1])
+		deps := changeset.Closure(sets, cs)
+		var top []changeset.ChangeSet
+		for _, s := range sets {
+			if s.ID == cs || slices.Contains(deps, s.ID) {
+				top = append(top, s)
+			}
+		}
+		layer(b, top)
+		for _, r := range changeset.Revised(sets, cs) {
+			b.problems = append(b.problems, Problem{ChangeSet: cs, Op: r.Op, Err: revisedErr(r)})
+		}
 	}
 	return b.finish()
+}
+
+// revisedErr is the ErrConflict for r: the dependency's op that was revised
+// or dropped after cs wrote its op.
+func revisedErr(r changeset.RevisedConflict) error {
+	if r.Dropped {
+		return fmt.Errorf("%w: change set %s dropped op %s, taking %s, after op %s was written on it",
+			ErrConflict, r.Dependency, r.DependencyOp, r.Target, r.Op)
+	}
+	return fmt.Errorf("%w: change set %s revised op %s on %s (%s) after op %s was written",
+		ErrConflict, r.Dependency, r.DependencyOp, r.Target, strings.Join(r.Aspects, ", "), r.Op)
 }
 
 // asIs returns a builder that knows every change set in sets, whatever its

@@ -56,9 +56,8 @@ exec genesis change use --none
 ! exec genesis set api --field a=b
 stderr '^next: genesis change new "<intent>"$'
 
-# A landed conflict: two intentions set the same landed node from the same
-# base and both land. Writes to it are then a conflict, exit 3, until a
-# change set resolves it.
+# Two intentions set the same landed node from the same base. Once one
+# lands, land refuses the other: its what-if view has the conflict, exit 3.
 exec genesis add capability shared --record
 exec genesis change new A
 exec genesis set shared --field a=1
@@ -68,14 +67,37 @@ exec genesis change new B
 exec genesis set shared --field a=2
 exec genesis propose
 exec genesis accept
+exec git init -q
+exec git add .genesis/log
+exec git commit -qm accepted
+exec git branch other
 exec genesis land
+! exec genesis land --change 01M5PWGX40FB1RBRN9YHMNJW07
+stderr '^genesis: cannot land change set 01M5PWGX40FB1RBRN9YHMNJW07: model: conflict: '
+stderr '^next: genesis check$'
+exec sh -c 'genesis land --change 01M5PWGX40FB1RBRN9YHMNJW07 2>/dev/null; echo exit $?'
+stdout '^exit 3$'
+
+# A landed conflict: each lands on its own branch (the other with another
+# seed, so their IDs differ) and the branches merge. Writes to the node are
+# then a conflict, exit 3, until a change set resolves it.
+exec git add .genesis/log
+exec git commit -qm B
+exec git checkout -q other
+env GENESIS_TEST_SEED=7
 exec genesis land --change 01M5PWGX40FB1RBRN9YHMNJW07
+env GENESIS_TEST_SEED=1
+exec git add .genesis/log
+exec git commit -qm A
+exec git checkout -q main
+exec git merge -q --no-edit other
 exec genesis change use 01M5PWGEF85Y185JZ2ZGCNH40N
 ! exec genesis set shared --field a=3 --json
 stdout '"code": "conflict"'
-stdout 'conflicting landed changes'
+stdout 'conflicting changes'
+stdout '"next": "genesis check"'
 ! exec genesis mv shared --root
-stderr 'resolving them must land first'
+stderr 'conflicting changes'
 ! exec genesis retire shared --reason x --json
 stdout '"code": "conflict"'
 
