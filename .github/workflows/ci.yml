@@ -11,7 +11,11 @@ jobs:
     runs-on: ubuntu-26.04
 
     steps:
+    # Full history: `genesis check` compares against origin/main by default,
+    # which a shallow pull-request checkout does not have.
     - uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
 
     - name: Set up Go
       uses: actions/setup-go@v7

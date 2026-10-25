@@ -74,6 +74,9 @@ func TestInit(t *testing.T) {
 		if err != nil || string(data) != "local/\n" {
 			t.Errorf(".gitignore = %q, %v; want \"local/\\n\"", data, err)
 		}
+		if data, err := os.ReadFile(filepath.Join(root, store.Dir, store.LogDir, ".gitkeep")); err != nil || len(data) != 0 {
+			t.Errorf("log/.gitkeep = %q, %v; want an empty file", data, err)
+		}
 		out := human(t, resp)
 		for _, s := range []string{root, r.Repo.String(), `genesis change new "<intent>"`} {
 			if !strings.Contains(out, s) {

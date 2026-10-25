@@ -26,13 +26,18 @@ Ruby, RSpec, Tailwind or ERB here.
 
 ```bash
 make            # build ./genesis in the repo root
-make check      # everything CI runs (fmt-check + vet + test)
+make check      # everything CI runs (fmt-check + vet + test + self-check)
+make self-check # genesis check on this repo, with this commit's build
 make test       # go test ./...
 make fmt        # gofmt every Go file in place
 make install    # build into ~/bin (PREFIX=... to override)
 ```
 
 Run `make check` before calling any change done.
+
+Genesis keeps its own `.genesis/` here, and `make check` runs `genesis check`
+on it. After landing a change set, run `genesis render` and commit
+`.genesis/rendered/`, or `make check` fails on stale rendered files.
 
 ## Tests
 

@@ -1,5 +1,6 @@
-# init creates .genesis with repo.json, an empty log and a .gitignore that
-# keeps local/ (the current change set) out of git.
+# init creates .genesis with repo.json, an empty log (holding only a
+# .gitkeep, so git keeps the folder) and a .gitignore that keeps local/ (the
+# current change set) out of git.
 mkdir proj
 cd proj
 exec git init -q
@@ -9,6 +10,7 @@ stdout '^next: genesis change new "<intent>"$'
 ! stderr .
 exists .genesis/repo.json
 exists .genesis/log
+exists .genesis/log/.gitkeep
 cmp .genesis/.gitignore $WORK/want.gitignore
 fold-ok
 

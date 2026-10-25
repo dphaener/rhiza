@@ -851,6 +851,153 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "check",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "base": {
+            "description": "The git revision the log may only have grown since; default the merge-base of HEAD with origin/HEAD, origin/main or main",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "base": {
+            "description": "The git revision the append-only rule compared against; empty when it was skipped",
+            "type": "string"
+          },
+          "findings": {
+            "description": "Every finding, sorted by rule (log, fold, model, in-flight, link, render, append-only), then path and IDs",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "change_set": {
+                  "description": "The change set's ID",
+                  "type": "string"
+                },
+                "entry": {
+                  "description": "The entry's ID",
+                  "type": "string"
+                },
+                "link": {
+                  "description": "The link's ID",
+                  "type": "string"
+                },
+                "message": {
+                  "description": "What is wrong",
+                  "type": "string"
+                },
+                "next": {
+                  "description": "A command that would help",
+                  "type": "string"
+                },
+                "op": {
+                  "description": "The operation's ID",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "The file, relative to the project root",
+                  "type": "string"
+                },
+                "rule": {
+                  "description": "The rule that found it",
+                  "enum": [
+                    "log",
+                    "fold",
+                    "model",
+                    "in-flight",
+                    "link",
+                    "render",
+                    "append-only"
+                  ],
+                  "type": "string"
+                },
+                "severity": {
+                  "description": "fail makes the check fail; warn does not",
+                  "enum": [
+                    "fail",
+                    "warn"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "message",
+                "rule",
+                "severity"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "merge_base_of": {
+            "description": "The ref whose merge-base with HEAD is the default base; absent with --base",
+            "type": "string"
+          },
+          "ok": {
+            "description": "True when no finding fails",
+            "type": "boolean"
+          },
+          "skipped": {
+            "description": "Why the append-only rule was skipped, if it was",
+            "type": "string"
+          }
+        },
+        "required": [
+          "base",
+          "findings",
+          "ok"
+        ],
+        "type": "object"
+      },
+      "summary": "Check the log, the links and the rendered markdown",
+      "write": false
+    },
+    {
+      "name": "ci.install",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "force": {
+            "description": "Overwrite an existing workflow that differs from the template",
+            "type": "boolean"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "unchanged": {
+            "description": "The files that were already current",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "written": {
+            "description": "The files written: new, or different from what was on disk",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "unchanged",
+          "written"
+        ],
+        "type": "object"
+      },
+      "summary": "Install the Genesis check as a GitHub workflow",
+      "write": false
+    },
+    {
       "name": "describe",
       "request": {
         "additionalProperties": false,
@@ -1319,6 +1466,46 @@ cmp stdout describe.golden.json
       },
       "summary": "Reject a proposed change set",
       "write": true
+    },
+    {
+      "name": "render",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "removed": {
+            "description": "The files render does not write, and then the folders left empty, that were removed",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "unchanged": {
+            "description": "How many rendered files were already current",
+            "type": "integer"
+          },
+          "written": {
+            "description": "The files written: new, or different from what was on disk",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "removed",
+          "unchanged",
+          "written"
+        ],
+        "type": "object"
+      },
+      "summary": "Write the as-is model as markdown under .genesis/rendered",
+      "write": false
     },
     {
       "name": "retire",

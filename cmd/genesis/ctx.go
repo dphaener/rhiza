@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	crand "crypto/rand"
+	"errors"
 	"fmt"
 	"io"
 	"math/rand"
@@ -38,8 +40,10 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		Now:       time.Now,
 		IDs:       id.Default(),
 		GitConfig: gitConfig,
+		Version:   versionString(),
 		Stdin:     stdin,
 	}
+	ctx.Git = gitIn(ctx.Root)
 	nowEnv, seedEnv := getenv("GENESIS_TEST_NOW"), getenv("GENESIS_TEST_SEED")
 	if nowEnv == "" && seedEnv == "" {
 		return ctx, nil
@@ -103,6 +107,22 @@ func findRoot(dir string) string {
 		return root
 	}
 	return dir
+}
+
+// gitIn returns an api.Ctx.Git that runs `git -C root <args...>` and returns
+// its standard output. A failure carries git's trimmed standard error.
+func gitIn(root string) func(args ...string) (string, error) {
+	return func(args ...string) (string, error) {
+		out, err := exec.Command("git", append([]string{"-C", root}, args...)...).Output()
+		if err != nil {
+			var ee *exec.ExitError
+			if errors.As(err, &ee) && len(bytes.TrimSpace(ee.Stderr)) > 0 {
+				return "", fmt.Errorf("git %s: %s", strings.Join(args, " "), bytes.TrimSpace(ee.Stderr))
+			}
+			return "", fmt.Errorf("git %s: %w", strings.Join(args, " "), err)
+		}
+		return string(out), nil
+	}
 }
 
 // gitConfig returns the trimmed value of a git config key, or an error if

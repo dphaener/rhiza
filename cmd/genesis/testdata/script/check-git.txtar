@@ -1,0 +1,159 @@
+# check's append-only rule against real git: the log may only grow since
+# the base, the merge-base of HEAD with main by default. Commit hashes
+# depend on the clock, so they are matched by pattern. Each project gets
+# its own folder: none sits below another's .genesis.
+
+mkdir repo
+cd repo
+exec git init -q
+exec genesis init
+exec genesis add constraint c1 --field statement=x --record
+exec genesis render
+exec git add -A
+exec git commit -qm one
+
+# Entries added on a branch are fine, committed or not.
+exec git checkout -q -b feature
+exec genesis add constraint c2 --record
+exec genesis render
+exec genesis check
+stdout '^ok$'
+stdout '^base: [0-9a-f]{40} \(merge-base of HEAD and main\)$'
+! stdout 'append-only'
+exec git add -A
+exec git commit -qm two
+exec genesis check --json
+stdout '"base": "[0-9a-f]{40}"'
+stdout '"merge_base_of": "main"'
+stdout '"findings": \[\]'
+stdout '"ok": true'
+
+# A modified entry fails, uncommitted or committed, naming the path and how
+# to put it back.
+cp $WORK/c1-edited.json .genesis/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
+! exec genesis check
+stdout '^failed$'
+stdout '^fail append-only \.genesis/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B\.json: log file modified since the base \(status M\); entries may only be added$'
+stdout '^  next: git checkout [0-9a-f]{40} -- \.genesis/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B\.json$'
+exec sh -c 'genesis check >/dev/null; echo exit $?'
+stdout '^exit 1$'
+exec genesis render
+exec git add -A
+exec git commit -qm edit
+! exec genesis check
+stdout '^fail append-only \.genesis/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B\.json: log file modified'
+
+# Against the commit that made the edit, nothing has changed since.
+exec genesis check --base HEAD
+stdout '^ok$'
+stdout '^base: HEAD$'
+# Against the one before, the edit shows, with --base in its next.
+! exec genesis check --base HEAD~1
+stdout '^base: HEAD~1$'
+stdout '^  next: git checkout HEAD~1 -- \.genesis/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B\.json$'
+
+# An unknown base is a usage error, exit 2.
+! exec genesis check --base nope
+stderr '^genesis: unknown base "nope": not a commit in this git repository$'
+exec sh -c 'genesis check --base nope 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+! exec genesis check --base nope --json
+stdout '"code": "usage"'
+
+# Restored, it passes again.
+exec git checkout main -- .genesis/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
+exec genesis render
+exec genesis check
+stdout '^ok$'
+
+# A deleted entry fails.
+rm .genesis/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
+! exec genesis check
+stdout '^fail append-only \.genesis/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B\.json: log file deleted since the base \(status D\); entries may only be added$'
+exec git checkout main -- .genesis/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
+exec genesis render
+exec genesis check
+stdout '^ok$'
+
+# Two branches each add entries (one with another seed, so their IDs
+# differ); their merge, rendered, is ok.
+exec git checkout -q -f main
+exec git checkout -q -b a
+exec genesis add constraint ca --record
+exec git add .genesis/log
+exec git commit -qm a
+exec git checkout -q main
+exec git checkout -q -b b
+env GENESIS_TEST_SEED=7
+exec genesis add constraint cb --record
+env GENESIS_TEST_SEED=1
+exec git add .genesis/log
+exec git commit -qm b
+exec git checkout -q a
+exec git merge -q --no-edit b
+exec genesis render
+stdout 'wrote \.genesis/rendered/constraint/cb\.md'
+exec genesis check
+stdout '^ok$'
+stdout '^base: [0-9a-f]{40} \(merge-base of HEAD and main\)$'
+fold-ok
+
+# No commit yet: no base, so the rule is skipped with a warning.
+mkdir $WORK/fresh
+cd $WORK/fresh
+exec git init -q
+exec genesis init
+exec genesis render
+exec genesis check
+stdout '^ok$'
+stdout '^append-only: skipped \(no base: none of origin/HEAD, origin/main, main resolves\)$'
+stdout '^warn append-only: append-only check skipped: no base: none of origin/HEAD, origin/main, main resolves$'
+
+# A project below the git toplevel: paths stay relative to the project
+# root, and a modification is still found.
+mkdir $WORK/top/sub
+cd $WORK/top
+exec git init -q
+cd sub
+exec genesis init
+exec genesis add constraint c1 --field statement=x --record
+exec genesis render
+exec git add -A
+exec git commit -qm one
+exec genesis check
+stdout '^ok$'
+cp $WORK/c1-edited.json .genesis/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
+! exec genesis check --base HEAD
+stdout '^fail append-only \.genesis/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B\.json: log file modified'
+stdout '^  next: git checkout HEAD -- \.genesis/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B\.json$'
+
+-- c1-edited.json --
+{
+  "actor": "01M5PWGEF85Y185JZ2ZAN43Q1G",
+  "after": [
+    "01M5PWGEF85Y185JZ2ZPZG2CBT"
+  ],
+  "at": "2026-10-24T12:00:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "y"
+        },
+        "handle": "c1",
+        "id": "01M5PWGEF85Y185JZ2ZNK1YAZ0",
+        "key": null,
+        "kind": "constraint",
+        "node": "01M5PWGEF85Y185JZ2ZMTJ11QP",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5PWGEF85Y185JZ2ZNP53DGX",
+  "for": "01M5PWGEF85Y185JZ2ZAN43Q1G",
+  "id": "01M5PWGEF85Y185JZ2ZQ6RRE3B",
+  "type": "ops",
+  "v": 1
+}

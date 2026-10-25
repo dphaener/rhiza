@@ -1,0 +1,419 @@
+package check
+
+import (
+	"encoding/binary"
+	"encoding/json"
+	"fmt"
+	"io/fs"
+	"reflect"
+	"slices"
+	"strings"
+	"testing"
+	"testing/fstest"
+	"time"
+
+	"github.com/dphaener/genesis/internal/changeset"
+	"github.com/dphaener/genesis/internal/entry"
+	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/genesis/internal/model"
+	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/genesis/internal/render"
+	"github.com/dphaener/genesis/internal/store"
+)
+
+const repoJSON = "{\n  \"format\": 1,\n  \"id\": \"01M5N90F40GQXYEAV0CGM90155\",\n  \"remotes\": []\n}\n"
+
+// fid is fixture ID n; IDs grow with n.
+func fid(n int) id.ID {
+	var i id.ID
+	i[0] = 1
+	binary.BigEndian.PutUint32(i[12:], uint32(n))
+	return i
+}
+
+var actor = fid(9999)
+
+// repo builds a .genesis folder in memory, entry by entry, through
+// entry.Encode, so tests read it with store.ReadLog as check's caller will.
+type repo struct {
+	t     *testing.T
+	n     int
+	files fstest.MapFS
+}
+
+func newRepo(t *testing.T) *repo {
+	return &repo{t: t, n: 100, files: fstest.MapFS{store.RepoFile: {Data: []byte(repoJSON)}}}
+}
+
+func (r *repo) next() id.ID {
+	r.n++
+	return fid(r.n)
+}
+
+// set is one change set being written.
+type set struct {
+	r    *repo
+	id   id.ID
+	last id.ID
+}
+
+func (r *repo) open(kind changeset.Kind, intent string) *set {
+	s := &set{r: r, id: r.next()}
+	s.add(changeset.Open{Kind: kind, Intent: intent}, nil)
+	return s
+}
+
+// record opens a record change set with ops and lands it.
+func (r *repo) record(intent string, ops ...op.Op) *set {
+	s := r.open(changeset.KindRecord, intent)
+	s.then(changeset.Ops{Ops: ops})
+	s.then(changeset.Land{})
+	return s
+}
+
+// then adds body after the last entry added.
+func (s *set) then(b changeset.Body) id.ID { return s.add(b, []id.ID{s.last}) }
+
+// add adds body with the given after list and returns the entry's ID.
+func (s *set) add(b changeset.Body, after []id.ID) id.ID {
+	s.r.t.Helper()
+	body, err := changeset.EncodeBody(b)
+	if err != nil {
+		s.r.t.Fatal(err)
+	}
+	e := entry.Entry{V: entry.FormatVersion, ID: s.r.next(), ChangeSet: s.id, Actor: actor, For: actor,
+		At: time.Date(2026, 10, 24, 12, 0, 0, 0, time.UTC), After: after, Type: b.Type(), Body: body}
+	data, err := entry.Encode(e)
+	if err != nil {
+		s.r.t.Fatal(err)
+	}
+	s.r.files[entryPath(s.id, e.ID)] = &fstest.MapFile{Data: data}
+	s.last = e.ID
+	return e.ID
+}
+
+func entryPath(cs, e id.ID) string {
+	return fmt.Sprintf("%s/%s/%s.json", store.LogDir, cs, e)
+}
+
+func statement(s string) map[string]json.RawMessage {
+	b, _ := json.Marshal(s)
+	return map[string]json.RawMessage{"statement": b}
+}
+
+func mkNode(o, node id.ID, k op.Kind, handle string) op.Op {
+	x := op.Op{ID: o, Type: op.TypeNodeCreate, Node: node, Kind: k, Handle: handle, Fields: statement(handle)}
+	if op.HasParent(k) {
+		x.Key = "i"
+	}
+	return x
+}
+
+func mkLink(o, link id.ID, t op.LinkType, from, to id.ID) op.Op {
+	return op.Op{ID: o, Type: op.TypeLinkCreate, Link: link, LinkType: t, From: from, To: to}
+}
+
+func setField(o, node, base id.ID, value string) op.Op {
+	return op.Op{ID: o, Type: op.TypeNodeUpdate, Node: node, Base: base, Set: statement(value)}
+}
+
+// rendered is what render writes for log l.
+func rendered(l store.Log) fstest.MapFS {
+	sets, _ := changeset.FoldLog(l)
+	m, _ := model.AsIs(sets)
+	out := fstest.MapFS{}
+	for p, b := range render.Render(m, sets) {
+		out[p] = &fstest.MapFile{Data: b}
+	}
+	return out
+}
+
+// input reads r's log and pairs it with a current render.
+func (r *repo) input() Input {
+	l := store.ReadLog(r.files)
+	return Input{Log: l, Rendered: rendered(l)}
+}
+
+// clean writes a landed intent, a capability serving it and a serves link
+// from the change set itself; it checks clean.
+func clean(r *repo) (intent, capab id.ID) {
+	intent, capab, _ = cleanOps(r)
+	return intent, capab
+}
+
+// cleanOps is clean, also returning the capability's create op.
+func cleanOps(r *repo) (intent, capab, capOp id.ID) {
+	intent, capab = r.next(), r.next()
+	o1, o2, o3, l1 := r.next(), r.next(), r.next(), r.next()
+	cs := r.open(changeset.KindRecord, "Start")
+	cs.then(changeset.Ops{Ops: []op.Op{
+		mkNode(o1, intent, op.KindIntent, "goal"),
+		mkNode(o2, capab, op.KindCapability, "thing"),
+		mkLink(o3, l1, op.LinkServes, capab, intent),
+	}})
+	o4, l2 := r.next(), r.next()
+	cs.then(changeset.Ops{Ops: []op.Op{mkLink(o4, l2, op.LinkServes, cs.id, intent)}})
+	cs.then(changeset.Land{})
+	return intent, capab, o2
+}
+
+// short is a finding as severity, rule and path, for comparing.
+func short(fs []Finding) []string {
+	out := []string{}
+	for _, f := range fs {
+		out = append(out, strings.TrimSpace(f.Severity+" "+f.Rule+" "+f.Path))
+	}
+	return out
+}
+
+func TestRun(t *testing.T) {
+	cases := []struct {
+		name string
+		// build returns the input and the expected findings in order.
+		build func(t *testing.T) (Input, []string, func(t *testing.T, r Report))
+	}{
+		{"clean", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
+			r := newRepo(t)
+			clean(r)
+			return r.input(), nil, nil
+		}},
+		{"empty", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
+			r := newRepo(t)
+			r.files[store.LogDir] = &fstest.MapFile{Mode: fs.ModeDir | 0o755}
+			return r.input(), nil, nil
+		}},
+		{"log", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
+			r := newRepo(t)
+			clean(r)
+			r.files["log/junk.txt"] = &fstest.MapFile{Data: []byte("x")}
+			return r.input(), []string{"fail log .genesis/log/junk.txt"}, func(t *testing.T, rep Report) {
+				if !strings.Contains(rep.Findings[0].Message, "unexpected") {
+					t.Errorf("message %q", rep.Findings[0].Message)
+				}
+			}
+		}},
+		{"fold", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
+			r := newRepo(t)
+			clean(r)
+			s := r.open(changeset.KindIntention, "Bad move")
+			bad := s.then(changeset.Accept{Rule: "owner"})
+			return r.input(), []string{"fail fold " + ".genesis/" + entryPath(s.id, bad)}, func(t *testing.T, rep Report) {
+				f := rep.Findings[0]
+				if f.ChangeSet != s.id.String() || f.Entry != bad.String() || !strings.Contains(f.Message, "illegal lifecycle move") {
+					t.Errorf("finding %+v", f)
+				}
+			}
+		}},
+		{"concurrent-warn", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
+			r := newRepo(t)
+			clean(r)
+			s := r.open(changeset.KindIntention, "Two writers")
+			start := s.last
+			o, n := r.next(), r.next()
+			s.add(changeset.Ops{Ops: []op.Op{mkNode(o, n, op.KindDecision, "a")}}, []id.ID{start})
+			later := s.add(changeset.Ops{Ops: []op.Op{mkNode(o, n, op.KindDecision, "b")}}, []id.ID{start})
+			return r.input(), []string{"warn fold .genesis/" + entryPath(s.id, later)}, nil
+		}},
+		{"model", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
+			r := newRepo(t)
+			clean(r)
+			n, o1 := r.next(), r.next()
+			r.record("Create", mkNode(o1, n, op.KindDecision, "pick"))
+			o2 := r.next()
+			r.record("Edit one", setField(o2, n, o1, "one"))
+			o3 := r.next()
+			c := r.record("Edit two", setField(o3, n, o1, "two"))
+			return r.input(), []string{"fail model"}, func(t *testing.T, rep Report) {
+				f := rep.Findings[0]
+				if f.ChangeSet != c.id.String() || f.Op != o3.String() || !strings.Contains(f.Message, "conflict") {
+					t.Errorf("finding %+v", f)
+				}
+				want := fmt.Sprintf(`genesis change new "Resolve the conflict on %s"`, n)
+				if f.Next != want {
+					t.Errorf("next %q, want %q", f.Next, want)
+				}
+			}
+		}},
+		{"in-flight", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
+			r := newRepo(t)
+			clean(r)
+			s := r.open(changeset.KindIntention, "Edit a ghost")
+			o := r.next()
+			s.then(changeset.Ops{Ops: []op.Op{setField(o, r.next(), r.next(), "x")}})
+			s.then(changeset.Propose{})
+			s.then(changeset.Accept{Rule: "owner"})
+			// Accepted: the problem is in ToBe and in WhatIf, reported once.
+			return r.input(), []string{"warn in-flight"}, func(t *testing.T, rep Report) {
+				f := rep.Findings[0]
+				if f.ChangeSet != s.id.String() || f.Op != o.String() || !strings.Contains(f.Message, "not found") {
+					t.Errorf("finding %+v", f)
+				}
+			}
+		}},
+		{"link", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
+			r := newRepo(t)
+			intent, capab := clean(r)
+			o, l := r.next(), r.next()
+			s := r.record("Bad link", mkLink(o, l, op.LinkVerifies, intent, capab))
+			return r.input(), []string{"fail link"}, func(t *testing.T, rep Report) {
+				f := rep.Findings[0]
+				if f.Link != l.String() || f.ChangeSet != s.id.String() || f.Op != o.String() {
+					t.Errorf("finding %+v", f)
+				}
+				if !strings.Contains(f.Message, `"verifies"`) || !strings.Contains(f.Message, "intent") ||
+					!strings.Contains(f.Message, "capability") {
+					t.Errorf("message %q", f.Message)
+				}
+			}
+		}},
+		{"link-retired", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
+			r := newRepo(t)
+			intent, capab, capOp := cleanOps(r)
+			o, l := r.next(), r.next()
+			r.record("Bad link", mkLink(o, l, op.LinkVerifies, intent, capab))
+			o2 := r.next()
+			r.record("Drop it", op.Op{ID: o2, Type: op.TypeLinkRetire, Link: l, Base: o})
+			// A live link to a retired node is fine: only kinds matter.
+			ev, o3, o4, l2 := r.next(), r.next(), r.next(), r.next()
+			r.record("Evidence", mkNode(o3, ev, op.KindEvidence, "proof"), mkLink(o4, l2, op.LinkVerifies, ev, capab))
+			o5 := r.next()
+			r.record("Retire it", op.Op{ID: o5, Type: op.TypeNodeRetire, Node: capab, Base: capOp, Reason: "gone"})
+			return r.input(), nil, nil
+		}},
+		{"render-differ", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
+			r := newRepo(t)
+			clean(r)
+			in := r.input()
+			in.Rendered.(fstest.MapFS)["index.md"] = &fstest.MapFile{Data: []byte("# Old\n")}
+			return in, []string{"fail render .genesis/rendered/index.md"}, func(t *testing.T, rep Report) {
+				if rep.Findings[0].Next != "genesis render" {
+					t.Errorf("next %q", rep.Findings[0].Next)
+				}
+			}
+		}},
+		{"render-missing", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
+			r := newRepo(t)
+			clean(r)
+			in := r.input()
+			delete(in.Rendered.(fstest.MapFS), "capability/thing.md")
+			return in, []string{"fail render .genesis/rendered/capability/thing.md"}, nil
+		}},
+		{"render-extra", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
+			r := newRepo(t)
+			clean(r)
+			in := r.input()
+			in.Rendered.(fstest.MapFS)[".DS_Store"] = &fstest.MapFile{Data: []byte("x")}
+			in.Rendered.(fstest.MapFS)["old/page.md"] = &fstest.MapFile{Data: []byte("x")}
+			return in, []string{"fail render .genesis/rendered/.DS_Store", "fail render .genesis/rendered/old/page.md"}, nil
+		}},
+		{"render-nil", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
+			r := newRepo(t)
+			clean(r)
+			in := r.input()
+			in.Rendered = nil
+			return in, []string{"fail render .genesis/rendered"}, func(t *testing.T, rep Report) {
+				if rep.Findings[0].Next != "genesis render" {
+					t.Errorf("next %q", rep.Findings[0].Next)
+				}
+			}
+		}},
+		{"append-only", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
+			r := newRepo(t)
+			clean(r)
+			in := r.input()
+			in.Base = "abc123"
+			in.Changes = []Change{
+				{Status: "M", Path: ".genesis/log/b/m.json"},
+				{Status: "A", Path: ".genesis/log/b/a.json"},
+				{Status: "D", Path: ".genesis/log/a/d.json"},
+			}
+			return in, []string{"fail append-only .genesis/log/a/d.json", "fail append-only .genesis/log/b/m.json"},
+				func(t *testing.T, rep Report) {
+					if rep.Base != "abc123" {
+						t.Errorf("base %q", rep.Base)
+					}
+					if want := "git checkout abc123 -- .genesis/log/a/d.json"; rep.Findings[0].Next != want {
+						t.Errorf("next %q, want %q", rep.Findings[0].Next, want)
+					}
+				}
+		}},
+		{"skipped", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
+			r := newRepo(t)
+			clean(r)
+			in := r.input()
+			in.Skipped = "not a git work tree"
+			return in, []string{"warn append-only"}, func(t *testing.T, rep Report) {
+				if !strings.Contains(rep.Findings[0].Message, "not a git work tree") {
+					t.Errorf("message %q", rep.Findings[0].Message)
+				}
+			}
+		}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			in, want, more := c.build(t)
+			rep := Run(in)
+			if want == nil {
+				want = []string{}
+			}
+			if got := short(rep.Findings); !reflect.DeepEqual(got, want) {
+				t.Fatalf("findings\n got %q\nwant %q\nall %+v", got, want, rep.Findings)
+			}
+			wantOK := !slices.ContainsFunc(want, func(s string) bool { return strings.HasPrefix(s, SeverityFail) })
+			if rep.OK != wantOK {
+				t.Errorf("OK = %v, want %v", rep.OK, wantOK)
+			}
+			if more != nil {
+				more(t, rep)
+			}
+			if again := Run(in); !reflect.DeepEqual(again, rep) {
+				t.Errorf("second run differs")
+			}
+		})
+	}
+}
+
+// TestRunOrder puts one finding of each rule in a single input and checks
+// they come in rule order.
+func TestRunOrder(t *testing.T) {
+	r := newRepo(t)
+	intent, capab := clean(r)
+	r.files["log/junk.txt"] = &fstest.MapFile{Data: []byte("x")}
+	bad := r.open(changeset.KindIntention, "Bad move")
+	bad.then(changeset.Accept{Rule: "owner"})
+	o, l := r.next(), r.next()
+	r.record("Bad link", mkLink(o, l, op.LinkVerifies, intent, capab))
+	n, o1 := r.next(), r.next()
+	r.record("Create", mkNode(o1, n, op.KindDecision, "pick"))
+	o2, o3 := r.next(), r.next()
+	r.record("Edit one", setField(o2, n, o1, "one"))
+	r.record("Edit two", setField(o3, n, o1, "two"))
+	g := r.open(changeset.KindIntention, "Ghost")
+	g.then(changeset.Ops{Ops: []op.Op{setField(r.next(), r.next(), r.next(), "x")}})
+	in := r.input()
+	in.Rendered = nil
+	in.Skipped = "no git"
+
+	rep := Run(in)
+	var rules []string
+	for _, f := range rep.Findings {
+		rules = append(rules, f.Rule)
+	}
+	want := []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleRender, RuleAppendOnly}
+	if !reflect.DeepEqual(rules, want) {
+		t.Fatalf("rules %q, want %q\n%+v", rules, want, rep.Findings)
+	}
+	if !slices.Equal(Rules(), want) {
+		t.Errorf("Rules() = %q", Rules())
+	}
+	if rep.OK {
+		t.Error("OK with failures")
+	}
+}
+
+func TestRunZeroInput(t *testing.T) {
+	rep := Run(Input{})
+	if rep.OK || len(rep.Findings) != 1 || rep.Findings[0].Rule != RuleRender {
+		t.Errorf("Run(Input{}) = %+v", rep)
+	}
+}

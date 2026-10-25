@@ -156,7 +156,8 @@ func apiCall(g globals, args []string, stdin io.Reader, stdout, stderr io.Writer
 	return call(g, o, req, stdin, stdout, stderr, getenv)
 }
 
-// call runs o on req and prints the outcome.
+// call runs o on req and prints the outcome. A response that is an
+// api.Exiter sets the exit code once it is printed.
 func call(g globals, o api.Operation, req any, stdin io.Reader, stdout, stderr io.Writer, getenv func(string) string) int {
 	ctx, err := newCtx(g, stdin, getenv)
 	if err != nil {
@@ -168,6 +169,9 @@ func call(g globals, o api.Operation, req any, stdin io.Reader, stdout, stderr i
 	}
 	if err != nil {
 		return writeError(stdout, stderr, err, g.json)
+	}
+	if e, ok := resp.(api.Exiter); ok {
+		return e.ExitCode()
 	}
 	return 0
 }
