@@ -21,10 +21,10 @@ package api
 // accepted gives to-be, where it already is; none, landed or any other
 // terminal state gives as-is. The rule is slice.DefaultView's, which
 // defaultView maps onto a view, so every read and slice agree (D4). An
-// operation whose question is about the plan rather
-// than the work in hand passes its own rule instead: roadmap and ready pass
-// toBeView, to-be always. An explicit view always wins, and then the
-// effective change set is not looked at.
+// operation whose question is about the plan rather than the work in hand
+// passes its own rule instead: roadmap and ready pass toBeView, to-be
+// always. An explicit view always wins, and then the effective change set
+// is not looked at.
 //
 // The as-is and to-be views are stored in the index; what-if is computed on
 // demand from its stored entries (index.WhatIf), so a what-if read costs a

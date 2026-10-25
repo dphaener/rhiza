@@ -88,9 +88,11 @@ func defaultModel(t testing.TB) generated {
 	return genned
 }
 
-// budgetLock holds an exclusive lock on a file every package's budget test
-// shares, until t ends: go test runs packages at once, and a budget timed
-// while another package writes and indexes its own 50,000-node model would
+// budgetLock holds an exclusive lock on a file shared by every test that
+// builds the 50,000-node model (the budget tests of internal/api,
+// internal/index and internal/slice), until t ends. Each takes it before
+// it writes and indexes its model: go test runs packages at once, and a
+// budget timed while another package builds or reads its own model would
 // measure that contention, not the read.
 func budgetLock(t *testing.T) {
 	t.Helper()
