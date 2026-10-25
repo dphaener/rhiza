@@ -10,10 +10,10 @@ import (
 	"github.com/dphaener/genesis/internal/guide"
 )
 
-// pendingCommands are commands the guide names before they exist. Tasks 7
-// and 8 remove the reads (slice, why, log, roadmap, ready, show, tree, ls)
-// as they land.
-var pendingCommands = []string{"why", "log", "roadmap", "ready", "show", "tree", "ls"}
+// pendingCommands are commands the guide names before they exist. None
+// are pending now; add one here when the guide gets ahead of the code, and
+// remove it when it lands.
+var pendingCommands []string
 
 // commandWord is one word of a command path.
 var commandWord = regexp.MustCompile(`^[a-z][a-z0-9-]*$`)
