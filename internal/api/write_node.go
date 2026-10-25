@@ -20,6 +20,7 @@ func init() {
 		Name:     "add",
 		Summary:  "Add a node",
 		Write:    true,
+		Record:   true,
 		Request:  reflect.TypeFor[AddRequest](),
 		Response: reflect.TypeFor[WriteResponse](),
 		Run: func(ctx *Ctx, req any) (any, error) {
@@ -32,6 +33,7 @@ func init() {
 		Name:     "set",
 		Summary:  "Change a node's handle or fields",
 		Write:    true,
+		Record:   true,
 		Request:  reflect.TypeFor[SetRequest](),
 		Response: reflect.TypeFor[WriteResponse](),
 		Run: func(ctx *Ctx, req any) (any, error) {
@@ -44,6 +46,7 @@ func init() {
 		Name:     "mv",
 		Summary:  "Move a capability or intent to another parent or position",
 		Write:    true,
+		Record:   true,
 		Request:  reflect.TypeFor[MvRequest](),
 		Response: reflect.TypeFor[WriteResponse](),
 		Run: func(ctx *Ctx, req any) (any, error) {
@@ -56,6 +59,7 @@ func init() {
 		Name:     "retire",
 		Summary:  "Retire a node",
 		Write:    true,
+		Record:   true,
 		Request:  reflect.TypeFor[RetireRequest](),
 		Response: reflect.TypeFor[WriteResponse](),
 		Run: func(ctx *Ctx, req any) (any, error) {

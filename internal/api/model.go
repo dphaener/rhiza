@@ -314,7 +314,7 @@ func (m *model) Resolve(ref string) (Node, error) {
 			return copyNode(n), nil
 		}
 	}
-	if len(ref) >= 4 {
+	if len(ref) >= minPrefix {
 		matches := m.sortedNodes(func(n *Node) bool { return strings.HasPrefix(n.ID.String(), ref) })
 		if len(matches) == 1 {
 			return matches[0], nil
@@ -362,7 +362,7 @@ func (m *model) ResolveLink(ref string) (Link, error) {
 			return copyLink(k), nil
 		}
 	}
-	if len(ref) >= 4 {
+	if len(ref) >= minPrefix {
 		matches := m.sortedLinks(func(k *Link) bool { return strings.HasPrefix(k.ID.String(), ref) })
 		if len(matches) == 1 {
 			return matches[0], nil

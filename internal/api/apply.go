@@ -24,6 +24,7 @@ func init() {
 		Name:     "apply",
 		Summary:  `Apply many writes as one entry: a JSON file {"writes":[{"op":"add",...},...]} whose items are add, set, mv, retire, link or unlink requests plus "op"`,
 		Write:    true,
+		Record:   true,
 		Request:  reflect.TypeFor[ApplyRequest](),
 		Response: reflect.TypeFor[WriteResponse](),
 		Input: &Input{

@@ -133,10 +133,6 @@ func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
 			rule = defaultRule
 		}
 	}
-	if ctx.Record {
-		return nil, Usagef("%s does not take --record: it is for node and link writes", v.name).
-			WithNext("genesis describe " + v.name)
-	}
 	body := v.body(rule, reason)
 	if err := body.Validate(); err != nil {
 		return nil, Usagef("%s", err.Error()).WithNext("genesis describe " + v.name)
@@ -149,11 +145,9 @@ func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	cs := current
-	if ref := strings.TrimSpace(ctx.ChangeRef); ref != "" {
-		if cs, err = w.resolveChangeSet(ref); err != nil {
-			return nil, err
-		}
+	cs, err := w.effectiveChangeSet(ctx)
+	if err != nil {
+		return nil, err
 	}
 	if cs.IsZero() {
 		return nil, Usagef("no change set: pass --change or make one current with change use").
@@ -168,7 +162,7 @@ func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
 		return nil, Conflictf("cannot %s change set %s: it is %s", v.name, cs, c.State).
 			WithNext(legalNext(c))
 	}
-	actor, forID, err := w.resolveActor(cs, ctx.ActorRef, ctx.ForRef, ctx.GitConfig)
+	actor, forID, err := w.resolveActor(cs, ctx)
 	if err != nil {
 		return nil, err
 	}

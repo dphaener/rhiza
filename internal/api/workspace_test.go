@@ -171,16 +171,16 @@ func TestWorkspace(t *testing.T) {
 		}
 
 		// Effective: the ref wins, then current, then none.
-		if got, err := w.effectiveChangeSet(""); err != nil || !got.IsZero() {
+		if got, err := w.effectiveChangeSet(&Ctx{}); err != nil || !got.IsZero() {
 			t.Fatalf("effective with nothing: %s, %v", got, err)
 		}
 		if err := w.setCurrent(sets[0]); err != nil {
 			t.Fatal(err)
 		}
-		if got, err := w.effectiveChangeSet(""); err != nil || got != sets[0] {
+		if got, err := w.effectiveChangeSet(&Ctx{}); err != nil || got != sets[0] {
 			t.Fatalf("effective current: %s, %v", got, err)
 		}
-		if got, err := w.effectiveChangeSet(full); err != nil || got != sets[1] {
+		if got, err := w.effectiveChangeSet(&Ctx{ChangeRef: full}); err != nil || got != sets[1] {
 			t.Fatalf("effective ref: %s, %v", got, err)
 		}
 	})
@@ -188,7 +188,7 @@ func TestWorkspace(t *testing.T) {
 	t.Run("ActorRecordedOnce", func(t *testing.T) {
 		w := testWorkspace(t, false)
 		git := gitConfig(map[string]string{"user.email": "Ada.Lovelace@example.com", "user.name": "Ada"})
-		actor, forID, err := w.resolveActor(id.ID{}, "", "", git)
+		actor, forID, err := resolveRefs(w, "", "", git)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -215,7 +215,7 @@ func TestWorkspace(t *testing.T) {
 			t.Fatalf("actor node %+v", n)
 		}
 
-		again, forAgain, err := w.resolveActor(id.ID{}, "", "", git)
+		again, forAgain, err := resolveRefs(w, "", "", git)
 		if err != nil || again != actor || forAgain != actor {
 			t.Fatalf("second call %s %s %v", again, forAgain, err)
 		}
@@ -224,11 +224,11 @@ func TestWorkspace(t *testing.T) {
 		}
 
 		// An explicit ref and a for ref resolve through the model.
-		other, _, err := w.resolveActor(id.ID{}, "", "", gitConfig(map[string]string{"user.email": "bob@example.com"}))
+		other, _, err := resolveRefs(w, "", "", gitConfig(map[string]string{"user.email": "bob@example.com"}))
 		if err != nil {
 			t.Fatal(err)
 		}
-		a, f, err := w.resolveActor(id.ID{}, "ada-lovelace", "bob", git)
+		a, f, err := resolveRefs(w, "ada-lovelace", "bob", git)
 		if err != nil || a != actor || f != other {
 			t.Fatalf("explicit refs: %s %s %v; want %s %s", a, f, err, actor, other)
 		}
@@ -240,7 +240,7 @@ func TestWorkspace(t *testing.T) {
 	t.Run("ActorWrongKind", func(t *testing.T) {
 		w := testWorkspace(t, false)
 		git := gitConfig(map[string]string{"user.email": "ada@example.com"})
-		actor, _, err := w.resolveActor(id.ID{}, "", "", git)
+		actor, _, err := resolveRefs(w, "", "", git)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -248,22 +248,22 @@ func TestWorkspace(t *testing.T) {
 		if _, _, err := w.writeRecord("Decide", []op.Op{c}, actor, actor); err != nil {
 			t.Fatal(err)
 		}
-		_, _, err = w.resolveActor(id.ID{}, "use-go", "", git)
+		_, _, err = resolveRefs(w, "use-go", "", git)
 		if ExitCode(err) != 2 || !strings.Contains(err.Error(), "is a decision, not an actor") {
 			t.Fatalf("wrong kind actor: %v", err)
 		}
-		_, _, err = w.resolveActor(id.ID{}, "", "use-go", git)
+		_, _, err = resolveRefs(w, "", "use-go", git)
 		if ExitCode(err) != 2 {
 			t.Fatalf("wrong kind for: %v", err)
 		}
-		if _, _, err := w.resolveActor(id.ID{}, "nobody", "", git); ExitCode(err) != 4 {
+		if _, _, err := resolveRefs(w, "nobody", "", git); ExitCode(err) != 4 {
 			t.Fatalf("unknown actor: %v", err)
 		}
 	})
 
 	t.Run("NoIdentity", func(t *testing.T) {
 		w := testWorkspace(t, false)
-		_, _, err := w.resolveActor(id.ID{}, "", "", gitConfig(nil))
+		_, _, err := resolveRefs(w, "", "", gitConfig(nil))
 		e := AsError(err)
 		if ExitCode(err) != 2 || !strings.Contains(e.Next, "git config user.email") {
 			t.Fatalf("no identity: %+v", e)
@@ -321,7 +321,7 @@ func TestWorkspace(t *testing.T) {
 	t.Run("DryRunWritesNothing", func(t *testing.T) {
 		w := testWorkspace(t, true)
 		// No actor node: a dry run records nothing and returns zero.
-		actor, forID, err := w.resolveActor(id.ID{}, "", "", gitConfig(map[string]string{"user.email": "ada@example.com"}))
+		actor, forID, err := resolveRefs(w, "", "", gitConfig(map[string]string{"user.email": "ada@example.com"}))
 		if err != nil || !actor.IsZero() || !forID.IsZero() {
 			t.Fatalf("dry-run actor %s %s %v", actor, forID, err)
 		}
@@ -351,7 +351,7 @@ func TestWorkspace(t *testing.T) {
 		w := testWorkspace(t, false)
 		var handles []string
 		for _, email := range []string{"x@a.example", "X@b.example", "x@c.example"} {
-			a, _, err := w.resolveActor(id.ID{}, "", "", gitConfig(map[string]string{"user.email": email}))
+			a, _, err := resolveRefs(w, "", "", gitConfig(map[string]string{"user.email": email}))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -389,4 +389,10 @@ func (w *workspace) mustID(t *testing.T) id.ID {
 		t.Fatal(err)
 	}
 	return v
+}
+
+// resolveRefs resolves the actor with no current change set, choosing by
+// actorRef and forRef over git.
+func resolveRefs(w *workspace, actorRef, forRef string, git func(string) (string, error)) (id.ID, id.ID, error) {
+	return w.resolveActor(id.ID{}, &Ctx{ActorRef: actorRef, ForRef: forRef, GitConfig: git})
 }

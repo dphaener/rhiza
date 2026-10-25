@@ -61,6 +61,18 @@ env GENESIS_TEST_NOW=yesterday
 stderr 'GENESIS_TEST_NOW'
 env GENESIS_TEST_NOW=
 
+# --record is for node and link writes; anything else refuses it, exit 2,
+# before touching the repo. Help still describes the command.
+! exec genesis change ls --record --json
+stdout '"code": "usage"'
+stdout '"message": "change ls does not take --record: it is for node and link writes"'
+stdout '"next": "genesis describe change.ls"'
+! stderr .
+! exec genesis describe --record
+stderr '^genesis: describe does not take --record'
+exec genesis add --record -h
+stdout '^## add$'
+
 # version still works.
 exec genesis version
 stdout '\Agenesis \S+\n\z'

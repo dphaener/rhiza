@@ -16,6 +16,7 @@ func init() {
 		Name:     "link",
 		Summary:  "Link two nodes",
 		Write:    true,
+		Record:   true,
 		Request:  reflect.TypeFor[LinkRequest](),
 		Response: reflect.TypeFor[WriteResponse](),
 		Run: func(ctx *Ctx, req any) (any, error) {
@@ -28,6 +29,7 @@ func init() {
 		Name:     "unlink",
 		Summary:  "Retire a link",
 		Write:    true,
+		Record:   true,
 		Request:  reflect.TypeFor[UnlinkRequest](),
 		Response: reflect.TypeFor[WriteResponse](),
 		Run: func(ctx *Ctx, req any) (any, error) {

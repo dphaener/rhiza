@@ -238,10 +238,22 @@ func (w *workspace) resolveChangeSet(ref string) (id.ID, error) {
 	return id.ID{}, Usagef("change set ref %q matches several change sets: %s", ref, strings.Join(matches, ", "))
 }
 
-// effectiveChangeSet is the change set a call acts on: ref resolved if
-// given, else the current change set, else zero.
-func (w *workspace) effectiveChangeSet(ref string) (id.ID, error) {
-	if strings.TrimSpace(ref) != "" {
+// effectiveChangeSet is the change set a call acts on: ctx.ChangeSet if
+// set (it must be in the log, else not_found), else ctx.ChangeRef resolved
+// if given, else the current change set, else zero. Setting both
+// ctx.ChangeSet and ctx.ChangeRef is a usage error.
+func (w *workspace) effectiveChangeSet(ctx *Ctx) (id.ID, error) {
+	ref := strings.TrimSpace(ctx.ChangeRef)
+	if cs := ctx.ChangeSet; !cs.IsZero() {
+		if ref != "" {
+			return id.ID{}, Usagef("set either ChangeSet or ChangeRef, not both")
+		}
+		if _, ok := w.changeSet(cs); !ok {
+			return id.ID{}, NotFoundf("no change set %s", cs).WithNext(changeLsNext)
+		}
+		return cs, nil
+	}
+	if ref != "" {
 		return w.resolveChangeSet(ref)
 	}
 	return w.current()
@@ -339,24 +351,35 @@ func (w *workspace) writeRecord(intent string, ops []op.Op, actor, forID id.ID) 
 }
 
 // resolveActor returns who acts and for whom (D5). current is the change
-// set the model sees as current (zero for none); actorRef and forRef are
-// the raw --actor/--for refs, empty if not given; gitConfig looks up git
-// config keys.
+// set the model sees as current (zero for none); ctx gives the choice.
 //
-// The actor is actorRef resolved (it must be an actor node), else the actor
-// node whose email is git's user.email, else a new actor node recorded in
-// its own landed record change set, written by itself. In a dry run with no
-// such node nothing is recorded and the actor is zero: dry runs only print
-// operations. With neither actorRef nor a git email it is a usage error.
-// For is forRef resolved (also an actor node), else the actor.
-func (w *workspace) resolveActor(current id.ID, actorRef, forRef string, gitConfig func(key string) (string, error)) (actor, forID id.ID, err error) {
+// The actor is ctx.Actor if set (it must be a live actor node), else
+// ctx.ActorRef resolved (also an actor node), else the actor node whose
+// email is git's user.email (ctx.GitConfig), else a new actor node recorded
+// in its own landed record change set, written by itself. In a dry run with
+// no such node nothing is recorded and the actor is zero: dry runs only
+// print operations. With none of these it is a usage error. For is ctx.For
+// if set, else ctx.ForRef resolved (both must be actor nodes), else the
+// actor. Setting both an ID and its ref is a usage error.
+func (w *workspace) resolveActor(current id.ID, ctx *Ctx) (actor, forID id.ID, err error) {
+	if !ctx.Actor.IsZero() && ctx.ActorRef != "" {
+		return id.ID{}, id.ID{}, Usagef("set either Actor or ActorRef, not both")
+	}
+	if !ctx.For.IsZero() && ctx.ForRef != "" {
+		return id.ID{}, id.ID{}, Usagef("set either For or ForRef, not both")
+	}
 	m := w.model(current)
-	if actorRef != "" {
-		if actor, err = resolveActorRef(m, actorRef); err != nil {
+	switch {
+	case !ctx.Actor.IsZero():
+		if actor, err = actorByID(m, ctx.Actor); err != nil {
 			return id.ID{}, id.ID{}, err
 		}
-	} else {
-		email := gitValue(gitConfig, "user.email")
+	case ctx.ActorRef != "":
+		if actor, err = resolveActorRef(m, ctx.ActorRef); err != nil {
+			return id.ID{}, id.ID{}, err
+		}
+	default:
+		email := gitValue(ctx.GitConfig, "user.email")
 		if email == "" {
 			return id.ID{}, id.ID{}, Usagef("no actor: set git user.email or pass --actor").
 				WithNext("git config user.email you@example.com")
@@ -366,19 +389,40 @@ func (w *workspace) resolveActor(current id.ID, actorRef, forRef string, gitConf
 		} else if w.dryRun {
 			return id.ID{}, id.ID{}, nil
 		} else {
-			if actor, err = w.recordActor(m, email, gitValue(gitConfig, "user.name")); err != nil {
+			if actor, err = w.recordActor(m, email, gitValue(ctx.GitConfig, "user.name")); err != nil {
 				return id.ID{}, id.ID{}, err
 			}
 			m = w.model(current)
 		}
 	}
-	if forRef == "" {
+	switch {
+	case !ctx.For.IsZero():
+		forID, err = actorByID(m, ctx.For)
+	case ctx.ForRef != "":
+		forID, err = resolveActorRef(m, ctx.ForRef)
+	default:
 		return actor, actor, nil
 	}
-	if forID, err = resolveActorRef(m, forRef); err != nil {
+	if err != nil {
 		return id.ID{}, id.ID{}, err
 	}
 	return actor, forID, nil
+}
+
+// actorByID requires n to be a live actor node: absent is not_found,
+// retired or another kind a usage error.
+func actorByID(m Model, n id.ID) (id.ID, error) {
+	node, ok := m.Node(n)
+	if !ok {
+		return id.ID{}, NotFoundf("no node %s", n)
+	}
+	if node.Kind != op.KindActor {
+		return id.ID{}, Usagef("%s is %s %s, not an actor", n, article(string(node.Kind)), node.Kind)
+	}
+	if node.Retired {
+		return id.ID{}, Usagef("%s is a retired actor", n)
+	}
+	return n, nil
 }
 
 // gitValue returns git config key trimmed, or "" if it is unset or fails.

@@ -150,10 +150,11 @@ func (r WriteResponse) Human(w io.Writer) {
 // runWrite is the shared pipeline. intent is the command line, used as a
 // record change set's intent; build makes the edit against a writeBase.
 //
-// Without --record the change set is ctx.ChangeRef resolved, else the
-// current one; there must be one, and it must not be terminal. With
-// --record the write sees only landed state and goes into a new record
-// change set; ctx.ChangeRef and the current change set are left alone.
+// Without --record the change set is ctx.ChangeSet, else ctx.ChangeRef
+// resolved, else the current one; there must be one, and it must not be
+// terminal. With --record the write sees only landed state and goes into a
+// new record change set; ctx's change set choice and the current change
+// set are left alone.
 //
 // The edit is built and checked before the actor is resolved, so a bad
 // request never records an actor; if resolving records one, the edit is
@@ -179,7 +180,7 @@ func runWriteOn(ctx *Ctx, opName, intent string, build func(w *workspace, cs id.
 	}
 	var cs id.ID
 	if !ctx.Record {
-		if cs, err = writeTarget(w, ctx.ChangeRef); err != nil {
+		if cs, err = writeTarget(w, ctx); err != nil {
 			return nil, err
 		}
 	}
@@ -195,7 +196,7 @@ func runWriteOn(ctx *Ctx, opName, intent string, build func(w *workspace, cs id.
 		return nil, err
 	}
 	before := len(w.log().Entries)
-	actor, forID, err := w.resolveActor(cs, ctx.ActorRef, ctx.ForRef, ctx.GitConfig)
+	actor, forID, err := w.resolveActor(cs, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -239,11 +240,10 @@ func runWriteOn(ctx *Ctx, opName, intent string, build func(w *workspace, cs id.
 	return resp, nil
 }
 
-// writeTarget is the change set a write without --record goes into: ref
-// resolved, else the current one. None is a usage error, a terminal one a
-// conflict.
-func writeTarget(w *workspace, ref string) (id.ID, error) {
-	cs, err := w.effectiveChangeSet(ref)
+// writeTarget is the change set a write without --record goes into, chosen
+// by effectiveChangeSet. None is a usage error, a terminal one a conflict.
+func writeTarget(w *workspace, ctx *Ctx) (id.ID, error) {
+	cs, err := w.effectiveChangeSet(ctx)
 	if err != nil {
 		return id.ID{}, err
 	}

@@ -42,6 +42,9 @@ type Operation struct {
 	Summary string
 	// Write reports whether the operation appends to the log.
 	Write bool
+	// Record reports whether the operation takes Ctx.Record. Run refuses
+	// Ctx.Record with a usage error for an operation without it.
+	Record bool
 	// Request and Response are the types of the call's input and output.
 	Request, Response reflect.Type
 	// Input, if not nil, describes a file or stdin document the operation
@@ -63,22 +66,30 @@ type Input struct {
 // Ctx carries everything a call needs besides its request. Callers set every
 // field explicitly; the CLI fills its defaults from flags, the environment
 // and the working tree.
+//
+// The change set, actor and for-actor may each be given as an ID or as a
+// raw ref, not both (that is a usage error). An ID wins over a ref, and a
+// ref over the default: the current change set, and the actor whose email
+// is git's user.email (recorded on first use). The CLI fills only the refs;
+// a programmatic caller, such as a server with no current anything, may set
+// the IDs instead.
 type Ctx struct {
 	// Root is the project root: the folder holding .genesis.
 	Root string
-	// ChangeSet is the change set writes go into; zero if there is none.
+	// ChangeSet is the change set to act on, zero to choose by ChangeRef
+	// or the current one. It must be in the log, else not_found.
 	ChangeSet id.ID
-	// Actor is who performs the call, For whom it acts for. Either may be
-	// zero when the caller leaves the choice to the operation.
+	// Actor is who performs the call, For whom it acts for; zero to choose
+	// by ActorRef and ForRef or the default. Each must be a live actor node.
 	Actor, For id.ID
 	// ChangeRef, ActorRef and ForRef are the raw refs the caller was given
 	// (the CLI's --change, --actor and --for, or GENESIS_CHANGE,
-	// GENESIS_ACTOR and GENESIS_FOR), empty if none. The CLI fills these
-	// and leaves ChangeSet, Actor and For zero; the workspace resolves the
-	// refs into them.
+	// GENESIS_ACTOR and GENESIS_FOR), empty if none. Operations resolve
+	// them when the matching ID is zero.
 	ChangeRef, ActorRef, ForRef string
 	// Record asks a write to open a record change set, write into it and
-	// land it in one step, leaving the current change set alone.
+	// land it in one step, leaving the current change set alone. Only
+	// operations with Operation.Record take it.
 	Record bool
 	// DryRun asks a write to build everything and write nothing.
 	DryRun bool
@@ -101,7 +112,8 @@ type registry struct {
 
 var defaultRegistry = &registry{}
 
-// add registers o. It panics if o has no name, a name already registered,
+// add registers o, wrapping Run to refuse Ctx.Record unless o.Record is
+// set. It panics if o has no name, a name already registered,
 // or no Request, Response or Run, since these are programming errors.
 func (r *registry) add(o Operation) {
 	switch {
@@ -119,6 +131,16 @@ func (r *registry) add(o Operation) {
 	}
 	if r.ops == nil {
 		r.ops = map[string]Operation{}
+	}
+	if !o.Record {
+		run, name := o.Run, o.Name
+		o.Run = func(ctx *Ctx, req any) (any, error) {
+			if ctx != nil && ctx.Record {
+				return nil, Usagef("%s does not take --record: it is for node and link writes", CommandPath(name)).
+					WithNext("genesis describe " + name)
+			}
+			return run(ctx, req)
+		}
 	}
 	r.ops[o.Name] = o
 }

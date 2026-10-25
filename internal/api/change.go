@@ -75,14 +75,10 @@ type ChangeNewResponse struct {
 
 // runChangeNew validates the request, resolves the sources and the actor
 // (recording one on first use), writes the open and makes the change set
-// current. ctx.ChangeRef is ignored: a new change set is not written into
-// another one. --record is refused; it is for node and link writes.
+// current. ctx.ChangeSet and ctx.ChangeRef are ignored: a new change set is
+// not written into another one.
 func runChangeNew(ctx *Ctx, req any) (any, error) {
 	r := req.(ChangeNewRequest)
-	if ctx.Record {
-		return nil, Usagef("change new does not take --record: it is for node and link writes").
-			WithNext(`genesis change new --kind record "<intent>"`)
-	}
 	w, err := openCtxWorkspace(ctx)
 	if err != nil {
 		return nil, err
@@ -117,7 +113,7 @@ func runChangeNew(ctx *Ctx, req any) (any, error) {
 	if err := open.Validate(); err != nil {
 		return nil, Usagef("%s", err.Error()).WithNext("genesis describe change.new")
 	}
-	actor, forID, err := w.resolveActor(current, ctx.ActorRef, ctx.ForRef, ctx.GitConfig)
+	actor, forID, err := w.resolveActor(current, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -240,8 +236,8 @@ type DecisionInfo struct {
 	Reason string     `json:"reason,omitempty" desc:"Why"`
 }
 
-// runChangeShow folds the change set named by the request, else
-// ctx.ChangeRef, else the current one.
+// runChangeShow folds the change set named by the request, else the one
+// effectiveChangeSet chooses from ctx.
 func runChangeShow(ctx *Ctx, req any) (any, error) {
 	r := req.(ChangeShowRequest)
 	w, err := openCtxWorkspace(ctx)
@@ -252,15 +248,14 @@ func runChangeShow(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	ref := strings.TrimSpace(r.Ref)
-	if ref == "" {
-		ref = strings.TrimSpace(ctx.ChangeRef)
+	var cs id.ID
+	if ref := strings.TrimSpace(r.Ref); ref != "" {
+		cs, err = w.resolveChangeSet(ref)
+	} else {
+		cs, err = w.effectiveChangeSet(ctx)
 	}
-	cs := current
-	if ref != "" {
-		if cs, err = w.resolveChangeSet(ref); err != nil {
-			return nil, err
-		}
+	if err != nil {
+		return nil, err
 	}
 	if cs.IsZero() {
 		return nil, Usagef("no change set: name one or make one current").WithNext(changeLsNext)

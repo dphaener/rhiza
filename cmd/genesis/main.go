@@ -106,6 +106,9 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer, getenv func(s
 		return 2
 	}
 	if g.help {
+		// Help describes the command; --record is for the command, not
+		// for describe.
+		g.record = false
 		return call(g, describeOp(), api.DescribeRequest{Op: o.Name}, stdin, stdout, stderr, getenv)
 	}
 	req, err := requestFromArgs(o, rest[n:])
