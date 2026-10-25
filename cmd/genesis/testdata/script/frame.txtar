@@ -26,6 +26,16 @@ stdout '"message": "unknown command \\"nope\\""'
 stdout '"next": "genesis --help"'
 ! stderr .
 
+# A group of operations without a subcommand asks for one, exit 2.
+! exec genesis change
+stderr '^genesis: "change" needs a subcommand: ls, new, show, use$'
+stderr '^next: genesis --help$'
+! stdout .
+! exec genesis change --json
+stdout '"code": "usage"'
+stdout '"message": "\\"change\\" needs a subcommand: ls, new, show, use"'
+! stderr .
+
 # An unknown flag on a command is a usage error with a next command.
 ! exec genesis describe --bogus
 stderr '^genesis: describe: unknown flag --bogus$'

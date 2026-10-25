@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 // Code classifies an Error. Each code has its own exit code.
@@ -107,4 +108,12 @@ func ErrorJSON(err error) ErrorResponse {
 		e = &Error{Code: CodeError}
 	}
 	return ErrorResponse{Error: ErrorBody{Code: e.Code, Message: e.Message, Next: e.Next}}
+}
+
+// article is the indefinite article for s: "an" before a vowel, else "a".
+func article(s string) string {
+	if s != "" && strings.ContainsRune("aeiouAEIOU", rune(s[0])) {
+		return "an"
+	}
+	return "a"
 }

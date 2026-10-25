@@ -49,7 +49,7 @@ cmp stdout describe.golden.json
             "type": "boolean"
           },
           "entry": {
-            "description": "The entry written",
+            "description": "The entry written; absent in a dry run",
             "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
             "type": "string"
           },
@@ -386,7 +386,7 @@ cmp stdout describe.golden.json
             "type": "boolean"
           },
           "entry": {
-            "description": "The open entry's ID",
+            "description": "The open entry's ID; absent in a dry run",
             "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
             "type": "string"
           },
@@ -409,7 +409,6 @@ cmp stdout describe.golden.json
         },
         "required": [
           "change_set",
-          "entry",
           "intent",
           "kind"
         ],
@@ -710,7 +709,7 @@ cmp stdout describe.golden.json
             "type": "boolean"
           },
           "entry": {
-            "description": "The entry written",
+            "description": "The entry written; absent in a dry run",
             "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
             "type": "string"
           },
@@ -966,7 +965,7 @@ cmp stdout describe.golden.json
             "type": "boolean"
           },
           "entry": {
-            "description": "The entry written",
+            "description": "The entry written; absent in a dry run",
             "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
             "type": "string"
           },
@@ -1031,7 +1030,7 @@ cmp stdout describe.golden.json
             "type": "boolean"
           },
           "entry": {
-            "description": "The entry written",
+            "description": "The entry written; absent in a dry run",
             "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
             "type": "string"
           },
@@ -1350,7 +1349,7 @@ cmp stdout describe.golden.json
             "type": "boolean"
           },
           "entry": {
-            "description": "The entry written",
+            "description": "The entry written; absent in a dry run",
             "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
             "type": "string"
           },

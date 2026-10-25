@@ -96,6 +96,9 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer, getenv func(s
 	}
 	o, n, ok := matchCommand(words)
 	if !ok {
+		if path, subs, ok := subcommands(words); ok {
+			return writeError(stdout, stderr, api.Usagef("%q needs a subcommand: %s", path, strings.Join(subs, ", ")).WithNext("genesis --help"), g.json)
+		}
 		if g.json {
 			return writeError(stdout, stderr, api.Usagef("unknown command %q", words[0]).WithNext("genesis --help"), true)
 		}

@@ -57,7 +57,7 @@ type DecisionRequest struct {
 type LifecycleResponse struct {
 	Verb           string          `json:"-"`
 	ChangeSet      id.ID           `json:"change_set" desc:"The change set moved"`
-	Entry          id.ID           `json:"entry,omitzero" desc:"The entry written"`
+	Entry          id.ID           `json:"entry,omitzero" desc:"The entry written; absent in a dry run"`
 	From           changeset.State `json:"from" desc:"The state before the move"`
 	To             changeset.State `json:"to" desc:"The state after the move"`
 	Rule           string          `json:"rule,omitempty" desc:"The rule of an accept or reject"`
@@ -178,6 +178,9 @@ func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
 	}
 	resp := LifecycleResponse{Verb: v.done, ChangeSet: cs, Entry: e.ID, From: c.State, To: to,
 		Rule: rule, Reason: reason, DryRun: ctx.DryRun}
+	if ctx.DryRun {
+		resp.Entry = id.ID{}
+	}
 	if to.Terminal() && cs == current && !ctx.DryRun {
 		if err := w.clearCurrent(); err != nil {
 			return nil, err

@@ -65,7 +65,7 @@ type ChangeNewRequest struct {
 // ChangeNewResponse names the new change set and its open entry.
 type ChangeNewResponse struct {
 	ChangeSet id.ID          `json:"change_set" desc:"The new change set's ID"`
-	Entry     id.ID          `json:"entry" desc:"The open entry's ID"`
+	Entry     id.ID          `json:"entry,omitzero" desc:"The open entry's ID; absent in a dry run"`
 	Kind      changeset.Kind `json:"kind" desc:"intention or record"`
 	Intent    string         `json:"intent" desc:"The change set's intent"`
 	Sources   []id.ID        `json:"sources,omitempty" desc:"The source node IDs, sorted"`
@@ -107,7 +107,7 @@ func runChangeNew(ctx *Ctx, req any) (any, error) {
 			return nil, err
 		}
 		if n.Kind != op.KindSource {
-			return nil, Usagef("%s is a %s, not a source", ref, n.Kind)
+			return nil, Usagef("%s is %s %s, not a source", ref, article(string(n.Kind)), n.Kind)
 		}
 		sources = append(sources, n.ID)
 	}
@@ -128,8 +128,12 @@ func runChangeNew(ctx *Ctx, req any) (any, error) {
 	if err := w.setCurrent(cs); err != nil {
 		return nil, err
 	}
-	return ChangeNewResponse{ChangeSet: cs, Entry: e.ID, Kind: kind, Intent: r.Intent,
-		Sources: sources, Actor: actor, DryRun: ctx.DryRun}, nil
+	resp := ChangeNewResponse{ChangeSet: cs, Entry: e.ID, Kind: kind, Intent: r.Intent,
+		Sources: sources, Actor: actor, DryRun: ctx.DryRun}
+	if ctx.DryRun {
+		resp.Entry = id.ID{}
+	}
+	return resp, nil
 }
 
 // Human reports the new change set.

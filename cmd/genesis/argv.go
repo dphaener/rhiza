@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -110,6 +111,28 @@ func matchCommand(words []string) (api.Operation, int, bool) {
 		}
 	}
 	return api.Operation{}, 0, false
+}
+
+// subcommands finds the longest prefix of words that names a group of
+// operations rather than one, such as "change" for change.ls and
+// change.new. It returns that command path and the group's next words,
+// sorted and deduplicated; none is false.
+func subcommands(words []string) (string, []string, bool) {
+	for n := len(words); n > 0; n-- {
+		prefix := strings.Join(words[:n], ".") + "."
+		var subs []string
+		for _, o := range api.Operations() {
+			if rest, ok := strings.CutPrefix(o.Name, prefix); ok {
+				sub, _, _ := strings.Cut(rest, ".")
+				subs = append(subs, sub)
+			}
+		}
+		if len(subs) > 0 {
+			slices.Sort(subs)
+			return strings.Join(words[:n], " "), slices.Compact(subs), true
+		}
+	}
+	return "", nil, false
 }
 
 // requestFromArgs builds o's request from the arguments after its command

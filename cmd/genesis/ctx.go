@@ -18,19 +18,11 @@ import (
 )
 
 // newCtx fills an api.Ctx from the global flags and the environment. Flags
-// win over GENESIS_CHANGE, GENESIS_ACTOR and GENESIS_FOR. The refs stay
-// raw; the workspace resolves them.
-//
-// GENESIS_TEST_NOW (RFC 3339) fixes the clock and GENESIS_TEST_SEED (an
-// integer) seeds the ID entropy, so tests get stable output. They are for
-// tests only. Every genesis process starts afresh, so a plain fixed clock
-// and seed would make each run generate the same IDs as the last and a
-// second write would collide. In test mode both are therefore offset by N,
-// the number of entry files already in the repo's log, plus one once
-// .genesis/repo.json exists (so the first write after init does not draw
-// init's IDs): the clock reads GENESIS_TEST_NOW + N seconds and the seed is
-// GENESIS_TEST_SEED + N. That stays deterministic, and every write changes
-// N for the next run.
+// win over GENESIS_CHANGE, GENESIS_ACTOR and GENESIS_FOR; the workspace
+// resolves the raw refs. GENESIS_TEST_NOW (RFC 3339) and GENESIS_TEST_SEED
+// fix the clock and ID seed for tests. Each process starts afresh, so both
+// are offset by the repo's entry files plus one for repo.json: every run
+// draws fresh, deterministic IDs, and a dry run predicts the next real run.
 func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, error) {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -77,7 +69,7 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 // .genesis/repo.json exists.
 func testOffset(root string) int {
 	n := countEntryFiles(root)
-	if fi, err := os.Stat(filepath.Join(root, ".genesis", store.RepoFile)); err == nil && !fi.IsDir() {
+	if fi, err := os.Stat(filepath.Join(root, store.Dir, store.RepoFile)); err == nil && !fi.IsDir() {
 		n++
 	}
 	return n
@@ -86,7 +78,7 @@ func testOffset(root string) int {
 // countEntryFiles counts the *.json files in root/.genesis/log/*/, skipping
 // names that start with "."; 0 if there is no log.
 func countEntryFiles(root string) int {
-	matches, _ := filepath.Glob(filepath.Join(root, ".genesis", "log", "*", "*.json"))
+	matches, _ := filepath.Glob(filepath.Join(root, store.Dir, store.LogDir, "*", "*.json"))
 	n := 0
 	for _, m := range matches {
 		if !strings.HasPrefix(filepath.Base(m), ".") && !strings.HasPrefix(filepath.Base(filepath.Dir(m)), ".") {
@@ -103,20 +95,14 @@ func pick(flag string, set bool, env string) string {
 	return env
 }
 
-// findRoot walks up from dir to the first folder holding .genesis. With
-// none, it returns dir: init works there, and operations needing a repo
-// report not_found themselves.
+// findRoot is api.FindRoot, falling back to dir when no ancestor holds
+// .genesis: init works there, and operations needing a repo report
+// not_found themselves.
 func findRoot(dir string) string {
-	for d := dir; ; {
-		if fi, err := os.Stat(filepath.Join(d, ".genesis")); err == nil && fi.IsDir() {
-			return d
-		}
-		parent := filepath.Dir(d)
-		if parent == d {
-			return dir
-		}
-		d = parent
+	if root, ok := api.FindRoot(dir); ok {
+		return root
 	}
+	return dir
 }
 
 // gitConfig returns the trimmed value of a git config key, or an error if

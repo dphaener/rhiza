@@ -223,7 +223,7 @@ func TestLifecycleDryRun(t *testing.T) {
 	size := logSize(t, ctx)
 	ctx.DryRun = true
 	r := move(t, ctx, "land", `{}`)
-	if !r.DryRun || r.ClearedCurrent || r.To != changeset.StateLanded || r.Entry.IsZero() {
+	if !r.DryRun || r.ClearedCurrent || r.To != changeset.StateLanded || !r.Entry.IsZero() {
 		t.Errorf("dry land = %+v", r)
 	}
 	if out := human(t, r); !strings.Contains(out, "dry run") {

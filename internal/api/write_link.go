@@ -70,7 +70,7 @@ func buildLink(b writeBase, r LinkRequest) (edit, error) {
 		return edit{}, err
 	}
 	if r.Note == "" && (t == op.LinkRelatesTo || t == op.LinkExempts) {
-		return edit{}, Usagef("a %s link needs --note", t).WithNext("genesis describe link")
+		return edit{}, Usagef("%s %s link needs --note", article(string(t)), t).WithNext("genesis describe link")
 	}
 	o := op.Op{Type: op.TypeLinkCreate, LinkType: t, From: from.ID, To: to.ID, Note: r.Note}
 	switch {
@@ -84,7 +84,7 @@ func buildLink(b writeBase, r LinkRequest) (edit, error) {
 			return edit{}, err
 		}
 		if d.Kind != op.KindDecision {
-			return edit{}, Usagef("--decision %s is a %s, not a decision", r.Decision, d.Kind)
+			return edit{}, Usagef("--decision %s is %s %s, not a decision", r.Decision, article(string(d.Kind)), d.Kind)
 		}
 		o.Decision = d.ID
 	}
@@ -93,7 +93,7 @@ func buildLink(b writeBase, r LinkRequest) (edit, error) {
 	}
 	switch k, err := b.m.LinkBetween(from.ID, to.ID, t); {
 	case err == nil:
-		return edit{}, Conflictf("a %s link from %s to %s already exists: %s", t, r.From, r.To, k.ID)
+		return edit{}, Conflictf("%s %s link from %s to %s already exists: %s", article(string(t)), t, r.From, r.To, k.ID)
 	case AsError(err).Code != CodeNotFound:
 		return edit{}, err
 	}

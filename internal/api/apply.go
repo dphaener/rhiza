@@ -213,7 +213,11 @@ func buildApply(w *workspace, cs id.ID, ids *id.Generator, items []applyItem) (e
 	var net edit
 	before := map[id.ID]json.RawMessage{}
 	for _, o := range start {
-		before[o.ID], _ = op.Encode(o)
+		raw, err := op.Encode(o)
+		if err != nil {
+			return edit{}, Usagef("%s", err.Error())
+		}
+		before[o.ID] = raw
 	}
 	after := map[id.ID]bool{}
 	targets := map[id.ID]bool{}

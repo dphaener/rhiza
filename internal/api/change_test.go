@@ -201,7 +201,7 @@ func TestChangeNew(t *testing.T) {
 		ctx := initCtx(t)
 		ctx.DryRun = true
 		r := newChange(t, ctx, `{"intent":"Nope"}`)
-		if !r.DryRun || r.ChangeSet.IsZero() || r.Entry.IsZero() || !r.Actor.IsZero() {
+		if !r.DryRun || r.ChangeSet.IsZero() || !r.Entry.IsZero() || !r.Actor.IsZero() {
 			t.Errorf("response = %+v", r)
 		}
 		if files := logFiles(t, ctx.Root); len(files) != 0 {

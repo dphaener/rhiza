@@ -127,7 +127,7 @@ func buildAdd(b writeBase, r AddRequest) (edit, error) {
 			return edit{}, err
 		}
 	} else if r.Parent != "" || r.Before != "" || r.After != "" {
-		return edit{}, Usagef("a %s is not in a tree: --parent, --before and --after are for capabilities and intents", kind)
+		return edit{}, Usagef("%s %s is not in a tree: --parent, --before and --after are for capabilities and intents", article(string(kind)), kind)
 	}
 	node, err := b.newID()
 	if err != nil {
@@ -236,7 +236,7 @@ func buildMv(b writeBase, r MvRequest) (edit, error) {
 		return edit{}, err
 	}
 	if !op.HasParent(n.Kind) {
-		return edit{}, Usagef("a %s is not in a tree: only capabilities and intents move", n.Kind)
+		return edit{}, Usagef("%s %s is not in a tree: only capabilities and intents move", article(string(n.Kind)), n.Kind)
 	}
 	if r.Root && r.Parent != "" {
 		return edit{}, Usagef("give --parent or --root, not both")
@@ -357,7 +357,7 @@ func treeParent(b writeBase, kind op.Kind, ref string) (Node, error) {
 		return Node{}, Usagef("parent %s (%s) is retired", p.ID, p.Handle)
 	}
 	if p.Kind != kind {
-		return Node{}, Usagef("parent %s is a %s; a %s's parent must be a %s", ref, p.Kind, kind, kind)
+		return Node{}, Usagef("parent %s is %s %s; %s %s's parent must be %s %s", ref, article(string(p.Kind)), p.Kind, article(string(kind)), kind, article(string(kind)), kind)
 	}
 	return p, nil
 }

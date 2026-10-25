@@ -34,15 +34,16 @@ const (
 	currentFile = "change"
 )
 
-// findRoot walks up from dir to the first folder holding a .genesis entry
-// and returns it. It reports false if no ancestor of dir has one.
-func findRoot(dir string) (string, bool) {
+// FindRoot walks up from dir to the first folder holding a .genesis
+// directory and returns its absolute path. It reports false if no ancestor
+// of dir has one.
+func FindRoot(dir string) (string, bool) {
 	d, err := filepath.Abs(dir)
 	if err != nil {
 		return "", false
 	}
 	for {
-		if _, err := os.Stat(filepath.Join(d, store.Dir)); err == nil {
+		if fi, err := os.Stat(filepath.Join(d, store.Dir)); err == nil && fi.IsDir() {
 			return d, true
 		}
 		parent := filepath.Dir(d)
@@ -399,7 +400,7 @@ func resolveActorRef(m Model, ref string) (id.ID, error) {
 		return id.ID{}, err
 	}
 	if n.Kind != op.KindActor {
-		return id.ID{}, Usagef("%s is a %s, not an actor", ref, n.Kind)
+		return id.ID{}, Usagef("%s is %s %s, not an actor", ref, article(string(n.Kind)), n.Kind)
 	}
 	return n.ID, nil
 }
