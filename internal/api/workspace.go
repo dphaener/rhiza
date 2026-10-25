@@ -130,6 +130,12 @@ func (w *workspace) changeSet(cs id.ID) (changeset.ChangeSet, bool) {
 	return c, true
 }
 
+// changeSets folds every change set in the log.
+func (w *workspace) changeSets() []changeset.ChangeSet {
+	sets, _ := changeset.FoldLog(w.log())
+	return sets
+}
+
 func (w *workspace) currentPath() string {
 	return filepath.Join(w.root, store.Dir, localDir, currentFile)
 }

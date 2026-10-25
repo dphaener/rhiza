@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"slices"
 	"strings"
@@ -660,6 +661,108 @@ func TestLink(t *testing.T) {
 		recordWrite(t, ctx, "retire", `{"ref":"old","reason":"x"}`)
 		_, err := callOp(t, ctx, "link", `{"from":"log","type":"depends-on","to":"`+r.Nodes[0].String()+`"}`)
 		wantExit(t, err, 3)
+	})
+}
+
+// TestLinkCycle refuses a depends-on link between change sets that would
+// close a loop, counting the links the same write batch added.
+func TestLinkCycle(t *testing.T) {
+	// link writes "from depends-on to" into change set in.
+	link := func(ctx *Ctx, in, from, to id.ID) error {
+		c := *ctx
+		c.ChangeRef = in.String()
+		_, err := callOp(t, &c, "link", fmt.Sprintf(`{"from":%q,"type":"depends-on","to":%q}`, from, to))
+		return err
+	}
+	// wantLoop checks err refuses a loop and names to as the one in the way.
+	wantLoop := func(t *testing.T, err error, to id.ID) {
+		t.Helper()
+		wantExit(t, err, 3)
+		e := AsError(err)
+		if !strings.Contains(e.Message, "would close a loop") || e.Next != "genesis change show "+shortID(to) {
+			t.Errorf("err = %q, next %q", e.Message, e.Next)
+		}
+	}
+	sets := func(t *testing.T, n int) (*Ctx, []id.ID) {
+		ctx := initCtx(t)
+		var out []id.ID
+		for i := range n {
+			out = append(out, newChange(t, ctx, fmt.Sprintf(`{"intent":"S%d"}`, i)).ChangeSet)
+		}
+		return ctx, out
+	}
+
+	t.Run("Direct", func(t *testing.T) {
+		ctx, s := sets(t, 2)
+		a, b := s[0], s[1]
+		if err := link(ctx, b, b, a); err != nil {
+			t.Fatal(err)
+		}
+		before := len(logFiles(t, ctx.Root))
+		wantLoop(t, link(ctx, a, a, b), b)
+		if n := len(logFiles(t, ctx.Root)); n != before {
+			t.Errorf("wrote %d files", n-before)
+		}
+	})
+
+	t.Run("ThreeSets", func(t *testing.T) {
+		ctx, s := sets(t, 3)
+		a, b, c := s[0], s[1], s[2]
+		if err := link(ctx, b, b, a); err != nil {
+			t.Fatal(err)
+		}
+		if err := link(ctx, c, c, b); err != nil {
+			t.Fatal(err)
+		}
+		wantLoop(t, link(ctx, a, a, c), c)
+	})
+
+	t.Run("NoLoop", func(t *testing.T) {
+		ctx, s := sets(t, 3)
+		a, b, c := s[0], s[1], s[2]
+		if err := link(ctx, b, b, a); err != nil {
+			t.Fatal(err)
+		}
+		if err := link(ctx, c, c, a); err != nil {
+			t.Fatal(err)
+		}
+		if err := link(ctx, c, c, b); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("SelfLink", func(t *testing.T) {
+		ctx, s := sets(t, 1)
+		wantExit(t, link(ctx, s[0], s[0], s[0]), 2)
+	})
+
+	t.Run("ApplyBatch", func(t *testing.T) {
+		ctx, s := sets(t, 3)
+		a, b, c := s[0], s[1], s[2]
+		before := len(logFiles(t, ctx.Root))
+		// Written in c, neither link is from c, yet both would count once
+		// c lands.
+		_, err := applyFile(t, ctx, fmt.Sprintf(`{"writes":[
+		  {"op":"link","from":%q,"type":"depends-on","to":%q},
+		  {"op":"link","from":%q,"type":"depends-on","to":%q}]}`, a, b, b, a))
+		wantLoop(t, err, a)
+		if e := AsError(err); !strings.HasPrefix(e.Message, "writes[1]: ") {
+			t.Errorf("err = %q", e.Message)
+		}
+		if n := len(logFiles(t, ctx.Root)); n != before {
+			t.Errorf("wrote %d files", n-before)
+		}
+		if ops := opsOf(t, ctx, c); len(ops) != 0 {
+			t.Errorf("ops = %+v", ops)
+		}
+	})
+
+	t.Run("NodesUnaffected", func(t *testing.T) {
+		ctx, _ := writeCtx(t)
+		mustWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
+		mustWrite(t, ctx, "add", `{"kind":"capability","handle":"log"}`)
+		mustWrite(t, ctx, "link", `{"from":"log","type":"depends-on","to":"store"}`)
+		mustWrite(t, ctx, "link", `{"from":"store","type":"depends-on","to":"log"}`)
 	})
 }
 
