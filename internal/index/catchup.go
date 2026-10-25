@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"slices"
 	"strings"
@@ -34,7 +35,8 @@ const (
 func fingerprint(l store.Listing) string {
 	h := sha256.New()
 	for _, p := range l.Paths {
-		fmt.Fprintf(h, "%s\n", p)
+		io.WriteString(h, p)
+		h.Write([]byte{'\n'})
 	}
 	h.Write([]byte{0})
 	for _, p := range l.Problems {
@@ -47,8 +49,13 @@ func fingerprint(l store.Listing) string {
 // describes. When the listing's fingerprint is the stored one it returns
 // without a write transaction.
 func (x *Index) catchUp() error {
+	return x.catchUpFrom(fingerprint(listLog(x.fsys)))
+}
+
+// catchUpFrom is catchUp given the fingerprint of a listing taken before
+// the call. The write path lists the log again under the lock.
+func (x *Index) catchUpFrom(fp string) error {
 	x.stats = stats{writes: map[string]int{}}
-	fp := fingerprint(store.ListLog(x.fsys))
 	stored, err := listingOf(x.db)
 	if err != nil {
 		return err
@@ -91,7 +98,7 @@ func listingOf(q querier) (string, error) {
 // catchUpTx is catch-up once the write lock is held.
 func (x *Index) catchUpTx(tx *sql.Tx) error {
 	// Another process may have caught up while this one waited.
-	listing := store.ListLog(x.fsys)
+	listing := listLog(x.fsys)
 	fp := fingerprint(listing)
 	stored, err := listingOf(tx)
 	if err != nil {

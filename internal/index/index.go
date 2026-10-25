@@ -148,6 +148,10 @@ func Open(root, dbPath string) (*Index, error) {
 
 // open is Open over fsys, rooted at a .genesis folder.
 func open(dbPath string, fsys fs.FS) (*Index, error) {
+	// The listing is most of a fresh open's cost; take it while the
+	// database opens.
+	fpc := make(chan string, 1)
+	go func() { fpc <- fingerprint(listLog(fsys)) }()
 	if err := os.MkdirAll(filepath.Dir(dbPath), 0o755); err != nil {
 		return nil, fmt.Errorf("open index: %w", err)
 	}
@@ -162,7 +166,7 @@ func open(dbPath string, fsys fs.FS) (*Index, error) {
 		return nil, fmt.Errorf("open index %s: %w", dbPath, err)
 	}
 	x := &Index{db: db, path: dbPath, fsys: fsys}
-	if err := x.catchUp(); err != nil {
+	if err := x.catchUpFrom(<-fpc); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("open index %s: %w", dbPath, err)
 	}
