@@ -714,6 +714,70 @@ func TestReadyRestsOnEndToEnd(t *testing.T) {
 	}
 }
 
+func TestReadyRestsOnBaseEndToEnd(t *testing.T) {
+	// A sets a field on a landed node, and B, depending on A, sets it again
+	// on A's version: B's op names A only by its base, an op ID. C, also
+	// withdrawn, is unrelated.
+	ctx := readCtx(t)
+	recordWrite(t, ctx, "add", `{"kind":"capability","handle":"base"}`)
+	cc := newChange(t, ctx, `{"intent":"C"}`).ChangeSet
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"other"}`)
+	a := newChange(t, ctx, `{"intent":"A"}`).ChangeSet
+	mustWrite(t, ctx, "set", `{"ref":"base","fields":["statement=FromA"]}`)
+	b := newChange(t, ctx, `{"intent":"B"}`).ChangeSet
+	planLink(t, ctx, op.LinkDependsOn, b, a)
+	mustWrite(t, ctx, "set", `{"ref":"base","fields":["statement=FromB"]}`)
+	c := *ctx
+	c.ChangeRef = cc.String()
+	move(t, &c, "withdraw", `{}`)
+
+	// With only C dropped, nothing B names is left over: C is not read.
+	mayRest := func() bool {
+		t.Helper()
+		r, err := openReader(ctx, "ready", "", toBeView)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer r.Close()
+		in, err := planGather(r)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var flying []changeset.ChangeSet
+		for _, s := range in.sets {
+			if planInFlight(s.State) {
+				flying = append(flying, s)
+			}
+		}
+		may, err := planMayRest(r, in.changeSets, flying)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return may
+	}
+	if mayRest() {
+		t.Errorf("may rest with A in flight, want not")
+	}
+	if r := readyOf(t, ctx, `{}`); len(r.ChangeSets) != 2 {
+		t.Fatalf("ready = %+v", r)
+	}
+
+	c.ChangeRef = a.String()
+	move(t, &c, "withdraw", `{}`)
+	if !mayRest() {
+		t.Errorf("may not rest with A withdrawn, want may")
+	}
+	r := readyOf(t, ctx, `{}`)
+	if len(r.ChangeSets) != 1 || r.ChangeSets[0].ID != b {
+		t.Fatalf("ready = %+v", r)
+	}
+	want := []string{"not accepted: draft", "depends on " + shortID(a) + " (withdrawn)",
+		"rests on " + shortID(a) + " (withdrawn): 1 operations"}
+	if !reflect.DeepEqual(r.ChangeSets[0].Reasons, want) {
+		t.Errorf("B reasons = %q, want %q", r.ChangeSets[0].Reasons, want)
+	}
+}
+
 func TestReadyRevisedLandedEndToEnd(t *testing.T) {
 	// B depends on M, M on A. B sets the statement of A's base; A then
 	// revises it in place, and A and M land. B still went under A's

@@ -26,39 +26,26 @@ type Resting struct {
 // op ID, and is nil when nothing rests. A cs not in sets has no ops, so
 // nothing rests.
 func RestsOn(sets []ChangeSet, cs id.ID) []Resting {
-	var mine []op.Op
-	kept := map[id.ID]bool{}
-	for _, s := range sets {
-		if s.ID == cs {
-			mine = s.Ops
-		}
-		if s.State == StateLanded || s.State.inFlight() {
-			for _, o := range s.Ops {
-				if created, ok := creates(o); ok {
-					kept[created] = true
-				}
-			}
-		}
-	}
+	return Analyze(sets).RestsOn(cs)
+}
+
+// RestsOn is RestsOn(sets, cs) for a's sets.
+func (a *Analysis) RestsOn(cs id.ID) []Resting {
+	s, _ := a.set(cs)
+	mine := s.Ops
 	if len(mine) == 0 {
 		return nil
 	}
+	a.rest()
 
 	var out []Resting
-	for _, x := range sets {
-		if !Dropped(x.State) || x.ID == cs {
+	for _, x := range a.dropped {
+		if x.ID == cs {
 			continue
-		}
-		gone := map[id.ID]bool{}
-		for _, o := range x.Ops {
-			gone[o.ID] = true
-			if created, ok := creates(o); ok && !kept[created] {
-				gone[created] = true
-			}
 		}
 		var ops []id.ID
 		for _, o := range mine {
-			if slices.ContainsFunc(names(o), func(n id.ID) bool { return gone[n] }) {
+			if slices.ContainsFunc(Names(o), func(n id.ID) bool { return x.gone[n] }) {
 				ops = append(ops, o.ID)
 			}
 		}
@@ -81,9 +68,9 @@ func creates(o op.Op) (id.ID, bool) {
 	return id.ID{}, false
 }
 
-// names lists the IDs o rests on: its target, parent, from, to and base.
+// Names lists the IDs o rests on: its target, parent, from, to and base.
 // The zero ID is left out.
-func names(o op.Op) []id.ID {
+func Names(o op.Op) []id.ID {
 	var out []id.ID
 	for _, n := range []id.ID{o.Target(), o.Parent, o.From, o.To, o.Base} {
 		if !n.IsZero() {

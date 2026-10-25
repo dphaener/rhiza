@@ -79,6 +79,7 @@ import (
 	"sync"
 
 	"github.com/dphaener/genesis/internal/changeset"
+	"github.com/dphaener/genesis/internal/entry"
 	"github.com/dphaener/genesis/internal/id"
 	"github.com/dphaener/genesis/internal/index"
 	gmodel "github.com/dphaener/genesis/internal/model"
@@ -170,9 +171,9 @@ type planInputs struct {
 	changeSets []index.ChangeSetInfo
 	// ops is each in-flight change set's folded ops.
 	ops map[id.ID][]op.Op
-	// sets is what the dependency analyses read: every in-flight and
-	// dropped change set folded, and planLanded's stand-in for the landed
-	// ones.
+	// sets is what the dependency analyses read: every in-flight change
+	// set folded, the dropped ones too when an in-flight op may rest on
+	// one (planMayRest), and planLanded's stand-in for the landed ones.
 	sets []changeset.ChangeSet
 	// links holds the view's links the core needs, live or retired, in any
 	// order and possibly repeated: those at in-flight change sets, blocks
@@ -304,6 +305,8 @@ func planCore(in planInputs) planResult {
 		states[c.ID] = c.State
 	}
 
+	// The analyses share what they work out from in.sets.
+	an := changeset.Analyze(in.sets)
 	var all []*planChangeSet
 	for _, c := range in.changeSets {
 		if !planInFlight(c.State) {
@@ -344,7 +347,7 @@ func planCore(in planInputs) planResult {
 			}
 		}
 		p.serves = planSortIDs(p.serves)
-		p.dependsOn = changeset.DependsOn(in.sets, c.ID)
+		p.dependsOn = an.DependsOn(c.ID)
 
 		if c.State != changeset.StateAccepted {
 			p.reasons = append(p.reasons, "not accepted: "+string(c.State))
@@ -357,10 +360,10 @@ func planCore(in planInputs) planResult {
 				p.reasons = append(p.reasons, fmt.Sprintf("depends on %s (%s)", shortID(d), s))
 			}
 		}
-		for _, r := range changeset.RestsOn(in.sets, c.ID) {
+		for _, r := range an.RestsOn(c.ID) {
 			p.reasons = append(p.reasons, fmt.Sprintf("rests on %s (%s): %d operations", shortID(r.ChangeSet), r.State, len(r.Ops)))
 		}
-		p.reasons = append(p.reasons, planRevisedReasons(changeset.Revised(in.sets, c.ID))...)
+		p.reasons = append(p.reasons, planRevisedReasons(an.Revised(c.ID))...)
 		for _, b := range planSortBlockers(c.ID, blockers, in.nodes) {
 			on := "this change set"
 			if b.target != c.ID {
@@ -698,8 +701,7 @@ func planGather(r *reader) (planInputs, error) {
 			dropped = append(dropped, c.ID)
 		}
 	}
-	folding := slices.Concat(flying, dropped)
-	entries, err := r.EntriesOf(folding)
+	entries, err := r.EntriesOf(flying)
 	if err != nil {
 		return planInputs{}, err
 	}
@@ -709,25 +711,31 @@ func planGather(r *reader) (planInputs, error) {
 	}
 	in.links = append(in.links, csLinks...)
 	csLinks = slices.Clone(csLinks)
-	// Folding is CPU work over entries already read: one change set per
-	// goroutine.
-	folded := make([]changeset.ChangeSet, len(folding))
-	var wg sync.WaitGroup
-	for k, c := range folding {
-		wg.Go(func() {
-			folded[k], _ = changeset.Fold(c, entries[c])
-		})
-	}
-	wg.Wait()
+	folded := planFold(flying, entries)
 	for k, c := range flying {
 		in.ops[c] = folded[k].Ops
 		csLinks = append(csLinks, planOwnLinks(c, folded[k].Ops)...)
 	}
-	landed, err := planLanded(r, flying, folded[len(flying):])
+	// The dropped change sets are read only when an in-flight op may rest
+	// on one: they pile up with the log, and most reads need none.
+	var gone []changeset.ChangeSet
+	if len(dropped) > 0 {
+		may, err := planMayRest(r, in.changeSets, folded)
+		if err != nil {
+			return planInputs{}, err
+		}
+		if may {
+			if entries, err = r.EntriesOf(dropped); err != nil {
+				return planInputs{}, err
+			}
+			gone = planFold(dropped, entries)
+		}
+	}
+	landed, err := planLanded(r, flying, gone)
 	if err != nil {
 		return planInputs{}, err
 	}
-	in.sets = append(folded, landed)
+	in.sets = slices.Concat(folded, gone, []changeset.ChangeSet{landed})
 	if in.sets, err = planLandedDeps(r, in.changeSets, flying, in.sets); err != nil {
 		return planInputs{}, err
 	}
@@ -880,6 +888,87 @@ func planMilestoneField(fields map[string]json.RawMessage) bool {
 	return len(v) > 0 && string(v) != `""` && string(v) != "null"
 }
 
+// planFold folds each of css from its entries. Folding is CPU work over
+// entries already read: one change set per goroutine.
+func planFold(css []id.ID, entries map[id.ID][]entry.Entry) []changeset.ChangeSet {
+	out := make([]changeset.ChangeSet, len(css))
+	var wg sync.WaitGroup
+	for k, c := range css {
+		wg.Go(func() {
+			out[k], _ = changeset.Fold(c, entries[c])
+		})
+	}
+	wg.Wait()
+	return out
+}
+
+// planMayRest reports whether an op of the flying change sets may rest on
+// a dropped one (changeset.RestsOn): whether one of the IDs it names
+// (changeset.Names) is left over once the IDs no dropped change set can
+// take with it are set aside. Those are the flying change sets' op IDs
+// and what they create, the change sets in all, and, in as-is whatever
+// r's view, the nodes and links (a landed create keeps them) and their
+// current versions (landed ops). Node, link, op and change set IDs are
+// unique in the log, so none of those is a dropped change set's op ID,
+// and what it creates is kept. As-is is asked only about the IDs left
+// over: their nodes in one query, then one query per link a flying link
+// op retires that is still left over.
+func planMayRest(r *reader, all []index.ChangeSetInfo, flying []changeset.ChangeSet) (bool, error) {
+	known := map[id.ID]bool{}
+	for _, c := range all {
+		known[c.ID] = true
+	}
+	for _, s := range flying {
+		for _, o := range s.Ops {
+			known[o.ID] = true
+			if o.Type == op.TypeNodeCreate || o.Type == op.TypeLinkCreate {
+				known[o.Target()] = true
+			}
+		}
+	}
+	// left is the named IDs not known yet.
+	left := func() []id.ID {
+		var out []id.ID
+		for _, s := range flying {
+			for _, o := range s.Ops {
+				for _, n := range changeset.Names(o) {
+					if !known[n] {
+						out = append(out, n)
+					}
+				}
+			}
+		}
+		return planSortIDs(out)
+	}
+	named := left()
+	if len(named) == 0 {
+		return false, nil
+	}
+	ns, err := r.x.NodesLight(index.AsIs, named)
+	if err != nil {
+		return false, readError(err)
+	}
+	for _, n := range ns {
+		known[n.ID], known[n.Version] = true, true
+	}
+	for _, s := range flying {
+		for _, o := range s.Ops {
+			if o.Type != op.TypeLinkRetire || known[o.Link] {
+				continue
+			}
+			l, ok, err := r.x.Link(index.AsIs, o.Link)
+			if err != nil {
+				return false, readError(err)
+			}
+			if !ok {
+				return true, nil
+			}
+			known[l.ID], known[l.Version] = true, true
+		}
+	}
+	return len(left()) > 0, nil
+}
+
 // planLanded is a stand-in for the landed change sets, so that the
 // analyses over planInputs.sets need not read their entries (too many to
 // fold within a read's budget). It holds what they ask of landed ops: a
@@ -939,8 +1028,9 @@ func planLandedDeps(r *reader, all []index.ChangeSetInfo, flying []id.ID, sets [
 	from := flying
 	for len(from) > 0 {
 		var next []id.ID
+		an := changeset.Analyze(sets)
 		for _, c := range from {
-			for _, d := range changeset.DependsOn(sets, c) {
+			for _, d := range an.DependsOn(c) {
 				if !seen[d] && states[d] == changeset.StateLanded {
 					seen[d] = true
 					next = append(next, d)

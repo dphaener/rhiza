@@ -35,8 +35,14 @@ func Dropped(s State) bool {
 // above, sorted by ID. cs itself is never in it. An ID may name a change
 // set that is not in sets.
 func DependsOn(sets []ChangeSet, cs id.ID) []id.ID {
+	return Analyze(sets).DependsOn(cs)
+}
+
+// DependsOn is DependsOn(sets, cs) for a's sets.
+func (a *Analysis) DependsOn(cs id.ID) []id.ID {
+	a.graph()
 	var out []id.ID
-	for _, to := range dependsOn(landedLinks(sets), cs, opsByID(sets)[cs]) {
+	for _, to := range dependsOn(a.landed, cs, a.ops[cs]) {
 		if to != cs {
 			out = append(out, to)
 		}
@@ -48,11 +54,13 @@ func DependsOn(sets []ChangeSet, cs id.ID) []id.ID {
 // others, that are in flight, sorted by ID. It excludes cs, skips IDs not
 // in sets, and does not enter dropped or landed change sets.
 func Closure(sets []ChangeSet, cs id.ID) []id.ID {
-	states := make(map[id.ID]State, len(sets))
-	for _, s := range sets {
-		states[s.ID] = s.State
-	}
-	landed, ops := landedLinks(sets), opsByID(sets)
+	return Analyze(sets).Closure(cs)
+}
+
+// Closure is Closure(sets, cs) for a's sets.
+func (a *Analysis) Closure(cs id.ID) []id.ID {
+	a.graph()
+	states, landed, ops := a.states, a.landed, a.ops
 	seen := map[id.ID]bool{cs: true}
 	var out []id.ID
 	next := []id.ID{cs}
@@ -80,11 +88,13 @@ func Closure(sets []ChangeSet, cs id.ID) []id.ID {
 // it goes through landed ones: their revisions and drops still count
 // against cs's writes (see Revised).
 func Dependencies(sets []ChangeSet, cs id.ID) []id.ID {
-	states := make(map[id.ID]State, len(sets))
-	for _, s := range sets {
-		states[s.ID] = s.State
-	}
-	landed, ops := landedLinks(sets), opsByID(sets)
+	return Analyze(sets).Dependencies(cs)
+}
+
+// Dependencies is Dependencies(sets, cs) for a's sets.
+func (a *Analysis) Dependencies(cs id.ID) []id.ID {
+	a.graph()
+	states, landed, ops := a.states, a.landed, a.ops
 	seen := map[id.ID]bool{cs: true}
 	var out []id.ID
 	next := []id.ID{cs}

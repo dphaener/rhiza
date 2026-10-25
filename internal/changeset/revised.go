@@ -69,25 +69,26 @@ type RevisedConflict struct {
 // dependency, then its op, and are nil when there are none. A cs not in
 // sets has no ops and so no conflicts.
 func Revised(sets []ChangeSet, cs id.ID) []RevisedConflict {
-	byID := make(map[id.ID]ChangeSet, len(sets))
-	for _, s := range sets {
-		byID[s.ID] = s
-	}
-	b, ok := byID[cs]
+	return Analyze(sets).Revised(cs)
+}
+
+// Revised is Revised(sets, cs) for a's sets.
+func (a *Analysis) Revised(cs id.ID) []RevisedConflict {
+	b, ok := a.set(cs)
 	if !ok || len(b.Ops) == 0 {
 		return nil
 	}
 	var out []RevisedConflict
-	for _, depID := range Dependencies(sets, cs) {
-		a := byID[depID]
+	for _, depID := range a.Dependencies(cs) {
+		dep, _ := a.set(depID)
 		for _, o := range b.Ops {
 			h := b.History[o.ID]
 			if len(h) == 0 {
 				continue
 			}
 			eB := h[len(h)-1].Entry
-			out = append(out, revisedUnder(cs, o, eB, a)...)
-			out = append(out, droppedUnder(cs, o, eB, a)...)
+			out = append(out, revisedUnder(cs, o, eB, dep)...)
+			out = append(out, droppedUnder(cs, o, eB, dep)...)
 		}
 	}
 	if len(out) == 0 {
@@ -149,7 +150,7 @@ func droppedUnder(cs id.ID, o op.Op, eB id.ID, a ChangeSet) []RevisedConflict {
 		if created, ok := creates(d.Op); ok {
 			gone = append(gone, created)
 		}
-		for _, n := range names(o) {
+		for _, n := range Names(o) {
 			if slices.Contains(gone, n) {
 				out = append(out, RevisedConflict{ChangeSet: cs, Op: o.ID, Dependency: a.ID, DependencyOp: xID,
 					Target: n, Dropped: true})
