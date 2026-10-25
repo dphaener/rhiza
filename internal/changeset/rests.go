@@ -46,12 +46,7 @@ func RestsOn(sets []ChangeSet, cs id.ID) []Resting {
 
 	var out []Resting
 	for _, x := range sets {
-		switch x.State {
-		case StateWithdrawn, StateRejected, StateSuperseded:
-		default:
-			continue
-		}
-		if x.ID == cs {
+		if !Dropped(x.State) || x.ID == cs {
 			continue
 		}
 		gone := map[id.ID]bool{}

@@ -152,10 +152,10 @@ type ChangeSet struct {
 	// History holds, for each current op ID, every version of the op that
 	// was written, in fold order, each with the entry that wrote it. The
 	// last version is the one in Ops. Drops holds, for each dropped op ID,
-	// the entry that dropped it and the last version before the drop. Only
-	// ops entries that applied contribute. Both live in memory only: they
-	// are worked out from the log, never written to it, and are nil when
-	// empty.
+	// the entry that dropped it, the entry that first wrote it and the last
+	// version before the drop. Only ops entries that applied contribute.
+	// Both live in memory only: they are worked out from the log, never
+	// written to it, and are nil when empty.
 	History map[id.ID][]Revision
 	Drops   map[id.ID]Revision
 	// Decided is the applied accept or reject, nil when there is none.
@@ -180,6 +180,10 @@ type ChangeSet struct {
 type Revision struct {
 	// Entry is the ops entry that wrote the version, or that dropped the op.
 	Entry id.ID
+	// First is set in a Drops record only: the entry that first wrote the
+	// dropped op, so that a reader can tell whether it existed at a given
+	// entry. It is zero in History, whose first element says the same.
+	First id.ID
 	Op    op.Op
 }
 
@@ -629,7 +633,7 @@ func (r *revision) apply(eid id.ID, b Ops) {
 	}
 	for _, x := range b.Drop {
 		r.dropped[x] = true
-		r.drops[x] = Revision{Entry: eid, Op: r.ops[r.pos[x]]}
+		r.drops[x] = Revision{Entry: eid, First: r.history[x][0].Entry, Op: r.ops[r.pos[x]]}
 		delete(r.history, x)
 	}
 	r.ops = slices.DeleteFunc(r.ops, func(o op.Op) bool { return r.dropped[o.ID] })

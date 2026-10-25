@@ -250,7 +250,7 @@ func TestFoldFull(t *testing.T) {
 			opID(3): {{Entry: fid(2), Op: retire(3, 3, "c")}},
 			opID(4): {{Entry: fid(3), Op: retire(4, 4, "d")}},
 		},
-		Drops:         map[id.ID]Revision{opID(1): {Entry: fid(3), Op: retire(1, 1, "a")}},
+		Drops:         map[id.ID]Revision{opID(1): {Entry: fid(3), First: fid(2), Op: retire(1, 1, "a")}},
 		TerminalEntry: fid(7),
 		Heads:         []id.ID{fid(7)},
 		Applied:       []id.ID{fid(1), fid(2), fid(3), fid(4), fid(5), fid(6), fid(7)},
@@ -264,7 +264,8 @@ func TestFoldFull(t *testing.T) {
 
 // TestFoldHistory: an op written in entry 2 and replaced in entry 4 keeps
 // both versions with their entries; an op dropped in entry 5 keeps its
-// drop entry and its last version; a skipped revision adds nothing.
+// drop entry, the entry that first wrote it and its last version; a
+// skipped revision adds nothing.
 func TestFoldHistory(t *testing.T) {
 	es := []entry.Entry{
 		e(t, 1, intention()),
@@ -282,7 +283,7 @@ func TestFoldHistory(t *testing.T) {
 	if !reflect.DeepEqual(got.History, wantH) {
 		t.Errorf("History = %+v, want %+v", got.History, wantH)
 	}
-	wantD := map[id.ID]Revision{opID(2): {Entry: fid(5), Op: retire(2, 2, "b2")}}
+	wantD := map[id.ID]Revision{opID(2): {Entry: fid(5), First: fid(2), Op: retire(2, 2, "b2")}}
 	if !reflect.DeepEqual(got.Drops, wantD) {
 		t.Errorf("Drops = %+v, want %+v", got.Drops, wantD)
 	}
