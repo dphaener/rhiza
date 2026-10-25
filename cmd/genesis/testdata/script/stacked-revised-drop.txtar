@@ -1,0 +1,50 @@
+# A dependency drops what B rests on (D13). B depends on A and sets a field
+# on A's base; A then retires base, which drops its own node.create. B's
+# update now rests on nothing: check warns with next, ready gives the reason,
+# land holds B back while A is in flight.
+
+exec genesis init
+
+# A adds base; B depends on A and sets base's statement.
+exec genesis change new A
+stdout 'change set 01M5PWGEF85Y185JZ2ZGCNH40N '
+exec genesis add capability base --field statement=Base --field owner=a
+exec genesis change new B
+stdout 'change set 01M5PWGKBGYFZMTH8Y8AF1G8GN '
+exec genesis link 01M5PWGKBGYFZMTH8Y8AF1G8GN depends-on 01M5PWGEF85Y185JZ2ZGCNH40N
+exec genesis set base --field statement=FromB
+
+# A retires base: its create is dropped, A has no ops left.
+exec genesis retire base --reason gone --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec genesis change show 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout '"ops": \[\]'
+fold-ok
+
+# check warns: the drop conflict, with next, and the node B's op misses.
+exec genesis render
+exec genesis check
+stdout '^ok$'
+stdout '^warn in-flight change set 01M5PWGKBGYFZMTH8Y8AF1G8GN, op 01M5PWGNA0MVZ1H5AXG5VQ0BY9: model: conflict: change set 01M5PWGEF85Y185JZ2ZGCNH40N dropped op 01M5PWGJC82P7YGZTWYJ3Y88Z9, taking 01M5PWGJC82P7YGZTWYFFZ0VJG, after op 01M5PWGNA0MVZ1H5AXG5VQ0BY9 was written on it$'
+stdout '^  next: genesis slice --change 01M5PWGKBGYFZMTH8Y8AF1G8GN --view what-if$'
+stdout '^warn in-flight change set 01M5PWGKBGYFZMTH8Y8AF1G8GN, op 01M5PWGNA0MVZ1H5AXG5VQ0BY9: model: not found: node 01M5PWGJC82P7YGZTWYFFZ0VJG$'
+
+# ready gives the reason; land refuses B while A is in flight.
+exec genesis propose
+exec genesis accept --reason ok
+exec genesis propose --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec genesis accept --reason ok --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec genesis ready --json
+stdout '"reasons": \[\n +"depends on 01M5PWGEF85Y18 \(accepted\)",\n +"01M5PWGEF85Y18 revised under it: 1 operations"\n +\]'
+! exec genesis land --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
+stderr '^next: genesis land --change 01M5PWGEF85Y18$'
+
+# A lands.
+exec genesis land --change 01M5PWGEF85Y185JZ2ZGCNH40N
+fold-ok
+
+# GAP against D13 ("land refuses it"): once A has landed, ready says B is
+# ready and `genesis land --change B` succeeds; land refuses only conflicts,
+# and B's what-if problem is now "not found", so the landed log then fails
+# check's model rule on B's op. Not asserted here; see the task 11 report.
+# When fixed, assert:
+#   ! exec genesis land --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
