@@ -15,7 +15,7 @@ package api
 // derived-from links out (its sources); the questions it answers (its live
 // answers links out) are listed with it. A queried node that is itself a
 // decision is walked the same way, as the starting point rather than as a
-// reason. Retired links are skipped, and no other link type is followed. The
+// reason, and its own fields lead the answer. Retired links are skipped, and no other link type is followed. The
 // far end of a link is listed whatever its kind, but only decisions are
 // walked further. Then come the distinct change sets of the node's history,
 // in apply order, with the sources their open names and those their own
@@ -86,11 +86,13 @@ type WhyResponse struct {
 	View       string         `json:"view" desc:"The view read"`
 }
 
-// WhyNode names a node.
+// WhyNode is the node explained, with every field: asked about a decision,
+// why gives back its own words first.
 type WhyNode struct {
-	ID     id.ID   `json:"id" desc:"The node's ID"`
-	Handle string  `json:"handle" desc:"Its handle"`
-	Kind   op.Kind `json:"kind" desc:"Its kind"`
+	ID     id.ID                      `json:"id" desc:"The node's ID"`
+	Handle string                     `json:"handle" desc:"Its handle"`
+	Kind   op.Kind                    `json:"kind" desc:"Its kind"`
+	Fields map[string]json.RawMessage `json:"fields" desc:"Every field, name to JSON value"`
 }
 
 // WhyRef names a node briefly.
@@ -152,7 +154,7 @@ func runWhy(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	resp := &WhyResponse{
-		Node:       WhyNode{ID: n.ID, Handle: n.Handle, Kind: n.Kind},
+		Node:       WhyNode{ID: n.ID, Handle: n.Handle, Kind: n.Kind, Fields: lineageFields(n.Fields)},
 		Decisions:  []WhyDecision{},
 		Sources:    []WhySource{},
 		ChangeSets: []WhyChangeSet{},
@@ -403,10 +405,15 @@ func whyChangeSetSources(r *reader, c lineageCS) ([]id.ID, error) {
 	return out, nil
 }
 
-// Human prints the decisions and sources with every field in full (they
-// are the owner's words), then the change sets.
+// Human prints the node's own fields, then the decisions and sources with
+// every field in full (they are the owner's words), then the change sets.
 func (r WhyResponse) Human(w io.Writer) {
-	fmt.Fprintf(w, "# Why %s\n\n## Decisions\n\n", r.Node.Handle)
+	fmt.Fprintf(w, "# Why %s\n\n", r.Node.Handle)
+	if len(r.Node.Fields) > 0 {
+		fmt.Fprintf(w, "- %s %s\n", r.Node.Kind, r.Node.ID)
+		lineageHumanFields(w, r.Node.Fields)
+	}
+	fmt.Fprintf(w, "## Decisions\n\n")
 	if len(r.Decisions) == 0 {
 		fmt.Fprintf(w, "None.\n\n")
 	}

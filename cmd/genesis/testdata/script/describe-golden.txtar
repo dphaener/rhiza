@@ -3940,6 +3940,10 @@ cmp stdout describe.golden.json
             "additionalProperties": false,
             "description": "The node explained",
             "properties": {
+              "fields": {
+                "description": "Every field, name to JSON value",
+                "type": "object"
+              },
               "handle": {
                 "description": "Its handle",
                 "type": "string"
@@ -3955,6 +3959,7 @@ cmp stdout describe.golden.json
               }
             },
             "required": [
+              "fields",
               "handle",
               "id",
               "kind"
