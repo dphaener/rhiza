@@ -18,6 +18,8 @@ Conflicting changes between change sets are found at field level, both among lan
 - decided-by [t4-d5-conflicting-op-applies](../../../decision/t4-d5-conflicting-op-applies.md)
 - decided-by [t4-d8-overlaps](../../../decision/t4-d8-overlaps.md)
 - decided-by [t4-d14-conflict-repair](../../../decision/t4-d14-conflict-repair.md)
+- decided-by [manual-rebase-for-now](../../../decision/manual-rebase-for-now.md)
+- decided-by [revised-in-place-conflicts](../../../decision/revised-in-place-conflicts.md)
 - derived-from [milestone-1](../../../source/milestone-1.md)
 - derived-from [plan-task-4](../../../source/plan-task-4.md)
 
