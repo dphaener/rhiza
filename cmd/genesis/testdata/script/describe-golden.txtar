@@ -2070,7 +2070,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "groups": {
-            "description": "One group per served intent in intent-tree order, then No intent",
+            "description": "One group per milestone served, in intent-tree order, then the backlog",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -2104,6 +2104,14 @@ cmp stdout describe.golden.json
                         "description": "Whether it can be worked on now (see ready)",
                         "type": "boolean"
                       },
+                      "serves": {
+                        "description": "The intents it serves, sorted",
+                        "items": {
+                          "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
                       "state": {
                         "description": "proposed or accepted",
                         "type": "string"
@@ -2115,6 +2123,7 @@ cmp stdout describe.golden.json
                       "intent",
                       "kind",
                       "ready",
+                      "serves",
                       "state"
                     ],
                     "type": "object"
@@ -2123,7 +2132,7 @@ cmp stdout describe.golden.json
                 },
                 "intent": {
                   "additionalProperties": false,
-                  "description": "The intent served; absent for the No intent group",
+                  "description": "The milestone; absent for the backlog",
                   "properties": {
                     "handle": {
                       "description": "Its handle; empty if the view does not have it",
@@ -2148,10 +2157,15 @@ cmp stdout describe.golden.json
                     "path"
                   ],
                   "type": "object"
+                },
+                "kind": {
+                  "description": "milestone, or backlog for the change sets that serve no milestone",
+                  "type": "string"
                 }
               },
               "required": [
-                "change_sets"
+                "change_sets",
+                "kind"
               ],
               "type": "object"
             },
@@ -2168,7 +2182,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Show the proposed and accepted change sets, grouped by the intent they serve",
+      "summary": "Show the proposed and accepted change sets: milestone groups first, then the backlog",
       "write": false
     },
     {

@@ -486,6 +486,25 @@ func (r *reader) NodesLight(ids []id.ID) ([]gmodel.Node, error) {
 	return out, nil
 }
 
+// NodesFields is NodesLight with each node's Fields, as
+// index.Index.NodesFields gives them: History nil.
+func (r *reader) NodesFields(ids []id.ID) ([]gmodel.Node, error) {
+	if r.m == nil {
+		ns, err := r.x.NodesFields(r.view.stored, ids)
+		return ns, readError(err)
+	}
+	ids = slices.Clone(ids)
+	slices.SortFunc(ids, id.Compare)
+	var out []gmodel.Node
+	for _, i := range slices.Compact(ids) {
+		if n, ok := r.m.Node(i); ok {
+			n.History = nil
+			out = append(out, n)
+		}
+	}
+	return out, nil
+}
+
 // LinksAt returns the links at any of ids in direction dir, live and
 // retired, sorted by ID, each once, as index.Index.LinksAt does; ids may
 // hold change sets.

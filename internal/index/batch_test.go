@@ -66,6 +66,29 @@ func TestNodesLight(t *testing.T) {
 	}
 }
 
+func TestNodesFields(t *testing.T) {
+	x, ms := listIndex(t)
+	for name, ids := range batchIDSets() {
+		for _, v := range []View{AsIs, ToBe} {
+			var want []model.Node
+			for _, n := range ms[v].Nodes() {
+				if slices.Contains(ids, n.ID) {
+					n.History = nil
+					want = append(want, n)
+				}
+			}
+			got, err := x.NodesFields(v, ids)
+			if err != nil {
+				t.Fatalf("%s %s: %v", name, v, err)
+			}
+			same(t, "nodes fields "+name+" "+string(v), got, want)
+		}
+	}
+	if _, err := x.NodesFields(View("what"), nil); err == nil {
+		t.Fatal("unknown view: no error")
+	}
+}
+
 func TestSubtreeLight(t *testing.T) {
 	x, ms := listIndex(t)
 	for _, root := range []id.ID{{}, nd(1), nd(3), nd(13), nd(9), nd(8)} {

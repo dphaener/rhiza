@@ -34,6 +34,8 @@
     - [slice](capability/genesis/views/slice.md)
     - [overlays](capability/genesis/views/overlays.md)
     - [roadmap](capability/genesis/views/roadmap.md)
+      - [milestone-groups](capability/genesis/views/roadmap/milestone-groups.md)
+      - [backlog-group](capability/genesis/views/roadmap/backlog-group.md)
     - [ready-next](capability/genesis/views/ready-next.md)
     - [fast-reads](capability/genesis/views/fast-reads.md)
     - [paged-lists](capability/genesis/views/paged-lists.md)
@@ -139,6 +141,13 @@
 - [m2-plan-authorship](decision/m2-plan-authorship.md)
 - [m2-scope-in](decision/m2-scope-in.md)
 - [m2-scope-out](decision/m2-scope-out.md)
+- [m2cs2-done-points-count](decision/m2cs2-done-points-count.md)
+- [m2cs2-flat-backlog](decision/m2cs2-flat-backlog.md)
+- [m2cs2-milestone-field](decision/m2cs2-milestone-field.md)
+- [m2cs2-milestone-order](decision/m2cs2-milestone-order.md)
+- [m2cs2-nearest-milestone](decision/m2cs2-nearest-milestone.md)
+- [m2cs2-roadmap-headings](decision/m2cs2-roadmap-headings.md)
+- [m2cs2-roadmap-kind-serves](decision/m2cs2-roadmap-kind-serves.md)
 - [manual-rebase-for-now](decision/manual-rebase-for-now.md)
 - [milestone-1-scope](decision/milestone-1-scope.md)
 - [milestone-as-intent](decision/milestone-as-intent.md)
@@ -378,6 +387,11 @@
 
 - [area-gap](question/area-gap.md)
 
+## Evidence
+
+- [backlog-group-tested](evidence/backlog-group-tested.md)
+- [milestone-groups-tested](evidence/milestone-groups-tested.md)
+
 ## Sources
 
 - [founding-conversation](source/founding-conversation.md)
@@ -397,6 +411,7 @@
 
 ## Actors
 
+- [claude-code-24d8eb87](actor/claude-code-24d8eb87.md)
 - [claude-code-orchestrator](actor/claude-code-orchestrator.md)
 - [claude-code-task-11](actor/claude-code-task-11.md)
 - [darin-haener](actor/darin-haener.md)

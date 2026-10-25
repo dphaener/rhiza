@@ -79,3 +79,19 @@ cmp stdout ready.json
 ! exec genesis ready --view what-if:ZZZZ
 stderr 'no change set'
 
+
+# Milestone work comes first: Q serves a milestone, so it is next though
+# B and P, in the backlog, are ready and have smaller IDs.
+exec genesis add intent ms --field milestone=2 --record
+exec genesis change new P
+stdout 'change set 01M5PWHFNRPA4JTNZM0B6MMB0H '
+exec genesis propose
+exec genesis accept --reason ok
+exec genesis change new Q
+stdout 'change set 01M5PWHJKGRCC1XHQD183TPV5R '
+exec genesis link 01M5PWHJKGRCC1XHQD183TPV5R serves ms
+exec genesis propose
+exec genesis accept --reason ok
+exec genesis ready
+stdout '^next: 01M5PWHJKGRCC1 Q$'
+stdout '^- 01M5PWHFNRPA4J P$'

@@ -45,6 +45,27 @@ func (x *Index) NodesLight(v View, ids []id.ID) ([]model.Node, error) {
 	return out, nil
 }
 
+// fieldsNodeSelect is lightNodeSelect with the fields.
+const fieldsNodeSelect = `SELECT id, kind, handle, parent, key, fields, retired, reason, version, created, NULL FROM nodes`
+
+// NodesFields is NodesLight with each node's Fields; History is nil. It
+// is one primary-key query per chunk of IDs.
+func (x *Index) NodesFields(v View, ids []id.ID) ([]model.Node, error) {
+	if err := v.check(); err != nil {
+		return nil, err
+	}
+	var out []model.Node
+	for _, chunk := range batchChunks(ids) {
+		ns, err := x.nodes(fieldsNodeSelect+` WHERE view = ? AND id IN `+sqlMarks(len(chunk)), batchArgs(v, chunk)...)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, ns...)
+	}
+	slices.SortFunc(out, func(a, b model.Node) int { return id.Compare(a.ID, b.ID) })
+	return out, nil
+}
+
 // LinksTo returns the links of view v of type t whose To end is one of
 // ids, live and retired, sorted by ID, each once; nil when there are none.
 // It reads the to index once per chunk of IDs.

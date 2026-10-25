@@ -1,7 +1,9 @@
-# roadmap shows the proposed and accepted change sets grouped by the intent
-# they serve, groups in intent-tree order and "No intent" last. A change
-# set's serves links are written inside it (D7), naming the change set by
-# its ID.
+# roadmap shows the proposed and accepted change sets: milestone groups
+# first, then one backlog. No intent here is a milestone (none has a
+# milestone field), so every change set is in the backlog, in depends-on
+# order, ties by ID (roadmap-milestones covers the milestone groups). A
+# change set's serves links are written inside it (D7), naming the change
+# set by its ID.
 
 exec genesis init
 exec genesis roadmap
@@ -39,8 +41,10 @@ exec genesis roadmap
 cmp stdout roadmap.md
 exec genesis roadmap --json
 stdout '"view": "to-be"'
-stdout '"path": \[\n *"grow"\n *\]'
-stdout '"handle": "cheap"'
+stdout '"kind": "backlog"'
+! stdout '"kind": "milestone"'
+! stdout '"handle": "cheap"'
+stdout '"serves": \[\n *"'
 ! stdout '"intent": "D"'
 cp stdout roadmap.json
 exec genesis api call roadmap '{}'
@@ -54,21 +58,16 @@ stdout '^- \[accepted\] 01M5PWH01R1B9M B$'
 ! stdout '\[ready\]'
 
 # as-is has no accepted change set's ops, but the change sets' own ops
-# still group them.
+# still list them.
 exec genesis roadmap --view as-is
-stdout '^## grow / fast$'
+stdout '^## Backlog$'
+stdout '^- \[accepted\] 01M5PWH01R1B9M B$'
 
 -- roadmap.md --
 # Roadmap
 
-## grow / fast
-
-- [ready] 01M5PWH01R1B9M B
-
-## cheap
+## Backlog
 
 - [proposed] 01M5PWGX40FB1R A
-
-## No intent
-
+- [ready] 01M5PWH01R1B9M B
 - [proposed] 01M5PWH4Y0SRA0 C
