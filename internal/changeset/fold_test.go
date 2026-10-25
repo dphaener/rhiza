@@ -245,6 +245,12 @@ func TestFoldFull(t *testing.T) {
 			Entry: fid(6), Actor: actor, For: owner, Type: entry.TypeAccept,
 			Rule: acceptBody.Rule, Reason: acceptBody.Reason,
 		},
+		History: map[id.ID][]Revision{
+			opID(2): {{Entry: fid(2), Op: retire(2, 2, "b")}, {Entry: fid(3), Op: retire(2, 2, "b2")}},
+			opID(3): {{Entry: fid(2), Op: retire(3, 3, "c")}},
+			opID(4): {{Entry: fid(3), Op: retire(4, 4, "d")}},
+		},
+		Drops:         map[id.ID]Revision{opID(1): {Entry: fid(3), Op: retire(1, 1, "a")}},
 		TerminalEntry: fid(7),
 		Heads:         []id.ID{fid(7)},
 		Applied:       []id.ID{fid(1), fid(2), fid(3), fid(4), fid(5), fid(6), fid(7)},
@@ -253,6 +259,37 @@ func TestFoldFull(t *testing.T) {
 	checkProblems(t, ps, csA, nil)
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("Fold =\n%+v\nwant\n%+v", got, want)
+	}
+}
+
+// TestFoldHistory: an op written in entry 2 and replaced in entry 4 keeps
+// both versions with their entries; an op dropped in entry 5 keeps its
+// drop entry and its last version; a skipped revision adds nothing.
+func TestFoldHistory(t *testing.T) {
+	es := []entry.Entry{
+		e(t, 1, intention()),
+		e(t, 2, Ops{Ops: []op.Op{retire(1, 1, "a"), retire(2, 2, "b")}}, 1),
+		e(t, 3, Ops{Ops: []op.Op{retire(2, 2, "b2")}}, 2),
+		e(t, 4, Ops{Ops: []op.Op{retire(1, 1, "a2")}}, 3),
+		e(t, 5, Ops{Drop: []id.ID{opID(2)}}, 4),
+		e(t, 6, Ops{Ops: []op.Op{retire(1, 1, "a3"), retire(2, 2, "b3")}}, 5),
+	}
+	got, ps := Fold(csA, es)
+	checkProblems(t, ps, csA, []want{{6, ErrRevision}})
+	wantH := map[id.ID][]Revision{
+		opID(1): {{Entry: fid(2), Op: retire(1, 1, "a")}, {Entry: fid(4), Op: retire(1, 1, "a2")}},
+	}
+	if !reflect.DeepEqual(got.History, wantH) {
+		t.Errorf("History = %+v, want %+v", got.History, wantH)
+	}
+	wantD := map[id.ID]Revision{opID(2): {Entry: fid(5), Op: retire(2, 2, "b2")}}
+	if !reflect.DeepEqual(got.Drops, wantD) {
+		t.Errorf("Drops = %+v, want %+v", got.Drops, wantD)
+	}
+
+	got, _ = Fold(csA, es[:1])
+	if got.History != nil || got.Drops != nil {
+		t.Errorf("no ops: History = %v, Drops = %v, want nil", got.History, got.Drops)
 	}
 }
 
