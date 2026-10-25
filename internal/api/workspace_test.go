@@ -45,7 +45,8 @@ func gitConfig(m map[string]string) func(string) (string, error) {
 	}
 }
 
-// logFiles lists the files under .genesis/log, relative to it.
+// logFiles lists the files under .genesis/log, relative to it, skipping
+// dot-files (init's .gitkeep) as the log reader does.
 func logFiles(t *testing.T, root string) []string {
 	t.Helper()
 	var out []string
@@ -54,7 +55,7 @@ func logFiles(t *testing.T, root string) []string {
 		if err != nil {
 			return err
 		}
-		if !d.IsDir() {
+		if !d.IsDir() && !strings.HasPrefix(d.Name(), ".") {
 			rel, _ := filepath.Rel(dir, p)
 			out = append(out, rel)
 		}
