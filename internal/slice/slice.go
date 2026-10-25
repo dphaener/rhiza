@@ -56,11 +56,12 @@
 //     linked to the focus by `relates-to`, with its note.
 //   - Anchors, Evidence: through live `implements` and `verifies` links to
 //     the focus; evidence with its status.
-//   - Children: the live children of the focus, each with its statement and
-//     evidence status.
+//   - Children: the live children of the focus, other than the focus
+//     nodes, each with its statement and evidence status.
 //   - Neighbours: `depends-on` out ("needs") and in ("needed by"), and
 //     `relates-to` either way with its note, to nodes that are not
-//     questions (those are under Open questions).
+//     questions (those are under Open questions), other than the focus
+//     nodes.
 //   - In flight: every other in-flight change set whose operations target a
 //     focus node.
 //
@@ -333,8 +334,11 @@ func (b *builder) build() (Slice, error) {
 	}
 	s.Anchors = sorted(anchors.items)
 	s.Evidence = sorted(evidence.items)
-	s.Children = sorted(children.items)
-	s.Neighbours = sorted(neighbours.items)
+	// A focus node is not listed again as another focus node's child or
+	// neighbour; in a change slice it is a Focus item already.
+	inFocus := func(it Item) bool { return isFocus[it.ID] }
+	s.Children = sorted(slices.DeleteFunc(children.items, inFocus))
+	s.Neighbours = sorted(slices.DeleteFunc(neighbours.items, inFocus))
 	inFlight, err := b.inFlight(isFocus)
 	if err != nil {
 		return Slice{}, err

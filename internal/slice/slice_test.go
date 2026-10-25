@@ -446,6 +446,27 @@ func TestBuild(t *testing.T) {
 		}
 	})
 
+	t.Run("change slice leaves focus nodes out of neighbours and children", func(t *testing.T) {
+		f := tree()
+		f.cap(5, "metering", 0)
+		f.link(1, op.LinkDependsOn, 3, 5, "", 0)
+		cs := f.begin(changeset.StateDraft, "Tangle")
+		f.set(2, "statement", q("governs"))
+		f.link(2, op.LinkDependsOn, 3, 2, "", 0)
+		r := f.whatIf(t, cs)
+		s := build(t, r, f.asIs(t), Request{Change: f.cs(cs), View: "what-if"})
+		var focus []string
+		for _, fi := range s.Focus {
+			focus = append(focus, fi.Handle)
+		}
+		// pause is governor's child and depends on it; both are Focus
+		// items, so neither is listed again under the other.
+		eq(t, "focus", focus, []string{"governor", "pause"})
+		eq(t, "children", show(s.Children), []string{"resume status=none"})
+		eq(t, "neighbours", show(s.Neighbours), []string{"metering rel=needs"})
+		eq(t, "context", show(s.Context), []string{"runtime rel=ancestor", "governor rel=ancestor"})
+	})
+
 	t.Run("change touches link.retire endpoints", func(t *testing.T) {
 		f := tree()
 		f.link(1, op.LinkDependsOn, 3, 4, "", 0)
