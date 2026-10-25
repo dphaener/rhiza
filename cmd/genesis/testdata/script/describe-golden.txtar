@@ -1409,6 +1409,243 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "log",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "description": "The node or link: an ID, a unique ID prefix of 4+ characters, or a node's handle",
+            "type": "string"
+          },
+          "view": {
+            "description": "as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ref"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_sets": {
+            "description": "Every change set that touched it, in apply order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "actor": {
+                  "description": "Who landed it; absent unless landed",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "at": {
+                  "description": "When it landed (RFC 3339, UTC); absent unless landed",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The change set's ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "intent": {
+                  "description": "Its intent",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "intention or record",
+                  "type": "string"
+                },
+                "ops": {
+                  "description": "The operations it applied to the target, in apply order",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "description": "The operation's ID",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      },
+                      "type": {
+                        "description": "Its type, such as node.create",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "type"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "state": {
+                  "description": "Its lifecycle state",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "intent",
+                "kind",
+                "ops",
+                "state"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "target": {
+            "additionalProperties": false,
+            "description": "The node or link",
+            "properties": {
+              "handle": {
+                "description": "The node's handle; absent for a link",
+                "type": "string"
+              },
+              "id": {
+                "description": "Its ID",
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": "string"
+              },
+              "kind": {
+                "description": "node or link",
+                "enum": [
+                  "node",
+                  "link"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "kind"
+            ],
+            "type": "object"
+          },
+          "view": {
+            "description": "The view read",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change_sets",
+          "target",
+          "view"
+        ],
+        "type": "object"
+      },
+      "summary": "List every change set that touched a node or link, in order",
+      "write": false
+    },
+    {
+      "name": "ls",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "cursor": {
+            "description": "Where to go on: the next_cursor of the page before",
+            "type": "string"
+          },
+          "kinds": {
+            "description": "Keep the nodes of this kind; repeat for several; default every kind",
+            "items": {
+              "enum": [
+                "intent",
+                "capability",
+                "constraint",
+                "decision",
+                "question",
+                "evidence",
+                "source",
+                "actor",
+                "anchor"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "description": "The most nodes to return, 1 to 1000; default 100",
+            "type": "integer"
+          },
+          "parent": {
+            "description": "Keep the nodes directly under this node: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
+            "type": "string"
+          },
+          "retired": {
+            "description": "Keep retired nodes too",
+            "type": "boolean"
+          },
+          "view": {
+            "description": "as-is, to-be or what-if:<change set>; default follows the effective change set",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "next_cursor": {
+            "description": "The cursor of the next page; absent when no more remain",
+            "type": "string"
+          },
+          "nodes": {
+            "description": "The nodes, sorted by ID",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "handle": {
+                  "description": "The node's handle",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The node's ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "The node's kind",
+                  "type": "string"
+                },
+                "parent": {
+                  "description": "The node's parent, if it has one",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "retired": {
+                  "description": "Whether it is retired",
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "handle",
+                "id",
+                "kind",
+                "retired"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "view": {
+            "description": "The view it was read in: as-is, to-be or what-if:<change set ID>",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nodes",
+          "view"
+        ],
+        "type": "object"
+      },
+      "summary": "List nodes, filtered by kind and parent, a page at a time",
+      "write": false
+    },
+    {
       "name": "mv",
       "request": {
         "additionalProperties": false,
@@ -1554,6 +1791,82 @@ cmp stdout describe.golden.json
       },
       "summary": "Propose the change set for review",
       "write": true
+    },
+    {
+      "name": "ready",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "view": {
+            "description": "The view: as-is, to-be or what-if:<change set>; default to-be, whatever the current change set",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_sets": {
+            "description": "Every draft, proposed and accepted change set: roadmap order, then drafts by ID",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "description": "The change set's ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "intent": {
+                  "description": "The change set's intent",
+                  "type": "string"
+                },
+                "ready": {
+                  "description": "Whether it can be worked on now",
+                  "type": "boolean"
+                },
+                "reasons": {
+                  "description": "Why it is not ready, in a fixed order; empty when it is",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "state": {
+                  "description": "draft, proposed or accepted",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "intent",
+                "ready",
+                "reasons",
+                "state"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "next": {
+            "description": "The first ready change set; absent when none is",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "view": {
+            "description": "The view read: as-is, to-be or what-if:<ID>",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change_sets",
+          "view"
+        ],
+        "type": "object"
+      },
+      "summary": "Say which change sets can be worked on now, and why the others can't",
+      "write": false
     },
     {
       "name": "reject",
@@ -1741,6 +2054,124 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "roadmap",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "view": {
+            "description": "The view: as-is, to-be or what-if:<change set>; default to-be, whatever the current change set",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "groups": {
+            "description": "One group per served intent in intent-tree order, then No intent",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "change_sets": {
+                  "description": "The group's change sets, in depends-on order, ties by ID",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "depends_on": {
+                        "description": "The change sets it depends on, sorted",
+                        "items": {
+                          "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "id": {
+                        "description": "The change set's ID",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      },
+                      "intent": {
+                        "description": "The change set's intent",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "intention or record",
+                        "type": "string"
+                      },
+                      "ready": {
+                        "description": "Whether it can be worked on now (see ready)",
+                        "type": "boolean"
+                      },
+                      "state": {
+                        "description": "proposed or accepted",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "depends_on",
+                      "id",
+                      "intent",
+                      "kind",
+                      "ready",
+                      "state"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "intent": {
+                  "additionalProperties": false,
+                  "description": "The intent served; absent for the No intent group",
+                  "properties": {
+                    "handle": {
+                      "description": "Its handle; empty if the view does not have it",
+                      "type": "string"
+                    },
+                    "id": {
+                      "description": "The intent's ID",
+                      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                      "type": "string"
+                    },
+                    "path": {
+                      "description": "The handles of its ancestors in the intent tree, the root first",
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "handle",
+                    "id",
+                    "path"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "change_sets"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "view": {
+            "description": "The view read: as-is, to-be or what-if:<ID>",
+            "type": "string"
+          }
+        },
+        "required": [
+          "groups",
+          "view"
+        ],
+        "type": "object"
+      },
+      "summary": "Show the proposed and accepted change sets, grouped by the intent they serve",
+      "write": false
+    },
+    {
       "name": "set",
       "request": {
         "additionalProperties": false,
@@ -1839,6 +2270,403 @@ cmp stdout describe.golden.json
       },
       "summary": "Change a node's handle or fields",
       "write": true
+    },
+    {
+      "name": "show",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "description": "The node or link: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
+            "type": "string"
+          },
+          "view": {
+            "description": "as-is, to-be or what-if:<change set>; default follows the effective change set",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ref"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "description": "What the ref named: node or link",
+            "enum": [
+              "node",
+              "link"
+            ],
+            "type": "string"
+          },
+          "link": {
+            "additionalProperties": false,
+            "description": "The link, when kind is link",
+            "properties": {
+              "created": {
+                "description": "The change set that created it",
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": "string"
+              },
+              "decision": {
+                "description": "The decision behind an exempts link",
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": "string"
+              },
+              "from": {
+                "additionalProperties": false,
+                "description": "The node or change set it goes from",
+                "properties": {
+                  "change_set": {
+                    "description": "True when the end is a change set",
+                    "type": "boolean"
+                  },
+                  "handle": {
+                    "description": "The node's handle",
+                    "type": "string"
+                  },
+                  "id": {
+                    "description": "The node's or change set's ID",
+                    "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                    "type": "string"
+                  },
+                  "intent": {
+                    "description": "The change set's intent",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": "object"
+              },
+              "id": {
+                "description": "The link's ID",
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": "string"
+              },
+              "note": {
+                "description": "The link's note",
+                "type": "string"
+              },
+              "retired": {
+                "description": "Whether the link is retired",
+                "type": "boolean"
+              },
+              "to": {
+                "additionalProperties": false,
+                "description": "The node or change set it goes to",
+                "properties": {
+                  "change_set": {
+                    "description": "True when the end is a change set",
+                    "type": "boolean"
+                  },
+                  "handle": {
+                    "description": "The node's handle",
+                    "type": "string"
+                  },
+                  "id": {
+                    "description": "The node's or change set's ID",
+                    "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                    "type": "string"
+                  },
+                  "intent": {
+                    "description": "The change set's intent",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": "object"
+              },
+              "type": {
+                "description": "The link's type",
+                "type": "string"
+              },
+              "version": {
+                "description": "The last operation applied to it",
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "created",
+              "from",
+              "id",
+              "retired",
+              "to",
+              "type",
+              "version"
+            ],
+            "type": "object"
+          },
+          "node": {
+            "additionalProperties": false,
+            "description": "The node, when kind is node",
+            "properties": {
+              "children": {
+                "description": "The nodes directly under it, live and retired, in tree order",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "handle": {
+                      "description": "The child's handle",
+                      "type": "string"
+                    },
+                    "id": {
+                      "description": "The child's ID",
+                      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                      "type": "string"
+                    },
+                    "kind": {
+                      "description": "The child's kind",
+                      "type": "string"
+                    },
+                    "retired": {
+                      "description": "Whether the child is retired",
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "handle",
+                    "id",
+                    "kind",
+                    "retired"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "created": {
+                "description": "The change set that created it",
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": "string"
+              },
+              "fields": {
+                "description": "Every field, name to canonical JSON value",
+                "type": "object"
+              },
+              "handle": {
+                "description": "The node's handle",
+                "type": "string"
+              },
+              "id": {
+                "description": "The node's ID",
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": "string"
+              },
+              "kind": {
+                "description": "The node's kind",
+                "type": "string"
+              },
+              "links_in": {
+                "description": "The links to it, live and retired, sorted by ID",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "decision": {
+                      "description": "The decision behind an exempts link",
+                      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                      "type": "string"
+                    },
+                    "id": {
+                      "description": "The link's ID",
+                      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                      "type": "string"
+                    },
+                    "name": {
+                      "description": "The link read in this direction: its type going out, the type read backwards coming in",
+                      "type": "string"
+                    },
+                    "note": {
+                      "description": "The link's note",
+                      "type": "string"
+                    },
+                    "other": {
+                      "additionalProperties": false,
+                      "description": "The node or change set at the other end",
+                      "properties": {
+                        "change_set": {
+                          "description": "True when the end is a change set",
+                          "type": "boolean"
+                        },
+                        "handle": {
+                          "description": "The node's handle",
+                          "type": "string"
+                        },
+                        "id": {
+                          "description": "The node's or change set's ID",
+                          "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                          "type": "string"
+                        },
+                        "intent": {
+                          "description": "The change set's intent",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id"
+                      ],
+                      "type": "object"
+                    },
+                    "retired": {
+                      "description": "Whether the link is retired",
+                      "type": "boolean"
+                    },
+                    "type": {
+                      "description": "The link's type",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "other",
+                    "retired",
+                    "type"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "links_out": {
+                "description": "The links from it, live and retired, sorted by ID",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "decision": {
+                      "description": "The decision behind an exempts link",
+                      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                      "type": "string"
+                    },
+                    "id": {
+                      "description": "The link's ID",
+                      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                      "type": "string"
+                    },
+                    "name": {
+                      "description": "The link read in this direction: its type going out, the type read backwards coming in",
+                      "type": "string"
+                    },
+                    "note": {
+                      "description": "The link's note",
+                      "type": "string"
+                    },
+                    "other": {
+                      "additionalProperties": false,
+                      "description": "The node or change set at the other end",
+                      "properties": {
+                        "change_set": {
+                          "description": "True when the end is a change set",
+                          "type": "boolean"
+                        },
+                        "handle": {
+                          "description": "The node's handle",
+                          "type": "string"
+                        },
+                        "id": {
+                          "description": "The node's or change set's ID",
+                          "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                          "type": "string"
+                        },
+                        "intent": {
+                          "description": "The change set's intent",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id"
+                      ],
+                      "type": "object"
+                    },
+                    "retired": {
+                      "description": "Whether the link is retired",
+                      "type": "boolean"
+                    },
+                    "type": {
+                      "description": "The link's type",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "other",
+                    "retired",
+                    "type"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "path": {
+                "description": "Its ancestors in the tree, the root first; empty for a root or a kind outside the tree",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "handle": {
+                      "description": "The ancestor's handle",
+                      "type": "string"
+                    },
+                    "id": {
+                      "description": "The ancestor's ID",
+                      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "handle",
+                    "id"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "reason": {
+                "description": "Why it was retired",
+                "type": "string"
+              },
+              "retired": {
+                "description": "Whether it is retired",
+                "type": "boolean"
+              },
+              "version": {
+                "description": "The last operation applied to it",
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "children",
+              "created",
+              "fields",
+              "handle",
+              "id",
+              "kind",
+              "links_in",
+              "links_out",
+              "path",
+              "retired",
+              "version"
+            ],
+            "type": "object"
+          },
+          "view": {
+            "description": "The view it was read in: as-is, to-be or what-if:<change set ID>",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "view"
+        ],
+        "type": "object"
+      },
+      "summary": "Show a node or a link: its fields, links and children",
+      "write": false
     },
     {
       "name": "slice",
@@ -2772,6 +3600,103 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "tree",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "depth": {
+            "description": "How many levels below the top to show; 0 for all",
+            "type": "integer"
+          },
+          "kind": {
+            "description": "Which tree: capability or intent; default capability, or the node's own kind with a ref",
+            "enum": [
+              "capability",
+              "intent"
+            ],
+            "type": "string"
+          },
+          "ref": {
+            "description": "The node whose subtree to show: an ID, ID prefix or handle; default every root of the tree",
+            "type": "string"
+          },
+          "retired": {
+            "description": "Show retired nodes too, and what is under them",
+            "type": "boolean"
+          },
+          "view": {
+            "description": "as-is, to-be or what-if:<change set>; default follows the effective change set",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "description": "capability or intent",
+            "type": "string"
+          },
+          "nodes": {
+            "description": "The nodes, depth first in pre-order, siblings by key then ID",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "children": {
+                  "description": "How many of its direct children are in the output",
+                  "type": "integer"
+                },
+                "depth": {
+                  "description": "0 for the top, one more per level down",
+                  "type": "integer"
+                },
+                "handle": {
+                  "description": "The node's handle",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The node's ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "retired": {
+                  "description": "True if the node is retired",
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "children",
+                "depth",
+                "handle",
+                "id"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "root": {
+            "description": "The node whose subtree this is; absent for the whole tree",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "view": {
+            "description": "The view read: as-is, to-be or what-if:<change set ID>",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "nodes",
+          "view"
+        ],
+        "type": "object"
+      },
+      "summary": "Show the capability tree, or the subtree under a node",
+      "write": false
+    },
+    {
       "name": "unlink",
       "request": {
         "additionalProperties": false,
@@ -2853,6 +3778,259 @@ cmp stdout describe.golden.json
       },
       "summary": "Retire a link",
       "write": true
+    },
+    {
+      "name": "why",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "description": "The node: an ID, a unique ID prefix of 4+ characters, or a handle",
+            "type": "string"
+          },
+          "view": {
+            "description": "as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ref"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_sets": {
+            "description": "The change sets of the node's history, in apply order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "description": "The change set's ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "intent": {
+                  "description": "Its intent",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "intention or record",
+                  "type": "string"
+                },
+                "sources": {
+                  "description": "The sources its open names, then those its own derived-from links lead to",
+                  "items": {
+                    "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "state": {
+                  "description": "Its lifecycle state",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "intent",
+                "kind",
+                "sources",
+                "state"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "decisions": {
+            "description": "The decisions reached, in walk order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "answers": {
+                  "description": "The questions it answers",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "handle": {
+                        "description": "Its handle",
+                        "type": "string"
+                      },
+                      "id": {
+                        "description": "The node's ID",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "handle",
+                      "id"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "fields": {
+                  "description": "Every field, name to JSON value",
+                  "type": "object"
+                },
+                "handle": {
+                  "description": "Its handle",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The decision's ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "inherited": {
+                  "description": "True when via is a tree ancestor of the node, not the node or a decision",
+                  "type": "boolean"
+                },
+                "kind": {
+                  "description": "Its kind: decision, unless the model links something else",
+                  "type": "string"
+                },
+                "relation": {
+                  "description": "How via relates to it: via is decided by it, via supersedes it, or via is superseded by it",
+                  "enum": [
+                    "decided by",
+                    "supersedes",
+                    "superseded by"
+                  ],
+                  "type": "string"
+                },
+                "via": {
+                  "additionalProperties": false,
+                  "description": "The node whose link led here",
+                  "properties": {
+                    "handle": {
+                      "description": "Its handle",
+                      "type": "string"
+                    },
+                    "id": {
+                      "description": "The node's ID",
+                      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "handle",
+                    "id"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "answers",
+                "fields",
+                "handle",
+                "id",
+                "inherited",
+                "kind",
+                "relation",
+                "via"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "node": {
+            "additionalProperties": false,
+            "description": "The node explained",
+            "properties": {
+              "handle": {
+                "description": "Its handle",
+                "type": "string"
+              },
+              "id": {
+                "description": "The node's ID",
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": "string"
+              },
+              "kind": {
+                "description": "Its kind",
+                "type": "string"
+              }
+            },
+            "required": [
+              "handle",
+              "id",
+              "kind"
+            ],
+            "type": "object"
+          },
+          "sources": {
+            "description": "The sources reached, in walk order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "fields": {
+                  "description": "Every field, name to JSON value",
+                  "type": "object"
+                },
+                "handle": {
+                  "description": "Its handle",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The source's ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "Its kind: source, unless the model links something else",
+                  "type": "string"
+                },
+                "via": {
+                  "additionalProperties": false,
+                  "description": "The node whose derived-from link led here",
+                  "properties": {
+                    "handle": {
+                      "description": "Its handle",
+                      "type": "string"
+                    },
+                    "id": {
+                      "description": "The node's ID",
+                      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "handle",
+                    "id"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "fields",
+                "handle",
+                "id",
+                "kind",
+                "via"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "view": {
+            "description": "The view read",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change_sets",
+          "decisions",
+          "node",
+          "sources",
+          "view"
+        ],
+        "type": "object"
+      },
+      "summary": "Walk back through the decisions, sources and change sets that shaped a node",
+      "write": false
     },
     {
       "name": "withdraw",
