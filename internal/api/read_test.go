@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 
@@ -130,6 +131,9 @@ func TestReadBackendsAgree(t *testing.T) {
 				ta, ea := stored.Subtree(i, depth, ret)
 				tb, eb := whatIf.Subtree(i, depth, ret)
 				sameRead(t, fmt.Sprintf("Subtree %s %d %v", i, depth, ret), ta, tb, ea, eb)
+				ta, ea = stored.SubtreeLight(i, depth, ret)
+				tb, eb = whatIf.SubtreeLight(i, depth, ret)
+				sameRead(t, fmt.Sprintf("SubtreeLight %s %d %v", i, depth, ret), ta, tb, ea, eb)
 			}
 		}
 		for _, q := range []index.ListQuery{
@@ -168,6 +172,30 @@ func TestReadBackendsAgree(t *testing.T) {
 		b, eb := whatIf.ResolveLink(ref)
 		sameRead(t, "ResolveLink "+ref, a, b, ea, eb)
 	}
+
+	// The batch reads, over ID sets with repeats, unknown IDs, change sets
+	// and every node.
+	for k, set := range [][]id.ID{nil, {{}, accepted}, ids, ids[2:4], append(slices.Clone(ids[3:]), ids[3])} {
+		na, ea := stored.NodesLight(set)
+		nb, eb := whatIf.NodesLight(set)
+		sameRead(t, fmt.Sprintf("NodesLight %d", k), na, nb, ea, eb)
+		for _, d := range []index.Direction{index.From, index.To, index.Both, 7} {
+			la, ea := stored.LinksAt(set, d)
+			lb, eb := whatIf.LinksAt(set, d)
+			sameRead(t, fmt.Sprintf("LinksAt %d %d", k, d), la, lb, ea, eb)
+		}
+		for _, typ := range []op.LinkType{op.LinkServes, op.LinkDecidedBy, op.LinkBlocks} {
+			la, ea := stored.LinksTo(set, typ)
+			lb, eb := whatIf.LinksTo(set, typ)
+			sameRead(t, fmt.Sprintf("LinksTo %d %s", k, typ), la, lb, ea, eb)
+		}
+	}
+	if ns, _ := whatIf.NodesLight(ids); len(ns) != len(nodes) || ns[0].History != nil {
+		t.Errorf("NodesLight(every node) = %d nodes, want %d light ones", len(ns), len(nodes))
+	}
+	ea1, ea := stored.EntriesOf([]id.ID{accepted, {}})
+	eb1, eb := whatIf.EntriesOf([]id.ID{accepted, {}})
+	sameRead(t, "EntriesOf", ea1, eb1, ea, eb)
 
 	sa, ea := stored.ChangeSets()
 	sb, eb := whatIf.ChangeSets()

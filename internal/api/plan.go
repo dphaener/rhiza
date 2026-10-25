@@ -57,6 +57,7 @@ import (
 	"reflect"
 	"slices"
 	"strings"
+	"sync"
 
 	"github.com/dphaener/genesis/internal/changeset"
 	"github.com/dphaener/genesis/internal/id"
@@ -532,7 +533,11 @@ const planCycleReason = "depends-on cycle"
 // sets in flight: each one's entries and links, the nodes its ops touch,
 // their ancestors and the blocks links to them, the questions those come
 // from and the answers to them, and the served intents with their
-// ancestors.
+// ancestors. The entries and the links at the change sets are read with
+// one query each, the nodes light (the core reads no fields) in a batch
+// per level of the tree, and the blocks and answers links with one query
+// each: every query has a cost of its own (a read transaction's locks), so
+// the count stays fixed, not one per change set or node.
 func planGather(r *reader) (planInputs, error) {
 	in := planInputs{ops: map[id.ID][]op.Op{}, nodes: map[id.ID]gmodel.Node{},
 		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}}
@@ -540,34 +545,107 @@ func planGather(r *reader) (planInputs, error) {
 	if in.changeSets, err = r.ChangeSets(); err != nil {
 		return planInputs{}, err
 	}
-	node := func(i id.ID) (gmodel.Node, bool, error) {
-		if n, ok := in.nodes[i]; ok {
-			return n, true, nil
+	// missing holds the IDs asked for that the view lacks, so that none is
+	// asked for twice.
+	missing := map[id.ID]bool{}
+	// fetch reads the nodes of ids not read yet in one batch, and returns
+	// the ones it read.
+	fetch := func(ids []id.ID) ([]gmodel.Node, error) {
+		var want []id.ID
+		for _, i := range ids {
+			if _, ok := in.nodes[i]; !ok && !missing[i] && !i.IsZero() {
+				want = append(want, i)
+			}
 		}
-		n, ok, err := r.Node(i)
-		if ok {
-			in.nodes[i] = n
+		if len(want) == 0 {
+			return nil, nil
 		}
-		return n, ok, err
+		ns, err := r.NodesLight(want)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range ns {
+			in.nodes[n.ID] = n
+		}
+		for _, i := range want {
+			if _, ok := in.nodes[i]; !ok {
+				missing[i] = true
+			}
+		}
+		return ns, nil
 	}
-	var csLinks []gmodel.Link
+	// prefetch reads starts and their ancestors, a level of the tree per
+	// batch.
+	prefetch := func(starts []id.ID) error {
+		level := starts
+		for range maxDepth {
+			ns, err := fetch(level)
+			if err != nil || len(ns) == 0 {
+				return err
+			}
+			level = level[:0:0]
+			for _, n := range ns {
+				level = append(level, n.Parent)
+			}
+		}
+		return nil
+	}
+	node := func(i id.ID) (gmodel.Node, bool, error) {
+		if _, err := fetch([]id.ID{i}); err != nil {
+			return gmodel.Node{}, false, err
+		}
+		n, ok := in.nodes[i]
+		return n, ok, nil
+	}
+	var flying []id.ID
 	for _, c := range in.changeSets {
-		if !planInFlight(c.State) {
-			continue
+		if planInFlight(c.State) {
+			flying = append(flying, c.ID)
 		}
-		es, err := r.Entries(c.ID)
-		if err != nil {
-			return planInputs{}, err
+	}
+	entries, err := r.EntriesOf(flying)
+	if err != nil {
+		return planInputs{}, err
+	}
+	csLinks, err := r.LinksAt(flying, index.Both)
+	if err != nil {
+		return planInputs{}, err
+	}
+	in.links = append(in.links, csLinks...)
+	csLinks = slices.Clone(csLinks)
+	// Folding is CPU work over entries already read: one change set per
+	// goroutine.
+	folded := make([][]op.Op, len(flying))
+	var wg sync.WaitGroup
+	for k, c := range flying {
+		wg.Go(func() {
+			f, _ := changeset.Fold(c, entries[c])
+			folded[k] = f.Ops
+		})
+	}
+	wg.Wait()
+	for k, c := range flying {
+		in.ops[c] = folded[k]
+		csLinks = append(csLinks, planOwnLinks(c, folded[k])...)
+	}
+
+	// Every node a chain below starts from: the touched nodes, the parents
+	// ops give them, and the served intents; read with their ancestors.
+	var starts []id.ID
+	for _, c := range in.changeSets {
+		touched, parents := planTouched(in.ops[c.ID])
+		for _, t := range touched {
+			starts = append(starts, t)
+			starts = append(starts, parents[t]...)
 		}
-		folded, _ := changeset.Fold(c.ID, es)
-		in.ops[c.ID] = folded.Ops
-		ls, err := r.Links(c.ID, index.Both)
-		if err != nil {
-			return planInputs{}, err
+	}
+	for _, l := range csLinks {
+		if l.Type == op.LinkServes && !l.Retired {
+			starts = append(starts, l.To)
 		}
-		in.links = append(in.links, ls...)
-		csLinks = append(csLinks, ls...)
-		csLinks = append(csLinks, planOwnLinks(c.ID, folded.Ops)...)
+	}
+	if err := prefetch(starts); err != nil {
+		return planInputs{}, err
 	}
 
 	// Touched nodes, their ancestors, and the blocks links to them.
@@ -583,8 +661,8 @@ func planGather(r *reader) (planInputs, error) {
 	}
 	addBlocks(csLinks)
 	// chain walks up from start through the view's parents, start first,
-	// caching each node, since change sets touch nodes in the same parts of
-	// the tree; nil when the view has no start.
+	// since change sets touch nodes in the same parts of the tree; nil when
+	// the view has no start.
 	chain := func(start id.ID) ([]id.ID, error) {
 		var out []id.ID
 		for p := start; !p.IsZero() && !slices.Contains(out, p) && len(out) < maxDepth; {
@@ -622,36 +700,27 @@ func planGather(r *reader) (planInputs, error) {
 			}
 		}
 	}
-	for _, t := range planSortIDs(slices.Collect(maps.Keys(targets))) {
-		ls, err := r.Links(t, index.To)
-		if err != nil {
-			return planInputs{}, err
-		}
-		for _, l := range ls {
-			if l.Type == op.LinkBlocks {
-				in.links = append(in.links, l)
-			}
-		}
-		addBlocks(ls)
+	ls, err := r.LinksTo(slices.Collect(maps.Keys(targets)), op.LinkBlocks)
+	if err != nil {
+		return planInputs{}, err
 	}
+	in.links = append(in.links, ls...)
+	addBlocks(ls)
 
 	// The questions, and the answers links to them.
+	if _, err := fetch(questions); err != nil {
+		return planInputs{}, err
+	}
+	var asked []id.ID
 	for _, q := range questions {
-		if _, ok, err := node(q); err != nil {
-			return planInputs{}, err
-		} else if !ok {
-			continue
-		}
-		ls, err := r.Links(q, index.To)
-		if err != nil {
-			return planInputs{}, err
-		}
-		for _, l := range ls {
-			if l.Type == op.LinkAnswers {
-				in.links = append(in.links, l)
-			}
+		if _, ok := in.nodes[q]; ok {
+			asked = append(asked, q)
 		}
 	}
+	if ls, err = r.LinksTo(asked, op.LinkAnswers); err != nil {
+		return planInputs{}, err
+	}
+	in.links = append(in.links, ls...)
 
 	// The served intents and their ancestors; one the view lacks but an
 	// in-flight change set creates is named from its create.

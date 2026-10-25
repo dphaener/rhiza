@@ -81,6 +81,18 @@ const maxDepth = 1000
 // unless retired, a retired root included. An unknown root is an error
 // wrapping ErrNotFound. It is one recursive query down the parent index.
 func (x *Index) Subtree(v View, root id.ID, depth int, retired bool) ([]TreeNode, error) {
+	return x.subtree(v, root, depth, retired, false)
+}
+
+// SubtreeLight is Subtree with light nodes (see NodesLight): the same nodes
+// in the same order, without the fields and history a reader that only
+// names them would pay to read and decode.
+func (x *Index) SubtreeLight(v View, root id.ID, depth int, retired bool) ([]TreeNode, error) {
+	return x.subtree(v, root, depth, retired, true)
+}
+
+// subtree is Subtree, with light nodes if light.
+func (x *Index) subtree(v View, root id.ID, depth int, retired, light bool) ([]TreeNode, error) {
 	if err := v.check(); err != nil {
 		return nil, err
 	}
@@ -93,10 +105,13 @@ func (x *Index) Subtree(v View, root id.ID, depth int, retired bool) ([]TreeNode
 	}
 	// The named root is read live or retired, so that a missing row means
 	// an unknown node; the walk goes on only from rows that pass.
-	start := `SELECT n.id, n.kind, n.handle, n.parent, n.key, n.fields, n.retired, n.reason, n.version, n.created, n.history, 0
-		FROM nodes n WHERE n.view = ?1 AND n.id = ?2`
+	cols := `n.id, n.kind, n.handle, n.parent, n.key, n.fields, n.retired, n.reason, n.version, n.created, n.history`
+	if light {
+		cols = `n.id, n.kind, n.handle, n.parent, n.key, NULL, n.retired, n.reason, n.version, n.created, NULL`
+	}
+	start := `SELECT ` + cols + `, 0 FROM nodes n WHERE n.view = ?1 AND n.id = ?2`
 	if root.IsZero() {
-		start = `SELECT n.id, n.kind, n.handle, n.parent, n.key, n.fields, n.retired, n.reason, n.version, n.created, n.history, 0
+		start = `SELECT ` + cols + `, 0
 			FROM nodes n INDEXED BY nodes_parent WHERE n.view = ?1 AND n.parent = '' AND n.kind IN ` + treeKinds + live
 	}
 	walk := ` AND t.retired = 0`
@@ -108,7 +123,7 @@ func (x *Index) Subtree(v View, root id.ID, depth int, retired bool) ([]TreeNode
 	rows, err := x.db.Query(`WITH RECURSIVE t(id, kind, handle, parent, key, fields, retired, reason, version, created, history, depth) AS (
 			`+start+`
 			UNION ALL
-			SELECT n.id, n.kind, n.handle, n.parent, n.key, n.fields, n.retired, n.reason, n.version, n.created, n.history, t.depth + 1
+			SELECT `+cols+`, t.depth + 1
 			FROM t CROSS JOIN nodes n INDEXED BY nodes_parent ON n.view = ?1 AND n.parent = t.id
 			WHERE n.kind IN `+treeKinds+live+walk+` AND t.depth < ?3
 		)

@@ -447,6 +447,90 @@ func (r *reader) Subtree(root id.ID, depth int, retired bool) ([]index.TreeNode,
 	return out, nil
 }
 
+// SubtreeLight is Subtree with light nodes, as index.Index.SubtreeLight
+// gives them: Fields and History nil.
+func (r *reader) SubtreeLight(root id.ID, depth int, retired bool) ([]index.TreeNode, error) {
+	if r.m == nil {
+		ts, err := r.x.SubtreeLight(r.view.stored, root, depth, retired)
+		return ts, readError(err)
+	}
+	ts, err := r.Subtree(root, depth, retired)
+	for i := range ts {
+		ts[i].Node = lightNode(ts[i].Node)
+	}
+	return ts, err
+}
+
+// NodesLight returns the nodes with the given IDs, live or retired, sorted
+// by ID, each once, as index.Index.NodesLight does: IDs the view lacks
+// left out, Fields and History nil.
+func (r *reader) NodesLight(ids []id.ID) ([]gmodel.Node, error) {
+	if r.m == nil {
+		ns, err := r.x.NodesLight(r.view.stored, ids)
+		return ns, readError(err)
+	}
+	ids = slices.Clone(ids)
+	slices.SortFunc(ids, id.Compare)
+	var out []gmodel.Node
+	for _, i := range slices.Compact(ids) {
+		if n, ok := r.m.Node(i); ok {
+			out = append(out, lightNode(n))
+		}
+	}
+	return out, nil
+}
+
+// LinksAt returns the links at any of ids in direction dir, live and
+// retired, sorted by ID, each once, as index.Index.LinksAt does; ids may
+// hold change sets.
+func (r *reader) LinksAt(ids []id.ID, dir index.Direction) ([]gmodel.Link, error) {
+	if r.m == nil {
+		ls, err := r.x.LinksAt(r.view.stored, ids, dir)
+		return ls, readError(err)
+	}
+	if dir != index.From && dir != index.To && dir != index.Both {
+		return nil, Errorf("index: unknown direction %d", dir)
+	}
+	at := map[id.ID]bool{}
+	for _, i := range ids {
+		at[i] = true
+	}
+	var out []gmodel.Link
+	for _, l := range r.m.Links() {
+		from, to := at[l.From], at[l.To]
+		if dir == index.From && from || dir == index.To && to || dir == index.Both && (from || to) {
+			out = append(out, l)
+		}
+	}
+	return out, nil
+}
+
+// lightNode is n without its Fields and History.
+func lightNode(n gmodel.Node) gmodel.Node {
+	n.Fields, n.History = nil, nil
+	return n
+}
+
+// LinksTo returns the links of type t whose To end is one of ids, live and
+// retired, sorted by ID, as index.Index.LinksTo does.
+func (r *reader) LinksTo(ids []id.ID, t op.LinkType) ([]gmodel.Link, error) {
+	if r.m == nil {
+		ls, err := r.x.LinksTo(r.view.stored, ids, t)
+		return ls, readError(err)
+	}
+	to := map[id.ID]bool{}
+	for _, i := range ids {
+		to[i] = true
+	}
+	var out []gmodel.Link
+	for _, l := range r.m.Links() {
+		if l.Type == t && to[l.To] {
+			out = append(out, l)
+		}
+	}
+	return out, nil
+}
+
 // List returns the nodes q selects, sorted by ID, at most q.Limit, as
 // index.Index.List does; a Limit of zero or less is an error.
 func (r *reader) List(q index.ListQuery) ([]gmodel.Node, error) {
@@ -484,6 +568,14 @@ func (r *reader) ChangeSets() ([]index.ChangeSetInfo, error) {
 // the index whatever the view.
 func (r *reader) Entries(cs id.ID) ([]entry.Entry, error) {
 	es, err := r.x.Entries(cs)
+	return es, readError(err)
+}
+
+// EntriesOf returns the good entries of each of the change sets css,
+// sorted by ID, keyed by change set (none for one without entries), from
+// the index whatever the view.
+func (r *reader) EntriesOf(css []id.ID) (map[id.ID][]entry.Entry, error) {
+	es, err := r.x.EntriesOf(css)
 	return es, readError(err)
 }
 

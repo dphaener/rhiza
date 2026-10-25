@@ -56,9 +56,9 @@ var treeKinds = map[string]op.Kind{
 }
 
 // runTree resolves the ref (if any), checks kind and depth, and reads the
-// subtree with one Subtree call. The whole tree is every root of both
-// kinds, kept to the asked kind root by root: a node's parent is always of
-// its own kind.
+// subtree with one SubtreeLight call, since it shows no fields. The whole
+// tree is every root of both kinds, kept to the asked kind root by root: a
+// node's parent is always of its own kind.
 func runTree(ctx *Ctx, req any) (any, error) {
 	q := req.(TreeRequest)
 	kind, ok := treeKinds[q.Kind]
@@ -95,7 +95,7 @@ func runTree(ctx *Ctx, req any) (any, error) {
 		kind = op.KindCapability
 	}
 
-	ts, err := r.Subtree(root, q.Depth, q.Retired)
+	ts, err := r.SubtreeLight(root, q.Depth, q.Retired)
 	if err != nil {
 		return nil, err
 	}

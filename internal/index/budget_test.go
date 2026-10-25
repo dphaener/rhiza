@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"slices"
 	"sync"
+	"syscall"
 	"testing"
 	"time"
 
@@ -87,6 +88,26 @@ func defaultModel(t testing.TB) generated {
 	return genned
 }
 
+// budgetLock holds an exclusive lock on a file every package's budget test
+// shares, until t ends: go test runs packages at once, and a budget timed
+// while another package writes and indexes its own 50,000-node model would
+// measure that contention, not the read.
+func budgetLock(t *testing.T) {
+	t.Helper()
+	f, err := os.OpenFile(filepath.Join(os.TempDir(), "genesis-budget.lock"), os.O_CREATE|os.O_RDWR, 0o600)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := syscall.Flock(int(f.Fd()), syscall.LOCK_EX); err != nil {
+		f.Close()
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		syscall.Flock(int(f.Fd()), syscall.LOCK_UN)
+		f.Close()
+	})
+}
+
 // freshRead is the budget's unit of work: open the index fresh, answer the
 // queries a command typically asks, close it.
 func freshRead(g generated) (resolved model.Node, ancestors, children []model.Node, links []model.Link, err error) {
@@ -117,6 +138,7 @@ func TestBudget(t *testing.T) {
 	if testing.Short() {
 		t.Skip("budget generates the 50,000-node model; skipped under -short")
 	}
+	budgetLock(t)
 	g := defaultModel(t)
 	s := g.summary
 	var times []time.Duration
