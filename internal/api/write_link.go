@@ -1,20 +1,21 @@
 package api
 
 // This file holds the link writes: link creates a link between two live
-// nodes, unlink retires one, or drops it if this change set created it.
+// nodes, or a node and a change set, or two change sets; unlink retires one, or drops it if this change set created it.
 
 import (
 	"reflect"
 	"slices"
 	"strings"
 
+	"github.com/dphaener/genesis/internal/id"
 	"github.com/dphaener/genesis/internal/op"
 )
 
 func init() {
 	register(Operation{
 		Name:     "link",
-		Summary:  "Link two nodes",
+		Summary:  "Link two nodes, two change sets, or one of each",
 		Write:    true,
 		Record:   true,
 		Request:  reflect.TypeFor[LinkRequest](),
@@ -42,9 +43,9 @@ func init() {
 
 // LinkRequest creates a link.
 type LinkRequest struct {
-	From     string `json:"from" arg:"0" desc:"The node the link starts at: an ID, a unique ID prefix of 4+ characters, or a live node's handle"`
+	From     string `json:"from" arg:"0" desc:"The node or change set the link starts at: an ID, a unique ID prefix of 4+ characters, or a live node's handle"`
 	Type     string `json:"type" arg:"1" enum:"serves,constrains,exempts,depends-on,relates-to,decided-by,answers,blocks,supersedes,derived-from,discovered-from,implements,verifies,observes" desc:"What the link says"`
-	To       string `json:"to" arg:"2" desc:"The node the link ends at"`
+	To       string `json:"to" arg:"2" desc:"The node or change set the link ends at"`
 	Note     string `json:"note,omitempty" desc:"Why; required on relates-to and exempts"`
 	Decision string `json:"decision,omitempty" desc:"The decision node behind an exempts link (exempts only, required there)"`
 }
@@ -63,18 +64,18 @@ func buildLink(b writeBase, r LinkRequest) (edit, error) {
 	if err != nil {
 		return edit{}, err
 	}
-	from, err := writableNode(b, r.From)
+	from, err := linkEnd(b, r.From)
 	if err != nil {
 		return edit{}, err
 	}
-	to, err := writableNode(b, r.To)
+	to, err := linkEnd(b, r.To)
 	if err != nil {
 		return edit{}, err
 	}
 	if r.Note == "" && (t == op.LinkRelatesTo || t == op.LinkExempts) {
 		return edit{}, Usagef("%s %s link needs --note", article(string(t)), t).WithNext("genesis describe link")
 	}
-	o := op.Op{Type: op.TypeLinkCreate, LinkType: t, From: from.ID, To: to.ID, Note: r.Note}
+	o := op.Op{Type: op.TypeLinkCreate, LinkType: t, From: from, To: to, Note: r.Note}
 	switch {
 	case t == op.LinkExempts && r.Decision == "":
 		return edit{}, Usagef("an exempts link needs --decision <decision>").WithNext("genesis describe link")
@@ -90,10 +91,10 @@ func buildLink(b writeBase, r LinkRequest) (edit, error) {
 		}
 		o.Decision = d.ID
 	}
-	if from.ID == to.ID {
-		return edit{}, Usagef("a link cannot start and end at the same node %s", from.ID)
+	if from == to {
+		return edit{}, Usagef("a link cannot start and end at the same node %s", from)
 	}
-	switch k, err := b.m.LinkBetween(from.ID, to.ID, t); {
+	switch k, err := b.m.LinkBetween(from, to, t); {
 	case err == nil:
 		return edit{}, Conflictf("%s %s link from %s to %s already exists: %s", article(string(t)), t, r.From, r.To, k.ID)
 	case AsError(err).Code != CodeNotFound:
@@ -108,6 +109,23 @@ func buildLink(b writeBase, r LinkRequest) (edit, error) {
 	e := edit{ops: []op.Op{o}}
 	e.touchLink(o.Link)
 	return e, nil
+}
+
+// linkEnd resolves one end of a new link: a writable node, or else a
+// change set in the log, such as either end of a discovered-from link. A
+// ref that is neither keeps the node's error.
+func linkEnd(b writeBase, ref string) (id.ID, error) {
+	n, err := writableNode(b, ref)
+	if err == nil {
+		return n.ID, nil
+	}
+	if AsError(err).Code != CodeNotFound || b.changeSet == nil {
+		return id.ID{}, err
+	}
+	if cs, csErr := b.changeSet(ref); csErr == nil {
+		return cs, nil
+	}
+	return id.ID{}, err
 }
 
 // buildUnlink retires a link against its version, or drops it, with every

@@ -1,5 +1,6 @@
-# link creates a link between two live nodes; unlink retires one, or drops
-# it if the same change set created it. Link writes report links, not nodes.
+# link creates a link between two live nodes, or with a change set at
+# either end; unlink retires one, or drops it if the same change set
+# created it. Link writes report links, not nodes.
 
 exec genesis init
 exec genesis change new Shape
@@ -71,4 +72,21 @@ stdout '"op": "link.retire"'
 ! exec genesis unlink ZZZZZZ --json
 stdout '"code": "not_found"'
 
+fold-ok
+
+# A change set can be an end: work found while doing Shape is a new change
+# set discovered from it, and a question can block a change set.
+exec genesis link d1 relates-to 01M5PWGEF85Y185JZ2ZGCNH40N --note 'Decided for it' --change 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- link [0-9A-Z]{26}$'
+exec genesis change new Found
+stdout 'change set 01M5PWH4Y0SRA04X93K2T73TD9 '
+exec genesis link 01M5PWH4Y0SRA04X93K2T73TD9 discovered-from 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- link [0-9A-Z]{26}$'
+exec genesis add question open-q --field statement=Which
+exec genesis link open-q blocks 01M5PWH4Y0SR
+stdout '^- link [0-9A-Z]{26}$'
+exec genesis change show
+stdout -count=2 '^- link.create '
+! exec genesis link ZZZZZZ discovered-from 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout '"code": "not_found"'
 fold-ok

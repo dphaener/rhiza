@@ -83,6 +83,10 @@ type Input struct {
 type Ctx struct {
 	// Root is the project root: the folder holding .genesis.
 	Root string
+	// Home is the user's home directory, given by the caller (the API reads
+	// no environment); empty if unknown. Operations that need it and find
+	// it empty return a usage error.
+	Home string
 	// ChangeSet is the change set to act on, zero to choose by ChangeRef
 	// or the current one. It must be in the log, else not_found.
 	ChangeSet id.ID

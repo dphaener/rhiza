@@ -373,7 +373,7 @@ cmp stdout describe.golden.json
                       "type": "string"
                     },
                     "from": {
-                      "description": "The node the link starts at: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
+                      "description": "The node or change set the link starts at: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
                       "type": "string"
                     },
                     "note": {
@@ -385,7 +385,7 @@ cmp stdout describe.golden.json
                       "description": "The operation this item is a request of"
                     },
                     "to": {
-                      "description": "The node the link ends at",
+                      "description": "The node or change set the link ends at",
                       "type": "string"
                     },
                     "type": {
@@ -1061,6 +1061,159 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "guide",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "description": "The text to print: genesis (the default), scrub or a topic name; genesis guide ls lists them",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "description": "The text's name",
+            "type": "string"
+          },
+          "text": {
+            "description": "The text, as markdown",
+            "type": "string"
+          },
+          "version": {
+            "description": "The genesis version the text ships in",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "text",
+          "version"
+        ],
+        "type": "object"
+      },
+      "summary": "Print the agent guide: the genesis skill, the scrub skill or a topic",
+      "write": false
+    },
+    {
+      "name": "guide.install",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "agent": {
+            "description": "The agent to install the guide for: claude (Claude Code)",
+            "enum": [
+              "claude"
+            ],
+            "type": "string"
+          },
+          "force": {
+            "description": "Overwrite a folder genesis guide install did not write; other files in it are kept",
+            "type": "boolean"
+          },
+          "project": {
+            "description": "Install into this repository's .claude/skills/ instead of ~/.claude/skills/",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "agent"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dir": {
+            "description": "The plugin folder, absolute",
+            "type": "string"
+          },
+          "unchanged": {
+            "description": "The files that were already current",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "written": {
+            "description": "The files written: new, or different from what was on disk",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "dir",
+          "unchanged",
+          "written"
+        ],
+        "type": "object"
+      },
+      "summary": "Install the agent guide into Claude Code as a skills-directory plugin",
+      "write": false
+    },
+    {
+      "name": "guide.ls",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "texts": {
+            "description": "The texts: the genesis skill, the scrub skill, then the topics by name",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "description": {
+                  "description": "When to load it",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "skill or topic",
+                  "enum": [
+                    "skill",
+                    "topic"
+                  ],
+                  "type": "string"
+                },
+                "name": {
+                  "description": "What genesis guide takes",
+                  "type": "string"
+                },
+                "tokens": {
+                  "description": "The text's estimated size in tokens",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "description",
+                "kind",
+                "name",
+                "tokens"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "texts"
+        ],
+        "type": "object"
+      },
+      "summary": "List the guide's skills and topics with their sizes",
+      "write": false
+    },
+    {
       "name": "init",
       "request": {
         "additionalProperties": false,
@@ -1156,7 +1309,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "from": {
-            "description": "The node the link starts at: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
+            "description": "The node or change set the link starts at: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
             "type": "string"
           },
           "note": {
@@ -1164,7 +1317,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "to": {
-            "description": "The node the link ends at",
+            "description": "The node or change set the link ends at",
             "type": "string"
           },
           "type": {
@@ -1252,7 +1405,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Link two nodes",
+      "summary": "Link two nodes, two change sets, or one of each",
       "write": true
     },
     {
@@ -1686,6 +1839,271 @@ cmp stdout describe.golden.json
       },
       "summary": "Change a node's handle or fields",
       "write": true
+    },
+    {
+      "input": {
+        "additionalProperties": false,
+        "properties": {
+          "quotes": {
+            "description": "Verbatim quotes from the source; may be empty",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "by": {
+                  "description": "Who said it",
+                  "type": "string"
+                },
+                "text": {
+                  "description": "The quote, verbatim",
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "where": {
+                  "description": "Where in the source it is",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "text"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "summary": {
+            "description": "What the source says, distilled",
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": {
+            "description": "The source's title",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "quotes",
+          "summary",
+          "title"
+        ],
+        "type": "object"
+      },
+      "name": "source.add",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "description": "A JSON file of the source's title, summary and quotes (see the input schema)",
+            "type": "string"
+          },
+          "handle": {
+            "description": "The source's handle: lower-case words joined by single dashes, unique among live nodes",
+            "type": "string"
+          },
+          "raw": {
+            "description": "The raw material's file, hashed with sha256; its content and path are not stored. Give this or --raw-sha256",
+            "type": "string"
+          },
+          "raw_sha256": {
+            "description": "The raw material's sha256, 64 lower-case hex characters. Give this or --raw",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file",
+          "handle"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The change set written to (with --record, the new record change set)",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "drop": {
+            "description": "Dry run only: the op IDs the entry would drop",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The ops entry written; absent in a dry run",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "links": {
+            "description": "The links the write created or retired, sorted",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "nodes": {
+            "description": "The nodes the write created or changed, sorted; link endpoints are not included",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ops": {
+            "description": "Dry run only: the ops the entry would carry, as canonical op JSON",
+            "items": {},
+            "type": "array"
+          },
+          "record": {
+            "description": "True if the write opened and landed a record change set",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "change_set",
+          "nodes"
+        ],
+        "type": "object"
+      },
+      "summary": "Add a source node from a JSON file of its title, summary and quotes, with the sha256 of its raw material",
+      "write": true
+    },
+    {
+      "name": "status",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "hook": {
+            "description": "Brief output for a session-start hook: silent outside a repo, always exits 0",
+            "type": "boolean"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "attention": {
+            "additionalProperties": false,
+            "description": "The change sets in flight, counted by state",
+            "properties": {
+              "accepted": {
+                "description": "Change sets accepted, waiting to land",
+                "type": "integer"
+              },
+              "draft": {
+                "description": "Change sets in draft",
+                "type": "integer"
+              },
+              "proposed": {
+                "description": "Change sets proposed, waiting for a decision",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "accepted",
+              "draft",
+              "proposed"
+            ],
+            "type": "object"
+          },
+          "change_set": {
+            "additionalProperties": false,
+            "description": "The current change set, as writes resolve it; null if none",
+            "properties": {
+              "id": {
+                "description": "The change set's ID",
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": "string"
+              },
+              "intent": {
+                "description": "The change set's intent",
+                "type": "string"
+              },
+              "kind": {
+                "description": "intention or record; empty without a valid open",
+                "type": "string"
+              },
+              "state": {
+                "description": "The lifecycle state; empty without a valid open",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "intent",
+              "kind",
+              "state"
+            ],
+            "type": "object"
+          },
+          "guide": {
+            "description": "Each installed guide found, user then project",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "current": {
+                  "description": "Whether that version is the running genesis's",
+                  "type": "boolean"
+                },
+                "dir": {
+                  "description": "The plugin folder",
+                  "type": "string"
+                },
+                "scope": {
+                  "description": "user (in the home directory) or project (in the repository)",
+                  "enum": [
+                    "user",
+                    "project"
+                  ],
+                  "type": "string"
+                },
+                "version": {
+                  "description": "The version it was installed by",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "current",
+                "dir",
+                "scope",
+                "version"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "next": {
+            "description": "Commands that would help, in order; empty if none",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "version": {
+            "description": "The running genesis's version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "attention",
+          "change_set",
+          "guide",
+          "next",
+          "version"
+        ],
+        "type": "object"
+      },
+      "summary": "Show the current change set, what is in flight and the installed guide",
+      "write": false
     },
     {
       "name": "unlink",
