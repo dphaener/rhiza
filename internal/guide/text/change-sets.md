@@ -51,6 +51,17 @@ Work found outside the intent becomes a new change set linked `discovered-from` 
 found in (`genesis link <new> discovered-from <this>`), or a question that `blocks` it. The
 work ends with `genesis land`, committed last.
 
+## Building on another
+
+- `genesis link <this> depends-on <that> --change <this>`. A loop is refused (exit 3);
+  `check` fails on one in the log.
+- Writes and what-if see landed state, every open change set this depends on (directly or
+  not), and its own operations.
+- `genesis land` exits 3 until every dependency has landed (`next` names it), or on a
+  what-if conflict.
+- A dependency dropped, or revised over what you wrote: `check` and `ready` name it. Fix by
+  writing again, revising, or retiring the link. Rebase is manual.
+
 ## Inspecting
 
 - `genesis change show [<id>] --json`: intent, state, operations, the accept or reject.
