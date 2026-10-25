@@ -198,12 +198,268 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "input": {
+        "additionalProperties": false,
+        "properties": {
+          "writes": {
+            "description": "The writes, applied in order",
+            "items": {
+              "oneOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "after": {
+                      "description": "Place it just after this sibling; default after the last one",
+                      "type": "string"
+                    },
+                    "before": {
+                      "description": "Place it just before this sibling",
+                      "type": "string"
+                    },
+                    "fields": {
+                      "description": "A text field, name=text",
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "handle": {
+                      "description": "The node's handle: lower-case words joined by single dashes, unique among live nodes",
+                      "type": "string"
+                    },
+                    "json_fields": {
+                      "description": "A JSON field, name=<json>",
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "kind": {
+                      "description": "The node's kind",
+                      "enum": [
+                        "intent",
+                        "capability",
+                        "constraint",
+                        "decision",
+                        "question",
+                        "evidence",
+                        "source",
+                        "actor",
+                        "anchor"
+                      ],
+                      "type": "string"
+                    },
+                    "op": {
+                      "const": "add",
+                      "description": "The operation this item is a request of"
+                    },
+                    "parent": {
+                      "description": "The parent node (capabilities and intents only, same kind); default a root",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "handle",
+                    "kind",
+                    "op"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "fields": {
+                      "description": "Set a text field, name=text",
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "handle": {
+                      "description": "A new handle",
+                      "type": "string"
+                    },
+                    "json_fields": {
+                      "description": "Set a JSON field, name=<json>",
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "op": {
+                      "const": "set",
+                      "description": "The operation this item is a request of"
+                    },
+                    "ref": {
+                      "description": "The node: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
+                      "type": "string"
+                    },
+                    "unset": {
+                      "description": "Remove a field by name",
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "op",
+                    "ref"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "after": {
+                      "description": "Place it just after this sibling; default after the last one",
+                      "type": "string"
+                    },
+                    "before": {
+                      "description": "Place it just before this sibling",
+                      "type": "string"
+                    },
+                    "op": {
+                      "const": "mv",
+                      "description": "The operation this item is a request of"
+                    },
+                    "parent": {
+                      "description": "The new parent, of the same kind",
+                      "type": "string"
+                    },
+                    "ref": {
+                      "description": "The node: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
+                      "type": "string"
+                    },
+                    "root": {
+                      "description": "Make it a root instead",
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "op",
+                    "ref"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "op": {
+                      "const": "retire",
+                      "description": "The operation this item is a request of"
+                    },
+                    "reason": {
+                      "description": "Why it is retired",
+                      "type": "string"
+                    },
+                    "ref": {
+                      "description": "The node: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "op",
+                    "reason",
+                    "ref"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "decision": {
+                      "description": "The decision node behind an exempts link (exempts only, required there)",
+                      "type": "string"
+                    },
+                    "from": {
+                      "description": "The node the link starts at: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
+                      "type": "string"
+                    },
+                    "note": {
+                      "description": "Why; required on relates-to and exempts",
+                      "type": "string"
+                    },
+                    "op": {
+                      "const": "link",
+                      "description": "The operation this item is a request of"
+                    },
+                    "to": {
+                      "description": "The node the link ends at",
+                      "type": "string"
+                    },
+                    "type": {
+                      "description": "What the link says",
+                      "enum": [
+                        "serves",
+                        "constrains",
+                        "exempts",
+                        "depends-on",
+                        "relates-to",
+                        "decided-by",
+                        "answers",
+                        "blocks",
+                        "supersedes",
+                        "derived-from",
+                        "discovered-from",
+                        "implements",
+                        "verifies",
+                        "observes"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "from",
+                    "op",
+                    "to",
+                    "type"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "op": {
+                      "const": "unlink",
+                      "description": "The operation this item is a request of"
+                    },
+                    "ref": {
+                      "description": "The link (a full ID or a unique prefix of 4+ characters), or the node it starts at when type and to follow",
+                      "type": "string"
+                    },
+                    "to": {
+                      "description": "The node the link ends at, with type",
+                      "type": "string"
+                    },
+                    "type": {
+                      "description": "The link type, with to",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "op",
+                    "ref"
+                  ],
+                  "type": "object"
+                }
+              ]
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "writes"
+        ],
+        "type": "object"
+      },
       "name": "apply",
       "request": {
         "additionalProperties": false,
         "properties": {
           "file": {
-            "description": "A JSON file {\"writes\":[{\"op\":\"add\",...},...]}; each item is an add, set, mv, retire, link or unlink request plus \"op\" naming it. Refs may name nodes added by earlier items. - reads stdin",
+            "description": "A JSON file of writes, or - for stdin (see the input schema); refs may name nodes added by earlier items",
             "type": "string"
           }
         },
@@ -615,6 +871,9 @@ cmp stdout describe.golden.json
             "items": {
               "additionalProperties": false,
               "properties": {
+                "input": {
+                  "description": "The JSON Schema of a file or stdin document the operation reads, if any"
+                },
                 "name": {
                   "description": "The operation name, its command path with dots",
                   "type": "string"

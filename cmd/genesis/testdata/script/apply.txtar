@@ -64,7 +64,11 @@ fold-ok
 
 # describe documents the file format.
 exec genesis describe apply
-stdout 'writes'
+stdout '^Input: \{"writes":\[\.\.\.\]\}'
+exec genesis describe apply --json
+stdout '"oneOf"'
+stdout '"const": "add"'
+stdout '"const": "unlink"'
 
 -- writes.json --
 {"writes":[

@@ -44,8 +44,20 @@ type Operation struct {
 	Write bool
 	// Request and Response are the types of the call's input and output.
 	Request, Response reflect.Type
+	// Input, if not nil, describes a file or stdin document the operation
+	// reads besides its request, such as apply's file of writes.
+	Input *Input
 	// Run performs the call.
 	Run func(ctx *Ctx, req any) (any, error)
+}
+
+// Input describes a document an operation reads from a file or stdin.
+type Input struct {
+	// Summary is one line describing the document's format for people.
+	Summary string
+	// Schema returns the document's JSON Schema, ready for canon.Marshal.
+	// It is called lazily, so it may look up other operations.
+	Schema func() map[string]any
 }
 
 // Ctx carries everything a call needs besides its request. Callers set every

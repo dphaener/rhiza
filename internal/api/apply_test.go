@@ -1,7 +1,9 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -263,4 +265,95 @@ func TestApply(t *testing.T) {
 			t.Errorf("got %d ops", len(ops))
 		}
 	})
+}
+
+// TestApplyInputSchema checks describe apply publishes the file schema: a
+// oneOf over the item ops, each that op's request schema plus a required
+// "op" fixed to its name.
+func TestApplyInputSchema(t *testing.T) {
+	resp, err := callDescribe(t, `{"op":"apply"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var file struct {
+		Required   []string `json:"required"`
+		Properties struct {
+			Writes struct {
+				Type     string `json:"type"`
+				MinItems int    `json:"minItems"`
+				Items    struct {
+					OneOf []map[string]json.RawMessage `json:"oneOf"`
+				} `json:"items"`
+			} `json:"writes"`
+		} `json:"properties"`
+	}
+	if err := json.Unmarshal(resp.Operations[0].Input, &file); err != nil {
+		t.Fatalf("input schema %s: %v", resp.Operations[0].Input, err)
+	}
+	w := file.Properties.Writes
+	if !slices.Equal(file.Required, []string{"writes"}) || w.Type != "array" || w.MinItems != 1 {
+		t.Errorf("file schema = %s", resp.Operations[0].Input)
+	}
+	verbs := []string{"add", "set", "mv", "retire", "link", "unlink"}
+	if len(w.Items.OneOf) != len(verbs) {
+		t.Fatalf("oneOf has %d branches, want %d", len(w.Items.OneOf), len(verbs))
+	}
+	for i, verb := range verbs {
+		b := w.Items.OneOf[i]
+		var props map[string]json.RawMessage
+		var required []string
+		if err := json.Unmarshal(b["properties"], &props); err != nil {
+			t.Fatal(err)
+		}
+		if err := json.Unmarshal(b["required"], &required); err != nil {
+			t.Fatal(err)
+		}
+		var opProp struct {
+			Const string `json:"const"`
+		}
+		if err := json.Unmarshal(props["op"], &opProp); err != nil || opProp.Const != verb {
+			t.Errorf("branch %d op = %s, want const %q", i, props["op"], verb)
+		}
+		if !slices.Contains(required, "op") {
+			t.Errorf("branch %s does not require op: %v", verb, required)
+		}
+		o, _ := Lookup(verb)
+		reqSchema := Schema(o.Request)
+		want := map[string]bool{"op": true}
+		for k := range reqSchema["properties"].(map[string]any) {
+			want[k] = true
+		}
+		got := map[string]bool{}
+		for k := range props {
+			got[k] = true
+		}
+		if !maps.Equal(got, want) {
+			t.Errorf("branch %s properties = %v, want %v", verb, got, want)
+		}
+		wantReq := append(slices.Clone(reqSchema["required"].([]string)), "op")
+		slices.Sort(wantReq)
+		if !slices.Equal(required, wantReq) {
+			t.Errorf("branch %s required = %v, want %v", verb, required, wantReq)
+		}
+	}
+}
+
+// TestApplySchemaMatchesDecoder checks the ops the schema publishes are
+// exactly the ops the decoder accepts.
+func TestApplySchemaMatchesDecoder(t *testing.T) {
+	var schemaOps []string
+	for _, w := range applyWrites {
+		schemaOps = append(schemaOps, w.op)
+	}
+	decoderOps := slices.Sorted(maps.Keys(applyBuilders))
+	if !slices.Equal(slices.Sorted(slices.Values(schemaOps)), decoderOps) {
+		t.Errorf("schema ops %v, decoder ops %v", schemaOps, decoderOps)
+	}
+	for _, o := range Operations() {
+		_, err := decodeWrite(json.RawMessage(fmt.Sprintf(`{"op":%q}`, o.Name)))
+		unknown := err != nil && strings.Contains(err.Error(), "unknown op")
+		if unknown == slices.Contains(schemaOps, o.Name) {
+			t.Errorf("decodeWrite op %s: err %v; in schema: %v", o.Name, err, !unknown)
+		}
+	}
 }

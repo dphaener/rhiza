@@ -26,13 +26,17 @@ func init() {
 		Write:    true,
 		Request:  reflect.TypeFor[ApplyRequest](),
 		Response: reflect.TypeFor[WriteResponse](),
-		Run:      runApply,
+		Input: &Input{
+			Summary: `{"writes":[...]}, at least one item; each item is one of add | set | mv | retire | link | unlink: that operation's request plus "op" naming it`,
+			Schema:  applyFileSchema,
+		},
+		Run: runApply,
 	})
 }
 
 // ApplyRequest names the file of writes.
 type ApplyRequest struct {
-	File string `json:"file" arg:"0" desc:"A JSON file {\"writes\":[{\"op\":\"add\",...},...]}; each item is an add, set, mv, retire, link or unlink request plus \"op\" naming it. Refs may name nodes added by earlier items. - reads stdin"`
+	File string `json:"file" arg:"0" desc:"A JSON file of writes, or - for stdin (see the input schema); refs may name nodes added by earlier items"`
 }
 
 // applyItem is one decoded write of the file.
@@ -41,14 +45,61 @@ type applyItem struct {
 	build func(writeBase) (edit, error)
 }
 
+// applyWrites lists, in order, each op an item may name with its builder.
+// It is the one list both decoding (applyBuilders) and the published file
+// schema (applyFileSchema) use.
+var applyWrites = []struct {
+	op    string
+	build func(writeBase, any) (edit, error)
+}{
+	{"add", func(b writeBase, r any) (edit, error) { return buildAdd(b, r.(AddRequest)) }},
+	{"set", func(b writeBase, r any) (edit, error) { return buildSet(b, r.(SetRequest)) }},
+	{"mv", func(b writeBase, r any) (edit, error) { return buildMv(b, r.(MvRequest)) }},
+	{"retire", func(b writeBase, r any) (edit, error) { return buildRetire(b, r.(RetireRequest)) }},
+	{"link", func(b writeBase, r any) (edit, error) { return buildLink(b, r.(LinkRequest)) }},
+	{"unlink", func(b writeBase, r any) (edit, error) { return buildUnlink(b, r.(UnlinkRequest)) }},
+}
+
 // applyBuilders maps each op an item may name to its builder.
-var applyBuilders = map[string]func(writeBase, any) (edit, error){
-	"add":    func(b writeBase, r any) (edit, error) { return buildAdd(b, r.(AddRequest)) },
-	"set":    func(b writeBase, r any) (edit, error) { return buildSet(b, r.(SetRequest)) },
-	"mv":     func(b writeBase, r any) (edit, error) { return buildMv(b, r.(MvRequest)) },
-	"retire": func(b writeBase, r any) (edit, error) { return buildRetire(b, r.(RetireRequest)) },
-	"link":   func(b writeBase, r any) (edit, error) { return buildLink(b, r.(LinkRequest)) },
-	"unlink": func(b writeBase, r any) (edit, error) { return buildUnlink(b, r.(UnlinkRequest)) },
+var applyBuilders = func() map[string]func(writeBase, any) (edit, error) {
+	m := map[string]func(writeBase, any) (edit, error){}
+	for _, w := range applyWrites {
+		m[w.op] = w.build
+	}
+	return m
+}()
+
+// applyFileSchema returns the JSON Schema of an apply file: an object whose
+// "writes" is a non-empty array, each item one of the applyWrites ops'
+// request schemas with a required "op" fixed to that op's name.
+func applyFileSchema() map[string]any {
+	branches := make([]any, 0, len(applyWrites))
+	for _, w := range applyWrites {
+		o, ok := Lookup(w.op)
+		if !ok {
+			panic("api: apply: operation " + w.op + " is not registered")
+		}
+		s := Schema(o.Request)
+		props := s["properties"].(map[string]any)
+		props["op"] = map[string]any{"const": w.op, "description": "The operation this item is a request of"}
+		required := append(s["required"].([]string), "op")
+		slices.Sort(required)
+		s["required"] = required
+		branches = append(branches, s)
+	}
+	return map[string]any{
+		"type": "object",
+		"properties": map[string]any{
+			"writes": map[string]any{
+				"type":        "array",
+				"minItems":    1,
+				"items":       map[string]any{"oneOf": branches},
+				"description": "The writes, applied in order",
+			},
+		},
+		"required":             []string{"writes"},
+		"additionalProperties": false,
+	}
 }
 
 // runApply reads and decodes the file, then writes the net edit of all its

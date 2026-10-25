@@ -34,6 +34,7 @@ type OperationInfo struct {
 	Write    bool            `json:"write" desc:"Whether the operation appends to the log"`
 	Request  json.RawMessage `json:"request" desc:"The JSON Schema of the request"`
 	Response json.RawMessage `json:"response" desc:"The JSON Schema of the response"`
+	Input    json.RawMessage `json:"input,omitempty" desc:"The JSON Schema of a file or stdin document the operation reads, if any"`
 }
 
 func init() {
@@ -66,10 +67,16 @@ func runDescribe(_ *Ctx, req any) (any, error) {
 		if err != nil {
 			return nil, fmt.Errorf("describe %s: %w", o.Name, err)
 		}
-		resp.Operations = append(resp.Operations, OperationInfo{
+		info := OperationInfo{
 			Name: o.Name, Summary: o.Summary, Write: o.Write,
 			Request: reqSchema, Response: respSchema,
-		})
+		}
+		if o.Input != nil {
+			if info.Input, err = canon.Marshal(o.Input.Schema()); err != nil {
+				return nil, fmt.Errorf("describe %s: %w", o.Name, err)
+			}
+		}
+		resp.Operations = append(resp.Operations, info)
 	}
 	return resp, nil
 }
@@ -86,6 +93,9 @@ func (r DescribeResponse) Human(w io.Writer) {
 			continue
 		}
 		fmt.Fprintf(w, "\n    %s\n", UsageLine(o))
+		if o.Input != nil {
+			fmt.Fprintf(w, "\nInput: %s. Its schema: genesis describe %s --json\n", o.Input.Summary, info.Name)
+		}
 		ps := Params(o.Request)
 		if len(ps) == 0 {
 			continue
