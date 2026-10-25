@@ -1,0 +1,148 @@
+# ci install writes the GitHub workflow that runs genesis check and marks
+# the rendered folder as generated in .gitattributes. Each project sits in
+# a folder of its own, since a repository's folders all act on it.
+
+# Outside a repository ci install is not_found, exit 4.
+! exec genesis ci install
+stderr '^genesis: no Genesis repository in '
+stderr '^next: genesis init$'
+exec sh -c 'genesis ci install 2>/dev/null; echo exit $?'
+stdout '^exit 4$'
+! exists .github
+
+# A fresh install writes both files. The test binary is a dev build, so
+# the workflow installs @latest.
+mkdir fresh
+cd fresh
+exec genesis init
+exec genesis ci install
+cmp stdout $WORK/first.txt
+cmp .github/workflows/genesis.yml $WORK/genesis.yml
+cmp .gitattributes $WORK/fresh.gitattributes
+
+# A second install writes nothing.
+exec genesis ci install
+cmp stdout $WORK/again.txt
+
+# ci install writes no log entry: --dry-run is a usage error, exit 2.
+! exec genesis ci install --dry-run
+stderr 'does not take --dry-run'
+stderr '^next: genesis ci install$'
+exec sh -c 'genesis ci install --dry-run 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+
+# A different workflow is a conflict, exit 3, and neither file is written.
+cp $WORK/other.yml .github/workflows/genesis.yml
+cp $WORK/kept.gitattributes .gitattributes
+! exec genesis ci install
+stderr '^genesis: \.github/workflows/genesis\.yml exists and differs from the template$'
+stderr '^next: genesis ci install --force$'
+exec sh -c 'genesis ci install 2>/dev/null; echo exit $?'
+stdout '^exit 3$'
+cmp .github/workflows/genesis.yml $WORK/other.yml
+cmp .gitattributes $WORK/kept.gitattributes
+
+# --force overwrites it; the other .gitattributes lines are kept.
+exec genesis ci install --force
+cmp stdout $WORK/first.txt
+cmp .github/workflows/genesis.yml $WORK/genesis.yml
+cmp .gitattributes $WORK/kept-merged.gitattributes
+
+# --json and api call print the same bytes.
+exec genesis ci install --json
+cp stdout $WORK/install.json
+exec genesis api call ci.install
+cmp stdout $WORK/install.json
+cmp stdout $WORK/again.json
+fold-ok
+
+# A .gitattributes without a final newline gets one before the line.
+mkdir $WORK/nonl
+cd $WORK/nonl
+exec genesis init
+exec sh -c 'printf "*.go diff=golang" > .gitattributes'
+exec genesis ci install
+cmp .gitattributes $WORK/kept-merged.gitattributes
+
+# A .gitattributes that already has the line is unchanged.
+mkdir $WORK/has
+cd $WORK/has
+exec genesis init
+cp $WORK/kept-merged.gitattributes .gitattributes
+exec genesis ci install
+cmp stdout $WORK/attrs-unchanged.txt
+cmp .gitattributes $WORK/kept-merged.gitattributes
+
+-- first.txt --
+Installed the Genesis check (2 written, 0 unchanged).
+
+- wrote .gitattributes
+- wrote .github/workflows/genesis.yml
+-- again.txt --
+Installed the Genesis check (0 written, 2 unchanged).
+-- attrs-unchanged.txt --
+Installed the Genesis check (1 written, 1 unchanged).
+
+- wrote .github/workflows/genesis.yml
+-- again.json --
+{
+  "unchanged": [
+    ".gitattributes",
+    ".github/workflows/genesis.yml"
+  ],
+  "written": []
+}
+-- other.yml --
+name: other
+-- fresh.gitattributes --
+.genesis/rendered/** linguist-generated=true
+-- kept.gitattributes --
+*.go diff=golang
+-- kept-merged.gitattributes --
+*.go diff=golang
+.genesis/rendered/** linguist-generated=true
+-- genesis.yml --
+# Written by `genesis ci install`. Rerun `genesis ci install --force` to
+# replace it with the current template.
+#
+# It checks the Genesis model on every pull request against its base branch
+# and on every push to main against the commit before the push. The go
+# install step needs read access to github.com/dphaener/genesis: while that
+# repository is private, set GOPRIVATE and give git a token that can read it.
+name: Genesis
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-26.04
+
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v7
+      with:
+        go-version: stable
+
+    - name: Install genesis
+      run: go install github.com/dphaener/genesis/cmd/genesis@latest
+
+    - name: Check against the base branch
+      if: github.event_name == 'pull_request'
+      run: genesis check --base origin/${{ github.base_ref }}
+
+    - name: Check against the commit before the push
+      if: github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000'
+      run: genesis check --base ${{ github.event.before }}
+
+    # A branch's first push has no commit before it: github.event.before is
+    # all zeros, so check runs with its default base.
+    - name: Check a first push
+      if: github.event_name == 'push' && github.event.before == '0000000000000000000000000000000000000000'
+      run: genesis check

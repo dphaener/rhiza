@@ -958,6 +958,46 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "ci.install",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "force": {
+            "description": "Overwrite an existing workflow that differs from the template",
+            "type": "boolean"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "unchanged": {
+            "description": "The files that were already current",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "written": {
+            "description": "The files written: new, or different from what was on disk",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "unchanged",
+          "written"
+        ],
+        "type": "object"
+      },
+      "summary": "Install the Genesis check as a GitHub workflow",
+      "write": false
+    },
+    {
       "name": "describe",
       "request": {
         "additionalProperties": false,
