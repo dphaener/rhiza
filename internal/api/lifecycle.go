@@ -5,8 +5,13 @@ package api
 // current change set, after checking the move against the folded state with
 // the same table changeset.Fold applies. A terminal move (reject, withdraw,
 // land) on the current change set clears it.
+//
+// Land checks two things more, before anything is written, so a dry run
+// refuses the same: every change set it depends on has landed, and its
+// what-if view has no conflict on its own ops. Either refusal exits 3.
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"reflect"
@@ -14,6 +19,7 @@ import (
 
 	"github.com/dphaener/genesis/internal/changeset"
 	"github.com/dphaener/genesis/internal/id"
+	gmodel "github.com/dphaener/genesis/internal/model"
 )
 
 func init() {
@@ -162,6 +168,11 @@ func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
 		return nil, Conflictf("cannot %s change set %s: it is %s", v.name, cs, c.State).
 			WithNext(legalNext(c))
 	}
+	if v.name == "land" {
+		if err := checkLand(w.changeSets(), cs); err != nil {
+			return nil, err
+		}
+	}
 	actor, forID, err := w.resolveActor(cs, ctx)
 	if err != nil {
 		return nil, err
@@ -182,6 +193,38 @@ func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
 		resp.ClearedCurrent = true
 	}
 	return resp, nil
+}
+
+// checkLand refuses to land cs while a change set it depends on has not
+// landed, naming the first by ID, or while cs's what-if view has a conflict
+// on one of cs's own ops.
+func checkLand(sets []changeset.ChangeSet, cs id.ID) error {
+	states := make(map[id.ID]changeset.State, len(sets))
+	for _, s := range sets {
+		states[s.ID] = s.State
+	}
+	for _, dep := range changeset.DependsOn(sets, cs) {
+		state, ok := states[dep]
+		if ok && state == changeset.StateLanded {
+			continue
+		}
+		what := string(state)
+		if !ok {
+			what = "not in the log"
+		}
+		next := "genesis change show " + shortID(dep)
+		if state == changeset.StateAccepted {
+			next = "genesis land --change " + shortID(dep)
+		}
+		return Conflictf("cannot land change set %s: it depends on %s (%s)", cs, dep, what).WithNext(next)
+	}
+	_, problems := gmodel.WhatIf(sets, cs)
+	for _, p := range problems {
+		if p.ChangeSet == cs && errors.Is(p.Err, gmodel.ErrConflict) {
+			return Conflictf("cannot land change set %s: %v", cs, p.Err).WithNext("genesis check")
+		}
+	}
+	return nil
 }
 
 // Human reports the move.
