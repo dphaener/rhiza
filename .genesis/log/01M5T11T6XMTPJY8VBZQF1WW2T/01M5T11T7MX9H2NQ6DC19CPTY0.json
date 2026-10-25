@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [],
+  "at": "2026-10-25T17:17:07Z",
+  "body": {
+    "intent": "add actor claude-code-24d8eb87",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M5T11T6XMTPJY8VBZQF1WW2T",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5T11T7MX9H2NQ6DC19CPTY0",
+  "type": "open",
+  "v": 1
+}

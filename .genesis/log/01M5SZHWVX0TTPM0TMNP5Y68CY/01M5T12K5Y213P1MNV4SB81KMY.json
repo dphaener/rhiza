@@ -1,0 +1,281 @@
+{
+  "actor": "01M5T11T3MAZWKXF3FTRNB4TVC",
+  "after": [
+    "01M5SZJ6KT9BNQBBB9639CVK95"
+  ],
+  "at": "2026-10-25T17:17:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M5SZHJG0Q8A3HCM4J66ERNHE",
+        "handle": null,
+        "id": "01M5T12H83KJ3KQ5WT3ZDB78M4",
+        "node": "01M5SZHJG0Q8A3HCM4J44AJMWT",
+        "op": "node.update",
+        "set": {
+          "milestone": "2"
+        },
+        "unset": []
+      },
+      {
+        "fields": {
+          "options": [
+            "A milestone field (Recommended)",
+            "Handle prefix milestone-",
+            "Structure: done points"
+          ],
+          "settled_by": "Agent's option, accepted by the owner: A milestone field (Recommended)",
+          "statement": "A milestone is an intent with a non-empty milestone field; milestone-2 has milestone=2. There is still no milestone kind.",
+          "wording": "agent of milestone-2 change set 2 (shipit plan), accepted by the owner"
+        },
+        "handle": "m2cs2-milestone-field",
+        "id": "01M5T12HB7QY18K3GYX7K03RXW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5T12HB7QY18K3GYX53Q586R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "One flat Backlog group (Recommended)",
+            "Backlog keeps intent groups",
+            "Flat, No intent separate"
+          ],
+          "settled_by": "Agent's option, accepted by the owner: One flat Backlog group (Recommended)",
+          "statement": "genesis roadmap shows one flat Backlog after the milestone groups: every proposed or accepted change set that serves no milestone, No intent ones included, each once, in depends-on order, ties by ID.",
+          "wording": "agent of milestone-2 change set 2 (shipit plan), accepted by the owner"
+        },
+        "handle": "m2cs2-flat-backlog",
+        "id": "01M5T12HECWT5RFSSKP2DE54NF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5T12HECWT5RFSSKP2D2HM4A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "Yes, in the milestone group (Recommended)",
+            "No, direct serves only"
+          ],
+          "settled_by": "Agent's option, accepted by the owner: Yes, in the milestone group (Recommended)",
+          "statement": "A change set that serves an intent under a milestone, such as one of its done points, shows in that milestone's group.",
+          "wording": "agent of milestone-2 change set 2 (shipit plan), accepted by the owner"
+        },
+        "handle": "m2cs2-done-points-count",
+        "id": "01M5T12HHHKX1F8Y028WR6AVKA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5T12HHHKX1F8Y028WCBF42R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "Intent-tree order (Recommended)",
+            "By milestone field value"
+          ],
+          "settled_by": "Agent's option, accepted by the owner: Intent-tree order (Recommended)",
+          "statement": "Milestone groups follow intent-tree order: pre-order, siblings by key then ID.",
+          "wording": "agent of milestone-2 change set 2 (shipit plan), accepted by the owner"
+        },
+        "handle": "m2cs2-milestone-order",
+        "id": "01M5T12HMMCH3VQ6NDYKYAN69N",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5T12HMMCH3VQ6NDYJACK1GH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "groups + kind + serves (Recommended)",
+            "Split milestones/backlog",
+            "groups + kind only"
+          ],
+          "settled_by": "Agent's option, accepted by the owner: groups + kind + serves (Recommended)",
+          "statement": "roadmap --json keeps groups; each group has a kind, milestone or backlog (the backlog has no intent), and each change set lists the intents it serves.",
+          "wording": "agent of milestone-2 change set 2 (shipit plan), accepted by the owner"
+        },
+        "handle": "m2cs2-roadmap-kind-serves",
+        "id": "01M5T12HQP2AKSWTMT65854J4D",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5T12HQP2AKSWTMT64YRSNE0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "Path as today, then Backlog (Recommended)",
+            "Milestone: <handle>, Backlog"
+          ],
+          "settled_by": "Agent's option, accepted by the owner: Path as today, then Backlog (Recommended)",
+          "statement": "genesis roadmap heads a milestone group with its intent path, as before, and the backlog with Backlog.",
+          "wording": "agent of milestone-2 change set 2 (shipit plan), accepted by the owner"
+        },
+        "handle": "m2cs2-roadmap-headings",
+        "id": "01M5T12HTQE7Z3PZY14M2G82XT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5T12HTQE7Z3PZY14K13DET4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "Nearest milestone only (Recommended)",
+            "Every milestone above"
+          ],
+          "settled_by": "Agent's option, accepted by the owner: Nearest milestone only (Recommended)",
+          "statement": "With nested milestones, a served intent counts for the nearest milestone at or above it only; an intent outside the live tree counts for none.",
+          "wording": "agent of milestone-2 change set 2 (shipit plan), accepted by the owner"
+        },
+        "handle": "m2cs2-nearest-milestone",
+        "id": "01M5T12HXSGQ23TRB20VBZV67J",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5T12HXSGQ23TRB20V6AJRCQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHX0DZ7V3C42Z9H1B3P74",
+        "id": "01M5T12J0V1Q4PM7BAQ4X9A972",
+        "link": "01M5T12J0V1Q4PM7BAQ22FKM9N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5T12HB7QY18K3GYX53Q586R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHX0DZ7V3C42Z9H1B3P74",
+        "id": "01M5T12J3SB0JC6GBVH2W5BMBE",
+        "link": "01M5T12J3SB0JC6GBVH0GSGX5R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5T12HHHKX1F8Y028WCBF42R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHX0DZ7V3C42Z9H1B3P74",
+        "id": "01M5T12J6NEMB3WN2B52QKQ2EG",
+        "link": "01M5T12J6NEMB3WN2B501WDK5M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5T12HMMCH3VQ6NDYJACK1GH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHX0DZ7V3C42Z9H1B3P74",
+        "id": "01M5T12J9KTQ68F8VKKCXPPJCG",
+        "link": "01M5T12J9KTQ68F8VKK9SCSFBJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5T12HTQE7Z3PZY14K13DET4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHX0DZ7V3C42Z9H1B3P74",
+        "id": "01M5T12JCFSKHT5A89PX1RSQMQ",
+        "link": "01M5T12JCFSKHT5A89PW17G1XA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5T12HXSGQ23TRB20V6AJRCQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHX8ND3YY30S2E2SE351F",
+        "id": "01M5T12JFCJ1RFW5N314XW0C25",
+        "link": "01M5T12JFCJ1RFW5N3121Q2AVJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5T12HECWT5RFSSKP2D2HM4A",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHX8ND3YY30S2E2SE351F",
+        "id": "01M5T12JJ8FJP4F6V8MB73WEM5",
+        "link": "01M5T12JJ8FJP4F6V8M9THQZ06",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5T12HQP2AKSWTMT64YRSNE0",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHJG0Q8A3HCM4J44AJMWT",
+        "id": "01M5T12JN4H4T579NSQN9XS3KE",
+        "link": "01M5T12JN4H4T579NSQN05GGP8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5T12HB7QY18K3GYX53Q586R",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "go test ./internal/api (TestPlanMilestonesThenBacklog, TestPlanMilestoneAndPlainIntent, TestPlanDonePointServes, TestPlanNestedMilestones, TestPlanTwoMilestones, TestPlanRetiredMilestone, TestPlanMilestoneField, TestRoadmapEndToEnd) and the roadmap-milestones and ready testscripts pass at 91b3a21; genesis roadmap on this repo shows anyone-builds / milestone-2 first"
+        },
+        "handle": "milestone-groups-tested",
+        "id": "01M5T12JR10NG26Z8X0F4ZBXEY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5T12JR10NG26Z8X0C8F2KNG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5T12JR10NG26Z8X0C8F2KNG",
+        "id": "01M5T12JTYK52ZG1879SJ0WGN2",
+        "link": "01M5T12JTYK52ZG1879PD6ABV0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHX0DZ7V3C42Z9H1B3P74",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "go test ./internal/api (TestPlanServesNothingInBacklog, TestPlanBacklogOrder, TestPlanNoBacklogGroup, TestPlanReadyFollowsGroups) and the roadmap and roadmap-milestones testscripts pass at 91b3a21; genesis roadmap on this repo shows one Backlog with each area change set once"
+        },
+        "handle": "backlog-group-tested",
+        "id": "01M5T12JXTX5Q87G1KM6G7ZQZX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5T12JXTX5Q87G1KM6DT1ZBN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5T12JXTX5Q87G1KM6DT1ZBN",
+        "id": "01M5T12K0PWX6XK25ZAZKJ69DB",
+        "link": "01M5T12K0PWX6XK25ZAY7E62NG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHX8ND3YY30S2E2SE351F",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SZHWVX0TTPM0TMNP5Y68CY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5T12K5Y213P1MNV4SB81KMY",
+  "type": "ops",
+  "v": 1
+}
