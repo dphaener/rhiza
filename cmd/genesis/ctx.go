@@ -16,15 +16,19 @@ import (
 
 	"github.com/dphaener/genesis/internal/api"
 	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/genesis/internal/index"
 	"github.com/dphaener/genesis/internal/store"
 )
 
 // newCtx fills an api.Ctx from the global flags and the environment. Flags
 // win over GENESIS_CHANGE, GENESIS_ACTOR and GENESIS_FOR; the workspace
-// resolves the raw refs. GENESIS_TEST_NOW (RFC 3339) and GENESIS_TEST_SEED
-// fix the clock and ID seed for tests. Each process starts afresh, so both
-// are offset by the repo's entry files plus one for repo.json: every run
-// draws fresh, deterministic IDs, and a dry run predicts the next real run.
+// resolves the raw refs. The index path is index.DefaultPath of the root,
+// under the user cache dir, when a root was found; otherwise, or when the
+// cache dir is unknown, it is empty and reads fail. GENESIS_TEST_NOW
+// (RFC 3339) and GENESIS_TEST_SEED fix the clock and ID seed for tests.
+// Each process starts afresh, so both are offset by the repo's entry files
+// plus one for repo.json: every run draws fresh, deterministic IDs, and a
+// dry run predicts the next real run.
 func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, error) {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -45,6 +49,11 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		Home:      getenv("HOME"),
 	}
 	ctx.Git = gitIn(ctx.Root)
+	if _, ok := api.FindRoot(wd); ok {
+		if p, err := index.DefaultPath(ctx.Root); err == nil {
+			ctx.IndexPath = p
+		}
+	}
 	nowEnv, seedEnv := getenv("GENESIS_TEST_NOW"), getenv("GENESIS_TEST_SEED")
 	if nowEnv == "" && seedEnv == "" {
 		return ctx, nil

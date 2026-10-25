@@ -93,7 +93,10 @@ const testGitConfig = `[user]
 `
 
 // hermeticGit points git at a sandboxed HOME and global config so scripts
-// never read the developer's real configuration. A missing git binary is
+// never read the developer's real configuration. XDG_CACHE_HOME goes there
+// too, so os.UserCacheDir, and with it every script's index, is under the
+// script's work dir on linux as on darwin (where it is $HOME/Library/Caches)
+// and never in the real user cache. A missing git binary is
 // left to fail the scripts that use it rather than skipping them.
 func hermeticGit(env *testscript.Env) error {
 	home := filepath.Join(env.WorkDir, "home")
@@ -105,6 +108,7 @@ func hermeticGit(env *testscript.Env) error {
 		return err
 	}
 	env.Setenv("HOME", home)
+	env.Setenv("XDG_CACHE_HOME", filepath.Join(home, ".cache"))
 	env.Setenv("GIT_CONFIG_NOSYSTEM", "1")
 	env.Setenv("GIT_CONFIG_GLOBAL", gitconfig)
 	return nil

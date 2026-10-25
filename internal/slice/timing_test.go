@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"slices"
 	"sync"
+	"syscall"
 	"testing"
 	"time"
 
@@ -202,10 +203,33 @@ func sliceOnce(g generated, ts timedSlice) (json, md Result, err error) {
 	return
 }
 
+// budgetLock holds an exclusive lock on a file shared by every test that
+// builds the 50,000-node model (the budget tests of internal/api,
+// internal/index and internal/slice), until t ends. Each takes it before
+// it writes and indexes its model: go test runs packages at once, and a
+// budget timed while another package builds or reads its own model would
+// measure that contention, not the read.
+func budgetLock(t *testing.T) {
+	t.Helper()
+	f, err := os.OpenFile(filepath.Join(os.TempDir(), "genesis-budget.lock"), os.O_CREATE|os.O_RDWR, 0o600)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := syscall.Flock(int(f.Fd()), syscall.LOCK_EX); err != nil {
+		f.Close()
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		syscall.Flock(int(f.Fd()), syscall.LOCK_UN)
+		f.Close()
+	})
+}
+
 func TestBudget(t *testing.T) {
 	if testing.Short() {
 		t.Skip("budget generates the 50,000-node model; skipped under -short")
 	}
+	budgetLock(t)
 	g := defaultModel(t)
 	s := g.summary
 	x, err := index.Open(g.root, g.dbPath)
