@@ -335,3 +335,159 @@ func TestStoreReadLogSymlinkedFolder(t *testing.T) {
 		t.Fatalf("Problems = %v, want one ErrStray at %q", got.Problems, want)
 	}
 }
+
+func TestListLog(t *testing.T) {
+	good := testEntry(t)
+	goodPath := entryPath(good)
+	cs := path.Join(LogDir, sCS)
+	corrupt := cs + "/" + sOtherID + ".json"
+
+	tests := []struct {
+		name      string
+		path      string // the extra file, relative to .genesis
+		data      *fstest.MapFile
+		wantPaths []string
+		wantProb  string // the one Problem's path, or "" for none
+		wantErr   error
+	}{
+		{"stray plain file in log", "log/README.md", file([]byte("hi\n")), []string{goodPath}, "log/README.md", ErrStray},
+		{"stray non-ID folder", "log/not-a-ulid/" + sOtherID + ".json", file([]byte("{")), []string{goodPath}, "log/not-a-ulid", ErrStray},
+		{"stray nested folder", cs + "/sub/" + sOtherID + ".json", file([]byte("{")), []string{goodPath}, cs + "/sub", ErrStray},
+		{"stray non-json file", cs + "/README.md", file([]byte("hi\n")), []string{goodPath}, cs + "/README.md", ErrStray},
+		{"stray non-ID file stem", cs + "/notes.json", file([]byte("{")), []string{goodPath}, cs + "/notes.json", ErrStray},
+		{"dot file skipped", cs + "/.x.tmp", file([]byte("partial")), []string{goodPath}, "", nil},
+		{"corrupt entry listed not read", corrupt, file([]byte("{")), []string{goodPath, corrupt}, "", nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fsys := fstest.MapFS{
+				RepoFile: file([]byte("{}\n")),
+				goodPath: file(mustEncode(t, good)),
+				tt.path:  tt.data,
+			}
+			got := ListLog(fsys)
+			want := slices.Clone(tt.wantPaths)
+			slices.Sort(want)
+			if !slices.Equal(got.Paths, want) {
+				t.Errorf("Paths = %v, want %v", got.Paths, want)
+			}
+			if got.Problems == nil {
+				t.Error("Problems is nil, want non-nil")
+			}
+			if tt.wantProb == "" {
+				if len(got.Problems) != 0 {
+					t.Errorf("Problems = %v, want none", got.Problems)
+				}
+				return
+			}
+			if len(got.Problems) != 1 {
+				t.Fatalf("Problems = %v, want exactly one", got.Problems)
+			}
+			if p := got.Problems[0]; p.Path != tt.wantProb || !errors.Is(p.Err, tt.wantErr) {
+				t.Errorf("Problem = %+v, want %q matching %v", p, tt.wantProb, tt.wantErr)
+			}
+		})
+	}
+
+	t.Run("missing log", func(t *testing.T) {
+		got := ListLog(fstest.MapFS{RepoFile: file([]byte("{}\n"))})
+		if got.Paths == nil || len(got.Paths) != 0 {
+			t.Errorf("Paths = %#v, want empty and non-nil", got.Paths)
+		}
+		if len(got.Problems) != 1 || got.Problems[0].Path != LogDir || !errors.Is(got.Problems[0].Err, fs.ErrNotExist) {
+			t.Errorf("Problems = %v, want one at %q matching fs.ErrNotExist", got.Problems, LogDir)
+		}
+	})
+}
+
+func TestReadEntriesSubset(t *testing.T) {
+	a := testEntry(t)
+	b := testEntry(t)
+	b.ID = mustID(t, sOtherID)
+	c := testEntry(t)
+	c.ChangeSet = mustID(t, sOtherCS)
+	corrupt := "log/" + sOtherCS + "/" + sOtherID + ".json"
+	mismatch := "log/" + sCS + "/01JB000000000000000000000Z.json"
+	fsys := fstest.MapFS{
+		entryPath(a): file(mustEncode(t, a)),
+		entryPath(b): file(mustEncode(t, b)),
+		entryPath(c): file(mustEncode(t, c)),
+		corrupt:      file([]byte("{")),
+		mismatch:     file(mustEncode(t, b)),
+	}
+
+	tests := []struct {
+		name      string
+		paths     []string
+		want      []entry.Entry
+		wantProbs []string
+		wantErrs  []error
+	}{
+		{"none", nil, []entry.Entry{}, []string{}, nil},
+		{"one", []string{entryPath(b)}, []entry.Entry{b}, []string{}, nil},
+		{"subset sorted", []string{entryPath(b), entryPath(c)}, []entry.Entry{c, b}, []string{}, nil},
+		{"corrupt among them", []string{corrupt, entryPath(a)}, []entry.Entry{a}, []string{corrupt}, []error{entry.ErrInvalid}},
+		{"mismatch", []string{mismatch}, []entry.Entry{}, []string{mismatch}, []error{ErrMismatch}},
+		{"missing file", []string{"log/" + sCS + "/01JB000000000000000000000Y.json"}, []entry.Entry{}, []string{"log/" + sCS + "/01JB000000000000000000000Y.json"}, []error{fs.ErrNotExist}},
+		{"not an entry path", []string{"log/README.md"}, []entry.Entry{}, []string{"log/README.md"}, []error{ErrStray}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := ReadEntries(fsys, tt.paths)
+			if !reflect.DeepEqual(got.Entries, tt.want) {
+				t.Errorf("Entries = %+v\nwant %+v", got.Entries, tt.want)
+			}
+			if got.Problems == nil {
+				t.Fatal("Problems is nil, want non-nil")
+			}
+			paths := []string{}
+			for i, p := range got.Problems {
+				paths = append(paths, p.Path)
+				if i < len(tt.wantErrs) && !errors.Is(p.Err, tt.wantErrs[i]) {
+					t.Errorf("Problem %q: Err = %v, want %v", p.Path, p.Err, tt.wantErrs[i])
+				}
+			}
+			if !slices.Equal(paths, tt.wantProbs) {
+				t.Errorf("Problem paths = %v, want %v", paths, tt.wantProbs)
+			}
+		})
+	}
+}
+
+func TestReadLogIsListLogThenReadEntries(t *testing.T) {
+	a := testEntry(t)
+	b := testEntry(t)
+	b.ID = mustID(t, sOtherID)
+	c := testEntry(t)
+	c.ChangeSet = mustID(t, sOtherCS)
+	other := testEntry(t)
+	other.ID = mustID(t, sOtherID)
+	cs := path.Join(LogDir, sCS)
+
+	fsys := fstest.MapFS{
+		RepoFile:                                file([]byte("{}\n")),
+		entryPath(a):                            file(mustEncode(t, a)),
+		entryPath(b):                            file(mustEncode(t, b)),
+		entryPath(c):                            file(mustEncode(t, c)),
+		"log/junk":                              file([]byte("x")),
+		"log/not-a-ulid/" + sOtherID + ".json":  file([]byte("{")),
+		cs + "/notes.txt":                       file([]byte("x")),
+		cs + "/sub/x.json":                      file([]byte("x")),
+		cs + "/.x.tmp":                          file([]byte("partial")),
+		cs + "/01JB000000000000000000000Z.json": file(mustEncode(t, other)),
+		"log/" + sOtherCS + "/" + sOtherID + ".json": file([]byte("{")),
+	}
+	l := ListLog(fsys)
+	r := ReadEntries(fsys, l.Paths)
+	merged := Log{Entries: r.Entries, Problems: append(slices.Clone(r.Problems), l.Problems...)}
+	sortProblems(merged.Problems)
+
+	got := ReadLog(fsys)
+	if !reflect.DeepEqual(got, merged) {
+		t.Errorf("ReadLog = %+v\nmerge   = %+v", got, merged)
+	}
+	if len(got.Entries) != 3 || len(l.Problems) != 4 || len(r.Problems) != 2 {
+		t.Errorf("entries %d, layout problems %d, read problems %d; want 3, 4, 2",
+			len(got.Entries), len(l.Problems), len(r.Problems))
+	}
+}
