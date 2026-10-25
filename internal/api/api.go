@@ -87,6 +87,10 @@ type Ctx struct {
 	// no environment); empty if unknown. Operations that need it and find
 	// it empty return a usage error.
 	Home string
+	// IndexPath is the index database file for Root, given by the caller,
+	// since nothing here reads the environment or the user cache dir (the
+	// CLI uses index.DefaultPath). Empty is an error from any read.
+	IndexPath string
 	// ChangeSet is the change set to act on, zero to choose by ChangeRef
 	// or the current one. It must be in the log, else not_found.
 	ChangeSet id.ID
