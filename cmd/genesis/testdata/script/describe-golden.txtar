@@ -1841,6 +1841,672 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "slice",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "budget": {
+            "description": "The token budget (a token is 4 bytes of output), at least 1; default 4000",
+            "type": "integer"
+          },
+          "ref": {
+            "description": "The node: an ID, a unique ID prefix of 4+ characters, or a live node's handle; none slices the change set (--change, else the current one)",
+            "type": "string"
+          },
+          "view": {
+            "description": "The view to read; default what-if for a draft or proposed change set, to-be for an accepted one, else as-is",
+            "enum": [
+              "as-is",
+              "to-be",
+              "what-if"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "anchors": {
+            "description": "The anchors that implement the focus",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "from": {
+                  "description": "The ancestor it is inherited from",
+                  "type": "string"
+                },
+                "handle": {
+                  "description": "The node's handle",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The node's full ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "The node's kind",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "The link's note",
+                  "type": "string"
+                },
+                "relation": {
+                  "description": "How it relates to the focus: ancestor, serves, blocks, relates-to, needs or needed by",
+                  "type": "string"
+                },
+                "short": {
+                  "description": "The node's short ID",
+                  "type": "string"
+                },
+                "statement": {
+                  "description": "The node's statement, or its handle; absent at brief",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "An evidence status: verified, failing, unverified or none",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "handle",
+                "id",
+                "kind",
+                "short"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "budget": {
+            "description": "The token budget",
+            "type": "integer"
+          },
+          "change": {
+            "additionalProperties": false,
+            "description": "The change set sliced or viewed through; absent for none",
+            "properties": {
+              "id": {
+                "description": "The change set's full ID",
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": "string"
+              },
+              "intent": {
+                "description": "Its intent; absent at brief or when empty",
+                "type": "string"
+              },
+              "short": {
+                "description": "The change set's short ID",
+                "type": "string"
+              },
+              "state": {
+                "description": "Its state; absent at brief",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "short"
+            ],
+            "type": "object"
+          },
+          "children": {
+            "description": "The live children of the focus",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "from": {
+                  "description": "The ancestor it is inherited from",
+                  "type": "string"
+                },
+                "handle": {
+                  "description": "The node's handle",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The node's full ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "The node's kind",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "The link's note",
+                  "type": "string"
+                },
+                "relation": {
+                  "description": "How it relates to the focus: ancestor, serves, blocks, relates-to, needs or needed by",
+                  "type": "string"
+                },
+                "short": {
+                  "description": "The node's short ID",
+                  "type": "string"
+                },
+                "statement": {
+                  "description": "The node's statement, or its handle; absent at brief",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "An evidence status: verified, failing, unverified or none",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "handle",
+                "id",
+                "kind",
+                "short"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "constraints": {
+            "description": "The constraints that apply, never cut",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "from": {
+                  "description": "The ancestor it is inherited from",
+                  "type": "string"
+                },
+                "handle": {
+                  "description": "The node's handle",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The node's full ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "The node's kind",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "The link's note",
+                  "type": "string"
+                },
+                "relation": {
+                  "description": "How it relates to the focus: ancestor, serves, blocks, relates-to, needs or needed by",
+                  "type": "string"
+                },
+                "short": {
+                  "description": "The node's short ID",
+                  "type": "string"
+                },
+                "statement": {
+                  "description": "The node's statement, or its handle; absent at brief",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "An evidence status: verified, failing, unverified or none",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "handle",
+                "id",
+                "kind",
+                "short"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "context": {
+            "description": "The ancestors, the root first, then the intents served",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "from": {
+                  "description": "The ancestor it is inherited from",
+                  "type": "string"
+                },
+                "handle": {
+                  "description": "The node's handle",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The node's full ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "The node's kind",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "The link's note",
+                  "type": "string"
+                },
+                "relation": {
+                  "description": "How it relates to the focus: ancestor, serves, blocks, relates-to, needs or needed by",
+                  "type": "string"
+                },
+                "short": {
+                  "description": "The node's short ID",
+                  "type": "string"
+                },
+                "statement": {
+                  "description": "The node's statement, or its handle; absent at brief",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "An evidence status: verified, failing, unverified or none",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "handle",
+                "id",
+                "kind",
+                "short"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "decisions": {
+            "description": "The current decisions that apply",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "from": {
+                  "description": "The ancestor it is inherited from",
+                  "type": "string"
+                },
+                "handle": {
+                  "description": "The node's handle",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The node's full ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "The node's kind",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "The link's note",
+                  "type": "string"
+                },
+                "relation": {
+                  "description": "How it relates to the focus: ancestor, serves, blocks, relates-to, needs or needed by",
+                  "type": "string"
+                },
+                "short": {
+                  "description": "The node's short ID",
+                  "type": "string"
+                },
+                "statement": {
+                  "description": "The node's statement, or its handle; absent at brief",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "An evidence status: verified, failing, unverified or none",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "handle",
+                "id",
+                "kind",
+                "short"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "evidence": {
+            "description": "The evidence that verifies the focus",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "from": {
+                  "description": "The ancestor it is inherited from",
+                  "type": "string"
+                },
+                "handle": {
+                  "description": "The node's handle",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The node's full ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "The node's kind",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "The link's note",
+                  "type": "string"
+                },
+                "relation": {
+                  "description": "How it relates to the focus: ancestor, serves, blocks, relates-to, needs or needed by",
+                  "type": "string"
+                },
+                "short": {
+                  "description": "The node's short ID",
+                  "type": "string"
+                },
+                "statement": {
+                  "description": "The node's statement, or its handle; absent at brief",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "An evidence status: verified, failing, unverified or none",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "handle",
+                "id",
+                "kind",
+                "short"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "focus": {
+            "description": "The focus nodes, never cut",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "fields": {
+                  "description": "Every field of the node, as stored",
+                  "type": "object"
+                },
+                "handle": {
+                  "description": "The node's handle",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The node's full ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "The node's kind",
+                  "type": "string"
+                },
+                "proposed": {
+                  "description": "The proposed change against as-is, one line each",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "reason": {
+                  "description": "Why it was retired",
+                  "type": "string"
+                },
+                "retired": {
+                  "description": "True when the node is retired in this view",
+                  "type": "boolean"
+                },
+                "short": {
+                  "description": "The node's short ID",
+                  "type": "string"
+                },
+                "statement": {
+                  "description": "The node's statement, or its handle",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The node's evidence status: verified, failing, unverified or none",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "fields",
+                "handle",
+                "id",
+                "kind",
+                "proposed",
+                "retired",
+                "short",
+                "statement",
+                "status"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "in_flight": {
+            "description": "Other in-flight change sets that target a focus node",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "description": "The change set's full ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "intent": {
+                  "description": "Its intent; absent at brief or when empty",
+                  "type": "string"
+                },
+                "short": {
+                  "description": "The change set's short ID",
+                  "type": "string"
+                },
+                "state": {
+                  "description": "Its state; absent at brief",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "short"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "neighbours": {
+            "description": "Nodes the focus needs, is needed by or relates to",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "from": {
+                  "description": "The ancestor it is inherited from",
+                  "type": "string"
+                },
+                "handle": {
+                  "description": "The node's handle",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The node's full ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "The node's kind",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "The link's note",
+                  "type": "string"
+                },
+                "relation": {
+                  "description": "How it relates to the focus: ancestor, serves, blocks, relates-to, needs or needed by",
+                  "type": "string"
+                },
+                "short": {
+                  "description": "The node's short ID",
+                  "type": "string"
+                },
+                "statement": {
+                  "description": "The node's statement, or its handle; absent at brief",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "An evidence status: verified, failing, unverified or none",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "handle",
+                "id",
+                "kind",
+                "short"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "omitted": {
+            "description": "Each section cut to fit the budget, in section order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "count": {
+                  "description": "How many items the section holds",
+                  "type": "integer"
+                },
+                "next": {
+                  "description": "A command that shows what was left out",
+                  "type": "string"
+                },
+                "section": {
+                  "description": "The section's key",
+                  "enum": [
+                    "context",
+                    "decisions",
+                    "anchors",
+                    "evidence",
+                    "children",
+                    "neighbours",
+                    "in_flight"
+                  ],
+                  "type": "string"
+                },
+                "tier": {
+                  "description": "brief: items as handle and short ID only; count: no items",
+                  "enum": [
+                    "brief",
+                    "count"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "count",
+                "next",
+                "section",
+                "tier"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "over_budget": {
+            "description": "True when the slice is over budget even with every section that can be cut cut to a count",
+            "type": "boolean"
+          },
+          "questions": {
+            "description": "The open questions, blocking ones first, never cut",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "from": {
+                  "description": "The ancestor it is inherited from",
+                  "type": "string"
+                },
+                "handle": {
+                  "description": "The node's handle",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The node's full ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "The node's kind",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "The link's note",
+                  "type": "string"
+                },
+                "relation": {
+                  "description": "How it relates to the focus: ancestor, serves, blocks, relates-to, needs or needed by",
+                  "type": "string"
+                },
+                "short": {
+                  "description": "The node's short ID",
+                  "type": "string"
+                },
+                "statement": {
+                  "description": "The node's statement, or its handle; absent at brief",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "An evidence status: verified, failing, unverified or none",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "handle",
+                "id",
+                "kind",
+                "short"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "ref": {
+            "description": "The focus handle of a node slice, or the change set's short ID of a change slice",
+            "type": "string"
+          },
+          "tokens": {
+            "description": "The estimated tokens of this whole document: its bytes divided by 4, rounded up",
+            "type": "integer"
+          },
+          "view": {
+            "description": "The view sliced: as-is, to-be or what-if",
+            "type": "string"
+          }
+        },
+        "required": [
+          "anchors",
+          "budget",
+          "children",
+          "constraints",
+          "context",
+          "decisions",
+          "evidence",
+          "focus",
+          "in_flight",
+          "neighbours",
+          "omitted",
+          "over_budget",
+          "questions",
+          "ref",
+          "tokens",
+          "view"
+        ],
+        "type": "object"
+      },
+      "summary": "Print the composed context for a node or a change set",
+      "write": false
+    },
+    {
       "input": {
         "additionalProperties": false,
         "properties": {

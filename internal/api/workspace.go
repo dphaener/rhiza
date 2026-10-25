@@ -204,13 +204,19 @@ const minPrefix = 4
 // of 4+ characters (any case), over the change sets in the log. No match is
 // not_found; several are a usage error listing them.
 func (w *workspace) resolveChangeSet(ref string) (id.ID, error) {
-	ref = strings.TrimSpace(ref)
 	var sets []id.ID
 	for _, e := range w.log().Entries {
 		if len(sets) == 0 || sets[len(sets)-1] != e.ChangeSet {
 			sets = append(sets, e.ChangeSet)
 		}
 	}
+	return matchChangeSet(sets, ref)
+}
+
+// matchChangeSet resolves a change set ref over sets by resolveChangeSet's
+// rules.
+func matchChangeSet(sets []id.ID, ref string) (id.ID, error) {
+	ref = strings.TrimSpace(ref)
 	if full, err := id.Parse(ref); err == nil {
 		if slices.Contains(sets, full) {
 			return full, nil
