@@ -30,7 +30,7 @@ type planFix struct {
 
 func newPlanFix() *planFix {
 	return &planFix{in: planInputs{ops: map[id.ID][]op.Op{}, nodes: map[id.ID]gmodel.Node{},
-		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}}}
+		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}, milestones: map[id.ID]bool{}}}
 }
 
 func (f *planFix) next() id.ID {
@@ -84,6 +84,18 @@ func (f *planFix) intent(handle string, parent id.ID, key string, path ...id.ID)
 	i := f.node(op.KindIntent, handle, parent, key)
 	f.in.intentPath[i] = append([]id.ID{}, path...)
 	return i
+}
+
+// milestone marks node i a milestone (its milestone field non-empty).
+func (f *planFix) milestone(i id.ID) {
+	f.in.milestones[i] = true
+}
+
+// serve adds a live view serves link from cs to each of intents.
+func (f *planFix) serve(cs id.ID, intents ...id.ID) {
+	for _, i := range intents {
+		f.link(op.LinkServes, cs, i, false)
+	}
 }
 
 // verdict runs the core and returns cs's verdict.
@@ -188,6 +200,7 @@ func TestPlanServesInsideChangeSet(t *testing.T) {
 	// a retired view copy of the same link wins over the op.
 	f := newPlanFix()
 	fast := f.intent("fast", id.ID{}, "f")
+	f.milestone(fast)
 	p := f.cs("P", changeset.StateProposed)
 	q := f.cs("Q", changeset.StateProposed)
 	f.own(p, op.LinkServes, p, fast)
@@ -196,7 +209,8 @@ func TestPlanServesInsideChangeSet(t *testing.T) {
 	f.in.links = append(f.in.links, gmodel.Link{ID: o.Link, Type: o.LinkType, From: q, To: fast, Retired: true})
 	res := planCore(f.in)
 	if len(res.groups) != 2 || res.groups[0].intent != fast || len(res.groups[0].members) != 1 ||
-		res.groups[0].members[0].info.ID != p || !res.groups[1].intent.IsZero() || res.groups[1].members[0].info.ID != q {
+		res.groups[0].members[0].info.ID != p || res.groups[0].backlog ||
+		!res.groups[1].intent.IsZero() || !res.groups[1].backlog || res.groups[1].members[0].info.ID != q {
 		t.Errorf("groups = %+v", res.groups)
 	}
 }
@@ -217,6 +231,7 @@ func planGroupIDs(res planResult) [][]id.ID {
 func TestPlanTopologicalOrder(t *testing.T) {
 	f := newPlanFix()
 	i := f.intent("fast", id.ID{}, "f")
+	f.milestone(i)
 	a := f.cs("A", changeset.StateAccepted)
 	b := f.cs("B", changeset.StateAccepted)
 	c := f.cs("C", changeset.StateAccepted)
@@ -248,13 +263,17 @@ func TestPlanCycle(t *testing.T) {
 }
 
 func TestPlanRoadmapGroupsAndReadyOrder(t *testing.T) {
-	// Groups in intent-tree pre-order (siblings by key), retired intents
-	// after, No intent last; drafts only in the ready order, after.
+	// Milestone groups in intent-tree pre-order (siblings by key), then one
+	// backlog: work on plain, retired and no intents, each once; drafts only
+	// in the ready order, after.
 	f := newPlanFix()
 	late := f.intent("late", id.ID{}, "z")
 	early := f.intent("early", id.ID{}, "a")
 	child := f.intent("child", early, "m", early)
+	plain := f.intent("plain", id.ID{}, "p")
 	gone := f.intent("gone", id.ID{}, "b")
+	f.milestone(late)
+	f.milestone(child)
 	f.retire(gone)
 	draft := f.cs("D", changeset.StateDraft)
 	both := f.cs("Both", changeset.StateAccepted)
@@ -262,23 +281,222 @@ func TestPlanRoadmapGroupsAndReadyOrder(t *testing.T) {
 	l := f.cs("L", changeset.StateAccepted)
 	g := f.cs("G", changeset.StateAccepted)
 	e := f.cs("E", changeset.StateProposed)
-	f.link(op.LinkServes, draft, early, false)
-	f.link(op.LinkServes, both, late, false)
-	f.link(op.LinkServes, both, child, false)
-	f.link(op.LinkServes, l, late, false)
-	f.link(op.LinkServes, g, gone, false)
-	f.link(op.LinkServes, e, early, false)
+	f.serve(draft, child)
+	f.serve(both, late, child)
+	f.serve(l, late)
+	f.serve(g, gone)
+	f.serve(e, early, plain)
 	res := planCore(f.in)
-	want := [][]id.ID{{early, e}, {child, both}, {late, both, l}, {gone, g}, {{}, alone}}
+	want := [][]id.ID{{child, both}, {late, both, l}, {{}, alone, g, e}}
 	if got := planGroupIDs(res); !reflect.DeepEqual(got, want) {
 		t.Errorf("groups = %v, want %v", got, want)
 	}
-	var order []id.ID
-	for _, p := range res.order {
-		order = append(order, p.info.ID)
+	if got := planBacklogs(res); !reflect.DeepEqual(got, []bool{false, false, true}) {
+		t.Errorf("backlog = %v", got)
 	}
-	if want := []id.ID{e, both, l, g, alone, draft}; !reflect.DeepEqual(order, want) {
-		t.Errorf("order = %v, want %v", order, want)
+	if got, want := planOrderIDs(res), []id.ID{both, l, alone, g, e, draft}; !reflect.DeepEqual(got, want) {
+		t.Errorf("order = %v, want %v", got, want)
+	}
+}
+
+// planBacklogs is each group's backlog mark.
+func planBacklogs(res planResult) []bool {
+	var out []bool
+	for _, g := range res.groups {
+		out = append(out, g.backlog)
+	}
+	return out
+}
+
+// planOrderIDs is the ready order's IDs.
+func planOrderIDs(res planResult) []id.ID {
+	var out []id.ID
+	for _, p := range res.order {
+		out = append(out, p.info.ID)
+	}
+	return out
+}
+
+// planWantGroups checks the core's groups against want, rows of intent then
+// member IDs, the backlog's intent zero.
+func planWantGroups(t *testing.T, f *planFix, want ...[]id.ID) planResult {
+	t.Helper()
+	res := planCore(f.in)
+	if got := planGroupIDs(res); !reflect.DeepEqual(got, want) {
+		t.Errorf("groups = %v, want %v", got, want)
+	}
+	for _, g := range res.groups {
+		if g.backlog != g.intent.IsZero() {
+			t.Errorf("group %s: backlog %v", g.intent, g.backlog)
+		}
+	}
+	return res
+}
+
+func TestPlanMilestonesThenBacklog(t *testing.T) {
+	f := newPlanFix()
+	m2 := f.intent("m2", id.ID{}, "b")
+	m1 := f.intent("m1", id.ID{}, "a")
+	plain := f.intent("plain", id.ID{}, "c")
+	f.milestone(m1)
+	f.milestone(m2)
+	a := f.cs("A", changeset.StateAccepted)
+	b := f.cs("B", changeset.StateAccepted)
+	c := f.cs("C", changeset.StateAccepted)
+	f.serve(a, m2)
+	f.serve(b, plain)
+	f.serve(c, m1)
+	planWantGroups(t, f, []id.ID{m1, c}, []id.ID{m2, a}, []id.ID{{}, b})
+}
+
+func TestPlanMilestoneAndPlainIntent(t *testing.T) {
+	// Serving a milestone and a plain intent: the milestone group only.
+	f := newPlanFix()
+	m := f.intent("m", id.ID{}, "a")
+	plain := f.intent("plain", id.ID{}, "b")
+	f.milestone(m)
+	a := f.cs("A", changeset.StateAccepted)
+	f.serve(a, m, plain)
+	planWantGroups(t, f, []id.ID{m, a})
+}
+
+func TestPlanDonePointServes(t *testing.T) {
+	// Serving an intent under a milestone puts the change set in the
+	// milestone's group, whose intent is the milestone.
+	f := newPlanFix()
+	m := f.node(op.KindIntent, "m", id.ID{}, "a")
+	mid := f.node(op.KindIntent, "mid", m, "b")
+	done := f.intent("done", mid, "c", m, mid)
+	f.milestone(m)
+	a := f.cs("A", changeset.StateAccepted)
+	f.serve(a, done)
+	planWantGroups(t, f, []id.ID{m, a})
+}
+
+func TestPlanNestedMilestones(t *testing.T) {
+	// Nested milestones: the nearest at or above a served intent only.
+	f := newPlanFix()
+	outer := f.intent("outer", id.ID{}, "a")
+	inner := f.node(op.KindIntent, "inner", outer, "b")
+	done := f.intent("done", inner, "c", outer, inner)
+	f.milestone(outer)
+	f.milestone(inner)
+	a := f.cs("A", changeset.StateAccepted)
+	b := f.cs("B", changeset.StateAccepted)
+	f.serve(a, done)
+	f.serve(b, outer)
+	planWantGroups(t, f, []id.ID{outer, b}, []id.ID{inner, a})
+}
+
+func TestPlanTwoMilestones(t *testing.T) {
+	// Serving two milestones: in both groups, once in the ready order.
+	f := newPlanFix()
+	m1 := f.intent("m1", id.ID{}, "a")
+	m2 := f.intent("m2", id.ID{}, "b")
+	f.milestone(m1)
+	f.milestone(m2)
+	a := f.cs("A", changeset.StateAccepted)
+	f.serve(a, m2, m1)
+	res := planWantGroups(t, f, []id.ID{m1, a}, []id.ID{m2, a})
+	if got := planOrderIDs(res); !reflect.DeepEqual(got, []id.ID{a}) {
+		t.Errorf("order = %v", got)
+	}
+}
+
+func TestPlanRetiredMilestone(t *testing.T) {
+	// A retired milestone, or one under a retired node, is no milestone:
+	// its work goes to the backlog. A live milestone above a retired one
+	// does not take it either, the served intent being outside the tree.
+	f := newPlanFix()
+	gone := f.intent("gone", id.ID{}, "a")
+	f.milestone(gone)
+	f.retire(gone)
+	dead := f.node(op.KindIntent, "dead", id.ID{}, "b")
+	f.retire(dead)
+	under := f.intent("under", dead, "c", dead)
+	f.milestone(under)
+	top := f.node(op.KindIntent, "top", id.ID{}, "d")
+	f.milestone(top)
+	mid := f.node(op.KindIntent, "mid", top, "e")
+	f.retire(mid)
+	leaf := f.intent("leaf", mid, "f", top, mid)
+	a := f.cs("A", changeset.StateAccepted)
+	b := f.cs("B", changeset.StateAccepted)
+	c := f.cs("C", changeset.StateAccepted)
+	f.serve(a, gone)
+	f.serve(b, under)
+	f.serve(c, leaf)
+	planWantGroups(t, f, []id.ID{{}, a, b, c})
+}
+
+func TestPlanServesNothingInBacklog(t *testing.T) {
+	f := newPlanFix()
+	m := f.intent("m", id.ID{}, "a")
+	f.milestone(m)
+	a := f.cs("A", changeset.StateAccepted)
+	b := f.cs("B", changeset.StateProposed)
+	f.serve(a, m)
+	planWantGroups(t, f, []id.ID{m, a}, []id.ID{{}, b})
+}
+
+func TestPlanBacklogOrder(t *testing.T) {
+	// The backlog follows depends-on, ties by ID; cycle members come last
+	// with the cycle reason.
+	f := newPlanFix()
+	plain := f.intent("plain", id.ID{}, "a")
+	a := f.cs("A", changeset.StateAccepted)
+	b := f.cs("B", changeset.StateAccepted)
+	c := f.cs("C", changeset.StateAccepted)
+	x := f.cs("X", changeset.StateAccepted)
+	y := f.cs("Y", changeset.StateAccepted)
+	f.serve(a, plain)
+	f.serve(c, plain)
+	f.link(op.LinkDependsOn, a, c, false)
+	f.link(op.LinkDependsOn, x, y, false)
+	f.link(op.LinkDependsOn, y, x, false)
+	res := planWantGroups(t, f, []id.ID{{}, b, c, a, x, y})
+	wantReasons(t, res.order[3], "depends on "+shortID(y)+" (accepted)", planCycleReason)
+	wantReasons(t, res.order[4], "depends on "+shortID(x)+" (accepted)", planCycleReason)
+}
+
+func TestPlanNoBacklogGroup(t *testing.T) {
+	// No backlog group when every change set serves a milestone (drafts
+	// never show), and no groups when nothing is in flight.
+	f := newPlanFix()
+	m := f.intent("m", id.ID{}, "a")
+	f.milestone(m)
+	a := f.cs("A", changeset.StateAccepted)
+	d := f.cs("D", changeset.StateDraft)
+	f.serve(a, m)
+	res := planWantGroups(t, f, []id.ID{m, a})
+	if got := planOrderIDs(res); !reflect.DeepEqual(got, []id.ID{a, d}) {
+		t.Errorf("order = %v", got)
+	}
+
+	f = newPlanFix()
+	m = f.intent("m", id.ID{}, "a")
+	f.milestone(m)
+	f.cs("L", changeset.StateLanded)
+	if res := planCore(f.in); len(res.groups) != 0 || len(res.order) != 0 {
+		t.Errorf("groups = %v, order = %v", planGroupIDs(res), planOrderIDs(res))
+	}
+}
+
+func TestPlanReadyFollowsGroups(t *testing.T) {
+	// Ready lists the milestone work first, then the backlog, then the
+	// drafts by ID, whatever the IDs.
+	f := newPlanFix()
+	d1 := f.cs("D1", changeset.StateDraft)
+	back := f.cs("Back", changeset.StateAccepted)
+	m := f.intent("m", id.ID{}, "a")
+	f.milestone(m)
+	d2 := f.cs("D2", changeset.StateDraft)
+	work := f.cs("Work", changeset.StateAccepted)
+	f.serve(work, m)
+	f.serve(d2, m)
+	res := planWantGroups(t, f, []id.ID{m, work}, []id.ID{{}, back})
+	if got, want := planOrderIDs(res), []id.ID{work, back, d1, d2}; !reflect.DeepEqual(got, want) {
+		t.Errorf("order = %v, want %v", got, want)
 	}
 }
 
@@ -376,14 +594,13 @@ func TestRoadmapEndToEnd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// fast is no milestone, so First is in the backlog.
 	r := resp.(RoadmapResponse)
-	if len(r.Groups) != 1 || r.Groups[0].Intent.Handle != "fast" ||
-		!reflect.DeepEqual(r.Groups[0].Intent.Path, []string{"grow"}) || r.Groups[0].ChangeSets[0].ID != a {
+	if len(r.Groups) != 1 || !r.Groups[0].Intent.ID.IsZero() || r.Groups[0].ChangeSets[0].ID != a {
 		t.Fatalf("roadmap = %+v", r)
 	}
-	want := "# Roadmap\n\n## grow / fast\n\n- [proposed] " + shortID(a) + " First\n"
-	if out := human(t, r); out != want {
-		t.Errorf("human = %q, want %q", out, want)
+	if out := human(t, r); !strings.Contains(out, "- [proposed] "+shortID(a)+" First\n") {
+		t.Errorf("human = %q", out)
 	}
 	_, err = callOp(t, ctx, "roadmap", `{"view":"what-if:nothing"}`)
 	wantExit(t, err, 4)

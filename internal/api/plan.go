@@ -29,16 +29,22 @@ package api
 //     the log)" for one that isn't), then "blocked by question <handle> on
 //     <this change set|node handle>", then "depends-on cycle".
 //
-// The roadmap (D9) groups the proposed and accepted change sets by served
-// intent; one serving several appears in each group. Groups follow the
-// intent tree in pre-order, siblings by key then ID (intents outside the
-// live tree, such as retired ones, after it by ID), and change sets serving
-// nothing come last under "No intent". Inside a group, change sets follow
-// depends-on (one lands before those that depend on it), ties by ID;
-// members left in or after a cycle come last by ID with the reason
-// "depends-on cycle". Ready lists every in-flight change set once: the
-// roadmap's ones in roadmap order (at the first group each appears in),
-// then the drafts by ID; its next is the first ready one.
+// The roadmap (D9) puts milestone work first. A milestone is an intent
+// in the live tree whose milestone field is non-empty. A served intent
+// maps to the nearest milestone at or above it: itself, else its nearest
+// ancestor that is one (so serving a done point under a milestone counts
+// for it, and with nested milestones only the inner one counts); an
+// intent outside the live tree, such as a retired one, maps to none. The
+// proposed and accepted change sets appear in each milestone group their
+// served intents map to; groups follow the intent tree in pre-order,
+// siblings by key then ID. Every other one (serving no milestone, or
+// nothing) appears once in a single flat backlog after them. Inside a
+// group, change sets follow depends-on (one lands before those that
+// depend on it), ties by ID; members left in or after a cycle come last
+// by ID with the reason "depends-on cycle". Ready lists every in-flight
+// change set once and follows that order: the roadmap's ones at the first
+// group each appears in, then the drafts by ID; its next is the first
+// ready one.
 //
 // Both default to the to-be view whatever the effective change set (D17):
 // their question is the plan, not the work in hand. The view field still
@@ -162,6 +168,9 @@ type planInputs struct {
 	// intentPath maps a served intent to its ancestor chain, the root
 	// first; absent for an intent the view does not have.
 	intentPath map[id.ID][]id.ID
+	// milestones is the nodes whose milestone field is non-empty; the core
+	// reads no fields, so planGather says which they are.
+	milestones map[id.ID]bool
 }
 
 // planChangeSet is the core's verdict on one in-flight change set.
@@ -173,9 +182,11 @@ type planChangeSet struct {
 	reasons   []string
 }
 
-// planGroup is one roadmap group; a zero intent is No intent.
+// planGroup is one roadmap group: a milestone's, or the backlog's, whose
+// intent is zero.
 type planGroup struct {
 	intent  id.ID
+	backlog bool
 	members []*planChangeSet
 }
 
@@ -339,31 +350,40 @@ func planCore(in planInputs) planResult {
 		all = append(all, p)
 	}
 
-	// The roadmap: proposed and accepted change sets by served intent.
+	// The roadmap: proposed and accepted change sets by the milestones
+	// their served intents map to, then the rest as the backlog.
+	in.intentPath = planAncestorPaths(in.intentPath)
 	members := map[id.ID][]*planChangeSet{}
-	var intents []id.ID
-	var none []*planChangeSet
+	var milestones []id.ID
+	var backlog []*planChangeSet
 	for _, p := range all {
 		if p.info.State == changeset.StateDraft {
 			continue
 		}
-		if len(p.serves) == 0 {
-			none = append(none, p)
-		}
+		var ms []id.ID
 		for _, i := range p.serves {
-			if _, ok := members[i]; !ok {
-				intents = append(intents, i)
+			if m, ok := planMilestoneOf(i, in); ok {
+				ms = append(ms, m)
 			}
-			members[i] = append(members[i], p)
+		}
+		ms = planSortIDs(ms)
+		if len(ms) == 0 {
+			backlog = append(backlog, p)
+		}
+		for _, m := range ms {
+			if _, ok := members[m]; !ok {
+				milestones = append(milestones, m)
+			}
+			members[m] = append(members[m], p)
 		}
 	}
-	slices.SortFunc(intents, func(a, b id.ID) int { return planCompareIntents(a, b, in) })
+	slices.SortFunc(milestones, func(a, b id.ID) int { return planCompareIntents(a, b, in) })
 	var res planResult
-	for _, i := range intents {
-		res.groups = append(res.groups, planGroup{intent: i, members: planTopo(members[i])})
+	for _, m := range milestones {
+		res.groups = append(res.groups, planGroup{intent: m, members: planTopo(members[m])})
 	}
-	if len(none) > 0 {
-		res.groups = append(res.groups, planGroup{members: planTopo(none)})
+	if len(backlog) > 0 {
+		res.groups = append(res.groups, planGroup{backlog: true, members: planTopo(backlog)})
 	}
 
 	listed := map[id.ID]bool{}
@@ -381,6 +401,42 @@ func planCore(in planInputs) planResult {
 		}
 	}
 	return res
+}
+
+// planAncestorPaths is paths with each ancestor on a chain given its own
+// chain, the prefix before it, where paths lacks one; paths is not changed.
+func planAncestorPaths(paths map[id.ID][]id.ID) map[id.ID][]id.ID {
+	out := maps.Clone(paths)
+	for _, path := range paths {
+		for k, a := range path {
+			if _, ok := out[a]; !ok {
+				out[a] = path[:k:k]
+			}
+		}
+	}
+	return out
+}
+
+// planMilestoneOf is the nearest milestone at or above served intent i:
+// i itself, then its ancestors from the nearest up. ok is false when i is
+// outside the live tree (so none of its ancestors' milestones count) or no
+// milestone is at or above it.
+func planMilestoneOf(i id.ID, in planInputs) (m id.ID, ok bool) {
+	if _, live := planTreeKey(i, in); !live {
+		return id.ID{}, false
+	}
+	if in.milestones[i] {
+		return i, true
+	}
+	path := in.intentPath[i]
+	for k := len(path) - 1; k >= 0; k-- {
+		if a := path[k]; in.milestones[a] {
+			if _, live := planTreeKey(a, in); live {
+				return a, true
+			}
+		}
+	}
+	return id.ID{}, false
 }
 
 // planLinksOf is change set cs's live links (D7): view, the live view
