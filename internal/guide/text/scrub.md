@@ -12,6 +12,10 @@ The Source is committed to the repo; the raw transcript never is.
 3. Quote every decision. Wherever the owner decided something, copy their exact words into
    `quotes`. Never paraphrase a decision, never tidy its grammar, never merge two quotes.
    "Yes, but custom kinds are down the roadmap" is worth more verbatim than summarised.
+   Quote only what the owner typed: their messages, typed answers and notes. An option an agent
+   wrote (an AskUserQuestion choice, a "(Recommended)" pick) is never the owner's words, even
+   when the owner picked it. Quote it with `by` naming the agent and saying the owner accepted
+   it, e.g. `"by": "agent (accepted by the owner)"`.
 4. Remove what must not be committed:
    - secrets: API keys, tokens, passwords, connection strings, private URLs;
    - personal data: emails, phone numbers, addresses, names of people outside the project
@@ -49,6 +53,7 @@ The Source is committed to the repo; the raw transcript never is.
 - Never commit the raw transcript, and never paste it into a field. Keep it and the scratch
   `<file.json>` out of git; `source add` stores what is needed.
 - Keep the owner's words exactly where they decided something; summarise everything else.
+- A picked option is the agent's wording, accepted by the owner, never the owner's own words.
 - When unsure whether something is sensitive, leave it out.
 - Handles are lower-case words joined by dashes, such as `export-call-2026-10-20`.
 

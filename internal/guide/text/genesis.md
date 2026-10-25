@@ -32,12 +32,19 @@ Refer to a node by handle, ID, or a unique ID prefix of 4+ characters.
 
 ## The core loop
 
+You work on an accepted change set (`genesis ready` names the next one). The contract:
+
 1. Read the slice first, before reading code:
    `genesis slice --change "$GENESIS_CHANGE" --json`
 2. Do the work.
-3. Record it in one `genesis apply <file> --json`: every node and link the work adds or
-   changes, in one file. One call, not many.
-4. Add a `Change: <id>` trailer to every commit, with the change set's ID:
+3. Write back only revisions within the change set's intent, in one
+   `genesis apply <file> --json`: every node and link the work adds or changes. One call, not many.
+4. Anything outside the intent is not this change set's: open a new one for it and link it
+   `discovered-from` this one, or add a question (recipe below). Don't write it here.
+   `genesis change new "<intent>" --json` makes the new one current, so then run
+   `genesis link <new> discovered-from <this> --change <new> --json` and
+   `genesis change use <this>` to go back (`GENESIS_CHANGE`, if set, still wins).
+5. Add a `Change: <id>` trailer to every commit, with the change set's ID:
 
    ```
    Stream CSV exports
@@ -45,7 +52,9 @@ Refer to a node by handle, ID, or a unique ID prefix of 4+ characters.
    Change: 01M5PWGEF85Y185JZ2ZGCNH40N
    ```
 
-Then `genesis propose --json`. Someone with the authority accepts and lands it.
+6. Finish with `genesis land --json`, then `genesis render`, committed as the last commit.
+
+`genesis propose` is for a draft you opened yourself with `genesis change new`.
 
 ## Reading the model
 
@@ -64,6 +73,9 @@ constraints on it, so you add to the model rather than duplicate it.
 - Always pass `--json`. Read the JSON; don't parse the markdown.
 - Propose; run `genesis accept` only where policy allows you to.
 - Never paraphrase an owner's decision: quote their exact words in the decision's fields.
+  Only what the owner typed is theirs. An option an agent wrote (an AskUserQuestion choice, a
+  "(Recommended)" pick) is never the owner's words: record it as the agent's wording, accepted
+  by the owner.
 - When something is unknown, add a question rather than guess. Park it, don't block on it.
 - Use `--dry-run` to see the operations a write would make before making it.
 

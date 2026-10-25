@@ -44,6 +44,13 @@ A write with none fails with exit 2 and `next` naming `genesis change new`.
 It ignores the current change set and sees only landed state. Use it to write down what
 already exists; never for new intentions.
 
+## Working on one
+
+An agent works on an accepted change set and writes back only revisions within its intent.
+Work found outside the intent becomes a new change set linked `discovered-from` the one it was
+found in (`genesis link <new> discovered-from <this>`), or a question that `blocks` it. The
+work ends with `genesis land`, committed last.
+
 ## Inspecting
 
 - `genesis change show [<id>] --json`: intent, state, operations, the accept or reject.
