@@ -19,8 +19,9 @@ package api
 // The default view (defaultView) follows the effective change set's state:
 // draft or proposed gives what-if of it, so a read shows the work in hand;
 // accepted gives to-be, where it already is; none, landed or any other
-// terminal state gives as-is. The rule is one function so that every read
-// (and slice) agrees. An operation whose question is about the plan rather
+// terminal state gives as-is. The rule is slice.DefaultView's, which
+// defaultView maps onto a view, so every read and slice agree (D4). An
+// operation whose question is about the plan rather
 // than the work in hand passes its own rule instead: roadmap and ready pass
 // toBeView, to-be always. An explicit view always wins, and then the
 // effective change set is not looked at.
@@ -45,6 +46,7 @@ import (
 	"github.com/dphaener/genesis/internal/index"
 	gmodel "github.com/dphaener/genesis/internal/model"
 	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/genesis/internal/slice"
 )
 
 // The view names.
@@ -83,13 +85,17 @@ func (v view) String() string {
 type viewRule func(cs id.ID, state changeset.State) view
 
 // defaultView is the default view of every read but roadmap and ready:
-// what-if of a draft or proposed change set, to-be for an accepted one,
-// as-is otherwise (none, landed, or any other terminal state).
+// slice.DefaultView's rule (what-if of a draft or proposed change set,
+// to-be for an accepted one, as-is otherwise), as a view.
 func defaultView(cs id.ID, state changeset.State) view {
-	switch state {
-	case changeset.StateDraft, changeset.StateProposed:
+	var c *changeset.ChangeSet
+	if !cs.IsZero() {
+		c = &changeset.ChangeSet{ID: cs, State: state}
+	}
+	switch slice.DefaultView(c) {
+	case slice.ViewWhatIf:
 		return view{whatIf: cs}
-	case changeset.StateAccepted:
+	case slice.ViewToBe:
 		return view{stored: index.ToBe}
 	}
 	return view{stored: index.AsIs}
