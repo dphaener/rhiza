@@ -206,7 +206,7 @@ func TestRecordRefusedOnNonWrites(t *testing.T) {
 		wantNext(t, err, "genesis describe "+c.op)
 	}
 	for _, o := range Operations() {
-		want := map[string]bool{"add": true, "set": true, "mv": true, "retire": true, "link": true, "unlink": true, "apply": true}[o.Name]
+		want := map[string]bool{"add": true, "set": true, "mv": true, "retire": true, "link": true, "unlink": true, "apply": true, "source.add": true}[o.Name]
 		if o.Record != want {
 			t.Errorf("%s: Record = %v, want %v", o.Name, o.Record, want)
 		}

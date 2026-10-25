@@ -1688,6 +1688,141 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "input": {
+        "additionalProperties": false,
+        "properties": {
+          "quotes": {
+            "description": "Verbatim quotes from the source; may be empty",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "by": {
+                  "description": "Who said it",
+                  "type": "string"
+                },
+                "text": {
+                  "description": "The quote, verbatim",
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "where": {
+                  "description": "Where in the source it is",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "text"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "summary": {
+            "description": "What the source says, distilled",
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": {
+            "description": "The source's title",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "quotes",
+          "summary",
+          "title"
+        ],
+        "type": "object"
+      },
+      "name": "source.add",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "description": "A JSON file of the source's title, summary and quotes (see the input schema)",
+            "type": "string"
+          },
+          "handle": {
+            "description": "The source's handle: lower-case words joined by single dashes, unique among live nodes",
+            "type": "string"
+          },
+          "raw": {
+            "description": "The raw material's file, hashed with sha256; its content and path are not stored. Give this or --raw-sha256",
+            "type": "string"
+          },
+          "raw_sha256": {
+            "description": "The raw material's sha256, 64 lower-case hex characters. Give this or --raw",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file",
+          "handle"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The change set written to (with --record, the new record change set)",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "drop": {
+            "description": "Dry run only: the op IDs the entry would drop",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The ops entry written; absent in a dry run",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "links": {
+            "description": "The links the write created or retired, sorted",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "nodes": {
+            "description": "The nodes the write created or changed, sorted; link endpoints are not included",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ops": {
+            "description": "Dry run only: the ops the entry would carry, as canonical op JSON",
+            "items": {},
+            "type": "array"
+          },
+          "record": {
+            "description": "True if the write opened and landed a record change set",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "change_set",
+          "nodes"
+        ],
+        "type": "object"
+      },
+      "summary": "Add a source node from a JSON file of its title, summary and quotes, with the sha256 of its raw material",
+      "write": true
+    },
+    {
       "name": "unlink",
       "request": {
         "additionalProperties": false,
