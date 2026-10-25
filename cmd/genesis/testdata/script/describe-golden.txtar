@@ -373,7 +373,7 @@ cmp stdout describe.golden.json
                       "type": "string"
                     },
                     "from": {
-                      "description": "The node the link starts at: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
+                      "description": "The node or change set the link starts at: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
                       "type": "string"
                     },
                     "note": {
@@ -385,7 +385,7 @@ cmp stdout describe.golden.json
                       "description": "The operation this item is a request of"
                     },
                     "to": {
-                      "description": "The node the link ends at",
+                      "description": "The node or change set the link ends at",
                       "type": "string"
                     },
                     "type": {
@@ -1309,7 +1309,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "from": {
-            "description": "The node the link starts at: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
+            "description": "The node or change set the link starts at: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
             "type": "string"
           },
           "note": {
@@ -1317,7 +1317,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "to": {
-            "description": "The node the link ends at",
+            "description": "The node or change set the link ends at",
             "type": "string"
           },
           "type": {
@@ -1405,7 +1405,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Link two nodes",
+      "summary": "Link two nodes, two change sets, or one of each",
       "write": true
     },
     {

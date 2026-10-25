@@ -237,7 +237,7 @@ func buildApply(w *workspace, cs id.ID, ids *id.Generator, items []applyItem) (e
 	var touched edit
 	ops := start
 	for i, it := range items {
-		e, err := it.build(writeBase{m: s.model(target), ops: ops, ids: ids})
+		e, err := it.build(writeBase{m: s.model(target), ops: ops, ids: ids, changeSet: s.resolveChangeSet})
 		if err == nil {
 			err = e.check(it.op)
 		}
