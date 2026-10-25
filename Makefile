@@ -43,9 +43,21 @@ fmt-check: ## Fail if any Go file is unformatted
 	fi
 
 .PHONY: check
-check: fmt-check vet test ## Run everything CI runs
+check: fmt-check vet test self-check ## Run everything CI runs
 # The single entry point .github/workflows/ci.yml runs, so local and CI
 # runs cannot drift apart.
+
+.PHONY: self-check
+self-check: ## Run genesis check on this repo with this commit's build
+# Genesis keeps its own .genesis/, so the build under test checks it: a stale
+# rendered/ or a broken log fails make. The binary is built in place in a
+# fresh temp folder (never copied there, for the arm64 signature reason under
+# install), so it never touches ./genesis or ~/bin. The folder is removed
+# whatever check returns, and check's exit status is make's.
+	@dir=$$(mktemp -d); \
+	go build -ldflags "$(LDFLAGS)" -o $$dir/$(BINARY) ./cmd/genesis \
+		&& $$dir/$(BINARY) check; \
+	status=$$?; rm -rf $$dir; exit $$status
 
 .PHONY: clean
 clean: ## Remove the locally built binary

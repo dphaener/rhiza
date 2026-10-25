@@ -135,6 +135,9 @@ func TestMatchCommand(t *testing.T) {
 }
 
 func TestCtxFromEnv(t *testing.T) {
+	// newCtx finds the repo from the working directory; outside a temp dir it
+	// would find this repo's own .genesis and offset the test clock and IDs.
+	t.Chdir(t.TempDir())
 	env := map[string]string{
 		"GENESIS_CHANGE":    "envchange",
 		"GENESIS_ACTOR":     "envactor",
