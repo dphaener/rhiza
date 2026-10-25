@@ -42,11 +42,9 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		GitConfig: gitConfig,
 		Version:   versionString(),
 		Stdin:     stdin,
+		Home:      getenv("HOME"),
 	}
 	ctx.Git = gitIn(ctx.Root)
-	if home, err := os.UserHomeDir(); err == nil {
-		ctx.Home = home
-	}
 	nowEnv, seedEnv := getenv("GENESIS_TEST_NOW"), getenv("GENESIS_TEST_SEED")
 	if nowEnv == "" && seedEnv == "" {
 		return ctx, nil

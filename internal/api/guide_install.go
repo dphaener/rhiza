@@ -70,9 +70,10 @@ func init() {
 	})
 }
 
-// runGuideInstall writes the plugin's four files. A folder that exists and
-// is not ours (see pluginOwned) is a conflict unless req.Force; then
-// nothing is written. Each file is written atomically, and only when its
+// runGuideInstall writes the plugin's four files, plugin.json first. A
+// folder that exists and is not ours (see pluginForeign) is a conflict
+// unless req.Force, and so is a file where the folder goes; then nothing
+// is written. Each file is written atomically, and only when its
 // bytes change; no other file in the folder is touched. guide.install
 // writes no log entry, so --dry-run is a usage error, as for ci.install.
 func runGuideInstall(ctx *Ctx, req any) (any, error) {
@@ -102,8 +103,11 @@ func runGuideInstall(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, Errorf("guide install: %v", err)
 	}
-	if _, err := os.Lstat(dir); err == nil {
-		if !r.Force && !pluginOwned(dir) {
+	if info, err := os.Stat(dir); err == nil {
+		if !info.IsDir() {
+			return nil, Conflictf("%s is a file, not a folder: move or remove it, then install again", dir)
+		}
+		if !r.Force && pluginForeign(dir) {
 			return nil, Conflictf("%s exists and was not written by genesis guide install", dir).
 				WithNext(cmd + " --force" + projectFlag(r.Project))
 		}
@@ -241,20 +245,37 @@ func readPluginManifest(dir string) (m pluginManifest, ok bool) {
 	return m, true
 }
 
-// pluginOwned reports whether dir holds a plugin guide.install wrote: a
-// plugin.json named genesis that carries the marker.
-func pluginOwned(dir string) bool {
-	m, ok := readPluginManifest(dir)
-	return ok && m.name == pluginName && m.marked
+// pluginOwned reports whether m, read from a plugin.json, is one
+// guide.install wrote: named genesis and carrying the marker.
+func pluginOwned(m pluginManifest) bool {
+	return m.name == pluginName && m.marked
+}
+
+// pluginForeign reports whether dir holds a plugin guide.install did not
+// write: a plugin.json that is not ours, or, with no plugin.json, any of the
+// other files guide.install writes. A folder holding none of them, such as
+// one another install has just created and not yet written plugin.json to,
+// is not foreign.
+func pluginForeign(dir string) bool {
+	if _, err := os.Lstat(filepath.Join(dir, filepath.FromSlash(pluginManifestPath))); err == nil {
+		m, ok := readPluginManifest(dir)
+		return !ok || !pluginOwned(m)
+	}
+	for _, p := range []string{pluginSkillPath, pluginHooksPath, pluginScrubPath} {
+		if _, err := os.Lstat(filepath.Join(dir, filepath.FromSlash(p))); err == nil {
+			return true
+		}
+	}
+	return false
 }
 
 // installedVersion is the genesis version that installed the plugin in
 // dir; ok is false unless dir holds a plugin guide.install wrote.
 func installedVersion(dir string) (version string, ok bool) {
-	if !pluginOwned(dir) {
+	m, ok := readPluginManifest(dir)
+	if !ok || !pluginOwned(m) {
 		return "", false
 	}
-	m, _ := readPluginManifest(dir)
 	return m.version, true
 }
 

@@ -4,15 +4,21 @@ import (
 	"testing"
 )
 
-// TestNewCtxHome checks that newCtx passes the home directory, and leaves
-// it empty when there is none.
+// TestNewCtxHome checks that newCtx passes the home directory from HOME,
+// and leaves it empty when there is none.
 func TestNewCtxHome(t *testing.T) {
-	getenv := func(string) string { return "" }
+	env := func(home string) func(string) string {
+		return func(k string) string {
+			if k == "HOME" {
+				return home
+			}
+			return ""
+		}
+	}
 
 	t.Run("set", func(t *testing.T) {
 		dir := t.TempDir()
-		t.Setenv("HOME", dir)
-		ctx, err := newCtx(globals{}, nil, getenv)
+		ctx, err := newCtx(globals{}, nil, env(dir))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -22,8 +28,7 @@ func TestNewCtxHome(t *testing.T) {
 	})
 
 	t.Run("unset", func(t *testing.T) {
-		t.Setenv("HOME", "")
-		ctx, err := newCtx(globals{}, nil, getenv)
+		ctx, err := newCtx(globals{}, nil, env(""))
 		if err != nil {
 			t.Fatal(err)
 		}

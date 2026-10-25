@@ -73,13 +73,18 @@ func commandRefs(md string) [][]string {
 	return refs
 }
 
-// resolves reports whether some prefix of words names an operation or a
-// group of operations, as the CLI resolves a command line.
+// resolves reports whether words name a command as the CLI resolves a
+// command line: some prefix is an operation, or all of words name a group
+// of operations (genesis change). A group followed by a word that names
+// none of its operations (genesis change frobnicate) does not resolve.
 func resolves(words []string) bool {
 	for n := len(words); n > 0; n-- {
 		name := strings.Join(words[:n], ".")
 		if _, ok := Lookup(name); ok {
 			return true
+		}
+		if n < len(words) {
+			continue
 		}
 		for _, o := range Operations() {
 			if strings.HasPrefix(o.Name, name+".") {
@@ -126,18 +131,20 @@ func TestCommandRefsScanner(t *testing.T) {
 	md := "Write only through `genesis` commands; see `genesis-scrub`.\n" +
 		"Run `genesis frobnicate --now`, then `genesis change new \"x\"`,\n" +
 		"`genesis link <node> derived-from <h>` and `genesis guide scrub`.\n" +
+		"`genesis change frobnicate` is a typo; bare `genesis change` lists the group.\n" +
 		"Plain genesis frobnicate outside code is prose.\n" +
 		"```sh\n$ genesis describe apply --json\ngenesis slice <ref>\ngenesis zork it\n```\n"
 	got := commandRefs(md)
 	want := [][]string{
 		{"describe", "apply"}, {"slice"}, {"zork", "it"},
 		{"frobnicate"}, {"change", "new"}, {"link"}, {"guide", "scrub"},
+		{"change", "frobnicate"}, {"change"},
 	}
 	if !slices.EqualFunc(got, want, slices.Equal) {
 		t.Errorf("commandRefs = %q, want %q", got, want)
 	}
 	bad := badRefs(md)
-	if wantBad := []string{"genesis zork it", "genesis frobnicate"}; !slices.Equal(bad, wantBad) {
+	if wantBad := []string{"genesis zork it", "genesis frobnicate", "genesis change frobnicate"}; !slices.Equal(bad, wantBad) {
 		t.Errorf("badRefs = %q, want %q", bad, wantBad)
 	}
 }

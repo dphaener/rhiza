@@ -173,3 +173,61 @@ func TestGuideInstallErrors(t *testing.T) {
 		t.Error("plugin description has a newline")
 	}
 }
+
+func TestGuideInstallEmptyFolder(t *testing.T) {
+	ctx := testCtx(t.TempDir())
+	ctx.Home = t.TempDir()
+	dir := filepath.Join(ctx.Home, ".claude", "skills", "genesis")
+	writePath(t, filepath.Join(dir, "notes.txt"), "keep\n")
+
+	r := guideInstall(t, ctx, `{"agent":"claude"}`)
+	if !slices.Equal(r.Written, pluginPaths) {
+		t.Errorf("written = %v, want %v", r.Written, pluginPaths)
+	}
+	if b, _ := os.ReadFile(filepath.Join(dir, "notes.txt")); string(b) != "keep\n" {
+		t.Errorf("notes.txt touched: %q", b)
+	}
+}
+
+func TestGuideInstallFileInTheWay(t *testing.T) {
+	ctx := testCtx(t.TempDir())
+	ctx.Home = t.TempDir()
+	dir := filepath.Join(ctx.Home, ".claude", "skills", "genesis")
+	writePath(t, dir, "a file\n")
+
+	for _, req := range []string{`{"agent":"claude"}`, `{"agent":"claude","force":true}`} {
+		_, err := callOp(t, ctx, "guide.install", req)
+		var e *Error
+		if !errors.As(err, &e) || e.Code != CodeConflict || e.Next != "" || !strings.Contains(e.Message, "is a file, not a folder") {
+			t.Errorf("%s: err = %v", req, err)
+		}
+	}
+}
+
+// TestGuideInstallConcurrent runs first installs at once: each sees the
+// folder another may have just created, and none may call it foreign.
+func TestGuideInstallConcurrent(t *testing.T) {
+	ctx := testCtx(t.TempDir())
+	ctx.Home = t.TempDir()
+	const n = 8
+	errs := make(chan error, n)
+	o, _ := Lookup("guide.install")
+	req, err := DecodeRequest(o, []byte(`{"agent":"claude"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for range n {
+		go func() {
+			_, err := o.Run(ctx, req)
+			errs <- err
+		}()
+	}
+	for range n {
+		if err := <-errs; err != nil {
+			t.Error(err)
+		}
+	}
+	if v, ok := installedVersion(filepath.Join(ctx.Home, ".claude", "skills", "genesis")); !ok || v != ctx.Version {
+		t.Errorf("installedVersion = %q, %v", v, ok)
+	}
+}
