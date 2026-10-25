@@ -12,8 +12,8 @@ import (
 
 // pendingCommands are commands the guide names before they exist. Tasks 7
 // and 8 remove the reads (slice, why, log, roadmap, ready, show, tree, ls)
-// as they land; status is removed by task 6 of the agent-guide plan.
-var pendingCommands = []string{"slice", "why", "log", "roadmap", "ready", "show", "tree", "ls", "status"}
+// as they land.
+var pendingCommands = []string{"slice", "why", "log", "roadmap", "ready", "show", "tree", "ls"}
 
 // commandWord is one word of a command path.
 var commandWord = regexp.MustCompile(`^[a-z][a-z0-9-]*$`)

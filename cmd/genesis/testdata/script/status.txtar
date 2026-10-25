@@ -1,0 +1,135 @@
+# status reports the current change set, the change sets in flight and the
+# installed guides. status --hook is the session-start hook's brief output:
+# silent outside a repository or on any error, always exit 0, never a
+# write. HOME is $WORK/home, set by the harness, never the real one.
+
+# Outside a repository status is not_found, exit 4.
+! exists .genesis
+! exec genesis status
+stderr '^genesis: no Genesis repository in '
+stderr '^next: genesis init$'
+! stdout .
+exec sh -c 'genesis status 2>/dev/null; echo exit $?'
+stdout '^exit 4$'
+
+# The hook prints nothing there, on stdout or stderr, and exits 0; with
+# --json it prints {}.
+exec genesis status --hook
+! stdout .
+! stderr .
+exec sh -c 'genesis status --hook; echo exit $?'
+stdout '\Aexit 0\n\z'
+exec genesis status --hook --json
+stdout '\A\{\}\n\z'
+! stderr .
+exec genesis api call status '{"hook":true}'
+stdout '\A\{\}\n\z'
+
+exec genesis init
+
+# No change set: next names change new; no guide installed.
+exec genesis status
+stdout '^genesis dev$'
+stdout '^- Change set: none current$'
+stdout '^- In flight: 0 draft, 0 proposed, 0 accepted$'
+stdout '^- Guide: not installed$'
+stdout '^next: genesis change new "<intent>"$'
+exec genesis status --json
+stdout '"change_set": null'
+stdout '"guide": \[\]'
+stdout '"next": \[\n    "genesis change new \\"<intent>\\""\n  \]'
+exec genesis status --hook
+stdout '^This repo uses Genesis \(load the genesis skill; `genesis guide` for more\)\.$'
+stdout '^No current change set\.$'
+stdout '^In flight: 0 draft, 0 proposed, 0 accepted\.$'
+! stdout 'out of date'
+! stderr .
+
+# A current change set.
+exec genesis change new 'Teach the agent the guide'
+exec genesis status
+stdout '^- Change set: [0-9A-Z]{26} \(draft\): Teach the agent the guide$'
+stdout '^- In flight: 1 draft, 0 proposed, 0 accepted$'
+! stdout 'next:'
+exec genesis status --json
+stdout '"intent": "Teach the agent the guide"'
+stdout '"kind": "intention"'
+stdout '"state": "draft"'
+stdout '"next": \[\]'
+exec genesis status --hook
+stdout '^Change set [0-9A-Z]{26} \(draft\): Teach the agent the guide$'
+stdout '^In flight: 1 draft, 0 proposed, 0 accepted\.$'
+
+# A proposed one counts as proposed; a second draft is current.
+exec genesis propose
+exec genesis change new 'Second thing'
+exec genesis status
+stdout '^- Change set: [0-9A-Z]{26} \(draft\): Second thing$'
+stdout '^- In flight: 1 draft, 1 proposed, 0 accepted$'
+exec genesis status --json
+stdout '"attention": \{\n    "accepted": 0,\n    "draft": 1,\n    "proposed": 1\n  \}'
+exec genesis status --hook
+stdout '^In flight: 1 draft, 1 proposed, 0 accepted\.$'
+
+# A guide at the binary's version is current: no mismatch.
+exec genesis guide install --agent claude
+exec genesis status
+stdout '^- Guide \(user\): dev in .*/home/\.claude/skills/genesis \(current\)$'
+! stdout 'next:'
+exec genesis status --json
+stdout '"scope": "user"'
+stdout '"current": true'
+exec genesis status --hook
+! stdout 'out of date'
+
+# At another version it is out of date: a mismatch line and the update.
+exec sh -c 'sed "s/\"dev\"/\"0.0.1\"/" $HOME/.claude/skills/genesis/.claude-plugin/plugin.json > p.tmp && mv p.tmp $HOME/.claude/skills/genesis/.claude-plugin/plugin.json'
+exec genesis status
+stdout '^- Guide \(user\): 0\.0\.1 in .* \(out of date\)$'
+stdout '^next: genesis guide install --agent claude$'
+exec genesis status --json
+stdout '"version": "0.0.1"'
+stdout '"current": false'
+stdout '"next": \[\n    "genesis guide install --agent claude"\n  \]'
+exec genesis status --hook
+stdout '^The installed genesis guide is out of date: run `genesis guide install --agent claude`\.$'
+
+# A project install out of date names --project.
+exec genesis guide install --agent claude --project
+exec sh -c 'sed "s/\"dev\"/\"0.0.1\"/" .claude/skills/genesis/.claude-plugin/plugin.json > p.tmp && mv p.tmp .claude/skills/genesis/.claude-plugin/plugin.json'
+exec genesis status
+stdout '^- Guide \(project\): 0\.0\.1 in .* \(out of date\)$'
+stdout '^next: genesis guide install --agent claude --project$'
+exec genesis status --hook
+stdout 'run `genesis guide install --agent claude`, `genesis guide install --agent claude --project`\.$'
+
+# The hook stays under 400 bytes (the Go test checks the token cap).
+exec sh -c 'genesis status --hook | wc -c'
+stdout '^ *[0-3]?[0-9]?[0-9]\n\z'
+
+# --json and api call print the same bytes, hook or not.
+exec genesis status --json
+cp stdout status.json
+exec genesis api call status '{}'
+cmp stdout status.json
+exec genesis status --hook --json
+cmp stdout status.json
+exec genesis api call status '{"hook":true}'
+cmp stdout status.json
+
+# Any error makes the hook silent and exit 0; plain status reports it.
+! exec genesis status --change ZZZZZZZZ
+stderr 'no change set matches'
+exec sh -c 'genesis status --hook --change ZZZZZZZZ; echo exit $?'
+stdout '\Aexit 0\n\z'
+! stderr .
+
+# The hook never writes: the .genesis folder is unchanged and folds.
+exec sh -c 'find .genesis | sort | xargs cksum 2>/dev/null; true'
+cp stdout tree-before.txt
+exec genesis status --hook
+exec genesis status --hook --json
+exec genesis status
+exec sh -c 'find .genesis | sort | xargs cksum 2>/dev/null; true'
+cmp stdout tree-before.txt
+fold-ok

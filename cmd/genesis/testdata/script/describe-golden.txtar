@@ -1976,6 +1976,136 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "status",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "hook": {
+            "description": "Brief output for a session-start hook: silent outside a repo, always exits 0",
+            "type": "boolean"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "attention": {
+            "additionalProperties": false,
+            "description": "The change sets in flight, counted by state",
+            "properties": {
+              "accepted": {
+                "description": "Change sets accepted, waiting to land",
+                "type": "integer"
+              },
+              "draft": {
+                "description": "Change sets in draft",
+                "type": "integer"
+              },
+              "proposed": {
+                "description": "Change sets proposed, waiting for a decision",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "accepted",
+              "draft",
+              "proposed"
+            ],
+            "type": "object"
+          },
+          "change_set": {
+            "additionalProperties": false,
+            "description": "The current change set, as writes resolve it; null if none",
+            "properties": {
+              "id": {
+                "description": "The change set's ID",
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": "string"
+              },
+              "intent": {
+                "description": "The change set's intent",
+                "type": "string"
+              },
+              "kind": {
+                "description": "intention or record; empty without a valid open",
+                "type": "string"
+              },
+              "state": {
+                "description": "The lifecycle state; empty without a valid open",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "intent",
+              "kind",
+              "state"
+            ],
+            "type": "object"
+          },
+          "guide": {
+            "description": "Each installed guide found, user then project",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "current": {
+                  "description": "Whether that version is the running genesis's",
+                  "type": "boolean"
+                },
+                "dir": {
+                  "description": "The plugin folder",
+                  "type": "string"
+                },
+                "scope": {
+                  "description": "user (in the home directory) or project (in the repository)",
+                  "enum": [
+                    "user",
+                    "project"
+                  ],
+                  "type": "string"
+                },
+                "version": {
+                  "description": "The version it was installed by",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "current",
+                "dir",
+                "scope",
+                "version"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "next": {
+            "description": "Commands that would help, in order; empty if none",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "version": {
+            "description": "The running genesis's version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "attention",
+          "change_set",
+          "guide",
+          "next",
+          "version"
+        ],
+        "type": "object"
+      },
+      "summary": "Show the current change set, what is in flight and the installed guide",
+      "write": false
+    },
+    {
       "name": "unlink",
       "request": {
         "additionalProperties": false,
