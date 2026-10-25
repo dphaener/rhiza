@@ -282,22 +282,12 @@ func TestPlanRoadmapGroupsAndReadyOrder(t *testing.T) {
 	}
 }
 
-// planLink writes a link.create op from from to to into the effective
-// change set (or a record one), since link takes node refs only.
+// planLink links from to to through the link operation, inside the
+// effective change set.
 func planLink(t *testing.T, ctx *Ctx, lt op.LinkType, from, to id.ID) {
 	t.Helper()
-	_, err := runWrite(ctx, "link", "link", func(b writeBase) (edit, error) {
-		l, err := b.newID()
-		if err != nil {
-			return edit{}, err
-		}
-		o, err := b.newID()
-		if err != nil {
-			return edit{}, err
-		}
-		return edit{ops: []op.Op{{ID: o, Type: op.TypeLinkCreate, Link: l, LinkType: lt, From: from, To: to}}}, nil
-	})
-	if err != nil {
+	req := fmt.Sprintf(`{"from":%q,"type":%q,"to":%q}`, from, lt, to)
+	if _, err := callOp(t, ctx, "link", req); err != nil {
 		t.Fatalf("link %s %s %s: %v", from, lt, to, err)
 	}
 }
