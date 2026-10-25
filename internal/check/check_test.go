@@ -390,6 +390,9 @@ func TestRunOrder(t *testing.T) {
 	r.record("Edit two", setField(o3, n, o1, "two"))
 	g := r.open(changeset.KindIntention, "Ghost")
 	g.then(changeset.Ops{Ops: []op.Op{setField(r.next(), r.next(), r.next(), "x")}})
+	la := r.open(changeset.KindIntention, "Loop A")
+	lb := r.open(changeset.KindIntention, "Loop B")
+	r.record("Loop", dependsOn(r, la.id, lb.id), dependsOn(r, lb.id, la.id))
 	in := r.input()
 	in.Rendered = nil
 	in.Skipped = "no git"
@@ -399,7 +402,8 @@ func TestRunOrder(t *testing.T) {
 	for _, f := range rep.Findings {
 		rules = append(rules, f.Rule)
 	}
-	want := []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleRender, RuleAppendOnly}
+	rules = slices.Compact(rules)
+	want := []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleRender, RuleAppendOnly}
 	if !reflect.DeepEqual(rules, want) {
 		t.Fatalf("rules %q, want %q\n%+v", rules, want, rep.Findings)
 	}
@@ -416,4 +420,190 @@ func TestRunZeroInput(t *testing.T) {
 	if rep.OK || len(rep.Findings) != 1 || rep.Findings[0].Rule != RuleRender {
 		t.Errorf("Run(Input{}) = %+v", rep)
 	}
+}
+
+// dependsOn is a depends-on link from change set from to change set to.
+func dependsOn(r *repo, from, to id.ID) op.Op {
+	return mkLink(r.next(), r.next(), op.LinkDependsOn, from, to)
+}
+
+// ofRule is the findings of rule in rep.
+func ofRule(rep Report, rule string) []Finding {
+	var out []Finding
+	for _, f := range rep.Findings {
+		if f.Rule == rule {
+			out = append(out, f)
+		}
+	}
+	return out
+}
+
+func TestRunCycle(t *testing.T) {
+	t.Run("CycleTwo", func(t *testing.T) {
+		r := newRepo(t)
+		clean(r)
+		a := r.open(changeset.KindIntention, "A")
+		b := r.open(changeset.KindIntention, "B")
+		a.then(changeset.Ops{Ops: []op.Op{dependsOn(r, a.id, b.id)}})
+		b.then(changeset.Ops{Ops: []op.Op{dependsOn(r, b.id, a.id)}})
+		rep := Run(r.input())
+		fs := ofRule(rep, RuleDependsOn)
+		if len(fs) != 1 {
+			t.Fatalf("depends-on findings %+v\nall %+v", fs, rep.Findings)
+		}
+		f := fs[0]
+		if f.Severity != SeverityFail || f.ChangeSet != a.id.String() ||
+			!strings.Contains(f.Message, a.id.String()) || !strings.Contains(f.Message, b.id.String()) {
+			t.Errorf("finding %+v", f)
+		}
+		if want := "genesis change show " + a.id.String(); f.Next != want {
+			t.Errorf("next %q, want %q", f.Next, want)
+		}
+		if rep.OK {
+			t.Error("OK with a loop")
+		}
+	})
+	t.Run("CycleLanded", func(t *testing.T) {
+		r := newRepo(t)
+		clean(r)
+		a := r.open(changeset.KindIntention, "A")
+		b := r.open(changeset.KindIntention, "B")
+		r.record("Links", dependsOn(r, a.id, b.id), dependsOn(r, b.id, a.id))
+		if fs := ofRule(Run(r.input()), RuleDependsOn); len(fs) != 1 || fs[0].Severity != SeverityFail {
+			t.Errorf("depends-on findings %+v", fs)
+		}
+	})
+	t.Run("CycleSelf", func(t *testing.T) {
+		// A log cannot hold a link from a change set to itself (op
+		// validation refuses it), so the change set is built folded.
+		a := fid(1)
+		var c checker
+		c.dependsOn([]changeset.ChangeSet{{ID: a, State: changeset.StateDraft,
+			Ops: []op.Op{mkLink(fid(2), fid(3), op.LinkDependsOn, a, a)}}})
+		if len(c.findings) != 1 || c.findings[0].Severity != SeverityFail || c.findings[0].ChangeSet != a.String() ||
+			!strings.Contains(c.findings[0].Message, "itself") {
+			t.Fatalf("findings %+v", c.findings)
+		}
+	})
+	t.Run("CycleNone", func(t *testing.T) {
+		r := newRepo(t)
+		clean(r)
+		a := r.open(changeset.KindIntention, "A")
+		b := r.open(changeset.KindIntention, "B")
+		b.then(changeset.Ops{Ops: []op.Op{dependsOn(r, b.id, a.id)}})
+		if fs := ofRule(Run(r.input()), RuleDependsOn); len(fs) != 0 {
+			t.Errorf("depends-on findings %+v", fs)
+		}
+	})
+}
+
+func TestRunRestsOn(t *testing.T) {
+	// build has A draft a node and B update it, then ends A with end; it
+	// returns B, B's update and A.
+	build := func(t *testing.T, end func(r *repo, a *set)) (*repo, *set, id.ID, *set) {
+		r := newRepo(t)
+		clean(r)
+		a := r.open(changeset.KindIntention, "A")
+		n, a1 := r.next(), r.next()
+		a.then(changeset.Ops{Ops: []op.Op{mkNode(a1, n, op.KindDecision, "pick")}})
+		b := r.open(changeset.KindIntention, "B")
+		b1 := r.next()
+		b.then(changeset.Ops{Ops: []op.Op{dependsOn(r, b.id, a.id), setField(b1, n, a1, "two")}})
+		if end != nil {
+			end(r, a)
+		}
+		return r, b, b1, a
+	}
+	// resting is the in-flight findings that name a resting op.
+	resting := func(rep Report) []Finding {
+		var out []Finding
+		for _, f := range ofRule(rep, RuleInFlight) {
+			if strings.Contains(f.Message, "rests on") {
+				out = append(out, f)
+			}
+		}
+		return out
+	}
+	for _, c := range []struct {
+		name  string
+		state changeset.State
+		end   func(r *repo, a *set)
+	}{
+		{"DroppedWithdrawn", changeset.StateWithdrawn, func(r *repo, a *set) { a.then(changeset.Withdraw{}) }},
+		{"DroppedRejected", changeset.StateRejected, func(r *repo, a *set) {
+			a.then(changeset.Propose{})
+			a.then(changeset.Reject{Rule: "owner", Reason: "no"})
+		}},
+		{"DroppedSuperseded", changeset.StateSuperseded, func(r *repo, a *set) {
+			a.then(changeset.Supersede{By: r.next()})
+		}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			r, b, b1, a := build(t, c.end)
+			rep := Run(r.input())
+			fs := resting(rep)
+			if len(fs) != 1 {
+				t.Fatalf("resting findings %+v\nall %+v", fs, rep.Findings)
+			}
+			f := fs[0]
+			if f.Severity != SeverityWarn || f.ChangeSet != b.id.String() || f.Op != b1.String() ||
+				!strings.Contains(f.Message, a.id.String()) || !strings.Contains(f.Message, string(c.state)) {
+				t.Errorf("finding %+v", f)
+			}
+			if want := "genesis change show " + b.id.String(); f.Next != want {
+				t.Errorf("next %q, want %q", f.Next, want)
+			}
+		})
+	}
+	t.Run("RestsOnLanded", func(t *testing.T) {
+		r, _, _, _ := build(t, func(r *repo, a *set) {
+			a.then(changeset.Propose{})
+			a.then(changeset.Accept{Rule: "owner"})
+			a.then(changeset.Land{})
+		})
+		if fs := resting(Run(r.input())); len(fs) != 0 {
+			t.Errorf("resting findings %+v", fs)
+		}
+	})
+	t.Run("RestsOnInFlight", func(t *testing.T) {
+		r, _, _, _ := build(t, nil)
+		if fs := resting(Run(r.input())); len(fs) != 0 {
+			t.Errorf("resting findings %+v", fs)
+		}
+	})
+	t.Run("RestsOnRevised", func(t *testing.T) {
+		// A revises its create in place after B's update wrote the same
+		// field: a revised conflict, warned with a next.
+		r := newRepo(t)
+		clean(r)
+		a := r.open(changeset.KindIntention, "A")
+		n, a1 := r.next(), r.next()
+		a.then(changeset.Ops{Ops: []op.Op{mkNode(a1, n, op.KindDecision, "pick")}})
+		b := r.open(changeset.KindIntention, "B")
+		b1 := r.next()
+		b.then(changeset.Ops{Ops: []op.Op{dependsOn(r, b.id, a.id), setField(b1, n, a1, "two")}})
+		revised := mkNode(a1, n, op.KindDecision, "pick")
+		revised.Fields = statement("changed")
+		a.then(changeset.Ops{Ops: []op.Op{revised}})
+		rep := Run(r.input())
+		var fs []Finding
+		for _, f := range ofRule(rep, RuleInFlight) {
+			if strings.Contains(f.Message, "revised") {
+				fs = append(fs, f)
+			}
+		}
+		if len(fs) != 1 {
+			t.Fatalf("revised findings %+v\nall %+v", fs, rep.Findings)
+		}
+		f := fs[0]
+		if f.Severity != SeverityWarn || f.ChangeSet != b.id.String() || f.Op != b1.String() {
+			t.Errorf("finding %+v", f)
+		}
+		if want := fmt.Sprintf("genesis slice --change %s --view what-if", b.id); f.Next != want {
+			t.Errorf("next %q, want %q", f.Next, want)
+		}
+		if !rep.OK {
+			t.Errorf("not OK on warnings: %+v", rep.Findings)
+		}
+	})
 }
