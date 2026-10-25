@@ -1,0 +1,146 @@
+{
+  "actor": "01M5T2CFJ05091RA4EK0JQTPY7",
+  "after": [
+    "01M5SZJ6FNFG3Z0SDHW9EEQP8X"
+  ],
+  "at": "2026-10-25T17:41:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "make check exit 0 at commit ea4c7f7",
+          "statement": "Go tests and testscripts show a write in a change set seeing the change sets it depends on, directly or not, with the landed model and its own operations.",
+          "tests": "go test: TestStackedWrites (internal/api), TestModel/Dependencies (internal/api), TestWhatIfDependencies (internal/model), TestDependencies (internal/changeset); testscript: stacked.txtar"
+        },
+        "handle": "dependent-writes-tests",
+        "id": "01M5T2DGQSTX12JC9N7SJC06G8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5T2DGQSTX12JC9N7P1M38ES",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5T2DGQSTX12JC9N7P1M38ES",
+        "id": "01M5T2DGTK03EDS09N548RE0Y3",
+        "link": "01M5T2DGTK03EDS09N50TT2JE8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHVFR2SPC0TXN7KBE9EAK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "make check exit 0 at commit ea4c7f7",
+          "statement": "Go tests and testscripts show land refusing a change set until every dependency has landed, and refusing one with a conflict, with next.",
+          "tests": "go test: TestLandDependencies, TestLandConflict, TestLandRevisedLanded, TestLandProblem (internal/api); testscript: stacked.txtar, stacked-revised.txtar, stacked-revised-disjoint.txtar, stacked-revised-rewrite.txtar, stacked-revised-drop.txtar"
+        },
+        "handle": "ordered-landing-tests",
+        "id": "01M5T2DGXDS88SEX05X1SQVFG1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5T2DGXDS88SEX05WYNJSGR3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5T2DGXDS88SEX05WYNJSGR3",
+        "id": "01M5T2DH065PTB39CBA6B36XMA",
+        "link": "01M5T2DH065PTB39CBA5JZTKPC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHVMY4CWQJFFW14XVXTXT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "make check exit 0 at commit ea4c7f7",
+          "statement": "Go tests and testscripts show check reporting operations that rest on a withdrawn or rejected dependency, and ready giving it as the reason.",
+          "tests": "go test: TestRestsOn, TestRestsOnSelf (internal/changeset), TestRunRestsOn (internal/check), TestPlanRestsOnDropped, TestReadyRestsOnEndToEnd (internal/api); testscript: stacked-dropped.txtar, stacked-revised-drop.txtar"
+        },
+        "handle": "dropped-dependencies-tests",
+        "id": "01M5T2DH30XHKFKE4CTYZF47BC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5T2DH30XHKFKE4CTYGR5NQ9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5T2DH30XHKFKE4CTYGR5NQ9",
+        "id": "01M5T2DH5XFQWR4EG7AFRCVNQN",
+        "link": "01M5T2DH5XFQWR4EG7ACD8B93S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHVT5WSS80C8NBS7BSJZZ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "make check exit 0 at commit ea4c7f7",
+          "statement": "Go tests and testscripts show link refusing a depends-on that closes a loop between change sets, and check and ready reporting one.",
+          "tests": "go test: TestCycles, TestWouldCycle (internal/changeset), TestLinkCycle (internal/api), TestRunCycle (internal/check), TestPlanCycle (internal/api); testscript: stacked-cycle.txtar"
+        },
+        "handle": "acyclic-dependencies-tests",
+        "id": "01M5T2DH90EFA4F1X2NJG0FGFF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5T2DH90EFA4F1X2NFW8BPCK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5T2DH90EFA4F1X2NFW8BPCK",
+        "id": "01M5T2DHC0CH1B09215RD8DG9X",
+        "link": "01M5T2DHC0CH1B09215NX2N12D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHVZM0DAQN075WY0H0JNC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "When a dependency revises an op in place and the revision changes a field that a dependent's op on the same node also writes, or drops a node or link the dependent's ops rest on, that is a conflict: check reports it, land refuses it with next, and ready gives it as the reason; no overlap, no conflict.",
+          "wording": "the orchestrator's amendment to change set 1, under the owner's authorization to amend plans"
+        },
+        "handle": "revised-in-place-conflicts",
+        "id": "01M5T2DHESV7R4G8513BSB7XHQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5T2DHESV7R4G8513BKASNHS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZ69FKFXS01D7Y60C0S4",
+        "id": "01M5T2DHHK1PVSVBM22F5F2NNZ",
+        "link": "01M5T2DHHK1PVSVBM22CQAWG0P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5T2DHESV7R4G8513BKASNHS",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5T2DHESV7R4G8513BKASNHS",
+        "id": "01M5T2DHMD5PCXFJ7506RV4SRG",
+        "link": "01M5T2DHMD5PCXFJ75038H08Q4",
+        "note": "applies manual-rebase-for-now to a dependency revised in place: the conflict shows only where fields overlap",
+        "op": "link.create",
+        "to": "01M5SZHMZQXH272B6DAGG8X70A",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M5SWTT2A55K0REHQ6JNJQZ6W",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5T2DHS81CE1GN5QXM8K4ZH1",
+  "type": "ops",
+  "v": 1
+}
