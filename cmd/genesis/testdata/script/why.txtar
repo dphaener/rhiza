@@ -32,6 +32,12 @@ stdout '"Keep it in memory, always\."'
 stdout '^## Change sets$'
 stdout '^- [0-9A-Z]{26} landed intention: Base$'
 
+# Asked about a decision, why leads with the decision's own words.
+exec genesis why use-ram
+stdout '^# Why use-ram$'
+stdout '^- statement: We keep the hot set in RAM because disk is too slow for us\.$'
+stdout '^- use-ram derived from talk$'
+
 # A child inherits its parent's decisions; relates-to is not walked.
 exec genesis link store decided-by old-way --record
 exec genesis why store

@@ -177,6 +177,17 @@ func TestWhyFromDecision(t *testing.T) {
 	if len(r.Sources) != 1 || r.Sources[0].Handle != "s1" {
 		t.Errorf("sources %+v", r.Sources)
 	}
+	// The decision asked about leads, with its own fields: its quote is the
+	// first thing why gives back.
+	if got := fieldText(r.Node.Fields["statement"]); got != "Because d1" {
+		t.Errorf("node statement %q, want %q", got, "Because d1")
+	}
+	var b bytes.Buffer
+	r.Human(&b)
+	out := b.String()
+	if k, d := strings.Index(out, "- statement: Because d1\n"), strings.Index(out, "## Decisions\n"); k < 0 || k > d {
+		t.Errorf("Human does not lead with d1's fields:\n%s", out)
+	}
 
 	// From d0, the supersedes cycle d0 -> d3 -> d1 -> d0 ends.
 	r = whyOf(t, ctx, `{"ref":"d0","view":"as-is"}`)
