@@ -24,9 +24,13 @@
 //     when they write a common aspect; a retirement overlaps everything.
 //   - A conflict is an operation with a stale base that overlaps one of the
 //     operations applied after its base. It is reported and still applied,
-//     so the later operation in apply order wins; a small change set written
-//     against the new version repairs it. A stale operation that overlaps
-//     nothing merges silently: editing different fields is not a conflict.
+//     so the later operation in apply order wins. It is repaired, and no
+//     longer reported, once later operations written against its target's
+//     version have rewritten every aspect it wrote; an unrelated edit does
+//     not repair it. A conflicting retirement, or a conflict whose target is
+//     then retired, is never repaired: a retired target takes no more
+//     writes. A stale operation that overlaps nothing merges silently:
+//     editing different fields is not a conflict.
 //   - A skipped operation breaks a rule of the model (a missing target, a
 //     base not in its history, a cycle, ...). It is reported and changes
 //     nothing.
@@ -45,6 +49,8 @@
 // are in no view. An operation in an upper layer whose base a landed
 // operation has since superseded is stale like any other: it merges or
 // conflicts by the rules below. The problems are every layer's, each once.
+// The change set IDs in the input are assumed unique, as FoldLog returns
+// them; with duplicates the result may depend on the input's order.
 //
 // An operation is applied in these steps.
 //
@@ -73,7 +79,10 @@
 //     sets Retired and Reason; link.retire sets Retired. A skipped
 //     operation reports only why it was skipped. An applied one is reported
 //     as ErrConflict when step 2 found an overlap, is appended to the
-//     history and becomes the version.
+//     history and becomes the version. When its base was the version, the
+//     aspects it wrote are taken off every conflict on its target not yet
+//     repaired, and a conflict with none left is repaired. A stale
+//     operation and a create repair nothing.
 //  5. After the last operation, live nodes are grouped by (parent, handle)
 //     when their kind sits in the tree and by (kind, handle) otherwise. In
 //     each group of two or more, ordered by when each node's handle or

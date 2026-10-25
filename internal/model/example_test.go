@@ -24,9 +24,9 @@ func mustID(s string) id.ID {
 // statement from A's create, and both land: whichever applies second (C, by
 // ID, since neither builds on the other) wrote over a change it never saw.
 // As-is still applies C, so C's statement wins, and reports C's update as a
-// conflict. D, written against the decision's current version, settles the
-// statement. It is not stale, so it brings no problem of its own; the B/C
-// conflict stays in the history and is still reported.
+// conflict. D, written against the decision's current version, rewrites the
+// statement C's update wrote. That repairs the conflict: it is no longer
+// reported, and D, not being stale, brings no problem of its own.
 func Example_landedConflict() {
 	csA, csB := mustID("01K8Z0000000000000000000A0"), mustID("01K8Z0000000000000000000B0")
 	csC, csD := mustID("01K8Z0000000000000000000C0"), mustID("01K8Z0000000000000000000D0")
@@ -72,6 +72,5 @@ func Example_landedConflict() {
 	// problem: C's update of change set C, conflict: true
 	// statement: "Use OAuth." (version: C's update)
 	// after D:
-	// problem: C's update of change set C, conflict: true
 	// statement: "Use OAuth with JWT access tokens." (version: D's update)
 }

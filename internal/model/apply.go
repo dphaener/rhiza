@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"cmp"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"maps"
 	"slices"
@@ -63,6 +64,13 @@ type mark struct {
 	ref Ref
 }
 
+// held is a conflict that later writes may still repair: the index of its
+// problem and the aspects of its operation not yet rewritten.
+type held struct {
+	problem int
+	left    []string
+}
+
 // builder applies operations one at a time to a model. A view is a new
 // builder that knows the input's change set IDs, apply for every operation of
 // every change set in apply order, then finish. finish does not change the
@@ -75,6 +83,10 @@ type builder struct {
 	seq      int
 	placed   map[id.ID]mark
 	problems []Problem
+	// held are the conflicts each target's later writes may still repair,
+	// and repaired the indexes in problems of those they did.
+	held     map[id.ID][]held
+	repaired map[int]struct{}
 }
 
 // newBuilder returns an empty builder whose links may name the change sets
@@ -86,8 +98,10 @@ func newBuilder(known []id.ID) *builder {
 			links:    map[id.ID]*record[Link]{},
 			children: map[id.ID]map[id.ID]struct{}{},
 		},
-		known:  make(map[id.ID]struct{}, len(known)),
-		placed: map[id.ID]mark{},
+		known:    make(map[id.ID]struct{}, len(known)),
+		placed:   map[id.ID]mark{},
+		held:     map[id.ID][]held{},
+		repaired: map[int]struct{}{},
 	}
 	for _, k := range known {
 		b.known[k] = struct{}{}
@@ -97,18 +111,28 @@ func newBuilder(known []id.ID) *builder {
 
 // clone returns a copy of b that shares nothing with it.
 func (b *builder) clone() *builder {
-	return &builder{
+	out := &builder{
 		m:        b.m.clone(),
 		known:    maps.Clone(b.known),
 		seq:      b.seq,
 		placed:   maps.Clone(b.placed),
 		problems: slices.Clone(b.problems),
+		held:     make(map[id.ID][]held, len(b.held)),
+		repaired: maps.Clone(b.repaired),
 	}
+	for t, hs := range b.held {
+		hs = slices.Clone(hs)
+		for i := range hs {
+			hs[i].left = slices.Clone(hs[i].left)
+		}
+		out.held[t] = hs
+	}
+	return out
 }
 
 // finish reports duplicate handles (step 5) and returns a copy of the model
-// with every problem so far, sorted, nil when there are none. The builder
-// itself is unchanged.
+// with every problem so far but the repaired conflicts, sorted, nil when
+// there are none. The builder itself is unchanged.
 func (b *builder) finish() (Model, []Problem) {
 	type place struct {
 		parent id.ID
@@ -127,7 +151,12 @@ func (b *builder) finish() (Model, []Problem) {
 		}
 		groups[p] = append(groups[p], k)
 	}
-	ps := slices.Clone(b.problems)
+	var ps []Problem
+	for i, p := range b.problems {
+		if _, ok := b.repaired[i]; !ok {
+			ps = append(ps, p)
+		}
+	}
 	for p, ns := range groups {
 		if len(ns) < 2 {
 			continue
@@ -148,9 +177,39 @@ func (b *builder) finish() (Model, []Problem) {
 // model.go, and records any problem.
 func (b *builder) apply(cs id.ID, o op.Op) {
 	b.seq++
-	if err := b.applyOp(cs, o); err != nil {
-		b.problems = append(b.problems, Problem{ChangeSet: cs, Op: o.ID, Err: err})
+	err := b.applyOp(cs, o)
+	if err == nil {
+		return
 	}
+	// A retirement's conflict cannot be repaired: its target takes no more
+	// writes.
+	if w := aspects(o); errors.Is(err, ErrConflict) && !slices.Contains(w, aspectRetired) {
+		t := o.Node
+		if o.Type == op.TypeLinkRetire {
+			t = o.Link
+		}
+		b.held[t] = append(b.held[t], held{problem: len(b.problems), left: w})
+	}
+	b.problems = append(b.problems, Problem{ChangeSet: cs, Op: o.ID, Err: err})
+}
+
+// repair takes the aspects an operation from t's current version wrote off
+// every conflict held on t, and marks repaired those with none left.
+func (b *builder) repair(t id.ID, wrote []string) {
+	var kept []held
+	for _, h := range b.held[t] {
+		h.left = slices.DeleteFunc(h.left, func(a string) bool { return slices.Contains(wrote, a) })
+		if len(h.left) == 0 {
+			b.repaired[h.problem] = struct{}{}
+			continue
+		}
+		kept = append(kept, h)
+	}
+	if kept == nil {
+		delete(b.held, t)
+		return
+	}
+	b.held[t] = kept
 }
 
 // applyOp returns why o was skipped, ErrConflict when it applied with a
@@ -177,10 +236,14 @@ func (b *builder) applyOp(cs id.ID, o op.Op) error {
 				return err
 			}
 		}
+		current := o.Base == r.v.Version
 		b.effect(r, ref, o)
 		r.v.History = append(r.v.History, ref)
 		r.aspects = append(r.aspects, aspects(o))
 		r.v.Version = o.ID
+		if current {
+			b.repair(o.Node, aspects(o))
+		}
 		return conflict
 
 	case op.TypeLinkRetire:

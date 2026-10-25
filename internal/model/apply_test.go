@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -63,6 +64,12 @@ func mkDec(n, node int, handle string) op.Op {
 func set(n, node, base int, name, value string) op.Op {
 	return op.Op{ID: fid(n), Type: op.TypeNodeUpdate, Node: nd(node), Base: fid(base),
 		Set: map[string]json.RawMessage{name: raw(value)}}
+}
+
+// setTwo updates fields statement and a of nd(node) from base fid(base).
+func setTwo(n, node, base int) op.Op {
+	return op.Op{ID: fid(n), Type: op.TypeNodeUpdate, Node: nd(node), Base: fid(base),
+		Set: map[string]json.RawMessage{"statement": raw(fmt.Sprintf(`"%d"`, n)), "a": raw(fmt.Sprint(n))}}
 }
 
 func unset(n, node, base int, names ...string) op.Op {
@@ -439,6 +446,58 @@ var applyCases = []applyCase{
 		problems: []want{{csC, 4, ErrMissing}},
 	},
 
+	// Repair: later writes from the current version clear a conflict.
+	{
+		name: "rewriting the conflicted field from the current version repairs the conflict",
+		steps: []step{a(mkDec(1, 1, "jwt")), b(set(2, 1, 1, "statement", `"b"`)), c(set(3, 1, 1, "statement", `"c"`)),
+			c(set(4, 1, 3, "statement", `"d"`))},
+		check: func(t *testing.T, m Model) {
+			if got := field(t, m, 1, "statement"); got != `"d"` {
+				t.Errorf("statement = %s, want the repair", got)
+			}
+		},
+	},
+	{
+		name: "an unrelated edit from the current version does not repair a conflict",
+		steps: []step{a(mkDec(1, 1, "jwt")), b(set(2, 1, 1, "statement", `"b"`)), c(set(3, 1, 1, "statement", `"c"`)),
+			c(set(4, 1, 3, "other", "1"))},
+		problems: []want{{csC, 3, ErrConflict}},
+	},
+	{
+		name: "a conflict on two fields stays while only one is rewritten",
+		steps: []step{a(mkDec(1, 1, "jwt")), b(setTwo(2, 1, 1)), c(setTwo(3, 1, 1)),
+			c(set(4, 1, 3, "statement", `"d"`))},
+		problems: []want{{csC, 3, ErrConflict}},
+	},
+	{
+		name: "a conflict on two fields is repaired once both are rewritten, by two ops",
+		steps: []step{a(mkDec(1, 1, "jwt")), b(setTwo(2, 1, 1)), c(setTwo(3, 1, 1)),
+			c(set(4, 1, 3, "statement", `"d"`)), a(set(5, 1, 4, "a", "2"))},
+	},
+	{
+		name: "a stale rewrite does not repair a conflict: it conflicts itself",
+		steps: []step{a(mkDec(1, 1, "jwt")), b(set(2, 1, 1, "statement", `"b"`)), c(set(3, 1, 1, "statement", `"c"`)),
+			c(set(4, 1, 2, "statement", `"d"`))},
+		problems: []want{{csC, 3, ErrConflict}, {csC, 4, ErrConflict}},
+	},
+	{
+		name: "a handle conflict is repaired by a rename from the current version",
+		steps: []step{a(mkDec(1, 1, "jwt")), b(rename(2, 1, 1, "pki")), c(rename(3, 1, 1, "oidc")),
+			c(rename(4, 1, 3, "sso"))},
+	},
+	{
+		name: "a stale retire's conflict stays: nothing can write the retired node",
+		steps: []step{a(mkDec(1, 1, "jwt")), b(set(2, 1, 1, "a", "1")), c(retire(3, 1, 1)),
+			c(set(4, 1, 3, "a", "2"))},
+		problems: []want{{csC, 3, ErrConflict}, {csC, 4, ErrRetired}},
+	},
+	{
+		name: "a conflict whose target is then retired stays",
+		steps: []step{a(mkDec(1, 1, "jwt")), b(set(2, 1, 1, "statement", `"b"`)), c(set(3, 1, 1, "statement", `"c"`)),
+			c(retire(4, 1, 3)), c(set(5, 1, 4, "statement", `"d"`))},
+		problems: []want{{csC, 3, ErrConflict}, {csC, 5, ErrRetired}},
+	},
+
 	// Rule 4: effects of moves and retires.
 	{
 		name: "move under a missing, retired or childless parent is skipped",
@@ -652,6 +711,23 @@ func TestApplyFinishIsASnapshot(t *testing.T) {
 	if !reflect.DeepEqual(m3, m1) || ps3 != nil {
 		t.Errorf("clone changed with the original")
 	}
+}
+
+func TestApplyCloneKeepsPendingConflicts(t *testing.T) {
+	bld := newBuilder(nil)
+	bld.apply(csA, mkDec(1, 1, "jwt"))
+	bld.apply(csB, set(2, 1, 1, "statement", `"b"`))
+	bld.apply(csC, set(3, 1, 1, "statement", `"c"`))
+	cl := bld.clone()
+	bld.apply(csC, set(4, 1, 3, "statement", `"d"`))
+
+	_, ps := bld.finish()
+	checkProblems(t, ps, nil)
+	_, ps = cl.finish()
+	checkProblems(t, ps, []want{{csC, 3, ErrConflict}})
+	cl.apply(csC, set(5, 1, 3, "statement", `"e"`))
+	_, ps = cl.finish()
+	checkProblems(t, ps, nil)
 }
 
 func TestApplyZeroModel(t *testing.T) {

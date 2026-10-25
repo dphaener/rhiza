@@ -177,6 +177,23 @@ func TestToBe(t *testing.T) {
 		})
 	}
 
+	t.Run("accepted resolver repairs a landed conflict in to-be only", func(t *testing.T) {
+		csD := csID(4)
+		sets := []changeset.ChangeSet{
+			vSet(csA, landed, mkDec(1, 1, "jwt")),
+			vSet(csB, landed, set(2, 1, 1, "statement", `"b"`)),
+			vSet(csC, landed, set(3, 1, 1, "statement", `"c"`)),
+			vSet(csD, accepted, set(4, 1, 3, "statement", `"d"`)),
+		}
+		_, ps := AsIs(sets)
+		checkProblems(t, ps, []want{{csC, 3, ErrConflict}})
+		m, ps := ToBe(sets)
+		checkProblems(t, ps, nil)
+		if got := field(t, m, 1, "statement"); got != `"d"` {
+			t.Errorf("statement = %s, want the resolver's", got)
+		}
+	})
+
 	t.Run("accepted set is in to-be", func(t *testing.T) {
 		m, ps := ToBe([]changeset.ChangeSet{
 			vSet(csA, landed, mkCap(1, 1, "a", 0, "")),
@@ -309,6 +326,20 @@ func TestWhatIf(t *testing.T) {
 	}
 	asIs, asIsPs := AsIs(sets)
 	checkProblems(t, asIsPs, nil)
+
+	t.Run("resolver repairs a landed conflict in its what-if", func(t *testing.T) {
+		sets := []changeset.ChangeSet{
+			vSet(csA, landed, mkDec(1, 1, "jwt")),
+			vSet(csB, landed, set(2, 1, 1, "statement", `"b"`)),
+			vSet(csC, landed, set(3, 1, 1, "statement", `"c"`)),
+			vSet(csD, changeset.StateProposed, set(4, 1, 3, "statement", `"d"`)),
+			vSet(csE, changeset.StateProposed, set(5, 1, 3, "other", "1")),
+		}
+		_, ps := WhatIf(sets, csD)
+		checkProblems(t, ps, nil)
+		_, ps = WhatIf(sets, csE)
+		checkProblems(t, ps, []want{{csC, 3, ErrConflict}})
+	})
 
 	t.Run("draft shows its ops on as-is", func(t *testing.T) {
 		m, ps := WhatIf(sets, csB)
