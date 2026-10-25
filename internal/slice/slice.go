@@ -185,11 +185,14 @@ type FocusItem struct {
 
 // Slice is the ten sections. Title is the focus handle for a node slice and
 // `change <short> "<intent>"` for a change slice; Change is the change set
-// sliced or viewed through, nil for none. Empty sections are nil.
+// sliced or viewed through, nil for none. ChangeSlice is true for a change
+// slice and false for a node slice, viewed through Change or not. Empty
+// sections are nil.
 type Slice struct {
 	Title       string
 	View        string
 	Change      *Change
+	ChangeSlice bool
 	Focus       []FocusItem
 	Context     []Item
 	Constraints []Item
@@ -259,6 +262,7 @@ func (b *builder) build() (Slice, error) {
 			return Slice{}, err
 		}
 		s.Title = fmt.Sprintf("change %s %q", s.Change.Short, s.Change.Intent)
+		s.ChangeSlice = true
 	default:
 		return Slice{}, ErrEmpty
 	}
