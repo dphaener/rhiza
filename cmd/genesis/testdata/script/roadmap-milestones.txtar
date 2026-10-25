@@ -1,0 +1,97 @@
+# roadmap puts milestone work first (D1-D6, D9). A milestone is an intent
+# in the live tree with a non-empty milestone field. A change set serving
+# an intent at or under a milestone is in the group of the nearest
+# milestone at or above it, so serving a done point counts for its
+# milestone and a nested milestone is a group of its own; one serving
+# several lands in each of their groups. Every other change set is in one
+# backlog after the milestones.
+
+exec genesis init
+
+# m1 is a milestone with a done point and a nested milestone m11 under it;
+# plain is not a milestone, nor is a capability with the field.
+exec genesis add intent m1 --field milestone=1 --record
+exec genesis add intent done --parent m1 --record
+exec genesis add intent m11 --parent m1 --field milestone=1.1 --record
+exec genesis add intent plain --record
+exec genesis add intent blank --field milestone= --record
+exec genesis add capability store --field milestone=9 --record
+
+# E serves the milestone.
+exec genesis change new E
+stdout 'change set 01M5PWH2ZG3C3FFDB7RZS336ZK '
+exec genesis link 01M5PWH2ZG3C3FFDB7RZS336ZK serves m1
+exec genesis propose
+
+# F serves the done point and is accepted.
+exec genesis change new F
+stdout 'change set 01M5PWH5X8NEAZEHVN4W3RKF6C '
+exec genesis link 01M5PWH5X8NEAZEHVN4W3RKF6C serves done
+exec genesis propose
+exec genesis accept --reason ok
+
+# G serves the nested milestone.
+exec genesis change new G
+stdout 'change set 01M5PWH9T8J593SXB60227482B '
+exec genesis link 01M5PWH9T8J593SXB60227482B serves m11
+exec genesis propose
+
+# H serves the plain intent, and the blank one, which is no milestone.
+exec genesis change new H
+stdout 'change set 01M5PWHCR04898T0FGJCXCMG86 '
+exec genesis link 01M5PWHCR04898T0FGJCXCMG86 serves plain
+exec genesis link 01M5PWHCR04898T0FGJCXCMG86 serves blank
+exec genesis propose
+
+# I serves the milestone and the plain intent: only the milestone's group.
+exec genesis change new I
+stdout 'change set 01M5PWHGN0J37C4AKJ7Z674QXJ '
+exec genesis link 01M5PWHGN0J37C4AKJ7Z674QXJ serves plain
+exec genesis link 01M5PWHGN0J37C4AKJ7Z674QXJ serves m1
+exec genesis propose
+
+# J serves nothing.
+exec genesis change new J
+stdout 'change set 01M5PWHMJ0YSB2JRHCP0ZFPEJT '
+exec genesis propose
+
+# K serves the done point and the nested milestone: both groups.
+exec genesis change new K
+stdout 'change set 01M5PWHPGG57CG93KFHSYGQ2Q0 '
+exec genesis link 01M5PWHPGG57CG93KFHSYGQ2Q0 serves done
+exec genesis link 01M5PWHPGG57CG93KFHSYGQ2Q0 serves m11
+exec genesis propose
+fold-ok
+
+exec genesis roadmap
+cmp stdout roadmap.md
+exec genesis roadmap --json
+stdout '"kind": "milestone"'
+stdout '"kind": "backlog"'
+stdout '"handle": "m11",\n *"id": "[0-9A-Z]+",\n *"path": \[\n *"m1"\n *\]'
+stdout '"serves": \[\]'
+! stdout '"handle": "plain"'
+! stdout '"handle": "done"'
+cp stdout roadmap.json
+exec genesis api call roadmap '{}'
+cmp stdout roadmap.json
+
+-- roadmap.md --
+# Roadmap
+
+## m1
+
+- [proposed] 01M5PWH2ZG3C3F E
+- [ready] 01M5PWH5X8NEAZ F
+- [proposed] 01M5PWHGN0J37C I
+- [proposed] 01M5PWHPGG57CG K
+
+## m1 / m11
+
+- [proposed] 01M5PWH9T8J593 G
+- [proposed] 01M5PWHPGG57CG K
+
+## Backlog
+
+- [proposed] 01M5PWHCR04898 H
+- [proposed] 01M5PWHMJ0YSB2 J

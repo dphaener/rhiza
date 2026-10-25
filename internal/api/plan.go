@@ -56,7 +56,9 @@ package api
 // flight, not the size of the model.
 
 import (
+	"bytes"
 	"cmp"
+	"encoding/json"
 	"fmt"
 	"io"
 	"maps"
@@ -75,7 +77,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "roadmap",
-		Summary:  "Show the proposed and accepted change sets, grouped by the intent they serve",
+		Summary:  "Show the proposed and accepted change sets: milestone groups first, then the backlog",
 		Request:  reflect.TypeFor[RoadmapRequest](),
 		Response: reflect.TypeFor[RoadmapResponse](),
 		Run:      runRoadmap,
@@ -99,13 +101,15 @@ type RoadmapRequest struct {
 
 // RoadmapResponse is the roadmap: its groups in order, and the view.
 type RoadmapResponse struct {
-	Groups []RoadmapGroup `json:"groups" desc:"One group per served intent in intent-tree order, then No intent"`
+	Groups []RoadmapGroup `json:"groups" desc:"One group per milestone served, in intent-tree order, then the backlog"`
 	View   string         `json:"view" desc:"The view read: as-is, to-be or what-if:<ID>"`
 }
 
-// RoadmapGroup is the change sets serving one intent, in depends-on order.
+// RoadmapGroup is the change sets of one milestone, or of the backlog, in
+// depends-on order.
 type RoadmapGroup struct {
-	Intent     RoadmapIntent      `json:"intent,omitzero" desc:"The intent served; absent for the No intent group"`
+	Kind       string             `json:"kind" desc:"milestone, or backlog for the change sets that serve no milestone"`
+	Intent     RoadmapIntent      `json:"intent,omitzero" desc:"The milestone; absent for the backlog"`
 	ChangeSets []RoadmapChangeSet `json:"change_sets" desc:"The group's change sets, in depends-on order, ties by ID"`
 }
 
@@ -124,6 +128,7 @@ type RoadmapChangeSet struct {
 	Intent    string          `json:"intent" desc:"The change set's intent"`
 	Ready     bool            `json:"ready" desc:"Whether it can be worked on now (see ready)"`
 	DependsOn []id.ID         `json:"depends_on" desc:"The change sets it depends on, sorted"`
+	Serves    []id.ID         `json:"serves" desc:"The intents it serves, sorted"`
 }
 
 // ReadyRequest asks which change sets are ready.
@@ -596,7 +601,7 @@ const planCycleReason = "depends-on cycle"
 // the count stays fixed, not one per change set or node.
 func planGather(r *reader) (planInputs, error) {
 	in := planInputs{ops: map[id.ID][]op.Op{}, nodes: map[id.ID]gmodel.Node{},
-		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}}
+		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}, milestones: map[id.ID]bool{}}
 	var err error
 	if in.changeSets, err = r.ChangeSets(); err != nil {
 		return planInputs{}, err
@@ -799,16 +804,51 @@ func planGather(r *reader) (planInputs, error) {
 		slices.Reverse(path)
 		in.intentPath[l.To] = path
 	}
+
+	// The milestones among the served intents and their ancestors: their
+	// fields, read in one batch.
+	var intents []id.ID
+	for i, path := range in.intentPath {
+		for _, n := range append([]id.ID{i}, path...) {
+			if in.nodes[n].Kind == op.KindIntent {
+				intents = append(intents, n)
+			}
+		}
+	}
+	ns, err := r.NodesFields(intents)
+	if err != nil {
+		return planInputs{}, err
+	}
+	for _, n := range ns {
+		if n.Kind == op.KindIntent && planMilestoneField(n.Fields) {
+			in.milestones[n.ID] = true
+		}
+	}
 	return in, nil
 }
 
+// planMilestoneField reports whether fields has a non-empty milestone:
+// present, and neither JSON "" nor null.
+func planMilestoneField(fields map[string]json.RawMessage) bool {
+	v, ok := fields["milestone"]
+	if !ok {
+		return false
+	}
+	v = bytes.TrimSpace(v)
+	return len(v) > 0 && string(v) != `""` && string(v) != "null"
+}
+
 // planCreatedNode adds node i to in.nodes from the node.create op of an
-// in-flight change set, if one creates it, so it can be named.
+// in-flight change set, if one creates it, so it can be named; an intent
+// it creates with a non-empty milestone field is a milestone.
 func planCreatedNode(i id.ID, in planInputs) {
 	for _, c := range in.changeSets {
 		for _, o := range in.ops[c.ID] {
 			if o.Type == op.TypeNodeCreate && o.Node == i {
 				in.nodes[i] = gmodel.Node{ID: i, Kind: o.Kind, Handle: o.Handle, Parent: o.Parent, Key: o.Key}
+				if o.Kind == op.KindIntent && planMilestoneField(o.Fields) {
+					in.milestones[i] = true
+				}
 				return
 			}
 		}
@@ -837,17 +877,21 @@ func runRoadmap(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	resp := RoadmapResponse{Groups: []RoadmapGroup{}, View: v}
+	// A milestone may be only an ancestor of the intents served.
+	paths := planAncestorPaths(in.intentPath)
 	for _, g := range res.groups {
-		rg := RoadmapGroup{ChangeSets: []RoadmapChangeSet{}}
-		if !g.intent.IsZero() {
+		rg := RoadmapGroup{Kind: "backlog", ChangeSets: []RoadmapChangeSet{}}
+		if !g.backlog {
+			rg.Kind = "milestone"
 			rg.Intent = RoadmapIntent{ID: g.intent, Handle: in.nodes[g.intent].Handle, Path: []string{}}
-			for _, a := range in.intentPath[g.intent] {
+			for _, a := range paths[g.intent] {
 				rg.Intent.Path = append(rg.Intent.Path, planHandle(a, in.nodes))
 			}
 		}
 		for _, p := range g.members {
 			rg.ChangeSets = append(rg.ChangeSets, RoadmapChangeSet{ID: p.info.ID, State: p.info.State,
-				Kind: p.info.Kind, Intent: p.info.Intent, Ready: p.ready, DependsOn: orEmpty(p.dependsOn)})
+				Kind: p.info.Kind, Intent: p.info.Intent, Ready: p.ready, DependsOn: orEmpty(p.dependsOn),
+				Serves: orEmpty(slices.Clone(p.serves))})
 		}
 		resp.Groups = append(resp.Groups, rg)
 	}
@@ -863,8 +907,8 @@ func (r RoadmapResponse) Human(w io.Writer) {
 		return
 	}
 	for _, g := range r.Groups {
-		name := "No intent"
-		if !g.Intent.ID.IsZero() {
+		name := "Backlog"
+		if g.Kind != "backlog" {
 			name = strings.Join(append(slices.Clone(g.Intent.Path), cmp.Or(g.Intent.Handle, shortID(g.Intent.ID))), " / ")
 		}
 		fmt.Fprintf(w, "\n## %s\n\n", name)

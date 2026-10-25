@@ -1,8 +1,10 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 
@@ -583,7 +585,8 @@ func TestRoadmapEndToEnd(t *testing.T) {
 	if out := human(t, resp); !strings.Contains(out, "Nothing planned yet.") {
 		t.Errorf("empty roadmap = %q", out)
 	}
-	recordWrite(t, ctx, "add", `{"kind":"intent","handle":"grow"}`)
+	recordWrite(t, ctx, "add", `{"kind":"intent","handle":"org"}`)
+	recordWrite(t, ctx, "add", `{"kind":"intent","handle":"grow","parent":"org","json_fields":["milestone=null"]}`)
 	recordWrite(t, ctx, "add", `{"kind":"intent","handle":"fast","parent":"grow"}`)
 	fast := nodeAt(t, ctx, "fast").ID
 	a := newChange(t, ctx, `{"intent":"First"}`).ChangeSet
@@ -594,14 +597,42 @@ func TestRoadmapEndToEnd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// fast is no milestone, so First is in the backlog.
+	// No milestone is at or above fast (grow's is null), so First is in
+	// the backlog.
 	r := resp.(RoadmapResponse)
-	if len(r.Groups) != 1 || !r.Groups[0].Intent.ID.IsZero() || r.Groups[0].ChangeSets[0].ID != a {
+	if len(r.Groups) != 1 || r.Groups[0].Kind != "backlog" || !r.Groups[0].Intent.ID.IsZero() ||
+		r.Groups[0].ChangeSets[0].ID != a || !slices.Equal(r.Groups[0].ChangeSets[0].Serves, []id.ID{fast}) {
 		t.Fatalf("roadmap = %+v", r)
 	}
-	if out := human(t, r); !strings.Contains(out, "- [proposed] "+shortID(a)+" First\n") {
+	if out := human(t, r); !strings.Contains(out, "\n## Backlog\n\n- [proposed] "+shortID(a)+" First\n") {
+		t.Errorf("human = %q", out)
+	}
+	// grow, a milestone, is only an ancestor of fast; its group still has
+	// its path.
+	recordWrite(t, ctx, "set", `{"ref":"grow","fields":["milestone=2"]}`)
+	resp, err = callOp(t, ctx, "roadmap", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r = resp.(RoadmapResponse)
+	if g := r.Groups; len(g) != 1 || g[0].Kind != "milestone" || g[0].Intent.Handle != "grow" ||
+		!slices.Equal(g[0].Intent.Path, []string{"org"}) || g[0].ChangeSets[0].ID != a {
+		t.Fatalf("roadmap = %+v", r)
+	}
+	if out := human(t, r); !strings.Contains(out, "\n## org / grow\n\n- [proposed] "+shortID(a)+" First\n") {
 		t.Errorf("human = %q", out)
 	}
 	_, err = callOp(t, ctx, "roadmap", `{"view":"what-if:nothing"}`)
 	wantExit(t, err, 4)
+}
+
+func TestPlanMilestoneField(t *testing.T) {
+	for raw, want := range map[string]bool{`"2"`: true, `1.5`: true, `""`: false, `null`: false, ` null `: false, ``: false} {
+		if got := planMilestoneField(map[string]json.RawMessage{"milestone": json.RawMessage(raw)}); got != want {
+			t.Errorf("milestone %q = %v, want %v", raw, got, want)
+		}
+	}
+	if planMilestoneField(map[string]json.RawMessage{"statement": json.RawMessage(`"x"`)}) || planMilestoneField(nil) {
+		t.Error("no milestone field: is a milestone")
+	}
 }
