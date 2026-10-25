@@ -162,6 +162,50 @@ func TestClosure(t *testing.T) {
 	}
 }
 
+func TestDependencies(t *testing.T) {
+	tests := []struct {
+		name string
+		sets []ChangeSet
+		want []id.ID
+	}{
+		{"no dependencies", []ChangeSet{folded(csA, StateDraft)}, nil},
+		{"goes through landed", []ChangeSet{
+			folded(csA, StateDraft, dep(1, csA, csB)),
+			folded(csB, StateLanded, dep(2, csB, csC)),
+			folded(csC, StateLanded),
+		}, idList(csB, csC)},
+		{"landed and in flight", []ChangeSet{
+			folded(csA, StateDraft, dep(1, csA, csB), dep(2, csA, csC)),
+			folded(csB, StateLanded), folded(csC, StateAccepted, dep(3, csC, csD)),
+			folded(csD, StateLanded),
+		}, idList(csB, csC, csD)},
+		{"stops at dropped", []ChangeSet{
+			folded(csA, StateDraft, dep(1, csA, csB), dep(2, csA, csD)),
+			folded(csB, StateWithdrawn, dep(3, csB, csC)),
+			folded(csC, StateLanded), folded(csD, StateRejected),
+		}, nil},
+		{"not in the log skipped", []ChangeSet{
+			folded(csA, StateDraft, dep(1, csA, csE), dep(2, csA, csB)), folded(csB, StateLanded),
+		}, idList(csB)},
+		{"tolerates a cycle", []ChangeSet{
+			folded(csA, StateDraft, dep(1, csA, csB)),
+			folded(csB, StateDraft, dep(2, csB, csA)),
+		}, idList(csB)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Dependencies(tt.sets, csA); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Dependencies = %v, want %v", got, tt.want)
+			}
+			rev := slices.Clone(tt.sets)
+			slices.Reverse(rev)
+			if got := Dependencies(rev, csA); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Dependencies reversed = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestWouldCycle(t *testing.T) {
 	chain := []ChangeSet{
 		folded(csA, StateDraft, dep(1, csA, csB)),

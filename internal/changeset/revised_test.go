@@ -3,6 +3,7 @@ package changeset
 import (
 	"encoding/json"
 	"reflect"
+	"slices"
 	"testing"
 
 	"github.com/dphaener/genesis/internal/entry"
@@ -134,6 +135,43 @@ func TestRevised(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			sets := []ChangeSet{chain(t, csA, c.a...), chain(t, csB, c.b...)}
 			got := Revised(sets, csB)
+			if !reflect.DeepEqual(got, c.want) {
+				t.Fatalf("Revised = %+v, want %+v", got, c.want)
+			}
+		})
+	}
+}
+
+// TestRevisedLanded: a dependency's revision or drop under B's write still
+// counts once the dependency has landed, until B writes its op again. The
+// fold keeps a landed change set's History and Drops; only the state is
+// set here.
+func TestRevisedLanded(t *testing.T) {
+	created := revCreate("h", "i", fields("statement", `"a"`))
+	bWrites := revUpdate(10, fields("statement", `"b"`))
+	bSteps := []step{{3, intention()}, {4, ops(dep(1, csB, csA), bWrites)}}
+	landed := func(s ChangeSet) ChangeSet { s.State = StateLanded; return s }
+	cases := []struct {
+		name string
+		a    ChangeSet
+		b    []step
+		want []RevisedConflict
+	}{
+		{"revised", landed(chain(t, csA, step{1, intention()}, step{2, ops(created)},
+			step{5, ops(revCreate("h", "i", fields("statement", `"a2"`)))})), bSteps,
+			[]RevisedConflict{{ChangeSet: csB, Op: opID(10), Dependency: csA, DependencyOp: opID(1),
+				Target: revNode, Aspects: []string{"field:statement"}}}},
+		{"dropped", landed(chain(t, csA, step{1, intention()}, step{2, ops(created)},
+			step{5, Ops{Drop: []id.ID{opID(1)}}})), bSteps,
+			[]RevisedConflict{{ChangeSet: csB, Op: opID(10), Dependency: csA, DependencyOp: opID(1),
+				Target: revNode, Dropped: true}}},
+		{"rewritten after the revision", landed(chain(t, csA, step{1, intention()}, step{2, ops(created)},
+			step{5, ops(revCreate("h", "i", fields("statement", `"a2"`)))})),
+			append(slices.Clone(bSteps), step{6, ops(bWrites)}), nil},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got := Revised([]ChangeSet{c.a, chain(t, csB, c.b...)}, csB)
 			if !reflect.DeepEqual(got, c.want) {
 				t.Fatalf("Revised = %+v, want %+v", got, c.want)
 			}

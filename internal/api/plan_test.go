@@ -714,6 +714,44 @@ func TestReadyRestsOnEndToEnd(t *testing.T) {
 	}
 }
 
+func TestReadyRevisedLandedEndToEnd(t *testing.T) {
+	// B depends on M, M on A. B sets the statement of A's base; A then
+	// revises it in place, and A and M land. B still went under A's
+	// revision (D13), found through the landed M.
+	ctx := readCtx(t)
+	a := newChange(t, ctx, `{"intent":"A"}`).ChangeSet
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"base","fields":["statement=Base"]}`)
+	m := newChange(t, ctx, `{"intent":"M"}`).ChangeSet
+	planLink(t, ctx, op.LinkDependsOn, m, a)
+	b := newChange(t, ctx, `{"intent":"B"}`).ChangeSet
+	planLink(t, ctx, op.LinkDependsOn, b, m)
+	mustWrite(t, ctx, "set", `{"ref":"base","fields":["statement=FromB"]}`)
+	c := *ctx
+	c.ChangeRef = a.String()
+	mustWrite(t, &c, "set", `{"ref":"base","fields":["statement=Revised"]}`)
+	for _, cs := range []id.ID{a, m} {
+		c.ChangeRef = cs.String()
+		move(t, &c, "propose", `{}`)
+		move(t, &c, "accept", `{}`)
+		move(t, &c, "land", `{}`)
+	}
+	r := readyOf(t, ctx, `{}`)
+	if len(r.ChangeSets) != 1 || r.ChangeSets[0].ID != b {
+		t.Fatalf("ready = %+v", r)
+	}
+	want := []string{"not accepted: draft", shortID(a) + " revised under it: 1 operations"}
+	if !reflect.DeepEqual(r.ChangeSets[0].Reasons, want) {
+		t.Errorf("B reasons = %q, want %q", r.ChangeSets[0].Reasons, want)
+	}
+
+	// B writing the statement again clears it.
+	mustWrite(t, ctx, "set", `{"ref":"base","fields":["statement=FromBAgain"]}`)
+	r = readyOf(t, ctx, `{}`)
+	if want := []string{"not accepted: draft"}; !reflect.DeepEqual(r.ChangeSets[0].Reasons, want) {
+		t.Errorf("B reasons after rewrite = %q, want %q", r.ChangeSets[0].Reasons, want)
+	}
+}
+
 func TestRoadmapEndToEnd(t *testing.T) {
 	ctx := readCtx(t)
 	resp, err := callOp(t, ctx, "roadmap", `{}`)

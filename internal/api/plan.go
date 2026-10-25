@@ -728,6 +728,9 @@ func planGather(r *reader) (planInputs, error) {
 		return planInputs{}, err
 	}
 	in.sets = append(folded, landed)
+	if in.sets, err = planLandedDeps(r, in.changeSets, flying, in.sets); err != nil {
+		return planInputs{}, err
+	}
 
 	// Every node a chain below starts from: the touched nodes, the parents
 	// ops give them, and the served intents; read with their ancestors.
@@ -917,6 +920,58 @@ func planLanded(r *reader, flying []id.ID, dropped []changeset.ChangeSet) (chang
 		}
 	}
 	return out, nil
+}
+
+// planLandedDeps adds to sets, folded with their real IDs and History, the
+// landed change sets that a flying change set depends on, directly or
+// through landed ones, so that changeset.Revised sees a landed
+// dependency's revisions and drops (D13). Only those are read; the walk
+// follows the depends-on links in sets and, for each landed change set
+// added, its live as-is depends-on links, which join the stand-in (the
+// zero-ID landed change set in sets).
+func planLandedDeps(r *reader, all []index.ChangeSetInfo, flying []id.ID, sets []changeset.ChangeSet) ([]changeset.ChangeSet, error) {
+	states := make(map[id.ID]changeset.State, len(all))
+	for _, c := range all {
+		states[c.ID] = c.State
+	}
+	stand := slices.IndexFunc(sets, func(s changeset.ChangeSet) bool { return s.ID.IsZero() })
+	seen := map[id.ID]bool{}
+	from := flying
+	for len(from) > 0 {
+		var next []id.ID
+		for _, c := range from {
+			for _, d := range changeset.DependsOn(sets, c) {
+				if !seen[d] && states[d] == changeset.StateLanded {
+					seen[d] = true
+					next = append(next, d)
+				}
+			}
+		}
+		if len(next) == 0 {
+			break
+		}
+		slices.SortFunc(next, id.Compare)
+		entries, err := r.EntriesOf(next)
+		if err != nil {
+			return nil, err
+		}
+		for _, c := range next {
+			s, _ := changeset.Fold(c, entries[c])
+			sets = append(sets, s)
+		}
+		ls, err := r.x.LinksAt(index.AsIs, next, index.From)
+		if err != nil {
+			return nil, readError(err)
+		}
+		for _, l := range ls {
+			if l.Type == op.LinkDependsOn && !l.Retired && stand >= 0 {
+				sets[stand].Ops = append(sets[stand].Ops,
+					op.Op{Type: op.TypeLinkCreate, Link: l.ID, LinkType: l.Type, From: l.From, To: l.To})
+			}
+		}
+		from = next
+	}
+	return sets, nil
 }
 
 // planCreatedNode adds node i to in.nodes from the node.create op of an

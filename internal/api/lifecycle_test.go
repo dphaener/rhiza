@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -384,4 +385,62 @@ func TestLandConflict(t *testing.T) {
 	wantLandRefused(t, ctx, b, want, "genesis check")
 	ctx.DryRun = true
 	wantLandRefused(t, ctx, b, want, "genesis check")
+}
+
+// TestLandRevisedLanded: A revises in place a field B wrote; once A has
+// landed, land still refuses B (D13) until B writes the field again.
+func TestLandRevisedLanded(t *testing.T) {
+	ctx := initCtx(t)
+	a := newChange(t, ctx, `{"intent":"A"}`).ChangeSet
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"base","fields":["statement=Base"]}`)
+	b := newChange(t, ctx, `{"intent":"B"}`).ChangeSet
+	mustWrite(t, ctx, "link", fmt.Sprintf(`{"from":%q,"type":"depends-on","to":%q}`, b, a))
+	mustWrite(t, ctx, "set", `{"ref":"base","fields":["statement=FromB"]}`)
+	ctx.ChangeRef = a.String()
+	mustWrite(t, ctx, "set", `{"ref":"base","fields":["statement=Revised"]}`)
+	for _, cs := range []id.ID{a, b} {
+		ctx.ChangeRef = cs.String()
+		move(t, ctx, "propose", `{}`)
+		move(t, ctx, "accept", `{}`)
+	}
+	ctx.ChangeRef = a.String()
+	move(t, ctx, "land", `{}`)
+
+	want := "cannot land change set " + b.String() + ": model: conflict: change set " + a.String() + " revised op "
+	wantLandRefused(t, ctx, b, want, "genesis check")
+
+	ctx.ChangeRef = b.String()
+	mustWrite(t, ctx, "set", `{"ref":"base","fields":["statement=FromBAgain"]}`)
+	if r := move(t, ctx, "land", `{}`); r.To != changeset.StateLanded {
+		t.Errorf("land B = %+v", r)
+	}
+}
+
+// TestLandProblem: an op on a node that is not there is not a conflict, but
+// land refuses it all the same, pointing at the what-if view.
+func TestLandProblem(t *testing.T) {
+	ctx := initCtx(t)
+	b := newChange(t, ctx, `{"intent":"R","kind":"record"}`).ChangeSet
+	w := ctxWorkspace(t, ctx)
+	actor, forID, err := w.resolveActor(b, ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	newID := func() id.ID {
+		v, err := w.ids.New()
+		if err != nil {
+			t.Fatal(err)
+		}
+		return v
+	}
+	ghost, base := newID(), newID()
+	o := op.Op{ID: newID(), Type: op.TypeNodeUpdate, Node: ghost, Base: base,
+		Set: map[string]json.RawMessage{"statement": json.RawMessage(`"x"`)}}
+	if _, err := w.appendEntry(b, changeset.Ops{Ops: []op.Op{o}}, actor, forID); err != nil {
+		t.Fatal(err)
+	}
+	want := "cannot land change set " + b.String() + ": model: not found"
+	wantLandRefused(t, ctx, b, want, "genesis slice --change "+shortID(b)+" --view what-if")
+	ctx.DryRun = true
+	wantLandRefused(t, ctx, b, want, "genesis slice --change "+shortID(b)+" --view what-if")
 }

@@ -6,7 +6,8 @@ package changeset
 // matches. That would let B overwrite a value it never saw, so a revision
 // is checked against B's writes.
 //
-// For each change set A in B's closure and each current op o of B, let eB
+// For each change set A that B depends on, directly or through others,
+// landed or in flight (Dependencies), and each current op o of B, let eB
 // be the entry that last wrote o. An op X of A on the same node or link as
 // o has a version as of eB: the last one written by an entry of A that
 // sorts before eB. When X had no version yet, B did not write against it
@@ -48,8 +49,8 @@ type RevisedConflict struct {
 	// ChangeSet is the dependent change set and Op its op.
 	ChangeSet id.ID
 	Op        id.ID
-	// Dependency is the change set in ChangeSet's closure that revised or
-	// dropped DependencyOp.
+	// Dependency is the change set ChangeSet depends on (landed or in
+	// flight) that revised or dropped DependencyOp.
 	Dependency   id.ID
 	DependencyOp id.ID
 	// Target is the node or link both ops write, or for a drop the name Op
@@ -63,7 +64,7 @@ type RevisedConflict struct {
 }
 
 // Revised returns the conflicts between the current ops of change set cs
-// and the revisions and drops of the change sets in its closure, as
+// and the revisions and drops of its landed and in-flight dependencies, as
 // described at the top of this file. They are sorted by cs's op, then the
 // dependency, then its op, and are nil when there are none. A cs not in
 // sets has no ops and so no conflicts.
@@ -77,7 +78,7 @@ func Revised(sets []ChangeSet, cs id.ID) []RevisedConflict {
 		return nil
 	}
 	var out []RevisedConflict
-	for _, depID := range Closure(sets, cs) {
+	for _, depID := range Dependencies(sets, cs) {
 		a := byID[depID]
 		for _, o := range b.Ops {
 			h := b.History[o.ID]

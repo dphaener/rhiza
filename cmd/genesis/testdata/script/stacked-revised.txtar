@@ -2,7 +2,7 @@
 # statement; A then revises its own node.create of base in place (same op
 # ID, so base's version is unchanged) and the revision changes the statement
 # too. B would overwrite a value it never saw: check warns with next, ready
-# gives the reason, and land holds B back while A is in flight.
+# gives the reason, and land refuses B, before A lands and after.
 
 exec genesis init
 
@@ -52,14 +52,39 @@ stdout '"reasons": \[\n +"depends on 01M5PWGEF85Y18 \(accepted\)",\n +"01M5PWGEF
 stderr '^genesis: cannot land change set 01M5PWGKBGYFZMTH8Y8AF1G8GN: it depends on 01M5PWGEF85Y185JZ2ZGCNH40N \(accepted\)$'
 stderr '^next: genesis land --change 01M5PWGEF85Y18$'
 
-# A lands.
+# A lands. The revision still went under B's write: A is landed but B
+# depends on it, so check still warns, ready gives the reason, and land
+# refuses B, exit 3, with next.
 exec genesis land --change 01M5PWGEF85Y185JZ2ZGCNH40N
 fold-ok
+exec genesis render
+exec genesis check
+stdout '^ok$'
+stdout '^warn in-flight change set 01M5PWGKBGYFZMTH8Y8AF1G8GN, op 01M5PWGNA0MVZ1H5AXG5VQ0BY9: model: conflict: change set 01M5PWGEF85Y185JZ2ZGCNH40N revised op 01M5PWGJC82P7YGZTWYJ3Y88Z9 on 01M5PWGJC82P7YGZTWYFFZ0VJG \(field:statement\) after op 01M5PWGNA0MVZ1H5AXG5VQ0BY9 was written$'
+exec genesis ready --json
+stdout '"reasons": \[\n +"01M5PWGEF85Y18 revised under it: 1 operations"\n +\]'
+! stdout '"next"'
+! exec genesis land --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
+stderr '^genesis: cannot land change set 01M5PWGKBGYFZMTH8Y8AF1G8GN: model: conflict: change set 01M5PWGEF85Y185JZ2ZGCNH40N revised op 01M5PWGJC82P7YGZTWYJ3Y88Z9 '
+stderr '^next: genesis check$'
+exec sh -c 'genesis land --change 01M5PWGKBGYFZMTH8Y8AF1G8GN 2>/dev/null; echo exit $?'
+stdout '^exit 3$'
 
-# GAP against D13 ("land refuses it"): once A has landed, A is no longer in
-# B's closure, so the revised-in-place analysis no longer sees it. check
-# reports nothing, ready says B is ready, and `genesis land --change B`
-# succeeds, overwriting statement=Revised with FromB, a value B never saw.
-# Not asserted here; see the task 11 report. When fixed, assert:
-#   ! exec genesis land --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
-#   stderr '^next: genesis check$'
+# B, having seen Revised, writes the statement again: the conflict clears
+# and B lands with its new value.
+exec genesis show base --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
+stdout '^FromB$'
+exec genesis set base --field statement=FromBAgain --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
+exec genesis check
+! stdout 'conflict'
+exec genesis ready --json
+stdout '"next": "01M5PWGKBGYFZMTH8Y8AF1G8GN"'
+exec genesis land --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
+stdout '^Landed change set 01M5PWGKBGYFZMTH8Y8AF1G8GN \(accepted → landed\)\.$'
+fold-ok
+exec genesis show base
+stdout '^FromBAgain$'
+exec genesis render
+exec genesis check
+stdout '^ok$'
+! stdout 'warn in-flight'

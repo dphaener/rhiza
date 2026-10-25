@@ -196,8 +196,10 @@ func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
 }
 
 // checkLand refuses to land cs while a change set it depends on has not
-// landed, naming the first by ID, or while cs's what-if view has a conflict
-// on one of cs's own ops.
+// landed, naming the first by ID, or while cs's what-if view has a problem
+// on cs itself or one of its own ops: a conflict (next genesis check) or
+// any other, such as an op resting on a node that is gone (next the what-if
+// slice), so nothing lands that check would then fail.
 func checkLand(sets []changeset.ChangeSet, cs id.ID) error {
 	states := make(map[id.ID]changeset.State, len(sets))
 	for _, s := range sets {
@@ -220,9 +222,14 @@ func checkLand(sets []changeset.ChangeSet, cs id.ID) error {
 	}
 	_, problems := gmodel.WhatIf(sets, cs)
 	for _, p := range problems {
-		if p.ChangeSet == cs && errors.Is(p.Err, gmodel.ErrConflict) {
-			return Conflictf("cannot land change set %s: %v", cs, p.Err).WithNext("genesis check")
+		if p.ChangeSet != cs {
+			continue
 		}
+		next := "genesis slice --change " + shortID(cs) + " --view what-if"
+		if errors.Is(p.Err, gmodel.ErrConflict) {
+			next = "genesis check"
+		}
+		return Conflictf("cannot land change set %s: %v", cs, p.Err).WithNext(next)
 	}
 	return nil
 }

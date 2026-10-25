@@ -74,6 +74,38 @@ func Closure(sets []ChangeSet, cs id.ID) []id.ID {
 	return out
 }
 
+// Dependencies returns every change set cs depends on, directly or through
+// others, that is landed or in flight, sorted by ID. It excludes cs, skips
+// IDs not in sets, and does not enter dropped change sets. Unlike Closure
+// it goes through landed ones: their revisions and drops still count
+// against cs's writes (see Revised).
+func Dependencies(sets []ChangeSet, cs id.ID) []id.ID {
+	states := make(map[id.ID]State, len(sets))
+	for _, s := range sets {
+		states[s.ID] = s.State
+	}
+	landed, ops := landedLinks(sets), opsByID(sets)
+	seen := map[id.ID]bool{cs: true}
+	var out []id.ID
+	next := []id.ID{cs}
+	for len(next) > 0 {
+		at := next[len(next)-1]
+		next = next[:len(next)-1]
+		for _, to := range dependsOn(landed, at, ops[at]) {
+			if seen[to] {
+				continue
+			}
+			seen[to] = true
+			if s, ok := states[to]; ok && (s.inFlight() || s == StateLanded) {
+				out = append(out, to)
+				next = append(next, to)
+			}
+		}
+	}
+	slices.SortFunc(out, id.Compare)
+	return out
+}
+
 // WouldCycle reports whether a new link "from depends-on to" would close a
 // loop: from and to are the same, or to already reaches from over the
 // dependencies of every change set in sets.
