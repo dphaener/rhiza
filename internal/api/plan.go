@@ -10,11 +10,16 @@ package api
 //   - A change set is in flight when it is draft, proposed or accepted.
 //   - A change set's links (D7) are the view's links that start or end at
 //     it, plus the link.create ops inside the change set itself that start
-//     or end at it, so that a proposal already says what it serves and what
-//     it depends on before it is accepted. Duplicates (the same link ID)
-//     count once, the view's copy first; retired links do not count.
-//   - A change set serves the intents its serves links point to, and
-//     depends on the change sets its depends-on links point to.
+//     or end at it, so that a proposal already says what it serves before
+//     it is accepted. Duplicates (the same link ID) count once, the view's
+//     copy first; retired links do not count.
+//   - A change set serves the intents its serves links point to. It
+//     depends on the change sets changeset.DependsOn gives (D1): its live
+//     depends-on links that have landed or are in its own ops, net of its
+//     own retires, whatever the view. A link another change set writes
+//     does not count.
+//   - A change set rests on a dropped one as changeset.RestsOn says (D7),
+//     and a dependency revised under it as changeset.Revised says (D13).
 //   - The nodes a change set touches are the targets of its node ops.
 //   - An open question is a live question node with no live answers link
 //     to it.
@@ -23,11 +28,17 @@ package api
 //     of such a node (in the view, or under the new parent its own ops
 //     give it).
 //   - A change set is ready (D8) when it is accepted, every change set it
-//     depends on has landed, and no open question blocks it. One that isn't
+//     depends on has landed, none of its ops rests on a dropped change set
+//     or has a dependency revised under it, and no open question blocks
+//     it. One that isn't
 //     says why, in a fixed order: "not accepted: <state>", then "depends
 //     on <change set> (<state>)" for each dependency not landed ("(not in
-//     the log)" for one that isn't), then "blocked by question <handle> on
-//     <this change set|node handle>", then "depends-on cycle".
+//     the log)" for one that isn't), then "rests on <change set> (<state>):
+//     N operations" for each dropped change set it rests on, then
+//     "<change set> revised under it: N operations" for each dependency
+//     whose revisions or drops went under N of its ops, then "blocked by
+//     question <handle> on <this change set|node handle>", then
+//     "depends-on cycle".
 //
 // The roadmap (D9) puts milestone work first. A milestone is an intent
 // in the live tree whose milestone field is non-empty. A served intent
@@ -159,6 +170,10 @@ type planInputs struct {
 	changeSets []index.ChangeSetInfo
 	// ops is each in-flight change set's folded ops.
 	ops map[id.ID][]op.Op
+	// sets is what the dependency analyses read: every in-flight and
+	// dropped change set folded, and planLanded's stand-in for the landed
+	// ones.
+	sets []changeset.ChangeSet
 	// links holds the view's links the core needs, live or retired, in any
 	// order and possibly repeated: those at in-flight change sets, blocks
 	// links to touched nodes and their ancestors, and answers links to the
@@ -301,8 +316,6 @@ func planCore(in planInputs) planResult {
 			switch {
 			case l.From == c.ID && l.Type == op.LinkServes:
 				p.serves = append(p.serves, l.To)
-			case l.From == c.ID && l.Type == op.LinkDependsOn:
-				p.dependsOn = append(p.dependsOn, l.To)
 			case l.To == c.ID && l.Type == op.LinkBlocks && open(l.From):
 				blockers = append(blockers, planBlocker{question: l.From, target: c.ID})
 			}
@@ -331,7 +344,7 @@ func planCore(in planInputs) planResult {
 			}
 		}
 		p.serves = planSortIDs(p.serves)
-		p.dependsOn = planSortIDs(p.dependsOn)
+		p.dependsOn = changeset.DependsOn(in.sets, c.ID)
 
 		if c.State != changeset.StateAccepted {
 			p.reasons = append(p.reasons, "not accepted: "+string(c.State))
@@ -344,6 +357,10 @@ func planCore(in planInputs) planResult {
 				p.reasons = append(p.reasons, fmt.Sprintf("depends on %s (%s)", shortID(d), s))
 			}
 		}
+		for _, r := range changeset.RestsOn(in.sets, c.ID) {
+			p.reasons = append(p.reasons, fmt.Sprintf("rests on %s (%s): %d operations", shortID(r.ChangeSet), r.State, len(r.Ops)))
+		}
+		p.reasons = append(p.reasons, planRevisedReasons(changeset.Revised(in.sets, c.ID))...)
 		for _, b := range planSortBlockers(c.ID, blockers, in.nodes) {
 			on := "this change set"
 			if b.target != c.ID {
@@ -455,6 +472,20 @@ func planLinksOf(cs id.ID, view []gmodel.Link, inView map[id.ID]bool, ops []op.O
 			seen[l.ID] = true
 			out = append(out, l)
 		}
+	}
+	return out
+}
+
+// planRevisedReasons is one reason per dependency in rs, by ID, counting
+// the dependent's ops it went under.
+func planRevisedReasons(rs []changeset.RevisedConflict) []string {
+	under := map[id.ID][]id.ID{}
+	for _, r := range rs {
+		under[r.Dependency] = append(under[r.Dependency], r.Op)
+	}
+	var out []string
+	for _, d := range slices.SortedFunc(maps.Keys(under), id.Compare) {
+		out = append(out, fmt.Sprintf("%s revised under it: %d operations", shortID(d), len(planSortIDs(under[d]))))
 	}
 	return out
 }
@@ -658,13 +689,17 @@ func planGather(r *reader) (planInputs, error) {
 		n, ok := in.nodes[i]
 		return n, ok, nil
 	}
-	var flying []id.ID
+	var flying, dropped []id.ID
 	for _, c := range in.changeSets {
-		if planInFlight(c.State) {
+		switch {
+		case planInFlight(c.State):
 			flying = append(flying, c.ID)
+		case changeset.Dropped(c.State):
+			dropped = append(dropped, c.ID)
 		}
 	}
-	entries, err := r.EntriesOf(flying)
+	folding := slices.Concat(flying, dropped)
+	entries, err := r.EntriesOf(folding)
 	if err != nil {
 		return planInputs{}, err
 	}
@@ -676,19 +711,23 @@ func planGather(r *reader) (planInputs, error) {
 	csLinks = slices.Clone(csLinks)
 	// Folding is CPU work over entries already read: one change set per
 	// goroutine.
-	folded := make([][]op.Op, len(flying))
+	folded := make([]changeset.ChangeSet, len(folding))
 	var wg sync.WaitGroup
-	for k, c := range flying {
+	for k, c := range folding {
 		wg.Go(func() {
-			f, _ := changeset.Fold(c, entries[c])
-			folded[k] = f.Ops
+			folded[k], _ = changeset.Fold(c, entries[c])
 		})
 	}
 	wg.Wait()
 	for k, c := range flying {
-		in.ops[c] = folded[k]
-		csLinks = append(csLinks, planOwnLinks(c, folded[k])...)
+		in.ops[c] = folded[k].Ops
+		csLinks = append(csLinks, planOwnLinks(c, folded[k].Ops)...)
 	}
+	landed, err := planLanded(r, flying, folded[len(flying):])
+	if err != nil {
+		return planInputs{}, err
+	}
+	in.sets = append(folded, landed)
 
 	// Every node a chain below starts from: the touched nodes, the parents
 	// ops give them, and the served intents; read with their ancestors.
@@ -836,6 +875,48 @@ func planMilestoneField(fields map[string]json.RawMessage) bool {
 	}
 	v = bytes.TrimSpace(v)
 	return len(v) > 0 && string(v) != `""` && string(v) != "null"
+}
+
+// planLanded is a stand-in for the landed change sets, so that the
+// analyses over planInputs.sets need not read their entries (too many to
+// fold within a read's budget). It holds what they ask of landed ops: a
+// link.create for each depends-on link from a flying change set that is
+// live in as-is, whatever r's view (a landed retire leaves it out), and a
+// create of each node or link a dropped change set creates that as-is has
+// (a landed change set creates it too). Its ID is zero.
+func planLanded(r *reader, flying []id.ID, dropped []changeset.ChangeSet) (changeset.ChangeSet, error) {
+	out := changeset.ChangeSet{State: changeset.StateLanded}
+	var nodes []id.ID
+	links := map[id.ID]bool{}
+	from := slices.Clone(flying)
+	for _, s := range dropped {
+		for _, o := range s.Ops {
+			switch o.Type {
+			case op.TypeNodeCreate:
+				nodes = append(nodes, o.Node)
+			case op.TypeLinkCreate:
+				links[o.Link] = true
+				from = append(from, o.From)
+			}
+		}
+	}
+	ns, err := r.x.NodesLight(index.AsIs, nodes)
+	if err != nil {
+		return changeset.ChangeSet{}, readError(err)
+	}
+	for _, n := range ns {
+		out.Ops = append(out.Ops, op.Op{Type: op.TypeNodeCreate, Node: n.ID})
+	}
+	ls, err := r.x.LinksAt(index.AsIs, planSortIDs(from), index.From)
+	if err != nil {
+		return changeset.ChangeSet{}, readError(err)
+	}
+	for _, l := range ls {
+		if links[l.ID] || l.Type == op.LinkDependsOn && !l.Retired {
+			out.Ops = append(out.Ops, op.Op{Type: op.TypeLinkCreate, Link: l.ID, LinkType: l.Type, From: l.From, To: l.To})
+		}
+	}
+	return out, nil
 }
 
 // planCreatedNode adds node i to in.nodes from the node.create op of an
