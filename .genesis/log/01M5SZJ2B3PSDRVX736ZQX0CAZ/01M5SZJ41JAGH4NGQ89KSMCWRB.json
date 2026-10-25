@@ -1,0 +1,27 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5SZJ3RWNYEQ8HPR3NF49CB1"
+  ],
+  "at": "2026-10-25T16:51:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M5SZJ2B3PSDRVX736ZQX0CAZ",
+        "id": "01M5SZJ3Y4YP60PEB9NRD82781",
+        "link": "01M5SZJ3Y4YP60PEB9NQ2EZZS2",
+        "note": "replaces this follow-up, whose intent called it milestone 2's first change set, no longer true; that one is withdrawn",
+        "op": "link.create",
+        "to": "01M5SWTRWSW2931QVZENKYMNVQ",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M5SZJ2B3PSDRVX736ZQX0CAZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SZJ41JAGH4NGQ89KSMCWRB",
+  "type": "ops",
+  "v": 1
+}

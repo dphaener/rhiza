@@ -1,0 +1,690 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5SZHJC9S6GMMX0G6NNYQT4G"
+  ],
+  "at": "2026-10-25T16:50:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Genesis runs the work: milestone 3 is built with Genesis orchestrating, not an orchestrator session."
+        },
+        "handle": "milestone-2",
+        "id": "01M5SZHJG0Q8A3HCM4J66ERNHE",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M5SZHJG0Q8A3HCM4J44AJMWT",
+        "op": "node.create",
+        "parent": "01M5SWRH3H0B4390HPAR4X2TJ5"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHJG0Q8A3HCM4J44AJMWT",
+        "id": "01M5SZHJJF5PR5BS78QG0ZF2EN",
+        "link": "01M5SZHJJF5PR5BS78QEVR4BRM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Milestone 3's first change set goes from genesis ready to merged and closed out through genesis run, with no orchestrator session; the owner still answers and signs off in the tab."
+        },
+        "handle": "m2-run-end-to-end",
+        "id": "01M5SZHJN88HK361K6ZPY3TJCR",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M5SZHJN88HK361K6ZPP5DCES",
+        "op": "node.create",
+        "parent": "01M5SZHJG0Q8A3HCM4J44AJMWT"
+      },
+      {
+        "fields": {
+          "statement": "Interview answers are recorded as Decisions automatically, a picked option as the agent's wording accepted by the owner and only typed text quoted as the owner's."
+        },
+        "handle": "m2-interviews-recorded",
+        "id": "01M5SZHJQWABTT5TWCFNPAKAEN",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M5SZHJQWABTT5TWCFMPTJDEG",
+        "op": "node.create",
+        "parent": "01M5SZHJG0Q8A3HCM4J44AJMWT"
+      },
+      {
+        "fields": {
+          "statement": "make check is green, genesis check included, and read commands stay under 50 ms on the 50,000-node model."
+        },
+        "handle": "m2-still-healthy",
+        "id": "01M5SZHJTBKSHDRT51QC9075ZH",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M5SZHJTBKSHDRT51QA70KMVJ",
+        "op": "node.create",
+        "parent": "01M5SZHJG0Q8A3HCM4J44AJMWT"
+      },
+      {
+        "fields": {
+          "quote": "A",
+          "quote_where": "milestone-2 conversation, topic 1: what milestone 2 is for",
+          "statement": "Milestone 2 is \"Genesis runs the work\" (layers 3–4: agent sessions in Rex, adapters, status from Rex events, slice --change driving each session, interview answers as Decisions), so milestone 3 is built with Genesis orchestrating. Its first change sets are stacked change sets and order vs depends-on.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "m2-genesis-runs-the-work",
+        "id": "01M5SZHJWYM32AF2X5YT9HWRAY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHJWYM32AF2X5YPEV733B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHJWYM32AF2X5YPEV733B",
+        "id": "01M5SZHJZFBKFC9TBEJJSYH8WM",
+        "link": "01M5SZHJZFBKFC9TBEJEV9ZK2C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHJG0Q8A3HCM4J44AJMWT",
+        "id": "01M5SZHK21NTSK8AP4HCP72CKC",
+        "link": "01M5SZHK21NTSK8AP4H953YZX1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJWYM32AF2X5YPEV733B",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "Yes to all",
+          "quote_where": "milestone-2 conversation, topic 2: how milestone 2 lives in the model, and the queue",
+          "statement": "A milestone is an intent: milestone-2 sits under anyone-builds, every milestone-2 change set serves it, and genesis roadmap shows it as its own group. When done it stays as the record of what the milestone was for.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "milestone-as-intent",
+        "id": "01M5SZHK4P7VWE3TM9NRAYVE6V",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHK4P7VWE3TM9NQXJP63M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHK4P7VWE3TM9NQXJP63M",
+        "id": "01M5SZHK76CJC0WDCDA9272HCZ",
+        "link": "01M5SZHK76CJC0WDCDA8TS5B0H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHJG0Q8A3HCM4J44AJMWT",
+        "id": "01M5SZHK9YGRNY1VF4KKYX3EF1",
+        "link": "01M5SZHK9YGRNY1VF4KKGJQBV1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHK4P7VWE3TM9NQXJP63M",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "Yes to all",
+          "quote_where": "milestone-2 conversation, topic 2: how milestone 2 lives in the model, and the queue",
+          "statement": "A milestone's done points are its child intents, each verified by Evidence, so whether the milestone is done is a question the model answers.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "done-points-as-intents",
+        "id": "01M5SZHKD4XXVVNJ18Y4CKWVHB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHKD4XXVVNJ18Y19V01PS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHKD4XXVVNJ18Y19V01PS",
+        "id": "01M5SZHKG2VF1ZA4KDQ4575RHZ",
+        "link": "01M5SZHKG2VF1ZA4KDQ3WETTJ2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHJG0Q8A3HCM4J44AJMWT",
+        "id": "01M5SZHKKNPQJ3K99Z594YAZFH",
+        "link": "01M5SZHKKNPQJ3K99Z56TRS5H0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHKD4XXVVNJ18Y19V01PS",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "Yes to all",
+          "quote_where": "milestone-2 conversation, topic 2: how milestone 2 lives in the model, and the queue",
+          "statement": "depends-on means only \"can't start before\". The chain links between the twelve areas are retired, the areas become a backlog, and the milestone-2 group comes first in the roadmap; order inside a group follows real depends-on links, ties by ID.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "depends-on-means-cannot-start",
+        "id": "01M5SZHKPJSQ2P1WRAJW2XSRSY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHKPJSQ2P1WRAJVP0M57Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHKPJSQ2P1WRAJVP0M57Q",
+        "id": "01M5SZHKSPQPCMZC5EEP6P0KBS",
+        "link": "01M5SZHKSPQPCMZC5EEK0KAF5G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS9C5KVKS7DEVJ08272NZ",
+        "id": "01M5SZHKYWG9DE7AEKX02Z9YZ6",
+        "link": "01M5SZHKYWG9DE7AEKWW87EACC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHKPJSQ2P1WRAJVP0M57Q",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "Yes to all",
+          "quote_where": "milestone-2 conversation, topic 2: how milestone 2 lives in the model, and the queue",
+          "statement": "Milestone work is carved out of the area bundles: each piece is its own change set with leaves, serving the milestone and relates-to its area; the bundle is revised to drop it and withdrawn when empty.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "carve-from-bundles",
+        "id": "01M5SZHM1QFKJP6SG9W4ZSS6BB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHM1QFKJP6SG9W4Z9FBDH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHM1QFKJP6SG9W4Z9FBDH",
+        "id": "01M5SZHM4MHNPWQ7RSY58H3VB0",
+        "link": "01M5SZHM4MHNPWQ7RSY4YRX47B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHJG0Q8A3HCM4J44AJMWT",
+        "id": "01M5SZHM7HMWRWR2F5YKQ3QVNZ",
+        "link": "01M5SZHM7HMWRWR2F5YJ1A2SHF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHM1QFKJP6SG9W4Z9FBDH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "Yes to all 5",
+          "quote_where": "milestone-2 conversation, topic 3: change sets that build on each other",
+          "statement": "A write in a change set sees as-is, plus every change set it transitively depends on that isn't rejected, withdrawn or superseded (drafts and proposals included), plus itself; the same for what-if and slice.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "writes-see-dependencies",
+        "id": "01M5SZHMAGJRYE3BGESK1JWRZ3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHMAGJRYE3BGESJKM2BY9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHMAGJRYE3BGESJKM2BY9",
+        "id": "01M5SZHMDERZ49GH6W5ZVWHJ5F",
+        "link": "01M5SZHMDERZ49GH6W5Z54SDKR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "Yes to all 5",
+          "quote_where": "milestone-2 conversation, topic 3: change sets that build on each other",
+          "statement": "A change set lands only when everything it depends on has landed; otherwise land exits 3 with next naming the dependency in the way.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "land-in-dependency-order",
+        "id": "01M5SZHMG8BKPEG15D3DQH04BX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHMG8BKPEG15D3B2QJE0H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHMG8BKPEG15D3B2QJE0H",
+        "id": "01M5SZHMJZ260E3XYCHCH0H8TH",
+        "link": "01M5SZHMJZ260E3XYCHC6JE8ES",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "Yes to all 5",
+          "quote_where": "milestone-2 conversation, topic 3: change sets that build on each other",
+          "statement": "When a dependency is withdrawn or rejected, the operations that rest on it are reported by check and given by ready as the reason, never silently broken.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "dropped-dependency-reported",
+        "id": "01M5SZHMNGC1NE00WX71TYT2N9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHMNGC1NE00WX6Z5B01W4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHMNGC1NE00WX6Z5B01W4",
+        "id": "01M5SZHMR1PGK3EZM24H1R68XY",
+        "link": "01M5SZHMR1PGK3EZM24GS61DNK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "Yes to all 5",
+          "quote_where": "milestone-2 conversation, topic 3: change sets that build on each other",
+          "statement": "depends-on between change sets is acyclic: link refuses a link that would close a loop, and check reports any in the log.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "no-dependency-cycles",
+        "id": "01M5SZHMTJNPEC3CW0XSDX9358",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHMTJNPEC3CW0XS4EGRAG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHMTJNPEC3CW0XS4EGRAG",
+        "id": "01M5SZHMX39WF8QGBX38S82Q6J",
+        "link": "01M5SZHMX39WF8QGBX354ZGB00",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "Yes to all 5",
+          "quote_where": "milestone-2 conversation, topic 3: change sets that build on each other",
+          "statement": "A dependency revised under a change set shows up as a conflict through the base versions its operations carry; automatic rebase stays in the change-sets backlog, and the conflict fails loudly with next.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "manual-rebase-for-now",
+        "id": "01M5SZHMZQXH272B6DAK8DYJZY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHMZQXH272B6DAGG8X70A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHMZQXH272B6DAGG8X70A",
+        "id": "01M5SZHN2A3EAC6PSG81S4RP2K",
+        "link": "01M5SZHN2A3EAC6PSG7Y638EF4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "Yes to all",
+          "quote_where": "milestone-2 conversation, topic 4: what Genesis runs the work covers",
+          "statement": "Milestone 2's done point: milestone 3's first change set goes from genesis ready to merged and closed out through genesis run, with no orchestrator session.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "m2-done-point",
+        "id": "01M5SZHN4WKGT5MS6N1BNAZBK9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHN4WKGT5MS6N1ANF5Z4S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHN4WKGT5MS6N1ANF5Z4S",
+        "id": "01M5SZHN7EXBQYWNKE4KE2W37H",
+        "link": "01M5SZHN7EXBQYWNKE4G30NJH8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHJN88HK361K6ZPP5DCES",
+        "id": "01M5SZHNA0Q8TSZ8QH2NFH35ZV",
+        "link": "01M5SZHNA0Q8TSZ8QH2J2ZSHDC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHN4WKGT5MS6N1ANF5Z4S",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "Yes to all",
+          "quote_where": "milestone-2 conversation, topic 4: what Genesis runs the work covers",
+          "statement": "In milestone 2: the Claude Code adapter, runs with the built-in ship-change workflow, messages to a running step through a file plus a pointer, interview answers as Decisions, and blocked runs that tell the owner.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "m2-scope-in",
+        "id": "01M5SZHNCWAKRZ9VS5KPAWQEJD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHNCWAKRZ9VS5KKNYKJ8Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHNCWAKRZ9VS5KKNYKJ8Y",
+        "id": "01M5SZHNG8ZPK8W6VXYEJ8FB24",
+        "link": "01M5SZHNG8ZPK8W6VXYAV4B8BT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHJG0Q8A3HCM4J44AJMWT",
+        "id": "01M5SZHNK7M7G006BNSN149VGS",
+        "link": "01M5SZHNK7M7G006BNSM6YVS45",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHNCWAKRZ9VS5KKNYKJ8Y",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "Yes to all",
+          "quote_where": "milestone-2 conversation, topic 4: what Genesis runs the work covers",
+          "statement": "Out of milestone 2: the daemon and parallel scheduling, the usage governor, plan review and conflict detection, Genesis's own plan/build/review workflows, custom workflow authoring, the TUI and web UI, other machines.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "m2-scope-out",
+        "id": "01M5SZHNPAGZRNT71NKHDYSP0B",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHNPAGZRNT71NKDSHY8TM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHNPAGZRNT71NKDSHY8TM",
+        "id": "01M5SZHNS78ERCMTE0CXYXA3AX",
+        "link": "01M5SZHNS78ERCMTE0CXBEW2KW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHJG0Q8A3HCM4J44AJMWT",
+        "id": "01M5SZHNVZ3SDFS569VNPC9KWB",
+        "link": "01M5SZHNVZ3SDFS569VJ2EFD0J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHNPAGZRNT71NKDSHY8TM",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "Yes to all",
+          "quote_where": "milestone-2 conversation, topic 4: what Genesis runs the work covers",
+          "statement": "Shipit stays the agent step of ship-change for now; Genesis's own plan, build and review workflows replace it in a later milestone.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "shipit-as-agent-step",
+        "id": "01M5SZHNYMKJGS09HYBKXD67ND",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHNYMKJGS09HYBGNQCEC2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHNYMKJGS09HYBGNQCEC2",
+        "id": "01M5SZHP1A1N59EH62W9WYEN5X",
+        "link": "01M5SZHP1A1N59EH62W7Y00ZBD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHJG0Q8A3HCM4J44AJMWT",
+        "id": "01M5SZHP3XCBR8CVV2SAYCFZ0H",
+        "link": "01M5SZHP3XCBR8CVV2SAQK9SN3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHNYMKJGS09HYBGNQCEC2",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "Yes to all",
+          "quote_where": "milestone-2 conversation, topic 5: milestone 2 as change sets",
+          "statement": "milestone-2's statement is \"Genesis runs the work: milestone 3 is built with Genesis orchestrating\", with three done points: the run end to end, interviews recorded, and make check green with reads under 50 ms.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "m2-intent-and-done-points",
+        "id": "01M5SZHP6HY4T3A2AX7EA4XYR8",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHP6HY4T3A2AX7ANH0BR7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHP6HY4T3A2AX7ANH0BR7",
+        "id": "01M5SZHP96MCSK1YZ77K767E26",
+        "link": "01M5SZHP96MCSK1YZ77J4DD9WX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHJG0Q8A3HCM4J44AJMWT",
+        "id": "01M5SZHPBSSD8G8HEYCJ6SF7H5",
+        "link": "01M5SZHPBSSD8G8HEYCEE1M186",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHP6HY4T3A2AX7ANH0BR7",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "Yes to all",
+          "quote_where": "milestone-2 conversation, topic 5: milestone 2 as change sets",
+          "statement": "Milestone 2 is eight change sets: stacked change sets; order and backlog; the Claude Code adapter; runs and journal; the ship-change workflow; messages to a step; interview answers as Decisions; blocked runs tell the owner.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "m2-eight-change-sets",
+        "id": "01M5SZHPEDFQW5PSGRHE28EJDD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHPEDFQW5PSGRHBM12EGZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHPEDFQW5PSGRHBM12EGZ",
+        "id": "01M5SZHPH13PQF0T3DMQ4AZ329",
+        "link": "01M5SZHPH13PQF0T3DMK8Y0WWW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHJG0Q8A3HCM4J44AJMWT",
+        "id": "01M5SZHPKK9DDFJYRE2XE976TK",
+        "link": "01M5SZHPKK9DDFJYRE2TC4T2RQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHPEDFQW5PSGRHBM12EGZ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "Yes to all",
+          "quote_where": "milestone-2 conversation, topic 5: milestone 2 as change sets",
+          "statement": "Change sets 1, 2 and 7 are written in full now; the leaves of 3–6 and 8 are added once change set 1 lands, since until then nothing can be written under the runtime, workflows and orchestration areas.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "plan-leaves-after-stacking",
+        "id": "01M5SZHPP50ZC95T697JRZWT88",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHPP50ZC95T697GKQBH0F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHPP50ZC95T697GKQBH0F",
+        "id": "01M5SZHPRQN4E8RTKASYZKK3E7",
+        "link": "01M5SZHPRQN4E8RTKASW1T6NVF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHJG0Q8A3HCM4J44AJMWT",
+        "id": "01M5SZHPV9GNDNH12HQ12725NY",
+        "link": "01M5SZHPV9GNDNH12HQ0322X63",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHPP50ZC95T697GKQBH0F",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "Yes to all",
+          "quote_where": "milestone-2 conversation, topic 5: milestone 2 as change sets",
+          "statement": "Milestone 2's plan is written through genesis on a branch and a PR, by an orchestrator actor acting for the owner, with the owner accepting.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "m2-plan-authorship",
+        "id": "01M5SZHPXWQWKE2RN0ANF5DRPX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHPXWQWKE2RN0AK5NKP5X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHPXWQWKE2RN0AK5NKP5X",
+        "id": "01M5SZHQ0G0DQH23B7BYN1QGMM",
+        "link": "01M5SZHQ0G0DQH23B7BWDRA78G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHJG0Q8A3HCM4J44AJMWT",
+        "id": "01M5SZHQ33747K7N1JDHDRTVNX",
+        "link": "01M5SZHQ33747K7N1JDF1S5Q1Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHPXWQWKE2RN0AK5NKP5X",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "Let's go with a, and yes you have my approval.",
+          "quote_where": "milestone-2 conversation, after the rehearsal",
+          "statement": "Change sets 3, 4, 5 and 8 are proposed now with intent only, so the whole milestone shows in genesis roadmap; their leaves are added as revisions once change set 1 lands.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "propose-intent-only",
+        "id": "01M5SZHQ5NP40HKQVPRNBH41R5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5SZHQ5NP40HKQVPRJBP36R4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHQ5NP40HKQVPRJBP36R4",
+        "id": "01M5SZHQ8AQG52SBH9TRSWERJC",
+        "link": "01M5SZHQ8AQG52SBH9TPKM3D3K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHJG0Q8A3HCM4J44AJMWT",
+        "id": "01M5SZHQB3CHHPH39BY7VF97VQ",
+        "link": "01M5SZHQB3CHHPH39BY6HQYN7B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHQ5NP40HKQVPRJBP36R4",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SZHJ4AECQ3Z6PE60XFQZP6",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SZHQFF2JPEWWWAS6T7P003",
+  "type": "ops",
+  "v": 1
+}

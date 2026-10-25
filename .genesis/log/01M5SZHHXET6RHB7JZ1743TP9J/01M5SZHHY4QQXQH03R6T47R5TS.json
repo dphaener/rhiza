@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [],
+  "at": "2026-10-25T16:50:46Z",
+  "body": {
+    "intent": "add actor claude-code-orchestrator",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M5SZHHXET6RHB7JZ1743TP9J",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SZHHY4QQXQH03R6T47R5TS",
+  "type": "open",
+  "v": 1
+}

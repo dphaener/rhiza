@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-25T16:51:05Z",
+  "body": {
+    "intent": "Blocked runs tell the owner: a run waiting on the owner sends a Rex notification, and genesis run status names the tab and the question.",
+    "kind": "intention",
+    "sources": [
+      "01M5SZHJ8S6TDVVJGKSMZGC3SG"
+    ]
+  },
+  "change_set": "01M5SZJ46HYE2DDJ0STCDZE1WP",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SZJ4770JWCFGR6JQG8ZPRY",
+  "type": "open",
+  "v": 1
+}

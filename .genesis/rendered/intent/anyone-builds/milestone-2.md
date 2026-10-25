@@ -1,0 +1,29 @@
+# milestone-2
+
+intent · `01M5SZHJG0Q8A3HCM4J44AJMWT` · parent [anyone-builds](../anyone-builds.md)
+
+## statement
+
+Genesis runs the work: milestone 3 is built with Genesis orchestrating, not an orchestrator session.
+
+## Links
+
+### Out
+
+- decided-by [m2-genesis-runs-the-work](../../decision/m2-genesis-runs-the-work.md)
+- decided-by [milestone-as-intent](../../decision/milestone-as-intent.md)
+- decided-by [done-points-as-intents](../../decision/done-points-as-intents.md)
+- decided-by [carve-from-bundles](../../decision/carve-from-bundles.md)
+- decided-by [m2-scope-in](../../decision/m2-scope-in.md)
+- decided-by [m2-scope-out](../../decision/m2-scope-out.md)
+- decided-by [shipit-as-agent-step](../../decision/shipit-as-agent-step.md)
+- decided-by [m2-intent-and-done-points](../../decision/m2-intent-and-done-points.md)
+- decided-by [m2-eight-change-sets](../../decision/m2-eight-change-sets.md)
+- decided-by [plan-leaves-after-stacking](../../decision/plan-leaves-after-stacking.md)
+- decided-by [m2-plan-authorship](../../decision/m2-plan-authorship.md)
+- decided-by [propose-intent-only](../../decision/propose-intent-only.md)
+- derived-from [milestone-2-conversation](../../source/milestone-2-conversation.md)
+
+## History
+
+- `01M5SZHJ4AECQ3Z6PE60XFQZP6` Milestone 2 planning record: the conversation, the milestone-2 intent and its done points, and its decisions

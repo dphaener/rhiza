@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-25T16:50:58Z",
+  "body": {
+    "intent": "The Claude Code adapter: Genesis launches Claude Code in a Rex tab and its own worktree, with the permission mode always explicit, its session ID and environment stamped, and its status read from hooks, then Rex events, then the process exiting.",
+    "kind": "intention",
+    "sources": [
+      "01M5SZHJ8S6TDVVJGKSMZGC3SG"
+    ]
+  },
+  "change_set": "01M5SZHY68YGJZETXGP786ASR7",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SZHY6YVNSAE148T4C0S49F",
+  "type": "open",
+  "v": 1
+}

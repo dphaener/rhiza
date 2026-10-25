@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-25T16:50:57Z",
+  "body": {
+    "intent": "Order and backlog: depends-on means only can't start before, and genesis roadmap shows milestone groups first, then the backlog.",
+    "kind": "intention",
+    "sources": [
+      "01M5SZHJ8S6TDVVJGKSMZGC3SG"
+    ]
+  },
+  "change_set": "01M5SZHWVX0TTPM0TMNP5Y68CY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SZHWWJFY32SK7HXQEDS2JV",
+  "type": "open",
+  "v": 1
+}

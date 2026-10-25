@@ -1,0 +1,81 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5SZHWWJFY32SK7HXQEDS2JV"
+  ],
+  "at": "2026-10-25T16:50:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "genesis roadmap shows the groups of milestone intents first, then the rest."
+        },
+        "handle": "milestone-groups",
+        "id": "01M5SZHX0DZ7V3C42Z9K3CFNZ5",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5SZHX0DZ7V3C42Z9H1B3P74",
+        "op": "node.create",
+        "parent": "01M5SWS9C5KVKS7DEVJ08272NZ"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHX0DZ7V3C42Z9H1B3P74",
+        "id": "01M5SZHX337CAWZAQVY1CDBTH0",
+        "link": "01M5SZHX337CAWZAQVXZP2BGP1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHK4P7VWE3TM9NQXJP63M",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHX0DZ7V3C42Z9H1B3P74",
+        "id": "01M5SZHX5XYAJ86XE9FJJ7B93W",
+        "link": "01M5SZHX5XYAJ86XE9FG1M9QP8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHKPJSQ2P1WRAJVP0M57Q",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Change sets that serve no milestone show in genesis roadmap as the backlog, after the milestones."
+        },
+        "handle": "backlog-group",
+        "id": "01M5SZHX8ND3YY30S2E6D5XX83",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5SZHX8ND3YY30S2E2SE351F",
+        "op": "node.create",
+        "parent": "01M5SWS9C5KVKS7DEVJ08272NZ"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHX8ND3YY30S2E2SE351F",
+        "id": "01M5SZHXB9AJZ518T0F77SA85Y",
+        "link": "01M5SZHXB9AJZ518T0F4ZY1T1V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHKPJSQ2P1WRAJVP0M57Q",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHX8ND3YY30S2E2SE351F",
+        "id": "01M5SZHXDZAHN2JXQGX3WGN4H9",
+        "link": "01M5SZHXDZAHN2JXQGX2XY0E86",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHM1QFKJP6SG9W4Z9FBDH",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SZHWVX0TTPM0TMNP5Y68CY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SZHXJNV061J2ZDCRTR91X3",
+  "type": "ops",
+  "v": 1
+}
