@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-25T16:51:00Z",
+  "body": {
+    "intent": "The ship-change workflow: shipit as the agent step, then wait for a green PR, a merge pinned to the checked head, the close-out (branch, worktree, CI on main, the repo's ship command), and land with the PR and CI recorded as Evidence.",
+    "kind": "intention",
+    "sources": [
+      "01M5SZHJ8S6TDVVJGKSMZGC3SG"
+    ]
+  },
+  "change_set": "01M5SZJ03NQS0A389JF8TTMF6M",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SZJ04B5TZT1N1DVDWTR2DM",
+  "type": "open",
+  "v": 1
+}

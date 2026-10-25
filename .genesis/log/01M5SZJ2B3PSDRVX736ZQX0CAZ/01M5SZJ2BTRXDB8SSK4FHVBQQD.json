@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-25T16:51:03Z",
+  "body": {
+    "intent": "Interview answers as Decisions: after an agent step, Genesis reads the session and proposes a Decision for each answer, a picked option as the agent's wording accepted by the owner and only typed text quoted as the owner's.",
+    "kind": "intention",
+    "sources": [
+      "01M5SZHJ8S6TDVVJGKSMZGC3SG"
+    ]
+  },
+  "change_set": "01M5SZJ2B3PSDRVX736ZQX0CAZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SZJ2BTRXDB8SSK4FHVBQQD",
+  "type": "open",
+  "v": 1
+}

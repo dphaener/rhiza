@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-25T16:50:59Z",
+  "body": {
+    "intent": "Runs and journal: genesis run start, status and resume run a workflow's agent, wait and command steps with a local journal and no daemon.",
+    "kind": "intention",
+    "sources": [
+      "01M5SZHJ8S6TDVVJGKSMZGC3SG"
+    ]
+  },
+  "change_set": "01M5SZHZ3HG3PXE9A4SK0CA9M7",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SZHZ48F2MXCR1JKBCBF454",
+  "type": "open",
+  "v": 1
+}

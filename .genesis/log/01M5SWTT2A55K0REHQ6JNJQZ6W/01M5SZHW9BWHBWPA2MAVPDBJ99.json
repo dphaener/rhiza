@@ -1,0 +1,115 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5SWTTY5WDCE9AQEPHHRVJWQ"
+  ],
+  "at": "2026-10-25T16:50:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A write in a change set sees the change sets it depends on, directly or not, as well as the landed model and its own operations."
+        },
+        "handle": "dependent-writes",
+        "id": "01M5SZHVFR2SPC0TXN7Q3RCXGE",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5SZHVFR2SPC0TXN7KBE9EAK",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHVFR2SPC0TXN7KBE9EAK",
+        "id": "01M5SZHVJDJ8BSXH3J94K476YD",
+        "link": "01M5SZHVJDJ8BSXH3J92KWGEHF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHMAGJRYE3BGESJKM2BY9",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "A change set lands only after every change set it depends on has landed."
+        },
+        "handle": "ordered-landing",
+        "id": "01M5SZHVMY4CWQJFFW16WN81TH",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5SZHVMY4CWQJFFW14XVXTXT",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHVMY4CWQJFFW14XVXTXT",
+        "id": "01M5SZHVQGNW1R0ZXK338MYHS4",
+        "link": "01M5SZHVQGNW1R0ZXK3113ZFMB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHMG8BKPEG15D3B2QJE0H",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Operations resting on a withdrawn or rejected dependency are reported by genesis check and given by genesis ready as the reason."
+        },
+        "handle": "dropped-dependencies",
+        "id": "01M5SZHVT5WSS80C8NBV98CHGJ",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5SZHVT5WSS80C8NBS7BSJZZ",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHVT5WSS80C8NBS7BSJZZ",
+        "id": "01M5SZHVX0H2PR2J8DVRR74W9G",
+        "link": "01M5SZHVX0H2PR2J8DVQ1F8V5W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHMNGC1NE00WX6Z5B01W4",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "depends-on between change sets never forms a cycle: genesis link refuses one and genesis check reports one."
+        },
+        "handle": "acyclic-dependencies",
+        "id": "01M5SZHVZM0DAQN075WZBX6QYP",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5SZHVZM0DAQN075WY0H0JNC",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHVZM0DAQN075WY0H0JNC",
+        "id": "01M5SZHW26T1TJBPX5AG32KCZM",
+        "link": "01M5SZHW26T1TJBPX5ADC735FM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHMTJNPEC3CW0XS4EGRAG",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRZ69FKFXS01D7Y60C0S4",
+        "id": "01M5SZHW4S1TP0RVE8E3A8C71R",
+        "link": "01M5SZHW4S1TP0RVE8E2ZNBK3Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHMZQXH272B6DAGG8X70A",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWTT2A55K0REHQ6JNJQZ6W",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SZHW9BWHBWPA2MAVPDBJ99",
+  "type": "ops",
+  "v": 1
+}

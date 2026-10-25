@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5SZHWRPGFR2HQ1VV5ECZQDB"
+  ],
+  "at": "2026-10-25T16:51:07Z",
+  "body": {
+    "reason": "The owner, in the milestone-2 conversation: \"Let's go with a, and yes you have my approval.\"",
+    "rule": "owner"
+  },
+  "change_set": "01M5SWTT2A55K0REHQ6JNJQZ6W",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5SZJ6FNFG3Z0SDHW9EEQP8X",
+  "type": "accept",
+  "v": 1
+}
