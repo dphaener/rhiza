@@ -149,6 +149,8 @@ func TestChangeNew(t *testing.T) {
 			{`{"intent":"x","kind":"bogus"}`, 2},
 			{`{"intent":""}`, 2},
 			{`{"intent":"x","sources":["ZZZ"]}`, 4},
+			{`{"intent":"x","title":"This title is far too long to be accepted"}`, 2},
+			{`{"intent":"x","title":"two\nlines"}`, 2},
 		} {
 			req := tc.req
 			ctx := initCtx(t)
@@ -159,6 +161,52 @@ func TestChangeNew(t *testing.T) {
 			if files := logFiles(t, ctx.Root); len(files) != 0 {
 				t.Errorf("%s wrote %v", req, files)
 			}
+		}
+	})
+
+	t.Run("Title", func(t *testing.T) {
+		ctx := initCtx(t)
+		titled := newChange(t, ctx, `{"intent":"Make tabs readable: name them","title":"Readable tabs"}`)
+		plain := newChange(t, ctx, `{"intent":"Carving keeps IDs, always"}`)
+		if titled.Title != "Readable tabs" || plain.Title != "Carving keeps IDs" {
+			t.Errorf("titles = %q, %q", titled.Title, plain.Title)
+		}
+		// Only the titled open needs format 2.
+		versions := map[id.ID]int{}
+		for _, e := range ctxWorkspace(t, ctx).log().Entries {
+			versions[e.ID] = e.V
+		}
+		if versions[titled.Entry] != 2 || versions[plain.Entry] != 1 {
+			t.Errorf("entry formats = %d, %d; want 2, 1", versions[titled.Entry], versions[plain.Entry])
+		}
+		for cs, want := range map[id.ID]string{titled.ChangeSet: "Readable tabs", plain.ChangeSet: "Carving keeps IDs"} {
+			resp, err := callOp(t, ctx, "change.show", `{"ref":"`+cs.String()+`"}`)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := resp.(ChangeShowResponse).Title; got != want {
+				t.Errorf("show %s title = %q, want %q", cs, got, want)
+			}
+		}
+		resp, err := callOp(t, ctx, "change.ls", `{}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		ls := resp.(ChangeLsResponse)
+		got := map[id.ID]string{}
+		for _, c := range ls.ChangeSets {
+			got[c.ID] = c.Title
+		}
+		if got[titled.ChangeSet] != "Readable tabs" || got[plain.ChangeSet] != "Carving keeps IDs" {
+			t.Errorf("ls titles = %v", got)
+		}
+		// The human list names a set title beside the intent; the fallback,
+		// a prefix of the intent, adds nothing.
+		var b strings.Builder
+		ls.Human(&b)
+		if out := b.String(); !strings.Contains(out, ": Readable tabs (Make tabs readable: name them)") ||
+			!strings.Contains(out, ": Carving keeps IDs, always (current)") {
+			t.Errorf("ls human =\n%s", out)
 		}
 	})
 

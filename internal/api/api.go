@@ -119,11 +119,68 @@ type Ctx struct {
 	// fails when git is missing or exits non-zero. Nil means no git: the
 	// operations that use it, such as check, skip what needs it.
 	Git func(args ...string) (string, error)
+	// Exec runs the program name with args in dir and returns its standard
+	// output. A nil env means the caller's environment. A failure carries
+	// the program's trimmed standard error. Nil means no programs can be
+	// run: the operations that need one, such as session.start, fail.
+	Exec func(name string, args []string, dir string, env []string) ([]byte, error)
+	// Self is the absolute path of the running rhiza, for commands that
+	// must call it back, such as the command a session's terminal tab runs.
+	// Empty if unknown.
+	Self string
+	// Start starts a program and returns at once; the caller waits for it.
+	// Unlike Exec it can hand the program the caller's terminal, or stream
+	// its output. Nil means no programs can be started: session.run fails.
+	Start func(p Program) (Process, error)
+	// RexSession is the Rex session the caller runs in (the CLI's
+	// REX_SESSION), empty if none: session.start opens its tab there
+	// unless the request names another.
+	RexSession string
+	// RexBlock is the Rex block the caller runs in (the CLI's REX_BLOCK),
+	// empty if none: session.run copies that block's status reports.
+	RexBlock string
+	// Stderr receives diagnostics an operation must not print as its
+	// response, such as a failed hook's; nil discards them.
+	Stderr io.Writer
 	// Version is the running rhiza's version, such as "v0.3.0" or
 	// "dev".
 	Version string
 	// Stdin is read by operations that accept "-" for a file.
 	Stdin io.Reader
+}
+
+// Program is a program for Ctx.Start.
+type Program struct {
+	// Name is the program, looked up on PATH unless it has a separator.
+	Name string
+	// Args are its arguments, without the name.
+	Args []string
+	// Dir is the folder it runs in; empty means the caller's.
+	Dir string
+	// Env holds NAME=value pairs set over the caller's environment.
+	Env []string
+	// Unset names variables removed from the caller's environment.
+	Unset []string
+	// Terminal hands the program the caller's standard input, output and
+	// error, and makes the caller ignore the terminal's interrupts while
+	// it runs, so they reach the program alone. Without it the program
+	// reads nothing, its standard output is Process.Output and its
+	// standard error is discarded.
+	Terminal bool
+}
+
+// Process is a started Program.
+type Process interface {
+	// Output is the program's standard output; nil for a Terminal program.
+	// Read it to the end before calling Wait.
+	Output() io.Reader
+	// Wait waits for the program to end and returns its exit code: 128
+	// plus the signal number if a signal ended it. The error is set only
+	// when the program could not be waited for.
+	Wait() (int, error)
+	// Kill ends the program. Output then reaches its end, at the latest
+	// shortly after, even if a child of the program still holds it.
+	Kill()
 }
 
 // registry holds operations by name. Tests use their own; the package uses

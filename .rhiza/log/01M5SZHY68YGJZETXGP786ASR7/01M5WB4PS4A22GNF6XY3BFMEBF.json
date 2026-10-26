@@ -1,0 +1,29 @@
+{
+  "actor": "01M5W8BT5ZSHQ96V8JRFP7MB71",
+  "after": [
+    "01M5WAZAJMC8D458BPB85ZFBJ3"
+  ],
+  "at": "2026-10-26T14:51:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "cmd/rhiza/testdata/script/session-start.txtar passes, and internal/api/session_test.go TestSessionStartCreatesWorktree passes; manual check on 2026-10-26: rhiza session start --permission-mode manual in a throwaway repo opened one Rex tab titled \"throwaway: Manual check\" whose process cwd, read with rex block call process, was the worktree throwaway.manual-check; claude ran with the recorded --session-id and --permission-mode manual, RHIZA_CHANGE, RHIZA_ACTOR and RHIZA_FOR were in its environment, and closing the tab recorded exit 129 in the session file"
+        },
+        "handle": "rex-tab-launch-test",
+        "id": "01M5WAZ89Y96XVX6ABHA151CHV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WAZ89Y96XVX6ABH7T99PF0",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5SZHY68YGJZETXGP786ASR7",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WB4PS4A22GNF6XY3BFMEBF",
+  "type": "ops",
+  "v": 1
+}

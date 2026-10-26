@@ -1,0 +1,61 @@
+# A change set's title: set with --title, else the intent's first clause.
+
+exec rhiza init
+
+# A title is shown by change new, change show and change ls.
+exec rhiza change new 'Make tabs readable: name them' --title 'Readable tabs' --json
+stdout '"title": "Readable tabs"'
+stdout '"intent": "Make tabs readable: name them"'
+exec rhiza change show --json
+stdout '"title": "Readable tabs"'
+exec rhiza change show
+stdout '^- Title: Readable tabs$'
+stdout '^- Intent: Make tabs readable: name them$'
+exec rhiza change ls --json
+stdout '"title": "Readable tabs"'
+exec rhiza change ls
+stdout '^- [0-9A-Z]{26} draft intention: Readable tabs \(Make tabs readable: name them\) \(current\)$'
+
+# Only the titled open is a format-2 entry, and it carries the title.
+exec grep -rl '"v": 2' .rhiza/log
+stdout -count=1 '\.json$'
+exec grep -rl '"title": "Readable tabs"' .rhiza/log
+stdout -count=1 '\.json$'
+
+# Without one the title is the intent's first clause, and the open stays
+# format 1.
+exec rhiza change new 'Carving keeps IDs, always' --json
+stdout '"title": "Carving keeps IDs"'
+exec rhiza change show --json
+stdout '"title": "Carving keeps IDs"'
+stdout '"intent": "Carving keeps IDs, always"'
+exec rhiza change ls
+stdout '^- [0-9A-Z]{26} draft intention: Carving keeps IDs, always \(current\)$'
+exec grep -rl '"v": 2' .rhiza/log
+stdout -count=1 '\.json$'
+
+# The recorded actor's change set falls back too, cut at a word.
+exec rhiza change ls --json
+stdout '"title": "Record actor"'
+
+# A title over 30 characters is a usage error, exit 2, and writes nothing.
+exec ls -R .rhiza/log
+cp stdout before.txt
+! exec rhiza change new x --title 'This title is far too long to be accepted' --json
+stdout '"code": "usage"'
+stdout 'field \\"title\\": 41 characters, at most 30'
+stdout '"next": "rhiza describe change.new"'
+! exec rhiza change new x --title 'Exactly thirty-one characters!!' --json
+stdout '"code": "usage"'
+stdout '31 characters, at most 30'
+! exec rhiza change new x --title ' Padded' --json
+stdout '"code": "usage"'
+exec ls -R .rhiza/log
+cmp stdout before.txt
+
+# Exactly 30 is fine.
+exec rhiza change new y --title 'Exactly thirty characters long' --json
+stdout '"title": "Exactly thirty characters long"'
+
+# The log, titled opens included, folds cleanly.
+fold-ok
