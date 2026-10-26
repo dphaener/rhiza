@@ -226,7 +226,17 @@ type ChangeShowResponse struct {
 	SupersededBy id.ID             `json:"superseded_by,omitzero" desc:"The change set that superseded it, if any"`
 	Heads        []id.ID           `json:"heads" desc:"The entries a new entry would follow"`
 	Applied      []id.ID           `json:"applied" desc:"Every folded entry, in causal order"`
+	History      []LifecycleEvent  `json:"history" desc:"The lifecycle entries that applied, in causal order"`
 	Problems     []string          `json:"problems" desc:"Everything wrong with its entries"`
+}
+
+// LifecycleEvent is one applied lifecycle entry: propose, accept, reject,
+// withdraw, supersede, land or reopen.
+type LifecycleEvent struct {
+	Type  entry.Type `json:"type" desc:"propose, accept, reject, withdraw, supersede, land or reopen"`
+	Entry id.ID      `json:"entry" desc:"The lifecycle entry"`
+	At    string     `json:"at" desc:"When it was written (RFC 3339, UTC)"`
+	Actor id.ID      `json:"actor" desc:"Who wrote it"`
 }
 
 // DecisionInfo is an applied accept or reject.
@@ -280,7 +290,12 @@ func runChangeShow(ctx *Ctx, req any) (any, error) {
 		SupersededBy: c.SupersededBy,
 		Heads:        orEmpty(c.Heads),
 		Applied:      orEmpty(c.Applied),
+		History:      []LifecycleEvent{},
 		Problems:     foldProblems(problems),
+	}
+	for _, m := range c.Lifecycle {
+		resp.History = append(resp.History, LifecycleEvent{Type: m.Type, Entry: m.Entry,
+			At: m.At.UTC().Format(lineageAtLayout), Actor: m.Actor})
 	}
 	for _, o := range c.Ops {
 		raw, err := op.Encode(o)
@@ -295,8 +310,8 @@ func runChangeShow(ctx *Ctx, req any) (any, error) {
 	return resp, nil
 }
 
-// Human shows the change set as a heading, a field list, its operations
-// and its problems.
+// Human shows the change set as a heading, a field list, its operations,
+// its lifecycle history and its problems.
 func (r ChangeShowResponse) Human(w io.Writer) {
 	fmt.Fprintf(w, "# Change set %s\n\n", r.ID)
 	fmt.Fprintf(w, "- Title: %s\n", r.Title)
@@ -337,6 +352,13 @@ func (r ChangeShowResponse) Human(w io.Writer) {
 			line += " (" + o.Handle + ")"
 		}
 		fmt.Fprintln(w, line)
+	}
+	fmt.Fprintf(w, "\n## History\n\n")
+	if len(r.History) == 0 {
+		fmt.Fprintln(w, "No lifecycle moves yet.")
+	}
+	for _, e := range r.History {
+		fmt.Fprintf(w, "- %s %s by %s\n", e.Type, e.At, e.Actor)
 	}
 	writeProblems(w, r.Problems)
 }

@@ -47,8 +47,13 @@ exec rhiza check --json
 stdout '"ok": true'
 fold-ok
 
-# The change set's log holds two land entries and one reopen.
-exec sh -c 'grep -l "^  \"type\": \"land\"" .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/*.json | wc -l'
-stdout '^ *2$'
-exec sh -c 'grep -l "^  \"type\": \"reopen\"" .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/*.json | wc -l'
-stdout '^ *1$'
+# Its history holds propose, accept, land, reopen and land, in order, and
+# its log one line per land and reopen.
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout '(?s)"history": \[\s*\{[^}]*"type": "propose"\s*\},\s*\{[^}]*"type": "accept"\s*\},\s*\{[^}]*"type": "land"\s*\},\s*\{[^}]*"type": "reopen"\s*\},\s*\{[^}]*"type": "land"\s*\}\s*\]'
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '(?s)## History\n\n- propose \S+ by \S+\n- accept \S+ by \S+\n- land \S+ by \S+\n- reopen \S+ by \S+\n- land \S+ by \S+\n'
+exec rhiza log store
+stdout '(?s)landed intention: Store things\n\n- Landed \S+ by \S+\n- Reopened \S+ by \S+\n- Landed \S+ by \S+\n- node.create'
+exec rhiza log store --json
+stdout '"events": \['

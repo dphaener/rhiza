@@ -887,6 +887,40 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "history": {
+            "description": "The lifecycle entries that applied, in causal order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "actor": {
+                  "description": "Who wrote it",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "at": {
+                  "description": "When it was written (RFC 3339, UTC)",
+                  "type": "string"
+                },
+                "entry": {
+                  "description": "The lifecycle entry",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "propose, accept, reject, withdraw, supersede, land or reopen",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "actor",
+                "at",
+                "entry",
+                "type"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "id": {
             "description": "The change set's ID",
             "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
@@ -938,6 +972,7 @@ cmp stdout describe.golden.json
           "applied",
           "current",
           "heads",
+          "history",
           "id",
           "intent",
           "kind",
@@ -1615,6 +1650,40 @@ cmp stdout describe.golden.json
                     "required": [
                       "carve_entry",
                       "entry"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "events": {
+                  "description": "Its applied land and reopen entries, in causal order; absent unless it was ever reopened",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "actor": {
+                        "description": "Who landed or reopened it",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      },
+                      "at": {
+                        "description": "When it was written (RFC 3339, UTC)",
+                        "type": "string"
+                      },
+                      "entry": {
+                        "description": "The land or reopen entry",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      },
+                      "type": {
+                        "description": "land or reopen",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "actor",
+                      "at",
+                      "entry",
+                      "type"
                     ],
                     "type": "object"
                   },

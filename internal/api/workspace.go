@@ -329,8 +329,8 @@ func (w *workspace) appendEntryID(cs id.ID, body changeset.Body, actor, forID, e
 //
 // A non-open body needs cs in the log (else not_found), and anything but a
 // note into a terminal change set is a conflict, save a reopen of a landed
-// one. Whether a lifecycle move is
-// legal in a non-terminal state is the caller's check.
+// one. Whether a lifecycle move is legal in a non-terminal state is the
+// caller's check.
 func (w *workspace) buildEntry(cs id.ID, body changeset.Body, actor, forID, eid id.ID) (entry.Entry, error) {
 	es := entriesOf(w.log(), cs)
 	var after []id.ID
