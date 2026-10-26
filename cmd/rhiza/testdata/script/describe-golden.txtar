@@ -5198,6 +5198,10 @@ cmp stdout describe.golden.json
             "additionalProperties": false,
             "description": "The node, when kind is node",
             "properties": {
+              "actor": {
+                "description": "Evidence only: the actor stamped on the entry that created it, its handle (its ID when it has none); no field sets it",
+                "type": "string"
+              },
               "children": {
                 "description": "The nodes directly under it, live and retired, in tree order",
                 "items": {

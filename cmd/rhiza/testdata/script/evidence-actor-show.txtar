@@ -1,0 +1,55 @@
+# An Evidence node's actor is the actor stamped on the entry that created
+# it: show gives it, the rendered page names it, and another actor setting
+# a field on it later changes nothing.
+
+exec rhiza init
+exec rhiza add actor verifier --record
+exec rhiza add actor other --record
+exec rhiza add capability store --field 'statement=Keeps the log' --record
+
+env RHIZA_ACTOR=verifier
+exec rhiza add evidence store-ok --field 'statement=store keeps the log' --field result=PASS --record
+exec rhiza link store-ok verifies store --record
+env RHIZA_ACTOR=other
+exec rhiza set store-ok --field result=FAIL --field actor=other --record
+env RHIZA_ACTOR=
+
+# show --json gives the creating actor's handle; a field named actor stays
+# a field.
+exec rhiza show store-ok --json
+stdout '^    "actor": "verifier",$'
+stdout '^      "actor": "other",?$'
+! stdout '^    "actor": "other"'
+stdout '^      "result": "FAIL",?$'
+
+# show names it next to Created.
+exec rhiza show store-ok
+stdout '^- Created: '
+stdout '^- Actor: verifier$'
+
+# Nodes of other kinds carry no actor.
+exec rhiza show store --json
+! stdout '^    "actor":'
+exec rhiza show store
+! stdout '^- Actor:'
+exec rhiza show verifier --json
+! stdout '^    "actor":'
+
+# The rendered page names it, linked to the actor's page.
+exec rhiza render
+grep '^evidence · `[0-9A-Z]{26}` · actor \[verifier\]\(\.\./actor/verifier\.md\)$' .rhiza/rendered/evidence/store-ok.md
+! grep 'actor \[other\]' .rhiza/rendered/evidence/store-ok.md
+! grep ' · actor ' .rhiza/rendered/capability/store.md
+
+# In a draft change set the what-if view gives it the same way.
+exec rhiza change new 'More evidence'
+env RHIZA_ACTOR=verifier
+exec rhiza add evidence log-ok --field 'statement=the log reads' --field result=PASS
+env RHIZA_ACTOR=other
+exec rhiza set log-ok --field result=FAIL
+env RHIZA_ACTOR=
+exec rhiza show log-ok --json
+stdout '"view": "what-if:'
+stdout '^    "actor": "verifier",$'
+
+fold-ok

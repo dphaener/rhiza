@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
 	gmodel "github.com/dphaener/rhiza/internal/model"
@@ -61,6 +62,7 @@ type ShowNode struct {
 	Reason   string                     `json:"reason,omitempty" desc:"Why it was retired"`
 	Version  id.ID                      `json:"version" desc:"The last operation applied to it"`
 	Created  id.ID                      `json:"created" desc:"The change set that created it"`
+	Actor    string                     `json:"actor,omitempty" desc:"Evidence only: the actor stamped on the entry that created it, its handle (its ID when it has none); no field sets it"`
 	Fields   map[string]json.RawMessage `json:"fields" desc:"Every field, name to canonical JSON value"`
 	LinksOut []ShowNodeLink             `json:"links_out" desc:"The links from it, live and retired, sorted by ID"`
 	LinksIn  []ShowNodeLink             `json:"links_in" desc:"The links to it, live and retired, sorted by ID"`
@@ -168,6 +170,13 @@ func showNodeOf(r *reader, e *showEnds, n gmodel.Node) (ShowNode, error) {
 		Path: []ShowPathStep{}, Fields: map[string]json.RawMessage{},
 		LinksOut: []ShowNodeLink{}, LinksIn: []ShowNodeLink{}, Children: []ShowChild{},
 	}
+	if n.Kind == op.KindEvidence {
+		a, err := showCreator(r, n)
+		if err != nil {
+			return ShowNode{}, err
+		}
+		sn.Actor = a
+	}
 	anc, err := r.Ancestors(n.ID)
 	if err != nil {
 		return ShowNode{}, err
@@ -210,6 +219,34 @@ func showNodeOf(r *reader, e *showEnds, n gmodel.Node) (ShowNode, error) {
 		sn.Children = append(sn.Children, ShowChild{ID: c.ID, Kind: c.Kind, Handle: c.Handle, Retired: c.Retired})
 	}
 	return sn, nil
+}
+
+// showCreator names the actor that created node n (gmodel.CreatedBy): it
+// folds only the change set of n's create, from the index's entries. The
+// name is the actor's handle in the view, else its ID; "" when the fold
+// does not say who it was.
+func showCreator(r *reader, n gmodel.Node) (string, error) {
+	if len(n.History) == 0 {
+		return "", nil
+	}
+	cs := n.History[0].ChangeSet
+	es, err := r.Entries(cs)
+	if err != nil {
+		return "", err
+	}
+	c, _ := changeset.Fold(cs, es)
+	a, ok := gmodel.CreatedBy(n, []changeset.ChangeSet{c})
+	if !ok {
+		return "", nil
+	}
+	an, ok, err := r.Node(a)
+	if err != nil {
+		return "", err
+	}
+	if ok && an.Handle != "" {
+		return an.Handle, nil
+	}
+	return a.String(), nil
 }
 
 // showLinkAt is link l seen from one end: name is how it reads from there
@@ -319,6 +356,9 @@ func (r ShowResponse) Human(w io.Writer) {
 	}
 	fmt.Fprintf(w, "- Version: %s\n", n.Version)
 	fmt.Fprintf(w, "- Created: %s\n", n.Created)
+	if n.Actor != "" {
+		fmt.Fprintf(w, "- Actor: %s\n", n.Actor)
+	}
 	fmt.Fprintf(w, "- View: %s\n", r.View)
 	if len(n.Fields) > 0 {
 		fmt.Fprintf(w, "\n## Fields\n")

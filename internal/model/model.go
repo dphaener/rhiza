@@ -102,6 +102,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
 )
@@ -160,6 +161,28 @@ type Node struct {
 	Version id.ID
 	Created id.ID
 	History []Ref
+}
+
+// CreatedBy returns the actor that created node n: the actor stamped on the
+// ops entry that first wrote n's create, History[0], in that change set of
+// sets. Later revisions of the create, and later operations on n by any
+// actor, do not change it. ok is false, and the ID zero, when n has no
+// history or sets lacks the change set or the create's revisions.
+func CreatedBy(n Node, sets []changeset.ChangeSet) (actor id.ID, ok bool) {
+	if len(n.History) == 0 {
+		return id.ID{}, false
+	}
+	c := n.History[0]
+	for _, s := range sets {
+		if s.ID != c.ChangeSet {
+			continue
+		}
+		if rs := s.History[c.Op]; len(rs) > 0 && !rs[0].Actor.IsZero() {
+			return rs[0].Actor, true
+		}
+		return id.ID{}, false
+	}
+	return id.ID{}, false
 }
 
 // Link is a link as it stands in a view. From and To are nodes or change

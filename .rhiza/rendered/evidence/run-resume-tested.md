@@ -1,6 +1,6 @@
 # run-resume-tested
 
-evidence · `01M5WEDGF8XS9271DC46R3GNR6`
+evidence · `01M5WEDGF8XS9271DC46R3GNR6` · actor [claude-code-569529c3](../actor/claude-code-569529c3.md)
 
 ## statement
 

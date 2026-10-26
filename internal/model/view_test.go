@@ -533,3 +533,36 @@ func TestWhatIfDependencies(t *testing.T) {
 		checkProblems(t, ps, nil)
 	})
 }
+
+// TestCreatedBy: a node's creating actor is the actor of the first revision
+// of its create op, whoever replaced that op or updated the node later; it
+// is unknown when the change set or its history is missing.
+func TestCreatedBy(t *testing.T) {
+	landed := changeset.StateLanded
+	author, other := fid(900), fid(901)
+	create := mkDec(1, 1, "jwt")
+	a := vSet(csA, landed, create)
+	a.History = map[id.ID][]changeset.Revision{create.ID: {
+		{Entry: entry(1), Actor: author, Op: create},
+		{Entry: entry(2), Actor: other, Op: create},
+	}}
+	b := vSet(csB, landed, set(2, 1, 1, "statement", `"use PASETO"`))
+	b.History = map[id.ID][]changeset.Revision{fid(2): {{Entry: entry(3), Actor: other, Op: b.Ops[0]}}}
+	m, ps := AsIs([]changeset.ChangeSet{a, b})
+	if len(ps) > 0 {
+		t.Fatalf("problems: %v", ps)
+	}
+	n, _ := m.Node(nd(1))
+	if got, ok := CreatedBy(n, []changeset.ChangeSet{b, a}); !ok || got != author {
+		t.Errorf("CreatedBy = %v, %v, want %v, true", got, ok, author)
+	}
+	if got, ok := CreatedBy(n, []changeset.ChangeSet{b}); ok || !got.IsZero() {
+		t.Errorf("CreatedBy without its change set = %v, %v, want zero, false", got, ok)
+	}
+	if got, ok := CreatedBy(n, []changeset.ChangeSet{vSet(csA, landed, create), b}); ok || !got.IsZero() {
+		t.Errorf("CreatedBy without history = %v, %v, want zero, false", got, ok)
+	}
+	if got, ok := CreatedBy(Node{}, []changeset.ChangeSet{a, b}); ok || !got.IsZero() {
+		t.Errorf("CreatedBy of a node with no history = %v, %v, want zero, false", got, ok)
+	}
+}

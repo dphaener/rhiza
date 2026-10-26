@@ -22,6 +22,10 @@
 
 - [use-stripe](decision/use-stripe.md)
 
+## Evidence
+
+- [checkout-verified](evidence/checkout-verified.md)
+
 ## Actors
 
 - [auditor](actor/auditor.md)

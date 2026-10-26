@@ -257,11 +257,11 @@ func TestFoldFull(t *testing.T) {
 			Rule: acceptBody.Rule, Reason: acceptBody.Reason,
 		},
 		History: map[id.ID][]Revision{
-			opID(2): {{Entry: fid(2), Op: retire(2, 2, "b")}, {Entry: fid(3), Op: retire(2, 2, "b2")}},
-			opID(3): {{Entry: fid(2), Op: retire(3, 3, "c")}},
-			opID(4): {{Entry: fid(3), Op: retire(4, 4, "d")}},
+			opID(2): {{Entry: fid(2), Actor: actor, Op: retire(2, 2, "b")}, {Entry: fid(3), Actor: actor, Op: retire(2, 2, "b2")}},
+			opID(3): {{Entry: fid(2), Actor: actor, Op: retire(3, 3, "c")}},
+			opID(4): {{Entry: fid(3), Actor: actor, Op: retire(4, 4, "d")}},
 		},
-		Drops: map[id.ID]Revision{opID(1): {Entry: fid(3), First: fid(2), Op: retire(1, 1, "a")}},
+		Drops: map[id.ID]Revision{opID(1): {Entry: fid(3), First: fid(2), Actor: actor, Op: retire(1, 1, "a")}},
 		Lifecycle: []Move{
 			{Type: entry.TypePropose, Entry: fid(5), At: at(5), Actor: actor, For: owner},
 			{Type: entry.TypeAccept, Entry: fid(6), At: at(6), Actor: actor, For: owner},
@@ -294,12 +294,12 @@ func TestFoldHistory(t *testing.T) {
 	got, ps := Fold(csA, es)
 	checkProblems(t, ps, csA, []want{{6, ErrRevision}})
 	wantH := map[id.ID][]Revision{
-		opID(1): {{Entry: fid(2), Op: retire(1, 1, "a")}, {Entry: fid(4), Op: retire(1, 1, "a2")}},
+		opID(1): {{Entry: fid(2), Actor: actor, Op: retire(1, 1, "a")}, {Entry: fid(4), Actor: actor, Op: retire(1, 1, "a2")}},
 	}
 	if !reflect.DeepEqual(got.History, wantH) {
 		t.Errorf("History = %+v, want %+v", got.History, wantH)
 	}
-	wantD := map[id.ID]Revision{opID(2): {Entry: fid(5), First: fid(2), Op: retire(2, 2, "b2")}}
+	wantD := map[id.ID]Revision{opID(2): {Entry: fid(5), First: fid(2), Actor: actor, Op: retire(2, 2, "b2")}}
 	if !reflect.DeepEqual(got.Drops, wantD) {
 		t.Errorf("Drops = %+v, want %+v", got.Drops, wantD)
 	}
@@ -307,6 +307,33 @@ func TestFoldHistory(t *testing.T) {
 	got, _ = Fold(csA, es[:1])
 	if got.History != nil || got.Drops != nil {
 		t.Errorf("no ops: History = %v, Drops = %v, want nil", got.History, got.Drops)
+	}
+}
+
+// TestFoldHistoryActor: each revision carries the actor of the entry that
+// wrote it, so a History's first revision names the actor that created the
+// op even after another actor replaced it; a Drops record carries the
+// dropping entry's actor.
+func TestFoldHistoryActor(t *testing.T) {
+	other := fid(902)
+	by := func(en entry.Entry, a id.ID) entry.Entry { en.Actor = a; return en }
+	es := []entry.Entry{
+		e(t, 1, intention()),
+		e(t, 2, Ops{Ops: []op.Op{retire(1, 1, "a"), retire(2, 2, "b")}}, 1),
+		by(e(t, 3, Ops{Ops: []op.Op{retire(1, 1, "a2")}}, 2), other),
+		by(e(t, 4, Ops{Drop: []id.ID{opID(2)}}, 3), other),
+	}
+	got, ps := Fold(csA, es)
+	checkProblems(t, ps, csA, nil)
+	wantH := map[id.ID][]Revision{
+		opID(1): {{Entry: fid(2), Actor: actor, Op: retire(1, 1, "a")}, {Entry: fid(3), Actor: other, Op: retire(1, 1, "a2")}},
+	}
+	if !reflect.DeepEqual(got.History, wantH) {
+		t.Errorf("History = %+v, want %+v", got.History, wantH)
+	}
+	wantD := map[id.ID]Revision{opID(2): {Entry: fid(4), First: fid(2), Actor: other, Op: retire(2, 2, "b")}}
+	if !reflect.DeepEqual(got.Drops, wantD) {
+		t.Errorf("Drops = %+v, want %+v", got.Drops, wantD)
 	}
 }
 
