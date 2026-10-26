@@ -33,6 +33,19 @@ order, and later items may refer to handles added by earlier ones. Unknown keys 
   `blocks` a capability; a capability `serves` an intent; a constraint `constrains` a
   capability; anything `derived-from` a source.
 
+## Build order
+
+A leaf `depends-on` another only when it must be built first: it uses the other's code or
+output. Don't link leaves that are merely related.
+
+```json
+{"op":"link","from":"export-csv","type":"depends-on","to":"report-query"}
+```
+
+`rhiza change show --json` then lists `leaves` in build order, each with its `needs`. A
+link that would close a loop is refused (exit 3, `depends-on from X to Y would close a
+loop: ...`) and writes nothing.
+
 ## Running it
 
 - `--dry-run` prints the operations it would write and writes nothing.

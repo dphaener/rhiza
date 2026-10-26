@@ -37,6 +37,10 @@ stdout '^## Steps$'
 exec rhiza guide apply
 stdout '^# apply$'
 stdout '^## The file$'
+# It shows a depends-on link between two capabilities, and that a loop is
+# refused.
+stdout '"op":"link","from":"export-csv","type":"depends-on","to":"report-query"'
+stdout 'would close a loop'
 exec rhiza guide carving
 stdout '^# Carving$'
 stdout '^## Known limit$'
