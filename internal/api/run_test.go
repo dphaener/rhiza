@@ -55,6 +55,7 @@ run = "test -f step1.txt"
 const agentWorkflow = `
 [step.build]
 kind = "agent"
+prompt = "build {change}"
 on.pass = "done"
 `
 
@@ -331,7 +332,8 @@ func TestRunAgentStepEndsWithTheSessionExit(t *testing.T) {
 			t.Fatalf("exit %d: run = %+v", c.code, info)
 		}
 		rec, err := sessions.Read(info.Steps[0].Session)
-		if err != nil || rec.Run != info.ID || rec.Step != "build" || rec.Worktree != f.worktree {
+		if err != nil || rec.Run != info.ID || rec.Step != "build" || rec.Worktree != f.worktree ||
+			rec.Prompt != "build "+info.Change {
 			t.Errorf("session = %+v, %v", rec, err)
 		}
 		if len(f.rex.calls) != 1 {

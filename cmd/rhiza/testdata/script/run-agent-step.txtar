@@ -27,6 +27,16 @@ exec rhiza run start --workflow passes --permission-mode manual --dry-run
 stdout '^Run \S+ would start$'
 ! exists $WORK/rex.log
 
+# A workflow whose agent step has no prompt, or an unknown placeholder, is
+# refused before anything runs.
+cp $WORK/noprompt.toml .rhiza/workflows/noprompt.toml
+! exec rhiza run start --workflow noprompt --permission-mode manual
+stderr 'step "build": an agent step needs prompt = '
+cp $WORK/badplaceholder.toml .rhiza/workflows/badplaceholder.toml
+! exec rhiza run start --workflow badplaceholder --permission-mode manual
+stderr 'step "build": prompt uses unknown placeholder \{branch\}'
+! exists $WORK/rex.log
+
 # The agent exits 0: the step passes and the run succeeds.
 exec sh -c 'rhiza run start --workflow passes --permission-mode manual --json; echo exit=$?'
 stdout '"state": "succeeded"'
@@ -55,6 +65,12 @@ stdout '^RHIZA_RUN=01M5PWGJC82P7YGZTWYFFZ0VJG$'
 exec cat $WORK/claude.args
 stdout '--permission-mode manual '
 ! stdout 'bypass'
+# The step's prompt, its placeholders filled, is Claude Code's positional
+# prompt: the last argument.
+exec cat $WORK/claude.prompt
+cmp stdout $WORK/want.prompt
+exec rhiza session show 158fe87f-5cf4-47e4-a3e9-01a16dc84988 --json
+stdout '"prompt": "Build 01M5PWGEF85Y185JZ2ZGCNH40N \(agent-steps, Agent steps\) in step build of run 01M5PWGJC82P7YGZTWYFFZ0VJG"'
 exec cat $WORK/rex.log
 stdout '^window new repo: Agent steps -c '${WORK@R}'/repo\.agent-steps --json -- '
 
@@ -83,17 +99,34 @@ fold-ok
 2
 -- claude.exit --
 0
+-- want.prompt --
+Build 01M5PWGEF85Y185JZ2ZGCNH40N (agent-steps, Agent steps) in step build of run 01M5PWGJC82P7YGZTWYFFZ0VJG
+-- noprompt.toml --
+name = "noprompt"
+
+[step.build]
+kind = "agent"
+on.pass = "done"
+-- badplaceholder.toml --
+name = "badplaceholder"
+
+[step.build]
+kind = "agent"
+prompt = "Build {branch}"
+on.pass = "done"
 -- passes.toml --
 name = "passes"
 
 [step.build]
 kind = "agent"
+prompt = "Build {change} ({slug}, {title}) in step {step} of run {run}"
 on.pass = "done"
 -- fails.toml --
 name = "fails"
 
 [step.build]
 kind = "agent"
+prompt = "Build {change}"
 on.pass = "done"
 on.fail = "recover"
 
@@ -122,4 +155,6 @@ echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
 env > "$WORK/claude.env"
 pwd > "$WORK/claude.pwd"
 echo "$@" > "$WORK/claude.args"
+for a; do last=$a; done
+printf '%s\n' "$last" > "$WORK/claude.prompt"
 exit $(cat "$WORK/claude.exit")

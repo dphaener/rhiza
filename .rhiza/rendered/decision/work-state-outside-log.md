@@ -24,11 +24,6 @@ the assistant's summary in the founding conversation
 
 - derived-from [founding-conversation](../source/founding-conversation.md)
 
-### In
-
-- decided-by [workflows](../capability/rhiza/workflows.md)
-- decided-by [run-journal-file](../capability/rhiza/workflows/workflow-runs/run-journal-file.md)
-
 ## History
 
 - `01M5SWRGHKJKT6JZY6ZVMQEGWN` Founding record: the Sources, the root intents and constraints, and the founding decisions

@@ -5,6 +5,7 @@ start = "build"
 kind = "agent"
 permission_mode = "manual"
 agent = "claude-code"
+prompt = "Build change set {change} ({title}) in step {step} of run {run}"
 on.pass = "test"
 
 [step.test]

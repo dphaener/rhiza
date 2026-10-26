@@ -462,6 +462,7 @@ const agentWF = `
 name = "wf"
 [step.build]
 kind = "agent"
+prompt = "build {change}"
 interval = "2s"
 on.pass = "done"
 `

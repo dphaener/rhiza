@@ -1,0 +1,89 @@
+{
+  "actor": "01M5WED4M9JT1C10AH7N01DHZX",
+  "after": [
+    "01M5WEDGZBKCZW28F6C98BTK8Z"
+  ],
+  "at": "2026-10-26T16:06:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript with a fake adapter runs an agent step to its outcome, and the fake Claude Code receives the step's prompt, its placeholders filled, as its positional prompt; a step with no prompt or an unknown placeholder is refused.",
+          "statement": "An agent step launches its agent through the adapter on the run's change set and ends with the session's outcome."
+        },
+        "handle": "agent-step",
+        "id": "01M5TYGHAHETP91SS0S17K3Z0P",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5TYGHAHETP91SS0S0Y8BPYB",
+        "op": "node.create",
+        "parent": "01M5SWT9A05VXSMXQME4CPJN2D"
+      },
+      {
+        "fields": {
+          "statement": "go test ./internal/workflow (TestLoadValid, TestLoadRefused, TestOutcomeNames, TestParseErrors, TestParseOrderAndStart, TestNext) and api TestRunStartWorkflowRefusals pass; TestLoadRefused loads testdata/valid.toml and refuses unknown-kind.toml, missing-target.toml and bad-outcome.toml (on.sucess on a command step), each with the step and what is wrong"
+        },
+        "handle": "workflow-file-tested",
+        "id": "01M5WEDEQYKCMH8GPJJ8Q0KA0F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WEDEQYKCMH8GPJJ4Y8VSDF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "go test ./internal/run (TestAgentPollsUntilDone, TestAgentFailEndsRunFailed, TestAgentResumedDoesNotStartAgain, TestAgentStartErrorFailsRun), go test ./internal/api (TestRunAgentStepEndsWithTheSessionExit, which checks the session records the rendered prompt), go test ./internal/workflow (TestAgentPrompt), go test ./internal/adapter/claudecode (TestCommandPrompt) and the run-agent-step testscript pass; in the testscript the fake Claude Code's last argument is the step's prompt with {change}, {slug}, {title}, {step} and {run} filled, and a workflow with no prompt or an unknown placeholder is refused before anything runs"
+        },
+        "handle": "agent-step-tested",
+        "id": "01M5WEDEYP93QEAWNTFW6V1EVK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WEDEYP93QEAWNTFV0S9ABN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "an agent step has a `prompt` in the workflow file: a text template, passed to the adapter as the agent's first prompt.",
+          "quote_where": "the orchestrator's fix brief for change set 4 (m2-cs4-fixes.md), item 1",
+          "statement": "An agent step has a prompt in the workflow file, a text template over {change}, {slug}, {title}, {run} and {step}, passed to the adapter as the agent's first prompt; a step without one, or with an unknown placeholder, is invalid, and skills are invoked through the prompt text.",
+          "wording": "the orchestrator's ruling, made under the owner's authorization to amend plans (orchestrator-amends-plans); not the owner's words"
+        },
+        "handle": "agent-step-has-prompt",
+        "id": "01M5WFCA132QY27VP37W1EJ2DE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WFCA132QY27VP37RDEKXD6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WFCA132QY27VP37RDEKXD6",
+        "id": "01M5WFCA4XBT9MFR55RZ1XV6TQ",
+        "link": "01M5WFCA4XBT9MFR55RVMM4ACR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WEDGP563VEJ4VAV24QECRK",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYGHAHETP91SS0S0Y8BPYB",
+        "id": "01M5WFCA8RPN0ZF32F6ZZXH6RY",
+        "link": "01M5WFCA8RPN0ZF32F6Z2WEZ08",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WFCA132QY27VP37RDEKXD6",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SZHZ3HG3PXE9A4SK0CA9M7",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WFCASRFRM81JGD14DADPHW",
+  "type": "ops",
+  "v": 1
+}

@@ -52,7 +52,11 @@ func (a Adapter) Command(l adapter.Launch) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return []string{"claude", "--session-id", l.SessionID, "--permission-mode", l.PermissionMode, "--settings", settings}, nil
+	argv := []string{"claude", "--session-id", l.SessionID, "--permission-mode", l.PermissionMode, "--settings", settings}
+	if l.Prompt != "" {
+		argv = append(argv, l.Prompt)
+	}
+	return argv, nil
 }
 
 type hookCmd struct {

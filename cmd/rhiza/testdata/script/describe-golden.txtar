@@ -3092,6 +3092,10 @@ cmp stdout describe.golden.json
                 "description": "The agent's permission mode",
                 "type": "string"
               },
+              "prompt": {
+                "description": "The agent's first prompt, if any",
+                "type": "string"
+              },
               "reports": {
                 "additionalProperties": false,
                 "description": "The latest report of each source that has spoken",
@@ -3404,6 +3408,10 @@ cmp stdout describe.golden.json
             "description": "The agent's permission mode",
             "type": "string"
           },
+          "prompt": {
+            "description": "The agent's first prompt, if any",
+            "type": "string"
+          },
           "reports": {
             "additionalProperties": false,
             "description": "The latest report of each source that has spoken",
@@ -3671,6 +3679,10 @@ cmp stdout describe.golden.json
             "description": "The agent's permission mode, always explicit: one the agent accepts; modes that bypass its permission checks are refused",
             "type": "string"
           },
+          "prompt": {
+            "description": "The agent's first prompt; default none",
+            "type": "string"
+          },
           "rex_session": {
             "description": "The Rex session to open the tab in; default the caller's REX_SESSION, else Rex chooses",
             "type": "string"
@@ -3733,6 +3745,10 @@ cmp stdout describe.golden.json
               },
               "permission_mode": {
                 "description": "The agent's permission mode",
+                "type": "string"
+              },
+              "prompt": {
+                "description": "The agent's first prompt, if any",
                 "type": "string"
               },
               "reports": {

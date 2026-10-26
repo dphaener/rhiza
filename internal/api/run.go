@@ -480,6 +480,13 @@ func (r *stepRunner) sh(cmd string, env []string, out io.Writer) (int, error) {
 func (r *stepRunner) StartAgent(step workflow.Step, _ []string) (string, error) {
 	req := agentStepRequest(step, r.mode, r.agent)
 	req.Change, req.Run = r.change, r.run
+	t, err := resolveChangeWorktree(r.ctx, r.change, "no agent can work on it")
+	if err != nil {
+		return "", err
+	}
+	req.Prompt = step.RenderPrompt(workflow.PromptVars{
+		Change: t.cs.String(), Slug: session.Slug(t.title), Title: t.title, Run: r.run, Step: step.Name,
+	})
 	resp, err := runSessionStart(r.ctx, req)
 	if err != nil {
 		return "", err

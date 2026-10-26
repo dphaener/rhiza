@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -46,7 +47,20 @@ const DefaultInterval = 10 * time.Second
 // MaxNameLen is the longest step name allowed.
 const MaxNameLen = 30
 
-var namePattern = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
+var (
+	namePattern        = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
+	placeholderPattern = regexp.MustCompile(`\{([A-Za-z0-9_]+)\}`)
+)
+
+// Placeholders an agent step's prompt may use.
+var placeholders = []string{"change", "slug", "title", "run", "step"}
+
+// kindOutcomes lists the outcomes each step kind can produce.
+var kindOutcomes = map[string][]string{
+	KindAgent:   {OutcomePass, OutcomeFail},
+	KindWait:    {OutcomePass, OutcomeTimeout},
+	KindCommand: {OutcomePass, OutcomeFail},
+}
 
 // Definition is a loaded, validated workflow.
 type Definition struct {
@@ -80,6 +94,9 @@ type Step struct {
 	// PermissionMode is an agent step's permission mode; empty means the
 	// run's.
 	PermissionMode string
+	// Prompt is an agent step's first prompt to its agent, a template over
+	// {change}, {slug}, {title}, {run} and {step}.
+	Prompt string
 	// MaxVisits caps how often a run may enter the step; 0 means 1.
 	MaxVisits int
 	// On maps an outcome to the next step, or to done or failed.
@@ -92,6 +109,25 @@ func (s Step) Cap() int {
 		return s.MaxVisits
 	}
 	return 1
+}
+
+// PromptVars are the values an agent step's prompt placeholders take.
+type PromptVars struct {
+	Change, Slug, Title, Run, Step string
+}
+
+// RenderPrompt fills the step's prompt placeholders from v. Validation has
+// already refused an unknown placeholder.
+func (s Step) RenderPrompt(v PromptVars) string {
+	values := map[string]string{
+		"change": v.Change, "slug": v.Slug, "title": v.Title, "run": v.Run, "step": v.Step,
+	}
+	return placeholderPattern.ReplaceAllStringFunc(s.Prompt, func(m string) string {
+		if val, ok := values[m[1:len(m)-1]]; ok {
+			return val
+		}
+		return m
+	})
 }
 
 // End says whether a transition ends the run, and how.
@@ -158,6 +194,7 @@ type fileStep struct {
 	Interval       string            `toml:"interval"`
 	Agent          string            `toml:"agent"`
 	PermissionMode string            `toml:"permission_mode"`
+	Prompt         string            `toml:"prompt"`
 	MaxVisits      int               `toml:"max_visits"`
 	On             map[string]string `toml:"on"`
 }
@@ -287,6 +324,7 @@ func buildStep(name string, fs fileStep) (Step, error) {
 		Until:          fs.Until,
 		Agent:          fs.Agent,
 		PermissionMode: fs.PermissionMode,
+		Prompt:         fs.Prompt,
 		MaxVisits:      fs.MaxVisits,
 		On:             fs.On,
 	}
@@ -320,11 +358,23 @@ func buildStep(name string, fs fileStep) (Step, error) {
 	if fs.PermissionMode != "" && fs.Kind != KindAgent {
 		return fail("permission_mode is only for agent steps; a %s step cannot have it", fs.Kind)
 	}
+	if fs.Prompt != "" && fs.Kind != KindAgent {
+		return fail("prompt is only for agent steps; a %s step cannot have it", fs.Kind)
+	}
 	if fs.MaxVisits < 0 {
 		return fail("max_visits is %d; want 0 or more (0 means 1)", fs.MaxVisits)
 	}
 
 	switch fs.Kind {
+	case KindAgent:
+		if strings.TrimSpace(fs.Prompt) == "" {
+			return fail("an agent step needs prompt = \"<what the agent should do>\"; it may use {%s}", strings.Join(placeholders, "}, {"))
+		}
+		for _, m := range placeholderPattern.FindAllStringSubmatch(fs.Prompt, -1) {
+			if !slices.Contains(placeholders, m[1]) {
+				return fail("prompt uses unknown placeholder {%s}; want one of {%s}", m[1], strings.Join(placeholders, "}, {"))
+			}
+		}
 	case KindCommand:
 		if strings.TrimSpace(fs.Run) == "" {
 			return fail("a command step needs run = \"<shell command>\"")
@@ -366,8 +416,9 @@ func positiveDuration(v string) (time.Duration, error) {
 	return d, nil
 }
 
-// checkTargets refuses an outcome name that does not match the pattern, and
-// a target that is neither a step nor done or failed.
+// checkTargets refuses an outcome name that does not match the pattern or
+// that the step's kind cannot produce, and a target that is neither a step
+// nor done or failed.
 func checkTargets(s Step, steps map[string]Step) error {
 	outcomes := make([]string, 0, len(s.On))
 	for o := range s.On {
@@ -378,6 +429,9 @@ func checkTargets(s Step, steps map[string]Step) error {
 		if err := checkName("outcome", o); err != nil {
 			return fmt.Errorf("step %q: on.%s: %w", s.Name, o, err)
 		}
+		if want := kindOutcomes[s.Kind]; !slices.Contains(want, o) {
+			return fmt.Errorf("step %q: on.%s: %s step has no outcome %q; want on.%s", s.Name, o, article(s.Kind), o, strings.Join(want, " or on."))
+		}
 		t := s.On[o]
 		if t == TargetDone || t == TargetFailed {
 			continue
@@ -387,4 +441,12 @@ func checkTargets(s Step, steps map[string]Step) error {
 		}
 	}
 	return nil
+}
+
+// article prefixes a step kind with "a" or "an".
+func article(kind string) string {
+	if kind == KindAgent {
+		return "an " + kind
+	}
+	return "a " + kind
 }

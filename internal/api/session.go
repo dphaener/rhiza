@@ -84,6 +84,7 @@ type SessionStartRequest struct {
 	Agent          string `json:"agent,omitempty" desc:"The agent adapter to launch; default the built-in default adapter"`
 	Step           string `json:"step,omitempty" desc:"The step the session works on, lower-case words joined by dashes; default build, which the tab title leaves out"`
 	Run            string `json:"run,omitempty" desc:"The run the launch belongs to, if any"`
+	Prompt         string `json:"prompt,omitempty" desc:"The agent's first prompt; default none"`
 	RexSession     string `json:"rex_session,omitempty" desc:"The Rex session to open the tab in; default the caller's REX_SESSION, else Rex chooses"`
 }
 
@@ -136,6 +137,7 @@ type SessionInfo struct {
 	Actor          string        `json:"actor" desc:"The agent's actor handle in the worktree's model"`
 	For            string        `json:"for" desc:"The actor the agent acts for: the launcher"`
 	PermissionMode string        `json:"permission_mode" desc:"The agent's permission mode"`
+	Prompt         string        `json:"prompt,omitempty" desc:"The agent's first prompt, if any"`
 	Worktree       string        `json:"worktree" desc:"The worktree it runs in"`
 	Branch         string        `json:"branch" desc:"The worktree's branch"`
 	Tab            SessionTab    `json:"tab" desc:"The terminal tab it runs in"`
@@ -202,7 +204,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 	reuse := t.reuse
 	rec := session.Record{
 		ID: sid, Agent: a.Name(), Change: cs.String(), Title: title, Step: step, Run: r.Run,
-		Actor: handleSlug(a.Name() + "-" + sid[:8]), PermissionMode: r.PermissionMode,
+		Actor: handleSlug(a.Name() + "-" + sid[:8]), PermissionMode: r.PermissionMode, Prompt: r.Prompt,
 		Worktree: worktree, Branch: branch, Tab: tab, StartedAt: ctx.Now().UTC().Truncate(time.Second),
 	}
 	self := ctx.Self
@@ -708,7 +710,7 @@ func sessionInfo(r session.Record) SessionInfo {
 	rep, src := session.Resolve(r)
 	return SessionInfo{
 		ID: r.ID, Agent: r.Agent, Change: r.Change, Title: r.Title, Step: r.Step, Run: r.Run,
-		Actor: r.Actor, For: r.For, PermissionMode: r.PermissionMode, Worktree: r.Worktree,
+		Actor: r.Actor, For: r.For, PermissionMode: r.PermissionMode, Prompt: r.Prompt, Worktree: r.Worktree,
 		Branch: r.Branch, Tab: sessionTab(r.Tab), StartedAt: rfc3339(r.StartedAt),
 		Reports: SessionStatus{
 			Hook: sessionReportPtr(r.Status.Hook),

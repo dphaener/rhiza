@@ -25,6 +25,7 @@ func TestLoadValid(t *testing.T) {
 	want := map[string]Step{
 		"build": {
 			Name: "build", Kind: KindAgent, Agent: "claude-code", PermissionMode: "manual",
+			Prompt:   "Build change set {change} ({title}) in step {step} of run {run}",
 			Interval: DefaultInterval, On: map[string]string{"pass": "test"},
 		},
 		"test": {
@@ -49,6 +50,7 @@ func TestLoadRefused(t *testing.T) {
 	}{
 		{"unknown-kind.toml", []string{`step "repeat": unknown kind "loop": want agent, wait or command`}},
 		{"missing-target.toml", []string{`step "build": on.pass names "nope", which is not a step; want a step or done or failed`}},
+		{"bad-outcome.toml", []string{`step "build": on.sucess: a command step has no outcome "sucess"; want on.pass or on.fail`}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.file, func(t *testing.T) {
@@ -265,5 +267,58 @@ func TestEndString(t *testing.T) {
 		if got := e.String(); got != want {
 			t.Errorf("End(%d).String() = %q, want %q", e, got, want)
 		}
+	}
+}
+
+func TestOutcomeNames(t *testing.T) {
+	tests := []struct {
+		name, src, want string
+	}{
+		{"wait has no fail", "[step.w]\nkind = \"wait\"\nuntil = \"true\"\ntimeout = \"1m\"\non.fail = \"done\"\n",
+			`step "w": on.fail: a wait step has no outcome "fail"; want on.pass or on.timeout`},
+		{"agent has no timeout", "[step.a]\nkind = \"agent\"\nprompt = \"go\"\non.timeout = \"done\"\n",
+			`step "a": on.timeout: an agent step`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Parse("o", []byte(tt.src))
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Fatalf("err = %v, want it to contain %q", err, tt.want)
+			}
+		})
+	}
+	ok := "[step.w]\nkind = \"wait\"\nuntil = \"true\"\ntimeout = \"1m\"\non.timeout = \"failed\"\non.pass = \"done\"\n"
+	if _, err := Parse("o", []byte(ok)); err != nil {
+		t.Errorf("wait with on.pass and on.timeout: %v", err)
+	}
+}
+
+func TestAgentPrompt(t *testing.T) {
+	refused := []struct {
+		name, src, want string
+	}{
+		{"no prompt", "[step.a]\nkind = \"agent\"\n", `step "a": an agent step needs prompt = `},
+		{"blank prompt", "[step.a]\nkind = \"agent\"\nprompt = \"  \"\n", `step "a": an agent step needs prompt = `},
+		{"unknown placeholder", "[step.a]\nkind = \"agent\"\nprompt = \"do {chnage}\"\n",
+			`step "a": prompt uses unknown placeholder {chnage}; want one of {change}, {slug}, {title}, {run}, {step}`},
+		{"prompt on a command", "[step.c]\nkind = \"command\"\nrun = \"true\"\nprompt = \"x\"\n",
+			`step "c": prompt is only for agent steps`},
+	}
+	for _, tt := range refused {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Parse("p", []byte(tt.src))
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Fatalf("err = %v, want it to contain %q", err, tt.want)
+			}
+		})
+	}
+
+	d, err := Parse("p", []byte("[step.build]\nkind = \"agent\"\nprompt = \"/shipit:go {change} {slug} {title} {run} {step} {x\"\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := d.Steps["build"].RenderPrompt(PromptVars{Change: "01ABC", Slug: "runs", Title: "Runs", Run: "r1", Step: "build"})
+	if want := "/shipit:go 01ABC runs Runs r1 build {x"; got != want {
+		t.Errorf("RenderPrompt = %q, want %q", got, want)
 	}
 }

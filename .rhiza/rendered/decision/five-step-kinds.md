@@ -25,14 +25,6 @@ the assistant's summary in the founding conversation
 
 - derived-from [founding-conversation](../source/founding-conversation.md)
 
-### In
-
-- decided-by [workflow-definitions](../capability/rhiza/workflows/workflow-definitions.md)
-- decided-by [workflow-file](../capability/rhiza/workflows/workflow-definitions/workflow-file.md)
-- decided-by [agent-step](../capability/rhiza/workflows/workflow-definitions/agent-step.md)
-- decided-by [wait-step](../capability/rhiza/workflows/workflow-definitions/wait-step.md)
-- decided-by [max-visits](../capability/rhiza/workflows/workflow-definitions/max-visits.md)
-
 ## History
 
 - `01M5SWRGHKJKT6JZY6ZVMQEGWN` Founding record: the Sources, the root intents and constraints, and the founding decisions

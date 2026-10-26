@@ -55,6 +55,25 @@ func TestCommandManual(t *testing.T) {
 	}
 }
 
+func TestCommandPrompt(t *testing.T) {
+	l := launch("manual")
+	argv, err := Adapter{}.Command(l)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if argv[len(argv)-2] != "--settings" {
+		t.Errorf("no prompt: argv ends %q, want the settings last", argv[len(argv)-2:])
+	}
+	l.Prompt = "/shipit:go 01ABC"
+	with, err := Adapter{}.Command(l)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(with) != len(argv)+1 || with[len(with)-1] != l.Prompt {
+		t.Errorf("prompt: argv = %q, want the prompt as the last, positional argument", with)
+	}
+}
+
 func TestCommandRefusesBadMode(t *testing.T) {
 	for _, m := range []string{"", "yolo"} {
 		argv, err := Adapter{}.Command(launch(m))
