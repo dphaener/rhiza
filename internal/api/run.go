@@ -676,6 +676,19 @@ func (r *stepRunner) AgentStatus(sid string) (run.AgentStatus, error) {
 	return run.AgentStatus{Done: true, Outcome: workflow.OutcomeFail, Detail: detail}, nil
 }
 
+// AgentEnded records the session's token use as its step ends (see
+// recordTokenUse); a warning comes back as the error the engine logs.
+func (r *stepRunner) AgentEnded(_ workflow.Step, sid string) error {
+	rec, err := readSession(r.sessions, sid)
+	if err != nil {
+		return err
+	}
+	if warn := recordTokenUse(r.ctx, r.sessions, rec); warn != "" {
+		return errors.New(warn)
+	}
+	return nil
+}
+
 // recordBlock is what a live session waits on when its resolved report
 // is blocked, else nil.
 func recordBlock(rec session.Record) *run.Block {

@@ -3416,6 +3416,13 @@ cmp stdout describe.golden.json
           "session": {
             "description": "The session's full ID",
             "type": "string"
+          },
+          "warnings": {
+            "description": "Token use that could not be read or recorded when the session said done; the done mark stands",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "required": [
@@ -4065,6 +4072,75 @@ cmp stdout describe.golden.json
                 "description": "The change set's title",
                 "type": "string"
               },
+              "tokens": {
+                "additionalProperties": false,
+                "description": "The latest reading of its token use, read from its transcript when it said done, its step ended or it exited; absent until one is recorded",
+                "properties": {
+                  "helpers": {
+                    "additionalProperties": false,
+                    "description": "The tokens of the calls its helper agents logged in its transcript, kept apart from the session's",
+                    "properties": {
+                      "cache_creation": {
+                        "description": "Input tokens written to the cache",
+                        "type": "integer"
+                      },
+                      "cache_read": {
+                        "description": "Input tokens read from the cache",
+                        "type": "integer"
+                      },
+                      "input": {
+                        "description": "Input tokens neither written to nor read from the cache",
+                        "type": "integer"
+                      },
+                      "output": {
+                        "description": "Output tokens the model generated",
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "cache_creation",
+                      "cache_read",
+                      "input",
+                      "output"
+                    ],
+                    "type": "object"
+                  },
+                  "session": {
+                    "additionalProperties": false,
+                    "description": "The tokens of the session's own model calls",
+                    "properties": {
+                      "cache_creation": {
+                        "description": "Input tokens written to the cache",
+                        "type": "integer"
+                      },
+                      "cache_read": {
+                        "description": "Input tokens read from the cache",
+                        "type": "integer"
+                      },
+                      "input": {
+                        "description": "Input tokens neither written to nor read from the cache",
+                        "type": "integer"
+                      },
+                      "output": {
+                        "description": "Output tokens the model generated",
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "cache_creation",
+                      "cache_read",
+                      "input",
+                      "output"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "helpers",
+                  "session"
+                ],
+                "type": "object"
+              },
               "worktree": {
                 "description": "The worktree it runs in",
                 "type": "string"
@@ -4090,7 +4166,7 @@ cmp stdout describe.golden.json
             "type": "object"
           },
           "warnings": {
-            "description": "Status reports that could not be copied while the agent ran, and a failed capture of the owner's answers",
+            "description": "Status reports that could not be copied while the agent ran, token use that could not be recorded, and a failed capture of the owner's answers",
             "items": {
               "type": "string"
             },
@@ -4380,6 +4456,75 @@ cmp stdout describe.golden.json
           "title": {
             "description": "The change set's title",
             "type": "string"
+          },
+          "tokens": {
+            "additionalProperties": false,
+            "description": "The latest reading of its token use, read from its transcript when it said done, its step ended or it exited; absent until one is recorded",
+            "properties": {
+              "helpers": {
+                "additionalProperties": false,
+                "description": "The tokens of the calls its helper agents logged in its transcript, kept apart from the session's",
+                "properties": {
+                  "cache_creation": {
+                    "description": "Input tokens written to the cache",
+                    "type": "integer"
+                  },
+                  "cache_read": {
+                    "description": "Input tokens read from the cache",
+                    "type": "integer"
+                  },
+                  "input": {
+                    "description": "Input tokens neither written to nor read from the cache",
+                    "type": "integer"
+                  },
+                  "output": {
+                    "description": "Output tokens the model generated",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "cache_creation",
+                  "cache_read",
+                  "input",
+                  "output"
+                ],
+                "type": "object"
+              },
+              "session": {
+                "additionalProperties": false,
+                "description": "The tokens of the session's own model calls",
+                "properties": {
+                  "cache_creation": {
+                    "description": "Input tokens written to the cache",
+                    "type": "integer"
+                  },
+                  "cache_read": {
+                    "description": "Input tokens read from the cache",
+                    "type": "integer"
+                  },
+                  "input": {
+                    "description": "Input tokens neither written to nor read from the cache",
+                    "type": "integer"
+                  },
+                  "output": {
+                    "description": "Output tokens the model generated",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "cache_creation",
+                  "cache_read",
+                  "input",
+                  "output"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "helpers",
+              "session"
+            ],
+            "type": "object"
           },
           "worktree": {
             "description": "The worktree it runs in",
@@ -4719,6 +4864,75 @@ cmp stdout describe.golden.json
               "title": {
                 "description": "The change set's title",
                 "type": "string"
+              },
+              "tokens": {
+                "additionalProperties": false,
+                "description": "The latest reading of its token use, read from its transcript when it said done, its step ended or it exited; absent until one is recorded",
+                "properties": {
+                  "helpers": {
+                    "additionalProperties": false,
+                    "description": "The tokens of the calls its helper agents logged in its transcript, kept apart from the session's",
+                    "properties": {
+                      "cache_creation": {
+                        "description": "Input tokens written to the cache",
+                        "type": "integer"
+                      },
+                      "cache_read": {
+                        "description": "Input tokens read from the cache",
+                        "type": "integer"
+                      },
+                      "input": {
+                        "description": "Input tokens neither written to nor read from the cache",
+                        "type": "integer"
+                      },
+                      "output": {
+                        "description": "Output tokens the model generated",
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "cache_creation",
+                      "cache_read",
+                      "input",
+                      "output"
+                    ],
+                    "type": "object"
+                  },
+                  "session": {
+                    "additionalProperties": false,
+                    "description": "The tokens of the session's own model calls",
+                    "properties": {
+                      "cache_creation": {
+                        "description": "Input tokens written to the cache",
+                        "type": "integer"
+                      },
+                      "cache_read": {
+                        "description": "Input tokens read from the cache",
+                        "type": "integer"
+                      },
+                      "input": {
+                        "description": "Input tokens neither written to nor read from the cache",
+                        "type": "integer"
+                      },
+                      "output": {
+                        "description": "Output tokens the model generated",
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "cache_creation",
+                      "cache_read",
+                      "input",
+                      "output"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "helpers",
+                  "session"
+                ],
+                "type": "object"
               },
               "worktree": {
                 "description": "The worktree it runs in",

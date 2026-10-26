@@ -71,7 +71,7 @@ type SessionRunResponse struct {
 	Env       []string    `json:"env" desc:"The variables set over this terminal's environment for the agent"`
 	Code      int         `json:"code" desc:"The agent's exit code, which is also this command's; 128 plus the signal number if a signal ended it"`
 	Decisions []string    `json:"decisions,omitempty" desc:"Handles of the Decisions proposed from the questions the owner answered (see session.interview)"`
-	Warnings  []string    `json:"warnings,omitempty" desc:"Status reports that could not be copied while the agent ran, and a failed capture of the owner's answers"`
+	Warnings  []string    `json:"warnings,omitempty" desc:"Status reports that could not be copied while the agent ran, token use that could not be recorded, and a failed capture of the owner's answers"`
 	DryRun    bool        `json:"dry_run,omitempty" desc:"True if nothing was started or written"`
 }
 
@@ -171,10 +171,75 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		resp.Warnings = append(resp.Warnings, fmt.Sprintf("record the exit: %v", err))
 	} else {
-		resp.Session = sessionInfo(updated)
+		rec = updated
 	}
+	if warn := recordTokenUse(ctx, st, rec); warn != "" {
+		resp.Warnings = append(resp.Warnings, warn)
+	} else if updated, err := st.Read(rec.ID); err == nil {
+		rec = updated
+	}
+	resp.Session = sessionInfo(rec)
 	resp.Decisions, resp.Warnings = captureAfterRun(ctx, rec, resp.Warnings)
 	return resp, nil
+}
+
+// recordTokenUse reads the session's token use from its transcript,
+// overwrites the record's tokens with it and, for a session in a run,
+// journals a tokens entry: the later reading wins. It runs when the
+// session says done, when its agent step ends and when its agent exits.
+// It returns a warning, never an error: a missing or unreadable transcript
+// records nothing. A caller that gives neither a home folder nor an
+// environment has no transcript to find, so nothing is read.
+func recordTokenUse(ctx *Ctx, st *session.Store, rec session.Record) string {
+	if ctx.Home == "" && ctx.Getenv == nil {
+		return ""
+	}
+	warn := func(msg string) string { return "record token use: " + msg }
+	a, ok := adapter.Lookup(rec.Agent)
+	if !ok {
+		return warn(fmt.Sprintf("session %s names agent %q, which this rhiza does not know", rec.ID, rec.Agent))
+	}
+	transcript, err := readTranscript(ctx, a, rec.ID)
+	if err != nil {
+		return warn(AsError(err).Message)
+	}
+	use, err := a.TokenUse(transcript)
+	if err != nil {
+		return warn(fmt.Sprintf("read the token use of session %s: %v", rec.ID, err))
+	}
+	tokens := sessionTokenUse(use)
+	if _, err := st.Update(rec.ID, func(r *session.Record) { r.Tokens = &tokens }); err != nil {
+		return warn(fmt.Sprintf("record session %s: %v", rec.ID, err))
+	}
+	if rec.Run == "" {
+		return ""
+	}
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return warn(AsError(err).Message)
+	}
+	ru := runTokenUse(tokens)
+	e := run.Entry{Type: run.TypeTokens, At: ctx.Now(), Step: rec.Step, Session: rec.ID, Tokens: &ru}
+	if err := run.NewStore(run.Dir(common)).Append(rec.Run, e); err != nil {
+		return warn(fmt.Sprintf("journal session %s's token use in run %s: %v", rec.ID, rec.Run, err))
+	}
+	return ""
+}
+
+// sessionTokenUse is an adapter's reading as the record keeps it.
+func sessionTokenUse(u adapter.TokenUse) session.TokenUse {
+	c := func(t adapter.TokenCounts) session.TokenCounts {
+		return session.TokenCounts{Input: t.Input, Output: t.Output, CacheCreation: t.CacheCreation, CacheRead: t.CacheRead}
+	}
+	return session.TokenUse{Session: c(u.Session), Helpers: c(u.Helpers)}
+}
+
+// runTokenUse is a record's reading as the journal keeps it.
+func runTokenUse(u session.TokenUse) run.TokenUse {
+	c := func(t session.TokenCounts) run.TokenCounts {
+		return run.TokenCounts{Input: t.Input, Output: t.Output, CacheCreation: t.CacheCreation, CacheRead: t.CacheRead}
+	}
+	return run.TokenUse{Session: c(u.Session), Helpers: c(u.Helpers)}
 }
 
 // captureAfterRun proposes the session's answered questions as Decisions

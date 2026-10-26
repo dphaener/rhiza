@@ -402,7 +402,10 @@ func TestSessionRunCaptureFailureIsAWarning(t *testing.T) {
 	if r.Code != 3 || r.ExitCode() != 3 || len(r.Decisions) != 0 {
 		t.Errorf("code %d exit %d decisions %v", r.Code, r.ExitCode(), r.Decisions)
 	}
-	if len(r.Warnings) != 1 || !strings.Contains(r.Warnings[0], "no transcript") {
+	// No transcript: the token use is not recorded either, a warning of
+	// its own.
+	if len(r.Warnings) != 2 || !strings.HasPrefix(r.Warnings[0], "record token use: no transcript") ||
+		!strings.Contains(r.Warnings[1], "no transcript") {
 		t.Errorf("warnings %v", r.Warnings)
 	}
 	if !strings.Contains(human(t, r), "- Warning: propose decisions") {
