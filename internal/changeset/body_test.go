@@ -496,3 +496,199 @@ func FuzzDecodeBody(f *testing.F) {
 		}
 	})
 }
+
+const (
+	sCarveEntry = "01JB00000000000000000000E9"
+	sCarveCS    = "01JB0000000000000000000CS9"
+)
+
+// carveDocs are an ops body of each carve direction, spelled by hand, with
+// the value each decodes to in a format-2 entry.
+func carveDocs(t testing.TB) []struct {
+	name string
+	doc  string
+	want Ops
+} {
+	create := op.Op{ID: mustID(t, sOp1), Type: op.TypeNodeCreate, Node: mustID(t, sNode), Kind: op.KindCapability,
+		Handle: "token-refresh", Key: "i", Fields: map[string]json.RawMessage{"statement": json.RawMessage(`"Résumé"`)}}
+	return []struct {
+		name string
+		doc  string
+		want Ops
+	}{
+		{"to", `{
+  "carve": {
+    "entry": "` + sCarveEntry + `",
+    "to": "` + sCarveCS + `"
+  },
+  "drop": [
+    "` + sOp3 + `"
+  ],
+  "ops": []
+}`, Ops{Drop: []id.ID{mustID(t, sOp3)}, Carve: &Carve{To: mustID(t, sCarveCS), Entry: mustID(t, sCarveEntry)}}},
+		{"from", `{
+  "carve": {
+    "entry": "` + sCarveEntry + `",
+    "from": "` + sCarveCS + `"
+  },
+  "drop": [],
+  "ops": [
+    {
+      "fields": {
+        "statement": "Résumé"
+      },
+      "handle": "token-refresh",
+      "id": "` + sOp1 + `",
+      "key": "i",
+      "kind": "capability",
+      "node": "` + sNode + `",
+      "op": "node.create",
+      "parent": null
+    }
+  ]
+}`, Ops{Ops: []op.Op{create}, Carve: &Carve{From: mustID(t, sCarveCS), Entry: mustID(t, sCarveEntry)}}},
+	}
+}
+
+func TestCarveRoundTrip(t *testing.T) {
+	for _, c := range carveDocs(t) {
+		t.Run(c.name, func(t *testing.T) {
+			if err := canon.Check([]byte(c.doc + "\n")); err != nil {
+				t.Fatalf("doc is not canonical: %v", err)
+			}
+			b, err := DecodeBody(entry.Entry{V: 2, Type: entry.TypeOps, Body: json.RawMessage(c.doc)})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !reflect.DeepEqual(b, c.want) {
+				t.Fatalf("DecodeBody = %#v, want %#v", b, c.want)
+			}
+			out, err := EncodeBody(c.want)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if string(out) != c.doc {
+				t.Fatalf("EncodeBody =\n%s\nwant\n%s", out, c.doc)
+			}
+			if v := EntryVersion(c.want); v != 2 {
+				t.Fatalf("EntryVersion = %d, want 2", v)
+			}
+		})
+	}
+}
+
+func TestCarveNeedsFormat2(t *testing.T) {
+	for _, c := range carveDocs(t) {
+		for _, v := range []int{0, 1} {
+			_, err := DecodeBody(entry.Entry{V: v, Type: entry.TypeOps, Body: json.RawMessage(c.doc)})
+			checkErr(t, err, "carve", nil)
+			if !strings.Contains(err.Error(), "unknown field") {
+				t.Fatalf("v%d %s: error %q, want unknown field", v, c.name, err)
+			}
+		}
+	}
+	// carve belongs to ops bodies only.
+	_, err := DecodeBody(entry.Entry{V: 2, Type: entry.TypeNote, Body: json.RawMessage(`{
+  "carve": {},
+  "text": "x"
+}`)})
+	checkErr(t, err, "carve", nil)
+}
+
+func TestVersionsWithoutCarve(t *testing.T) {
+	for _, g := range golden(t) {
+		for _, v := range []int{1, 2} {
+			b, err := DecodeBody(entry.Entry{V: v, Type: g.typ, Body: json.RawMessage(g.doc)})
+			if err != nil {
+				t.Fatalf("v%d %s: %v", v, g.typ, err)
+			}
+			if !reflect.DeepEqual(b, g.want) {
+				t.Fatalf("v%d %s: DecodeBody = %#v, want %#v", v, g.typ, b, g.want)
+			}
+		}
+		if v := EntryVersion(g.want); v != 1 {
+			t.Fatalf("EntryVersion(%s) = %d, want 1", g.typ, v)
+		}
+	}
+}
+
+// setCarve sets fields on an ops body's carve object.
+func setCarve(kv ...any) func(map[string]any) {
+	return func(m map[string]any) {
+		set(kv...)(m["carve"].(map[string]any))
+	}
+}
+
+func delCarve(k string) func(map[string]any) {
+	return func(m map[string]any) { delete(m["carve"].(map[string]any), k) }
+}
+
+func TestCarveInvalid(t *testing.T) {
+	docs := carveDocs(t)
+	to, from := docs[0].doc, docs[1].doc
+	cases := []struct {
+		name  string
+		doc   string
+		edit  func(map[string]any)
+		field string
+	}{
+		{"both from and to", to, setCarve("from", sCarveCS), "carve"},
+		{"neither from nor to", to, delCarve("to"), "carve"},
+		{"missing entry", to, delCarve("entry"), "carve.entry"},
+		{"extra key", to, setCarve("why", "x"), "carve.why"},
+		{"extra keys sorted", from, setCarve("zz", 1, "aa", 2), "carve.aa"},
+		{"zero entry", to, setCarve("entry", sZero), "carve.entry"},
+		{"zero to", to, setCarve("to", sZero), "carve.to"},
+		{"zero from", from, setCarve("from", sZero), "carve.from"},
+		{"entry a number", to, setCarve("entry", 1), "carve.entry"},
+		{"to not a ULID", to, setCarve("to", "nope"), "carve.to"},
+		{"carve null", to, set("carve", nil), "carve"},
+		{"carve an array", to, set("carve", []any{}), "carve"},
+		{"carve.from with empty ops", from, func(m map[string]any) {
+			m["ops"] = []any{}
+			m["drop"] = []any{sOp3}
+		}, "ops"},
+		{"carve.to with empty drop", to, func(m map[string]any) {
+			m["drop"] = []any{}
+			m["ops"] = base(t, entry.TypeOps)["ops"]
+		}, "drop"},
+		{"missing drop beats carve", to, func(m map[string]any) {
+			delete(m, "drop")
+			m["carve"] = nil
+		}, "drop"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var m map[string]any
+			if err := json.Unmarshal([]byte(tc.doc), &m); err != nil {
+				t.Fatal(err)
+			}
+			tc.edit(m)
+			_, err := DecodeBody(entry.Entry{V: 2, Type: entry.TypeOps, Body: canonical(t, m)})
+			checkErr(t, err, tc.field, nil)
+		})
+	}
+
+	// The same rules hold on the way out.
+	good := op.Op{ID: mustID(t, sOp2), Type: op.TypeLinkRetire, Link: mustID(t, sLink), Base: mustID(t, sBase)}
+	cs, e := mustID(t, sCarveCS), mustID(t, sCarveEntry)
+	drop := []id.ID{mustID(t, sOp3)}
+	enc := []struct {
+		name  string
+		body  Ops
+		field string
+	}{
+		{"both", Ops{Drop: drop, Carve: &Carve{From: cs, To: cs, Entry: e}}, "carve"},
+		{"neither", Ops{Drop: drop, Carve: &Carve{Entry: e}}, "carve"},
+		{"zero entry", Ops{Drop: drop, Carve: &Carve{To: cs}}, "carve.entry"},
+		{"from without ops", Ops{Drop: drop, Carve: &Carve{From: cs, Entry: e}}, "ops"},
+		{"to without drop", Ops{Ops: []op.Op{good}, Carve: &Carve{To: cs, Entry: e}}, "drop"},
+	}
+	for _, tc := range enc {
+		t.Run("encode "+tc.name, func(t *testing.T) {
+			checkErr(t, tc.body.Validate(), tc.field, nil)
+			_, err := EncodeBody(tc.body)
+			checkErr(t, err, tc.field, nil)
+		})
+	}
+}

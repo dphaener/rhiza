@@ -347,7 +347,7 @@ func (c *changeSet) write(b changeset.Body, tick bool) error {
 	if err != nil {
 		return fmt.Errorf("gen: %s body: %w", b.Type(), err)
 	}
-	e := entry.Entry{V: entry.FormatVersion, ID: g.newID(), ChangeSet: c.id, Actor: g.actor, For: g.actor,
+	e := entry.Entry{V: changeset.EntryVersion(b), ID: g.newID(), ChangeSet: c.id, Actor: g.actor, For: g.actor,
 		At: g.now.UTC().Truncate(time.Second), Type: b.Type(), Body: body}
 	if !c.head.IsZero() {
 		e.After = []id.ID{c.head}

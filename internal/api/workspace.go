@@ -308,7 +308,7 @@ func (w *workspace) appendEntry(cs id.ID, body changeset.Body, actor, forID id.I
 		return entry.Entry{}, Errorf("%s", err.Error())
 	}
 	e := entry.Entry{
-		V:         entry.FormatVersion,
+		V:         changeset.EntryVersion(body),
 		ID:        eid,
 		ChangeSet: cs,
 		Actor:     actor,

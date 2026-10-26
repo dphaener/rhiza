@@ -81,7 +81,7 @@ func (s *set) add(b changeset.Body, after []id.ID) id.ID {
 	if err != nil {
 		s.r.t.Fatal(err)
 	}
-	e := entry.Entry{V: entry.FormatVersion, ID: s.r.next(), ChangeSet: s.id, Actor: actor, For: actor,
+	e := entry.Entry{V: changeset.EntryVersion(b), ID: s.r.next(), ChangeSet: s.id, Actor: actor, For: actor,
 		At: time.Date(2026, 10, 24, 12, 0, 0, 0, time.UTC), After: after, Type: b.Type(), Body: body}
 	data, err := entry.Encode(e)
 	if err != nil {

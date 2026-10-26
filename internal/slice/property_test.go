@@ -88,7 +88,7 @@ func (g *propGen) add(cs id.ID, head *id.ID, b changeset.Body) {
 		after = []id.ID{*head}
 	}
 	actor := mkID(7, 1)
-	data, err := entry.Encode(entry.Entry{V: entry.FormatVersion, ID: eid, ChangeSet: cs, Actor: actor, For: actor,
+	data, err := entry.Encode(entry.Entry{V: changeset.EntryVersion(b), ID: eid, ChangeSet: cs, Actor: actor, For: actor,
 		At: time.Date(2026, 10, 24, 12, 0, 0, 0, time.UTC), After: after, Type: b.Type(), Body: body})
 	if err != nil {
 		g.t.Fatalf("encode entry: %v", err)

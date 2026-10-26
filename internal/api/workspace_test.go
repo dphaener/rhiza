@@ -300,7 +300,7 @@ func TestWorkspace(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !slices.Equal(ops2.After, []id.ID{ops1.ID}) || ops2.V != entry.FormatVersion {
+		if !slices.Equal(ops2.After, []id.ID{ops1.ID}) || ops2.V != 1 {
 			t.Fatalf("second ops %+v", ops2)
 		}
 		mustFoldClean(t, w)

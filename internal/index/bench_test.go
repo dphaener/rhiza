@@ -146,7 +146,7 @@ func encodeBenchEntry(b *testing.B, cs, head, actor id.ID, at time.Time, body ch
 	if err != nil {
 		b.Fatal(err)
 	}
-	e := entry.Entry{V: entry.FormatVersion, ID: newID(b), ChangeSet: cs, Actor: actor, For: actor,
+	e := entry.Entry{V: changeset.EntryVersion(body), ID: newID(b), ChangeSet: cs, Actor: actor, For: actor,
 		At: at.UTC().Truncate(time.Second), After: []id.ID{head}, Type: body.Type(), Body: raw}
 	data, err := entry.Encode(e)
 	if err != nil {

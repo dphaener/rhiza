@@ -52,7 +52,7 @@ func (b *logBuilder) changeSet(kind changeset.Kind, bodies ...changeset.Body) id
 		if err != nil {
 			b.t.Fatal(err)
 		}
-		e := entry.Entry{V: entry.FormatVersion, ID: b.id(), ChangeSet: cs, Actor: b.actor, For: b.actor,
+		e := entry.Entry{V: changeset.EntryVersion(body), ID: b.id(), ChangeSet: cs, Actor: b.actor, For: b.actor,
 			At: b.now, Type: body.Type(), Body: raw}
 		if !prev.IsZero() {
 			e.After = []id.ID{prev}

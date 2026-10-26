@@ -6,6 +6,7 @@ import (
 	"errors"
 	"reflect"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -54,7 +55,7 @@ const twoAfter = "[\n    \"" + sAfter1 + "\",\n    \"" + sAfter2 + "\"\n  ]"
 
 func baseEntry(t testing.TB) Entry {
 	return Entry{
-		V:         FormatVersion,
+		V:         1,
 		ID:        mustID(t, sID),
 		ChangeSet: mustID(t, sCS),
 		Actor:     mustID(t, sActor),
@@ -129,6 +130,32 @@ func TestGolden(t *testing.T) {
 	}
 }
 
+func TestVersions(t *testing.T) {
+	if FormatVersion != 2 {
+		t.Fatalf("FormatVersion = %d, want 2", FormatVersion)
+	}
+	// Both formats read and write; the envelope is the same in each.
+	for v := 1; v <= FormatVersion; v++ {
+		t.Run(strconv.Itoa(v), func(t *testing.T) {
+			in := swap(`"v": 1`, `"v": `+strconv.Itoa(v))
+			e, err := Decode([]byte(in))
+			if err != nil {
+				t.Fatalf("Decode: %v", err)
+			}
+			if e.V != v {
+				t.Fatalf("V = %d, want %d", e.V, v)
+			}
+			out, err := Encode(e)
+			if err != nil {
+				t.Fatalf("Encode: %v", err)
+			}
+			if string(out) != in {
+				t.Fatalf("Encode =\n%s\nwant\n%s", out, in)
+			}
+		})
+	}
+}
+
 func TestDecodeEmptyAfterIsNonNil(t *testing.T) {
 	e, err := Decode([]byte(doc("[]", "note", "{}")))
 	if err != nil {
@@ -184,8 +211,8 @@ var decodeFailures = []struct {
 	{"v negative", swap(`"v": 1`, `"v": -1`), ErrInvalid, "v", ""},
 	{"v string", swap(`"v": 1`, `"v": "1"`), ErrInvalid, "v", ""},
 	{"v missing", swap(`,`+"\n"+`  "v": 1`, ``), ErrInvalid, "v", ""},
-	{"v 2", swap(`"v": 1`, `"v": 2`), ErrNewerFormat, "v", ""},
-	{"v 2 with unknown keys", "{\n  \"future\": [],\n  \"v\": 2\n}\n", ErrNewerFormat, "v", ""},
+	{"v 3", swap(`"v": 1`, `"v": 3`), ErrNewerFormat, "v", ""},
+	{"v 3 with unknown keys", "{\n  \"future\": [],\n  \"v\": 3\n}\n", ErrNewerFormat, "v", ""},
 	{"missing for", swap(`  "for": "`+sFor+`",`+"\n", ``), ErrInvalid, "for", "missing"},
 	{"extra key", swap(`  "for"`, `  "extra": 1,`+"\n"+`  "for"`), ErrInvalid, "extra", "unknown"},
 	{"lower-case id", swap(sID, strings.ToLower(sID)), ErrInvalid, "id", ""},
@@ -278,7 +305,8 @@ func TestEncodeFailures(t *testing.T) {
 		field  string
 	}{
 		{"v 0", func(e *Entry) { e.V = 0 }, "v"},
-		{"v 2", func(e *Entry) { e.V = 2 }, "v"},
+		{"v 3", func(e *Entry) { e.V = 3 }, "v"},
+		{"v negative", func(e *Entry) { e.V = -1 }, "v"},
 		{"zero id", func(e *Entry) { e.ID = id.ID{} }, "id"},
 		{"zero change_set", func(e *Entry) { e.ChangeSet = id.ID{} }, "change_set"},
 		{"zero actor", func(e *Entry) { e.Actor = id.ID{} }, "actor"},
@@ -406,7 +434,7 @@ func genEntry() *rapid.Generator[Entry] {
 			t.Fatalf("canon.Marshal body: %v", err)
 		}
 		return Entry{
-			V:         FormatVersion,
+			V:         rapid.IntRange(1, FormatVersion).Draw(t, "v"),
 			ID:        genID().Draw(t, "id"),
 			ChangeSet: genID().Draw(t, "change_set"),
 			Actor:     genID().Draw(t, "actor"),

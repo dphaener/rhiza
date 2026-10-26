@@ -34,7 +34,7 @@ func ExampleFold() {
 		if err != nil {
 			panic(err)
 		}
-		e := entry.Entry{V: entry.FormatVersion, ID: next(), ChangeSet: cs, Actor: owner, For: owner,
+		e := entry.Entry{V: changeset.EntryVersion(b), ID: next(), ChangeSet: cs, Actor: owner, For: owner,
 			At: now, Type: b.Type(), Body: body}
 		if len(entries) > 0 {
 			e.After = []id.ID{entries[len(entries)-1].ID}
