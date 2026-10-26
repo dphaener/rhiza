@@ -1,6 +1,6 @@
 # leaf-depends-on-guide-verified
 
-evidence · `01M5X0Z2Z4FS6B6SVJT6XNF1WD`
+evidence · `01M5X0Z2Z4FS6B6SVJT6XNF1WD` · actor [claude-code-b6232fc2-verifier](../actor/claude-code-b6232fc2-verifier.md)
 
 ## result
 

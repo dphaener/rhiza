@@ -1,6 +1,6 @@
 # pointer-at-prompt-script
 
-evidence · `01M5WJG28FVC5NCV0Q1MEKHCK0`
+evidence · `01M5WJG28FVC5NCV0Q1MEKHCK0` · actor [claude-code-f436602f](../actor/claude-code-f436602f.md)
 
 ## result
 

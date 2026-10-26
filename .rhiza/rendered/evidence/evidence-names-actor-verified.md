@@ -1,6 +1,6 @@
 # evidence-names-actor-verified
 
-evidence · `01M5X0Z374E5EB0F8RWXYXTPF0`
+evidence · `01M5X0Z374E5EB0F8RWXYXTPF0` · actor [claude-code-b6232fc2-verifier](../actor/claude-code-b6232fc2-verifier.md)
 
 ## result
 

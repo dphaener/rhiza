@@ -1,6 +1,6 @@
 # command-step-tested
 
-evidence · `01M5WEDF5EDPFR8Z0NT2FBG62W`
+evidence · `01M5WEDF5EDPFR8Z0NT2FBG62W` · actor [claude-code-569529c3](../actor/claude-code-569529c3.md)
 
 ## statement
 

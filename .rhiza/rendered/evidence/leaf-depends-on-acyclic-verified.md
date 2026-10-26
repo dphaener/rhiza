@@ -1,6 +1,6 @@
 # leaf-depends-on-acyclic-verified
 
-evidence · `01M5X0Z2F7S7V6N7SYS3J1WYX7`
+evidence · `01M5X0Z2F7S7V6N7SYS3J1WYX7` · actor [claude-code-b6232fc2-verifier](../actor/claude-code-b6232fc2-verifier.md)
 
 ## result
 

@@ -1,6 +1,6 @@
 # known-session-id-test
 
-evidence · `01M5WAZ99YY2ZK6CZFB878B2MA`
+evidence · `01M5WAZ99YY2ZK6CZFB878B2MA` · actor [claude-code-dd482246](../actor/claude-code-dd482246.md)
 
 ## statement
 

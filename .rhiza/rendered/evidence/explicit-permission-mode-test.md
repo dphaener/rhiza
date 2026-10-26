@@ -1,6 +1,6 @@
 # explicit-permission-mode-test
 
-evidence · `01M5WAZ93GNCDP4P2QXT8GJN72`
+evidence · `01M5WAZ93GNCDP4P2QXT8GJN72` · actor [claude-code-dd482246](../actor/claude-code-dd482246.md)
 
 ## statement
 

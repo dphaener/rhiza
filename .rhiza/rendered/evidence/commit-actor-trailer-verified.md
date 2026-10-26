@@ -1,6 +1,6 @@
 # commit-actor-trailer-verified
 
-evidence · `01M5X0Z3F30CNVDFDQMVZD6HPS`
+evidence · `01M5X0Z3F30CNVDFDQMVZD6HPS` · actor [claude-code-b6232fc2-verifier](../actor/claude-code-b6232fc2-verifier.md)
 
 ## result
 
