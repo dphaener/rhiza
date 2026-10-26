@@ -3,6 +3,7 @@ module github.com/dphaener/rhiza
 go 1.25.14
 
 require (
+	github.com/BurntSushi/toml v1.6.0
 	github.com/oklog/ulid/v2 v2.1.2
 	github.com/rogpeppe/go-internal v1.14.1
 	modernc.org/sqlite v1.59.0

@@ -2362,6 +2362,394 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "run.resume",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "no_wait": {
+            "description": "Stop at a wait step whose condition does not hold yet, instead of waiting",
+            "type": "boolean"
+          },
+          "run": {
+            "description": "The run: a full ID or a unique prefix of 4+ characters",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "description": "True if nothing was written or run",
+            "type": "boolean"
+          },
+          "run": {
+            "additionalProperties": false,
+            "description": "The run as its journal stands; the command exits 1 when the run failed",
+            "properties": {
+              "change": {
+                "description": "The change set it runs on",
+                "type": "string"
+              },
+              "current": {
+                "description": "The step being run or to run next; empty once the run is finished",
+                "type": "string"
+              },
+              "detail": {
+                "description": "Why it stopped or failed",
+                "type": "string"
+              },
+              "id": {
+                "description": "The run ID",
+                "type": "string"
+              },
+              "started_at": {
+                "description": "When it started, RFC 3339 UTC",
+                "type": "string"
+              },
+              "state": {
+                "description": "running (another process runs it now), stopped (resumable), succeeded or failed; empty in a dry run",
+                "type": "string"
+              },
+              "steps": {
+                "description": "The steps done, in order",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it ended, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "What the step reported, such as its exit code",
+                      "type": "string"
+                    },
+                    "next": {
+                      "description": "The step the outcome led to; empty when it ended the run",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "How it ended: pass, fail, timeout, or error when it could not run",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "An agent step's session",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step's name",
+                      "type": "string"
+                    },
+                    "visit": {
+                      "description": "Which visit of the step it was, from 1",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "outcome",
+                    "step",
+                    "visit"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "title": {
+                "description": "The change set's title",
+                "type": "string"
+              },
+              "workflow": {
+                "description": "The workflow's name",
+                "type": "string"
+              },
+              "worktree": {
+                "description": "The worktree every step runs in",
+                "type": "string"
+              }
+            },
+            "required": [
+              "change",
+              "id",
+              "started_at",
+              "state",
+              "steps",
+              "title",
+              "workflow",
+              "worktree"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Continue a stopped or interrupted run where its journal left it",
+      "write": true
+    },
+    {
+      "name": "run.start",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "agent": {
+            "description": "The agent adapter of agent steps that name none; default the built-in default adapter",
+            "type": "string"
+          },
+          "change": {
+            "description": "The change set: a full ID or a unique prefix of 4+ characters; default --change, else the current one",
+            "type": "string"
+          },
+          "no_wait": {
+            "description": "Stop at a wait step whose condition does not hold yet, instead of waiting; resume the run later",
+            "type": "boolean"
+          },
+          "permission_mode": {
+            "description": "The permission mode of agent steps that set none; modes that bypass the agent's permission checks are refused",
+            "type": "string"
+          },
+          "workflow": {
+            "description": "The workflow: a .toml file (a path with a / or ending in .toml), else a name in .rhiza/workflows/<name>.toml",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workflow"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "description": "True if nothing was written or run",
+            "type": "boolean"
+          },
+          "run": {
+            "additionalProperties": false,
+            "description": "The run as its journal stands; the command exits 1 when the run failed",
+            "properties": {
+              "change": {
+                "description": "The change set it runs on",
+                "type": "string"
+              },
+              "current": {
+                "description": "The step being run or to run next; empty once the run is finished",
+                "type": "string"
+              },
+              "detail": {
+                "description": "Why it stopped or failed",
+                "type": "string"
+              },
+              "id": {
+                "description": "The run ID",
+                "type": "string"
+              },
+              "started_at": {
+                "description": "When it started, RFC 3339 UTC",
+                "type": "string"
+              },
+              "state": {
+                "description": "running (another process runs it now), stopped (resumable), succeeded or failed; empty in a dry run",
+                "type": "string"
+              },
+              "steps": {
+                "description": "The steps done, in order",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it ended, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "What the step reported, such as its exit code",
+                      "type": "string"
+                    },
+                    "next": {
+                      "description": "The step the outcome led to; empty when it ended the run",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "How it ended: pass, fail, timeout, or error when it could not run",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "An agent step's session",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step's name",
+                      "type": "string"
+                    },
+                    "visit": {
+                      "description": "Which visit of the step it was, from 1",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "outcome",
+                    "step",
+                    "visit"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "title": {
+                "description": "The change set's title",
+                "type": "string"
+              },
+              "workflow": {
+                "description": "The workflow's name",
+                "type": "string"
+              },
+              "worktree": {
+                "description": "The worktree every step runs in",
+                "type": "string"
+              }
+            },
+            "required": [
+              "change",
+              "id",
+              "started_at",
+              "state",
+              "steps",
+              "title",
+              "workflow",
+              "worktree"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Run a workflow's steps on a change set in its worktree, in the foreground",
+      "write": true
+    },
+    {
+      "name": "run.status",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "run": {
+            "description": "The run: a full ID or a unique prefix of 4+ characters; default the latest run of the current change set, else the latest run",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change": {
+            "description": "The change set it runs on",
+            "type": "string"
+          },
+          "current": {
+            "description": "The step being run or to run next; empty once the run is finished",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Why it stopped or failed",
+            "type": "string"
+          },
+          "id": {
+            "description": "The run ID",
+            "type": "string"
+          },
+          "started_at": {
+            "description": "When it started, RFC 3339 UTC",
+            "type": "string"
+          },
+          "state": {
+            "description": "running (another process runs it now), stopped (resumable), succeeded or failed; empty in a dry run",
+            "type": "string"
+          },
+          "steps": {
+            "description": "The steps done, in order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "at": {
+                  "description": "When it ended, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "detail": {
+                  "description": "What the step reported, such as its exit code",
+                  "type": "string"
+                },
+                "next": {
+                  "description": "The step the outcome led to; empty when it ended the run",
+                  "type": "string"
+                },
+                "outcome": {
+                  "description": "How it ended: pass, fail, timeout, or error when it could not run",
+                  "type": "string"
+                },
+                "session": {
+                  "description": "An agent step's session",
+                  "type": "string"
+                },
+                "step": {
+                  "description": "The step's name",
+                  "type": "string"
+                },
+                "visit": {
+                  "description": "Which visit of the step it was, from 1",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "at",
+                "outcome",
+                "step",
+                "visit"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "title": {
+            "description": "The change set's title",
+            "type": "string"
+          },
+          "workflow": {
+            "description": "The workflow's name",
+            "type": "string"
+          },
+          "worktree": {
+            "description": "The worktree every step runs in",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change",
+          "id",
+          "started_at",
+          "state",
+          "steps",
+          "title",
+          "workflow",
+          "worktree"
+        ],
+        "type": "object"
+      },
+      "summary": "Show a run's state and the steps it has done, from its journal",
+      "write": false
+    },
+    {
       "name": "session.hook",
       "request": {
         "additionalProperties": false,
@@ -2704,6 +3092,10 @@ cmp stdout describe.golden.json
                 "description": "The agent's permission mode",
                 "type": "string"
               },
+              "prompt": {
+                "description": "The agent's first prompt, if any",
+                "type": "string"
+              },
               "reports": {
                 "additionalProperties": false,
                 "description": "The latest report of each source that has spoken",
@@ -3016,6 +3408,10 @@ cmp stdout describe.golden.json
             "description": "The agent's permission mode",
             "type": "string"
           },
+          "prompt": {
+            "description": "The agent's first prompt, if any",
+            "type": "string"
+          },
           "reports": {
             "additionalProperties": false,
             "description": "The latest report of each source that has spoken",
@@ -3283,6 +3679,10 @@ cmp stdout describe.golden.json
             "description": "The agent's permission mode, always explicit: one the agent accepts; modes that bypass its permission checks are refused",
             "type": "string"
           },
+          "prompt": {
+            "description": "The agent's first prompt; default none",
+            "type": "string"
+          },
           "rex_session": {
             "description": "The Rex session to open the tab in; default the caller's REX_SESSION, else Rex chooses",
             "type": "string"
@@ -3345,6 +3745,10 @@ cmp stdout describe.golden.json
               },
               "permission_mode": {
                 "description": "The agent's permission mode",
+                "type": "string"
+              },
+              "prompt": {
+                "description": "The agent's first prompt, if any",
                 "type": "string"
               },
               "reports": {

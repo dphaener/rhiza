@@ -1,0 +1,40 @@
+# run start runs a command-only workflow in the change set's worktree,
+# prints the run, and leaves its journal in the git common dir: local
+# work-layer state, not in the model.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Start a run' --title 'Run starts' --json
+stdout '"change_set": "[0-9A-Z]{26}"'
+mkdir .rhiza/workflows
+cp ../one.toml .rhiza/workflows/one.toml
+
+exec rhiza run start --workflow one
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
+stdout '^- Workflow: one$'
+stdout '^- a \(visit 1\): pass, then b: exit 0$'
+stdout '^- b \(visit 1\): pass, then end: exit 0$'
+
+# The run's ID names a journal file in the git common dir.
+exists .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+grep '"type":"started"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+grep '"type":"finished".*"end":"succeeded"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
+
+-- one.toml --
+name = "one"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "b"
+
+[step.b]
+kind = "command"
+run = "true"
+on.pass = "done"

@@ -1,0 +1,68 @@
+# A run's command steps run through `sh -c` in the change set's worktree
+# with RHIZA_CHANGE, RHIZA_RUN and RHIZA_STEP set, and each outcome picks
+# the next step: exit 0 is pass, any other exit is fail.
+#
+# `a` runs `true` and passes to `b`; `b` exits 1 and fails to `c`; `c`
+# writes a marker into the worktree and ends the run.
+
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Command steps' --title 'Command steps' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+
+mkdir .rhiza/workflows
+cp $WORK/flow.toml .rhiza/workflows/flow.toml
+
+exec sh -c 'rhiza run start --workflow flow --json; echo exit=$?'
+stdout '"state": "succeeded"'
+stdout '^exit=0$'
+exec rhiza run status
+stdout '^Run \S+ succeeded$'
+stdout '^- a \(visit 1\): pass, then b: exit 0$'
+stdout '^- b \(visit 1\): fail, then c: exit 1$'
+stdout '^- c \(visit 1\): pass, then end: exit 0$'
+
+# The journal shows the same path, in order.
+exec rhiza run status --json
+stdout '"workflow": "flow"'
+stdout '"worktree": "'${WORK@R}'/repo\.command-steps"'
+stdout '"next": "c",\s+"outcome": "fail"'
+
+# c's marker is in the run's worktree, and the steps ran there.
+exists $WORK/repo.command-steps/marker.txt
+! exists marker.txt
+exec cat $WORK/a.pwd
+stdout '^'${WORK@R}'/repo\.command-steps$'
+
+# The command saw the change set, the run and its own step.
+exec cat $WORK/a.env
+stdout '^RHIZA_CHANGE=01M5PWGEF85Y185JZ2ZGCNH40N$'
+stdout '^RHIZA_RUN=\S+$'
+stdout '^RHIZA_STEP=a$'
+exec cat $WORK/b.env
+stdout '^RHIZA_STEP=b$'
+
+fold-ok
+
+-- flow.toml --
+name = "flow"
+
+[step.a]
+kind = "command"
+run = "env > $WORK/a.env; pwd > $WORK/a.pwd; true"
+on.pass = "b"
+
+[step.b]
+kind = "command"
+run = "env > $WORK/b.env; exit 1"
+on.fail = "c"
+
+[step.c]
+kind = "command"
+run = "touch marker.txt"
+on.pass = "done"
