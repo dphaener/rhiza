@@ -1,6 +1,6 @@
 # check-identity-verified
 
-evidence · `01M5V9A637FQP6C6SYNVCPHS1K` · actor [claude-code-d2f2546a](../actor/claude-code-d2f2546a.md)
+evidence · `01M5V9A637FQP6C6SYNVCPHS1K`
 
 ## result
 

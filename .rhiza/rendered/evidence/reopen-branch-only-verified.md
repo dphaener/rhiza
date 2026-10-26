@@ -1,6 +1,6 @@
 # reopen-branch-only-verified
 
-evidence · `01M5WT1PXSTBVVDZ7TM7G8CRV6` · actor [claude-code-b5610794](../actor/claude-code-b5610794.md)
+evidence · `01M5WT1PXSTBVVDZ7TM7G8CRV6`
 
 ## result
 

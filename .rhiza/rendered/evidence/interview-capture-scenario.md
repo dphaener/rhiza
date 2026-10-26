@@ -1,6 +1,6 @@
 # interview-capture-scenario
 
-evidence · `01M5WE456ARA8S7HZ7E2NAX6ZZ` · actor [claude-code-76c0731d](../actor/claude-code-76c0731d.md)
+evidence · `01M5WE456ARA8S7HZ7E2NAX6ZZ`
 
 ## result
 

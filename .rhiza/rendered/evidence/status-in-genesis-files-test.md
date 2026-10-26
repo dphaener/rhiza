@@ -1,6 +1,6 @@
 # status-in-genesis-files-test
 
-evidence · `01M5WAZ9XHM6Y0QGGMC4RW2VH2` · actor [claude-code-dd482246](../actor/claude-code-dd482246.md)
+evidence · `01M5WAZ9XHM6Y0QGGMC4RW2VH2`
 
 ## statement
 

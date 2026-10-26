@@ -1,6 +1,6 @@
 # ordered-landing-tests
 
-evidence · `01M5T2DGXDS88SEX05WYNJSGR3` · actor [claude-code-a7bf1047](../actor/claude-code-a7bf1047.md)
+evidence · `01M5T2DGXDS88SEX05WYNJSGR3`
 
 ## result
 

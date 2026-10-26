@@ -1,6 +1,6 @@
 # message-sender-script
 
-evidence · `01M5WJG20YN5NN2K8TTCNKW8K0` · actor [claude-code-f436602f](../actor/claude-code-f436602f.md)
+evidence · `01M5WJG20YN5NN2K8TTCNKW8K0`
 
 ## result
 

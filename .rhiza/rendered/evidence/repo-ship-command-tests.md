@@ -1,6 +1,6 @@
 # repo-ship-command-tests
 
-evidence · `01M5WHKD0PWADHFWMYHE6KW2D7` · actor [claude-code-4c6d8166](../actor/claude-code-4c6d8166.md)
+evidence · `01M5WHKD0PWADHFWMYHE6KW2D7`
 
 ## result
 

@@ -1,6 +1,6 @@
 # land-with-evidence-tests
 
-evidence · `01M5WHKD7Y22PB4S8Y0CTJPBXH` · actor [claude-code-4c6d8166](../actor/claude-code-4c6d8166.md)
+evidence · `01M5WHKD7Y22PB4S8Y0CTJPBXH`
 
 ## result
 

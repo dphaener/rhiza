@@ -1,6 +1,6 @@
 # workflow-file-tested
 
-evidence · `01M5WEDEQYKCMH8GPJJ4Y8VSDF` · actor [claude-code-569529c3](../actor/claude-code-569529c3.md)
+evidence · `01M5WEDEQYKCMH8GPJJ4Y8VSDF`
 
 ## statement
 

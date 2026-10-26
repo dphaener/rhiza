@@ -1,6 +1,6 @@
 # budget-timings-in-ci-run
 
-evidence · `01M5WKQNAC8BTMJ3M6Z2FE151M` · actor [claude-code-3e771a5f](../actor/claude-code-3e771a5f.md)
+evidence · `01M5WKQNAC8BTMJ3M6Z2FE151M`
 
 ## result
 

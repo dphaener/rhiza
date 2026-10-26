@@ -1,6 +1,6 @@
 # m2-proof-run
 
-evidence · `01M5WX8581BMVQVK24D41E19QA` · actor [claude-code-orchestrator](../actor/claude-code-orchestrator.md)
+evidence · `01M5WX8581BMVQVK24D41E19QA`
 
 ## result
 

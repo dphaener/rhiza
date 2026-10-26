@@ -1,6 +1,6 @@
 # pr-35-reopening-a-change-set
 
-evidence · `01M5WVCJVBQMWEW8HRBC730J82` · actor [darin-haener](../actor/darin-haener.md)
+evidence · `01M5WVCJVBQMWEW8HRBC730J82`
 
 ## head
 

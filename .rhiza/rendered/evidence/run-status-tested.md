@@ -1,6 +1,6 @@
 # run-status-tested
 
-evidence · `01M5WEDG80GG2F0GXW2A6QP7NK` · actor [claude-code-569529c3](../actor/claude-code-569529c3.md)
+evidence · `01M5WEDG80GG2F0GXW2A6QP7NK`
 
 ## statement
 

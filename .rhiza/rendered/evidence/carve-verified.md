@@ -1,6 +1,6 @@
 # carve-verified
 
-evidence · `01M5TVXZN94BWJAX70MNQXQB75` · actor [claude-code-50e191e7](../actor/claude-code-50e191e7.md)
+evidence · `01M5TVXZN94BWJAX70MNQXQB75`
 
 ## result
 

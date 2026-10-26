@@ -1,6 +1,6 @@
 # blocked-run-status-tested
 
-evidence · `01M5WGZJ1DK8JK0WD8EF7QSMAQ` · actor [claude-code-01m5szj4](../actor/claude-code-01m5szj4.md)
+evidence · `01M5WGZJ1DK8JK0WD8EF7QSMAQ`
 
 ## command
 

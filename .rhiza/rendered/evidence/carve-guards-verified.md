@@ -1,6 +1,6 @@
 # carve-guards-verified
 
-evidence · `01M5TVY0797CG7BPYJVP6A8C0N` · actor [claude-code-50e191e7](../actor/claude-code-50e191e7.md)
+evidence · `01M5TVY0797CG7BPYJVP6A8C0N`
 
 ## result
 

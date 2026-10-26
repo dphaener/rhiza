@@ -1,6 +1,6 @@
 # shipit-agent-step-tests
 
-evidence · `01M5WHKC1RBD6E4939DF90GQQD` · actor [claude-code-4c6d8166](../actor/claude-code-4c6d8166.md)
+evidence · `01M5WHKC1RBD6E4939DF90GQQD`
 
 ## result
 

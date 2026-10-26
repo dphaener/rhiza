@@ -1,6 +1,6 @@
 # faster-reads-budget
 
-evidence · `01M5V5BSX2ZYHR5C0NB8710Y32` · actor [claude-code-9a170ddb](../actor/claude-code-9a170ddb.md)
+evidence · `01M5V5BSX2ZYHR5C0NB8710Y32`
 
 ## result
 

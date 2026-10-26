@@ -1,6 +1,6 @@
 # tab-title-test
 
-evidence · `01M5WAZ8GAQY01BVGA1NNNPVQW` · actor [claude-code-dd482246](../actor/claude-code-dd482246.md)
+evidence · `01M5WAZ8GAQY01BVGA1NNNPVQW`
 
 ## statement
 

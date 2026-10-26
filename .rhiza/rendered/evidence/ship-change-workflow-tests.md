@@ -1,6 +1,6 @@
 # ship-change-workflow-tests
 
-evidence · `01M5WHKBTBAK90JVBNSPZRYSAG` · actor [claude-code-4c6d8166](../actor/claude-code-4c6d8166.md)
+evidence · `01M5WHKBTBAK90JVBNSPZRYSAG`
 
 ## result
 

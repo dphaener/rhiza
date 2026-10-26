@@ -36,6 +36,7 @@ Rhiza's own workflows: milestone 4 is planned, built and reviewed by Rhiza, with
 ### In
 
 - serves change set `01M5WPTRX1DDQ7BAGDF7T29QPW` (Reopening a change set: rhiza reopen lets a change set landed only on its branch take more writes and land again, so no session deletes a log entry to fix its work.)
+- serves change set `01M5WPTV0NX6YECXCPMHSEJAWY` (Leaf dependencies and Evidence's actor: leaves link depends-on each other, Evidence names the actor that wrote it, and rhiza check warns when that actor also wrote the leaf's code.)
 
 ## History
 

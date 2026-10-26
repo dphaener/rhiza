@@ -1,6 +1,6 @@
 # pinned-merge-tests
 
-evidence · `01M5WHKCHS79BZTVXXWHAG4DG5` · actor [claude-code-4c6d8166](../actor/claude-code-4c6d8166.md)
+evidence · `01M5WHKCHS79BZTVXXWHAG4DG5`
 
 ## result
 

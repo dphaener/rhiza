@@ -1,6 +1,6 @@
 # acyclic-dependencies-tests
 
-evidence · `01M5T2DH90EFA4F1X2NFW8BPCK` · actor [claude-code-a7bf1047](../actor/claude-code-a7bf1047.md)
+evidence · `01M5T2DH90EFA4F1X2NFW8BPCK`
 
 ## result
 

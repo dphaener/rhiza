@@ -1,6 +1,6 @@
 # change-set-title-test
 
-evidence · `01M5WAZA44NPBF4A77M39GB6R1` · actor [claude-code-dd482246](../actor/claude-code-dd482246.md)
+evidence · `01M5WAZA44NPBF4A77M39GB6R1`
 
 ## statement
 

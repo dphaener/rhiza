@@ -1,6 +1,6 @@
 # reopen-verified
 
-evidence · `01M5WT1PT758E697WGX1HNBW1R` · actor [claude-code-b5610794](../actor/claude-code-b5610794.md)
+evidence · `01M5WT1PT758E697WGX1HNBW1R`
 
 ## result
 

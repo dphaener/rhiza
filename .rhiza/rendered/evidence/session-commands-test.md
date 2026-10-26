@@ -1,6 +1,6 @@
 # session-commands-test
 
-evidence · `01M5WAZ8X39JMPZZWZ532GG534` · actor [claude-code-dd482246](../actor/claude-code-dd482246.md)
+evidence · `01M5WAZ8X39JMPZZWZ532GG534`
 
 ## statement
 

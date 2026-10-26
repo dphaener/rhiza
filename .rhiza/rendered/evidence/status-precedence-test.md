@@ -1,6 +1,6 @@
 # status-precedence-test
 
-evidence · `01M5WAZ9PS21FRW2373AP9WF5P` · actor [claude-code-dd482246](../actor/claude-code-dd482246.md)
+evidence · `01M5WAZ9PS21FRW2373AP9WF5P`
 
 ## statement
 

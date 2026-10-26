@@ -1,6 +1,6 @@
 # runner-headroom-runs
 
-evidence · `01M5WKQNHC7ZKWFTVEJWD2MWS5` · actor [claude-code-3e771a5f](../actor/claude-code-3e771a5f.md)
+evidence · `01M5WKQNHC7ZKWFTVEJWD2MWS5`
 
 ## result
 

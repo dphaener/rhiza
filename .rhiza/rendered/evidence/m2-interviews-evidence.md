@@ -1,6 +1,6 @@
 # m2-interviews-evidence
 
-evidence · `01M5WX85FR5KSERNTM6PCXNCX8` · actor [claude-code-orchestrator](../actor/claude-code-orchestrator.md)
+evidence · `01M5WX85FR5KSERNTM6PCXNCX8`
 
 ## result
 

@@ -1,6 +1,6 @@
 # carve-dependency-verified
 
-evidence · `01M5TVY01AZ9PNM8JFQMD0SS7W` · actor [claude-code-50e191e7](../actor/claude-code-50e191e7.md)
+evidence · `01M5TVY01AZ9PNM8JFQMD0SS7W`
 
 ## result
 

@@ -1,6 +1,6 @@
 # old-folder-verified
 
-evidence · `01M5V9A69GJR7P3AR7V4DHEHZ4` · actor [claude-code-d2f2546a](../actor/claude-code-d2f2546a.md)
+evidence · `01M5V9A69GJR7P3AR7V4DHEHZ4`
 
 ## result
 

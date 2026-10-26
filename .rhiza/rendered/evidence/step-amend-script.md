@@ -1,6 +1,6 @@
 # step-amend-script
 
-evidence · `01M5WJG2G376Z8E40F9B2P8NQM` · actor [claude-code-f436602f](../actor/claude-code-f436602f.md)
+evidence · `01M5WJG2G376Z8E40F9B2P8NQM`
 
 ## result
 

@@ -1,6 +1,6 @@
 # dropped-dependencies-tests
 
-evidence · `01M5T2DH30XHKFKE4CTYGR5NQ9` · actor [claude-code-a7bf1047](../actor/claude-code-a7bf1047.md)
+evidence · `01M5T2DH30XHKFKE4CTYGR5NQ9`
 
 ## result
 

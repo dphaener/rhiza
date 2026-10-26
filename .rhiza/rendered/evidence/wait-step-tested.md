@@ -1,6 +1,6 @@
 # wait-step-tested
 
-evidence · `01M5WEDFC4Q9APZS6NNWZDV6RK` · actor [claude-code-569529c3](../actor/claude-code-569529c3.md)
+evidence · `01M5WEDFC4Q9APZS6NNWZDV6RK`
 
 ## statement
 

@@ -1,6 +1,6 @@
 # interview-provenance-scenario
 
-evidence · `01M5WE459TQPNPFYYY27A64GG5` · actor [claude-code-76c0731d](../actor/claude-code-76c0731d.md)
+evidence · `01M5WE459TQPNPFYYY27A64GG5`
 
 ## result
 

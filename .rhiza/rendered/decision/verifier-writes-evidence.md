@@ -27,6 +27,10 @@ the orchestrator's proposal in the milestone-3 conversation, accepted by the own
 ### In
 
 - decided-by [milestone-3](../intent/anyone-builds/milestone-3.md)
+- decided-by [evidence-actor](../capability/rhiza/integrity/evidence-actor.md)
+- decided-by [evidence-names-actor](../capability/rhiza/integrity/evidence-actor/evidence-names-actor.md)
+- decided-by [commit-actor-trailer](../capability/rhiza/integrity/evidence-actor/commit-actor-trailer.md)
+- decided-by [check-evidence-actor](../capability/rhiza/integrity/evidence-actor/check-evidence-actor.md)
 
 ## History
 

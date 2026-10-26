@@ -1,6 +1,6 @@
 # launch-env-stamping-test
 
-evidence · `01M5WAZ9GADF5YF9N83WN7D9DN` · actor [claude-code-dd482246](../actor/claude-code-dd482246.md)
+evidence · `01M5WAZ9GADF5YF9N83WN7D9DN`
 
 ## statement
 
