@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5WPV42RYAZPV3V1QEP40F8A"
+  ],
+  "at": "2026-10-26T18:24:53Z",
+  "body": {
+    "reason": "The owner: \"yes, and you have the power to start that yourself!\" (answering \"Accept all eight?\" in the milestone-3 conversation, after reading the plan in PR #32).",
+    "rule": "owner"
+  },
+  "change_set": "01M5WPTV0NX6YECXCPMHSEJAWY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WQAKBMNZS76A4M29B2SKSG",
+  "type": "accept",
+  "v": 1
+}
