@@ -37,6 +37,9 @@ type fakeRunner struct {
 	polls    map[string]int
 	starts   map[string]int
 	envs     map[string][]string
+	answers  map[string]Answer // Answer per question; missing is not OK
+	answerN  map[string]int    // Answer calls per question
+	arbiters []string          // "<step> <question>" per StartArbiter call
 }
 
 func newFakeRunner() *fakeRunner {
@@ -45,7 +48,7 @@ func newFakeRunner() *fakeRunner {
 		agentSeq: map[string][]AgentStatus{}, agentErr: map[string]error{},
 		outcome: map[string]string{}, failOn: map[string]error{},
 		commands: map[string]int{}, polls: map[string]int{}, starts: map[string]int{},
-		envs: map[string][]string{},
+		envs: map[string][]string{}, answers: map[string]Answer{}, answerN: map[string]int{},
 	}
 }
 
@@ -105,6 +108,23 @@ func (f *fakeRunner) AgentStatus(session string) (AgentStatus, error) {
 		return AgentStatus{}, err
 	}
 	return AgentStatus{Done: true, Outcome: f.outcome[session], Detail: "exit 0"}, nil
+}
+
+func (f *fakeRunner) StartArbiter(step workflow.Step, question string, env []string) (string, error) {
+	f.envs[step.Name] = env
+	if err := f.failOn[step.Name]; err != nil {
+		return "", err
+	}
+	f.arbiters = append(f.arbiters, step.Name+" "+question)
+	return "S-" + step.Name + "-" + question, nil
+}
+
+func (f *fakeRunner) Answer(question string) (Answer, error) {
+	f.answerN[question]++
+	if a, ok := f.answers[question]; ok {
+		return a, nil
+	}
+	return Answer{Why: "no live Decision answers question " + question}, nil
 }
 
 const runID = "01RUNAAAAAAAAAAAAAAAAAAAAA"
@@ -1161,4 +1181,181 @@ func TestDecideCapSinceRetry(t *testing.T) {
 	if got, _ := Decide(def, st); got.Kind != ActOverCap || got.Visit != 5 {
 		t.Fatalf("over cap since retry: %+v", got)
 	}
+}
+
+// arbiterWF has an agent step and a declared arbiter step.
+const arbiterWF = `
+name = "wf"
+[step.build]
+kind = "agent"
+prompt = "build"
+[step.decide]
+kind = "arbiter"
+interval = "3s"
+`
+
+// arbitrateOn runs the arbiter of def on question Q1 as asked from step
+// build, without taking the run's lock, and returns its result.
+func arbitrateOn(t *testing.T, e *Engine, def *workflow.Definition) result {
+	t.Helper()
+	j, err := e.Store.Read(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := &running{e: e, j: j, def: def}
+	res, err := r.arbitrate(def.Steps["build"], "Q1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return res
+}
+
+// arbitrations reads the run's folded arbitrations.
+func arbitrations(t *testing.T, e *Engine) []Arbitration {
+	t.Helper()
+	j, err := e.Store.Read(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return j.State().Arbitrations
+}
+
+// TestArbitratePasses polls the arbiter's session at the arbiter step's
+// interval until it says done, then passes on a valid answer, journalling
+// arbiter and arbitrated entries.
+func TestArbitratePasses(t *testing.T) {
+	e, r, c, def := setup(t, arbiterWF)
+	r.agentSeq["S-decide-Q1"] = []AgentStatus{idle, {SaidDone: true}}
+	r.answers["Q1"] = Answer{OK: true, Decision: "assume-sqlite", Statement: "Use SQLite"}
+	res := arbitrateOn(t, e, def)
+	if res.outcome != workflow.OutcomePass || res.detail != "answered by assume-sqlite" {
+		t.Fatalf("result %+v", res)
+	}
+	if !reflect.DeepEqual(r.arbiters, []string{"decide Q1"}) || r.answerN["Q1"] != 1 {
+		t.Errorf("arbiters %v answers %v", r.arbiters, r.answerN)
+	}
+	if want := []string{"RHIZA_CHANGE=CS1", "RHIZA_RUN=" + runID, "RHIZA_STEP=decide"}; !reflect.DeepEqual(r.envs["decide"], want) {
+		t.Errorf("arbiter env %v, want %v", r.envs["decide"], want)
+	}
+	if want := []time.Duration{3 * time.Second}; !reflect.DeepEqual(c.sleeps, want) {
+		t.Errorf("sleeps = %v, want %v", c.sleeps, want)
+	}
+	if got, want := entryTypes(t, e), []string{"started:build", "arbiter:build", "arbitrated:build"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("journal %v, want %v", got, want)
+	}
+	want := []Arbitration{{Step: "build", Session: "S-decide-Q1", Question: "Q1", Outcome: "pass",
+		Detail: "answered by assume-sqlite", Decision: "assume-sqlite", At: at(1)}}
+	if got := arbitrations(t, e); !reflect.DeepEqual(got, want) {
+		t.Errorf("arbitrations %+v\nwant %+v", got, want)
+	}
+}
+
+// TestArbitrateFailsWithoutAnswer fails when the arbiter wrote nothing,
+// or a Decision the Runner does not accept (no reasoning), with the
+// Runner's why; an exited session is judged the same as one said done.
+func TestArbitrateFailsWithoutAnswer(t *testing.T) {
+	for _, tt := range []struct {
+		name   string
+		answer *Answer
+		why    string
+	}{
+		{"NoDecision", nil, "no live Decision answers question Q1"},
+		{"NoReasoning", &Answer{Decision: "assume-sqlite", Why: "decision assume-sqlite has no reasoning"},
+			"decision assume-sqlite has no reasoning"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			e, r, _, def := setup(t, arbiterWF)
+			if tt.answer != nil {
+				r.answers["Q1"] = *tt.answer
+			}
+			res := arbitrateOn(t, e, def)
+			if res.outcome != workflow.OutcomeFail || res.detail != tt.why {
+				t.Fatalf("result %+v, want fail %q", res, tt.why)
+			}
+			a := arbitrations(t, e)
+			if len(a) != 1 || a[0].Outcome != "fail" || a[0].Detail != tt.why || a[0].Decision != "" || a[0].Open() {
+				t.Errorf("arbitrations %+v", a)
+			}
+		})
+	}
+}
+
+// TestArbitrateFailsWhenArbiterAsks fails as soon as the arbiter's own
+// session blocks on a question, without asking for the answer (D10).
+func TestArbitrateFailsWhenArbiterAsks(t *testing.T) {
+	e, r, _, def := setup(t, arbiterWF)
+	ns := noticeLog(e)
+	r.agentSeq["S-decide-Q1"] = []AgentStatus{idle, blocked, {SaidDone: true}}
+	r.answers["Q1"] = Answer{OK: true, Decision: "assume-sqlite"}
+	res := arbitrateOn(t, e, def)
+	if res.outcome != workflow.OutcomeFail || res.detail != "the arbiter asked a question: Ship it?" {
+		t.Fatalf("result %+v", res)
+	}
+	if r.answerN["Q1"] != 0 || r.polls["S-decide-Q1"] != 2 {
+		t.Errorf("answer calls %d, polls %d", r.answerN["Q1"], r.polls["S-decide-Q1"])
+	}
+	if countType(t, e, TypeBlocked) != 0 || len(*ns) != 0 {
+		t.Errorf("the arbiter's block was journalled or notified: %v", *ns)
+	}
+}
+
+// TestArbitrateResumeRejoins rejoins the arbiter session an open
+// arbitration names instead of launching a second one.
+func TestArbitrateResumeRejoins(t *testing.T) {
+	e, r, _, def := setup(t, arbiterWF)
+	if err := e.Store.Append(runID, Entry{Type: TypeArbiter, At: at(1), Step: "build", Session: "S-earlier", Question: "Q1"}); err != nil {
+		t.Fatal(err)
+	}
+	r.agentSeq["S-earlier"] = []AgentStatus{{SaidDone: true}}
+	r.answers["Q1"] = Answer{OK: true, Decision: "assume-sqlite"}
+	res := arbitrateOn(t, e, def)
+	if res.outcome != workflow.OutcomePass || len(r.arbiters) != 0 || r.polls["S-earlier"] != 1 {
+		t.Fatalf("result %+v arbiters %v polls %v", res, r.arbiters, r.polls)
+	}
+	if got := countType(t, e, TypeArbiter); got != 1 {
+		t.Errorf("arbiter entries = %d, want 1", got)
+	}
+	a := arbitrations(t, e)
+	if len(a) != 1 || a[0].Session != "S-earlier" || a[0].Outcome != "pass" {
+		t.Errorf("arbitrations %+v", a)
+	}
+	// A closed arbitration is not rejoined: the next one launches anew.
+	if _, ok := (Journal{ID: runID, Entries: mustEntries(t, e)}).State().OpenArbitration("Q1"); ok {
+		t.Error("a judged arbitration is still open")
+	}
+}
+
+// TestArbitrateBuiltinAndStartError uses the built-in arbiter when the
+// file declares none, and journals a Runner failure to launch it as an
+// error verdict.
+func TestArbitrateBuiltinAndStartError(t *testing.T) {
+	e, r, c, def := setup(t, agentWF)
+	r.agentSeq["S-arbiter-Q1"] = []AgentStatus{idle, {Done: true, Outcome: "pass"}}
+	r.answers["Q1"] = Answer{OK: true, Decision: "d"}
+	if res := arbitrateOn(t, e, def); res.outcome != workflow.OutcomePass {
+		t.Fatalf("result %+v", res)
+	}
+	if !reflect.DeepEqual(r.arbiters, []string{"arbiter Q1"}) || !reflect.DeepEqual(c.sleeps, []time.Duration{workflow.DefaultInterval}) {
+		t.Errorf("arbiters %v sleeps %v", r.arbiters, c.sleeps)
+	}
+
+	e, r, _, def = setup(t, agentWF)
+	r.failOn["arbiter"] = errors.New("adapter refused")
+	res := arbitrateOn(t, e, def)
+	if res.outcome != OutcomeError || res.detail != "adapter refused" {
+		t.Fatalf("result %+v", res)
+	}
+	a := arbitrations(t, e)
+	if len(a) != 1 || a[0].Session != "" || a[0].Outcome != OutcomeError || countType(t, e, TypeArbiter) != 0 {
+		t.Errorf("arbitrations %+v", a)
+	}
+}
+
+func mustEntries(t *testing.T, e *Engine) []Entry {
+	t.Helper()
+	j, err := e.Store.Read(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return j.Entries
 }

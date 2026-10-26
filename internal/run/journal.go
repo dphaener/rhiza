@@ -7,18 +7,20 @@ import "time"
 
 // Entry types.
 const (
-	TypeStarted   = "started"
-	TypeEntered   = "entered"
-	TypeSession   = "session"
-	TypeEnded     = "ended"
-	TypeStopped   = "stopped"
-	TypeFinished  = "finished"
-	TypeBlocked   = "blocked"
-	TypeUnblocked = "unblocked"
-	TypeAmended   = "amended"
-	TypeRetried   = "retried"
-	TypeAccepted  = "accepted"
-	TypeRejected  = "rejected"
+	TypeStarted    = "started"
+	TypeEntered    = "entered"
+	TypeSession    = "session"
+	TypeEnded      = "ended"
+	TypeStopped    = "stopped"
+	TypeFinished   = "finished"
+	TypeBlocked    = "blocked"
+	TypeUnblocked  = "unblocked"
+	TypeAmended    = "amended"
+	TypeRetried    = "retried"
+	TypeAccepted   = "accepted"
+	TypeRejected   = "rejected"
+	TypeArbiter    = "arbiter"
+	TypeArbitrated = "arbitrated"
 )
 
 // Run results, used in Entry.End and State.Result.
@@ -72,6 +74,10 @@ type Block struct {
 //	retried:   Step, Detail (a failed run reopened at Step; Detail is why it had failed)
 //	accepted:  Change, LogEntry (the run accepted a change set under rule autonomous)
 //	rejected:  Change, LogEntry (the run rejected a change set under rule autonomous)
+//	arbiter:   Step, Session, Question (the arbiter's session launched on question
+//	           node Question, asked from agent step Step)
+//	arbitrated: Step, Question, Outcome (pass, fail or error), Detail, Decision (the
+//	           arbiter's verdict on Question; Decision is the answering Decision's handle)
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -90,6 +96,11 @@ type Entry struct {
 	// and the model log entry that moved it.
 	Change   string `json:"change,omitempty"`
 	LogEntry string `json:"log_entry,omitempty"`
+	// Question is an arbiter or arbitrated entry's question node ID.
+	Question string `json:"question,omitempty"`
+	// Decision is an arbitrated entry's answering Decision's handle, when
+	// the arbiter passed.
+	Decision string `json:"decision,omitempty"`
 }
 
 // Amendment is one amended entry: a step's brief or plan file replaced
@@ -112,6 +123,26 @@ type Accept struct {
 	Verb     string
 	At       time.Time
 }
+
+// Arbitration is one arbiter entry, completed by its arbitrated entry: the
+// arbiter's session Session decided question node Question, asked from
+// agent step Step. Outcome is empty while it is open (no arbitrated entry
+// yet); then it is pass, fail or error, with Detail, and Decision is the
+// answering Decision's handle on a pass. An arbitrated entry with no open
+// arbiter entry (the arbiter could not be launched) has no Session. At is
+// when it began.
+type Arbitration struct {
+	Step     string
+	Session  string
+	Question string
+	Outcome  string
+	Detail   string
+	Decision string
+	At       time.Time
+}
+
+// Open reports whether the arbitration has no verdict yet.
+func (a Arbitration) Open() bool { return a.Outcome == "" }
 
 // Journal is a run's entries in order.
 type Journal struct {
@@ -188,6 +219,9 @@ type State struct {
 	// Accepts are the accepted and rejected entries in journal order. They
 	// change nothing else in the fold.
 	Accepts []Accept
+	// Arbitrations are the arbiter entries in journal order, each completed
+	// by its arbitrated entry. They change nothing else in the fold.
+	Arbitrations []Arbitration
 	// RetryBase holds each step's Visits as they stood at the run's last
 	// retried entry. Only visits past it count against max_visits, so a
 	// retry gives every step its full cap again; visit numbers still
@@ -265,6 +299,12 @@ func (j Journal) State() State {
 			})
 		case TypeAccepted, TypeRejected:
 			st.Accepts = append(st.Accepts, Accept{Change: e.Change, LogEntry: e.LogEntry, Verb: e.Type, At: e.At})
+		case TypeArbiter:
+			st.Arbitrations = append(st.Arbitrations, Arbitration{
+				Step: e.Step, Session: e.Session, Question: e.Question, At: e.At,
+			})
+		case TypeArbitrated:
+			st.arbitrated(e)
 		case TypeStopped:
 			st.Stopped = e.Detail
 		case TypeFinished:
@@ -298,6 +338,33 @@ func (j Journal) State() State {
 		}
 	}
 	return st
+}
+
+// arbitrated completes the last open arbitration of e's question with e's
+// verdict, or, when there is none, adds a completed one without a session.
+func (st *State) arbitrated(e Entry) {
+	for i := len(st.Arbitrations) - 1; i >= 0; i-- {
+		a := &st.Arbitrations[i]
+		if a.Open() && a.Question == e.Question {
+			a.Outcome, a.Detail, a.Decision = e.Outcome, e.Detail, e.Decision
+			return
+		}
+	}
+	st.Arbitrations = append(st.Arbitrations, Arbitration{
+		Step: e.Step, Question: e.Question, Outcome: e.Outcome, Detail: e.Detail, Decision: e.Decision, At: e.At,
+	})
+}
+
+// OpenArbitration is the open arbitration of question, the latest when
+// there are several: the arbiter launched on it and not yet judged, which a
+// resume rejoins.
+func (st State) OpenArbitration(question string) (Arbitration, bool) {
+	for i := len(st.Arbitrations) - 1; i >= 0; i-- {
+		if a := st.Arbitrations[i]; a.Open() && a.Question == question {
+			return a, true
+		}
+	}
+	return Arbitration{}, false
 }
 
 // CapVisits is how many visits of step count against its max_visits: those

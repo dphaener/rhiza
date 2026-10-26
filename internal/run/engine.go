@@ -74,6 +74,24 @@ type Runner interface {
 	// outcome (pass or fail), or still running and perhaps blocked on the
 	// owner.
 	AgentStatus(session string) (AgentStatus, error)
+	// StartArbiter launches the arbiter step's session to decide question
+	// node question, on the run's change set, and returns its ID. Its
+	// prompt names only the question and how to decide it.
+	StartArbiter(step workflow.Step, question string, env []string) (session string, err error)
+	// Answer reports whether the model, as the run's change set sees it,
+	// holds a valid answer to question node question, and if not, why.
+	Answer(question string) (Answer, error)
+}
+
+// Answer is the Runner's verdict on an arbiter's work: OK when a live
+// Decision answers the question as an arbiter must (assumed wording and a
+// reason). Decision and Statement are that Decision's handle and
+// statement; Why says what was missing when it is not OK.
+type Answer struct {
+	OK        bool
+	Decision  string
+	Statement string
+	Why       string
 }
 
 // AgentStatus is one poll of an agent step's session.
@@ -393,11 +411,7 @@ func errResult(err error) result { return result{outcome: OutcomeError, detail: 
 // runStep runs one step by kind. A Runner failure is an error outcome, not
 // an error: it ends the run. The error return is for journal failures.
 func (r *running) runStep(step workflow.Step, change string) (result, error) {
-	env := []string{
-		"RHIZA_CHANGE=" + change,
-		"RHIZA_RUN=" + r.j.ID,
-		"RHIZA_STEP=" + step.Name,
-	}
+	env := r.stepEnv(step.Name, change)
 	switch step.Kind {
 	case workflow.KindCommand:
 		return r.command(step, env), nil
@@ -407,6 +421,15 @@ func (r *running) runStep(step workflow.Step, change string) (result, error) {
 		return r.agent(step, env)
 	}
 	return errResult(fmt.Errorf("step %q: unknown kind %q", step.Name, step.Kind)), nil
+}
+
+// stepEnv is the RHIZA_* variables of step on the run's change set.
+func (r *running) stepEnv(step, change string) []string {
+	return []string{
+		"RHIZA_CHANGE=" + change,
+		"RHIZA_RUN=" + r.j.ID,
+		"RHIZA_STEP=" + step,
+	}
 }
 
 func (r *running) command(step workflow.Step, env []string) result {
@@ -605,4 +628,84 @@ func (r *running) notify(st State, step, session string, blocked bool, b *Block)
 		Run: r.j.ID, Change: st.Change, Title: st.Title, Step: step,
 		Session: session, Blocked: blocked, Block: &cp,
 	})
+}
+
+// arbitrate has the run's arbiter (Definition.Arbiter) decide question
+// node question, raised by agent step asking, and journals its verdict. It
+// rejoins the question's open arbitration (a resume), else launches the
+// arbiter's session and journals an arbiter entry. It polls the session at
+// the arbiter's interval until the agent says done or the session exits,
+// then asks the Runner for the answer: a valid one passes, anything else
+// fails with why. A session that blocks, on a question above all, fails at
+// once: an arbiter never asks (it would recurse). The session is left open
+// either way. Runner failures are an error outcome; the error return is
+// for journal failures. The arbitrated entry records the verdict.
+func (r *running) arbitrate(asking workflow.Step, question string) (result, error) {
+	arb := r.def.Arbiter()
+	st := r.j.State()
+	session := ""
+	if a, ok := st.OpenArbitration(question); ok && a.Session != "" {
+		session = a.Session
+		r.log("step %s: rejoining arbiter session %s on question %s", asking.Name, session, question)
+	} else {
+		s, err := r.e.Runner.StartArbiter(arb, question, r.stepEnv(arb.Name, st.Change))
+		if err != nil {
+			return r.arbitrated(asking, question, errResult(err), "")
+		}
+		if err := r.append(Entry{Type: TypeArbiter, Step: asking.Name, Session: s, Question: question}); err != nil {
+			return result{}, err
+		}
+		r.log("step %s: arbiter session %s on question %s", asking.Name, s, question)
+		session = s
+	}
+	interval := arb.Interval
+	if interval <= 0 {
+		interval = workflow.DefaultInterval
+	}
+	for {
+		status, err := r.e.Runner.AgentStatus(session)
+		if err != nil {
+			return r.arbitrated(asking, question, errResult(err), "")
+		}
+		if !status.Done && status.Blocked != nil {
+			return r.arbitrated(asking, question, result{outcome: workflow.OutcomeFail, detail: arbiterBlocked(status.Blocked)}, "")
+		}
+		if status.Done || status.SaidDone {
+			break
+		}
+		r.clock().Sleep(interval)
+	}
+	ans, err := r.e.Runner.Answer(question)
+	if err != nil {
+		return r.arbitrated(asking, question, errResult(err), "")
+	}
+	if !ans.OK {
+		return r.arbitrated(asking, question, result{outcome: workflow.OutcomeFail, detail: ans.Why}, "")
+	}
+	return r.arbitrated(asking, question, result{outcome: workflow.OutcomePass, detail: "answered by " + ans.Decision}, ans.Decision)
+}
+
+// arbiterBlocked is why an arbiter whose session blocked on b fails.
+func arbiterBlocked(b *Block) string {
+	switch {
+	case b.Kind != "" && b.Kind != "question":
+		return "the arbiter blocked on " + b.Kind
+	case b.Question != "":
+		return "the arbiter asked a question: " + b.Question
+	}
+	return "the arbiter asked a question"
+}
+
+// arbitrated journals the arbiter's verdict res on question, asked from
+// step asking, with the answering Decision's handle on a pass, and
+// returns res.
+func (r *running) arbitrated(asking workflow.Step, question string, res result, decision string) (result, error) {
+	if err := r.append(Entry{
+		Type: TypeArbitrated, Step: asking.Name, Question: question,
+		Outcome: res.outcome, Detail: res.detail, Decision: decision,
+	}); err != nil {
+		return result{}, err
+	}
+	r.log("step %s: arbiter %s on question %s: %s", asking.Name, res.outcome, question, res.detail)
+	return res, nil
 }

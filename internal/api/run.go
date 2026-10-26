@@ -25,6 +25,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/store"
@@ -186,7 +188,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := checkAgentSteps(def, r.PermissionMode, r.Agent, runStartNext); err != nil {
+	if err := checkAgentSteps(def, r.PermissionMode, r.Agent, r.Autonomous, runStartNext); err != nil {
 		return nil, err
 	}
 	t, err := resolveChangeWorktree(ctx, r.Change, "no run can work on it")
@@ -266,7 +268,7 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 	}
 	// Start checked the agent steps; check again, since the journal is a
 	// file anyone can edit.
-	if err := checkAgentSteps(def, st.PermissionMode, st.Agent, "rhiza run status "+j.ID); err != nil {
+	if err := checkAgentSteps(def, st.PermissionMode, st.Agent, st.Autonomous, "rhiza run status "+j.ID); err != nil {
 		return nil, err
 	}
 	if retryStep != "" {
@@ -447,22 +449,39 @@ func loadWorkflow(path, ref string) (*workflow.Definition, []byte, error) {
 // checkAgentSteps checks every agent step's effective adapter and
 // permission mode (the step's, else mode and agent) as session.start
 // checks its own: a mode is required, it must be the adapter's, and a mode
-// that bypasses permission checks is refused.
-func checkAgentSteps(def *workflow.Definition, mode, agent, next string) error {
+// that bypasses permission checks is refused. An autonomous run's arbiter
+// (the file's arbiter step or the built-in one) is checked the same way
+// when the workflow has an agent step: only an autonomous run launches it,
+// and only on an agent step's question.
+func checkAgentSteps(def *workflow.Definition, mode, agent string, autonomous bool, next string) error {
+	agents := false
 	for _, name := range def.Order {
 		s := def.Steps[name]
 		if s.Kind != workflow.KindAgent {
 			continue
 		}
-		req := agentStepRequest(s, mode, agent)
-		if req.PermissionMode == "" {
-			return Usagef("step %q is an agent step with no permission mode: give --permission-mode or set permission_mode on the step", name).
-				WithNext(next)
+		agents = true
+		if err := checkAgentStep(s, "an agent step", mode, agent, next); err != nil {
+			return err
 		}
-		if _, err := startAdapter(req); err != nil {
-			e := AsError(err)
-			return &Error{Code: e.Code, Message: fmt.Sprintf("step %q: %s", name, e.Message), Next: next}
-		}
+	}
+	if autonomous && agents {
+		return checkAgentStep(def.Arbiter(), "the arbiter step", mode, agent, next)
+	}
+	return nil
+}
+
+// checkAgentStep checks one step's effective adapter and permission mode
+// for checkAgentSteps; what names the step's role in the message.
+func checkAgentStep(s workflow.Step, what, mode, agent, next string) error {
+	req := agentStepRequest(s, mode, agent)
+	if req.PermissionMode == "" {
+		return Usagef("step %q is %s with no permission mode: give --permission-mode or set permission_mode on the step", s.Name, what).
+			WithNext(next)
+	}
+	if _, err := startAdapter(req); err != nil {
+		e := AsError(err)
+		return &Error{Code: e.Code, Message: fmt.Sprintf("step %q: %s", s.Name, e.Message), Next: next}
 	}
 	return nil
 }
@@ -651,6 +670,78 @@ func (r *stepRunner) StartAgent(step workflow.Step, _ []string) (string, error) 
 		return "", err
 	}
 	return resp.(SessionStartResponse).Session.ID, nil
+}
+
+// arbiterPrompt is the arbiter's whole prompt, over the question node's
+// ID: it names nothing else, so the arbiter reads the question and its
+// context from the model, as the guide topic tells it.
+const arbiterPrompt = "Decide question %s: follow rhiza guide arbiter."
+
+// arbiterWording is the wording field of a Decision an arbiter writes: it
+// assumed the answer in the owner's place.
+const arbiterWording = "(assumed, would have escalated)"
+
+// StartArbiter starts the arbiter step's session as StartAgent starts an
+// agent step's (the step's adapter and mode, else the run's; autonomous as
+// the run is), on the run's change set, with a prompt that names only
+// question and the arbiter guide topic.
+func (r *stepRunner) StartArbiter(step workflow.Step, question string, _ []string) (string, error) {
+	req := agentStepRequest(step, r.mode, r.agent)
+	req.Change, req.Run, req.autonomous = r.change, r.run, r.autonomous
+	req.Prompt = fmt.Sprintf(arbiterPrompt, question)
+	resp, err := runSessionStart(r.ctx, req)
+	if err != nil {
+		return "", err
+	}
+	return resp.(SessionStartResponse).Session.ID, nil
+}
+
+// Answer reads the model as the run's change set sees it in the run's
+// worktree, where its sessions write, and looks for a live Decision with a
+// live answers link to question node question, wording arbiterWording and
+// a reasoning. The first such Decision, by link ID, is the answer; with
+// none, Why names what the nearest one lacks.
+func (r *stepRunner) Answer(question string) (run.Answer, error) {
+	q, err := id.Parse(question)
+	if err != nil {
+		return run.Answer{}, fmt.Errorf("question %q is not a node ID: %v", question, err)
+	}
+	cs, err := id.Parse(r.change)
+	if err != nil {
+		return run.Answer{}, fmt.Errorf("run %s names change set %q: %v", r.run, r.change, err)
+	}
+	prefix, err := r.ctx.Git("rev-parse", "--show-prefix")
+	if err != nil {
+		return run.Answer{}, err
+	}
+	ww, err := openWorkspace(filepath.Join(r.worktree, strings.TrimSpace(prefix)), r.ctx.Now, r.ctx.IDs, true)
+	if err != nil {
+		return run.Answer{}, err
+	}
+	return arbiterAnswer(ww.model(cs), q), nil
+}
+
+// arbiterAnswer is Answer's verdict over model m on question q.
+func arbiterAnswer(m Model, q id.ID) run.Answer {
+	if n, ok := m.Node(q); !ok || n.Retired {
+		return run.Answer{Why: fmt.Sprintf("question %s is not a live node", q)}
+	}
+	why := fmt.Sprintf("no live Decision answers question %s", q)
+	for _, l := range m.LinksTo(q, op.LinkAnswers) {
+		d, ok := m.Node(l.From)
+		if !ok || d.Retired || d.Kind != op.KindDecision {
+			continue
+		}
+		switch {
+		case fieldText(d.Fields["wording"]) != arbiterWording:
+			why = fmt.Sprintf("decision %s answers question %s but its wording is %q, not %q", d.Handle, q, fieldText(d.Fields["wording"]), arbiterWording)
+		case strings.TrimSpace(fieldText(d.Fields["reasoning"])) == "":
+			why = fmt.Sprintf("decision %s answers question %s but has no reasoning", d.Handle, q)
+		default:
+			return run.Answer{OK: true, Decision: d.Handle, Statement: fieldText(d.Fields["statement"])}
+		}
+	}
+	return run.Answer{Why: why}
 }
 
 // AgentStatus reads the session's record: it is done once its process
