@@ -19,8 +19,24 @@
 //     the job of a full check, not of the index.
 //   - The index is fresh when the listing equals the one it last caught up
 //     with. Open stores a fingerprint of the listing (every path and layout
-//     problem), so the fresh case costs one listing of log/ and one row read,
-//     with no write transaction.
+//     problem). Listing every change set folder is most of a fresh open's
+//     cost, so Open first takes a stat fingerprint: the names in log/ and,
+//     for each folder in it, its modification time and mode, plus its
+//     change time, inode and device where the os gives them. When that
+//     equals the stored one, no folder gained or lost a name, and the
+//     fresh case costs one read of log/, a stat per folder and one row
+//     read, with no listing and no write. When it differs (a touched
+//     folder, an index from before stat fingerprints, or a change), the
+//     log is listed and freshness is decided by names as before; if the
+//     listing matches, the new stat fingerprint is written in a short
+//     write transaction so the next open is fast again.
+//   - A stat fingerprint is taken before the listing it is stored with, so
+//     a file added meanwhile changes the next one. It is stored only when
+//     every folder's modification time is older than the moment of the
+//     stats by racyWindow (two seconds): a folder changed within one tick
+//     of a coarse file system clock may keep its time, so a fingerprint of
+//     a recent time could hide a change. Until the folders are that old,
+//     opens decide freshness by listing.
 //   - A rebuild empties every table and catches up from nothing. It happens
 //     when a path the index has seen is no longer listed (the log is
 //     append-only, so a vanished file means something rewrote it), and,
@@ -106,8 +122,13 @@ type Index struct {
 
 // stats records what one catch-up did.
 type stats struct {
-	// fresh is true when the listing matched and nothing was written.
+	// fresh is true when no catch-up was needed: the stats or the listing
+	// matched what is stored.
 	fresh bool
+	// statFresh is true when the stats matched, so the log was not listed.
+	statFresh bool
+	// statStored is true when a stat fingerprint was written.
+	statStored bool
 	// rebuilt is true when every table was emptied first.
 	rebuilt bool
 	// read is the number of entry files read.
@@ -148,10 +169,11 @@ func Open(root, dbPath string) (*Index, error) {
 
 // open is Open over fsys, rooted at a .genesis folder.
 func open(dbPath string, fsys fs.FS) (*Index, error) {
-	// The listing is most of a fresh open's cost; take it while the
-	// database opens.
-	fpc := make(chan string, 1)
-	go func() { fpc <- fingerprint(listLog(fsys)) }()
+	// Take the stats while the database opens. They come before any
+	// listing this open takes, which the slow path starts only once they
+	// are in.
+	spc := make(chan statPrint, 1)
+	go func() { spc <- takeStats(fsys, time.Now()) }()
 	if err := os.MkdirAll(filepath.Dir(dbPath), 0o755); err != nil {
 		return nil, fmt.Errorf("open index: %w", err)
 	}
@@ -166,7 +188,7 @@ func open(dbPath string, fsys fs.FS) (*Index, error) {
 		return nil, fmt.Errorf("open index %s: %w", dbPath, err)
 	}
 	x := &Index{db: db, path: dbPath, fsys: fsys}
-	if err := x.catchUpFrom(<-fpc); err != nil {
+	if err := x.catchUpFrom(<-spc); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("open index %s: %w", dbPath, err)
 	}
@@ -181,6 +203,16 @@ func (x *Index) Close() error {
 // errStale marks a database file to delete and build again.
 var errStale = errors.New("index: stale or unreadable database")
 
+// mmapSize is how much of the database file a connection maps into memory
+// (PRAGMA mmap_size), so that a page read is a memory access rather than a
+// read system call into the connection's own page cache. Every read opens
+// its connections afresh, so their caches start cold and the mapping, which
+// the kernel shares between processes, is what saves the time: measured on
+// the 50,000-node model, a cold lookup costs about a tenth less. 256 MB
+// covers the index of that model several times over; a larger file is
+// mapped up to that much and read as before past it.
+const mmapSize = 256 << 20
+
 // dsn is the connection string: every connection the pool opens gets the
 // busy timeout, WAL and the other pragmas, and its transactions start with
 // BEGIN IMMEDIATE.
@@ -190,6 +222,7 @@ func dsn(path string) string {
 		"_pragma=journal_mode(WAL)",
 		"_pragma=synchronous(NORMAL)",
 		"_pragma=foreign_keys(0)",
+		fmt.Sprintf("_pragma=mmap_size(%d)", mmapSize),
 		"_txlock=immediate",
 	}
 	return "file:" + path + "?" + strings.Join(q, "&")

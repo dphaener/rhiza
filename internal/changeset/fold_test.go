@@ -869,3 +869,22 @@ func TestFoldLogOrderIndependentProperty(t *testing.T) {
 		}
 	})
 }
+
+// TestFoldCanonicalMatchesFold checks that FoldCanonical gives Fold's
+// result and problems for every fold case: their entries are encoded, so
+// their bodies are canonical, which is what FoldCanonical is for.
+func TestFoldCanonicalMatchesFold(t *testing.T) {
+	for _, c := range foldCases {
+		t.Run(c.name, func(t *testing.T) {
+			entries := c.entries(t)
+			want, wantPs := Fold(csA, entries)
+			got, gotPs := FoldCanonical(csA, entries)
+			if !reflect.DeepEqual(got, want) {
+				t.Errorf("FoldCanonical =\n%#v\nFold =\n%#v", got, want)
+			}
+			if !reflect.DeepEqual(fmt.Sprint(gotPs), fmt.Sprint(wantPs)) {
+				t.Errorf("FoldCanonical problems %v, Fold problems %v", gotPs, wantPs)
+			}
+		})
+	}
+}

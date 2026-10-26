@@ -27,8 +27,13 @@ Read commands answer in under 50 ms on a 50,000-node model, from an index kept p
 - decided-by [t5-d13-budget-threshold](../../../decision/t5-d13-budget-threshold.md)
 - decided-by [t7-d3-reads-use-index](../../../decision/t7-d3-reads-use-index.md)
 - decided-by [t7-d14-read-budget](../../../decision/t7-d14-read-budget.md)
+- decided-by [fresh-read-by-folder-stats](../../../decision/fresh-read-by-folder-stats.md)
 - derived-from [milestone-1](../../../source/milestone-1.md)
 - derived-from [plan-task-5](../../../source/plan-task-5.md)
+
+### In
+
+- verifies [faster-reads-budget](../../../evidence/faster-reads-budget.md)
 
 ## History
 

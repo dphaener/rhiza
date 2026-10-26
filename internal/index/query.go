@@ -349,7 +349,7 @@ func (x *Index) Entries(cs id.ID) ([]entry.Entry, error) {
 		if err := rows.Scan(&raw); err != nil {
 			return nil, err
 		}
-		e, err := entry.Decode(raw)
+		e, err := entry.DecodeCanonical(raw)
 		if err != nil {
 			return nil, fmt.Errorf("decode stored entry: %w", err)
 		}

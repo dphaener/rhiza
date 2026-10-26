@@ -1,0 +1,75 @@
+{
+  "actor": "01M5V5B80ZJ7FF698BQZ309MPG",
+  "after": [
+    "01M5TWT41NHA6R8RF565V8FHJC"
+  ],
+  "at": "2026-10-26T03:51:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "refines": "t5-d6-freshness-by-names",
+          "statement": "A fresh index open first compares a fingerprint of the names in log/ and each change set folder's stat (modification time, mode, change time, inode and device) with the one stored at the last catch-up, and skips listing the folders when they match; any mismatch, or a folder modified within the last two seconds, falls back to deciding freshness by names.",
+          "wording": "agent of change set 01M5SWTJ, in autonomous mode"
+        },
+        "handle": "fresh-read-by-folder-stats",
+        "id": "01M5V5BSMKWHFT3HCYP1186PSE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5V5BSMKWHFT3HCYNXC8YFFP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SWS1V2VF3MF5R7A78C6JQA",
+        "id": "01M5V5BSQE7DYTGJCMH5MJE2YK",
+        "link": "01M5V5BSQE7DYTGJCMH4WHSRCA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5V5BSMKWHFT3HCYNXC8YFFP",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5V5BSMKWHFT3HCYNXC8YFFP",
+        "id": "01M5V5BST7KSW2B9K6M49DXJPP",
+        "link": "01M5V5BST7KSW2B9K6M1FE0QDC",
+        "note": "refines it: the stat fingerprint is a pre-check that skips the listing when nothing changed; names still decide freshness on any mismatch",
+        "op": "link.create",
+        "to": "01M5SWS2B0K2ZF8WHR0HKSC2EE",
+        "type": "relates-to"
+      },
+      {
+        "fields": {
+          "result": "TestReadBudget on an M3 Pro (11 CPUs), two runs per setting: default procs roadmap 4.93-5.29 ms and ready 4.92-5.11 ms (target 6 ms); GOMAXPROCS=2 roadmap 5.30-6.14 ms and ready 5.25-6.09 ms (target 10 ms); show 1.35-1.73 ms. make check exit 0.",
+          "statement": "roadmap and ready read the 50,000-node model well under the 50 ms budget: TestReadBudget medians of about 5 ms on an M3 Pro at default procs and 5.3-6.1 ms at GOMAXPROCS=2, from about 15 ms before the change set.",
+          "tests": "go test: TestReadBudget (internal/api), the freshness tests (internal/index), DecodeCanonical tests (internal/entry)"
+        },
+        "handle": "faster-reads-budget",
+        "id": "01M5V5BSX2ZYHR5C0NB917FRZB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5V5BSX2ZYHR5C0NB8710Y32",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5V5BSX2ZYHR5C0NB8710Y32",
+        "id": "01M5V5BSZX7NS7M0T3JF6JFA8G",
+        "link": "01M5V5BSZX7NS7M0T3JDZ6E575",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWS1V2VF3MF5R7A78C6JQA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTJY0AZP9TR3V1QJ54HMY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5V5BT460DQGD3Z2B9GXFHWR",
+  "type": "ops",
+  "v": 1
+}
