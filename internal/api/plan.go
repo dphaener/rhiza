@@ -74,9 +74,11 @@ import (
 	"io"
 	"maps"
 	"reflect"
+	"runtime"
 	"slices"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"github.com/dphaener/genesis/internal/changeset"
 	"github.com/dphaener/genesis/internal/entry"
@@ -181,7 +183,7 @@ type planInputs struct {
 	// questions those come from.
 	links []gmodel.Link
 	// nodes holds the nodes the core names: served intents and their
-	// ancestors, questions, touched nodes and their ancestors.
+	// ancestors, questions, and the nodes blocks links point to.
 	nodes map[id.ID]gmodel.Node
 	// ancestors maps each node the view has that a change set touches, or
 	// moves or creates a node under, to its tree ancestors, in any order.
@@ -469,10 +471,13 @@ func planMilestoneOf(i id.ID, in planInputs) (m id.ID, ok bool) {
 // not in seen (every link the view has, live or retired), each once.
 func planLinksOf(cs id.ID, view []gmodel.Link, inView map[id.ID]bool, ops []op.Op) []gmodel.Link {
 	out := slices.Clone(view)
-	seen := maps.Clone(inView)
+	var own map[id.ID]bool
 	for _, l := range planOwnLinks(cs, ops) {
-		if !seen[l.ID] {
-			seen[l.ID] = true
+		if !inView[l.ID] && !own[l.ID] {
+			if own == nil {
+				own = map[id.ID]bool{}
+			}
+			own[l.ID] = true
 			out = append(out, l)
 		}
 	}
@@ -628,69 +633,56 @@ const planCycleReason = "depends-on cycle"
 // sets in flight: each one's entries and links, the nodes its ops touch,
 // their ancestors and the blocks links to them, the questions those come
 // from and the answers to them, and the served intents with their
-// ancestors. The entries and the links at the change sets are read with
-// one query each, the nodes light (the core reads no fields) in a batch
-// per level of the tree, and the blocks and answers links with one query
-// each: every query has a cost of its own (a read transaction's locks), so
-// the count stays fixed, not one per change set or node.
+// ancestors. Every query has a cost of its own (a read transaction's
+// locks), so the count stays bounded by the depth of the tree, not one per
+// change set or node, and the two connections the index keeps are both
+// busy: the in-flight entries are read, decoded and folded on one
+// (index.EachInFlight) while the change sets and the links at them are
+// read on the other, and then, while the fold still runs, a planWalk on
+// that connection climbs from the nodes each folded change set touches,
+// a level of the tree per query, probing the blocks links to each level.
+// Once the fold ends the walk probes on the connection the fold held while
+// it climbs on its own; every query stays within index.BatchOne, so no
+// third connection is opened.
 func planGather(r *reader) (planInputs, error) {
 	in := planInputs{ops: map[id.ID][]op.Op{}, nodes: map[id.ID]gmodel.Node{},
 		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}, milestones: map[id.ID]bool{}}
+	w := newPlanWalk(r)
+	// flown is the in-flight change sets folded, keyed by ID: their entries
+	// are read and folded on another connection while the change sets are
+	// listed, since the index knows which are in flight. Each change set
+	// folded hands the walk the nodes it touches, the parents its ops give
+	// them and the intents its own links serve.
+	var flown struct {
+		sets map[id.ID]changeset.ChangeSet
+		err  error
+	}
+	var flownWG sync.WaitGroup
+	defer flownWG.Wait()
+	flownWG.Go(func() {
+		var mu sync.Mutex
+		sets := map[id.ID]changeset.ChangeSet{}
+		err := r.x.EachInFlight(func(c id.ID, es []entry.Entry) {
+			// Fold problems are dropped, as plan reads always dropped Fold's: these
+			// entries come from the index's store, whose bodies entry.Decode checked
+			// to be canonical at catch-up, and fold problems are reported by check's
+			// fold rule and change show/ls (and stored by the index at catch-up),
+			// not by plan reads.
+			s, _ := changeset.FoldCanonical(c, es)
+			w.add(planStarts(c, s.Ops, nil))
+			mu.Lock()
+			sets[c] = s
+			mu.Unlock()
+		})
+		if err != nil {
+			flown.err = readError(err)
+			return
+		}
+		flown.sets = sets
+	})
 	var err error
 	if in.changeSets, err = r.ChangeSets(); err != nil {
 		return planInputs{}, err
-	}
-	// missing holds the IDs asked for that the view lacks, so that none is
-	// asked for twice.
-	missing := map[id.ID]bool{}
-	// fetch reads the nodes of ids not read yet in one batch, and returns
-	// the ones it read.
-	fetch := func(ids []id.ID) ([]gmodel.Node, error) {
-		var want []id.ID
-		for _, i := range ids {
-			if _, ok := in.nodes[i]; !ok && !missing[i] && !i.IsZero() {
-				want = append(want, i)
-			}
-		}
-		if len(want) == 0 {
-			return nil, nil
-		}
-		ns, err := r.NodesLight(want)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range ns {
-			in.nodes[n.ID] = n
-		}
-		for _, i := range want {
-			if _, ok := in.nodes[i]; !ok {
-				missing[i] = true
-			}
-		}
-		return ns, nil
-	}
-	// prefetch reads starts and their ancestors, a level of the tree per
-	// batch.
-	prefetch := func(starts []id.ID) error {
-		level := starts
-		for range maxDepth {
-			ns, err := fetch(level)
-			if err != nil || len(ns) == 0 {
-				return err
-			}
-			level = level[:0:0]
-			for _, n := range ns {
-				level = append(level, n.Parent)
-			}
-		}
-		return nil
-	}
-	node := func(i id.ID) (gmodel.Node, bool, error) {
-		if _, err := fetch([]id.ID{i}); err != nil {
-			return gmodel.Node{}, false, err
-		}
-		n, ok := in.nodes[i]
-		return n, ok, nil
 	}
 	var flying, dropped []id.ID
 	for _, c := range in.changeSets {
@@ -701,18 +693,34 @@ func planGather(r *reader) (planInputs, error) {
 			dropped = append(dropped, c.ID)
 		}
 	}
-	entries, err := r.EntriesOf(flying)
-	if err != nil {
-		return planInputs{}, err
-	}
 	csLinks, err := r.LinksAt(flying, index.Both)
 	if err != nil {
 		return planInputs{}, err
 	}
 	in.links = append(in.links, csLinks...)
 	csLinks = slices.Clone(csLinks)
-	folded := planFold(flying, entries)
+	w.add(planServed(csLinks))
+	// The connection the change sets were read on is free until the fold
+	// ends: the walk takes it.
+	w.start()
+	defer w.wait()
+	flownWG.Wait()
+	w.folded()
+	if flown.err != nil {
+		return planInputs{}, flown.err
+	}
+	// A change set in flight has entries; one without folds to no open.
+	folded := make([]changeset.ChangeSet, len(flying))
 	for k, c := range flying {
+		var ok bool
+		if folded[k], ok = flown.sets[c]; !ok {
+			// Fold problems are dropped, as plan reads always dropped Fold's: these
+			// entries come from the index's store, whose bodies entry.Decode checked
+			// to be canonical at catch-up, and fold problems are reported by check's
+			// fold rule and change show/ls (and stored by the index at catch-up),
+			// not by plan reads.
+			folded[k], _ = changeset.FoldCanonical(c, nil)
+		}
 		in.ops[c] = folded[k].Ops
 		csLinks = append(csLinks, planOwnLinks(c, folded[k].Ops)...)
 	}
@@ -725,7 +733,8 @@ func planGather(r *reader) (planInputs, error) {
 			return planInputs{}, err
 		}
 		if may {
-			if entries, err = r.EntriesOf(dropped); err != nil {
+			entries, err := r.EntriesOf(dropped)
+			if err != nil {
 				return planInputs{}, err
 			}
 			gone = planFold(dropped, entries)
@@ -740,28 +749,58 @@ func planGather(r *reader) (planInputs, error) {
 		return planInputs{}, err
 	}
 
-	// Every node a chain below starts from: the touched nodes, the parents
-	// ops give them, and the served intents; read with their ancestors.
-	var starts []id.ID
+	// Every node a chain below starts from: the touched nodes and the
+	// parents ops give them (chainStarts), and the served intents.
+	var chainStarts []id.ID
 	for _, c := range in.changeSets {
-		touched, parents := planTouched(in.ops[c.ID])
-		for _, t := range touched {
-			starts = append(starts, t)
-			starts = append(starts, parents[t]...)
-		}
+		chainStarts = planStarts(c.ID, in.ops[c.ID], chainStarts)
 	}
-	for _, l := range csLinks {
-		if l.Type == op.LinkServes && !l.Retired {
-			starts = append(starts, l.To)
-		}
-	}
-	if err := prefetch(starts); err != nil {
+	served := planServed(csLinks)
+	if err := w.wait(); err != nil {
 		return planInputs{}, err
 	}
-
+	// chainBuf holds the last chain, which each caller copies what it keeps
+	// from before the next.
+	var chainBuf []id.ID
+	// chain walks up from start through the view's parents, start first;
+	// empty when the view has no start. The walk has read the parents of
+	// every start it was handed; one it was not is read now.
+	chain := func(start id.ID) ([]id.ID, error) {
+		out := chainBuf[:0]
+		defer func() { chainBuf = out[:0] }()
+		for p := start; !p.IsZero() && !slices.Contains(out, p) && len(out) < maxDepth; {
+			parent, ok, err := w.parent(p)
+			if err != nil {
+				return nil, err
+			}
+			if !ok {
+				break
+			}
+			out = append(out, p)
+			p = parent
+		}
+		return out, nil
+	}
 	// Touched nodes, their ancestors, and the blocks links to them.
+	targets := map[id.ID]bool{}
+	for _, s := range chainStarts {
+		if _, done := in.ancestors[s]; done {
+			continue
+		}
+		ch, err := chain(s)
+		if err != nil {
+			return planInputs{}, err
+		}
+		if len(ch) == 0 {
+			continue
+		}
+		in.ancestors[s] = planSortIDs(slices.Clone(ch[1:]))
+		for _, a := range ch {
+			targets[a] = true
+		}
+	}
 	blocked := map[id.ID]bool{}
-	var questions []id.ID
+	var questions, named []id.ID
 	addBlocks := func(ls []gmodel.Link) {
 		for _, l := range ls {
 			if l.Type == op.LinkBlocks && !blocked[l.From] {
@@ -771,56 +810,61 @@ func planGather(r *reader) (planInputs, error) {
 		}
 	}
 	addBlocks(csLinks)
-	// chain walks up from start through the view's parents, start first,
-	// since change sets touch nodes in the same parts of the tree; nil when
-	// the view has no start.
-	chain := func(start id.ID) ([]id.ID, error) {
-		var out []id.ID
-		for p := start; !p.IsZero() && !slices.Contains(out, p) && len(out) < maxDepth; {
-			n, ok, err := node(p)
-			if err != nil {
-				return nil, err
-			}
-			if !ok {
-				break
-			}
-			out = append(out, p)
-			p = n.Parent
-		}
-		return out, nil
-	}
-	targets := map[id.ID]bool{}
-	for _, c := range in.changeSets {
-		touched, parents := planTouched(in.ops[c.ID])
-		for _, t := range touched {
-			for _, s := range append([]id.ID{t}, parents[t]...) {
-				if _, done := in.ancestors[s]; done {
-					continue
-				}
-				ch, err := chain(s)
-				if err != nil {
-					return planInputs{}, err
-				}
-				if len(ch) == 0 {
-					continue
-				}
-				in.ancestors[s] = planSortIDs(slices.Clone(ch[1:]))
-				for _, a := range ch {
-					targets[a] = true
-				}
-			}
-		}
-	}
-	ls, err := r.LinksTo(slices.Collect(maps.Keys(targets)), op.LinkBlocks)
+	blocks, err := w.blocks(targets)
 	if err != nil {
 		return planInputs{}, err
 	}
-	in.links = append(in.links, ls...)
-	addBlocks(ls)
+	for _, l := range blocks {
+		named = append(named, l.To)
+	}
+	in.links = append(in.links, blocks...)
+	addBlocks(blocks)
 
-	// The questions, and the answers links to them.
-	if _, err := fetch(questions); err != nil {
+	// The served intents and their ancestors, with their fields, since
+	// the milestones are among them; one the view lacks but an in-flight
+	// change set creates is named from its create.
+	var onPaths []id.ID
+	for _, i := range served {
+		if _, done := in.intentPath[i]; done {
+			continue
+		}
+		ch, err := chain(i)
+		if err != nil {
+			return planInputs{}, err
+		}
+		if len(ch) == 0 {
+			planCreatedNode(i, in)
+			continue
+		}
+		onPaths = append(onPaths, ch...)
+		path := slices.Clone(ch[1:])
+		slices.Reverse(path)
+		in.intentPath[i] = path
+	}
+	ns, err := r.NodesFields(onPaths)
+	if err != nil {
 		return planInputs{}, err
+	}
+	for _, n := range ns {
+		in.nodes[n.ID] = lightNode(n)
+		if n.Kind == op.KindIntent && planMilestoneField(n.Fields) {
+			in.milestones[n.ID] = true
+		}
+	}
+
+	// The questions and the nodes the blocks links name, and the answers
+	// links to the questions the view has.
+	var want []id.ID
+	for _, i := range slices.Concat(questions, named) {
+		if _, ok := in.nodes[i]; !ok && !i.IsZero() {
+			want = append(want, i)
+		}
+	}
+	if ns, err = r.NodesLight(want); err != nil {
+		return planInputs{}, err
+	}
+	for _, n := range ns {
+		in.nodes[n.ID] = n
 	}
 	var asked []id.ID
 	for _, q := range questions {
@@ -828,53 +872,294 @@ func planGather(r *reader) (planInputs, error) {
 			asked = append(asked, q)
 		}
 	}
-	if ls, err = r.LinksTo(asked, op.LinkAnswers); err != nil {
-		return planInputs{}, err
-	}
-	in.links = append(in.links, ls...)
-
-	// The served intents and their ancestors; one the view lacks but an
-	// in-flight change set creates is named from its create.
-	for _, l := range csLinks {
-		if l.Type != op.LinkServes || l.Retired {
-			continue
-		}
-		if _, done := in.intentPath[l.To]; done {
-			continue
-		}
-		ch, err := chain(l.To)
-		if err != nil {
-			return planInputs{}, err
-		}
-		if len(ch) == 0 {
-			planCreatedNode(l.To, in)
-			continue
-		}
-		path := slices.Clone(ch[1:])
-		slices.Reverse(path)
-		in.intentPath[l.To] = path
-	}
-
-	// The milestones among the served intents and their ancestors: their
-	// fields, read in one batch.
-	var intents []id.ID
-	for i, path := range in.intentPath {
-		for _, n := range append([]id.ID{i}, path...) {
-			if in.nodes[n].Kind == op.KindIntent {
-				intents = append(intents, n)
-			}
-		}
-	}
-	ns, err := r.NodesFields(intents)
+	ls, err := r.LinksTo(asked, op.LinkAnswers)
 	if err != nil {
 		return planInputs{}, err
 	}
-	for _, n := range ns {
-		if n.Kind == op.KindIntent && planMilestoneField(n.Fields) {
-			in.milestones[n.ID] = true
+	in.links = append(in.links, ls...)
+	return in, nil
+}
+
+// planStarts appends to starts the nodes the node ops of change set cs's
+// ops touch, each followed by the parents its create and move ops give
+// it: where a chain starts from for cs.
+func planStarts(cs id.ID, ops []op.Op, starts []id.ID) []id.ID {
+	touched, parents := planTouched(ops)
+	for _, t := range touched {
+		starts = append(starts, t)
+		starts = append(starts, parents[t]...)
+	}
+	return starts
+}
+
+// planServed is the intents the live serves links among ls point to.
+func planServed(ls []gmodel.Link) []id.ID {
+	var out []id.ID
+	for _, l := range ls {
+		if l.Type == op.LinkServes && !l.Retired {
+			out = append(out, l.To)
 		}
 	}
-	return in, nil
+	return out
+}
+
+// planWalk climbs the view's tree from the nodes it is handed while the
+// in-flight entries are read, and reads the blocks links to the nodes it
+// finds. It reads the parent of each node pending, a level per query
+// (planParents), queues the parents it has not seen, and probes the nodes
+// found for blocks links, until nothing is pending and it has been told no
+// more starts will come. While the entries hold the other connection it
+// does both on one goroutine, each query bounded by index.BatchOne so that
+// the index opens no third connection; once told, a second goroutine
+// probes while the first climbs, each query still bounded, so the two
+// connections stay busy without a third. What it read is kept for the
+// gather: each node's parent, the nodes the view lacks, the nodes probed
+// and the blocks links to them.
+type planWalk struct {
+	r    *reader
+	done chan struct{}
+
+	mu sync.Mutex
+	// more is signalled when pending grows or ended is set, probes when
+	// toProbe grows or climbed is set.
+	more, probes sync.Cond
+	// pending is the nodes to read the parents of, and seen those handed
+	// to the walk so far; toProbe the nodes found and not probed yet.
+	pending, toProbe []id.ID
+	seen             map[id.ID]bool
+	// ended is set once no more starts will come, climbed once nothing is
+	// pending after that.
+	ended, climbed bool
+	// parents is each node found and its parent, missing the nodes the
+	// view lacks, probed the nodes whose blocks links are in links. The
+	// first two are the climbing goroutine's alone until done is closed;
+	// the gather reads them all after.
+	parents map[id.ID]id.ID
+	missing map[id.ID]bool
+	probed  map[id.ID]bool
+	links   []gmodel.Link
+	err     error
+}
+
+func newPlanWalk(r *reader) *planWalk {
+	w := &planWalk{r: r, done: make(chan struct{}), seen: map[id.ID]bool{},
+		parents: map[id.ID]id.ID{}, missing: map[id.ID]bool{}, probed: map[id.ID]bool{}}
+	w.more.L, w.probes.L = &w.mu, &w.mu
+	return w
+}
+
+// add hands the walk nodes to climb from; those it has seen are dropped.
+func (w *planWalk) add(ids []id.ID) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	for _, i := range ids {
+		if !i.IsZero() && !w.seen[i] {
+			w.seen[i] = true
+			w.pending = append(w.pending, i)
+		}
+	}
+	w.more.Signal()
+}
+
+// folded tells the walk that no more starts will come.
+func (w *planWalk) folded() {
+	w.mu.Lock()
+	w.ended = true
+	w.mu.Unlock()
+	w.more.Signal()
+}
+
+// start runs the walk on a goroutine of its own, until done.
+func (w *planWalk) start() {
+	go w.run()
+}
+
+// run climbs until nothing is pending and the walk has ended, probing
+// between levels until then, and on the probing goroutine from then on,
+// which it waits for.
+func (w *planWalk) run() {
+	defer close(w.done)
+	var probing sync.WaitGroup
+	defer probing.Wait()
+	alone := true
+	for {
+		w.mu.Lock()
+		for len(w.pending) == 0 && !w.ended {
+			w.more.Wait()
+		}
+		if w.ended && alone {
+			alone = false
+			probing.Go(w.probe)
+		}
+		if len(w.pending) == 0 || w.err != nil {
+			w.climbed = true
+			w.mu.Unlock()
+			w.probes.Signal()
+			return
+		}
+		level := w.take(&w.pending)
+		w.mu.Unlock()
+		if _, err := w.climb(level); err != nil {
+			w.fail(err)
+			continue
+		}
+		if alone {
+			w.probeOnce()
+		}
+	}
+}
+
+// take removes and returns the first index.BatchOne of *ids at most;
+// the caller holds mu.
+func (w *planWalk) take(ids *[]id.ID) []id.ID {
+	n := min(len(*ids), index.BatchOne)
+	out := slices.Clone((*ids)[:n])
+	*ids = slices.Delete(*ids, 0, n)
+	return out
+}
+
+// probe reads the blocks links to the nodes found, a batch at a time,
+// until nothing is left to probe and the climbing is done.
+func (w *planWalk) probe() {
+	for {
+		w.mu.Lock()
+		for len(w.toProbe) == 0 && !w.climbed {
+			w.probes.Wait()
+		}
+		if len(w.toProbe) == 0 || w.err != nil {
+			w.mu.Unlock()
+			return
+		}
+		w.mu.Unlock()
+		w.probeOnce()
+	}
+}
+
+// probeOnce probes a batch of the nodes found, if any.
+func (w *planWalk) probeOnce() {
+	w.mu.Lock()
+	batch := w.take(&w.toProbe)
+	w.mu.Unlock()
+	if len(batch) == 0 {
+		return
+	}
+	ls, err := w.r.LinksTo(batch, op.LinkBlocks)
+	if err != nil {
+		w.fail(err)
+		return
+	}
+	w.mu.Lock()
+	w.links = append(w.links, ls...)
+	for _, i := range batch {
+		w.probed[i] = true
+	}
+	w.mu.Unlock()
+}
+
+// fail records the walk's first error, which ends it.
+func (w *planWalk) fail(err error) {
+	w.mu.Lock()
+	if w.err == nil {
+		w.err = err
+	}
+	w.mu.Unlock()
+	w.more.Signal()
+	w.probes.Signal()
+}
+
+// climb reads the parents of level, remembers them and the nodes the view
+// lacks, queues the parents not seen yet and the nodes found for probing,
+// and returns the nodes found.
+func (w *planWalk) climb(level []id.ID) ([]id.ID, error) {
+	ps, err := planParents(w.r, level)
+	if err != nil {
+		return nil, err
+	}
+	found := make([]id.ID, 0, len(ps))
+	next := make([]id.ID, 0, len(ps))
+	for _, p := range ps {
+		w.parents[p.ID] = p.Parent
+		found = append(found, p.ID)
+		if !p.Parent.IsZero() {
+			next = append(next, p.Parent)
+		}
+	}
+	for _, i := range level {
+		if _, ok := w.parents[i]; !ok {
+			w.missing[i] = true
+		}
+	}
+	w.add(next)
+	w.mu.Lock()
+	w.toProbe = append(w.toProbe, found...)
+	w.mu.Unlock()
+	w.probes.Signal()
+	return found, nil
+}
+
+// wait returns once the walk is done, with its error if it failed. The
+// walk ends only once told that no more starts will come (folded), which
+// wait makes sure of, for a gather that returns early.
+func (w *planWalk) wait() error {
+	w.folded()
+	<-w.done
+	return w.err
+}
+
+// parent is node i's parent in the view, zero for a root; ok is false
+// when the view lacks i. A node the walk did not climb from is read now,
+// so the gather's answer does not depend on what the walk was handed.
+func (w *planWalk) parent(i id.ID) (parent id.ID, ok bool, err error) {
+	if p, ok := w.parents[i]; ok {
+		return p, true, nil
+	}
+	if w.missing[i] {
+		return id.ID{}, false, nil
+	}
+	if _, err := w.climb([]id.ID{i}); err != nil {
+		return id.ID{}, false, err
+	}
+	p, ok := w.parents[i]
+	return p, ok, nil
+}
+
+// blocks is the blocks links to the nodes in targets, after the walk is
+// done: those probed already, and a probe now of any it did not reach.
+func (w *planWalk) blocks(targets map[id.ID]bool) ([]gmodel.Link, error) {
+	var left []id.ID
+	for t := range targets {
+		if !w.probed[t] {
+			left = append(left, t)
+		}
+	}
+	ls, err := w.r.LinksTo(left, op.LinkBlocks)
+	if err != nil {
+		return nil, err
+	}
+	var out []gmodel.Link
+	for _, l := range slices.Concat(w.links, ls) {
+		if targets[l.To] {
+			out = append(out, l)
+		}
+	}
+	return out, nil
+}
+
+// planParents is the ID and parent of each of ids that r's view has,
+// sorted by ID, each once, as index.Index.Parents gives them; from the
+// what-if model when r reads one.
+func planParents(r *reader, ids []id.ID) ([]index.Parent, error) {
+	if r.m == nil {
+		ps, err := r.x.Parents(r.view.stored, ids)
+		return ps, readError(err)
+	}
+	var out []index.Parent
+	for _, i := range planSortIDs(slices.Clone(ids)) {
+		if n, ok := r.m.Node(i); ok {
+			out = append(out, index.Parent{ID: i, Parent: n.Parent})
+		}
+	}
+	return out, nil
 }
 
 // planMilestoneField reports whether fields has a non-empty milestone:
@@ -888,14 +1173,24 @@ func planMilestoneField(fields map[string]json.RawMessage) bool {
 	return len(v) > 0 && string(v) != `""` && string(v) != "null"
 }
 
-// planFold folds each of css from its entries. Folding is CPU work over
-// entries already read: one change set per goroutine.
+// planFold folds each of css from its entries, which the index decoded
+// from canonical bytes (changeset.FoldCanonical). Folding is CPU work over
+// entries already read: one worker per usable CPU takes the change sets in
+// turn, which costs fewer goroutines than one per change set on few CPUs.
 func planFold(css []id.ID, entries map[id.ID][]entry.Entry) []changeset.ChangeSet {
 	out := make([]changeset.ChangeSet, len(css))
+	var next atomic.Int64
 	var wg sync.WaitGroup
-	for k, c := range css {
+	for range min(runtime.GOMAXPROCS(0), len(css)) {
 		wg.Go(func() {
-			out[k], _ = changeset.Fold(c, entries[c])
+			for k := int(next.Add(1)) - 1; k < len(css); k = int(next.Add(1)) - 1 {
+				// Fold problems are dropped, as plan reads always dropped Fold's: these
+				// entries come from the index's store, whose bodies entry.Decode checked
+				// to be canonical at catch-up, and fold problems are reported by check's
+				// fold rule and change show/ls (and stored by the index at catch-up),
+				// not by plan reads.
+				out[k], _ = changeset.FoldCanonical(css[k], entries[css[k]])
+			}
 		})
 	}
 	wg.Wait()
@@ -1046,7 +1341,12 @@ func planLandedDeps(r *reader, all []index.ChangeSetInfo, flying []id.ID, sets [
 			return nil, err
 		}
 		for _, c := range next {
-			s, _ := changeset.Fold(c, entries[c])
+			// Fold problems are dropped, as plan reads always dropped Fold's: these
+			// entries come from the index's store, whose bodies entry.Decode checked
+			// to be canonical at catch-up, and fold problems are reported by check's
+			// fold rule and change show/ls (and stored by the index at catch-up),
+			// not by plan reads.
+			s, _ := changeset.FoldCanonical(c, entries[c])
 			sets = append(sets, s)
 		}
 		ls, err := r.x.LinksAt(index.AsIs, next, index.From)

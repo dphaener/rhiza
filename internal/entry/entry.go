@@ -95,6 +95,13 @@ func invalidWrap(field string, err error) error {
 // the body's concern. The time embedded in a ULID is deliberately not
 // compared with At.
 func (e Entry) Validate() error {
+	return e.validate(false)
+}
+
+// validate is Validate; with canonical set, the body is known to be in
+// canonical form and is not checked to be, which is most of Validate's
+// cost.
+func (e Entry) validate(canonical bool) error {
 	if e.V < 1 || e.V > FormatVersion {
 		return invalid("v", "%d, want 1 through %d", e.V, FormatVersion)
 	}
@@ -129,6 +136,9 @@ func (e Entry) Validate() error {
 	}
 	if len(e.Body) == 0 || e.Body[0] != '{' {
 		return invalid("body", "not an object")
+	}
+	if canonical {
+		return nil
 	}
 	out, err := canon.Canonicalize(e.Body)
 	if err != nil {
@@ -169,12 +179,36 @@ func Decode(data []byte) (Entry, error) {
 	if err := canon.Check(data); err != nil {
 		return Entry{}, fmt.Errorf("%w: %w", ErrInvalid, err)
 	}
+	return decode(data, false)
+}
+
+// DecodeCanonical is Decode for bytes already known to be canonical, such
+// as those the index stored after Decode accepted them. It runs every
+// check Decode does but the canonical-form ones, of the entry and of its
+// body, which are most of Decode's cost; on bytes that are not canonical
+// its result is unspecified, though it still fails on bytes the checks it
+// runs reject.
+func DecodeCanonical(data []byte) (Entry, error) {
+	if len(data) == 0 {
+		return Entry{}, fmt.Errorf("%w: %w", ErrInvalid, canon.Check(data))
+	}
+	return decode(data, true)
+}
+
+// decode parses data, which Decode has checked to be canonical or
+// DecodeCanonical takes to be (trusted).
+func decode(data []byte, trusted bool) (Entry, error) {
 	if data[0] != '{' {
 		return Entry{}, fmt.Errorf("%w: not an object", ErrInvalid)
 	}
 	var fields map[string]json.RawMessage
-	if err := json.Unmarshal(data, &fields); err != nil {
-		return Entry{}, fmt.Errorf("%w: %w", ErrInvalid, err)
+	if trusted {
+		fields = scanMembers(data)
+	}
+	if fields == nil {
+		if err := json.Unmarshal(data, &fields); err != nil {
+			return Entry{}, fmt.Errorf("%w: %w", ErrInvalid, err)
+		}
 	}
 
 	var e Entry
@@ -238,8 +272,13 @@ func Decode(data []byte) (Entry, error) {
 		return Entry{}, invalid("after", "not an array")
 	}
 	var after []json.RawMessage
-	if err := json.Unmarshal(raw, &after); err != nil {
-		return Entry{}, invalidWrap("after", err)
+	if trusted {
+		after = scanElements(raw)
+	}
+	if after == nil {
+		if err := json.Unmarshal(raw, &after); err != nil {
+			return Entry{}, invalidWrap("after", err)
+		}
 	}
 	e.After = make([]id.ID, 0, len(after))
 	for _, r := range after {
@@ -266,13 +305,20 @@ func Decode(data []byte) (Entry, error) {
 	}
 	// The body sits indented inside the entry; standalone it has its own
 	// canonical form.
-	body, err := canon.Canonicalize(raw)
-	if err != nil {
-		return Entry{}, invalidWrap("body", err)
+	if trusted {
+		// Canonical text holds no raw newline inside a string, so every
+		// "\n  " is indentation: removing two spaces of it is the body's
+		// own canonical form, without parsing it again.
+		e.Body = json.RawMessage(bytes.ReplaceAll(raw, []byte("\n  "), []byte("\n")))
+	} else {
+		body, err := canon.Canonicalize(raw)
+		if err != nil {
+			return Entry{}, invalidWrap("body", err)
+		}
+		e.Body = json.RawMessage(bytes.TrimSuffix(body, []byte("\n")))
 	}
-	e.Body = json.RawMessage(bytes.TrimSuffix(body, []byte("\n")))
 
-	if err := e.Validate(); err != nil {
+	if err := e.validate(trusted); err != nil {
 		return Entry{}, err
 	}
 	return e, nil
@@ -285,9 +331,117 @@ func str(raw json.RawMessage) (string, error) {
 	if len(raw) == 0 || raw[0] != '"' {
 		return "", errNotString
 	}
+	// A string without an escape is its own text between the quotes; the
+	// bytes are valid JSON by here, so this is what Unmarshal would give.
+	if n := len(raw); n >= 2 && raw[n-1] == '"' && bytes.IndexByte(raw, '\\') < 0 {
+		return string(raw[1 : n-1]), nil
+	}
 	var s string
 	if err := json.Unmarshal(raw, &s); err != nil {
 		return "", err
 	}
 	return s, nil
+}
+
+// scanMembers splits a canonical JSON object into its members without
+// parsing the values; nil when data is not shaped as expected, so the
+// caller falls back to a full parse and its errors.
+func scanMembers(data []byte) map[string]json.RawMessage {
+	fields := make(map[string]json.RawMessage, len(keys))
+	i := skipSpace(data, 1)
+	for i < len(data) && data[i] != '}' {
+		if data[i] != '"' {
+			return nil
+		}
+		end := scanValue(data, i)
+		if end < 0 || bytes.IndexByte(data[i:end], '\\') >= 0 {
+			return nil
+		}
+		key := string(data[i+1 : end-1])
+		i = skipSpace(data, end)
+		if i >= len(data) || data[i] != ':' {
+			return nil
+		}
+		i = skipSpace(data, i+1)
+		if end = scanValue(data, i); end < 0 {
+			return nil
+		}
+		fields[key] = data[i:end]
+		i = skipSpace(data, end)
+		if i < len(data) && data[i] == ',' {
+			i = skipSpace(data, i+1)
+		}
+	}
+	if i >= len(data) {
+		return nil
+	}
+	return fields
+}
+
+// scanElements is scanMembers for an array.
+func scanElements(data []byte) []json.RawMessage {
+	out := []json.RawMessage{}
+	i := skipSpace(data, 1)
+	for i < len(data) && data[i] != ']' {
+		end := scanValue(data, i)
+		if end < 0 {
+			return nil
+		}
+		out = append(out, data[i:end])
+		i = skipSpace(data, end)
+		if i < len(data) && data[i] == ',' {
+			i = skipSpace(data, i+1)
+		}
+	}
+	if i >= len(data) {
+		return nil
+	}
+	return out
+}
+
+func skipSpace(data []byte, i int) int {
+	for i < len(data) && (data[i] == ' ' || data[i] == '\n') {
+		i++
+	}
+	return i
+}
+
+// scanValue returns the end of the JSON value starting at data[i], or -1
+// when it does not end.
+func scanValue(data []byte, i int) int {
+	if i >= len(data) {
+		return -1
+	}
+	depth := 0
+	for j := i; j < len(data); j++ {
+		switch data[j] {
+		case '"':
+			for j++; j < len(data) && data[j] != '"'; j++ {
+				if data[j] == '\\' {
+					j++
+				}
+			}
+			if j >= len(data) {
+				return -1
+			}
+			if depth == 0 {
+				return j + 1
+			}
+		case '{', '[':
+			depth++
+		case '}', ']':
+			depth--
+			if depth <= 0 {
+				if depth < 0 {
+					return j // a scalar ended at its container's close
+				}
+				return j + 1
+			}
+		case ',', ' ', '\n':
+			if depth == 0 {
+				return j
+			}
+		}
+	}
+	return -1
 }

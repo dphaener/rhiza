@@ -136,6 +136,7 @@
 - [fixed-core-kinds](decision/fixed-core-kinds.md)
 - [fixed-link-types](decision/fixed-link-types.md)
 - [fourteen-links](decision/fourteen-links.md)
+- [fresh-read-by-folder-stats](decision/fresh-read-by-folder-stats.md)
 - [go-one-binary](decision/go-one-binary.md)
 - [golden-files](decision/golden-files.md)
 - [hooks-from-the-start](decision/hooks-from-the-start.md)
@@ -418,6 +419,7 @@
 - [carve-verified](evidence/carve-verified.md)
 - [dependent-writes-tests](evidence/dependent-writes-tests.md)
 - [dropped-dependencies-tests](evidence/dropped-dependencies-tests.md)
+- [faster-reads-budget](evidence/faster-reads-budget.md)
 - [milestone-groups-tested](evidence/milestone-groups-tested.md)
 - [ordered-landing-tests](evidence/ordered-landing-tests.md)
 
@@ -442,6 +444,7 @@
 
 - [claude-code-24d8eb87](actor/claude-code-24d8eb87.md)
 - [claude-code-50e191e7](actor/claude-code-50e191e7.md)
+- [claude-code-9a170ddb](actor/claude-code-9a170ddb.md)
 - [claude-code-a7bf1047](actor/claude-code-a7bf1047.md)
 - [claude-code-orchestrator](actor/claude-code-orchestrator.md)
 - [claude-code-task-11](actor/claude-code-task-11.md)

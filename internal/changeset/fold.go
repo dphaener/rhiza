@@ -247,6 +247,20 @@ func compareEntries(a, b entry.Entry) int {
 // (ErrOrder) and ignored. Problems are sorted by change set, entry ID, then
 // error text, and are nil when there are none. Fold never panics.
 func Fold(cs id.ID, entries []entry.Entry) (ChangeSet, []Problem) {
+	return fold(cs, entries, false)
+}
+
+// FoldCanonical is Fold for entries whose bodies are known to be canonical
+// on their own, as entry.Decode and entry.DecodeCanonical return them: it
+// skips DecodeBody's check that each body is, which is most of a fold's
+// cost. On such entries its result is Fold's; a body that is not canonical
+// may decode where Fold reports it.
+func FoldCanonical(cs id.ID, entries []entry.Entry) (ChangeSet, []Problem) {
+	return fold(cs, entries, true)
+}
+
+// fold is Fold, and FoldCanonical when canonical is set.
+func fold(cs id.ID, entries []entry.Entry, canonical bool) (ChangeSet, []Problem) {
 	f := &folder{cs: cs}
 	out := ChangeSet{ID: cs}
 
@@ -276,7 +290,7 @@ func Fold(cs id.ID, entries []entry.Entry) (ChangeSet, []Problem) {
 	var opens []id.ID
 	for _, x := range eids {
 		e := byID[x]
-		b, err := DecodeBody(e)
+		b, err := decodeBody(e, canonical)
 		if err != nil {
 			f.report(x, fmt.Errorf("%w: %w", ErrBody, err))
 			continue

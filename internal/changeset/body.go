@@ -240,13 +240,21 @@ func (o Open) Validate() error {
 
 // Validate reports the first rule o breaks.
 func (o Ops) Validate() error {
+	return o.validate(false)
+}
+
+// validate is Validate; with opsChecked set each op's own Validate is not
+// run again, as decodeOps ran it when it decoded the op.
+func (o Ops) validate(opsChecked bool) error {
 	if len(o.Ops) == 0 && len(o.Drop) == 0 {
 		return invalid("ops", "nothing to change: ops and drop are empty")
 	}
 	seen := make(map[id.ID]int, len(o.Ops))
 	for i, x := range o.Ops {
-		if err := x.Validate(); err != nil {
-			return invalidWrap(opField(i), err)
+		if !opsChecked {
+			if err := x.Validate(); err != nil {
+				return invalidWrap(opField(i), err)
+			}
 		}
 		if j, ok := seen[x.ID]; ok {
 			return invalid("ops", "op id %s at %d repeats %s", x.ID, i, opField(j))
@@ -392,23 +400,37 @@ func EncodeBody(b Body) (json.RawMessage, error) {
 // a format-1 entry carve is an unknown field. A carve's own fields are
 // checked the same way and reported as "carve.<field>".
 func DecodeBody(e entry.Entry) (Body, error) {
+	return decodeBody(e, false)
+}
+
+// decodeBody is DecodeBody. With canonical set, e.Body is known to be
+// canonical on its own (see FoldCanonical), and the check that it is, most
+// of the cost, is skipped.
+func decodeBody(e entry.Entry, canonical bool) (Body, error) {
 	shape, ok := shapes[e.Type]
 	if !ok {
 		return nil, invalid("type", "unknown entry type %q", e.Type)
 	}
-	data, err := canon.Canonicalize(e.Body)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrInvalid, err)
+	data := []byte(e.Body)
+	if !canonical {
+		c, err := canon.Canonicalize(e.Body)
+		if err != nil {
+			return nil, fmt.Errorf("%w: %w", ErrInvalid, err)
+		}
+		if !bytes.Equal(bytes.TrimSuffix(c, []byte("\n")), e.Body) {
+			return nil, fmt.Errorf("%w: %w", ErrInvalid, canon.ErrNotCanonical)
+		}
 	}
-	if !bytes.Equal(bytes.TrimSuffix(data, []byte("\n")), e.Body) {
-		return nil, fmt.Errorf("%w: %w", ErrInvalid, canon.ErrNotCanonical)
-	}
-	if data[0] != '{' {
+	// data is canonical from here on, so its members and elements can be
+	// split without parsing them (scanMembers, scanElements).
+	if len(data) == 0 || data[0] != '{' {
 		return nil, fmt.Errorf("%w: not an object", ErrInvalid)
 	}
-	var fields map[string]json.RawMessage
-	if err := json.Unmarshal(data, &fields); err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrInvalid, err)
+	fields := scanMembers(data)
+	if fields == nil {
+		if err := json.Unmarshal(data, &fields); err != nil {
+			return nil, fmt.Errorf("%w: %w", ErrInvalid, err)
+		}
 	}
 	for _, k := range shape {
 		if _, ok := fields[k]; !ok {
@@ -424,6 +446,7 @@ func DecodeBody(e entry.Entry) (Body, error) {
 	}
 
 	var b Body
+	var err error
 	switch e.Type {
 	case entry.TypeOpen:
 		b, err = decodeOpen(fields)
@@ -464,7 +487,15 @@ func DecodeBody(e entry.Entry) (Body, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := b.Validate(); err != nil {
+	// An ops body's ops were each validated as they were decoded (op.Decode
+	// runs Validate); on the canonical path that is not done again, since
+	// each op's Validate would canonicalize its field values once more.
+	if ops, ok := b.(Ops); ok && canonical {
+		err = ops.validate(true)
+	} else {
+		err = b.Validate()
+	}
+	if err != nil {
 		return nil, err
 	}
 	return b, nil
@@ -492,6 +523,9 @@ func decodeOps(fields map[string]json.RawMessage) (Body, error) {
 		return nil, invalidWrap("ops", err)
 	}
 	var ops []op.Op
+	if len(items) > 0 {
+		ops = make([]op.Op, 0, len(items))
+	}
 	for i, r := range items {
 		// The op sits indented inside the body; op.Decode canonicalizes it on
 		// its own.
@@ -521,9 +555,11 @@ func decodeCarve(raw json.RawMessage) (*Carve, error) {
 	if len(raw) == 0 || raw[0] != '{' {
 		return nil, invalid("carve", "not an object")
 	}
-	var fields map[string]json.RawMessage
-	if err := json.Unmarshal(raw, &fields); err != nil {
-		return nil, invalidWrap("carve", err)
+	fields := scanMembers(raw)
+	if fields == nil {
+		if err := json.Unmarshal(raw, &fields); err != nil {
+			return nil, invalidWrap("carve", err)
+		}
 	}
 	if _, ok := fields["entry"]; !ok {
 		return nil, invalid("carve.entry", "missing")
@@ -586,6 +622,12 @@ func str(raw json.RawMessage) (string, error) {
 	if len(raw) == 0 || raw[0] != '"' {
 		return "", errNotString
 	}
+	// Bodies are canonical by the time their strings are read: valid UTF-8
+	// and minimally escaped, so a string with no backslash is its own text
+	// between the quotes, as Unmarshal would give it.
+	if n := len(raw); n >= 2 && raw[n-1] == '"' && bytes.IndexByte(raw, '\\') < 0 {
+		return string(raw[1 : n-1]), nil
+	}
 	var s string
 	if err := json.Unmarshal(raw, &s); err != nil {
 		return "", err
@@ -605,6 +647,9 @@ func ulid(raw json.RawMessage) (id.ID, error) {
 func array(raw json.RawMessage) ([]json.RawMessage, error) {
 	if len(raw) == 0 || raw[0] != '[' {
 		return nil, errNotArray
+	}
+	if items := scanElements(raw); items != nil {
+		return items, nil
 	}
 	var items []json.RawMessage
 	if err := json.Unmarshal(raw, &items); err != nil {
@@ -628,4 +673,109 @@ func ids(raw json.RawMessage) ([]id.ID, error) {
 		out = append(out, x)
 	}
 	return out, nil
+}
+
+// scanMembers splits a canonical JSON object into its members without
+// parsing their values, which come back as slices of data. It is nil when
+// data is not shaped as expected (a key with an escape, say), so that the
+// caller falls back to json.Unmarshal and its errors. Canonical text has
+// no duplicate keys, so the map holds what Unmarshal would give.
+func scanMembers(data []byte) map[string]json.RawMessage {
+	fields := map[string]json.RawMessage{}
+	i := skipSpace(data, 1)
+	for i < len(data) && data[i] != '}' {
+		if data[i] != '"' {
+			return nil
+		}
+		end := scanValue(data, i)
+		if end < 0 || bytes.IndexByte(data[i:end], '\\') >= 0 {
+			return nil
+		}
+		key := string(data[i+1 : end-1])
+		i = skipSpace(data, end)
+		if i >= len(data) || data[i] != ':' {
+			return nil
+		}
+		i = skipSpace(data, i+1)
+		if end = scanValue(data, i); end < 0 {
+			return nil
+		}
+		fields[key] = data[i:end]
+		if i = skipSpace(data, end); i < len(data) && data[i] == ',' {
+			i = skipSpace(data, i+1)
+		}
+	}
+	if i >= len(data) {
+		return nil
+	}
+	return fields
+}
+
+// scanElements is scanMembers for an array: its elements, never nil for an
+// array that scans, so an empty one is [].
+func scanElements(data []byte) []json.RawMessage {
+	out := []json.RawMessage{}
+	i := skipSpace(data, 1)
+	for i < len(data) && data[i] != ']' {
+		end := scanValue(data, i)
+		if end < 0 {
+			return nil
+		}
+		out = append(out, data[i:end])
+		if i = skipSpace(data, end); i < len(data) && data[i] == ',' {
+			i = skipSpace(data, i+1)
+		}
+	}
+	if i >= len(data) {
+		return nil
+	}
+	return out
+}
+
+// skipSpace skips the spaces and newlines of canonical text from data[i].
+func skipSpace(data []byte, i int) int {
+	for i < len(data) && (data[i] == ' ' || data[i] == '\n') {
+		i++
+	}
+	return i
+}
+
+// scanValue returns the end of the JSON value starting at data[i], or -1
+// when it does not end.
+func scanValue(data []byte, i int) int {
+	if i >= len(data) {
+		return -1
+	}
+	depth := 0
+	for j := i; j < len(data); j++ {
+		switch data[j] {
+		case '"':
+			for j++; j < len(data) && data[j] != '"'; j++ {
+				if data[j] == '\\' {
+					j++
+				}
+			}
+			if j >= len(data) {
+				return -1
+			}
+			if depth == 0 {
+				return j + 1
+			}
+		case '{', '[':
+			depth++
+		case '}', ']':
+			depth--
+			if depth <= 0 {
+				if depth < 0 {
+					return j // a scalar ended at its container's close
+				}
+				return j + 1
+			}
+		case ',', ' ', '\n':
+			if depth == 0 {
+				return j
+			}
+		}
+	}
+	return -1
 }

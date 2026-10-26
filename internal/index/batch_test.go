@@ -3,8 +3,11 @@ package index
 import (
 	"errors"
 	"slices"
+	"sync"
 	"testing"
 
+	"github.com/dphaener/genesis/internal/changeset"
+	"github.com/dphaener/genesis/internal/entry"
 	"github.com/dphaener/genesis/internal/id"
 	"github.com/dphaener/genesis/internal/model"
 	"github.com/dphaener/genesis/internal/op"
@@ -185,4 +188,74 @@ func TestEntriesOf(t *testing.T) {
 	if got, err := x.EntriesOf(nil); len(got) != 0 || err != nil {
 		t.Fatalf("no change sets: %v, %v", got, err)
 	}
+}
+
+func TestParents(t *testing.T) {
+	x, ms := listIndex(t)
+	for name, ids := range batchIDSets() {
+		for _, v := range []View{AsIs, ToBe} {
+			var want []Parent
+			for _, n := range ms[v].Nodes() {
+				if slices.Contains(ids, n.ID) {
+					want = append(want, Parent{ID: n.ID, Parent: n.Parent})
+				}
+			}
+			got, err := x.Parents(v, ids)
+			if err != nil {
+				t.Fatalf("%s %s: %v", name, v, err)
+			}
+			same(t, "parents "+name+" "+string(v), got, want)
+			// Parents is NodesLight's ID and parent, in NodesLight's order.
+			ns, err := x.NodesLight(v, ids)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var fromLight []Parent
+			for _, n := range ns {
+				fromLight = append(fromLight, Parent{ID: n.ID, Parent: n.Parent})
+			}
+			same(t, "parents against nodes light "+name+" "+string(v), got, fromLight)
+		}
+	}
+	if _, err := x.Parents(View("what"), nil); err == nil {
+		t.Fatal("unknown view: no error")
+	}
+}
+
+func TestEachInFlight(t *testing.T) {
+	x, _ := listIndex(t)
+	sets, err := x.ChangeSets()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var flying []id.ID
+	for _, c := range sets {
+		switch c.State {
+		case changeset.StateDraft, changeset.StateProposed, changeset.StateAccepted:
+			flying = append(flying, c.ID)
+		}
+	}
+	if len(flying) < 2 {
+		t.Fatalf("fixture: %d change sets in flight, want 2 or more", len(flying))
+	}
+	want, err := x.EntriesOf(flying)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var mu sync.Mutex
+	got := map[id.ID][]entry.Entry{}
+	calls := 0
+	err = x.EachInFlight(func(cs id.ID, es []entry.Entry) {
+		mu.Lock()
+		defer mu.Unlock()
+		calls++
+		got[cs] = es
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if calls != len(want) {
+		t.Fatalf("each called %d times, want once per change set with entries (%d)", calls, len(want))
+	}
+	same(t, "entries in flight", got, want)
 }

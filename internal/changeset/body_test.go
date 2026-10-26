@@ -692,3 +692,58 @@ func TestCarveInvalid(t *testing.T) {
 		})
 	}
 }
+
+// TestDecodeBodyCanonicalMatches checks that the canonical path of
+// decodeBody (FoldCanonical's) gives DecodeBody's body for every golden
+// body and carve, and DecodeBody's error for every shape and rule mutation
+// of them.
+func TestDecodeBodyCanonicalMatches(t *testing.T) {
+	for _, g := range golden(t) {
+		e := entry.Entry{V: 2, Type: g.typ, Body: json.RawMessage(g.doc)}
+		want, err := DecodeBody(e)
+		if err != nil {
+			t.Fatalf("%s: %v", g.typ, err)
+		}
+		got, err := decodeBody(e, true)
+		if err != nil {
+			t.Fatalf("%s: canonical: %v", g.typ, err)
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Fatalf("%s: canonical =\n%#v\nDecodeBody =\n%#v", g.typ, got, want)
+		}
+	}
+	for _, d := range carveDocs(t) {
+		e := entry.Entry{V: 2, Type: entry.TypeOps, Body: json.RawMessage(d.doc)}
+		want, err := DecodeBody(e)
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, err := decodeBody(e, true)
+		if err != nil {
+			t.Fatalf("canonical: %v", err)
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Fatalf("carve: canonical =\n%#v\nDecodeBody =\n%#v", got, want)
+		}
+	}
+	for _, cases := range [][]mutation{shapeCases, ruleCases} {
+		for _, m := range cases {
+			t.Run(m.name, func(t *testing.T) {
+				doc := base(t, m.typ)
+				m.edit(doc)
+				e := entry.Entry{V: 1, Type: m.typ, Body: canonical(t, doc)}
+				_, wantErr := DecodeBody(e)
+				if wantErr == nil {
+					t.Fatal("DecodeBody accepted the mutation")
+				}
+				_, gotErr := decodeBody(e, true)
+				if gotErr == nil {
+					t.Fatalf("canonical path accepted %s", e.Body)
+				}
+				if gotErr.Error() != wantErr.Error() {
+					t.Fatalf("canonical error %q, DecodeBody error %q", gotErr, wantErr)
+				}
+			})
+		}
+	}
+}

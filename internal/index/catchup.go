@@ -11,6 +11,7 @@ import (
 	"io/fs"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/dphaener/genesis/internal/changeset"
 	"github.com/dphaener/genesis/internal/entry"
@@ -18,8 +19,13 @@ import (
 	"github.com/dphaener/genesis/internal/store"
 )
 
-// metaListing is the meta key holding the listing fingerprint.
-const metaListing = "listing"
+// metaListing is the meta key holding the listing fingerprint; metaStats
+// the stat fingerprint taken before that listing, absent when none could
+// be stored.
+const (
+	metaListing = "listing"
+	metaStats   = "stats"
+)
 
 // Problem sources, as stored in problems.source; the view names double as
 // nodes.view and links.view.
@@ -46,22 +52,37 @@ func fingerprint(l store.Listing) string {
 }
 
 // catchUp brings the index level with the log, as the package doc
-// describes. When the listing's fingerprint is the stored one it returns
-// without a write transaction.
+// describes, taking the stats now.
 func (x *Index) catchUp() error {
-	return x.catchUpFrom(fingerprint(listLog(x.fsys)))
+	return x.catchUpFrom(takeStats(x.fsys, time.Now()))
 }
 
-// catchUpFrom is catchUp given the fingerprint of a listing taken before
-// the call. The write path lists the log again under the lock.
-func (x *Index) catchUpFrom(fp string) error {
+// catchUpFrom is catchUp given stats taken before the call. When they
+// equal the stored stat fingerprint the index is fresh and the log is not
+// listed. Otherwise the log is listed, and when its fingerprint is the
+// stored one the index is fresh too; the stats are then stored, if they
+// may be, in a short write transaction. Only a listing that differs takes
+// the catch-up transaction, which lists the log again under the lock.
+func (x *Index) catchUpFrom(sp statPrint) error {
 	x.stats = stats{writes: map[string]int{}}
-	stored, err := listingOf(x.db)
+	storedStats, err := metaOf(x.db, metaStats)
+	if err != nil {
+		return err
+	}
+	if sp.fp != "" && sp.fp == storedStats {
+		x.stats.fresh, x.stats.statFresh = true, true
+		return nil
+	}
+	fp := fingerprint(listLog(x.fsys))
+	stored, err := metaOf(x.db, metaListing)
 	if err != nil {
 		return err
 	}
 	if stored == fp {
 		x.stats.fresh = true
+		if sp.storable() {
+			x.storeStats(fp, sp.fp)
+		}
 		return nil
 	}
 
@@ -70,7 +91,7 @@ func (x *Index) catchUpFrom(fp string) error {
 		return fmt.Errorf("catch up: %w", err)
 	}
 	defer tx.Rollback()
-	if err := x.catchUpTx(tx); err != nil {
+	if err := x.catchUpTx(tx, sp); err != nil {
 		return fmt.Errorf("catch up: %w", err)
 	}
 	if err := tx.Commit(); err != nil {
@@ -79,32 +100,56 @@ func (x *Index) catchUpFrom(fp string) error {
 	return nil
 }
 
+// storeStats stores statFP as the stat fingerprint of the listing whose
+// fingerprint is fp, unless another process has caught up to another
+// listing meanwhile. The index is fresh either way, so a failure here
+// (the lock held past the busy timeout, say) fails no read: the next open
+// lists the log and tries again.
+func (x *Index) storeStats(fp, statFP string) {
+	tx, err := x.db.Begin()
+	if err != nil {
+		return
+	}
+	defer tx.Rollback()
+	if stored, err := metaOf(tx, metaListing); err != nil || stored != fp {
+		return
+	}
+	if _, err := tx.Exec(`INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)`, metaStats, statFP); err != nil {
+		return
+	}
+	if tx.Commit() == nil {
+		x.stats.statStored = true
+	}
+}
+
 // querier is what *sql.DB and *sql.Tx share.
 type querier interface {
 	Query(query string, args ...any) (*sql.Rows, error)
 	QueryRow(query string, args ...any) *sql.Row
 }
 
-// listingOf returns the stored listing fingerprint, "" when there is none.
-func listingOf(q querier) (string, error) {
+// metaOf returns the stored value of a meta key, "" when there is none.
+func metaOf(q querier, key string) (string, error) {
 	var v string
-	err := q.QueryRow(`SELECT value FROM meta WHERE key = ?`, metaListing).Scan(&v)
+	err := q.QueryRow(`SELECT value FROM meta WHERE key = ?`, key).Scan(&v)
 	if errors.Is(err, sql.ErrNoRows) {
 		return "", nil
 	}
 	return v, err
 }
 
-// catchUpTx is catch-up once the write lock is held.
-func (x *Index) catchUpTx(tx *sql.Tx) error {
+// catchUpTx is catch-up once the write lock is held. sp was taken before
+// the listing this lists, so a file added since changes the next stats.
+func (x *Index) catchUpTx(tx *sql.Tx, sp statPrint) error {
 	// Another process may have caught up while this one waited.
 	listing := listLog(x.fsys)
 	fp := fingerprint(listing)
-	stored, err := listingOf(tx)
+	stored, err := metaOf(tx, metaListing)
 	if err != nil {
 		return err
 	}
 	if stored == fp {
+		// Its stats, if it stored any, are newer than these.
 		x.stats.fresh = true
 		return nil
 	}
@@ -154,8 +199,19 @@ func (x *Index) catchUpTx(tx *sql.Tx) error {
 	if err := writeLogProblems(tx, listing); err != nil {
 		return err
 	}
-	_, err = tx.Exec(`INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)`, metaListing, fp)
-	return err
+	if _, err := tx.Exec(`INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)`, metaListing, fp); err != nil {
+		return err
+	}
+	if !sp.storable() {
+		// Stats of an older listing must not outlive it.
+		_, err := tx.Exec(`DELETE FROM meta WHERE key = ?`, metaStats)
+		return err
+	}
+	if _, err := tx.Exec(`INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)`, metaStats, sp.fp); err != nil {
+		return err
+	}
+	x.stats.statStored = true
+	return nil
 }
 
 // column returns the one text column a query selects.

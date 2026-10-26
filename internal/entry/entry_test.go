@@ -484,3 +484,71 @@ func TestEncodeDeterministicProperty(t *testing.T) {
 		}
 	})
 }
+
+func TestDecodeCanonicalMatchesDecode(t *testing.T) {
+	for i := range goldenCases {
+		e, doc := goldenEntry(t, i)
+		want, err := Decode([]byte(doc))
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, err := DecodeCanonical([]byte(doc))
+		if err != nil {
+			t.Fatalf("%s: %v", e.Type, err)
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Fatalf("%s: DecodeCanonical = %+v, Decode = %+v", e.Type, got, want)
+		}
+	}
+}
+
+func TestDecodeCanonicalRejects(t *testing.T) {
+	good := doc("[]", "note", "{}")
+	for _, tc := range []struct {
+		name, in string
+		is       error
+		field    string
+	}{
+		{"missing field", strings.Replace(good, "  \"for\": \""+sFor+"\",\n", "", 1), ErrInvalid, "for"},
+		{"unknown field", strings.Replace(good, "  \"id\"", "  \"extra\": 1,\n  \"id\"", 1), ErrInvalid, "extra"},
+		{"bad version", strings.Replace(good, `"v": 1`, `"v": 0`, 1), ErrInvalid, "v"},
+		{"newer version", strings.Replace(good, `"v": 1`, `"v": 99`, 1), ErrNewerFormat, "v"},
+		{"empty", "", ErrInvalid, ""},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := DecodeCanonical([]byte(tc.in))
+			if err == nil {
+				t.Fatalf("DecodeCanonical(%q) succeeded", tc.in)
+			}
+			if !errors.Is(err, tc.is) {
+				t.Fatalf("error %q does not wrap %v", err, tc.is)
+			}
+			if tc.is == ErrNewerFormat && errors.Is(err, ErrInvalid) {
+				t.Fatalf("newer-format error %q also wraps ErrInvalid", err)
+			}
+			if tc.field != "" && !strings.Contains(err.Error(), `field "`+tc.field+`"`) {
+				t.Fatalf("error %q does not name field %q", err, tc.field)
+			}
+		})
+	}
+}
+
+func TestDecodeCanonicalProperty(t *testing.T) {
+	rapid.Check(t, func(t *rapid.T) {
+		data, err := Encode(genEntry().Draw(t, "entry"))
+		if err != nil {
+			t.Fatalf("Encode: %v", err)
+		}
+		want, err := Decode(data)
+		if err != nil {
+			t.Fatalf("Decode(%q): %v", data, err)
+		}
+		got, err := DecodeCanonical(data)
+		if err != nil {
+			t.Fatalf("DecodeCanonical(%q): %v", data, err)
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Fatalf("DecodeCanonical =\n%#v\nDecode =\n%#v", got, want)
+		}
+	})
+}
