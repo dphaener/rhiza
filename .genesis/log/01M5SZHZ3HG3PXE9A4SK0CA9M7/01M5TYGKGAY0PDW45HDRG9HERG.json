@@ -1,0 +1,264 @@
+{
+  "actor": "01M5TYA1ZV6XHZWWSDKVWR70B3",
+  "after": [
+    "01M5TYG93FSA4M30VPRYQMXKX9"
+  ],
+  "at": "2026-10-26T01:52:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A test loads a valid file and rejects both bad ones with a message.",
+          "statement": "A workflow is a TOML file of named steps, each of kind agent, wait or command, with outcomes naming the next step; an unknown kind or a missing target is refused."
+        },
+        "handle": "workflow-file",
+        "id": "01M5TYGH047RKA27R0RDFH9P87",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5TYGH047RKA27R0RBS38HKM",
+        "op": "node.create",
+        "parent": "01M5SWT9A05VXSMXQME4CPJN2D"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYGH047RKA27R0RBS38HKM",
+        "id": "01M5TYGH3KWFJZA1K7R9MB4XE0",
+        "link": "01M5TYGH3KWFJZA1K7R6G0PQ7K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKM2R8FPWPK0C3E701E0",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYGH047RKA27R0RBS38HKM",
+        "id": "01M5TYGH72GAR8YM0ETA5487MQ",
+        "link": "01M5TYGH72GAR8YM0ET6A42WYY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKJTTN98CSM3087H6KXW",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a fake adapter runs an agent step to its outcome.",
+          "statement": "An agent step launches its agent through the adapter on the run's change set and ends with the session's outcome."
+        },
+        "handle": "agent-step",
+        "id": "01M5TYGHAHETP91SS0S17K3Z0P",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5TYGHAHETP91SS0S0Y8BPYB",
+        "op": "node.create",
+        "parent": "01M5SWT9A05VXSMXQME4CPJN2D"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYGHAHETP91SS0S0Y8BPYB",
+        "id": "01M5TYGHE15K320DETDB771025",
+        "link": "01M5TYGHE15K320DETD9H8GVM1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKHJ7SB5CGRE47AJQ4AH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYGHAHETP91SS0S0Y8BPYB",
+        "id": "01M5TYGHHNCAFE49K1Y7FXYCQB",
+        "link": "01M5TYGHHNCAFE49K1Y4DKQ7J8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKJTTN98CSM3087H6KXW",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs a command step that exits 0 and one that exits 1 and follows each outcome.",
+          "statement": "A command step runs a shell command in the worktree and maps its exit code to an outcome."
+        },
+        "handle": "command-step",
+        "id": "01M5TYGHN9QSF654FF0XZJCF1K",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5TYGHN9QSF654FF0V1Q309N",
+        "op": "node.create",
+        "parent": "01M5SWT9A05VXSMXQME4CPJN2D"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYGHN9QSF654FF0V1Q309N",
+        "id": "01M5TYGHRW7RT2PPBD8EB4CQ13",
+        "link": "01M5TYGHRW7RT2PPBD8DPFM4M0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKM2R8FPWPK0C3E701E0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test with a fake clock reaches both the held and the timed-out outcome.",
+          "statement": "A wait step polls its condition inside the engine until it holds or its timeout passes."
+        },
+        "handle": "wait-step",
+        "id": "01M5TYGHWFYX6PYBNED84NJ24A",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5TYGHWFYX6PYBNED6R4X1M4",
+        "op": "node.create",
+        "parent": "01M5SWT9A05VXSMXQME4CPJN2D"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYGHWFYX6PYBNED6R4X1M4",
+        "id": "01M5TYGJ04QMRWJARPQ274AEQR",
+        "link": "01M5TYGJ04QMRWJARPPZ21602Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKJTTN98CSM3087H6KXW",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript loops a step past its cap and sees the run fail.",
+          "statement": "A step's `max_visits` caps how often a run enters it, and going over fails the run with the step named."
+        },
+        "handle": "max-visits",
+        "id": "01M5TYGJ3TN69C01G7J9S79NCY",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5TYGJ3TN69C01G7J9C3NJWY",
+        "op": "node.create",
+        "parent": "01M5SWT9A05VXSMXQME4CPJN2D"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYGJ3TN69C01G7J9C3NJWY",
+        "id": "01M5TYGJ7821MEWJZXGZVRHAFR",
+        "link": "01M5TYGJ7821MEWJZXGWJMYE5X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKJTTN98CSM3087H6KXW",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript starts a run and finds it in the journal.",
+          "statement": "`genesis run start <change set>` starts a run of a workflow on that change set and prints its run ID."
+        },
+        "handle": "run-start",
+        "id": "01M5TYGJASX1Q1J7DV6GF4633M",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5TYGJASX1Q1J7DV6DVHB0DZ",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYGJASX1Q1J7DV6DVHB0DZ",
+        "id": "01M5TYGJE9X7MKJV05CR3XZX99",
+        "link": "01M5TYGJE9X7MKJV05CNP9QYJ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKNB2DZ7H57TF8T897N7",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYGJASX1Q1J7DV6DVHB0DZ",
+        "id": "01M5TYGJHZTP07DF7FXNQNX9XB",
+        "link": "01M5TYGJHZTP07DF7FXNJ3JE9S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHNCWAKRZ9VS5KKNYKJ8Y",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "After a run the journal holds every step and `.genesis/log/` is unchanged.",
+          "statement": "Each run keeps a local journal of its steps, outcomes and visits outside the model's log."
+        },
+        "handle": "run-journal-file",
+        "id": "01M5TYGJNH9AMN4S8C5VJV8AED",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5TYGJNH9AMN4S8C5QSY3CW4",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYGJNH9AMN4S8C5QSY3CW4",
+        "id": "01M5TYGJS2VQMRMYX2WQGJA3VK",
+        "link": "01M5TYGJS2VQMRMYX2WNBRFP8E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKNB2DZ7H57TF8T897N7",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYGJNH9AMN4S8C5QSY3CW4",
+        "id": "01M5TYGJWK349JB6Q4YN0BF0BS",
+        "link": "01M5TYGJWK349JB6Q4YHWC8679",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKGAYPACFPDK0FXHSNH4",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript reads status mid-run and after it ends.",
+          "statement": "`genesis run status [<run>]` shows a run's workflow, current step, state and the steps done."
+        },
+        "handle": "run-status",
+        "id": "01M5TYGK04WT4AH5KMH5T3YXR4",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5TYGK04WT4AH5KMH4RF82YD",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYGK04WT4AH5KMH4RF82YD",
+        "id": "01M5TYGK3WJ1CQ3GN5JME3Y822",
+        "link": "01M5TYGK3WJ1CQ3GN5JM72KMG3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKNB2DZ7H57TF8T897N7",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript stops a run after step one, resumes it, and step one runs once.",
+          "statement": "`genesis run resume <run>` continues a stopped run from its journal without a daemon, never redoing a finished step."
+        },
+        "handle": "run-resume",
+        "id": "01M5TYGK7EFHKPB9JG3AAYENTF",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5TYGK7EFHKPB9JG3A2MH2G2",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYGK7EFHKPB9JG3A2MH2G2",
+        "id": "01M5TYGKB1JYXCX4YC8SRYMSAR",
+        "link": "01M5TYGKB1JYXCX4YC8PM5SCVA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKNB2DZ7H57TF8T897N7",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SZHZ3HG3PXE9A4SK0CA9M7",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5TYGKGAY0PDW45HDRG9HERG",
+  "type": "ops",
+  "v": 1
+}
