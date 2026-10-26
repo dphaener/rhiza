@@ -30,6 +30,7 @@
     - [carve-entries](capability/rhiza/change-sets/carve-entries.md)
     - [carve-dependency](capability/rhiza/change-sets/carve-dependency.md)
     - [carve-guards](capability/rhiza/change-sets/carve-guards.md)
+    - [change-set-title](capability/rhiza/change-sets/change-set-title.md)
   - [lineage](capability/rhiza/lineage.md)
     - [why-walk](capability/rhiza/lineage/why-walk.md)
     - [change-history](capability/rhiza/lineage/change-history.md)
@@ -61,6 +62,21 @@
     - [session-start](capability/rhiza/guide/session-start.md)
     - [guide-size-cap](capability/rhiza/guide/guide-size-cap.md)
     - [command-schemas](capability/rhiza/guide/command-schemas.md)
+  - [runtime](capability/rhiza/runtime.md)
+    - [rex-sessions](capability/rhiza/runtime/rex-sessions.md)
+      - [rex-tab-launch](capability/rhiza/runtime/rex-sessions/rex-tab-launch.md)
+      - [tab-title](capability/rhiza/runtime/rex-sessions/tab-title.md)
+      - [title-slug](capability/rhiza/runtime/rex-sessions/title-slug.md)
+      - [session-commands](capability/rhiza/runtime/rex-sessions/session-commands.md)
+    - [agent-adapters](capability/rhiza/runtime/agent-adapters.md)
+      - [explicit-permission-mode](capability/rhiza/runtime/agent-adapters/explicit-permission-mode.md)
+      - [known-session-id](capability/rhiza/runtime/agent-adapters/known-session-id.md)
+    - [agent-status](capability/rhiza/runtime/agent-status.md)
+      - [status-precedence](capability/rhiza/runtime/agent-status/status-precedence.md)
+      - [status-in-genesis-files](capability/rhiza/runtime/agent-status/status-in-genesis-files.md)
+    - [actor-stamping](capability/rhiza/runtime/actor-stamping.md)
+      - [launch-env-stamping](capability/rhiza/runtime/actor-stamping/launch-env-stamping.md)
+  - [orchestration](capability/rhiza/orchestration.md)
 
 ## Intents
 
@@ -415,6 +431,7 @@
 
 - [area-gap](question/area-gap.md)
 - [carve-stale-base-recovery](question/carve-stale-base-recovery.md)
+- [stale-hook-status-after-exit](question/stale-hook-status-after-exit.md)
 
 ## Evidence
 
@@ -424,13 +441,23 @@
 - [carve-entries-verified](evidence/carve-entries-verified.md)
 - [carve-guards-verified](evidence/carve-guards-verified.md)
 - [carve-verified](evidence/carve-verified.md)
+- [change-set-title-test](evidence/change-set-title-test.md)
 - [check-identity-verified](evidence/check-identity-verified.md)
 - [dependent-writes-tests](evidence/dependent-writes-tests.md)
 - [dropped-dependencies-tests](evidence/dropped-dependencies-tests.md)
+- [explicit-permission-mode-test](evidence/explicit-permission-mode-test.md)
 - [faster-reads-budget](evidence/faster-reads-budget.md)
+- [known-session-id-test](evidence/known-session-id-test.md)
+- [launch-env-stamping-test](evidence/launch-env-stamping-test.md)
 - [milestone-groups-tested](evidence/milestone-groups-tested.md)
 - [old-folder-verified](evidence/old-folder-verified.md)
 - [ordered-landing-tests](evidence/ordered-landing-tests.md)
+- [rex-tab-launch-test](evidence/rex-tab-launch-test.md)
+- [session-commands-test](evidence/session-commands-test.md)
+- [status-in-genesis-files-test](evidence/status-in-genesis-files-test.md)
+- [status-precedence-test](evidence/status-precedence-test.md)
+- [tab-title-test](evidence/tab-title-test.md)
+- [title-slug-test](evidence/title-slug-test.md)
 
 ## Sources
 
