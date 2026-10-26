@@ -56,7 +56,7 @@ func encodeEntry(t tb, eid, cs id.ID, after []id.ID, b changeset.Body) (string, 
 	if err != nil {
 		t.Fatalf("encode body: %v", err)
 	}
-	e := entry.Entry{V: entry.FormatVersion, ID: eid, ChangeSet: cs, Actor: actorID(), For: actorID(),
+	e := entry.Entry{V: changeset.EntryVersion(b), ID: eid, ChangeSet: cs, Actor: actorID(), For: actorID(),
 		At: fixtureTime, After: after, Type: b.Type(), Body: body}
 	data, err := entry.Encode(e)
 	if err != nil {

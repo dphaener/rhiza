@@ -75,7 +75,7 @@ func mk(t testing.TB, cs id.ID, n int, b Body, after ...int) entry.Entry {
 		as = []id.ID{}
 	}
 	return entry.Entry{
-		V: entry.FormatVersion, ID: fid(n), ChangeSet: cs, Actor: actor, For: owner,
+		V: EntryVersion(b), ID: fid(n), ChangeSet: cs, Actor: actor, For: owner,
 		At: time.Unix(1_800_000_000+int64(n), 0).UTC(), After: as, Type: b.Type(), Body: raw,
 	}
 }

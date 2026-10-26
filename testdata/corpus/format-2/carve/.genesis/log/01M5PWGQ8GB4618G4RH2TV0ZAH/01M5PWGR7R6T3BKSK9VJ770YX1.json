@@ -1,0 +1,67 @@
+{
+  "actor": "01M5PWGEF85Y185JZ2Z5MPYCA4",
+  "after": [
+    "01M5PWGQ8GB4618G4RH53T7SX9"
+  ],
+  "at": "2026-10-24T12:00:11Z",
+  "body": {
+    "carve": {
+      "entry": "01M5PWGR7R6T3BKSK9VJ2NZPVH",
+      "from": "01M5PWGEF85Y185JZ2ZGCNH40N"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "People can read reports."
+        },
+        "handle": "reports",
+        "id": "01M5PWGR7R6T3BKSK9V4MCGPCP",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5PWGJC82P7YGZTWYFFZ0VJG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "Export a report as CSV."
+        },
+        "handle": "report-export",
+        "id": "01M5PWGR7R6T3BKSK9V6N2KZSR",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5PWGKBGYFZMTH8Y8AF1G8GN",
+        "op": "node.create",
+        "parent": "01M5PWGJC82P7YGZTWYFFZ0VJG"
+      },
+      {
+        "fields": {
+          "statement": "CSV before any other format."
+        },
+        "handle": "csv-first",
+        "id": "01M5PWGR7R6T3BKSK9V76DZ19Q",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5PWGNA0MVZ1H5AXG5VQ0BY9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5PWGKBGYFZMTH8Y8AF1G8GN",
+        "id": "01M5PWGR7R6T3BKSK9V9MG5Z5B",
+        "link": "01M5PWGP98GD3JXPKEPHTS0TQE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5PWGNA0MVZ1H5AXG5VQ0BY9",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5PWGQ8GB4618G4RH2TV0ZAH",
+  "for": "01M5PWGEF85Y185JZ2Z5MPYCA4",
+  "id": "01M5PWGR7R6T3BKSK9VJ770YX1",
+  "type": "ops",
+  "v": 2
+}

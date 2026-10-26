@@ -41,7 +41,7 @@ func testGen() *id.Generator {
 
 func testEntry(t testing.TB) entry.Entry {
 	return entry.Entry{
-		V:         entry.FormatVersion,
+		V:         1,
 		ID:        mustID(t, sID),
 		ChangeSet: mustID(t, sCS),
 		Actor:     mustID(t, sActor),

@@ -16,7 +16,8 @@ format-1/
     .genesis/
       repo.json
       log/<change_set>/<id>.json
-format-2/        (later)
+format-2/
+  <case>/        (same layout)
 ```
 
 ## Rules
@@ -34,6 +35,10 @@ format-2/        (later)
 `internal/store/corpus_test.go` opens every case, reads its log and expects
 zero problems, checks every `.json` file is canonical, and checks that the
 format-1 cases use every entry type at least once.
+
+Format 2 adds the optional `carve` field on an ops entry. Only carve entries
+are written as v2; every other entry in a format-2 case is still v1, as in a
+real repository.
 
 `internal/changeset/corpus_test.go` folds every case with
 `changeset.FoldLog`, expects zero problems, and checks each change set's

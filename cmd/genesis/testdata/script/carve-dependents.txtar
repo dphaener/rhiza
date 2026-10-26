@@ -1,0 +1,100 @@
+# A change set that depends on the source of a carve keeps working when its
+# ops rest only on the moved node and link IDs: a child created under the
+# moved node and a link to it still apply, since the IDs did not change.
+# One whose op has a base on a moved op (an update written against the
+# source's create) gets a base conflict after the carve and must write that
+# op again: a known limit.
+
+exec genesis init
+
+# A creates base > leaf. B is the target.
+exec genesis change new A
+stdout 'change set 01M5PWGEF85Y185JZ2ZGCNH40N '
+exec genesis add capability base
+stdout '^- node 01M5PWGJC82P7YGZTWYFFZ0VJG \(base\)$'
+exec genesis add capability leaf --parent base
+exec genesis change new B
+stdout 'change set 01M5PWGMARA1WR6BD0MEF4Y76P '
+
+# C depends on A and rests on base by ID only: a child under it and a link
+# to it.
+exec genesis change new C
+stdout 'change set 01M5PWGNA0MVZ1H5AXG5VQ0BY9 '
+exec genesis link 01M5PWGNA0MVZ1H5AXG5VQ0BY9 depends-on 01M5PWGEF85Y185JZ2ZGCNH40N
+exec genesis add capability kid --parent base
+exec genesis add capability cnode
+exec genesis link cnode relates-to base --note n
+
+# D depends on A and updates base: its update's base is A's create op.
+exec genesis change new D
+stdout 'change set 01M5PWGT68X5XKB54XFQMHKA0A '
+exec genesis link 01M5PWGT68X5XKB54XFQMHKA0A depends-on 01M5PWGEF85Y185JZ2ZGCNH40N
+exec genesis set base --field statement=Changed
+exec genesis render
+exec genesis check
+stdout '^ok$'
+! stdout '^warn in-flight'
+
+# Carve base into B. leaf stays in A, so A now depends on B, and C and D
+# still see base through A.
+exec genesis carve base --from 01M5PWGEF85Y185JZ2ZGCNH40N --to 01M5PWGMARA1WR6BD0MEF4Y76P
+stdout '^01M5PWGEF85Y18 now depends on 01M5PWGMARA1WR '
+fold-ok
+
+# C has no conflicts: kid is still under base, the link still ends there.
+exec genesis render
+exec genesis check
+stdout '^ok$'
+! stdout 'change set 01M5PWGNA0MVZ1H5AXG5VQ0BY9'
+cp stdout check.txt
+exec genesis change show 01M5PWGNA0MVZ1H5AXG5VQ0BY9 --json
+stdout '"problems": \[\]'
+exec genesis show kid --change 01M5PWGNA0MVZ1H5AXG5VQ0BY9
+stdout '^- Path: base$'
+exec genesis show base --change 01M5PWGNA0MVZ1H5AXG5VQ0BY9
+stdout '^- Created: 01M5PWGMARA1WR6BD0MEF4Y76P$'
+stdout '^- related to cnode \([0-9A-Z]{14}\) — n$'
+stdout '^- capability kid \([0-9A-Z]{14}\)$'
+
+# D's update was written against the dropped create op: a base conflict,
+# reported as warnings naming D's op and what to run next.
+exec cat check.txt
+stdout '^warn in-flight change set 01M5PWGT68X5XKB54XFQMHKA0A, op [0-9A-Z]{26}: model: base not in history: base 01M5PWGJC82P7YGZTWYJ3Y88Z9 is not an operation on 01M5PWGJC82P7YGZTWYFFZ0VJG$'
+stdout '^warn in-flight change set 01M5PWGT68X5XKB54XFQMHKA0A, op [0-9A-Z]{26}: model: conflict: change set 01M5PWGEF85Y185JZ2ZGCNH40N dropped op 01M5PWGJC82P7YGZTWYJ3Y88Z9, '
+stdout '^  next: genesis slice --change 01M5PWGT68X5XKB54XFQMHKA0A --view what-if$'
+exec genesis check --json
+stdout '"change_set": "01M5PWGT68X5XKB54XFQMHKA0A"'
+stdout '"rule": "in-flight"'
+! stdout '"change_set": "01M5PWGNA0MVZ1H5AXG5VQ0BY9"'
+
+# A source the carve leaves empty still gains depends-on the target when a
+# change set that depends on it rests on what moved. E creates p; G depends
+# on E and creates bkid under p; carving p from E into F empties E.
+exec genesis change new E
+stdout 'change set 01M5PWGZ2GNMAQ31Z5VAZRKFVB '
+exec genesis add capability p
+exec genesis change new F
+stdout 'change set 01M5PWH110D047SG185GTXKBCB '
+exec genesis change new G
+stdout 'change set 01M5PWH2087P0K3579XNNGK8DE '
+exec genesis link 01M5PWH2087P0K3579XNNGK8DE depends-on 01M5PWGZ2GNMAQ31Z5VAZRKFVB
+exec genesis add capability bkid --parent p
+exec genesis carve p --from 01M5PWGZ2GNMAQ31Z5VAZRKFVB --to 01M5PWH110D047SG185GTXKBCB
+stdout '^01M5PWGZ2GNMAQ now depends on 01M5PWH110D047 \(link [0-9A-Z]{26}\): ops in 01M5PWH2087P0K rest on what moved\.$'
+! stdout 'no ops left'
+! stdout 'next: genesis withdraw'
+fold-ok
+
+# G is intact: no finding, bkid still under p, nothing revised under it.
+exec genesis render
+exec genesis check
+! stdout 'change set 01M5PWH2087P0K3579XNNGK8DE'
+exec genesis show bkid --change 01M5PWH2087P0K3579XNNGK8DE
+stdout '^- Path: p$'
+exec genesis show p --change 01M5PWH2087P0K3579XNNGK8DE
+stdout '^- Created: 01M5PWH110D047SG185GTXKBCB$'
+exec genesis change show 01M5PWH2087P0K3579XNNGK8DE --json
+stdout '"problems": \[\]'
+exec genesis ready
+stdout '^- \[draft\] 01M5PWH2087P0K G\n  - not accepted: draft\n  - depends on 01M5PWGZ2GNMAQ \(draft\)\n?$'
+! stdout '01M5PWGZ2GNMAQ revised under it'

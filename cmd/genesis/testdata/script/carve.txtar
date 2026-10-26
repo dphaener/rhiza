@@ -1,0 +1,127 @@
+# carve moves nodes from one unlanded change set to another under the same
+# node and link IDs: the source gets one entry dropping the moved ops, the
+# target one entry re-creating them under new op IDs, and the two name each
+# other. An op left in the source that rests on what moved makes the source
+# depend on the target. --dry-run predicts the real run, and --json and api
+# call print the same bytes.
+
+exec genesis init
+
+# A creates base, leaf under base, other, and a link from other to base.
+exec genesis change new A
+stdout 'change set 01M5PWGEF85Y185JZ2ZGCNH40N '
+exec genesis add capability base --field statement=Base
+stdout '^- node 01M5PWGJC82P7YGZTWYFFZ0VJG \(base\)$'
+exec genesis add capability leaf --parent base --field statement=Leaf
+stdout '^- node 01M5PWGKBGYFZMTH8Y8AF1G8GN \(leaf\)$'
+exec genesis add capability other --field statement=Other
+stdout '^- node 01M5PWGMARA1WR6BD0MEF4Y76P \(other\)$'
+exec genesis link other relates-to base --note why
+stdout '^- link 01M5PWGNA0MVZ1H5AXG5VQ0BY9$'
+exec genesis change new B
+stdout 'change set 01M5PWGP98GD3JXPKEPHTS0TQE '
+exec genesis show base --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout '"id": "01M5PWGJC82P7YGZTWYFFZ0VJG"'
+stdout '"version": "01M5PWGJC82P7YGZTWYJ3Y88Z9"'
+stdout '"created": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+
+# A dry run writes nothing and says what would move: both nodes and the
+# link between them, under three new op IDs. leaf stays in A and rests on
+# base, so A would depend on B.
+exec ls -R .genesis/log
+cp stdout before.txt
+exec genesis carve other base --from 01M5PWGEF85Y185JZ2ZGCNH40N --to 01M5PWGP98GD3JXPKEPHTS0TQE --dry-run --json
+stdout '"dry_run": true'
+! stdout '"source_entry"'
+! stdout '"target_entry"'
+stdout '"nodes": \[\n    "01M5PWGJC82P7YGZTWYFFZ0VJG",\n    "01M5PWGMARA1WR6BD0MEF4Y76P"\n  \]'
+stdout '"links": \[\n    "01M5PWGNA0MVZ1H5AXG5VQ0BY9"\n  \]'
+stdout '"dropped": \[\n    "01M5PWGJC82P7YGZTWYJ3Y88Z9",\n    "01M5PWGMARA1WR6BD0MGG098MY",\n    "01M5PWGNA0MVZ1H5AXG69X6B7V"\n  \]'
+stdout '"ops": \[\n    "01M5PWGQ8GB4618G4RH2TV0ZAH",\n    "01M5PWGQ8GB4618G4RH53T7SX9",\n    "01M5PWGQ8GB4618G4RH79NNPGS"\n  \]'
+stdout '"depends_on": "01M5PWGQ8GB4618G4RH8A5HABA"'
+stdout '"source_ops": \['
+stdout '"target_ops": \['
+cp stdout dry.json
+exec genesis api call carve '{"nodes":["other","base"],"from":"01M5PWGEF85Y185JZ2ZGCNH40N","to":"01M5PWGP98GD3JXPKEPHTS0TQE"}' --dry-run
+cmp stdout dry.json
+exec ls -R .genesis/log
+cmp stdout before.txt
+exec genesis carve other base --from 01M5PWGEF85Y185JZ2ZGCNH40N --to 01M5PWGP98GD3JXPKEPHTS0TQE --dry-run
+stdout '^Dry run: would carve 2 node\(s\) from 01M5PWGEF85Y185JZ2ZGCNH40N into 01M5PWGP98GD3JXPKEPHTS0TQE; nothing was written\.$'
+stdout '^- node 01M5PWGJC82P7YGZTWYFFZ0VJG \(base\)$'
+stdout '^- link 01M5PWGNA0MVZ1H5AXG5VQ0BY9$'
+stdout '^Moved 3 op\(s\) under new op IDs\.$'
+stdout '^01M5PWGEF85Y18 now depends on 01M5PWGP98GD3J \(link 01M5PWGQ8GB4618G4RH8A5HABA\): ops left there rest on what moved\.$'
+
+# The real run draws the IDs the dry run predicted.
+exec genesis carve other base --from 01M5PWGEF85Y185JZ2ZGCNH40N --to 01M5PWGP98GD3JXPKEPHTS0TQE --json
+! stdout '"dry_run"'
+! stdout '"source_ops"'
+stdout '"source_entry": "01M5PWGQ8GB4618G4RHBGXVK6Z"'
+stdout '"target_entry": "01M5PWGQ8GB4618G4RHBMQ4GDV"'
+stdout '"nodes": \[\n    "01M5PWGJC82P7YGZTWYFFZ0VJG",\n    "01M5PWGMARA1WR6BD0MEF4Y76P"\n  \]'
+stdout '"links": \[\n    "01M5PWGNA0MVZ1H5AXG5VQ0BY9"\n  \]'
+stdout '"dropped": \[\n    "01M5PWGJC82P7YGZTWYJ3Y88Z9",\n    "01M5PWGMARA1WR6BD0MGG098MY",\n    "01M5PWGNA0MVZ1H5AXG69X6B7V"\n  \]'
+stdout '"ops": \[\n    "01M5PWGQ8GB4618G4RH2TV0ZAH",\n    "01M5PWGQ8GB4618G4RH53T7SX9",\n    "01M5PWGQ8GB4618G4RH79NNPGS"\n  \]'
+stdout '"depends_on": "01M5PWGQ8GB4618G4RH8A5HABA"'
+! stdout '"next"'
+fold-ok
+
+# Two entries, both v2, naming each other.
+exec cat .genesis/log/01M5PWGEF85Y185JZ2ZGCNH40N/01M5PWGQ8GB4618G4RHBGXVK6Z.json
+stdout '"carve": \{\n      "entry": "01M5PWGQ8GB4618G4RHBMQ4GDV",\n      "to": "01M5PWGP98GD3JXPKEPHTS0TQE"\n    \}'
+stdout '"v": 2'
+exec cat .genesis/log/01M5PWGP98GD3JXPKEPHTS0TQE/01M5PWGQ8GB4618G4RHBMQ4GDV.json
+stdout '"carve": \{\n      "entry": "01M5PWGQ8GB4618G4RHBGXVK6Z",\n      "from": "01M5PWGEF85Y185JZ2ZGCNH40N"\n    \}'
+stdout '"v": 2'
+exec grep -rl '"v": 2' .genesis/log
+stdout -count=2 '\.json$'
+
+# Same node and link IDs in B, created there under new op IDs.
+exec genesis show base --change 01M5PWGP98GD3JXPKEPHTS0TQE --json
+stdout '"id": "01M5PWGJC82P7YGZTWYFFZ0VJG"'
+stdout '"version": "01M5PWGQ8GB4618G4RH2TV0ZAH"'
+stdout '"created": "01M5PWGP98GD3JXPKEPHTS0TQE"'
+stdout '"id": "01M5PWGNA0MVZ1H5AXG5VQ0BY9"'
+stdout '"id": "01M5PWGMARA1WR6BD0MEF4Y76P"'
+exec genesis change show 01M5PWGP98GD3JXPKEPHTS0TQE
+stdout '^- node.create 01M5PWGJC82P7YGZTWYFFZ0VJG \(base\)$'
+stdout '^- node.create 01M5PWGMARA1WR6BD0MEF4Y76P \(other\)$'
+stdout '^- link.create 01M5PWGNA0MVZ1H5AXG5VQ0BY9$'
+
+# A keeps leaf and gains depends-on B, so leaf still sees base as parent.
+exec genesis change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- node.create 01M5PWGKBGYFZMTH8Y8AF1G8GN \(leaf\)$'
+stdout '^- link.create 01M5PWGQ8GB4618G4RH8A5HABA$'
+! stdout '\(base\)'
+! stdout '\(other\)'
+exec genesis show leaf --change 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- Path: base$'
+
+# Carving it again is refused: base is not created in A any more.
+! exec genesis carve base --from 01M5PWGEF85Y185JZ2ZGCNH40N --to 01M5PWGP98GD3JXPKEPHTS0TQE
+stderr 'is not created in change set 01M5PWGEF85Y185JZ2ZGCNH40N'
+
+# log shows the carve on both sides, for a node and for the link.
+exec genesis log base
+stdout '^## 01M5PWGEF85Y185JZ2ZGCNH40N draft intention: A$'
+stdout '^## 01M5PWGP98GD3JXPKEPHTS0TQE draft intention: B$'
+stdout -count=2 '^- Carved from 01M5PWGEF85Y18 into 01M5PWGP98GD3J$'
+stdout '^- node.create 01M5PWGQ8GB4618G4RH2TV0ZAH$'
+exec genesis log base --json
+stdout '"carve_entry": "01M5PWGQ8GB4618G4RHBMQ4GDV",\n +"carved_into": "01M5PWGP98GD3JXPKEPHTS0TQE",\n +"entry": "01M5PWGQ8GB4618G4RHBGXVK6Z"'
+stdout '"carve_entry": "01M5PWGQ8GB4618G4RHBGXVK6Z",\n +"carved_from": "01M5PWGEF85Y185JZ2ZGCNH40N",\n +"entry": "01M5PWGQ8GB4618G4RHBMQ4GDV"'
+exec genesis log 01M5PWGNA0MVZ1H5AXG5VQ0BY9
+stdout -count=2 '^- Carved from 01M5PWGEF85Y18 into 01M5PWGP98GD3J$'
+stdout '^- link.create 01M5PWGQ8GB4618G4RH79NNPGS$'
+
+# Human output, in a fresh carve: other2 moves alone, nothing left in A
+# rests on it, so no dependency is added.
+exec genesis add capability other2 --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec genesis carve other2 --from 01M5PWGEF85Y185JZ2ZGCNH40N --to 01M5PWGP98GD3JXPKEPHTS0TQE
+stdout '^Carved 1 node\(s\) from 01M5PWGEF85Y185JZ2ZGCNH40N into 01M5PWGP98GD3JXPKEPHTS0TQE \(entries [0-9A-Z]{26} and [0-9A-Z]{26}\)\.$'
+stdout '^- node [0-9A-Z]{26} \(other2\)$'
+stdout '^Moved 1 op\(s\) under new op IDs\.$'
+! stdout 'depends on'
+! stdout 'next:'
+fold-ok

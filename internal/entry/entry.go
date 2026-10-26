@@ -5,6 +5,13 @@
 // and Decode accepts nothing else: non-canonical bytes, missing or unknown
 // fields and values of the wrong kind are all rejected rather than repaired.
 // What a body means for each type is not this package's concern.
+//
+// The envelope is the same in every format this package knows; v says which
+// format the entry is written in, so a reader can refuse an entry from a
+// newer Genesis instead of misreading it. Format 2 adds no envelope field: it
+// marks an entry whose body uses something format 1 cannot spell (an ops
+// body's carve). A writer stamps the lowest format that can spell the entry,
+// so every entry format 1 can spell is still written as format 1.
 package entry
 
 import (
@@ -20,11 +27,12 @@ import (
 	"github.com/dphaener/genesis/internal/id"
 )
 
-// FormatVersion is the envelope format this package reads and writes.
-const FormatVersion = 1
+// FormatVersion is the newest entry format this package reads and writes.
+// Every format from 1 through FormatVersion is read and written.
+const FormatVersion = 2
 
 // ErrInvalid is wrapped by every error for an entry that is not a valid
-// format-1 entry.
+// entry of a format from 1 through FormatVersion.
 var ErrInvalid = errors.New("entry: invalid")
 
 // ErrNewerFormat is wrapped by Decode's error when the entry declares a
@@ -35,7 +43,7 @@ var ErrNewerFormat = errors.New("entry: newer format")
 // Type names what an entry records.
 type Type string
 
-// The nine entry types of format 1.
+// The nine entry types, the same in every format.
 const (
 	TypeOpen      Type = "open"
 	TypeOps       Type = "ops"
@@ -82,11 +90,13 @@ func invalidWrap(field string, err error) error {
 	return fmt.Errorf("%w: field %q: %w", ErrInvalid, field, err)
 }
 
-// Validate reports the first way e breaks the format-1 envelope rules.
-// The time embedded in a ULID is deliberately not compared with At.
+// Validate reports the first way e breaks the envelope rules. V must be a
+// format from 1 through FormatVersion; whether the body needs that format is
+// the body's concern. The time embedded in a ULID is deliberately not
+// compared with At.
 func (e Entry) Validate() error {
-	if e.V != FormatVersion {
-		return invalid("v", "%d, want %d", e.V, FormatVersion)
+	if e.V < 1 || e.V > FormatVersion {
+		return invalid("v", "%d, want 1 through %d", e.V, FormatVersion)
 	}
 	for _, f := range []struct {
 		name string
@@ -179,8 +189,8 @@ func Decode(data []byte) (Entry, error) {
 	if v > FormatVersion {
 		return Entry{}, fmt.Errorf("%w: field %q: %d, this Genesis reads %d", ErrNewerFormat, "v", v, FormatVersion)
 	}
-	if v != FormatVersion {
-		return Entry{}, invalid("v", "%d, want %d", v, FormatVersion)
+	if v < 1 {
+		return Entry{}, invalid("v", "%d, want 1 through %d", v, FormatVersion)
 	}
 	e.V = int(v)
 

@@ -529,6 +529,129 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "carve",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "description": "The change set to carve from: an ID or a unique prefix of 4+ characters",
+            "type": "string"
+          },
+          "nodes": {
+            "description": "The nodes to move, at least one: IDs, unique ID prefixes of 4+ characters, or handles, as the source sees them; each must be created in the source",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "to": {
+            "description": "The change set to carve into: an ID or a unique prefix of 4+ characters",
+            "type": "string"
+          },
+          "with_children": {
+            "description": "Also move every node created in the source below a named one, transitively",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "from",
+          "nodes",
+          "to"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "depends_on": {
+            "description": "The depends-on link added from the source to the target, if one was",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "dropped": {
+            "description": "The op IDs dropped from the source, sorted",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "links": {
+            "description": "The links moved, sorted",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "next": {
+            "description": "A command that would help: withdrawing the source, when the carve left it with no ops",
+            "type": "string"
+          },
+          "nodes": {
+            "description": "The nodes moved, sorted",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ops": {
+            "description": "The new op IDs in the target, in order",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "source": {
+            "description": "The change set carved from",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "source_entry": {
+            "description": "The entry written to the source, dropping the moved ops; absent in a dry run",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "source_ops": {
+            "description": "Dry run only: the ops the source's entry would carry, as canonical op JSON",
+            "items": {},
+            "type": "array"
+          },
+          "target": {
+            "description": "The change set carved into",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "target_entry": {
+            "description": "The entry written to the target, re-creating them; absent in a dry run",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "target_ops": {
+            "description": "Dry run only: the ops the target's entry would carry, as canonical op JSON",
+            "items": {},
+            "type": "array"
+          }
+        },
+        "required": [
+          "dropped",
+          "nodes",
+          "ops",
+          "source",
+          "target"
+        ],
+        "type": "object"
+      },
+      "summary": "Move nodes from one change set to another, keeping their IDs",
+      "write": true
+    },
+    {
       "name": "change.ls",
       "request": {
         "additionalProperties": false,
@@ -1443,6 +1566,40 @@ cmp stdout describe.golden.json
                 "at": {
                   "description": "When it landed (RFC 3339, UTC); absent unless landed",
                   "type": "string"
+                },
+                "carves": {
+                  "description": "Its carve entries that moved the target in or out, in the order found; absent when none",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "carve_entry": {
+                        "description": "The other change set's entry of the same carve",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      },
+                      "carved_from": {
+                        "description": "The change set the target was carved from; set on the target change set's entry",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      },
+                      "carved_into": {
+                        "description": "The change set the target was carved into; set on the source change set's entry",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      },
+                      "entry": {
+                        "description": "The carve entry, in this change set",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "carve_entry",
+                      "entry"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
                 },
                 "id": {
                   "description": "The change set's ID",

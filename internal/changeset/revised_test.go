@@ -200,3 +200,60 @@ func TestRevisedSorted(t *testing.T) {
 		t.Errorf("unknown change set: Revised = %+v, want nil", got)
 	}
 }
+
+// TestRevisedRecreated: a drop of A's create is no conflict for B while
+// something in B's view still creates the node under the same ID, as after
+// a carve moves the create to C and A depends on C. A drop whose op ID B's
+// op names, as base, still is.
+func TestRevisedRecreated(t *testing.T) {
+	created := revCreate("h", "i", fields("statement", `"a"`))
+	again := created
+	again.ID = opID(20)
+	unbased := revUpdate(10, fields("statement", `"b"`))
+	unbased.Base = opID(99) // not A's create
+	carved := func(depOn ...op.Op) []step {
+		return []step{{1, intention()}, {2, ops(created)}, {5, Ops{Ops: depOn, Drop: []id.ID{opID(1)}}}}
+	}
+	bSteps := func(o op.Op) []step { return []step{{3, intention()}, {4, ops(dep(1, csB, csA), o)}} }
+	cSteps := []step{{6, intention()}, {7, ops(again)}}
+	landed := func(s ChangeSet) ChangeSet { s.State = StateLanded; return s }
+	dropped := []RevisedConflict{{ChangeSet: csB, Op: opID(10), Dependency: csA, DependencyOp: opID(1),
+		Target: revNode, Dropped: true}}
+	cases := []struct {
+		name string
+		sets func(t *testing.T) []ChangeSet
+		want []RevisedConflict
+	}{
+		{"re-created in the closure", func(t *testing.T) []ChangeSet {
+			return []ChangeSet{chain(t, csA, carved(dep(2, csA, csC))...), chain(t, csB, bSteps(unbased)...),
+				chain(t, csC, cSteps...)}
+		}, nil},
+		{"re-created by a landed change set", func(t *testing.T) []ChangeSet {
+			return []ChangeSet{chain(t, csA, carved()...), chain(t, csB, bSteps(unbased)...),
+				landed(chain(t, csC, cSteps...))}
+		}, nil},
+		{"re-created by B", func(t *testing.T) []ChangeSet {
+			return []ChangeSet{chain(t, csA, carved()...),
+				chain(t, csB, step{3, intention()}, step{4, ops(dep(1, csB, csA), unbased)}, step{8, ops(again)})}
+		}, nil},
+		{"not re-created", func(t *testing.T) []ChangeSet {
+			return []ChangeSet{chain(t, csA, carved()...), chain(t, csB, bSteps(unbased)...)}
+		}, dropped},
+		{"re-created outside the view", func(t *testing.T) []ChangeSet {
+			return []ChangeSet{chain(t, csA, carved()...), chain(t, csB, bSteps(unbased)...),
+				chain(t, csC, cSteps...)}
+		}, dropped},
+		{"base names the dropped op", func(t *testing.T) []ChangeSet {
+			return []ChangeSet{chain(t, csA, carved(dep(2, csA, csC))...),
+				chain(t, csB, bSteps(revUpdate(10, fields("statement", `"b"`)))...), chain(t, csC, cSteps...)}
+		}, []RevisedConflict{{ChangeSet: csB, Op: opID(10), Dependency: csA, DependencyOp: opID(1),
+			Target: opID(1), Dropped: true}}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := Revised(c.sets(t), csB); !reflect.DeepEqual(got, c.want) {
+				t.Fatalf("Revised = %+v, want %+v", got, c.want)
+			}
+		})
+	}
+}

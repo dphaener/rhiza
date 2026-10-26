@@ -7,8 +7,10 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/dphaener/genesis/internal/changeset"
+	"github.com/dphaener/genesis/internal/entry"
 	"github.com/dphaener/genesis/internal/id"
 	"github.com/dphaener/genesis/internal/op"
 )
@@ -279,5 +281,96 @@ func TestLogLink(t *testing.T) {
 	wantExit(t, err, 4)
 	if e := AsError(err); e.Next != lsNext {
 		t.Errorf("next %q", e.Next)
+	}
+}
+
+// carveByHand moves node handle's create from change set from to change set
+// to the way a carve does: one entry in from dropping the create, one in to
+// re-creating it under a new op ID, each naming the other. It returns the
+// source's and the target's entry IDs.
+func carveByHand(t *testing.T, ctx *Ctx, handle string, from, to id.ID) (id.ID, id.ID) {
+	t.Helper()
+	w := ctxWorkspace(t, ctx)
+	src, _ := w.changeSet(from)
+	tgt, _ := w.changeSet(to)
+	var create op.Op
+	for _, o := range src.Ops {
+		if o.Type == op.TypeNodeCreate && o.Handle == handle {
+			create = o
+		}
+	}
+	moved := create
+	moved.ID = newID(t, ctx)
+	srcEntry, tgtEntry := newID(t, ctx), newID(t, ctx)
+	actor := entriesOf(w.log(), from)[0].Actor
+	write := func(cs, eid id.ID, after []id.ID, body changeset.Ops) {
+		raw, err := changeset.EncodeBody(body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		e := entry.Entry{V: changeset.EntryVersion(body), ID: eid, ChangeSet: cs, Actor: actor, For: actor,
+			At: ctx.Now().UTC().Truncate(time.Second), After: after, Type: body.Type(), Body: raw}
+		if err := w.st.Write(e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write(from, srcEntry, src.Heads, changeset.Ops{Ops: []op.Op{}, Drop: []id.ID{create.ID},
+		Carve: &changeset.Carve{To: to, Entry: tgtEntry}})
+	write(to, tgtEntry, tgt.Heads, changeset.Ops{Ops: []op.Op{moved}, Drop: []id.ID{},
+		Carve: &changeset.Carve{From: from, Entry: srcEntry}})
+	return srcEntry, tgtEntry
+}
+
+func newID(t *testing.T, ctx *Ctx) id.ID {
+	t.Helper()
+	v, err := ctx.IDs.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return v
+}
+
+func TestLogCarve(t *testing.T) {
+	ctx := readCtx(t)
+	src := newChange(t, ctx, `{"intent":"Bundle"}`).ChangeSet
+	mustWrite(t, ctx, "add", `{"kind":"decision","handle":"moved"}`)
+	mustWrite(t, ctx, "add", `{"kind":"decision","handle":"stays"}`)
+	tgt := newChange(t, ctx, `{"intent":"Milestone"}`).ChangeSet
+	mustWrite(t, ctx, "add", `{"kind":"decision","handle":"other"}`)
+	srcEntry, tgtEntry := carveByHand(t, ctx, "moved", src, tgt)
+
+	r := logOf(t, ctx, fmt.Sprintf(`{"ref":"moved","view":"what-if:%s"}`, tgt))
+	if len(r.ChangeSets) != 2 || r.ChangeSets[0].ID != src || r.ChangeSets[1].ID != tgt {
+		t.Fatalf("change sets %+v, want %s then %s", r.ChangeSets, src, tgt)
+	}
+	s, g := r.ChangeSets[0], r.ChangeSets[1]
+	if s.Intent != "Bundle" || s.State != changeset.StateDraft || s.Ops == nil || len(s.Ops) != 0 {
+		t.Errorf("source %+v, want draft Bundle with no ops", s)
+	}
+	if want := []LogCarve{{Entry: srcEntry, CarvedInto: tgt, CarveEntry: tgtEntry}}; !slices.Equal(s.Carves, want) {
+		t.Errorf("source carves %+v, want %+v", s.Carves, want)
+	}
+	if len(g.Ops) != 1 || g.Ops[0].Type != op.TypeNodeCreate {
+		t.Errorf("target ops %+v", g.Ops)
+	}
+	if want := []LogCarve{{Entry: tgtEntry, CarvedFrom: src, CarveEntry: srcEntry}}; !slices.Equal(g.Carves, want) {
+		t.Errorf("target carves %+v, want %+v", g.Carves, want)
+	}
+	var b bytes.Buffer
+	r.Human(&b)
+	line := "- Carved from " + shortID(src) + " into " + shortID(tgt) + "\n"
+	if strings.Count(b.String(), line) != 2 {
+		t.Errorf("Human lacks %q twice:\n%s", line, b.String())
+	}
+
+	// A node the carve did not move logs as before: no carves.
+	r = logOf(t, ctx, fmt.Sprintf(`{"ref":"stays","view":"what-if:%s"}`, src))
+	if len(r.ChangeSets) != 1 || r.ChangeSets[0].ID != src || r.ChangeSets[0].Carves != nil {
+		t.Errorf("stays %+v", r.ChangeSets)
+	}
+	b.Reset()
+	r.Human(&b)
+	if strings.Contains(b.String(), "Carved") {
+		t.Errorf("Human:\n%s", b.String())
 	}
 }

@@ -50,8 +50,8 @@ func TestReadLogProblems(t *testing.T) {
 	other := testEntry(t)
 	other.ID = mustID(t, sOtherID)
 
-	v2 := bytes.Replace(mustEncode(t, other), []byte(`"v": 1`), []byte(`"v": 2`), 1)
-	if bytes.Equal(v2, mustEncode(t, other)) {
+	v3 := bytes.Replace(mustEncode(t, other), []byte(`"v": 1`), []byte(`"v": 3`), 1)
+	if bytes.Equal(v3, mustEncode(t, other)) {
 		t.Fatal(`no "v": 1 in the encoding`)
 	}
 	nonCanon := bytes.TrimSuffix(mustEncode(t, other), []byte("\n"))
@@ -73,7 +73,7 @@ func TestReadLogProblems(t *testing.T) {
 		{"mismatch file name and id", cs + "/01JB000000000000000000000Z.json", file(mustEncode(t, other)), cs + "/01JB000000000000000000000Z.json", ErrMismatch},
 		{"mismatch wrong change set folder", "log/" + sOtherCS + "/" + sOtherID + ".json", file(mustEncode(t, other)), "log/" + sOtherCS + "/" + sOtherID + ".json", ErrMismatch},
 		{"non-canonical file", cs + "/" + sOtherID + ".json", file(nonCanon), cs + "/" + sOtherID + ".json", entry.ErrInvalid},
-		{"newer format file", cs + "/" + sOtherID + ".json", file(v2), cs + "/" + sOtherID + ".json", entry.ErrNewerFormat},
+		{"newer format file", cs + "/" + sOtherID + ".json", file(v3), cs + "/" + sOtherID + ".json", entry.ErrNewerFormat},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -216,7 +216,7 @@ func genLog(t *rapid.T) fstest.MapFS {
 			after := rapid.SliceOfNDistinct(genStoreID(), 0, 3, func(i id.ID) id.ID { return i }).Draw(t, "after")
 			slices.SortFunc(after, id.Compare)
 			e := entry.Entry{
-				V:         entry.FormatVersion,
+				V:         1,
 				ID:        eid,
 				ChangeSet: cs,
 				Actor:     genStoreID().Draw(t, "actor"),

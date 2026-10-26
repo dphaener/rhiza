@@ -14,6 +14,10 @@
 //   - A revision is an ops entry after the first: it adds operations,
 //     replaces earlier ones by repeating their IDs, or drops them. An
 //     operation keeps its ID for the life of its change set.
+//   - A carve moves work from one change set to another: the source gets an
+//     ops entry dropping the moved operations, the target an ops entry
+//     re-creating them under new operation IDs, and each entry's carve
+//     names the other change set and entry.
 //   - A base version is the ID of the last landed operation that touched an
 //     operation's target when the operation was written; a stale base is a
 //     conflict, not a silent overwrite.
@@ -31,6 +35,12 @@
 // empty); DecodeBody rejects missing, unknown and wrongly typed fields and
 // every rule a body can break on its own. Rules that need other entries, such
 // as open coming first or which lifecycle moves are legal, belong to folding.
+//
+// The one optional field is an ops body's carve, present only on a carve's
+// two entries. Format 1 cannot spell it: DecodeBody reads it only in an entry
+// of format 2 or later and treats it as an unknown field in a format-1 entry,
+// and EntryVersion tells a writer which format a body needs, so every other
+// entry is still written as format 1.
 package changeset
 
 import (
@@ -82,13 +92,29 @@ type Open struct {
 	Sources []id.ID
 }
 
-// Ops is the body of an ops entry: {ops, drop}. At least one is non-empty.
+// Ops is the body of an ops entry: {ops, drop}, plus {carve} on either side
+// of a carve. At least one of ops and drop is non-empty.
 type Ops struct {
 	// Ops holds operations with distinct IDs. It decodes to nil when empty.
 	Ops []op.Op
 	// Drop is sorted and unique, and shares no ID with Ops. It decodes to nil
 	// when empty.
 	Drop []id.ID
+	// Carve is set only on a carve's two entries, and needs format 2. With
+	// Carve.From set, Ops is non-empty; with Carve.To set, Drop is non-empty.
+	Carve *Carve
+}
+
+// Carve links the two entries of one carve: {entry, to} on the source's
+// entry, which drops the moved operations, or {entry, from} on the target's,
+// which re-creates them. Exactly one of From and To is set.
+type Carve struct {
+	// From is the change set the work was carved from, on the target's entry.
+	From id.ID
+	// To is the change set the work was carved into, on the source's entry.
+	To id.ID
+	// Entry is the other side's entry.
+	Entry id.ID
 }
 
 // Propose is the body of a propose entry: {}.
@@ -146,6 +172,20 @@ var shapes = map[entry.Type][]string{
 	entry.TypeSupersede: {"by"},
 	entry.TypeLand:      {},
 	entry.TypeNote:      {"text"},
+}
+
+// carveShape lists a carve's fields in the order DecodeBody checks them;
+// exactly one of the last two is present.
+var carveShape = []string{"entry", "from", "to"}
+
+// EntryVersion returns the lowest entry format that can spell b: 2 for an
+// ops body with a carve, 1 for every other body. A writer stamps it as the
+// entry's v.
+func EntryVersion(b Body) int {
+	if o, ok := b.(Ops); ok && o.Carve != nil {
+		return 2
+	}
+	return 1
 }
 
 func invalid(field, format string, args ...any) error {
@@ -221,6 +261,32 @@ func (o Ops) Validate() error {
 			return invalid("drop", "%s is also in %s", x, opField(j))
 		}
 	}
+	if o.Carve == nil {
+		return nil
+	}
+	if err := o.Carve.Validate(); err != nil {
+		return err
+	}
+	if !o.Carve.From.IsZero() && len(o.Ops) == 0 {
+		return invalid("ops", "empty, but a carve from %s re-creates operations", o.Carve.From)
+	}
+	if !o.Carve.To.IsZero() && len(o.Drop) == 0 {
+		return invalid("drop", "empty, but a carve into %s drops operations", o.Carve.To)
+	}
+	return nil
+}
+
+// Validate reports the first rule c breaks.
+func (c Carve) Validate() error {
+	if c.Entry.IsZero() {
+		return invalid("carve.entry", "zero id")
+	}
+	switch from, to := !c.From.IsZero(), !c.To.IsZero(); {
+	case from && to:
+		return invalid("carve", "both from and to")
+	case !from && !to:
+		return invalid("carve", "neither from nor to")
+	}
 	return nil
 }
 
@@ -288,6 +354,15 @@ func EncodeBody(b Body) (json.RawMessage, error) {
 			ops = append(ops, raw)
 		}
 		m = map[string]any{"ops": ops, "drop": list(b.Drop)}
+		if c := b.Carve; c != nil {
+			cm := map[string]any{"entry": c.Entry}
+			if !c.From.IsZero() {
+				cm["from"] = c.From
+			} else {
+				cm["to"] = c.To
+			}
+			m["carve"] = cm
+		}
 	case Accept:
 		m = map[string]any{"rule": b.Rule, "reason": b.Reason}
 	case Reject:
@@ -313,7 +388,9 @@ func EncodeBody(b Body) (json.RawMessage, error) {
 // reported in schema order, then the first unknown field in sorted order,
 // then each field's kind and the body's rules. An invalid operation is
 // reported on its index, as field "ops[i]", and its error still wraps
-// op.ErrInvalid.
+// op.ErrInvalid. An ops body may also hold carve when e.V is 2 or later; in
+// a format-1 entry carve is an unknown field. A carve's own fields are
+// checked the same way and reported as "carve.<field>".
 func DecodeBody(e entry.Entry) (Body, error) {
 	shape, ok := shapes[e.Type]
 	if !ok {
@@ -338,15 +415,12 @@ func DecodeBody(e entry.Entry) (Body, error) {
 			return nil, invalid(k, "missing")
 		}
 	}
-	if len(fields) != len(shape) {
-		names := make([]string, 0, len(fields))
-		for k := range fields {
-			if !slices.Contains(shape, k) {
-				names = append(names, k)
-			}
-		}
-		slices.Sort(names)
-		return nil, invalid(names[0], "unknown field")
+	known := shape
+	if e.Type == entry.TypeOps && e.V >= 2 {
+		known = append(slices.Clip(shape), "carve")
+	}
+	if name, ok := unknownField(fields, known); ok {
+		return nil, invalid(name, "unknown field")
 	}
 
 	var b Body
@@ -431,7 +505,75 @@ func decodeOps(fields map[string]json.RawMessage) (Body, error) {
 	if err != nil {
 		return nil, invalidWrap("drop", err)
 	}
-	return Ops{Ops: ops, Drop: drop}, nil
+	b := Ops{Ops: ops, Drop: drop}
+	if raw, ok := fields["carve"]; ok {
+		if b.Carve, err = decodeCarve(raw); err != nil {
+			return nil, err
+		}
+	}
+	return b, nil
+}
+
+// decodeCarve parses an ops body's carve: missing entry, then the first
+// unknown field in sorted order, then both or neither of from and to, then
+// each field's kind. A zero ID is reported on its own field.
+func decodeCarve(raw json.RawMessage) (*Carve, error) {
+	if len(raw) == 0 || raw[0] != '{' {
+		return nil, invalid("carve", "not an object")
+	}
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &fields); err != nil {
+		return nil, invalidWrap("carve", err)
+	}
+	if _, ok := fields["entry"]; !ok {
+		return nil, invalid("carve.entry", "missing")
+	}
+	if name, ok := unknownField(fields, carveShape); ok {
+		return nil, invalid("carve."+name, "unknown field")
+	}
+	_, from := fields["from"]
+	_, to := fields["to"]
+	switch {
+	case from && to:
+		return nil, invalid("carve", "both from and to")
+	case !from && !to:
+		return nil, invalid("carve", "neither from nor to")
+	}
+	var c Carve
+	for _, f := range []struct {
+		name string
+		dst  *id.ID
+	}{{"entry", &c.Entry}, {"from", &c.From}, {"to", &c.To}} {
+		r, ok := fields[f.name]
+		if !ok {
+			continue
+		}
+		x, err := ulid(r)
+		if err != nil {
+			return nil, invalidWrap("carve."+f.name, err)
+		}
+		if x.IsZero() {
+			return nil, invalid("carve."+f.name, "zero id")
+		}
+		*f.dst = x
+	}
+	return &c, nil
+}
+
+// unknownField returns the first key of fields, in sorted order, that is not
+// in known.
+func unknownField(fields map[string]json.RawMessage, known []string) (string, bool) {
+	var names []string
+	for k := range fields {
+		if !slices.Contains(known, k) {
+			names = append(names, k)
+		}
+	}
+	if len(names) == 0 {
+		return "", false
+	}
+	slices.Sort(names)
+	return names[0], true
 }
 
 var (

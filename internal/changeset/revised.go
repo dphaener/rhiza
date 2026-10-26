@@ -19,7 +19,12 @@ package changeset
 // its reason, which is no aspect. Overlap is a conflict; no overlap, no
 // conflict. When A drops, after eB, an op X it had written before eB, and o
 // names (as target, parent, from, to or base) X's ID or the node or link X
-// creates, that is a conflict too.
+// creates, that is a conflict too, unless X created what o names and a
+// current op in B's view still creates it under the same ID: an op of B,
+// of a change set in B's in-flight closure (Closure) or of a landed one.
+// That is a carve: the create moved to another change set A depends on,
+// and B still sees the node or link through it. o naming X's ID itself
+// still conflicts.
 //
 // B writing o again clears its conflicts: eB moves past A's revision. Which
 // entry came first is decided by entry ID order only.
@@ -79,6 +84,13 @@ func (a *Analysis) Revised(cs id.ID) []RevisedConflict {
 		return nil
 	}
 	var out []RevisedConflict
+	var view map[id.ID]bool
+	created := func(n id.ID) bool {
+		if view == nil {
+			view = a.viewCreates(cs)
+		}
+		return view[n]
+	}
 	for _, depID := range a.Dependencies(cs) {
 		dep, _ := a.set(depID)
 		for _, o := range b.Ops {
@@ -88,7 +100,7 @@ func (a *Analysis) Revised(cs id.ID) []RevisedConflict {
 			}
 			eB := h[len(h)-1].Entry
 			out = append(out, revisedUnder(cs, o, eB, dep)...)
-			out = append(out, droppedUnder(cs, o, eB, dep)...)
+			out = append(out, droppedUnder(cs, o, eB, dep, created)...)
 		}
 	}
 	if len(out) == 0 {
@@ -139,23 +151,46 @@ func revisedUnder(cs id.ID, o op.Op, eB id.ID, a ChangeSet) []RevisedConflict {
 }
 
 // droppedUnder finds a's ops dropped after eB, written before it, whose ID
-// or created node or link o names.
-func droppedUnder(cs id.ID, o op.Op, eB id.ID, a ChangeSet) []RevisedConflict {
+// or created node or link o names; a created node or link for which
+// created reports true does not count.
+func droppedUnder(cs id.ID, o op.Op, eB id.ID, a ChangeSet, created func(id.ID) bool) []RevisedConflict {
 	var out []RevisedConflict
 	for xID, d := range a.Drops {
 		if id.Compare(d.Entry, eB) <= 0 || id.Compare(d.First, eB) >= 0 {
 			continue
 		}
-		gone := []id.ID{xID}
-		if created, ok := creates(d.Op); ok {
-			gone = append(gone, created)
-		}
+		made, makes := creates(d.Op)
 		for _, n := range Names(o) {
-			if slices.Contains(gone, n) {
+			if n == xID || makes && n == made && !created(n) {
 				out = append(out, RevisedConflict{ChangeSet: cs, Op: o.ID, Dependency: a.ID, DependencyOp: xID,
 					Target: n, Dropped: true})
 				break
 			}
+		}
+	}
+	return out
+}
+
+// viewCreates is every node and link a current op in cs's view creates:
+// cs's own ops, those of its in-flight closure and those of landed change
+// sets.
+func (a *Analysis) viewCreates(cs id.ID) map[id.ID]bool {
+	a.graph()
+	out := map[id.ID]bool{}
+	add := func(os []op.Op) {
+		for _, o := range os {
+			if n, ok := creates(o); ok {
+				out[n] = true
+			}
+		}
+	}
+	add(a.ops[cs])
+	for _, c := range a.Closure(cs) {
+		add(a.ops[c])
+	}
+	for _, s := range a.sets {
+		if s.State == StateLanded {
+			add(s.Ops)
 		}
 	}
 	return out

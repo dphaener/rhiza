@@ -82,6 +82,7 @@ var skills = []entry{
 // topics lists the topics, sorted by name.
 var topics = []entry{
 	{name: "apply", file: "apply.md", description: "The genesis apply file format: many writes in one JSON file."},
+	{name: "carving", file: "carving.md", description: "Carving: moving nodes from one change set to another under the same IDs, what moves, the rules."},
 	{name: "change-sets", file: "change-sets.md", description: "Change sets: intention and record, the lifecycle, which change set a write goes into, --record."},
 	{name: "sources", file: "sources.md", description: "Source nodes: the stored fields, the raw material's hash, and how scrub feeds genesis source add."},
 }
