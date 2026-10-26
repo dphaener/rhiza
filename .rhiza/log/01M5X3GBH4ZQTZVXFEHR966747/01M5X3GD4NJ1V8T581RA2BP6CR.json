@@ -1,0 +1,132 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5X3GBH4ZQTZVXFEHVHS7P4Q"
+  ],
+  "at": "2026-10-26T21:57:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The second proof run (01M5WXM5, change set 2) failed and showed four gaps in ship-change, fixed together before more change sets are run: the build step passed while shipit was still reviewing (idle between turns with a PR open); land rendered with the installed rhiza though the branch changed rendering; a PR that main moves past can conflict and get no CI; and a failed run can't be resumed.",
+          "wording": "the orchestrator's ruling as arbiter, under the owner's instruction to run milestone 3 and be the arbiter; not the owner's words"
+        },
+        "handle": "ship-change-holds-up",
+        "id": "01M5X3GBRZX8CEV9BHBAFH0V3M",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5X3GBRZX8CEV9BHB88P666D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5X3GBRZX8CEV9BHB88P666D",
+        "id": "01M5X3GBXBKRQ7DTM2X2TYVJN3",
+        "link": "01M5X3GBXBKRQ7DTM2X03CKC0R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a fake agent that goes idle, opens a PR and only later runs rhiza session done: the build step does not pass while idle, and passes after the done mark.",
+          "statement": "An agent step's until can wait for the agent to say it is done: rhiza session done marks the session's record, and ship-change's build passes only on that mark (or exit 0) and an open PR, never on idle alone. Its prompt tells the agent to run rhiza session done as its very last action, after the owner's sign-off."
+        },
+        "handle": "agent-step-done-signal",
+        "id": "01M5X3GC1F8YT2560E88PHY93E",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5X3GC1F8YT2560E864QREFK",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M5X3GC1F8YT2560E864QREFK",
+        "id": "01M5X3GC5PSHPR9303FG59ZE6R",
+        "link": "01M5X3GC5PSHPR9303FCK1D7W1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X3GBRZX8CEV9BHB88P666D",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript where the branch's rendering differs from the installed binary's: after ship land, rhiza check with the head's build passes (no stale rendered files).",
+          "statement": "In Rhiza's own repo (its go.mod module is Rhiza's), ship-change's land and render use a rhiza built from the PR head, so a branch that changes how the model renders lands with its own rendering."
+        },
+        "handle": "land-with-branch-build",
+        "id": "01M5X3GC9S0ENG89Y22M1WKWXF",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5X3GC9S0ENG89Y22HF3KPFH",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M5X3GC9S0ENG89Y22HF3KPFH",
+        "id": "01M5X3GCDWAY399B2W63475TQM",
+        "link": "01M5X3GCDWAY399B2W60VBGWVC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X3GBRZX8CEV9BHB88P666D",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a local bare origin where main moves during the run: once with a rendered-only conflict (the run rebases, re-renders and merges), once with a code conflict (the step fails and a question names the files).",
+          "statement": "Before landing and again before merging, ship-change rebases a PR that main has moved past: conflicts only under .rhiza/rendered/ are settled by re-rendering; any other conflict fails the step and becomes a question; after a rebase it pushes and waits for CI again."
+        },
+        "handle": "rebase-when-behind",
+        "id": "01M5X3GCHZRJ9YPV8BA3YXYPFE",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5X3GCHZRJ9YPV8BA37J1AN3",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M5X3GCHZRJ9YPV8BA37J1AN3",
+        "id": "01M5X3GCP04VDYRJZ9H6Q4CDD7",
+        "link": "01M5X3GCP04VDYRJZ9H4YXNFYK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X3GBRZX8CEV9BHB88P666D",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript where a command step fails, the cause is fixed, and resume --retry runs that step again and the run succeeds; the journal shows the failure and the retry.",
+          "statement": "rhiza run resume --retry restarts a failed run at the step that failed, once the cause is fixed, and journals the retry; without --retry, resume still refuses a finished run."
+        },
+        "handle": "resume-failed-run",
+        "id": "01M5X3GCT3DRQ1XEGAZ6ESW6DF",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M5X3GCT3DRQ1XEGAZ630X0KS",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M5X3GCT3DRQ1XEGAZ630X0KS",
+        "id": "01M5X3GCY53DQXXQKM82ENTABK",
+        "link": "01M5X3GCY53DQXXQKM81DK3EN6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X3GBRZX8CEV9BHB88P666D",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5X3GBH4ZQTZVXFEHR966747",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5X3GD4NJ1V8T581RA2BP6CR",
+  "type": "ops",
+  "v": 1
+}
