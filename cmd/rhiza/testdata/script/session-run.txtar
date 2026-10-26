@@ -68,23 +68,35 @@ stdout '^events -s session:s1 --json$'
 exec cat $WORK/hook.out
 ! stdout .
 
-# Each source keeps its own report; the hook wins (status-precedence).
+# Each source keeps its own report. The agent has exited, so the exit is the
+# status: the earlier hook and Rex reports don't outrank it (status-precedence).
 exec rhiza session show 158fe87f-5cf3-4ff0-ae50-01a16dc84988
-stdout '^- Status: blocked permission: Claude needs your permission to use Bash at \S+ \(from hook\)$'
+stdout '^- Status: exited code 3 at \S+ \(from exit\)$'
 stdout '^- hook: blocked permission: Claude needs your permission to use Bash at '
 stdout '^- rex: working: Running tests at '
 stdout '^- exit: exited code 3 at '
 exec rhiza session show 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json
-stdout '"source": "hook"'
+stdout '"source": "exit"'
 stdout '"code": 3'
 exec rhiza session ls
-stdout '^- 158fe87f-5cf3-4ff0-ae50-01a16dc84988 blocked \(hook\) '
+stdout '^- 158fe87f-5cf3-4ff0-ae50-01a16dc84988 exited \(exit\) '
+
+# A hook that arrives after the exit is ignored: it doesn't revive the
+# session, and the hook's earlier report stays as it was.
+stdin $WORK/late.json
+exec rhiza session hook UserPromptSubmit
+! stdout .
+! stderr .
+exec rhiza session show 158fe87f-5cf3-4ff0-ae50-01a16dc84988
+stdout '^- Status: exited code 3 at \S+ \(from exit\)$'
+stdout '^- hook: blocked permission: Claude needs your permission to use Bash at '
 
 # The status is in Rhiza's own files: with no rex at all, show still
 # reports it (status-in-genesis-files).
 rm $WORK/bin/rex
 exec rhiza session show 158fe87f-5cf3-4ff0-ae50-01a16dc84988
-stdout '^- Status: blocked permission: Claude needs your permission to use Bash at \S+ \(from hook\)$'
+stdout '^- Status: exited code 3 at \S+ \(from exit\)$'
+stdout '^- hook: blocked permission: Claude needs your permission to use Bash at '
 stdout '^- rex: working: Running tests at '
 stdout '^- exit: exited code 3 at '
 
@@ -125,6 +137,8 @@ stderr 'session hook Stop'
 
 fold-ok
 
+-- late.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","hook_event_name":"UserPromptSubmit","prompt":"are you there?"}
 -- unknown.json --
 {"session_id":"00000000-0000-4000-8000-000000000000","hook_event_name":"Stop"}
 -- bad.json --

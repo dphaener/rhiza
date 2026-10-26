@@ -24,11 +24,6 @@ the assistant's summary in the founding conversation
 
 - derived-from [founding-conversation](../source/founding-conversation.md)
 
-### In
-
-- decided-by [actor-stamping](../capability/rhiza/runtime/actor-stamping.md)
-- decided-by [launch-env-stamping](../capability/rhiza/runtime/actor-stamping/launch-env-stamping.md)
-
 ## History
 
 - `01M5SWRGHKJKT6JZY6ZVMQEGWN` Founding record: the Sources, the root intents and constraints, and the founding decisions

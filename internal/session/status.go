@@ -48,6 +48,11 @@ type Status struct {
 	Exit *Report `json:"exit,omitempty"`
 }
 
+// Exited reports whether the session's process has exited. A live source's
+// report that arrives after that must not be recorded: it would not revive
+// the session.
+func (s Status) Exited() bool { return s.Exit != nil }
+
 // ValidState reports whether state is one of the known states.
 func ValidState(state string) bool {
 	switch state {
@@ -57,18 +62,19 @@ func ValidState(state string) bool {
 	return false
 }
 
-// Resolve returns the report that wins, and its source: hooks first, then
-// Rex events, then the process exit, then a bare starting report when no
-// source has spoken. Precedence is strict: a present lower source never
-// overrides a higher one, whatever the times say.
+// Resolve returns the report that wins, and its source. Once the process
+// has exited, the exit is the status: no hook or Rex report outranks it.
+// While the session is live, hooks come first, then Rex events, then a bare
+// starting report when no source has spoken. Precedence is strict: a present
+// lower source never overrides a higher one, whatever the times say.
 func Resolve(r Record) (Report, Source) {
 	switch {
+	case r.Status.Exit != nil:
+		return *r.Status.Exit, SourceExit
 	case r.Status.Hook != nil:
 		return *r.Status.Hook, SourceHook
 	case r.Status.Rex != nil:
 		return *r.Status.Rex, SourceRex
-	case r.Status.Exit != nil:
-		return *r.Status.Exit, SourceExit
 	}
 	return Report{State: StateStarting, At: r.StartedAt}, SourceDefault
 }

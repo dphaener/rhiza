@@ -27,7 +27,6 @@ the orchestrator's proposal in the milestone-2 conversation, accepted by the own
 ### In
 
 - decided-by [milestone-2](../intent/anyone-builds/milestone-2.md)
-- decided-by [session-commands](../capability/rhiza/runtime/rex-sessions/session-commands.md)
 
 ## History
 

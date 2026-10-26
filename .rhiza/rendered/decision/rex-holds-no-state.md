@@ -24,12 +24,6 @@ the assistant's summary in the founding conversation
 
 - derived-from [founding-conversation](../source/founding-conversation.md)
 
-### In
-
-- decided-by [runtime](../capability/rhiza/runtime.md)
-- decided-by [session-commands](../capability/rhiza/runtime/rex-sessions/session-commands.md)
-- decided-by [status-in-genesis-files](../capability/rhiza/runtime/agent-status/status-in-genesis-files.md)
-
 ## History
 
 - `01M5SWRGHKJKT6JZY6ZVMQEGWN` Founding record: the Sources, the root intents and constraints, and the founding decisions

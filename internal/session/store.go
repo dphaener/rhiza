@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"sync"
 )
 
 // MinPrefix is the shortest ID prefix Read accepts.
@@ -39,8 +38,6 @@ func Dir(gitCommonDir string) string {
 type Store struct {
 	dir string
 }
-
-var updateMu sync.Mutex
 
 // NewStore returns a store over dir. The directory is created on first write.
 func NewStore(dir string) *Store { return &Store{dir: dir} }
@@ -137,11 +134,21 @@ func (s *Store) List() ([]Record, error) {
 }
 
 // Update re-reads the session, applies fn and writes it back, so a writer
-// only changes what fn touches. It takes a full ID or a unique prefix.
+// only changes what fn touches. It takes a full ID or a unique prefix. The
+// read, fn and the rename happen under an exclusive lock on the record's
+// sibling lock file, so writers in other processes (a hook and the Rex
+// copier) cannot drop each other's report.
 func (s *Store) Update(id string, fn func(*Record)) (Record, error) {
-	updateMu.Lock()
-	defer updateMu.Unlock()
-	r, err := s.Read(id)
+	found, err := s.Read(id)
+	if err != nil {
+		return Record{}, err
+	}
+	unlock, err := s.lock(found.ID)
+	if err != nil {
+		return Record{}, err
+	}
+	defer unlock()
+	r, err := s.readFile(s.path(found.ID))
 	if err != nil {
 		return Record{}, err
 	}

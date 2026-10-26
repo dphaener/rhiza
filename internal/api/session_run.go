@@ -52,6 +52,8 @@ const (
 	rexSessionEvent       = "session_event"
 	rexBlockEvent         = "block_event"
 	rexProgramStatusEvent = "program_status_changed"
+	rexStatusRemovedEvent = "program_status_removed"
+	rexChildExited        = "child_exited"
 )
 
 // SessionRunRequest names the session to run.
@@ -220,9 +222,9 @@ func followRex(ctx *Ctx, st *session.Store, sid string) *rexFollower {
 		rd := bufio.NewReader(p.Output())
 		for {
 			line, err := rd.ReadBytes('\n')
-			if rep, ok := rexStatus(line, ctx.RexBlock); ok {
+			if rep, exited, ok := rexStatus(line, ctx.RexBlock); ok {
 				rep.At = ctx.Now().UTC()
-				if _, uerr := st.Update(sid, func(r *session.Record) { r.Status.Rex = &rep }); uerr != nil {
+				if _, uerr := st.Update(sid, func(r *session.Record) { recordRex(r, rep, exited) }); uerr != nil {
 					f.warnings = append(f.warnings, fmt.Sprintf("record rex status %s: %v", rep.State, uerr))
 				}
 			}
@@ -249,8 +251,24 @@ func (f *rexFollower) stop() []string {
 	return f.warnings
 }
 
+// recordRex copies a Rex report into the record. A report that the
+// terminal's program exited becomes the exit source, unless the wrapper
+// already recorded the exit with its code. Nothing is recorded once the
+// session has exited: a late report does not revive it.
+func recordRex(r *session.Record, rep session.Report, exited bool) {
+	if r.Status.Exited() {
+		return
+	}
+	if exited {
+		r.Status.Exit = &rep
+		return
+	}
+	r.Status.Rex = &rep
+}
+
 // rexEvent is the part of a `rex events --json` line that carries a block's
-// status report: a block_event inside a session_event.
+// status: a block_event inside a session_event, whose payload is a report
+// (program_status_changed) or a removal (program_status_removed).
 type rexEvent struct {
 	Type    string `json:"type"`
 	Payload struct {
@@ -265,27 +283,40 @@ type rexEvent struct {
 						Kind  string `json:"kind"`
 						Msg   string `json:"msg"`
 					} `json:"record"`
+					Reason string `json:"reason"`
 				} `json:"payload"`
 			} `json:"payload"`
 		} `json:"event"`
 	} `json:"payload"`
 }
 
-// rexStatus reads one `rex events --json` line and returns the status
-// report it carries for block, if it is one: state, kind and message. Rex
-// asks that an unknown state be taken as idle and an unknown kind as none.
-func rexStatus(line []byte, block string) (session.Report, bool) {
+// rexStatus reads one `rex events --json` line and returns the status it
+// carries for block, if any. A status report gives state, kind and message;
+// Rex asks that an unknown state be taken as idle and an unknown kind as
+// none. A removal because the terminal's program exited gives an exited
+// report and exited true, so Rex alone can end a session whose wrapper
+// never saw the exit.
+func rexStatus(line []byte, block string) (rep session.Report, exited, ok bool) {
 	var ev rexEvent
 	if err := json.Unmarshal(line, &ev); err != nil {
-		return session.Report{}, false
+		return session.Report{}, false, false
 	}
 	be := ev.Payload.Event
-	if ev.Type != rexSessionEvent || be.Type != rexBlockEvent || be.Payload.Name != rexProgramStatusEvent ||
-		be.Payload.BlockID != block {
-		return session.Report{}, false
+	if ev.Type != rexSessionEvent || be.Type != rexBlockEvent || be.Payload.BlockID != block {
+		return session.Report{}, false, false
+	}
+	switch be.Payload.Name {
+	case rexProgramStatusEvent:
+	case rexStatusRemovedEvent:
+		if be.Payload.Payload.Reason != rexChildExited {
+			return session.Report{}, false, false
+		}
+		return session.Report{State: session.StateExited, Detail: "rex: the terminal's program exited"}, true, true
+	default:
+		return session.Report{}, false, false
 	}
 	rec := be.Payload.Payload.Record
-	rep := session.Report{State: rec.State, Detail: rec.Msg}
+	rep = session.Report{State: rec.State, Detail: rec.Msg}
 	switch rec.State {
 	case session.StateIdle, session.StateWorking, session.StateDone, session.StateError:
 	case session.StateBlocked:
@@ -296,7 +327,7 @@ func rexStatus(line []byte, block string) (session.Report, bool) {
 	default:
 		rep.State = session.StateIdle
 	}
-	return rep, true
+	return rep, false, true
 }
 
 // runSessionHook records the status a hook reports. It never fails: a hook
@@ -353,8 +384,17 @@ func sessionHook(ctx *Ctx, event string) (SessionHookResponse, error) {
 			return resp, fmt.Errorf("%s reported unknown state %q", name, rep.State)
 		}
 		report := session.Report{State: rep.State, Kind: rep.Kind, Detail: rep.Detail, At: ctx.Now().UTC()}
-		if _, err := st.Update(rec.ID, func(r *session.Record) { r.Status.Hook = &report }); err != nil {
+		recorded := false
+		if _, err := st.Update(rec.ID, func(r *session.Record) {
+			// A hook that arrives after the exit does not revive the session.
+			if !r.Status.Exited() {
+				r.Status.Hook, recorded = &report, true
+			}
+		}); err != nil {
 			return resp, fmt.Errorf("record session %s: %v", rec.ID, err)
+		}
+		if !recorded {
+			return resp, nil
 		}
 		resp.Recorded, resp.State, resp.Kind = true, report.State, report.Kind
 		return resp, nil

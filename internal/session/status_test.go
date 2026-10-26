@@ -22,9 +22,9 @@ func TestResolvePrecedence(t *testing.T) {
 		{"rex alone", Status{Rex: rex}, StateIdle, SourceRex},
 		{"exit alone", Status{Exit: exit}, StateExited, SourceExit},
 		{"hook over rex", Status{Hook: hook, Rex: rex}, StateWorking, SourceHook},
-		{"hook over exit", Status{Hook: hook, Exit: exit}, StateWorking, SourceHook},
-		{"rex over exit", Status{Rex: rex, Exit: exit}, StateIdle, SourceRex},
-		{"all three", Status{Hook: hook, Rex: rex, Exit: exit}, StateWorking, SourceHook},
+		{"exit over hook", Status{Hook: hook, Exit: exit}, StateExited, SourceExit},
+		{"exit over rex", Status{Rex: rex, Exit: exit}, StateExited, SourceExit},
+		{"exit over all", Status{Hook: hook, Rex: rex, Exit: exit}, StateExited, SourceExit},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -38,12 +38,12 @@ func TestResolvePrecedence(t *testing.T) {
 
 func TestResolveKeepsDetails(t *testing.T) {
 	code := 2
-	r := Record{Status: Status{Exit: &Report{State: StateError, Code: &code}, Rex: &Report{State: StateBlocked, Kind: KindPermission, Detail: "Bash"}}}
+	r := Record{Status: Status{Rex: &Report{State: StateBlocked, Kind: KindPermission, Detail: "Bash"}}}
 	got, _ := Resolve(r)
 	if got.Kind != KindPermission || got.Detail != "Bash" {
 		t.Errorf("got %+v", got)
 	}
-	r.Status.Rex = nil
+	r.Status.Exit = &Report{State: StateError, Code: &code}
 	got, _ = Resolve(r)
 	if got.Code == nil || *got.Code != 2 {
 		t.Errorf("exit code lost: %+v", got)

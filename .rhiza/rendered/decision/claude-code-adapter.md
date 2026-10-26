@@ -24,13 +24,6 @@ the assistant's summary in the founding conversation
 
 - derived-from [founding-conversation](../source/founding-conversation.md)
 
-### In
-
-- decided-by [agent-adapters](../capability/rhiza/runtime/agent-adapters.md)
-- decided-by [rex-tab-launch](../capability/rhiza/runtime/rex-sessions/rex-tab-launch.md)
-- decided-by [explicit-permission-mode](../capability/rhiza/runtime/agent-adapters/explicit-permission-mode.md)
-- decided-by [known-session-id](../capability/rhiza/runtime/agent-adapters/known-session-id.md)
-
 ## History
 
 - `01M5SWRGHKJKT6JZY6ZVMQEGWN` Founding record: the Sources, the root intents and constraints, and the founding decisions

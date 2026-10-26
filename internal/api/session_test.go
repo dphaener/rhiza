@@ -336,11 +336,9 @@ func TestSessionLsShow(t *testing.T) {
 
 	newChange(t, f.ctx, `{"intent":"Readable tabs"}`)
 	s := startSession(t, f.ctx, `{"permission_mode":"manual"}`).Session
-	// Reports from the sources, written as later tasks will: hook wins.
-	code := 3
+	// Reports from a live session's sources: the hook wins over Rex.
 	if _, err := session.NewStore(session.Dir(f.common)).Update(s.ID, func(r *session.Record) {
 		r.Status.Rex = &session.Report{State: session.StateWorking, At: r.StartedAt}
-		r.Status.Exit = &session.Report{State: session.StateExited, Code: &code, At: r.StartedAt}
 		r.Status.Hook = &session.Report{State: session.StateBlocked, Kind: session.KindPermission, Detail: "Bash", At: r.StartedAt}
 	}); err != nil {
 		t.Fatal(err)
@@ -373,12 +371,11 @@ func TestSessionLsShow(t *testing.T) {
 	if show.Status.State != "blocked" || show.Status.Kind != "permission" || show.Source != "hook" {
 		t.Errorf("status %+v from %s", show.Status, show.Source)
 	}
-	if show.Reports.Rex == nil || show.Reports.Rex.State != "working" || show.Reports.Exit == nil ||
-		show.Reports.Exit.Code == nil || *show.Reports.Exit.Code != 3 {
+	if show.Reports.Rex == nil || show.Reports.Rex.State != "working" || show.Reports.Exit != nil {
 		t.Errorf("reports %+v", show.Reports)
 	}
 	h := human(t, show)
-	for _, want := range []string{"- Status: blocked permission: Bash", "- rex: working", "- exit: exited code 3"} {
+	for _, want := range []string{"- Status: blocked permission: Bash", "- rex: working", "- exit: none"} {
 		if !strings.Contains(h, want) {
 			t.Errorf("human lacks %q:\n%s", want, h)
 		}
@@ -543,8 +540,30 @@ func TestSessionRun(t *testing.T) {
 	if rec.Status.Hook != nil {
 		t.Errorf("hook report %+v", rec.Status.Hook)
 	}
-	if r.Session.Source != "rex" || r.Session.Status.State != session.StateWorking {
+	// The Rex report came first, then the exit: the exit is the status.
+	if r.Session.Source != "exit" || r.Session.Status.State != session.StateExited {
 		t.Errorf("resolved %s from %s", r.Session.Status.State, r.Session.Source)
+	}
+
+	// A hook report after the exit is ignored: it is not recorded and the
+	// session stays exited.
+	f.ctx.Stdin = strings.NewReader(`{"session_id":"` + s.ID + `","hook_event_name":"UserPromptSubmit"}`)
+	hresp, herr := callOp(t, f.ctx, "session.hook", `{"event":"UserPromptSubmit"}`)
+	if herr != nil {
+		t.Fatal(herr)
+	}
+	if hr := hresp.(SessionHookResponse); hr.Recorded {
+		t.Errorf("a hook after the exit was recorded: %+v", hr)
+	}
+	after, err := session.NewStore(session.Dir(f.common)).Read(s.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if after.Status.Hook != nil {
+		t.Errorf("hook report after the exit %+v", after.Status.Hook)
+	}
+	if got, src := session.Resolve(after); got.State != session.StateExited || src != session.SourceExit {
+		t.Errorf("after a late hook: %s from %s", got.State, src)
 	}
 	if out := human(t, r); !strings.Contains(out, "exited with code 3") {
 		t.Errorf("human %q", out)
@@ -644,28 +663,70 @@ func TestSessionRunStartFails(t *testing.T) {
 	}
 }
 
+// removedEvent is a `rex events --json` line removing block's status
+// records for reason.
+func removedEvent(block, reason string) string {
+	return `{"type":"session_event","payload":{"session_id":"session:s1","event":{"type":"block_event","payload":{` +
+		`"block_id":"` + block + `","creator_name":"com.superlogical.terminal","name":"program_status_removed",` +
+		`"payload":{"ids":[""],"reason":"` + reason + `"}}}}}`
+}
+
 func TestRexStatus(t *testing.T) {
 	cases := []struct {
 		name, line        string
-		ok                bool
+		ok, exited        bool
 		state, kind, text string
 	}{
-		{"Working", statusEvent("block:b1", "working", "", "Building"), true, "working", "", "Building"},
-		{"Blocked", statusEvent("block:b1", "blocked", "question", "Which one?"), true, "blocked", "question", "Which one?"},
-		{"UnknownKind", statusEvent("block:b1", "blocked", "coffee", ""), true, "blocked", "", ""},
-		{"UnknownState", statusEvent("block:b1", "napping", "", ""), true, "idle", "", ""},
-		{"OtherBlock", statusEvent("block:b2", "working", "", ""), false, "", "", ""},
-		{"OtherEvent", strings.Replace(statusEvent("block:b1", "working", "", ""), "program_status_changed", "cwd_changed", 1), false, "", "", ""},
-		{"NotJSON", "nope", false, "", "", ""},
-		{"Empty", "", false, "", "", ""},
+		{"Working", statusEvent("block:b1", "working", "", "Building"), true, false, "working", "", "Building"},
+		{"Blocked", statusEvent("block:b1", "blocked", "question", "Which one?"), true, false, "blocked", "question", "Which one?"},
+		{"UnknownKind", statusEvent("block:b1", "blocked", "coffee", ""), true, false, "blocked", "", ""},
+		{"UnknownState", statusEvent("block:b1", "napping", "", ""), true, false, "idle", "", ""},
+		{"ChildExited", removedEvent("block:b1", "child_exited"), true, true, "exited", "", "rex: the terminal's program exited"},
+		{"RemovedOtherReason", removedEvent("block:b1", "prompt"), false, false, "", "", ""},
+		{"RemovedOtherBlock", removedEvent("block:b2", "child_exited"), false, false, "", "", ""},
+		{"OtherBlock", statusEvent("block:b2", "working", "", ""), false, false, "", "", ""},
+		{"OtherEvent", strings.Replace(statusEvent("block:b1", "working", "", ""), "program_status_changed", "cwd_changed", 1), false, false, "", "", ""},
+		{"NotJSON", "nope", false, false, "", "", ""},
+		{"Empty", "", false, false, "", "", ""},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			rep, ok := rexStatus([]byte(c.line), "block:b1")
-			if ok != c.ok || rep.State != c.state || rep.Kind != c.kind || rep.Detail != c.text {
-				t.Errorf("rexStatus = %+v, %v", rep, ok)
+			rep, exited, ok := rexStatus([]byte(c.line), "block:b1")
+			if ok != c.ok || exited != c.exited || rep.State != c.state || rep.Kind != c.kind || rep.Detail != c.text {
+				t.Errorf("rexStatus = %+v, %v, %v", rep, exited, ok)
 			}
 		})
+	}
+}
+
+// TestRecordRexExitIsFinal feeds Rex reports in order: a working report,
+// then Rex saying the terminal's program exited, then a late report. Rex
+// alone ends the session, and nothing after the exit revives it.
+func TestRecordRexExitIsFinal(t *testing.T) {
+	var r session.Record
+	feed := func(line string) {
+		t.Helper()
+		rep, exited, ok := rexStatus([]byte(line), "block:b1")
+		if !ok {
+			t.Fatalf("rexStatus ignored %s", line)
+		}
+		recordRex(&r, rep, exited)
+	}
+	feed(statusEvent("block:b1", "working", "", "Running tests"))
+	if got, src := session.Resolve(r); got.State != session.StateWorking || src != session.SourceRex {
+		t.Fatalf("live: %s from %s", got.State, src)
+	}
+	feed(removedEvent("block:b1", "child_exited"))
+	if got, src := session.Resolve(r); got.State != session.StateExited || src != session.SourceExit || got.Code != nil {
+		t.Fatalf("after exit: %+v from %s", got, src)
+	}
+	feed(statusEvent("block:b1", "blocked", "question", "late"))
+	feed(removedEvent("block:b1", "child_exited"))
+	if r.Status.Rex == nil || r.Status.Rex.State != session.StateWorking {
+		t.Errorf("a report after the exit changed rex: %+v", r.Status.Rex)
+	}
+	if got, src := session.Resolve(r); got.State != session.StateExited || src != session.SourceExit {
+		t.Errorf("a late report revived the session: %s from %s", got.State, src)
 	}
 }
 

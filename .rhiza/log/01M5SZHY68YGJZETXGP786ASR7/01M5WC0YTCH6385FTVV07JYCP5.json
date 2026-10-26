@@ -1,0 +1,76 @@
+{
+  "actor": "01M5W8BT5ZSHQ96V8JRFP7MB71",
+  "after": [
+    "01M5WB4PS4A22GNF6XY3BFMEBF"
+  ],
+  "at": "2026-10-26T15:07:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "internal/session/status_test.go TestResolvePrecedence passes (live reports: hook over Rex; once exited, the exit over hook and Rex); internal/api/session_test.go TestRecordRexExitIsFinal passes (a Rex working report, then Rex's child_exited removal, gives the exit, and later reports don't revive it) and TestSessionRun passes (a Rex working report then the agent's exit resolves to the exit, and a later hook is not recorded); cmd/rhiza/testdata/script/session-run.txtar passes"
+        },
+        "handle": "status-precedence-test",
+        "id": "01M5WAZ9PS21FRW2373CA03TRF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WAZ9PS21FRW2373AP9WF5P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "internal/session/store_test.go TestStoreWriteReadAtomic passes; internal/session/race_test.go TestStoreUpdateConcurrentWriters and TestStoreUpdateConcurrentProcesses pass under -race (a hook writer and a Rex writer make 200 updates each at once, as goroutines and as separate processes, and neither loses a report, since each update holds a per-record flock; without the lock both fail); internal/api/session_test.go TestSessionLsShow passes; cmd/rhiza/testdata/script/session-run.txtar shows the recorded status with rex removed"
+        },
+        "handle": "status-in-genesis-files-test",
+        "id": "01M5WAZ9XHM6Y0QGGMC8492JQX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WAZ9XHM6Y0QGGMC4RW2VH2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "status precedence applies among a live session's reports. Once the process has exited, the exit is the status, and no earlier hook or Rex report outranks it. A hook or Rex report that arrives after the exit doesn't revive the session.",
+          "quote_where": "the orchestrator's fix brief for change set 3 (m2-cs3-fixes.md), item 1",
+          "statement": "Status precedence applies among a live session's reports; once the process has exited, the exit is the status, no earlier hook or Rex report outranks it, and a report that arrives after the exit doesn't revive the session.",
+          "wording": "the orchestrator's ruling, made under the owner's authorization to amend plans (orchestrator-amends-plans); not the owner's words"
+        },
+        "handle": "exit-is-final",
+        "id": "01M5WC0Y8JK6CXNDDTVQ24HTHA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WC0Y8JK6CXNDDTVPWR275C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WC0Y8JK6CXNDDTVPWR275C",
+        "id": "01M5WC0YBSD55X53P6VQQM3S3T",
+        "link": "01M5WC0YBSD55X53P6VMV9MRTJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WAZAAJYHCRX79TPRZVV393",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYCYW9FJ42M36KXMA9BT99",
+        "id": "01M5WC0YF20Q0T0HBM6R1ASCSX",
+        "link": "01M5WC0YF20Q0T0HBM6PQA2Q00",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WC0Y8JK6CXNDDTVPWR275C",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SZHY68YGJZETXGP786ASR7",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WC0YTCH6385FTVV07JYCP5",
+  "type": "ops",
+  "v": 1
+}
