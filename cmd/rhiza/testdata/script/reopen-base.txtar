@@ -27,7 +27,7 @@ stdout 'discovered-from'
 stdout '"next": "rhiza change new \\"<intent>\\" --json"'
 exec rhiza change show 01M5PWGEF85Y185JZ2ZNP53DGX --json
 stdout '"state": "landed"'
-! exists .rhiza/local/current
+! exists .rhiza/local/change
 
 # --base names another revision with the same rule.
 exec sh -c 'rhiza reopen --change 01M5PWGEF85Y185JZ2ZNP53DGX --base main --json; echo exit=$?'
@@ -42,6 +42,7 @@ exec git add -A
 exec git commit -qm 'Shelve things'
 exec rhiza reopen --change 01M5PWGMARA1WR6BD0MJ9F50JK --json
 stdout '"to": "accepted"'
+grep '^01M5PWGMARA1WR6BD0MJ9F50JK$' .rhiza/local/change
 exec rhiza change show --json
 stdout '"id": "01M5PWGMARA1WR6BD0MJ9F50JK"'
 stdout '"state": "accepted"'

@@ -30,6 +30,7 @@ exec rhiza reopen --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
 stdout '"from": "landed"'
 stdout '"to": "accepted"'
 ! stdout cleared_current
+grep '^01M5PWGEF85Y185JZ2ZGCNH40N$' .rhiza/local/change
 exec rhiza change show --json
 stdout '"id": "01M5PWGEF85Y185JZ2ZGCNH40N"'
 stdout '"state": "accepted"'
