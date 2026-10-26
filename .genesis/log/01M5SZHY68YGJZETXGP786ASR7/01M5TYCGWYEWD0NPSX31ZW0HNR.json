@@ -1,0 +1,103 @@
+{
+  "actor": "01M5TYA1ZV6XHZWWSDKVWR70B3",
+  "after": [
+    "01M5TYCFF7JSEETAY1DJ38X4JJ"
+  ],
+  "at": "2026-10-26T01:49:47Z",
+  "body": {
+    "carve": {
+      "entry": "01M5TYCGWYEWD0NPSX30WK1QT3",
+      "from": "01M5SWTC1923N3AB7MWA9D9Z2A"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Genesis works unattended: the daemon, the usage governor, shipping, the inbox and acceptance policy."
+        },
+        "handle": "orchestration",
+        "id": "01M5TYCGWYEWD0NPSX2AG6P7XA",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5SWTC58PN8WNJRRM03630JS",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWTC58PN8WNJRRM03630JS",
+        "id": "01M5TYCGWYEWD0NPSX2EF683DA",
+        "link": "01M5SWTCMZ0KJFQBMTE590571D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRM58RX5MQ2P82HC6YG1Q",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWTC58PN8WNJRRM03630JS",
+        "id": "01M5TYCGWYEWD0NPSX2HZMT84P",
+        "link": "01M5SWTCQ7F6394PRD2MGSAD22",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRNSJW6J9ZQW0B1HHSS7B",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWTC58PN8WNJRRM03630JS",
+        "id": "01M5TYCGWYEWD0NPSX2K2JMWTK",
+        "link": "01M5SWTCSFZCSRVCDR55X76K3J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRNV6HP7PYPCB2ZWBQG3J",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWTC58PN8WNJRRM03630JS",
+        "id": "01M5TYCGWYEWD0NPSX2PMBP4M3",
+        "link": "01M5SWTCVQSQ7192WHBZAJKTPM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRNX365HMMTTS46627D1N",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWTC58PN8WNJRRM03630JS",
+        "id": "01M5TYCGWYEWD0NPSX2PNXMPGK",
+        "link": "01M5SWTCY1M0MV583YMYZ7WJZ2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRNYR3SM6S4GCZQZQA43T",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWTC58PN8WNJRRM03630JS",
+        "id": "01M5TYCGWYEWD0NPSX2QZG0QB1",
+        "link": "01M5SWTD09Q8DK1DTQGASFWQ9W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRP0DZA6FTKHQAEHQGHSB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWTC58PN8WNJRRM03630JS",
+        "id": "01M5TYCGWYEWD0NPSX2RDS832C",
+        "link": "01M5SWTD2HTPJT03PS733QQGJ5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRP22Y8H75NVQHCNHBHZ6",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SZHY68YGJZETXGP786ASR7",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5TYCGWYEWD0NPSX31ZW0HNR",
+  "type": "ops",
+  "v": 2
+}
