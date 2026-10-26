@@ -21,6 +21,7 @@ Genesis keeps the model of a product, what it is, why it is that way and what is
 - decided-by [testscript-scenarios](../decision/testscript-scenarios.md)
 - decided-by [twelve-areas](../decision/twelve-areas.md)
 - decided-by [root-intents-and-constraints](../decision/root-intents-and-constraints.md)
+- decided-by [name-is-rhiza](../decision/name-is-rhiza.md)
 - derived-from [founding-conversation](../source/founding-conversation.md)
 
 ### In
