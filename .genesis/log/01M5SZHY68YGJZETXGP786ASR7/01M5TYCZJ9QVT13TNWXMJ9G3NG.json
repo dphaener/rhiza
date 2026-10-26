@@ -1,0 +1,297 @@
+{
+  "actor": "01M5TYA1ZV6XHZWWSDKVWR70B3",
+  "after": [
+    "01M5TYCGWYEWD0NPSX31ZW0HNR"
+  ],
+  "at": "2026-10-26T01:50:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A launch opens one Rex tab whose cwd is the worktree, checked through the Rex CLI.",
+          "statement": "Genesis launches Claude Code interactively in a new Rex tab, in the change set's own worktree."
+        },
+        "handle": "rex-tab-launch",
+        "id": "01M5TYCWXMBHC1V7Q280F7N8WY",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5TYCWXMBHC1V7Q27ZRG3JKQ",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYCWXMBHC1V7Q27ZRG3JKQ",
+        "id": "01M5TYCX0WHWXSTMGQ8EJ67G1J",
+        "link": "01M5TYCX0WHWXSTMGQ8C91C0YD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKYG58WPFJ2SXD35J4EW",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYCWXMBHC1V7Q27ZRG3JKQ",
+        "id": "01M5TYCX4340N0FQTC6D4CSFDG",
+        "link": "01M5TYCX4340N0FQTC6BN10F9Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJ700ZRMVTHJ5XZZYD3Y",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test builds the title for a change set with and without a title and for a build and a review step.",
+          "statement": "A session's Rex tab is named `<repo>: <change set title>`, for example `genesis: Carving keeps IDs`, with no state in it and the step added after ` · ` only when it is not the build step."
+        },
+        "handle": "tab-title",
+        "id": "01M5TYCX7CHJ1H823GCFTS0E9B",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5TYCX7CHJ1H823GCD762206",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYCX7CHJ1H823GCD762206",
+        "id": "01M5TYCXAMG75GA5CT1PZZ48H6",
+        "link": "01M5TYCXAMG75GA5CT1M4MT4KK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYAJ70NJ6DQ4WC31CQRA5W",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYCX7CHJ1H823GCD762206",
+        "id": "01M5TYCXDXVRAGYAQ1YQKQ225Z",
+        "link": "01M5TYCXDXVRAGYAQ1YMDQNAAZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYAJDS6GZKCPSV13507EAG",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYCX7CHJ1H823GCD762206",
+        "id": "01M5TYCXH5VJ627VC2MMAMT2C2",
+        "link": "01M5TYCXH5VJ627VC2MJP86R1G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYAJ3DPSHCMJBANNVS15B7",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test derives the slug, branch and worktree names from one title.",
+          "statement": "The branch `cs/<slug>` and worktree `<repo>.<slug>` are named from the same title."
+        },
+        "handle": "title-slug",
+        "id": "01M5TYCXMES38V9E8DBY2R9GGY",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5TYCXMES38V9E8DBVEZMFV4",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYCXMES38V9E8DBVEZMFV4",
+        "id": "01M5TYCXQQ7H2RPKHNPKKFA18S",
+        "link": "01M5TYCXQQ7H2RPKHNPHGSX0CH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYAJH5CHF7TQ1JT7MSYRFN",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript launches against a fake Rex and reads both outputs.",
+          "statement": "`genesis session ls` and `genesis session show <id>` list the sessions Genesis launched with their change set, tab, worktree, permission mode and status."
+        },
+        "handle": "session-commands",
+        "id": "01M5TYCXTZ9SNZZF3527RC136V",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5TYCXTZ9SNZZF3524Q9REGP",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYCXTZ9SNZZF3524Q9REGP",
+        "id": "01M5TYCXY89NB642ETZD6F88WR",
+        "link": "01M5TYCXY89NB642ETZ9859ZMD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHNCWAKRZ9VS5KKNYKJ8Y",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYCXTZ9SNZZF3524Q9REGP",
+        "id": "01M5TYCY1H1FZ4XJZ89C7K748M",
+        "link": "01M5TYCY1H1FZ4XJZ899MEQ3SB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJ90AVMW12YTHEXE0QZ0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test shows the launch command carries `--permission-mode` and a launch without one exits non-zero.",
+          "statement": "The Claude Code adapter always passes a permission mode, and a launch with none is refused."
+        },
+        "handle": "explicit-permission-mode",
+        "id": "01M5TYCY4T4VXA86X91FMWYGTC",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5TYCY4T4VXA86X91CZAXTMT",
+        "op": "node.create",
+        "parent": "01M5SWT6SV13QH6EDSH7HDJFCB"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYCY4T4VXA86X91CZAXTMT",
+        "id": "01M5TYCY830YSTKGFTNAHW2WFN",
+        "link": "01M5TYCY830YSTKGFTN9Q3Y6PP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKYG58WPFJ2SXD35J4EW",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYCY4T4VXA86X91CZAXTMT",
+        "id": "01M5TYCYBHTX6YK3K849Y4199R",
+        "link": "01M5TYCYBHTX6YK3K8489SKBNP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRM16H3EGRN6S2A7MY88G",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "The recorded session ID equals the one on the launch command.",
+          "statement": "The adapter starts Claude Code with `--session-id` set to an ID Genesis generates and records."
+        },
+        "handle": "known-session-id",
+        "id": "01M5TYCYETKM4SSWXPGHNPH4GY",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5TYCYETKM4SSWXPGEJ4Z8SF",
+        "op": "node.create",
+        "parent": "01M5SWT6SV13QH6EDSH7HDJFCB"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYCYETKM4SSWXPGEJ4Z8SF",
+        "id": "01M5TYCYJ4C3XE9A0M2NN27RY7",
+        "link": "01M5TYCYJ4C3XE9A0M2NDQGVY4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKYG58WPFJ2SXD35J4EW",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test reads the launched environment and finds all three.",
+          "statement": "Every agent Genesis launches gets `GENESIS_CHANGE`, `GENESIS_ACTOR` and, when it belongs to a run, `GENESIS_RUN` in its environment."
+        },
+        "handle": "launch-env-stamping",
+        "id": "01M5TYCYNEBVFGQ1B2YJNW2DGH",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5TYCYNEBVFGQ1B2YH1KDDQP",
+        "op": "node.create",
+        "parent": "01M5SWT74MW73RE94XQVNWFJEQ"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYCYNEBVFGQ1B2YH1KDDQP",
+        "id": "01M5TYCYRV4VP9V99V2709VYAJ",
+        "link": "01M5TYCYRV4VP9V99V24X6FRH3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKZVB6P9F107Z5WCCDW0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test feeds each source alone and in conflict and gets the highest-precedence status.",
+          "statement": "A session's status comes from Claude Code's hooks first, then the status in Rex's events, then the process exiting."
+        },
+        "handle": "status-precedence",
+        "id": "01M5TYCYW9FJ42M36KXPYR3MGF",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5TYCYW9FJ42M36KXMA9BT99",
+        "op": "node.create",
+        "parent": "01M5SWT6Y6BCPQ46RHC2GGPM9J"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYCYW9FJ42M36KXMA9BT99",
+        "id": "01M5TYCYZQ7RPP13ND4N6MYCVW",
+        "link": "01M5TYCYZQ7RPP13ND4KBH11A0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKX5MFMP08NQ1SNZ8DF0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "`genesis session show` reports the last status with Rex stopped.",
+          "statement": "The status is copied into Genesis's own files, never read back from Rex as the record."
+        },
+        "handle": "status-in-genesis-files",
+        "id": "01M5TYCZ35E465M8SEAHYD6EVT",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5TYCZ35E465M8SEAF8N9XNZ",
+        "op": "node.create",
+        "parent": "01M5SWT6Y6BCPQ46RHC2GGPM9J"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYCZ35E465M8SEAF8N9XNZ",
+        "id": "01M5TYCZ6M28W9GC5PKYP41F8E",
+        "link": "01M5TYCZ6M28W9GC5PKVQYCMQG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJ90AVMW12YTHEXE0QZ0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript sets a title, shows it in `change show --json`, refuses an over-long one, and shows the fallback.",
+          "statement": "A change set has an optional short title, set with `genesis change new --title` (under about 30 characters), and without one its intent's first clause stands in."
+        },
+        "handle": "change-set-title",
+        "id": "01M5TYCZA314H413P69E3XPT1K",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M5TYCZA314H413P69D60GNVC",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYCZA314H413P69D60GNVC",
+        "id": "01M5TYCZDDGMEVN987EPDH9W0Z",
+        "link": "01M5TYCZDDGMEVN987ENMN4GBZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYAJACFC692661YN9XANXW",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SZHY68YGJZETXGP786ASR7",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5TYCZJ9QVT13TNWXMJ9G3NG",
+  "type": "ops",
+  "v": 1
+}

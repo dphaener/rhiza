@@ -1,0 +1,171 @@
+{
+  "actor": "01M5TYA1ZV6XHZWWSDKVWR70B3",
+  "after": [
+    "01M5TW3ZVRPFMSRRYQTDHWRV4N"
+  ],
+  "at": "2026-10-26T01:49:46Z",
+  "body": {
+    "carve": {
+      "entry": "01M5TYCFF7JSEETAY1DH20QSNQ",
+      "from": "01M5SWT6HKYEKHXJAQT000NSDA"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Genesis runs agents: sessions in Rex, an adapter per agent, their status, and how far each machine is trusted."
+        },
+        "handle": "runtime",
+        "id": "01M5TYCFF7JSEETAY1C8F7Q1GX",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5SWT6NGS1S2AS5PZN74E68P",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "fields": {
+          "statement": "Agent steps run as sessions in Rex windows, interactive by default and headless when a step asks."
+        },
+        "handle": "rex-sessions",
+        "id": "01M5TYCFF7JSEETAY1C9CCT987",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5SWT6QN894SDW5V7GJNYK3H",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "fields": {
+          "statement": "A built-in adapter per agent, Claude Code first, declares what it can do, and a missing capability degrades and is reported."
+        },
+        "handle": "agent-adapters",
+        "id": "01M5TYCFF7JSEETAY1CBPYGQP2",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5SWT6SV13QH6EDSH7HDJFCB",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "fields": {
+          "statement": "Agent status comes from the agent's hooks, then Rex's events, then the process exiting, and is copied into Genesis's own files."
+        },
+        "handle": "agent-status",
+        "id": "01M5TYCFF7JSEETAY1CF79Z3PB",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5SWT6Y6BCPQ46RHC2GGPM9J",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "fields": {
+          "statement": "Every agent launched gets GENESIS_ACTOR, so each entry it writes is stamped with who and for whom."
+        },
+        "handle": "actor-stamping",
+        "id": "01M5TYCFF7JSEETAY1CK24MXC8",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5SWT74MW73RE94XQVNWFJEQ",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT6NGS1S2AS5PZN74E68P",
+        "id": "01M5TYCFF7JSEETAY1CPGW6BXJ",
+        "link": "01M5SWT78ZBD9127C1TC4SWVBY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJ700ZRMVTHJ5XZZYD3Y",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT6NGS1S2AS5PZN74E68P",
+        "id": "01M5TYCFF7JSEETAY1CR4SYJVW",
+        "link": "01M5SWT7B3QSY3664KZWBXGQBF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJ80J64J1Q9VCNV7Y3A9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT6NGS1S2AS5PZN74E68P",
+        "id": "01M5TYCFF7JSEETAY1CW0426NT",
+        "link": "01M5SWT7DAC3D7H15RVH9HSZFM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJ90AVMW12YTHEXE0QZ0",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT6SV13QH6EDSH7HDJFCB",
+        "id": "01M5TYCFF7JSEETAY1CX2W6DNM",
+        "link": "01M5SWT7HM0NJ7QJE0FSZB67AE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKTJQTRF8BBM5RN21VFF",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT6NGS1S2AS5PZN74E68P",
+        "id": "01M5TYCFF7JSEETAY1D10V6BZT",
+        "link": "01M5SWT7KRT5Y5S11KYX3JJ0KG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKVW3M6RPVH7CH38G0ZJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT6Y6BCPQ46RHC2GGPM9J",
+        "id": "01M5TYCFF7JSEETAY1D3TQKEKB",
+        "link": "01M5SWT7NXRP8QWCPR6D21KN9M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKX5MFMP08NQ1SNZ8DF0",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT6SV13QH6EDSH7HDJFCB",
+        "id": "01M5TYCFF7JSEETAY1D5D4XBVV",
+        "link": "01M5SWT7R3VZB0F9BNAGXRP11S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKYG58WPFJ2SXD35J4EW",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT74MW73RE94XQVNWFJEQ",
+        "id": "01M5TYCFF7JSEETAY1D5SNJ824",
+        "link": "01M5SWT7T85AXB2F7PPQS1STDW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKZVB6P9F107Z5WCCDW0",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT6NGS1S2AS5PZN74E68P",
+        "id": "01M5TYCFF7JSEETAY1D97KER4R",
+        "link": "01M5SWT7WEH6YR93KEP62JRVEX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRM16H3EGRN6S2A7MY88G",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SZHY68YGJZETXGP786ASR7",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5TYCFF7JSEETAY1DJ38X4JJ",
+  "type": "ops",
+  "v": 2
+}

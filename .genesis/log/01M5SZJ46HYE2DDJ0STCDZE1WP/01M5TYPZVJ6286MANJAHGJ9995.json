@@ -1,0 +1,106 @@
+{
+  "actor": "01M5TYA1ZV6XHZWWSDKVWR70B3",
+  "after": [
+    "01M5TYPR4QXCGJTCQ2REYB8JWR"
+  ],
+  "at": "2026-10-26T01:55:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A test drives a fake session status to waiting and back and reads the run's state.",
+          "statement": "A run is blocked on the owner while its agent step's session waits for the owner's input, and stops being blocked once the owner answers."
+        },
+        "handle": "run-blocked-state",
+        "id": "01M5TYPYZ6GFFNK5BCADKQTHH5",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5TYPYZ6GFFNK5BCAAHBK7K4",
+        "op": "node.create",
+        "parent": "01M5SWTCGG54JMNZNRSYQ2WAHH"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYPYZ6GFFNK5BCAAHBK7K4",
+        "id": "01M5TYPZ2JWW06XWB0M1HTW7HS",
+        "link": "01M5TYPZ2JWW06XWB0KYSQCQ6X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKX5MFMP08NQ1SNZ8DF0",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYPYZ6GFFNK5BCAAHBK7K4",
+        "id": "01M5TYPZ5X8AS4YF8AWFEHB88T",
+        "link": "01M5TYPZ5X8AS4YF8AWDJJSGCV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHNCWAKRZ9VS5KKNYKJ8Y",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "With a fake Rex, one notification per block, none while it stays blocked.",
+          "statement": "When a run becomes blocked, Genesis sends one Rex notification naming the tab and the change set's title."
+        },
+        "handle": "blocked-run-notice",
+        "id": "01M5TYPZ98NCFG64MWBJVSGFXD",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5TYPZ98NCFG64MWBH0VC7QA",
+        "op": "node.create",
+        "parent": "01M5SWTCGG54JMNZNRSYQ2WAHH"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYPZ98NCFG64MWBH0VC7QA",
+        "id": "01M5TYPZCHYCNFGSDNJF3C4GFV",
+        "link": "01M5TYPZCHYCNFGSDNJCDFMMVR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHNCWAKRZ9VS5KKNYKJ8Y",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYPZ98NCFG64MWBH0VC7QA",
+        "id": "01M5TYPZFZVAG1985DRR8QHGTE",
+        "link": "01M5TYPZFZVAG1985DRMZYKFJB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJ700ZRMVTHJ5XZZYD3Y",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a blocked fake session shows both in text and --json.",
+          "statement": "genesis run status names a blocked run's tab and the question it waits on."
+        },
+        "handle": "blocked-run-status",
+        "id": "01M5TYPZKAXABH94S3HD6M4QMD",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5TYPZKAXABH94S3HCHA49MY",
+        "op": "node.create",
+        "parent": "01M5SWTCGG54JMNZNRSYQ2WAHH"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYPZKAXABH94S3HCHA49MY",
+        "id": "01M5TYPZPMQ5C2WTV6KT37GHHD",
+        "link": "01M5TYPZPMQ5C2WTV6KP9QTDCD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHNCWAKRZ9VS5KKNYKJ8Y",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SZJ46HYE2DDJ0STCDZE1WP",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5TYPZVJ6286MANJAHGJ9995",
+  "type": "ops",
+  "v": 1
+}

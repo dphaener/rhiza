@@ -60,6 +60,21 @@ source · `01M5SZHJ8S6TDVVJGKSMZGC3SG`
     "by": "owner",
     "text": "Agree with everything",
     "where": "milestone-2 conversation, topic 7: the rename"
+  },
+  {
+    "by": "owner",
+    "text": "Side note, because Rex has such an awesome API and we have full control over tab names, I don't like that \"genesis m2 cs9\" is the default name for the tab. When working on a changeset it would be useful to have a more human readable name.",
+    "where": "milestone-2 conversation, tab names"
+  },
+  {
+    "by": "owner",
+    "text": "I do like having the project name as a prefix: \"genesis: Carving keeps IDs\", but maybe we can workshop that a bit.",
+    "where": "milestone-2 conversation, tab names"
+  },
+  {
+    "by": "owner",
+    "text": "1. Yes\n2. Yes\n3. yes\n4. Yes",
+    "where": "milestone-2 conversation, tab names"
   }
 ]
 ```
@@ -112,9 +127,15 @@ Milestone 2 planning, with the owner
 - derived-from [check-by-entry-identity](../decision/check-by-entry-identity.md)
 - derived-from [rename-clean-break](../decision/rename-clean-break.md)
 - derived-from [rename-is-change-set-10](../decision/rename-is-change-set-10.md)
+- derived-from [human-readable-tab-names](../decision/human-readable-tab-names.md)
+- derived-from [tab-title-repo-prefix](../decision/tab-title-repo-prefix.md)
+- derived-from [change-set-title-field](../decision/change-set-title-field.md)
+- derived-from [no-state-in-tab-title](../decision/no-state-in-tab-title.md)
+- derived-from [one-slug-everywhere](../decision/one-slug-everywhere.md)
 
 ## History
 
 - `01M5SZHJ4AECQ3Z6PE60XFQZP6` Milestone 2 planning record: the conversation, the milestone-2 intent and its done points, and its decisions
 - `01M5TS2AA3FSV9JC3HA19Y5MJ8` Milestone 2 planning record, part 2: carving that keeps IDs
 - `01M5TW3V7ES5JW5MYWM44RNNMS` Milestone 2 planning record, part 3: the rename to Rhiza
+- `01M5TYA5K3Y0VJRJ4GJ5X73T1D` Milestone 2 planning record, part 4: tab names and change set titles

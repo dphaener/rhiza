@@ -1,0 +1,33 @@
+{
+  "actor": "01M5TYA1ZV6XHZWWSDKVWR70B3",
+  "after": [
+    "01M5TS2FANDXFC15764SMS9XPG"
+  ],
+  "at": "2026-10-26T01:55:22Z",
+  "body": {
+    "carve": {
+      "entry": "01M5TYPR4QXCGJTCQ2RCH0XP80",
+      "from": "01M5SWTC1923N3AB7MWA9D9Z2A"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The owner is notified when something needs them."
+        },
+        "handle": "notifications",
+        "id": "01M5TYPR4QXCGJTCQ2R8PRWAX5",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5SWTCGG54JMNZNRSYQ2WAHH",
+        "op": "node.create",
+        "parent": "01M5SWTC58PN8WNJRRM03630JS"
+      }
+    ]
+  },
+  "change_set": "01M5SZJ46HYE2DDJ0STCDZE1WP",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5TYPR4QXCGJTCQ2REYB8JWR",
+  "type": "ops",
+  "v": 2
+}

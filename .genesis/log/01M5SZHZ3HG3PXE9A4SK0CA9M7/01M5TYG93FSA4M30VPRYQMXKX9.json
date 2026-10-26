@@ -1,0 +1,127 @@
+{
+  "actor": "01M5TYA1ZV6XHZWWSDKVWR70B3",
+  "after": [
+    "01M5TS2EMWJC84DAEBZXNJBMTT"
+  ],
+  "at": "2026-10-26T01:51:50Z",
+  "body": {
+    "carve": {
+      "entry": "01M5TYG93FSA4M30VPRWMTGX1R",
+      "from": "01M5SWT91P766X04ESJABB0Q44"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Genesis carries out work: workflow definitions, runs, the built-in workflows, and writing your own."
+        },
+        "handle": "workflows",
+        "id": "01M5TYG93FSA4M30VPR1BR5QS6",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5SWT95KQCW65MYWN9S7K9P3",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "fields": {
+          "statement": "A workflow is a declarative state machine of steps (agent, command, wait, workflow, foreach) with outcomes and visit limits."
+        },
+        "handle": "workflow-definitions",
+        "id": "01M5TYG93FSA4M30VPR3Z9V8GS",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5SWT9A05VXSMXQME4CPJN2D",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "fields": {
+          "statement": "A run carries one workflow on one change set, with a local journal, started, resumed and dry-run from the CLI."
+        },
+        "handle": "workflow-runs",
+        "id": "01M5TYG93FSA4M30VPR7F80BPQ",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5SWT9C9AN7E2283H93ZNSKW",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT95KQCW65MYWN9S7K9P3",
+        "id": "01M5TYG93FSA4M30VPRA58KPVY",
+        "link": "01M5SWT9VR0RNJRMQVW66CX5HX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKBD18MWGYZTK5YEC7DW",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT95KQCW65MYWN9S7K9P3",
+        "id": "01M5TYG93FSA4M30VPRDNNFV08",
+        "link": "01M5SWT9XZ22ZSNK8Q4Z2G99BT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKF3TPXT2G8BYRGXQNQE",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT95KQCW65MYWN9S7K9P3",
+        "id": "01M5TYG93FSA4M30VPRFK5TE34",
+        "link": "01M5SWTA06WM6ZKQXN09P7N82E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKGAYPACFPDK0FXHSNH4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT95KQCW65MYWN9S7K9P3",
+        "id": "01M5TYG93FSA4M30VPRJE04F0N",
+        "link": "01M5SWTA2DSTQQCYTSQ29YN8CD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKHJ7SB5CGRE47AJQ4AH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9A05VXSMXQME4CPJN2D",
+        "id": "01M5TYG93FSA4M30VPRMFNSED1",
+        "link": "01M5SWTA4N8PPK5ZF4VBARNRY3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKJTTN98CSM3087H6KXW",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9A05VXSMXQME4CPJN2D",
+        "id": "01M5TYG93FSA4M30VPRP47NRYA",
+        "link": "01M5SWTA6W14Q6H16FQ6YBACJW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKM2R8FPWPK0C3E701E0",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9C9AN7E2283H93ZNSKW",
+        "id": "01M5TYG93FSA4M30VPRRN9AG04",
+        "link": "01M5SWTA93GC5X69RBZB2KKAHD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKNB2DZ7H57TF8T897N7",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SZHZ3HG3PXE9A4SK0CA9M7",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5TYG93FSA4M30VPRYQMXKX9",
+  "type": "ops",
+  "v": 2
+}

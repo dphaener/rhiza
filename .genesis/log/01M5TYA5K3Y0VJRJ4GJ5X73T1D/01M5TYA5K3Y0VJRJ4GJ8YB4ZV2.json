@@ -1,0 +1,15 @@
+{
+  "actor": "01M5TYA1ZV6XHZWWSDKVWR70B3",
+  "after": [],
+  "at": "2026-10-26T01:48:30Z",
+  "body": {
+    "intent": "Milestone 2 planning record, part 4: tab names and change set titles",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M5TYA5K3Y0VJRJ4GJ5X73T1D",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5TYA5K3Y0VJRJ4GJ8YB4ZV2",
+  "type": "open",
+  "v": 1
+}

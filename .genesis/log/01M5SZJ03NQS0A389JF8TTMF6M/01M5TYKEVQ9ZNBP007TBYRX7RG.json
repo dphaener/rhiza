@@ -1,0 +1,33 @@
+{
+  "actor": "01M5TYA1ZV6XHZWWSDKVWR70B3",
+  "after": [
+    "01M5TYKE6N598DK5QSJHCK63KN"
+  ],
+  "at": "2026-10-26T01:53:35Z",
+  "body": {
+    "carve": {
+      "entry": "01M5TYKEVQ9ZNBP007TBVSKSMN",
+      "from": "01M5SWTC1923N3AB7MWA9D9Z2A"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Finished work is shipped unattended: push, PR, CI, merge and deploy check."
+        },
+        "handle": "shipping",
+        "id": "01M5TYKEVQ9ZNBP007TBQRXVEC",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5SWTCBZ9E5DEKJT4EZ8MBX6",
+        "op": "node.create",
+        "parent": "01M5SWTC58PN8WNJRRM03630JS"
+      }
+    ]
+  },
+  "change_set": "01M5SZJ03NQS0A389JF8TTMF6M",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5TYKEVQ9ZNBP007TBYRX7RG",
+  "type": "ops",
+  "v": 2
+}
