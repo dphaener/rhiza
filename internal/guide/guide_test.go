@@ -64,7 +64,7 @@ func TestListOrder(t *testing.T) {
 	for _, tx := range List() {
 		names = append(names, tx.Name)
 	}
-	want := []string{"rhiza", "scrub", "apply", "carving", "change-sets", "sources"}
+	want := []string{"rhiza", "scrub", "apply", "carving", "change-sets", "reopening", "sources"}
 	if !slices.Equal(names, want) {
 		t.Fatalf("List names = %v, want %v", names, want)
 	}

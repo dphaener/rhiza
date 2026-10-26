@@ -10,10 +10,9 @@ import (
 	"github.com/dphaener/rhiza/internal/guide"
 )
 
-// pendingCommands are commands the guide names before they exist. None
-// are pending now; add one here when the guide gets ahead of the code, and
-// remove it when it lands.
-var pendingCommands []string
+// pendingCommands are commands the guide names before they exist. Add one
+// here when the guide gets ahead of the code, and remove it when it lands.
+var pendingCommands = []string{"reopen"}
 
 // commandWord is one word of a command path.
 var commandWord = regexp.MustCompile(`^[a-z][a-z0-9-]*$`)
