@@ -1,0 +1,178 @@
+{
+  "actor": "01M5WXM5WCQT92FBNNBMT6SSAH",
+  "after": [
+    "01M5WT5R949W38GKCQWFH7AXA0"
+  ],
+  "at": "2026-10-26T21:07:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript in a git repo commits with Change: <id> and Actor: builder, then writes Evidence verifying the change set's leaf: as builder, check --json exits 0 with one warn finding on rule evidence-actor naming the four; as verifier, no such finding; a commit with no Actor: trailer yields none. Go tests run the rule on given commit trailers, so check itself still runs no git.",
+          "statement": "rhiza check warns, on a rule named evidence-actor, for each live Evidence that verifies a capability when the Evidence's actor is named in an Actor: trailer of a commit carrying the Change: trailer of the change set that added that capability, unless the commit's Leaf: trailers name other leaves only. The warning names the Evidence, the capability, the actor and the commit. Outside a git work tree the rule is skipped, silently."
+        },
+        "handle": "check-evidence-actor",
+        "id": "01M5WR40W9BDXA9Z2Q0VC6370D",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5WR40W9BDXA9Z2Q0T4GEM4S",
+        "op": "node.create",
+        "parent": "01M5WR40418Q8WECTQVWKZZ4QC"
+      },
+      {
+        "fields": {
+          "statement": "A commit's Leaf: trailers scope the evidence-actor warning: a commit with Leaf: trailers counts only for the leaves they name, by handle or ID; a commit with a Change: trailer and no Leaf: counts for every capability of its change set.",
+          "wording": "the planning agent's proposal, accepted by the owner"
+        },
+        "handle": "evidence-actor-leaf-scope",
+        "id": "01M5X0MAAXT6CKQWH568XCDW0C",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5X0MAAXT6CKQWH56530SWZV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WR40W9BDXA9Z2Q0T4GEM4S",
+        "id": "01M5X0MAEQ65R92BENCS8PF28Y",
+        "link": "01M5X0MAEQ65R92BENCPM4BXDD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X0MAAXT6CKQWH56530SWZV",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Outside a git work tree the evidence-actor rule is skipped with no finding, since append-only already warns that git is missing.",
+          "wording": "the planning agent's proposal, accepted by the owner"
+        },
+        "handle": "evidence-actor-silent-skip",
+        "id": "01M5X0MAJJE369RPH5BYARTHGS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5X0MAJJE369RPH5BW8ZGHWJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WR40W9BDXA9Z2Q0T4GEM4S",
+        "id": "01M5X0MAPCRG7VFP6BHJ8EVC44",
+        "link": "01M5X0MAPCRG7VFP6BHE9HMK00",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X0MAJJE369RPH5BW8ZGHWJ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "evidence-actor warns once per Evidence and capability, naming the oldest matching commit, and matches an Actor: trailer by the actor's handle or ID.",
+          "wording": "the implementing agent's choice, accepted by the orchestrator acting as arbiter"
+        },
+        "handle": "evidence-actor-one-per-pair",
+        "id": "01M5X0MAT79V0TXH4BB8H2F4PS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5X0MAT79V0TXH4BB6JKAZJV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WR40W9BDXA9Z2Q0T4GEM4S",
+        "id": "01M5X0MAY3WZATMX4KJ6NSS2QR",
+        "link": "01M5X0MAY3WZATMX4KJ4YN5PZQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X0MAT79V0TXH4BB6JKAZJV",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "A leaf's needs in change show lists every live capability it depends on, in or out of the change set; build order is worked out among the change set's own leaves, ties in tree order.",
+          "wording": "the planning agent's proposal, accepted by the owner"
+        },
+        "handle": "leaf-needs-every-target",
+        "id": "01M5X0MB1YW492ZMT612ZWPQ80",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5X0MB1YW492ZMT6114ZT078",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WR3ZJQCG6MCWRGY69NWJJY",
+        "id": "01M5X0MB5RKD442X9Y7CXAKPQK",
+        "link": "01M5X0MB5RKD442X9Y7CP5HM2V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X0MB1YW492ZMT6114ZT078",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "An Evidence node's actor is the actor stamped on the ops entry that first wrote its create; later writes by other actors, and replacing the create, do not change it.",
+          "wording": "the implementing agent's choice, accepted by the orchestrator acting as arbiter"
+        },
+        "handle": "evidence-actor-is-creator",
+        "id": "01M5X0MB9JECRVGHSBRV3G5ST0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5X0MB9JECRVGHSBRS8HRKMF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WR40B08FCCSMTK2QFHHPPM",
+        "id": "01M5X0MBDDHM9P7HJSAYYV8NNX",
+        "link": "01M5X0MBDDHM9P7HJSAYTK3FE2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X0MB9JECRVGHSBRS8HRKMF",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "A depends-on loop among capabilities is refused at write time naming the shortest path back, and reported by rhiza check on the depends-on rule, once per loop, naming its capabilities.",
+          "wording": "the implementing agent's choice, accepted by the orchestrator acting as arbiter"
+        },
+        "handle": "capability-loops-on-depends-on",
+        "id": "01M5X0MBH7KJYYTMDA6AE3ZY1N",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5X0MBH7KJYYTMDA69EF2KMM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WR3ZBTGE5H3YSXP61HGY9C",
+        "id": "01M5X0MBN3S0CY9GJQ9APYHZ5G",
+        "link": "01M5X0MBN3S0CY9GJQ98QS43J4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X0MBH7KJYYTMDA69EF2KMM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5X0MAAXT6CKQWH56530SWZV",
+        "id": "01M5X0MBRXDQT6JJEYB1BVPMFC",
+        "link": "01M5X0MBRXDQT6JJEYB00D4SNC",
+        "note": "implements its warning scope in rhiza check",
+        "op": "link.create",
+        "to": "01M5WT5QZENJ8RMZ9W4YQ9M19D",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M5WPTV0NX6YECXCPMHSEJAWY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5X0MBYWDC2W2EYZ6MD967AX",
+  "type": "ops",
+  "v": 1
+}
