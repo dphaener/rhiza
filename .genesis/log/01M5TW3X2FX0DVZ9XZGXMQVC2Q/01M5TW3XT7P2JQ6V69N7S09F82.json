@@ -1,0 +1,71 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5TW3X37KCPF932QC7KZ1A68"
+  ],
+  "at": "2026-10-26T01:10:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "check identifies each log entry by its ID and bytes, so the log can move between folders while an edited entry still fails."
+        },
+        "handle": "check-entry-identity",
+        "id": "01M5TW3X7X0YSDRC8Y6ZY96WSH",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5TW3X7X0YSDRC8Y6Y9JTF20",
+        "op": "node.create",
+        "parent": "01M5SWSJ0K067EMGMKBTA224AY"
+      },
+      {
+        "decision": null,
+        "from": "01M5TW3X7X0YSDRC8Y6Y9JTF20",
+        "id": "01M5TW3XB3EN7J2CF3Y6R9GGF7",
+        "link": "01M5TW3XB3EN7J2CF3Y5GNFDXQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TW3VWR848SYJV1FGATKK39",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Run in a repo that still has a .genesis/ folder, the CLI fails with a clear error and the command to rename it."
+        },
+        "handle": "old-folder-notice",
+        "id": "01M5TW3XE94JPEKQ1CDM3YQX94",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5TW3XE94JPEKQ1CDJCFJKAY",
+        "op": "node.create",
+        "parent": "01M5SWS4PZCV2JGC4689HAND12"
+      },
+      {
+        "decision": null,
+        "from": "01M5TW3XE94JPEKQ1CDJCFJKAY",
+        "id": "01M5TW3XHH6WN4CM1KTA77AQ88",
+        "link": "01M5TW3XHH6WN4CM1KTA2BF3D9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TW3W33XW1S8WQP7JYS0MTW",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "id": "01M5TW3XMQZSQXE2ATN6QQD207",
+        "link": "01M5TW3XMQZSQXE2ATN60NZKC2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TW3VPF312SDA33ZHKS0XCA",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5TW3X2FX0DVZ9XZGXMQVC2Q",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5TW3XT7P2JQ6V69N7S09F82",
+  "type": "ops",
+  "v": 1
+}

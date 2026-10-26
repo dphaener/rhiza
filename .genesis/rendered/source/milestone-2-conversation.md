@@ -50,17 +50,27 @@ source · `01M5SZHJ8S6TDVVJGKSMZGC3SG`
     "by": "owner",
     "text": "All of them, let's go",
     "where": "milestone-2 conversation, topic 6: carving that keeps IDs"
+  },
+  {
+    "by": "owner",
+    "text": "Ok I think I like the name. The designs are going to need some work but we've got a good start. I'm going to table that for now, but let's move forward with the name change.",
+    "where": "milestone-2 conversation, the name"
+  },
+  {
+    "by": "owner",
+    "text": "Agree with everything",
+    "where": "milestone-2 conversation, topic 7: the rename"
   }
 ]
 ```
 
 ## raw_sha256
 
-8375751ac3ae19bf0a4bfa4367828337a345edbce7a1307c3ecf0216c4e98a3e
+344235f460b7c632df6d73d0017cfe99fcedb0dfaa53919860c21238a159a1dc
 
 ## summary
 
-The owner and the orchestrator (Claude Code in Rex) planned milestone 2 inside Genesis on 2026-10-25, right after milestone 1's import. Decided: milestone 2 is "Genesis runs the work" (layers 3–4), so milestone 3 is built with Genesis orchestrating; milestone 2 is an intent its change sets serve, with done points as child intents verified by Evidence; depends-on means only "can't start before", so the area chain is retired and the areas become a backlog; milestone work is carved out of the area bundles; a write sees the change sets it depends on, change sets land in dependency order, dropped dependencies and cycles are reported, rebasing stays manual; the scope (Claude Code adapter, runs with a built-in ship-change workflow, messages to a running step, interview answers as Decisions, blocked runs that tell the owner) and what is out; shipit stays the agent step; eight change sets, with 1, 2 and 7 written in full first and 3, 4, 5 and 8 proposed with intent only; the owner gave the go-ahead to accept 1, 2 and 7. Every answer was the owner accepting the orchestrator's proposal; the proposals' wording is the orchestrator's. Later: carving as decided couldn't be done with today's Genesis (re-creating a bundle's node changes its ID), so the owner added change set 9, carving that keeps IDs: carve by node, two entries with the same node and link IDs, the source made to depend on the target, its rules, and 3, 4, 5 and 8 depending on it.
+The owner and the orchestrator (Claude Code in Rex) planned milestone 2 inside Genesis on 2026-10-25, right after milestone 1's import. Decided: milestone 2 is "Genesis runs the work" (layers 3–4), so milestone 3 is built with Genesis orchestrating; milestone 2 is an intent its change sets serve, with done points as child intents verified by Evidence; depends-on means only "can't start before", so the area chain is retired and the areas become a backlog; milestone work is carved out of the area bundles; a write sees the change sets it depends on, change sets land in dependency order, dropped dependencies and cycles are reported, rebasing stays manual; the scope (Claude Code adapter, runs with a built-in ship-change workflow, messages to a running step, interview answers as Decisions, blocked runs that tell the owner) and what is out; shipit stays the agent step; eight change sets, with 1, 2 and 7 written in full first and 3, 4, 5 and 8 proposed with intent only; the owner gave the go-ahead to accept 1, 2 and 7. Every answer was the owner accepting the orchestrator's proposal; the proposals' wording is the orchestrator's. Later: carving as decided couldn't be done with today's Genesis (re-creating a bundle's node changes its ID), so the owner added change set 9, carving that keeps IDs: carve by node, two entries with the same node and link IDs, the source made to depend on the target, its rules, and 3, 4, 5 and 8 depending on it. Then the product was renamed Rhiza (from mycorrhiza, the fungal network under a forest), chosen over Hypha and Myco because neither collides with an agent tool; the rename is change set 10: everything renamed, the log's history left as written, check identifying entries by ID and bytes, a clean break with one error for an old .genesis/ folder.
 
 ## title
 
@@ -97,8 +107,14 @@ Milestone 2 planning, with the owner
 - derived-from [carve-adds-dependency](../decision/carve-adds-dependency.md)
 - derived-from [carve-rules](../decision/carve-rules.md)
 - derived-from [carve-is-change-set-9](../decision/carve-is-change-set-9.md)
+- derived-from [name-is-rhiza](../decision/name-is-rhiza.md)
+- derived-from [rename-everything](../decision/rename-everything.md)
+- derived-from [check-by-entry-identity](../decision/check-by-entry-identity.md)
+- derived-from [rename-clean-break](../decision/rename-clean-break.md)
+- derived-from [rename-is-change-set-10](../decision/rename-is-change-set-10.md)
 
 ## History
 
 - `01M5SZHJ4AECQ3Z6PE60XFQZP6` Milestone 2 planning record: the conversation, the milestone-2 intent and its done points, and its decisions
 - `01M5TS2AA3FSV9JC3HA19Y5MJ8` Milestone 2 planning record, part 2: carving that keeps IDs
+- `01M5TW3V7ES5JW5MYWM44RNNMS` Milestone 2 planning record, part 3: the rename to Rhiza

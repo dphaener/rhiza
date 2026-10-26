@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5TW3Z5PN2AR51ZQZGR025C6"
+  ],
+  "at": "2026-10-26T01:10:10Z",
+  "body": {
+    "reason": "The owner, in the milestone-2 conversation: \"Agree with everything\"",
+    "rule": "owner"
+  },
+  "change_set": "01M5TW3X2FX0DVZ9XZGXMQVC2Q",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5TW401M283SRH66Z7CD6RCG",
+  "type": "accept",
+  "v": 1
+}
