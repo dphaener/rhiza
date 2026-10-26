@@ -46,7 +46,15 @@ type Status struct {
 	Hook *Report `json:"hook,omitempty"`
 	Rex  *Report `json:"rex,omitempty"`
 	Exit *Report `json:"exit,omitempty"`
+	// Done is the agent's own word that its work is finished, written only
+	// by `rhiza session done`. It is not a source Resolve weighs: it says
+	// nothing of whether the session works, waits or has exited, and is
+	// read on its own (SaidDone).
+	Done *Report `json:"done,omitempty"`
 }
+
+// SaidDone reports whether the agent has said its work is done.
+func (s Status) SaidDone() bool { return s.Done != nil }
 
 // Exited reports whether the session's process has exited. A live source's
 // report that arrives after that must not be recorded: it would not revive

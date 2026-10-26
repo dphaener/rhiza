@@ -1,0 +1,32 @@
+{
+  "actor": "01M5X6WX5C600DP4NERS5774N9",
+  "after": [
+    "01M5X6XS3D1C3T5JQM3TRBFZSF"
+  ],
+  "at": "2026-10-26T22:57:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "go test ./cmd/rhiza -run TestScripts/run-agent-done -count=1 passed at 35733c1",
+          "statement": "An agent step with until_when done passes only once the agent says it is done.",
+          "status": "verified",
+          "tests": "TestScripts/run-agent-done"
+        },
+        "handle": "agent-step-done-signal-tests",
+        "id": "01M5X6XSACCQ2CDD8APTKSP5NE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5X6XSACCQ2CDD8APT4ANWJY",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5X3GBH4ZQTZVXFEHR966747",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5X6XSEWFR5FGV5X9TZH1WRJ",
+  "type": "ops",
+  "v": 1
+}

@@ -2621,6 +2621,10 @@ cmp stdout describe.golden.json
             "description": "Stop at a wait step whose condition does not hold yet, instead of waiting",
             "type": "boolean"
           },
+          "retry": {
+            "description": "Restart a failed run at the step that failed, once its cause is fixed; the retry is journalled. A run that succeeded is refused",
+            "type": "boolean"
+          },
           "run": {
             "description": "The run: a full ID or a unique prefix of 4+ characters",
             "type": "string"
@@ -2637,6 +2641,10 @@ cmp stdout describe.golden.json
           "dry_run": {
             "description": "True if nothing was written or run",
             "type": "boolean"
+          },
+          "retry": {
+            "description": "The step a resume --retry restarted the failed run at, or in a dry run would; absent otherwise",
+            "type": "string"
           },
           "run": {
             "additionalProperties": false,
@@ -2752,6 +2760,32 @@ cmp stdout describe.golden.json
                 "description": "The run ID",
                 "type": "string"
               },
+              "retries": {
+                "description": "The retries of the run after it failed, in order; absent when it was never retried",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it was retried, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "Why the run had failed",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was restarted at",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "started_at": {
                 "description": "When it started, RFC 3339 UTC",
                 "type": "string"
@@ -2780,6 +2814,10 @@ cmp stdout describe.golden.json
                     "outcome": {
                       "description": "How it ended: pass, fail, timeout, or error when it could not run",
                       "type": "string"
+                    },
+                    "retry": {
+                      "description": "True for the first visit of the step after a retry restarted the run at it",
+                      "type": "boolean"
                     },
                     "session": {
                       "description": "An agent step's session",
@@ -2836,7 +2874,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Continue a stopped or interrupted run where its journal left it",
+      "summary": "Continue a stopped or interrupted run where its journal left it, or retry a failed run at its failed step",
       "write": true
     },
     {
@@ -2874,6 +2912,10 @@ cmp stdout describe.golden.json
           "dry_run": {
             "description": "True if nothing was written or run",
             "type": "boolean"
+          },
+          "retry": {
+            "description": "The step a resume --retry restarted the failed run at, or in a dry run would; absent otherwise",
+            "type": "string"
           },
           "run": {
             "additionalProperties": false,
@@ -2989,6 +3031,32 @@ cmp stdout describe.golden.json
                 "description": "The run ID",
                 "type": "string"
               },
+              "retries": {
+                "description": "The retries of the run after it failed, in order; absent when it was never retried",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it was retried, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "Why the run had failed",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was restarted at",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "started_at": {
                 "description": "When it started, RFC 3339 UTC",
                 "type": "string"
@@ -3017,6 +3085,10 @@ cmp stdout describe.golden.json
                     "outcome": {
                       "description": "How it ended: pass, fail, timeout, or error when it could not run",
                       "type": "string"
+                    },
+                    "retry": {
+                      "description": "True for the first visit of the step after a retry restarted the run at it",
+                      "type": "boolean"
                     },
                     "session": {
                       "description": "An agent step's session",
@@ -3202,6 +3274,32 @@ cmp stdout describe.golden.json
             "description": "The run ID",
             "type": "string"
           },
+          "retries": {
+            "description": "The retries of the run after it failed, in order; absent when it was never retried",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "at": {
+                  "description": "When it was retried, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "detail": {
+                  "description": "Why the run had failed",
+                  "type": "string"
+                },
+                "step": {
+                  "description": "The step the run was restarted at",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "at",
+                "step"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "started_at": {
             "description": "When it started, RFC 3339 UTC",
             "type": "string"
@@ -3230,6 +3328,10 @@ cmp stdout describe.golden.json
                 "outcome": {
                   "description": "How it ended: pass, fail, timeout, or error when it could not run",
                   "type": "string"
+                },
+                "retry": {
+                  "description": "True for the first visit of the step after a retry restarted the run at it",
+                  "type": "boolean"
                 },
                 "session": {
                   "description": "An agent step's session",
@@ -3281,6 +3383,48 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "Show a run's state and the steps it has done, from its journal",
+      "write": false
+    },
+    {
+      "name": "session.done",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "description": "The session: its full ID or a unique prefix of 4+ characters; default RHIZA_SESSION, which a launched agent has",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "already": {
+            "description": "True if the session had already said done; the first mark stands",
+            "type": "boolean"
+          },
+          "at": {
+            "description": "When the session first said done, RFC 3339 UTC",
+            "type": "string"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "session": {
+            "description": "The session's full ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "at",
+          "session"
+        ],
+        "type": "object"
+      },
+      "summary": "Mark a session's work as done; its agent runs this as its very last action",
       "write": false
     },
     {
@@ -5063,6 +5207,91 @@ cmp stdout describe.golden.json
       },
       "summary": "Squash merge a change set's pull request, pinned to the head whose checks passed",
       "write": false
+    },
+    {
+      "name": "ship.rebase",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "behind": {
+            "description": "True if origin's main had commits the branch did not",
+            "type": "boolean"
+          },
+          "branch": {
+            "description": "The change set's branch",
+            "type": "string"
+          },
+          "change": {
+            "description": "The change set",
+            "type": "string"
+          },
+          "commit": {
+            "description": "The commit of that rendering; empty if it changed nothing",
+            "type": "string"
+          },
+          "conflicts": {
+            "description": "The files that conflicted when the rebase stopped on a conflict outside the rendered files; the rebase was aborted",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "detail": {
+            "description": "Why the rebase stopped; the command exits 1 then",
+            "type": "string"
+          },
+          "onto": {
+            "description": "The commit of origin's main the branch was compared with",
+            "type": "string"
+          },
+          "pushed": {
+            "description": "The rebased head pushed to the PR branch",
+            "type": "string"
+          },
+          "question": {
+            "description": "The handle of the question raised about those conflicts",
+            "type": "string"
+          },
+          "question_change": {
+            "description": "The change set the question was written into: the change set itself, or a record change set when it had already landed",
+            "type": "string"
+          },
+          "rebased": {
+            "description": "True if the branch was rebased onto origin's main",
+            "type": "boolean"
+          },
+          "rendered": {
+            "description": "The rendered files written or removed by rendering after the rebase",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "settled": {
+            "description": "The rendered files whose conflicts were settled by rendering again",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "behind",
+          "branch",
+          "change",
+          "onto",
+          "rebased"
+        ],
+        "type": "object"
+      },
+      "summary": "Rebase a change set's branch onto origin's main when main has moved past it, settling rendered-only conflicts by rendering again, and push it",
+      "write": true
     },
     {
       "name": "show",

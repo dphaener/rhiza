@@ -920,3 +920,245 @@ func TestAgentUntilErrorFailsRun(t *testing.T) {
 		t.Fatalf("result %q steps %+v", st.Result, st.Steps)
 	}
 }
+
+const agentDoneWF = `
+name = "wf"
+[step.build]
+kind = "agent"
+prompt = "build {change}"
+until = "pr-open"
+until_when = "done"
+interval = "2s"
+on.pass = "done"
+`
+
+// A step that waits for done never checks until while the session sits
+// idle, however long; once the agent says done and until holds, it passes
+// and leaves the session open.
+func TestAgentUntilDoneIgnoresIdle(t *testing.T) {
+	e, r, c, _ := setup(t, agentDoneWF)
+	r.agentSeq["S-build"] = []AgentStatus{{Idle: true}, {Idle: true}, {Idle: true}, {Idle: true, SaidDone: true}}
+	r.agentErr["S-build"] = errors.New("polled past the pass")
+	r.holds["build"] = []bool{true}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || r.polls["S-build"] != 4 || r.polls["build"] != 1 || len(c.sleeps) != 3 {
+		t.Fatalf("result %q detail %q polls %v sleeps %v", st.Result, st.Detail, r.polls, c.sleeps)
+	}
+	if got := st.Steps[0].Detail; got != "said done and until held; session left open" {
+		t.Errorf("detail = %q", got)
+	}
+}
+
+// A session that said done but whose until
+// does not hold keeps the step waiting, checking until once per poll.
+func TestAgentUntilDoneKeepsWaitingUntilHolds(t *testing.T) {
+	e, r, _, _ := setup(t, agentDoneWF)
+	r.agentSeq["S-build"] = []AgentStatus{{SaidDone: true}, {SaidDone: true}}
+	r.agentErr["S-build"] = errors.New("polled past the pass")
+	r.holds["build"] = []bool{false, true}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || r.polls["S-build"] != 2 || r.polls["build"] != 2 {
+		t.Fatalf("result %q polls %v", st.Result, r.polls)
+	}
+}
+
+// A session that said done but is blocked on the owner is not passed over.
+func TestAgentUntilDoneNotCheckedWhileBlocked(t *testing.T) {
+	e, r, _, _ := setup(t, agentDoneWF)
+	b := &Block{Kind: "permission"}
+	r.agentSeq["S-build"] = []AgentStatus{{SaidDone: true, Blocked: b}}
+	r.holds["build"] = []bool{true}
+	r.outcome["S-build"] = "fail"
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Failed || r.polls["build"] != 0 {
+		t.Fatalf("result %q polls %v: until was checked while blocked", st.Result, r.polls)
+	}
+}
+
+// When the session of a step that waits for done exits 0, until is
+// checked: the step passes only if it holds. A non-zero exit fails without
+// checking it.
+func TestAgentUntilDoneOnExit(t *testing.T) {
+	for _, tt := range []struct {
+		name    string
+		outcome string
+		holds   []bool
+		result  string
+		detail  string
+		checks  int
+	}{
+		{"exit 0, until holds", "pass", []bool{true}, Succeeded, "exit 0 and until held", 1},
+		{"exit 0, until does not hold", "pass", []bool{false}, Failed, "exit 0 but until did not hold", 1},
+		{"non-zero exit", "fail", []bool{true}, Failed, "exit 0", 0},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			e, r, _, _ := setup(t, agentDoneWF)
+			r.agentSeq["S-build"] = []AgentStatus{{Idle: true}}
+			r.outcome["S-build"] = tt.outcome
+			r.holds["build"] = tt.holds
+			st, err := e.Run(runID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if st.Result != tt.result || st.Steps[0].Detail != tt.detail || r.polls["build"] != tt.checks {
+				t.Fatalf("result %q detail %q polls %v", st.Result, st.Steps[0].Detail, r.polls)
+			}
+		})
+	}
+}
+
+// A step without until_when keeps today's behaviour on exit: exit 0
+// passes without checking until.
+func TestAgentUntilIdleExitSkipsUntil(t *testing.T) {
+	e, r, _, _ := setup(t, agentUntilWF)
+	r.outcome["S-build"] = "pass"
+	r.holds["build"] = []bool{false}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || r.polls["build"] != 0 || st.Steps[0].Detail != "exit 0" {
+		t.Fatalf("result %q detail %q polls %v", st.Result, st.Steps[0].Detail, r.polls)
+	}
+}
+
+// A run whose command step failed is retried at that step: the step runs
+// again and the run succeeds. The journal keeps the failure, then the
+// retried entry, then the new visit.
+func TestRetryRerunsFailedStep(t *testing.T) {
+	e, r, _, _ := setup(t, `
+name = "wf"
+[step.one]
+kind = "command"
+run = "true"
+on.pass = "two"
+
+[step.two]
+kind = "command"
+run = "test -f x"
+on.pass = "done"
+on.fail = "failed"
+`)
+	r.codes["two"] = []int{1, 0}
+	st, err := e.Run(runID)
+	if err != nil || st.Result != Failed {
+		t.Fatalf("first run: %v, %q", err, st.Result)
+	}
+	if _, err := e.Run(runID); !errors.Is(err, ErrFinished) {
+		t.Fatalf("plain resume of a failed run: %v", err)
+	}
+	st, err = e.Retry(runID[:6])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded {
+		t.Fatalf("result after retry = %q (%s)", st.Result, st.Detail)
+	}
+	if r.commands["one"] != 1 || r.commands["two"] != 2 {
+		t.Errorf("commands = %v", r.commands)
+	}
+	if got, want := outcomes(st), []string{"one:pass", "two:fail", "two:pass"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("outcomes = %v, want %v", got, want)
+	}
+	if last := st.Steps[2]; !last.Retried || last.Visit != 2 {
+		t.Errorf("retried visit = %+v", last)
+	}
+	want := []string{
+		"started:one", "entered:one", "ended:one", "entered:two", "ended:two", "finished:two",
+		"retried:two", "entered:two", "ended:two", "finished:two",
+	}
+	if got := entryTypes(t, e); !reflect.DeepEqual(got, want) {
+		t.Errorf("entries = %v\nwant %v", got, want)
+	}
+}
+
+// A run that went over a step's max_visits is retried at that step: the
+// cap counts only visits since the retry, so the step is entered again.
+func TestRetryOverCapStep(t *testing.T) {
+	e, r, _, _ := setup(t, loopWF)
+	r.codes["test"] = []int{1, 1, 0}
+	st, err := e.Run(runID)
+	if err != nil || st.Result != Failed || st.FinishedStep != "build" {
+		t.Fatalf("first run: %v, %+v", err, st)
+	}
+	st, err = e.Retry(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded {
+		t.Fatalf("result after retry = %q (%s)", st.Result, st.Detail)
+	}
+	if r.commands["build"] != 3 || r.commands["test"] != 3 {
+		t.Errorf("commands = %v", r.commands)
+	}
+	if st.Visits["build"] != 3 || st.CapVisits("build") != 1 {
+		t.Errorf("build visits %d, cap visits %d", st.Visits["build"], st.CapVisits("build"))
+	}
+}
+
+// Retrying a run that succeeded is refused and writes nothing.
+func TestRetrySucceededIsErrNotFailed(t *testing.T) {
+	e, r, _, _ := setup(t, cmdWF)
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	before := entryTypes(t, e)
+	_, err := e.Retry(runID)
+	if !errors.Is(err, ErrNotFailed) || !strings.Contains(err.Error(), "only a failed run can be retried") {
+		t.Fatalf("err = %v, want ErrNotFailed", err)
+	}
+	if got := entryTypes(t, e); !reflect.DeepEqual(got, before) {
+		t.Errorf("entries changed: %v", got)
+	}
+	if r.commands["test"] != 1 {
+		t.Errorf("test ran %d times", r.commands["test"])
+	}
+}
+
+// Retry on a run that is not finished runs it as Run does, with no
+// retried entry.
+func TestRetryUnfinishedRunResumes(t *testing.T) {
+	e, r, _, _ := setup(t, waitWF)
+	e.NoWait = true
+	if st, err := e.Run(runID); err != nil || st.Stopped == "" {
+		t.Fatalf("first run: %v, %+v", err, st)
+	}
+	e.NoWait = false
+	r.holds["ci"] = []bool{true}
+	st, err := e.Retry(runID)
+	if err != nil || st.Result != Succeeded {
+		t.Fatalf("retry of a stopped run: %v, %+v", err, st)
+	}
+	if countType(t, e, TypeRetried) != 0 || len(st.Retries) != 0 {
+		t.Errorf("a stopped run was journalled as retried")
+	}
+}
+
+// Decide counts max_visits from the last retry.
+func TestDecideCapSinceRetry(t *testing.T) {
+	def, err := workflow.Parse("wf", []byte(loopWF))
+	if err != nil {
+		t.Fatal(err)
+	}
+	st := State{Current: "build", Visits: map[string]int{"build": 2}, RetryBase: map[string]int{"build": 2}}
+	got, err := Decide(def, st)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := (Action{Kind: ActEnter, Step: "build", Visit: 3}); got != want {
+		t.Fatalf("got %+v, want %+v", got, want)
+	}
+	st.Visits["build"], st.RetryBase["build"] = 4, 2
+	if got, _ := Decide(def, st); got.Kind != ActOverCap || got.Visit != 5 {
+		t.Fatalf("over cap since retry: %+v", got)
+	}
+}

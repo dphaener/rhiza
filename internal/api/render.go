@@ -82,6 +82,9 @@ func runRender(ctx *Ctx, _ any) (any, error) {
 	sets, _ := changeset.FoldLog(st.ReadLog())
 	m, _ := gmodel.AsIs(sets)
 	want := render.Render(m, sets)
+	if v := testRenderStale(ctx); v != "" {
+		want[testStaleFile] = []byte(v + "\n")
+	}
 
 	dir := filepath.Join(ctx.Root, filepath.FromSlash(renderedDir))
 	resp := RenderResponse{Written: []string{}, Removed: []string{}}
@@ -102,6 +105,22 @@ func runRender(ctx *Ctx, _ any) (any, error) {
 		resp.Written = append(resp.Written, renderedDir+"/"+p)
 	}
 	return resp, nil
+}
+
+// testStaleFile is the extra file render writes under the
+// RHIZA_TEST_RENDER_STALE test hook, relative to the rendered folder.
+const testStaleFile = "stale.md"
+
+// testRenderStale is the value of RHIZA_TEST_RENDER_STALE, a test-only
+// hook that makes render write one extra file, stale.md, holding it: a
+// rendering that differs from what check expects, as an older rhiza's
+// would. It applies only alongside RHIZA_TEST_NOW, which only tests set,
+// so render never sees it in normal use; "" (unset) leaves render alone.
+func testRenderStale(ctx *Ctx) string {
+	if ctx.Getenv == nil || ctx.Getenv("RHIZA_TEST_NOW") == "" {
+		return ""
+	}
+	return ctx.Getenv("RHIZA_TEST_RENDER_STALE")
 }
 
 // pruneRendered removes from dir every file not in want, then every folder

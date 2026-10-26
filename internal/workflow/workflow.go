@@ -40,6 +40,17 @@ const (
 	OutcomeTimeout = "timeout"
 )
 
+// When an agent step checks its `until` (the step's until_when).
+const (
+	// UntilWhenIdle checks it whenever the session sits idle at its
+	// prompt. It is the default.
+	UntilWhenIdle = "idle"
+	// UntilWhenDone checks it only once the agent has said its work is
+	// done (`rhiza session done`), or when its session exits 0; idle alone
+	// is not enough.
+	UntilWhenDone = "done"
+)
+
 // DefaultInterval is how often a wait step checks its condition, and an
 // agent step its session, when the step sets no interval.
 const DefaultInterval = 10 * time.Second
@@ -91,6 +102,10 @@ type Step struct {
 	Until string
 	// Timeout is how long a wait step waits for its condition.
 	Timeout time.Duration
+	// UntilWhen is when an agent step with an `until` checks it:
+	// UntilWhenIdle (also when empty) or UntilWhenDone. Empty on other
+	// steps.
+	UntilWhen string
 	// Interval is how often a wait step checks its condition, or an agent
 	// step its session. It is DefaultInterval when the file sets none
 	// (AgentUntilInterval on an agent step with until), and zero on a
@@ -117,6 +132,10 @@ func (s Step) Cap() int {
 	}
 	return 1
 }
+
+// WaitsForDone reports whether the step checks its `until` only once its
+// agent has said done (or exited 0), never on idle alone.
+func (s Step) WaitsForDone() bool { return s.UntilWhen == UntilWhenDone }
 
 // PromptVars are the values an agent step's prompt placeholders take.
 type PromptVars struct {
@@ -197,6 +216,7 @@ type fileStep struct {
 	Kind           string            `toml:"kind"`
 	Run            string            `toml:"run"`
 	Until          string            `toml:"until"`
+	UntilWhen      string            `toml:"until_when"`
 	Timeout        string            `toml:"timeout"`
 	Interval       string            `toml:"interval"`
 	Agent          string            `toml:"agent"`
@@ -329,6 +349,7 @@ func buildStep(name string, fs fileStep) (Step, error) {
 		Kind:           fs.Kind,
 		Run:            fs.Run,
 		Until:          fs.Until,
+		UntilWhen:      fs.UntilWhen,
 		Agent:          fs.Agent,
 		PermissionMode: fs.PermissionMode,
 		Prompt:         fs.Prompt,
@@ -352,6 +373,17 @@ func buildStep(name string, fs fileStep) (Step, error) {
 	}
 	if fs.Until != "" && fs.Kind == KindCommand {
 		return fail("until is only for wait and agent steps; a command step cannot have it")
+	}
+	if fs.UntilWhen != "" {
+		if fs.Kind != KindAgent {
+			return fail("until_when is only for agent steps; a %s step cannot have it", fs.Kind)
+		}
+		if fs.Until == "" {
+			return fail("until_when needs until = \"<shell command>\" on the same step: it says when that condition is checked")
+		}
+		if fs.UntilWhen != UntilWhenIdle && fs.UntilWhen != UntilWhenDone {
+			return fail("until_when %q: want %q (check until whenever the session is idle) or %q (only once the agent says it is done)", fs.UntilWhen, UntilWhenIdle, UntilWhenDone)
+		}
 	}
 	if fs.Timeout != "" && fs.Kind != KindWait {
 		return fail("timeout is only for wait steps; a %s step cannot have it", fs.Kind)

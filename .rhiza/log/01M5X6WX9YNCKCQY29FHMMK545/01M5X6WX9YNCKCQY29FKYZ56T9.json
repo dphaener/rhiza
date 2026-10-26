@@ -1,0 +1,15 @@
+{
+  "actor": "01M5X3T3R521GBX72GMM6J8YZ1",
+  "after": [],
+  "at": "2026-10-26T22:57:01Z",
+  "body": {
+    "intent": "add actor claude-code-eac4d56d-verifier",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M5X6WX9YNCKCQY29FHMMK545",
+  "for": "01M5X3T3R521GBX72GMM6J8YZ1",
+  "id": "01M5X6WX9YNCKCQY29FKYZ56T9",
+  "type": "open",
+  "v": 1
+}

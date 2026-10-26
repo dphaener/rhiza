@@ -143,6 +143,7 @@ Milestone 3 planning, with the owner
 - derived-from [m3-scope](../decision/m3-scope.md)
 - derived-from [m3-change-sets](../decision/m3-change-sets.md)
 - derived-from [budget-timed-alone](../decision/budget-timed-alone.md)
+- derived-from [ship-change-holds-up](../decision/ship-change-holds-up.md)
 
 ## History
 

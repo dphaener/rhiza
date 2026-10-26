@@ -1,0 +1,32 @@
+{
+  "actor": "01M5X6WX5C600DP4NERS5774N9",
+  "after": [
+    "01M5X3GEC1XNWWZZ5REBFBZ202"
+  ],
+  "at": "2026-10-26T22:57:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "go test ./cmd/rhiza -run TestScripts/run-resume-retry -count=1 passed at 35733c1",
+          "statement": "resume --retry restarts a failed run at its failed step.",
+          "status": "verified",
+          "tests": "TestScripts/run-resume-retry"
+        },
+        "handle": "resume-failed-run-tests",
+        "id": "01M5X6XRM1WM0DBX63V740K0BB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5X6XRM1WM0DBX63V4TWK84R",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5X3GBH4ZQTZVXFEHR966747",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5X6XRR7TW2TGEEFBPF16R8S",
+  "type": "ops",
+  "v": 1
+}

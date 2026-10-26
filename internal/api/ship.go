@@ -8,8 +8,9 @@ package api
 //
 // Steps are plain commands, so they pass values to each other through a
 // state file per change set, <git common dir>/rhiza/ship/<change set>.json:
-// ship.check records the PR, its checked head and checks; ship.merge
-// records the merge commit; ship.check --main records main's checks. Like
+// ship.check records the PR, its checked head and checks; ship.rebase
+// records the head it pushed; ship.merge records the merge commit;
+// ship.check --main records main's checks. Like
 // a run's journal it is work-layer state, never committed.
 
 import (
@@ -193,9 +194,11 @@ type shipState struct {
 	Checks      []ShipCheck `json:"checks,omitempty"`
 	MergeCommit string      `json:"merge_commit,omitempty"`
 	Main        []ShipCheck `json:"main,omitempty"`
-	// Pushed is the head ship.land pushed to the PR branch. Until GitHub
-	// reports it as the PR's head, ship.check counts the PR as not
-	// settled, so a wait never passes on the checks of the head before.
+	// Pushed is the head ship.land or ship.rebase pushed to the PR
+	// branch. Until GitHub reports it as the PR's head, ship.check counts
+	// the PR as not settled, so a wait never passes on the checks of the
+	// head before. ship.rebase also clears Head and Checks, so nothing
+	// lands or merges until ship.check records the rebased head's CI.
 	Pushed string `json:"pushed,omitempty"`
 }
 

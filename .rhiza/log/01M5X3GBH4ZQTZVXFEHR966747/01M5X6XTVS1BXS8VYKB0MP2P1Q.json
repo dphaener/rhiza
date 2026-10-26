@@ -1,0 +1,32 @@
+{
+  "actor": "01M5X6WX5C600DP4NERS5774N9",
+  "after": [
+    "01M5X6XTGEBZBXTD0YK0AVN7ZQ"
+  ],
+  "at": "2026-10-26T22:57:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "go test ./cmd/rhiza -run TestScripts/run-ship-change-rebase -count=1 passed at 35733c1",
+          "statement": "Ship rebases a PR that main has moved past, and asks when code conflicts.",
+          "status": "verified",
+          "tests": "TestScripts/run-ship-change-rebase"
+        },
+        "handle": "rebase-when-behind-tests",
+        "id": "01M5X6XTQH9PA705SC2NRDPSQF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5X6XTQH9PA705SC2JRNBPWR",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5X3GBH4ZQTZVXFEHR966747",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5X6XTVS1BXS8VYKB0MP2P1Q",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,84 @@
+# run resume --retry restarts a failed run at the step that failed, once
+# the cause is fixed, and journals the retry. Here step two fails because
+# ../input is missing; a plain resume refuses the finished run (exit 3);
+# after the file is made, resume --retry runs step two again, not step
+# one, and the run succeeds. run status shows the failure and the retry.
+# Steps run in the run's worktree, so ../count and ../input are
+# $WORK/count and $WORK/input.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Retry a failed run' --title 'Run retry' --json
+stdout '"change_set": "[0-9A-Z]{26}"'
+mkdir .rhiza/workflows
+cp ../flaky.toml .rhiza/workflows/flaky.toml
+
+# Step two fails: the input is missing.
+! exec rhiza run start --workflow flaky
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG failed$'
+stdout '^- two \(visit 1\): fail, then end: exit 1$'
+
+# A plain resume refuses the finished run and points at --retry.
+! exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG
+stderr 'run 01M5PWGJC82P7YGZTWYFFZ0VJG is finished: it failed'
+stderr 'next: rhiza run resume --retry 01M5PWGJC82P7YGZTWYFFZ0VJG'
+exec sh -c 'rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG 2>/dev/null; echo exit=$?'
+stdout '^exit=3$'
+
+# A dry run of the retry names the step and writes nothing.
+exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG --retry --dry-run
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG would be retried at step two$'
+stdout 'nothing was written or run'
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG failed$'
+! stdout 'Retries'
+
+# The cause is fixed; the retry reruns step two only, and the run succeeds.
+exec sh -c 'echo > $WORK/input'
+exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG --retry
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
+exec sh -c 'wc -l < $WORK/count'
+stdout '^ *1$'
+
+# The journal shows the failure, then the retry.
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
+stdout '^- one \(visit 1\): pass, then two: exit 0$'
+stdout '^- two \(visit 1\): fail, then end: exit 1$'
+stdout '^- two \(visit 2, retried\): pass, then end: exit 0$'
+stdout '^## Retries$'
+stdout 'retried at two, after: step "two" ended with outcome "fail"$'
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG --json
+stdout '"retries": \['
+stdout '"step": "two"'
+stdout '"retry": true'
+
+# A run that succeeded cannot be retried, and plain resume still refuses it.
+! exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG --retry
+stderr 'run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded: only a failed run can be retried'
+exec sh -c 'rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG --retry 2>/dev/null; echo exit=$?'
+stdout '^exit=3$'
+! exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG
+stderr 'run 01M5PWGJC82P7YGZTWYFFZ0VJG is finished: it succeeded'
+exec sh -c 'wc -l < $WORK/count'
+stdout '^ *1$'
+
+fold-ok
+
+-- flaky.toml --
+name = "flaky"
+
+[step.one]
+kind = "command"
+run = "echo one >> ../count"
+on.pass = "two"
+
+[step.two]
+kind = "command"
+run = "test -f ../input"
+on.pass = "done"
+on.fail = "failed"

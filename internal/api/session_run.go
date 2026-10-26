@@ -199,13 +199,15 @@ func captureAfterRun(ctx *Ctx, rec session.Record, warnings []string) ([]string,
 }
 
 // launchEnv is what the agent's environment gets over the terminal's: the
-// change set, the agent's actor, the actor it acts for and, only when the
-// launch belongs to one, the run. A run the terminal had is removed.
+// change set, the agent's actor, the actor it acts for, the session (so
+// `rhiza session done` needs no argument) and, only when the launch belongs
+// to one, the run. A run the terminal had is removed.
 func launchEnv(rec session.Record) (set, unset []string) {
 	set = []string{
 		envChange + "=" + rec.Change,
 		envActor + "=" + rec.Actor,
 		envFor + "=" + rec.For,
+		envSession + "=" + rec.ID,
 	}
 	if rec.Run != "" {
 		return append(set, envRun+"="+rec.Run), nil

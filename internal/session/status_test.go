@@ -60,3 +60,27 @@ func TestResolveValidState(t *testing.T) {
 		t.Error("napping should be invalid")
 	}
 }
+
+func TestSaidDoneLeavesResolveAlone(t *testing.T) {
+	at := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	r := Record{StartedAt: at, Status: Status{Hook: &Report{State: StateIdle, At: at}}}
+	if r.Status.SaidDone() {
+		t.Fatal("a session that never said done says done")
+	}
+	r.Status.Done = &Report{State: StateDone, At: at.Add(time.Hour)}
+	if !r.Status.SaidDone() {
+		t.Fatal("the done mark is not read")
+	}
+	// The mark does not outrank the live sources, nor the exit.
+	if got, src := Resolve(r); got.State != StateIdle || src != SourceHook {
+		t.Errorf("Resolve with a done mark = %s from %s, want idle from hook", got.State, src)
+	}
+	code := 0
+	r.Status.Exit = &Report{State: StateExited, Code: &code, At: at.Add(2 * time.Hour)}
+	if got, src := Resolve(r); got.State != StateExited || src != SourceExit {
+		t.Errorf("Resolve after the exit = %s from %s, want exited from exit", got.State, src)
+	}
+	if !r.Status.SaidDone() {
+		t.Error("the exit cleared the done mark")
+	}
+}

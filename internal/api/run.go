@@ -2,7 +2,8 @@ package api
 
 // This file holds the run operations: run.start runs a workflow's steps on
 // a change set in the foreground, run.status reports a run from its
-// journal, and run.resume continues a stopped or interrupted run. A run's
+// journal, and run.resume continues a stopped or interrupted run, or with
+// --retry restarts a failed one at the step that failed. A run's
 // journal lives in <git common dir>/rhiza/runs, beside the session
 // records, and is never committed: it is work-layer state, not the model.
 //
@@ -48,7 +49,7 @@ func init() {
 	})
 	register(Operation{
 		Name:     "run.resume",
-		Summary:  "Continue a stopped or interrupted run where its journal left it",
+		Summary:  "Continue a stopped or interrupted run where its journal left it, or retry a failed run at its failed step",
 		Write:    true,
 		Request:  reflect.TypeFor[RunResumeRequest](),
 		Response: reflect.TypeFor[RunResponse](),
@@ -97,6 +98,7 @@ type RunStatusRequest struct {
 type RunResumeRequest struct {
 	Run    string `json:"run" arg:"0" desc:"The run: a full ID or a unique prefix of 4+ characters"`
 	NoWait bool   `json:"no_wait,omitempty" desc:"Stop at a wait step whose condition does not hold yet, instead of waiting"`
+	Retry  bool   `json:"retry,omitempty" flag:"retry" desc:"Restart a failed run at the step that failed, once its cause is fixed; the retry is journalled. A run that succeeded is refused"`
 }
 
 // RunResponse is a run after run.start or run.resume ran it, or in a dry
@@ -104,6 +106,7 @@ type RunResumeRequest struct {
 type RunResponse struct {
 	Run    RunInfo `json:"run" desc:"The run as its journal stands; the command exits 1 when the run failed"`
 	DryRun bool    `json:"dry_run,omitempty" desc:"True if nothing was written or run"`
+	Retry  string  `json:"retry,omitempty" desc:"The step a resume --retry restarted the failed run at, or in a dry run would; absent otherwise"`
 }
 
 // RunInfo is a run folded from its journal.
@@ -120,6 +123,15 @@ type RunInfo struct {
 	StartedAt  string         `json:"started_at" desc:"When it started, RFC 3339 UTC"`
 	Blocked    *RunBlocked    `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
 	Amendments []RunAmendment `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
+	Retries    []RunRetry     `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
+}
+
+// RunRetry is one retry journalled in a run: the run had failed and
+// resume --retry restarted it at a step.
+type RunRetry struct {
+	Step   string `json:"step" desc:"The step the run was restarted at"`
+	Detail string `json:"detail,omitempty" desc:"Why the run had failed"`
+	At     string `json:"at" desc:"When it was retried, RFC 3339 UTC"`
 }
 
 // RunAmendment is one amendment journaled in a run: a step's brief or
@@ -151,6 +163,7 @@ type RunStep struct {
 	Detail  string `json:"detail,omitempty" desc:"What the step reported, such as its exit code"`
 	Session string `json:"session,omitempty" desc:"An agent step's session"`
 	At      string `json:"at" desc:"When it ended, RFC 3339 UTC"`
+	Retry   bool   `json:"retry,omitempty" desc:"True for the first visit of the step after a retry restarted the run at it"`
 }
 
 // ExitCode is 1 when the run failed, else 0.
@@ -207,7 +220,10 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 }
 
 // runRunResume continues a run that is neither finished nor running in
-// another process, with the definition its journal started with.
+// another process, with the definition its journal started with. With
+// Retry it also restarts a failed run at its failed step: the engine
+// appends the retried entry under the run's lock, then runs it. Without
+// Retry a finished run is refused, as is a succeeded one with it.
 func runRunResume(ctx *Ctx, req any) (any, error) {
 	r := req.(RunResumeRequest)
 	ref := strings.TrimSpace(r.Run)
@@ -224,8 +240,20 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	st := j.State()
-	if st.Ended {
-		return nil, Conflictf("run %s is finished: it %s", j.ID, st.Result).WithNext("rhiza run status " + j.ID)
+	retryStep := ""
+	switch {
+	case st.Ended && !r.Retry:
+		next := "rhiza run status " + j.ID
+		if st.Result == run.Failed {
+			next = "rhiza run resume --retry " + j.ID
+		}
+		return nil, Conflictf("run %s is finished: it %s", j.ID, st.Result).WithNext(next)
+	case st.Ended:
+		step, err := st.FailedStep()
+		if err != nil {
+			return nil, Conflictf("run %s %s: only a failed run can be retried", j.ID, st.Result).WithNext("rhiza run status " + j.ID)
+		}
+		retryStep = step
 	}
 	if rs.Live(j.ID) {
 		return nil, Conflictf("run %s is running in another process", j.ID).WithNext("rhiza run status " + j.ID)
@@ -239,13 +267,29 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 	if err := checkAgentSteps(def, st.PermissionMode, st.Agent, "rhiza run status "+j.ID); err != nil {
 		return nil, err
 	}
+	if retryStep != "" {
+		if _, ok := def.Steps[retryStep]; !ok {
+			return nil, Errorf("run %s: step %q is not in workflow %q", j.ID, retryStep, def.Name).WithNext("rhiza run status " + j.ID)
+		}
+	}
 	if ctx.DryRun {
-		return RunResponse{Run: runInfo(st, false, session.NewStore(session.Dir(common))), DryRun: true}, nil
+		if retryStep != "" {
+			// Fold the retried entry the engine would append, without
+			// writing it, to show the run as the retry would leave it.
+			j.Entries = append(j.Entries, run.Entry{Type: run.TypeRetried, At: ctx.Now(), Step: retryStep, Detail: st.Detail})
+			st = j.State()
+		}
+		return RunResponse{Run: runInfo(st, false, session.NewStore(session.Dir(common))), DryRun: true, Retry: retryStep}, nil
 	}
 	if err := canRun(ctx, def); err != nil {
 		return nil, err
 	}
-	return runEngine(ctx, rs, common, j.ID, st.Change, st.Worktree, st.PermissionMode, st.Agent, r.NoWait)
+	resp, err := runEngineRetry(ctx, rs, common, j.ID, st.Change, st.Worktree, st.PermissionMode, st.Agent, r.NoWait, r.Retry)
+	if err != nil {
+		return nil, err
+	}
+	resp.Retry = retryStep
+	return resp, nil
 }
 
 // runRunStatus reports a run from its journal alone.
@@ -479,6 +523,16 @@ func newRunID(ctx *Ctx, rs *run.Store) (string, error) {
 // runEngine runs the run in the foreground until it finishes or stops,
 // and responds with its state.
 func runEngine(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, agent string, noWait bool) (any, error) {
+	resp, err := runEngineRetry(ctx, rs, common, rid, change, worktree, mode, agent, noWait, false)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+// runEngineRetry is runEngine; with retry it runs the engine's Retry, which
+// restarts a failed run at its failed step.
+func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, agent string, noWait, retry bool) (RunResponse, error) {
 	sessions := session.NewStore(session.Dir(common))
 	e := &run.Engine{
 		Store: rs,
@@ -496,12 +550,16 @@ func runEngine(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, age
 	if ctx.Rex != nil {
 		e.Notify = func(n run.Notice) { ctx.Rex.Write(rexNotice(n)) }
 	}
-	st, err := e.Run(rid)
+	run1 := e.Run
+	if retry {
+		run1 = e.Retry
+	}
+	st, err := run1(rid)
 	switch {
-	case errors.Is(err, run.ErrLive), errors.Is(err, run.ErrFinished):
-		return nil, Conflictf("%v", err).WithNext("rhiza run status " + rid)
+	case errors.Is(err, run.ErrLive), errors.Is(err, run.ErrFinished), errors.Is(err, run.ErrNotFailed):
+		return RunResponse{}, Conflictf("%v", err).WithNext("rhiza run status " + rid)
 	case err != nil:
-		return nil, Errorf("run %s: %v", rid, err).WithNext("rhiza run status " + rid)
+		return RunResponse{}, Errorf("run %s: %v", rid, err).WithNext("rhiza run status " + rid)
 	}
 	return RunResponse{Run: runInfo(st, false, sessions)}, nil
 }
@@ -591,7 +649,8 @@ func (r *stepRunner) StartAgent(step workflow.Step, _ []string) (string, error) 
 // AgentStatus reads the session's record: it is done once its process
 // has exited (exit-is-final), with pass for exit 0, else fail. Until then
 // it is blocked while its resolved report is blocked, on that report's
-// kind and detail, in the record's tab, and idle while it resolves to idle.
+// kind and detail, in the record's tab, idle while it resolves to idle,
+// and said done once the record has the agent's done mark (session.done).
 func (r *stepRunner) AgentStatus(sid string) (run.AgentStatus, error) {
 	rec, err := readSession(r.sessions, sid)
 	if err != nil {
@@ -599,7 +658,9 @@ func (r *stepRunner) AgentStatus(sid string) (run.AgentStatus, error) {
 	}
 	if !rec.Status.Exited() {
 		rep, _ := session.Resolve(rec)
-		return run.AgentStatus{Blocked: recordBlock(rec), Idle: rep.State == session.StateIdle}, nil
+		return run.AgentStatus{
+			Blocked: recordBlock(rec), Idle: rep.State == session.StateIdle, SaidDone: rec.Status.SaidDone(),
+		}, nil
 	}
 	x := rec.Status.Exit
 	switch {
@@ -751,8 +812,11 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 	for _, s := range st.Steps {
 		info.Steps = append(info.Steps, RunStep{
 			Step: s.Step, Visit: s.Visit, Outcome: s.Outcome, Next: s.Next, Detail: s.Detail,
-			Session: s.Session, At: rfc3339(s.At),
+			Session: s.Session, At: rfc3339(s.At), Retry: s.Retried,
 		})
+	}
+	for _, rt := range st.Retries {
+		info.Retries = append(info.Retries, RunRetry{Step: rt.Step, Detail: rt.Detail, At: rfc3339(rt.At)})
 	}
 	for _, a := range st.Amendments {
 		info.Amendments = append(info.Amendments, RunAmendment{
@@ -764,6 +828,12 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 
 // Human reports the run, or the plan of a dry run.
 func (r RunResponse) Human(w io.Writer) {
+	if r.DryRun && r.Retry != "" {
+		fmt.Fprintf(w, "Run %s would be retried at step %s\n\n", r.Run.ID, r.Retry)
+		runLines(w, r.Run)
+		fmt.Fprintf(w, "\nThis was a dry run: nothing was written or run.\n")
+		return
+	}
 	if r.DryRun {
 		fmt.Fprintf(w, "Run %s would start\n\n", r.Run.ID)
 		runLines(w, r.Run)
@@ -784,12 +854,26 @@ func (r RunInfo) Human(w io.Writer) {
 			if s.Next != "" {
 				to = s.Next
 			}
-			fmt.Fprintf(w, "- %s (visit %d): %s, then %s", s.Step, s.Visit, s.Outcome, to)
+			retry := ""
+			if s.Retry {
+				retry = ", retried"
+			}
+			fmt.Fprintf(w, "- %s (visit %d%s): %s, then %s", s.Step, s.Visit, retry, s.Outcome, to)
 			if s.Session != "" {
 				fmt.Fprintf(w, ", session %s", s.Session)
 			}
 			if s.Detail != "" {
 				fmt.Fprintf(w, ": %s", s.Detail)
+			}
+			fmt.Fprintf(w, "\n")
+		}
+	}
+	if len(r.Retries) > 0 {
+		fmt.Fprintf(w, "\n## Retries\n\n")
+		for _, rt := range r.Retries {
+			fmt.Fprintf(w, "- %s retried at %s", rt.At, rt.Step)
+			if rt.Detail != "" {
+				fmt.Fprintf(w, ", after: %s", rt.Detail)
 			}
 			fmt.Fprintf(w, "\n")
 		}

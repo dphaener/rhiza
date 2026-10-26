@@ -1,0 +1,18 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-26T21:57:44Z",
+  "body": {
+    "intent": "ship-change that holds up: the agent step passes only when the agent says it is done, land renders with the branch's own build in Rhiza's repo, a PR that main has moved past is rebased, and a failed run can be resumed from the step that failed.",
+    "kind": "intention",
+    "sources": [
+      "01M5WPTJ0WSM5QRW0M2WS7J4E6"
+    ],
+    "title": "ship-change that holds up"
+  },
+  "change_set": "01M5X3GBH4ZQTZVXFEHR966747",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5X3GBH4ZQTZVXFEHVHS7P4Q",
+  "type": "open",
+  "v": 2
+}

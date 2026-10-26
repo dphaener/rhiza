@@ -660,3 +660,81 @@ func TestStepRunnerDirFallsBackToMainCheckout(t *testing.T) {
 		t.Errorf("dir without a worktree = %q; want the main checkout %q", got, main)
 	}
 }
+
+// A failed run is refused by a plain resume, with --retry as the next
+// command; a dry run of --retry writes nothing and names the step; resume
+// --retry reruns the failed step and the run succeeds, the retry shown in
+// its steps and retries. A retry of the succeeded run is a conflict.
+func TestRunResumeRetry(t *testing.T) {
+	f := newSessionFixture(t, "x")
+	newChange(t, f.ctx, `{"intent":"X","title":"X"}`)
+	writeWorkflow(t, f.ctx.Root, "hello", twoCommands)
+	sh := &shStart{codes: map[string]int{"test -f step1.txt": 1}}
+	f.ctx.Start = sh.start
+
+	resp, err := callOp(t, f.ctx, "run.start", `{"workflow":"hello"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	id := resp.(RunResponse).Run.ID
+	_, err = callOp(t, f.ctx, "run.resume", `{"run":"`+id+`"}`)
+	wantExit(t, err, 3)
+	if e := AsError(err); e.Next != "rhiza run resume --retry "+id || !strings.Contains(e.Message, "is finished: it failed") {
+		t.Errorf("refusal = %q, next %q", e.Message, e.Next)
+	}
+
+	f.ctx.DryRun = true
+	resp, err = callOp(t, f.ctx, "run.resume", `{"run":"`+id+`","retry":true}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r := resp.(RunResponse); !r.DryRun || r.Retry != "two" || r.Run.Current != "two" || r.Run.State != runStopped {
+		t.Errorf("dry run = %+v", r)
+	}
+	if !strings.Contains(human(t, resp), "would be retried at step two") {
+		t.Errorf("markdown:\n%s", human(t, resp))
+	}
+	st, err := callOp(t, f.ctx, "run.status", `{"run":"`+id+`"}`)
+	if err != nil || st.(RunInfo).State != run.Failed || len(st.(RunInfo).Retries) != 0 {
+		t.Fatalf("a dry run changed the run: %+v, %v", st, err)
+	}
+	f.ctx.DryRun = false
+
+	sh.codes["test -f step1.txt"] = 0
+	ran := len(sh.programs)
+	resp, err = callOp(t, f.ctx, "run.resume", `{"run":"`+id+`","retry":true}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := resp.(RunResponse)
+	if r.Run.State != run.Succeeded || r.Retry != "two" || r.ExitCode() != 0 {
+		t.Fatalf("retried run = %+v", r)
+	}
+	if got := len(sh.programs) - ran; got != 1 {
+		t.Errorf("retry ran %d programs, want 1 (step two only)", got)
+	}
+	steps := r.Run.Steps
+	if len(steps) != 3 || steps[1].Outcome != "fail" || steps[2].Step != "two" || !steps[2].Retry || steps[2].Visit != 2 {
+		t.Errorf("steps = %+v", steps)
+	}
+	if len(r.Run.Retries) != 1 || r.Run.Retries[0].Step != "two" || !strings.Contains(r.Run.Retries[0].Detail, `step "two"`) {
+		t.Errorf("retries = %+v", r.Run.Retries)
+	}
+	out := human(t, resp)
+	for _, want := range []string{"- two (visit 1): fail, then end", "- two (visit 2, retried): pass, then end", "## Retries", "retried at two"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("markdown lacks %q:\n%s", want, out)
+		}
+	}
+
+	_, err = callOp(t, f.ctx, "run.resume", `{"run":"`+id+`","retry":true}`)
+	wantExit(t, err, 3)
+	if e := AsError(err); !strings.Contains(e.Message, "only a failed run can be retried") {
+		t.Errorf("refusal = %q", e.Message)
+	}
+	_, err = callOp(t, f.ctx, "run.resume", `{"run":"`+id+`"}`)
+	wantExit(t, err, 3)
+	if e := AsError(err); e.Next != "rhiza run status "+id {
+		t.Errorf("next = %q", e.Next)
+	}
+}

@@ -16,6 +16,7 @@ const (
 	TypeBlocked   = "blocked"
 	TypeUnblocked = "unblocked"
 	TypeAmended   = "amended"
+	TypeRetried   = "retried"
 )
 
 // Run results, used in Entry.End and State.Result.
@@ -62,6 +63,7 @@ type Block struct {
 //	stopped:   Step, Detail (why it stopped, e.g. waiting)
 //	finished:  End (succeeded or failed), Detail
 //	amended:   Step, Session, Actor, File (the owner or an agent amended the step's brief)
+//	retried:   Step, Detail (a failed run reopened at Step; Detail is why it had failed)
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -104,6 +106,17 @@ type StepDone struct {
 	Detail  string
 	Session string
 	At      time.Time
+	// Retried is true for the first visit of Step after a retried entry
+	// that reopened the run at it.
+	Retried bool
+}
+
+// Retry is one retried entry: the run had failed (Detail says why) and
+// was reopened at Step.
+type Retry struct {
+	Step   string
+	Detail string
+	At     time.Time
 }
 
 // State is a journal folded.
@@ -142,6 +155,20 @@ type State struct {
 	// Amendments are the amended entries in journal order. An amendment
 	// changes nothing else in the fold.
 	Amendments []Amendment
+	// FinishedStep is the step the finished entry names: the step whose
+	// end finished the run, or the one that went over its max_visits.
+	FinishedStep string
+	// Retries are the retried entries in journal order.
+	Retries []Retry
+	// RetryBase holds each step's Visits as they stood at the run's last
+	// retried entry. Only visits past it count against max_visits, so a
+	// retry gives every step its full cap again; visit numbers still
+	// count from the run's start. Nil until a retry.
+	RetryBase map[string]int
+	// retryNext is the step the last retried entry reopened the run at,
+	// until its next entered entry marks that visit as the retry.
+	retryNext  string
+	retryVisit map[string]int
 }
 
 // State folds the journal.
@@ -169,6 +196,13 @@ func (j Journal) State() State {
 				st.CurrentVisit = st.Visits[e.Step]
 			}
 			st.Stopped = ""
+			if st.retryNext == e.Step {
+				if st.retryVisit == nil {
+					st.retryVisit = map[string]int{}
+				}
+				st.retryVisit[e.Step] = st.CurrentVisit
+			}
+			st.retryNext = ""
 		case TypeSession:
 			st.Session[e.Step] = e.Session
 		case TypeBlocked:
@@ -187,6 +221,7 @@ func (j Journal) State() State {
 			st.Steps = append(st.Steps, StepDone{
 				Step: e.Step, Visit: visit, Outcome: e.Outcome, Next: e.Next,
 				Detail: e.Detail, Session: st.Session[e.Step], At: e.At,
+				Retried: visit > 0 && st.retryVisit[e.Step] == visit,
 			})
 			delete(st.Session, e.Step)
 			if st.BlockedStep == e.Step {
@@ -208,9 +243,54 @@ func (j Journal) State() State {
 			st.Detail = e.Detail
 			st.Current = ""
 			st.CurrentVisit = 0
+			st.FinishedStep = e.Step
+			st.retryNext = ""
+		case TypeRetried:
+			// A retry reopens a finished run at e.Step with no open visit,
+			// so the engine enters it anew. Nothing before it is undone:
+			// the failed steps and the finished entry stay in the history.
+			st.Retries = append(st.Retries, Retry{Step: e.Step, Detail: e.Detail, At: e.At})
+			st.clearBlock()
+			st.Ended = false
+			st.Result = ""
+			st.Detail = ""
+			st.FinishedStep = ""
+			st.Stopped = ""
+			st.Current = e.Step
+			st.CurrentVisit = 0
+			delete(st.Session, e.Step)
+			st.RetryBase = make(map[string]int, len(st.Visits))
+			for step, n := range st.Visits {
+				st.RetryBase[step] = n
+			}
+			st.retryNext = e.Step
 		}
 	}
 	return st
+}
+
+// CapVisits is how many visits of step count against its max_visits: those
+// since the run's last retried entry, or all of them when it has none.
+func (st State) CapVisits(step string) int {
+	return st.Visits[step] - st.RetryBase[step]
+}
+
+// FailedStep is the step a failed run would be retried at: the step its
+// finished entry names, which is the step whose end failed the run or the
+// one that went over its max_visits. Journals whose finished entry names no
+// step fall back to the last ended step. A run that is not finished, or
+// that succeeded, has none and returns ErrNotFailed.
+func (st State) FailedStep() (string, error) {
+	if !st.Ended || st.Result != Failed {
+		return "", ErrNotFailed
+	}
+	if st.FinishedStep != "" {
+		return st.FinishedStep, nil
+	}
+	if n := len(st.Steps); n > 0 {
+		return st.Steps[n-1].Step, nil
+	}
+	return "", ErrNotFailed
 }
 
 func (st *State) clearBlock() {
