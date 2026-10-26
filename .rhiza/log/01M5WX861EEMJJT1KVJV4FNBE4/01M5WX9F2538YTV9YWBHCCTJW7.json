@@ -1,0 +1,59 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5WX9EAT5NNZNZQA2CT34EYR"
+  ],
+  "at": "2026-10-26T20:09:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M5WX8581BMVQVK24D41E19QA",
+        "id": "01M5WX9EH5KWQ8H7MHQ2R8SPX9",
+        "link": "01M5WX9EH5KWQ8H7MHPZE97J4X",
+        "note": "meets this done point",
+        "op": "link.create",
+        "to": "01M5SZHJN88HK361K6ZPP5DCES",
+        "type": "relates-to"
+      },
+      {
+        "decision": null,
+        "from": "01M5WX85FR5KSERNTM6PCXNCX8",
+        "id": "01M5WX9EMVGF9PBBVN9MYRYDVQ",
+        "link": "01M5WX9EMVGF9PBBVN9KEDDM6F",
+        "note": "meets this done point",
+        "op": "link.create",
+        "to": "01M5SZHJQWABTT5TWCFMPTJDEG",
+        "type": "relates-to"
+      },
+      {
+        "decision": null,
+        "from": "01M5WX85QEM204Y4AZ26EAC4NG",
+        "id": "01M5WX9ERKN2C68091A2GW8KA3",
+        "link": "01M5WX9ERKN2C68091A186FB4M",
+        "note": "meets this done point",
+        "op": "link.create",
+        "to": "01M5SZHJTBKSHDRT51QA70KMVJ",
+        "type": "relates-to"
+      },
+      {
+        "fields": {
+          "statement": "How does Evidence show that a done point (an intent under a milestone) is met? verifies goes only from evidence to capability, so milestone 2's done points carry their Evidence through relates-to; should verifies also reach intents, or should done points be capabilities?"
+        },
+        "handle": "done-point-evidence",
+        "id": "01M5WX9EWBEZNXXP56M5DMP3CK",
+        "key": null,
+        "kind": "question",
+        "node": "01M5WX9EWBEZNXXP56M2YMXJZB",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5WX861EEMJJT1KVJV4FNBE4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WX9F2538YTV9YWBHCCTJW7",
+  "type": "ops",
+  "v": 1
+}
