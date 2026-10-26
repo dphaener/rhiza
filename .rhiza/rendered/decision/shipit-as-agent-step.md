@@ -27,7 +27,6 @@ the orchestrator's proposal in the milestone-2 conversation, accepted by the own
 ### In
 
 - decided-by [milestone-2](../intent/anyone-builds/milestone-2.md)
-- decided-by [shipit-agent-step](../capability/rhiza/workflows/built-in-workflows/shipit-agent-step.md)
 
 ## History
 

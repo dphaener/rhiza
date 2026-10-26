@@ -27,8 +27,6 @@ the orchestrator's summary in the founding conversation
 ### In
 
 - decided-by [orchestration](../capability/rhiza/orchestration.md)
-- decided-by [close-out](../capability/rhiza/orchestration/shipping/close-out.md)
-- decided-by [repo-ship-command](../capability/rhiza/orchestration/shipping/repo-ship-command.md)
 
 ## History
 
