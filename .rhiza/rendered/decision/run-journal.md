@@ -25,6 +25,14 @@ the assistant's summary in the founding conversation
 
 - derived-from [founding-conversation](../source/founding-conversation.md)
 
+### In
+
+- decided-by [workflow-runs](../capability/rhiza/workflows/workflow-runs.md)
+- decided-by [run-start](../capability/rhiza/workflows/workflow-runs/run-start.md)
+- decided-by [run-journal-file](../capability/rhiza/workflows/workflow-runs/run-journal-file.md)
+- decided-by [run-status](../capability/rhiza/workflows/workflow-runs/run-status.md)
+- decided-by [run-resume](../capability/rhiza/workflows/workflow-runs/run-resume.md)
+
 ## History
 
 - `01M5SWRGHKJKT6JZY6ZVMQEGWN` Founding record: the Sources, the root intents and constraints, and the founding decisions

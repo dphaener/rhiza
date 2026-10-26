@@ -1,0 +1,10 @@
+name = "unknown-kind"
+
+[step.build]
+kind = "command"
+run = "make"
+on.pass = "repeat"
+
+[step.repeat]
+kind = "loop"
+on.pass = "done"

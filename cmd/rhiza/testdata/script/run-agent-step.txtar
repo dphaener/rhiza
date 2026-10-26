@@ -1,0 +1,160 @@
+# An agent step launches a session through session.start's path (a Rex tab
+# running `rhiza session run <id>`) and takes the agent's exit as its
+# outcome: exit 0 is pass, any other code is fail.
+#
+# The fake rex runs the tab's command (the argv after `--`) synchronously
+# in the window's directory (ignoring its exit, as a real window would), then prints a window; the fake claude exits
+# with the code in $WORK/claude.exit.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Agent steps' --title 'Agent steps' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+
+mkdir .rhiza/workflows
+cp $WORK/passes.toml .rhiza/workflows/passes.toml
+cp $WORK/fails.toml .rhiza/workflows/fails.toml
+
+# A dry run starts nothing.
+exec rhiza run start --workflow passes --permission-mode manual --dry-run
+stdout '^Run \S+ would start$'
+! exists $WORK/rex.log
+
+# A workflow whose agent step has no prompt, or an unknown placeholder, is
+# refused before anything runs.
+cp $WORK/noprompt.toml .rhiza/workflows/noprompt.toml
+! exec rhiza run start --workflow noprompt --permission-mode manual
+stderr 'step "build": an agent step needs prompt = '
+cp $WORK/badplaceholder.toml .rhiza/workflows/badplaceholder.toml
+! exec rhiza run start --workflow badplaceholder --permission-mode manual
+stderr 'step "build": prompt uses unknown placeholder \{branch\}'
+! exists $WORK/rex.log
+
+# The agent exits 0: the step passes and the run succeeds.
+exec sh -c 'rhiza run start --workflow passes --permission-mode manual --json; echo exit=$?'
+stdout '"state": "succeeded"'
+stdout '"outcome": "pass"'
+stdout '"step": "build"'
+stdout '^exit=0$'
+exec rhiza run status --json
+stdout '"session": "[0-9a-f-]{36}"'
+exec rhiza run status
+stdout '^- build \(visit 1\): pass, then end, session [0-9a-f-]{36}: exit 0$'
+
+# The session is the run's, for the step, and it ran in the worktree.
+exec rhiza session ls --json
+stdout -count=1 '"id": "[0-9a-f-]{36}"'
+stdout '"step": "build"'
+stdout '"permission_mode": "manual"'
+exec rhiza session show 158fe87f-5cf4-47e4-a3e9-01a16dc84988
+stdout '^- Run: 01M5PWGJC82P7YGZTWYFFZ0VJG$'
+stdout '^- Step: build$'
+stdout 'exited code 0'
+exec cat $WORK/claude.pwd
+stdout '^'${WORK@R}'/repo\.agent-steps$'
+exec cat $WORK/claude.env
+stdout '^RHIZA_CHANGE=01M5PWGEF85Y185JZ2ZGCNH40N$'
+stdout '^RHIZA_RUN=01M5PWGJC82P7YGZTWYFFZ0VJG$'
+exec cat $WORK/claude.args
+stdout '--permission-mode manual '
+! stdout 'bypass'
+# The step's prompt, its placeholders filled, is Claude Code's positional
+# prompt: the last argument.
+exec cat $WORK/claude.prompt
+cmp stdout $WORK/want.prompt
+exec rhiza session show 158fe87f-5cf4-47e4-a3e9-01a16dc84988 --json
+stdout '"prompt": "Build 01M5PWGEF85Y185JZ2ZGCNH40N \(agent-steps, Agent steps\) in step build of run 01M5PWGJC82P7YGZTWYFFZ0VJG"'
+exec cat $WORK/rex.log
+stdout '^window new repo: Agent steps -c '${WORK@R}'/repo\.agent-steps --json -- '
+
+# The agent exits 2: the step fails and follows on.fail to a command step.
+cp $WORK/code2 $WORK/claude.exit
+exec sh -c 'rhiza run start --workflow fails --permission-mode manual --json; echo exit=$?'
+stdout '"state": "succeeded"'
+stdout '^exit=0$'
+exec rhiza run status
+stdout '^- build \(visit 1\): fail, then recover, session [0-9a-f-]{36}: exit 2$'
+stdout '^- recover \(visit 1\): pass, then end: exit 0$'
+exists $WORK/repo.agent-steps/recovered.txt
+
+# Each session records its own run and step.
+exec rhiza session ls --json
+stdout -count=2 '"step": "build"'
+stdout -count=2 '"permission_mode": "manual"'
+exec rhiza session show f3ff4d45-1e43-47f3-a3b8-01a16dc84d70
+stdout '^- Run: 01M5PWGKBGYFZMTH8Y8AF1G8GN$'
+stdout '^- Step: build$'
+stdout 'exited code 2'
+
+fold-ok
+
+-- code2 --
+2
+-- claude.exit --
+0
+-- want.prompt --
+Build 01M5PWGEF85Y185JZ2ZGCNH40N (agent-steps, Agent steps) in step build of run 01M5PWGJC82P7YGZTWYFFZ0VJG
+-- noprompt.toml --
+name = "noprompt"
+
+[step.build]
+kind = "agent"
+on.pass = "done"
+-- badplaceholder.toml --
+name = "badplaceholder"
+
+[step.build]
+kind = "agent"
+prompt = "Build {branch}"
+on.pass = "done"
+-- passes.toml --
+name = "passes"
+
+[step.build]
+kind = "agent"
+prompt = "Build {change} ({slug}, {title}) in step {step} of run {run}"
+on.pass = "done"
+-- fails.toml --
+name = "fails"
+
+[step.build]
+kind = "agent"
+prompt = "Build {change}"
+on.pass = "done"
+on.fail = "recover"
+
+[step.recover]
+kind = "command"
+run = "touch recovered.txt"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+env > "$WORK/claude.env"
+pwd > "$WORK/claude.pwd"
+echo "$@" > "$WORK/claude.args"
+for a; do last=$a; done
+printf '%s\n' "$last" > "$WORK/claude.prompt"
+exit $(cat "$WORK/claude.exit")

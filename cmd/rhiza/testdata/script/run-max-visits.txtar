@@ -1,0 +1,47 @@
+# A step entered more often than its max_visits fails the run, naming the
+# step and the cap; `run start` then exits 1.
+#
+# `a` passes to `b`; `b` exits 1 and fails back to `a`. b is capped at 2
+# visits, so its third entry fails the run.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Looping' --title 'Looping' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+
+mkdir .rhiza/workflows
+cp $WORK/loop.toml .rhiza/workflows/loop.toml
+
+exec sh -c 'rhiza run start --workflow loop; echo exit=$?'
+stdout '^Run \S+ failed$'
+stdout '^- Detail: .*step "b".*max_visits'
+stdout '^exit=1$'
+stdout '^- b \(visit 2\): fail, then a: exit 1$'
+! stdout '^- b \(visit 3\)'
+
+# The failure is in the journal, and status reports it without failing.
+exec sh -c 'rhiza run status --json; echo exit=$?'
+stdout '"state": "failed"'
+stdout 'max_visits'
+stdout '^exit=0$'
+
+fold-ok
+
+-- loop.toml --
+name = "loop"
+
+[step.a]
+kind = "command"
+run = "true"
+max_visits = 5
+on.pass = "b"
+
+[step.b]
+kind = "command"
+run = "exit 1"
+max_visits = 2
+on.fail = "a"

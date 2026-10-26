@@ -25,6 +25,7 @@ type Record struct {
 	Actor          string    `json:"actor"`
 	For            string    `json:"for"`
 	PermissionMode string    `json:"permission_mode"`
+	Prompt         string    `json:"prompt,omitempty"`
 	Worktree       string    `json:"worktree"`
 	Branch         string    `json:"branch"`
 	Tab            Tab       `json:"tab"`

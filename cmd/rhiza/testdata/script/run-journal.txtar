@@ -1,0 +1,59 @@
+# A run's journal holds an entered and an ended line for every step and a
+# finished line, and the model's log is untouched by the run: the same
+# files with the same bytes in the main checkout, and nothing but the
+# change set's own copy in the run's worktree.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Journal a run' --title 'Run journal' --json
+stdout '"change_set": "[0-9A-Z]{26}"'
+mkdir .rhiza/workflows
+cp ../three.toml .rhiza/workflows/three.toml
+exec sh -c 'find .rhiza/log -type f | sort | xargs cat > $WORK/before-content; find .rhiza/log -type f | sort > $WORK/before-list'
+
+exec rhiza run start --workflow three
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
+
+# Every step has an entered and an ended line; the run has a finished line.
+grep '"type":"started"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+grep '"type":"entered".*"step":"a"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+grep '"type":"ended".*"step":"a".*"outcome":"pass"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+grep '"type":"entered".*"step":"b"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+grep '"type":"ended".*"step":"b".*"outcome":"fail"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+grep '"type":"entered".*"step":"c"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+grep '"type":"ended".*"step":"c".*"outcome":"pass".*"end":"succeeded"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+grep '"type":"finished".*"end":"succeeded"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+
+# The log did not change in the main checkout...
+exec sh -c 'find .rhiza/log -type f | sort | xargs cat > $WORK/after-content; find .rhiza/log -type f | sort > $WORK/after-list'
+cmp $WORK/before-list $WORK/after-list
+cmp $WORK/before-content $WORK/after-content
+
+# ...nor in the run's worktree, which holds only the copy of the change
+# set's log that opening a worktree makes: the same files, the same bytes.
+exec diff -r .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N ../repo.run-journal/.rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N
+exec rhiza run status --json
+stdout '"state": "succeeded"'
+fold-ok
+
+-- three.toml --
+name = "three"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "b"
+
+[step.b]
+kind = "command"
+run = "exit 1"
+on.fail = "c"
+
+[step.c]
+kind = "command"
+run = "true"
+on.pass = "done"

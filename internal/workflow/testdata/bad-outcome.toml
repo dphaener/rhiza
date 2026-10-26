@@ -1,0 +1,6 @@
+name = "bad-outcome"
+
+[step.build]
+kind = "command"
+run = "make"
+on.sucess = "done"

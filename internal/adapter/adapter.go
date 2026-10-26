@@ -75,6 +75,8 @@ type Launch struct {
 	// HookCommand is the argv prefix the agent runs for each hook; the adapter
 	// appends the event name.
 	HookCommand []string
+	// Prompt is the agent's first prompt; empty starts it with none.
+	Prompt string
 }
 
 // HookReport is the status a hook event reports.
