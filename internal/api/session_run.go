@@ -4,7 +4,8 @@ package api
 // and session.hook, the command the agent's hooks run. Together they keep a
 // session's status in its record: run starts the agent, copies the tab's
 // Rex status reports while it runs and records how it exited; hook records
-// what each hook says. Each writes only its own source of the status.
+// what each hook says and, for a session in a run, journals in the run the
+// messages the session sends. Each writes only its own source of the status.
 //
 // Nothing here names an agent: the record names its adapter.
 
@@ -19,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/adapter"
+	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 )
 
@@ -84,10 +86,11 @@ type SessionHookRequest struct {
 // SessionHookResponse says what the hook recorded. Its markdown is empty:
 // an agent may read a hook's output.
 type SessionHookResponse struct {
-	Session  string `json:"session,omitempty" desc:"The session the payload names, if Rhiza launched it"`
-	Recorded bool   `json:"recorded" desc:"Whether the hook report was recorded"`
-	State    string `json:"state,omitempty" enum:"starting,working,idle,blocked,done,error,exited" desc:"The state recorded"`
-	Kind     string `json:"kind,omitempty" desc:"What a blocked session waits for"`
+	Session   string `json:"session,omitempty" desc:"The session the payload names, if Rhiza launched it"`
+	Recorded  bool   `json:"recorded" desc:"Whether the hook report was recorded"`
+	State     string `json:"state,omitempty" enum:"starting,working,idle,blocked,done,error,exited" desc:"The state recorded"`
+	Kind      string `json:"kind,omitempty" desc:"What a blocked session waits for"`
+	Journaled bool   `json:"journaled,omitempty" desc:"Whether a message the session sent was journaled in its run"`
 }
 
 // runSessionRun starts the session's agent in its worktree with this
@@ -361,7 +364,8 @@ func rexStatus(line []byte, block string) (rep session.Report, exited, ok bool) 
 	return rep, false, true
 }
 
-// runSessionHook records the status a hook reports. It never fails: a hook
+// runSessionHook records the status a hook reports and journals a run's
+// messages (see sessionHook). It never fails: a hook
 // that failed would get in the agent's way, so problems go to Ctx.Stderr
 // and the call succeeds. A payload for a session Rhiza did not launch is
 // ignored without a word.
@@ -375,7 +379,10 @@ func runSessionHook(ctx *Ctx, req any) (any, error) {
 }
 
 // sessionHook finds the session the payload names, among every adapter's
-// sessions, and records the report its adapter reads from the payload.
+// sessions, records the report its adapter reads from the payload and, when
+// the session belongs to a run, journals in the run any message the payload
+// says it sent. The message is journaled whether or not the status was
+// recorded, even after the session exited.
 func sessionHook(ctx *Ctx, event string) (SessionHookResponse, error) {
 	var resp SessionHookResponse
 	if event == "" {
@@ -408,29 +415,64 @@ func sessionHook(ctx *Ctx, event string) (SessionHookResponse, error) {
 			continue
 		}
 		resp.Session = rec.ID
-		if !changed {
-			return resp, nil
-		}
-		if !session.ValidState(rep.State) {
-			return resp, fmt.Errorf("%s reported unknown state %q", name, rep.State)
-		}
-		report := session.Report{State: rep.State, Kind: rep.Kind, Detail: rep.Detail, At: ctx.Now().UTC()}
-		recorded := false
-		if _, err := st.Update(rec.ID, func(r *session.Record) {
-			// A hook that arrives after the exit does not revive the session.
-			if !r.Status.Exited() {
-				r.Status.Hook, recorded = &report, true
-			}
-		}); err != nil {
-			return resp, fmt.Errorf("record session %s: %v", rec.ID, err)
-		}
-		if !recorded {
-			return resp, nil
-		}
-		resp.Recorded, resp.State, resp.Kind = true, report.State, report.Kind
-		return resp, nil
+		serr := recordHook(ctx, st, rec, name, rep, changed, &resp)
+		journaled, jerr := journalHookMessage(ctx, a, rec, event, payload)
+		resp.Journaled = journaled
+		return resp, errors.Join(serr, jerr)
 	}
 	return resp, errors.Join(errs...)
+}
+
+// recordHook records the report a hook gave in the session's record and
+// says so in resp. A report that changes nothing, or arrives after the
+// session exited, is not recorded.
+func recordHook(ctx *Ctx, st *session.Store, rec session.Record, name string, rep adapter.HookReport, changed bool, resp *SessionHookResponse) error {
+	if !changed {
+		return nil
+	}
+	if !session.ValidState(rep.State) {
+		return fmt.Errorf("%s reported unknown state %q", name, rep.State)
+	}
+	report := session.Report{State: rep.State, Kind: rep.Kind, Detail: rep.Detail, At: ctx.Now().UTC()}
+	recorded := false
+	if _, err := st.Update(rec.ID, func(r *session.Record) {
+		// A hook that arrives after the exit does not revive the session.
+		if !r.Status.Exited() {
+			r.Status.Hook, recorded = &report, true
+		}
+	}); err != nil {
+		return fmt.Errorf("record session %s: %v", rec.ID, err)
+	}
+	if !recorded {
+		return nil
+	}
+	resp.Recorded, resp.State, resp.Kind = true, report.State, report.Kind
+	return nil
+}
+
+// journalHookMessage appends the message the payload says the session sent
+// to the session's run journal, and reports whether it did. A session in
+// no run journals nothing.
+func journalHookMessage(ctx *Ctx, a adapter.Adapter, rec session.Record, event string, payload []byte) (bool, error) {
+	m, ok, err := a.HookMessage(event, payload)
+	if err != nil {
+		return false, fmt.Errorf("%s: %v", a.Name(), err)
+	}
+	if !ok || rec.Run == "" {
+		return false, nil
+	}
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return false, err
+	}
+	e := run.Entry{
+		Type: run.TypeMessage, At: ctx.Now(), Step: rec.Step, Session: rec.ID, Actor: rec.Actor,
+		To: m.To, Text: m.Text, Summary: m.Summary, Structured: m.Structured,
+	}
+	if err := run.NewStore(run.Dir(common)).Append(rec.Run, e); err != nil {
+		return false, fmt.Errorf("journal the message session %s sent in run %s: %v", rec.ID, rec.Run, err)
+	}
+	return true, nil
 }
 
 // hookSession reads the session with exactly the ID sid. A payload must

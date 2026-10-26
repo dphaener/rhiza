@@ -1,0 +1,125 @@
+# session hook journals the messages a run's sessions send: a SendMessage
+# PostToolUse for a session that belongs to a run appends one message entry
+# to the run's journal, with the sender's step, session and actor, and the
+# hook's status is recorded as for any PostToolUse. A session in no run
+# journals nothing. A journal that cannot be written, or a message that
+# cannot be read, goes to stderr; the hook still exits 0 and records its
+# status. The fake rex opens a window and runs nothing.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Journal messages' --title 'Messages' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+mkdir .rhiza/workflows
+cp ../one.toml .rhiza/workflows/one.toml
+exec rhiza run start --workflow one
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
+
+# A session in the run, on step talk, and one in no run.
+exec rhiza session start --permission-mode manual --run 01M5PWGJC82P7YGZTWYFFZ0VJG --step talk --json
+stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+stdout '"actor": "claude-code-158fe87f"'
+exec rhiza session start --permission-mode manual --step solo --json
+stdout '"id": "f3ff4d45-1e42-4e18-a215-01a16dc84d70"'
+! grep '"type":"message"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+
+# A plain PostToolUse records working and journals nothing.
+stdin $WORK/bash.json
+exec rhiza session hook PostToolUse
+! stdout .
+! stderr .
+exec rhiza session show 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json
+stdout '"source": "hook"'
+stdout '"state": "working"'
+! grep '"type":"message"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+
+# Stop makes it idle, so the next hook's status shows.
+stdin $WORK/stop.json
+exec rhiza session hook Stop
+exec rhiza session show 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json
+stdout '"state": "idle"'
+
+# A SendMessage is journaled once, and records working like any PostToolUse.
+stdin $WORK/send.json
+exec rhiza session hook PostToolUse
+! stdout .
+! stderr .
+grep -count=1 '"type":"message"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+grep '^\{"type":"message","at":"[^"]+","step":"talk","session":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","actor":"claude-code-158fe87f","to":"reviewer","text":"Line one\\nsaid \\"done\\"","summary":"Ready"\}$' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+exec rhiza session show 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json
+stdout '"state": "working"'
+
+# A message that is a JSON object is journaled as its raw JSON, structured.
+stdin $WORK/structured.json
+exec rhiza session hook PostToolUse
+! stderr .
+grep -count=2 '"type":"message"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+grep '"to":"lead","text":"\{\\"verdict\\":\\"pass\\",\\"n\\":2\}","structured":true\}$' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+
+# The same SendMessage from the session in no run: exit 0, no entry, no
+# new journal.
+stdin $WORK/send-solo.json
+exec rhiza session hook PostToolUse
+! stdout .
+! stderr .
+exec ls .git/rhiza/runs
+stdout '^01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl\n$'
+grep -count=2 '"type":"message"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+exec rhiza session show f3ff4d45-1e42-4e18-a215-01a16dc84d70 --json
+stdout '"state": "working"'
+
+# A malformed SendMessage (no to): exit 0, the reason on stderr, no entry,
+# and the status is still recorded.
+stdin $WORK/stop.json
+exec rhiza session hook Stop
+stdin $WORK/no-to.json
+exec rhiza session hook PostToolUse
+! stdout .
+stderr '^rhiza: session hook PostToolUse: '
+grep -count=2 '"type":"message"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+exec rhiza session show 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json
+stdout '"state": "working"'
+
+# A journal that cannot be written: exit 0, the reason on stderr, the
+# journal byte-for-byte unchanged and still readable.
+cp .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl $WORK/journal.before
+chmod 444 .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+stdin $WORK/send.json
+exec rhiza session hook PostToolUse
+! stdout .
+stderr '^rhiza: session hook PostToolUse: .*journal.*01M5PWGJC82P7YGZTWYFFZ0VJG.*permission denied'
+cmp .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl $WORK/journal.before
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG --json
+stdout '"state": "succeeded"'
+chmod 644 .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+
+fold-ok
+
+-- one.toml --
+name = "one"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- bash.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","transcript_path":"/tmp/x.jsonl","cwd":"/tmp/w","hook_event_name":"PostToolUse","tool_name":"Bash","tool_input":{"command":"true"},"tool_response":{"stdout":""},"tool_use_id":"toolu_01B"}
+-- stop.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","transcript_path":"/tmp/x.jsonl","cwd":"/tmp/w","hook_event_name":"Stop"}
+-- send.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","transcript_path":"/tmp/x.jsonl","cwd":"/tmp/w","hook_event_name":"PostToolUse","tool_name":"SendMessage","tool_input":{"to":"reviewer","summary":"Ready","message":"Line one\nsaid \"done\""},"tool_response":{"success":true},"tool_use_id":"toolu_01X"}
+-- structured.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","transcript_path":"/tmp/x.jsonl","cwd":"/tmp/w","hook_event_name":"PostToolUse","tool_name":"SendMessage","tool_input":{"to":"lead","message":{"verdict":"pass","n":2}},"tool_response":{"success":true},"tool_use_id":"toolu_01Y"}
+-- send-solo.json --
+{"session_id":"f3ff4d45-1e42-4e18-a215-01a16dc84d70","transcript_path":"/tmp/x.jsonl","cwd":"/tmp/w","hook_event_name":"PostToolUse","tool_name":"SendMessage","tool_input":{"to":"reviewer","summary":"Ready","message":"Line one\nsaid \"done\""},"tool_response":{"success":true},"tool_use_id":"toolu_01Z"}
+-- no-to.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","transcript_path":"/tmp/x.jsonl","cwd":"/tmp/w","hook_event_name":"PostToolUse","tool_name":"SendMessage","tool_input":{"summary":"Ready","message":"hi"},"tool_response":{"success":true},"tool_use_id":"toolu_01W"}
+-- bin/rex --
+#!/bin/sh
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

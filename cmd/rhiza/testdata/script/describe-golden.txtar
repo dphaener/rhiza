@@ -3443,6 +3443,10 @@ cmp stdout describe.golden.json
       "response": {
         "additionalProperties": false,
         "properties": {
+          "journaled": {
+            "description": "Whether a message the session sent was journaled in its run",
+            "type": "boolean"
+          },
           "kind": {
             "description": "What a blocked session waits for",
             "type": "string"
