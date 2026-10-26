@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-26T20:08:25Z",
+  "body": {
+    "intent": "apply /Users/darinhaener/code/_genesis/orchestrator/m3plan/m2-evidence.json",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M5WX861EEMJJT1KVJV4FNBE4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WX861EEMJJT1KVJXRRJVVY",
+  "type": "open",
+  "v": 1
+}

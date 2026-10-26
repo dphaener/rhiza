@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5WX861EEMJJT1KVJXRRJVVY"
+  ],
+  "at": "2026-10-26T20:08:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "Run succeeded. PR #35 merged as 995e97c pinned to the checked head after 8 checks; main CI green; the worktree, local and remote branch and build tab removed; main fast-forwarded; make install put rhiza 995e97c in ~/bin. No merge, close-out or install was done by hand. The owner asked the orchestrator to start the run and act as arbiter, so the orchestrator, not the owner, answered shipit's questions and gates, only in the run's tab.",
+          "statement": "Milestone 3's first change set (01M5WPTRX1DDQ7, reopening a change set) went from rhiza ready to merged and closed out through rhiza run: run 01M5WQN74NA8ERGJ91M73RCJGQ of ship-change ran build, wait-pr, pr-green, land, wait-landed, landed-green, merge, wait-main, main-green, close-out and ship, each passing."
+        },
+        "handle": "m2-proof-run",
+        "id": "01M5WX8581BMVQVK24D7W7MYEE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WX8581BMVQVK24D41E19QA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WX8581BMVQVK24D41E19QA",
+        "id": "01M5WX85BW662YV77VV0ENRKCN",
+        "link": "01M5WX85BW662YV77VTZYBC99Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJN88HK361K6ZPP5DCES",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PR #26's tests (internal/adapter/claudecode, internal/api/session_interview_test.go) pass on main. Known limit: when someone other than the owner answers in the tab, as the orchestrator did in the proof run, the transcript can't tell, so such answers must be labelled by whoever gives them.",
+          "statement": "Interview answers become Decisions with the right provenance: change set 7 (PR #26, 20fdee5) reads AskUserQuestion results from the session transcript; an answer that is exactly an option label is recorded as the agent's wording picked by the owner, and only other text and notes are quoted as the owner's."
+        },
+        "handle": "m2-interviews-evidence",
+        "id": "01M5WX85FR5KSERNTM6SEZYW3A",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WX85FR5KSERNTM6PCXNCX8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WX85FR5KSERNTM6PCXNCX8",
+        "id": "01M5WX85KFWYFQ54G327WTDN77",
+        "link": "01M5WX85KFWYFQ54G325X24KBN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJQWABTT5TWCFMPTJDEG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "Main CI green at 995e97c and at every milestone-2 merge after PR #28. TestReadBudget prints its timings on every run; on GitHub's runner roadmap and ready take about 7 to 15 ms, timed once no other test package runs (PR #28), against the unchanged 50 ms budget.",
+          "statement": "make check is green, rhiza check included, and reads stay under 50 ms on the 50,000-node model."
+        },
+        "handle": "m2-healthy-evidence",
+        "id": "01M5WX85QEM204Y4AZ26G2HTRT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WX85QEM204Y4AZ26EAC4NG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WX85QEM204Y4AZ26EAC4NG",
+        "id": "01M5WX85VGYM2DTDKHBF5JQQX0",
+        "link": "01M5WX85VGYM2DTDKHBBZ3M6S1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJTBKSHDRT51QA70KMVJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WX861EEMJJT1KVJV4FNBE4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WX862X0H31R0VG4KZ32QPT",
+  "type": "ops",
+  "v": 1
+}
