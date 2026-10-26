@@ -1,0 +1,671 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5WPTJ48HDM08HKV1JD7JNCC"
+  ],
+  "at": "2026-10-26T18:16:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "3",
+          "statement": "Rhiza's own workflows: milestone 4 is planned, built and reviewed by Rhiza, with the owner talking only to Rhiza."
+        },
+        "handle": "milestone-3",
+        "id": "01M5WPTJ9Z4Z1FWZC11TY7AT83",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "op": "node.create",
+        "parent": "01M5SWRH3H0B4390HPAR4X2TJ5"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "id": "01M5WPTJDB88FHBMQK08NKR1QE",
+        "link": "01M5WPTJDB88FHBMQK08AB1ZV0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Milestone 4 is planned by Rhiza's plan workflow."
+        },
+        "handle": "m3-planned-by-rhiza",
+        "id": "01M5WPTJGQMKRRQQR64GYX86MD",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M5WPTJGQMKRRQQR64GX1CHPT",
+        "op": "node.create",
+        "parent": "01M5WPTJ9Z4Z1FWZC11QMCPV2D"
+      },
+      {
+        "fields": {
+          "statement": "Milestone 4's first change sets are built and reviewed by Rhiza's build and review workflows through ship-change, with the owner talking only to Rhiza."
+        },
+        "handle": "m3-built-by-rhiza",
+        "id": "01M5WPTJMNGZ5B846D9GQM0AAS",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M5WPTJMNGZ5B846D9G7EGBYF",
+        "op": "node.create",
+        "parent": "01M5WPTJ9Z4Z1FWZC11QMCPV2D"
+      },
+      {
+        "fields": {
+          "statement": "make check is green, rhiza check included, and read commands stay within their budget."
+        },
+        "handle": "m3-still-healthy",
+        "id": "01M5WPTJRESJ73GBTH6RMDMRGR",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M5WPTJRESJ73GBTH6Q5AS2GW",
+        "op": "node.create",
+        "parent": "01M5WPTJ9Z4Z1FWZC11QMCPV2D"
+      },
+      {
+        "fields": {
+          "quote": "Perfect.",
+          "quote_where": "milestone-3 conversation, topic 1: what milestone 3 is for",
+          "statement": "Milestone 3 is Rhiza's own workflows: plan, build and review, with ship switched over to them. Its done point is that milestone 4 is planned by Rhiza's plan workflow and built by its build and review workflows, with the owner talking only to Rhiza. Orchestration (the daemon, parallel runs, the usage governor) comes after, or is folded in where the workflows need it. Milestone 3 itself is planned the old way once more.",
+          "wording": "the orchestrator's proposal in the milestone-3 conversation, accepted by the owner"
+        },
+        "handle": "m3-rhizas-own-workflows",
+        "id": "01M5WPTJVR4SW4CVDDXYR859QW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WPTJVR4SW4CVDDXV6969Q8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJVR4SW4CVDDXV6969Q8",
+        "id": "01M5WPTJZ24T58K349NBTA2DS7",
+        "link": "01M5WPTJZ24T58K349N9X5MFQP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "id": "01M5WPTK2KKZB0ZT05C8KNQA0E",
+        "link": "01M5WPTK2KKZB0ZT05C5EPX5SX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJVR4SW4CVDDXV6969Q8",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "1. Yes the model is the plan and the state",
+          "quote_where": "milestone-3 conversation, topic 2: the shape of the workflows",
+          "statement": "The model is the plan and the state: Rhiza's workflows keep no plan file and no checkboxes; change sets, leaves with acceptance checks, decisions, questions and Evidence hold the plan and the progress.",
+          "wording": "the orchestrator's proposal in the milestone-3 conversation, accepted by the owner"
+        },
+        "handle": "model-is-plan-and-state",
+        "id": "01M5WPTK5ZNN67QTSAX8HFWZVJ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WPTK5ZNN67QTSAX8A5SVMA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTK5ZNN67QTSAX8A5SVMA",
+        "id": "01M5WPTK9AXAWB190Q7NBJ8D9Q",
+        "link": "01M5WPTK9AXAWB190Q7JJ6AZ4S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "id": "01M5WPTKCSSHV0508J6GT4KX3D",
+        "link": "01M5WPTKCSSHV0508J6D09WAH1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTK5ZNN67QTSAX8A5SVMA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "2. Yes those are the four workflows",
+          "quote_where": "milestone-3 conversation, topic 2",
+          "statement": "Rhiza ships four workflows: plan (interview into the model, plan review, acceptance), build (a change set's leaves as tasks, a builder and an independent verifier per leaf, Evidence as done), review (fresh checkers told only the ID, a critic that can't add findings, capped fix cycles) and ship (ship-change, its agent step running build then review).",
+          "wording": "the orchestrator's proposal in the milestone-3 conversation, accepted by the owner"
+        },
+        "handle": "four-workflows",
+        "id": "01M5WPTKG9YSWM6HVRQT84TW0B",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WPTKG9YSWM6HVRQSFEWMWN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTKG9YSWM6HVRQSFEWMWN",
+        "id": "01M5WPTKKRJVAV8T356JHVEC0Z",
+        "link": "01M5WPTKKRJVAV8T356HV17193",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "id": "01M5WPTKQ9C59AA2CS372399QY",
+        "link": "01M5WPTKQ9C59AA2CS35ERRQEE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTKG9YSWM6HVRQSFEWMWN",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "3. Yes those are perfect, but I do want to have an autonomous mode that skips those gates.",
+          "quote_where": "milestone-3 conversation, topic 2",
+          "statement": "The owner has two gates: accepting the plan's change sets, and signing off before the merge. Rhiza does everything else.",
+          "wording": "the orchestrator's proposal in the milestone-3 conversation, accepted by the owner"
+        },
+        "handle": "two-owner-gates",
+        "id": "01M5WPTKTR8E370K79Z7VG8NJV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WPTKTR8E370K79Z5JAA82H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTKTR8E370K79Z5JAA82H",
+        "id": "01M5WPTKY9JAAE07V38NS2NQMT",
+        "link": "01M5WPTKY9JAAE07V38KSPA1XX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "id": "01M5WPTM1PGERKM8K5ZY3SRM24",
+        "link": "01M5WPTM1PGERKM8K5ZWHW9N50",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTKTR8E370K79Z5JAA82H",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "1. Correct, just as afk does, as described.",
+          "quote_where": "milestone-3 conversation, topic 3",
+          "statement": "Autonomous mode skips the owner's gates and questions, as afk's --autonomous does: each question is decided and recorded as (assumed, would have escalated), each skipped gate with rule autonomous, all reviewable and undoable. It never bypasses agent permissions; bypassing stays limited to machines with trust = \"dedicated\".",
+          "wording": "the owner's own words in the milestone-3 conversation (\"autonomous mode that skips those gates\"), detailed in the orchestrator's wording and confirmed"
+        },
+        "handle": "autonomous-mode",
+        "id": "01M5WPTM52804W6ND2EYWGNAXF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WPTM52804W6ND2EV8CHM5T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTM52804W6ND2EV8CHM5T",
+        "id": "01M5WPTM8B2EM2R8HG7Q13W7Y8",
+        "link": "01M5WPTM8B2EM2R8HG7MTHDVB2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "id": "01M5WPTMBNN1VCJPVJZV5GET4F",
+        "link": "01M5WPTMBNN1VCJPVJZT5TBSG8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTM52804W6ND2EV8CHM5T",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "2. Looks correct!",
+          "quote_where": "milestone-3 conversation, topic 3: the plan workflow",
+          "statement": "The plan workflow is an agent step driven by a plan guide topic, planning a milestone or a single change set straight into the model: facts are looked up, never asked; one topic at a time with a recommendation; picks through AskUserQuestion so they are recorded with the right provenance; parked items as questions; the conversation as a Source with Decisions quoting the owner's typed words; a fresh plan review (missing acceptance, missing provenance, unreal depends-on, scope, contradictions) with a critic and at most 3 rounds; acceptance as the gate.",
+          "wording": "the orchestrator's proposal in the milestone-3 conversation, accepted by the owner"
+        },
+        "handle": "plan-workflow-shape",
+        "id": "01M5WPTMEZF9MZGS5FA99YVYFG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WPTMEZF9MZGS5FA7AEBZFA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTMEZF9MZGS5FA7AEBZFA",
+        "id": "01M5WPTMJ8XZQ4JPRDJY6YHXH2",
+        "link": "01M5WPTMJ8XZQ4JPRDJW7G0W37",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "id": "01M5WPTMNKBWN3J0X1VMG51P1W",
+        "link": "01M5WPTMNKBWN3J0X1VK61DEZR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMEZF9MZGS5FA7AEBZFA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "everything else looks good.",
+          "quote_where": "milestone-3 conversation, topic 4: the build workflow",
+          "statement": "In the build workflow a change set's leaves are the tasks: a leaf is ready when the leaves it depends-on have Evidence; a builder writes code and tests to the leaf's acceptance and a fresh verifier re-runs it and writes the Evidence; a failed check goes back to a builder up to 3 times on stronger models, then the leaf fails, its dependents are skipped and it becomes a question; outside work is a discovered-from change set or a question; one commit per leaf, and the build does not land.",
+          "wording": "the orchestrator's proposal in the milestone-3 conversation, accepted by the owner"
+        },
+        "handle": "build-workflow-shape",
+        "id": "01M5WPTMRWPNYM2AMVSRBZ9G29",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WPTMRWPNYM2AMVSMDREY04",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTMRWPNYM2AMVSMDREY04",
+        "id": "01M5WPTMW78C354MXQ6G3J5FS4",
+        "link": "01M5WPTMW78C354MXQ6EHEDBZN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "id": "01M5WPTMZHVSRJ05NBN10EF58S",
+        "link": "01M5WPTMZHVSRJ05NBMZFDXZC4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMRWPNYM2AMVSMDREY04",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "2. Yes that is correct.",
+          "quote_where": "milestone-3 conversation, topic 4",
+          "statement": "Only a verifier that didn't write a leaf's code writes its Evidence; Evidence names its actor so rhiza can enforce this.",
+          "wording": "the orchestrator's proposal in the milestone-3 conversation, accepted by the owner"
+        },
+        "handle": "verifier-writes-evidence",
+        "id": "01M5WPTN2W3ZB386XFGA7NTQ02",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WPTN2W3ZB386XFG74VKD8B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTN2W3ZB386XFG74VKD8B",
+        "id": "01M5WPTN68VY4XKEM6JWFE2BGK",
+        "link": "01M5WPTN68VY4XKEM6JSR9D0CQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "id": "01M5WPTN9J15T05MFQVS3E2CR0",
+        "link": "01M5WPTN9J15T05MFQVPMT34T1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTN2W3ZB386XFG74VKD8B",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "It doesn't necessarily have to be a sub-agent. With rex it can just be a regular old agent since agents can talk to each other now.",
+          "quote_where": "milestone-3 conversation, topic 4, point 1",
+          "statement": "Builders and verifiers are full agent sessions in Rex, not subagents: each in a pane of the change set's tab, able to talk to each other.",
+          "wording": "the owner's own words in the milestone-3 conversation"
+        },
+        "handle": "full-agent-sessions",
+        "id": "01M5WPTNCV49ARCE8JJH6VDQX9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WPTNCV49ARCE8JJE2GM65B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTNCV49ARCE8JJE2GM65B",
+        "id": "01M5WPTNG6P8C7AW8JR62PK562",
+        "link": "01M5WPTNG6P8C7AW8JR27D3RG7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "id": "01M5WPTNKGCQAQ2NX6ZV1KNT07",
+        "link": "01M5WPTNKGCQAQ2NX6ZR97QCGC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTNCV49ARCE8JJE2GM65B",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "Right now I'm not seeing the benefit of having an LLM conductor, unless possibly we're running in autonomous mode and there need to be decisions made on the larger scale level.",
+          "quote_where": "milestone-3 conversation, topic 4, point 1",
+          "statement": "Rhiza's run engine is the conductor: deterministic and journaled, no LLM conductor; judgment is called in only at decision points.",
+          "wording": "the owner's own words in the milestone-3 conversation"
+        },
+        "handle": "engine-is-conductor",
+        "id": "01M5WPTNPTV7PZ8EGVVA9WBFWD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WPTNPTV7PZ8EGVV8WM6421",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTNPTV7PZ8EGVV8WM6421",
+        "id": "01M5WPTNT3CKC4G6QDKVQBDQJ3",
+        "link": "01M5WPTNT3CKC4G6QDKR12X4R5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "id": "01M5WPTNXCV31QYNPCJ6VGHCDN",
+        "link": "01M5WPTNXCV31QYNPCJ6CG9BHS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTNPTV7PZ8EGVV8WM6421",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "1. I like c, but starting with a and folding in b once the engine has proven itself",
+          "quote_where": "milestone-3 conversation, topic 4, git for parallel leaves",
+          "statement": "Milestone 3 builds leaves in one worktree, builders one at a time and verifiers in parallel; a worktree per leaf with max_parallel is folded in later, once the engine has proven itself.",
+          "wording": "the owner's own words in the milestone-3 conversation, choosing between the orchestrator's options"
+        },
+        "handle": "one-worktree-first",
+        "id": "01M5WPTP0QZZGT2S0XRX2CDSE3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WPTP0QZZGT2S0XRWNR402A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTP0QZZGT2S0XRWNR402A",
+        "id": "01M5WPTP422XZ3C39JVE6CKY6G",
+        "link": "01M5WPTP422XZ3C39JVCCR6T5W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "id": "01M5WPTP7D0ZWF0KMKSQXDD4FX",
+        "link": "01M5WPTP7D0ZWF0KMKSMHQ54QD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTP0QZZGT2S0XRWNR402A",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "2. Freely for sure, with messages recorded so we have a log to fall back on and inspect.",
+          "quote_where": "milestone-3 conversation, topic 4, how sessions talk",
+          "statement": "Sessions in a run message each other freely, and every message is recorded in the run's journal with sender and recipient, as a log to inspect.",
+          "wording": "the owner's own words in the milestone-3 conversation"
+        },
+        "handle": "sessions-talk-freely",
+        "id": "01M5WPTPAR7NQ64KWYSXH9BA6Y",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WPTPAR7NQ64KWYSWKDNQ42",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTPAR7NQ64KWYSWKDNQ42",
+        "id": "01M5WPTPE2JWKJF9K5FH3FKHW8",
+        "link": "01M5WPTPE2JWKJF9K5FF1QEYFE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "id": "01M5WPTPHEXNN1EJ2XFS0F0V5M",
+        "link": "01M5WPTPHEXNN1EJ2XFP2XM6E8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPAR7NQ64KWYSWKDNQ42",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "1. arbiter propsal looks good",
+          "quote_where": "milestone-3 conversation, topic 5",
+          "statement": "The engine calls an arbiter only at decision points (a session's question, a plan contradiction, a leaf failing after 3 tries, work outside the intent). In normal mode these go to the owner; in autonomous mode a fresh arbiter session told only the question's ID decides from slice and why and records (assumed, would have escalated) with its reasoning. One arbiter serves every workflow.",
+          "wording": "the orchestrator's proposal in the milestone-3 conversation, accepted by the owner"
+        },
+        "handle": "arbiter",
+        "id": "01M5WPTPMQ4KMTMGSXG35K1A84",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WPTPMQ4KMTMGSXG178SMBS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTPMQ4KMTMGSXG178SMBS",
+        "id": "01M5WPTPR2MVH1BB6GVA5WDQNZ",
+        "link": "01M5WPTPR2MVH1BB6GV66NJRVH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "id": "01M5WPTPVD1ZJNBZV8YBC14AN8",
+        "link": "01M5WPTPVD1ZJNBZV8YB058PV2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPMQ4KMTMGSXG178SMBS",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "2. review looks good",
+          "quote_where": "milestone-3 conversation, topic 5: the review workflow",
+          "statement": "The review workflow: a fresh session per check told only the change set ID; compliance, quality, hands-on QA with the built binary (fakes alone don't count), scope and model checks; a check fails only on a surviving blocker or major finding, with a critic that can't add findings; fixes routed per leaf, only failed checks re-run, at most 2 cycles, then a question or the arbiter; verdicts in the journal and the PR body; the owner signs off with rhiza run approve, skipped in autonomous mode.",
+          "wording": "the orchestrator's proposal in the milestone-3 conversation, accepted by the owner"
+        },
+        "handle": "review-workflow-shape",
+        "id": "01M5WPTPYRHM3SVDQ7TV1Z578B",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WPTPYRHM3SVDQ7TR70XMNA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTPYRHM3SVDQ7TR70XMNA",
+        "id": "01M5WPTQ25F2CWAJZ3QTPA9PWQ",
+        "link": "01M5WPTQ25F2CWAJZ3QPZF4JQF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "id": "01M5WPTQ5GVE4P4FD5V2FY6PZW",
+        "link": "01M5WPTQ5GVE4P4FD5TYXE56ZN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPYRHM3SVDQ7TR70XMNA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "everything looks good",
+          "quote_where": "milestone-3 conversation, topic 6: what milestone 3 covers",
+          "statement": "Milestone 3 covers the plan, build and review workflows, the arbiter and autonomous mode, session messages logged through a SendMessage hook, ship-change switched over, and three model gaps (depends-on between leaves, Evidence's actor, reopening a change set). Out: a worktree per leaf, the daemon and cross-change-set scheduling, the usage governor (each session's token use is recorded in the journal for it), other adapters and machines, TUI and web, other repos, supersede, intent edit, a reason on withdraw. Reopening a change set is the first change set, run with today's ship-change as milestone 2's proof.",
+          "wording": "the orchestrator's proposal in the milestone-3 conversation, accepted by the owner"
+        },
+        "handle": "m3-scope",
+        "id": "01M5WPTQ8TH17R4YA0Y97NQATF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WPTQ8TH17R4YA0Y81CQN0V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTQ8TH17R4YA0Y81CQN0V",
+        "id": "01M5WPTQC4TETSEN5KB3JF8MV7",
+        "link": "01M5WPTQC4TETSEN5KB2YNH70C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "id": "01M5WPTQFMVJA3PVHVB4P41ZYH",
+        "link": "01M5WPTQFMVJA3PVHVB1S00AVV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTQ8TH17R4YA0Y81CQN0V",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "2. Looks good",
+          "quote_where": "milestone-3 conversation, topic 7: milestone 3 as change sets",
+          "statement": "Milestone 3 is eight change sets serving milestone-3: reopening; leaf dependencies and Evidence's actor; autonomous mode and the arbiter; session messages and token use; the plan workflow; the build workflow; the review workflow; ship-change on Rhiza's workflows. Order 1, then 2, 3, 4, then 5, 6, then 7, then 8. Change set 1 is written in full now, 2 to 5 get leaves from a leaves session, and 6 to 8 get theirs from the plan workflow once 5 lands. The orchestrator writes it for the owner through a PR, the owner accepts with rule owner.",
+          "wording": "the orchestrator's proposal in the milestone-3 conversation, accepted by the owner"
+        },
+        "handle": "m3-change-sets",
+        "id": "01M5WPTQK3XN8XSBKA0MYKNG48",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WPTQK3XN8XSBKA0MFYYR9N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTQK3XN8XSBKA0MFYYR9N",
+        "id": "01M5WPTQPKVGGFBSJGK8Z350H6",
+        "link": "01M5WPTQPKVGGFBSJGK8SS6AQ9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "id": "01M5WPTQSY4KN3ZP7HD8JHTWMM",
+        "link": "01M5WPTQSY4KN3ZP7HD6DWFCFB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTQK3XN8XSBKA0MFYYR9N",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "quote": "Yes accept the test change and merge.",
+          "quote_where": "milestone-3 conversation, on the runner read-speed change set",
+          "statement": "TestReadBudget times the reads only once no other test package is running: same work, same 50 ms budget. On GitHub's runner the reads take about 7 to 15 ms alone; the 30 to 52 ms medians were contention from parallel test packages.",
+          "wording": "the building agent's proposal on PR #28, accepted by the owner"
+        },
+        "handle": "budget-timed-alone",
+        "id": "01M5WPTQX9793RV3HWE4EKZ2SR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WPTQX9793RV3HWE10ZVBDQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTQX9793RV3HWE10ZVBDQ",
+        "id": "01M5WPTR0NMESXGJ47W735E339",
+        "link": "01M5WPTR0NMESXGJ47W64JMY4C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTJ9Z4Z1FWZC11QMCPV2D",
+        "id": "01M5WPTR40EBQJPGTFK4NMS5YE",
+        "link": "01M5WPTR40EBQJPGTFK3KZ7A4Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTQX9793RV3HWE10ZVBDQ",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5WPTHR3EBHDNNH1CFX7A0T0",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WPTR95XX030VGPF7XCF096",
+  "type": "ops",
+  "v": 1
+}

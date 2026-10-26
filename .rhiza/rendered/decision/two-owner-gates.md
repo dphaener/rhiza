@@ -1,0 +1,33 @@
+# two-owner-gates
+
+decision · `01M5WPTKTR8E370K79Z5JAA82H`
+
+## quote
+
+3. Yes those are perfect, but I do want to have an autonomous mode that skips those gates.
+
+## quote_where
+
+milestone-3 conversation, topic 2
+
+## statement
+
+The owner has two gates: accepting the plan's change sets, and signing off before the merge. Rhiza does everything else.
+
+## wording
+
+the orchestrator's proposal in the milestone-3 conversation, accepted by the owner
+
+## Links
+
+### Out
+
+- derived-from [milestone-3-conversation](../source/milestone-3-conversation.md)
+
+### In
+
+- decided-by [milestone-3](../intent/anyone-builds/milestone-3.md)
+
+## History
+
+- `01M5WPTHR3EBHDNNH1CFX7A0T0` Milestone 3 planning record: the conversation, the milestone-3 intent and its done points, and its decisions

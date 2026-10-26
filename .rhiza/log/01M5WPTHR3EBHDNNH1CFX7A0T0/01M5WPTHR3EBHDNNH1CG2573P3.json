@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-26T18:16:07Z",
+  "body": {
+    "intent": "Milestone 3 planning record: the conversation, the milestone-3 intent and its done points, and its decisions",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M5WPTHR3EBHDNNH1CFX7A0T0",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WPTHR3EBHDNNH1CG2573P3",
+  "type": "open",
+  "v": 1
+}
