@@ -522,7 +522,7 @@ func TestSessionRun(t *testing.T) {
 	if !agent.Terminal || agent.Dir != f.worktree {
 		t.Errorf("agent terminal %v, dir %q", agent.Terminal, agent.Dir)
 	}
-	wantEnv := []string{"RHIZA_CHANGE=" + s.Change, "RHIZA_ACTOR=" + s.Actor, "RHIZA_FOR=" + s.For, "RHIZA_RUN=run-1"}
+	wantEnv := []string{"RHIZA_CHANGE=" + s.Change, "RHIZA_ACTOR=" + s.Actor, "RHIZA_FOR=" + s.For, "RHIZA_SESSION=" + s.ID, "RHIZA_RUN=run-1"}
 	if !slices.Equal(agent.Env, wantEnv) || len(agent.Unset) != 0 {
 		t.Errorf("env %v unset %v, want %v", agent.Env, agent.Unset, wantEnv)
 	}
@@ -812,5 +812,97 @@ func TestSessionHook(t *testing.T) {
 	f.ctx.Git = nil
 	if _, errOut = hook(t, f.ctx, "Stop", `{"session_id":"`+s.ID+`"}`); !strings.Contains(errOut, "git") {
 		t.Errorf("stderr %q", errOut)
+	}
+}
+
+func TestSessionDone(t *testing.T) {
+	f, s, _ := runFixture(t, `{"permission_mode":"manual"}`)
+	st := session.NewStore(session.Dir(f.common))
+
+	// Neither an argument nor RHIZA_SESSION names a session: usage.
+	f.ctx.Getenv = func(string) string { return "" }
+	_, err := callOp(t, f.ctx, "session.done", `{}`)
+	if e := AsError(err); e == nil || e.Code != CodeUsage || !strings.Contains(e.Message, "RHIZA_SESSION") || e.Next == "" {
+		t.Fatalf("no session named: %v", err)
+	}
+
+	// A dry run writes nothing.
+	f.ctx.DryRun = true
+	resp, err := callOp(t, f.ctx, "session.done", `{"id":"`+s.ID[:8]+`"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r := resp.(SessionDoneResponse); !r.DryRun || r.Session != s.ID {
+		t.Errorf("dry run %+v", r)
+	}
+	if rec, _ := st.Read(s.ID); rec.Status.SaidDone() {
+		t.Fatal("a dry run marked the session done")
+	}
+	f.ctx.DryRun = false
+
+	// RHIZA_SESSION names it: the mark is recorded, and Resolve is as before.
+	f.ctx.Getenv = func(k string) string {
+		if k == "RHIZA_SESSION" {
+			return s.ID
+		}
+		return ""
+	}
+	resp, err = callOp(t, f.ctx, "session.done", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := resp.(SessionDoneResponse)
+	if r.Session != s.ID || r.Already || r.At == "" {
+		t.Errorf("done %+v", r)
+	}
+	rec, err := st.Read(s.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d := rec.Status.Done; d == nil || d.State != session.StateDone {
+		t.Fatalf("done mark %+v", d)
+	}
+	if rec.Status.Hook != nil || rec.Status.Rex != nil || rec.Status.Exit != nil {
+		t.Errorf("session done wrote another source: %+v", rec.Status)
+	}
+	if out := human(t, r); !strings.Contains(out, "Session "+s.ID+" is done.") {
+		t.Errorf("human %q", out)
+	}
+
+	// Saying it again keeps the first mark.
+	first := *rec.Status.Done
+	resp, err = callOp(t, f.ctx, "session.done", `{"id":"`+s.ID+`"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r := resp.(SessionDoneResponse); !r.Already || r.At != rfc3339(first.At) {
+		t.Errorf("again %+v", r)
+	}
+	if again, _ := st.Read(s.ID); !again.Status.Done.At.Equal(first.At) {
+		t.Errorf("the first mark changed: %+v", again.Status.Done)
+	}
+
+	// An unknown session is not found.
+	_, err = callOp(t, f.ctx, "session.done", `{"id":"ffffffff-ffff"}`)
+	if e := AsError(err); e == nil || e.Code != CodeNotFound {
+		t.Errorf("unknown session: %v", err)
+	}
+}
+
+func TestSessionDoneAfterExit(t *testing.T) {
+	f, s, _ := runFixture(t, `{"permission_mode":"manual"}`)
+	st := session.NewStore(session.Dir(f.common))
+	code := 0
+	if _, err := st.Update(s.ID, func(r *session.Record) {
+		r.Status.Exit = &session.Report{State: session.StateExited, Code: &code}
+	}); err != nil {
+		t.Fatal(err)
+	}
+	_, err := callOp(t, f.ctx, "session.done", `{"id":"`+s.ID+`"}`)
+	if e := AsError(err); e == nil || e.Code != CodeConflict || !strings.Contains(e.Message, "has exited") {
+		t.Fatalf("done after exit: %v", err)
+	}
+	if rec, _ := st.Read(s.ID); rec.Status.SaidDone() {
+		t.Error("a session that exited was marked done")
 	}
 }

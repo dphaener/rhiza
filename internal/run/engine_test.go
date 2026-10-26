@@ -921,6 +921,116 @@ func TestAgentUntilErrorFailsRun(t *testing.T) {
 	}
 }
 
+const agentDoneWF = `
+name = "wf"
+[step.build]
+kind = "agent"
+prompt = "build {change}"
+until = "pr-open"
+until_when = "done"
+interval = "2s"
+on.pass = "done"
+`
+
+// A step that waits for done never checks until while the session sits
+// idle, however long; once the agent says done and until holds, it passes
+// and leaves the session open.
+func TestAgentUntilDoneIgnoresIdle(t *testing.T) {
+	e, r, c, _ := setup(t, agentDoneWF)
+	r.agentSeq["S-build"] = []AgentStatus{{Idle: true}, {Idle: true}, {Idle: true}, {Idle: true, SaidDone: true}}
+	r.agentErr["S-build"] = errors.New("polled past the pass")
+	r.holds["build"] = []bool{true}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || r.polls["S-build"] != 4 || r.polls["build"] != 1 || len(c.sleeps) != 3 {
+		t.Fatalf("result %q detail %q polls %v sleeps %v", st.Result, st.Detail, r.polls, c.sleeps)
+	}
+	if got := st.Steps[0].Detail; got != "said done and until held; session left open" {
+		t.Errorf("detail = %q", got)
+	}
+}
+
+// A session that said done but whose until
+// does not hold keeps the step waiting, checking until once per poll.
+func TestAgentUntilDoneKeepsWaitingUntilHolds(t *testing.T) {
+	e, r, _, _ := setup(t, agentDoneWF)
+	r.agentSeq["S-build"] = []AgentStatus{{SaidDone: true}, {SaidDone: true}}
+	r.agentErr["S-build"] = errors.New("polled past the pass")
+	r.holds["build"] = []bool{false, true}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || r.polls["S-build"] != 2 || r.polls["build"] != 2 {
+		t.Fatalf("result %q polls %v", st.Result, r.polls)
+	}
+}
+
+// A session that said done but is blocked on the owner is not passed over.
+func TestAgentUntilDoneNotCheckedWhileBlocked(t *testing.T) {
+	e, r, _, _ := setup(t, agentDoneWF)
+	b := &Block{Kind: "permission"}
+	r.agentSeq["S-build"] = []AgentStatus{{SaidDone: true, Blocked: b}}
+	r.holds["build"] = []bool{true}
+	r.outcome["S-build"] = "fail"
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Failed || r.polls["build"] != 0 {
+		t.Fatalf("result %q polls %v: until was checked while blocked", st.Result, r.polls)
+	}
+}
+
+// When the session of a step that waits for done exits 0, until is
+// checked: the step passes only if it holds. A non-zero exit fails without
+// checking it.
+func TestAgentUntilDoneOnExit(t *testing.T) {
+	for _, tt := range []struct {
+		name    string
+		outcome string
+		holds   []bool
+		result  string
+		detail  string
+		checks  int
+	}{
+		{"exit 0, until holds", "pass", []bool{true}, Succeeded, "exit 0 and until held", 1},
+		{"exit 0, until does not hold", "pass", []bool{false}, Failed, "exit 0 but until did not hold", 1},
+		{"non-zero exit", "fail", []bool{true}, Failed, "exit 0", 0},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			e, r, _, _ := setup(t, agentDoneWF)
+			r.agentSeq["S-build"] = []AgentStatus{{Idle: true}}
+			r.outcome["S-build"] = tt.outcome
+			r.holds["build"] = tt.holds
+			st, err := e.Run(runID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if st.Result != tt.result || st.Steps[0].Detail != tt.detail || r.polls["build"] != tt.checks {
+				t.Fatalf("result %q detail %q polls %v", st.Result, st.Steps[0].Detail, r.polls)
+			}
+		})
+	}
+}
+
+// A step without until_when keeps today's behaviour on exit: exit 0
+// passes without checking until.
+func TestAgentUntilIdleExitSkipsUntil(t *testing.T) {
+	e, r, _, _ := setup(t, agentUntilWF)
+	r.outcome["S-build"] = "pass"
+	r.holds["build"] = []bool{false}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || r.polls["build"] != 0 || st.Steps[0].Detail != "exit 0" {
+		t.Fatalf("result %q detail %q polls %v", st.Result, st.Steps[0].Detail, r.polls)
+	}
+}
+
 // A run whose command step failed is retried at that step: the step runs
 // again and the run succeeds. The journal keeps the failure, then the
 // retried entry, then the new visit.

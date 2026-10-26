@@ -649,7 +649,8 @@ func (r *stepRunner) StartAgent(step workflow.Step, _ []string) (string, error) 
 // AgentStatus reads the session's record: it is done once its process
 // has exited (exit-is-final), with pass for exit 0, else fail. Until then
 // it is blocked while its resolved report is blocked, on that report's
-// kind and detail, in the record's tab, and idle while it resolves to idle.
+// kind and detail, in the record's tab, idle while it resolves to idle,
+// and said done once the record has the agent's done mark (session.done).
 func (r *stepRunner) AgentStatus(sid string) (run.AgentStatus, error) {
 	rec, err := readSession(r.sessions, sid)
 	if err != nil {
@@ -657,7 +658,9 @@ func (r *stepRunner) AgentStatus(sid string) (run.AgentStatus, error) {
 	}
 	if !rec.Status.Exited() {
 		rep, _ := session.Resolve(rec)
-		return run.AgentStatus{Blocked: recordBlock(rec), Idle: rep.State == session.StateIdle}, nil
+		return run.AgentStatus{
+			Blocked: recordBlock(rec), Idle: rep.State == session.StateIdle, SaidDone: rec.Status.SaidDone(),
+		}, nil
 	}
 	x := rec.Status.Exit
 	switch {

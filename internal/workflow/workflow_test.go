@@ -366,6 +366,12 @@ func TestShipChangeBuiltin(t *testing.T) {
 			t.Errorf("build prompt lacks %q", want)
 		}
 	}
+	if !build.WaitsForDone() {
+		t.Errorf("build until_when = %q; want %q", build.UntilWhen, UntilWhenDone)
+	}
+	if !strings.Contains(build.Prompt, "rhiza session done") {
+		t.Error("build prompt does not tell the agent to run rhiza session done")
+	}
 	want := []string{"build", "wait-pr", "pr-green", "land", "wait-landed", "landed-green", "merge", "wait-main", "main-green", "close-out", "ship"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
@@ -396,5 +402,48 @@ func TestAgentStepUntil(t *testing.T) {
 	}
 	if got := d.Steps["g"].Interval; got != DefaultInterval {
 		t.Errorf("agent step without until: interval = %v, want %v", got, DefaultInterval)
+	}
+}
+
+// until_when says when an agent step checks its until: idle (the default)
+// or done. It is only for agent steps with an until.
+func TestAgentStepUntilWhen(t *testing.T) {
+	src := "[step.g]\nkind = \"agent\"\nprompt = \"go\"\nuntil = \"true\"\n"
+	for _, tt := range []struct {
+		line      string
+		when      string
+		waitsDone bool
+	}{
+		{"", "", false},
+		{"until_when = \"idle\"\n", UntilWhenIdle, false},
+		{"until_when = \"done\"\n", UntilWhenDone, true},
+	} {
+		d, err := Parse("w", []byte(src+tt.line))
+		if err != nil {
+			t.Fatalf("%q: %v", tt.line, err)
+		}
+		g := d.Steps["g"]
+		if g.UntilWhen != tt.when || g.WaitsForDone() != tt.waitsDone {
+			t.Errorf("%q: until_when %q, waits for done %v", tt.line, g.UntilWhen, g.WaitsForDone())
+		}
+	}
+	for _, tt := range []struct {
+		name, src, want string
+	}{
+		{"unknown value", src + "until_when = \"soon\"\n",
+			`step "g": until_when "soon": want "idle" (check until whenever the session is idle) or "done"`},
+		{"no until", "[step.g]\nkind = \"agent\"\nprompt = \"go\"\nuntil_when = \"done\"\n",
+			`step "g": until_when needs until = "<shell command>" on the same step`},
+		{"wait step", "[step.w]\nkind = \"wait\"\nuntil = \"true\"\ntimeout = \"1m\"\nuntil_when = \"done\"\n",
+			`step "w": until_when is only for agent steps; a wait step cannot have it`},
+		{"command step", "[step.a]\nkind = \"command\"\nrun = \"true\"\nuntil_when = \"idle\"\n",
+			`step "a": until_when is only for agent steps; a command step cannot have it`},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Parse("w", []byte(tt.src))
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Errorf("error %v; want %q", err, tt.want)
+			}
+		})
 	}
 }

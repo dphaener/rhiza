@@ -3386,6 +3386,48 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "session.done",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "description": "The session: its full ID or a unique prefix of 4+ characters; default RHIZA_SESSION, which a launched agent has",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "already": {
+            "description": "True if the session had already said done; the first mark stands",
+            "type": "boolean"
+          },
+          "at": {
+            "description": "When the session first said done, RFC 3339 UTC",
+            "type": "string"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "session": {
+            "description": "The session's full ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "at",
+          "session"
+        ],
+        "type": "object"
+      },
+      "summary": "Mark a session's work as done; its agent runs this as its very last action",
+      "write": false
+    },
+    {
       "name": "session.hook",
       "request": {
         "additionalProperties": false,

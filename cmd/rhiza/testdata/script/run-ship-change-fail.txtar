@@ -6,7 +6,8 @@
 # by name: run start with no --workflow runs it instead.
 #
 # The fakes are run-ship-change.txtar's, except that gh reports the test
-# check failed and answers nothing but pr view.
+# check failed and answers nothing but pr view, and the agent says done and
+# exits 0: the build step then passes because the PR is open.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -37,7 +38,7 @@ exec rhiza run status --json
 stdout '"workflow": "ship-change"'
 stdout '"state": "failed"'
 exec rhiza run status
-stdout '^- build \(visit 1\): pass, then wait-pr, session [0-9a-f-]{36}: exit 0$'
+stdout '^- build \(visit 1\): pass, then wait-pr, session [0-9a-f-]{36}: exit 0 and until held$'
 stdout '^- wait-pr \(visit 1\): pass, then pr-green: held after [0-9]+ checks?$'
 stdout '^- pr-green \(visit 1\): fail, then end: exit 1$'
 ! stdout '^- land '
@@ -96,6 +97,7 @@ echo built > feature.txt
 git add feature.txt
 git commit -qm 'Build the feature'
 git push -q -u origin HEAD
+rhiza session done
 -- bin/gh --
 #!/bin/sh
 echo "$@" >> "$WORK/gh.log"

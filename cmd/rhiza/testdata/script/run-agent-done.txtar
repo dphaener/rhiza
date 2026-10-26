@@ -1,0 +1,183 @@
+# An agent step with until_when = "done" waits for the agent to say it is
+# done (`rhiza session done`), never for idle alone: the agent goes idle at
+# its prompt and opens the PR, the step still does not pass and its until
+# is never even checked; once the agent says done, until (the PR is open)
+# is checked and the step passes, leaving the session open.
+#
+# Nothing here reaches GitHub, Rex or Claude Code. origin is a bare repo
+# in $WORK. The fake rex starts the tab's command in the background and
+# returns once the agent is idle; the fake claude commits and pushes the
+# branch (which opens the PR: the fake gh answers open for any branch on
+# origin), reports idle through the Stop hook, waits for $WORK/say.done,
+# then runs `rhiza session done` with no argument (RHIZA_SESSION names its
+# session), and stays open until $WORK/tab.closed. The fake gh logs every
+# call to gh.log, so an until that was checked leaves a line there.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/agent-done.toml .rhiza/workflows/agent-done.toml
+exec rhiza change new 'Say done' --title 'Say done' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability saying-done --field 'statement=Says when it is done'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start'
+exec git push -q -u origin main
+
+# Start the run in the background; wait until the agent is idle (the fake
+# rex then returns and the engine starts polling the session every 100ms),
+# then give the engine many polls.
+exec rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --workflow agent-done --permission-mode manual &
+exec sh -c 'i=0; until [ -f "$WORK/claude.idle" ]; do i=$((i+1)); [ $i -gt 800 ] && exit 1; sleep 0.025; done'
+exec sh -c 'i=0; until grep -q window:w1 "$WORK/rex.done" 2>/dev/null; do i=$((i+1)); [ $i -gt 400 ] && exit 1; sleep 0.025; done'
+exec sleep 1
+
+# The session sits idle at its prompt and the PR is open (the branch is on
+# origin)...
+exec rhiza session ls
+stdout '^- [0-9a-f-]{36} idle \(hook\) '
+exec git -C $WORK/origin.git rev-parse --verify --quiet refs/heads/cs/say-done
+# ...yet the build step has not passed: the run is still at build, no step
+# has ended, and until was never checked (gh was never called).
+exec rhiza run status
+stdout '^Run \S+ running$'
+stdout '^- Current step: build$'
+! stdout '^## Steps$'
+! stdout '^- build \(visit'
+! exists $WORK/gh.log
+! exists $WORK/done.out
+
+# The PR is open: the until would hold if it were checked now.
+exec rhiza ship check --pr-open --change 01M5PWGEF85Y185JZ2ZGCNH40N
+rm $WORK/gh.log
+
+# The agent says done: the step checks until, which holds, and passes.
+exec touch $WORK/say.done
+wait
+stdout '^Run \S+ succeeded$'
+exec cat $WORK/done.out
+stdout '^Session [0-9a-f-]{36} is done\.$'
+exec rhiza run status
+stdout '^Run \S+ succeeded$'
+stdout '^- build \(visit 1\): pass, then end, session [0-9a-f-]{36}: said done and until held; session left open$'
+grep '^pr view cs/say-done --json ' $WORK/gh.log
+
+# Saying done again keeps the first mark.
+exec sh -c 'rhiza session done $(cat $WORK/claude.sid)'
+stdout '^Session [0-9a-f-]{36} already said done at \S+\.$'
+
+# The session was left open; close its tab and it exits. Once it has
+# exited it can no longer say done.
+exec touch $WORK/tab.closed
+exec sh -c 'i=0; until [ -f "$WORK/claude.done" ]; do i=$((i+1)); [ $i -gt 400 ] && exit 1; sleep 0.025; done; cat "$WORK/claude.done"'
+stdout '^tab closed$'
+exec sh -c 'i=0; until rhiza session ls | grep -q " exited (exit) "; do i=$((i+1)); [ $i -gt 400 ] && exit 1; sleep 0.025; done'
+exec sh -c 'rhiza session done $(cat $WORK/claude.sid); echo exit=$?'
+stdout '^exit=3$'
+stderr 'has exited'
+fold-ok
+
+-- agent-done.toml --
+name = "agent-done"
+
+[step.build]
+kind = "agent"
+prompt = "Build {change}, open a PR, and run rhiza session done last"
+until = "rhiza ship check --pr-open"
+until_when = "done"
+interval = "100ms"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+if [ "$1 $2" = "window close" ]; then
+	touch "$WORK/tab.closed"
+	exit 0
+fi
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >"$WORK/tab.out" 2>&1 </dev/null &
+		break
+	fi
+	shift
+done
+i=0
+until [ -f "$WORK/claude.idle" ]; do
+	i=$((i + 1))
+	if [ $i -gt 800 ]; then
+		echo 'fake rex: the agent never went idle' >&2
+		exit 1
+	fi
+	sleep 0.025
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+echo window:w1 > "$WORK/rex.done"
+-- bin/claude --
+#!/bin/sh
+sid=
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
+echo "$sid" > "$WORK/claude.sid"
+echo built > feature.txt
+git add feature.txt
+git commit -qm 'Build the feature'
+git push -q -u origin HEAD
+echo '{"session_id":"'$sid'","hook_event_name":"Stop"}' | rhiza session hook Stop >> "$WORK/hook.out" || exit 8
+touch "$WORK/claude.idle"
+i=0
+until [ -f "$WORK/say.done" ]; do
+	i=$((i + 1))
+	if [ $i -gt 2400 ]; then
+		echo 'never told to say done' > "$WORK/claude.done"
+		exit 9
+	fi
+	sleep 0.025
+done
+rhiza session done >> "$WORK/done.out" 2>&1 || exit 7
+i=0
+until [ -f "$WORK/tab.closed" ]; do
+	i=$((i + 1))
+	if [ $i -gt 2400 ]; then
+		echo 'timed out' > "$WORK/claude.done"
+		exit 9
+	fi
+	sleep 0.025
+done
+echo 'tab closed' > "$WORK/claude.done"
+exit 129
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3"); then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[]}\n' "$head"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

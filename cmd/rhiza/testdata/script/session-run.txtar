@@ -34,7 +34,7 @@ stdout '"actor": "claude-code-158fe87f"'
 exec rhiza session run 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --dry-run
 stdout '^Would run session 158fe87f-5cf3-4ff0-ae50-01a16dc84988 '
 stdout '^- Command: claude --session-id 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --permission-mode manual --settings '
-stdout '^- Environment: RHIZA_CHANGE=01M5PWGEF85Y185JZ2ZGCNH40N RHIZA_ACTOR=claude-code-158fe87f RHIZA_FOR=01M5PWGEF85Y185JZ2Z5MPYCA4 RHIZA_RUN=run-1$'
+stdout '^- Environment: RHIZA_CHANGE=01M5PWGEF85Y185JZ2ZGCNH40N RHIZA_ACTOR=claude-code-158fe87f RHIZA_FOR=01M5PWGEF85Y185JZ2Z5MPYCA4 RHIZA_SESSION=158fe87f-5cf3-4ff0-ae50-01a16dc84988 RHIZA_RUN=run-1$'
 ! exists $WORK/claude.args
 
 # Run it in tab block:b1 of Rex session session:s1: it exits as the agent did.
@@ -57,6 +57,7 @@ stdout '^PWD='${WORK@R}'/repo\.agent-runs$'
 stdout '^RHIZA_CHANGE=01M5PWGEF85Y185JZ2ZGCNH40N$'
 stdout '^RHIZA_ACTOR=claude-code-158fe87f$'
 stdout '^RHIZA_FOR=01M5PWGEF85Y185JZ2Z5MPYCA4$'
+stdout '^RHIZA_SESSION=158fe87f-5cf3-4ff0-ae50-01a16dc84988$'
 stdout '^RHIZA_RUN=run-1$'
 # ...with the recorded session ID and the explicit permission mode
 # (known-session-id, explicit-permission-mode), and hooks calling rhiza.

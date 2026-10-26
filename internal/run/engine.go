@@ -89,6 +89,9 @@ type AgentStatus struct {
 	// Idle is true while the live session sits at its prompt: neither
 	// working nor blocked. It is ignored once Done.
 	Idle bool
+	// SaidDone is true once the agent has said its work is done (its
+	// session's done mark). It is ignored once Done.
+	SaidDone bool
 }
 
 // Notice tells the caller that a run's agent step became blocked on the
@@ -453,9 +456,13 @@ func (r *running) wait(step workflow.Step, env []string) result {
 
 // agent launches the step's session, unless the journal already has one
 // for this visit (a resume), and polls it until it ends. A step with an
-// `until` also passes when a poll finds the session idle at its prompt and
-// the condition holds; the session is left open. The condition is never
-// checked while the session works or is blocked on the owner.
+// `until` also passes when a poll finds the session ready and the
+// condition holds; the session is left open. Ready is idle at its prompt,
+// or, for a step that waits for done (until_when = "done"), that the agent
+// has said its work is done: idle alone is then not enough. The condition
+// is never checked while the session is blocked on the owner. A step that
+// waits for done also checks it when the session exits 0, and passes only
+// if it holds; any other exit fails, as on every agent step.
 func (r *running) agent(step workflow.Step, env []string) (result, error) {
 	session := r.j.State().Session[step.Name]
 	if session == "" {
@@ -493,6 +500,9 @@ func (r *running) agent(step workflow.Step, env []string) (result, error) {
 			if outcome == "" {
 				outcome = workflow.OutcomeFail
 			}
+			if outcome == workflow.OutcomePass && step.Until != "" && step.WaitsForDone() {
+				return r.exitedUntil(step, env, status.Detail), nil
+			}
 			return result{outcome: outcome, detail: status.Detail}, nil
 		}
 		if status.Blocked != nil {
@@ -503,17 +513,45 @@ func (r *running) agent(step workflow.Step, env []string) (result, error) {
 		if err != nil {
 			return result{}, err
 		}
-		if step.Until != "" && status.Idle && status.Blocked == nil {
+		if ready, why := readyForUntil(step, status); ready {
 			held, err := r.e.Runner.Holds(step, env)
 			if err != nil {
 				return errResult(err), nil
 			}
 			if held {
-				return result{outcome: workflow.OutcomePass, detail: "idle and until held; session left open"}, nil
+				return result{outcome: workflow.OutcomePass, detail: why + " and until held; session left open"}, nil
 			}
 		}
 		c.Sleep(interval)
 	}
+}
+
+// readyForUntil reports whether a live session's poll lets the step check
+// its `until`, and why: never without an `until` or while blocked; for a
+// step that waits for done, only once the agent said done; otherwise
+// whenever the session is idle.
+func readyForUntil(step workflow.Step, status AgentStatus) (bool, string) {
+	switch {
+	case step.Until == "" || status.Blocked != nil:
+		return false, ""
+	case step.WaitsForDone():
+		return status.SaidDone, "said done"
+	default:
+		return status.Idle, "idle"
+	}
+}
+
+// exitedUntil is the outcome of a step that waits for done when its
+// session exited 0 (detail): pass if its `until` holds, else fail.
+func (r *running) exitedUntil(step workflow.Step, env []string, detail string) result {
+	held, err := r.e.Runner.Holds(step, env)
+	if err != nil {
+		return errResult(err)
+	}
+	if held {
+		return result{outcome: workflow.OutcomePass, detail: detail + " and until held"}
+	}
+	return result{outcome: workflow.OutcomeFail, detail: detail + " but until did not hold"}
 }
 
 // blockedOn reports whether the journal shows session blocked.
