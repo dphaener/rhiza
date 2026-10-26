@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5TS2DZ73CEWED8H5HVNSF40"
+  ],
+  "at": "2026-10-26T00:16:55Z",
+  "body": {
+    "reason": "The owner, in the milestone-2 conversation: \"All of them, let's go\"",
+    "rule": "owner"
+  },
+  "change_set": "01M5TS2C87Z5G8HX2AWAVSGGQN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5TS2FERNQPC5TAHZ63V65KP",
+  "type": "accept",
+  "v": 1
+}

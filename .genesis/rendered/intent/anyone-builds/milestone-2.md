@@ -27,6 +27,8 @@ Genesis runs the work: milestone 3 is built with Genesis orchestrating, not an o
 - decided-by [m2-plan-authorship](../../decision/m2-plan-authorship.md)
 - decided-by [propose-intent-only](../../decision/propose-intent-only.md)
 - decided-by [m2cs2-milestone-field](../../decision/m2cs2-milestone-field.md)
+- decided-by [carving-keeps-ids](../../decision/carving-keeps-ids.md)
+- decided-by [carve-is-change-set-9](../../decision/carve-is-change-set-9.md)
 - derived-from [milestone-2-conversation](../../source/milestone-2-conversation.md)
 
 ### In

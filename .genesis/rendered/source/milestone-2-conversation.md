@@ -40,17 +40,27 @@ source · `01M5SZHJ8S6TDVVJGKSMZGC3SG`
     "by": "owner",
     "text": "Let's go with a, and yes you have my approval.",
     "where": "milestone-2 conversation, after the rehearsal: proposing the drafts, and the go-ahead"
+  },
+  {
+    "by": "owner",
+    "text": "Ok let's add the recommended change set",
+    "where": "milestone-2 conversation, after carving was found not to work as decided"
+  },
+  {
+    "by": "owner",
+    "text": "All of them, let's go",
+    "where": "milestone-2 conversation, topic 6: carving that keeps IDs"
   }
 ]
 ```
 
 ## raw_sha256
 
-5ac1af81b41639a3905090d212c486cad28d05bad8f59bc824e3ee8a88b442cf
+8375751ac3ae19bf0a4bfa4367828337a345edbce7a1307c3ecf0216c4e98a3e
 
 ## summary
 
-The owner and the orchestrator (Claude Code in Rex) planned milestone 2 inside Genesis on 2026-10-25, right after milestone 1's import. Decided: milestone 2 is "Genesis runs the work" (layers 3–4), so milestone 3 is built with Genesis orchestrating; milestone 2 is an intent its change sets serve, with done points as child intents verified by Evidence; depends-on means only "can't start before", so the area chain is retired and the areas become a backlog; milestone work is carved out of the area bundles; a write sees the change sets it depends on, change sets land in dependency order, dropped dependencies and cycles are reported, rebasing stays manual; the scope (Claude Code adapter, runs with a built-in ship-change workflow, messages to a running step, interview answers as Decisions, blocked runs that tell the owner) and what is out; shipit stays the agent step; eight change sets, with 1, 2 and 7 written in full first and 3, 4, 5 and 8 proposed with intent only; the owner gave the go-ahead to accept 1, 2 and 7. Every answer was the owner accepting the orchestrator's proposal; the proposals' wording is the orchestrator's.
+The owner and the orchestrator (Claude Code in Rex) planned milestone 2 inside Genesis on 2026-10-25, right after milestone 1's import. Decided: milestone 2 is "Genesis runs the work" (layers 3–4), so milestone 3 is built with Genesis orchestrating; milestone 2 is an intent its change sets serve, with done points as child intents verified by Evidence; depends-on means only "can't start before", so the area chain is retired and the areas become a backlog; milestone work is carved out of the area bundles; a write sees the change sets it depends on, change sets land in dependency order, dropped dependencies and cycles are reported, rebasing stays manual; the scope (Claude Code adapter, runs with a built-in ship-change workflow, messages to a running step, interview answers as Decisions, blocked runs that tell the owner) and what is out; shipit stays the agent step; eight change sets, with 1, 2 and 7 written in full first and 3, 4, 5 and 8 proposed with intent only; the owner gave the go-ahead to accept 1, 2 and 7. Every answer was the owner accepting the orchestrator's proposal; the proposals' wording is the orchestrator's. Later: carving as decided couldn't be done with today's Genesis (re-creating a bundle's node changes its ID), so the owner added change set 9, carving that keeps IDs: carve by node, two entries with the same node and link IDs, the source made to depend on the target, its rules, and 3, 4, 5 and 8 depending on it.
 
 ## title
 
@@ -81,7 +91,14 @@ Milestone 2 planning, with the owner
 - derived-from [m2-plan-authorship](../decision/m2-plan-authorship.md)
 - derived-from [propose-intent-only](../decision/propose-intent-only.md)
 - derived-from change set `01M5SWTT2A55K0REHQ6JNJQZ6W` (Writes see the accepted, unlanded change sets they depend on, so a sequence of change sets can build on each other. This is the gap behind the built/intended split and milestone 2's most important item.)
+- derived-from [carving-keeps-ids](../decision/carving-keeps-ids.md)
+- derived-from [carve-by-node](../decision/carve-by-node.md)
+- derived-from [carve-two-entries](../decision/carve-two-entries.md)
+- derived-from [carve-adds-dependency](../decision/carve-adds-dependency.md)
+- derived-from [carve-rules](../decision/carve-rules.md)
+- derived-from [carve-is-change-set-9](../decision/carve-is-change-set-9.md)
 
 ## History
 
 - `01M5SZHJ4AECQ3Z6PE60XFQZP6` Milestone 2 planning record: the conversation, the milestone-2 intent and its done points, and its decisions
+- `01M5TS2AA3FSV9JC3HA19Y5MJ8` Milestone 2 planning record, part 2: carving that keeps IDs

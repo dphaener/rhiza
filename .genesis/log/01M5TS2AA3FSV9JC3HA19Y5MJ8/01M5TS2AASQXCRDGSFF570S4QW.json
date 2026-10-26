@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-26T00:16:50Z",
+  "body": {
+    "intent": "Milestone 2 planning record, part 2: carving that keeps IDs",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M5TS2AA3FSV9JC3HA19Y5MJ8",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5TS2AASQXCRDGSFF570S4QW",
+  "type": "open",
+  "v": 1
+}
