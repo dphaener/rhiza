@@ -2412,6 +2412,88 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "session.interview",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "description": "The session: its full ID or a unique prefix of 4+ characters",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change": {
+            "description": "The session's change set, which the Decisions go into",
+            "type": "string"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "proposed": {
+            "description": "The Decisions proposed, in transcript order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "handle": {
+                  "description": "The Decision's handle: answer-<first 8 characters of the session ID>-<position in the transcript>",
+                  "type": "string"
+                },
+                "picked": {
+                  "description": "The agent's option labels the owner picked, verbatim",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "question": {
+                  "description": "The question the agent asked, verbatim",
+                  "type": "string"
+                },
+                "typed": {
+                  "description": "The text the owner typed, verbatim",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "handle",
+                "question"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "session": {
+            "description": "The session ID",
+            "type": "string"
+          },
+          "skipped": {
+            "description": "Handles of answers already proposed in the change set, left alone",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "change",
+          "proposed",
+          "session",
+          "skipped"
+        ],
+        "type": "object"
+      },
+      "summary": "Propose a Decision for each question the session's agent asked and the owner answered",
+      "write": true
+    },
+    {
       "name": "session.ls",
       "request": {
         "additionalProperties": false,
@@ -2571,6 +2653,13 @@ cmp stdout describe.golden.json
           "code": {
             "description": "The agent's exit code, which is also this command's; 128 plus the signal number if a signal ended it",
             "type": "integer"
+          },
+          "decisions": {
+            "description": "Handles of the Decisions proposed from the questions the owner answered (see session.interview)",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "dry_run": {
             "description": "True if nothing was started or written",
@@ -2863,7 +2952,7 @@ cmp stdout describe.golden.json
             "type": "object"
           },
           "warnings": {
-            "description": "Status reports that could not be copied while the agent ran",
+            "description": "Status reports that could not be copied while the agent ran, and a failed capture of the owner's answers",
             "items": {
               "type": "string"
             },

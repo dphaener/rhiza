@@ -1,0 +1,30 @@
+{
+  "actor": "01M5WE3WT7VCAVK9YAE0AWYRRB",
+  "after": [
+    "01M5WE4KZHNJQA9WM4MC85MXK5"
+  ],
+  "at": "2026-10-26T15:44:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Each proposed Decision has handle answer-<sid8>-<n> and fields statement, question, session, options, picked plus wording for picked, quote plus quote_where for typed, and notes_quote.",
+          "wording": "the building agent's choice in change set 7, no owner input"
+        },
+        "handle": "interview-decision-fields",
+        "id": "01M5WE45VJEWMD3D9SFQAK73W9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WE45VJEWMD3D9SFM8PETCM",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5SZJ2B3PSDRVX736ZQX0CAZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WE4M99KRT86SBZ946YN4A7",
+  "type": "ops",
+  "v": 1
+}

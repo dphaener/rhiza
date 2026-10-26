@@ -6,10 +6,12 @@
 # files, so session show needs no Rex.
 #
 # The fake agent logs its environment and argv, waits until the session
-# records the Rex report (so no two writers race), runs two hooks and exits
-# 3. The fake rex opens a window for `window new` and, for `events`, prints
+# records the Rex report (so no two writers race), runs two hooks, writes a
+# transcript with one answered question and exits 3. session run then
+# proposes that answer as a Decision. The fake rex opens a window for `window new` and, for `events`, prints
 # a status report for another block, then one for block:b1, and exits.
 
+mkdir $HOME/.claude/projects/p
 cp rex.bak bin/rex
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -42,6 +44,7 @@ exec sh -c 'rhiza session run 158fe87f-5cf3-4ff0-ae50-01a16dc84988; echo exit=$?
 stdout '^Session 158fe87f-5cf3-4ff0-ae50-01a16dc84988 ended: the agent exited with code 3\.$'
 stdout '^exit=3$'
 ! stdout 'Warning'
+stdout '^- Proposed decision answer-158fe87f-1$'
 env REX_BLOCK=
 env REX_SESSION=
 
@@ -180,6 +183,9 @@ if [ -n "$REX_BLOCK" ]; then
 		sleep 0.05
 	done
 fi
+cp "$WORK/answer.jsonl" "$HOME/.claude/projects/p/$sid.jsonl"
 echo '{"session_id":"'$sid'","hook_event_name":"SessionStart","source":"startup"}' | rhiza session hook SessionStart >> "$WORK/hook.out" || exit 8
 echo '{"session_id":"'$sid'","hook_event_name":"Notification","notification_type":"permission_prompt","message":"Claude needs your permission to use Bash"}' | rhiza session hook Notification >> "$WORK/hook.out" || exit 8
 exit 3
+-- answer.jsonl --
+{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_1","content":"answered"}]},"toolUseResult":{"questions":[{"question":"Which colour?","header":"Colour","multiSelect":false,"options":[{"label":"Red","description":"d"},{"label":"Blue","description":"d"}]}],"answers":{"Which colour?":"Blue"},"annotations":{}}}

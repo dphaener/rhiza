@@ -1,0 +1,30 @@
+{
+  "actor": "01M5WE3WT7VCAVK9YAE0AWYRRB",
+  "after": [
+    "01M5WE46BJC5S4V9NXQKAE76TK"
+  ],
+  "at": "2026-10-26T15:44:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Capture runs when session run sees the agent exit, and as rhiza session interview; runs can call it after their agent step.",
+          "wording": "the building agent's choice in change set 7, no owner input"
+        },
+        "handle": "interview-on-session-exit",
+        "id": "01M5WE45ME1M2R7HJKAMD0SHZ0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WE45ME1M2R7HJKAGXGRXWW",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5SZJ2B3PSDRVX736ZQX0CAZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WE4KZHNJQA9WM4MC85MXK5",
+  "type": "ops",
+  "v": 1
+}

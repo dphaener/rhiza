@@ -64,12 +64,13 @@ type SessionRunRequest struct {
 // SessionRunResponse is how the agent ended, or in a dry run what would
 // start.
 type SessionRunResponse struct {
-	Session  SessionInfo `json:"session" desc:"The session as recorded after the agent ended"`
-	Argv     []string    `json:"argv" desc:"The agent's command"`
-	Env      []string    `json:"env" desc:"The variables set over this terminal's environment for the agent"`
-	Code     int         `json:"code" desc:"The agent's exit code, which is also this command's; 128 plus the signal number if a signal ended it"`
-	Warnings []string    `json:"warnings,omitempty" desc:"Status reports that could not be copied while the agent ran"`
-	DryRun   bool        `json:"dry_run,omitempty" desc:"True if nothing was started or written"`
+	Session   SessionInfo `json:"session" desc:"The session as recorded after the agent ended"`
+	Argv      []string    `json:"argv" desc:"The agent's command"`
+	Env       []string    `json:"env" desc:"The variables set over this terminal's environment for the agent"`
+	Code      int         `json:"code" desc:"The agent's exit code, which is also this command's; 128 plus the signal number if a signal ended it"`
+	Decisions []string    `json:"decisions,omitempty" desc:"Handles of the Decisions proposed from the questions the owner answered (see session.interview)"`
+	Warnings  []string    `json:"warnings,omitempty" desc:"Status reports that could not be copied while the agent ran, and a failed capture of the owner's answers"`
+	DryRun    bool        `json:"dry_run,omitempty" desc:"True if nothing was started or written"`
 }
 
 // ExitCode is the agent's exit code.
@@ -92,7 +93,9 @@ type SessionHookResponse struct {
 // runSessionRun starts the session's agent in its worktree with this
 // terminal, its environment stamped with the change set, actor, for-actor
 // and run; copies this tab's Rex status reports while the agent runs; and
-// records the exit. It returns the agent's exit code as its own.
+// records the exit; then proposes a Decision for each question the owner
+// answered (see captureInterview). It returns the agent's exit code as its
+// own: a capture that fails is only a warning.
 func runSessionRun(ctx *Ctx, req any) (any, error) {
 	r := req.(SessionRunRequest)
 	ref := strings.TrimSpace(r.ID)
@@ -163,10 +166,35 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 	})
 	if err != nil {
 		resp.Warnings = append(resp.Warnings, fmt.Sprintf("record the exit: %v", err))
-		return resp, nil
+	} else {
+		resp.Session = sessionInfo(updated)
 	}
-	resp.Session = sessionInfo(updated)
+	resp.Decisions, resp.Warnings = captureAfterRun(ctx, rec, resp.Warnings)
 	return resp, nil
+}
+
+// captureAfterRun proposes the session's answered questions as Decisions
+// once its agent has exited, and returns their handles and warnings with a
+// failure appended. A caller that gives neither a home folder nor an
+// environment has no transcript to find, so nothing is captured.
+func captureAfterRun(ctx *Ctx, rec session.Record, warnings []string) ([]string, []string) {
+	if ctx.Home == "" && ctx.Getenv == nil {
+		return nil, warnings
+	}
+	got, err := captureInterview(ctx, rec)
+	if err != nil {
+		e := AsError(err)
+		msg := "propose decisions from the owner's answers: " + e.Message
+		if e.Next != "" {
+			msg += " (next: " + e.Next + ")"
+		}
+		return nil, append(warnings, msg)
+	}
+	var handles []string
+	for _, p := range got.Proposed {
+		handles = append(handles, p.Handle)
+	}
+	return handles, warnings
 }
 
 // launchEnv is what the agent's environment gets over the terminal's: the
@@ -431,6 +459,9 @@ func (r SessionRunResponse) Human(w io.Writer) {
 		return
 	}
 	fmt.Fprintf(w, "Session %s ended: the agent exited with code %d.\n", s.ID, r.Code)
+	for _, h := range r.Decisions {
+		fmt.Fprintf(w, "- Proposed decision %s\n", h)
+	}
 	for _, warn := range r.Warnings {
 		fmt.Fprintf(w, "- Warning: %s\n", warn)
 	}

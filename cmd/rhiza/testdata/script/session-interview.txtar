@@ -1,0 +1,96 @@
+# session interview reads the session's transcript and proposes a Decision in
+# the session's change set for each question the owner answered. A picked
+# option is the agent's wording and is never quoted as the owner's; only
+# typed text is. A rejected question proposes nothing. A second run proposes
+# nothing. The fake rex opens a window and runs nothing.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Capture answers' --title 'Answers' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza session start --permission-mode manual --json
+stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+
+# No transcript yet: an error with a next, exit 1, and nothing written.
+exec sh -c 'rhiza session interview 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json; echo exit=$?'
+stdout '"code": "error"'
+stdout 'no transcript of session 158fe87f-5cf3-4ff0-ae50-01a16dc84988'
+stdout '"next": "rhiza session show 158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+stdout '^exit=1$'
+
+# The agent's transcript: a picked single-select answer, a typed "Other"
+# answer, a multiSelect mixing labels and typed text, an answer with notes,
+# and a rejected question.
+mkdir $HOME/.claude/projects/p
+cp $WORK/transcript.jsonl $HOME/.claude/projects/p/158fe87f-5cf3-4ff0-ae50-01a16dc84988.jsonl
+
+# A dry run lists the four proposals and writes nothing.
+exec rhiza session interview 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --dry-run --json
+stdout '"dry_run": true'
+stdout -count=4 '"handle": "answer-158fe87f-'
+cd $WORK/repo.answers
+! exec rhiza show answer-158fe87f-1 --change 01M5PWGEF85Y185JZ2ZGCNH40N
+stderr 'no node or link matches'
+cd $WORK/repo
+
+# The real run proposes four decisions in the change set.
+exec rhiza session interview 158fe87f-5cf3-4ff0-ae50-01a16dc84988
+stdout '^Proposed 4 decision\(s\) in change set 01M5PWGEF85Y185JZ2ZGCNH40N from session '
+stdout '^- answer-158fe87f-1: Which colour\?$'
+stdout '^- answer-158fe87f-4: Which port\?$'
+cd $WORK/repo.answers
+exec rhiza show answer-158fe87f-1 --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout '"picked": "Blue"'
+stdout '"wording": "the agent'
+! stdout '"quote"'
+exec rhiza show answer-158fe87f-2 --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout '"quote": "Something like DuckDB, but local"'
+! stdout '"wording"'
+! stdout '"picked"'
+exec rhiza show answer-158fe87f-3 --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout '"picked": "Go, Make"'
+stdout '"quote": "and a linter"'
+stdout '"wording": "the agent'
+exec rhiza show answer-158fe87f-4 --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout '"picked": "8080"'
+stdout '"notes_quote": "Not 80, it needs root\."'
+stdout '"wording": "the agent'
+! stdout '"quote"'
+exec rhiza log answer-158fe87f-1 --json
+stdout '"type": "node.create"'
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout -count=4 '"op": "node.create"'
+exec rhiza show claude-code-158fe87f --json
+stdout '"id": "01M5PWGJC82P7YGZTWYJ3Y88Z9"'
+
+# All four are one entry by the session's agent actor, for the launcher.
+exec sh -c 'cat .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/*'
+stdout -count=1 '"actor": "01M5PWGJC82P7YGZTWYJ3Y88Z9"'
+stdout -count=2 '"for": "01M5PWGEF85Y185JZ2Z5MPYCA4"'
+stdout -count=4 '"op": "node.create"'
+
+# A second run proposes nothing and skips all four.
+cd $WORK/repo
+exec rhiza session interview 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json
+stdout '"proposed": \[\]'
+stdout -count=4 '"answer-158fe87f-[1-4]"'
+cd $WORK/repo.answers
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout -count=4 '"op": "node.create"'
+
+fold-ok
+cd $WORK/repo
+fold-ok
+
+-- bin/rex --
+#!/bin/sh
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- transcript.jsonl --
+{"type": "user", "message": {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "toolu_1", "content": "answered"}]}, "toolUseResult": {"questions": [{"question": "Which colour?", "header": "Colour", "multiSelect": false, "options": [{"label": "Red", "description": "d"}, {"label": "Blue", "description": "d"}]}, {"question": "Which store?", "header": "Store", "multiSelect": false, "options": [{"label": "SQLite", "description": "d"}, {"label": "Postgres", "description": "d"}]}, {"question": "Which tools?", "header": "Tools", "multiSelect": true, "options": [{"label": "Go", "description": "d"}, {"label": "Make", "description": "d"}]}, {"question": "Which port?", "header": "Port", "multiSelect": false, "options": [{"label": "80", "description": "d"}, {"label": "8080", "description": "d"}]}], "answers": {"Which colour?": "Blue", "Which store?": "Something like DuckDB, but local", "Which tools?": "Go, and a linter, Make", "Which port?": "8080"}, "annotations": {"Which port?": {"notes": "Not 80, it needs root."}}}}
+{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_rej","content":"The user doesn't want to proceed","is_error":true}]},"toolUseResult":"Error: The user doesn't want to proceed with this tool use."}
