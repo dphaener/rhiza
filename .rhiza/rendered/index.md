@@ -637,6 +637,7 @@
 - [claude-code-d2f2546a](actor/claude-code-d2f2546a.md)
 - [claude-code-dd482246](actor/claude-code-dd482246.md)
 - [claude-code-eac4d56d](actor/claude-code-eac4d56d.md)
+- [claude-code-eac4d56d-verifier](actor/claude-code-eac4d56d-verifier.md)
 - [claude-code-f436602f](actor/claude-code-f436602f.md)
 - [claude-code-orchestrator](actor/claude-code-orchestrator.md)
 - [claude-code-task-11](actor/claude-code-task-11.md)

@@ -1,0 +1,29 @@
+{
+  "actor": "01M5X3T3R521GBX72GMM6J8YZ1",
+  "after": [
+    "01M5X6WX9YNCKCQY29FKYZ56T9"
+  ],
+  "at": "2026-10-26T22:57:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "role": "verifies change set 01M5X3GBH4ZQTZVXFEHR966747's leaves"
+        },
+        "handle": "claude-code-eac4d56d-verifier",
+        "id": "01M5X6WX5C600DP4NERVDD3MVN",
+        "key": null,
+        "kind": "actor",
+        "node": "01M5X6WX5C600DP4NERS5774N9",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5X6WX9YNCKCQY29FHMMK545",
+  "for": "01M5X3T3R521GBX72GMM6J8YZ1",
+  "id": "01M5X6WXBMTAQF9DQ04TZF62GR",
+  "type": "ops",
+  "v": 1
+}
