@@ -20,6 +20,8 @@ format-1/
       log/<change_set>/<id>.json
 format-2/
   <case>/        (same layout)
+format-3/
+  <case>/        (same layout)
 ```
 
 ## Rules
@@ -35,12 +37,17 @@ format-2/
 ## Tests
 
 `internal/store/corpus_test.go` opens every case, reads its log and expects
-zero problems, checks every `.json` file is canonical, and checks that the
-format-1 cases use every entry type at least once.
+zero problems, checks every `.json` file is canonical, and checks that every
+entry type is used by some case of the earliest format that has it: reopen
+in format 3, every other type in format 1.
 
 Format 2 adds the optional `carve` field on an ops entry. Only carve entries
 are written as v2; every other entry in a format-2 case is still v1, as in a
 real repository.
+
+Format 3 adds the reopen entry type, which moves a landed change set back
+to accepted. Only reopen entries are written as v3; the format-3 case lands,
+reopens and lands again, and every other entry in it is v1.
 
 `internal/changeset/corpus_test.go` folds every case with
 `changeset.FoldLog`, expects zero problems, and checks each change set's

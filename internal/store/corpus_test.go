@@ -33,8 +33,18 @@ func corpusCases(t *testing.T) []string {
 	return cases
 }
 
+// firstFormat names the earliest format that can spell typ: reopen came
+// with format 3, every other type with format 1.
+func firstFormat(typ entry.Type) string {
+	if typ == entry.TypeReopen {
+		return "format-3"
+	}
+	return "format-1"
+}
+
 func TestCorpus(t *testing.T) {
-	seen := map[entry.Type]bool{}
+	// seen records, per format, the entry types its cases use.
+	seen := map[string]map[entry.Type]bool{}
 	for _, root := range corpusCases(t) {
 		format := filepath.Base(filepath.Dir(root))
 		t.Run(format+"/"+filepath.Base(root), func(t *testing.T) {
@@ -49,10 +59,11 @@ func TestCorpus(t *testing.T) {
 			if len(got.Entries) == 0 {
 				t.Error("no entries")
 			}
-			if format == "format-1" {
-				for _, e := range got.Entries {
-					seen[e.Type] = true
-				}
+			if seen[format] == nil {
+				seen[format] = map[entry.Type]bool{}
+			}
+			for _, e := range got.Entries {
+				seen[format][e.Type] = true
 			}
 
 			files := 0
@@ -85,14 +96,15 @@ func TestCorpus(t *testing.T) {
 		})
 	}
 
-	var missing []entry.Type
+	// Every type is used by some case of the earliest format that has it.
+	missing := map[string][]entry.Type{}
 	for _, typ := range entry.Types() {
-		if !seen[typ] {
-			missing = append(missing, typ)
+		if f := firstFormat(typ); !seen[f][typ] {
+			missing[f] = append(missing[f], typ)
 		}
 	}
-	if len(missing) != 0 {
-		t.Errorf("format-1 corpus never uses types %v", missing)
+	for f, types := range missing {
+		t.Errorf("%s corpus never uses types %v", f, types)
 	}
 }
 

@@ -1,0 +1,29 @@
+{
+  "actor": "01M5PWGEF85Y185JZ2Z5MPYCA4",
+  "after": [
+    "01M5PWGJC82P7YGZTWYN55E6YF"
+  ],
+  "at": "2026-10-24T12:00:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "List archived reports."
+        },
+        "handle": "archive-list",
+        "id": "01M5PWGKBGYFZMTH8Y8C3Z6RXR",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5PWGKBGYFZMTH8Y8AF1G8GN",
+        "op": "node.create",
+        "parent": "01M5PWGJC82P7YGZTWYFFZ0VJG"
+      }
+    ]
+  },
+  "change_set": "01M5PWGEF85Y185JZ2ZGCNH40N",
+  "for": "01M5PWGEF85Y185JZ2Z5MPYCA4",
+  "id": "01M5PWGKBGYFZMTH8Y8EYJ7AS3",
+  "type": "ops",
+  "v": 1
+}
