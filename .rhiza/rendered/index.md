@@ -78,6 +78,18 @@
       - [status-in-genesis-files](capability/rhiza/runtime/agent-status/status-in-genesis-files.md)
     - [actor-stamping](capability/rhiza/runtime/actor-stamping.md)
       - [launch-env-stamping](capability/rhiza/runtime/actor-stamping/launch-env-stamping.md)
+  - [workflows](capability/rhiza/workflows.md)
+    - [workflow-definitions](capability/rhiza/workflows/workflow-definitions.md)
+      - [workflow-file](capability/rhiza/workflows/workflow-definitions/workflow-file.md)
+      - [agent-step](capability/rhiza/workflows/workflow-definitions/agent-step.md)
+      - [command-step](capability/rhiza/workflows/workflow-definitions/command-step.md)
+      - [wait-step](capability/rhiza/workflows/workflow-definitions/wait-step.md)
+      - [max-visits](capability/rhiza/workflows/workflow-definitions/max-visits.md)
+    - [workflow-runs](capability/rhiza/workflows/workflow-runs.md)
+      - [run-start](capability/rhiza/workflows/workflow-runs/run-start.md)
+      - [run-journal-file](capability/rhiza/workflows/workflow-runs/run-journal-file.md)
+      - [run-status](capability/rhiza/workflows/workflow-runs/run-status.md)
+      - [run-resume](capability/rhiza/workflows/workflow-runs/run-resume.md)
   - [orchestration](capability/rhiza/orchestration.md)
 
 ## Intents
@@ -108,6 +120,7 @@
 - [actors-are-nodes](decision/actors-are-nodes.md)
 - [adapters-declare-capabilities](decision/adapters-declare-capabilities.md)
 - [afk-m17-continues](decision/afk-m17-continues.md)
+- [agent-step-has-prompt](decision/agent-step-has-prompt.md)
 - [always-a-dot-folder](decision/always-a-dot-folder.md)
 - [anchor-shape](decision/anchor-shape.md)
 - [append-only-log](decision/append-only-log.md)
@@ -435,6 +448,7 @@
 
 ## Questions
 
+- [agent-step-prompt](question/agent-step-prompt.md)
 - [area-gap](question/area-gap.md)
 - [carve-stale-base-recovery](question/carve-stale-base-recovery.md)
 - [stale-hook-status-after-exit](question/stale-hook-status-after-exit.md)
@@ -442,6 +456,7 @@
 ## Evidence
 
 - [acyclic-dependencies-tests](evidence/acyclic-dependencies-tests.md)
+- [agent-step-tested](evidence/agent-step-tested.md)
 - [backlog-group-tested](evidence/backlog-group-tested.md)
 - [carve-dependency-verified](evidence/carve-dependency-verified.md)
 - [carve-entries-verified](evidence/carve-entries-verified.md)
@@ -449,6 +464,7 @@
 - [carve-verified](evidence/carve-verified.md)
 - [change-set-title-test](evidence/change-set-title-test.md)
 - [check-identity-verified](evidence/check-identity-verified.md)
+- [command-step-tested](evidence/command-step-tested.md)
 - [dependent-writes-tests](evidence/dependent-writes-tests.md)
 - [dropped-dependencies-tests](evidence/dropped-dependencies-tests.md)
 - [explicit-permission-mode-test](evidence/explicit-permission-mode-test.md)
@@ -457,15 +473,22 @@
 - [interview-provenance-scenario](evidence/interview-provenance-scenario.md)
 - [known-session-id-test](evidence/known-session-id-test.md)
 - [launch-env-stamping-test](evidence/launch-env-stamping-test.md)
+- [max-visits-tested](evidence/max-visits-tested.md)
 - [milestone-groups-tested](evidence/milestone-groups-tested.md)
 - [old-folder-verified](evidence/old-folder-verified.md)
 - [ordered-landing-tests](evidence/ordered-landing-tests.md)
 - [rex-tab-launch-test](evidence/rex-tab-launch-test.md)
+- [run-journal-file-tested](evidence/run-journal-file-tested.md)
+- [run-resume-tested](evidence/run-resume-tested.md)
+- [run-start-tested](evidence/run-start-tested.md)
+- [run-status-tested](evidence/run-status-tested.md)
 - [session-commands-test](evidence/session-commands-test.md)
 - [status-in-genesis-files-test](evidence/status-in-genesis-files-test.md)
 - [status-precedence-test](evidence/status-precedence-test.md)
 - [tab-title-test](evidence/tab-title-test.md)
 - [title-slug-test](evidence/title-slug-test.md)
+- [wait-step-tested](evidence/wait-step-tested.md)
+- [workflow-file-tested](evidence/workflow-file-tested.md)
 
 ## Sources
 
