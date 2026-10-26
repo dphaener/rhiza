@@ -1,0 +1,94 @@
+# session message writes the message to a file inside the session's
+# worktree, naming the sender's actor, and types a one-line pointer to the
+# file into the session's Rex tab, but only while the session waits at its
+# prompt: never over an open question or menu. The fake rex logs its argv,
+# prints a window for `window new` and runs nothing; the session's status
+# comes from the agent's hooks, fed by hand.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza change new 'Pick a palette for the dashboard' --title Palette --json
+exec git add -A
+exec git commit -qm init
+
+exec rhiza session start --permission-mode manual --json
+stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+stdout '"block": "block:b1"'
+
+# The agent opens a question: the menu is open, the session is blocked.
+stdin $WORK/ask.json
+exec rhiza session hook PreToolUse
+exec rhiza session show 158fe87f-5cf3-4ff0-ae50-01a16dc84988
+stdout '^- Status: blocked question: Which palette\? at '
+
+# The message is written at once, but nothing is typed while the question
+# is open.
+exec rhiza session message 158fe87f-5cf3-4ff0-ae50-01a16dc84988 'Use the blue palette' &
+exec sh -c 'i=0; while [ $i -lt 400 ]; do [ -f "$WORK"/repo.palette/.rhiza/local/messages/158fe87f-5cf3-4ff0-ae50-01a16dc84988/0001.md ] && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
+exec sh -c 'sleep 0.6'
+! exec grep -c '^send' $WORK/rex.log
+
+# The file names the sender's actor and holds the text verbatim.
+exec cat $WORK/repo.palette/.rhiza/local/messages/158fe87f-5cf3-4ff0-ae50-01a16dc84988/0001.md
+stdout '^# Message from test$'
+stdout '^- From: test \(01[0-9A-Z]{24}\)$'
+stdout '^- Session: 158fe87f-5cf3-4ff0-ae50-01a16dc84988$'
+stdout '^- Step: build$'
+stdout '^Use the blue palette$'
+
+# The question is answered and the agent stops at its prompt: the pointer
+# is typed once, then Enter.
+stdin $WORK/stop.json
+exec rhiza session hook Stop
+wait
+stdout '^Sent session 158fe87f-5cf3-4ff0-ae50-01a16dc84988 a message from test$'
+stdout '^- File: '${WORK@R}'/repo\.palette/\.rhiza/local/messages/158fe87f-5cf3-4ff0-ae50-01a16dc84988/0001\.md$'
+stdout '^- Pointer: rhiza: message from test: read \.rhiza/local/messages/158fe87f-5cf3-4ff0-ae50-01a16dc84988/0001\.md and act on it\.$'
+exec grep -c '^send -b block:b1 rhiza: message from test: read .rhiza/local/messages/158fe87f-5cf3-4ff0-ae50-01a16dc84988/0001.md and act on it.$' $WORK/rex.log
+stdout '^1$'
+exec grep -c '^send-key -b block:b1 enter$' $WORK/rex.log
+stdout '^1$'
+exec grep -c '^send' $WORK/rex.log
+stdout '^2$'
+
+# The message folder is gitignored: the worktree stays clean of it.
+exec git -C $WORK/repo.palette status --porcelain
+! stdout 'messages'
+
+# A dry run names the next file and writes and sends nothing.
+exec rhiza session message 158fe87f-5cf3-4ff0-ae50-01a16dc84988 'And rounder corners' --dry-run
+stdout '^Would send session 158fe87f-5cf3-4ff0-ae50-01a16dc84988 a message from test$'
+stdout '/0002\.md$'
+stdout '^This was a dry run: nothing was written or sent\.$'
+! exists $WORK/repo.palette/.rhiza/local/messages/158fe87f-5cf3-4ff0-ae50-01a16dc84988/0002.md
+exec grep -c '^send' $WORK/rex.log
+stdout '^2$'
+
+# An unknown session is not_found, exit 4; a blank message is a usage
+# error, exit 2. Neither writes or sends anything.
+exec sh -c 'rhiza session message deadbeef hello --json; echo exit=$?'
+stdout '"code": "not_found"'
+stdout '^exit=4$'
+exec sh -c 'rhiza session message 158fe87f-5cf3-4ff0-ae50-01a16dc84988 "   " --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout '^exit=2$'
+! exists $WORK/repo.palette/.rhiza/local/messages/158fe87f-5cf3-4ff0-ae50-01a16dc84988/0002.md
+exec grep -c '^send' $WORK/rex.log
+stdout '^2$'
+
+fold-ok
+
+-- ask.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","hook_event_name":"PreToolUse","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which palette?","header":"Palette","options":[{"label":"Blue"},{"label":"Green"}]}]}}
+-- stop.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","hook_event_name":"Stop"}
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+case "$1 $2" in
+"window new") echo '{"window_id":"window:w1","block_ids":["block:b1"]}' ;;
+esac

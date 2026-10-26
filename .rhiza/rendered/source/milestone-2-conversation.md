@@ -116,6 +116,7 @@ Milestone 2 planning, with the owner
 - derived-from [m2-plan-authorship](../decision/m2-plan-authorship.md)
 - derived-from [propose-intent-only](../decision/propose-intent-only.md)
 - derived-from change set `01M5SWTT2A55K0REHQ6JNJQZ6W` (Writes see the accepted, unlanded change sets they depend on, so a sequence of change sets can build on each other. This is the gap behind the built/intended split and milestone 2's most important item.)
+- derived-from change set `01M5SWTQ11MR7CP75QWPYFBQFQ` (Genesis amends a running step and sends it a message.)
 - derived-from [carving-keeps-ids](../decision/carving-keeps-ids.md)
 - derived-from [carve-by-node](../decision/carve-by-node.md)
 - derived-from [carve-two-entries](../decision/carve-two-entries.md)
@@ -132,6 +133,7 @@ Milestone 2 planning, with the owner
 - derived-from [change-set-title-field](../decision/change-set-title-field.md)
 - derived-from [no-state-in-tab-title](../decision/no-state-in-tab-title.md)
 - derived-from [one-slug-everywhere](../decision/one-slug-everywhere.md)
+- derived-from [amend-is-brief-edit-plus-pointer](../decision/amend-is-brief-edit-plus-pointer.md)
 
 ## History
 

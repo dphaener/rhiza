@@ -108,17 +108,28 @@ type RunResponse struct {
 
 // RunInfo is a run folded from its journal.
 type RunInfo struct {
-	ID        string      `json:"id" desc:"The run ID"`
-	Workflow  string      `json:"workflow" desc:"The workflow's name"`
-	Change    string      `json:"change" desc:"The change set it runs on"`
-	Title     string      `json:"title" desc:"The change set's title"`
-	Worktree  string      `json:"worktree" desc:"The worktree every step runs in"`
-	State     string      `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
-	Current   string      `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
-	Detail    string      `json:"detail,omitempty" desc:"Why it stopped or failed"`
-	Steps     []RunStep   `json:"steps" desc:"The steps done, in order"`
-	StartedAt string      `json:"started_at" desc:"When it started, RFC 3339 UTC"`
-	Blocked   *RunBlocked `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
+	ID         string         `json:"id" desc:"The run ID"`
+	Workflow   string         `json:"workflow" desc:"The workflow's name"`
+	Change     string         `json:"change" desc:"The change set it runs on"`
+	Title      string         `json:"title" desc:"The change set's title"`
+	Worktree   string         `json:"worktree" desc:"The worktree every step runs in"`
+	State      string         `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
+	Current    string         `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
+	Detail     string         `json:"detail,omitempty" desc:"Why it stopped or failed"`
+	Steps      []RunStep      `json:"steps" desc:"The steps done, in order"`
+	StartedAt  string         `json:"started_at" desc:"When it started, RFC 3339 UTC"`
+	Blocked    *RunBlocked    `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
+	Amendments []RunAmendment `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
+}
+
+// RunAmendment is one amendment journaled in a run: a step's brief or
+// plan file replaced while the step ran.
+type RunAmendment struct {
+	Step    string `json:"step" desc:"The amended step"`
+	Session string `json:"session" desc:"The step's session, which was sent a pointer to the file"`
+	Actor   string `json:"actor" desc:"The sender's actor handle"`
+	File    string `json:"file" desc:"The amended file, relative to the run's worktree"`
+	At      string `json:"at" desc:"When it was amended, RFC 3339 UTC"`
 }
 
 // RunBlocked is what a blocked run waits on, read from its agent step's
@@ -180,7 +191,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if ctx.DryRun {
 		return RunResponse{Run: RunInfo{
 			ID: rid, Workflow: def.Name, Change: started.Change, Title: t.title, Worktree: t.worktree,
-			Current: def.Start, Steps: []RunStep{}, StartedAt: rfc3339(ctx.Now()),
+			Current: def.Start, Steps: []RunStep{}, StartedAt: rfc3339(ctx.Now()), Amendments: []RunAmendment{},
 		}, DryRun: true}, nil
 	}
 	if err := canRun(ctx, def); err != nil {
@@ -724,6 +735,7 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 	info := RunInfo{
 		ID: st.ID, Workflow: st.Workflow, Change: st.Change, Title: st.Title, Worktree: st.Worktree,
 		Current: st.Current, Steps: []RunStep{}, StartedAt: rfc3339(st.StartedAt),
+		Amendments: []RunAmendment{},
 	}
 	switch {
 	case st.Ended:
@@ -740,6 +752,11 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 		info.Steps = append(info.Steps, RunStep{
 			Step: s.Step, Visit: s.Visit, Outcome: s.Outcome, Next: s.Next, Detail: s.Detail,
 			Session: s.Session, At: rfc3339(s.At),
+		})
+	}
+	for _, a := range st.Amendments {
+		info.Amendments = append(info.Amendments, RunAmendment{
+			Step: a.Step, Session: a.Session, Actor: a.Actor, File: a.File, At: rfc3339(a.At),
 		})
 	}
 	return info
@@ -775,6 +792,12 @@ func (r RunInfo) Human(w io.Writer) {
 				fmt.Fprintf(w, ": %s", s.Detail)
 			}
 			fmt.Fprintf(w, "\n")
+		}
+	}
+	if len(r.Amendments) > 0 {
+		fmt.Fprintf(w, "\n## Amendments\n\n")
+		for _, a := range r.Amendments {
+			fmt.Fprintf(w, "- %s %s amended %s (step %s)\n", a.At, a.Actor, a.File, a.Step)
 		}
 	}
 	switch r.State {

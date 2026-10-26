@@ -15,6 +15,7 @@ const (
 	TypeFinished  = "finished"
 	TypeBlocked   = "blocked"
 	TypeUnblocked = "unblocked"
+	TypeAmended   = "amended"
 )
 
 // Run results, used in Entry.End and State.Result.
@@ -60,6 +61,7 @@ type Block struct {
 //	ended:     Step, Outcome, and Next (a step) or End (the run ends)
 //	stopped:   Step, Detail (why it stopped, e.g. waiting)
 //	finished:  End (succeeded or failed), Detail
+//	amended:   Step, Session, Actor, File (the owner or an agent amended the step's brief)
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -72,6 +74,19 @@ type Entry struct {
 	Started *Started  `json:"started,omitempty"`
 	End     string    `json:"end,omitempty"`
 	Block   *Block    `json:"block,omitempty"`
+	Actor   string    `json:"actor,omitempty"`
+	File    string    `json:"file,omitempty"`
+}
+
+// Amendment is one amended entry: a step's brief or plan file replaced
+// while the step ran. File is relative to the run's worktree and Actor is
+// the sender's actor handle.
+type Amendment struct {
+	Step    string
+	Session string
+	Actor   string
+	File    string
+	At      time.Time
 }
 
 // Journal is a run's entries in order.
@@ -124,6 +139,9 @@ type State struct {
 	Blocked        *Block
 	BlockedStep    string
 	BlockedSession string
+	// Amendments are the amended entries in journal order. An amendment
+	// changes nothing else in the fold.
+	Amendments []Amendment
 }
 
 // State folds the journal.
@@ -177,6 +195,10 @@ func (j Journal) State() State {
 			st.Current = e.Next
 			st.CurrentVisit = 0
 			st.Stopped = ""
+		case TypeAmended:
+			st.Amendments = append(st.Amendments, Amendment{
+				Step: e.Step, Session: e.Session, Actor: e.Actor, File: e.File, At: e.At,
+			})
 		case TypeStopped:
 			st.Stopped = e.Detail
 		case TypeFinished:
