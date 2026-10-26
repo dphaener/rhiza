@@ -1,0 +1,75 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5TZAMMDNDHMYMSPNW1P8MDT"
+  ],
+  "at": "2026-10-26T14:19:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quote": "1. Yes I agree with that assesment.",
+          "quote_where": "milestone-2 conversation, the morning after the rename: item 1, answering what amends a running step",
+          "statement": "Amending a running step means editing the step's brief or plan file and then sending it a one-line pointer to that file, the same way a message is sent; the run's journal records the amendment and who made it.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "amend-is-brief-edit-plus-pointer",
+        "id": "01M5W98BN8WP98HZYTJE8K1669",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5W98BN8WP98HZYTJC5D0H81",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5W98BN8WP98HZYTJC5D0H81",
+        "id": "01M5W98BRR3G2R9WZ39TPN5MQD",
+        "link": "01M5W98BRR3G2R9WZ39RWRKZD7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYN3ZXZD1J6632PVT0KRXJ",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M5W98BN8WP98HZYTJC5D0H81",
+        "id": "01M5W98BW91ET8JH5DJYJGJA01",
+        "link": "01M5W98BW91ET8JH5DJYAMZTJC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a fake Rex amends a step: the brief file changes, the journal holds one amendment entry with the sender's actor, and one pointer line naming the file is sent.",
+          "statement": "rhiza can amend a running step: it edits the step's brief or plan file, records the amendment and its sender's actor in the run's journal, and sends the step a one-line pointer to the changed file."
+        },
+        "handle": "step-amend",
+        "id": "01M5W98BZJ7N8NSBPBMPZ35H5F",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5W98BZJ7N8NSBPBMMNWV70F",
+        "op": "node.create",
+        "parent": "01M5TYN2ZKGF19DS99BZ7RRRCD"
+      },
+      {
+        "decision": null,
+        "from": "01M5W98BZJ7N8NSBPBMMNWV70F",
+        "id": "01M5W98C2WS68E32JP8DS7MXRV",
+        "link": "01M5W98C2WS68E32JP8A2QCATP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5W98BN8WP98HZYTJC5D0H81",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWTQ11MR7CP75QWPYFBQFQ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5W98C7SNKN4YR1BX13ZWW0H",
+  "type": "ops",
+  "v": 1
+}
