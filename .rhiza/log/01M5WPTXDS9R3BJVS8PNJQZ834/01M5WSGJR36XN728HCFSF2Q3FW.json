@@ -1,0 +1,580 @@
+{
+  "actor": "01M5WQX8K83SE3FRCPBBNVP3H7",
+  "after": [
+    "01M5WQAKT5EX8KP9GZ2XK1VQ9M"
+  ],
+  "at": "2026-10-26T19:03:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript runs rhiza run start --workflow plan on a draft change set with fake agents that interview, review with one finding the critic confirms, revise, and review clean: the run succeeds, the plan's change sets are proposed, git status in the worktree shows changes only under .rhiza/, and rhiza check passes.",
+          "statement": "rhiza run start --workflow plan runs Rhiza's plan workflow: an agent interviews the owner one topic at a time and writes a milestone, or a single change set's leaves, straight into the model, with a Source and Decisions quoting the owner's typed words, a fresh review with a critic and at most 3 rounds, and the owner's acceptance as the gate. It keeps no plan file and no checkboxes."
+        },
+        "handle": "plan-workflow",
+        "id": "01M5WSGC24VYV3Y9D1N6K9Z650",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5WSGC24VYV3Y9D1N4WQ39PC",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "fields": {
+          "acceptance": "Go guide tests: rhiza guide ls lists plan as a skill; rhiza guide plan holds an apply recipe for a leaf with statement and acceptance fields and a decided-by link, and says that no plan file and no checkboxes are kept; the text stays within SkillCap and its description within MaxDescription.",
+          "statement": "rhiza guide plan prints the plan text, a skill like the rhiza and scrub texts, that drives a planning session: what it plans, in what order, and that every leaf, acceptance check, Decision and question goes into the model through rhiza apply, with no plan file and no checkboxes."
+        },
+        "handle": "plan-guide",
+        "id": "01M5WSGC647VGCTM55KPA7RJZV",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5WSGC647VGCTM55KP1WAART",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs rhiza guide install with its own HOME: the plugin holds skills/rhiza-plan/SKILL.md whose frontmatter names rhiza-plan with the plan text's description and whose body is rhiza guide plan's text; after that file is deleted the status says the install is not current, and a second install restores it.",
+          "statement": "rhiza guide install also installs the plan text as the rhiza-plan skill, and its status reports the install as not current when that skill is missing or out of date."
+        },
+        "handle": "plan-guide-install",
+        "id": "01M5WSGCA14V3HZZFPJ4VF8AY3",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5WSGCA14V3HZZFPJ4A1WXVB",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "fields": {
+          "acceptance": "Go guide tests find in rhiza guide plan both scopes, the serves rule that tells them apart, done points as child intents, rhiza change new for each change set of a milestone, and the rule that change sets not planned now keep intent only; the text stays within SkillCap.",
+          "statement": "The plan text covers both scopes and how to tell them apart: run on a change set that serves an existing intent, the planner writes that change set's leaves within its intent; run on a draft opened for the plan, it writes a milestone: an intent with its done points as child intents, and change sets made with rhiza change new that serve it, linked depends-on only where real, with leaves for the change sets the owner chooses to plan now and intent only for the rest."
+        },
+        "handle": "plan-scope",
+        "id": "01M5WSGCDYWW0Y5W9GK62VY5P0",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5WSGCDYWW0Y5W9GK5WNWWZB",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "fields": {
+          "acceptance": "Go guide tests find in rhiza guide plan rhiza slice and rhiza why as where facts come from, the rule never to ask a fact, one topic per message with a recommendation for each decision, AskUserQuestion for picks, the rule that only typed words are quoted as the owner's, and the question recipe with its blocks link; the text stays within SkillCap.",
+          "statement": "The plan text sets the interview's rules: facts are looked up in the code, in the model through rhiza slice and rhiza why, and in the records, never asked; one topic at a time, with its proposed decisions, a recommendation for each and what is to be decided; picks through AskUserQuestion where options fit, so capture records them as the agent's wording accepted by the owner; free answers quoted as the owner typed them; anything parked added as a question node linked blocks to what it holds up."
+        },
+        "handle": "plan-interview",
+        "id": "01M5WSGCHV0CA8YQD9X0232M66",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5WSGCHV0CA8YQD9WWH9YNXJ",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "fields": {
+          "acceptance": "Go guide tests find in rhiza guide plan the RHIZA_AUTONOMOUS=1 rule, the arbiter and (assumed, would have escalated). A testscript runs the plan workflow with --autonomous on fake agents whose planner raises one question: a fake arbiter answers it, the run never blocks on the owner, and the planner's step carries on to the review.",
+          "statement": "In an autonomous run the planner asks the owner nothing: the plan text tells it that when RHIZA_AUTONOMOUS=1 each question it would have asked is raised for the arbiter, which records the answering Decision as (assumed, would have escalated), and that it quotes no owner words because there are none."
+        },
+        "handle": "plan-autonomous-interview",
+        "id": "01M5WSGCNQDGV9W6JFMV169RDX",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5WSGCNQDGV9W6JFMSXNQ17J",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript launches a fake agent and finds RHIZA_SESSION in its environment; rhiza source add --raw-session on a session with a fake transcript gives raw_sha256 equal to the transcript file's sha256 and a session field naming the session, and the transcript's text appears nowhere under .rhiza/; an unknown session exits 4, and --raw-session with --raw or --raw-sha256 exits 2. Go guide tests find --raw-session \"$RHIZA_SESSION\" in rhiza guide plan. describe-golden is regenerated.",
+          "statement": "A planner records its interview as a Source in the plan's change set without storing the transcript: every agent Rhiza launches has RHIZA_SESSION set to its session ID, and rhiza source add --raw-session <session> hashes that session's transcript, found through its agent adapter, as the raw material and gives the Source a session field naming it. The plan text tells the planner to scrub its interview and add it this way before it exits."
+        },
+        "handle": "plan-source",
+        "id": "01M5WSGCSYNYA9BFQX53CWXMK3",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5WSGCSYNYA9BFQX50REASAY",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript adds a Source with --raw-session for a fake session whose transcript holds one picked and one typed answer, then runs rhiza session interview on it: both proposed Decisions link derived-from the Source, the picked one with its wording and the typed one with its quote; with no such Source both are proposed with no derived-from link, as now. Go guide tests find the derived-from and typed-words rules in rhiza guide plan.",
+          "statement": "Every Decision a plan settles links derived-from the plan's Source: the Decisions an interview's capture proposes link derived-from the Source in the session's change set whose session field names that session, and the plan text tells the planner that each Decision it writes from a typed answer quotes the owner's typed words and links derived-from that Source."
+        },
+        "handle": "plan-decisions-from-source",
+        "id": "01M5WSGCY2WM4E3XGQ2VBP9FHZ",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5WSGCY2WM4E3XGQ2T8R1ET8",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with RHIZA_RUN set records two findings and a verdict confirming one and dropping the other: the journal holds both entries, and run status --json and its markdown show the round with one confirmed finding. A verdict naming a third finding, a finding of an unknown kind, or one naming a node that does not exist exits 2 with nothing written; with no RHIZA_RUN both commands exit 2. describe-golden is regenerated.",
+          "statement": "A plan review round is journaled in its run: rhiza run findings <file> records the reviewer's findings, each naming a node, one kind (missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction) and its reason; rhiza run verdict <file> records the critic's verdict on each, confirmed or dropped with a reason, and refuses a finding the round does not hold, so a critic can't add one; rhiza run status shows each round's findings and verdicts."
+        },
+        "handle": "plan-review-journal",
+        "id": "01M5WSGD28YB7NQC8BQRZBDJM1",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M5WSGD28YB7NQC8BQR8MCVFM",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "fields": {
+          "acceptance": "Go guide tests: rhiza guide ls lists the plan-review topic, which names the five finding kinds, rhiza run findings and rhiza run verdict with their file formats, how the plan's change sets are found, and the rule that a critic never adds a finding; the topic stays within TopicCap.",
+          "statement": "rhiza guide plan-review tells a reviewer, given only a change set ID, to find the plan's change sets (that one and every change set serving an intent it adds), read them through rhiza slice and rhiza why, and record leaves without an acceptance check, decisions without provenance, depends-on links that aren't real, scope outside the intent and contradictions with rhiza run findings; it tells a critic to confirm or drop each finding with rhiza run verdict, never adding one, and a reviser to fix the confirmed findings in the model."
+        },
+        "handle": "plan-review-guide",
+        "id": "01M5WSGD6GSZAS9X5C77BCQ98Y",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M5WSGD6GSZAS9X5C75R728DG",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript in a run with journaled rounds: no confirmed finding passes; one confirmed in round 1 or 2 fails and adds nothing; one confirmed in round 3 adds a question node whose statement holds the finding and its reason, linked blocks to the capability it names, journals it, and passes.",
+          "statement": "rhiza run review-check passes when the latest round's critic confirmed no finding and fails when it confirmed any in round 1 or 2; after a third round that still has confirmed findings it adds each as a question node in the run's change set, linked blocks to the node it names when that is a capability, journals them, and passes, so the plan reaches the gate with those questions open."
+        },
+        "handle": "plan-review-rounds",
+        "id": "01M5WSGDAB8W8BWQX6VG29YKDV",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M5WSGDAB8W8BWQX6VEWR1FVY",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript ends a plan run whose draft change set adds an intent served by two draft change sets: normal, all three are proposed, none accepted, and run status --json names rhiza accept --rule owner; autonomous with a passing review, all three are accepted with rule autonomous and reasons naming the run; autonomous with a question left by the review, none is accepted and the command exits non-zero naming the question.",
+          "statement": "rhiza run gate ends a plan: it proposes each draft among the plan's change sets (the run's change set and every change set that serves an intent the run's change set adds), leaving accepted ones as they are. In a normal run they wait for the owner's rhiza accept --rule owner, which run status names; in an autonomous run it accepts each with rule autonomous once the review passed with no finding left, and accepts nothing while a question from the review is open."
+        },
+        "handle": "plan-gate",
+        "id": "01M5WSGDEE854PFE4BXM02S0H1",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M5WSGDEE854PFE4BXJM13CWS",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "fields": {
+          "acceptance": "Go workflow tests: BuiltinNames lists plan and its file parses; the review step's prompt names only {change} and rhiza guide plan-review, and the interview step's prompt names the rhiza-plan skill. A testscript runs rhiza run start --workflow plan with fake agents on a draft change set to the gate, and git status in the worktree shows changes only under .rhiza/.",
+          "statement": "The binary ships a built-in plan workflow: an interview agent step driven by the rhiza-plan skill, then rounds of a fresh review agent step told only the change set's ID, a critic agent step and rhiza run review-check, with a revise agent step on a failed check, and finally rhiza run gate. It writes no plan file."
+        },
+        "handle": "plan-workflow-file",
+        "id": "01M5WSGDJMV9EEVE603PF7B67E",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M5WSGDJMV9EEVE603M22PTYT",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "fields": {
+          "statement": "When does a milestone plan's own change set land: the draft that holds the milestone intent, its done points, the Source and the Decisions, which has no code for a build or ship-change run to land? (Milestone 3's planning record was landed at once with --record.)"
+        },
+        "handle": "plan-record-landing",
+        "id": "01M5WSGDPQXDYFT9T6VD6R6E8K",
+        "key": null,
+        "kind": "question",
+        "node": "01M5WSGDPQXDYFT9T6V9VW3NHH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "In an autonomous plan run, what happens to the findings left after the third review round: does the arbiter decide each one (the arbiter Decision names a plan contradiction as one of its decision points) and the run then accept the change sets, or does the run end failed with a report and accept nothing?"
+        },
+        "handle": "plan-review-left-autonomous",
+        "id": "01M5WSGDTSAQGM4B4GX9W5AG5M",
+        "key": null,
+        "kind": "question",
+        "node": "01M5WSGDTSAQGM4B4GX9EEB9MZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGC24VYV3Y9D1N4WQ39PC",
+        "id": "01M5WSGDYYCDPP5JG1XDRYQGRX",
+        "link": "01M5WSGDYYCDPP5JG1XCRAT33C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMEZF9MZGS5FA7AEBZFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGC24VYV3Y9D1N4WQ39PC",
+        "id": "01M5WSGE2Z2TAT437KZT6K3PF1",
+        "link": "01M5WSGE2Z2TAT437KZSGQWSPW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTK5ZNN67QTSAX8A5SVMA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGC24VYV3Y9D1N4WQ39PC",
+        "id": "01M5WSGE757CD0WDAYV2N291HA",
+        "link": "01M5WSGE757CD0WDAYTZFWVBWQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTKG9YSWM6HVRQSFEWMWN",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGC647VGCTM55KP1WAART",
+        "id": "01M5WSGEBAJG2JM517Q13AGZD0",
+        "link": "01M5WSGEBAJG2JM517PYGX3W27",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMEZF9MZGS5FA7AEBZFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGC647VGCTM55KP1WAART",
+        "id": "01M5WSGEFG1124JWG6QCPG110E",
+        "link": "01M5WSGEFG1124JWG6Q9181J30",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTK5ZNN67QTSAX8A5SVMA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGCA14V3HZZFPJ4A1WXVB",
+        "id": "01M5WSGEKT5ESHG0NHKE8TV5WG",
+        "link": "01M5WSGEKT5ESHG0NHKBC5HZJN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMEZF9MZGS5FA7AEBZFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGCA14V3HZZFPJ4A1WXVB",
+        "id": "01M5WSGER2G0357XAW1NG5RSG4",
+        "link": "01M5WSGER2G0357XAW1MW4F5C4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGC647VGCTM55KP1WAART",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGCDYWW0Y5W9GK5WNWWZB",
+        "id": "01M5WSGEW57ZEZXFSC6F589CXM",
+        "link": "01M5WSGEW57ZEZXFSC6EBT2ZTQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMEZF9MZGS5FA7AEBZFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGCDYWW0Y5W9GK5WNWWZB",
+        "id": "01M5WSGF06P9S4R8BSR5EPQVKM",
+        "link": "01M5WSGF06P9S4R8BSR52ZFE6P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGC647VGCTM55KP1WAART",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGCHV0CA8YQD9WWH9YNXJ",
+        "id": "01M5WSGF4A21JTDXJTJZVG2WJQ",
+        "link": "01M5WSGF4A21JTDXJTJY5P7ACD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMEZF9MZGS5FA7AEBZFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGCHV0CA8YQD9WWH9YNXJ",
+        "id": "01M5WSGF8F5JN6A13H5HS5T7C0",
+        "link": "01M5WSGF8F5JN6A13H5HCBA89X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGC647VGCTM55KP1WAART",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGCNQDGV9W6JFMSXNQ17J",
+        "id": "01M5WSGFCJSNGK79KF8F9EWMFV",
+        "link": "01M5WSGFCJSNGK79KF8CW7469Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTM52804W6ND2EV8CHM5T",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGCNQDGV9W6JFMSXNQ17J",
+        "id": "01M5WSGFGPCWKY07GNSG7WTZTG",
+        "link": "01M5WSGFGPCWKY07GNSCYE658E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPMQ4KMTMGSXG178SMBS",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGCNQDGV9W6JFMSXNQ17J",
+        "id": "01M5WSGFMNCS98SMVWM8REX1W7",
+        "link": "01M5WSGFMNCS98SMVWM7AH58AG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGCHV0CA8YQD9WWH9YNXJ",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGCNQDGV9W6JFMSXNQ17J",
+        "id": "01M5WSGFRP8Y55YGZWEJN4TDSF",
+        "link": "01M5WSGFRP8Y55YGZWEF4SQSYN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHGM59FSCHB3SDT7C8H75",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGCSYNYA9BFQX50REASAY",
+        "id": "01M5WSGFWPD6GBFW7REPSDHQME",
+        "link": "01M5WSGFWPD6GBFW7RENTWYEMN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMEZF9MZGS5FA7AEBZFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGCSYNYA9BFQX50REASAY",
+        "id": "01M5WSGG0QVC8GQWDNGM8V5SAP",
+        "link": "01M5WSGG0QVC8GQWDNGJGFE93W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGC647VGCTM55KP1WAART",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGCY2WM4E3XGQ2T8R1ET8",
+        "id": "01M5WSGG4NX73Y27HT5S763JRS",
+        "link": "01M5WSGG4NX73Y27HT5RWWY3WJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMEZF9MZGS5FA7AEBZFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGCY2WM4E3XGQ2T8R1ET8",
+        "id": "01M5WSGG8KNMH0S3FJA0SEFGPP",
+        "link": "01M5WSGG8KNMH0S3FJ9XMA87A6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGCSYNYA9BFQX50REASAY",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGD28YB7NQC8BQR8MCVFM",
+        "id": "01M5WSGGCHK1A20B78MSADHX69",
+        "link": "01M5WSGGCHK1A20B78MQ1CNK5T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMEZF9MZGS5FA7AEBZFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGD6GSZAS9X5C75R728DG",
+        "id": "01M5WSGGGF81F6XVFBPPPKPFX4",
+        "link": "01M5WSGGGF81F6XVFBPP1NQ2Z8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMEZF9MZGS5FA7AEBZFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGD6GSZAS9X5C75R728DG",
+        "id": "01M5WSGGMF4E21QQ4Z1Z1CZM2W",
+        "link": "01M5WSGGMF4E21QQ4Z1YEV1YZZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGD28YB7NQC8BQR8MCVFM",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDAB8W8BWQX6VEWR1FVY",
+        "id": "01M5WSGGRH2V9X3K1D001AKBN5",
+        "link": "01M5WSGGRH2V9X3K1CZXJ3CGQT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMEZF9MZGS5FA7AEBZFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDAB8W8BWQX6VEWR1FVY",
+        "id": "01M5WSGGWJZ7PV207EY9MYMYV5",
+        "link": "01M5WSGGWJZ7PV207EY5YYV2VN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGD28YB7NQC8BQR8MCVFM",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDEE854PFE4BXJM13CWS",
+        "id": "01M5WSGH0G23ETSKVVXVJFX606",
+        "link": "01M5WSGH0G23ETSKVVXTMG707T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTKTR8E370K79Z5JAA82H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDEE854PFE4BXJM13CWS",
+        "id": "01M5WSGH4KXXJYZN437195121N",
+        "link": "01M5WSGH4KXXJYZN436YD7XW57",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTM52804W6ND2EV8CHM5T",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDEE854PFE4BXJM13CWS",
+        "id": "01M5WSGH8FP4VBQ536BESSW6BN",
+        "link": "01M5WSGH8FP4VBQ536BC0P4FJM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMEZF9MZGS5FA7AEBZFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDEE854PFE4BXJM13CWS",
+        "id": "01M5WSGHCKHVFFDZ5VY2534Z45",
+        "link": "01M5WSGHCKHVFFDZ5VY1H46SJB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGDAB8W8BWQX6VEWR1FVY",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDEE854PFE4BXJM13CWS",
+        "id": "01M5WSGHGKK9J0JBK1NZ6VFSN0",
+        "link": "01M5WSGHGKK9J0JBK1NVH8TBRT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHE82S6TFSBBQ3VN42HGQ",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDJMV9EEVE603M22PTYT",
+        "id": "01M5WSGHMM8X0R0B9742BF6ZNJ",
+        "link": "01M5WSGHMM8X0R0B9740VM0W0J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMEZF9MZGS5FA7AEBZFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDJMV9EEVE603M22PTYT",
+        "id": "01M5WSGHRJ1N9J8XAVHN5PMZ79",
+        "link": "01M5WSGHRJ1N9J8XAVHHE8DH6V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTK5ZNN67QTSAX8A5SVMA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDJMV9EEVE603M22PTYT",
+        "id": "01M5WSGHWS3AQ8YSJ4G24BZM9P",
+        "link": "01M5WSGHWS3AQ8YSJ4FZVR9A5G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTKG9YSWM6HVRQSFEWMWN",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDJMV9EEVE603M22PTYT",
+        "id": "01M5WSGJ0YV48ZQR79WFGCNSY2",
+        "link": "01M5WSGJ0YV48ZQR79WDBX3D8S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGCA14V3HZZFPJ4A1WXVB",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDJMV9EEVE603M22PTYT",
+        "id": "01M5WSGJ50KTNXNN99AGKD2P4D",
+        "link": "01M5WSGJ50KTNXNN99AEN8RKBP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGD6GSZAS9X5C75R728DG",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDJMV9EEVE603M22PTYT",
+        "id": "01M5WSGJ93WJ8MZ5JC6YF9CGVV",
+        "link": "01M5WSGJ93WJ8MZ5JC6XTZE4WA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGDEE854PFE4BXJM13CWS",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDPQXDYFT9T6V9VW3NHH",
+        "id": "01M5WSGJD7MVBZCD3FQ1XXN8E6",
+        "link": "01M5WSGJD7MVBZCD3FQ08NSZQX",
+        "note": "The gate proposes the plan's own change set with the others; who lands it after acceptance is not decided.",
+        "op": "link.create",
+        "to": "01M5WSGDEE854PFE4BXJM13CWS",
+        "type": "relates-to"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDTSAQGM4B4GX9EEB9MZ",
+        "id": "01M5WSGJHEPQ0J9XXY2S7JHZTW",
+        "link": "01M5WSGJHEPQ0J9XXY2NG3TFXH",
+        "note": "The gate accepts nothing while a review question is open; whether the arbiter settles those questions first is not decided.",
+        "op": "link.create",
+        "to": "01M5WSGDEE854PFE4BXJM13CWS",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M5WPTXDS9R3BJVS8PNJQZ834",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WSGJR36XN728HCFSF2Q3FW",
+  "type": "ops",
+  "v": 1
+}
