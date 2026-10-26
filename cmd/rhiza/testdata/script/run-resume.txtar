@@ -1,0 +1,61 @@
+# run resume continues a stopped run where its journal left it: step one
+# ran once, before the stop, and does not run again. Resuming a finished
+# run is a conflict (exit 3) with a next command. Steps run in the run's
+# worktree, so ../count and ../go are $WORK/count and $WORK/go.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Resume a run' --title 'Run resume' --json
+stdout '"change_set": "[0-9A-Z]{26}"'
+mkdir .rhiza/workflows
+cp ../twostep.toml .rhiza/workflows/twostep.toml
+
+# Step one runs and the run stops at the wait.
+exec rhiza run start --workflow twostep --no-wait
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG stopped$'
+stdout '^- Current step: two$'
+stdout '^next: rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG$'
+exec cat $WORK/count
+stdout -count=1 '^one$'
+
+# Resuming before the flag exists stops again, step one still counted once.
+exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG --no-wait
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG stopped$'
+
+# With the flag, the resume finishes the run without re-running step one.
+exec sh -c 'echo > $WORK/go'
+exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
+stdout '^- one \(visit 1\): pass, then two: exit 0$'
+stdout '^- two \(visit 1\): pass, then end: held after [0-9]+ checks$'
+exec sh -c 'wc -l < $WORK/count'
+stdout '^ *1$'
+
+# A finished run cannot be resumed.
+! exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG
+stderr 'run 01M5PWGJC82P7YGZTWYFFZ0VJG is finished: it succeeded'
+stderr 'next: rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG'
+exec sh -c 'rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG 2>/dev/null; echo exit=$?'
+stdout '^exit=3$'
+exec sh -c 'wc -l < $WORK/count'
+stdout '^ *1$'
+
+-- twostep.toml --
+name = "twostep"
+
+[step.one]
+kind = "command"
+run = "echo one >> ../count"
+on.pass = "two"
+
+[step.two]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"

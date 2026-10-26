@@ -1,0 +1,23 @@
+name = "example"
+start = "build"
+
+[step.build]
+kind = "agent"
+permission_mode = "manual"
+agent = "claude-code"
+on.pass = "test"
+
+[step.test]
+kind = "command"
+run = "make test"
+max_visits = 3
+on.pass = "ci"
+on.fail = "build"
+
+[step.ci]
+kind = "wait"
+until = "gh pr checks"
+timeout = "30m"
+interval = "30s"
+on.pass = "done"
+on.timeout = "failed"

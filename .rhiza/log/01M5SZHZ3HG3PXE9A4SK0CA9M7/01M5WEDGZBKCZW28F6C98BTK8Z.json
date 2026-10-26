@@ -1,0 +1,237 @@
+{
+  "actor": "01M5WED4M9JT1C10AH7N01DHZX",
+  "after": [
+    "01M5TZAMAP7K4ACRJ2TBF55NV1"
+  ],
+  "at": "2026-10-26T15:49:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "go test ./internal/workflow (TestLoadValid, TestLoadRefused, TestParseErrors, TestParseOrderAndStart, TestNext) and the TestScripts/run-start workflow refusals (api TestRunStartWorkflowRefusals) pass"
+        },
+        "handle": "workflow-file-tested",
+        "id": "01M5WEDEQYKCMH8GPJJ8Q0KA0F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WEDEQYKCMH8GPJJ4Y8VSDF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WEDEQYKCMH8GPJJ4Y8VSDF",
+        "id": "01M5WEDEVAFH43R47SAZPB3F8Y",
+        "link": "01M5WEDEVAFH43R47SAW95J9PV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYGH047RKA27R0RBS38HKM",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "go test ./internal/run (TestAgentPollsUntilDone, TestAgentFailEndsRunFailed, TestAgentResumedDoesNotStartAgain, TestAgentStartErrorFailsRun), go test ./internal/api (TestRunAgentStepEndsWithTheSessionExit) and the run-agent-step testscript pass"
+        },
+        "handle": "agent-step-tested",
+        "id": "01M5WEDEYP93QEAWNTFW6V1EVK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WEDEYP93QEAWNTFV0S9ABN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WEDEYP93QEAWNTFV0S9ABN",
+        "id": "01M5WEDF2135G2B9VWGRXR3QJ5",
+        "link": "01M5WEDF2135G2B9VWGQHNFE4X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYGHAHETP91SS0S0Y8BPYB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "go test ./internal/run (TestCommandPassFollowsOnPass, TestCommandFailFollowsOnFail, TestCommandRunnerErrorFailsRun) and the run-command-step testscript pass"
+        },
+        "handle": "command-step-tested",
+        "id": "01M5WEDF5EDPFR8Z0NT6B4G5HC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WEDF5EDPFR8Z0NT2FBG62W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WEDF5EDPFR8Z0NT2FBG62W",
+        "id": "01M5WEDF8SFQJF54JR89GKN27H",
+        "link": "01M5WEDF8SFQJF54JR88MD6GMQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYGHN9QSF654FF0V1Q309N",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "go test ./internal/run (TestWaitHeldOnThirdPoll, TestWaitTimesOut, TestWaitSleepsOnlyToDeadline) with a fake clock, and go test ./internal/api (TestRunStopsAtWaitAndResumes) pass"
+        },
+        "handle": "wait-step-tested",
+        "id": "01M5WEDFC4Q9APZS6NNZN1KJ8F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WEDFC4Q9APZS6NNWZDV6RK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WEDFC4Q9APZS6NNWZDV6RK",
+        "id": "01M5WEDFFQHN0XW1CCRT0E8X49",
+        "link": "01M5WEDFFQHN0XW1CCRRD3RKGF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYGHWFYX6PYBNED6R4X1M4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "go test ./internal/run (TestMaxVisitsFailsRun, TestDefaultMaxVisitsIsOne) and the run-max-visits testscript pass"
+        },
+        "handle": "max-visits-tested",
+        "id": "01M5WEDFKKR73K824Y34J3TR72",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WEDFKKR73K824Y31DKE5BH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WEDFKKR73K824Y31DKE5BH",
+        "id": "01M5WEDFQ4ZKK0H11SEWY99Q5J",
+        "link": "01M5WEDFQ4ZKK0H11SEWNJSDXY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYGJ3TN69C01G7J9C3NJWY",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "go test ./internal/api (TestRunStartCommandSteps, TestRunStartFailedExitsNonZero, TestRunStartDryRunWritesNothing) and the run-start testscript pass"
+        },
+        "handle": "run-start-tested",
+        "id": "01M5WEDFTFR4VK3GK72DREVGCQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WEDFTFR4VK3GK72BA706DX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WEDFTFR4VK3GK72BA706DX",
+        "id": "01M5WEDFXWF4EJSMB6ACJ3A8B2",
+        "link": "01M5WEDFXWF4EJSMB6ABB2FK73",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYGJASX1Q1J7DV6DVHB0DZ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "go test ./internal/run (TestRoundTrip, TestReadPrefix, TestTornLineIgnored, TestFoldFinished, TestTryLockExclusion) and the run-journal testscript pass, which finds the change set's log unchanged after a run"
+        },
+        "handle": "run-journal-file-tested",
+        "id": "01M5WEDG17KHB6F80MA32EF4QK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WEDG17KHB6F80M9ZAMM5B1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WEDG17KHB6F80M9ZAMM5B1",
+        "id": "01M5WEDG4NBMHQW5S1MKYXJ5XC",
+        "link": "01M5WEDG4NBMHQW5S1MHRSBJ07",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYGJNH9AMN4S8C5QSY3CW4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "go test ./internal/api (TestRunStatusAndResumeRefusals) and the run-status testscript pass"
+        },
+        "handle": "run-status-tested",
+        "id": "01M5WEDG80GG2F0GXW2BN5P7KQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WEDG80GG2F0GXW2A6QP7NK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WEDG80GG2F0GXW2A6QP7NK",
+        "id": "01M5WEDGBCMG44YW22VW2MJE0X",
+        "link": "01M5WEDGBCMG44YW22VTEZXW1X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYGK04WT4AH5KMH4RF82YD",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "go test ./internal/run (TestResumeAfterNoWaitDoesNotRedo, TestResumeFinishedRunIsErrFinished, TestResumeLiveRunIsErrLive, TestResumeKilledMidStepContinuesVisit, TestResumeEndedWithoutFinishedWritesFinished) and the run-resume testscript pass; step one runs once"
+        },
+        "handle": "run-resume-tested",
+        "id": "01M5WEDGF8XS9271DC49Z6Q8M1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WEDGF8XS9271DC46R3GNR6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WEDGF8XS9271DC46R3GNR6",
+        "id": "01M5WEDGJNV110EZWHVEXYZZXF",
+        "link": "01M5WEDGJNV110EZWHVDYAB0QH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYGK7EFHKPB9JG3A2MH2G2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "How does an agent step tell its agent what to do: a prompt, a skill, or the slice alone? Change set 4 launches the agent with no prompt."
+        },
+        "handle": "agent-step-prompt",
+        "id": "01M5WEDGP563VEJ4VAV4QWK1H8",
+        "key": null,
+        "kind": "question",
+        "node": "01M5WEDGP563VEJ4VAV24QECRK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WEDGP563VEJ4VAV24QECRK",
+        "id": "01M5WEDGSTSKCW6XTG9BF9AP1X",
+        "link": "01M5WEDGSTSKCW6XTG98R5YQZQ",
+        "note": "the agent step launches its agent with no prompt today",
+        "op": "link.create",
+        "to": "01M5TYGHAHETP91SS0S0Y8BPYB",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M5SZHZ3HG3PXE9A4SK0CA9M7",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WEDGZBKCZW28F6C98BTK8Z",
+  "type": "ops",
+  "v": 1
+}

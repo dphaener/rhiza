@@ -1,0 +1,69 @@
+# run status reads a run from its journal alone: stopped at a wait step
+# (--no-wait), running while another process holds the run, and succeeded
+# with every step done once it ends. The wait polls for ../go, which is
+# $WORK/go from the run's worktree next to the repo.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Read status' --title 'Run status' --json
+stdout '"change_set": "[0-9A-Z]{26}"'
+mkdir .rhiza/workflows
+cp ../gate.toml .rhiza/workflows/gate.toml
+
+# Mid-run, stopped: the first step is done and the wait step is current.
+exec rhiza run start --workflow gate --no-wait
+stdout '^Run [0-9A-Z]{26} stopped$'
+stdout '^- Current step: hold$'
+stdout '^- first \(visit 1\): pass, then hold: exit 0$'
+! stdout 'hold \(visit'
+stdout '^next: rhiza run resume [0-9A-Z]{26}$'
+exec rhiza run status --json
+stdout '"state": "stopped"'
+stdout '"current": "hold"'
+
+# A live run: started in the background, it waits for the flag. Status
+# reports running (bounded retries) until the flag appears.
+exec rhiza run start --workflow gate &
+exec sh -c 'i=0; while [ $i -lt 400 ]; do rhiza run status | grep -q "^Run .* running$" && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
+exec rhiza run status
+stdout '^Run [0-9A-Z]{26} running$'
+stdout '^- Current step: hold$'
+stdout '^next: rhiza run status [0-9A-Z]{26}$'
+exec sh -c 'echo > $WORK/go'
+wait
+stdout '^Run [0-9A-Z]{26} succeeded$'
+
+# After it ends, status shows every step done.
+exec rhiza run status
+stdout '^Run [0-9A-Z]{26} succeeded$'
+stdout '^- first \(visit 1\): pass, then hold: exit 0$'
+stdout '^- hold \(visit 1\): pass, then last: held after [0-9]+ checks$'
+stdout '^- last \(visit 1\): pass, then end: exit 0$'
+! stdout '^- Current step:'
+exec rhiza run status --json
+stdout '"state": "succeeded"'
+
+-- gate.toml --
+name = "gate"
+
+[step.first]
+kind = "command"
+run = "true"
+on.pass = "hold"
+
+[step.hold]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "last"
+on.timeout = "failed"
+
+[step.last]
+kind = "command"
+run = "true"
+on.pass = "done"

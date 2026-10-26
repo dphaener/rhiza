@@ -1,0 +1,6 @@
+name = "missing-target"
+
+[step.build]
+kind = "command"
+run = "make"
+on.pass = "nope"

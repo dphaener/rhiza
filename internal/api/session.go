@@ -185,42 +185,11 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	w, err := openCtxWorkspace(ctx)
+	t, err := resolveChangeWorktree(ctx, r.Change, "no agent can work on it")
 	if err != nil {
 		return nil, err
 	}
-	var cs id.ID
-	if ref := strings.TrimSpace(r.Change); ref != "" {
-		cs, err = w.resolveChangeSet(ref)
-	} else {
-		cs, err = w.effectiveChangeSet(ctx)
-	}
-	if err != nil {
-		return nil, err
-	}
-	if cs.IsZero() {
-		return nil, Usagef("no change set: name one or make one current").WithNext(changeLsNext)
-	}
-	c, _ := w.changeSet(cs)
-	if c.State.Terminal() {
-		return nil, Conflictf("change set %s is %s; no agent can work on it", cs, c.State).WithNext(changeLsNext)
-	}
-	common, err := gitCommonDir(ctx)
-	if err != nil {
-		return nil, err
-	}
-	prefix, err := ctx.Git("rev-parse", "--show-prefix")
-	if err != nil {
-		return nil, Errorf("%v", err)
-	}
-	prefix = strings.TrimSpace(prefix)
-
-	title := c.Open.DisplayTitle()
-	mainRoot := filepath.Dir(common)
-	repo := filepath.Base(mainRoot)
-	slug := session.Slug(title)
-	branch := session.Branch(slug)
-	worktree := session.Worktree(mainRoot, repo, slug)
+	w, cs, title, repo, worktree, branch := t.w, t.cs, t.title, t.repo, t.worktree, t.branch
 	sid, err := newSessionID(ctx.IDs)
 	if err != nil {
 		return nil, err
@@ -230,10 +199,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 		rexSession = ctx.RexSession
 	}
 	tab := session.Tab{Session: rexSession, Title: session.TabTitle(repo, title, step)}
-	reuse, err := worktreeReuse(ctx, worktree, branch)
-	if err != nil {
-		return nil, err
-	}
+	reuse := t.reuse
 	rec := session.Record{
 		ID: sid, Agent: a.Name(), Change: cs.String(), Title: title, Step: step, Run: r.Run,
 		Actor: handleSlug(a.Name() + "-" + sid[:8]), PermissionMode: r.PermissionMode,
@@ -263,16 +229,8 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !reuse {
-		if err := addWorktree(ctx, prefix, worktree, branch); err != nil {
-			return nil, err
-		}
-	}
-	ww, err := worktreeWorkspace(ctx, w, filepath.Join(worktree, prefix), cs)
+	ww, err := t.open(ctx)
 	if err != nil {
-		return nil, err
-	}
-	if err := ww.setCurrent(cs); err != nil {
 		return nil, err
 	}
 	if rec.Actor, err = recordAgentActor(ww, a.Name(), sid, cs, launcher, forID); err != nil {
@@ -280,7 +238,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 	}
 	rec.For = launcher.String()
 
-	st := session.NewStore(session.Dir(common))
+	st := session.NewStore(session.Dir(t.common))
 	if err := st.Write(rec); err != nil {
 		return nil, Errorf("write session %s: %v", sid, err)
 	}
@@ -302,6 +260,86 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 	}
 	return SessionStartResponse{Session: sessionInfo(rec), RexArgv: append([]string{"rex"}, rexArgs...),
 		WorktreeReused: reuse}, nil
+}
+
+// changeWorktree is a change set and the worktree an agent or a run works
+// on it in, derived from its title: <repo>.<slug> on cs/<slug>, beside the
+// main checkout.
+type changeWorktree struct {
+	w        *workspace
+	cs       id.ID
+	title    string
+	common   string // the absolute git common dir
+	prefix   string // Root's folder within the git repository, "" or ending in "/"
+	repo     string // the main checkout's folder name
+	branch   string
+	worktree string
+	reuse    bool // the worktree already exists on branch
+}
+
+// resolveChangeWorktree resolves the change set ref names (default
+// --change, else the current one), refuses one in a terminal state with
+// "change set X is <state>; <refusal>", and derives its worktree. It
+// writes nothing.
+func resolveChangeWorktree(ctx *Ctx, ref, refusal string) (changeWorktree, error) {
+	var t changeWorktree
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return t, err
+	}
+	var cs id.ID
+	if ref = strings.TrimSpace(ref); ref != "" {
+		cs, err = w.resolveChangeSet(ref)
+	} else {
+		cs, err = w.effectiveChangeSet(ctx)
+	}
+	if err != nil {
+		return t, err
+	}
+	if cs.IsZero() {
+		return t, Usagef("no change set: name one or make one current").WithNext(changeLsNext)
+	}
+	c, _ := w.changeSet(cs)
+	if c.State.Terminal() {
+		return t, Conflictf("change set %s is %s; %s", cs, c.State, refusal).WithNext(changeLsNext)
+	}
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return t, err
+	}
+	prefix, err := ctx.Git("rev-parse", "--show-prefix")
+	if err != nil {
+		return t, Errorf("%v", err)
+	}
+	t = changeWorktree{w: w, cs: cs, title: c.Open.DisplayTitle(), common: common, prefix: strings.TrimSpace(prefix)}
+	mainRoot := filepath.Dir(common)
+	t.repo = filepath.Base(mainRoot)
+	slug := session.Slug(t.title)
+	t.branch = session.Branch(slug)
+	t.worktree = session.Worktree(mainRoot, t.repo, slug)
+	if t.reuse, err = worktreeReuse(ctx, t.worktree, t.branch); err != nil {
+		return t, err
+	}
+	return t, nil
+}
+
+// open creates the worktree unless it is reused, opens its Rhiza
+// repository with the change set in its log, and makes the change set
+// current there.
+func (t changeWorktree) open(ctx *Ctx) (*workspace, error) {
+	if !t.reuse {
+		if err := addWorktree(ctx, t.prefix, t.worktree, t.branch); err != nil {
+			return nil, err
+		}
+	}
+	ww, err := worktreeWorkspace(ctx, t.w, filepath.Join(t.worktree, t.prefix), t.cs)
+	if err != nil {
+		return nil, err
+	}
+	if err := ww.setCurrent(t.cs); err != nil {
+		return nil, err
+	}
+	return ww, nil
 }
 
 // startAdapter returns the request's adapter after checking its permission
