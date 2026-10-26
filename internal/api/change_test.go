@@ -541,3 +541,128 @@ func TestChangeLs(t *testing.T) {
 		t.Errorf("human lacks problems:\n%s", out)
 	}
 }
+
+func TestChangeShowLeaves(t *testing.T) {
+	ctx := initCtx(t)
+	landed(t, ctx) // store, a capability outside the change set
+	cs := newChange(t, ctx, `{"intent":"Leaves"}`).ChangeSet
+	for _, req := range []string{
+		`{"kind":"capability","handle":"p"}`,
+		`{"kind":"capability","handle":"c","parent":"p"}`,
+		`{"kind":"capability","handle":"b","parent":"p"}`,
+		`{"kind":"capability","handle":"a","parent":"p"}`,
+		`{"kind":"capability","handle":"q"}`,
+		`{"kind":"capability","handle":"e","parent":"q"}`,
+		`{"kind":"capability","handle":"d","parent":"q","before":"e"}`,
+		`{"kind":"capability","handle":"r"}`,
+		`{"kind":"decision","handle":"not-a-capability"}`,
+	} {
+		mustWrite(t, ctx, "add", req)
+	}
+	for _, req := range []string{
+		`{"from":"c","type":"depends-on","to":"b"}`,
+		`{"from":"b","type":"depends-on","to":"a"}`,
+		`{"from":"a","type":"depends-on","to":"store"}`,
+		`{"from":"e","type":"depends-on","to":"store"}`,
+		`{"from":"e","type":"depends-on","to":"d"}`,
+	} {
+		mustWrite(t, ctx, "link", req)
+	}
+	mustWrite(t, ctx, "retire", `{"ref":"r","reason":"Gone"}`)
+
+	show := func(cs id.ID) ChangeShowResponse {
+		t.Helper()
+		resp, err := callOp(t, ctx, "change.show", `{"ref":"`+cs.String()+`"}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return resp.(ChangeShowResponse)
+	}
+	r := show(cs)
+	var got []string
+	for _, l := range r.Leaves {
+		got = append(got, l.Handle+"<"+strings.Join(l.Needs, ",")+">")
+		if l.ID.IsZero() || l.Needs == nil {
+			t.Errorf("leaf %+v", l)
+		}
+	}
+	// a, b, c by depends-on; d before e by tree order (d was put before e)
+	// and by e's need of d; store is outside the change set, so it is a need
+	// but not ordered.
+	want := []string{"a<store>", "b<a>", "c<b>", "d<>", "e<d,store>"}
+	if !slices.Equal(got, want) {
+		t.Errorf("leaves = %v, want %v", got, want)
+	}
+	if raw, _ := json.Marshal(r); !strings.Contains(string(raw), `"handle":"d","needs":[]`) {
+		t.Errorf("json = %s", raw)
+	}
+	out := human(t, r)
+	block := "\n## Leaves\n\n- a (needs store)\n- b (needs a)\n- c (needs b)\n- d\n- e (needs d, store)\n"
+	if !strings.Contains(out, block) {
+		t.Errorf("human output lacks %q:\n%s", block, out)
+	}
+
+	// Unlinked leaves come out in tree order, not ID order.
+	ctx2 := initCtx(t)
+	cs2 := newChange(t, ctx2, `{"intent":"Tree"}`).ChangeSet
+	for _, req := range []string{
+		`{"kind":"capability","handle":"z"}`,
+		`{"kind":"capability","handle":"y","before":"z"}`,
+		`{"kind":"capability","handle":"x","after":"y"}`,
+	} {
+		mustWrite(t, ctx2, "add", req)
+	}
+	resp, err := callOp(t, ctx2, "change.show", `{"ref":"`+cs2.String()+`"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got = nil
+	for _, l := range resp.(ChangeShowResponse).Leaves {
+		got = append(got, l.Handle)
+	}
+	if want := []string{"y", "x", "z"}; !slices.Equal(got, want) {
+		t.Errorf("tree-order leaves = %v, want %v", got, want)
+	}
+
+	// No leaves: an empty list, never null, and no Leaves section.
+	empty := newChange(t, ctx2, `{"intent":"Empty"}`).ChangeSet
+	resp, err = callOp(t, ctx2, "change.show", `{"ref":"`+empty.String()+`"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if l := resp.(ChangeShowResponse).Leaves; l == nil || len(l) != 0 {
+		t.Errorf("empty leaves = %#v", l)
+	}
+	if out := human(t, resp); strings.Contains(out, "## Leaves") {
+		t.Errorf("empty human has a Leaves section:\n%s", out)
+	}
+}
+
+func TestChangeShowLeavesLanded(t *testing.T) {
+	ctx := initCtx(t)
+	cs := landed(t, ctx)
+	leaves := func() []string {
+		t.Helper()
+		resp, err := callOp(t, ctx, "change.show", `{"ref":"`+cs.String()+`"}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var out []string
+		for _, l := range resp.(ChangeShowResponse).Leaves {
+			out = append(out, l.Handle)
+		}
+		return out
+	}
+	if got := leaves(); !slices.Equal(got, []string{"store"}) {
+		t.Errorf("landed leaves = %v", got)
+	}
+	// A later change set retires store and lands: it is no longer a leaf.
+	newChange(t, ctx, `{"intent":"Drop store"}`)
+	mustWrite(t, ctx, "retire", `{"ref":"store","reason":"Gone"}`)
+	for _, s := range []string{"propose", "accept", "land"} {
+		move(t, ctx, s, `{}`)
+	}
+	if got := leaves(); len(got) != 0 {
+		t.Errorf("leaves after retire = %v", got)
+	}
+}

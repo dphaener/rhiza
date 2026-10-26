@@ -934,6 +934,37 @@ cmp stdout describe.golden.json
             "description": "intention or record; empty without a valid open",
             "type": "string"
           },
+          "leaves": {
+            "description": "The live capabilities it adds that have no live child capability, in build order: each after every leaf it depends on, ties in tree order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "handle": {
+                  "description": "The capability's handle",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The capability's ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "needs": {
+                  "description": "The handles of every live capability it depends on, in or out of the change set, sorted",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "handle",
+                "id",
+                "needs"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "ops": {
             "description": "The current operations, as canonical op JSON, in change set order",
             "items": {},
@@ -976,6 +1007,7 @@ cmp stdout describe.golden.json
           "id",
           "intent",
           "kind",
+          "leaves",
           "ops",
           "problems",
           "sources",
