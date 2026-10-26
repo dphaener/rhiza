@@ -44,6 +44,10 @@ const (
 // agent step its session, when the step sets no interval.
 const DefaultInterval = 10 * time.Second
 
+// AgentUntilInterval is an agent step's interval when it has an `until`
+// and the file sets no interval.
+const AgentUntilInterval = 30 * time.Second
+
 // MaxNameLen is the longest step name allowed.
 const MaxNameLen = 30
 
@@ -81,13 +85,16 @@ type Step struct {
 	// Run is a command step's shell command.
 	Run string
 	// Until is a wait step's condition, a shell command; exit 0 means it
-	// holds.
+	// holds. On an agent step it is optional: the step also passes when
+	// its session is idle at its prompt and the condition holds, leaving
+	// the session open.
 	Until string
 	// Timeout is how long a wait step waits for its condition.
 	Timeout time.Duration
 	// Interval is how often a wait step checks its condition, or an agent
-	// step its session. It is DefaultInterval when the file sets none, and
-	// zero on a command step.
+	// step its session. It is DefaultInterval when the file sets none
+	// (AgentUntilInterval on an agent step with until), and zero on a
+	// command step.
 	Interval time.Duration
 	// Agent is an agent step's adapter name; empty means the default.
 	Agent string
@@ -343,8 +350,8 @@ func buildStep(name string, fs fileStep) (Step, error) {
 	if fs.Run != "" && fs.Kind != KindCommand {
 		return fail("run is only for command steps; a %s step cannot have it", fs.Kind)
 	}
-	if fs.Until != "" && fs.Kind != KindWait {
-		return fail("until is only for wait steps; a %s step cannot have it", fs.Kind)
+	if fs.Until != "" && fs.Kind == KindCommand {
+		return fail("until is only for wait and agent steps; a command step cannot have it")
 	}
 	if fs.Timeout != "" && fs.Kind != KindWait {
 		return fail("timeout is only for wait steps; a %s step cannot have it", fs.Kind)
@@ -394,6 +401,9 @@ func buildStep(name string, fs fileStep) (Step, error) {
 	}
 	if fs.Kind == KindWait || fs.Kind == KindAgent {
 		s.Interval = DefaultInterval
+		if fs.Kind == KindAgent && fs.Until != "" {
+			s.Interval = AgentUntilInterval
+		}
 		if fs.Interval != "" {
 			d, err := positiveDuration(fs.Interval)
 			if err != nil {

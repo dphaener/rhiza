@@ -187,7 +187,7 @@ func TestParseErrors(t *testing.T) {
 		{"run on wait", "[step.w]\nkind = \"wait\"\nuntil = \"true\"\ntimeout = \"1m\"\nrun = \"x\"\n",
 			`step "w": run is only for command steps`},
 		{"until on command", cmd + "until = \"x\"\n",
-			`step "a": until is only for wait steps`},
+			`step "a": until is only for wait and agent steps`},
 		{"timeout on agent", "[step.g]\nkind = \"agent\"\ntimeout = \"1m\"\n",
 			`step "g": timeout is only for wait steps`},
 		{"interval on command", cmd + "interval = \"1s\"\n",
@@ -369,5 +369,32 @@ func TestShipChangeBuiltin(t *testing.T) {
 	want := []string{"build", "wait-pr", "pr-green", "land", "wait-landed", "landed-green", "merge", "wait-main", "main-green", "close-out", "ship"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
+	}
+}
+
+// An agent step may have until; its interval then defaults to
+// AgentUntilInterval, and a set interval still wins.
+func TestAgentStepUntil(t *testing.T) {
+	src := "[step.g]\nkind = \"agent\"\nprompt = \"go\"\nuntil = \"true\"\n"
+	d, err := Parse("w", []byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if g := d.Steps["g"]; g.Until != "true" || g.Interval != AgentUntilInterval {
+		t.Errorf("agent step with until = %+v; want until \"true\" every %v", g, AgentUntilInterval)
+	}
+	d, err = Parse("w", []byte(src+"interval = \"5s\"\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := d.Steps["g"].Interval; got != 5*time.Second {
+		t.Errorf("interval = %v, want the file's 5s", got)
+	}
+	d, err = Parse("w", []byte("[step.g]\nkind = \"agent\"\nprompt = \"go\"\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := d.Steps["g"].Interval; got != DefaultInterval {
+		t.Errorf("agent step without until: interval = %v, want %v", got, DefaultInterval)
 	}
 }

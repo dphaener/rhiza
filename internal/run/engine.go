@@ -61,7 +61,7 @@ type Runner interface {
 	// Command runs a command step's `run` once and returns its exit code.
 	// A non-zero exit is not an error; failing to run it is.
 	Command(step workflow.Step, env []string) (code int, detail string, err error)
-	// Holds runs a wait step's `until` condition once.
+	// Holds runs a wait or agent step's `until` condition once.
 	Holds(step workflow.Step, env []string) (bool, error)
 	// StartAgent launches an agent step's session and returns its ID.
 	StartAgent(step workflow.Step, env []string) (session string, err error)
@@ -81,6 +81,9 @@ type AgentStatus struct {
 	// Blocked is what the session waits on, nil when it is not blocked.
 	// It is ignored once Done.
 	Blocked *Block
+	// Idle is true while the live session sits at its prompt: neither
+	// working nor blocked. It is ignored once Done.
+	Idle bool
 }
 
 // Notice tells the caller that a run's agent step became blocked on the
@@ -415,7 +418,10 @@ func (r *running) wait(step workflow.Step, env []string) result {
 }
 
 // agent launches the step's session, unless the journal already has one
-// for this visit (a resume), and polls it until it ends.
+// for this visit (a resume), and polls it until it ends. A step with an
+// `until` also passes when a poll finds the session idle at its prompt and
+// the condition holds; the session is left open. The condition is never
+// checked while the session works or is blocked on the owner.
 func (r *running) agent(step workflow.Step, env []string) (result, error) {
 	session := r.j.State().Session[step.Name]
 	if session == "" {
@@ -462,6 +468,15 @@ func (r *running) agent(step workflow.Step, env []string) (result, error) {
 		}
 		if err != nil {
 			return result{}, err
+		}
+		if step.Until != "" && status.Idle && status.Blocked == nil {
+			held, err := r.e.Runner.Holds(step, env)
+			if err != nil {
+				return errResult(err), nil
+			}
+			if held {
+				return result{outcome: workflow.OutcomePass, detail: "idle and until held; session left open"}, nil
+			}
 		}
 		c.Sleep(interval)
 	}

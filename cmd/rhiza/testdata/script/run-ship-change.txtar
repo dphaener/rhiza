@@ -6,9 +6,12 @@
 # gone, main pulled) and then runs the repo's own ship command.
 #
 # Nothing here reaches GitHub, Rex or Claude Code. origin is a bare repo in
-# $WORK. The fake rex runs the tab's command (the argv after `--`)
-# synchronously in the window's directory. The fake claude records its
-# prompt, commits a file on the branch and pushes it. The fake gh logs its
+# $WORK. The fake rex starts the tab's command (the argv after `--`) in the
+# background in the window's directory, returns once the agent is idle,
+# and on `window close` tells the agent its tab closed. The fake claude
+# records its prompt, commits a file on the branch, pushes it, reports idle
+# at its prompt through the Stop hook, and stays open until its tab is
+# closed, as an interactive session does. The fake gh logs its
 # argv to gh.log and answers from the bare origin: the PR (#7) is open with
 # every check passed at the branch's current head on origin; a merge
 # squashes the branch onto main in origin (refusing any head but the
@@ -48,7 +51,7 @@ exec rhiza run status --json
 stdout '"workflow": "ship-change"'
 stdout '"state": "succeeded"'
 exec rhiza run status
-stdout '^- build \(visit 1\): pass, then wait-pr, session [0-9a-f-]{36}: exit 0$'
+stdout '^- build \(visit 1\): pass, then wait-pr, session [0-9a-f-]{36}: idle and until held; session left open$'
 stdout '^- wait-pr \(visit 1\): pass, then pr-green: held after [0-9]+ checks?$'
 stdout '^- pr-green \(visit 1\): pass, then land: exit 0$'
 stdout '^- land \(visit 1\): pass, then wait-landed: exit 0$'
@@ -59,6 +62,14 @@ stdout '^- wait-main \(visit 1\): pass, then main-green: held after [0-9]+ check
 stdout '^- main-green \(visit 1\): pass, then close-out: exit 0$'
 stdout '^- close-out \(visit 1\): pass, then ship: exit 0$'
 stdout '^- ship \(visit 1\): pass, then end: exit 0$'
+
+# The build step passed while its session sat idle with the PR open, and
+# left the session running; close-out closed its tab, and the session then
+# exited.
+grep '^pr view cs/ship-it --json number,url,state,headRefOid,statusCheckRollup$' $WORK/gh.log
+grep 'window close .*window:w1$' $WORK/rex.log
+exec sh -c 'i=0; until [ -f "$WORK/claude.done" ]; do i=$((i+1)); [ $i -gt 400 ] && exit 1; sleep 0.025; done; cat "$WORK/claude.done"'
+stdout '^tab closed$'
 
 # The agent was told to use shipit, starting from the change set's slice.
 exec cat $WORK/claude.prompt
@@ -120,6 +131,10 @@ echo shipped >> "$WORK/order.log"
 -- bin/rex --
 #!/bin/sh
 echo "$@" >> "$WORK/rex.log"
+if [ "$1 $2" = "window close" ]; then
+	touch "$WORK/tab.closed"
+	exit 0
+fi
 dir=
 while [ $# -gt 0 ]; do
 	if [ "$1" = -c ]; then
@@ -127,20 +142,49 @@ while [ $# -gt 0 ]; do
 	fi
 	if [ "$1" = -- ]; then
 		shift
-		(cd "$dir" && "$@") >&2 || true
+		(cd "$dir" && exec "$@") >"$WORK/tab.out" 2>&1 </dev/null &
 		break
 	fi
 	shift
 done
+i=0
+until [ -f "$WORK/claude.idle" ]; do
+	i=$((i + 1))
+	if [ $i -gt 800 ]; then
+		echo 'fake rex: the agent never went idle' >&2
+		exit 1
+	fi
+	sleep 0.025
+done
 echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
 -- bin/claude --
 #!/bin/sh
+sid=
 for a; do last=$a; done
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
 printf '%s\n' "$last" > "$WORK/claude.prompt"
 echo built > feature.txt
 git add feature.txt
 git commit -qm 'Build the feature'
 git push -q -u origin HEAD
+echo '{"session_id":"'$sid'","hook_event_name":"Stop"}' | rhiza session hook Stop >> "$WORK/hook.out" || exit 8
+touch "$WORK/claude.idle"
+i=0
+until [ -f "$WORK/tab.closed" ]; do
+	i=$((i + 1))
+	if [ $i -gt 2400 ]; then
+		echo 'timed out' > "$WORK/claude.done"
+		exit 9
+	fi
+	sleep 0.025
+done
+echo 'tab closed' > "$WORK/claude.done"
+exit 129
 -- bin/gh --
 #!/bin/sh
 echo "$@" >> "$WORK/gh.log"

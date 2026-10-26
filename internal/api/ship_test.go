@@ -11,6 +11,7 @@ import (
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/session"
 )
 
 func TestParsePRView(t *testing.T) {
@@ -707,5 +708,94 @@ func TestShipCheckWaitsForPushedHead(t *testing.T) {
 	}
 	if st, _ := readShipState(state); st.Head != "abc1234def" {
 		t.Errorf("state = %+v", st)
+	}
+}
+
+// --pr-open passes on an open PR whatever its CI, records nothing, and
+// fails with no PR or a closed one.
+func TestShipCheckPROpen(t *testing.T) {
+	f, g, state := shipFixture(t)
+	g.answers[shipPRView] = "!no pull requests found for branch \"cs/ship-it\""
+	if r := shipCheck(t, f, `{"pr_open":true}`); r.Passed || r.ExitCode() != 1 {
+		t.Errorf("no PR: %+v", r)
+	}
+	g.answers[shipPRView] = openPR(`{"name":"test","status":"IN_PROGRESS","conclusion":""}`)
+	r := shipCheck(t, f, `{"pr_open":true}`)
+	if !r.Passed || r.ExitCode() != 0 || r.Written || r.Settled {
+		t.Errorf("open PR with pending CI: %+v", r)
+	}
+	if got := human(t, r); got != "PR #7 at abc1234: open from cs/ship-it\n" {
+		t.Errorf("human = %q", got)
+	}
+	g.answers[shipPRView] = strings.Replace(openPR(greenRollup), `"OPEN"`, `"MERGED"`, 1)
+	if r := shipCheck(t, f, `{"pr_open":true}`); r.Passed {
+		t.Errorf("merged PR passed --pr-open: %+v", r)
+	}
+	if _, err := os.Stat(state); !errors.Is(err, os.ErrNotExist) {
+		t.Errorf("state file written: %v", err)
+	}
+	for _, req := range []string{`{"pr_open":true,"main":true}`, `{"pr_open":true,"settled":true}`} {
+		_, err := callOp(t, f.ctx, "ship.check", req)
+		wantExit(t, err, 2)
+	}
+}
+
+// Close-out closes the Rex tab of each of the change set's sessions after
+// the worktree is gone; a tab Rex no longer has is already closed, and
+// other change sets' tabs are left alone.
+func TestShipCloseOutClosesTabs(t *testing.T) {
+	f, _, state := shipFixture(t)
+	if err := writeShipState(state, shipState{PR: 7, Head: "abc1234def", MergeCommit: "fff0000aaa"}); err != nil {
+		t.Fatal(err)
+	}
+	cs := strings.TrimSuffix(filepath.Base(state), ".json")
+	store := session.NewStore(session.Dir(f.common))
+	for _, rec := range []session.Record{
+		{ID: "11111111-1111-4111-8111-111111111111", Change: cs, Tab: session.Tab{Session: "session:s1", Window: "window:w1"}},
+		{ID: "22222222-2222-4222-8222-222222222222", Change: cs, Tab: session.Tab{Session: "session:s1", Window: "window:gone"}},
+		{ID: "33333333-3333-4333-8333-333333333333", Change: "OTHER", Tab: session.Tab{Window: "window:other"}},
+	} {
+		if err := store.Write(rec); err != nil {
+			t.Fatal(err)
+		}
+	}
+	x := &shipExec{answers: map[string]string{
+		"git worktree remove " + f.worktree:                    "",
+		"rex window close -s session:s1 window:w1":             "",
+		"rex window close -s session:s1 window:gone":           `!Error: window target "window:gone" not found`,
+		"git rev-parse --verify --quiet refs/heads/cs/ship-it": "!",
+		"git push origin --delete cs/ship-it":                  "",
+		"git symbolic-ref --short HEAD":                        "main\n",
+		"git status --porcelain --untracked-files=no":          "",
+		"git pull --ff-only origin main":                       "",
+	}}
+	f.ctx.Exec = x.run
+	resp, err := callOp(t, f.ctx, "ship.close-out", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := resp.(ShipCloseOutResponse)
+	want := []ShipStep{{Step: "remove-worktree", Result: "done"},
+		{Step: "close-tab", Result: "done", Tab: "window:w1"}, {Step: "close-tab", Result: "already", Tab: "window:gone"},
+		{Step: "delete-branch", Result: "already"}, {Step: "delete-remote-branch", Result: "done"}, {Step: "update-main", Result: "done"}}
+	if !r.MainUpdated || !slices.Equal(r.Steps, want) {
+		t.Errorf("close-out steps = %+v", r.Steps)
+	}
+	if i := slices.Index(x.calls, "rex window close -s session:s1 window:w1"); i != 1 {
+		t.Errorf("tab closed at call %d, want right after the worktree is removed: %q", i, x.calls)
+	}
+	got := human(t, r)
+	for _, s := range []string{"Closed Rex tab window:w1.", "Rex tab window:gone was already closed."} {
+		if !strings.Contains(got, s) {
+			t.Errorf("human = %q, want %q", got, s)
+		}
+	}
+
+	// Rex failing for another reason fails the step.
+	x.answers["rex window close -s session:s1 window:w1"] = "!Error: cannot connect to the Rex server"
+	_, err = callOp(t, f.ctx, "ship.close-out", `{}`)
+	wantExit(t, err, 1)
+	if !strings.Contains(err.Error(), "cannot connect") {
+		t.Errorf("err = %v", err)
 	}
 }

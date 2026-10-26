@@ -840,3 +840,83 @@ max_visits = 2
 		})
 	}
 }
+
+const agentUntilWF = `
+name = "wf"
+[step.build]
+kind = "agent"
+prompt = "build {change}"
+until = "pr-open"
+interval = "2s"
+on.pass = "done"
+`
+
+// An idle session whose until holds passes the step and is left open: the
+// engine never waits for its exit.
+func TestAgentUntilHoldsWhenIdle(t *testing.T) {
+	e, r, _, _ := setup(t, agentUntilWF)
+	r.agentSeq["S-build"] = []AgentStatus{{}, {Idle: true}}
+	r.agentErr["S-build"] = errors.New("polled past the pass")
+	r.holds["build"] = []bool{true}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || r.polls["S-build"] != 2 || r.polls["build"] != 1 {
+		t.Fatalf("result %q detail %q polls %v", st.Result, st.Detail, r.polls)
+	}
+	if got := st.Steps[0].Detail; got != "idle and until held; session left open" {
+		t.Errorf("detail = %q", got)
+	}
+}
+
+// An idle session whose until does not hold keeps the step waiting, with
+// the condition checked once per idle poll; it still ends on the exit.
+func TestAgentUntilFailsKeepsWaiting(t *testing.T) {
+	e, r, c, _ := setup(t, agentUntilWF)
+	r.agentSeq["S-build"] = []AgentStatus{{Idle: true}, {Idle: true}, {}}
+	r.holds["build"] = []bool{false}
+	r.outcome["S-build"] = "pass"
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || r.polls["S-build"] != 4 || r.polls["build"] != 2 {
+		t.Fatalf("result %q polls %v", st.Result, r.polls)
+	}
+	if st.Steps[0].Detail != "exit 0" || len(c.sleeps) != 3 {
+		t.Errorf("detail %q sleeps %v", st.Steps[0].Detail, c.sleeps)
+	}
+}
+
+// A blocked session is never passed over, even when until holds and the
+// session also reads idle.
+func TestAgentUntilNotCheckedWhileBlocked(t *testing.T) {
+	e, r, _, _ := setup(t, agentUntilWF)
+	b := &Block{Kind: "question", Question: "Ship it?"}
+	r.agentSeq["S-build"] = []AgentStatus{{Blocked: b}, {Idle: true, Blocked: b}}
+	r.holds["build"] = []bool{true}
+	r.outcome["S-build"] = "fail"
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Failed || r.polls["build"] != 0 {
+		t.Fatalf("result %q polls %v: until was checked while blocked", st.Result, r.polls)
+	}
+}
+
+// A runner error from until ends the step with the error outcome.
+func TestAgentUntilErrorFailsRun(t *testing.T) {
+	e, r, _, _ := setup(t, agentUntilWF)
+	r.agentSeq["S-build"] = []AgentStatus{{Idle: true}}
+	// Only until fails: the session has started by the first poll.
+	r.onPoll = func(string, int) { r.failOn["build"] = errors.New("sh missing") }
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Failed || r.starts["build"] != 1 || !strings.Contains(st.Steps[0].Detail, "sh missing") {
+		t.Fatalf("result %q steps %+v", st.Result, st.Steps)
+	}
+}

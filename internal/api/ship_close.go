@@ -24,6 +24,7 @@ import (
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/session"
 )
 
 func init() {
@@ -92,8 +93,9 @@ type ShipCloseOutResponse struct {
 
 // ShipStep is one thing close-out does.
 type ShipStep struct {
-	Step   string `json:"step" desc:"What: remove-worktree, delete-branch, delete-remote-branch or update-main"`
+	Step   string `json:"step" desc:"What: remove-worktree, close-tab, delete-branch, delete-remote-branch or update-main"`
 	Result string `json:"result" desc:"done, already (nothing was left to do) or failed"`
+	Tab    string `json:"tab,omitempty" desc:"For close-tab, the Rex window of the change set's session"`
 	Detail string `json:"detail,omitempty" desc:"Why it failed"`
 }
 
@@ -344,8 +346,9 @@ func gitAt(ctx *Ctx, dir string, args ...string) (string, error) {
 	return string(out), err
 }
 
-// runShipCloseOut removes the worktree and the branch, locally and on
-// origin, then fast-forwards main, all from the main checkout. Each part
+// runShipCloseOut removes the worktree, closes the Rex tabs of the change
+// set's sessions, deletes the branch, locally and on origin, then
+// fast-forwards main, all from the main checkout. Each part
 // already done is reported as such. A dirty worktree fails git's remove,
 // and so the step: nothing is forced.
 func runShipCloseOut(ctx *Ctx, _ any) (any, error) {
@@ -378,6 +381,22 @@ func runShipCloseOut(ctx *Ctx, _ any) (any, error) {
 		step("remove-worktree", false)
 	} else {
 		return nil, Errorf("worktree %s: %v", t.worktree, err)
+	}
+
+	recs, err := session.NewStore(session.Dir(t.common)).List()
+	if err != nil {
+		return nil, Errorf("%v", err)
+	}
+	for _, rec := range recs {
+		if rec.Change != t.cs.String() || rec.Tab.Window == "" {
+			continue
+		}
+		closed, err := closeSessionTab(ctx, rec, t.main)
+		if err != nil {
+			return nil, err
+		}
+		resp.Steps = append(resp.Steps, ShipStep{Step: "close-tab", Tab: rec.Tab.Window,
+			Result: map[bool]string{true: "done", false: "already"}[closed]})
 	}
 
 	if _, err := gitAt(ctx, t.main, "rev-parse", "--verify", "--quiet", "refs/heads/"+t.branch); err == nil {
@@ -524,6 +543,7 @@ func (r ShipLandResponse) Human(w io.Writer) {
 // shipStepWords says each close-out step for people: done, then already.
 var shipStepWords = map[string][2]string{
 	"remove-worktree":      {"Removed worktree %s.", "Worktree %s was already gone."},
+	"close-tab":            {"Closed Rex tab %s.", "Rex tab %s was already closed."},
 	"delete-branch":        {"Deleted branch %s.", "Branch %s was already gone."},
 	"delete-remote-branch": {"Deleted origin/%s.", "origin/%s was already gone."},
 	"update-main":          {"Updated main in %s.", "main in %s was already current."},
@@ -537,7 +557,7 @@ func (r ShipCloseOutResponse) Human(w io.Writer) {
 			continue
 		}
 		arg := map[string]string{"remove-worktree": r.Worktree, "delete-branch": r.Branch,
-			"delete-remote-branch": r.Branch, "update-main": r.Main}[s.Step]
+			"delete-remote-branch": r.Branch, "update-main": r.Main, "close-tab": s.Tab}[s.Step]
 		words := shipStepWords[s.Step]
 		f := words[0]
 		if s.Result != "done" {

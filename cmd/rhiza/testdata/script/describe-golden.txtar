@@ -4291,6 +4291,10 @@ cmp stdout describe.golden.json
             "description": "Check the CI runs on the merge commit that rhiza ship merge recorded, instead of the pull request",
             "type": "boolean"
           },
+          "pr_open": {
+            "description": "Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)",
+            "type": "boolean"
+          },
           "settled": {
             "description": "Exit 0 once every check has finished, passed or not, instead of only when all passed; records nothing (for a wait step)",
             "type": "boolean"
@@ -4360,7 +4364,7 @@ cmp stdout describe.golden.json
             "type": "boolean"
           },
           "passed": {
-            "description": "True if the check asked for holds: settled with --settled, else green; the command exits 1 otherwise",
+            "description": "True if the check asked for holds: open with --pr-open, settled with --settled, else green; the command exits 1 otherwise",
             "type": "boolean"
           },
           "pr": {
@@ -4442,7 +4446,11 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "step": {
-                  "description": "What: remove-worktree, delete-branch, delete-remote-branch or update-main",
+                  "description": "What: remove-worktree, close-tab, delete-branch, delete-remote-branch or update-main",
+                  "type": "string"
+                },
+                "tab": {
+                  "description": "For close-tab, the Rex window of the change set's session",
                   "type": "string"
                 }
               },

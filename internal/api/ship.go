@@ -59,6 +59,7 @@ const shipDir = "rhiza/ship"
 type ShipCheckRequest struct {
 	Settled bool `json:"settled,omitempty" flag:"settled" desc:"Exit 0 once every check has finished, passed or not, instead of only when all passed; records nothing (for a wait step)"`
 	Main    bool `json:"main,omitempty" flag:"main" desc:"Check the CI runs on the merge commit that rhiza ship merge recorded, instead of the pull request"`
+	PROpen  bool `json:"pr_open,omitempty" flag:"pr-open" desc:"Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)"`
 }
 
 // ShipCheckResponse is what ship.check found.
@@ -74,7 +75,7 @@ type ShipCheckResponse struct {
 	Settled bool        `json:"settled" desc:"True if there is an open PR (or a merge commit) and every check on it has finished"`
 	Green   bool        `json:"green" desc:"True if settled and every check passed (success, neutral or skipped)"`
 	Failed  []string    `json:"failed,omitempty" desc:"The names of the settled checks that did not pass"`
-	Passed  bool        `json:"passed" desc:"True if the check asked for holds: settled with --settled, else green; the command exits 1 otherwise"`
+	Passed  bool        `json:"passed" desc:"True if the check asked for holds: open with --pr-open, settled with --settled, else green; the command exits 1 otherwise"`
 	Detail  string      `json:"detail,omitempty" desc:"Why it did not pass, such as no open pull request"`
 	Written bool        `json:"written,omitempty" desc:"True if the result was recorded in the state file for the next steps"`
 }
@@ -333,9 +334,13 @@ func checksVerdict(checks []ShipCheck) (settled, green bool, failed []string) {
 
 // runShipCheck checks the PR (or with Main the merge commit) and, when it
 // is green and Settled was not asked for, records it in the state file.
-// Nothing is recorded on failure.
+// Nothing is recorded on failure. With PROpen it asks only whether the PR
+// is open.
 func runShipCheck(ctx *Ctx, req any) (any, error) {
 	r := req.(ShipCheckRequest)
+	if r.PROpen && (r.Main || r.Settled) {
+		return nil, Usagef("--pr-open asks only whether the pull request is open; it takes neither --main nor --settled")
+	}
 	t, err := findShipTarget(ctx)
 	if err != nil {
 		return nil, err
@@ -375,6 +380,10 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		resp.PR, resp.URL, resp.State, resp.Commit, resp.Checks = v.Number, v.URL, v.State, v.Head, v.Checks
 		if !strings.EqualFold(v.State, "OPEN") {
 			resp.Detail = fmt.Sprintf("pull request #%d for branch %s is %s, not open", v.Number, t.branch, v.State)
+			return resp, nil
+		}
+		if r.PROpen {
+			resp.Passed = true
 			return resp, nil
 		}
 		if st.Pushed != "" && v.Head != st.Pushed {
@@ -495,6 +504,9 @@ func (r ShipCheckResponse) Human(w io.Writer) {
 		fmt.Fprintf(w, "%s.\n", r.Detail)
 	case r.State != "" && !strings.EqualFold(r.State, "OPEN"):
 		fmt.Fprintf(w, "%s.\n", r.Detail)
+	case r.Passed && !r.Settled:
+		// Only --pr-open passes without settled checks.
+		fmt.Fprintf(w, "%s: open from %s\n", what, r.Branch)
 	case r.Green:
 		fmt.Fprintf(w, "%s: %d %s passed\n", what, len(r.Checks), shipPlural(len(r.Checks), "check", "checks"))
 	default:
