@@ -9,6 +9,7 @@ import (
 
 	"github.com/dphaener/genesis/internal/changeset"
 	"github.com/dphaener/genesis/internal/id"
+	gmodel "github.com/dphaener/genesis/internal/model"
 	"github.com/dphaener/genesis/internal/op"
 )
 
@@ -81,6 +82,36 @@ func dependsOnOps(ops []op.Op) []op.Op {
 		}
 	}
 	return out
+}
+
+// dependent opens change set ref ("Dependent") depending on dep and
+// returns it and a ctx writing into it.
+func dependent(t *testing.T, ctx *Ctx, dep id.ID) (id.ID, *Ctx) {
+	t.Helper()
+	cs := newChange(t, ctx, `{"intent":"Dependent"}`).ChangeSet
+	c := *ctx
+	c.ChangeRef = cs.String()
+	planLink(t, &c, op.LinkDependsOn, cs, dep)
+	return cs, &c
+}
+
+// wantIntact fails unless cs has no revision conflicts, rests on nothing
+// dropped, shows no what-if problem, and resolves each handle.
+func wantIntact(t *testing.T, ctx *Ctx, cs id.ID, handles ...string) {
+	t.Helper()
+	w := ctxWorkspace(t, ctx)
+	sets := w.changeSets()
+	if rv, rs := changeset.Revised(sets, cs), changeset.RestsOn(sets, cs); rv != nil || rs != nil {
+		t.Errorf("%s: revised %+v, rests on %+v", cs, rv, rs)
+	}
+	if _, ps := gmodel.WhatIf(sets, cs); len(ps) != 0 {
+		t.Errorf("%s: problems %v", cs, ps)
+	}
+	for _, h := range handles {
+		if _, err := w.model(cs).Resolve(h); err != nil {
+			t.Errorf("%s: %s: %v", cs, h, err)
+		}
+	}
 }
 
 func TestCarve(t *testing.T) {
@@ -232,9 +263,73 @@ func TestCarve(t *testing.T) {
 			t.Errorf("source entry ops = %+v", sb.Ops)
 		}
 	})
+	t.Run("DependentRests", func(t *testing.T) {
+		// The source is left empty, but a change set that depends on it
+		// has a child under p and a link to it: the source still gains
+		// depends-on the target, so the dependent keeps seeing p.
+		ctx, in, src, tgt := carveCtx(t)
+		mustWrite(t, in, "add", `{"kind":"capability","handle":"p"}`)
+		b, inB := dependent(t, ctx, src)
+		mustWrite(t, inB, "add", `{"kind":"capability","handle":"bkid","parent":"p"}`)
+		mustWrite(t, inB, "add", `{"kind":"capability","handle":"bnode"}`)
+		mustWrite(t, inB, "link", `{"from":"bnode","type":"relates-to","to":"p","note":"n"}`)
+		r := mustCarve(t, ctx, src, tgt, false, "p")
+		dep := dependsOnOps(opsOf(t, ctx, src))
+		if len(dep) != 1 || dep[0].To != tgt || dep[0].Link != r.DependsOn || r.Next != "" {
+			t.Fatalf("depends-on = %+v, resp %+v", dep, r)
+		}
+		wantIntact(t, ctx, b, "p", "bkid", "bnode")
+		if out := human(t, r); !strings.Contains(out, "ops in "+shortID(b)+" rest on what moved") {
+			t.Errorf("human:\n%s", out)
+		}
+	})
+
+	t.Run("TransitiveDependentRests", func(t *testing.T) {
+		ctx, in, src, tgt := carveCtx(t)
+		mustWrite(t, in, "add", `{"kind":"capability","handle":"p"}`)
+		b, _ := dependent(t, ctx, src)
+		d, inD := dependent(t, ctx, b)
+		mustWrite(t, inD, "add", `{"kind":"capability","handle":"dkid","parent":"p"}`)
+		r := mustCarve(t, ctx, src, tgt, false, "p")
+		if r.DependsOn.IsZero() || r.Next != "" {
+			t.Fatalf("resp = %+v", r)
+		}
+		wantIntact(t, ctx, d, "p", "dkid")
+	})
+
+	t.Run("DependentRestsOnNothingMoved", func(t *testing.T) {
+		// A dependent that does not touch p adds no dependency.
+		ctx, in, src, tgt := carveCtx(t)
+		mustWrite(t, in, "add", `{"kind":"capability","handle":"p"}`)
+		_, inB := dependent(t, ctx, src)
+		mustWrite(t, inB, "add", `{"kind":"capability","handle":"other"}`)
+		r := mustCarve(t, ctx, src, tgt, false, "p")
+		if !r.DependsOn.IsZero() || r.Next == "" {
+			t.Errorf("resp = %+v", r)
+		}
+	})
 }
 
 func TestCarveRefused(t *testing.T) {
+	t.Run("DependentCycle", func(t *testing.T) {
+		// The target depends on the source, and a dependent of the source
+		// rests on p: the dependency it needs would close a loop.
+		ctx, in, src, tgt := carveCtx(t)
+		mustWrite(t, in, "add", `{"kind":"capability","handle":"p"}`)
+		planLink(t, ctx, op.LinkDependsOn, tgt, src)
+		b, inB := dependent(t, ctx, src)
+		mustWrite(t, inB, "add", `{"kind":"capability","handle":"bkid","parent":"p"}`)
+		before := logSize(t, ctx)
+		_, err := carve(t, ctx, src, tgt, false, "p")
+		wantExit(t, err, 3)
+		if e := AsError(err); !strings.Contains(e.Message, "ops in "+b.String()+" rest on what moves") ||
+			!strings.Contains(e.Message, "loop") || e.Next == "" {
+			t.Errorf("err = %q, next %q", e.Message, e.Next)
+		}
+		if n := logSize(t, ctx); n != before {
+			t.Errorf("wrote %d entries", n-before)
+		}
+	})
 	t.Run("Cycle", func(t *testing.T) {
 		ctx, in, src, tgt := carveCtx(t)
 		mustWrite(t, in, "add", `{"kind":"capability","handle":"p"}`)

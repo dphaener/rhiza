@@ -9,8 +9,9 @@ link starting or ending at it. `--with-children` adds the nodes created below, t
 - Node and link IDs stay the same; the moved ops get new op IDs.
 - One entry in the source drops the moved ops, one in the target re-creates them, and each
   names the other. `genesis log <node>` shows "Carved from X into Y" on both sides.
-- If ops left in the source rest on what moved (a child, a link), the source gains
-  `depends-on` the target. A carve that would close a loop is refused (exit 3).
+- If ops left in the source, or in a change set that depends on it, rest on what moved
+  (a child, a link), the source gains `depends-on` the target, so they keep seeing it. A
+  carve that would close a loop is refused (exit 3).
 - `--dry-run --json` shows the IDs the real run will use and writes nothing.
 
 ## Rules

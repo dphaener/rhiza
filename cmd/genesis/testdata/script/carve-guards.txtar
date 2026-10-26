@@ -102,7 +102,7 @@ cmp stdout before.txt
 # A cycle: leaf stays in A and rests on base, so A would depend on Cy, which
 # already depends on A.
 ! exec genesis carve base --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWH110D047SG185GTXKBCB
-stderr '^genesis: ops left in 01M5PWGP98GD3JXPKEPHTS0TQE rest on what moves, so it would depend on 01M5PWH110D047SG185GTXKBCB, and that would close a loop: 01M5PWH110D047SG185GTXKBCB already depends on 01M5PWGP98GD3JXPKEPHTS0TQE$'
+stderr '^genesis: ops left in 01M5PWGP98GD3JXPKEPHTS0TQE rest on what moves, so 01M5PWGP98GD3JXPKEPHTS0TQE would depend on 01M5PWH110D047SG185GTXKBCB, and that would close a loop: 01M5PWH110D047SG185GTXKBCB already depends on 01M5PWGP98GD3JXPKEPHTS0TQE$'
 stderr '^next: genesis change show 01M5PWH110D047$'
 ! exec genesis carve base --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWH110D047SG185GTXKBCB --json
 stdout '"code": "conflict"'

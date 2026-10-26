@@ -10,10 +10,12 @@ package api
 // A carve is two entries that name each other: one in the source dropping
 // the moved ops, and one in the target re-creating them under new op IDs,
 // with each base among them rewritten to the new ID. When an op left in the
-// source still rests on a moved node or link, the source's entry also
-// links it depends-on the target, unless it already does; a link that
-// would close a loop is refused. A source left with no ops is not
-// withdrawn; the response says how to.
+// source, or a current op of an in-flight change set that depends on the
+// source directly or through others, still rests on a moved node or link,
+// the source's entry also links it depends-on the target, unless it
+// already does: a dependent sees the source's dependencies, so it keeps
+// seeing what moved. A link that would close a loop is refused. A source
+// left with no ops is not withdrawn; the response says how to.
 //
 // Before anything is written, and before the actor is resolved, both
 // entries are built and put in the workspace's pending entries for a
@@ -74,6 +76,7 @@ type CarveResponse struct {
 	Next        string            `json:"next,omitempty" desc:"A command that would help: withdrawing the source, when the carve left it with no ops"`
 
 	handles map[id.ID]string
+	restsIn id.ID
 }
 
 // Human reports the carve: the nodes and links moved, the dependency
@@ -98,8 +101,12 @@ func (r CarveResponse) Human(w io.Writer) {
 	}
 	fmt.Fprintf(w, "\nMoved %d op(s) under new op IDs.\n", len(r.Ops))
 	if !r.DependsOn.IsZero() {
-		fmt.Fprintf(w, "%s now depends on %s (link %s): ops left there rest on what moved.\n",
-			shortID(r.Source), shortID(r.Target), r.DependsOn)
+		why := "ops left there"
+		if r.restsIn != r.Source {
+			why = "ops in " + shortID(r.restsIn)
+		}
+		fmt.Fprintf(w, "%s now depends on %s (link %s): %s rest on what moved.\n",
+			shortID(r.Source), shortID(r.Target), r.DependsOn, why)
 	}
 	if r.Next != "" {
 		fmt.Fprintf(w, "\n%s has no ops left.\nnext: %s\n", shortID(r.Source), r.Next)
@@ -116,6 +123,7 @@ type carvePlan struct {
 	source, target     changeset.Ops
 	srcEntry, tgtEntry id.ID
 	dependsOn          id.ID
+	restsIn            id.ID
 }
 
 // runCarve builds and checks the carve, resolves the actor once (building
@@ -156,7 +164,7 @@ func runCarve(ctx *Ctx, r CarveRequest) (any, error) {
 
 	resp := CarveResponse{Source: p.from, Target: p.to, SourceEntry: p.srcEntry, TargetEntry: p.tgtEntry,
 		Nodes: slices.SortedFunc(slices.Values(p.nodes), id.Compare), Dropped: p.dropped, Ops: p.created,
-		DependsOn: p.dependsOn, DryRun: ctx.DryRun, handles: p.handles}
+		DependsOn: p.dependsOn, DryRun: ctx.DryRun, handles: p.handles, restsIn: p.restsIn}
 	if len(p.links) > 0 {
 		resp.Links = slices.SortedFunc(slices.Values(p.links), id.Compare)
 	}
@@ -270,14 +278,32 @@ func planCarve(w *workspace, r CarveRequest) (carvePlan, error) {
 			kept = append(kept, o)
 		}
 	}
-	rests := slices.ContainsFunc(kept, func(o op.Op) bool {
+	rests := func(o op.Op) bool {
 		return moved[o.Decision] || slices.ContainsFunc(changeset.Names(o), func(n id.ID) bool { return moved[n] })
-	})
+	}
+	// restsIn is the source if an op left there rests on what moves, else
+	// the first in-flight dependent of the source (by ID) whose op does.
 	sets := w.changeSets()
-	needDep := rests && !slices.Contains(changeset.DependsOn(sets, src.ID), tgt.ID)
+	if slices.ContainsFunc(kept, rests) {
+		p.restsIn = src.ID
+	} else {
+		a := changeset.Analyze(sets)
+		for _, x := range sets {
+			if x.ID != src.ID && !x.State.Terminal() && slices.Contains(a.Closure(x.ID), src.ID) &&
+				slices.ContainsFunc(x.Ops, rests) {
+				p.restsIn = x.ID
+				break
+			}
+		}
+	}
+	needDep := !p.restsIn.IsZero() && !slices.Contains(changeset.DependsOn(sets, src.ID), tgt.ID)
 	if needDep && changeset.WouldCycle(sets, src.ID, tgt.ID) {
-		return carvePlan{}, Conflictf("ops left in %s rest on what moves, so it would depend on %s, and that would close a loop: %s already depends on %s",
-			src.ID, tgt.ID, tgt.ID, src.ID).WithNext("genesis change show " + shortID(tgt.ID))
+		why := "ops left in " + src.ID.String()
+		if p.restsIn != src.ID {
+			why = "ops in " + p.restsIn.String()
+		}
+		return carvePlan{}, Conflictf("%s rest on what moves, so %s would depend on %s, and that would close a loop: %s already depends on %s",
+			why, src.ID, tgt.ID, tgt.ID, src.ID).WithNext("genesis change show " + shortID(tgt.ID))
 	}
 
 	newID := func() (id.ID, error) {
