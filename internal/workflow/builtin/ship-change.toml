@@ -17,6 +17,23 @@ on.pass = "pr-green"
 [step.pr-green]
 kind = "command"
 run = "rhiza ship check"
+on.pass = "rebase"
+
+[step.rebase]
+kind = "command"
+run = "rhiza ship rebase"
+on.pass = "wait-rebased"
+
+[step.wait-rebased]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "2h"
+interval = "30s"
+on.pass = "rebased-green"
+
+[step.rebased-green]
+kind = "command"
+run = "rhiza ship check"
 on.pass = "land"
 
 [step.land]
@@ -32,6 +49,23 @@ interval = "30s"
 on.pass = "landed-green"
 
 [step.landed-green]
+kind = "command"
+run = "rhiza ship check"
+on.pass = "rebase-merge"
+
+[step.rebase-merge]
+kind = "command"
+run = "rhiza ship rebase"
+on.pass = "wait-rebased-merge"
+
+[step.wait-rebased-merge]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "2h"
+interval = "30s"
+on.pass = "rebased-merge-green"
+
+[step.rebased-merge-green]
 kind = "command"
 run = "rhiza ship check"
 on.pass = "merge"

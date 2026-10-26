@@ -41,6 +41,7 @@ exec rhiza run status
 stdout '^- build \(visit 1\): pass, then wait-pr, session [0-9a-f-]{36}: exit 0 and until held$'
 stdout '^- wait-pr \(visit 1\): pass, then pr-green: held after [0-9]+ checks?$'
 stdout '^- pr-green \(visit 1\): fail, then end: exit 1$'
+! stdout '^- rebase '
 ! stdout '^- land '
 
 # Nothing merged; the change set is still accepted, its branch and

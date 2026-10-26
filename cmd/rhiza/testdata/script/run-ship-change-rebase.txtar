@@ -1,0 +1,275 @@
+# The built-in ship-change run rebases a PR that main has moved past:
+# before landing and again before merging, rhiza ship rebase fetches
+# origin and, when origin's main has commits the branch lacks, rebases the
+# branch onto it.
+#
+# Case 1: main moves after the land commit is pushed (another change set
+# landed and rendered there), so the land commit's rendered index.md
+# conflicts. Conflicts only under .rhiza/rendered/ are settled by
+# rendering again; the run pushes the rebased head with a lease, waits for
+# CI on it and merges it.
+#
+# Case 2: main moves while the agent builds, with a commit that adds the
+# same file the agent adds. That conflict is not a rendered one: the
+# rebase is aborted, the step and the run fail, and a question in the
+# change set names the file.
+#
+# The fakes are run-ship-change.txtar's, except that gh finds origin from
+# the checkout it runs in, and moves main at a set point: case 1's gh
+# pushes a prepared commit to origin's main the first time it sees the
+# land commit as the PR's head; case 2's agent pushes one while it builds.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+
+# Case 1: a rendered-only conflict.
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability shipping --field 'statement=Ships a change set'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza render
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+
+# Another change set lands on main while this one ships: prepared in a
+# clone (with its own ID seed, so its IDs differ), pushed by the fake gh.
+exec git clone -q $WORK/origin.git $WORK/other
+cd $WORK/other
+env RHIZA_TEST_SEED=2
+exec rhiza change new 'Other' --title 'Other'
+exec rhiza add capability other --field 'statement=Does another thing'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+exec rhiza render
+stdout 'index\.md'
+exec git add -A
+exec git commit -qm 'Land other'
+env RHIZA_TEST_SEED=1
+cd $WORK/repo
+exec touch $WORK/move-main
+
+exec sh -c 'rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual; echo exit=$?'
+stdout '^exit=0$'
+stdout '^Run \S+ succeeded$'
+# Main had not moved before the land; it had before the merge, and the
+# rendered conflict was settled.
+stderr '^cs/ship-it already holds origin/main at [0-9a-f]{7}; nothing to rebase\.$'
+stderr '^Rebased cs/ship-it onto origin/main at [0-9a-f]{7}\.$'
+stderr '^Settled 1 rendered file by rendering again\.$'
+! exists $WORK/move-main
+
+exec rhiza run status
+stdout '^- rebase \(visit 1\): pass, then wait-rebased: exit 0$'
+stdout '^- land \(visit 1\): pass, then wait-landed: exit 0$'
+stdout '^- landed-green \(visit 1\): pass, then rebase-merge: exit 0$'
+stdout '^- rebase-merge \(visit 1\): pass, then wait-rebased-merge: exit 0$'
+stdout '^- wait-rebased-merge \(visit 1\): pass, then rebased-merge-green: held after [0-9]+ checks?$'
+stdout '^- rebased-merge-green \(visit 1\): pass, then merge: exit 0$'
+stdout '^- merge \(visit 1\): pass, then wait-main: exit 0$'
+stdout '^- ship \(visit 1\): pass, then end: exit 0$'
+
+# The merge was pinned to the rebased head, which holds the other change
+# set's commit and is not the land head CI first passed.
+exec sh -c 'grep -c -x "pr merge 7 --squash --match-head-commit $(cat $WORK/landed.sha)" $WORK/gh.log'
+stdout '^1$'
+exec sh -c 'test "$(cat $WORK/landed.sha)" != "$(cat $WORK/before.sha)" && echo moved'
+stdout '^moved$'
+exec sh -c 'git -C $WORK/origin.git merge-base --is-ancestor $(cat $WORK/other.sha) $(cat $WORK/landed.sha) && echo rebased'
+stdout '^rebased$'
+
+# Main now holds both change sets, rendered from the model: the index
+# names both capabilities, and rhiza check finds nothing stale.
+exec sh -c 'test "$(git rev-parse HEAD)" = "$(cat $WORK/merge.sha)" && echo same'
+stdout '^same$'
+exec cat .rhiza/rendered/index.md
+stdout 'shipping'
+stdout 'other'
+! stdout '<<<<<<<|>>>>>>>'
+exec rhiza check
+! stdout 'stale'
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- State: landed'
+fold-ok
+
+# Release case 1's agent once its tab is closed, and reset the markers.
+exec sh -c 'i=0; until [ -f "$WORK/claude.done" ]; do i=$((i+1)); [ $i -gt 400 ] && exit 1; sleep 0.025; done; cat "$WORK/claude.done"'
+stdout '^tab closed$'
+rm $WORK/claude.idle
+rm $WORK/claude.done
+rm $WORK/tab.closed
+rm $WORK/gh.log
+
+# Case 2: a code conflict.
+cd $WORK
+exec git init -q --bare origin2.git
+mkdir repo2
+cd repo2
+exec git init -q
+exec git remote add origin $WORK/origin2.git
+exec rhiza init
+exec rhiza change new 'Ship two' --title 'Ship two' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability shipping --field 'statement=Ships a change set'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+
+# main gets its own feature.txt; the agent pushes it while it builds.
+exec git clone -q $WORK/origin2.git $WORK/other2
+cd $WORK/other2
+exec sh -c 'echo theirs > feature.txt'
+exec git add feature.txt
+exec git commit -qm 'Add a feature on main'
+cd $WORK/repo2
+
+! exec rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
+stdout '^Run \S+ failed$'
+stdout '^- Detail: step "rebase" ended with outcome "fail"$'
+stderr '^Rebasing cs/ship-two onto origin/main at [0-9a-f]{7} conflicts in:$'
+stderr '^- feature\.txt$'
+stderr '^Raised question rebase-conflict-ship-two\.$'
+
+exec rhiza run status
+stdout '^- rebase \(visit 1\): fail, then end: exit 1$'
+! stdout '^- land '
+! grep '^pr merge' $WORK/gh.log
+
+# The branch is as the agent left it, plus the question's commit, which is
+# not pushed; no rebase is left in progress.
+cd $WORK/repo2.ship-two
+exec git status
+! stdout 'rebase'
+exec git log -1 --format=%s
+stdout '^Raise a question on the rebase conflicts$'
+exec sh -c 'test "$(git rev-parse HEAD~1)" = "$(git -C $WORK/origin2.git rev-parse refs/heads/cs/ship-two)" && echo unpushed'
+stdout '^unpushed$'
+exec cat feature.txt
+stdout '^built$'
+
+# The question is in the change set and names the conflicting file.
+exec rhiza ls --kind question --json
+stdout '"handle": "rebase-conflict-ship-two"'
+exec rhiza show rebase-conflict-ship-two
+stdout 'feature\.txt'
+stdout 'cs/ship-two onto origin/main'
+fold-ok
+
+# Release case 2's agent.
+exec touch $WORK/tab.closed
+exec sh -c 'i=0; until [ -f "$WORK/claude.done" ]; do i=$((i+1)); [ $i -gt 400 ] && exit 1; sleep 0.025; done; cat "$WORK/claude.done"'
+stdout '^tab closed$'
+
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+if [ "$1 $2" = "window close" ]; then
+	touch "$WORK/tab.closed"
+	exit 0
+fi
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >"$WORK/tab.out" 2>&1 </dev/null &
+		break
+	fi
+	shift
+done
+i=0
+until [ -f "$WORK/claude.idle" ]; do
+	i=$((i + 1))
+	if [ $i -gt 800 ]; then
+		echo 'fake rex: the agent never went idle' >&2
+		exit 1
+	fi
+	sleep 0.025
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+sid=
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
+echo built > feature.txt
+git add feature.txt
+git commit -qm 'Build the feature'
+git push -q -u origin HEAD
+if [ -d "$WORK/other2" ]; then
+	git -C "$WORK/other2" push -q origin HEAD:main || exit 6
+fi
+echo '{"session_id":"'$sid'","hook_event_name":"Stop"}' | rhiza session hook Stop >> "$WORK/hook.out" || exit 8
+rhiza session done >> "$WORK/done.out" || exit 7
+touch "$WORK/claude.idle"
+i=0
+until [ -f "$WORK/tab.closed" ]; do
+	i=$((i + 1))
+	if [ $i -gt 2400 ]; then
+		echo 'timed out' > "$WORK/claude.done"
+		exit 9
+	fi
+	sleep 0.025
+done
+echo 'tab closed' > "$WORK/claude.done"
+exit 129
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+o=$(git remote get-url origin)
+case "$1 $2" in
+"pr view")
+	if [ "$3" = 7 ]; then
+		printf '{"mergeCommit":{"oid":"%s"},"state":"MERGED"}\n' "$(cat "$WORK/merge.sha")"
+		exit 0
+	fi
+	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3"); then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	# Case 1: main moves once CI has seen the land commit.
+	if [ -f "$WORK/move-main" ] && [ "$(git -C "$o" log -1 --format=%s "$head")" = "Land the change set and record its CI" ]; then
+		git -C "$WORK/other" push -q origin HEAD:main || exit 1
+		git -C "$WORK/other" rev-parse HEAD > "$WORK/other.sha"
+		echo "$head" > "$WORK/before.sha"
+		rm "$WORK/move-main"
+	fi
+	echo "$head" > "$WORK/landed.sha"
+	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"},{"context":"lint","state":"SUCCESS"}]}\n' "$head"
+	;;
+"pr merge")
+	head=$(git -C "$o" rev-parse refs/heads/cs/ship-it)
+	if [ "$6" != "$head" ]; then
+		echo "head branch was modified" >&2
+		exit 1
+	fi
+	sha=$(git -C "$o" commit-tree "$head^{tree}" -p refs/heads/main -m 'Ship it (#7)')
+	git -C "$o" update-ref refs/heads/main "$sha"
+	echo "$sha" > "$WORK/merge.sha"
+	;;
+"run list")
+	echo '[{"name":"ci","status":"completed","conclusion":"success"}]'
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

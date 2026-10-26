@@ -1,7 +1,9 @@
 # run start with no --workflow runs the built-in ship-change workflow end
 # to end: the agent builds and pushes the branch, the run waits for the
-# PR's checks, lands the change set on the PR branch with the PR recorded
-# as Evidence, waits for CI on that head, squash merges pinned to it, waits
+# PR's checks, finds main has not moved (nothing to rebase), lands the
+# change set on the PR branch with the PR recorded as Evidence, waits for
+# CI on that head, finds main still has not moved, squash merges pinned
+# to it, waits
 # for main to go green, closes out (worktree, branch and origin branch
 # gone, main pulled) and then runs the repo's own ship command.
 #
@@ -54,10 +56,16 @@ stdout '"state": "succeeded"'
 exec rhiza run status
 stdout '^- build \(visit 1\): pass, then wait-pr, session [0-9a-f-]{36}: said done and until held; session left open$'
 stdout '^- wait-pr \(visit 1\): pass, then pr-green: held after [0-9]+ checks?$'
-stdout '^- pr-green \(visit 1\): pass, then land: exit 0$'
+stdout '^- pr-green \(visit 1\): pass, then rebase: exit 0$'
+stdout '^- rebase \(visit 1\): pass, then wait-rebased: exit 0$'
+stdout '^- wait-rebased \(visit 1\): pass, then rebased-green: held after [0-9]+ checks?$'
+stdout '^- rebased-green \(visit 1\): pass, then land: exit 0$'
 stdout '^- land \(visit 1\): pass, then wait-landed: exit 0$'
 stdout '^- wait-landed \(visit 1\): pass, then landed-green: held after [0-9]+ checks?$'
-stdout '^- landed-green \(visit 1\): pass, then merge: exit 0$'
+stdout '^- landed-green \(visit 1\): pass, then rebase-merge: exit 0$'
+stdout '^- rebase-merge \(visit 1\): pass, then wait-rebased-merge: exit 0$'
+stdout '^- wait-rebased-merge \(visit 1\): pass, then rebased-merge-green: held after [0-9]+ checks?$'
+stdout '^- rebased-merge-green \(visit 1\): pass, then merge: exit 0$'
 stdout '^- merge \(visit 1\): pass, then wait-main: exit 0$'
 stdout '^- wait-main \(visit 1\): pass, then main-green: held after [0-9]+ checks?$'
 stdout '^- main-green \(visit 1\): pass, then close-out: exit 0$'

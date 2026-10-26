@@ -372,7 +372,8 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if !strings.Contains(build.Prompt, "rhiza session done") {
 		t.Error("build prompt does not tell the agent to run rhiza session done")
 	}
-	want := []string{"build", "wait-pr", "pr-green", "land", "wait-landed", "landed-green", "merge", "wait-main", "main-green", "close-out", "ship"}
+	want := []string{"build", "wait-pr", "pr-green", "rebase", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
+		"rebase-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
 	}
