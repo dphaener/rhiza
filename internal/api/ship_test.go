@@ -391,6 +391,10 @@ func TestShipEvidenceFields(t *testing.T) {
 	}
 }
 
+// shipTestActor is the handle of the actor testCtx's git user.email
+// (test@example.com) records on the first write.
+const shipTestActor = "test"
+
 // shipLandFixture is a ship fixture whose change set adds a capability and
 // is accepted, with the PR's checks recorded and git answering as on the
 // PR branch.
@@ -411,7 +415,7 @@ func shipLandFixture(t *testing.T) (*sessionFixture, string, id.ID) {
 		"symbolic-ref --short HEAD":           "cs/ship-it\n",
 		"add -- .rhiza":                       "",
 		"diff --cached --name-only -- .rhiza": ".rhiza/rendered/x.md\n",
-		"commit -m " + shipLandMessage + " -m Change: " + currentOf(t, f.ctx).String() + " -- .rhiza": "",
+		"commit -m " + shipLandMessage + " -m Change: " + currentOf(t, f.ctx).String() + "\nActor: " + shipTestActor + " -- .rhiza": "",
 		"rev-parse HEAD": "beef000111\n",
 		"rev-parse --abbrev-ref --symbolic-full-name @{upstream}": "origin/cs/ship-it\n",
 		"rev-list --count @{upstream}..HEAD":                      "1\n",

@@ -44,12 +44,14 @@ You work on an accepted change set (`rhiza ready` names the next one). The contr
    `rhiza change new "<intent>" --json` makes the new one current, so then run
    `rhiza link <new> discovered-from <this> --change <new> --json` and
    `rhiza change use <this>` to go back (`RHIZA_CHANGE`, if set, still wins).
-5. Add a `Change: <id>` trailer to every commit, with the change set's ID:
+5. End every commit with a `Change: <id>` trailer, the change set's ID, and an
+   `Actor: <handle>` trailer naming who made it, from `RHIZA_ACTOR`:
 
    ```
    Stream CSV exports
 
    Change: 01M5PWGEF85Y185JZ2ZGCNH40N
+   Actor: claude-code-1a2b3c4d
    ```
 
 6. Finish with `rhiza land --json`, then `rhiza render`, committed as the last commit.

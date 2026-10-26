@@ -8,6 +8,11 @@ exec rhiza guide
 stdout '^# Rhiza$'
 stdout '^## The core loop$'
 stdout '^## Hard rules$'
+# Its commit example carries an Actor: trailer beside Change:.
+stdout '^   Change: 01M5PWGEF85Y185JZ2ZGCNH40N$'
+stdout '^   Actor: claude-code-1a2b3c4d$'
+stdout 'RHIZA_ACTOR'
+! stdout 'Leaf:'
 ! stderr .
 cp stdout skill.md
 exec rhiza guide rhiza

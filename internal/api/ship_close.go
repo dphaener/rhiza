@@ -208,6 +208,10 @@ func runShipLand(ctx *Ctx, _ any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	actor, err := shipActorHandle(w, t.cs, ctx)
+	if err != nil {
+		return nil, err
+	}
 	if c, _ := w.changeSet(t.cs); c.State != changeset.StateLanded {
 		land, _ := Lookup("land")
 		lctx := *ctx
@@ -232,7 +236,7 @@ func runShipLand(ctx *Ctx, _ any) (any, error) {
 		return nil, Errorf("%v", err)
 	}
 	if strings.TrimSpace(staged) != "" {
-		if _, err := ctx.Git("commit", "-m", shipLandMessage, "-m", "Change: "+t.cs.String(), "--", ".rhiza"); err != nil {
+		if _, err := ctx.Git("commit", "-m", shipLandMessage, "-m", "Change: "+t.cs.String()+"\nActor: "+actor, "--", ".rhiza"); err != nil {
 			return nil, Errorf("%v", err)
 		}
 		if resp.Commit, err = gitHead(ctx); err != nil {
@@ -253,6 +257,21 @@ func runShipLand(ctx *Ctx, _ any) (any, error) {
 		}
 	}
 	return resp, nil
+}
+
+// shipActorHandle is the handle of the actor making ship's land commit,
+// resolved as every write resolves it (RHIZA_ACTOR, else git's
+// user.email), for the commit's Actor: trailer. A node with no handle
+// gives its ID.
+func shipActorHandle(w *workspace, cs id.ID, ctx *Ctx) (string, error) {
+	actor, _, err := w.resolveActor(cs, ctx)
+	if err != nil {
+		return "", err
+	}
+	if n, ok := w.model(cs).Node(actor); ok && n.Handle != "" {
+		return n.Handle, nil
+	}
+	return actor.String(), nil
 }
 
 // shipRecordEvidence writes the Evidence node and its verifies links in

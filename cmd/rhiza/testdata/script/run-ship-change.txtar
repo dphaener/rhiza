@@ -87,10 +87,17 @@ grep '^pr view 7 --json mergeCommit,state$' $WORK/gh.log
 exec sh -c 'grep -c -x "run list --commit $(cat $WORK/merge.sha) --json name,status,conclusion" $WORK/gh.log'
 ! stdout '^0$'
 
-# The land commit is the PR head's last commit, with the Change trailer.
+# The land commit is the PR head's last commit, with the Change trailer
+# and an Actor trailer naming the run's actor (git's user.email here), in
+# one trailer block, so git reads both as trailers.
 exec sh -c 'git -C $WORK/origin.git log -1 --format=%B $(cat $WORK/landed.sha)'
 stdout '^Land the change set and record its CI$'
 stdout '^Change: 01M5PWGEF85Y185JZ2ZGCNH40N$'
+stdout '^Actor: test$'
+exec sh -c 'git -C $WORK/origin.git log -1 --format="%(trailers:only,unfold)" $(cat $WORK/landed.sha)'
+stdout -count=2 '^.+$'
+stdout '^Change: 01M5PWGEF85Y185JZ2ZGCNH40N$'
+stdout '^Actor: test$'
 
 # Close-out: no worktree, no local branch, no branch on origin, and main
 # here is the merge commit.
