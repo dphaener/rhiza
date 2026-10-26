@@ -552,8 +552,118 @@ func FuzzDecode(f *testing.F) {
 		if !reflect.DeepEqual(again, o) {
 			t.Fatalf("re-Decode = %#v, want %#v", again, o)
 		}
+		trusted, err := DecodeCanonical(indented(string(out), 2))
+		if err != nil {
+			t.Fatalf("DecodeCanonical(Encode(...)) failed: %v", err)
+		}
+		if !reflect.DeepEqual(trusted, o) {
+			t.Fatalf("DecodeCanonical = %#v, want %#v", trusted, o)
+		}
 		if o.Target().IsZero() {
 			t.Fatalf("decoded op has a zero target: %#v", o)
 		}
 	})
 }
+
+// indented returns doc as it appears inside an entry body: every line but
+// the first starts with depth levels of two-space indentation.
+func indented(doc string, depth int) json.RawMessage {
+	return json.RawMessage(strings.ReplaceAll(doc, "\n", "\n"+strings.Repeat("  ", depth)))
+}
+
+// canonicalDoc returns m's canonical JSON without the final newline.
+func canonicalDoc(t testing.TB, m map[string]any) string {
+	t.Helper()
+	out, err := canon.Marshal(m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return strings.TrimSuffix(string(out), "\n")
+}
+
+// TestDecodeCanonicalMatchesDecode checks that DecodeCanonical gives
+// Decode's op for every golden op at every indentation an entry body puts
+// it at, and Decode's error, word for word, for every shape and rule
+// mutation.
+func TestDecodeCanonicalMatchesDecode(t *testing.T) {
+	for _, g := range golden {
+		want, err := Decode(json.RawMessage(g.doc))
+		if err != nil {
+			t.Fatalf("%s: %v", g.typ, err)
+		}
+		for depth := 0; depth <= 3; depth++ {
+			in := indented(g.doc, depth)
+			got, err := DecodeCanonical(in)
+			if err != nil {
+				t.Fatalf("%s at depth %d: %v", g.typ, depth, err)
+			}
+			if !reflect.DeepEqual(got, want) {
+				t.Fatalf("%s at depth %d: DecodeCanonical =\n%#v\nDecode =\n%#v", g.typ, depth, got, want)
+			}
+		}
+	}
+	for _, cases := range [][]mutation{shapeCases, ruleCases} {
+		for _, tc := range cases {
+			t.Run(tc.name, func(t *testing.T) {
+				m := base(t, tc.typ)
+				tc.edit(m)
+				in := indented(canonicalDoc(t, m), 2)
+				_, wantErr := Decode(in)
+				if wantErr == nil {
+					t.Fatal("Decode accepted the mutation")
+				}
+				_, gotErr := DecodeCanonical(in)
+				if gotErr == nil {
+					t.Fatalf("DecodeCanonical accepted %s", in)
+				}
+				if gotErr.Error() != wantErr.Error() {
+					t.Fatalf("DecodeCanonical error %q, Decode error %q", gotErr, wantErr)
+				}
+			})
+		}
+	}
+}
+
+func TestDecodeCanonicalSyntaxInvalid(t *testing.T) {
+	for _, in := range []string{``, `[]`, `"op"`, `null`, `{`, `{} {}`} {
+		t.Run(in, func(t *testing.T) {
+			if _, err := DecodeCanonical(json.RawMessage(in)); !errors.Is(err, ErrInvalid) {
+				t.Fatalf("DecodeCanonical(%q) = %v, want ErrInvalid", in, err)
+			}
+		})
+	}
+}
+
+func TestDeindent(t *testing.T) {
+	for _, tc := range []struct{ in, want string }{
+		{"{\n    \"a\": 1,\n    \"b\": [\n      2\n    ]\n  }", "{\n  \"a\": 1,\n  \"b\": [\n    2\n  ]\n}"},
+		{"[\n  1\n]", "[\n  1\n]"},
+		{"{}", "{}"},
+		{"3", "3"},
+		{`"a\nb"`, `"a\nb"`},
+		{"{\n\"a\": 1\n}", "{\n\"a\": 1\n}"},
+	} {
+		if got := string(deindent([]byte(tc.in))); got != tc.want {
+			t.Errorf("deindent(%q) = %q, want %q", tc.in, got, tc.want)
+		}
+	}
+}
+
+// benchDecode decodes the golden ops as they sit in an entry body.
+func benchDecode(b *testing.B, decode func(json.RawMessage) (Op, error)) {
+	docs := make([]json.RawMessage, len(golden))
+	for i, g := range golden {
+		docs[i] = indented(g.doc, 2)
+	}
+	b.ReportAllocs()
+	for b.Loop() {
+		for _, d := range docs {
+			if _, err := decode(d); err != nil {
+				b.Fatal(err)
+			}
+		}
+	}
+}
+
+func BenchmarkDecode(b *testing.B)          { benchDecode(b, Decode) }
+func BenchmarkDecodeCanonical(b *testing.B) { benchDecode(b, DecodeCanonical) }
