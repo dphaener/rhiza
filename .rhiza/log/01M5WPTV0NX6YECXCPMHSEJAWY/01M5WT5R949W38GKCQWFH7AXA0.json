@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5WR41KCYZTNPBN2KV1WK4NH"
+  ],
+  "at": "2026-10-26T19:14:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Each build commit names the leaf it builds with a Leaf: <handle> trailer beside its Change: trailer, so the Evidence-actor warning compares only that leaf's commits.",
+          "wording": "the orchestrator's ruling as arbiter, under the owner's instruction to be the arbiter (milestone-3 conversation); not the owner's words"
+        },
+        "handle": "leaf-trailer-on-build-commits",
+        "id": "01M5WT5QZENJ8RMZ9W508EDM4T",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WT5QZENJ8RMZ9W4YQ9M19D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WT5QZENJ8RMZ9W4YQ9M19D",
+        "id": "01M5WT5R38YK08CV8KJSKBAAGV",
+        "link": "01M5WT5R38YK08CV8KJNRW7C9P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WR41AGM8419PSHHCB0B630",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M5WPTV0NX6YECXCPMHSEJAWY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WT5R949W38GKCQWFH7AXA0",
+  "type": "ops",
+  "v": 1
+}

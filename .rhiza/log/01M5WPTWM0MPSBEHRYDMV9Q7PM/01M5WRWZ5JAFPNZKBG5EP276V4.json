@@ -1,0 +1,282 @@
+{
+  "actor": "01M5WQX8K83SE3FRCPBBNVP3H7",
+  "after": [
+    "01M5WQAKNB10ENGAT269449Z68"
+  ],
+  "at": "2026-10-26T18:52:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript runs a workflow on a fake adapter whose agent sends one SendMessage and leaves a transcript with token usage: the run's journal has a message entry and a tokens entry for the session, run status --json lists the message and the session's token use, and session show --json gives the same token use.",
+          "statement": "A run's journal records every message its sessions send each other through Claude Code's SendMessage, with sender, recipient and text, and each of its sessions' token use, and rhiza run status and rhiza session show show both."
+        },
+        "handle": "session-journal",
+        "id": "01M5WRWWARC3CG3GN0Y5MSDZJP",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M5WRWWARC3CG3GN0Y485B6NJ",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWWARC3CG3GN0Y485B6NJ",
+        "id": "01M5WRWWEFJ4FTVZ17RQY3PNMH",
+        "link": "01M5WRWWEFJ4FTVZ17RPMRFP8P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPAR7NQ64KWYSWKDNQ42",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWWARC3CG3GN0Y485B6NJ",
+        "id": "01M5WRWWJ778PST70AQRN51J1T",
+        "link": "01M5WRWWJ778PST70AQNG6SBKQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTQ8TH17R4YA0Y81CQN0V",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go adapter tests feed PostToolUse payloads recorded from a real SendMessage call (one plain, one with newlines and quotes in its text), a PostToolUse payload for another tool, a malformed SendMessage input and each other hook event: SendMessage gives the recipient and the verbatim text, the rest give no message, a malformed input is an error, and HookStatus returns the same report as before for all of them. The settings JSON still installs one PostToolUse hook with no matcher.",
+          "statement": "The Claude Code adapter reads a PostToolUse hook payload whose tool is SendMessage as a message: the recipient and the text exactly as the tool's input gives them. Every other tool and every other event gives no message, and the status the hook reports is unchanged."
+        },
+        "handle": "message-hook-payload",
+        "id": "01M5WRWWNXTXNFMZMGZJR480PY",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5WRWWNXTXNFMZMGZFM46D6F",
+        "op": "node.create",
+        "parent": "01M5WRWWARC3CG3GN0Y485B6NJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWWNXTXNFMZMGZFM46D6F",
+        "id": "01M5WRWWSJPFTTSGV1AQEE9S0R",
+        "link": "01M5WRWWSJPFTTSGV1APTWBBD5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPAR7NQ64KWYSWKDNQ42",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWWNXTXNFMZMGZFM46D6F",
+        "id": "01M5WRWWX8YJATHDJF6BTS51E9",
+        "link": "01M5WRWWX8YJATHDJF6BCRPVHS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTQ8TH17R4YA0Y81CQN0V",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript launches a session in a run with a fake Rex, then pipes a SendMessage PostToolUse payload naming that session into rhiza session hook PostToolUse: the run's journal gains one message entry with the step, the session ID, the session's actor, the recipient and the text, and the session's recorded status is the same as for any PostToolUse. The same payload for a session outside any run, and for a run whose journal is unwritable, exits 0 and adds no entry; the journal's existing entries still fold.",
+          "statement": "When a session that belongs to a run sends a message, rhiza session hook appends a message entry to that run's journal: the step, the sending session, its actor as sender, the recipient and the text, at the time of the hook. A session that belongs to no run journals nothing, and a failure to journal is reported on stderr and never fails the agent's tool call."
+        },
+        "handle": "message-journal",
+        "id": "01M5WRWX0ZGMQPHT667T9N3SX7",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5WRWX0ZGMQPHT667PFCEY26",
+        "op": "node.create",
+        "parent": "01M5WRWWARC3CG3GN0Y485B6NJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWX0ZGMQPHT667PFCEY26",
+        "id": "01M5WRWX4NXP6DTH0GP6V6HF6N",
+        "link": "01M5WRWX4NXP6DTH0GP3GN2PBC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPAR7NQ64KWYSWKDNQ42",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWX0ZGMQPHT667PFCEY26",
+        "id": "01M5WRWX8BXPX75M5YEBW7Q1HX",
+        "link": "01M5WRWX8BXPX75M5YEA24KZ12",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRWWNXTXNFMZMGZFM46D6F",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript journals two messages in a run through rhiza session hook: run status --json has a messages list with both in order and every field, the markdown shows each with its sender, recipient and text, and a run with no messages has an empty list. describe-golden is regenerated for the new response field.",
+          "statement": "rhiza run status lists a run's journaled messages in order, each with its time, step, sending session, sender, recipient and text, so the conversation between its sessions can be read back after the run."
+        },
+        "handle": "run-status-messages",
+        "id": "01M5WRWXC0MEDRAPVSV7SV52H8",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5WRWXC0MEDRAPVSV5P23ZVK",
+        "op": "node.create",
+        "parent": "01M5WRWWARC3CG3GN0Y485B6NJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWXC0MEDRAPVSV5P23ZVK",
+        "id": "01M5WRWXFPM9WCBQ74GBSAAJ90",
+        "link": "01M5WRWXFPM9WCBQ74G93W2MT0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPAR7NQ64KWYSWKDNQ42",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWXC0MEDRAPVSV5P23ZVK",
+        "id": "01M5WRWXKBA4QJ9JFAKKBS82CB",
+        "link": "01M5WRWXKBA4QJ9JFAKJZT852A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRWX0ZGMQPHT667PFCEY26",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Go adapter tests read a transcript fixture with three assistant messages, one of them split over several lines that repeat its usage, plus a user line and a broken line: the totals equal the sum over the three messages counted once each; an empty transcript gives zeros.",
+          "statement": "An adapter reads a session's token use from its own transcript: for Claude Code, the input, output, cache-creation and cache-read tokens of the session's assistant messages, each message counted once however many transcript lines repeat it. Helper agents' transcripts are not counted, and unreadable lines are skipped, not fatal."
+        },
+        "handle": "transcript-token-use",
+        "id": "01M5WRWXQ0MVD3SNCJ9H140DAV",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5WRWXQ0MVD3SNCJ9GFXZ6KK",
+        "op": "node.create",
+        "parent": "01M5WRWWARC3CG3GN0Y485B6NJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWXQ0MVD3SNCJ9GFXZ6KK",
+        "id": "01M5WRWXTMMFMMTVZBAGS7XASQ",
+        "link": "01M5WRWXTMMFMMTVZBAF47FAF0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTQ8TH17R4YA0Y81CQN0V",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs a session in a run with a fake agent that leaves a transcript fixture where TranscriptGlobs points: after it exits, session show --json and its markdown give the four counts, and the run's journal has one tokens entry with the step, session and the same counts. With no transcript, session run warns, exits with the agent's code, and neither the record nor the journal gains token use. describe-golden is regenerated for the new response field.",
+          "statement": "When a session's agent exits, rhiza session run reads its token use from the transcript, records it on the session record, and, when the session belongs to a run, appends a tokens entry with the step, session and the four counts to the run's journal. rhiza session show shows it. A transcript that cannot be read is a warning and records no token use."
+        },
+        "handle": "session-token-use",
+        "id": "01M5WRWXYCPD79ST702XMKBT3H",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5WRWXYCPD79ST702XJ65GAF",
+        "op": "node.create",
+        "parent": "01M5WRWWARC3CG3GN0Y485B6NJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWXYCPD79ST702XJ65GAF",
+        "id": "01M5WRWY22F4NPB94K0HK5QKFV",
+        "link": "01M5WRWY22F4NPB94K0FRYDJ9M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTQ8TH17R4YA0Y81CQN0V",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWXYCPD79ST702XJ65GAF",
+        "id": "01M5WRWY5R2K4FW3VSMKJD074V",
+        "link": "01M5WRWY5R2K4FW3VSMJ9GRC1Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRWXQ0MVD3SNCJ9GFXZ6KK",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs a two-step workflow whose two fake agents leave transcripts with known usage: run status --json lists both sessions with their steps and counts and totals equal to their sums, the markdown shows the same, and a session whose token use was not recorded is listed with no counts and left out of the totals. describe-golden is regenerated for the new response field.",
+          "statement": "rhiza run status shows each of a run's sessions with its step and journaled token use, and the run's totals, so the token cost of a run can be read when it is over."
+        },
+        "handle": "run-status-tokens",
+        "id": "01M5WRWY9E4NFEB9ZYE9VGJFXH",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5WRWY9E4NFEB9ZYE7K54AXK",
+        "op": "node.create",
+        "parent": "01M5WRWWARC3CG3GN0Y485B6NJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWY9E4NFEB9ZYE7K54AXK",
+        "id": "01M5WRWYD5W542RSTJW4ATMBSQ",
+        "link": "01M5WRWYD4JSW7ZTFDCBZSPGXR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTQ8TH17R4YA0Y81CQN0V",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWY9E4NFEB9ZYE7K54AXK",
+        "id": "01M5WRWYGWW643YCYZBXVYBJG5",
+        "link": "01M5WRWYGWW643YCYZBXKNE7B4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRWXYCPD79ST702XJ65GAF",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "statement": "SendMessage names its recipient as Claude Code knows it, not as a Rhiza session ID. Should the journal also resolve the recipient to the run's session it reached, and how? (For example: each session's agent name set at launch from its step, so a name maps to one session.)"
+        },
+        "handle": "message-recipient-session",
+        "id": "01M5WRWYMM148C2SMJSPQ00BDE",
+        "key": null,
+        "kind": "question",
+        "node": "01M5WRWYMM148C2SMJSNEDB33D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWYMM148C2SMJSNEDB33D",
+        "id": "01M5WRWYRA133HBRJ6ZVSWDQBD",
+        "link": "01M5WRWYRA133HBRJ6ZT5NR23Y",
+        "note": "message-journal records the recipient exactly as SendMessage gives it; resolving it to a session is open.",
+        "op": "link.create",
+        "to": "01M5WRWX0ZGMQPHT667PFCEY26",
+        "type": "relates-to"
+      },
+      {
+        "fields": {
+          "statement": "Should messages sent into a run's step with rhiza session message (step-messages), not through SendMessage, also be journaled as message entries? Today only an amendment is journaled."
+        },
+        "handle": "session-message-journaled",
+        "id": "01M5WRWYW1NWMRQ5ZCP2G0GG78",
+        "key": null,
+        "kind": "question",
+        "node": "01M5WRWYW1NWMRQ5ZCP0THPAYM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWYW1NWMRQ5ZCP0THPAYM",
+        "id": "01M5WRWYZQSMXNXFCZN11S5GZ7",
+        "link": "01M5WRWYZQSMXNXFCZN03ETZTA",
+        "note": "The intent journals messages through a SendMessage hook; whether rhiza session message is journaled too is open.",
+        "op": "link.create",
+        "to": "01M5WRWX0ZGMQPHT667PFCEY26",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M5WPTWM0MPSBEHRYDMV9Q7PM",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WRWZ5JAFPNZKBG5EP276V4",
+  "type": "ops",
+  "v": 1
+}

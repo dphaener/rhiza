@@ -1,0 +1,263 @@
+{
+  "actor": "01M5WQX8K83SE3FRCPBBNVP3H7",
+  "after": [
+    "01M5WQAKBMNZS76A4M29B2SKSG"
+  ],
+  "at": "2026-10-26T18:38:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript writes a change set whose three leaves link depends-on in a chain, sees change show list them in that order, and has a fourth link closing the loop refused with nothing written.",
+          "statement": "A change set's leaves link depends-on each other to say which must be built first: the links never form a loop, and the leaves read back in an order that respects them."
+        },
+        "handle": "leaf-dependencies",
+        "id": "01M5WR3Z4YXYHDRPGQB2012HBD",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5WR3Z4YXYHDRPGQB1VKJ6ZG",
+        "op": "node.create",
+        "parent": "01M5SWRGZDB2NV1W7MBBRW2HNX"
+      },
+      {
+        "decision": null,
+        "from": "01M5WR3Z4YXYHDRPGQB1VKJ6ZG",
+        "id": "01M5WR3Z8CBRRY4X7K7BGVDDX7",
+        "link": "01M5WR3Z8CBRRY4X7K787T1H8T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMRWPNYM2AMVSMDREY04",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript links a depends-on b and b depends-on c, then c depends-on a by rhiza link and by rhiza apply: both exit 3 with the loop named and the log entry count unchanged. A Go check test folds a loop made by two concurrent change sets and gets one fail finding on rule depends-on naming the three capabilities.",
+          "statement": "depends-on between capabilities never forms a loop, as between change sets: rhiza link and rhiza apply refuse a depends-on that would close one, and rhiza check fails on each loop already in the log."
+        },
+        "handle": "leaf-depends-on-acyclic",
+        "id": "01M5WR3ZBTGE5H3YSXP9267KHS",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5WR3ZBTGE5H3YSXP61HGY9C",
+        "op": "node.create",
+        "parent": "01M5WR3Z4YXYHDRPGQB1VKJ6ZG"
+      },
+      {
+        "decision": null,
+        "from": "01M5WR3ZBTGE5H3YSXP61HGY9C",
+        "id": "01M5WR3ZF8RSDVBJMDBZSFBN3M",
+        "link": "01M5WR3ZF8RSDVBJMDBZQCC2X0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMRWPNYM2AMVSMDREY04",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript adds leaves c, b and a in that order with c depends-on b and b depends-on a; change show --json lists a, b, c with b's needs [a] and c's needs [b]; leaves with no links come out in tree order; describe-golden is regenerated for the new response field.",
+          "statement": "rhiza change show --json lists the change set's leaves (the capabilities it adds that have no live children) in build order: each leaf after every leaf it depends-on, ties in tree order, each with the handles it depends on."
+        },
+        "handle": "leaf-order",
+        "id": "01M5WR3ZJQCG6MCWRGY8Y02119",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5WR3ZJQCG6MCWRGY69NWJJY",
+        "op": "node.create",
+        "parent": "01M5WR3Z4YXYHDRPGQB1VKJ6ZG"
+      },
+      {
+        "decision": null,
+        "from": "01M5WR3ZJQCG6MCWRGY69NWJJY",
+        "id": "01M5WR3ZP5FP2ZRSWGT0A9D8R2",
+        "link": "01M5WR3ZP5FP2ZRSWGSWFHAQ2W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMRWPNYM2AMVSMDREY04",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WR3ZJQCG6MCWRGY69NWJJY",
+        "id": "01M5WR3ZSM5XV43S7YTRHN6JTV",
+        "link": "01M5WR3ZSM5XV43S7YTP214K1N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WR3ZBTGE5H3YSXP61HGY9C",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "rhiza guide apply contains a recipe with a depends-on link between two capabilities, the guide tests pass, and the topic stays within its size cap.",
+          "statement": "rhiza guide apply shows how to link one leaf depends-on another, only where the dependency is real, and says a loop is refused."
+        },
+        "handle": "leaf-depends-on-guide",
+        "id": "01M5WR3ZX3R2RHFEK7AV01K2BJ",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5WR3ZX3R2RHFEK7ASXR477Q",
+        "op": "node.create",
+        "parent": "01M5WR3Z4YXYHDRPGQB1VKJ6ZG"
+      },
+      {
+        "decision": null,
+        "from": "01M5WR3ZX3R2RHFEK7ASXR477Q",
+        "id": "01M5WR400K4AJJCH967G2RRMJT",
+        "link": "01M5WR400K4AJJCH967ED1DJW7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMRWPNYM2AMVSMDREY04",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript in a git repo has a builder commit a leaf's code and then write Evidence that verifies it: rhiza check --json exits 0 with one evidence-actor warning; written by a different actor, there is none.",
+          "statement": "Evidence names the actor that wrote it, and rhiza check warns when that actor also wrote the code of the leaf the Evidence verifies."
+        },
+        "handle": "evidence-actor",
+        "id": "01M5WR40418Q8WECTQVY8VVEWT",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5WR40418Q8WECTQVWKZZ4QC",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "decision": null,
+        "from": "01M5WR40418Q8WECTQVWKZZ4QC",
+        "id": "01M5WR407HXSP4Z0VV6JTM6P2F",
+        "link": "01M5WR407HXSP4Z0VV6F8E59S2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTN2W3ZB386XFG74VKD8B",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript writes Evidence with RHIZA_ACTOR=verifier, then sets a field on it as another actor: show --json still gives actor verifier, and the rendered page under .rhiza/rendered/ names verifier.",
+          "statement": "An Evidence node's actor is the actor stamped on the log entry that created it: rhiza show --json gives it as actor on every Evidence node, and the rendered Evidence page names it. No field can set or change it."
+        },
+        "handle": "evidence-names-actor",
+        "id": "01M5WR40B08FCCSMTK2VE16CMR",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5WR40B08FCCSMTK2QFHHPPM",
+        "op": "node.create",
+        "parent": "01M5WR40418Q8WECTQVWKZZ4QC"
+      },
+      {
+        "decision": null,
+        "from": "01M5WR40B08FCCSMTK2QFHHPPM",
+        "id": "01M5WR40EE1SJ8FTJE1CGPMXA2",
+        "link": "01M5WR40EE1SJ8FTJE19Q2Z9A1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTN2W3ZB386XFG74VKD8B",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "rhiza guide shows the Actor: trailer beside Change: in its commit example and the guide tests pass within the size cap; the run-ship-change testscript finds Actor: with the run's actor on ship's land commit.",
+          "statement": "Every commit that carries a change set's Change: trailer also carries an Actor: trailer naming the actor that made it: the guide tells agents to add it from RHIZA_ACTOR, which every launched agent has, and the commits rhiza makes itself carry it."
+        },
+        "handle": "commit-actor-trailer",
+        "id": "01M5WR40HYV1726DQYVFK8VGP1",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5WR40HYV1726DQYVDYZ212Z",
+        "op": "node.create",
+        "parent": "01M5WR40418Q8WECTQVWKZZ4QC"
+      },
+      {
+        "decision": null,
+        "from": "01M5WR40HYV1726DQYVDYZ212Z",
+        "id": "01M5WR40NDEEMYWTR15V58CJVX",
+        "link": "01M5WR40NDEEMYWTR15RA22HC7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTN2W3ZB386XFG74VKD8B",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WR40HYV1726DQYVDYZ212Z",
+        "id": "01M5WR40RT9P3G273EWT4GSPVT",
+        "link": "01M5WR40RT9P3G273EWRDTXHK5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHVMNH35QRF5F89GN3K6",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript in a git repo commits with Change: <id> and Actor: builder, then writes Evidence verifying the change set's leaf: as builder, check --json exits 0 with one warn finding on rule evidence-actor naming the four; as verifier, no such finding; a commit with no Actor: trailer yields none. Go tests run the rule on given commit trailers, so check itself still runs no git.",
+          "statement": "rhiza check warns, on a rule named evidence-actor, for each live Evidence that verifies a capability when the Evidence's actor is named in an Actor: trailer of a commit carrying the Change: trailer of the change set that added that capability. The warning names the Evidence, the capability, the actor and the commit. Outside a git work tree the rule is skipped."
+        },
+        "handle": "check-evidence-actor",
+        "id": "01M5WR40W9BDXA9Z2Q0VC6370D",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5WR40W9BDXA9Z2Q0T4GEM4S",
+        "op": "node.create",
+        "parent": "01M5WR40418Q8WECTQVWKZZ4QC"
+      },
+      {
+        "decision": null,
+        "from": "01M5WR40W9BDXA9Z2Q0T4GEM4S",
+        "id": "01M5WR40ZSN2FKW2CSZ67CV2T6",
+        "link": "01M5WR40ZSN2FKW2CSZ4WJYS9M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTN2W3ZB386XFG74VKD8B",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WR40W9BDXA9Z2Q0T4GEM4S",
+        "id": "01M5WR4139HPHRDV3XEJYW96YD",
+        "link": "01M5WR4139HPHRDV3XEHE1NXYY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WR40B08FCCSMTK2QFHHPPM",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WR40W9BDXA9Z2Q0T4GEM4S",
+        "id": "01M5WR4170QDB6GW5GY5GYNVYX",
+        "link": "01M5WR4170QDB6GW5GY3TRD96W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WR40HYV1726DQYVDYZ212Z",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "statement": "Does each build commit name the leaf it builds (a Leaf: trailer, say), so the evidence-actor warning compares only that leaf's commits rather than every commit of the leaf's change set?"
+        },
+        "handle": "leaf-commit-scope",
+        "id": "01M5WR41AGM8419PSHHDX1HP6J",
+        "key": null,
+        "kind": "question",
+        "node": "01M5WR41AGM8419PSHHCB0B630",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WR41AGM8419PSHHCB0B630",
+        "id": "01M5WR41DZGZ9D4NPV31CA6CT3",
+        "link": "01M5WR41DZGZ9D4NPV2Y85721S",
+        "note": "Until it is settled the warning works per change set: an actor that committed any of the change set's code is warned about as the verifier of any of its leaves.",
+        "op": "link.create",
+        "to": "01M5WR40W9BDXA9Z2Q0T4GEM4S",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M5WPTV0NX6YECXCPMHSEJAWY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WR41KCYZTNPBN2KV1WK4NH",
+  "type": "ops",
+  "v": 1
+}

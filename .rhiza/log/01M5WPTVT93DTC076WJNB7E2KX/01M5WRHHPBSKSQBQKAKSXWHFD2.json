@@ -1,0 +1,401 @@
+{
+  "actor": "01M5WQX8K83SE3FRCPBBNVP3H7",
+  "after": [
+    "01M5WQAKGFA3XCS74KDFBHTBC6"
+  ],
+  "at": "2026-10-26T18:46:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript starts a run with --autonomous on a fake adapter whose step accepts a change set under rule autonomous: run status --json shows the run autonomous and lists that accept, and the agent's launch carries the same --permission-mode as without the flag.",
+          "statement": "A run can be started autonomous: it skips the owner's gates, recording each with rule autonomous, never bypasses an agent's permissions, and lists afterwards everything it skipped and assumed."
+        },
+        "handle": "autonomous-runs",
+        "id": "01M5WRHD790X47F8VK7VH9H7J2",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5WRHD790X47F8VK7RQEHEHX",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHD790X47F8VK7RQEHEHX",
+        "id": "01M5WRHDBHA1K3S2BJV1P91HEC",
+        "link": "01M5WRHDBHA1K3S2BJTZR1MEG2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTM52804W6ND2EV8CHM5T",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHD790X47F8VK7RQEHEHX",
+        "id": "01M5WRHDFQDYJBPM3D8S5MZ6B0",
+        "link": "01M5WRHDFQDYJBPM3D8Q1GBW7F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTKTR8E370K79Z5JAA82H",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript starts a run with --autonomous on a fake adapter: the journal's started entry has autonomous true, run status --json and its markdown show autonomous, the fake agent's environment has RHIZA_AUTONOMOUS=1, and after a stop run resume (no flag) launches the next agent with it too; a run started without the flag has none of these. describe-golden is regenerated for the new request and response fields.",
+          "statement": "rhiza run start --autonomous starts a run in autonomous mode: the journal's started entry records it, run resume keeps it without the flag, run status shows it, and every agent the run launches has RHIZA_AUTONOMOUS=1 in its environment."
+        },
+        "handle": "run-start-autonomous",
+        "id": "01M5WRHDKXZ0Z9PQKMPVPM053J",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5WRHDKXZ0Z9PQKMPRVQBC5W",
+        "op": "node.create",
+        "parent": "01M5WRHD790X47F8VK7RQEHEHX"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHDKXZ0Z9PQKMPRVQBC5W",
+        "id": "01M5WRHDR3KQHG6X4NK9375MDV",
+        "link": "01M5WRHDR3KQHG6X4NK72TS1SE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTM52804W6ND2EV8CHM5T",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs the same workflow with and without --autonomous on a fake adapter and finds the same --permission-mode in both launches; run start --autonomous --permission-mode bypassPermissions exits non-zero with the trust = \"dedicated\" error and no journal is written.",
+          "statement": "Autonomous mode never changes an agent's permissions: its agent and arbiter sessions launch with the permission mode they would have without it, and a permission mode that bypasses the agent's checks is refused with --autonomous exactly as without it, until a machine has trust = \"dedicated\"."
+        },
+        "handle": "autonomous-keeps-permissions",
+        "id": "01M5WRHDW5DG93SS5KHKE15A5B",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5WRHDW5DG93SS5KHGSB709X",
+        "op": "node.create",
+        "parent": "01M5WRHD790X47F8VK7RQEHEHX"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHDW5DG93SS5KHGSB709X",
+        "id": "01M5WRHE01C05EF4CS6Z5QYDQE",
+        "link": "01M5WRHE01C05EF4CS6WGB7D8C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTM52804W6ND2EV8CHM5T",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHDW5DG93SS5KHGSB709X",
+        "id": "01M5WRHE42J0ZMEKPP95QKF0WS",
+        "link": "01M5WRHE42J0ZMEKPP94MD0GGY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHDKXZ0Z9PQKMPRVQBC5W",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript proposes a change set and runs rhiza accept --rule autonomous three ways: with no RHIZA_RUN, and with RHIZA_RUN naming a run that is not autonomous, it exits 2 with nothing written; with RHIZA_RUN naming an unfinished autonomous run it accepts, and change show --json gives rule autonomous and a reason naming the run.",
+          "statement": "An owner's gate skipped in autonomous mode is recorded with rule autonomous: rhiza accept --rule autonomous is allowed only when RHIZA_RUN names an unfinished autonomous run, and with no --reason the entry's reason names that run. Anywhere else the rule is refused, so it always means an autonomous run made the move."
+        },
+        "handle": "autonomous-gate-rule",
+        "id": "01M5WRHE82S6TFSBBQ3Z40DSGM",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5WRHE82S6TFSBBQ3VN42HGQ",
+        "op": "node.create",
+        "parent": "01M5WRHD790X47F8VK7RQEHEHX"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHE82S6TFSBBQ3VN42HGQ",
+        "id": "01M5WRHEC2VC6CSRB39DR09FV5",
+        "link": "01M5WRHEC2VC6CSRB39CTRS4H9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTM52804W6ND2EV8CHM5T",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHE82S6TFSBBQ3VN42HGQ",
+        "id": "01M5WRHEG1GKZZ4NQVJMD6CD44",
+        "link": "01M5WRHEG1GKZZ4NQVJKJJE11Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTKTR8E370K79Z5JAA82H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHE82S6TFSBBQ3VN42HGQ",
+        "id": "01M5WRHEM0FAZ236RAF3JJ5CYZ",
+        "link": "01M5WRHEM0FAZ236RAF2RR3EF1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHDKXZ0Z9PQKMPRVQBC5W",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs an autonomous workflow on a fake adapter that accepts a change set under rule autonomous and raises one question its fake arbiter answers: run status --json lists the accept (change set and entry) and the question with its Decision's handle, and the markdown shows both; a normal run's status lists neither.",
+          "statement": "rhiza run status on an autonomous run lists what the run did in the owner's place: each accept it made under rule autonomous, and each question its arbiter decided with the Decision that answers it."
+        },
+        "handle": "autonomous-review",
+        "id": "01M5WRHEQX9FSJ95GVE629GKPF",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5WRHEQX9FSJ95GVE3BH7EQJ",
+        "op": "node.create",
+        "parent": "01M5WRHD790X47F8VK7RQEHEHX"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHEQX9FSJ95GVE3BH7EQJ",
+        "id": "01M5WRHEVW30Q9JGKMEKTNKA52",
+        "link": "01M5WRHEVW30Q9JGKMEGFK2Q8D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTM52804W6ND2EV8CHM5T",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHEQX9FSJ95GVE3BH7EQJ",
+        "id": "01M5WRHEZW829AQP88DBNSXBEH",
+        "link": "01M5WRHEZW829AQP88D9JD2YYH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHE82S6TFSBBQ3VN42HGQ",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs a workflow whose fake agent raises a question: autonomous, a fake arbiter is launched with the question's ID and its Decision answers the question; normal, the run is blocked on the owner and no arbiter is launched.",
+          "statement": "In an autonomous run, the engine calls a fresh arbiter session on a session's question, told only the question's ID; it decides from slice and why and records its Decision as (assumed, would have escalated) with its reasoning. In a normal run questions go to the owner and no arbiter runs."
+        },
+        "handle": "arbiter-sessions",
+        "id": "01M5WRHF3WYWZGR13RD1VEX3JV",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5WRHF3WYWZGR13RCYDS6NXY",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHF3WYWZGR13RCYDS6NXY",
+        "id": "01M5WRHF7Y9QRQ0351XB85B4VV",
+        "link": "01M5WRHF7Y9QRQ0351X9FYYHE5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPMQ4KMTMGSXG178SMBS",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "rhiza guide ls lists the arbiter topic, rhiza guide arbiter holds an apply recipe for the answering Decision with its wording and reasoning fields and the answers link, and the guide tests pass with the topic within its size cap.",
+          "statement": "rhiza guide arbiter tells an arbiter session what to do with the question ID it is given: read the question, its slice and why, decide, write one Decision that answers the question with wording (assumed, would have escalated) and a reasoning field, then exit, writing nothing else."
+        },
+        "handle": "arbiter-guide",
+        "id": "01M5WRHFC1A3WK2A6G4XJJ3Y7W",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5WRHFC1A3WK2A6G4VQMPTM6",
+        "op": "node.create",
+        "parent": "01M5WRHF3WYWZGR13RCYDS6NXY"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHFC1A3WK2A6G4VQMPTM6",
+        "id": "01M5WRHFG7W7G1DA161JYDSBF1",
+        "link": "01M5WRHFG7W7G1DA161JGKW32C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPMQ4KMTMGSXG178SMBS",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go workflow tests load a file with an arbiter step and refuse one that sets prompt on it. A testscript runs an arbiter step on a question with a fake adapter: the fake agent's prompt holds the question's ID and rhiza guide arbiter and no other node's handle or ID; when the fake writes the answering Decision the step passes, when it writes nothing or a Decision without reasoning it fails.",
+          "statement": "A workflow step of kind arbiter launches a fresh agent session on the run's change set whose prompt names only a question's ID and the arbiter guide topic. It passes when a live Decision answers that question with wording (assumed, would have escalated) and a non-empty reasoning field, and fails otherwise. A workflow file may not give it a prompt."
+        },
+        "handle": "arbiter-step",
+        "id": "01M5WRHFM7T3P6V5ZV81RE199M",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5WRHFM7T3P6V5ZV7XVKE55Q",
+        "op": "node.create",
+        "parent": "01M5WRHF3WYWZGR13RCYDS6NXY"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHFM7T3P6V5ZV7XVKE55Q",
+        "id": "01M5WRHFR854RCW7AFKBHTZADV",
+        "link": "01M5WRHFR854RCW7AFK8Y2VSWS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPMQ4KMTMGSXG178SMBS",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHFM7T3P6V5ZV7XVKE55Q",
+        "id": "01M5WRHFW7J5BBENM1EN1SPZ78",
+        "link": "01M5WRHFW7J5BBENM1EKCRVMR4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHFC1A3WK2A6G4VQMPTM6",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a fake adapter whose agent reports blocked with kind question: autonomous, the run's change set gains a question node whose statement is the reported question, the journal has an arbiter entry naming it, and a fake arbiter is launched with its ID; a failing fake arbiter ends the run failed with the question named; normal, run status shows blocked, the change set gains no question node and no arbiter is launched.",
+          "statement": "When an agent step's session in an autonomous run reports it is blocked on a question, the engine adds that question, as the session reported it, as a question node in the run's change set, journals it, and runs the arbiter step on its ID; if the arbiter fails, the run fails naming the question. In a normal run the engine does none of this: the run is blocked on the owner, as now."
+        },
+        "handle": "arbiter-on-question",
+        "id": "01M5WRHG053937VJ6GEJEYBQD3",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5WRHG053937VJ6GEJ84EJJH",
+        "op": "node.create",
+        "parent": "01M5WRHF3WYWZGR13RCYDS6NXY"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHG053937VJ6GEJ84EJJH",
+        "id": "01M5WRHG4700QCBZATWAQFCSSC",
+        "link": "01M5WRHG4700QCBZATWAB5Q83J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPMQ4KMTMGSXG178SMBS",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHG053937VJ6GEJ84EJJH",
+        "id": "01M5WRHG875CTB3TY09Q2A87V0",
+        "link": "01M5WRHG875CTB3TY09NRKTA2G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTM52804W6ND2EV8CHM5T",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHG053937VJ6GEJ84EJJH",
+        "id": "01M5WRHGC5CF60ME05R6Q6SEXS",
+        "link": "01M5WRHGC5CF60ME05R5CP9F6C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHDKXZ0Z9PQKMPRVQBC5W",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHG053937VJ6GEJ84EJJH",
+        "id": "01M5WRHGG40CWE3KJ9A47GMS90",
+        "link": "01M5WRHGG40CWE3KJ9A3ZQ97C2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHFM7T3P6V5ZV7XVKE55Q",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a fake adapter whose agent blocks on a question in an autonomous run, and a fake arbiter that answers it: the asking fake agent receives the Decision's statement, the journal has the block and its unblock, and the step ends with the agent's outcome.",
+          "statement": "Once the arbiter has decided, the engine gives the answering Decision to the session that asked, the run is no longer blocked, and the agent step carries on to its own outcome."
+        },
+        "handle": "arbiter-answer-to-session",
+        "id": "01M5WRHGM59FSCHB3SDWFMHJRN",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5WRHGM59FSCHB3SDT7C8H75",
+        "op": "node.create",
+        "parent": "01M5WRHF3WYWZGR13RCYDS6NXY"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHGM59FSCHB3SDT7C8H75",
+        "id": "01M5WRHGR4VN7MR9YGW4QZGH3B",
+        "link": "01M5WRHGR4VN7MR9YGW21TQ0NJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPMQ4KMTMGSXG178SMBS",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHGM59FSCHB3SDT7C8H75",
+        "id": "01M5WRHGW1TWE2ZYB03FMVY34T",
+        "link": "01M5WRHGW1TWE2ZYB03D08N4PK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHG053937VJ6GEJ84EJJH",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "statement": "How does the arbiter's answer reach a session that is waiting on its question, when that session is waiting inside Claude Code's AskUserQuestion rather than at its prompt, where rhiza session message delivers? (For example: a PreToolUse hook on AskUserQuestion in autonomous runs, or the guide telling agents in autonomous runs to raise questions another way.)"
+        },
+        "handle": "arbiter-answer-delivery",
+        "id": "01M5WRHH045QXSZA0X2C2YYR2B",
+        "key": null,
+        "kind": "question",
+        "node": "01M5WRHH045QXSZA0X2BP6E8S0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHH045QXSZA0X2BP6E8S0",
+        "id": "01M5WRHH457XXY9X8ZMK48SQME",
+        "link": "01M5WRHH457XXY9X8ZMH3GKYC2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHGM59FSCHB3SDT7C8H75",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "How is something an autonomous run did undone: an accept made under rule autonomous, or a Decision recorded (assumed, would have escalated)? supersede is out of milestone 3."
+        },
+        "handle": "autonomous-undo",
+        "id": "01M5WRHH875RDA99REFRFA73S1",
+        "key": null,
+        "kind": "question",
+        "node": "01M5WRHH875RDA99REFMWQPQHX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHEQX9FSJ95GVE3BH7EQJ",
+        "id": "01M5WRHHC4FTJPKZZZ2CFVWDP4",
+        "link": "01M5WRHHC4FTJPKZZZ2BZSERDH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHG053937VJ6GEJ84EJJH",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHH875RDA99REFMWQPQHX",
+        "id": "01M5WRHHG2FDC5SS0WNEVAEEFX",
+        "link": "01M5WRHHG2FDC5SS0WNET1D0CM",
+        "note": "The autonomous-mode Decision says all of it is reviewable and undoable; this change set makes it reviewable, and how it is undone is open.",
+        "op": "link.create",
+        "to": "01M5WRHEQX9FSJ95GVE3BH7EQJ",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M5WPTVT93DTC076WJNB7E2KX",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WRHHPBSKSQBQKAKSXWHFD2",
+  "type": "ops",
+  "v": 1
+}
