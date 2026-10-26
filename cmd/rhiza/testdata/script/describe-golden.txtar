@@ -2150,6 +2150,67 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "reopen",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "base": {
+            "description": "The git revision the change set's land must not be in; default the merge-base of HEAD with origin/HEAD, origin/main or main",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The change set moved",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "cleared_current": {
+            "description": "True if the move ended the current change set and cleared it",
+            "type": "boolean"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The entry written; absent in a dry run",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "from": {
+            "description": "The state before the move",
+            "type": "string"
+          },
+          "reason": {
+            "description": "The reason of an accept or reject",
+            "type": "string"
+          },
+          "rule": {
+            "description": "The rule of an accept or reject",
+            "type": "string"
+          },
+          "to": {
+            "description": "The state after the move",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change_set",
+          "from",
+          "to"
+        ],
+        "type": "object"
+      },
+      "summary": "Reopen a change set landed only on its branch, so it takes writes and lands again",
+      "write": true
+    },
+    {
       "name": "retire",
       "request": {
         "additionalProperties": false,

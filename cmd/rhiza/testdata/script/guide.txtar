@@ -46,7 +46,7 @@ stdout '^## Lifecycle$'
 stdout 'landed --reopen--> accepted'
 exec rhiza guide reopening
 stdout '^# Reopening$'
-stdout 'rhiza reopen \[<change>\]'
+stdout 'rhiza reopen --change <id>'
 stdout '^## Never delete or edit log entries$'
 exec rhiza guide sources
 stdout '^# Sources$'

@@ -11,13 +11,13 @@ missed. Reopen it instead of opening a second change set for the same intent.
 ## The command
 
 ```
-rhiza reopen [<change>] [--base <rev>] --json
+rhiza reopen --change <id> [--base <rev>] --json
 ```
 
 - It appends a reopen entry: the change set goes from landed back to accepted.
 - It becomes the worktree's current change set (`RHIZA_CHANGE` still wins).
 - Write as usual (`rhiza apply`, `rhiza add`, ...), then `rhiza land` again.
-- With no `<change>` it takes the current one, else the one named.
+- It acts on `--change`, else the current change set; land cleared the current one, so name it.
 - The base is the one `rhiza check` uses: the merge-base with `origin/HEAD`, `origin/main` or
   `main`. `--base <rev>` picks another.
 

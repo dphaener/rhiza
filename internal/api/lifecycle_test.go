@@ -444,3 +444,188 @@ func TestLandProblem(t *testing.T) {
 	ctx.DryRun = true
 	wantLandRefused(t, ctx, b, want, "rhiza slice --change "+shortID(b)+" --view what-if")
 }
+
+// branchGit is a fake git whose default base is abc, with base listing
+// the log at abc.
+func branchGit(base string) *fakeGit {
+	return &fakeGit{out: map[string]string{
+		gitWorkTree:                  "true\n",
+		verifyArgs("main"):           "m\n",
+		"merge-base HEAD main":       "abc\n",
+		lsTreeArgs + "abc" + logSpec: base,
+	}}
+}
+
+// landed makes an intention change set and lands it, leaving none current.
+func landed(t *testing.T, ctx *Ctx) id.ID {
+	t.Helper()
+	cs := newChange(t, ctx, `{"intent":"X"}`).ChangeSet
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
+	for _, s := range []string{"propose", "accept", "land"} {
+		move(t, ctx, s, `{}`)
+	}
+	return cs
+}
+
+// landPath is the log path of cs's last land entry.
+func landPath(t *testing.T, ctx *Ctx, cs id.ID) string {
+	t.Helper()
+	var land id.ID
+	for _, m := range foldedState(t, ctx, cs).Lifecycle {
+		if m.Type == entry.TypeLand {
+			land = m.Entry
+		}
+	}
+	return ".rhiza/log/" + cs.String() + "/" + land.String() + ".json"
+}
+
+func TestReopenOnBranch(t *testing.T) {
+	ctx := initCtx(t)
+	cs := landed(t, ctx)
+	// Another change set's land in the base does not matter.
+	ctx.Git = branchGit("100644 blob abc\t.rhiza/log/" + cs.String() + "/OTHER.json\x00").run
+	ctx.ChangeRef = cs.String()
+
+	ctx.DryRun = true
+	size := logSize(t, ctx)
+	r := move(t, ctx, "reopen", `{}`)
+	if !r.DryRun || !r.Entry.IsZero() || r.From != changeset.StateLanded || r.To != changeset.StateAccepted {
+		t.Errorf("dry reopen = %+v", r)
+	}
+	if got := logSize(t, ctx); got != size {
+		t.Errorf("dry run grew the log from %d to %d", size, got)
+	}
+	if got := currentOf(t, ctx); !got.IsZero() {
+		t.Errorf("dry run made %s current", got)
+	}
+	ctx.DryRun = false
+
+	r = move(t, ctx, "reopen", `{}`)
+	if r.ChangeSet != cs || r.Entry.IsZero() || r.From != changeset.StateLanded ||
+		r.To != changeset.StateAccepted || r.ClearedCurrent {
+		t.Errorf("reopen = %+v", r)
+	}
+	if out := human(t, r); !strings.Contains(out, "Reopened change set "+cs.String()+" (landed → accepted).") {
+		t.Errorf("reopen human:\n%s", out)
+	}
+	if got := foldedState(t, ctx, cs).State; got != changeset.StateAccepted {
+		t.Errorf("state = %s", got)
+	}
+	if got := currentOf(t, ctx); got != cs {
+		t.Errorf("current = %s, want %s", got, cs)
+	}
+
+	// It takes writes again and lands again.
+	ctx.ChangeRef = ""
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"more"}`)
+	if r := move(t, ctx, "land", `{}`); r.To != changeset.StateLanded || !r.ClearedCurrent {
+		t.Errorf("land again = %+v", r)
+	}
+	var types []entry.Type
+	for _, m := range foldedState(t, ctx, cs).Lifecycle {
+		types = append(types, m.Type)
+	}
+	want := []entry.Type{entry.TypePropose, entry.TypeAccept, entry.TypeLand, entry.TypeReopen, entry.TypeLand}
+	if fmt.Sprint(types) != fmt.Sprint(want) {
+		t.Errorf("lifecycle = %v, want %v", types, want)
+	}
+}
+
+func TestReopenLandedOnBase(t *testing.T) {
+	ctx := initCtx(t)
+	cs := landed(t, ctx)
+	ctx.Git = branchGit("100644 blob abc\t" + landPath(t, ctx, cs) + "\x00").run
+	ctx.ChangeRef = cs.String()
+	for _, dry := range []bool{false, true} {
+		ctx.DryRun = dry
+		size := logSize(t, ctx)
+		_, err := callOp(t, ctx, "reopen", `{}`)
+		wantExit(t, err, 3)
+		wantNext(t, err, reopenNext)
+		msg := err.Error()
+		for _, want := range []string{"cannot reopen change set " + cs.String() + ": it landed on the base (abc)",
+			"landed work on main is final", "discovered-from " + shortID(cs)} {
+			if !strings.Contains(msg, want) {
+				t.Errorf("message = %q, want %q in it", msg, want)
+			}
+		}
+		if got := logSize(t, ctx); got != size {
+			t.Errorf("log grew from %d to %d entries", size, got)
+		}
+	}
+}
+
+func TestReopenNoBase(t *testing.T) {
+	for _, c := range []struct {
+		name string
+		git  func(...string) (string, error)
+		why  string
+	}{
+		{"NoGit", nil, "not a git work tree"},
+		{"NoRef", (&fakeGit{out: map[string]string{gitWorkTree: "true\n"}}).run, "no base: none of"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			ctx := initCtx(t)
+			cs := landed(t, ctx)
+			ctx.Git = c.git
+			ctx.ChangeRef = cs.String()
+			size := logSize(t, ctx)
+			_, err := callOp(t, ctx, "reopen", `{}`)
+			wantExit(t, err, 3)
+			wantNext(t, err, reopenNext)
+			if msg := err.Error(); !strings.Contains(msg,
+				"cannot reopen change set "+cs.String()+": no base to show its land is only on this branch ("+c.why) {
+				t.Errorf("message = %q", msg)
+			}
+			if got := logSize(t, ctx); got != size {
+				t.Errorf("log grew from %d to %d entries", size, got)
+			}
+		})
+	}
+}
+
+func TestReopenIllegal(t *testing.T) {
+	for _, c := range []struct {
+		name  string
+		steps []string
+		next  string
+	}{
+		{"draft", nil, "rhiza propose"},
+		{"accepted", []string{"propose", "accept"}, "rhiza land"},
+		{"rejected", []string{"propose", "reject"}, newEntryNext},
+		{"withdrawn", []string{"withdraw"}, newEntryNext},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			ctx := initCtx(t)
+			cs := newChange(t, ctx, `{"intent":"X"}`).ChangeSet
+			for _, s := range c.steps {
+				move(t, ctx, s, `{}`)
+			}
+			ctx.Git = branchGit("").run
+			ctx.ChangeRef = cs.String()
+			before := foldedState(t, ctx, cs).State
+			size := logSize(t, ctx)
+			_, err := callOp(t, ctx, "reopen", `{}`)
+			wantExit(t, err, 3)
+			wantNext(t, err, c.next)
+			if !strings.Contains(err.Error(), "cannot reopen change set "+cs.String()+": it is "+string(before)) {
+				t.Errorf("message = %q", err.Error())
+			}
+			if got := logSize(t, ctx); got != size {
+				t.Errorf("log grew from %d to %d entries", size, got)
+			}
+		})
+	}
+}
+
+// TestReopenNoWritesToLanded: reopen is the one way into a landed change
+// set; ordinary writes stay refused.
+func TestReopenNoWritesToLanded(t *testing.T) {
+	ctx := initCtx(t)
+	cs := landed(t, ctx)
+	ctx.ChangeRef = cs.String()
+	_, err := callOp(t, ctx, "add", `{"kind":"capability","handle":"late"}`)
+	wantExit(t, err, 3)
+	_, err = callOp(t, ctx, "withdraw", `{}`)
+	wantExit(t, err, 3)
+}

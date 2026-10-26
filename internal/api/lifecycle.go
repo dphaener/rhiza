@@ -1,14 +1,20 @@
 package api
 
 // This file holds the lifecycle operations: propose, accept, reject,
-// withdraw and land. Each writes one entry of its type into --change or the
-// current change set, after checking the move against the folded state with
-// the same table changeset.Fold applies. A terminal move (reject, withdraw,
-// land) on the current change set clears it.
+// withdraw, land and reopen. Each writes one entry of its type into --change
+// or the current change set, after checking the move against the folded
+// state with the same table changeset.Fold applies. A terminal move (reject,
+// withdraw, land) on the current change set clears it; a reopen makes its
+// change set current.
 //
 // Land checks two things more, before anything is written, so a dry run
 // refuses the same: every change set it depends on has landed, and its
 // what-if view has no conflict on its own ops. Either refusal exits 3.
+//
+// Reopen moves a landed change set back to accepted, only while its land is
+// on its branch alone: none of its land entries is in the log at check's
+// base. Landed work on main is final. With no base to look at it refuses
+// too. Both refusals exit 3, before anything is written.
 
 import (
 	"errors"
@@ -18,6 +24,7 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
 	gmodel "github.com/dphaener/rhiza/internal/model"
 )
@@ -29,10 +36,14 @@ func init() {
 		{name: "reject", summary: "Reject a proposed change set", done: "Rejected", decision: true},
 		{name: "withdraw", summary: "Withdraw a change set that has not landed", done: "Withdrew"},
 		{name: "land", summary: "Land the change set: an accepted intention, or a record", done: "Landed"},
+		{name: "reopen", summary: "Reopen a change set landed only on its branch, so it takes writes and lands again", done: "Reopened"},
 	} {
 		req := reflect.TypeFor[LifecycleRequest]()
-		if v.decision {
+		switch {
+		case v.decision:
 			req = reflect.TypeFor[DecisionRequest]()
+		case v.name == "reopen":
+			req = reflect.TypeFor[ReopenRequest]()
 		}
 		register(Operation{
 			Name:     v.name,
@@ -58,6 +69,15 @@ type DecisionRequest struct {
 	Rule   string `json:"rule,omitempty" desc:"The rule the decision is made under; default owner"`
 	Reason string `json:"reason,omitempty" desc:"Why"`
 }
+
+// ReopenRequest is the request of reopen: the base its land must not be in.
+type ReopenRequest struct {
+	Base string `json:"base,omitempty" desc:"The git revision the change set's land must not be in; default the merge-base of HEAD with origin/HEAD, origin/main or main"`
+}
+
+// reopenNext is the next command when reopen is refused: the work goes on
+// in a new change set.
+const reopenNext = `rhiza change new "<intent>" --json`
 
 // LifecycleResponse reports one lifecycle move.
 type LifecycleResponse struct {
@@ -92,6 +112,8 @@ func (v lifecycleVerb) body(rule, reason string) changeset.Body {
 		return changeset.Reject{Rule: rule, Reason: reason}
 	case "withdraw":
 		return changeset.Withdraw{}
+	case "reopen":
+		return changeset.Reopen{}
 	}
 	return changeset.Land{}
 }
@@ -110,6 +132,8 @@ func (v lifecycleVerb) to(c changeset.ChangeSet) (changeset.State, bool) {
 		return changeset.StateRejected, c.State == changeset.StateProposed
 	case "withdraw":
 		return changeset.StateWithdrawn, inFlight
+	case "reopen":
+		return changeset.StateAccepted, c.State == changeset.StateLanded
 	}
 	if c.Open.Kind == changeset.KindRecord {
 		return changeset.StateLanded, inFlight
@@ -132,12 +156,15 @@ func legalNext(c changeset.ChangeSet) string {
 
 // run checks the move and writes its entry.
 func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
-	var rule, reason string
-	if r, ok := req.(DecisionRequest); ok {
+	var rule, reason, base string
+	switch r := req.(type) {
+	case DecisionRequest:
 		rule, reason = strings.TrimSpace(r.Rule), r.Reason
 		if rule == "" {
 			rule = defaultRule
 		}
+	case ReopenRequest:
+		base = strings.TrimSpace(r.Base)
 	}
 	body := v.body(rule, reason)
 	if err := body.Validate(); err != nil {
@@ -168,8 +195,13 @@ func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
 		return nil, Conflictf("cannot %s change set %s: it is %s", v.name, cs, c.State).
 			WithNext(legalNext(c))
 	}
-	if v.name == "land" {
+	switch v.name {
+	case "land":
 		if err := checkLand(w.changeSets(), cs); err != nil {
+			return nil, err
+		}
+	case "reopen":
+		if err := checkReopen(ctx, c, base); err != nil {
 			return nil, err
 		}
 	}
@@ -192,7 +224,52 @@ func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
 		}
 		resp.ClearedCurrent = true
 	}
+	if v.name == "reopen" && !ctx.DryRun {
+		if err := w.setCurrent(cs); err != nil {
+			return nil, err
+		}
+	}
 	return resp, nil
+}
+
+// checkReopen refuses to reopen c while any of its land entries is in the
+// log at the base (base, else check's default), or when there is no base to
+// look at, since then nothing shows the land is only on this branch.
+func checkReopen(ctx *Ctx, c changeset.ChangeSet, base string) error {
+	rev, _, skipped, err := checkBase(ctx.Git, base)
+	if err != nil {
+		return err
+	}
+	if rev == "" {
+		return Conflictf("cannot reopen change set %s: no base to show its land is only on this branch (%s)",
+			c.ID, skipped).WithNext(reopenNext)
+	}
+	es, err := logAt(ctx, rev)
+	if err != nil {
+		return err
+	}
+	inBase := make(map[string]bool, len(es))
+	for _, e := range es {
+		inBase[e.ID] = true
+	}
+	for _, m := range c.Lifecycle {
+		if m.Type != entry.TypeLand || !inBase[m.Entry.String()] {
+			continue
+		}
+		short := shortID(c.ID)
+		return Conflictf("cannot reopen change set %s: it landed on the base (%s), and landed work on main is final; "+
+			"open a new change set and link it: rhiza link <new> discovered-from %s --change <new>",
+			c.ID, shortRev(rev), short).WithNext(reopenNext)
+	}
+	return nil
+}
+
+// shortRev shortens a commit ID for messages; a ref name is kept whole.
+func shortRev(rev string) string {
+	if len(rev) == 40 && strings.Trim(rev, "0123456789abcdef") == "" {
+		return rev[:12]
+	}
+	return rev
 }
 
 // checkLand refuses to land cs while a change set it depends on has not

@@ -1,0 +1,54 @@
+# rhiza reopen moves a change set that landed only on its branch back to
+# accepted and makes it current, so it takes one more write and lands
+# again; rhiza check then passes and the log holds land, reopen and land.
+
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+exec git add -A
+exec git commit -qm 'Init'
+exec git push -q -u origin main
+
+# A change set accepted and landed on branch cs/x, then committed there.
+exec git checkout -q -b cs/x
+exec rhiza change new 'Store things' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability store --field 'statement=Stores things'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land --json
+stdout '"cleared_current": true'
+exec rhiza render
+exec git add -A
+exec git commit -qm 'Land Store things'
+
+# Its land is on cs/x only, so it reopens, back to accepted and current.
+exec rhiza reopen --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout '"from": "landed"'
+stdout '"to": "accepted"'
+! stdout cleared_current
+exec rhiza change show --json
+stdout '"id": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+stdout '"state": "accepted"'
+exec rhiza status
+stdout 01M5PWGEF85Y185JZ2ZGCNH40N
+
+# One more write, land again, commit: check passes.
+exec rhiza add capability shelve --field 'statement=Shelves things'
+exec rhiza land --json
+stdout '"to": "landed"'
+exec rhiza render
+exec git add -A
+exec git commit -qm 'Land Store things again'
+exec rhiza check --json
+stdout '"ok": true'
+fold-ok
+
+# The change set's log holds two land entries and one reopen.
+exec sh -c 'grep -l "^  \"type\": \"land\"" .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/*.json | wc -l'
+stdout '^ *2$'
+exec sh -c 'grep -l "^  \"type\": \"reopen\"" .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/*.json | wc -l'
+stdout '^ *1$'
