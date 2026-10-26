@@ -146,6 +146,7 @@ func TestHookStatus(t *testing.T) {
 		{"SessionStart", `{"session_id":"s"}`, "idle", "", true},
 		{"UserPromptSubmit", `{"session_id":"s"}`, "working", "", true},
 		{"PreToolUse", `{"session_id":"s"}`, "working", "", true},
+		{"PostToolUse", `{"session_id":"s"}`, "working", "", true},
 		{"Notification", `{"session_id":"s","notification_type":"permission_prompt"}`, "blocked", "permission", true},
 		{"Notification", `{"session_id":"s","notification_type":"idle_prompt"}`, "idle", "", true},
 		{"Notification", `{"session_id":"s","notification_type":"auth_success"}`, "", "", false},
@@ -164,6 +165,44 @@ func TestHookStatus(t *testing.T) {
 	}
 	if _, _, err := (Adapter{}).HookStatus("Bogus", nil); err == nil {
 		t.Error("unknown event should error")
+	}
+}
+
+func TestHookStatusAskUserQuestion(t *testing.T) {
+	cases := []struct {
+		name, event, payload string
+		state, kind, detail  string
+	}{
+		{"one question", "PreToolUse", `{"session_id":"s","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which database?"}]}}`, "blocked", "question", "Which database?"},
+		{"two questions", "PreToolUse", `{"session_id":"s","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which database?"},{"question":" Which cache? "}]}}`, "blocked", "question", "Which database? / Which cache?"},
+		{"multi-line", "PreToolUse", `{"session_id":"s","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Line one\nline two\t\u001bend\n"}]}}`, "blocked", "question", "Line one line two  end"},
+		{"no questions", "PreToolUse", `{"session_id":"s","tool_name":"AskUserQuestion","tool_input":{}}`, "blocked", "question", ""},
+		{"other tool", "PreToolUse", `{"session_id":"s","tool_name":"Bash","tool_input":{"command":"ls"}}`, "working", "", ""},
+		{"post tool use", "PostToolUse", `{"session_id":"s","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which database?"}]}}`, "working", "", ""},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			r, ok, err := Adapter{}.HookStatus(c.event, []byte(c.payload))
+			if err != nil || !ok || r.State != c.state || r.Kind != c.kind || r.Detail != c.detail || r.SessionID != "s" {
+				t.Errorf("%+v ok=%v err=%v", r, ok, err)
+			}
+		})
+	}
+}
+
+func TestHookStatusMalformedPreToolUse(t *testing.T) {
+	for _, raw := range []string{`{"tool_input": 5}`, `{"tool_name":"AskUserQuestion","tool_input":"x"}`, `{"tool_name":`} {
+		r, ok, err := Adapter{}.HookStatus("PreToolUse", []byte(raw))
+		if err == nil || ok || r != (adapter.HookReport{}) {
+			t.Errorf("%s: want error and no report, got %+v ok=%v err=%v", raw, r, ok, err)
+		}
+	}
+}
+
+func TestSettingsInstallsPostToolUse(t *testing.T) {
+	s, err := Settings([]string{"rhiza", "session", "hook"})
+	if err != nil || !strings.Contains(s, `"PostToolUse":[{"hooks":[{"type":"command","command":"rhiza session hook PostToolUse"}]}]`) {
+		t.Fatalf("%s %v", s, err)
 	}
 }
 

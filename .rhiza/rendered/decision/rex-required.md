@@ -38,6 +38,7 @@ the assistant's summary in the founding conversation
 
 - decided-by [runtime](../capability/rhiza/runtime.md)
 - decided-by [rex-tab-launch](../capability/rhiza/runtime/rex-sessions/rex-tab-launch.md)
+- decided-by [blocked-run-notice](../capability/rhiza/orchestration/notifications/blocked-run-notice.md)
 
 ## History
 

@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -181,6 +182,95 @@ func TestFoldStoppedMidStep(t *testing.T) {
 	st = j.State()
 	if st.Current != "z" || st.Stopped != "" || st.Steps[1].Session != "S9" || st.Steps[1].Visit != 1 {
 		t.Fatalf("after end: %+v", st)
+	}
+}
+
+func TestFoldBlockedAndUnblocked(t *testing.T) {
+	b := &Block{Kind: "question", Question: "Ship it?", TabSession: "rex", TabWindow: "w1", TabBlock: "b1", TabTitle: "build"}
+	j := Journal{ID: "r", Entries: []Entry{
+		startedEntry("a", 0),
+		{Type: TypeEntered, At: at(1), Step: "a", Visit: 1},
+		{Type: TypeSession, At: at(2), Step: "a", Session: "S1"},
+		{Type: TypeBlocked, At: at(3), Step: "a", Session: "S1", Block: b},
+	}}
+	st := j.State()
+	if !reflect.DeepEqual(st.Blocked, b) || st.BlockedStep != "a" || st.BlockedSession != "S1" {
+		t.Fatalf("blocked = %+v step %q session %q", st.Blocked, st.BlockedStep, st.BlockedSession)
+	}
+	if st.Blocked == b {
+		t.Errorf("folded block aliases the entry's")
+	}
+	j.Entries = append(j.Entries, Entry{Type: TypeUnblocked, At: at(4), Step: "a", Session: "S1"})
+	st = j.State()
+	if st.Blocked != nil || st.BlockedStep != "" || st.BlockedSession != "" || st.Current != "a" {
+		t.Fatalf("after unblocked: %+v", st)
+	}
+	// A blocked entry with no block still reads blocked.
+	j.Entries = append(j.Entries, Entry{Type: TypeBlocked, At: at(5), Step: "a", Session: "S1"})
+	if st = j.State(); st.Blocked == nil || *st.Blocked != (Block{}) {
+		t.Fatalf("bare blocked = %+v", st.Blocked)
+	}
+}
+
+func TestFoldBlockClearedByEndedAndFinished(t *testing.T) {
+	b := &Block{Kind: "permission", Question: "Run rm?"}
+	base := []Entry{
+		startedEntry("a", 0),
+		{Type: TypeEntered, At: at(1), Step: "a", Visit: 1},
+		{Type: TypeSession, At: at(2), Step: "a", Session: "S1"},
+		{Type: TypeBlocked, At: at(3), Step: "a", Session: "S1", Block: b},
+	}
+	ended := Journal{Entries: append(append([]Entry{}, base...),
+		Entry{Type: TypeEnded, At: at(4), Step: "a", Visit: 1, Outcome: "pass", Next: "b"})}.State()
+	if ended.Blocked != nil || ended.BlockedSession != "" || ended.Current != "b" {
+		t.Fatalf("after ended: %+v", ended)
+	}
+	// Another step's ended entry leaves the block alone.
+	other := Journal{Entries: append(append([]Entry{}, base...),
+		Entry{Type: TypeEnded, At: at(4), Step: "z", Outcome: "pass", Next: "a"})}.State()
+	if other.Blocked == nil {
+		t.Fatalf("another step's end cleared the block")
+	}
+	finished := Journal{Entries: append(append([]Entry{}, base...),
+		Entry{Type: TypeFinished, At: at(4), End: Failed, Detail: "killed"})}.State()
+	if finished.Blocked != nil || finished.BlockedStep != "" || !finished.Ended {
+		t.Fatalf("after finished: %+v", finished)
+	}
+}
+
+func TestBlockEntryRoundTrip(t *testing.T) {
+	s := newStore(t)
+	if err := s.Create("01BLOCK", startedEntry("a", 0)); err != nil {
+		t.Fatal(err)
+	}
+	b := &Block{Kind: "question", Question: "Ship it?", TabSession: "rex", TabWindow: "w1", TabBlock: "b1", TabTitle: "build"}
+	more := []Entry{
+		{Type: TypeBlocked, At: at(1), Step: "a", Session: "S1", Block: b},
+		{Type: TypeUnblocked, At: at(2), Step: "a", Session: "S1"},
+	}
+	for _, e := range more {
+		if err := s.Append("01BLOCK", e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	j, err := s.Read("01BLOCK")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(j.Entries[1:], more) {
+		t.Fatalf("got %+v, want %+v", j.Entries[1:], more)
+	}
+	raw, err := os.ReadFile(s.path("01BLOCK"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{`"type":"blocked"`, `"block":{"kind":"question","question":"Ship it?","tab_session":"rex","tab_window":"w1","tab_block":"b1","tab_title":"build"}`, `"type":"unblocked"`} {
+		if !strings.Contains(string(raw), want) {
+			t.Errorf("journal lacks %s:\n%s", want, raw)
+		}
+	}
+	if strings.Count(string(raw), `"block":`) != 1 {
+		t.Errorf("unblocked entry carries a block:\n%s", raw)
 	}
 }
 

@@ -1,0 +1,137 @@
+{
+  "actor": "01M5WGZABW1833Y925YGPX03TR",
+  "after": [
+    "01M5TZAMS6C90TBE8CQQ78YHSW"
+  ],
+  "at": "2026-10-26T16:34:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "command": "go test ./internal/run -run TestAgent && go test ./internal/api -run 'TestRunBlocked|TestRunInfoHumanBlocked|TestRexReportEncoder'",
+          "result": "pass",
+          "statement": "Go tests drive a fake agent session to blocked and back, and a run whose session record is blocked reads blocked in run status.",
+          "tests": "internal/run: TestAgentBlockedAndBack, TestAgentResumeWhileBlocked, TestAgentBlockedThenExit, TestAgentBlockedThenRunnerError, TestAgentSecondBlockNotifiesAgain; internal/api: TestRunBlockedStatusAndRexReports"
+        },
+        "handle": "run-blocked-state-tested",
+        "id": "01M5WGZHTDE1S52HCSR1HH4MDW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WGZHTDE1S52HCSR0J9DFYX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "command": "go test ./internal/run -run TestAgent && go test ./internal/api -run 'TestRunBlocked|TestRunInfoHumanBlocked|TestRexReportEncoder'",
+          "result": "pass",
+          "statement": "Go tests with a fake Rex writer count one OSC 7501 blocked report per block, none while the run stays blocked, and a working report when the block ends.",
+          "tests": "internal/run: TestAgentBlockedAndBack, TestAgentSecondBlockNotifiesAgain, TestAgentBlockWithoutNotify; internal/api: TestRunBlockedStatusAndRexReports, TestRunBlockedWithoutRexWritesNothing, TestRexReportEncoder"
+        },
+        "handle": "blocked-run-notice-tested",
+        "id": "01M5WGZHXYGN6K3NQR0AXNDZNE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WGZHXYGN6K3NQR072DN0EV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "command": "go test ./cmd/rhiza -run TestScripts/run-blocked",
+          "result": "pass",
+          "statement": "A testscript with a blocked fake session shows the tab and the question in run status text and --json, and counts one OSC 7501 blocked report.",
+          "tests": "cmd/rhiza/testdata/script/run-blocked.txtar"
+        },
+        "handle": "blocked-run-status-tested",
+        "id": "01M5WGZJ1DK8JK0WD8EJP44J6S",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WGZJ1DK8JK0WD8EF7QSMAQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WGZHTDE1S52HCSR0J9DFYX",
+        "id": "01M5WGZJ4VCX6W3CFRXFFKJ1WT",
+        "link": "01M5WGZJ4VCX6W3CFRXFAWJJAS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYPYZ6GFFNK5BCAAHBK7K4",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M5WGZHXYGN6K3NQR072DN0EV",
+        "id": "01M5WGZJ89AH66617S7PG1XQXE",
+        "link": "01M5WGZJ89AH66617S7KBR7HWA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYPZ98NCFG64MWBH0VC7QA",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M5WGZJ1DK8JK0WD8EF7QSMAQ",
+        "id": "01M5WGZJBR888JPPQ5GM4ZWT6C",
+        "link": "01M5WGZJBR888JPPQ5GK9GCKWZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYPZKAXABH94S3HCHA49MY",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "A blocked run's notification is an OSC 7501 blocked report from the process running the run, because Rex has no notify API and makes its notifications from the main program's status.",
+          "wording": "the agent's choice, not the owner's"
+        },
+        "handle": "rex-notice-by-program-status",
+        "id": "01M5WGZJF80R73FMQNVAJ1HX7A",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WGZJF80R73FMQNV8M80R65",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5TYPZ98NCFG64MWBH0VC7QA",
+        "id": "01M5WGZJJP0666BJB34RRZ9C9M",
+        "link": "01M5WGZJJP0666BJB34QKRK8DZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WGZJF80R73FMQNV8M80R65",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Should an agent step idle at its prompt count as blocked on the owner?"
+        },
+        "handle": "idle-step-blocked",
+        "id": "01M5WGZJP6NGH0HQ48K71N6CN8",
+        "key": null,
+        "kind": "question",
+        "node": "01M5WGZJP6NGH0HQ48K6PH1KM5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WGZJP6NGH0HQ48K6PH1KM5",
+        "id": "01M5WGZJSN8J0P37HPZ8PXZ38Q",
+        "link": "01M5WGZJSN8J0P37HPZ6KXPBDQ",
+        "note": "Today only a session waiting for input (permission, question, auth) is blocked; an idle prompt is not.",
+        "op": "link.create",
+        "to": "01M5TYPYZ6GFFNK5BCAAHBK7K4",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M5SZJ46HYE2DDJ0STCDZE1WP",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WGZJYXH0TMKQN43BP28B7C",
+  "type": "ops",
+  "v": 1
+}

@@ -12,6 +12,7 @@ package api
 // agent.
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -20,6 +21,8 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
@@ -63,7 +66,12 @@ const (
 const (
 	runRunning = "running"
 	runStopped = "stopped"
+	runBlocked = "blocked"
 )
+
+// runClock is the clock run.start and run.resume poll by; tests replace
+// it to drive a session's status between polls.
+var runClock run.Clock = run.RealClock{}
 
 // workflowsDir is where named workflows live, under the project root.
 const workflowsDir = store.Dir + "/workflows"
@@ -100,16 +108,27 @@ type RunResponse struct {
 
 // RunInfo is a run folded from its journal.
 type RunInfo struct {
-	ID        string    `json:"id" desc:"The run ID"`
-	Workflow  string    `json:"workflow" desc:"The workflow's name"`
-	Change    string    `json:"change" desc:"The change set it runs on"`
-	Title     string    `json:"title" desc:"The change set's title"`
-	Worktree  string    `json:"worktree" desc:"The worktree every step runs in"`
-	State     string    `json:"state" desc:"running (another process runs it now), stopped (resumable), succeeded or failed; empty in a dry run"`
-	Current   string    `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
-	Detail    string    `json:"detail,omitempty" desc:"Why it stopped or failed"`
-	Steps     []RunStep `json:"steps" desc:"The steps done, in order"`
-	StartedAt string    `json:"started_at" desc:"When it started, RFC 3339 UTC"`
+	ID        string      `json:"id" desc:"The run ID"`
+	Workflow  string      `json:"workflow" desc:"The workflow's name"`
+	Change    string      `json:"change" desc:"The change set it runs on"`
+	Title     string      `json:"title" desc:"The change set's title"`
+	Worktree  string      `json:"worktree" desc:"The worktree every step runs in"`
+	State     string      `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
+	Current   string      `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
+	Detail    string      `json:"detail,omitempty" desc:"Why it stopped or failed"`
+	Steps     []RunStep   `json:"steps" desc:"The steps done, in order"`
+	StartedAt string      `json:"started_at" desc:"When it started, RFC 3339 UTC"`
+	Blocked   *RunBlocked `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
+}
+
+// RunBlocked is what a blocked run waits on, read from its agent step's
+// session record when the run is reported.
+type RunBlocked struct {
+	Step     string     `json:"step" desc:"The agent step that waits"`
+	Session  string     `json:"session" desc:"The step's session"`
+	Kind     string     `json:"kind,omitempty" desc:"What kind of block: permission, question or auth; empty when the session gave none"`
+	Question string     `json:"question,omitempty" desc:"What the session asks the owner, as it reported it; empty when it gave nothing"`
+	Tab      SessionTab `json:"tab" desc:"The terminal tab the session runs in, where the owner answers"`
 }
 
 // RunStep is one step a run has done.
@@ -214,7 +233,7 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	if ctx.DryRun {
-		return RunResponse{Run: runInfo(st, false), DryRun: true}, nil
+		return RunResponse{Run: runInfo(st, false, session.NewStore(session.Dir(common))), DryRun: true}, nil
 	}
 	if err := canRun(ctx, def); err != nil {
 		return nil, err
@@ -238,7 +257,7 @@ func runRunStatus(ctx *Ctx, req any) (any, error) {
 	} else if j, err = latestRun(ctx, rs); err != nil {
 		return nil, err
 	}
-	return runInfo(j.State(), rs.Live(j.ID)), nil
+	return runInfo(j.State(), rs.Live(j.ID), session.NewStore(session.Dir(common))), nil
 }
 
 // latestRun is the latest started run of the effective change set, else
@@ -406,18 +425,22 @@ func newRunID(ctx *Ctx, rs *run.Store) (string, error) {
 // runEngine runs the run in the foreground until it finishes or stops,
 // and responds with its state.
 func runEngine(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, agent string, noWait bool) (any, error) {
+	sessions := session.NewStore(session.Dir(common))
 	e := &run.Engine{
 		Store: rs,
 		Runner: &stepRunner{
 			ctx: ctx, change: change, run: rid, worktree: worktree, mode: mode, agent: agent,
-			sessions: session.NewStore(session.Dir(common)),
+			sessions: sessions,
 		},
-		Clock:  run.RealClock{},
+		Clock:  runClock,
 		Now:    ctx.Now,
 		NoWait: noWait,
 	}
 	if ctx.Stderr != nil {
 		e.Log = func(line string) { fmt.Fprintf(ctx.Stderr, "rhiza: %s\n", line) }
+	}
+	if ctx.Rex != nil {
+		e.Notify = func(n run.Notice) { ctx.Rex.Write(rexNotice(n)) }
 	}
 	st, err := e.Run(rid)
 	switch {
@@ -426,7 +449,7 @@ func runEngine(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, age
 	case err != nil:
 		return nil, Errorf("run %s: %v", rid, err).WithNext("rhiza run status " + rid)
 	}
-	return RunResponse{Run: runInfo(st, false)}, nil
+	return RunResponse{Run: runInfo(st, false, sessions)}, nil
 }
 
 // stepRunner is the engine's run.Runner: command and wait steps run
@@ -494,33 +517,149 @@ func (r *stepRunner) StartAgent(step workflow.Step, _ []string) (string, error) 
 	return resp.(SessionStartResponse).Session.ID, nil
 }
 
-// AgentOutcome reads the session's record: it is done once its process
-// has exited (exit-is-final), with pass for exit 0, else fail.
-func (r *stepRunner) AgentOutcome(sid string) (bool, string, string, error) {
+// AgentStatus reads the session's record: it is done once its process
+// has exited (exit-is-final), with pass for exit 0, else fail. Until then
+// it is blocked while its resolved report is blocked, on that report's
+// kind and detail, in the record's tab.
+func (r *stepRunner) AgentStatus(sid string) (run.AgentStatus, error) {
 	rec, err := readSession(r.sessions, sid)
 	if err != nil {
-		return false, "", "", err
+		return run.AgentStatus{}, err
 	}
 	if !rec.Status.Exited() {
-		return false, "", "", nil
+		return run.AgentStatus{Blocked: recordBlock(rec)}, nil
 	}
 	x := rec.Status.Exit
 	switch {
 	case x.Code != nil && *x.Code == 0:
-		return true, workflow.OutcomePass, "exit 0", nil
+		return run.AgentStatus{Done: true, Outcome: workflow.OutcomePass, Detail: "exit 0"}, nil
 	case x.Code != nil:
-		return true, workflow.OutcomeFail, fmt.Sprintf("exit %d", *x.Code), nil
+		return run.AgentStatus{Done: true, Outcome: workflow.OutcomeFail, Detail: fmt.Sprintf("exit %d", *x.Code)}, nil
 	}
 	detail := x.State
 	if x.Detail != "" {
 		detail += ": " + x.Detail
 	}
-	return true, workflow.OutcomeFail, detail, nil
+	return run.AgentStatus{Done: true, Outcome: workflow.OutcomeFail, Detail: detail}, nil
+}
+
+// recordBlock is what a live session waits on when its resolved report
+// is blocked, else nil.
+func recordBlock(rec session.Record) *run.Block {
+	if rec.Status.Exited() {
+		return nil
+	}
+	rep, _ := session.Resolve(rec)
+	if rep.State != session.StateBlocked {
+		return nil
+	}
+	return &run.Block{
+		Kind: rep.Kind, Question: rep.Detail,
+		TabSession: rec.Tab.Session, TabWindow: rec.Tab.Window, TabBlock: rec.Tab.Block, TabTitle: rec.Tab.Title,
+	}
+}
+
+// runBlockedNow is what an unfinished run waits on now: its current
+// step's session, read from its record, when that resolves to blocked.
+// A record that cannot be read leaves the run not blocked.
+func runBlockedNow(st run.State, sessions *session.Store) *RunBlocked {
+	sid := st.Session[st.Current]
+	if st.Ended || sid == "" || sessions == nil {
+		return nil
+	}
+	rec, err := sessions.Read(sid)
+	if err != nil {
+		return nil
+	}
+	b := recordBlock(rec)
+	if b == nil {
+		return nil
+	}
+	return &RunBlocked{
+		Step: st.Current, Session: sid, Kind: b.Kind, Question: b.Question,
+		Tab: SessionTab{Session: b.TabSession, Window: b.TabWindow, Block: b.TabBlock, Title: b.TabTitle},
+	}
+}
+
+// Limits of a Program Status report's fields, in decoded bytes.
+const (
+	rexTitleMax = 192
+	rexMsgMax   = 2048
+)
+
+// rexNotice is the OSC 7501 root-record report of a notice: blocked, with
+// the kind, the agent's tab as title and a message naming the change set,
+// the step, the tab and the question; or working once the block ends.
+func rexNotice(n run.Notice) []byte {
+	if !n.Blocked || n.Block == nil {
+		return rexReport("working", "", "", "")
+	}
+	b := n.Block
+	what := n.Title
+	if what == "" {
+		what = n.Change
+	}
+	tab := b.TabTitle
+	if tab == "" {
+		tab = n.Session
+	}
+	msg := fmt.Sprintf("%s: %s waits on you in tab %s", what, n.Step, tab)
+	if q := strings.TrimSpace(b.Question); q != "" {
+		msg += ": " + q
+	}
+	return rexReport("blocked", b.Kind, b.TabTitle, msg)
+}
+
+// rexReport encodes one OSC 7501 root-record report from app rhiza. The
+// kind is kept only on a blocked state and only when Rex knows it; title
+// and msg have their control characters replaced with spaces, are capped
+// on a UTF-8 boundary and are base64-encoded, and are left out when empty.
+func rexReport(state, kind, title, msg string) []byte {
+	var b strings.Builder
+	b.WriteString("\x1b]7501;state=")
+	b.WriteString(state)
+	if state == session.StateBlocked {
+		switch kind {
+		case session.KindPermission, session.KindQuestion, session.KindAuth:
+			b.WriteString(":kind=" + kind)
+		}
+	}
+	b.WriteString(":app=rhiza")
+	if t := rexField(title, rexTitleMax); t != "" {
+		b.WriteString(":title=" + base64.StdEncoding.EncodeToString([]byte(t)))
+	}
+	if m := rexField(msg, rexMsgMax); m != "" {
+		b.WriteString(":msg=" + base64.StdEncoding.EncodeToString([]byte(m)))
+	}
+	b.WriteString("\x1b\\")
+	return []byte(b.String())
+}
+
+// rexField is s as valid UTF-8 with every control character replaced by
+// a space, trimmed and cut to at most limit bytes without splitting a rune.
+func rexField(s string, limit int) string {
+	s = strings.ToValidUTF8(s, "\uFFFD")
+	s = strings.Map(func(r rune) rune {
+		if unicode.IsControl(r) {
+			return ' '
+		}
+		return r
+	}, s)
+	s = strings.TrimSpace(s)
+	if len(s) <= limit {
+		return s
+	}
+	cut := limit
+	for cut > 0 && !utf8.RuneStart(s[cut]) {
+		cut--
+	}
+	return strings.TrimSpace(s[:cut])
 }
 
 // runInfo is the response form of a folded journal; live says another
-// process holds the run.
-func runInfo(st run.State, live bool) RunInfo {
+// process holds the run. An unfinished run whose current step's session
+// is blocked reads blocked, with what it waits on from sessions.
+func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 	info := RunInfo{
 		ID: st.ID, Workflow: st.Workflow, Change: st.Change, Title: st.Title, Worktree: st.Worktree,
 		Current: st.Current, Steps: []RunStep{}, StartedAt: rfc3339(st.StartedAt),
@@ -532,6 +671,9 @@ func runInfo(st run.State, live bool) RunInfo {
 		info.State = runRunning
 	default:
 		info.State, info.Detail = runStopped, st.Stopped
+	}
+	if b := runBlockedNow(st, sessions); b != nil {
+		info.State, info.Blocked = runBlocked, b
 	}
 	for _, s := range st.Steps {
 		info.Steps = append(info.Steps, RunStep{
@@ -579,6 +721,12 @@ func (r RunInfo) Human(w io.Writer) {
 		fmt.Fprintf(w, "\nnext: rhiza run resume %s\n", r.ID)
 	case runRunning:
 		fmt.Fprintf(w, "\nnext: rhiza run status %s\n", r.ID)
+	case runBlocked:
+		if r.Blocked != nil && r.Blocked.Tab.Block != "" {
+			fmt.Fprintf(w, "\nnext: rex focus -b %s\n", r.Blocked.Tab.Block)
+		} else if r.Blocked != nil {
+			fmt.Fprintf(w, "\nnext: rhiza session show %s\n", r.Blocked.Session)
+		}
 	}
 }
 
@@ -594,5 +742,19 @@ func runLines(w io.Writer, r RunInfo) {
 	}
 	if r.Detail != "" {
 		fmt.Fprintf(w, "- Detail: %s\n", r.Detail)
+	}
+	if b := r.Blocked; b != nil {
+		tab := b.Tab.Title
+		if tab == "" {
+			tab = b.Session
+		}
+		fmt.Fprintf(w, "- Blocked: %s waits on the owner in tab %s", b.Step, tab)
+		if b.Tab.Window != "" {
+			fmt.Fprintf(w, " (window %s)", b.Tab.Window)
+		}
+		fmt.Fprintf(w, "\n")
+		if b.Question != "" {
+			fmt.Fprintf(w, "- Question: %s\n", b.Question)
+		}
 	}
 }

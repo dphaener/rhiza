@@ -13,6 +13,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"unicode"
 
 	"github.com/dphaener/rhiza/internal/adapter"
 )
@@ -21,7 +22,7 @@ import (
 const Name = "claude-code"
 
 // hookEvents are the events whose hooks the settings JSON installs.
-var hookEvents = []string{"SessionStart", "UserPromptSubmit", "PreToolUse", "Notification", "Stop", "SessionEnd"}
+var hookEvents = []string{"SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "Notification", "Stop", "SessionEnd"}
 
 var modes = []string{"acceptEdits", "auto", "bypassPermissions", "manual", "dontAsk", "plan"}
 
@@ -107,6 +108,34 @@ type payload struct {
 	SessionID        string `json:"session_id"`
 	NotificationType string `json:"notification_type"`
 	Message          string `json:"message"`
+	ToolName         string `json:"tool_name"`
+	ToolInput        struct {
+		Questions []struct {
+			Question string `json:"question"`
+		} `json:"questions"`
+	} `json:"tool_input"`
+}
+
+// askTool is the tool the agent calls to put a question to the owner.
+const askTool = "AskUserQuestion"
+
+// questionText joins the questions of an ask call with " / ". Each is
+// trimmed and has its control characters, newlines included, replaced by a
+// space; empty questions are dropped.
+func (p payload) questionText() string {
+	var parts []string
+	for _, q := range p.ToolInput.Questions {
+		t := strings.TrimSpace(strings.Map(func(r rune) rune {
+			if unicode.IsControl(r) {
+				return ' '
+			}
+			return r
+		}, q.Question))
+		if t != "" {
+			parts = append(parts, t)
+		}
+	}
+	return strings.Join(parts, " / ")
 }
 
 // HookStatus implements adapter.Adapter.
@@ -121,7 +150,13 @@ func (Adapter) HookStatus(event string, raw []byte) (adapter.HookReport, bool, e
 	switch event {
 	case "SessionStart", "Stop":
 		r.State = "idle"
-	case "UserPromptSubmit", "PreToolUse":
+	case "PreToolUse":
+		if p.ToolName == askTool {
+			r.State, r.Kind, r.Detail = "blocked", "question", p.questionText()
+		} else {
+			r.State = "working"
+		}
+	case "UserPromptSubmit", "PostToolUse":
 		r.State = "working"
 	case "SessionEnd":
 		r.State = "done"

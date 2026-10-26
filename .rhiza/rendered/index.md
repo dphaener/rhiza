@@ -91,6 +91,10 @@
       - [run-status](capability/rhiza/workflows/workflow-runs/run-status.md)
       - [run-resume](capability/rhiza/workflows/workflow-runs/run-resume.md)
   - [orchestration](capability/rhiza/orchestration.md)
+    - [notifications](capability/rhiza/orchestration/notifications.md)
+      - [run-blocked-state](capability/rhiza/orchestration/notifications/run-blocked-state.md)
+      - [blocked-run-notice](capability/rhiza/orchestration/notifications/blocked-run-notice.md)
+      - [blocked-run-status](capability/rhiza/orchestration/notifications/blocked-run-status.md)
 
 ## Intents
 
@@ -250,6 +254,7 @@
 - [rex-extras-optional](decision/rex-extras-optional.md)
 - [rex-holds-no-state](decision/rex-holds-no-state.md)
 - [rex-host-by-name](decision/rex-host-by-name.md)
+- [rex-notice-by-program-status](decision/rex-notice-by-program-status.md)
 - [rex-required](decision/rex-required.md)
 - [root-intents-and-constraints](decision/root-intents-and-constraints.md)
 - [run-journal](decision/run-journal.md)
@@ -451,6 +456,7 @@
 - [agent-step-prompt](question/agent-step-prompt.md)
 - [area-gap](question/area-gap.md)
 - [carve-stale-base-recovery](question/carve-stale-base-recovery.md)
+- [idle-step-blocked](question/idle-step-blocked.md)
 - [stale-hook-status-after-exit](question/stale-hook-status-after-exit.md)
 
 ## Evidence
@@ -458,6 +464,8 @@
 - [acyclic-dependencies-tests](evidence/acyclic-dependencies-tests.md)
 - [agent-step-tested](evidence/agent-step-tested.md)
 - [backlog-group-tested](evidence/backlog-group-tested.md)
+- [blocked-run-notice-tested](evidence/blocked-run-notice-tested.md)
+- [blocked-run-status-tested](evidence/blocked-run-status-tested.md)
 - [carve-dependency-verified](evidence/carve-dependency-verified.md)
 - [carve-entries-verified](evidence/carve-entries-verified.md)
 - [carve-guards-verified](evidence/carve-guards-verified.md)
@@ -478,6 +486,7 @@
 - [old-folder-verified](evidence/old-folder-verified.md)
 - [ordered-landing-tests](evidence/ordered-landing-tests.md)
 - [rex-tab-launch-test](evidence/rex-tab-launch-test.md)
+- [run-blocked-state-tested](evidence/run-blocked-state-tested.md)
 - [run-journal-file-tested](evidence/run-journal-file-tested.md)
 - [run-resume-tested](evidence/run-resume-tested.md)
 - [run-start-tested](evidence/run-start-tested.md)
@@ -509,6 +518,7 @@
 
 ## Actors
 
+- [claude-code-01m5szj4](actor/claude-code-01m5szj4.md)
 - [claude-code-24d8eb87](actor/claude-code-24d8eb87.md)
 - [claude-code-48819f12](actor/claude-code-48819f12.md)
 - [claude-code-50e191e7](actor/claude-code-50e191e7.md)

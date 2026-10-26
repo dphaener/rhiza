@@ -148,6 +148,11 @@ type Ctx struct {
 	// Stderr receives diagnostics an operation must not print as its
 	// response, such as a failed hook's; nil discards them.
 	Stderr io.Writer
+	// Rex is the terminal Rex shows this process in, nil outside Rex.
+	// run.start and run.resume write their OSC 7501 status reports to it,
+	// such as blocked while an agent step waits on the owner; nothing is
+	// ever read back from it.
+	Rex io.Writer
 	// Version is the running rhiza's version, such as "v0.3.0" or
 	// "dev".
 	Version string
