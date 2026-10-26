@@ -1,0 +1,115 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5TS2C8YHYV38A4CKMZV4PCF"
+  ],
+  "at": "2026-10-26T00:16:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "genesis carve moves nodes, with their writes and links, from one unlanded change set to another, keeping their IDs."
+        },
+        "handle": "carve",
+        "id": "01M5TS2CD3J67XD0MP9M8D2GED",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M5TS2CD3J67XD0MP9KK8DVXH",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5TS2CD3J67XD0MP9KK8DVXH",
+        "id": "01M5TS2CG0J4TC7F493KNHZD8R",
+        "link": "01M5TS2CG0J4TC7F493HQXJ53J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TS2AJ5Q6CSHZCY3W3558QG",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5TS2CD3J67XD0MP9KK8DVXH",
+        "id": "01M5TS2CJXHTGK298JE6JHXH81",
+        "link": "01M5TS2CJXHTGK298JE3N3Q2A4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TS2AR1047SBJ6VRRAJ6Z8G",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "A carve writes a revision in the source and an ops entry in the target that refer to each other, so genesis log shows what was carved from where."
+        },
+        "handle": "carve-entries",
+        "id": "01M5TS2CNT1FCWTRRTGKDN3NK3",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M5TS2CNT1FCWTRRTGGN3E1DP",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5TS2CNT1FCWTRRTGGN3E1DP",
+        "id": "01M5TS2CRPQGBSFAFYTTP9WE6C",
+        "link": "01M5TS2CRPQGBSFAFYTRQZKVMC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TS2AXXJ8D45RRSKJKM27TR",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "A carve makes the source depend on the target when the source still rests on a moved node, and refuses a carve that would close a cycle."
+        },
+        "handle": "carve-dependency",
+        "id": "01M5TS2CVJC3TH6EEMA7JYAW51",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M5TS2CVJC3TH6EEMA75TNXDF",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5TS2CVJC3TH6EEMA75TNXDF",
+        "id": "01M5TS2CYG8YCAH7SV4HBFAGFE",
+        "link": "01M5TS2CYG8YCAH7SV4F7FTDH4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TS2B3W700JCEWBJ7QB1QMX",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "genesis carve refuses landed or terminal change sets and moves that wouldn't apply in the target, and suggests withdrawing a source it empties."
+        },
+        "handle": "carve-guards",
+        "id": "01M5TS2D1EMDVHZCN0SGZK6DW4",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M5TS2D1EMDVHZCN0SEACEKTV",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5TS2D1EMDVHZCN0SEACEKTV",
+        "id": "01M5TS2D4CM26BGDPCM43S6E75",
+        "link": "01M5TS2D4CM26BGDPCM0ZZAERK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TS2B9MWSZXVQK36X30YPX5",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5TS2C87Z5G8HX2AWAVSGGQN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5TS2D9CAXNGJ2B6FXY2YX7Z",
+  "type": "ops",
+  "v": 1
+}

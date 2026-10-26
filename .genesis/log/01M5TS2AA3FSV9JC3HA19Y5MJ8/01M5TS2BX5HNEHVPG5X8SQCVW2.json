@@ -1,0 +1,246 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5TS2AASQXCRDGSFF570S4QW"
+  ],
+  "at": "2026-10-26T00:16:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M5SZHJ8S6TDVVJGKSP5DJXHX",
+        "handle": null,
+        "id": "01M5TS2AF7VMP6TJ7R957DQ4WP",
+        "node": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "op": "node.update",
+        "set": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "Yes let's do that",
+              "where": "milestone-2 conversation, start: answering \"Shall we start planning milestone 2?\""
+            },
+            {
+              "by": "owner",
+              "text": "A",
+              "where": "milestone-2 conversation, topic 1: what milestone 2 is for"
+            },
+            {
+              "by": "owner",
+              "text": "Yes to all",
+              "where": "milestone-2 conversation, topic 2: how milestone 2 lives in the model, and the queue"
+            },
+            {
+              "by": "owner",
+              "text": "Yes to all 5",
+              "where": "milestone-2 conversation, topic 3: change sets that build on each other"
+            },
+            {
+              "by": "owner",
+              "text": "Yes to all",
+              "where": "milestone-2 conversation, topic 4: what Genesis runs the work covers"
+            },
+            {
+              "by": "owner",
+              "text": "Yes to all",
+              "where": "milestone-2 conversation, topic 5: milestone 2 as change sets"
+            },
+            {
+              "by": "owner",
+              "text": "Let's go with a, and yes you have my approval.",
+              "where": "milestone-2 conversation, after the rehearsal: proposing the drafts, and the go-ahead"
+            },
+            {
+              "by": "owner",
+              "text": "Ok let's add the recommended change set",
+              "where": "milestone-2 conversation, after carving was found not to work as decided"
+            },
+            {
+              "by": "owner",
+              "text": "All of them, let's go",
+              "where": "milestone-2 conversation, topic 6: carving that keeps IDs"
+            }
+          ],
+          "raw_sha256": "8375751ac3ae19bf0a4bfa4367828337a345edbce7a1307c3ecf0216c4e98a3e",
+          "summary": "The owner and the orchestrator (Claude Code in Rex) planned milestone 2 inside Genesis on 2026-10-25, right after milestone 1's import. Decided: milestone 2 is \"Genesis runs the work\" (layers 3–4), so milestone 3 is built with Genesis orchestrating; milestone 2 is an intent its change sets serve, with done points as child intents verified by Evidence; depends-on means only \"can't start before\", so the area chain is retired and the areas become a backlog; milestone work is carved out of the area bundles; a write sees the change sets it depends on, change sets land in dependency order, dropped dependencies and cycles are reported, rebasing stays manual; the scope (Claude Code adapter, runs with a built-in ship-change workflow, messages to a running step, interview answers as Decisions, blocked runs that tell the owner) and what is out; shipit stays the agent step; eight change sets, with 1, 2 and 7 written in full first and 3, 4, 5 and 8 proposed with intent only; the owner gave the go-ahead to accept 1, 2 and 7. Every answer was the owner accepting the orchestrator's proposal; the proposals' wording is the orchestrator's. Later: carving as decided couldn't be done with today's Genesis (re-creating a bundle's node changes its ID), so the owner added change set 9, carving that keeps IDs: carve by node, two entries with the same node and link IDs, the source made to depend on the target, its rules, and 3, 4, 5 and 8 depending on it."
+        },
+        "unset": []
+      },
+      {
+        "fields": {
+          "quote": "Ok let's add the recommended change set",
+          "quote_where": "milestone-2 conversation, after carving was found not to work as decided",
+          "statement": "A new milestone-2 change set, carving that keeps IDs, comes before the leaves of change sets 3, 4, 5 and 8, because re-creating a bundle's node in another change set changes its ID and breaks the bundle.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "carving-keeps-ids",
+        "id": "01M5TS2AJ5Q6CSHZCY3Y0JKCWQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5TS2AJ5Q6CSHZCY3W3558QG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5TS2AJ5Q6CSHZCY3W3558QG",
+        "id": "01M5TS2AN4ZE1Q6TA0NMR391PK",
+        "link": "01M5TS2AN4ZE1Q6TA0NMC963JB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "All of them, let's go",
+          "quote_where": "milestone-2 conversation, topic 6: carving that keeps IDs",
+          "statement": "genesis carve <node>... --from <change set> --to <change set> moves each named node's create, every op in the source that writes it, and every link in the source that starts or ends at it; children move only with --with-children.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "carve-by-node",
+        "id": "01M5TS2AR1047SBJ6VRSJN9N9Z",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5TS2AR1047SBJ6VRRAJ6Z8G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5TS2AR1047SBJ6VRRAJ6Z8G",
+        "id": "01M5TS2ATXETR2HP4GJWGZQGXS",
+        "link": "01M5TS2ATXETR2HP4GJT5J3ZAE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "All of them, let's go",
+          "quote_where": "milestone-2 conversation, topic 6: carving that keeps IDs",
+          "statement": "A carve writes one revision entry in the source dropping the moved ops and one ops entry in the target re-creating them with the same node and link IDs and new op IDs, both stamped with the actor and referring to each other.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "carve-two-entries",
+        "id": "01M5TS2AXXJ8D45RRSKJNFTKKC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5TS2AXXJ8D45RRSKJKM27TR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5TS2AXXJ8D45RRSKJKM27TR",
+        "id": "01M5TS2B0YGSE6N3E8ECES7CCT",
+        "link": "01M5TS2B0YGSE6N3E8E9VY3PJQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "All of them, let's go",
+          "quote_where": "milestone-2 conversation, topic 6: carving that keeps IDs",
+          "statement": "When the source still has ops resting on a moved node, carve adds source depends-on target; a carve that would close a cycle is refused.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "carve-adds-dependency",
+        "id": "01M5TS2B3W700JCEWBJAJ60745",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5TS2B3W700JCEWBJ7QB1QMX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5TS2B3W700JCEWBJ7QB1QMX",
+        "id": "01M5TS2B6RVBFDZJD1QQSPCAMJ",
+        "link": "01M5TS2B6RVBFDZJD1QN0W4ZNE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "All of them, let's go",
+          "quote_where": "milestone-2 conversation, topic 6: carving that keeps IDs",
+          "statement": "Both change sets are unlanded, the target isn't terminal, and every moved op still applies in the target's view; an emptied source gets next: genesis withdraw, but carve doesn't withdraw it. carve has --dry-run, --json, a describe schema and api call carve.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "carve-rules",
+        "id": "01M5TS2B9MWSZXVQK36YRCJP65",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5TS2B9MWSZXVQK36X30YPX5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5TS2B9MWSZXVQK36X30YPX5",
+        "id": "01M5TS2BCMNQ11XKY9XSKKJTSW",
+        "link": "01M5TS2BCMNQ11XKY9XQKA2844",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "All of them, let's go",
+          "quote_where": "milestone-2 conversation, topic 6: carving that keeps IDs",
+          "statement": "Carving is milestone-2 change set 9, under change-sets, serving milestone-2; change sets 3, 4, 5 and 8 depend on it, and it writes their leaves as its first use.",
+          "wording": "the orchestrator's proposal in the milestone-2 conversation, accepted by the owner"
+        },
+        "handle": "carve-is-change-set-9",
+        "id": "01M5TS2BFGTD8ET8DBHHTYJMK7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5TS2BFGTD8ET8DBHEZN5PNJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5TS2BFGTD8ET8DBHEZN5PNJ",
+        "id": "01M5TS2BJBEX0E3TWVW56E185Q",
+        "link": "01M5TS2BJBEX0E3TWVW44EWBRA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHJ8S6TDVVJGKSMZGC3SG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHJG0Q8A3HCM4J44AJMWT",
+        "id": "01M5TS2BN8RYC3H8Q1RX2SMG1M",
+        "link": "01M5TS2BN8RYC3H8Q1RSMT0ZP5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TS2AJ5Q6CSHZCY3W3558QG",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SZHJG0Q8A3HCM4J44AJMWT",
+        "id": "01M5TS2BR509DVMW3JQ42YYX2N",
+        "link": "01M5TS2BR509DVMW3JQ19DCH8S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TS2BFGTD8ET8DBHEZN5PNJ",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5TS2AA3FSV9JC3HA19Y5MJ8",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5TS2BX5HNEHVPG5X8SQCVW2",
+  "type": "ops",
+  "v": 1
+}
