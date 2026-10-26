@@ -1,0 +1,120 @@
+# A run whose agent step's session blocks on a question tells the owner:
+# `run status` reads blocked (text and --json) with the tab and the question,
+# and the process running the run writes exactly one OSC 7501 blocked report
+# to the terminal Rex shows it in, then one working report when the owner
+# answers.
+#
+# The fake rex runs the tab's command in the background, so `window new`
+# returns at once, and prints a window with a block. The fake claude reports
+# an AskUserQuestion through the real hook path, waits (bounded) for
+# $WORK/answer, reports the answer's PostToolUse and exits 0.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Blocked runs' --title 'Blocked runs' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+
+mkdir .rhiza/workflows
+cp $WORK/ask.toml .rhiza/workflows/ask.toml
+
+# Inside Rex: the run's own terminal is a Rex block, so its reports go to
+# stderr.
+env REX_BLOCK=block:root
+env REX_SESSION=session:s1
+exec rhiza run start --workflow ask --permission-mode manual &
+
+# Poll (bounded) until the run reads blocked.
+exec sh -c 'i=0; while [ $i -lt 400 ]; do rhiza run status | grep -q "^Run .* blocked$" && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
+exec rhiza run status
+stdout '^Run [0-9A-Z]{26} blocked$'
+stdout '^- Blocked: build waits on the owner in tab repo: Blocked runs \(window window:w1\)$'
+stdout '^- Question: Which colour\?$'
+stdout '^next: rex focus -b block:b1$'
+exec rhiza run status --json
+stdout '"state": "blocked"'
+stdout '"question": "Which colour\?"'
+stdout '"title": "repo: Blocked runs"'
+stdout '"window": "window:w1"'
+stdout '"block": "block:b1"'
+stdout '"kind": "question"'
+
+# The run's own process has journaled the block (it polls every 50ms), so
+# the answer cannot slip in before it sees the block.
+exec sh -c 'i=0; while [ $i -lt 400 ]; do grep -q "\"type\":\"blocked\"" "$WORK"/repo/.git/rhiza/runs/*.jsonl && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
+
+# The owner answers: the agent carries on, exits 0 and the run succeeds.
+exec sh -c 'echo > $WORK/answer'
+wait
+stdout '^Run [0-9A-Z]{26} succeeded$'
+
+# Exactly one blocked report and one working report reached the terminal.
+stderr -count=1 'state=blocked'
+stderr -count=1 'state=working'
+stderr -count=1 ']7501;state=blocked:kind=question:app=rhiza:'
+stderr -count=1 ']7501;state=working:app=rhiza'
+
+# The block is over.
+exec rhiza run status
+stdout '^Run [0-9A-Z]{26} succeeded$'
+! stdout '^- (Blocked|Question):'
+exec rhiza run status --json
+stdout '"state": "succeeded"'
+! stdout '"blocked": \{'
+
+fold-ok
+
+-- ask.toml --
+name = "ask"
+
+[step.build]
+kind = "agent"
+prompt = "Build {change}"
+interval = "50ms"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+if [ "$1" = events ]; then
+	exit 0
+fi
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >"$WORK/tab.out" 2>&1 </dev/null &
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+sid=
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
+echo '{"session_id":"'$sid'","hook_event_name":"PreToolUse","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which colour?"}]}}' | rhiza session hook PreToolUse >> "$WORK/hook.out" || exit 8
+i=0
+until [ -f "$WORK/answer" ]; do
+	i=$((i + 1))
+	if [ $i -gt 800 ]; then
+		echo 'no answer' >&2
+		exit 9
+	fi
+	sleep 0.025
+done
+echo '{"session_id":"'$sid'","hook_event_name":"PostToolUse","tool_name":"AskUserQuestion"}' | rhiza session hook PostToolUse >> "$WORK/hook.out" || exit 8
+exit 0

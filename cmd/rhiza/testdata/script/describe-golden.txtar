@@ -2391,6 +2391,63 @@ cmp stdout describe.golden.json
             "additionalProperties": false,
             "description": "The run as its journal stands; the command exits 1 when the run failed",
             "properties": {
+              "blocked": {
+                "additionalProperties": false,
+                "description": "What the run waits on while its agent step's session is blocked; absent otherwise",
+                "properties": {
+                  "kind": {
+                    "description": "What kind of block: permission, question or auth; empty when the session gave none",
+                    "type": "string"
+                  },
+                  "question": {
+                    "description": "What the session asks the owner, as it reported it; empty when it gave nothing",
+                    "type": "string"
+                  },
+                  "session": {
+                    "description": "The step's session",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The agent step that waits",
+                    "type": "string"
+                  },
+                  "tab": {
+                    "additionalProperties": false,
+                    "description": "The terminal tab the session runs in, where the owner answers",
+                    "properties": {
+                      "block": {
+                        "description": "The Rex block running the agent; empty until the tab opened",
+                        "type": "string"
+                      },
+                      "session": {
+                        "description": "The Rex session; empty when Rex chose it",
+                        "type": "string"
+                      },
+                      "title": {
+                        "description": "The tab title",
+                        "type": "string"
+                      },
+                      "window": {
+                        "description": "The Rex window ID; empty until the tab opened",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "block",
+                      "session",
+                      "title",
+                      "window"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "session",
+                  "step",
+                  "tab"
+                ],
+                "type": "object"
+              },
               "change": {
                 "description": "The change set it runs on",
                 "type": "string"
@@ -2412,7 +2469,7 @@ cmp stdout describe.golden.json
                 "type": "string"
               },
               "state": {
-                "description": "running (another process runs it now), stopped (resumable), succeeded or failed; empty in a dry run",
+                "description": "running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run",
                 "type": "string"
               },
               "steps": {
@@ -2535,6 +2592,63 @@ cmp stdout describe.golden.json
             "additionalProperties": false,
             "description": "The run as its journal stands; the command exits 1 when the run failed",
             "properties": {
+              "blocked": {
+                "additionalProperties": false,
+                "description": "What the run waits on while its agent step's session is blocked; absent otherwise",
+                "properties": {
+                  "kind": {
+                    "description": "What kind of block: permission, question or auth; empty when the session gave none",
+                    "type": "string"
+                  },
+                  "question": {
+                    "description": "What the session asks the owner, as it reported it; empty when it gave nothing",
+                    "type": "string"
+                  },
+                  "session": {
+                    "description": "The step's session",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The agent step that waits",
+                    "type": "string"
+                  },
+                  "tab": {
+                    "additionalProperties": false,
+                    "description": "The terminal tab the session runs in, where the owner answers",
+                    "properties": {
+                      "block": {
+                        "description": "The Rex block running the agent; empty until the tab opened",
+                        "type": "string"
+                      },
+                      "session": {
+                        "description": "The Rex session; empty when Rex chose it",
+                        "type": "string"
+                      },
+                      "title": {
+                        "description": "The tab title",
+                        "type": "string"
+                      },
+                      "window": {
+                        "description": "The Rex window ID; empty until the tab opened",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "block",
+                      "session",
+                      "title",
+                      "window"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "session",
+                  "step",
+                  "tab"
+                ],
+                "type": "object"
+              },
               "change": {
                 "description": "The change set it runs on",
                 "type": "string"
@@ -2556,7 +2670,7 @@ cmp stdout describe.golden.json
                 "type": "string"
               },
               "state": {
-                "description": "running (another process runs it now), stopped (resumable), succeeded or failed; empty in a dry run",
+                "description": "running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run",
                 "type": "string"
               },
               "steps": {
@@ -2653,6 +2767,63 @@ cmp stdout describe.golden.json
       "response": {
         "additionalProperties": false,
         "properties": {
+          "blocked": {
+            "additionalProperties": false,
+            "description": "What the run waits on while its agent step's session is blocked; absent otherwise",
+            "properties": {
+              "kind": {
+                "description": "What kind of block: permission, question or auth; empty when the session gave none",
+                "type": "string"
+              },
+              "question": {
+                "description": "What the session asks the owner, as it reported it; empty when it gave nothing",
+                "type": "string"
+              },
+              "session": {
+                "description": "The step's session",
+                "type": "string"
+              },
+              "step": {
+                "description": "The agent step that waits",
+                "type": "string"
+              },
+              "tab": {
+                "additionalProperties": false,
+                "description": "The terminal tab the session runs in, where the owner answers",
+                "properties": {
+                  "block": {
+                    "description": "The Rex block running the agent; empty until the tab opened",
+                    "type": "string"
+                  },
+                  "session": {
+                    "description": "The Rex session; empty when Rex chose it",
+                    "type": "string"
+                  },
+                  "title": {
+                    "description": "The tab title",
+                    "type": "string"
+                  },
+                  "window": {
+                    "description": "The Rex window ID; empty until the tab opened",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "block",
+                  "session",
+                  "title",
+                  "window"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "session",
+              "step",
+              "tab"
+            ],
+            "type": "object"
+          },
           "change": {
             "description": "The change set it runs on",
             "type": "string"
@@ -2674,7 +2845,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "state": {
-            "description": "running (another process runs it now), stopped (resumable), succeeded or failed; empty in a dry run",
+            "description": "running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run",
             "type": "string"
           },
           "steps": {

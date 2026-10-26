@@ -31,6 +31,9 @@ the orchestrator's proposal in the milestone-2 conversation, accepted by the own
 - decided-by [interview-provenance](../capability/rhiza/lineage/interview-provenance.md)
 - decided-by [session-commands](../capability/rhiza/runtime/rex-sessions/session-commands.md)
 - decided-by [run-start](../capability/rhiza/workflows/workflow-runs/run-start.md)
+- decided-by [run-blocked-state](../capability/rhiza/orchestration/notifications/run-blocked-state.md)
+- decided-by [blocked-run-notice](../capability/rhiza/orchestration/notifications/blocked-run-notice.md)
+- decided-by [blocked-run-status](../capability/rhiza/orchestration/notifications/blocked-run-status.md)
 
 ## History
 
