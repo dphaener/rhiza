@@ -20,6 +20,7 @@ func (fake) HookStatus(string, []byte) (HookReport, bool, error)  { return HookR
 func (fake) HookMessage(string, []byte) (Message, bool, error)    { return Message{}, false, nil }
 func (fake) TranscriptGlobs(string, func(string) string) []string { return nil }
 func (fake) Answers([]byte) ([]Answer, error)                     { return nil, nil }
+func (fake) TokenUse([]byte) (TokenUse, error)                    { return TokenUse{}, nil }
 
 func reset() {
 	mu.Lock()

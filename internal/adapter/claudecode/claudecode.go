@@ -386,6 +386,75 @@ func toolUseID(content json.RawMessage) string {
 	return ""
 }
 
+// usageLine is the part of one transcript line that TokenUse reads. Usage
+// is a pointer so that a line without usage can be told apart from one with
+// zero tokens.
+type usageLine struct {
+	Type        string `json:"type"`
+	IsSidechain bool   `json:"isSidechain"`
+	Message     struct {
+		ID    string `json:"id"`
+		Usage *struct {
+			Input         int64 `json:"input_tokens"`
+			Output        int64 `json:"output_tokens"`
+			CacheCreation int64 `json:"cache_creation_input_tokens"`
+			CacheRead     int64 `json:"cache_read_input_tokens"`
+		} `json:"usage"`
+	} `json:"message"`
+}
+
+// TokenUse implements adapter.Adapter. It reads the transcript one JSON line
+// at a time with no line-length limit, like Answers. Only assistant lines
+// with usage count. Claude Code writes one line per content block of a
+// message, each repeating the message's id and usage, so a message counts
+// once per id; a line with no id counts on its own. Sidechain lines are the
+// helper agents' and count toward Helpers, deduplicated apart from the
+// session's.
+func (Adapter) TokenUse(transcript []byte) (adapter.TokenUse, error) {
+	var use adapter.TokenUse
+	seen := [2]map[string]bool{{}, {}}
+	r := bufio.NewReader(bytes.NewReader(transcript))
+	for {
+		line, err := r.ReadBytes('\n')
+		addLineUsage(&use, &seen, line)
+		if errors.Is(err, io.EOF) {
+			return use, nil
+		}
+		if err != nil {
+			return use, err
+		}
+	}
+}
+
+// addLineUsage adds one transcript line's usage to use, unless the line has
+// none or its message was already counted in its bucket. seen holds the
+// counted message ids, the session's first and the helpers' second.
+func addLineUsage(use *adapter.TokenUse, seen *[2]map[string]bool, line []byte) {
+	line = bytes.TrimSpace(line)
+	if len(line) == 0 || line[0] != '{' {
+		return
+	}
+	var l usageLine
+	if json.Unmarshal(line, &l) != nil || l.Type != "assistant" || l.Message.Usage == nil {
+		return
+	}
+	bucket, ids := &use.Session, seen[0]
+	if l.IsSidechain {
+		bucket, ids = &use.Helpers, seen[1]
+	}
+	if id := l.Message.ID; id != "" {
+		if ids[id] {
+			return
+		}
+		ids[id] = true
+	}
+	u := l.Message.Usage
+	bucket.Input += u.Input
+	bucket.Output += u.Output
+	bucket.CacheCreation += u.CacheCreation
+	bucket.CacheRead += u.CacheRead
+}
+
 // answerSep joins the labels of a multiSelect answer.
 const answerSep = ", "
 

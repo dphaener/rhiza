@@ -611,3 +611,64 @@ func TestTranscriptGlobsMatchOnlyTheSessionsOwn(t *testing.T) {
 		t.Fatalf("matches = %q, want %q", got, []string{own})
 	}
 }
+
+// tokenTranscript is made-up content in the shape of a Claude Code
+// transcript: msg_B is split over three lines that repeat its usage, and the
+// helper's msg_H is logged twice on sidechain lines.
+const tokenTranscript = `{"type":"user","isSidechain":false,"message":{"role":"user","content":"hi"}}
+{"type":"assistant","isSidechain":false,"message":{"id":"msg_A","usage":{"input_tokens":3,"output_tokens":10,"cache_creation_input_tokens":100,"cache_read_input_tokens":1000}}}
+{"type":"assistant","isSidechain":false,"message":{"id":"msg_B","usage":{"input_tokens":5,"output_tokens":20,"cache_creation_input_tokens":200,"cache_read_input_tokens":2000}}}
+{"type":"assistant","isSidechain":false,"message":{"id":"msg_B","usage":{"input_tokens":5,"output_tokens":20,"cache_creation_input_tokens":200,"cache_read_input_tokens":2000}}}
+{not json
+{"type":"assistant","isSidechain":false,"message":{"id":"msg_B","usage":{"input_tokens":5,"output_tokens":20,"cache_creation_input_tokens":200,"cache_read_input_tokens":2000}}}
+{"type":"assistant","isSidechain":true,"message":{"id":"msg_H","usage":{"input_tokens":11,"output_tokens":40,"cache_creation_input_tokens":400,"cache_read_input_tokens":4000}}}
+{"type":"assistant","isSidechain":true,"message":{"id":"msg_H","usage":{"input_tokens":11,"output_tokens":40,"cache_creation_input_tokens":400,"cache_read_input_tokens":4000}}}
+{"type":"user","isSidechain":false,"message":{"role":"user","content":"more","usage":{"input_tokens":999}}}
+{"type":"assistant","isSidechain":false,"message":{"id":"msg_C","usage":{"input_tokens":7,"output_tokens":30,"cache_creation_input_tokens":300,"cache_read_input_tokens":3000}}}
+{"type":"assistant","isSidechain":false,"message":{"usage":{"input_tokens":1,"output_tokens":2,"cache_creation_input_tokens":4,"cache_read_input_tokens":8}}}
+{"type":"assistant","isSidechain":false,"message":{"id":"msg_D"}}
+`
+
+func TestTokenUse(t *testing.T) {
+	got, err := Adapter{}.TokenUse([]byte(tokenTranscript))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := adapter.TokenUse{
+		Session: adapter.TokenCounts{Input: 3 + 5 + 7 + 1, Output: 10 + 20 + 30 + 2,
+			CacheCreation: 100 + 200 + 300 + 4, CacheRead: 1000 + 2000 + 3000 + 8},
+		Helpers: adapter.TokenCounts{Input: 11, Output: 40, CacheCreation: 400, CacheRead: 4000},
+	}
+	if got != want {
+		t.Fatalf("TokenUse = %+v, want %+v", got, want)
+	}
+}
+
+func TestTokenUseEmpty(t *testing.T) {
+	for _, in := range []string{"", "\n\n"} {
+		got, err := Adapter{}.TokenUse([]byte(in))
+		if err != nil || got != (adapter.TokenUse{}) {
+			t.Fatalf("TokenUse(%q) = %+v, %v; want zeros, nil", in, got, err)
+		}
+	}
+}
+
+func TestTokenUseBroken(t *testing.T) {
+	got, err := Adapter{}.TokenUse([]byte("{not json\n[1,2]\n\"usage\"\n{\"type\":\"assistant\",\"message\":{\"usage\":\"x\"}}"))
+	if err != nil || got != (adapter.TokenUse{}) {
+		t.Fatalf("TokenUse = %+v, %v; want zeros, nil", got, err)
+	}
+}
+
+func TestTokenUseLongLine(t *testing.T) {
+	pad := strings.Repeat("x", 70*1024)
+	in := `{"type":"assistant","isSidechain":false,"pad":"` + pad + `","message":{"id":"msg_L","usage":{"input_tokens":2,"output_tokens":3,"cache_creation_input_tokens":5,"cache_read_input_tokens":7}}}` + "\n"
+	got, err := Adapter{}.TokenUse([]byte(in))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := adapter.TokenUse{Session: adapter.TokenCounts{Input: 2, Output: 3, CacheCreation: 5, CacheRead: 7}}
+	if got != want {
+		t.Fatalf("TokenUse = %+v, want %+v", got, want)
+	}
+}

@@ -43,6 +43,12 @@ type Adapter interface {
 	// the owner answered, in transcript order; the questions of one call keep
 	// their order. Unreadable entries are skipped, not fatal.
 	Answers(transcript []byte) ([]Answer, error)
+	// TokenUse returns the session's token use read from transcript. Each
+	// of the agent's messages counts once, however many transcript lines
+	// repeat it; lines its helper agents left in the same transcript count
+	// toward Helpers. Unreadable lines are skipped, not fatal. It reads
+	// nothing itself.
+	TokenUse(transcript []byte) (TokenUse, error)
 }
 
 // Answer is one question the agent asked the owner and the owner's answer,
@@ -110,6 +116,29 @@ type Message struct {
 	// Structured reports whether the message was not a string, so Text
 	// holds its raw JSON.
 	Structured bool
+}
+
+// TokenCounts are the tokens of some of a session's model calls.
+type TokenCounts struct {
+	// Input is the tokens sent that were neither written to nor read from
+	// the cache.
+	Input int64
+	// Output is the tokens the model generated.
+	Output int64
+	// CacheCreation is the input tokens written to the cache.
+	CacheCreation int64
+	// CacheRead is the input tokens read from the cache.
+	CacheRead int64
+}
+
+// TokenUse is a session's token use: its own calls, and those its helper
+// agents logged in its transcript.
+type TokenUse struct {
+	// Session is the tokens of the session's own model calls.
+	Session TokenCounts
+	// Helpers is the tokens of the calls its helper agents logged in the
+	// session's transcript, kept apart from Session.
+	Helpers TokenCounts
 }
 
 // CheckMode returns an error unless mode is a non-empty member of

@@ -45,6 +45,9 @@ func (interviewAdapter) Answers(transcript []byte) ([]adapter.Answer, error) {
 	err := json.Unmarshal(transcript, &out)
 	return out, err
 }
+func (interviewAdapter) TokenUse([]byte) (adapter.TokenUse, error) {
+	return adapter.TokenUse{}, nil
+}
 
 var (
 	pickedAnswer = adapter.Answer{ToolUseID: "t1", Question: "Which store?", Header: "Store",
