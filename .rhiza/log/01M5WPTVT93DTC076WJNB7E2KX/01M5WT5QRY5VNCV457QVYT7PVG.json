@@ -1,0 +1,50 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5WRHHPBSKSQBQKAKSXWHFD2"
+  ],
+  "at": "2026-10-26T19:14:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "In an autonomous run, a PreToolUse hook on AskUserQuestion denies the call, records the question as a question node, and tells the session its answer will arrive as a message, so the session's turn ends at its prompt; once the arbiter's Decision answers the question, the engine delivers it with rhiza session message. Nothing is typed into a menu, and no hook waits on the arbiter.",
+          "wording": "the orchestrator's ruling as arbiter, under the owner's instruction to be the arbiter (milestone-3 conversation); not the owner's words"
+        },
+        "handle": "arbiter-answer-by-message",
+        "id": "01M5WT5QB5QR7Y1HX1PENBAV8S",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WT5QB5QR7Y1HX1PCB5X443",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WT5QB5QR7Y1HX1PCB5X443",
+        "id": "01M5WT5QEZ2N4CXZSM5S8R0V2G",
+        "link": "01M5WT5QEZ2N4CXZSM5QVK6Z3D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHH045QXSZA0X2BP6E8S0",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHGM59FSCHB3SDT7C8H75",
+        "id": "01M5WT5QJZDN7GMHF5DBH65YFT",
+        "link": "01M5WT5QJZDN7GMHF5DAVPY1E5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WT5QB5QR7Y1HX1PCB5X443",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5WPTVT93DTC076WJNB7E2KX",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WT5QRY5VNCV457QVYT7PVG",
+  "type": "ops",
+  "v": 1
+}
