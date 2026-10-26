@@ -16,7 +16,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/canon"
+	"github.com/dphaener/rhiza/internal/canon"
 )
 
 func init() {
@@ -90,7 +90,7 @@ func sourceFileSchema() map[string]any {
 // material and adds the node through the add builder and write pipeline.
 func runSourceAdd(ctx *Ctx, req any) (any, error) {
 	r := req.(SourceAddRequest)
-	const next = "genesis describe source.add"
+	const next = "rhiza describe source.add"
 	if (r.Raw == "") == (r.RawSHA256 == "") {
 		return nil, Usagef("source add needs exactly one of --raw or --raw-sha256").WithNext(next)
 	}
@@ -147,7 +147,7 @@ func readSourceFile(what, file string) ([]byte, error) {
 // duplicate or unknown keys, a non-empty title and summary, a quotes array
 // and a non-empty text on every quote.
 func decodeSourceFile(data []byte) (sourceFile, error) {
-	const next = "genesis describe source.add"
+	const next = "rhiza describe source.add"
 	trimmed := bytes.TrimSpace(data)
 	if _, err := canon.Canonicalize(trimmed); err != nil {
 		return sourceFile{}, Usagef("source file: %v", err).WithNext(next)

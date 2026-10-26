@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 // listWorkers is how many change set folders listLog reads at once.

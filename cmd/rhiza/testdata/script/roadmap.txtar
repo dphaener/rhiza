@@ -1,0 +1,73 @@
+# roadmap shows the proposed and accepted change sets: milestone groups
+# first, then one backlog. No intent here is a milestone (none has a
+# milestone field), so every change set is in the backlog, in depends-on
+# order, ties by ID (roadmap-milestones covers the milestone groups). A
+# change set's serves links are written inside it (D7), naming the change
+# set by its ID.
+
+exec rhiza init
+exec rhiza roadmap
+stdout '^# Roadmap$'
+stdout '^Nothing planned yet\.$'
+stdout '^next: rhiza change new "<intent>"$'
+
+# Two root intents, grow (key i) before cheap (key r), and fast under grow.
+exec rhiza add intent grow --record
+exec rhiza add intent fast --parent grow --record
+exec rhiza add intent cheap --record
+exec rhiza add capability store --record
+
+# A serves cheap and stays proposed.
+exec rhiza change new A
+stdout 'change set 01M5PWGX40FB1RBRN9YHMNJW07 '
+exec rhiza link 01M5PWGX40FB1RBRN9YHMNJW07 serves cheap
+exec rhiza propose
+
+# B serves fast, touches store and is accepted.
+exec rhiza change new B
+stdout 'change set 01M5PWH01R1B9MDYF6J8XB3MQG '
+exec rhiza link 01M5PWH01R1B9MDYF6J8XB3MQG serves fast
+exec rhiza set store --field statement=Kept
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# C serves nothing; D is a draft, which the roadmap leaves out.
+exec rhiza change new C
+exec rhiza propose
+exec rhiza change new D
+fold-ok
+
+exec rhiza roadmap
+cmp stdout roadmap.md
+exec rhiza roadmap --json
+stdout '"view": "to-be"'
+stdout '"kind": "backlog"'
+! stdout '"kind": "milestone"'
+! stdout '"handle": "cheap"'
+stdout '"serves": \[\n *"'
+! stdout '"intent": "D"'
+cp stdout roadmap.json
+exec rhiza api call roadmap '{}'
+cmp stdout roadmap.json
+
+# An open question blocking a node B touches: B is no longer ready.
+exec rhiza add question which-disk --record
+exec rhiza link which-disk blocks store --record
+exec rhiza roadmap
+stdout '^- \[accepted\] 01M5PWH01R1B9M B$'
+! stdout '\[ready\]'
+
+# as-is has no accepted change set's ops, but the change sets' own ops
+# still list them.
+exec rhiza roadmap --view as-is
+stdout '^## Backlog$'
+stdout '^- \[accepted\] 01M5PWH01R1B9M B$'
+
+-- roadmap.md --
+# Roadmap
+
+## Backlog
+
+- [proposed] 01M5PWGX40FB1R A
+- [ready] 01M5PWH01R1B9M B
+- [proposed] 01M5PWH4Y0SRA0 C

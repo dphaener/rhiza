@@ -1,0 +1,79 @@
+# No arguments: usage from the registry on stdout, exit 0.
+exec rhiza
+stdout '^Usage:'
+stdout '^  describe +Describe operations'
+stdout '^  api call '
+stdout '^  version '
+stdout '--json'
+! stderr .
+
+# -h and --help print the same usage.
+exec rhiza --help
+stdout '^Usage:'
+exec rhiza -h
+stdout '^Usage:'
+
+# An unknown command: message and usage on stderr, exit 2.
+! exec rhiza nope
+stderr '^rhiza: unknown command "nope"$'
+stderr '^Usage:'
+! stdout .
+
+# With --json, anywhere on the line, the error is JSON on stdout only.
+! exec rhiza nope --json
+stdout '"code": "usage"'
+stdout '"message": "unknown command \\"nope\\""'
+stdout '"next": "rhiza --help"'
+! stderr .
+
+# A group of operations without a subcommand asks for one, exit 2.
+! exec rhiza change
+stderr '^rhiza: "change" needs a subcommand: ls, new, show, use$'
+stderr '^next: rhiza --help$'
+! stdout .
+! exec rhiza change --json
+stdout '"code": "usage"'
+stdout '"message": "\\"change\\" needs a subcommand: ls, new, show, use"'
+! stderr .
+
+# An unknown flag on a command is a usage error with a next command.
+! exec rhiza describe --bogus
+stderr '^rhiza: describe: unknown flag --bogus$'
+stderr '^next: rhiza describe describe$'
+! stdout .
+
+# Too many arguments.
+! exec rhiza describe a b
+stderr 'too many arguments'
+
+# A global flag without its value.
+! exec rhiza describe --change
+stderr '^rhiza: flag --change needs a value$'
+
+# A command's --help describes it.
+exec rhiza describe --help
+stdout '^## describe$'
+stdout 'rhiza describe \[<op>\]'
+
+# Bad test clock.
+env RHIZA_TEST_NOW=yesterday
+! exec rhiza describe
+stderr 'RHIZA_TEST_NOW'
+env RHIZA_TEST_NOW=
+
+# --record is for node and link writes; anything else refuses it, exit 2,
+# before touching the repo. Help still describes the command.
+! exec rhiza change ls --record --json
+stdout '"code": "usage"'
+stdout '"message": "change ls does not take --record: it is for node and link writes"'
+stdout '"next": "rhiza describe change.ls"'
+! stderr .
+! exec rhiza describe --record
+stderr '^rhiza: describe does not take --record'
+exec rhiza add --record -h
+stdout '^## add$'
+
+# version still works.
+exec rhiza version
+stdout '\Arhiza \S+\n\z'
+! stderr .

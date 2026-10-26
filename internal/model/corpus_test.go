@@ -6,8 +6,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 // corpusDir holds sample logs from every released format; see its README.

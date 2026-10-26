@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dphaener/genesis/internal/gen"
-	"github.com/dphaener/genesis/internal/model"
+	"github.com/dphaener/rhiza/internal/gen"
+	"github.com/dphaener/rhiza/internal/model"
 )
 
 // budget is the most the fresh-read path's median may take: milestone 1's
@@ -56,7 +56,7 @@ func TestMain(m *testing.M) {
 func defaultModel(t testing.TB) generated {
 	t.Helper()
 	genOnce.Do(func() {
-		dir, err := os.MkdirTemp("", "genesis-index-budget-")
+		dir, err := os.MkdirTemp("", "rhiza-index-budget-")
 		if err != nil {
 			genned.err = err
 			return
@@ -100,7 +100,7 @@ func defaultModel(t testing.TB) generated {
 // measure that contention, not the read.
 func budgetLock(t *testing.T) {
 	t.Helper()
-	f, err := os.OpenFile(filepath.Join(os.TempDir(), "genesis-budget.lock"), os.O_CREATE|os.O_RDWR, 0o600)
+	f, err := os.OpenFile(filepath.Join(os.TempDir(), "rhiza-budget.lock"), os.O_CREATE|os.O_RDWR, 0o600)
 	if err != nil {
 		t.Fatal(err)
 	}

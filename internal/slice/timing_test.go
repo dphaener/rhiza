@@ -10,11 +10,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/gen"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/index"
-	"github.com/dphaener/genesis/internal/model"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/gen"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/index"
+	"github.com/dphaener/rhiza/internal/model"
 )
 
 // sliceBudget is the most a slice's median may take, open to printed.
@@ -54,7 +54,7 @@ func TestMain(m *testing.M) {
 func defaultModel(t testing.TB) generated {
 	t.Helper()
 	genOnce.Do(func() {
-		dir, err := os.MkdirTemp("", "genesis-slice-budget-")
+		dir, err := os.MkdirTemp("", "rhiza-slice-budget-")
 		if err != nil {
 			genned.err = err
 			return
@@ -211,7 +211,7 @@ func sliceOnce(g generated, ts timedSlice) (json, md Result, err error) {
 // measure that contention, not the read.
 func budgetLock(t *testing.T) {
 	t.Helper()
-	f, err := os.OpenFile(filepath.Join(os.TempDir(), "genesis-budget.lock"), os.O_CREATE|os.O_RDWR, 0o600)
+	f, err := os.OpenFile(filepath.Join(os.TempDir(), "rhiza-budget.lock"), os.O_CREATE|os.O_RDWR, 0o600)
 	if err != nil {
 		t.Fatal(err)
 	}

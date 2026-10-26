@@ -1,4 +1,4 @@
-// Package id provides Genesis's identifiers: format-1 ULIDs, random and
+// Package id provides Rhiza's identifiers: format-1 ULIDs, random and
 // time-sortable, generated anywhere without coordination.
 //
 // Every ID has exactly one spelling, its canonical 26-character upper-case

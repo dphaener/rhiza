@@ -7,11 +7,11 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/model"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // The queries below read the index as Open left it: they never catch up
@@ -363,7 +363,7 @@ type Problem struct {
 	// Source is where it came from: "log" (layout and entry files), "fold"
 	// (changeset.FoldLog), "asis" or "tobe" (model.AsIs, model.ToBe).
 	Source string
-	// Path is the file or folder under .genesis, for log problems.
+	// Path is the file or folder under .rhiza, for log problems.
 	Path string
 	// ChangeSet is set for fold and view problems, Entry for fold problems
 	// and Op for view problems; each zero otherwise.

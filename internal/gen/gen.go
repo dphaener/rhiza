@@ -1,4 +1,4 @@
-// Package gen writes a synthetic, deterministic Genesis repository: a
+// Package gen writes a synthetic, deterministic Rhiza repository: a
 // repo.json and a log of change sets that projects with no problems. It
 // exists for tests, benchmarks and demonstrations, never for real data.
 //
@@ -38,13 +38,13 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/dphaener/genesis/internal/canon"
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/key"
-	"github.com/dphaener/genesis/internal/op"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/key"
+	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 // Options sizes a generated repository.
@@ -118,7 +118,7 @@ var start = time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 // maxDepth is the deepest level a tree node is created or moved to.
 const maxDepth = 6
 
-// Write writes the repository o describes into root/.genesis, which must
+// Write writes the repository o describes into root/.rhiza, which must
 // not exist yet, and returns its Summary.
 func Write(root string, o Options) (Summary, error) {
 	if o.Nodes < 1 || o.Links < 0 || o.Landed < 1 || o.InFlight < 2 {

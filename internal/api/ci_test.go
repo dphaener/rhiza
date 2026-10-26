@@ -34,7 +34,7 @@ func TestInstallVersion(t *testing.T) {
 }
 
 func TestWithGitattribute(t *testing.T) {
-	const line = ".genesis/rendered/** linguist-generated=true"
+	const line = ".rhiza/rendered/** linguist-generated=true"
 	for _, tc := range []struct {
 		name, have, want string
 		changed          bool
@@ -97,13 +97,13 @@ func TestCIInstall(t *testing.T) {
 	}
 	wf := readRoot(t, ctx, workflowPath)
 	for _, s := range []string{
-		"genesis ci install",
-		"go install github.com/dphaener/genesis/cmd/genesis@v1.2.3\n",
-		"genesis check --base origin/${{ github.base_ref }}\n",
-		"genesis check --base ${{ github.event.before }}\n",
+		"rhiza ci install",
+		"go install github.com/dphaener/rhiza/cmd/rhiza@v1.2.3\n",
+		"rhiza check --base origin/${{ github.base_ref }}\n",
+		"rhiza check --base ${{ github.event.before }}\n",
 		"fetch-depth: 0\n",
 		"github.event.before != '" + strings.Repeat("0", 40) + "'\n",
-		"github.event.before == '" + strings.Repeat("0", 40) + "'\n      run: genesis check\n",
+		"github.event.before == '" + strings.Repeat("0", 40) + "'\n      run: rhiza check\n",
 	} {
 		if !strings.Contains(wf, s) {
 			t.Errorf("workflow lacks %q:\n%s", s, wf)
@@ -112,7 +112,7 @@ func TestCIInstall(t *testing.T) {
 	if got := readRoot(t, ctx, gitattributesPath); got != gitattribute+"\n" {
 		t.Errorf(".gitattributes = %q", got)
 	}
-	if out := human(t, r); out != "Installed the Genesis check (2 written, 0 unchanged).\n\n- wrote .gitattributes\n- wrote .github/workflows/genesis.yml\n" {
+	if out := human(t, r); out != "Installed the Rhiza check (2 written, 0 unchanged).\n\n- wrote .gitattributes\n- wrote .github/workflows/rhiza.yml\n" {
 		t.Errorf("human:\n%s", out)
 	}
 
@@ -120,7 +120,7 @@ func TestCIInstall(t *testing.T) {
 	if r.Written == nil || len(r.Written) != 0 || !slices.Equal(r.Unchanged, both) {
 		t.Errorf("second install = %+v", r)
 	}
-	if out := human(t, r); out != "Installed the Genesis check (0 written, 2 unchanged).\n" {
+	if out := human(t, r); out != "Installed the Rhiza check (0 written, 2 unchanged).\n" {
 		t.Errorf("human:\n%s", out)
 	}
 
@@ -129,7 +129,7 @@ func TestCIInstall(t *testing.T) {
 	writeRoot(t, ctx, gitattributesPath, "*.go diff=golang\n")
 	_, err := callOp(t, ctx, "ci.install", `{}`)
 	wantExit(t, err, 3)
-	wantNext(t, err, "genesis ci install --force")
+	wantNext(t, err, "rhiza ci install --force")
 	if got := readRoot(t, ctx, workflowPath); got != "name: other\n" {
 		t.Errorf("conflict rewrote the workflow: %q", got)
 	}
@@ -153,7 +153,7 @@ func TestCIInstallLatest(t *testing.T) {
 	ctx := initCtx(t)
 	ctx.Version = "dev"
 	ciInstall(t, ctx, `{}`)
-	if wf := readRoot(t, ctx, workflowPath); !strings.Contains(wf, "/cmd/genesis@latest\n") {
+	if wf := readRoot(t, ctx, workflowPath); !strings.Contains(wf, "/cmd/rhiza@latest\n") {
 		t.Errorf("workflow:\n%s", wf)
 	}
 }
@@ -162,13 +162,13 @@ func TestCIInstallErrors(t *testing.T) {
 	ctx := testCtx(t.TempDir())
 	_, err := callOp(t, ctx, "ci.install", `{}`)
 	wantExit(t, err, 4)
-	wantNext(t, err, "genesis init")
+	wantNext(t, err, "rhiza init")
 
 	ctx = initCtx(t)
 	ctx.DryRun = true
 	_, err = callOp(t, ctx, "ci.install", `{}`)
 	wantExit(t, err, 2)
-	wantNext(t, err, "genesis ci install")
+	wantNext(t, err, "rhiza ci install")
 	for _, p := range []string{workflowPath, gitattributesPath} {
 		if _, serr := os.Stat(filepath.Join(ctx.Root, filepath.FromSlash(p))); serr == nil {
 			t.Errorf("a dry run wrote %s", p)

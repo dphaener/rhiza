@@ -1,0 +1,136 @@
+# The change set commands. IDs are fixed: Setup pins the clock and seed and
+# every run offsets them by the number of entry files, so the same script
+# always writes the same IDs.
+
+# Outside a repository every change command is not_found, exit 4.
+! exec rhiza change ls
+stderr '^rhiza: no Rhiza repository in '
+stderr '^next: rhiza init$'
+! stdout .
+! exec rhiza change ls --json
+stdout '"code": "not_found"'
+stdout '"next": "rhiza init"'
+
+exec rhiza init
+
+# An empty log.
+exec rhiza change ls
+stdout '^No change sets yet\.$'
+stdout '^next: rhiza change new "<intent>"$'
+exec rhiza change ls --json
+stdout '"change_sets": \[\]'
+
+# change new opens an intention and makes it current. The first write
+# records the git user as an actor, in its own landed record change set.
+exec rhiza change new 'Try it' --json
+stdout '"change_set": "[0-9A-Z]{26}"'
+stdout '"entry": "[0-9A-Z]{26}"'
+stdout '"actor": "[0-9A-Z]{26}"'
+stdout '"kind": "intention"'
+stdout '"intent": "Try it"'
+exec rhiza change ls
+stdout '^- [0-9A-Z]{26} landed record: Record actor test@rhiza.invalid$'
+stdout '^- [0-9A-Z]{26} draft intention: Try it \(current\)$'
+
+# A second one becomes current.
+exec rhiza change new Other
+stdout '^Opened change set [0-9A-Z]{26} \(intention\): Other$'
+stdout '^It is now the current change set'
+exec rhiza change ls
+stdout ': Other \(current\)$'
+! stdout 'Try it \(current\)'
+
+# change show defaults to the current change set.
+exec rhiza change show
+stdout '^# Change set [0-9A-Z]{26}$'
+stdout '^- Intent: Other$'
+stdout '^- State: draft \(current\)$'
+stdout '^## Operations$'
+stdout '^No operations yet\.$'
+
+# change use switches back, by full ID or a unique prefix (any case).
+exec rhiza change use 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^Current change set: 01M5PWGEF85Y185JZ2ZGCNH40N: Try it$'
+grep '^01M5PWGEF85Y185JZ2ZGCNH40N$' .rhiza/local/change
+exec rhiza change ls
+stdout ': Try it \(current\)$'
+exec rhiza change use 01m5pwgjc82p7 --json
+stdout '"change_set": "01M5PWGJC82P7YGZTWYFFZ0VJG"'
+stdout '"intent": "Other"'
+
+# A prefix matching several change sets is a usage error listing them.
+! exec rhiza change use 01M5PWGEF8 --json
+stdout '"code": "usage"'
+stdout '01M5PWGEF85Y185JZ2ZAN43Q1G, 01M5PWGEF85Y185JZ2ZGCNH40N'
+
+# An unknown change set is not_found, exit 4.
+! exec rhiza change use ZZZZZZ --json
+stdout '"code": "not_found"'
+stdout '"next": "rhiza change ls"'
+
+# A landed change set cannot be current: conflict, exit 3.
+! exec rhiza change use 01M5PWGEF85Y185JZ2ZAN43Q1G --json
+stdout '"code": "conflict"'
+stdout 'is landed; nothing can be written to it'
+stdout '"next": "rhiza change new \\"<intent>\\""'
+! exec rhiza change use 01M5PWGEF85Y185JZ2ZAN43Q1G
+stderr '^next: rhiza change new "<intent>"$'
+
+# change show takes a ref or --change, and shows a landed one's operations.
+exec rhiza change show 01M5PWGEF85Y185JZ2ZAN43Q1G
+stdout '^# Change set 01M5PWGEF85Y185JZ2ZAN43Q1G$'
+stdout '^- Intent: Record actor test@rhiza.invalid$'
+stdout '^- Kind: record$'
+stdout '^- State: landed$'
+stdout '^- Entries: 3$'
+stdout '^- node.create [0-9A-Z]{26} \(test\)$'
+exec rhiza change show --change 01M5PWGEF85Y185JZ2ZAN43Q1G --json
+stdout '"op": "node.create"'
+stdout '"kind": "actor"'
+stdout '"state": "landed"'
+stdout '"current": false'
+stdout '"problems": \[\]'
+
+# Exactly one of a ref and --none.
+! exec rhiza change use
+stderr '^rhiza: change use takes a change set or --none'
+! exec rhiza change use 01M5PWGEF85Y185JZ2ZGCNH40N --none
+stderr 'not both or neither'
+
+# --none clears it; then change show has nothing to show.
+exec rhiza change use --none
+stdout '^No current change set\.$'
+! exists .rhiza/local/change
+! exec rhiza change show --json
+stdout '"code": "usage"'
+stdout '"next": "rhiza change ls"'
+exec rhiza change ls
+! stdout '\(current\)'
+
+# A dry run prints the change set it would open and writes nothing.
+exec rhiza change new --dry-run Nope
+stdout '^Would open change set [0-9A-Z]{26} \(intention\): Nope$'
+stdout 'dry run'
+exec rhiza change ls
+! stdout Nope
+! exists .rhiza/local/change
+
+# Bad requests are usage errors, exit 2, and record nothing.
+! exec rhiza change new --kind bogus x --json
+stdout '"code": "usage"'
+stdout 'unknown change set kind'
+! exec rhiza change new --record x --json
+stdout '"code": "usage"'
+! exec rhiza change new --source nothing-here x --json
+stdout '"code": "not_found"'
+
+# A record change set; api call gives the same bytes as the command.
+exec rhiza change new --kind record 'Fix a typo'
+stdout '\(record\): Fix a typo$'
+exec rhiza change ls --json
+cp stdout ls.json
+exec rhiza api call change.ls
+cmp stdout ls.json
+
+# The whole log, the auto-recorded actor included, folds cleanly.
+fold-ok

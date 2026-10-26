@@ -14,7 +14,7 @@ package api
 //     ref; empty means the operation's default.
 //   - The effective change set is the one a call acts on (see
 //     effectiveChangeSet): Ctx.ChangeSet, else Ctx.ChangeRef (the CLI's
-//     --change or GENESIS_CHANGE), else the current change set, else none.
+//     --change or RHIZA_CHANGE), else the current change set, else none.
 //
 // The default view (defaultView) follows the effective change set's state:
 // draft or proposed gives what-if of it, so a read shows the work in hand;
@@ -39,14 +39,14 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/canon"
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/index"
-	gmodel "github.com/dphaener/genesis/internal/model"
-	"github.com/dphaener/genesis/internal/op"
-	"github.com/dphaener/genesis/internal/slice"
+	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/index"
+	gmodel "github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/slice"
 )
 
 // The view names.
@@ -57,7 +57,7 @@ const (
 )
 
 // lsNext is the next command for a ref that names nothing.
-const lsNext = "genesis ls"
+const lsNext = "rhiza ls"
 
 // view is a parsed view: stored is index.AsIs or index.ToBe, or "" for the
 // what-if of whatIf. The zero view stands for the operation's default.
@@ -123,7 +123,7 @@ func parseView(w *workspace, opName, s string) (view, error) {
 		ref := strings.TrimPrefix(s, viewWhatIfPref)
 		if strings.TrimSpace(ref) == "" {
 			return view{}, Usagef("view %q names no change set: give what-if:<change set>", s).
-				WithNext("genesis describe " + opName)
+				WithNext("rhiza describe " + opName)
 		}
 		cs, err := w.resolveChangeSet(ref)
 		if err != nil {
@@ -132,12 +132,12 @@ func parseView(w *workspace, opName, s string) (view, error) {
 		return view{whatIf: cs}, nil
 	}
 	return view{}, Usagef("unknown view %q: give as-is, to-be or what-if:<change set>", s).
-		WithNext("genesis describe " + opName)
+		WithNext("rhiza describe " + opName)
 }
 
 // reader answers the queries of every read in one view: from the index for
 // as-is and to-be, from the computed model for what-if. Errors are already
-// Errors: an unknown ref not_found with next "genesis ls", an ambiguous one
+// Errors: an unknown ref not_found with next "rhiza ls", an ambiguous one
 // usage.
 type reader struct {
 	x    *index.Index
@@ -149,7 +149,7 @@ type reader struct {
 // openReader opens a reader for operation opName in the view named by s,
 // or by rule (defaultView, or the operation's own) when s is empty. A
 // what-if of a change set not in the log is not_found, of one not in
-// flight a conflict, both with next "genesis change ls". An empty
+// flight a conflict, both with next "rhiza change ls". An empty
 // ctx.IndexPath is an error.
 func openReader(ctx *Ctx, opName, s string, rule viewRule) (*reader, error) {
 	w, err := openCtxWorkspace(ctx)
@@ -229,7 +229,7 @@ func (r *reader) View() string {
 }
 
 // readError maps an index or model query error to an Error: ErrNotFound is
-// not_found with next "genesis ls", ErrAmbiguous usage, anything else
+// not_found with next "rhiza ls", ErrAmbiguous usage, anything else
 // error; the message drops the sentinel's prefix.
 func readError(err error) error {
 	if err == nil {

@@ -9,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/index"
-	gmodel "github.com/dphaener/genesis/internal/model"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/index"
+	gmodel "github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // readCtx is initCtx with an index path in a temp folder.
@@ -233,7 +233,7 @@ func TestReadErrors(t *testing.T) {
 		r := mustReader(t, ctx, v, defaultView)
 		_, err := r.Resolve("nothing")
 		wantExit(t, err, 4)
-		wantNext(t, err, "genesis ls")
+		wantNext(t, err, "rhiza ls")
 		if msg := AsError(err).Message; msg != `no node matches "nothing"` {
 			t.Errorf("%s: message %q", v, msg)
 		}
@@ -271,8 +271,8 @@ func TestReadOpenErrors(t *testing.T) {
 		exit       int
 		next       string
 	}{
-		{"sideways", "sideways", 2, "genesis describe show"},
-		{"empty what-if", "what-if:", 2, "genesis describe show"},
+		{"sideways", "sideways", 2, "rhiza describe show"},
+		{"empty what-if", "what-if:", 2, "rhiza describe show"},
 		{"unknown change set", "what-if:ZZZZ", 4, changeLsNext},
 		{"unknown full ID", "what-if:" + ctxWorkspace(t, ctx).mustID(t).String(), 4, changeLsNext},
 		{"landed", "what-if:" + landed.String(), 3, changeLsNext},
@@ -341,7 +341,7 @@ func TestViewParse(t *testing.T) {
 			t.Errorf("parseView(%q) = %q, %v; want %q, exit %d", c.in, v, err, c.want, c.exit)
 		}
 		if c.exit == 2 && c.in != "what-if:"+accepted.String()[:4] && c.in != "what-if:ab" {
-			wantNext(t, err, "genesis describe ls")
+			wantNext(t, err, "rhiza describe ls")
 		}
 	}
 }

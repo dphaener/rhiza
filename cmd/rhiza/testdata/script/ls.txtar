@@ -1,0 +1,92 @@
+# ls lists nodes sorted by ID, filtered by kind and parent, a page at a
+# time: an opaque cursor carries on where the page before stopped.
+
+exec rhiza init
+exec rhiza ls --kind capability
+stdout '^No nodes match\.$'
+stdout '^next: rhiza add$'
+
+exec rhiza add capability store --record
+exec rhiza add capability cache --parent store --record
+exec rhiza add capability ram --parent cache --record
+exec rhiza add intent faster --record
+exec rhiza add decision use-ssd --record
+exec rhiza retire ram --reason 'Too small' --record
+
+# Every live node, the recorded actor too.
+exec rhiza ls
+cmp stdout all.md
+! stdout 'next:'
+
+# --retired keeps retired nodes, marked.
+exec rhiza ls --retired
+stdout -count=6 '^- '
+stdout '^- capability ram [0-9A-Z]{26} \[retired\]$'
+
+# --kind, repeatable.
+exec rhiza ls --kind capability
+stdout -count=2 '^- capability '
+! stdout 'intent|decision|actor'
+exec rhiza ls --kind intent --kind decision
+stdout -count=2 '^- '
+stdout '^- intent faster '
+stdout '^- decision use-ssd '
+
+# --parent: direct children only.
+exec rhiza ls --parent store
+stdout -count=1 '^- '
+stdout '^- capability cache '
+exec rhiza ls --parent cache
+stdout '^No nodes match\.$'
+exec rhiza ls --parent cache --retired --json
+stdout '"handle": "ram"'
+stdout '"parent": "[0-9A-Z]{26}"'
+stdout '"retired": true'
+! stdout 'next_cursor'
+
+# --limit 1 pages one node at a time; the next line names the next page.
+exec rhiza ls --limit 1 --retired
+stdout -count=1 '^- actor test '
+stdout '^next: rhiza ls --retired --limit 1 --cursor [A-Za-z0-9_-]+$'
+exec rhiza ls --limit 1 --retired --json
+stdout '"next_cursor": "[A-Za-z0-9_-]+"'
+
+# Walk every page by its printed cursor: the pages make up the full list.
+exec sh -c 'rhiza ls --retired > full.txt; out=$(rhiza ls --limit 1 --retired); pages=1; echo "$out" | grep "^- " > walked.txt; while c=$(echo "$out" | sed -n "s/^next: .* --cursor //p"); [ -n "$c" ]; do out=$(rhiza ls --limit 1 --retired --cursor "$c"); pages=$((pages+1)); echo "$out" | grep "^- " >> walked.txt; done; echo pages $pages'
+stdout '^pages 6$'
+cmp walked.txt full.txt
+
+# The same through api call.
+exec rhiza ls --kind capability --json
+cp stdout ls.json
+exec rhiza api call ls '{"kinds":["capability"]}'
+cmp stdout ls.json
+
+# Usage errors, exit 2: a limit out of range, a bad cursor, an unknown kind.
+! exec rhiza ls --limit 5000
+stderr '^rhiza: limit 5000 is out of range: give 1 to 1000$'
+stderr '^next: rhiza describe ls$'
+exec sh -c 'rhiza ls --limit 5000 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+! exec rhiza ls --limit -1 --json
+stdout '"code": "usage"'
+! exec rhiza ls --cursor '!!'
+stderr '^rhiza: bad cursor "!!"'
+stderr '^next: rhiza describe ls$'
+exec sh -c 'rhiza ls --cursor "!!" 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+! exec rhiza ls --kind widget --json
+stdout '"code": "usage"'
+
+# An unknown parent is not_found, exit 4.
+! exec rhiza ls --parent nosuch
+stderr '^next: rhiza ls$'
+
+fold-ok
+
+-- all.md --
+- actor test 01M5PWGEF85Y185JZ2ZAN43Q1G
+- capability store 01M5PWGEF85Y185JZ2ZMTJ11QP
+- capability cache 01M5PWGMARA1WR6BD0MEF4Y76P
+- intent faster 01M5PWGT68X5XKB54XFQMHKA0A
+- decision use-ssd 01M5PWGX40FB1RBRN9YHMNJW07

@@ -3,8 +3,8 @@ package api
 // This file holds the guide.install operation: it writes the agent guide
 // into Claude Code as a skills-directory plugin, a folder in
 // ~/.claude/skills/ (or a repository's .claude/skills/) that Claude Code
-// loads with no install step. The plugin holds the genesis skill, the
-// genesis-scrub skill and a SessionStart hook that runs genesis status
+// loads with no install step. The plugin holds the rhiza skill, the
+// rhiza-scrub skill and a SessionStart hook that runs rhiza status
 // --hook.
 
 import (
@@ -19,8 +19,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/canon"
-	"github.com/dphaener/genesis/internal/guide"
+	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/guide"
 )
 
 // The files guide.install writes, relative to the plugin folder, with
@@ -29,26 +29,26 @@ const (
 	pluginManifestPath = ".claude-plugin/plugin.json"
 	pluginSkillPath    = "SKILL.md"
 	pluginHooksPath    = "hooks/hooks.json"
-	pluginScrubPath    = "skills/genesis-scrub/SKILL.md"
+	pluginScrubPath    = "skills/rhiza-scrub/SKILL.md"
 )
 
 // pluginName is the plugin's name, and the folder's under .claude/skills.
-const pluginName = "genesis"
+const pluginName = "rhiza"
 
 // pluginDescription is the plugin manifest's description.
-const pluginDescription = "The Genesis agent guide: the genesis and genesis-scrub skills, and a " +
-	"SessionStart hook that runs genesis status --hook."
+const pluginDescription = "The Rhiza agent guide: the rhiza and rhiza-scrub skills, and a " +
+	"SessionStart hook that runs rhiza status --hook."
 
 // pluginMarker is the manifest's ownership marker: a plugin.json holding
-// it, under the name genesis, was written by guide.install.
-const pluginMarker = "genesis"
+// it, under the name rhiza, was written by guide.install.
+const pluginMarker = "rhiza"
 
 // GuideInstallRequest asks for the guide installed for an agent, in the
 // user's skills folder or, with Project, the repository's.
 type GuideInstallRequest struct {
 	Agent   string `json:"agent" enum:"claude" desc:"The agent to install the guide for: claude (Claude Code)"`
 	Project bool   `json:"project,omitempty" desc:"Install into this repository's .claude/skills/ instead of ~/.claude/skills/"`
-	Force   bool   `json:"force,omitempty" desc:"Overwrite a folder genesis guide install did not write; other files in it are kept"`
+	Force   bool   `json:"force,omitempty" desc:"Overwrite a folder rhiza guide install did not write; other files in it are kept"`
 }
 
 // GuideInstallResponse says where guide.install wrote the plugin, which
@@ -79,9 +79,9 @@ func init() {
 func runGuideInstall(ctx *Ctx, req any) (any, error) {
 	r := req.(GuideInstallRequest)
 	if r.Agent != "claude" {
-		return nil, Usagef("unknown agent %q: want claude", r.Agent).WithNext("genesis guide install --agent claude")
+		return nil, Usagef("unknown agent %q: want claude", r.Agent).WithNext("rhiza guide install --agent claude")
 	}
-	cmd := "genesis guide install --agent " + r.Agent
+	cmd := "rhiza guide install --agent " + r.Agent
 	if ctx.DryRun {
 		return nil, Usagef("guide install does not take --dry-run: it writes no log entry").WithNext(cmd + projectFlag(r.Project))
 	}
@@ -108,7 +108,7 @@ func runGuideInstall(ctx *Ctx, req any) (any, error) {
 			return nil, Conflictf("%s is a file, not a folder: move or remove it, then install again", dir)
 		}
 		if !r.Force && pluginForeign(dir) {
-			return nil, Conflictf("%s exists and was not written by genesis guide install", dir).
+			return nil, Conflictf("%s exists and was not written by rhiza guide install", dir).
 				WithNext(cmd + " --force" + projectFlag(r.Project))
 		}
 	} else if !errors.Is(err, fs.ErrNotExist) {
@@ -142,14 +142,14 @@ func projectFlag(project bool) string {
 	return ""
 }
 
-// pluginFiles returns the plugin's files by path, for a genesis of the
+// pluginFiles returns the plugin's files by path, for a rhiza of the
 // given version.
 func pluginFiles(version string) (map[string][]byte, error) {
 	manifest, err := canon.Marshal(map[string]any{
 		"name":        pluginName,
 		"version":     version,
 		"description": pluginDescription,
-		pluginMarker:  map[string]any{"installed_by": "genesis guide install"},
+		pluginMarker:  map[string]any{"installed_by": "rhiza guide install"},
 	})
 	if err != nil {
 		return nil, err
@@ -159,7 +159,7 @@ func pluginFiles(version string) (map[string][]byte, error) {
 			"SessionStart": []any{map[string]any{
 				"hooks": []any{map[string]any{
 					"type":    "command",
-					"command": "genesis",
+					"command": "rhiza",
 					"args":    []string{"status", "--hook"},
 					"timeout": 10,
 				}},
@@ -169,11 +169,11 @@ func pluginFiles(version string) (map[string][]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	skill, err := skillFile("genesis", "genesis")
+	skill, err := skillFile("rhiza", "rhiza")
 	if err != nil {
 		return nil, err
 	}
-	scrub, err := skillFile("genesis-scrub", "scrub")
+	scrub, err := skillFile("rhiza-scrub", "scrub")
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +246,7 @@ func readPluginManifest(dir string) (m pluginManifest, ok bool) {
 }
 
 // pluginOwned reports whether m, read from a plugin.json, is one
-// guide.install wrote: named genesis and carrying the marker.
+// guide.install wrote: named rhiza and carrying the marker.
 func pluginOwned(m pluginManifest) bool {
 	return m.name == pluginName && m.marked
 }
@@ -269,7 +269,7 @@ func pluginForeign(dir string) bool {
 	return false
 }
 
-// installedVersion is the genesis version that installed the plugin in
+// installedVersion is the rhiza version that installed the plugin in
 // dir; ok is false unless dir holds a plugin guide.install wrote.
 func installedVersion(dir string) (version string, ok bool) {
 	m, ok := readPluginManifest(dir)
@@ -281,7 +281,7 @@ func installedVersion(dir string) (version string, ok bool) {
 
 // Human reports the folder and the counts, then each path written.
 func (r GuideInstallResponse) Human(w io.Writer) {
-	fmt.Fprintf(w, "Installed the Genesis guide in %s (%d written, %d unchanged).\n", r.Dir, len(r.Written), len(r.Unchanged))
+	fmt.Fprintf(w, "Installed the Rhiza guide in %s (%d written, %d unchanged).\n", r.Dir, len(r.Written), len(r.Unchanged))
 	if len(r.Written) == 0 {
 		return
 	}

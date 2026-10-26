@@ -1,7 +1,7 @@
 // Package check checks a repository's integrity: that its log reads and
 // folds, that what has landed makes a sound model, that every link joins the
 // kinds its type allows, that the rendered markdown is current and that the
-// log has only grown since a base revision. It is what `genesis check` and
+// log has only grown since a base revision. It is what `rhiza check` and
 // CI run. Run is a pure function of its Input: it reads nothing but the
 // fs.FS it is given, runs no git and never panics.
 //
@@ -38,9 +38,13 @@
 //   - render fails on each rendered file that differs from what
 //     render.Render writes, is missing or is extra, and on a missing
 //     rendered folder.
-//   - append-only fails on each log file changed since the base other than
-//     by being added, and warns once when the rule was skipped (no git, no
-//     base).
+//   - append-only compares log entries by identity, not by path: an entry
+//     is its entry ID (its file name minus .json) and its bytes. It fails on
+//     each entry of the base whose ID is in the current log nowhere (deleted)
+//     or only with other bytes (modified), and warns once when the rule was
+//     skipped (no git, no base). An entry found with the same bytes passes
+//     wherever it now sits, so a moved log passes; entries new since the
+//     base pass.
 //
 // Findings are sorted by rule in the order above, then path, change set,
 // entry, op, link, message, severity and next.
@@ -55,11 +59,11 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/model"
-	"github.com/dphaener/genesis/internal/render"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/render"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 // The two severities.
@@ -87,32 +91,34 @@ func Rules() []string {
 
 // Paths in findings are relative to the project root.
 const (
-	genesisDir  = ".genesis/"
-	renderedDir = ".genesis/rendered"
+	rhizaDir    = ".rhiza/"
+	renderedDir = ".rhiza/rendered"
 )
 
 // Input is everything Run checks.
 type Input struct {
 	// Log is the log as store.ReadLog read it.
 	Log store.Log
-	// Rendered is rooted at .genesis/rendered; nil when the folder is
+	// Rendered is rooted at .rhiza/rendered; nil when the folder is
 	// missing.
 	Rendered fs.FS
-	// Base is the base revision used, "" when the append-only rule was
+	// Rev is the base revision used, "" when the append-only rule was
 	// skipped.
-	Base string
+	Rev string
 	// Skipped is why the append-only rule was skipped, "" otherwise.
 	Skipped string
-	// Changes are the log files changed since Base.
-	Changes []Change
+	// Base are the log entries at Rev, Current those in the work tree.
+	Base, Current []Entry
 }
 
-// Change is one log file changed since the base: a git name-status letter
-// ("A", "M", "D", ...) and a path relative to the project root, such as
-// .genesis/log/<change set>/<entry>.json.
-type Change struct {
-	Status string
-	Path   string
+// Entry is one log entry file: its entry ID (the file name minus .json),
+// its path relative to the project root, such as
+// .rhiza/log/<change set>/<entry>.json, and the git blob ID of its bytes.
+// Two entries with the same Blob have the same bytes.
+type Entry struct {
+	ID   string
+	Path string
+	Blob string
 }
 
 // Finding is one thing check found. Every field but Severity, Rule and
@@ -131,7 +137,7 @@ type Finding struct {
 }
 
 // Report is the result of a check. OK is true when no finding fails. Base
-// is Input.Base. Findings is never nil.
+// is Input.Rev. Findings is never nil.
 type Report struct {
 	OK       bool
 	Base     string
@@ -161,7 +167,7 @@ func Run(in Input) Report {
 			strings.Compare(a.Next, b.Next))
 	})
 	ok := !slices.ContainsFunc(c.findings, func(f Finding) bool { return f.Severity == SeverityFail })
-	return Report{OK: ok, Base: in.Base, Findings: c.findings}
+	return Report{OK: ok, Base: in.Rev, Findings: c.findings}
 }
 
 type checker struct {
@@ -181,7 +187,7 @@ func str(i id.ID) string {
 
 func (c *checker) log() {
 	for _, p := range c.in.Log.Problems {
-		c.add(Finding{Severity: SeverityFail, Rule: RuleLog, Path: genesisDir + p.Path, Message: p.Err.Error()})
+		c.add(Finding{Severity: SeverityFail, Rule: RuleLog, Path: rhizaDir + p.Path, Message: p.Err.Error()})
 	}
 }
 
@@ -194,7 +200,7 @@ func (c *checker) fold() []changeset.ChangeSet {
 			f.Severity = SeverityWarn
 		}
 		if !p.Entry.IsZero() {
-			f.Path = fmt.Sprintf("%s%s/%s/%s.json", genesisDir, store.LogDir, p.ChangeSet, p.Entry)
+			f.Path = fmt.Sprintf("%s%s/%s/%s.json", rhizaDir, store.LogDir, p.ChangeSet, p.Entry)
 		}
 		c.add(f)
 	}
@@ -217,7 +223,7 @@ func (c *checker) model(sets []changeset.ChangeSet) model.Model {
 		f := Finding{Severity: SeverityFail, Rule: RuleModel, ChangeSet: str(p.ChangeSet), Op: str(p.Op),
 			Message: p.Err.Error()}
 		if errors.Is(p.Err, model.ErrConflict) {
-			f.Next = fmt.Sprintf("genesis change new %q", "Resolve the conflict on "+target(sets, p))
+			f.Next = fmt.Sprintf("rhiza change new %q", "Resolve the conflict on "+target(sets, p))
 		}
 		c.add(f)
 	}
@@ -243,7 +249,7 @@ func (c *checker) model(sets []changeset.ChangeSet) model.Model {
 			f := Finding{Severity: SeverityWarn, Rule: RuleInFlight, ChangeSet: str(p.ChangeSet), Op: str(p.Op),
 				Message: p.Err.Error()}
 			if errors.Is(p.Err, model.ErrConflict) && !p.ChangeSet.IsZero() {
-				f.Next = fmt.Sprintf("genesis slice --change %s --view what-if", p.ChangeSet)
+				f.Next = fmt.Sprintf("rhiza slice --change %s --view what-if", p.ChangeSet)
 			}
 			c.add(f)
 		}
@@ -253,7 +259,7 @@ func (c *checker) model(sets []changeset.ChangeSet) model.Model {
 			for _, o := range x.Ops {
 				c.add(Finding{Severity: SeverityWarn, Rule: RuleInFlight, ChangeSet: s.ID.String(), Op: o.String(),
 					Message: fmt.Sprintf("op rests on change set %s (%s)", x.ChangeSet, x.State),
-					Next:    "genesis change show " + s.ID.String()})
+					Next:    "rhiza change show " + s.ID.String()})
 			}
 		}
 	}
@@ -319,12 +325,12 @@ func (c *checker) dependsOn(sets []changeset.ChangeSet) {
 			msg = "depends-on loop among change sets " + strings.Join(names, ", ")
 		}
 		c.add(Finding{Severity: SeverityFail, Rule: RuleDependsOn, ChangeSet: loop[0].String(), Message: msg,
-			Next: "genesis change show " + loop[0].String()})
+			Next: "rhiza change show " + loop[0].String()})
 	}
 }
 
 func (c *checker) render(m model.Model, sets []changeset.ChangeSet) {
-	const next = "genesis render"
+	const next = "rhiza render"
 	fail := func(p, msg string) {
 		c.add(Finding{Severity: SeverityFail, Rule: RuleRender, Path: p, Message: msg, Next: next})
 	}
@@ -377,37 +383,72 @@ func renderedPath(p string) string {
 	return renderedDir + "/" + p
 }
 
+// appendOnly judges each base entry by its ID and bytes (see the package
+// comment). Of several current entries with a base entry's ID, one with the
+// same bytes passes it; else the one at the base path, else the first by
+// path, is the modified one. Next restores the base bytes and, when the base
+// path lies outside the store folder (history from before the rename), moves
+// them where the entry belongs now.
 func (c *checker) appendOnly() {
 	if c.in.Skipped != "" {
 		c.add(Finding{Severity: SeverityWarn, Rule: RuleAppendOnly,
 			Message: "append-only check skipped: " + c.in.Skipped})
 	}
-	for _, ch := range c.in.Changes {
-		if ch.Status == "A" {
+	byID := map[string][]Entry{}
+	for _, e := range c.in.Current {
+		byID[e.ID] = append(byID[e.ID], e)
+	}
+	for _, cur := range byID {
+		slices.SortFunc(cur, func(a, b Entry) int { return strings.Compare(a.Path, b.Path) })
+	}
+	seen := map[Entry]bool{}
+	for _, b := range c.in.Base {
+		if seen[b] {
 			continue
 		}
-		f := Finding{Severity: SeverityFail, Rule: RuleAppendOnly, Path: ch.Path,
-			Message: fmt.Sprintf("log file %s since the base (status %s); entries may only be added", verb(ch.Status), ch.Status)}
-		if c.in.Base != "" {
-			f.Next = fmt.Sprintf("git checkout %s -- %s", c.in.Base, ch.Path)
+		seen[b] = true
+		cur := byID[b.ID]
+		if slices.ContainsFunc(cur, func(e Entry) bool { return e.Blob == b.Blob }) {
+			continue
+		}
+		moved := !strings.HasPrefix(b.Path, rhizaDir)
+		f := Finding{Severity: SeverityFail, Rule: RuleAppendOnly, Entry: b.ID}
+		if len(cur) == 0 {
+			f.Path = b.Path
+			f.Message = fmt.Sprintf("log entry %s deleted since the base; entries may only be added", b.ID)
+			if c.in.Rev != "" {
+				f.Next = fmt.Sprintf("git checkout %s -- %s", c.in.Rev, b.Path)
+				if moved {
+					f.Next += fmt.Sprintf(" && git mv %s %s", b.Path, underStore(b.Path))
+				}
+			}
+			c.add(f)
+			continue
+		}
+		at := cur[0]
+		if i := slices.IndexFunc(cur, func(e Entry) bool { return e.Path == b.Path }); i >= 0 {
+			at = cur[i]
+		}
+		f.Path = at.Path
+		f.Message = fmt.Sprintf("log entry %s modified since the base; entries may only be added", b.ID)
+		if at.Path != b.Path {
+			f.Message = fmt.Sprintf("log entry %s modified since the base, where it was %s; entries may only be added",
+				b.ID, b.Path)
+		}
+		if c.in.Rev != "" {
+			f.Next = fmt.Sprintf("git checkout %s -- %s", c.in.Rev, b.Path)
+			if moved {
+				f.Next += fmt.Sprintf(" && git mv -f %s %s", b.Path, at.Path)
+			}
 		}
 		c.add(f)
 	}
 }
 
-// verb is what git's name-status letter s means.
-func verb(s string) string {
-	switch {
-	case strings.HasPrefix(s, "M"):
-		return "modified"
-	case strings.HasPrefix(s, "D"):
-		return "deleted"
-	case strings.HasPrefix(s, "T"):
-		return "changed type"
-	case strings.HasPrefix(s, "R"):
-		return "renamed"
-	case strings.HasPrefix(s, "C"):
-		return "copied"
+// underStore is path p with its top folder replaced by the store folder.
+func underStore(p string) string {
+	if _, rest, ok := strings.Cut(p, "/"); ok {
+		return rhizaDir + rest
 	}
-	return "changed"
+	return rhizaDir + p
 }

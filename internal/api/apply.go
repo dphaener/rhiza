@@ -13,10 +13,10 @@ import (
 	"reflect"
 	"slices"
 
-	"github.com/dphaener/genesis/internal/canon"
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 func init() {
@@ -124,7 +124,7 @@ func runApply(ctx *Ctx, req any) (any, error) {
 func readApplyFile(ctx *Ctx, file string) ([]byte, error) {
 	switch {
 	case file == "":
-		return nil, Usagef("apply needs a file, or - for stdin").WithNext("genesis describe apply")
+		return nil, Usagef("apply needs a file, or - for stdin").WithNext("rhiza describe apply")
 	case file == "-":
 		if ctx.Stdin == nil {
 			return nil, Usagef("apply -: no stdin")
@@ -148,7 +148,7 @@ func readApplyFile(ctx *Ctx, file string) ([]byte, error) {
 func decodeWrites(data []byte) ([]applyItem, error) {
 	trimmed := bytes.TrimSpace(data)
 	if _, err := canon.Canonicalize(trimmed); err != nil {
-		return nil, Usagef("apply file: %v", err).WithNext("genesis describe apply")
+		return nil, Usagef("apply file: %v", err).WithNext("rhiza describe apply")
 	}
 	var file struct {
 		Writes []json.RawMessage `json:"writes"`
@@ -156,10 +156,10 @@ func decodeWrites(data []byte) ([]applyItem, error) {
 	dec := json.NewDecoder(bytes.NewReader(trimmed))
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(&file); err != nil {
-		return nil, Usagef("apply file: want {\"writes\":[...]}: %v", err).WithNext("genesis describe apply")
+		return nil, Usagef("apply file: want {\"writes\":[...]}: %v", err).WithNext("rhiza describe apply")
 	}
 	if len(file.Writes) == 0 {
-		return nil, Usagef("apply file: no writes").WithNext("genesis describe apply")
+		return nil, Usagef("apply file: no writes").WithNext("rhiza describe apply")
 	}
 	items := make([]applyItem, 0, len(file.Writes))
 	for i, raw := range file.Writes {
@@ -176,15 +176,15 @@ func decodeWrites(data []byte) ([]applyItem, error) {
 func decodeWrite(raw json.RawMessage) (applyItem, error) {
 	var fields map[string]json.RawMessage
 	if !bytes.HasPrefix(bytes.TrimSpace(raw), []byte("{")) || json.Unmarshal(raw, &fields) != nil {
-		return applyItem{}, Usagef("not a JSON object").WithNext("genesis describe apply")
+		return applyItem{}, Usagef("not a JSON object").WithNext("rhiza describe apply")
 	}
 	var name string
 	if err := json.Unmarshal(fields["op"], &name); err != nil || fields["op"] == nil {
-		return applyItem{}, Usagef(`want a string "op": one of add, set, mv, retire, link, unlink`).WithNext("genesis describe apply")
+		return applyItem{}, Usagef(`want a string "op": one of add, set, mv, retire, link, unlink`).WithNext("rhiza describe apply")
 	}
 	build, ok := applyBuilders[name]
 	if !ok {
-		return applyItem{}, Usagef(`unknown op %q: want one of add, set, mv, retire, link, unlink`, name).WithNext("genesis describe apply")
+		return applyItem{}, Usagef(`unknown op %q: want one of add, set, mv, retire, link, unlink`, name).WithNext("rhiza describe apply")
 	}
 	o, ok := Lookup(name)
 	if !ok {
@@ -197,7 +197,7 @@ func decodeWrite(raw json.RawMessage) (applyItem, error) {
 	}
 	req, err := DecodeRequest(o, rest)
 	if err != nil {
-		return applyItem{}, AsError(err).WithNext("genesis describe " + name)
+		return applyItem{}, AsError(err).WithNext("rhiza describe " + name)
 	}
 	return applyItem{op: name, build: func(b writeBase) (edit, error) { return build(b, req) }}, nil
 }
@@ -291,7 +291,7 @@ func buildApply(w *workspace, cs id.ID, ids *id.Generator, items []applyItem) (e
 		}
 	}
 	if len(net.ops)+len(net.drop) == 0 {
-		return edit{}, Usagef("nothing to write: the file's writes cancel out").WithNext("genesis change show")
+		return edit{}, Usagef("nothing to write: the file's writes cancel out").WithNext("rhiza change show")
 	}
 	for _, n := range touched.nodes {
 		if targets[n] {

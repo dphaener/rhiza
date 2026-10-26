@@ -95,7 +95,7 @@ func TestParamsPanics(t *testing.T) {
 func TestUsageLine(t *testing.T) {
 	o := Operation{Name: "change.new", Request: reflect.TypeFor[paramsRequest]()}
 	got := UsageLine(o)
-	want := "genesis change new <kind> [<handle>] --reason <reason> [--parent <parent>] [--field <field>]... [--force-it] [--depth <depth>]"
+	want := "rhiza change new <kind> [<handle>] --reason <reason> [--parent <parent>] [--field <field>]... [--force-it] [--depth <depth>]"
 	if got != want {
 		t.Errorf("UsageLine =\n%s\nwant\n%s", got, want)
 	}

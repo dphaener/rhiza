@@ -1,0 +1,89 @@
+# check's append-only rule across the rename: a base whose log sits at
+# .genesis/log, and a branch that moved it to .rhiza/log with git mv. The
+# move passes; an edited or deleted entry still fails; an entry that only
+# moves between two paths in .rhiza/log is never an append-only finding.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add constraint c1 --field statement=x --record
+exec rhiza render
+exec git add -A
+# No rhiza command runs while the folder is .genesis.
+exec git mv .rhiza .genesis
+exec git commit -qm one
+
+# The move itself passes the rule, committed.
+exec git checkout -q -b feature
+exec git mv .genesis .rhiza
+exec git commit -qm move
+exec rhiza check --json
+stdout '"base": "[0-9a-f]{40}"'
+stdout '"ok": true'
+! stdout '"rule": "append-only"'
+exec rhiza check
+stdout '^ok$'
+
+# An edited entry still fails, naming it as modified.
+cp $WORK/c1-edited.json .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
+! exec rhiza check
+stdout '^failed$'
+stdout '^fail append-only .*: log entry 01M5PWGEF85Y185JZ2ZQ6RRE3B modified since the base, where it was \.genesis/log/[^;]*; entries may only be added$'
+! exec rhiza check --json
+stdout '"rule": "append-only"'
+stdout '"ok": false'
+
+# Restored, it passes again.
+exec git checkout -- .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
+exec rhiza check
+stdout '^ok$'
+
+# A deleted entry fails, naming it as deleted.
+rm .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
+! exec rhiza check
+stdout '^failed$'
+stdout '^fail append-only .*: log entry 01M5PWGEF85Y185JZ2ZQ6RRE3B deleted since the base; entries may only be added$'
+exec git checkout -- .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
+exec rhiza check
+stdout '^ok$'
+
+# The same bytes under another path in .rhiza/log: the log rule may flag
+# the entry's place, but append-only does not.
+mkdir .rhiza/log/01M5PWGEF85Y185JZ2ZZZZZZZZ
+exec git mv .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json .rhiza/log/01M5PWGEF85Y185JZ2ZZZZZZZZ/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
+exec sh -c 'rhiza check >/dev/null; echo exit $?'
+stdout '^exit 1$'
+! exec rhiza check --json
+! stdout '"rule": "append-only"'
+
+-- c1-edited.json --
+{
+  "actor": "01M5PWGEF85Y185JZ2ZAN43Q1G",
+  "after": [
+    "01M5PWGEF85Y185JZ2ZPZG2CBT"
+  ],
+  "at": "2026-10-24T12:00:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "y"
+        },
+        "handle": "c1",
+        "id": "01M5PWGEF85Y185JZ2ZNK1YAZ0",
+        "key": null,
+        "kind": "constraint",
+        "node": "01M5PWGEF85Y185JZ2ZMTJ11QP",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5PWGEF85Y185JZ2ZNP53DGX",
+  "for": "01M5PWGEF85Y185JZ2ZAN43Q1G",
+  "id": "01M5PWGEF85Y185JZ2ZQ6RRE3B",
+  "type": "ops",
+  "v": 1
+}

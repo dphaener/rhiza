@@ -17,10 +17,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/canon"
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // writeBase is what a builder builds against: the to-be model, the current
@@ -92,7 +92,7 @@ func (e *edit) touchLink(l id.ID) {
 func (e edit) check(opName string) error {
 	for _, o := range e.ops {
 		if err := o.Validate(); err != nil {
-			return Usagef("%s", err.Error()).WithNext("genesis describe " + opName)
+			return Usagef("%s", err.Error()).WithNext("rhiza describe " + opName)
 		}
 	}
 	return nil
@@ -254,7 +254,7 @@ func writeTarget(w *workspace, ctx *Ctx) (id.ID, error) {
 		return id.ID{}, err
 	}
 	if cs.IsZero() {
-		return id.ID{}, Usagef("no change set: open one with genesis change new, or add --record to write and land this in one step").
+		return id.ID{}, Usagef("no change set: open one with rhiza change new, or add --record to write and land this in one step").
 			WithNext(newEntryNext)
 	}
 	c, ok := w.changeSet(cs)

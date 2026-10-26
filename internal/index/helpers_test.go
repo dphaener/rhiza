@@ -16,12 +16,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/model"
-	"github.com/dphaener/genesis/internal/op"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 // tb is what *testing.T and *rapid.T share.
@@ -49,7 +49,7 @@ func raw(s string) json.RawMessage { return json.RawMessage(s) }
 var fixtureTime = time.Date(2026, 10, 24, 12, 0, 0, 0, time.UTC)
 
 // encodeEntry builds and encodes an entry of cs with body b after after,
-// returning its path under .genesis and its bytes.
+// returning its path under .rhiza and its bytes.
 func encodeEntry(t tb, eid, cs id.ID, after []id.ID, b changeset.Body) (string, []byte) {
 	t.Helper()
 	body, err := changeset.EncodeBody(b)
@@ -65,7 +65,7 @@ func encodeEntry(t tb, eid, cs id.ID, after []id.ID, b changeset.Body) (string, 
 	return entryPath(cs, eid), data
 }
 
-// writeFile writes data at path p (slash form) under the .genesis folder
+// writeFile writes data at path p (slash form) under the .rhiza folder
 // gdir.
 func writeFile(t tb, gdir, p string, data []byte) {
 	t.Helper()
@@ -265,7 +265,7 @@ func viewProblems(view string, ps []model.Problem) []storedProblem {
 }
 
 // checkModel fails unless everything stored equals what store.ReadLog,
-// changeset.FoldLog and model.AsIs/ToBe compute from the .genesis folder
+// changeset.FoldLog and model.AsIs/ToBe compute from the .rhiza folder
 // gdir.
 func checkModel(t tb, x *Index, gdir string) {
 	t.Helper()

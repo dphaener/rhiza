@@ -1,0 +1,5 @@
+# An unknown command fails with a message and the usage on stderr only.
+! exec rhiza frobnicate
+stderr 'unknown command "frobnicate"'
+stderr 'Usage:'
+! stdout .

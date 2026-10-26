@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 // openT opens the index for f through fsys (os.DirFS when nil).
@@ -78,7 +78,7 @@ func TestEmptyLog(t *testing.T) {
 		t.Fatalf("second open not fresh: %+v", x.stats)
 	}
 
-	// No .genesis at all: a log problem, no error.
+	// No .rhiza at all: a log problem, no error.
 	root := t.TempDir()
 	y, err := Open(root, filepath.Join(t.TempDir(), "i.db"))
 	if err != nil {
@@ -407,7 +407,7 @@ func TestDefaultPath(t *testing.T) {
 	if pa == pb {
 		t.Fatalf("different roots share %s", pa)
 	}
-	if dir := filepath.Join(cache, "genesis", "index"); filepath.Dir(pa) != dir || filepath.Ext(pa) != ".db" {
+	if dir := filepath.Join(cache, "rhiza", "index"); filepath.Dir(pa) != dir || filepath.Ext(pa) != ".db" {
 		t.Fatalf("path %s not a .db in %s", pa, dir)
 	}
 	if _, err := DefaultPath(filepath.Join(base, "missing")); err == nil {
@@ -416,7 +416,7 @@ func TestDefaultPath(t *testing.T) {
 }
 
 // TestReadOnly: building, catching up and rebuilding never change anything
-// under .genesis.
+// under .rhiza.
 func TestReadOnly(t *testing.T) {
 	f := newFixture(t)
 	landedSet(f, 1)
@@ -428,8 +428,8 @@ func TestReadOnly(t *testing.T) {
 		t.Helper()
 		before := snapshot(t, f.gdir)
 		do()
-		same(t, step+": .genesis", snapshot(t, f.gdir), before)
-		t.Logf("%s: %d paths under .genesis unchanged", step, len(before))
+		same(t, step+": .rhiza", snapshot(t, f.gdir), before)
+		t.Logf("%s: %d paths under .rhiza unchanged", step, len(before))
 	}
 	check("build", func() { openT(t, f, db, nil).Close() })
 	check("fresh", func() { openT(t, f, db, nil).Close() })

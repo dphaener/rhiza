@@ -1,4 +1,4 @@
-// Package api defines Genesis's operations: every command, as a typed,
+// Package api defines Rhiza's operations: every command, as a typed,
 // transport-independent call with a published schema. The CLI and any future
 // server are only callers; they turn their input into a request, run the
 // operation and render its response.
@@ -29,7 +29,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/rhiza/internal/id"
 )
 
 // Operation is one named call. Request and Response are struct types; Run
@@ -81,7 +81,7 @@ type Input struct {
 // a programmatic caller, such as a server with no current anything, may set
 // the IDs instead.
 type Ctx struct {
-	// Root is the project root: the folder holding .genesis.
+	// Root is the project root: the folder holding .rhiza.
 	Root string
 	// Home is the user's home directory, given by the caller (the API reads
 	// no environment); empty if unknown. Operations that need it and find
@@ -98,8 +98,8 @@ type Ctx struct {
 	// by ActorRef and ForRef or the default. Each must be a live actor node.
 	Actor, For id.ID
 	// ChangeRef, ActorRef and ForRef are the raw refs the caller was given
-	// (the CLI's --change, --actor and --for, or GENESIS_CHANGE,
-	// GENESIS_ACTOR and GENESIS_FOR), empty if none. Operations resolve
+	// (the CLI's --change, --actor and --for, or RHIZA_CHANGE,
+	// RHIZA_ACTOR and RHIZA_FOR), empty if none. Operations resolve
 	// them when the matching ID is zero.
 	ChangeRef, ActorRef, ForRef string
 	// Record asks a write to open a record change set, write into it and
@@ -119,7 +119,7 @@ type Ctx struct {
 	// fails when git is missing or exits non-zero. Nil means no git: the
 	// operations that use it, such as check, skip what needs it.
 	Git func(args ...string) (string, error)
-	// Version is the running genesis's version, such as "v0.3.0" or
+	// Version is the running rhiza's version, such as "v0.3.0" or
 	// "dev".
 	Version string
 	// Stdin is read by operations that accept "-" for a file.
@@ -159,7 +159,7 @@ func (r *registry) add(o Operation) {
 		o.Run = func(ctx *Ctx, req any) (any, error) {
 			if ctx != nil && ctx.Record {
 				return nil, Usagef("%s does not take --record: it is for node and link writes", CommandPath(name)).
-					WithNext("genesis describe " + name)
+					WithNext("rhiza describe " + name)
 			}
 			return run(ctx, req)
 		}

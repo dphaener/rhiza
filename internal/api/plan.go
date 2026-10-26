@@ -80,12 +80,12 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/index"
-	gmodel "github.com/dphaener/genesis/internal/model"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/index"
+	gmodel "github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 func init() {
@@ -106,7 +106,7 @@ func init() {
 }
 
 // planNewNext is the next command when nothing is in flight.
-const planNewNext = `genesis change new "<intent>"`
+const planNewNext = `rhiza change new "<intent>"`
 
 // RoadmapRequest asks for the roadmap.
 type RoadmapRequest struct {

@@ -10,22 +10,47 @@ package api
 // shares history with HEAD. The default base is reported as that merge-base
 // commit, with the ref it came from in MergeBaseOf. No git, no work tree or
 // no base skips the rule with a warning.
+//
+// The append-only rule identifies a log entry by its ID and bytes, wherever
+// it sits, so check gathers the entries on both sides rather than diffing
+// paths. The base side is one `git ls-tree -r -z` of the base revision over
+// the store's log folder and the legacy one (see legacyDir), giving each
+// entry's path and blob ID; the current side is the work tree's log folder
+// (as `git diff <base>` would compare, not HEAD), each file's blob ID
+// computed in Go. Neither side uses git hash-object, which resolves paths
+// against the git toplevel and so breaks a project below it. Both sides
+// keep only paths shaped <log>/<change set>/<entry>.json where neither the
+// change set folder nor the file name starts with ".", so log/.gitkeep is
+// not an entry and deleting it passes the rule. Comparing blob IDs assumes
+// no content filter on log files (none in .gitattributes) and a SHA-1
+// object format.
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/check"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/check"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 // baseCandidates are the refs the default base is merged with, first that
 // resolves wins.
 var baseCandidates = []string{"origin/HEAD", "origin/main", "main"}
+
+// legacyDir is where the log lived before the rename to Rhiza. Check reads
+// it from the base revision only, as pre-rename history, never from the work
+// tree; it is removable once no supported base predates the rename. Until
+// the rename it is the store folder itself, and the two are read once.
+const legacyDir = ".genesis"
 
 // CheckRequest names the base of the append-only rule.
 type CheckRequest struct {
@@ -69,7 +94,7 @@ func init() {
 func runCheck(ctx *Ctx, req any) (any, error) {
 	r := req.(CheckRequest)
 	if ctx.DryRun {
-		return nil, Usagef("check does not take --dry-run: it writes nothing").WithNext("genesis check")
+		return nil, Usagef("check does not take --dry-run: it writes nothing").WithNext("rhiza check")
 	}
 	st, err := openStore(ctx.Root)
 	if err != nil {
@@ -84,13 +109,20 @@ func runCheck(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	in.Base, in.Skipped = base, skipped
+	in.Rev, in.Skipped = base, skipped
 	if base != "" {
-		out, err := ctx.Git("diff", "--name-status", "--no-renames", "-z", "--relative", base, "--", store.Dir+"/"+store.LogDir)
-		if err != nil {
-			return nil, Errorf("diff the log against %s: %v", base, err)
+		args := []string{"ls-tree", "-r", "-z", base, "--", store.Dir + "/" + store.LogDir}
+		if legacyDir != store.Dir {
+			args = append(args, legacyDir+"/"+store.LogDir)
 		}
-		in.Changes = parseNameStatus(out)
+		out, err := ctx.Git(args...)
+		if err != nil {
+			return nil, Errorf("list the log at %s: %v", base, err)
+		}
+		in.Base = parseLsTree(out)
+		if in.Current, err = currentEntries(ctx.Root); err != nil {
+			return nil, Errorf("read the log: %v", err)
+		}
 	}
 	rep := check.Run(in)
 	resp := CheckResponse{OK: rep.OK, Base: rep.Base, MergeBaseOf: from, Skipped: skipped,
@@ -119,7 +151,7 @@ func checkBase(git func(...string) (string, error), base string) (rev, from, ski
 	if base != "" {
 		if !resolves(base) {
 			return "", "", "", Usagef("unknown base %q: not a commit in this git repository", base).
-				WithNext("genesis check --base <rev>")
+				WithNext("rhiza check --base <rev>")
 		}
 		return base, "", "", nil
 	}
@@ -135,18 +167,96 @@ func checkBase(git func(...string) (string, error), base string) (rev, from, ski
 	return "", "", "no base: none of " + strings.Join(baseCandidates, ", ") + " resolves", nil
 }
 
-// parseNameStatus parses `git diff --name-status -z`: a status, then a
-// path, each ended by a NUL. With -z git writes paths verbatim, unquoted.
-func parseNameStatus(out string) []check.Change {
-	var cs []check.Change
-	fields := strings.Split(out, "\x00")
-	for i := 0; i+1 < len(fields); i += 2 {
-		if fields[i] == "" || fields[i+1] == "" {
-			break
+// parseLsTree parses `git ls-tree -r -z`: per line a mode, a type and an
+// object ID separated by spaces, a tab, then the path, each line ended by a
+// NUL; with -z git writes paths verbatim, unquoted. It keeps the blobs whose
+// path is an entry path (see entryID), sorted by path, each path once.
+func parseLsTree(out string) []check.Entry {
+	var es []check.Entry
+	seen := map[string]bool{}
+	for _, line := range strings.Split(out, "\x00") {
+		meta, p, ok := strings.Cut(line, "\t")
+		f := strings.Fields(meta)
+		if !ok || len(f) != 3 || f[1] != "blob" || seen[p] {
+			continue
 		}
-		cs = append(cs, check.Change{Status: fields[i], Path: fields[i+1]})
+		id, ok := entryID(p)
+		if !ok {
+			continue
+		}
+		seen[p] = true
+		es = append(es, check.Entry{ID: id, Path: p, Blob: f[2]})
 	}
-	return cs
+	slices.SortFunc(es, func(a, b check.Entry) int { return strings.Compare(a.Path, b.Path) })
+	return es
+}
+
+// entryID is the entry ID of path p, relative to the project root, when p is
+// <store or legacy folder>/log/<change set>/<entry>.json with neither the
+// change set folder nor the file name starting with ".".
+func entryID(p string) (string, bool) {
+	for _, dir := range []string{store.Dir, legacyDir} {
+		rest, ok := strings.CutPrefix(p, dir+"/"+store.LogDir+"/")
+		if !ok {
+			continue
+		}
+		cs, name, ok := strings.Cut(rest, "/")
+		if !ok || cs == "" || strings.HasPrefix(cs, ".") || strings.HasPrefix(name, ".") ||
+			strings.Contains(name, "/") || !strings.HasSuffix(name, ".json") {
+			return "", false
+		}
+		return strings.TrimSuffix(name, ".json"), true
+	}
+	return "", false
+}
+
+// currentEntries reads the work tree's log under root: every regular file
+// <store folder>/log/*/*.json, skipping names that start with "." as
+// countEntryFiles does, with its blob ID, sorted by path. It reads the
+// files, not store.ReadLog's valid entries, so an entry edited into invalid
+// JSON is modified, not deleted. No log folder is no entries.
+func currentEntries(root string) ([]check.Entry, error) {
+	logDir := filepath.Join(root, store.Dir, store.LogDir)
+	sets, err := os.ReadDir(logDir)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	var es []check.Entry
+	for _, cs := range sets {
+		if !cs.IsDir() || strings.HasPrefix(cs.Name(), ".") {
+			continue
+		}
+		files, err := os.ReadDir(filepath.Join(logDir, cs.Name()))
+		if err != nil {
+			return nil, err
+		}
+		for _, f := range files {
+			name := f.Name()
+			if !f.Type().IsRegular() || strings.HasPrefix(name, ".") || !strings.HasSuffix(name, ".json") {
+				continue
+			}
+			b, err := os.ReadFile(filepath.Join(logDir, cs.Name(), name))
+			if err != nil {
+				return nil, err
+			}
+			es = append(es, check.Entry{ID: strings.TrimSuffix(name, ".json"),
+				Path: store.Dir + "/" + store.LogDir + "/" + cs.Name() + "/" + name, Blob: gitBlob(b)})
+		}
+	}
+	slices.SortFunc(es, func(a, b check.Entry) int { return strings.Compare(a.Path, b.Path) })
+	return es, nil
+}
+
+// gitBlob is the git blob ID of b in a SHA-1 repository:
+// sha1("blob " + len + NUL + bytes).
+func gitBlob(b []byte) string {
+	h := sha1.New()
+	fmt.Fprintf(h, "blob %d\x00", len(b))
+	h.Write(b)
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 // ExitCode is 1 when a finding fails, else 0.

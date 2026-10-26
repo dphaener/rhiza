@@ -16,8 +16,8 @@ import (
 
 	"pgregory.net/rapid"
 
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
 )
 
 const (
@@ -34,7 +34,7 @@ func mustEncode(t testing.TB, e entry.Entry) []byte {
 	return b
 }
 
-// entryPath is where e belongs, relative to .genesis.
+// entryPath is where e belongs, relative to .rhiza.
 func entryPath(e entry.Entry) string {
 	return path.Join(LogDir, e.ChangeSet.String(), e.ID.String()+".json")
 }
@@ -59,7 +59,7 @@ func TestReadLogProblems(t *testing.T) {
 	cs := path.Join(LogDir, sCS)
 	tests := []struct {
 		name    string
-		path    string // the bad file, relative to .genesis
+		path    string // the bad file, relative to .rhiza
 		data    *fstest.MapFile
 		want    string // the Problem's path
 		wantErr error
@@ -344,7 +344,7 @@ func TestListLog(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		path      string // the extra file, relative to .genesis
+		path      string // the extra file, relative to .rhiza
 		data      *fstest.MapFile
 		wantPaths []string
 		wantProb  string // the one Problem's path, or "" for none

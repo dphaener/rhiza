@@ -36,8 +36,8 @@ import (
 	"maps"
 	"slices"
 
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // The aspects an operation writes, spelled as internal/model spells them.

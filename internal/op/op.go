@@ -25,9 +25,9 @@ import (
 	"slices"
 	"unicode/utf8"
 
-	"github.com/dphaener/genesis/internal/canon"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/key"
+	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/key"
 )
 
 // ErrInvalid is wrapped by every error for an operation that is not valid.

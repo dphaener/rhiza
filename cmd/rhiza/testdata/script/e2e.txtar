@@ -1,0 +1,164 @@
+# End to end: one intention from init to land, built with every write
+# command, then a record write. The log must fold cleanly at each step and
+# change ls must give exactly the expected bytes. The clock and IDs are fixed
+# by Setup (RHIZA_TEST_NOW/SEED), offset by the entries in the log, so
+# every ID below is stable.
+
+# api call and the command give byte-identical responses for a real write:
+# two fresh repos reach the same IDs. (Done first, in subfolders, because a
+# subfolder of a repo resolves to that repo.)
+mkdir a b
+cd a
+exec rhiza init
+exec rhiza add capability store --record --json
+cp stdout $WORK/add-cli.json
+cd ../b
+exec rhiza init
+exec rhiza api call add '{"kind":"capability","handle":"store"}' --record
+cmp stdout $WORK/add-cli.json
+cd ..
+
+# The main repo.
+exec rhiza init --json
+stdout '"repo": "01M5PWGDG0ABYZR1S1G9JMY5HZ"'
+
+# The intention. The first write records the git user as an actor; its ID
+# is not the repo's.
+exec rhiza change new 'Build the store' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+stdout '"actor": "[0-9A-Z]{26}"'
+! stdout '01M5PWGDG0ABYZR1S1G9JMY5HZ'
+
+exec rhiza add capability store --field statement='Keeps the log' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability log --parent store
+stdout '^- node [0-9A-Z]{26} \(log\)$'
+exec rhiza add capability index
+exec rhiza set log --field statement='Appends entries' --json-field weight=3
+exec rhiza mv index --parent store --before log
+exec rhiza add decision d1 --field statement='One file per entry'
+exec rhiza link log decided-by d1 --note 'why the log is files'
+exec rhiza link index decided-by d1
+exec rhiza unlink index decided-by d1
+exec rhiza add question q-tmp
+exec rhiza retire q-tmp --reason 'Answered already'
+fold-ok
+
+# apply as a dry run, then for real. In a dry run too, api call and the
+# command give the same bytes.
+exec rhiza apply writes.json --dry-run --json
+cp stdout apply-dry.json
+exec rhiza api call apply '{"file":"writes.json"}' --dry-run
+cmp stdout apply-dry.json
+exec rhiza apply writes.json --json
+stdout '"entry": "[0-9A-Z]{26}"'
+! stdout '"dry_run"'
+fold-ok
+
+# Every node and link is new here, so set, mv, unlink and retire revised or
+# dropped the creates (D9): only creates remain, and q-tmp and the index
+# link are gone.
+exec rhiza change show --json
+stdout '"state": "draft"'
+stdout -count=6 '"op": "node.create"'
+stdout -count=2 '"op": "link.create"'
+! stdout '"op": "node.(update|move|retire)"'
+! stdout '"op": "link.retire"'
+! stdout 'q-tmp'
+stdout '"weight": 3'
+stdout '"statement": "Finds entries fast"'
+
+# Lifecycle: propose, accept, land. Landing clears the current change set.
+exec rhiza propose
+exec rhiza accept --rule review --reason 'Looks right'
+exec rhiza land --json
+stdout '"to": "landed"'
+stdout '"cleared_current": true'
+! exists .rhiza/local/change
+fold-ok
+
+# Record writes on the landed tree: no current change set needed. Now the
+# nodes and links are landed, so each write is its own op (a dry run shows
+# it).
+exec rhiza set store --field owner=storage --record --dry-run --json
+stdout '"op": "node.update"'
+exec rhiza set store --field owner=storage --record --json
+stdout '"record": true'
+exec rhiza mv render --before index --record --dry-run --json
+stdout '"op": "node.move"'
+exec rhiza mv render --before index --record
+exec rhiza unlink render decided-by d2 --record --dry-run --json
+stdout '"op": "link.retire"'
+exec rhiza unlink render decided-by d2 --record
+exec rhiza retire d2 --reason 'Superseded' --record --dry-run --json
+stdout '"op": "node.retire"'
+exec rhiza retire d2 --reason 'Superseded' --record
+exec rhiza add capability cli --record
+! exists .rhiza/local/change
+fold-ok
+
+exec rhiza change ls --json
+cmp stdout expected-ls.json
+
+-- writes.json --
+{"writes":[
+  {"op":"add","kind":"capability","handle":"render","parent":"store","after":"log"},
+  {"op":"add","kind":"decision","handle":"d2","fields":["statement=Markdown first"]},
+  {"op":"link","from":"render","type":"decided-by","to":"d2"},
+  {"op":"set","ref":"index","fields":["statement=Finds entries fast"]}
+]}
+-- expected-ls.json --
+{
+  "change_sets": [
+    {
+      "current": false,
+      "id": "01M5PWGEF85Y185JZ2ZAN43Q1G",
+      "intent": "Record actor test@rhiza.invalid",
+      "kind": "record",
+      "state": "landed"
+    },
+    {
+      "current": false,
+      "id": "01M5PWGEF85Y185JZ2ZGCNH40N",
+      "intent": "Build the store",
+      "kind": "intention",
+      "state": "landed"
+    },
+    {
+      "current": false,
+      "id": "01M5PWH110D047SG185KJEHG9J",
+      "intent": "set store",
+      "kind": "record",
+      "state": "landed"
+    },
+    {
+      "current": false,
+      "id": "01M5PWH3YRZ17GS4S9J2VTJ19E",
+      "intent": "mv render",
+      "kind": "record",
+      "state": "landed"
+    },
+    {
+      "current": false,
+      "id": "01M5PWH6WG057XVB12H9VV67F6",
+      "intent": "unlink render decided-by d2",
+      "kind": "record",
+      "state": "landed"
+    },
+    {
+      "current": false,
+      "id": "01M5PWH9T8J593SXB602CWGJRN",
+      "intent": "retire d2",
+      "kind": "record",
+      "state": "landed"
+    },
+    {
+      "current": false,
+      "id": "01M5PWHCR04898T0FGJGBHRJTW",
+      "intent": "add capability cli",
+      "kind": "record",
+      "state": "landed"
+    }
+  ],
+  "problems": []
+}

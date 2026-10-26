@@ -7,10 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/id"
-	gmodel "github.com/dphaener/genesis/internal/model"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
+	gmodel "github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // carveCtx opens change set src ("Bundle") and then tgt ("Milestone"), the
@@ -215,13 +215,13 @@ func TestCarve(t *testing.T) {
 			t.Errorf("target %d ops, source %d", len(opsOf(t, ctx, tgt)), len(opsOf(t, ctx, src)))
 		}
 		// Emptied: nothing rests on the moved nodes, so no dependency.
-		if r.Next != "genesis withdraw --change "+shortID(src) || r.DependsOn != (id.ID{}) {
+		if r.Next != "rhiza withdraw --change "+shortID(src) || r.DependsOn != (id.ID{}) {
 			t.Errorf("resp = %+v", r)
 		}
 		if s := foldedState(t, ctx, src).State; s != changeset.StateDraft {
 			t.Errorf("source is %s", s)
 		}
-		if out := human(t, r); !strings.Contains(out, "next: genesis withdraw --change "+shortID(src)) {
+		if out := human(t, r); !strings.Contains(out, "next: rhiza withdraw --change "+shortID(src)) {
 			t.Errorf("human:\n%s", out)
 		}
 	})

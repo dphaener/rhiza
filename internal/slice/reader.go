@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/model"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/model"
 )
 
 // Direction picks which links of a node Links returns.

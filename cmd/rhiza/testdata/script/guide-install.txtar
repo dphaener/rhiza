@@ -1,0 +1,155 @@
+# guide install writes the agent guide into Claude Code as a
+# skills-directory plugin: ~/.claude/skills/rhiza by default, or the
+# repository's .claude/skills/rhiza with --project. HOME is $WORK/home,
+# set by the harness, never the real one.
+
+# A user install needs no repository and writes the four files.
+! exists .rhiza
+exec rhiza guide install --agent claude
+cmpenv stdout first.txt
+cmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json plugin.json
+cmp $HOME/.claude/skills/rhiza/hooks/hooks.json hooks.json
+exists $HOME/.claude/skills/rhiza/SKILL.md
+exists $HOME/.claude/skills/rhiza/skills/rhiza-scrub/SKILL.md
+
+# Each SKILL.md starts with its frontmatter, then the guide text.
+exec head -3 $HOME/.claude/skills/rhiza/SKILL.md
+stdout '\A---\nname: rhiza\ndescription: "Work with the product model of a repository that has a \.rhiza/ folder: .*"\n\z'
+grep '^# Rhiza$' $HOME/.claude/skills/rhiza/SKILL.md
+exec head -3 $HOME/.claude/skills/rhiza/skills/rhiza-scrub/SKILL.md
+stdout '\A---\nname: rhiza-scrub\ndescription: "Turn a raw conversation .*"\n\z'
+
+# A second install writes nothing.
+exec rhiza guide install --agent claude
+cmpenv stdout again.txt
+
+# --json and api call print the same bytes.
+exec rhiza guide install --agent claude --json
+cp stdout install.json
+exec rhiza api call guide.install '{"agent":"claude"}'
+cmp stdout install.json
+stdout '"written": \[\]'
+
+# A plugin.json from another version is rewritten; the other files are not.
+exec sh -c 'sed "s/\"dev\"/\"v0.0.1\"/" $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json > p.tmp && mv p.tmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json'
+grep v0.0.1 $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json
+exec rhiza guide install --agent claude
+cmpenv stdout version.txt
+cmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json plugin.json
+
+# guide install writes no log entry: --dry-run is a usage error, exit 2.
+! exec rhiza guide install --agent claude --dry-run
+stderr 'does not take --dry-run'
+stderr '^next: rhiza guide install --agent claude$'
+exec sh -c 'rhiza guide install --agent claude --dry-run 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+
+# --agent is required and takes only claude: exit 2.
+exec sh -c 'rhiza guide install 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+! exec rhiza guide install --agent agents-md
+stderr '^rhiza: unknown agent "agents-md": want claude$'
+exec sh -c 'rhiza guide install --agent agents-md 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+
+# A folder guide install did not write is a conflict, exit 3; nothing in it
+# is touched.
+rm $HOME/.claude/skills/rhiza
+mkdir $HOME/.claude/skills/rhiza
+cp mine.md $HOME/.claude/skills/rhiza/SKILL.md
+cp extra.txt $HOME/.claude/skills/rhiza/extra.txt
+! exec rhiza guide install --agent claude
+stderr 'exists and was not written by rhiza guide install$'
+stderr '^next: rhiza guide install --agent claude --force$'
+exec sh -c 'rhiza guide install --agent claude 2>/dev/null; echo exit $?'
+stdout '^exit 3$'
+cmp $HOME/.claude/skills/rhiza/SKILL.md mine.md
+! exists $HOME/.claude/skills/rhiza/.claude-plugin
+
+# A plugin.json without the marker is not ours either.
+mkdir $HOME/.claude/skills/rhiza/.claude-plugin
+cp foreign-plugin.json $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json
+exec sh -c 'rhiza guide install --agent claude 2>/dev/null; echo exit $?'
+stdout '^exit 3$'
+cmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json foreign-plugin.json
+
+# --force writes the four files and keeps the others.
+exec rhiza guide install --agent claude --force
+cmpenv stdout first.txt
+cmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json plugin.json
+cmp $HOME/.claude/skills/rhiza/extra.txt extra.txt
+grep '^# Rhiza$' $HOME/.claude/skills/rhiza/SKILL.md
+
+# --project outside a repository is not_found, exit 4.
+! exec rhiza guide install --agent claude --project
+stderr '^rhiza: no Rhiza repository in '
+stderr '^next: rhiza init$'
+exec sh -c 'rhiza guide install --agent claude --project 2>/dev/null; echo exit $?'
+stdout '^exit 4$'
+! exists .claude
+
+# --project inside a repository writes .claude/skills/rhiza there.
+mkdir proj
+cd proj
+exec rhiza init
+exec rhiza guide install --agent claude --project
+stdout '^Installed the Rhiza guide in .*/proj/\.claude/skills/rhiza \(4 written, 0 unchanged\)\.$'
+cmp .claude/skills/rhiza/.claude-plugin/plugin.json $WORK/plugin.json
+cmp .claude/skills/rhiza/hooks/hooks.json $WORK/hooks.json
+exists .claude/skills/rhiza/SKILL.md
+exists .claude/skills/rhiza/skills/rhiza-scrub/SKILL.md
+fold-ok
+
+# A project conflict's next keeps --project.
+exec sh -c 'rm .claude/skills/rhiza/.claude-plugin/plugin.json'
+! exec rhiza guide install --agent claude --project
+stderr '^next: rhiza guide install --agent claude --force --project$'
+
+-- first.txt --
+Installed the Rhiza guide in $HOME/.claude/skills/rhiza (4 written, 0 unchanged).
+
+- wrote .claude-plugin/plugin.json
+- wrote SKILL.md
+- wrote hooks/hooks.json
+- wrote skills/rhiza-scrub/SKILL.md
+-- again.txt --
+Installed the Rhiza guide in $HOME/.claude/skills/rhiza (0 written, 4 unchanged).
+-- version.txt --
+Installed the Rhiza guide in $HOME/.claude/skills/rhiza (1 written, 3 unchanged).
+
+- wrote .claude-plugin/plugin.json
+-- plugin.json --
+{
+  "description": "The Rhiza agent guide: the rhiza and rhiza-scrub skills, and a SessionStart hook that runs rhiza status --hook.",
+  "name": "rhiza",
+  "rhiza": {
+    "installed_by": "rhiza guide install"
+  },
+  "version": "dev"
+}
+-- hooks.json --
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "status",
+              "--hook"
+            ],
+            "command": "rhiza",
+            "timeout": 10,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}
+-- mine.md --
+mine
+-- extra.txt --
+keep me
+-- foreign-plugin.json --
+{"name":"rhiza","version":"v9"}

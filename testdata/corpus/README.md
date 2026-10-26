@@ -1,10 +1,12 @@
 # The log corpus
 
-Sample `.genesis` logs from every released format version.
+Sample `.rhiza` logs from every released format version. The cases were
+written when the project was called Genesis and moved here with `git mv` at the
+rename, so the entries inside them still say genesis; their bytes are unchanged.
 
-Genesis never compacts or rewrites its log, so a repository written by any
-released Genesis must still load in every later one, forever. This corpus is
-that promise, checked on every test run.
+Rhiza never compacts or rewrites its log, so a repository written by any
+released Genesis or Rhiza must still load in every later one, forever. This
+corpus is that promise, checked on every test run.
 
 ## Layout
 
@@ -13,7 +15,7 @@ One folder per format, then one folder per case:
 ```
 format-1/
   <case>/
-    .genesis/
+    .rhiza/
       repo.json
       log/<change_set>/<id>.json
 format-2/

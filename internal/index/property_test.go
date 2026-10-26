@@ -8,15 +8,15 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/store"
 	"pgregory.net/rapid"
 )
 
-// logFile is one file of a drawn log: its path under .genesis, its bytes
+// logFile is one file of a drawn log: its path under .rhiza, its bytes
 // and, for an entry, its type.
 type logFile struct {
 	path string

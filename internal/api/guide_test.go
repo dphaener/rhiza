@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/guide"
+	"github.com/dphaener/rhiza/internal/guide"
 )
 
 // pendingCommands are commands the guide names before they exist. None
@@ -48,14 +48,14 @@ func codeSpans(md string) []string {
 }
 
 // commandRefs returns the command references in md's code: for each
-// "genesis" token, the command words after it, up to the first token that
-// is not one. A bare genesis is skipped.
+// "rhiza" token, the command words after it, up to the first token that
+// is not one. A bare rhiza is skipped.
 func commandRefs(md string) [][]string {
 	var refs [][]string
 	for _, span := range codeSpans(md) {
 		f := strings.Fields(span)
 		for i, tok := range f {
-			if tok != "genesis" {
+			if tok != "rhiza" {
 				continue
 			}
 			var words []string
@@ -75,8 +75,8 @@ func commandRefs(md string) [][]string {
 
 // resolves reports whether words name a command as the CLI resolves a
 // command line: some prefix is an operation, or all of words name a group
-// of operations (genesis change). A group followed by a word that names
-// none of its operations (genesis change frobnicate) does not resolve.
+// of operations (rhiza change). A group followed by a word that names
+// none of its operations (rhiza change frobnicate) does not resolve.
 func resolves(words []string) bool {
 	for n := len(words); n > 0; n-- {
 		name := strings.Join(words[:n], ".")
@@ -103,7 +103,7 @@ func badRefs(md string) []string {
 		if resolves(words) || slices.Contains(pendingCommands, words[0]) {
 			continue
 		}
-		bad = append(bad, "genesis "+strings.Join(words, " "))
+		bad = append(bad, "rhiza "+strings.Join(words, " "))
 	}
 	return bad
 }
@@ -128,12 +128,12 @@ func TestPendingCommandsUnregistered(t *testing.T) {
 }
 
 func TestCommandRefsScanner(t *testing.T) {
-	md := "Write only through `genesis` commands; see `genesis-scrub`.\n" +
-		"Run `genesis frobnicate --now`, then `genesis change new \"x\"`,\n" +
-		"`genesis link <node> derived-from <h>` and `genesis guide scrub`.\n" +
-		"`genesis change frobnicate` is a typo; bare `genesis change` lists the group.\n" +
-		"Plain genesis frobnicate outside code is prose.\n" +
-		"```sh\n$ genesis describe apply --json\ngenesis slice <ref>\ngenesis zork it\n```\n"
+	md := "Write only through `rhiza` commands; see `rhiza-scrub`.\n" +
+		"Run `rhiza frobnicate --now`, then `rhiza change new \"x\"`,\n" +
+		"`rhiza link <node> derived-from <h>` and `rhiza guide scrub`.\n" +
+		"`rhiza change frobnicate` is a typo; bare `rhiza change` lists the group.\n" +
+		"Plain rhiza frobnicate outside code is prose.\n" +
+		"```sh\n$ rhiza describe apply --json\nrhiza slice <ref>\nrhiza zork it\n```\n"
 	got := commandRefs(md)
 	want := [][]string{
 		{"describe", "apply"}, {"slice"}, {"zork", "it"},
@@ -144,7 +144,7 @@ func TestCommandRefsScanner(t *testing.T) {
 		t.Errorf("commandRefs = %q, want %q", got, want)
 	}
 	bad := badRefs(md)
-	if wantBad := []string{"genesis zork it", "genesis frobnicate", "genesis change frobnicate"}; !slices.Equal(bad, wantBad) {
+	if wantBad := []string{"rhiza zork it", "rhiza frobnicate", "rhiza change frobnicate"}; !slices.Equal(bad, wantBad) {
 		t.Errorf("badRefs = %q, want %q", bad, wantBad)
 	}
 }
@@ -168,9 +168,9 @@ func TestGuide(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want, _ := guide.Lookup("genesis")
+	want, _ := guide.Lookup("rhiza")
 	r := got.(GuideResponse)
-	if r.Name != "genesis" || r.Version != "v9" || r.Text != want.Body {
+	if r.Name != "rhiza" || r.Version != "v9" || r.Text != want.Body {
 		t.Errorf("guide = %+v", r)
 	}
 	var buf bytes.Buffer
@@ -179,7 +179,7 @@ func TestGuide(t *testing.T) {
 		t.Error("Human output differs from the text")
 	}
 	_, err = runGuide(ctx, GuideRequest{Name: "nope"})
-	if e := AsError(err); e.Code != CodeNotFound || e.Next != "genesis guide ls" {
+	if e := AsError(err); e.Code != CodeNotFound || e.Next != "rhiza guide ls" {
 		t.Errorf("unknown name: %+v", e)
 	}
 }

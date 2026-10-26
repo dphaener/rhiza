@@ -11,11 +11,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 // testWorkspace makes a repository in a temp folder and opens it with a
@@ -45,7 +45,7 @@ func gitConfig(m map[string]string) func(string) (string, error) {
 	}
 }
 
-// logFiles lists the files under .genesis/log, relative to it, skipping
+// logFiles lists the files under .rhiza/log, relative to it, skipping
 // dot-files (init's .gitkeep) as the log reader does.
 func logFiles(t *testing.T, root string) []string {
 	t.Helper()
@@ -129,8 +129,38 @@ func TestWorkspace(t *testing.T) {
 			t.Fatalf("FindRoot outside a repo = %q, true", got)
 		}
 		if _, err := openWorkspace(t.TempDir(), time.Now, id.Default(), false); ExitCode(err) != 4 ||
-			AsError(err).Next != "genesis init" {
+			AsError(err).Next != "rhiza init" {
 			t.Fatalf("open without repo: %v", err)
+		}
+	})
+
+	t.Run("FindRootOldFolder", func(t *testing.T) {
+		root := t.TempDir()
+		if err := os.MkdirAll(filepath.Join(root, ".genesis"), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		sub := filepath.Join(root, "src")
+		if err := os.Mkdir(sub, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		for _, d := range []string{root, sub} {
+			if got, ok := FindRoot(d); !ok || got != root {
+				t.Fatalf("FindRoot(%s) = %q, %v; want the old-style root %q", d, got, ok, root)
+			}
+		}
+		// A nearer .rhiza wins over an older .genesis above it.
+		inner := filepath.Join(sub, "pkg")
+		if err := os.MkdirAll(filepath.Join(inner, ".rhiza"), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if got, ok := FindRoot(inner); !ok || got != inner {
+			t.Fatalf("FindRoot(inner) = %q, %v; want %q", got, ok, inner)
+		}
+		// Opening the old-style root is a conflict naming the rename.
+		_, err := openWorkspace(root, time.Now, id.Default(), false)
+		if e := AsError(err); ExitCode(err) != 3 || e.Code != CodeConflict || e.Next != "git mv .genesis .rhiza" ||
+			!strings.Contains(e.Message, ".genesis/") || !isOldFolderError(err) {
+			t.Fatalf("open old root: %v", err)
 		}
 	})
 
@@ -310,7 +340,7 @@ func TestWorkspace(t *testing.T) {
 			t.Fatal(err)
 		}
 		_, err = w.appendEntry(cs, changeset.Ops{Ops: []op.Op{c2}}, a, a)
-		if ExitCode(err) != 3 || !strings.Contains(AsError(err).Next, "genesis change new") {
+		if ExitCode(err) != 3 || !strings.Contains(AsError(err).Next, "rhiza change new") {
 			t.Fatalf("ops into withdrawn: %v", err)
 		}
 		missing := w.mustID(t)

@@ -1,0 +1,135 @@
+# status reports the current change set, the change sets in flight and the
+# installed guides. status --hook is the session-start hook's brief output:
+# silent outside a repository or on any error, always exit 0, never a
+# write. HOME is $WORK/home, set by the harness, never the real one.
+
+# Outside a repository status is not_found, exit 4.
+! exists .rhiza
+! exec rhiza status
+stderr '^rhiza: no Rhiza repository in '
+stderr '^next: rhiza init$'
+! stdout .
+exec sh -c 'rhiza status 2>/dev/null; echo exit $?'
+stdout '^exit 4$'
+
+# The hook prints nothing there, on stdout or stderr, and exits 0; with
+# --json it prints {}.
+exec rhiza status --hook
+! stdout .
+! stderr .
+exec sh -c 'rhiza status --hook; echo exit $?'
+stdout '\Aexit 0\n\z'
+exec rhiza status --hook --json
+stdout '\A\{\}\n\z'
+! stderr .
+exec rhiza api call status '{"hook":true}'
+stdout '\A\{\}\n\z'
+
+exec rhiza init
+
+# No change set: next names change new; no guide installed.
+exec rhiza status
+stdout '^rhiza dev$'
+stdout '^- Change set: none current$'
+stdout '^- In flight: 0 draft, 0 proposed, 0 accepted$'
+stdout '^- Guide: not installed$'
+stdout '^next: rhiza change new "<intent>"$'
+exec rhiza status --json
+stdout '"change_set": null'
+stdout '"guide": \[\]'
+stdout '"next": \[\n    "rhiza change new \\"<intent>\\""\n  \]'
+exec rhiza status --hook
+stdout '^This repo uses Rhiza \(load the rhiza skill; `rhiza guide` for more\)\.$'
+stdout '^No current change set\.$'
+stdout '^In flight: 0 draft, 0 proposed, 0 accepted\.$'
+! stdout 'out of date'
+! stderr .
+
+# A current change set.
+exec rhiza change new 'Teach the agent the guide'
+exec rhiza status
+stdout '^- Change set: [0-9A-Z]{26} \(draft\): Teach the agent the guide$'
+stdout '^- In flight: 1 draft, 0 proposed, 0 accepted$'
+! stdout 'next:'
+exec rhiza status --json
+stdout '"intent": "Teach the agent the guide"'
+stdout '"kind": "intention"'
+stdout '"state": "draft"'
+stdout '"next": \[\]'
+exec rhiza status --hook
+stdout '^Change set [0-9A-Z]{26} \(draft\): Teach the agent the guide$'
+stdout '^In flight: 1 draft, 0 proposed, 0 accepted\.$'
+
+# A proposed one counts as proposed; a second draft is current.
+exec rhiza propose
+exec rhiza change new 'Second thing'
+exec rhiza status
+stdout '^- Change set: [0-9A-Z]{26} \(draft\): Second thing$'
+stdout '^- In flight: 1 draft, 1 proposed, 0 accepted$'
+exec rhiza status --json
+stdout '"attention": \{\n    "accepted": 0,\n    "draft": 1,\n    "proposed": 1\n  \}'
+exec rhiza status --hook
+stdout '^In flight: 1 draft, 1 proposed, 0 accepted\.$'
+
+# A guide at the binary's version is current: no mismatch.
+exec rhiza guide install --agent claude
+exec rhiza status
+stdout '^- Guide \(user\): dev in .*/home/\.claude/skills/rhiza \(current\)$'
+! stdout 'next:'
+exec rhiza status --json
+stdout '"scope": "user"'
+stdout '"current": true'
+exec rhiza status --hook
+! stdout 'out of date'
+
+# At another version it is out of date: a mismatch line and the update.
+exec sh -c 'sed "s/\"dev\"/\"0.0.1\"/" $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json > p.tmp && mv p.tmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json'
+exec rhiza status
+stdout '^- Guide \(user\): 0\.0\.1 in .* \(out of date\)$'
+stdout '^next: rhiza guide install --agent claude$'
+exec rhiza status --json
+stdout '"version": "0.0.1"'
+stdout '"current": false'
+stdout '"next": \[\n    "rhiza guide install --agent claude"\n  \]'
+exec rhiza status --hook
+stdout '^The installed rhiza guide is out of date: run `rhiza guide install --agent claude`\.$'
+
+# A project install out of date names --project.
+exec rhiza guide install --agent claude --project
+exec sh -c 'sed "s/\"dev\"/\"0.0.1\"/" .claude/skills/rhiza/.claude-plugin/plugin.json > p.tmp && mv p.tmp .claude/skills/rhiza/.claude-plugin/plugin.json'
+exec rhiza status
+stdout '^- Guide \(project\): 0\.0\.1 in .* \(out of date\)$'
+stdout '^next: rhiza guide install --agent claude --project$'
+exec rhiza status --hook
+stdout 'run `rhiza guide install --agent claude`, `rhiza guide install --agent claude --project`\.$'
+
+# The hook stays under 400 bytes (the Go test checks the token cap).
+exec sh -c 'rhiza status --hook | wc -c'
+stdout '^ *[0-3]?[0-9]?[0-9]\n\z'
+
+# --json and api call print the same bytes, hook or not.
+exec rhiza status --json
+cp stdout status.json
+exec rhiza api call status '{}'
+cmp stdout status.json
+exec rhiza status --hook --json
+cmp stdout status.json
+exec rhiza api call status '{"hook":true}'
+cmp stdout status.json
+
+# Any error makes the hook silent and exit 0; plain status reports it.
+! exec rhiza status --change ZZZZZZZZ
+stderr 'no change set matches'
+exec sh -c 'rhiza status --hook --change ZZZZZZZZ; echo exit $?'
+stdout '\Aexit 0\n\z'
+! stderr .
+
+# The hook never writes: the .rhiza folder is unchanged and folds.
+exec sh -c 'find .rhiza | sort | xargs cksum 2>/dev/null; true'
+cp stdout tree-before.txt
+exec rhiza status --hook
+exec rhiza status --hook --json
+exec rhiza status
+exec sh -c 'find .rhiza | sort | xargs cksum 2>/dev/null; true'
+cmp stdout tree-before.txt
+fold-ok

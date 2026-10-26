@@ -5,8 +5,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
 )
 
 // AsIs returns the as-is view of sets: the landed change sets in apply order,

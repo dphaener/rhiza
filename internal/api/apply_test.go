@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // writeFile writes an apply file into a temp folder and returns its path.
@@ -172,7 +172,7 @@ func TestApply(t *testing.T) {
 		ctx, _ := writeCtx(t)
 		_, err := applyFile(t, ctx, `{"writes":[{"op":"add","kind":"widget","handle":"a"}]}`)
 		wantExit(t, err, 2)
-		wantNext(t, err, "genesis describe add")
+		wantNext(t, err, "rhiza describe add")
 	})
 
 	t.Run("MissingFile", func(t *testing.T) {

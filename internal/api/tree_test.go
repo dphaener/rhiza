@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // treeLog lands two capability roots (alpha, beta) with nested children
@@ -125,8 +125,8 @@ func TestTree(t *testing.T) {
 func TestTreeEmpty(t *testing.T) {
 	ctx := readCtx(t)
 	for _, c := range []struct{ req, want string }{
-		{`{}`, "No capabilities yet.\n\nnext: genesis add capability <handle>\n"},
-		{`{"kind":"intent"}`, "No intents yet.\n\nnext: genesis add intent <handle>\n"},
+		{`{}`, "No capabilities yet.\n\nnext: rhiza add capability <handle>\n"},
+		{`{"kind":"intent"}`, "No intents yet.\n\nnext: rhiza add intent <handle>\n"},
 	} {
 		r, err := treeCall(t, ctx, c.req)
 		if err != nil {
@@ -149,13 +149,13 @@ func TestTreeErrors(t *testing.T) {
 		msg  string
 		next string
 	}{
-		{`{"ref":"pick"}`, 2, "not in a tree", "genesis show pick"},
-		{`{"ref":"goal","kind":"capability"}`, 2, "not a capability", "genesis tree goal"},
-		{`{"ref":"alpha","kind":"intent"}`, 2, "not an intent", "genesis tree alpha"},
-		{`{"kind":"decision"}`, 2, "unknown tree kind", "genesis describe tree"},
-		{`{"depth":-1}`, 2, "negative", "genesis describe tree"},
-		{`{"ref":"nope"}`, 4, `no node matches "nope"`, "genesis ls"},
-		{`{"view":"sideways"}`, 2, "unknown view", "genesis describe tree"},
+		{`{"ref":"pick"}`, 2, "not in a tree", "rhiza show pick"},
+		{`{"ref":"goal","kind":"capability"}`, 2, "not a capability", "rhiza tree goal"},
+		{`{"ref":"alpha","kind":"intent"}`, 2, "not an intent", "rhiza tree alpha"},
+		{`{"kind":"decision"}`, 2, "unknown tree kind", "rhiza describe tree"},
+		{`{"depth":-1}`, 2, "negative", "rhiza describe tree"},
+		{`{"ref":"nope"}`, 4, `no node matches "nope"`, "rhiza ls"},
+		{`{"view":"sideways"}`, 2, "unknown view", "rhiza describe tree"},
 	} {
 		_, err := treeCall(t, ctx, c.req)
 		if ExitCode(err) != c.code {

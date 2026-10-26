@@ -10,9 +10,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 func init() {
@@ -77,12 +77,12 @@ func buildLink(b writeBase, r LinkRequest) (edit, error) {
 		return edit{}, err
 	}
 	if r.Note == "" && (t == op.LinkRelatesTo || t == op.LinkExempts) {
-		return edit{}, Usagef("%s %s link needs --note", article(string(t)), t).WithNext("genesis describe link")
+		return edit{}, Usagef("%s %s link needs --note", article(string(t)), t).WithNext("rhiza describe link")
 	}
 	o := op.Op{Type: op.TypeLinkCreate, LinkType: t, From: from, To: to, Note: r.Note}
 	switch {
 	case t == op.LinkExempts && r.Decision == "":
-		return edit{}, Usagef("an exempts link needs --decision <decision>").WithNext("genesis describe link")
+		return edit{}, Usagef("an exempts link needs --decision <decision>").WithNext("rhiza describe link")
 	case t != op.LinkExempts && r.Decision != "":
 		return edit{}, Usagef("only an exempts link takes --decision, not %s", t)
 	case r.Decision != "":
@@ -106,7 +106,7 @@ func buildLink(b writeBase, r LinkRequest) (edit, error) {
 	}
 	if t == op.LinkDependsOn && fromSet && toSet && b.changeSets != nil && wouldCycle(b, from, to) {
 		return edit{}, Conflictf("depends-on from %s to %s would close a loop: %s already depends on %s", from, to, to, from).
-			WithNext("genesis change show " + shortID(to))
+			WithNext("rhiza change show " + shortID(to))
 	}
 	if o.Link, err = b.newID(); err != nil {
 		return edit{}, err
@@ -190,13 +190,13 @@ func buildUnlink(b writeBase, r UnlinkRequest) (edit, error) {
 			return edit{}, err
 		}
 	default:
-		return edit{}, Usagef("unlink takes a link, or <from> <type> <to>").WithNext("genesis describe unlink")
+		return edit{}, Usagef("unlink takes a link, or <from> <type> <to>").WithNext("rhiza describe unlink")
 	}
 	if k.Retired {
 		return edit{}, Conflictf("link %s is retired", k.ID)
 	}
 	if k.Conflict {
-		return edit{}, Conflictf("link %s has conflicting changes", k.ID).WithNext("genesis check")
+		return edit{}, Conflictf("link %s has conflicting changes", k.ID).WithNext("rhiza check")
 	}
 	var e edit
 	e.touchLink(k.ID)
@@ -224,7 +224,7 @@ func linkType(s, opName string) (op.LinkType, error) {
 			names = append(names, string(x))
 		}
 		return "", Usagef("unknown link type %q: want one of %s", s, strings.Join(names, ", ")).
-			WithNext("genesis describe " + opName)
+			WithNext("rhiza describe " + opName)
 	}
 	return t, nil
 }

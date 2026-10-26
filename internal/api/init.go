@@ -1,8 +1,8 @@
 package api
 
 // This file holds the init operation: it creates the repository, the
-// .genesis/.gitignore that keeps local/ (the current change set) out of git,
-// and .genesis/log/.gitkeep, since git keeps no empty folder and a clone of a
+// .rhiza/.gitignore that keeps local/ (the current change set) out of git,
+// and .rhiza/log/.gitkeep, since git keeps no empty folder and a clone of a
 // fresh repository would otherwise have no log at all.
 
 import (
@@ -13,11 +13,11 @@ import (
 	"path/filepath"
 	"reflect"
 
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
-// gitignore is the content of .genesis/.gitignore: local/ holds per-worktree
+// gitignore is the content of .rhiza/.gitignore: local/ holds per-worktree
 // state that must never be committed.
 const gitignore = localDir + "/\n"
 
@@ -27,13 +27,13 @@ type InitRequest struct{}
 // InitResponse names the new repository.
 type InitResponse struct {
 	Repo id.ID  `json:"repo" desc:"The new repository's ID"`
-	Root string `json:"root" desc:"The absolute path of the project root holding .genesis"`
+	Root string `json:"root" desc:"The absolute path of the project root holding .rhiza"`
 }
 
 func init() {
 	register(Operation{
 		Name:     "init",
-		Summary:  "Create a Genesis repository in the current folder",
+		Summary:  "Create a Rhiza repository in the current folder",
 		Request:  reflect.TypeFor[InitRequest](),
 		Response: reflect.TypeFor[InitResponse](),
 		Run:      runInit,
@@ -47,7 +47,7 @@ func init() {
 // log to survive a clone; the log reader skips dot-files.
 func runInit(ctx *Ctx, _ any) (any, error) {
 	if ctx.DryRun {
-		return nil, Usagef("init does not take --dry-run: it writes no log entry").WithNext("genesis init")
+		return nil, Usagef("init does not take --dry-run: it writes no log entry").WithNext("rhiza init")
 	}
 	root, err := filepath.Abs(ctx.Root)
 	if err != nil {
@@ -55,8 +55,11 @@ func runInit(ctx *Ctx, _ any) (any, error) {
 	}
 	st, err := store.Init(root, ctx.IDs)
 	if err != nil {
+		if errors.Is(err, store.ErrOldFolder) {
+			return nil, oldFolderError()
+		}
 		if errors.Is(err, store.ErrExists) {
-			return nil, Conflictf("a Genesis repository already exists in %s", root).WithNext("genesis change ls")
+			return nil, Conflictf("a Rhiza repository already exists in %s", root).WithNext("rhiza change ls")
 		}
 		return nil, Errorf("init: %v", err)
 	}
@@ -71,6 +74,6 @@ func runInit(ctx *Ctx, _ any) (any, error) {
 
 // Human reports the new repository and the first command to run.
 func (r InitResponse) Human(w io.Writer) {
-	fmt.Fprintf(w, "Initialised a Genesis repository in %s (repo %s).\n\n", r.Root, r.Repo)
+	fmt.Fprintf(w, "Initialised a Rhiza repository in %s (repo %s).\n\n", r.Root, r.Repo)
 	fmt.Fprintf(w, "next: %s\n", newEntryNext)
 }

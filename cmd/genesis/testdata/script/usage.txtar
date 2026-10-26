@@ -1,5 +1,0 @@
-# genesis with no arguments prints usage on stdout and succeeds.
-exec genesis
-stdout 'Usage:'
-stdout 'version'
-! stderr .

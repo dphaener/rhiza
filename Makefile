@@ -1,4 +1,4 @@
-BINARY  := genesis
+BINARY  := rhiza
 PREFIX  ?= $(HOME)/bin
 VERSION := $(shell git describe --always --dirty 2>/dev/null || echo dev)
 LDFLAGS := -X main.version=$(VERSION)
@@ -8,8 +8,8 @@ GOFILES := $(shell find . -name '*.go' -not -path './vendor/*' -not -path './.sh
 .DEFAULT_GOAL := build
 
 .PHONY: build
-build: ## Build ./genesis in the repo root
-	go build -ldflags "$(LDFLAGS)" -o $(BINARY) ./cmd/genesis
+build: ## Build ./rhiza in the repo root
+	go build -ldflags "$(LDFLAGS)" -o $(BINARY) ./cmd/rhiza
 
 .PHONY: install
 install: ## Build straight into $(PREFIX) (default ~/bin)
@@ -19,7 +19,7 @@ install: ## Build straight into $(PREFIX) (default ~/bin)
 # (exit 137, no output). Recover a copied binary with:
 #   codesign --force --sign - $(PREFIX)/$(BINARY)
 	@mkdir -p $(PREFIX)
-	go build -ldflags "$(LDFLAGS)" -o $(PREFIX)/$(BINARY) ./cmd/genesis
+	go build -ldflags "$(LDFLAGS)" -o $(PREFIX)/$(BINARY) ./cmd/rhiza
 
 .PHONY: test
 test: ## Run the full test suite
@@ -48,14 +48,14 @@ check: fmt-check vet test self-check ## Run everything CI runs
 # runs cannot drift apart.
 
 .PHONY: self-check
-self-check: ## Run genesis check on this repo with this commit's build
-# Genesis keeps its own .genesis/, so the build under test checks it: a stale
+self-check: ## Run rhiza check on this repo with this commit's build
+# Rhiza keeps its own .rhiza/, so the build under test checks it: a stale
 # rendered/ or a broken log fails make. The binary is built in place in a
 # fresh temp folder (never copied there, for the arm64 signature reason under
-# install), so it never touches ./genesis or ~/bin. The folder is removed
+# install), so it never touches ./rhiza or ~/bin. The folder is removed
 # whatever check returns, and check's exit status is make's.
 	@dir=$$(mktemp -d); \
-	go build -ldflags "$(LDFLAGS)" -o $$dir/$(BINARY) ./cmd/genesis \
+	go build -ldflags "$(LDFLAGS)" -o $$dir/$(BINARY) ./cmd/rhiza \
 		&& $$dir/$(BINARY) check; \
 	status=$$?; rm -rf $$dir; exit $$status
 

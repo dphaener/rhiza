@@ -8,7 +8,7 @@
 //
 // The envelope is the same in every format this package knows; v says which
 // format the entry is written in, so a reader can refuse an entry from a
-// newer Genesis instead of misreading it. Format 2 adds no envelope field: it
+// newer Rhiza instead of misreading it. Format 2 adds no envelope field: it
 // marks an entry whose body uses something format 1 cannot spell (an ops
 // body's carve). A writer stamps the lowest format that can spell the entry,
 // so every entry format 1 can spell is still written as format 1.
@@ -23,8 +23,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/dphaener/genesis/internal/canon"
-	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/id"
 )
 
 // FormatVersion is the newest entry format this package reads and writes.
@@ -37,7 +37,7 @@ var ErrInvalid = errors.New("entry: invalid")
 
 // ErrNewerFormat is wrapped by Decode's error when the entry declares a
 // format newer than FormatVersion. It does not wrap ErrInvalid: the entry
-// may be perfectly valid to a newer Genesis.
+// may be perfectly valid to a newer Rhiza.
 var ErrNewerFormat = errors.New("entry: newer format")
 
 // Type names what an entry records.
@@ -221,7 +221,7 @@ func decode(data []byte, trusted bool) (Entry, error) {
 		return Entry{}, invalid("v", "not an integer")
 	}
 	if v > FormatVersion {
-		return Entry{}, fmt.Errorf("%w: field %q: %d, this Genesis reads %d", ErrNewerFormat, "v", v, FormatVersion)
+		return Entry{}, fmt.Errorf("%w: field %q: %d, this Rhiza reads %d", ErrNewerFormat, "v", v, FormatVersion)
 	}
 	if v < 1 {
 		return Entry{}, invalid("v", "%d, want 1 through %d", v, FormatVersion)

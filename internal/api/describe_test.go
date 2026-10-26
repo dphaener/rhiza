@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/canon"
+	"github.com/dphaener/rhiza/internal/canon"
 )
 
 func callDescribe(t *testing.T, req string) (DescribeResponse, error) {
@@ -90,7 +90,7 @@ func TestDescribeUnknown(t *testing.T) {
 	if ExitCode(err) != 4 {
 		t.Fatalf("err = %v, exit %d, want 4", err, ExitCode(err))
 	}
-	if AsError(err).Next != "genesis describe" {
+	if AsError(err).Next != "rhiza describe" {
 		t.Errorf("next = %q", AsError(err).Next)
 	}
 }
@@ -103,7 +103,7 @@ func TestDescribeHuman(t *testing.T) {
 	var buf bytes.Buffer
 	resp.Human(&buf)
 	out := buf.String()
-	for _, s := range []string{"## describe", "genesis describe [<op>]", "`<op>`"} {
+	for _, s := range []string{"## describe", "rhiza describe [<op>]", "`<op>`"} {
 		if !strings.Contains(out, s) {
 			t.Errorf("human output lacks %q:\n%s", s, out)
 		}

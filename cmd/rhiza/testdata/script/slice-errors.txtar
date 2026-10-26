@@ -1,0 +1,61 @@
+# slice's errors: an unknown ref is not_found (exit 4), an ambiguous one and
+# a budget below 1 are usage errors (exit 2), and outside a repository it is
+# not_found with next rhiza init.
+
+! exec rhiza slice log
+stderr '^rhiza: no Rhiza repository in '
+stderr '^next: rhiza init$'
+
+exec rhiza init
+exec rhiza apply model.json --record
+
+! exec rhiza slice nope --json
+cmp stdout nope.json
+exec sh -c 'rhiza slice nope --json >/dev/null; echo exit $?'
+stdout '^exit 4$'
+! exec rhiza slice nope
+stderr '^rhiza: no node matches "nope" in the as-is view$'
+
+# An ID prefix shared by every node (the actor too) is ambiguous.
+! exec rhiza slice 01M5 --json
+stdout '"code": "usage"'
+stdout 'matches 3 nodes: '
+exec sh -c 'rhiza slice 01M5 >/dev/null 2>&1; echo exit $?'
+stdout '^exit 2$'
+
+! exec rhiza slice log --budget 0 --json
+cmp stdout budget.json
+exec sh -c 'rhiza slice log --budget 0 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+! exec rhiza slice log --budget -5
+stderr 'budget must be at least 1, not -5'
+
+! exec rhiza slice log --view sideways --json
+stdout '"code": "usage"'
+
+# A retired node has no slice.
+exec rhiza retire index --reason 'Not needed' --record
+! exec rhiza slice index --json
+stdout '"code": "not_found"'
+
+-- model.json --
+{"writes":[
+  {"op":"add","kind":"capability","handle":"log"},
+  {"op":"add","kind":"capability","handle":"index"}
+]}
+-- nope.json --
+{
+  "error": {
+    "code": "not_found",
+    "message": "no node matches \"nope\" in the as-is view",
+    "next": ""
+  }
+}
+-- budget.json --
+{
+  "error": {
+    "code": "usage",
+    "message": "slice request: budget must be at least 1, not 0",
+    "next": ""
+  }
+}

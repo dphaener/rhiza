@@ -1,0 +1,71 @@
+# add creates a node in the current change set. IDs are fixed (see
+# change.txtar), so they are hard-coded below.
+
+exec rhiza init
+
+# No change set: usage, exit 2, naming change new and --record.
+! exec rhiza add capability store
+stderr '^rhiza: no change set: .*--record'
+stderr '^next: rhiza change new "<intent>"$'
+! exec rhiza add capability store --json
+stdout '"code": "usage"'
+
+exec rhiza change new Shape
+
+# Human output names the entry, the change set and the node.
+exec rhiza add capability store --field 'statement=Keeps the log'
+stdout '^Wrote entry 01M5PWGJC82P7YGZTWYN55E6YF to change set 01M5PWGEF85Y185JZ2ZGCNH40N\.$'
+stdout '^- node 01M5PWGJC82P7YGZTWYFFZ0VJG \(store\)$'
+
+# --json, with a parent, a JSON field and a position.
+exec rhiza add capability log --parent store --json-field 'tags=["a","b"]' --json
+stdout '"entry": "[0-9A-Z]{26}"'
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+stdout '"nodes": \[\n    "[0-9A-Z]{26}"\n  \]'
+! stdout '"links"'
+exec rhiza add capability first --before store
+exec rhiza change show --json
+stdout '"handle": "first",\n      "id": "[0-9A-Z]{26}",\n      "key": "[0-9a-h]'
+stdout '"tags": \[\n          "a",'
+
+# A dry run prints the op and writes nothing.
+exec rhiza add decision d1 --dry-run
+stdout '^Dry run: would write 1 operation\(s\) to change set 01M5PWGEF85Y185JZ2ZGCNH40N; nothing was written\.$'
+stdout '^- \{"fields":\{\},"handle":"d1",.*"kind":"decision".*"op":"node.create"'
+exec rhiza add decision d1 --dry-run --json
+stdout '"dry_run": true'
+stdout '"ops": \['
+! stdout '"entry"'
+exec rhiza change show
+! stdout '\(d1\)'
+
+# A taken handle is a conflict, exit 3.
+! exec rhiza add decision store --json
+stdout '"code": "conflict"'
+stdout 'handle \\"store\\" is taken by node 01M5PWGJC82P7YGZTWYFFZ0VJG'
+
+# Bad requests are usage errors, exit 2.
+! exec rhiza add widget x --json
+stdout '"code": "usage"'
+! exec rhiza add capability 'Not OK' --json
+stdout '"code": "usage"'
+! exec rhiza add decision d2 --parent store
+stderr 'not in a tree'
+! exec rhiza add capability x --field nope
+stderr 'want name=value'
+! exec rhiza add capability x --json-field 'a={'
+stderr '^rhiza: --json-field'
+
+# An unknown parent is not_found, exit 4; an ambiguous one usage, exit 2.
+! exec rhiza add capability x --parent nosuch --json
+stdout '"code": "not_found"'
+! exec rhiza add capability x --parent 01M5PWG --json
+stdout '"code": "usage"'
+stdout 'matches [0-9] nodes'
+
+# Writes into a landed change set are a conflict, exit 3.
+! exec rhiza add capability x --change 01M5PWGEF85Y185JZ2ZAN43Q1G --json
+stdout '"code": "conflict"'
+stdout 'is landed'
+
+fold-ok

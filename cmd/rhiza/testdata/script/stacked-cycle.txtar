@@ -1,0 +1,66 @@
+# depends-on between change sets never loops. link refuses the link that
+# would close a loop (exit 3); a loop that still reaches the log, through two
+# branches each adding one link and then merging, fails check under the rule
+# depends-on, and ready gives it as a reason.
+
+exec rhiza init
+exec rhiza change new A
+stdout 'change set 01M5PWGEF85Y185JZ2ZGCNH40N '
+exec rhiza change new B
+stdout 'change set 01M5PWGJC82P7YGZTWYFFZ0VJG '
+exec rhiza render
+exec git init -q
+exec git add -A
+exec git commit -qm base
+exec git branch other
+
+# On main, B depends on A, from inside B.
+exec rhiza link 01M5PWGJC82P7YGZTWYFFZ0VJG depends-on 01M5PWGEF85Y185JZ2ZGCNH40N
+
+# A depending on B would close the loop: refused, exit 3, with next.
+! exec rhiza link 01M5PWGEF85Y185JZ2ZGCNH40N depends-on 01M5PWGJC82P7YGZTWYFFZ0VJG --change 01M5PWGEF85Y185JZ2ZGCNH40N
+stderr '^rhiza: depends-on from 01M5PWGEF85Y185JZ2ZGCNH40N to 01M5PWGJC82P7YGZTWYFFZ0VJG would close a loop: 01M5PWGJC82P7YGZTWYFFZ0VJG already depends on 01M5PWGEF85Y185JZ2ZGCNH40N$'
+stderr '^next: rhiza change show 01M5PWGJC82P7Y$'
+! exec rhiza link 01M5PWGEF85Y185JZ2ZGCNH40N depends-on 01M5PWGJC82P7YGZTWYFFZ0VJG --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout '"code": "conflict"'
+stdout '"next": "rhiza change show 01M5PWGJC82P7Y"'
+exec sh -c 'rhiza link 01M5PWGEF85Y185JZ2ZGCNH40N depends-on 01M5PWGJC82P7YGZTWYFFZ0VJG --change 01M5PWGEF85Y185JZ2ZGCNH40N 2>/dev/null; echo exit $?'
+stdout '^exit 3$'
+fold-ok
+exec rhiza check
+stdout '^ok$'
+exec git add -A
+exec git commit -qm B
+
+# On the other branch (another seed, so IDs differ), A depends on B, from
+# inside A: no loop there.
+exec git checkout -q other
+env RHIZA_TEST_SEED=7
+exec rhiza link 01M5PWGEF85Y185JZ2ZGCNH40N depends-on 01M5PWGJC82P7YGZTWYFFZ0VJG --change 01M5PWGEF85Y185JZ2ZGCNH40N
+env RHIZA_TEST_SEED=1
+exec rhiza check
+stdout '^ok$'
+exec git add -A
+exec git commit -qm A
+
+# Merged, the log has the loop: the fold is fine, check fails it, exit 1.
+exec git checkout -q main
+exec git merge -q --no-edit other
+fold-ok
+! exec rhiza check
+stdout '^failed$'
+stdout '^fail depends-on change set 01M5PWGEF85Y185JZ2ZGCNH40N: depends-on loop among change sets 01M5PWGEF85Y185JZ2ZGCNH40N, 01M5PWGJC82P7YGZTWYFFZ0VJG$'
+stdout '^  next: rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N$'
+! exec rhiza check --json
+stdout '"rule": "depends-on"'
+stdout '"severity": "fail"'
+stdout '"ok": false'
+
+# Proposed, both are in the roadmap; ready names the cycle for each.
+exec rhiza propose --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec rhiza propose --change 01M5PWGJC82P7YGZTWYFFZ0VJG
+exec rhiza ready
+stdout '^Nothing is ready\.$'
+exec rhiza ready --json
+stdout '"reasons": \[\n +"not accepted: proposed",\n +"depends on 01M5PWGJC82P7Y \(proposed\)",\n +"depends-on cycle"\n +\]'
+stdout '"reasons": \[\n +"not accepted: proposed",\n +"depends on 01M5PWGEF85Y18 \(proposed\)",\n +"depends-on cycle"\n +\]'

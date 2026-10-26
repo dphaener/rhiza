@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 // testCtx is a Ctx over root with a fixed clock, seeded IDs and a git
@@ -78,7 +78,7 @@ func TestInit(t *testing.T) {
 			t.Errorf("log/.gitkeep = %q, %v; want an empty file", data, err)
 		}
 		out := human(t, resp)
-		for _, s := range []string{root, r.Repo.String(), `genesis change new "<intent>"`} {
+		for _, s := range []string{root, r.Repo.String(), `rhiza change new "<intent>"`} {
 			if !strings.Contains(out, s) {
 				t.Errorf("human output lacks %q:\n%s", s, out)
 			}
@@ -120,7 +120,7 @@ func TestInit(t *testing.T) {
 			t.Fatalf("dry-run init: %v, exit %d; want 2", err, ExitCode(err))
 		}
 		if _, err := os.Stat(filepath.Join(root, store.Dir)); !os.IsNotExist(err) {
-			t.Errorf("dry-run init created .genesis: %v", err)
+			t.Errorf("dry-run init created .rhiza: %v", err)
 		}
 	})
 }

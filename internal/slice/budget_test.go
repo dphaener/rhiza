@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 func TestTokens(t *testing.T) {
@@ -173,8 +173,8 @@ func TestFit(t *testing.T) {
 				continue
 			}
 			want := fmt.Sprintf("\n\n---\n"+
-				"Omitted: neighbours 4 (brief) — `genesis slice hard-pause --budget %d`\n"+
-				"Omitted: in flight 4 (brief) — `genesis slice hard-pause --budget %d`\n", next, next)
+				"Omitted: neighbours 4 (brief) — `rhiza slice hard-pause --budget %d`\n"+
+				"Omitted: in flight 4 (brief) — `rhiza slice hard-pause --budget %d`\n", next, next)
 			if !strings.HasSuffix(string(res.Bytes), want) {
 				t.Errorf("footer:\n%s\nwant suffix\n%s", res.Bytes, want)
 			}
@@ -206,19 +206,19 @@ func TestFit(t *testing.T) {
 			other    string
 		}{
 			{"node default view", node, Options{DefaultView: "to-be"},
-				"genesis tree hard-pause", "genesis slice hard-pause --budget %d"},
+				"rhiza tree hard-pause", "rhiza slice hard-pause --budget %d"},
 			{"node other view", node, Options{DefaultView: "as-is"},
-				"genesis tree hard-pause", "genesis slice hard-pause --view to-be --budget %d"},
+				"rhiza tree hard-pause", "rhiza slice hard-pause --view to-be --budget %d"},
 			{"node json", node, Options{DefaultView: "to-be", JSON: true},
-				"genesis tree hard-pause", "genesis slice hard-pause --budget %d"},
+				"rhiza tree hard-pause", "rhiza slice hard-pause --budget %d"},
 			{"change default view", change, Options{DefaultView: "to-be"},
-				"genesis slice --change 01JB7A --budget %d", "genesis slice --change 01JB7A --budget %d"},
+				"rhiza slice --change 01JB7A --budget %d", "rhiza slice --change 01JB7A --budget %d"},
 			{"change other view", change, Options{DefaultView: "what-if"},
-				"genesis slice --change 01JB7A --view to-be --budget %d", "genesis slice --change 01JB7A --view to-be --budget %d"},
+				"rhiza slice --change 01JB7A --view to-be --budget %d", "rhiza slice --change 01JB7A --view to-be --budget %d"},
 			{"ref given", node, Options{DefaultView: "to-be", Ref: "cap/hard-pause"},
-				"genesis tree hard-pause", "genesis slice cap/hard-pause --budget %d"},
+				"rhiza tree hard-pause", "rhiza slice cap/hard-pause --budget %d"},
 			{"quoted", odd, Options{DefaultView: "to-be"},
-				`genesis tree 'it'\''s odd'`, `genesis slice 'it'\''s odd' --budget %d`},
+				`rhiza tree 'it'\''s odd'`, `rhiza slice 'it'\''s odd' --budget %d`},
 		}
 		for _, c := range cases {
 			t.Run(c.name, func(t *testing.T) {
@@ -284,7 +284,7 @@ func TestFit(t *testing.T) {
 		if !strings.HasSuffix(out, want) {
 			t.Errorf("footer:\n%s\nwant suffix %q", out, want)
 		}
-		if !strings.Contains(out, "\n---\nOmitted: context 4 — `genesis slice hard-pause --budget ") {
+		if !strings.Contains(out, "\n---\nOmitted: context 4 — `rhiza slice hard-pause --budget ") {
 			t.Errorf("no context line in footer:\n%s", out)
 		}
 		if res.Tokens != Tokens(res.Bytes) {

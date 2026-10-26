@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // writeCtx is an initialized repository with a current intention change
@@ -459,7 +459,7 @@ func TestSet(t *testing.T) {
 		} {
 			_, err := callOp(t, ctx, name, req)
 			wantExit(t, err, 3)
-			wantNext(t, err, "genesis check")
+			wantNext(t, err, "rhiza check")
 			if !strings.Contains(err.Error(), "conflicting changes") {
 				t.Errorf("%s message = %q", name, err)
 			}
@@ -679,7 +679,7 @@ func TestLinkCycle(t *testing.T) {
 		t.Helper()
 		wantExit(t, err, 3)
 		e := AsError(err)
-		if !strings.Contains(e.Message, "would close a loop") || e.Next != "genesis change show "+shortID(to) {
+		if !strings.Contains(e.Message, "would close a loop") || e.Next != "rhiza change show "+shortID(to) {
 			t.Errorf("err = %q, next %q", e.Message, e.Next)
 		}
 	}

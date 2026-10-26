@@ -1,0 +1,77 @@
+# --with-children also moves every node the source creates below a named
+# one, transitively. Without it the children stay in the source, which then
+# depends on the target. A source left with no ops is not withdrawn: it
+# keeps its state and the carve says how to withdraw it.
+
+exec rhiza init
+
+# A creates root > mid > tip and is accepted.
+exec rhiza change new A
+stdout 'change set 01M5PWGEF85Y185JZ2ZGCNH40N '
+exec rhiza add capability root
+stdout '^- node 01M5PWGJC82P7YGZTWYFFZ0VJG \(root\)$'
+exec rhiza add capability mid --parent root
+stdout '^- node 01M5PWGKBGYFZMTH8Y8AF1G8GN \(mid\)$'
+exec rhiza add capability tip --parent mid
+stdout '^- node 01M5PWGMARA1WR6BD0MEF4Y76P \(tip\)$'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza change new B
+stdout 'change set 01M5PWGQ8GB4618G4RH2TV0ZAH '
+
+# Without --with-children only root would move; mid stays and rests on it,
+# so A would depend on B.
+exec rhiza carve root --from 01M5PWGEF85Y185JZ2ZGCNH40N --to 01M5PWGQ8GB4618G4RH2TV0ZAH --dry-run --json
+stdout '"nodes": \[\n    "01M5PWGJC82P7YGZTWYFFZ0VJG"\n  \]'
+stdout '"depends_on": "[0-9A-Z]{26}"'
+! stdout '"next"'
+
+# With it, the grandchild tip moves too and A is left empty.
+exec rhiza carve root --from 01M5PWGEF85Y185JZ2ZGCNH40N --to 01M5PWGQ8GB4618G4RH2TV0ZAH --with-children
+stdout '^Carved 3 node\(s\) from 01M5PWGEF85Y185JZ2ZGCNH40N into 01M5PWGQ8GB4618G4RH2TV0ZAH '
+stdout '^- node 01M5PWGJC82P7YGZTWYFFZ0VJG \(root\)$'
+stdout '^- node 01M5PWGKBGYFZMTH8Y8AF1G8GN \(mid\)$'
+stdout '^- node 01M5PWGMARA1WR6BD0MEF4Y76P \(tip\)$'
+stdout '^Moved 3 op\(s\) under new op IDs\.$'
+! stdout 'now depends on'
+stdout '^01M5PWGEF85Y18 has no ops left\.$'
+stdout '^next: rhiza withdraw --change 01M5PWGEF85Y18$'
+fold-ok
+
+# A is still accepted, with no ops; nothing was withdrawn.
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- State: accepted$'
+stdout '^No operations yet\.$'
+! exec grep -rl '"type": "withdraw"' .rhiza/log
+exec rhiza change show 01M5PWGQ8GB4618G4RH2TV0ZAH
+stdout '^- node.create 01M5PWGJC82P7YGZTWYFFZ0VJG \(root\)$'
+stdout '^- node.create 01M5PWGKBGYFZMTH8Y8AF1G8GN \(mid\)$'
+stdout '^- node.create 01M5PWGMARA1WR6BD0MEF4Y76P \(tip\)$'
+exec rhiza show tip --change 01M5PWGQ8GB4618G4RH2TV0ZAH
+stdout '^- Path: root / mid$'
+
+# The emptied source's next in --json too: C creates one node and gives it
+# away whole.
+exec rhiza change new C
+stdout 'change set 01M5PWGT68X5XKB54XFQMHKA0A '
+exec rhiza add capability lone
+exec rhiza carve lone --from 01M5PWGT68X5XKB54XFQMHKA0A --to 01M5PWGQ8GB4618G4RH2TV0ZAH --json
+stdout '"next": "rhiza withdraw --change 01M5PWGT68X5XK"'
+
+# Without --with-children, for real: D creates p > c and moves p only. c
+# stays in D, still under p, and D now depends on B.
+exec rhiza change new D
+stdout 'change set 01M5PWGY38TY4APFS7ZR0Q10WA '
+exec rhiza add capability p
+exec rhiza add capability c --parent p
+exec rhiza carve p --from 01M5PWGY38TY4APFS7ZR0Q10WA --to 01M5PWGQ8GB4618G4RH2TV0ZAH
+stdout '^Carved 1 node\(s\) '
+stdout ' now depends on 01M5PWGQ8GB461 \(link [0-9A-Z]{26}\): ops left there rest on what moved\.$'
+! stdout 'next:'
+exec rhiza change show
+stdout '^- node.create [0-9A-Z]{26} \(c\)$'
+stdout '^- link.create [0-9A-Z]{26}$'
+! stdout '\(p\)'
+exec rhiza show c
+stdout '^- Path: p$'
+fold-ok

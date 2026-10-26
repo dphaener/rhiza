@@ -1,4 +1,4 @@
-module github.com/dphaener/genesis
+module github.com/dphaener/rhiza
 
 go 1.25.14
 

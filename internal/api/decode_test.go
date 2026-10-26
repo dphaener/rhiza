@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/rhiza/internal/id"
 )
 
 type decodeRequest struct {

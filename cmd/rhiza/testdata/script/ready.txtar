@@ -1,0 +1,97 @@
+# ready says which change sets can be worked on now and why the others
+# can't. A change set's serves and depends-on links are written inside it
+# (D7), naming the change set by its ID.
+
+exec rhiza init
+
+# Nothing in flight.
+exec rhiza ready
+stdout '^Nothing is ready: no change set is in flight\.$'
+stdout '^next: rhiza change new "<intent>"$'
+
+exec rhiza add intent fast --record
+exec rhiza add capability store --record
+
+# A serves fast, from inside A; a draft is not ready.
+exec rhiza change new A
+stdout 'change set 01M5PWGQ8GB4618G4RH2TV0ZAH '
+exec rhiza link 01M5PWGQ8GB4618G4RH2TV0ZAH serves fast
+fold-ok
+exec rhiza ready
+stdout '^Nothing is ready\.$'
+stdout '^01M5PWGQ8GB461 A: not accepted: draft$'
+stdout '^- \[draft\] 01M5PWGQ8GB461 A$'
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# B depends on A, from inside B, and touches store.
+exec rhiza change new B
+stdout 'change set 01M5PWGV5G8W2RPXNBFMN118QF '
+exec rhiza link 01M5PWGV5G8W2RPXNBFMN118QF depends-on 01M5PWGQ8GB4618G4RH2TV0ZAH
+fold-ok
+exec rhiza set store --field statement=Kept
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# A is next; B waits for A to land. The current change set (B) does not
+# change the default view: it is to-be (D17).
+exec rhiza ready
+stdout '^next: 01M5PWGQ8GB461 A$'
+stdout '^## Ready$'
+stdout '^- 01M5PWGQ8GB461 A$'
+stdout '^## Not ready$'
+stdout '^- \[accepted\] 01M5PWGV5G8W2R B$'
+stdout '^  - depends on 01M5PWGQ8GB461 \(accepted\)$'
+exec rhiza ready --json
+stdout '"next": "01M5PWGQ8GB4618G4RH2TV0ZAH"'
+stdout '"view": "to-be"'
+stdout '"depends on 01M5PWGQ8GB461 \(accepted\)"'
+
+# Land A: B is next.
+exec rhiza land --change 01M5PWGQ8GB4618G4RH2TV0ZAH
+exec rhiza ready
+stdout '^next: 01M5PWGV5G8W2R B$'
+! stdout 'Not ready'
+
+# An open question blocking a node B touches stops it.
+exec rhiza add question which-disk --record
+exec rhiza link which-disk blocks store --record
+exec rhiza ready
+stdout '^Nothing is ready\.$'
+stdout '^01M5PWGV5G8W2R B: blocked by question which-disk on store$'
+exec rhiza ready --json
+! stdout '"next"'
+stdout '"ready": false'
+stdout '"reasons": \[\n *"blocked by question which-disk on store"'
+
+# Answered by a decision, it no longer blocks.
+exec rhiza add decision ssd --record
+exec rhiza link ssd answers which-disk --record
+exec rhiza ready
+stdout '^next: 01M5PWGV5G8W2R B$'
+
+# --view overrides the default; api call prints the same bytes as --json.
+exec rhiza ready --view as-is --json
+stdout '"view": "as-is"'
+cp stdout ready.json
+exec rhiza api call ready '{"view":"as-is"}'
+cmp stdout ready.json
+! exec rhiza ready --view what-if:ZZZZ
+stderr 'no change set'
+
+
+# Milestone work comes first: Q serves a milestone, so it is next though
+# B and P, in the backlog, are ready and have smaller IDs.
+exec rhiza add intent ms --field milestone=2 --record
+exec rhiza change new P
+stdout 'change set 01M5PWHFNRPA4JTNZM0B6MMB0H '
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza change new Q
+stdout 'change set 01M5PWHJKGRCC1XHQD183TPV5R '
+exec rhiza link 01M5PWHJKGRCC1XHQD183TPV5R serves ms
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza ready
+stdout '^next: 01M5PWHJKGRCC1 Q$'
+stdout '^- 01M5PWHFNRPA4J P$'

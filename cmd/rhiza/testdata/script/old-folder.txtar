@@ -1,0 +1,76 @@
+# A repo that still keeps its model in .genesis/ fails clearly, with the
+# command that renames it. Nothing reads .genesis/ as a repository.
+
+mkdir repo
+cd repo
+mkdir .genesis/log
+exec sh -c 'echo {} > .genesis/repo.json'
+mkdir src
+
+# Every command that needs a repo fails with a conflict, exit 3.
+! exec rhiza status
+stderr '^rhiza: this repo keeps its model in \.genesis/, the folder''s name before the rename to Rhiza; rename it with: git mv \.genesis \.rhiza$'
+stderr '^next: git mv \.genesis \.rhiza$'
+! stdout .
+exec sh -c 'rhiza status 2>/dev/null; echo exit $?'
+stdout '^exit 3$'
+! exec rhiza status --json
+stdout '"code": "conflict"'
+stdout '"next": "git mv \.genesis \.rhiza"'
+! exec rhiza render
+stderr '^next: git mv \.genesis \.rhiza$'
+! exec rhiza check
+stderr '\.genesis/'
+
+# The same from a subfolder.
+cd src
+! exec rhiza status
+stderr '^next: git mv \.genesis \.rhiza$'
+exec sh -c 'rhiza status 2>/dev/null; echo exit $?'
+stdout '^exit 3$'
+! exists .rhiza
+cd ..
+
+# init refuses with the same error and creates nothing.
+! exec rhiza init
+stderr '^next: git mv \.genesis \.rhiza$'
+exec sh -c 'rhiza init 2>/dev/null; echo exit $?'
+stdout '^exit 3$'
+! exists .rhiza
+
+# The hook prints the one-line notice and exits 0; --json stays {}.
+exec rhiza status --hook
+stdout '^This repo keeps its model in \.genesis/, .* git mv \.genesis \.rhiza$'
+! stderr .
+exec sh -c 'rhiza status --hook >/dev/null; echo exit $?'
+stdout '^exit 0$'
+exec rhiza status --hook --json
+stdout '\A\{\}\n\z'
+
+# Commands that need no repo still work.
+exec rhiza version
+exec rhiza describe
+exec rhiza guide
+
+# Where both folders exist, .rhiza/ is used and no error is raised.
+mkdir ../both
+cd ../both
+exec rhiza init
+mkdir .genesis
+exec rhiza status
+stdout '^rhiza dev$'
+! stderr .
+! exec rhiza init
+stderr 'already exists'
+cd ..
+
+# After the rename the command works.
+mkdir moved
+cd moved
+exec rhiza init
+exec mv .rhiza .genesis
+! exec rhiza status
+stderr '^next: git mv \.genesis \.rhiza$'
+exec mv .genesis .rhiza
+exec rhiza status
+stdout '^rhiza dev$'

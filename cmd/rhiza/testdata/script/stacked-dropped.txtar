@@ -1,0 +1,65 @@
+# A dropped dependency. B depends on A and writes on A's node; when A is
+# withdrawn (or rejected) B's op rests on work that will never land: check
+# warns on it, ready gives it as a reason, land refuses B. Superseded is the
+# third dropped state, but no command supersedes a change set yet, so it is
+# covered only by the package tests.
+
+exec rhiza init
+
+# A adds base; B depends on A and sets a field on base.
+exec rhiza change new A
+stdout 'change set 01M5PWGEF85Y185JZ2ZGCNH40N '
+exec rhiza add capability base --field statement=Base
+exec rhiza change new B
+stdout 'change set 01M5PWGKBGYFZMTH8Y8AF1G8GN '
+exec rhiza link 01M5PWGKBGYFZMTH8Y8AF1G8GN depends-on 01M5PWGEF85Y185JZ2ZGCNH40N
+exec rhiza set base --field owner=b
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+! stdout 'rests on'
+
+# Withdraw A: B's update rests on a withdrawn change set.
+exec rhiza withdraw --change 01M5PWGEF85Y185JZ2ZGCNH40N
+fold-ok
+exec rhiza check
+stdout '^ok$'
+stdout '^warn in-flight change set 01M5PWGKBGYFZMTH8Y8AF1G8GN, op 01M5PWGNA0MVZ1H5AXG5VQ0BY9: op rests on change set 01M5PWGEF85Y185JZ2ZGCNH40N \(withdrawn\)$'
+stdout '^  next: rhiza change show 01M5PWGKBGYFZMTH8Y8AF1G8GN$'
+exec rhiza check --json
+stdout '"message": "op rests on change set 01M5PWGEF85Y185JZ2ZGCNH40N \(withdrawn\)",\n +"next": "rhiza change show 01M5PWGKBGYFZMTH8Y8AF1G8GN",\n +"op": "01M5PWGNA0MVZ1H5AXG5VQ0BY9",\n +"rule": "in-flight",\n +"severity": "warn"'
+stdout '"ok": true'
+
+# ready: B depends on a withdrawn change set and rests on it.
+exec rhiza ready
+stdout '^Nothing is ready\.$'
+stdout '^  - rests on 01M5PWGEF85Y18 \(withdrawn\): 1 operations$'
+exec rhiza ready --json
+stdout '"reasons": \[\n +"depends on 01M5PWGEF85Y18 \(withdrawn\)",\n +"rests on 01M5PWGEF85Y18 \(withdrawn\): 1 operations"\n +\]'
+
+# land refuses B: its dependency will never land.
+! exec rhiza land --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
+stderr '^rhiza: cannot land change set 01M5PWGKBGYFZMTH8Y8AF1G8GN: it depends on 01M5PWGEF85Y185JZ2ZGCNH40N \(withdrawn\)$'
+stderr '^next: rhiza change show 01M5PWGEF85Y18$'
+
+# Rejected: C adds core and is proposed; D depends on C and sets core; C is
+# rejected.
+exec rhiza change new C
+stdout 'change set 01M5PWGS702G3VYA781BNZ0K7Q '
+exec rhiza add capability core --field statement=Core
+exec rhiza propose
+exec rhiza change new D
+stdout 'change set 01M5PWGW4RMJ580CPWEPP3158J '
+exec rhiza link 01M5PWGW4RMJ580CPWEPP3158J depends-on 01M5PWGS702G3VYA781BNZ0K7Q
+exec rhiza set core --field owner=d
+exec rhiza check
+! stdout 'rests on change set 01M5PWGS702G3VYA781BNZ0K7Q'
+exec rhiza reject --change 01M5PWGS702G3VYA781BNZ0K7Q --rule review --reason no
+fold-ok
+exec rhiza check
+stdout '^ok$'
+stdout '^warn in-flight change set 01M5PWGW4RMJ580CPWEPP3158J, op 01M5PWGY38TY4APFS7ZR0Q10WA: op rests on change set 01M5PWGS702G3VYA781BNZ0K7Q \(rejected\)$'
+exec rhiza ready --json
+stdout '"rests on 01M5PWGS702G3V \(rejected\): 1 operations"'

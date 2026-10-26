@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dphaener/genesis/internal/canon"
-	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/id"
 	"pgregory.net/rapid"
 )
 

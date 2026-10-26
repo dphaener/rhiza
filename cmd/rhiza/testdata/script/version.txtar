@@ -1,0 +1,4 @@
+# rhiza version prints its name and a non-empty version on stdout.
+exec rhiza version
+stdout '\Arhiza \S+\n\z'
+! stderr .

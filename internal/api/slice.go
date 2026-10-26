@@ -25,11 +25,11 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/index"
-	gmodel "github.com/dphaener/genesis/internal/model"
-	"github.com/dphaener/genesis/internal/slice"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/index"
+	gmodel "github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/slice"
 )
 
 // defaultSliceBudget is the token budget when the request gives none.
@@ -98,10 +98,10 @@ func init() {
 }
 
 // sliceNext is the next command for a change slice with no change set.
-const sliceNext = "genesis slice <ref>"
+const sliceNext = "rhiza slice <ref>"
 
 // openIndex opens the index of the worktree at root, caught up with its
-// log. No repository is not_found with next "genesis init". The caller
+// log. No repository is not_found with next "rhiza init". The caller
 // closes it.
 func openIndex(root string) (*index.Index, error) {
 	if _, err := openStore(root); err != nil {
@@ -127,10 +127,10 @@ func runSlice(ctx *Ctx, req any) (any, error) {
 	case budget == 0:
 		budget = defaultSliceBudget
 	case budget < 0:
-		return nil, Usagef("budget must be at least 1, not %d", budget).WithNext("genesis describe slice")
+		return nil, Usagef("budget must be at least 1, not %d", budget).WithNext("rhiza describe slice")
 	}
 	if r.View != "" && !slices.Contains([]string{slice.ViewAsIs, slice.ViewToBe, slice.ViewWhatIf}, r.View) {
-		return nil, Usagef("unknown view %q: want as-is, to-be or what-if", r.View).WithNext("genesis describe slice")
+		return nil, Usagef("unknown view %q: want as-is, to-be or what-if", r.View).WithNext("rhiza describe slice")
 	}
 	w, err := openCtxWorkspace(ctx)
 	if err != nil {
@@ -283,7 +283,7 @@ func refError(err error, ref, view string) error {
 	switch {
 	case errors.Is(err, index.ErrAmbiguous):
 		return Usagef("%s", strings.TrimPrefix(err.Error(), index.ErrAmbiguous.Error()+": ")).
-			WithNext("genesis slice <id>")
+			WithNext("rhiza slice <id>")
 	case errors.Is(err, index.ErrNotFound), errors.Is(err, slice.ErrNotFound):
 		return NotFoundf("no node matches %q in the %s view", ref, view)
 	case errors.Is(err, slice.ErrRetired):

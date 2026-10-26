@@ -1,8 +1,8 @@
 package changeset
 
 import (
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // An Analysis answers DependsOn, Closure, Dependencies, RestsOn and Revised

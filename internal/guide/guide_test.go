@@ -41,11 +41,11 @@ func TestCaps(t *testing.T) {
 }
 
 func TestCapCatchesOversize(t *testing.T) {
-	g, _ := Lookup("genesis")
+	g, _ := Lookup("rhiza")
 	g.Body += strings.Repeat("x", 9000)
 	if err := checkCap(g); err == nil {
-		t.Fatalf("checkCap(genesis + 9000 bytes) = nil, want an error")
-	} else if !strings.Contains(err.Error(), "genesis") {
+		t.Fatalf("checkCap(rhiza + 9000 bytes) = nil, want an error")
+	} else if !strings.Contains(err.Error(), "rhiza") {
 		t.Fatalf("checkCap error %q does not name the text", err)
 	}
 	topic, _ := Lookup("apply")
@@ -64,7 +64,7 @@ func TestListOrder(t *testing.T) {
 	for _, tx := range List() {
 		names = append(names, tx.Name)
 	}
-	want := []string{"genesis", "scrub", "apply", "carving", "change-sets", "sources"}
+	want := []string{"rhiza", "scrub", "apply", "carving", "change-sets", "sources"}
 	if !slices.Equal(names, want) {
 		t.Fatalf("List names = %v, want %v", names, want)
 	}
@@ -102,14 +102,14 @@ func TestLookup(t *testing.T) {
 		}
 	}
 	g, ok := Lookup("")
-	if !ok || g.Name != "genesis" {
-		t.Errorf(`Lookup("") = %q, %v; want genesis`, g.Name, ok)
+	if !ok || g.Name != "rhiza" {
+		t.Errorf(`Lookup("") = %q, %v; want rhiza`, g.Name, ok)
 	}
 	if _, ok := Lookup("nope"); ok {
 		t.Errorf(`Lookup("nope") found a text`)
 	}
-	if _, ok := Lookup("genesis.md"); ok {
-		t.Errorf(`Lookup("genesis.md") found a text; names have no extension`)
+	if _, ok := Lookup("rhiza.md"); ok {
+		t.Errorf(`Lookup("rhiza.md") found a text; names have no extension`)
 	}
 }
 
@@ -146,7 +146,7 @@ func TestDescriptions(t *testing.T) {
 func TestList(t *testing.T) {
 	a := List()
 	a[0].Body = "changed"
-	if b, _ := Lookup("genesis"); b.Body == "changed" {
+	if b, _ := Lookup("rhiza"); b.Body == "changed" {
 		t.Fatalf("List returned the package's own slice")
 	}
 }

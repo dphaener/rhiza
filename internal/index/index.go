@@ -71,10 +71,10 @@
 // writes in one BEGIN IMMEDIATE transaction and re-lists the log once it
 // holds the lock, since another process may have caught up meanwhile. A
 // writer waits up to five seconds for the lock; a timeout is an error. The
-// index never writes, creates or deletes anything under .genesis.
+// index never writes, creates or deletes anything under .rhiza.
 //
 // The driver is modernc.org/sqlite, a translation of SQLite to pure Go: no
-// cgo, so Genesis stays one statically built binary.
+// cgo, so Rhiza stays one statically built binary.
 package index
 
 import (
@@ -91,7 +91,7 @@ import (
 
 	"modernc.org/sqlite"
 
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 // SchemaVersion is the schema this package writes, kept in PRAGMA
@@ -140,7 +140,7 @@ type stats struct {
 }
 
 // DefaultPath returns the index file for the worktree at root:
-// os.UserCacheDir()/genesis/index/<hex SHA-256 of root's absolute,
+// os.UserCacheDir()/rhiza/index/<hex SHA-256 of root's absolute,
 // symlink-resolved path>.db. root must exist.
 func DefaultPath(root string) (string, error) {
 	abs, err := filepath.Abs(root)
@@ -156,18 +156,18 @@ func DefaultPath(root string) (string, error) {
 		return "", fmt.Errorf("index path: %w", err)
 	}
 	sum := sha256.Sum256([]byte(resolved))
-	return filepath.Join(cache, "genesis", "index", hex.EncodeToString(sum[:])+".db"), nil
+	return filepath.Join(cache, "rhiza", "index", hex.EncodeToString(sum[:])+".db"), nil
 }
 
 // Open opens the index at dbPath for the worktree at root, creating,
 // rebuilding or catching it up as needed, and returns it fresh. Its folder
-// is created when missing. It reads root's .genesis folder and never
+// is created when missing. It reads root's .rhiza folder and never
 // writes there.
 func Open(root, dbPath string) (*Index, error) {
 	return open(dbPath, os.DirFS(filepath.Join(root, store.Dir)))
 }
 
-// open is Open over fsys, rooted at a .genesis folder.
+// open is Open over fsys, rooted at a .rhiza folder.
 func open(dbPath string, fsys fs.FS) (*Index, error) {
 	// Take the stats while the database opens. They come before any
 	// listing this open takes, which the slow path starts only once they

@@ -12,13 +12,13 @@ import (
 	"testing/fstest"
 	"time"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/model"
-	"github.com/dphaener/genesis/internal/op"
-	"github.com/dphaener/genesis/internal/render"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/render"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 const repoJSON = "{\n  \"format\": 1,\n  \"id\": \"01M5N90F40GQXYEAV0CGM90155\",\n  \"remotes\": []\n}\n"
@@ -33,7 +33,7 @@ func fid(n int) id.ID {
 
 var actor = fid(9999)
 
-// repo builds a .genesis folder in memory, entry by entry, through
+// repo builds a .rhiza folder in memory, entry by entry, through
 // entry.Encode, so tests read it with store.ReadLog as check's caller will.
 type repo struct {
 	t     *testing.T
@@ -186,7 +186,7 @@ func TestRun(t *testing.T) {
 			r := newRepo(t)
 			clean(r)
 			r.files["log/junk.txt"] = &fstest.MapFile{Data: []byte("x")}
-			return r.input(), []string{"fail log .genesis/log/junk.txt"}, func(t *testing.T, rep Report) {
+			return r.input(), []string{"fail log .rhiza/log/junk.txt"}, func(t *testing.T, rep Report) {
 				if !strings.Contains(rep.Findings[0].Message, "unexpected") {
 					t.Errorf("message %q", rep.Findings[0].Message)
 				}
@@ -197,7 +197,7 @@ func TestRun(t *testing.T) {
 			clean(r)
 			s := r.open(changeset.KindIntention, "Bad move")
 			bad := s.then(changeset.Accept{Rule: "owner"})
-			return r.input(), []string{"fail fold " + ".genesis/" + entryPath(s.id, bad)}, func(t *testing.T, rep Report) {
+			return r.input(), []string{"fail fold " + ".rhiza/" + entryPath(s.id, bad)}, func(t *testing.T, rep Report) {
 				f := rep.Findings[0]
 				if f.ChangeSet != s.id.String() || f.Entry != bad.String() || !strings.Contains(f.Message, "illegal lifecycle move") {
 					t.Errorf("finding %+v", f)
@@ -212,7 +212,7 @@ func TestRun(t *testing.T) {
 			o, n := r.next(), r.next()
 			s.add(changeset.Ops{Ops: []op.Op{mkNode(o, n, op.KindDecision, "a")}}, []id.ID{start})
 			later := s.add(changeset.Ops{Ops: []op.Op{mkNode(o, n, op.KindDecision, "b")}}, []id.ID{start})
-			return r.input(), []string{"warn fold .genesis/" + entryPath(s.id, later)}, nil
+			return r.input(), []string{"warn fold .rhiza/" + entryPath(s.id, later)}, nil
 		}},
 		{"model", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
 			r := newRepo(t)
@@ -228,7 +228,7 @@ func TestRun(t *testing.T) {
 				if f.ChangeSet != c.id.String() || f.Op != o3.String() || !strings.Contains(f.Message, "conflict") {
 					t.Errorf("finding %+v", f)
 				}
-				want := fmt.Sprintf(`genesis change new "Resolve the conflict on %s"`, n)
+				want := fmt.Sprintf(`rhiza change new "Resolve the conflict on %s"`, n)
 				if f.Next != want {
 					t.Errorf("next %q, want %q", f.Next, want)
 				}
@@ -285,8 +285,8 @@ func TestRun(t *testing.T) {
 			clean(r)
 			in := r.input()
 			in.Rendered.(fstest.MapFS)["index.md"] = &fstest.MapFile{Data: []byte("# Old\n")}
-			return in, []string{"fail render .genesis/rendered/index.md"}, func(t *testing.T, rep Report) {
-				if rep.Findings[0].Next != "genesis render" {
+			return in, []string{"fail render .rhiza/rendered/index.md"}, func(t *testing.T, rep Report) {
+				if rep.Findings[0].Next != "rhiza render" {
 					t.Errorf("next %q", rep.Findings[0].Next)
 				}
 			}
@@ -296,7 +296,7 @@ func TestRun(t *testing.T) {
 			clean(r)
 			in := r.input()
 			delete(in.Rendered.(fstest.MapFS), "capability/thing.md")
-			return in, []string{"fail render .genesis/rendered/capability/thing.md"}, nil
+			return in, []string{"fail render .rhiza/rendered/capability/thing.md"}, nil
 		}},
 		{"render-extra", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
 			r := newRepo(t)
@@ -304,15 +304,15 @@ func TestRun(t *testing.T) {
 			in := r.input()
 			in.Rendered.(fstest.MapFS)[".DS_Store"] = &fstest.MapFile{Data: []byte("x")}
 			in.Rendered.(fstest.MapFS)["old/page.md"] = &fstest.MapFile{Data: []byte("x")}
-			return in, []string{"fail render .genesis/rendered/.DS_Store", "fail render .genesis/rendered/old/page.md"}, nil
+			return in, []string{"fail render .rhiza/rendered/.DS_Store", "fail render .rhiza/rendered/old/page.md"}, nil
 		}},
 		{"render-nil", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
 			r := newRepo(t)
 			clean(r)
 			in := r.input()
 			in.Rendered = nil
-			return in, []string{"fail render .genesis/rendered"}, func(t *testing.T, rep Report) {
-				if rep.Findings[0].Next != "genesis render" {
+			return in, []string{"fail render .rhiza/rendered"}, func(t *testing.T, rep Report) {
+				if rep.Findings[0].Next != "rhiza render" {
 					t.Errorf("next %q", rep.Findings[0].Next)
 				}
 			}
@@ -321,18 +321,23 @@ func TestRun(t *testing.T) {
 			r := newRepo(t)
 			clean(r)
 			in := r.input()
-			in.Base = "abc123"
-			in.Changes = []Change{
-				{Status: "M", Path: ".genesis/log/b/m.json"},
-				{Status: "A", Path: ".genesis/log/b/a.json"},
-				{Status: "D", Path: ".genesis/log/a/d.json"},
+			in.Rev = "abc123"
+			in.Base = []Entry{
+				{ID: "d", Path: ".rhiza/log/a/d.json", Blob: "b1"},
+				{ID: "m", Path: ".rhiza/log/b/m.json", Blob: "b2"},
+				{ID: "k", Path: ".rhiza/log/b/k.json", Blob: "b3"},
 			}
-			return in, []string{"fail append-only .genesis/log/a/d.json", "fail append-only .genesis/log/b/m.json"},
+			in.Current = []Entry{
+				{ID: "m", Path: ".rhiza/log/b/m.json", Blob: "b2-edited"},
+				{ID: "k", Path: ".rhiza/log/b/k.json", Blob: "b3"},
+				{ID: "a", Path: ".rhiza/log/b/a.json", Blob: "b4"},
+			}
+			return in, []string{"fail append-only .rhiza/log/a/d.json", "fail append-only .rhiza/log/b/m.json"},
 				func(t *testing.T, rep Report) {
 					if rep.Base != "abc123" {
 						t.Errorf("base %q", rep.Base)
 					}
-					if want := "git checkout abc123 -- .genesis/log/a/d.json"; rep.Findings[0].Next != want {
+					if want := "git checkout abc123 -- .rhiza/log/a/d.json"; rep.Findings[0].Next != want {
 						t.Errorf("next %q, want %q", rep.Findings[0].Next, want)
 					}
 				}
@@ -456,7 +461,7 @@ func TestRunCycle(t *testing.T) {
 			!strings.Contains(f.Message, a.id.String()) || !strings.Contains(f.Message, b.id.String()) {
 			t.Errorf("finding %+v", f)
 		}
-		if want := "genesis change show " + a.id.String(); f.Next != want {
+		if want := "rhiza change show " + a.id.String(); f.Next != want {
 			t.Errorf("next %q, want %q", f.Next, want)
 		}
 		if rep.OK {
@@ -550,7 +555,7 @@ func TestRunRestsOn(t *testing.T) {
 				!strings.Contains(f.Message, a.id.String()) || !strings.Contains(f.Message, string(c.state)) {
 				t.Errorf("finding %+v", f)
 			}
-			if want := "genesis change show " + b.id.String(); f.Next != want {
+			if want := "rhiza change show " + b.id.String(); f.Next != want {
 				t.Errorf("next %q, want %q", f.Next, want)
 			}
 		})
@@ -599,11 +604,105 @@ func TestRunRestsOn(t *testing.T) {
 		if f.Severity != SeverityWarn || f.ChangeSet != b.id.String() || f.Op != b1.String() {
 			t.Errorf("finding %+v", f)
 		}
-		if want := fmt.Sprintf("genesis slice --change %s --view what-if", b.id); f.Next != want {
+		if want := fmt.Sprintf("rhiza slice --change %s --view what-if", b.id); f.Next != want {
 			t.Errorf("next %q, want %q", f.Next, want)
 		}
 		if !rep.OK {
 			t.Errorf("not OK on warnings: %+v", rep.Findings)
 		}
 	})
+}
+
+// appendOnly runs the append-only rule alone on base and current entries at
+// base revision "abc".
+func appendOnly(base, current []Entry) []Finding {
+	c := checker{in: Input{Rev: "abc", Base: base, Current: current}}
+	c.appendOnly()
+	return c.findings
+}
+
+func TestAppendOnlyIdentity(t *testing.T) {
+	const (
+		old = ".old/log/cs1/e1.json"
+		at  = ".rhiza/log/cs1/e1.json"
+	)
+	for _, c := range []struct {
+		name          string
+		base, current []Entry
+		want          []Finding
+	}{
+		{name: "Unchanged",
+			base:    []Entry{{ID: "e1", Path: at, Blob: "x"}},
+			current: []Entry{{ID: "e1", Path: at, Blob: "x"}}},
+		{name: "MovedFolderPasses",
+			base:    []Entry{{ID: "e1", Path: old, Blob: "x"}, {ID: "e2", Path: ".old/log/cs1/e2.json", Blob: "y"}},
+			current: []Entry{{ID: "e1", Path: at, Blob: "x"}, {ID: "e2", Path: ".rhiza/log/cs1/e2.json", Blob: "y"}}},
+		{name: "OtherChangeSetFolderPasses",
+			base:    []Entry{{ID: "e1", Path: at, Blob: "x"}},
+			current: []Entry{{ID: "e1", Path: ".rhiza/log/cs2/e1.json", Blob: "x"}}},
+		{name: "AddedPasses",
+			base:    []Entry{{ID: "e1", Path: at, Blob: "x"}},
+			current: []Entry{{ID: "e1", Path: at, Blob: "x"}, {ID: "e9", Path: ".rhiza/log/cs1/e9.json", Blob: "z"}}},
+		{name: "OneCopyWithSameBytesPasses",
+			base:    []Entry{{ID: "e1", Path: at, Blob: "x"}},
+			current: []Entry{{ID: "e1", Path: at, Blob: "edited"}, {ID: "e1", Path: ".rhiza/log/cs2/e1.json", Blob: "x"}}},
+		{name: "EditedFails",
+			base:    []Entry{{ID: "e1", Path: at, Blob: "x"}},
+			current: []Entry{{ID: "e1", Path: at, Blob: "edited"}},
+			want: []Finding{{Severity: SeverityFail, Rule: RuleAppendOnly, Path: at, Entry: "e1",
+				Message: "log entry e1 modified since the base; entries may only be added",
+				Next:    "git checkout abc -- " + at}}},
+		{name: "MovedAndEditedFails",
+			base:    []Entry{{ID: "e1", Path: old, Blob: "x"}},
+			current: []Entry{{ID: "e1", Path: at, Blob: "edited"}},
+			want: []Finding{{Severity: SeverityFail, Rule: RuleAppendOnly, Path: at, Entry: "e1",
+				Message: "log entry e1 modified since the base, where it was " + old + "; entries may only be added",
+				Next:    "git checkout abc -- " + old + " && git mv -f " + old + " " + at}}},
+		{name: "MovedWithinStoreAndEditedFails",
+			base:    []Entry{{ID: "e1", Path: at, Blob: "x"}},
+			current: []Entry{{ID: "e1", Path: ".rhiza/log/cs2/e1.json", Blob: "edited"}},
+			want: []Finding{{Severity: SeverityFail, Rule: RuleAppendOnly, Path: ".rhiza/log/cs2/e1.json", Entry: "e1",
+				Message: "log entry e1 modified since the base, where it was " + at + "; entries may only be added",
+				Next:    "git checkout abc -- " + at}}},
+		{name: "EditedPrefersBasePath",
+			base: []Entry{{ID: "e1", Path: ".rhiza/log/cs2/e1.json", Blob: "x"}},
+			current: []Entry{{ID: "e1", Path: ".rhiza/log/cs1/e1.json", Blob: "p"},
+				{ID: "e1", Path: ".rhiza/log/cs2/e1.json", Blob: "q"}},
+			want: []Finding{{Severity: SeverityFail, Rule: RuleAppendOnly, Path: ".rhiza/log/cs2/e1.json", Entry: "e1",
+				Message: "log entry e1 modified since the base; entries may only be added",
+				Next:    "git checkout abc -- .rhiza/log/cs2/e1.json"}}},
+		{name: "DeletedFails",
+			base: []Entry{{ID: "e1", Path: at, Blob: "x"}},
+			want: []Finding{{Severity: SeverityFail, Rule: RuleAppendOnly, Path: at, Entry: "e1",
+				Message: "log entry e1 deleted since the base; entries may only be added",
+				Next:    "git checkout abc -- " + at}}},
+		{name: "DeletedFromOldFolderFails",
+			base:    []Entry{{ID: "e1", Path: old, Blob: "x"}},
+			current: []Entry{{ID: "e2", Path: ".rhiza/log/cs1/e2.json", Blob: "x"}},
+			want: []Finding{{Severity: SeverityFail, Rule: RuleAppendOnly, Path: old, Entry: "e1",
+				Message: "log entry e1 deleted since the base; entries may only be added",
+				Next:    "git checkout abc -- " + old + " && git mv " + old + " " + at}}},
+		{name: "SameBaseEntryTwiceOnce",
+			base: []Entry{{ID: "e1", Path: at, Blob: "x"}, {ID: "e1", Path: at, Blob: "x"}},
+			want: []Finding{{Severity: SeverityFail, Rule: RuleAppendOnly, Path: at, Entry: "e1",
+				Message: "log entry e1 deleted since the base; entries may only be added",
+				Next:    "git checkout abc -- " + at}}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			got := appendOnly(c.base, c.current)
+			if !reflect.DeepEqual(got, c.want) {
+				t.Errorf("findings\n got %+v\nwant %+v", got, c.want)
+			}
+		})
+	}
+}
+
+// TestAppendOnlyNoRev reports a deleted entry without a Next when there is
+// no base revision to restore it from.
+func TestAppendOnlyNoRev(t *testing.T) {
+	rep := Run(Input{Base: []Entry{{ID: "e1", Path: ".rhiza/log/cs/e1.json", Blob: "x"}}})
+	f := ofRule(rep, RuleAppendOnly)
+	if len(f) != 1 || f[0].Next != "" || rep.OK {
+		t.Errorf("findings %+v", rep.Findings)
+	}
 }

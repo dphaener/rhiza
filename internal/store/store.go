@@ -1,8 +1,8 @@
-// Package store keeps a Genesis repository on disk.
+// Package store keeps a Rhiza repository on disk.
 //
-// A repository lives in a .genesis folder at the root of a project:
+// A repository lives in a .rhiza folder at the root of a project:
 //
-//	.genesis/
+//	.rhiza/
 //	  repo.json                     {"format": 1, "id": "<ULID>", "remotes": []}
 //	  log/
 //	    <change_set>/
@@ -30,15 +30,19 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/canon"
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
 )
 
 // The on-disk layout, relative to the project root.
 const (
 	// Dir is the repository folder at the project root.
-	Dir = ".genesis"
+	Dir = ".rhiza"
+	// OldDir is the folder's name before the rename to Rhiza. It is never
+	// read as a repository: it only lets Open and Init tell the user to
+	// rename it.
+	OldDir = ".genesis"
 	// RepoFile is the repository description inside Dir.
 	RepoFile = "repo.json"
 	// LogDir holds one folder per change set inside Dir.
@@ -51,6 +55,9 @@ const FormatVersion = 1
 var (
 	// ErrExists is wrapped by Init's error when the root already has a Dir.
 	ErrExists = errors.New("store: repository already exists")
+	// ErrOldFolder is wrapped by Open's and Init's error when the root has an
+	// OldDir folder and no Dir.
+	ErrOldFolder = errors.New("store: repository is in the old folder")
 	// ErrNotFound is wrapped by Open's error when there is no Dir or RepoFile.
 	ErrNotFound = errors.New("store: no repository")
 	// ErrInvalid is wrapped by Open's error when repo.json is not a valid
@@ -120,7 +127,7 @@ func decodeRepo(data []byte) (Repo, error) {
 		return Repo{}, invalid("format", "not an integer")
 	}
 	if f > FormatVersion {
-		return Repo{}, fmt.Errorf("%w: field %q: %d, this Genesis reads %d", ErrNewerFormat, "format", f, FormatVersion)
+		return Repo{}, fmt.Errorf("%w: field %q: %d, this Rhiza reads %d", ErrNewerFormat, "format", f, FormatVersion)
 	}
 	if f != FormatVersion {
 		return Repo{}, invalid("format", "%d, want %d", f, FormatVersion)
@@ -196,10 +203,20 @@ func (s *Store) Root() string { return s.root }
 // Repo returns the repository description read from repo.json.
 func (s *Store) Repo() Repo { return s.repo }
 
-// dir returns the path of the .genesis folder.
+// dir returns the path of the .rhiza folder.
 func (s *Store) dir() string { return filepath.Join(s.root, Dir) }
 
-// logDir returns the path of the .genesis/log folder.
+// oldFolder reports whether the root has an OldDir folder and nothing at
+// Dir. Where both exist, Dir wins.
+func (s *Store) oldFolder() bool {
+	if _, err := os.Lstat(s.dir()); err == nil || !errors.Is(err, fs.ErrNotExist) {
+		return false
+	}
+	fi, err := os.Stat(filepath.Join(s.root, OldDir))
+	return err == nil && fi.IsDir()
+}
+
+// logDir returns the path of the .rhiza/log folder.
 func (s *Store) logDir() string { return filepath.Join(s.root, Dir, LogDir) }
 
 // Init creates a new repository in root, with an ID from gen and no
@@ -207,6 +224,9 @@ func (s *Store) logDir() string { return filepath.Join(s.root, Dir, LogDir) }
 // a Dir of any kind.
 func Init(root string, gen *id.Generator) (*Store, error) {
 	s := &Store{root: root}
+	if s.oldFolder() {
+		return nil, fmt.Errorf("%w: %s", ErrOldFolder, filepath.Join(root, OldDir))
+	}
 	// Mkdir, not MkdirAll: it fails atomically if anything is already
 	// there, so two Inits cannot both succeed.
 	if err := os.Mkdir(s.dir(), 0o755); err != nil {
@@ -237,12 +257,15 @@ func Init(root string, gen *id.Generator) (*Store, error) {
 }
 
 // Open opens the repository in root. It fails with ErrNotFound if there is
-// none, with ErrNewerFormat if repo.json is from a newer Genesis, and with
+// none, with ErrNewerFormat if repo.json is from a newer Rhiza, and with
 // ErrInvalid if Dir is not a folder, repo.json is not a regular file, or
 // repo.json is not exactly a canonical format-1 description.
 func Open(root string) (*Store, error) {
 	s := &Store{root: root}
 	p := filepath.Join(s.dir(), RepoFile)
+	if s.oldFolder() {
+		return nil, fmt.Errorf("%w: %s", ErrOldFolder, filepath.Join(root, OldDir))
+	}
 	if err := statKind(s.dir(), "a folder", fs.FileMode.IsDir); err != nil {
 		return nil, err
 	}

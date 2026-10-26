@@ -1,6 +1,6 @@
 # Carving
 
-`genesis carve <node>... --from <source> --to <target> [--with-children]` moves work from one
+`rhiza carve <node>... --from <source> --to <target> [--with-children]` moves work from one
 change set to another. It takes each node's create, every source op on it, and every source
 link starting or ending at it. `--with-children` adds the nodes created below, transitively.
 
@@ -8,7 +8,7 @@ link starting or ending at it. `--with-children` adds the nodes created below, t
 
 - Node and link IDs stay the same; the moved ops get new op IDs.
 - One entry in the source drops the moved ops, one in the target re-creates them, and each
-  names the other. `genesis log <node>` shows "Carved from X into Y" on both sides.
+  names the other. `rhiza log <node>` shows "Carved from X into Y" on both sides.
 - If ops left in the source, or in a change set that depends on it, rest on what moved
   (a child, a link), the source gains `depends-on` the target, so they keep seeing it. A
   carve that would close a loop is refused (exit 3).
@@ -21,11 +21,11 @@ link starting or ending at it. `--with-children` adds the nodes created below, t
 - The moved ops must apply in the target's view: a parent, link end or decision left behind,
   or a handle the target already holds, refuses the carve (exit 3).
 - Carve never withdraws. A source left with no ops gets
-  `next: genesis withdraw --change <source>` and keeps its state.
+  `next: rhiza withdraw --change <source>` and keeps its state.
 
 ## Known limit
 
 A change set that depends on the source keeps working when its ops rest only on moved node or
 link IDs. One whose op has a base on a moved op (an update written against the source's create)
-gets a base conflict after the carve, and `genesis check` names it. Clearing it is not yet
+gets a base conflict after the carve, and `rhiza check` names it. Clearing it is not yet
 supported by a plain command.

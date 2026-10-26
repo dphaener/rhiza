@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/rhiza/internal/id"
 )
 
 // lsCall calls ls with req.
@@ -89,7 +89,7 @@ func TestLsPaging(t *testing.T) {
 			t.Errorf("cursor %q, want %q", r.NextCursor, c)
 		}
 		h := human(t, r)
-		if !strings.Contains(h, "\nnext: genesis ls --retired --limit 3 --view to-be --cursor "+r.NextCursor+"\n") {
+		if !strings.Contains(h, "\nnext: rhiza ls --retired --limit 3 --view to-be --cursor "+r.NextCursor+"\n") {
 			t.Errorf("human next:\n%s", h)
 		}
 		cursor = r.NextCursor
@@ -112,11 +112,11 @@ func TestLsHuman(t *testing.T) {
 		lines[1] != "- capability disk "+r.Nodes[1].ID.String()+" [retired]" || strings.Contains(h, "next:") {
 		t.Errorf("human:\n%s", h)
 	}
-	if h := human(t, lsCall(t, ctx, `{"view":"to-be","kinds":["question"]}`)); h != "No nodes match.\n\nnext: genesis add\n" {
+	if h := human(t, lsCall(t, ctx, `{"view":"to-be","kinds":["question"]}`)); h != "No nodes match.\n\nnext: rhiza add\n" {
 		t.Errorf("empty human %q", h)
 	}
 	r = lsCall(t, ctx, `{"view":"to-be","kinds":["capability","intent"],"parent":"cache","limit":1}`)
-	if h := human(t, r); !strings.HasSuffix(h, "\nnext: genesis ls --kind capability --kind intent --parent cache --limit 1 --view to-be --cursor "+r.NextCursor+"\n") {
+	if h := human(t, r); !strings.HasSuffix(h, "\nnext: rhiza ls --kind capability --kind intent --parent cache --limit 1 --view to-be --cursor "+r.NextCursor+"\n") {
 		t.Errorf("next line:\n%s", h)
 	}
 }
@@ -133,11 +133,11 @@ func TestLsErrors(t *testing.T) {
 	} {
 		_, err := callOp(t, ctx, "ls", req)
 		wantExit(t, err, 2)
-		wantNext(t, err, "genesis describe ls")
+		wantNext(t, err, "rhiza describe ls")
 	}
 	_, err := callOp(t, ctx, "ls", `{"parent":"nosuch"}`)
 	wantExit(t, err, 4)
-	wantNext(t, err, "genesis ls")
+	wantNext(t, err, "rhiza ls")
 	_, err = callOp(t, ctx, "ls", `{"view":"what-if:ZZZZ"}`)
 	wantExit(t, err, 4)
 	if r := lsCall(t, ctx, `{"limit":1000}`); r.NextCursor != "" {

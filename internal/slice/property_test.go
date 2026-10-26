@@ -10,13 +10,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/index"
-	"github.com/dphaener/genesis/internal/model"
-	"github.com/dphaener/genesis/internal/op"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/index"
+	"github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/store"
 	"pgregory.net/rapid"
 )
 
@@ -211,7 +211,7 @@ func (g *propGen) drawOp() op.Op {
 	return g.create(len(g.nodes)+1, rapid.SampledFrom(propKinds).Draw(g.t, "kind"))
 }
 
-// genLog draws a log and returns its files by path under .genesis.
+// genLog draws a log and returns its files by path under .rhiza.
 func genLog(t *rapid.T) map[string][]byte {
 	g := &propGen{t: t, kinds: map[id.ID]op.Kind{}, ver: map[id.ID]id.ID{}, files: map[string][]byte{}}
 	n := rapid.IntRange(1, 4).Draw(t, "change sets")
