@@ -87,6 +87,12 @@ type Ctx struct {
 	// no environment); empty if unknown. Operations that need it and find
 	// it empty return a usage error.
 	Home string
+	// Getenv looks up a variable of the caller's environment, for adapters
+	// that locate an agent's own files, such as a session's transcript
+	// (Home answers HOME when set). Nil means no environment: an operation
+	// that needs it finds nothing there, and session.run captures no
+	// answers when Home is empty too.
+	Getenv func(key string) string
 	// IndexPath is the index database file for Root, given by the caller,
 	// since nothing here reads the environment or the user cache dir (the
 	// CLI uses index.DefaultPath). Empty is an error from any read.

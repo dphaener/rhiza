@@ -1,0 +1,30 @@
+{
+  "actor": "01M5WE3WT7VCAVK9YAE0AWYRRB",
+  "after": [
+    "01M5WE4M99KRT86SBZ946YN4A7"
+  ],
+  "at": "2026-10-26T15:44:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "An existing handle is skipped, so a repeated capture proposes nothing.",
+          "wording": "the building agent's choice in change set 7, no owner input"
+        },
+        "handle": "interview-idempotent",
+        "id": "01M5WE462KWM64NDPG41S4KRB3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WE462KWM64NDPG3Y4G3PQ2",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5SZJ2B3PSDRVX736ZQX0CAZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WE4MJPC9AZX8XEPRCHCB7H",
+  "type": "ops",
+  "v": 1
+}

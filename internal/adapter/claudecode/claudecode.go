@@ -3,8 +3,15 @@
 package claudecode
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
+	"path/filepath"
+	"runtime"
+	"sort"
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/adapter"
@@ -127,4 +134,240 @@ func (Adapter) HookStatus(event string, raw []byte) (adapter.HookReport, bool, e
 		return adapter.HookReport{}, false, fmt.Errorf("unknown hook event %q", event)
 	}
 	return r, true, nil
+}
+
+// TranscriptGlobs implements adapter.Adapter. Claude Code keeps a session's
+// transcript at <config>/projects/<encoded cwd>/<session-id>.jsonl, where
+// <config> is $CLAUDE_CONFIG_DIR when set and $HOME/.claude otherwise. Helper
+// agents' transcripts sit one level deeper, under <session-id>/subagents/,
+// so the patterns do not match them.
+func (Adapter) TranscriptGlobs(sessionID string, getenv func(string) string) []string {
+	if !safeSessionID(sessionID) || getenv == nil {
+		return nil
+	}
+	var globs []string
+	add := func(config string) {
+		globs = append(globs, filepath.Join(globEscape(config), "projects", "*", sessionID+".jsonl"))
+	}
+	if dir := getenv("CLAUDE_CONFIG_DIR"); dir != "" {
+		add(dir)
+	}
+	if home := getenv("HOME"); home != "" {
+		add(filepath.Join(home, ".claude"))
+	}
+	return globs
+}
+
+// safeSessionID reports whether id can stand as one literal path element in
+// a glob pattern: not empty, no separator, no parent reference and no
+// pattern syntax.
+func safeSessionID(id string) bool {
+	return id != "" && !strings.ContainsAny(id, `/\*?[`) && !strings.Contains(id, "..")
+}
+
+// globEscape quotes the pattern syntax in a literal directory so that
+// filepath.Glob matches it as written. Windows has no escape character in
+// patterns, so there the directory is used as is.
+func globEscape(dir string) string {
+	if runtime.GOOS == "windows" {
+		return dir
+	}
+	var b strings.Builder
+	for _, r := range dir {
+		if strings.ContainsRune(`*?[\`, r) {
+			b.WriteByte('\\')
+		}
+		b.WriteRune(r)
+	}
+	return b.String()
+}
+
+// transcriptLine is the part of one transcript line that Answers reads.
+type transcriptLine struct {
+	Message struct {
+		Content json.RawMessage `json:"content"`
+	} `json:"message"`
+	ToolUseResult json.RawMessage `json:"toolUseResult"`
+}
+
+type contentBlock struct {
+	Type      string `json:"type"`
+	ToolUseID string `json:"tool_use_id"`
+}
+
+// askResult is the toolUseResult of an answered AskUserQuestion call. A
+// rejected call's toolUseResult is a string instead.
+type askResult struct {
+	Questions []struct {
+		Question string `json:"question"`
+		Header   string `json:"header"`
+		Options  []struct {
+			Label string `json:"label"`
+		} `json:"options"`
+		MultiSelect bool `json:"multiSelect"`
+	} `json:"questions"`
+	Answers     map[string]string `json:"answers"`
+	Annotations map[string]struct {
+		Notes string `json:"notes"`
+	} `json:"annotations"`
+}
+
+// Answers implements adapter.Adapter. It reads the transcript one JSON line
+// at a time with no line-length limit, and skips every line that is not an
+// answered AskUserQuestion result, malformed lines included.
+func (Adapter) Answers(transcript []byte) ([]adapter.Answer, error) {
+	var out []adapter.Answer
+	r := bufio.NewReader(bytes.NewReader(transcript))
+	for {
+		line, err := r.ReadBytes('\n')
+		out = append(out, lineAnswers(line)...)
+		if errors.Is(err, io.EOF) {
+			return out, nil
+		}
+		if err != nil {
+			return out, err
+		}
+	}
+}
+
+// lineAnswers returns the answered questions on one transcript line, or nil
+// when the line holds none.
+func lineAnswers(line []byte) []adapter.Answer {
+	line = bytes.TrimSpace(line)
+	if len(line) == 0 || line[0] != '{' {
+		return nil
+	}
+	var l transcriptLine
+	if json.Unmarshal(line, &l) != nil {
+		return nil
+	}
+	res := bytes.TrimSpace(l.ToolUseResult)
+	if len(res) == 0 || res[0] != '{' {
+		return nil
+	}
+	var ask askResult
+	if json.Unmarshal(res, &ask) != nil || len(ask.Answers) == 0 {
+		return nil
+	}
+	id := toolUseID(l.Message.Content)
+	var out []adapter.Answer
+	for _, q := range ask.Questions {
+		answer, ok := ask.Answers[q.Question]
+		if !ok || answer == "" {
+			continue
+		}
+		labels := make([]string, len(q.Options))
+		for i, o := range q.Options {
+			labels[i] = o.Label
+		}
+		a := adapter.Answer{
+			ToolUseID:   id,
+			Question:    q.Question,
+			Header:      q.Header,
+			Options:     labels,
+			MultiSelect: q.MultiSelect,
+			Notes:       ask.Annotations[q.Question].Notes,
+		}
+		a.Picked, a.Typed = splitAnswer(answer, labels, q.MultiSelect)
+		out = append(out, a)
+	}
+	return out
+}
+
+// toolUseID returns the tool_use_id of the first tool_result block in a
+// message's content, or "" when there is none.
+func toolUseID(content json.RawMessage) string {
+	var blocks []contentBlock
+	if json.Unmarshal(content, &blocks) != nil {
+		return ""
+	}
+	for _, b := range blocks {
+		if b.Type == "tool_result" && b.ToolUseID != "" {
+			return b.ToolUseID
+		}
+	}
+	return ""
+}
+
+// answerSep joins the labels of a multiSelect answer.
+const answerSep = ", "
+
+// splitAnswer separates an answer into the option labels the owner picked
+// and the text the owner typed. A single-select answer is either exactly a
+// label or typed text. A multiSelect answer is labels and typed text joined
+// with ", "; since labels may contain ", " themselves, labels are matched
+// whole at ", " boundaries, longest first, and never split. What no label
+// claims is the typed text, each leftover piece trimmed and the pieces
+// rejoined with ", ".
+func splitAnswer(answer string, labels []string, multi bool) (picked []string, typed string) {
+	for _, l := range labels {
+		if l != "" && answer == l {
+			return []string{l}, ""
+		}
+	}
+	if !multi {
+		return nil, answer
+	}
+	order := make([]string, 0, len(labels))
+	for _, l := range labels {
+		if l != "" {
+			order = append(order, l)
+		}
+	}
+	sort.SliceStable(order, func(i, j int) bool { return len(order[i]) > len(order[j]) })
+
+	type span struct {
+		start, end int
+		label      string
+	}
+	var claimed []span
+	free := func(start, end int) bool {
+		for _, c := range claimed {
+			if start < c.end && c.start < end {
+				return false
+			}
+		}
+		return true
+	}
+	atBoundary := func(start, end int) bool {
+		return (start == 0 || strings.HasSuffix(answer[:start], answerSep)) &&
+			(end == len(answer) || strings.HasPrefix(answer[end:], answerSep))
+	}
+	for _, l := range order {
+		for from := 0; from <= len(answer)-len(l); {
+			i := strings.Index(answer[from:], l)
+			if i < 0 {
+				break
+			}
+			start, end := from+i, from+i+len(l)
+			if atBoundary(start, end) && free(start, end) {
+				claimed = append(claimed, span{start, end, l})
+				break
+			}
+			from = start + 1
+		}
+	}
+	sort.Slice(claimed, func(i, j int) bool { return claimed[i].start < claimed[j].start })
+
+	var rest []string
+	keep := func(start, end int) {
+		piece := answer[start:end]
+		if start > 0 {
+			piece = strings.TrimPrefix(piece, answerSep)
+		}
+		if end < len(answer) {
+			piece = strings.TrimSuffix(piece, answerSep)
+		}
+		if piece = strings.TrimSpace(piece); piece != "" {
+			rest = append(rest, piece)
+		}
+	}
+	prev := 0
+	for _, c := range claimed {
+		picked = append(picked, c.label)
+		keep(prev, c.start)
+		prev = c.end
+	}
+	keep(prev, len(answer))
+	return picked, strings.Join(rest, answerSep)
 }

@@ -27,6 +27,7 @@ the orchestrator's summary in the founding conversation
 ### In
 
 - decided-by [lineage](../capability/rhiza/lineage.md)
+- decided-by [interview-provenance](../capability/rhiza/lineage/interview-provenance.md)
 
 ## History
 

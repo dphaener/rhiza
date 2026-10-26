@@ -1,0 +1,134 @@
+{
+  "actor": "01M5WE3WT7VCAVK9YAE0AWYRRB",
+  "after": [
+    "01M5SZJ6QVZZ2PGTWMJN0CPNPZ"
+  ],
+  "at": "2026-10-26T15:44:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "pass",
+          "statement": "The session-interview and session-run scenarios propose one Decision per answered question and skip rejected ones and repeats.",
+          "test": "cmd/rhiza/testdata/script/session-interview.txtar"
+        },
+        "handle": "interview-capture-scenario",
+        "id": "01M5WE456ARA8S7HZ7E56ZD5HC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WE456ARA8S7HZ7E2NAX6ZZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "result": "pass",
+          "statement": "Picked options carry the agent's wording and no quote; typed text and notes are quoted verbatim.",
+          "test": "cmd/rhiza/testdata/script/session-interview.txtar; internal/adapter/claudecode/claudecode_test.go; internal/api/session_interview_test.go"
+        },
+        "handle": "interview-provenance-scenario",
+        "id": "01M5WE459TQPNPFYYY27K661SC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WE459TQPNPFYYY27A64GG5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WE456ARA8S7HZ7E2NAX6ZZ",
+        "id": "01M5WE45DAA0QEJJ01YW1SG631",
+        "link": "01M5WE45DAA0QEJJ01YVEGCZGJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZJ2G1C136TPR73S2C93QG",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M5WE459TQPNPFYYY27A64GG5",
+        "id": "01M5WE45GVM6HF79BMQS1T8RGY",
+        "link": "01M5WE45GVM6HF79BMQQAPT5V0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZJ2NK795XJ7FNJWJPQDKF",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "Capture runs when session run sees the agent exit, and as rhiza session interview; runs can call it after their agent step.",
+          "wording": ""
+        },
+        "handle": "interview-on-session-exit",
+        "id": "01M5WE45ME1M2R7HJKAMD0SHZ0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WE45ME1M2R7HJKAGXGRXWW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZJ2G1C136TPR73S2C93QG",
+        "id": "01M5WE45R1X3T59A92Z2EEXYJZ",
+        "link": "01M5WE45R1X3T59A92Z0MGPP56",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WE45ME1M2R7HJKAGXGRXWW",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Each proposed Decision has handle answer-<sid8>-<n> and fields statement, question, session, options, picked plus wording for picked, quote plus quote_where for typed, and notes_quote.",
+          "wording": ""
+        },
+        "handle": "interview-decision-fields",
+        "id": "01M5WE45VJEWMD3D9SFQAK73W9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WE45VJEWMD3D9SFM8PETCM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZJ2NK795XJ7FNJWJPQDKF",
+        "id": "01M5WE45Z3Y7TFK41CX953GR0W",
+        "link": "01M5WE45Z3Y7TFK41CX5D7AXYW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WE45VJEWMD3D9SFM8PETCM",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "An existing handle is skipped, so a repeated capture proposes nothing.",
+          "wording": ""
+        },
+        "handle": "interview-idempotent",
+        "id": "01M5WE462KWM64NDPG41S4KRB3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WE462KWM64NDPG3Y4G3PQ2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5SZJ2G1C136TPR73S2C93QG",
+        "id": "01M5WE4666W4QKQZ1ZRER02F92",
+        "link": "01M5WE4666W4QKQZ1ZRBFW652Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WE462KWM64NDPG3Y4G3PQ2",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SZJ2B3PSDRVX736ZQX0CAZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WE46BJC5S4V9NXQKAE76TK",
+  "type": "ops",
+  "v": 1
+}

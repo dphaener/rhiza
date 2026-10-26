@@ -51,6 +51,7 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		Version:   versionString(),
 		Stdin:     stdin,
 		Home:      getenv("HOME"),
+		Getenv:    getenv,
 		Exec:      execIn,
 		Self:      selfPath(),
 		Start:     startProgram,

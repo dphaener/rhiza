@@ -2,7 +2,9 @@
 // launches. Callers see only the Adapter interface; the one package per agent
 // that implements it is the only place that names the agent.
 //
-// An adapter builds argv and interprets hook payloads. It never runs anything.
+// An adapter builds argv, interprets hook payloads, says where the agent keeps
+// a session's transcript and reads the owner's answers out of one. It never
+// runs anything and never reads files or the environment itself.
 package adapter
 
 import (
@@ -26,6 +28,42 @@ type Adapter interface {
 	// HookStatus maps one hook event and its stdin payload to a status
 	// report. The bool is false when the event leaves the status unchanged.
 	HookStatus(event string, payload []byte) (HookReport, bool, error)
+	// TranscriptGlobs returns file glob patterns, most specific first, where
+	// the agent keeps the session's own transcript (not those of any helper
+	// agents it started). getenv looks up an environment variable. It is
+	// pure: it reads nothing, and returns no patterns for a session ID that
+	// could escape or widen a pattern.
+	TranscriptGlobs(sessionID string, getenv func(string) string) []string
+	// Answers returns every question in transcript that the agent asked and
+	// the owner answered, in transcript order; the questions of one call keep
+	// their order. Unreadable entries are skipped, not fatal.
+	Answers(transcript []byte) ([]Answer, error)
+}
+
+// Answer is one question the agent asked the owner and the owner's answer,
+// split by who wrote each part: option labels are the agent's wording that
+// the owner picked; Typed and Notes are the owner's own words.
+type Answer struct {
+	// ToolUseID identifies the agent's call that asked the question, so one
+	// answer can be told apart from another with the same text.
+	ToolUseID string
+	// Question is the question text, verbatim.
+	Question string
+	// Header is the question's short label, if the agent gave one.
+	Header string
+	// Options are the labels of the options the agent offered, in order.
+	Options []string
+	// MultiSelect reports whether the owner could pick several options.
+	MultiSelect bool
+	// Picked are the option labels the owner chose, verbatim, in the order
+	// they appear in the answer. Empty when the owner picked none.
+	Picked []string
+	// Typed is the text the owner typed that is not an option label,
+	// verbatim; "" when the owner typed nothing.
+	Typed string
+	// Notes is the annotation the owner typed alongside the answer, verbatim;
+	// "" when there is none.
+	Notes string
 }
 
 // Launch is what an adapter needs to build a command.
