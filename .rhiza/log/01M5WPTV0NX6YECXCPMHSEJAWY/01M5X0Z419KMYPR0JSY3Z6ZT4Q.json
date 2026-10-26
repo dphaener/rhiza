@@ -1,0 +1,161 @@
+{
+  "actor": "01M5X0WD4XCHYSACK0C37G4M68",
+  "after": [
+    "01M5X0MBYWDC2W2EYZ6MD967AX"
+  ],
+  "at": "2026-10-26T21:13:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS under make check at commit a345b25 on branch cs/leaf-dependencies-and, run by an independent verifier (claude-code-b6232fc2-verifier)",
+          "statement": "rhiza link and rhiza apply refuse a depends-on that would close a loop among capabilities a, b, c (exit 3, the loop named, the log entry count unchanged), and rhiza check folds a loop made by two concurrent change sets into one fail finding on rule depends-on naming a, b and c.",
+          "tests": "testscript leaf-cycle; go test internal/api: TestLinkCapabilityLoop (Direct, Two, ApplyBatch, Unlinked, NoLoop); internal/check: TestRunCapabilityLoop (Concurrent, Retired, Chain), TestLoops"
+        },
+        "handle": "leaf-depends-on-acyclic-verified",
+        "id": "01M5X0Z2F7S7V6N7SYS77P3BCM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5X0Z2F7S7V6N7SYS3J1WYX7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5X0Z2F7S7V6N7SYS3J1WYX7",
+        "id": "01M5X0Z2K6NNZTQ04F5Q2FAS4Y",
+        "link": "01M5X0Z2K6NNZTQ04F5NZVNNJ7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WR3ZBTGE5H3YSXP61HGY9C",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS under make check at commit a345b25 on branch cs/leaf-dependencies-and, run by an independent verifier (claude-code-b6232fc2-verifier)",
+          "statement": "rhiza change show --json lists leaves c, b, a (added in that order, c depends-on b, b depends-on a) as a, b, c with b needs [a] and c needs [b]; leaves with no links come out in tree order; parents and retired capabilities are not leaves; the describe golden carries the new leaves field.",
+          "tests": "testscript leaf-order, describe-golden; go test internal/api: TestChangeShowLeaves, TestChangeShowLeavesLanded"
+        },
+        "handle": "leaf-order-verified",
+        "id": "01M5X0Z2Q4CVFSGT99V6TACP0S",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5X0Z2Q3M9X64873P5M7AM9M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5X0Z2Q3M9X64873P5M7AM9M",
+        "id": "01M5X0Z2V3YF6G94N8EDJCFV8X",
+        "link": "01M5X0Z2V3YF6G94N8ECS9BW80",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WR3ZJQCG6MCWRGY69NWJJY",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS under make check at commit a345b25 on branch cs/leaf-dependencies-and, run by an independent verifier (claude-code-b6232fc2-verifier)",
+          "statement": "rhiza guide apply contains a recipe linking export-csv depends-on report-query and says a link that would close a loop is refused; the apply topic is 663 tokens, within its cap of 800.",
+          "tests": "testscript guide; go test internal/guide: TestCaps"
+        },
+        "handle": "leaf-depends-on-guide-verified",
+        "id": "01M5X0Z2Z4FS6B6SVJT7ASW2AG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5X0Z2Z4FS6B6SVJT6XNF1WD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5X0Z2Z4FS6B6SVJT6XNF1WD",
+        "id": "01M5X0Z335GA6D47TGJDNE1BHE",
+        "link": "01M5X0Z335GA6D47TGJD3JVVKB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WR3ZX3R2RHFEK7ASXR477Q",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS under make check at commit a345b25 on branch cs/leaf-dependencies-and, run by an independent verifier (claude-code-b6232fc2-verifier)",
+          "statement": "Evidence written with RHIZA_ACTOR=verifier and then set by another actor (including a field named actor) still shows actor verifier in show --json and show, in the draft what-if view too, and its rendered page under .rhiza/rendered/ names verifier linked to the actor page; other kinds carry no actor.",
+          "tests": "testscript evidence-actor-show; go test internal/changeset: TestFoldHistoryActor; internal/model: TestCreatedBy; internal/render: TestEvidenceActor, TestGolden"
+        },
+        "handle": "evidence-names-actor-verified",
+        "id": "01M5X0Z374E5EB0F8RX1W25W6H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5X0Z374E5EB0F8RWXYXTPF0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5X0Z374E5EB0F8RWXYXTPF0",
+        "id": "01M5X0Z3B3256VMM8073V319PT",
+        "link": "01M5X0Z3B3256VMM8072BHRDKS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WR40B08FCCSMTK2QFHHPPM",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS under make check at commit a345b25 on branch cs/leaf-dependencies-and, run by an independent verifier (claude-code-b6232fc2-verifier)",
+          "statement": "rhiza guide's commit example shows Actor: beside Change: and names RHIZA_ACTOR, within the size cap; ship's land commit carries Change: and Actor: with the run's actor in one trailer block.",
+          "tests": "testscripts run-ship-change, guide; go test internal/api: TestShipLand, TestShipLandAfterAgentLanded, TestShipLandRefusals; internal/guide: TestCaps"
+        },
+        "handle": "commit-actor-trailer-verified",
+        "id": "01M5X0Z3F30CNVDFDQMXJ17BPY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5X0Z3F30CNVDFDQMVZD6HPS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5X0Z3F30CNVDFDQMVZD6HPS",
+        "id": "01M5X0Z3K2P89EJBV9V3G9P4BF",
+        "link": "01M5X0Z3K2P89EJBV9V1SW6XSP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WR40HYV1726DQYVDYZ212Z",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS under make check at commit a345b25 on branch cs/leaf-dependencies-and, run by an independent verifier (claude-code-b6232fc2-verifier)",
+          "statement": "In a git repo with a commit carrying Change: and Actor: builder, Evidence written by builder verifying the change set's leaf gives check --json ok with one warn finding on rule evidence-actor naming the evidence, capability, actor and commit; written by verifier it gives none; a commit with no Actor: trailer, or a Leaf: trailer naming another leaf only, gives none; the Go tests run the rule on given commit trailers and skip it with no git.",
+          "tests": "testscript check-evidence-actor; go test internal/check: TestRunEvidenceActor; internal/api: TestParseTrailerLog, TestGitCommits"
+        },
+        "handle": "check-evidence-actor-verified",
+        "id": "01M5X0Z3Q26XEPV9ZZ75KWZW8B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5X0Z3Q26XEPV9ZZ73ASK7ZJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5X0Z3Q26XEPV9ZZ73ASK7ZJ",
+        "id": "01M5X0Z3V2PX55Z8JPDRAM2HZC",
+        "link": "01M5X0Z3V2PX55Z8JPDNNCDTFQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WR40W9BDXA9Z2Q0T4GEM4S",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTV0NX6YECXCPMHSEJAWY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5X0Z419KMYPR0JSY3Z6ZT4Q",
+  "type": "ops",
+  "v": 1
+}
