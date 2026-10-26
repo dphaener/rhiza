@@ -1,0 +1,43 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5WEV2063MZ6QQ2RHNKBAERZ"
+  ],
+  "at": "2026-10-26T15:56:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A passing CI run's log shows the roadmap and ready medians for as-is and to-be.",
+          "statement": "CI prints the read-budget timings (median, min and max per read and view) on every run, passing or failing, so the runner's numbers are on record."
+        },
+        "handle": "budget-timings-in-ci",
+        "id": "01M5WEV26TVQ3KYNKN9ZWQDYSK",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5WEV26TVQ3KYNKN9ZC369G1",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "fields": {
+          "acceptance": "Three consecutive CI runs on the PR each print roadmap and ready medians under 25 ms, and TestReadBudget's budget is still 50 ms.",
+          "statement": "On GitHub's runner, roadmap and ready on the 50,000-node model have a median under 25 ms in every view, half the 50 ms budget, which is unchanged."
+        },
+        "handle": "runner-headroom",
+        "id": "01M5WEV2ACBFPS60CYA452695N",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5WEV2ACBFPS60CYA3REQEWS",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      }
+    ]
+  },
+  "change_set": "01M5WEV2063MZ6QQ2RHMPW49V4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WEV2G11EE65E6118BV1VWG",
+  "type": "ops",
+  "v": 1
+}

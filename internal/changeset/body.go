@@ -475,7 +475,7 @@ func decodeBody(e entry.Entry, canonical bool) (Body, error) {
 	case entry.TypeOpen:
 		b, err = decodeOpen(fields)
 	case entry.TypeOps:
-		b, err = decodeOps(fields)
+		b, err = decodeOps(fields, canonical)
 	case entry.TypePropose:
 		b = Propose{}
 	case entry.TypeAccept, entry.TypeReject:
@@ -512,8 +512,9 @@ func decodeBody(e entry.Entry, canonical bool) (Body, error) {
 		return nil, err
 	}
 	// An ops body's ops were each validated as they were decoded (op.Decode
-	// runs Validate); on the canonical path that is not done again, since
-	// each op's Validate would canonicalize its field values once more.
+	// and op.DecodeCanonical run Validate); on the canonical path that is
+	// not done again, since each op's Validate would canonicalize its field
+	// values once more.
 	if ops, ok := b.(Ops); ok && canonical {
 		err = ops.validate(true)
 	} else {
@@ -552,7 +553,11 @@ func decodeOpen(fields map[string]json.RawMessage) (Body, error) {
 	return b, nil
 }
 
-func decodeOps(fields map[string]json.RawMessage) (Body, error) {
+// decodeOps decodes an ops body's fields. With canonical set the body is
+// known to be canonical (see decodeBody), so each op, cut out of it indented
+// by its place in the ops array, is decoded with op.DecodeCanonical, which
+// skips the canonical-form checks and nothing else.
+func decodeOps(fields map[string]json.RawMessage, canonical bool) (Body, error) {
 	items, err := array(fields["ops"])
 	if err != nil {
 		return nil, invalidWrap("ops", err)
@@ -563,8 +568,13 @@ func decodeOps(fields map[string]json.RawMessage) (Body, error) {
 	}
 	for i, r := range items {
 		// The op sits indented inside the body; op.Decode canonicalizes it on
-		// its own.
-		o, err := op.Decode(r)
+		// its own, op.DecodeCanonical only removes the indentation.
+		var o op.Op
+		if canonical {
+			o, err = op.DecodeCanonical(r)
+		} else {
+			o, err = op.Decode(r)
+		}
 		if err != nil {
 			return nil, invalidWrap(opField(i), err)
 		}

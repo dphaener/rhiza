@@ -22,8 +22,16 @@ install: ## Build straight into $(PREFIX) (default ~/bin)
 	go build -ldflags "$(LDFLAGS)" -o $(PREFIX)/$(BINARY) ./cmd/rhiza
 
 .PHONY: test
-test: ## Run the full test suite
-	go test ./...
+test: ## Run the full test suite and print the read-budget timings
+# TestReadBudget appends its timings to the file named by RHIZA_BUDGET_LOG.
+# They print after the run whether the tests passed or failed, so CI logs
+# (and local runs) always show the numbers. go test's exit status is make's.
+	@log=$$(mktemp); \
+	RHIZA_BUDGET_LOG=$$log go test ./...; \
+	status=$$?; \
+	echo "Read-budget timings"; \
+	if [ -s "$$log" ]; then cat "$$log"; else echo "(no timings: $$log is missing or empty)"; fi; \
+	rm -f $$log; exit $$status
 
 .PHONY: vet
 vet: ## Run go vet
@@ -43,7 +51,7 @@ fmt-check: ## Fail if any Go file is unformatted
 	fi
 
 .PHONY: check
-check: fmt-check vet test self-check ## Run everything CI runs
+check: fmt-check vet self-check test ## Run everything CI runs
 # The single entry point .github/workflows/ci.yml runs, so local and CI
 # runs cannot drift apart.
 

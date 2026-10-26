@@ -1,0 +1,65 @@
+{
+  "actor": "01M5WKPJK8VYFX7M14XY3V6KC4",
+  "after": [
+    "01M5WEV3ECXQGVYF2K33SCT5QK"
+  ],
+  "at": "2026-10-26T17:22:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "The log of that run shows, in ms, roadmap as-is 9.94 and to-be 9.96, ready as-is 9.82 and to-be 9.94 (GOMAXPROCS=2, NumCPU=2), with min and max for every read and view. The same lines appear in attempts 2 and 3 (roadmap 14.8 and 14.8 / 13.4 and 13.9, ready 14.9 and 14.8 / 13.6 and 13.4) and in the baseline run https://github.com/dphaener/rhiza/actions/runs/40357489189.",
+          "statement": "CI prints the read-budget timings (median, min and max per read and view) on every run: make test sets RHIZA_BUDGET_LOG, and make check, which CI runs, prints a 'Read-budget timings' heading and the 15-line log after the tests, passing or failing.",
+          "tests": "Makefile test target (RHIZA_BUDGET_LOG, printed after go test, exit status kept); TestReadBudget writes the log. Run https://github.com/dphaener/rhiza/actions/runs/40366003546 (PR #28, 3f74ee3), Run checks step."
+        },
+        "handle": "budget-timings-in-ci-run",
+        "id": "01M5WKQNAC8BTMJ3M6Z637WAKH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WKQNAC8BTMJ3M6Z2FE151M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WKQNAC8BTMJ3M6Z2FE151M",
+        "id": "01M5WKQNDZ8NJ6FQWK9MP97SG5",
+        "link": "01M5WKQNDZ8NJ6FQWK9HYP3ZMV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WEV26TVQ3KYNKN9ZC369G1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "Run 1: roadmap 9.94/9.96 ms, ready 9.82/9.94 ms. Run 2: roadmap 14.78/14.83 ms, ready 14.90/14.81 ms. Run 3: roadmap 13.36/13.87 ms, ready 13.58/13.45 ms (as-is/to-be). All under 25 ms, all runs successful. The runner machine varies about 2x between attempts, which is the 10 vs 14 ms spread.",
+          "statement": "On GitHub's runner roadmap and ready have a median under 25 ms in as-is and to-be on three consecutive CI runs of PR #28 at 3f74ee3, with readBudget unchanged at 50 ms.",
+          "tests": "Three consecutive attempts of workflow run 40366003546: https://github.com/dphaener/rhiza/actions/runs/40366003546, https://github.com/dphaener/rhiza/actions/runs/40366003546/attempts/2, https://github.com/dphaener/rhiza/actions/runs/40366003546/attempts/3. The reads are timed alone (the log header says 'alone after ...'; no run printed a note line). budget_test.go still has readBudget = 50 ms and no SetGCPercent exists in the code."
+        },
+        "handle": "runner-headroom-runs",
+        "id": "01M5WKQNHC7ZKWFTVEJZEDDG9R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WKQNHC7ZKWFTVEJWD2MWS5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WKQNHC7ZKWFTVEJWD2MWS5",
+        "id": "01M5WKQNNJT7BS68XYRY400WHD",
+        "link": "01M5WKQNNJT7BS68XYRXAMJ3TA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WEV2ACBFPS60CYA3REQEWS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WEV2063MZ6QQ2RHMPW49V4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WKQNTRC9XBG0HJHDS0SJD1",
+  "type": "ops",
+  "v": 1
+}

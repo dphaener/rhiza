@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-26T15:56:35Z",
+  "body": {
+    "intent": "Reads meet their budget on GitHub's runner with room to spare: roadmap and ready median under 25 ms there, and CI prints the read-budget timings on every run so the runner is measured, not guessed.",
+    "kind": "intention",
+    "sources": [
+      "01M5SZHJ8S6TDVVJGKSMZGC3SG"
+    ]
+  },
+  "change_set": "01M5WEV2063MZ6QQ2RHMPW49V4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WEV2063MZ6QQ2RHNKBAERZ",
+  "type": "open",
+  "v": 1
+}
