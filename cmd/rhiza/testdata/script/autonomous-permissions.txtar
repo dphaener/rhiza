@@ -1,0 +1,78 @@
+# --autonomous changes no permission mode: the same workflow run with and
+# without it launches its agent with the same --permission-mode, and a mode
+# that bypasses permission checks is refused with the flag as without it,
+# before any journal is written.
+#
+# The fake rex runs the tab's command synchronously in the window's
+# directory; the fake claude logs its argv on one line, then exits 0.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Keep permission modes' --title 'Keep permission modes' --json
+stdout '"change_set": "[0-9A-Z]{26}"'
+mkdir .rhiza/workflows
+cp $WORK/oneagent.toml .rhiza/workflows/oneagent.toml
+
+# Without the flag.
+exec rhiza run start --workflow oneagent --permission-mode manual --no-wait
+stdout 'succeeded$'
+exec cat $WORK/argv.log
+stdout -count=1 '^launch: .* --permission-mode manual( |$)'
+
+# With it: the same mode.
+exec rhiza run start --workflow oneagent --permission-mode manual --autonomous --no-wait
+stdout 'succeeded$'
+stdout '^- Autonomous: yes$'
+exec cat $WORK/argv.log
+stdout -count=2 '^launch: .* --permission-mode manual( |$)'
+! stdout 'bypassPermissions'
+! stdout 'dangerously'
+
+# A bypass mode is refused under --autonomous too, and writes no journal.
+exec sh -c 'ls .git/rhiza/runs | wc -l | tr -d " "'
+stdout '^2$'
+! exec rhiza run start --workflow oneagent --autonomous --permission-mode bypassPermissions --no-wait
+stderr 'permission mode bypassPermissions bypasses the agent''s permission checks: that needs a machine with trust = "dedicated"'
+! exec rhiza run start --workflow oneagent --autonomous --permission-mode bypassPermissions --no-wait --json
+stdout 'trust = \\"dedicated\\"'
+exec sh -c 'ls .git/rhiza/runs | wc -l | tr -d " "'
+stdout '^2$'
+exec cat $WORK/argv.log
+stdout -count=2 '^launch: '
+
+fold-ok
+
+-- oneagent.toml --
+name = "oneagent"
+
+[step.one]
+kind = "agent"
+prompt = "one"
+interval = "50ms"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+echo "launch: $*" >> "$WORK/argv.log"
+exit 0
