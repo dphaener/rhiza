@@ -1,0 +1,140 @@
+{
+  "actor": "01M5TYA1ZV6XHZWWSDKVWR70B3",
+  "after": [
+    "01M5SZJ267RYAHD8A7WEXTFTNJ"
+  ],
+  "at": "2026-10-26T01:54:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Genesis sends a running agent step a message."
+        },
+        "handle": "step-messages",
+        "id": "01M5TYN2ZKGF19DS99C08HRBYA",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5TYN2ZKGF19DS99BZ7RRRCD",
+        "op": "node.create",
+        "parent": "01M5SWTC58PN8WNJRRM03630JS"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYN2ZKGF19DS99BZ7RRRCD",
+        "id": "01M5TYN338GSPVE6B3P2V87EBQ",
+        "link": "01M5TYN338GSPVE6B3P2EPV5DN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHNCWAKRZ9VS5KKNYKJ8Y",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a fake Rex finds the file and one pointer line naming it.",
+          "statement": "A message is written to a file the step reads, and a one-line pointer to that file is sent into the step's Rex tab."
+        },
+        "handle": "message-file",
+        "id": "01M5TYN36XRCJ78CJZC7CA8TA1",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5TYN36XRCJ78CJZC61QCSNC",
+        "op": "node.create",
+        "parent": "01M5TYN2ZKGF19DS99BZ7RRRCD"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYN36XRCJ78CJZC61QCSNC",
+        "id": "01M5TYN3AFNBMAVX90AABVEFWK",
+        "link": "01M5TYN3AFNBMAVX90A7XZ2061",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHNCWAKRZ9VS5KKNYKJ8Y",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "The message file names the sender's GENESIS_ACTOR.",
+          "statement": "Each message carries the sender's actor, so the step knows who wrote it."
+        },
+        "handle": "message-sender",
+        "id": "01M5TYN3E1GHAA2F3FCQFJDEPF",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5TYN3E1GHAA2F3FCNGZRHMX",
+        "op": "node.create",
+        "parent": "01M5TYN2ZKGF19DS99BZ7RRRCD"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYN3E1GHAA2F3FCNGZRHMX",
+        "id": "01M5TYN3HM0Z6V5FE2PC2SP2DK",
+        "link": "01M5TYN3HM0Z6V5FE2PAE4A73D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHNCWAKRZ9VS5KKNYKJ8Y",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYN3E1GHAA2F3FCNGZRHMX",
+        "id": "01M5TYN3N6CVN88B8RXH6HV4CX",
+        "link": "01M5TYN3N6CVN88B8RXG7WCGFA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKZVB6P9F107Z5WCCDW0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "With a fake status of \"menu open\" no keys are sent, and they are sent once the status is idle.",
+          "statement": "The pointer is typed only while the session waits at its prompt, never over an open menu or question, and otherwise waits until it does."
+        },
+        "handle": "pointer-at-prompt",
+        "id": "01M5TYN3RQJHQJKFATJBMB5QQT",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5TYN3RQJHQJKFATJ8K4ZMQW",
+        "op": "node.create",
+        "parent": "01M5TYN2ZKGF19DS99BZ7RRRCD"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYN3RQJHQJKFATJ8K4ZMQW",
+        "id": "01M5TYN3WAMK339PNM536SXT95",
+        "link": "01M5TYN3WAMK339PNM510MR77Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKX5MFMP08NQ1SNZ8DF0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "What does amending a running step add beyond sending it a message: a change to the step's recorded task in the run's journal, or a message that says the task changed?"
+        },
+        "handle": "step-amend-meaning",
+        "id": "01M5TYN3ZXZD1J6632PWFNRB9E",
+        "key": null,
+        "kind": "question",
+        "node": "01M5TYN3ZXZD1J6632PVT0KRXJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5TYN3ZXZD1J6632PVT0KRXJ",
+        "id": "01M5TYN43FS772RPC1GM27SWD2",
+        "link": "01M5TYN43FS772RPC1GJTFHCS0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYN2ZKGF19DS99BZ7RRRCD",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M5SWTQ11MR7CP75QWPYFBQFQ",
+  "for": "01M5TYA1ZV6XHZWWSDKVWR70B3",
+  "id": "01M5TYN48T0F3NHG4WKABYW5R2",
+  "type": "ops",
+  "v": 1
+}
