@@ -50,6 +50,8 @@
       - [backlog-group](capability/rhiza/views/roadmap/backlog-group.md)
     - [ready-next](capability/rhiza/views/ready-next.md)
     - [fast-reads](capability/rhiza/views/fast-reads.md)
+      - [budget-timings-in-ci](capability/rhiza/views/fast-reads/budget-timings-in-ci.md)
+      - [runner-headroom](capability/rhiza/views/fast-reads/runner-headroom.md)
     - [paged-lists](capability/rhiza/views/paged-lists.md)
   - [integrity](capability/rhiza/integrity.md)
     - [check](capability/rhiza/integrity/check.md)
@@ -458,6 +460,7 @@
 - [acyclic-dependencies-tests](evidence/acyclic-dependencies-tests.md)
 - [agent-step-tested](evidence/agent-step-tested.md)
 - [backlog-group-tested](evidence/backlog-group-tested.md)
+- [budget-timings-in-ci-run](evidence/budget-timings-in-ci-run.md)
 - [carve-dependency-verified](evidence/carve-dependency-verified.md)
 - [carve-entries-verified](evidence/carve-entries-verified.md)
 - [carve-guards-verified](evidence/carve-guards-verified.md)
@@ -482,6 +485,7 @@
 - [run-resume-tested](evidence/run-resume-tested.md)
 - [run-start-tested](evidence/run-start-tested.md)
 - [run-status-tested](evidence/run-status-tested.md)
+- [runner-headroom-runs](evidence/runner-headroom-runs.md)
 - [session-commands-test](evidence/session-commands-test.md)
 - [status-in-genesis-files-test](evidence/status-in-genesis-files-test.md)
 - [status-precedence-test](evidence/status-precedence-test.md)
@@ -510,6 +514,7 @@
 ## Actors
 
 - [claude-code-24d8eb87](actor/claude-code-24d8eb87.md)
+- [claude-code-3e771a5f](actor/claude-code-3e771a5f.md)
 - [claude-code-48819f12](actor/claude-code-48819f12.md)
 - [claude-code-50e191e7](actor/claude-code-50e191e7.md)
 - [claude-code-569529c3](actor/claude-code-569529c3.md)

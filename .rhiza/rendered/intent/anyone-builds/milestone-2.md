@@ -42,6 +42,7 @@ Genesis runs the work: milestone 3 is built with Genesis orchestrating, not an o
 - serves change set `01M5TS2C87Z5G8HX2AWAVSGGQN` (Carving that keeps IDs: genesis carve moves nodes, with their writes and links, from one unlanded change set to another under the same IDs, so milestone work can be carved out of the area bundles.)
 - serves change set `01M5TW3X2FX0DVZ9XZGXMQVC2Q` (The rename to Rhiza: the module, repo, binary, .rhiza/ folder, RHIZA_* variables, skills, guide, cache and root handle all become rhiza, with check identifying entries by ID and bytes so the log can move.)
 - serves change set `01M5SWTJY0AZP9TR3V1QJ54HMY` (planGather (behind roadmap and ready) and the index's fresh read get faster, so CI has headroom under 25 ms again.)
+- serves change set `01M5WEV2063MZ6QQ2RHMPW49V4` (Reads meet their budget on GitHub's runner with room to spare: roadmap and ready median under 25 ms there, and CI prints the read-budget timings on every run so the runner is measured, not guessed.)
 
 ## History
 
