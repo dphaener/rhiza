@@ -757,12 +757,77 @@ func TestLinkCycle(t *testing.T) {
 		}
 	})
 
-	t.Run("NodesUnaffected", func(t *testing.T) {
+}
+
+// TestLinkCapabilityLoop refuses a depends-on link between capabilities
+// that would close a loop, naming it, whether the links in the way are
+// earlier writes or earlier items of the same apply.
+func TestLinkCapabilityLoop(t *testing.T) {
+	// caps adds capabilities a, b and c to a new change set.
+	caps := func(t *testing.T) *Ctx {
 		ctx, _ := writeCtx(t)
-		mustWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
-		mustWrite(t, ctx, "add", `{"kind":"capability","handle":"log"}`)
-		mustWrite(t, ctx, "link", `{"from":"log","type":"depends-on","to":"store"}`)
-		mustWrite(t, ctx, "link", `{"from":"store","type":"depends-on","to":"log"}`)
+		for _, h := range []string{"a", "b", "c"} {
+			mustWrite(t, ctx, "add", `{"kind":"capability","handle":"`+h+`"}`)
+		}
+		return ctx
+	}
+	const loop = "depends-on from c to a would close a loop: a depends on b, b depends on c"
+
+	t.Run("Direct", func(t *testing.T) {
+		ctx := caps(t)
+		mustWrite(t, ctx, "link", `{"from":"a","type":"depends-on","to":"b"}`)
+		mustWrite(t, ctx, "link", `{"from":"b","type":"depends-on","to":"c"}`)
+		before := len(logFiles(t, ctx.Root))
+		_, err := callOp(t, ctx, "link", `{"from":"c","type":"depends-on","to":"a"}`)
+		wantExit(t, err, 3)
+		if e := AsError(err); e.Message != loop || e.Next != "rhiza show a" {
+			t.Errorf("err = %q, next %q", e.Message, e.Next)
+		}
+		if n := len(logFiles(t, ctx.Root)); n != before {
+			t.Errorf("wrote %d files", n-before)
+		}
+	})
+
+	t.Run("Two", func(t *testing.T) {
+		ctx := caps(t)
+		mustWrite(t, ctx, "link", `{"from":"a","type":"depends-on","to":"b"}`)
+		_, err := callOp(t, ctx, "link", `{"from":"b","type":"depends-on","to":"a"}`)
+		wantExit(t, err, 3)
+		if e := AsError(err); e.Message != "depends-on from b to a would close a loop: a depends on b" {
+			t.Errorf("err = %q", e.Message)
+		}
+	})
+
+	t.Run("ApplyBatch", func(t *testing.T) {
+		ctx := caps(t)
+		before := len(logFiles(t, ctx.Root))
+		_, err := applyFile(t, ctx, `{"writes":[
+		  {"op":"link","from":"a","type":"depends-on","to":"b"},
+		  {"op":"link","from":"b","type":"depends-on","to":"c"},
+		  {"op":"link","from":"c","type":"depends-on","to":"a"}]}`)
+		wantExit(t, err, 3)
+		if e := AsError(err); e.Message != "writes[2]: "+loop {
+			t.Errorf("err = %q", e.Message)
+		}
+		if n := len(logFiles(t, ctx.Root)); n != before {
+			t.Errorf("wrote %d files", n-before)
+		}
+	})
+
+	t.Run("Unlinked", func(t *testing.T) {
+		// A retired link no longer counts.
+		ctx := caps(t)
+		mustWrite(t, ctx, "link", `{"from":"a","type":"depends-on","to":"b"}`)
+		mustWrite(t, ctx, "unlink", `{"ref":"a","type":"depends-on","to":"b"}`)
+		mustWrite(t, ctx, "link", `{"from":"b","type":"depends-on","to":"a"}`)
+	})
+
+	t.Run("NoLoop", func(t *testing.T) {
+		ctx := caps(t)
+		mustWrite(t, ctx, "link", `{"from":"a","type":"depends-on","to":"b"}`)
+		mustWrite(t, ctx, "link", `{"from":"b","type":"depends-on","to":"c"}`)
+		mustWrite(t, ctx, "link", `{"from":"a","type":"depends-on","to":"c"}`)
+		mustWrite(t, ctx, "link", `{"from":"c","type":"relates-to","to":"a","note":"x"}`)
 	})
 }
 

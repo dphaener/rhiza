@@ -1,0 +1,53 @@
+# change show lists the change set's leaves (the capabilities it adds that
+# have no live child capability) in build order: each leaf after every leaf
+# it depends on, ties in tree order, each with the handles it needs.
+
+exec rhiza init
+
+# A landed capability, outside the change sets below.
+exec rhiza change new Base
+exec rhiza add capability ext
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+
+# c, b and a added in that order under p (so in tree order c, b, a), with c
+# depending on b and b on a. p has children, so it is not a leaf; r is
+# retired, so it is not one either.
+exec rhiza change new Shape
+exec rhiza add capability p
+exec rhiza add capability c --parent p
+exec rhiza add capability b --parent p
+exec rhiza add capability a --parent p
+exec rhiza add capability r
+exec rhiza link c depends-on b
+exec rhiza link b depends-on a
+exec rhiza retire r --reason Gone
+exec rhiza change show --json
+stdout '"leaves": \[\n    \{\n      "handle": "a",\n      "id": "[0-9A-Z]{26}",\n      "needs": \[\]\n    \},\n    \{\n      "handle": "b",\n      "id": "[0-9A-Z]{26}",\n      "needs": \[\n        "a"\n      \]\n    \},\n    \{\n      "handle": "c",\n      "id": "[0-9A-Z]{26}",\n      "needs": \[\n        "b"\n      \]\n    \}\n  \],'
+! stdout '"handle": "[pr]",\n      "id": "[0-9A-Z]{26}",\n      "needs"'
+exec rhiza change show
+stdout '\n## Leaves\n\n- a\n- b \(needs a\)\n- c \(needs b\)\n\n## History\n'
+
+# Leaves with no links among them come out in tree order: y was put before
+# z, and x after y. x needs ext, outside the change set: it is listed but
+# does not move x.
+exec rhiza change new Tree
+exec rhiza add capability z
+exec rhiza add capability y --before z
+exec rhiza add capability x --after y
+exec rhiza link x depends-on ext
+exec rhiza change show --json
+stdout '"leaves": \[\n    \{\n      "handle": "y",\n      "id": "[0-9A-Z]{26}",\n      "needs": \[\]\n    \},\n    \{\n      "handle": "x",\n      "id": "[0-9A-Z]{26}",\n      "needs": \[\n        "ext"\n      \]\n    \},\n    \{\n      "handle": "z",\n      "id": "[0-9A-Z]{26}",\n      "needs": \[\]\n    \}\n  \],'
+exec rhiza change show
+stdout '\n## Leaves\n\n- y\n- x \(needs ext\)\n- z\n\n## History\n'
+
+# A change set that adds no capability has no leaves: an empty list, and no
+# Leaves section.
+exec rhiza change new Empty
+exec rhiza add decision d1
+exec rhiza change show --json
+stdout '"leaves": \[\],'
+exec rhiza change show
+! stdout '## Leaves'
+fold-ok

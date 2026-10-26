@@ -3,7 +3,8 @@
 // kinds its type allows, that the rendered markdown is current and that the
 // log has only grown since a base revision. It is what `rhiza check` and
 // CI run. Run is a pure function of its Input: it reads nothing but the
-// fs.FS it is given, runs no git and never panics.
+// fs.FS it is given, runs no git and never panics. What git knows, the base
+// entries and the commits' trailers, its caller gathers into the Input.
 //
 // The vocabulary:
 //
@@ -34,7 +35,19 @@
 //   - link fails on each live as-is link whose Ends the endpoint table does
 //     not allow.
 //   - depends-on fails once on each depends-on loop among change sets
-//     (changeset.Cycles), whatever their states.
+//     (changeset.Cycles), whatever their states, and once on each loop of
+//     live as-is depends-on links among capabilities.
+//   - evidence-actor warns once on each live Evidence with a live as-is
+//     verifies link to a capability when the Evidence's actor (the actor of
+//     its create, model.CreatedBy) is named, by handle or ID, in an Actor:
+//     trailer of a commit that changes a file outside .rhiza/, whose
+//     Change: trailers name the change set that created the capability and
+//     whose Leaf: trailers, if it has any, name the capability by handle or
+//     ID: whoever wrote a leaf's code should not be the one to verify it. A
+//     commit of model writes alone is not a leaf's code, so its caller lists
+//     only commits that change a file outside .rhiza/ (Input.Commits). The
+//     finding names the oldest such commit. Without git (Input.Commits nil)
+//     the rule is skipped silently.
 //   - render fails on each rendered file that differs from what
 //     render.Render writes, is missing or is extra, and on a missing
 //     rendered folder.
@@ -56,12 +69,14 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"slices"
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/render"
 	"github.com/dphaener/rhiza/internal/store"
 )
@@ -74,19 +89,21 @@ const (
 
 // The rules, in report order.
 const (
-	RuleLog        = "log"
-	RuleFold       = "fold"
-	RuleModel      = "model"
-	RuleInFlight   = "in-flight"
-	RuleLink       = "link"
-	RuleDependsOn  = "depends-on"
-	RuleRender     = "render"
-	RuleAppendOnly = "append-only"
+	RuleLog           = "log"
+	RuleFold          = "fold"
+	RuleModel         = "model"
+	RuleInFlight      = "in-flight"
+	RuleLink          = "link"
+	RuleDependsOn     = "depends-on"
+	RuleEvidenceActor = "evidence-actor"
+	RuleRender        = "render"
+	RuleAppendOnly    = "append-only"
 )
 
 // Rules returns the rules in report order.
 func Rules() []string {
-	return []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleRender, RuleAppendOnly}
+	return []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleEvidenceActor, RuleRender,
+		RuleAppendOnly}
 }
 
 // Paths in findings are relative to the project root.
@@ -109,6 +126,20 @@ type Input struct {
 	Skipped string
 	// Base are the log entries at Rev, Current those in the work tree.
 	Base, Current []Entry
+	// Commits are the commits of HEAD's history that change a file outside
+	// .rhiza/, newest first as git log lists them; a commit of model writes
+	// alone is not listed. Nil means no git, and the evidence-actor rule is
+	// skipped.
+	Commits []Commit
+}
+
+// Commit is one git commit and the values of its trailers: Changes of its
+// Change: trailers (change set IDs), Actors of its Actor: trailers (actor
+// handles or IDs) and Leaves of its Leaf: trailers (capability handles or
+// IDs). Hash is the full commit hash.
+type Commit struct {
+	Hash                    string
+	Changes, Actors, Leaves []string
 }
 
 // Entry is one log entry file: its entry ID (the file name minus .json),
@@ -152,6 +183,8 @@ func Run(in Input) Report {
 	asIs := c.model(sets)
 	c.links(asIs, sets)
 	c.dependsOn(sets)
+	c.capabilityLoops(asIs)
+	c.evidenceActor(asIs, sets)
 	c.render(asIs, sets)
 	c.appendOnly()
 
@@ -327,6 +360,150 @@ func (c *checker) dependsOn(sets []changeset.ChangeSet) {
 		c.add(Finding{Severity: SeverityFail, Rule: RuleDependsOn, ChangeSet: loop[0].String(), Message: msg,
 			Next: "rhiza change show " + loop[0].String()})
 	}
+}
+
+// capabilityLoops fails once on each depends-on loop among capabilities:
+// each group of two or more that reach one another over live as-is links,
+// and each that depends on itself, named by handle in handle order.
+func (c *checker) capabilityLoops(m model.Model) {
+	g := map[id.ID][]id.ID{}
+	for _, l := range m.Links() {
+		if l.Retired || l.Type != op.LinkDependsOn {
+			continue
+		}
+		from, okFrom := m.Node(l.From)
+		to, okTo := m.Node(l.To)
+		if okFrom && okTo && from.Kind == op.KindCapability && to.Kind == op.KindCapability {
+			g[l.From] = append(g[l.From], l.To)
+		}
+	}
+	for _, loop := range loops(g) {
+		names := make([]string, len(loop))
+		for i, n := range loop {
+			names[i] = n.String()
+			if v, _ := m.Node(n); v.Handle != "" {
+				names[i] = v.Handle
+			}
+		}
+		slices.Sort(names)
+		msg := "capability " + names[0] + " depends on itself"
+		if len(names) > 1 {
+			msg = "depends-on loop among capabilities " + strings.Join(names, ", ")
+		}
+		c.add(Finding{Severity: SeverityFail, Rule: RuleDependsOn, Message: msg, Next: "rhiza show " + names[0]})
+	}
+}
+
+// evidenceActor warns on each Evidence whose actor wrote the code of a
+// capability it verifies (see the package comment), once per Evidence and
+// capability, naming the oldest matching commit by its first 12 hex digits.
+func (c *checker) evidenceActor(m model.Model, sets []changeset.ChangeSet) {
+	if len(c.in.Commits) == 0 {
+		return
+	}
+	name := func(n model.Node) string {
+		if n.Handle != "" {
+			return n.Handle
+		}
+		return n.ID.String()
+	}
+	type pair struct{ ev, capab id.ID }
+	seen := map[pair]bool{}
+	for _, l := range m.Links() {
+		if l.Retired || l.Type != op.LinkVerifies || seen[pair{l.From, l.To}] {
+			continue
+		}
+		ev, okEv := m.Node(l.From)
+		capab, okCap := m.Node(l.To)
+		if !okEv || !okCap || ev.Retired || ev.Kind != op.KindEvidence || capab.Kind != op.KindCapability {
+			continue
+		}
+		who, ok := model.CreatedBy(ev, sets)
+		if !ok {
+			continue
+		}
+		actorNames := []string{who.String()}
+		actorName := who.String()
+		if a, ok := m.Node(who); ok && a.Handle != "" {
+			actorNames = append(actorNames, a.Handle)
+			actorName = a.Handle
+		}
+		var hit *Commit
+		for i := range c.in.Commits {
+			cm := &c.in.Commits[i]
+			if slices.Contains(cm.Changes, capab.Created.String()) &&
+				(len(cm.Leaves) == 0 || (capab.Handle != "" && slices.Contains(cm.Leaves, capab.Handle)) ||
+					slices.Contains(cm.Leaves, capab.ID.String())) &&
+				slices.ContainsFunc(cm.Actors, func(a string) bool { return slices.Contains(actorNames, a) }) {
+				hit = cm
+			}
+		}
+		if hit == nil {
+			continue
+		}
+		seen[pair{l.From, l.To}] = true
+		hash := hit.Hash
+		if len(hash) > 12 {
+			hash = hash[:12]
+		}
+		c.add(Finding{Severity: SeverityWarn, Rule: RuleEvidenceActor, ChangeSet: str(capab.Created), Link: l.ID.String(),
+			Message: fmt.Sprintf("evidence %s verifies capability %s, but its actor %s wrote that capability in commit %s",
+				name(ev), name(capab), actorName, hash),
+			Next: "rhiza show " + name(ev)})
+	}
+}
+
+// loops returns the loops of graph g: each strongly connected component of
+// two or more nodes, and each node with an edge to itself. It visits nodes
+// and edges in ID order, so the result is the same for the same g.
+func loops(g map[id.ID][]id.ID) [][]id.ID {
+	nodes := slices.SortedFunc(maps.Keys(g), id.Compare)
+	for _, n := range nodes {
+		slices.SortFunc(g[n], id.Compare)
+	}
+	// Tarjan's strongly connected components.
+	index := map[id.ID]int{}
+	low := map[id.ID]int{}
+	onStack := map[id.ID]bool{}
+	var stack []id.ID
+	var out [][]id.ID
+	var visit func(v id.ID)
+	visit = func(v id.ID) {
+		index[v] = len(index)
+		low[v] = index[v]
+		stack = append(stack, v)
+		onStack[v] = true
+		for _, w := range g[v] {
+			if _, ok := index[w]; !ok {
+				visit(w)
+				low[v] = min(low[v], low[w])
+			} else if onStack[w] {
+				low[v] = min(low[v], index[w])
+			}
+		}
+		if low[v] != index[v] {
+			return
+		}
+		var scc []id.ID
+		for {
+			w := stack[len(stack)-1]
+			stack = stack[:len(stack)-1]
+			onStack[w] = false
+			scc = append(scc, w)
+			if w == v {
+				break
+			}
+		}
+		if len(scc) > 1 || slices.Contains(g[v], v) {
+			out = append(out, scc)
+		}
+	}
+	for _, n := range nodes {
+		if _, ok := index[n]; !ok {
+			visit(n)
+		}
+	}
+	return out
 }
 
 func (c *checker) render(m model.Model, sets []changeset.ChangeSet) {

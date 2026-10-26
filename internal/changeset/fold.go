@@ -202,6 +202,9 @@ type Revision struct {
 	// dropped op, so that a reader can tell whether it existed at a given
 	// entry. It is zero in History, whose first element says the same.
 	First id.ID
+	// Actor is the actor stamped on Entry: who wrote the version, or who
+	// dropped the op. History's first revision names the op's author.
+	Actor id.ID
 	Op    op.Op
 }
 
@@ -567,7 +570,7 @@ func (f *folder) apply(out *ChangeSet, rev *revision, n *node) error {
 		if err := rev.check(b); err != nil {
 			return err
 		}
-		rev.apply(n.e.ID, b)
+		rev.apply(n.e.ID, n.e.Actor, b)
 	case Propose:
 		if from != StateDraft {
 			return transition(n.e.Type, from)
@@ -658,10 +661,11 @@ func (r *revision) check(b Ops) error {
 	return nil
 }
 
-// apply applies b, written by entry eid, which check accepted.
-func (r *revision) apply(eid id.ID, b Ops) {
+// apply applies b, written by entry eid of actor who, which check
+// accepted.
+func (r *revision) apply(eid, who id.ID, b Ops) {
 	for _, o := range b.Ops {
-		r.history[o.ID] = append(r.history[o.ID], Revision{Entry: eid, Op: o})
+		r.history[o.ID] = append(r.history[o.ID], Revision{Entry: eid, Actor: who, Op: o})
 		if i, ok := r.pos[o.ID]; ok {
 			r.ops[i] = o
 			continue
@@ -674,7 +678,7 @@ func (r *revision) apply(eid id.ID, b Ops) {
 	}
 	for _, x := range b.Drop {
 		r.dropped[x] = true
-		r.drops[x] = Revision{Entry: eid, First: r.history[x][0].Entry, Op: r.ops[r.pos[x]]}
+		r.drops[x] = Revision{Entry: eid, First: r.history[x][0].Entry, Actor: who, Op: r.ops[r.pos[x]]}
 		delete(r.history, x)
 	}
 	r.ops = slices.DeleteFunc(r.ops, func(o op.Op) bool { return r.dropped[o.ID] })

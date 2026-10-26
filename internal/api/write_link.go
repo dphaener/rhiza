@@ -2,8 +2,8 @@ package api
 
 // This file holds the link writes: link creates a link between two live
 // nodes, or a node and a change set, or two change sets, refusing a
-// depends-on between change sets that would close a loop; unlink retires
-// one, or drops it if this change set created it.
+// depends-on between change sets, or between nodes, that would close a
+// loop; unlink retires one, or drops it if this change set created it.
 
 import (
 	"reflect"
@@ -62,7 +62,7 @@ type UnlinkRequest struct {
 
 // buildLink creates a link between two live nodes, or change sets, or one
 // of each. An identical live link is a conflict, and so is a depends-on
-// between change sets that would close a loop.
+// between change sets, or between nodes, that would close a loop.
 func buildLink(b writeBase, r LinkRequest) (edit, error) {
 	t, err := linkType(r.Type, "link")
 	if err != nil {
@@ -107,6 +107,13 @@ func buildLink(b writeBase, r LinkRequest) (edit, error) {
 	if t == op.LinkDependsOn && fromSet && toSet && b.changeSets != nil && wouldCycle(b, from, to) {
 		return edit{}, Conflictf("depends-on from %s to %s would close a loop: %s already depends on %s", from, to, to, from).
 			WithNext("rhiza change show " + shortID(to))
+	}
+	if t == op.LinkDependsOn && !fromSet && !toSet {
+		if path := dependsPath(b.m, to, from); path != nil {
+			return edit{}, Conflictf("depends-on from %s to %s would close a loop: %s",
+				nodeName(b.m, from), nodeName(b.m, to), loopText(b.m, path)).
+				WithNext("rhiza show " + nodeName(b.m, to))
+		}
 	}
 	if o.Link, err = b.newID(); err != nil {
 		return edit{}, err
@@ -161,6 +168,55 @@ func wouldCycle(b writeBase, from, to id.ID) bool {
 		sets = append(sets, changeset.ChangeSet{State: changeset.StateLanded, Ops: held})
 	}
 	return changeset.WouldCycle(sets, from, to)
+}
+
+// dependsPath returns the shortest path from node from to node to over the
+// live depends-on links of m, both ends included, choosing among equally
+// short ones by ID; nil when to cannot be reached. m holds the change set's
+// own links, and in an apply every earlier item's, so a loop that an apply
+// closes is refused at the item that closes it.
+func dependsPath(m Model, from, to id.ID) []id.ID {
+	prev := map[id.ID]id.ID{from: {}}
+	next := []id.ID{from}
+	for len(next) > 0 {
+		at := next[0]
+		next = next[1:]
+		for _, n := range m.DependsOn(at) {
+			if _, ok := prev[n]; ok {
+				continue
+			}
+			prev[n] = at
+			if n == to {
+				path := []id.ID{to}
+				for p := at; p != from; p = prev[p] {
+					path = append(path, p)
+				}
+				path = append(path, from)
+				slices.Reverse(path)
+				return path
+			}
+			next = append(next, n)
+		}
+	}
+	return nil
+}
+
+// loopText says what path says, one step at a time: "a depends on b, b
+// depends on c".
+func loopText(m Model, path []id.ID) string {
+	steps := make([]string, 0, len(path)-1)
+	for i := range len(path) - 1 {
+		steps = append(steps, nodeName(m, path[i])+" depends on "+nodeName(m, path[i+1]))
+	}
+	return strings.Join(steps, ", ")
+}
+
+// nodeName is node n's handle, or its ID when it has none.
+func nodeName(m Model, n id.ID) string {
+	if v, ok := m.Node(n); ok && v.Handle != "" {
+		return v.Handle
+	}
+	return n.String()
 }
 
 // buildUnlink retires a link against its version, or drops it, with every

@@ -6,6 +6,7 @@ package api
 // of them writes nodes or links.
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -222,12 +223,20 @@ type ChangeShowResponse struct {
 	State        changeset.State   `json:"state" desc:"The lifecycle state; empty without a valid open"`
 	Current      bool              `json:"current" desc:"Whether it is the current change set"`
 	Ops          []json.RawMessage `json:"ops" desc:"The current operations, as canonical op JSON, in change set order"`
+	Leaves       []ChangeLeaf      `json:"leaves" desc:"The live capabilities it adds that have no live child capability, in build order: each after every leaf it depends on, ties in tree order"`
 	Decided      *DecisionInfo     `json:"decided,omitempty" desc:"The applied accept or reject, if any"`
 	SupersededBy id.ID             `json:"superseded_by,omitzero" desc:"The change set that superseded it, if any"`
 	Heads        []id.ID           `json:"heads" desc:"The entries a new entry would follow"`
 	Applied      []id.ID           `json:"applied" desc:"Every folded entry, in causal order"`
 	History      []LifecycleEvent  `json:"history" desc:"The lifecycle entries that applied, in causal order"`
 	Problems     []string          `json:"problems" desc:"Everything wrong with its entries"`
+}
+
+// ChangeLeaf is one leaf of a change set.
+type ChangeLeaf struct {
+	ID     id.ID    `json:"id" desc:"The capability's ID"`
+	Handle string   `json:"handle" desc:"The capability's handle"`
+	Needs  []string `json:"needs" desc:"The handles of every live capability it depends on, in or out of the change set, sorted"`
 }
 
 // LifecycleEvent is one applied lifecycle entry: propose, accept, reject,
@@ -287,6 +296,7 @@ func runChangeShow(ctx *Ctx, req any) (any, error) {
 		State:        c.State,
 		Current:      cs == current,
 		Ops:          []json.RawMessage{},
+		Leaves:       changeLeaves(w.model(cs), c.Ops),
 		SupersededBy: c.SupersededBy,
 		Heads:        orEmpty(c.Heads),
 		Applied:      orEmpty(c.Applied),
@@ -353,6 +363,16 @@ func (r ChangeShowResponse) Human(w io.Writer) {
 		}
 		fmt.Fprintln(w, line)
 	}
+	if len(r.Leaves) > 0 {
+		fmt.Fprintf(w, "\n## Leaves\n\n")
+	}
+	for _, l := range r.Leaves {
+		line := "- " + l.Handle
+		if len(l.Needs) > 0 {
+			line += " (needs " + strings.Join(l.Needs, ", ") + ")"
+		}
+		fmt.Fprintln(w, line)
+	}
 	fmt.Fprintf(w, "\n## History\n\n")
 	if len(r.History) == 0 {
 		fmt.Fprintln(w, "No lifecycle moves yet.")
@@ -361,6 +381,90 @@ func (r ChangeShowResponse) Human(w io.Writer) {
 		fmt.Fprintf(w, "- %s %s by %s\n", e.Type, e.At, e.Actor)
 	}
 	writeProblems(w, r.Problems)
+}
+
+// changeLeaves finds the leaves among the capabilities that ops create, as
+// m shows them: live, with no live child capability. A change set's own
+// view is w.model(cs): its ops on top for an open one, as-is for a landed
+// one. A rejected, withdrawn or superseded change set's creates are in
+// neither, so it has no leaves.
+//
+// The order is Kahn's over depends-on among the leaves alone, the ready
+// leaf first in tree order (depth first from the roots, siblings by key,
+// then ID). If a loop leaves none ready, the first left in tree order goes next. A
+// leaf the walk does not reach, under a retired parent, sorts after the
+// rest by ID.
+func changeLeaves(m Model, ops []op.Op) []ChangeLeaf {
+	rank := map[id.ID]int{}
+	var walk func(parent id.ID)
+	walk = func(parent id.ID) {
+		for _, n := range m.Children(op.KindCapability, parent) {
+			rank[n.ID] = len(rank)
+			walk(n.ID)
+		}
+	}
+	walk(id.ID{})
+
+	var leaves []Node
+	for _, o := range ops {
+		if o.Type != op.TypeNodeCreate || o.Kind != op.KindCapability {
+			continue
+		}
+		n, ok := m.Node(o.Node)
+		if !ok || n.Retired || n.Kind != op.KindCapability || len(m.Children(op.KindCapability, n.ID)) > 0 {
+			continue
+		}
+		leaves = append(leaves, n)
+	}
+	slices.SortFunc(leaves, func(a, b Node) int {
+		ra, oka := rank[a.ID]
+		rb, okb := rank[b.ID]
+		switch {
+		case oka && okb:
+			return cmp.Compare(ra, rb)
+		case oka != okb:
+			if oka {
+				return -1
+			}
+			return 1
+		}
+		return id.Compare(a.ID, b.ID)
+	})
+
+	in := map[id.ID]bool{}
+	for _, n := range leaves {
+		in[n.ID] = true
+	}
+	placed := map[id.ID]bool{}
+	ready := func(n Node) bool {
+		return !slices.ContainsFunc(m.DependsOn(n.ID), func(d id.ID) bool {
+			return in[d] && !placed[d]
+		})
+	}
+	out := []ChangeLeaf{}
+	for len(leaves) > 0 {
+		i := slices.IndexFunc(leaves, ready)
+		if i < 0 {
+			i = 0
+		}
+		n := leaves[i]
+		placed[n.ID] = true
+		leaves = slices.Delete(leaves, i, i+1)
+		out = append(out, ChangeLeaf{ID: n.ID, Handle: n.Handle, Needs: leafNeeds(m, n.ID)})
+	}
+	return out
+}
+
+// leafNeeds is the sorted handles of the live capabilities n depends on.
+func leafNeeds(m Model, n id.ID) []string {
+	needs := []string{}
+	for _, d := range m.DependsOn(n) {
+		if t, ok := m.Node(d); ok && !t.Retired && t.Kind == op.KindCapability {
+			needs = append(needs, t.Handle)
+		}
+	}
+	slices.Sort(needs)
+	return needs
 }
 
 // ChangeLsRequest takes nothing.

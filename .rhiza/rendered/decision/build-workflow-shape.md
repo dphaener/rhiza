@@ -27,6 +27,10 @@ the orchestrator's proposal in the milestone-3 conversation, accepted by the own
 ### In
 
 - decided-by [milestone-3](../intent/anyone-builds/milestone-3.md)
+- decided-by [leaf-dependencies](../capability/rhiza/model/leaf-dependencies.md)
+- decided-by [leaf-depends-on-acyclic](../capability/rhiza/model/leaf-dependencies/leaf-depends-on-acyclic.md)
+- decided-by [leaf-order](../capability/rhiza/model/leaf-dependencies/leaf-order.md)
+- decided-by [leaf-depends-on-guide](../capability/rhiza/model/leaf-dependencies/leaf-depends-on-guide.md)
 
 ## History
 

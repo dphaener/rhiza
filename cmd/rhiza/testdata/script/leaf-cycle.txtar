@@ -1,0 +1,41 @@
+# depends-on between capabilities never loops, as between change sets:
+# link and apply refuse the link that would close a loop (exit 3), name the
+# loop and write nothing.
+
+exec rhiza init
+exec rhiza change new Shape
+exec rhiza add capability a
+exec rhiza add capability b
+exec rhiza add capability c
+exec rhiza link a depends-on b
+exec rhiza link b depends-on c
+exec sh -c 'find .rhiza/log -name "*.json" | wc -l > before.txt'
+
+# c depending on a would close the loop: refused, exit 3, with next.
+! exec rhiza link c depends-on a
+stderr '^rhiza: depends-on from c to a would close a loop: a depends on b, b depends on c$'
+stderr '^next: rhiza show a$'
+! exec rhiza link c depends-on a --json
+stdout '"code": "conflict"'
+stdout '"next": "rhiza show a"'
+exec sh -c 'rhiza link c depends-on a 2>/dev/null; echo exit $?'
+stdout '^exit 3$'
+
+# The same link through apply.
+! exec rhiza apply loop.json
+stderr '^rhiza: writes\[0\]: depends-on from c to a would close a loop: a depends on b, b depends on c$'
+! exec rhiza apply loop.json --json
+stdout '"code": "conflict"'
+exec sh -c 'rhiza apply loop.json 2>/dev/null; echo exit $?'
+stdout '^exit 3$'
+
+# Nothing was written.
+exec sh -c 'find .rhiza/log -name "*.json" | wc -l > after.txt'
+cmp before.txt after.txt
+fold-ok
+
+# A chain with no loop is fine.
+exec rhiza link a depends-on c
+
+-- loop.json --
+{"writes":[{"op":"link","from":"c","type":"depends-on","to":"a"}]}

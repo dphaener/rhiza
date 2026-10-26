@@ -27,6 +27,7 @@ the assistant's summary in the founding conversation
 ### In
 
 - decided-by [integrity](../capability/rhiza/integrity.md)
+- decided-by [commit-actor-trailer](../capability/rhiza/integrity/evidence-actor/commit-actor-trailer.md)
 
 ## History
 

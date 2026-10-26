@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"strings"
 	"testing"
@@ -374,4 +375,43 @@ func TestCheckErrors(t *testing.T) {
 	_, err = callOp(t, ctx, "check", `{}`)
 	wantExit(t, err, 2)
 	wantNext(t, err, "rhiza check")
+}
+
+func TestParseTrailerLog(t *testing.T) {
+	out := "aaa\x1fChange: CS1\x1fActor: builder\x1fLeaf: leaf\x1fLeaf: other\x1e\n" +
+		"bbb\x1e\n" +
+		"ccc\x1fchange: CS2\x1fCHANGE:  CS3 \x1factor: 01M5ACTOR\x1fnot a trailer\x1e\n"
+	got := parseTrailerLog(out)
+	want := []check.Commit{
+		{Hash: "aaa", Changes: []string{"CS1"}, Actors: []string{"builder"}, Leaves: []string{"leaf", "other"}},
+		{Hash: "bbb"},
+		{Hash: "ccc", Changes: []string{"CS2", "CS3"}, Actors: []string{"01M5ACTOR"}},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("parseTrailerLog = %+v, want %+v", got, want)
+	}
+	if got := parseTrailerLog(""); got == nil || len(got) != 0 {
+		t.Errorf("parseTrailerLog(\"\") = %#v, want empty non-nil", got)
+	}
+}
+
+func TestGitCommits(t *testing.T) {
+	// Only commits that change a file outside the store folder, anywhere
+	// in the repository, and on every branch merged in.
+	logArgs := "log --full-history --format=" + trailerLogFormat + " HEAD -- :/ :(exclude).rhiza"
+	if got := gitCommits(nil); got != nil {
+		t.Errorf("no git: %+v", got)
+	}
+	if got := gitCommits((&fakeGit{out: map[string]string{}}).run); got != nil {
+		t.Errorf("not a work tree: %+v", got)
+	}
+	// No commit yet: git log fails, and there are no commits, not nil.
+	if got := gitCommits((&fakeGit{out: map[string]string{gitWorkTree: "true\n"}}).run); got == nil || len(got) != 0 {
+		t.Errorf("no commits: %#v", got)
+	}
+	g := &fakeGit{out: map[string]string{gitWorkTree: "true\n", logArgs: "abc\x1fActor: x\x1e\n"}}
+	want := []check.Commit{{Hash: "abc", Actors: []string{"x"}}}
+	if got := gitCommits(g.run); !reflect.DeepEqual(got, want) {
+		t.Errorf("gitCommits = %+v, want %+v (calls %q)", got, want, g.calls)
+	}
 }

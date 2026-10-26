@@ -934,6 +934,37 @@ cmp stdout describe.golden.json
             "description": "intention or record; empty without a valid open",
             "type": "string"
           },
+          "leaves": {
+            "description": "The live capabilities it adds that have no live child capability, in build order: each after every leaf it depends on, ties in tree order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "handle": {
+                  "description": "The capability's handle",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The capability's ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "needs": {
+                  "description": "The handles of every live capability it depends on, in or out of the change set, sorted",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "handle",
+                "id",
+                "needs"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "ops": {
             "description": "The current operations, as canonical op JSON, in change set order",
             "items": {},
@@ -976,6 +1007,7 @@ cmp stdout describe.golden.json
           "id",
           "intent",
           "kind",
+          "leaves",
           "ops",
           "problems",
           "sources",
@@ -1048,7 +1080,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "findings": {
-            "description": "Every finding, sorted by rule (log, fold, model, in-flight, link, render, append-only), then path and IDs",
+            "description": "Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, render, append-only), then path and IDs",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -1088,6 +1120,8 @@ cmp stdout describe.golden.json
                     "model",
                     "in-flight",
                     "link",
+                    "depends-on",
+                    "evidence-actor",
                     "render",
                     "append-only"
                   ],
@@ -5166,6 +5200,10 @@ cmp stdout describe.golden.json
             "additionalProperties": false,
             "description": "The node, when kind is node",
             "properties": {
+              "actor": {
+                "description": "Evidence only: the actor stamped on the entry that created it, its handle (its ID when it has none); no field sets it",
+                "type": "string"
+              },
               "children": {
                 "description": "The nodes directly under it, live and retired, in tree order",
                 "items": {

@@ -1,0 +1,53 @@
+{
+  "actor": "01M5WXM5WCQT92FBNNBMT6SSAH",
+  "after": [
+    "01M5X0Z419KMYPR0JSY3Z6ZT4Q"
+  ],
+  "at": "2026-10-26T21:28:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript in a git repo commits with Change: <id> and Actor: builder, then writes Evidence verifying the change set's leaf: as builder, check --json exits 0 with one warn finding on rule evidence-actor naming the four; as verifier, no such finding; a commit with no Actor: trailer yields none. Go tests run the rule on given commit trailers, so check itself still runs no git.",
+          "statement": "rhiza check warns, on a rule named evidence-actor, for each live Evidence that verifies a capability when the Evidence's actor is named in an Actor: trailer of a commit that changes a file outside .rhiza/ and carries the Change: trailer of the change set that added that capability, unless the commit's Leaf: trailers name other leaves only. The warning names the Evidence, the capability, the actor and the commit. Outside a git work tree the rule is skipped, silently."
+        },
+        "handle": "check-evidence-actor",
+        "id": "01M5WR40W9BDXA9Z2Q0VC6370D",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5WR40W9BDXA9Z2Q0T4GEM4S",
+        "op": "node.create",
+        "parent": "01M5WR40418Q8WECTQVWKZZ4QC"
+      },
+      {
+        "fields": {
+          "statement": "The evidence-actor rule counts only commits that change a file outside .rhiza/: a commit of model writes alone, such as ship's land commit or a verifier's Evidence commit, is not a leaf's code.",
+          "wording": "the agent's option, accepted by the owner when the final review found that .rhiza-only commits made every leaf warn after landing"
+        },
+        "handle": "evidence-actor-code-commits",
+        "id": "01M5X1T4PCMTCE1GK9TPAMG7MG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5X1T4PCMTCE1GK9TNHR1CT7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WR40W9BDXA9Z2Q0T4GEM4S",
+        "id": "01M5X1T4T7077MZ68PB014PCPN",
+        "link": "01M5X1T4T7077MZ68PAY5RTV2K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X1T4PCMTCE1GK9TNHR1CT7",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5WPTV0NX6YECXCPMHSEJAWY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5X1T5059XA9SD9G45Q03HPV",
+  "type": "ops",
+  "v": 1
+}

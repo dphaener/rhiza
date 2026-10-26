@@ -42,7 +42,9 @@
 // A page is these blocks, each only when it has content:
 //
 //   - "# <handle>", then "<kind> · `<ID>`", plus " · parent [<handle>](<path>)"
-//     when it has a parent ("<handle> (retired)" for a retired one).
+//     when it has a parent ("<handle> (retired)" for a retired one). An
+//     Evidence page adds " · actor <endpoint>": the actor that created it
+//     (see model.CreatedBy), when sets say who that was.
 //   - One "## <name>" per field, sorted by name. A JSON string is decoded
 //     and written as markdown, line endings made LF and leading and trailing
 //     blank lines trimmed; an empty one leaves the heading alone. Any other
@@ -118,11 +120,13 @@ type renderer struct {
 	out, in map[id.ID][]model.Link
 	// intents maps each change set in the input to its intent.
 	intents map[id.ID]string
+	// sets is the input's change sets, for each Evidence node's creator.
+	sets []changeset.ChangeSet
 }
 
 func newRenderer(m model.Model, sets []changeset.ChangeSet) *renderer {
 	r := &renderer{m: m, nodes: map[id.ID]model.Node{}, paths: map[id.ID]string{}, intents: map[id.ID]string{},
-		out: map[id.ID][]model.Link{}, in: map[id.ID][]model.Link{}}
+		out: map[id.ID][]model.Link{}, in: map[id.ID][]model.Link{}, sets: sets}
 	for _, s := range sets {
 		if _, ok := r.intents[s.ID]; !ok {
 			r.intents[s.ID] = s.Open.Intent
@@ -263,6 +267,11 @@ func (r *renderer) page(n model.Node, self string) []byte {
 	head := fmt.Sprintf("%s · `%s`", n.Kind, n.ID)
 	if !n.Parent.IsZero() {
 		head += " · parent " + r.endpoint(n.Parent, self)
+	}
+	if n.Kind == op.KindEvidence {
+		if a, ok := model.CreatedBy(n, r.sets); ok {
+			head += " · actor " + r.endpoint(a, self)
+		}
 	}
 	blocks := []string{"# " + n.Handle, head}
 	names := make([]string, 0, len(n.Fields))

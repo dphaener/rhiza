@@ -48,6 +48,16 @@ func landed(cs id.ID, intent string, ops ...op.Op) changeset.ChangeSet {
 	return changeset.ChangeSet{ID: cs, State: changeset.StateLanded, Open: changeset.Open{Intent: intent}, Ops: ops}
 }
 
+// by returns s with a History that has every op written once, by actor a:
+// what a fold of an ops entry from a gives.
+func by(s changeset.ChangeSet, a id.ID) changeset.ChangeSet {
+	s.History = map[id.ID][]changeset.Revision{}
+	for _, o := range s.Ops {
+		s.History[o.ID] = []changeset.Revision{{Entry: o.ID, Actor: a, Op: o}}
+	}
+	return s
+}
+
 func create(o, node id.ID, k op.Kind, handle string, parent id.ID, key string, fields map[string]json.RawMessage) op.Op {
 	return op.Op{ID: o, Type: op.TypeNodeCreate, Node: node, Kind: k, Handle: handle, Parent: parent, Key: key, Fields: fields}
 }
@@ -65,6 +75,7 @@ var (
 	nSell, nPCI, nPCIDup, nStripe     = fid(205), fid(206), fid(207), fid(208)
 	nWhich, nLegacy, nLegacyChild     = fid(209), fid(210), fid(211)
 	nAuditor, nGone                   = fid(212), fid(213)
+	nVerified                         = fid(214)
 
 	lServes, lConstrains, lDecided, lAnswers = fid(301), fid(302), fid(303), fid(304)
 	lRelates, lRetired, lSelf                = fid(305), fid(306), fid(307)
@@ -73,7 +84,8 @@ var (
 // handBuilt returns change sets whose as-is covers every branch of a page
 // and the index: a nested tree three deep, a duplicate handle, retired nodes
 // (one with a live child), a change set endpoint, notes, a non-string field,
-// links in and out, a retired link and a node touched by two change sets.
+// links in and out, a retired link, a node touched by two change sets and
+// Evidence whose page names the actor that wrote it.
 func handBuilt() []changeset.ChangeSet {
 	seed := landed(csSeed, "Seed the coffee shop",
 		create(fid(1), nCheckout, op.KindCapability, "checkout", id.ID{}, "i", map[string]json.RawMessage{
@@ -97,7 +109,10 @@ func handBuilt() []changeset.ChangeSet {
 		create(fid(12), nAuditor, op.KindActor, "auditor", id.ID{}, "", nil),
 		create(fid(13), nGone, op.KindSource, "old-notes", id.ID{}, "", nil),
 	)
-	wire := landed(csWire, "Wire it\nup",
+	wire := by(landed(csWire, "Wire it\nup",
+		create(fid(35), nVerified, op.KindEvidence, "checkout-verified", id.ID{}, "", map[string]json.RawMessage{
+			"result": str("PASS"),
+		}),
 		link(fid(20), lServes, op.LinkServes, nCheckout, nSell, "the main path"),
 		link(fid(21), lConstrains, op.LinkConstrains, nPCI, nCheckout, ""),
 		link(fid(22), lDecided, op.LinkDecidedBy, nCheckout, nStripe, ""),
@@ -111,7 +126,7 @@ func handBuilt() []changeset.ChangeSet {
 		op.Op{ID: fid(32), Type: op.TypeNodeRetire, Node: nLegacy, Base: fid(10), Reason: "folded into checkout"},
 		op.Op{ID: fid(33), Type: op.TypeNodeRetire, Node: nGone, Base: fid(13)},
 		op.Op{ID: fid(34), Type: op.TypeLinkRetire, Link: lRetired, Base: fid(25)},
-	)
+	), nAuditor)
 	draft := changeset.ChangeSet{ID: csDraft, State: changeset.StateDraft,
 		Open: changeset.Open{Intent: "Try a gift card flow"},
 		Ops:  []op.Op{create(fid(40), fid(220), op.KindCapability, "gift-card", nCheckout, "z", nil)}}
@@ -285,11 +300,28 @@ func TestPaths(t *testing.T) {
 		"constraint/pci." + nPCIDup.String() + ".md",
 		"constraint/pci.md",
 		"decision/use-stripe.md",
+		"evidence/checkout-verified.md",
 		"index.md",
 		"intent/sell-coffee.md",
 	}
 	if !slices.Equal(paths, want) {
 		t.Errorf("paths = %q\nwant %q", paths, want)
+	}
+}
+
+// TestEvidenceActor checks an Evidence page names the actor of the entry
+// that created it, linked to the actor's page, and that no other page does.
+func TestEvidenceActor(t *testing.T) {
+	got := renderSets(t, handBuilt())
+	page := string(got["evidence/checkout-verified.md"])
+	want := "evidence · `" + nVerified.String() + "` · actor [auditor](../actor/auditor.md)\n"
+	if !strings.Contains(page, want) {
+		t.Errorf("evidence page =\n%s\nwant a line %q", page, want)
+	}
+	for p, b := range got {
+		if p != "evidence/checkout-verified.md" && bytes.Contains(b, []byte(" · actor ")) {
+			t.Errorf("%s names an actor:\n%s", p, b)
+		}
 	}
 }
 
