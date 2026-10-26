@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5TYKQZAXDRGFXR6FQ3GPBBG"
+  ],
+  "at": "2026-10-26T02:06:14Z",
+  "body": {
+    "reason": "The owner, before stepping away: \"I'm stepping away, please accept the plans for execution when they are written for me so they can proceed.\" and later \"I want to keep it rolling\". The orchestrator reviewed the leaves against topics 4 and 5 of the milestone-2 record.",
+    "rule": "owner"
+  },
+  "change_set": "01M5SZJ03NQS0A389JF8TTMF6M",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5TZAMFN93JVAGPRMAY8EF7Y",
+  "type": "accept",
+  "v": 1
+}
