@@ -5,8 +5,8 @@ import (
 	"maps"
 	"slices"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
 )
 
 // Overlap is two in-flight change sets writing overlapping aspects of the

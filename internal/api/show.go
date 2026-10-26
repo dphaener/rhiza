@@ -13,11 +13,11 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/canon"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/index"
-	gmodel "github.com/dphaener/genesis/internal/model"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/index"
+	gmodel "github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 func init() {
@@ -115,7 +115,7 @@ type ShowLink struct {
 }
 
 // runShow resolves the ref as a node, then as a link. Neither is
-// not_found with next "genesis ls"; an ambiguous node ref is usage.
+// not_found with next "rhiza ls"; an ambiguous node ref is usage.
 func runShow(ctx *Ctx, req any) (any, error) {
 	q := req.(ShowRequest)
 	r, err := openReader(ctx, "show", q.View, defaultView)
@@ -125,7 +125,7 @@ func runShow(ctx *Ctx, req any) (any, error) {
 	defer r.Close()
 	ref := strings.TrimSpace(q.Ref)
 	if ref == "" {
-		return nil, Usagef("show takes a node or link ref").WithNext("genesis describe show")
+		return nil, Usagef("show takes a node or link ref").WithNext("rhiza describe show")
 	}
 	e := &showEnds{r: r}
 	n, err := r.Resolve(ref)

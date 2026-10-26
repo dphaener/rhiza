@@ -10,8 +10,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
 )
 
 var (
@@ -25,7 +25,7 @@ var (
 	ErrMismatch = errors.New("store: entry id or change set does not match its path")
 )
 
-// Problem is one thing wrong under log/. Path is relative to the .genesis
+// Problem is one thing wrong under log/. Path is relative to the .rhiza
 // folder, in slash form (log/<change_set>/<id>.json), and Err is never nil.
 // Decode failures keep the entry error, so errors.Is matches
 // entry.ErrInvalid or entry.ErrNewerFormat.
@@ -43,7 +43,7 @@ type Log struct {
 
 // Listing is everything ListLog found. Paths are the entry files whose
 // folder and file names parse as IDs, in slash form relative to the
-// .genesis folder (log/<change_set>/<id>.json), sorted. Problems are the
+// .rhiza folder (log/<change_set>/<id>.json), sorted. Problems are the
 // layout problems, sorted by path, then error text. Neither slice is ever
 // nil.
 type Listing struct {
@@ -52,7 +52,7 @@ type Listing struct {
 }
 
 // ReadLog reads every entry under log/ in fsys, which is rooted at a
-// .genesis folder. It never stops early: each bad file or folder becomes a
+// .rhiza folder. It never stops early: each bad file or folder becomes a
 // Problem and every good entry is kept, so one corrupt or newer-format file
 // cannot hide the rest of the log. Names starting with "." are skipped at
 // every level, since writers stage temp files that way and tools leave
@@ -72,7 +72,7 @@ func ReadLog(fsys fs.FS) Log {
 func (s *Store) ReadLog() Log { return ReadLog(os.DirFS(s.dir())) }
 
 // ListLog lists the entry files under log/ in fsys, which is rooted at a
-// .genesis folder, by name alone: it opens no entry file, so a corrupt
+// .rhiza folder, by name alone: it opens no entry file, so a corrupt
 // entry is listed, not reported. It walks log/ as ReadLog does, skipping
 // names that start with ".", and reports the same layout problems: a
 // missing or unreadable log/ or change set folder, and every stray file or
@@ -87,7 +87,7 @@ func ListLog(fsys fs.FS) Listing {
 }
 
 // ReadEntries reads and decodes exactly the given entry files in fsys,
-// which is rooted at a .genesis folder. Each path is in slash form,
+// which is rooted at a .rhiza folder. Each path is in slash form,
 // log/<change_set>/<id>.json, as ListLog returns it; the change set and ID
 // an entry must carry are parsed from its path, and a path not of that
 // form is an ErrStray problem. Like ReadLog it never stops early: a file

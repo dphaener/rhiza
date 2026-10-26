@@ -1,5 +1,5 @@
 // Package render writes the as-is model as markdown: an index and one page
-// per live node, the files `genesis render` keeps under .genesis/rendered/.
+// per live node, the files `rhiza render` keeps under .rhiza/rendered/.
 // The output is a pure function of its input: no file I/O, no clock, and the
 // same model always gives the same bytes.
 //
@@ -7,7 +7,7 @@
 //
 //   - A page is the markdown file of one live node. Retired nodes get no
 //     page; the index lists them.
-//   - A node's path is where its page goes, relative to .genesis/rendered/
+//   - A node's path is where its page goes, relative to .rhiza/rendered/
 //     and written with slashes. A capability or an intent sits at
 //     <kind>/<ancestor handles...>/<handle>.md, its ancestors' handles from
 //     the root down, whether or not they are live and whatever their kind.
@@ -68,11 +68,11 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/canon"
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/model"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // IndexPath is the index's path.
@@ -95,7 +95,7 @@ var plurals = map[op.Kind]string{
 }
 
 // Render returns the rendered files of m, the as-is view, keyed by their
-// slash path relative to .genesis/rendered/. sets gives the intents of the
+// slash path relative to .rhiza/rendered/. sets gives the intents of the
 // change sets that link endpoints and histories name; the change sets of the
 // view are expected among them. The result always holds index.md.
 func Render(m model.Model, sets []changeset.ChangeSet) map[string][]byte {

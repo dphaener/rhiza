@@ -1,6 +1,6 @@
 package check
 
-import "github.com/dphaener/genesis/internal/op"
+import "github.com/dphaener/rhiza/internal/op"
 
 // End is what one end of a link is: a node of some kind, or a change set.
 // A node's End is its kind's name (NodeEnd); a change set's is ChangeSet.

@@ -13,9 +13,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/index"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/index"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 func init() {
@@ -35,7 +35,7 @@ const (
 )
 
 // lsDescribeNext is the next command for a bad ls request.
-const lsDescribeNext = "genesis describe ls"
+const lsDescribeNext = "rhiza describe ls"
 
 // LsRequest filters and pages the nodes.
 type LsRequest struct {
@@ -143,7 +143,7 @@ func lsDecodeCursor(c string) (id.ID, error) {
 
 // lsCommand is the command line that asks for q again, without its cursor.
 func lsCommand(q LsRequest) string {
-	parts := []string{"genesis", "ls"}
+	parts := []string{"rhiza", "ls"}
 	for _, k := range q.Kinds {
 		parts = append(parts, "--kind", k)
 	}
@@ -167,7 +167,7 @@ func lsCommand(q LsRequest) string {
 func (r LsResponse) Human(w io.Writer) {
 	if len(r.Nodes) == 0 {
 		fmt.Fprintln(w, "No nodes match.")
-		fmt.Fprintln(w, "\nnext: genesis add")
+		fmt.Fprintln(w, "\nnext: rhiza add")
 		return
 	}
 	for _, n := range r.Nodes {
@@ -180,7 +180,7 @@ func (r LsResponse) Human(w io.Writer) {
 	if r.NextCursor != "" {
 		cmd := r.command
 		if cmd == "" {
-			cmd = "genesis ls"
+			cmd = "rhiza ls"
 		}
 		fmt.Fprintf(w, "\nnext: %s --cursor %s\n", cmd, r.NextCursor)
 	}

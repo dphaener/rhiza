@@ -1,6 +1,6 @@
 # apply
 
-`genesis apply <file> --json` writes many operations from one JSON file as one entry, or
+`rhiza apply <file> --json` writes many operations from one JSON file as one entry, or
 writes nothing. `-` reads stdin. Use it instead of many single writes.
 
 ## The file
@@ -37,10 +37,10 @@ order, and later items may refer to handles added by earlier ones. Unknown keys 
 
 - `--dry-run` prints the operations it would write and writes nothing.
 - `--record` lands the file in a new record change set in one step.
-- Otherwise it goes into `--change`, `GENESIS_CHANGE` or the current change set.
+- Otherwise it goes into `--change`, `RHIZA_CHANGE` or the current change set.
 - A bad item writes nothing; the error names it (`writes[2]: ...`) and `next` names
-  `genesis describe <op>`.
+  `rhiza describe <op>`.
 - Items that cancel out are an error: nothing to write.
 
-`genesis describe apply --json` gives the full schema, and `genesis describe add --json` (and
+`rhiza describe apply --json` gives the full schema, and `rhiza describe add --json` (and
 so on) each item's.

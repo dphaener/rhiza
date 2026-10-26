@@ -3,7 +3,7 @@ package check
 import (
 	"testing"
 
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // expect is the endpoint table written out a second way, as a switch, so

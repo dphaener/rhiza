@@ -7,7 +7,7 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/dphaener/genesis/internal/canon"
+	"github.com/dphaener/rhiza/internal/canon"
 )
 
 // DecodeRequest decodes data into a new value of o.Request and returns that
@@ -16,7 +16,7 @@ import (
 //
 // Decoding is strict: data must be one JSON object with no duplicate keys,
 // no unknown fields, no wrongly typed values, no non-integer numbers
-// (Genesis JSON has only integers) and nothing after it. Every failure is a
+// (Rhiza JSON has only integers) and nothing after it. Every failure is a
 // usage Error.
 func DecodeRequest(o Operation, data []byte) (any, error) {
 	ptr := reflect.New(o.Request)

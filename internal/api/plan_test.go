@@ -8,11 +8,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/index"
-	gmodel "github.com/dphaener/genesis/internal/model"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/index"
+	gmodel "github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // planID is a fixed ID whose short ID tells n apart.

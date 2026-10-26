@@ -3,8 +3,8 @@ package api
 import (
 	"testing"
 
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
 )
 
 // entryOf returns the log entry with ID e.
@@ -203,7 +203,7 @@ func TestRecordRefusedOnNonWrites(t *testing.T) {
 	} {
 		_, err := callOp(t, ctx, c.op, c.req)
 		wantExit(t, err, 2)
-		wantNext(t, err, "genesis describe "+c.op)
+		wantNext(t, err, "rhiza describe "+c.op)
 	}
 	for _, o := range Operations() {
 		want := map[string]bool{"add": true, "set": true, "mv": true, "retire": true, "link": true, "unlink": true, "apply": true, "source.add": true}[o.Name]

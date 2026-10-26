@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/index"
+	"github.com/dphaener/rhiza/internal/index"
 )
 
 // showCall calls show with req.
@@ -170,7 +170,7 @@ func TestShowErrors(t *testing.T) {
 	ctx, _, _ := readLog(t)
 	_, err := callOp(t, ctx, "show", `{"ref":"nosuch"}`)
 	wantExit(t, err, 4)
-	wantNext(t, err, "genesis ls")
+	wantNext(t, err, "rhiza ls")
 	if msg := AsError(err).Message; msg != `no node or link matches "nosuch"` {
 		t.Errorf("message %q", msg)
 	}
@@ -181,7 +181,7 @@ func TestShowErrors(t *testing.T) {
 	wantExit(t, err, 2)
 	_, err = callOp(t, ctx, "show", `{"ref":"store","view":"sideways"}`)
 	wantExit(t, err, 2)
-	wantNext(t, err, "genesis describe show")
+	wantNext(t, err, "rhiza describe show")
 
 	// An ambiguous node prefix stays a usage error.
 	r := mustReader(t, ctx, "to-be", defaultView)

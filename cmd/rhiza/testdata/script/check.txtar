@@ -1,0 +1,157 @@
+# check reports every finding of the log, the links and the rendered
+# markdown, failures first; it exits 1 on any failure and 0 when there are
+# only warnings. $WORK is no git work tree, so the append-only rule is
+# skipped with a warning throughout (check-git.txtar covers it).
+
+# A fresh repository, rendered, is ok.
+mkdir fresh
+cd fresh
+exec rhiza init
+! exec rhiza check
+stdout '^failed$'
+stdout '^fail render \.rhiza/rendered: the rendered folder is missing$'
+stdout '^  next: rhiza render$'
+exec rhiza render
+exec rhiza check
+cmp stdout $WORK/ok.txt
+
+# A stale render fails with the command that fixes it.
+cp $WORK/stale.md .rhiza/rendered/index.md
+! exec rhiza check
+stdout '^failed$'
+stdout '^fail render \.rhiza/rendered/index\.md: differs from what render writes$'
+stdout '^  next: rhiza render$'
+exec sh -c 'rhiza check >/dev/null; echo exit $?'
+stdout '^exit 1$'
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+
+# --json and api call print the same bytes, and both exit 1 on a failure.
+cp $WORK/stale.md .rhiza/rendered/index.md
+! exec rhiza check --json
+cp stdout check.json
+stdout '"ok": false'
+stdout '"rule": "render"'
+stdout '"next": "rhiza render"'
+! stdout '"change_set"'
+! exec rhiza api call check
+cmp stdout check.json
+exec sh -c 'rhiza check --json >/dev/null; echo exit $?; rhiza api call check >/dev/null; echo exit $?'
+stdout -count=2 '^exit 1$'
+exec rhiza render
+exec rhiza check --json
+cmp stdout $WORK/ok.json
+exec rhiza api call check '{}'
+cmp stdout $WORK/ok.json
+
+# Check writes nothing: --dry-run is a usage error.
+! exec rhiza check --dry-run
+stderr 'does not take --dry-run'
+stderr '^next: rhiza check$'
+exec sh -c 'rhiza check --dry-run 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+fold-ok
+
+# A link whose type does not join its endpoints' kinds fails. Writes do
+# not check endpoints; check does.
+cd $WORK
+mkdir badlink
+cd badlink
+exec rhiza init
+exec rhiza add intent fast --record
+exec rhiza add capability store --record
+exec rhiza link fast verifies store --record
+exec rhiza render
+fold-ok
+! exec rhiza check
+stdout '^fail link change set [0-9A-Z]{26}, op [0-9A-Z]{26}, link [0-9A-Z]{26}: link type "verifies" does not go from intent to capability$'
+exec rhiza unlink fast verifies store --record
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+
+# A corrupt entry file fails the log rule.
+exists .rhiza/log/01M5PWGEF85Y185JZ2ZB9QSVK7/01M5PWGEF85Y185JZ2ZEVTPAGP.json
+cp $WORK/corrupt.json .rhiza/log/01M5PWGEF85Y185JZ2ZB9QSVK7/01M5PWGEF85Y185JZ2ZEVTPAGP.json
+! exec rhiza check
+stdout '^fail log \.rhiza/log/01M5PWGEF85Y185JZ2ZB9QSVK7/01M5PWGEF85Y185JZ2ZEVTPAGP\.json: '
+
+# A landed conflict fails the model rule. Two record change sets set the
+# same field from the same base: the first is hidden while the second is
+# written (with another seed, so their IDs differ), then put back.
+cd $WORK
+mkdir conflict
+cd conflict
+exec rhiza init
+exec rhiza add capability store --record
+exec rhiza set store --field statement=A --record
+stdout '^Recorded and landed change set 01M5PWGMARA1WR6BD0MGG098MY '
+mv .rhiza/log/01M5PWGMARA1WR6BD0MGG098MY $WORK/hold
+env RHIZA_TEST_SEED=2
+exec rhiza set store --field statement=B --record
+env RHIZA_TEST_SEED=1
+mv $WORK/hold .rhiza/log/01M5PWGMARA1WR6BD0MGG098MY
+fold-ok
+exec rhiza render
+! exec rhiza check
+stdout '^fail model change set [0-9A-Z]{26}, op [0-9A-Z]{26}: model: conflict: .* is stale: .* wrote field:statement$'
+stdout '^  next: rhiza change new "Resolve the conflict on 01M5PWGEF85Y185JZ2ZMTJ11QP"$'
+
+# Two concurrent entries writing the same op only warn: an honest merge
+# leaves them. The second set is written while the first is hidden.
+cd $WORK
+mkdir concurrent
+cd concurrent
+exec rhiza init
+exec rhiza change new Shape
+exec rhiza add capability a
+exec rhiza set a --field s=1
+stdout '^Wrote entry 01M5PWGKBGYFZMTH8Y8AF1G8GN to change set 01M5PWGEF85Y185JZ2ZGCNH40N\.$'
+mv .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/01M5PWGKBGYFZMTH8Y8AF1G8GN.json $WORK/hold.json
+env RHIZA_TEST_SEED=2
+exec rhiza set a --field s=2
+env RHIZA_TEST_SEED=1
+mv $WORK/hold.json .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/01M5PWGKBGYFZMTH8Y8AF1G8GN.json
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+stdout '^warn fold \.rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/01M5PWGKBGYFZMTH8Y8AF1G8GN\.json: changeset: concurrent entries: ops [0-9A-Z]{26} and ops 01M5PWGKBGYFZMTH8Y8AF1G8GN both write op [0-9A-Z]{26}$'
+! stdout '^fail'
+
+# Outside a repository, check is not_found.
+cd $WORK
+mkdir empty
+cd empty
+! exec rhiza check
+stderr '^rhiza: no Rhiza repository in '
+stderr '^next: rhiza init$'
+! exec rhiza check --json
+stdout '"code": "not_found"'
+exec sh -c 'rhiza check 2>/dev/null; echo exit $?'
+stdout '^exit 4$'
+
+-- ok.txt --
+ok
+append-only: skipped (not a git work tree)
+
+warn append-only: append-only check skipped: not a git work tree
+-- ok.json --
+{
+  "base": "",
+  "findings": [
+    {
+      "message": "append-only check skipped: not a git work tree",
+      "rule": "append-only",
+      "severity": "warn"
+    }
+  ],
+  "ok": true,
+  "skipped": "not a git work tree"
+}
+-- stale.md --
+# Model
+
+Something else.
+-- corrupt.json --
+{"not": "an entry"

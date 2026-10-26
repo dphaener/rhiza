@@ -18,7 +18,7 @@ const (
 )
 
 // Error is an operation failure a caller can act on. Next, if set, is a
-// command that would help, such as `genesis change new "<intent>"`.
+// command that would help, such as `rhiza change new "<intent>"`.
 type Error struct {
 	Code    Code
 	Message string
@@ -32,7 +32,7 @@ func (e *Error) Error() string {
 
 // WithNext returns a copy of e with Next set, leaving e unchanged:
 //
-//	return Usagef("no change set").WithNext(`genesis change new "<intent>"`)
+//	return Usagef("no change set").WithNext(`rhiza change new "<intent>"`)
 func (e *Error) WithNext(next string) *Error {
 	c := *e
 	c.Next = next

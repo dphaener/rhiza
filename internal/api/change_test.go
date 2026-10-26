@@ -8,11 +8,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 // initCtx runs init in a temp folder and returns a Ctx over it.
@@ -84,7 +84,7 @@ func TestChangeOutsideRepo(t *testing.T) {
 		{"change.ls", `{}`},
 	} {
 		_, err := callOp(t, testCtx(t.TempDir()), c.op, c.req)
-		if ExitCode(err) != 4 || AsError(err).Next != "genesis init" {
+		if ExitCode(err) != 4 || AsError(err).Next != "rhiza init" {
 			t.Errorf("%s outside a repo: %v (exit %d, next %q)", c.op, err, ExitCode(err), AsError(err).Next)
 		}
 	}
@@ -298,7 +298,7 @@ func TestChangeShow(t *testing.T) {
 	ctx := initCtx(t)
 	_, err := callOp(t, ctx, "change.show", `{}`)
 	wantExit(t, err, 2)
-	if AsError(err).Next != "genesis change ls" {
+	if AsError(err).Next != "rhiza change ls" {
 		t.Errorf("next = %q", AsError(err).Next)
 	}
 
@@ -380,7 +380,7 @@ func TestChangeLs(t *testing.T) {
 		t.Errorf("empty ls = %+v", r)
 	}
 	if out := human(t, r); !strings.Contains(out, "No change sets yet.") ||
-		!strings.Contains(out, `next: genesis change new "<intent>"`) {
+		!strings.Contains(out, `next: rhiza change new "<intent>"`) {
 		t.Errorf("empty human:\n%s", out)
 	}
 

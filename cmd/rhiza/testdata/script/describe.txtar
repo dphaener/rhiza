@@ -1,0 +1,59 @@
+# describe lists every operation for people.
+exec rhiza describe
+stdout '^## describe$'
+stdout '^    rhiza describe \[<op>\]$'
+stdout '^- `<op>`: The operation to describe'
+! stderr .
+
+# --json gives each operation's name, summary and schemas.
+exec rhiza describe --json
+stdout '"name": "describe"'
+stdout '"request": \{'
+stdout '"response": \{'
+cp stdout describe.json
+
+# api call reaches the same operation and prints the same bytes.
+exec rhiza api call describe '{}'
+cmp stdout describe.json
+exec rhiza api call describe
+cmp stdout describe.json
+stdin empty.json
+exec rhiza api call describe -
+cmp stdout describe.json
+
+# One operation, by positional argument or by request.
+exec rhiza describe describe --json
+cp stdout one.json
+exec rhiza api call describe '{"op":"describe"}'
+cmp stdout one.json
+
+# Unknown request fields are a usage error, as JSON on stdout.
+! exec rhiza api call describe '{"bogus":1}'
+stdout '"code": "usage"'
+stdout 'unknown field'
+! stderr .
+! exec rhiza api call describe '{"bogus":1}' --json
+stdout '"code": "usage"'
+
+# Malformed JSON too.
+! exec rhiza api call describe '{'
+stdout '"code": "usage"'
+
+# An unknown operation is not found, through both transports.
+! exec rhiza describe nope
+stderr '^rhiza: unknown operation "nope"$'
+stderr '^next: rhiza describe$'
+! exec rhiza api call nope '{}'
+stdout '"code": "not_found"'
+! exec rhiza describe nope --json
+stdout '"code": "not_found"'
+stdout '"next": "rhiza describe"'
+
+# api needs call and an operation.
+! exec rhiza api
+stdout '"code": "usage"'
+! exec rhiza api call
+stdout '"code": "usage"'
+
+-- empty.json --
+{}

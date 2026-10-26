@@ -1,7 +1,7 @@
 # Sources
 
 A Source node is where an idea came from: a conversation, a meeting, an interview. Decisions
-and capabilities link to it, so `genesis why` can show the owner's own words behind them.
+and capabilities link to it, so `rhiza why` can show the owner's own words behind them.
 
 ## Two different things
 
@@ -21,14 +21,14 @@ and capabilities link to it, so `genesis why` can show the owner's own words beh
 
 ## Adding one
 
-1. Scrub the conversation with the genesis-scrub skill (`genesis guide scrub`). It writes a
+1. Scrub the conversation with the rhiza-scrub skill (`rhiza guide scrub`). It writes a
    JSON file `{"title", "summary", "quotes":[{"text", "by", "where"}]}`; `by` and `where` are
    optional, and `quotes` may be empty.
-2. `genesis source add <handle> <file.json> --raw <transcript> --json` inside a change set, or
+2. `rhiza source add <handle> <file.json> --raw <transcript> --json` inside a change set, or
    with `--record` to land it in one step. `--raw-sha256 <hex>` gives the hash when the
    transcript is elsewhere. `--dry-run` shows what it would write.
 3. Link what came from it: `derived-from` from a decision or capability to the source, and
-   `--source <handle>` on `genesis change new` for a change set that comes from it.
+   `--source <handle>` on `rhiza change new` for a change set that comes from it.
 
 ## Rules
 

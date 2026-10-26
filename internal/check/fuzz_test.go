@@ -10,12 +10,12 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 const corpusDir = "../../testdata/corpus/format-1"
 
-// corpus loads each corpus case's .genesis folder into memory, by case name.
+// corpus loads each corpus case's .rhiza folder into memory, by case name.
 func corpus(t testing.TB) map[string]fstest.MapFS {
 	t.Helper()
 	des, err := os.ReadDir(corpusDir)
@@ -27,7 +27,7 @@ func corpus(t testing.TB) map[string]fstest.MapFS {
 		if !de.IsDir() {
 			continue
 		}
-		root := os.DirFS(path.Join(corpusDir, de.Name(), ".genesis"))
+		root := os.DirFS(path.Join(corpusDir, de.Name(), ".rhiza"))
 		m := fstest.MapFS{}
 		err := fs.WalkDir(root, ".", func(p string, d fs.DirEntry, err error) error {
 			if err != nil || d.IsDir() {
@@ -65,7 +65,7 @@ func TestCorpus(t *testing.T) {
 	for name, m := range corpus(t) {
 		t.Run(name, func(t *testing.T) {
 			l := store.ReadLog(m)
-			rep := Run(Input{Log: l, Rendered: rendered(l), Base: "base"})
+			rep := Run(Input{Log: l, Rendered: rendered(l), Rev: "base"})
 			if !rep.OK {
 				t.Errorf("not OK: %+v", rep.Findings)
 			}

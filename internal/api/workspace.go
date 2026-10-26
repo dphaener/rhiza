@@ -1,7 +1,7 @@
 package api
 
 // This file holds the workspace: an open repository plus everything a write
-// needs around it, namely the current change set (.genesis/local/change),
+// needs around it, namely the current change set (.rhiza/local/change),
 // change set refs, the interim model, actor resolution and the one helper
 // that appends entries. Operations open one per call with openWorkspace and
 // pass every input explicitly; nothing here reads the environment or runs
@@ -20,31 +20,55 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dphaener/genesis/internal/canon"
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
-// The current change set file, relative to the .genesis folder.
+// The current change set file, relative to the .rhiza folder.
 const (
 	localDir    = "local"
 	currentFile = "change"
 )
 
-// FindRoot walks up from dir to the first folder holding a .genesis
-// directory and returns its absolute path. It reports false if no ancestor
-// of dir has one.
+// oldFolderNext is the command that renames the old folder.
+const oldFolderNext = "git mv " + store.OldDir + " " + store.Dir
+
+// oldFolderMessage names the old folder and the rename.
+const oldFolderMessage = "this repo keeps its model in " + store.OldDir + "/, the folder's name before the rename to Rhiza; rename it with: " + oldFolderNext
+
+// oldFolderError is the conflict every repo-needing command reports for an
+// old-style root. Where the folder is not tracked by git, plain mv does the
+// same.
+func oldFolderError() *Error {
+	return Conflictf("%s", oldFolderMessage).WithNext(oldFolderNext)
+}
+
+// isOldFolderError reports whether err is the error oldFolderError returns.
+// Error carries no cause, so the match is on the message.
+func isOldFolderError(err error) bool {
+	e := AsError(err)
+	return e != nil && e.Code == CodeConflict && e.Message == oldFolderMessage
+}
+
+// FindRoot walks up from dir to the first folder holding a .rhiza
+// directory, or the old .genesis one, and returns its absolute path. An
+// old-style root counts as found so that Open can report the rename; the
+// nearest of the two wins, and within one folder .rhiza. It reports false
+// if no ancestor of dir has either.
 func FindRoot(dir string) (string, bool) {
 	d, err := filepath.Abs(dir)
 	if err != nil {
 		return "", false
 	}
 	for {
-		if fi, err := os.Stat(filepath.Join(d, store.Dir)); err == nil && fi.IsDir() {
-			return d, true
+		for _, name := range []string{store.Dir, store.OldDir} {
+			if fi, err := os.Stat(filepath.Join(d, name)); err == nil && fi.IsDir() {
+				return d, true
+			}
 		}
 		parent := filepath.Dir(d)
 		if parent == d {
@@ -72,12 +96,15 @@ type workspace struct {
 }
 
 // openWorkspace opens the repository in root. No repository is not_found
-// with next "genesis init"; a newer-format or invalid one is an error.
+// with next "rhiza init"; a newer-format or invalid one is an error.
 func openWorkspace(root string, now func() time.Time, ids *id.Generator, dryRun bool) (*workspace, error) {
 	st, err := store.Open(root)
 	if err != nil {
+		if errors.Is(err, store.ErrOldFolder) {
+			return nil, oldFolderError()
+		}
 		if errors.Is(err, store.ErrNotFound) {
-			return nil, NotFoundf("no Genesis repository in %s", root).WithNext("genesis init")
+			return nil, NotFoundf("no Rhiza repository in %s", root).WithNext("rhiza init")
 		}
 		return nil, Errorf("%s", err.Error())
 	}
@@ -153,7 +180,7 @@ func (w *workspace) current() (id.ID, error) {
 	cs, err := id.Parse(string(bytes.TrimSpace(data)))
 	if err != nil {
 		return id.ID{}, Errorf("%s: not a change set ID: %v", w.currentPath(), err).
-			WithNext("genesis change use <change set>")
+			WithNext("rhiza change use <change set>")
 	}
 	return cs, nil
 }
@@ -227,7 +254,7 @@ func matchChangeSet(sets []id.ID, ref string) (id.ID, error) {
 		if slices.Contains(sets, full) {
 			return full, nil
 		}
-		return id.ID{}, NotFoundf("no change set %s", full).WithNext("genesis change ls")
+		return id.ID{}, NotFoundf("no change set %s", full).WithNext("rhiza change ls")
 	}
 	if len(ref) < minPrefix {
 		return id.ID{}, Usagef("change set ref %q is too short: give a full ID or %d+ characters", ref, minPrefix)
@@ -243,7 +270,7 @@ func matchChangeSet(sets []id.ID, ref string) (id.ID, error) {
 	}
 	switch len(matches) {
 	case 0:
-		return id.ID{}, NotFoundf("no change set matches %q", ref).WithNext("genesis change ls")
+		return id.ID{}, NotFoundf("no change set matches %q", ref).WithNext("rhiza change ls")
 	case 1:
 		return found, nil
 	}
@@ -272,7 +299,7 @@ func (w *workspace) effectiveChangeSet(ctx *Ctx) (id.ID, error) {
 }
 
 // newEntryNext is the next command for a write that needs a change set.
-const newEntryNext = `genesis change new "<intent>"`
+const newEntryNext = `rhiza change new "<intent>"`
 
 // appendEntry appends body to change set cs as actor for forID and returns
 // the entry, under a freshly drawn entry ID. See buildEntry for the rules.
@@ -312,7 +339,7 @@ func (w *workspace) buildEntry(cs id.ID, body changeset.Body, actor, forID, eid 
 		}
 	} else {
 		if len(es) == 0 {
-			return entry.Entry{}, NotFoundf("no change set %s", cs).WithNext("genesis change ls")
+			return entry.Entry{}, NotFoundf("no change set %s", cs).WithNext("rhiza change ls")
 		}
 		c, _ := changeset.Fold(cs, es)
 		if c.State.Terminal() && body.Type() != entry.TypeNote {

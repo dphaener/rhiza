@@ -16,8 +16,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 func init() {
@@ -39,7 +40,7 @@ type StatusRequest struct {
 // A silent response (the hook outside a repository or after an error)
 // prints nothing and encodes as {}.
 type StatusResponse struct {
-	Version   string           `json:"version" desc:"The running genesis's version"`
+	Version   string           `json:"version" desc:"The running rhiza's version"`
 	ChangeSet *StatusChangeSet `json:"change_set" desc:"The current change set, as writes resolve it; null if none"`
 	Attention StatusAttention  `json:"attention" desc:"The change sets in flight, counted by state"`
 	Guide     []StatusGuide    `json:"guide" desc:"Each installed guide found, user then project"`
@@ -47,6 +48,7 @@ type StatusResponse struct {
 
 	hook   bool
 	silent bool
+	notice string
 }
 
 // StatusChangeSet is the current change set.
@@ -70,11 +72,14 @@ type StatusGuide struct {
 	Scope   string `json:"scope" enum:"user,project" desc:"user (in the home directory) or project (in the repository)"`
 	Dir     string `json:"dir" desc:"The plugin folder"`
 	Version string `json:"version" desc:"The version it was installed by"`
-	Current bool   `json:"current" desc:"Whether that version is the running genesis's"`
+	Current bool   `json:"current" desc:"Whether that version is the running rhiza's"`
 }
 
+// oldFolderNotice is the hook's one line for an old-style root.
+const oldFolderNotice = "This repo keeps its model in " + store.OldDir + "/, the folder's name before the rename to Rhiza; rename it with: " + oldFolderNext
+
 // guideInstallNext is the command that installs or updates the user guide.
-const guideInstallNext = "genesis guide install --agent claude"
+const guideInstallNext = "rhiza guide install --agent claude"
 
 // hookIntentMax is the most bytes of intent the hook prints.
 const hookIntentMax = 60
@@ -85,6 +90,9 @@ func runStatus(ctx *Ctx, req any) (any, error) {
 	r := req.(StatusRequest)
 	resp, err := status(ctx)
 	if r.Hook {
+		if isOldFolderError(err) {
+			return StatusResponse{hook: true, silent: true, notice: oldFolderNotice}, nil
+		}
 		if err != nil {
 			return StatusResponse{hook: true, silent: true}, nil
 		}
@@ -132,7 +140,7 @@ func status(ctx *Ctx) (StatusResponse, error) {
 	}
 	places = append(places, place{"project", ctx.Root, guideInstallNext + " --project"})
 	for _, p := range places {
-		dir := filepath.Join(p.base, ".claude", "skills", "genesis")
+		dir := filepath.Join(p.base, ".claude", "skills", "rhiza")
 		v, ok := installedVersion(dir)
 		if !ok {
 			continue
@@ -166,13 +174,15 @@ func (r StatusResponse) ExitCode() int { return 0 }
 // silent.
 func (r StatusResponse) Human(w io.Writer) {
 	switch {
+	case r.notice != "":
+		fmt.Fprintln(w, r.notice)
 	case r.silent:
 		return
 	case r.hook:
 		r.humanHook(w)
 		return
 	}
-	fmt.Fprintf(w, "genesis %s\n\n", r.Version)
+	fmt.Fprintf(w, "rhiza %s\n\n", r.Version)
 	if c := r.ChangeSet; c != nil {
 		fmt.Fprintf(w, "- Change set: %s (%s): %s\n", c.ID, c.State, c.Intent)
 	} else {
@@ -200,7 +210,7 @@ func (r StatusResponse) Human(w io.Writer) {
 // humanHook prints the brief status: at most guide.StartCap tokens. Every
 // line is bounded: the intent is truncated and no version is printed.
 func (r StatusResponse) humanHook(w io.Writer) {
-	fmt.Fprintln(w, "This repo uses Genesis (load the genesis skill; `genesis guide` for more).")
+	fmt.Fprintln(w, "This repo uses Rhiza (load the rhiza skill; `rhiza guide` for more).")
 	if c := r.ChangeSet; c != nil {
 		fmt.Fprintf(w, "Change set %s (%s): %s\n", c.ID, c.State, truncate(c.Intent, hookIntentMax))
 	} else {
@@ -215,7 +225,7 @@ func (r StatusResponse) humanHook(w io.Writer) {
 	}
 	if len(updates) > 0 {
 		// No versions: a version string has no bound, the cap does.
-		fmt.Fprintf(w, "The installed genesis guide is out of date: run %s.\n", strings.Join(updates, ", "))
+		fmt.Fprintf(w, "The installed rhiza guide is out of date: run %s.\n", strings.Join(updates, ", "))
 	}
 }
 

@@ -129,10 +129,10 @@ func paramKind(t reflect.Type, f reflect.StructField) ParamKind {
 }
 
 // UsageLine returns the command-line synopsis of o, such as
-// "genesis change new <intent> [--kind <kind>]": positionals, then the
+// "rhiza change new <intent> [--kind <kind>]": positionals, then the
 // required flags, then the optional ones.
 func UsageLine(o Operation) string {
-	parts := []string{"genesis", CommandPath(o.Name)}
+	parts := []string{"rhiza", CommandPath(o.Name)}
 	ps := Params(o.Request)
 	var required, optional []string
 	for _, p := range ps {

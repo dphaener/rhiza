@@ -13,10 +13,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 // metaListing is the meta key holding the listing fingerprint; metaStats
@@ -271,7 +271,7 @@ func addFiles(tx *sql.Tx, read store.Log) (map[id.ID]bool, error) {
 	return touched, nil
 }
 
-// entryPath is the slash path of an entry file under .genesis.
+// entryPath is the slash path of an entry file under .rhiza.
 func entryPath(cs, eid id.ID) string {
 	return store.LogDir + "/" + cs.String() + "/" + eid.String() + ".json"
 }

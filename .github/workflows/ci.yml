@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-26.04
 
     steps:
-    # Full history: `genesis check` compares against origin/main by default,
+    # Full history: `rhiza check` compares against origin/main by default,
     # which a shallow pull-request checkout does not have.
     - uses: actions/checkout@v7
       with:

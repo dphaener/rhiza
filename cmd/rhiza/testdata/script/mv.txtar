@@ -1,0 +1,64 @@
+# mv moves a capability or intent: --parent or --root, and --before or
+# --after a sibling (default after the last one). On a landed node it writes
+# a node.move, and a second mv replaces it (D9); on a node added here it
+# revises the node.create.
+
+exec rhiza init
+exec rhiza change new Shape
+exec rhiza add capability store --record
+exec rhiza add capability api --record
+exec rhiza add capability log --parent store --record
+
+# A landed node: one node.move, replaced by the next mv.
+exec rhiza mv log --root
+stdout '^Wrote entry [0-9A-Z]{26} to change set 01M5PWGEF85Y185JZ2ZGCNH40N\.$'
+stdout '^- node [0-9A-Z]{26} \(log\)$'
+exec rhiza mv log --parent api --json
+stdout '"nodes": \['
+exec rhiza change show --json
+stdout '"op": "node.move"'
+stdout '"key": "i"'
+! stdout '"parent": null'
+exec rhiza change show
+stdout -count=1 '^- node.move '
+
+# Placing before a sibling.
+exec rhiza mv api --before store
+exec rhiza change show
+stdout -count=2 '^- node.move '
+
+# A node added here: its create is revised.
+exec rhiza add capability new
+exec rhiza mv new --parent store
+exec rhiza change show
+stdout -count=1 '^- node.create .*\(new\)$'
+stdout -count=2 '^- node.move '
+
+# A dry run prints the move and writes nothing.
+exec rhiza mv store --after api --dry-run
+stdout '^Dry run: would write 1 operation\(s\)'
+stdout '"op":"node.move"'
+exec rhiza change show
+stdout -count=2 '^- node.move '
+
+# Usage errors, exit 2.
+exec rhiza add decision d
+! exec rhiza mv d --root --json
+stdout '"code": "usage"'
+stdout 'not in a tree'
+! exec rhiza mv store --parent store
+stderr 'under itself or one of its descendants'
+! exec rhiza mv store --root --parent api
+stderr 'not both'
+! exec rhiza mv store
+stderr '^rhiza: nothing to move'
+! exec rhiza mv store --after new
+stderr 'not a sibling'
+! exec rhiza mv 01M5PWG --root --json
+stdout '"code": "usage"'
+
+# Unknown ref, exit 4.
+! exec rhiza mv nosuch --root --json
+stdout '"code": "not_found"'
+
+fold-ok

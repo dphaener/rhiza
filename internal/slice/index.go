@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/index"
-	"github.com/dphaener/genesis/internal/model"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/index"
+	"github.com/dphaener/rhiza/internal/model"
 )
 
 // FromIndex returns a Reader, and a LinkReader, over view v of x. It reads

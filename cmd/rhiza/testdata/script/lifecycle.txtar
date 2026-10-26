@@ -1,0 +1,95 @@
+# The lifecycle verbs: propose, accept, reject, withdraw and land. Each acts
+# on --change or the current change set; a terminal move on the current one
+# clears it.
+
+exec rhiza init
+
+# No change set: usage, exit 2.
+! exec rhiza propose --json
+stdout '"code": "usage"'
+stdout '"next": "rhiza change ls"'
+
+# The intention path: propose, accept, land.
+exec rhiza change new X
+exec rhiza propose
+stdout '^Proposed change set [0-9A-Z]{26} \(draft → proposed\)\.$'
+stdout '^next: rhiza accept$'
+exec rhiza accept --reason ok
+stdout '^Accepted change set [0-9A-Z]{26} \(proposed → accepted\)\.$'
+stdout '^Rule: owner$'
+stdout '^Reason: ok$'
+stdout '^next: rhiza land$'
+exec rhiza change show
+stdout '^- State: accepted \(current\)$'
+exec rhiza land --json
+stdout '"from": "accepted"'
+stdout '"to": "landed"'
+stdout '"cleared_current": true'
+stdout '"entry": "[0-9A-Z]{26}"'
+! exists .rhiza/local/change
+exec rhiza change ls
+stdout '^- [0-9A-Z]{26} landed intention: X$'
+! stdout '\(current\)'
+
+# Illegal moves exit 3 and name the legal step.
+exec rhiza change new Y
+! exec rhiza accept --json
+stdout '"code": "conflict"'
+stdout '"message": "cannot accept change set [0-9A-Z]{26}: it is draft"'
+stdout '"next": "rhiza propose"'
+! exec rhiza land
+stderr '^rhiza: cannot land change set [0-9A-Z]{26}: it is draft$'
+stderr '^next: rhiza propose$'
+exec rhiza propose
+! exec rhiza land --json
+stdout '"code": "conflict"'
+stdout '"next": "rhiza accept"'
+
+# A dry run writes nothing and keeps the current change set.
+exec rhiza reject --rule review --reason 'too big' --dry-run --json
+stdout '"dry_run": true'
+stdout '"to": "rejected"'
+! stdout cleared_current
+exec rhiza change show
+stdout '^- State: proposed \(current\)$'
+
+# reject ends Y and clears it.
+exec rhiza reject --rule review --reason 'too big'
+stdout '^Rejected change set [0-9A-Z]{26} \(proposed → rejected\)\.$'
+stdout '^Rule: review$'
+stdout '^No current change set now\.$'
+exec rhiza change ls
+stdout ' rejected intention: Y$'
+! exists .rhiza/local/change
+
+# A record lands from draft.
+exec rhiza change new --kind record R
+exec rhiza land
+stdout '^Landed change set [0-9A-Z]{26} \(draft → landed\)\.$'
+exec rhiza change ls
+stdout ' landed record: R$'
+
+# withdraw of a change set named with --change leaves the current one alone.
+exec rhiza change new W
+exec rhiza change new Z
+exec rhiza withdraw --change 01M5PWGT68X5XKB54XFQMHKA0A
+stdout '^Withdrew change set 01M5PWGT68X5XKB54XFQMHKA0A \(draft → withdrawn\)\.$'
+! stdout 'No current change set'
+exec rhiza change ls
+stdout '^- 01M5PWGT68X5XKB54XFQMHKA0A withdrawn intention: W$'
+stdout ': Z \(current\)$'
+
+# A terminal change set takes nothing more.
+! exec rhiza land --change 01M5PWGT68X5XKB54XFQMHKA0A --json
+stdout '"code": "conflict"'
+stdout '"next": "rhiza change new \\"<intent>\\""'
+
+# withdraw of the current change set clears it.
+exec rhiza withdraw
+stdout '^Withdrew change set [0-9A-Z]{26} \(draft → withdrawn\)\.$'
+stdout '^No current change set now\.$'
+! exists .rhiza/local/change
+exec rhiza change ls
+stdout ' withdrawn intention: Z$'
+
+fold-ok

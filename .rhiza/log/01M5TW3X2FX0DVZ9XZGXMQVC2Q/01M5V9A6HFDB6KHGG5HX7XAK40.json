@@ -1,0 +1,76 @@
+{
+  "actor": "01M5V99ZQ3ZGWYADC18J5W5GWD",
+  "after": [
+    "01M5TW401M283SRH66Z7CD6RCG"
+  ],
+  "at": "2026-10-26T05:00:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M5SWRGYQGD0QD427DNTS54XF",
+        "handle": "rhiza",
+        "id": "01M5V9A603YRWCEA5F9B4JJ91S",
+        "node": "01M5SWRGYQGD0QD427DMK4RTM2",
+        "op": "node.update",
+        "set": {
+          "statement": "Rhiza keeps the model of a product, what it is, why it is that way and what is planned, inside its repo, so anyone can build quality software with agents."
+        },
+        "unset": []
+      },
+      {
+        "fields": {
+          "result": "PASS under make check on branch cs/rename-to-rhiza",
+          "statement": "The check unit tests in internal/check and internal/api, and the check-move.txtar testscript, show check judging log entries by ID and bytes, so an entry moved from .genesis/log to .rhiza/log passes and an edited or deleted one fails. They pass.",
+          "tests": "go test: internal/check (all), internal/api TestCheckInputPreRename; testscript: check-move.txtar"
+        },
+        "handle": "check-identity-verified",
+        "id": "01M5V9A637FQP6C6SYNYJFTZ29",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5V9A637FQP6C6SYNVCPHS1K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5V9A637FQP6C6SYNVCPHS1K",
+        "id": "01M5V9A66BB4KVJ7WVWDR5QMSG",
+        "link": "01M5V9A66BB4KVJ7WVWAAMDX3J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TW3X7X0YSDRC8Y6Y9JTF20",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS under make check on branch cs/rename-to-rhiza",
+          "statement": "The old-folder.txtar testscript and the store tests show a repo with only a .genesis folder getting the old-folder notice (conflict, exit 3, Next git mv .genesis .rhiza) instead of acting as uninitialised. They pass.",
+          "tests": "go test: internal/store (ErrOldFolder); testscript: old-folder.txtar"
+        },
+        "handle": "old-folder-verified",
+        "id": "01M5V9A69GJR7P3AR7V6RSJBTN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5V9A69GJR7P3AR7V4DHEHZ4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5V9A69GJR7P3AR7V4DHEHZ4",
+        "id": "01M5V9A6CNJNYMS7JXQSZQDY7N",
+        "link": "01M5V9A6CNJNYMS7JXQQ9S3AEW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TW3XE94JPEKQ1CDJCFJKAY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5TW3X2FX0DVZ9XZGXMQVC2Q",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5V9A6HFDB6KHGG5HX7XAK40",
+  "type": "ops",
+  "v": 1
+}

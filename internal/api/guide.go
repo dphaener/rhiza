@@ -8,13 +8,13 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/dphaener/genesis/internal/guide"
+	"github.com/dphaener/rhiza/internal/guide"
 )
 
 func init() {
 	register(Operation{
 		Name:     "guide",
-		Summary:  "Print the agent guide: the genesis skill, the scrub skill or a topic",
+		Summary:  "Print the agent guide: the rhiza skill, the scrub skill or a topic",
 		Request:  reflect.TypeFor[GuideRequest](),
 		Response: reflect.TypeFor[GuideResponse](),
 		Run:      runGuide,
@@ -30,13 +30,13 @@ func init() {
 
 // GuideRequest asks for one text of the guide.
 type GuideRequest struct {
-	Name string `json:"name,omitempty" arg:"0" desc:"The text to print: genesis (the default), scrub or a topic name; genesis guide ls lists them"`
+	Name string `json:"name,omitempty" arg:"0" desc:"The text to print: rhiza (the default), scrub or a topic name; rhiza guide ls lists them"`
 }
 
 // GuideResponse is one text of the guide.
 type GuideResponse struct {
 	Name    string `json:"name" desc:"The text's name"`
-	Version string `json:"version" desc:"The genesis version the text ships in"`
+	Version string `json:"version" desc:"The rhiza version the text ships in"`
 	Text    string `json:"text" desc:"The text, as markdown"`
 }
 
@@ -50,12 +50,12 @@ type GuideLsRequest struct{}
 
 // GuideLsResponse lists the guide's texts.
 type GuideLsResponse struct {
-	Texts []GuideTextInfo `json:"texts" desc:"The texts: the genesis skill, the scrub skill, then the topics by name"`
+	Texts []GuideTextInfo `json:"texts" desc:"The texts: the rhiza skill, the scrub skill, then the topics by name"`
 }
 
 // GuideTextInfo describes one text of the guide.
 type GuideTextInfo struct {
-	Name        string `json:"name" desc:"What genesis guide takes"`
+	Name        string `json:"name" desc:"What rhiza guide takes"`
 	Kind        string `json:"kind" enum:"skill,topic" desc:"skill or topic"`
 	Tokens      int    `json:"tokens" desc:"The text's estimated size in tokens"`
 	Description string `json:"description" desc:"When to load it"`
@@ -76,7 +76,7 @@ func runGuide(ctx *Ctx, req any) (any, error) {
 	r := req.(GuideRequest)
 	t, ok := guide.Lookup(r.Name)
 	if !ok {
-		return nil, NotFoundf("no guide text %q", r.Name).WithNext("genesis guide ls")
+		return nil, NotFoundf("no guide text %q", r.Name).WithNext("rhiza guide ls")
 	}
 	return GuideResponse{Name: t.Name, Version: ctx.Version, Text: t.Body}, nil
 }

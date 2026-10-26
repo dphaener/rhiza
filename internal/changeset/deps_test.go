@@ -5,8 +5,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // dep is a depends-on link.create with op ID fid(600+n) and link ID

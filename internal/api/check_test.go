@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/check"
+	"github.com/dphaener/rhiza/internal/check"
 )
 
 // fakeGit answers git calls from a table keyed by the space-joined
@@ -29,7 +29,8 @@ func (g *fakeGit) run(args ...string) (string, error) {
 
 const (
 	gitWorkTree = "rev-parse --is-inside-work-tree"
-	diffArgs    = "diff --name-status --no-renames -z --relative "
+	lsTreeArgs  = "ls-tree -r -z "
+	logSpec     = " -- .rhiza/log .genesis/log"
 )
 
 func verifyArgs(rev string) string { return "rev-parse --verify --quiet " + rev + "^{commit}" }
@@ -96,37 +97,117 @@ func TestCheckBase(t *testing.T) {
 	}
 }
 
-func TestParseNameStatus(t *testing.T) {
-	for _, c := range []struct {
-		in   string
-		want []check.Change
-	}{
-		{"", nil},
-		{"A\x00.genesis/log/a/b.json\x00", []check.Change{{Status: "A", Path: ".genesis/log/a/b.json"}}},
-		{"M\x00.genesis/log/a/b.json\x00D\x00.genesis/log/a/c d.json\x00T\x00.genesis/log/\"q\".json\x00",
-			[]check.Change{{Status: "M", Path: ".genesis/log/a/b.json"}, {Status: "D", Path: ".genesis/log/a/c d.json"},
-				{Status: "T", Path: `.genesis/log/"q".json`}}},
-		// A trailing status with no path is dropped.
-		{"M\x00", nil},
+func TestGitBlob(t *testing.T) {
+	// The IDs `git hash-object` prints for these bytes.
+	for in, want := range map[string]string{
+		"":        "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+		"hello\n": "ce013625030ba8dba906f756967f9e9ca394464a",
 	} {
-		got := parseNameStatus(c.in)
-		if !slices.Equal(got, c.want) {
-			t.Errorf("parseNameStatus(%q) = %v, want %v", c.in, got, c.want)
+		if got := gitBlob([]byte(in)); got != want {
+			t.Errorf("gitBlob(%q) = %s, want %s", in, got, want)
 		}
+	}
+}
+
+func TestParseLsTree(t *testing.T) {
+	line := func(typ, obj, p string) string { return "100644 " + typ + " " + obj + "\t" + p + "\x00" }
+	for _, c := range []struct {
+		name string
+		in   string
+		want []check.Entry
+	}{
+		{name: "Empty"},
+		{name: "One", in: line("blob", "b1", ".rhiza/log/cs/e.json"),
+			want: []check.Entry{{ID: "e", Path: ".rhiza/log/cs/e.json", Blob: "b1"}}},
+		{name: "SortedOnceVerbatim",
+			in: line("blob", "b2", ".rhiza/log/cs/z \"q\".json") + line("blob", "b1", ".rhiza/log/cs/a.json") +
+				line("blob", "b1", ".rhiza/log/cs/a.json"),
+			want: []check.Entry{{ID: "a", Path: ".rhiza/log/cs/a.json", Blob: "b1"},
+				{ID: `z "q"`, Path: `.rhiza/log/cs/z "q".json`, Blob: "b2"}}},
+		// Not entries: the .gitkeep, dot folders and files, other names and
+		// depths, other folders, a submodule, a truncated line.
+		{name: "Skips", in: line("blob", "k", ".rhiza/log/.gitkeep") +
+			line("blob", "k", ".rhiza/log/.x/e.json") + line("blob", "k", ".rhiza/log/cs/.e.json") +
+			line("blob", "k", ".rhiza/log/cs/e.txt") + line("blob", "k", ".rhiza/log/e.json") +
+			line("blob", "k", ".rhiza/log/cs/d/e.json") + line("blob", "k", ".rhiza/repo.json") +
+			line("blob", "k", "other/log/cs/e.json") + line("commit", "k", ".rhiza/log/cs/m.json") +
+			"100644 blob k"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			if got := parseLsTree(c.in); !slices.Equal(got, c.want) {
+				t.Errorf("parseLsTree = %+v, want %+v", got, c.want)
+			}
+		})
+	}
+}
+
+func TestCurrentEntries(t *testing.T) {
+	root := t.TempDir()
+	if es, err := currentEntries(root); err != nil || es != nil {
+		t.Fatalf("no log: %v, %v", es, err)
+	}
+	logDir := filepath.Join(root, ".rhiza", "log")
+	for p, b := range map[string]string{
+		"cs2/e2.json": "hello\n", "cs1/e1.json": "", "cs1/bad.json": "{not json",
+		".gitkeep": "", "e0.json": "", ".hidden/e3.json": "", "cs1/.e4.json": "", "cs1/e5.txt": "",
+	} {
+		full := filepath.Join(logDir, filepath.FromSlash(p))
+		if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(full, []byte(b), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.Mkdir(filepath.Join(logDir, "cs1", "dir.json"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	es, err := currentEntries(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []check.Entry{
+		{ID: "bad", Path: ".rhiza/log/cs1/bad.json", Blob: gitBlob([]byte("{not json"))},
+		{ID: "e1", Path: ".rhiza/log/cs1/e1.json", Blob: "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"},
+		{ID: "e2", Path: ".rhiza/log/cs2/e2.json", Blob: "ce013625030ba8dba906f756967f9e9ca394464a"},
+	}
+	if !slices.Equal(es, want) {
+		t.Errorf("currentEntries = %+v, want %+v", es, want)
+	}
+}
+
+// writeEntry writes bytes b at the entry path p under ctx's root.
+func writeEntry(t *testing.T, ctx *Ctx, p, b string) {
+	t.Helper()
+	full := filepath.Join(ctx.Root, filepath.FromSlash(p))
+	if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(full, []byte(b), 0o644); err != nil {
+		t.Fatal(err)
 	}
 }
 
 func TestCheckInputChanges(t *testing.T) {
 	ctx := initCtx(t)
+	const (
+		edited = ".rhiza/log/x/y.json"
+		gone   = ".rhiza/log/x/z.json"
+		moved  = ".rhiza/log/w/m.json"
+	)
+	writeEntry(t, ctx, edited, "now\n")
+	writeEntry(t, ctx, ".rhiza/log/v/m.json", "same\n")
+	base := func(p, b string) string { return "100644 blob " + gitBlob([]byte(b)) + "\t" + p + "\x00" }
 	g := &fakeGit{out: map[string]string{
-		gitWorkTree:                         "true\n",
-		verifyArgs("main"):                  "m\n",
-		"merge-base HEAD main":              "abc\n",
-		diffArgs + "abc -- .genesis/log":    "M\x00.genesis/log/x/y.json\x00",
-		diffArgs + "HEAD~1 -- .genesis/log": "",
-		verifyArgs("HEAD~1"):                "h\n",
-		diffArgs + "broken -- .genesis/log": "",
-		verifyArgs("broken"):                "b\n",
+		gitWorkTree:            "true\n",
+		verifyArgs("main"):     "m\n",
+		"merge-base HEAD main": "abc\n",
+		lsTreeArgs + "abc" + logSpec: base(edited, "then\n") + base(gone, "z\n") + base(moved, "same\n") +
+			base(".rhiza/log/.gitkeep", ""),
+		lsTreeArgs + "HEAD~1" + logSpec: "",
+		verifyArgs("HEAD~1"):            "h\n",
+		lsTreeArgs + "broken" + logSpec: "",
+		verifyArgs("broken"):            "b\n",
 	}}
 	ctx.Git = g.run
 	resp, err := callOp(t, ctx, "check", `{}`)
@@ -137,30 +218,81 @@ func TestCheckInputChanges(t *testing.T) {
 	if r.Base != "abc" || r.MergeBaseOf != "main" || r.Skipped != "" {
 		t.Errorf("base %q from %q skipped %q", r.Base, r.MergeBaseOf, r.Skipped)
 	}
-	if !slices.ContainsFunc(r.Findings, func(f CheckFinding) bool {
-		return f.Rule == check.RuleAppendOnly && f.Path == ".genesis/log/x/y.json" && f.Next == "git checkout abc -- .genesis/log/x/y.json"
-	}) {
-		t.Errorf("no append-only finding: %+v", r.Findings)
+	var got []CheckFinding
+	for _, f := range r.Findings {
+		if f.Rule == check.RuleAppendOnly {
+			got = append(got, f)
+		}
+	}
+	// The moved entry kept its bytes, so only the edit and the deletion
+	// fail; the missing .gitkeep is not an entry.
+	want := []CheckFinding{
+		{Severity: "fail", Rule: "append-only", Path: edited, Entry: "y",
+			Message: "log entry y modified since the base; entries may only be added",
+			Next:    "git checkout abc -- " + edited},
+		{Severity: "fail", Rule: "append-only", Path: gone, Entry: "z",
+			Message: "log entry z deleted since the base; entries may only be added",
+			Next:    "git checkout abc -- " + gone},
+	}
+	if !slices.Equal(got, want) {
+		t.Errorf("append-only findings\n got %+v\nwant %+v", got, want)
 	}
 	if r.OK || r.ExitCode() != 1 {
 		t.Errorf("ok %v exit %d", r.OK, r.ExitCode())
 	}
 	out := human(t, r)
 	for _, s := range []string{"failed\n", "base: abc (merge-base of HEAD and main)\n",
-		"fail append-only .genesis/log/x/y.json: log file modified",
-		"  next: git checkout abc -- .genesis/log/x/y.json\n"} {
+		"fail append-only .rhiza/log/x/y.json: log entry y modified since the base",
+		"  next: git checkout abc -- .rhiza/log/x/y.json\n"} {
 		if !strings.Contains(out, s) {
 			t.Errorf("human lacks %q:\n%s", s, out)
 		}
 	}
 
-	// A diff that fails is an error, not a silent pass.
-	delete(g.out, diffArgs+"broken -- .genesis/log")
+	// A listing that fails is an error, not a silent pass.
+	delete(g.out, lsTreeArgs+"broken"+logSpec)
 	_, err = callOp(t, ctx, "check", `{"base":"broken"}`)
 	wantExit(t, err, 1)
 
 	_, err = callOp(t, ctx, "check", `{"base":"nope"}`)
 	wantExit(t, err, 2)
+}
+
+// A base from before the rename keeps its log at .genesis/log: an entry
+// moved to .rhiza/log with its bytes passes, an edited or deleted one fails
+// with a Next that restores it and moves it under .rhiza/.
+func TestCheckInputPreRename(t *testing.T) {
+	ctx := initCtx(t)
+	writeEntry(t, ctx, ".rhiza/log/x/kept.json", "same\n")
+	writeEntry(t, ctx, ".rhiza/log/x/edited.json", "now\n")
+	base := func(p, b string) string { return "100644 blob " + gitBlob([]byte(b)) + "\t" + p + "\x00" }
+	ctx.Git = (&fakeGit{out: map[string]string{
+		gitWorkTree:       "true\n",
+		verifyArgs("old"): "o\n",
+		lsTreeArgs + "old" + logSpec: base(".genesis/log/x/kept.json", "same\n") +
+			base(".genesis/log/x/edited.json", "then\n") + base(".genesis/log/x/gone.json", "z\n"),
+	}}).run
+	resp, err := callOp(t, ctx, "check", `{"base":"old"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got []CheckFinding
+	for _, f := range resp.(CheckResponse).Findings {
+		if f.Rule == check.RuleAppendOnly {
+			got = append(got, f)
+		}
+	}
+	want := []CheckFinding{
+		{Severity: "fail", Rule: "append-only", Path: ".genesis/log/x/gone.json", Entry: "gone",
+			Message: "log entry gone deleted since the base; entries may only be added",
+			Next:    "git checkout old -- .genesis/log/x/gone.json && git mv .genesis/log/x/gone.json .rhiza/log/x/gone.json"},
+		{Severity: "fail", Rule: "append-only", Path: ".rhiza/log/x/edited.json", Entry: "edited",
+			Message: "log entry edited modified since the base, where it was .genesis/log/x/edited.json; entries may only be added",
+			Next:    "git checkout old -- .genesis/log/x/edited.json && git mv -f .genesis/log/x/edited.json .rhiza/log/x/edited.json"},
+	}
+	if !slices.Equal(got, want) {
+		t.Errorf("append-only findings\n got %+v\nwant %+v", got, want)
+	}
 }
 
 func TestCheckFreshRepo(t *testing.T) {
@@ -197,8 +329,8 @@ func TestCheckFailsFirst(t *testing.T) {
 		t.Fatalf("check = %+v", r)
 	}
 	want := "failed\nappend-only: skipped (not a git work tree)\n\n" +
-		"fail render .genesis/rendered: the rendered folder is missing\n" +
-		"  next: genesis render\n" +
+		"fail render .rhiza/rendered: the rendered folder is missing\n" +
+		"  next: rhiza render\n" +
 		"warn append-only: append-only check skipped: not a git work tree\n"
 	if out := human(t, r); out != want {
 		t.Errorf("human:\n%s\nwant:\n%s", out, want)
@@ -219,7 +351,7 @@ func TestCheckFindingWhere(t *testing.T) {
 		f    CheckFinding
 		want string
 	}{
-		{CheckFinding{Severity: "fail", Rule: "log", Path: ".genesis/log/a", Message: "bad"}, "fail log .genesis/log/a: bad"},
+		{CheckFinding{Severity: "fail", Rule: "log", Path: ".rhiza/log/a", Message: "bad"}, "fail log .rhiza/log/a: bad"},
 		{CheckFinding{Severity: "fail", Rule: "model", ChangeSet: "C", Op: "O", Message: "m"}, "fail model change set C, op O: m"},
 		{CheckFinding{Severity: "fail", Rule: "link", ChangeSet: "C", Op: "O", Link: "L", Message: "m"}, "fail link change set C, op O, link L: m"},
 		{CheckFinding{Severity: "warn", Rule: "fold", ChangeSet: "C", Entry: "E", Message: "m"}, "warn fold change set C, entry E: m"},
@@ -235,11 +367,11 @@ func TestCheckErrors(t *testing.T) {
 	ctx := testCtx(t.TempDir())
 	_, err := callOp(t, ctx, "check", `{}`)
 	wantExit(t, err, 4)
-	wantNext(t, err, "genesis init")
+	wantNext(t, err, "rhiza init")
 
 	ctx = initCtx(t)
 	ctx.DryRun = true
 	_, err = callOp(t, ctx, "check", `{}`)
 	wantExit(t, err, 2)
-	wantNext(t, err, "genesis check")
+	wantNext(t, err, "rhiza check")
 }

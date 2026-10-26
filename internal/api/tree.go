@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 func init() {
@@ -64,11 +64,11 @@ func runTree(ctx *Ctx, req any) (any, error) {
 	kind, ok := treeKinds[q.Kind]
 	if q.Kind != "" && !ok {
 		return nil, Usagef("unknown tree kind %q: give capability or intent", q.Kind).
-			WithNext("genesis describe tree")
+			WithNext("rhiza describe tree")
 	}
 	if q.Depth < 0 {
 		return nil, Usagef("depth %d is negative: give 0 for the whole tree, or more", q.Depth).
-			WithNext("genesis describe tree")
+			WithNext("rhiza describe tree")
 	}
 	r, err := openReader(ctx, "tree", q.View, defaultView)
 	if err != nil {
@@ -84,11 +84,11 @@ func runTree(ctx *Ctx, req any) (any, error) {
 		}
 		if !op.HasParent(n.Kind) {
 			return nil, Usagef("%s is %s %s, which is not in a tree", displayName(n), article(string(n.Kind)), n.Kind).
-				WithNext("genesis show " + ref)
+				WithNext("rhiza show " + ref)
 		}
 		if q.Kind != "" && kind != n.Kind {
 			return nil, Usagef("%s is %s %s, not %s %s", displayName(n), article(string(n.Kind)), n.Kind, article(q.Kind), q.Kind).
-				WithNext("genesis tree " + ref)
+				WithNext("rhiza tree " + ref)
 		}
 		root, kind = n.ID, n.Kind
 	} else if kind == "" {
@@ -133,10 +133,10 @@ func treePlural(k op.Kind) string {
 func (r TreeResponse) Human(w io.Writer) {
 	if len(r.Nodes) == 0 {
 		if !r.Root.IsZero() {
-			fmt.Fprintf(w, "Nothing to show: %s is retired.\n\nnext: genesis tree %s --retired\n", r.Root, r.Root)
+			fmt.Fprintf(w, "Nothing to show: %s is retired.\n\nnext: rhiza tree %s --retired\n", r.Root, r.Root)
 			return
 		}
-		fmt.Fprintf(w, "No %s yet.\n\nnext: genesis add %s <handle>\n", treePlural(r.Kind), r.Kind)
+		fmt.Fprintf(w, "No %s yet.\n\nnext: rhiza add %s <handle>\n", treePlural(r.Kind), r.Kind)
 		return
 	}
 	for _, n := range r.Nodes {

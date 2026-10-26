@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 // Model is what the write operations need to know about the graph: refs,
@@ -27,7 +27,7 @@ import (
 type Model interface {
 	// Resolve finds a node by ref (see the ref rules on newModel). Retired
 	// nodes resolve by ID and ID prefix, never by handle. No match is a
-	// not_found Error with next "genesis ls"; several are a usage Error
+	// not_found Error with next "rhiza ls"; several are a usage Error
 	// listing the candidates.
 	Resolve(ref string) (Node, error)
 	// Node returns the node with ID n, retired or not.

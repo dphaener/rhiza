@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/canon"
+	"github.com/dphaener/rhiza/internal/canon"
 )
 
 // Humaner is implemented by every response type: Human writes the response
@@ -53,7 +53,7 @@ func runDescribe(_ *Ctx, req any) (any, error) {
 	if r.Op != "" {
 		o, ok := Lookup(r.Op)
 		if !ok {
-			return nil, NotFoundf("unknown operation %q", r.Op).WithNext("genesis describe")
+			return nil, NotFoundf("unknown operation %q", r.Op).WithNext("rhiza describe")
 		}
 		ops = []Operation{o}
 	}
@@ -94,7 +94,7 @@ func (r DescribeResponse) Human(w io.Writer) {
 		}
 		fmt.Fprintf(w, "\n    %s\n", UsageLine(o))
 		if o.Input != nil {
-			fmt.Fprintf(w, "\nInput: %s. Its schema: genesis describe %s --json\n", o.Input.Summary, info.Name)
+			fmt.Fprintf(w, "\nInput: %s. Its schema: rhiza describe %s --json\n", o.Input.Summary, info.Name)
 		}
 		ps := Params(o.Request)
 		if len(ps) == 0 {

@@ -18,9 +18,9 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // order returns sets in apply order, as described above, with an ErrCycle

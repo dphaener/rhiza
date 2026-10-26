@@ -6,28 +6,28 @@ Guidance for Claude Code when working in this repository.
 
 The Rails/Ruby rules in `~/code/.claude/rules/` (`stack.md`, `global.md`,
 `ui-standards.md`, `boundaries.md`) are loaded only because this repo sits
-under `~/code`. They do not apply to Genesis. Ignore them: there is no Rails,
+under `~/code`. They do not apply to Rhiza. Ignore them: there is no Rails,
 Ruby, RSpec, Tailwind or ERB here.
 
 ## Stack and shape
 
-- Go, one binary: `genesis`. The future daemon is the same binary, not a
+- Go, one binary: `rhiza`. The future daemon is the same binary, not a
   second one.
-- Pure domain packages go under `internal/`. `cmd/genesis` stays a thin CLI
+- Pure domain packages go under `internal/`. `cmd/rhiza` stays a thin CLI
   over them: argument parsing, output and exit codes only.
 - Operations live in `internal/api`: transport-independent, one registry,
   schemas reflected from the Go request/response types. Its interim model
   (over `changeset.FoldLog`) is to be replaced by projection.
-- `cmd/genesis` is a generic frame: it maps argv to requests through the
-  request structs' tags (`arg`, `flag`, `desc`). `genesis <cmd> --json` and
-  `genesis api call <op>` reach the same handler and print the same bytes.
+- `cmd/rhiza` is a generic frame: it maps argv to requests through the
+  request structs' tags (`arg`, `flag`, `desc`). `rhiza <cmd> --json` and
+  `rhiza api call <op>` reach the same handler and print the same bytes.
 
 ## Commands
 
 ```bash
-make            # build ./genesis in the repo root
+make            # build ./rhiza in the repo root
 make check      # everything CI runs (fmt-check + vet + test + self-check)
-make self-check # genesis check on this repo, with this commit's build
+make self-check # rhiza check on this repo, with this commit's build
 make test       # go test ./...
 make fmt        # gofmt every Go file in place
 make install    # build into ~/bin (PREFIX=... to override)
@@ -35,34 +35,34 @@ make install    # build into ~/bin (PREFIX=... to override)
 
 Run `make check` before calling any change done.
 
-Genesis keeps its own `.genesis/` here, and `make check` runs `genesis check`
-on it. After landing a change set, run `genesis render` and commit
-`.genesis/rendered/`, or `make check` fails on stale rendered files.
+Rhiza keeps its own `.rhiza/` here, and `make check` runs `rhiza check`
+on it. After landing a change set, run `rhiza render` and commit
+`.rhiza/rendered/`, or `make check` fails on stale rendered files.
 
 ## Tests
 
-- Scenarios are testscript files in `cmd/genesis/testdata/script/*.txtar`.
-  They run in-process via `testscript.Main` in `cmd/genesis/main_test.go`,
-  never against the `genesis` on `$PATH`.
-- Git inside scripts is hermetic: the `Setup` in `cmd/genesis/main_test.go`
+- Scenarios are testscript files in `cmd/rhiza/testdata/script/*.txtar`.
+  They run in-process via `testscript.Main` in `cmd/rhiza/main_test.go`,
+  never against the `rhiza` on `$PATH`.
+- Git inside scripts is hermetic: the `Setup` in `cmd/rhiza/main_test.go`
   gives each script its own `HOME` and global git config.
 - No test touches the network, Rex, agents or `gh`.
 - Nothing binds a unix socket in the default test run.
-- Every script runs with `GENESIS_TEST_NOW` and `GENESIS_TEST_SEED` set, so
+- Every script runs with `RHIZA_TEST_NOW` and `RHIZA_TEST_SEED` set, so
   IDs and times are deterministic. Both are offset by the entries in the log
   (plus one for `repo.json`), so each run draws fresh IDs and a `--dry-run`
   predicts the next real run's.
-- The `fold-ok` script command checks that `.genesis` reads and folds with
+- The `fold-ok` script command checks that `.rhiza` reads and folds with
   no problems.
 - `describe-golden.txtar` holds `describe --json`. Regenerate it when a
   request or response type changes:
-  `go test ./cmd/genesis -run TestScripts/describe-golden -update`.
+  `go test ./cmd/rhiza -run TestScripts/describe-golden -update`.
 
 ## Binaries
 
 - Build scratch binaries outside `$PATH`:
-  `go build -o $TMPDIR/genesis-x ./cmd/genesis && $TMPDIR/genesis-x version`.
-  `~/bin/genesis` is one slot shared by every worktree, so it may not be yours.
+  `go build -o $TMPDIR/rhiza-x ./cmd/rhiza && $TMPDIR/rhiza-x version`.
+  `~/bin/rhiza` is one slot shared by every worktree, so it may not be yours.
 - Never `cp` a Go binary on arm64. Its ad-hoc signature is bound to the path
   it was linked at; a copy gets SIGKILLed (exit 137, no output). Recover one
   with `codesign --force --sign - <path>`.

@@ -7,10 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // move runs a lifecycle operation and fails the test on error.
@@ -71,7 +71,7 @@ func TestLifecycleIntentionPath(t *testing.T) {
 	if r.From != changeset.StateProposed || r.To != changeset.StateAccepted || r.Rule != "owner" || r.Reason != "ok" {
 		t.Errorf("accept = %+v", r)
 	}
-	if out := human(t, r); !strings.Contains(out, "next: genesis land") {
+	if out := human(t, r); !strings.Contains(out, "next: rhiza land") {
 		t.Errorf("accept human:\n%s", out)
 	}
 	c := foldedState(t, ctx, cs)
@@ -152,12 +152,12 @@ func TestLifecycleIllegal(t *testing.T) {
 		op    string
 		next  string
 	}{
-		{"land draft intention", nil, "land", "genesis propose"},
-		{"land proposed intention", []string{"propose"}, "land", "genesis accept"},
-		{"accept draft", nil, "accept", "genesis propose"},
-		{"reject draft", nil, "reject", "genesis propose"},
-		{"accept accepted", []string{"propose", "accept"}, "accept", "genesis land"},
-		{"propose proposed", []string{"propose"}, "propose", "genesis accept"},
+		{"land draft intention", nil, "land", "rhiza propose"},
+		{"land proposed intention", []string{"propose"}, "land", "rhiza accept"},
+		{"accept draft", nil, "accept", "rhiza propose"},
+		{"reject draft", nil, "reject", "rhiza propose"},
+		{"accept accepted", []string{"propose", "accept"}, "accept", "rhiza land"},
+		{"propose proposed", []string{"propose"}, "propose", "rhiza accept"},
 		{"withdraw landed", []string{"propose", "accept", "land"}, "withdraw", newEntryNext},
 		{"accept rejected", []string{"propose", "reject"}, "accept", newEntryNext},
 		{"land withdrawn", []string{"withdraw"}, "land", newEntryNext},
@@ -256,7 +256,7 @@ func TestLifecycleNoChangeSet(t *testing.T) {
 	ctx.ChangeRef = "ZZZZZZ"
 	_, err := callOp(t, ctx, "propose", `{}`)
 	wantExit(t, err, 4)
-	if _, err := os.Stat(ctx.Root + "/.genesis/log"); err != nil {
+	if _, err := os.Stat(ctx.Root + "/.rhiza/log"); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -310,9 +310,9 @@ func TestLandDependencies(t *testing.T) {
 	t.Run("Accepted", func(t *testing.T) {
 		ctx, a, b := stackedPair(t)
 		want := "cannot land change set " + b.String() + ": it depends on " + a.String() + " (accepted)"
-		wantLandRefused(t, ctx, b, want, "genesis land --change "+shortID(a))
+		wantLandRefused(t, ctx, b, want, "rhiza land --change "+shortID(a))
 		ctx.DryRun = true
-		wantLandRefused(t, ctx, b, want, "genesis land --change "+shortID(a))
+		wantLandRefused(t, ctx, b, want, "rhiza land --change "+shortID(a))
 	})
 
 	t.Run("InOrder", func(t *testing.T) {
@@ -331,7 +331,7 @@ func TestLandDependencies(t *testing.T) {
 		move(t, ctx, "withdraw", `{}`)
 		wantLandRefused(t, ctx, b,
 			"cannot land change set "+b.String()+": it depends on "+a.String()+" (withdrawn)",
-			"genesis change show "+shortID(a))
+			"rhiza change show "+shortID(a))
 	})
 
 	t.Run("Proposed", func(t *testing.T) {
@@ -342,7 +342,7 @@ func TestLandDependencies(t *testing.T) {
 		mustWrite(t, ctx, "link", fmt.Sprintf(`{"from":%q,"type":"depends-on","to":%q}`, b, a))
 		wantLandRefused(t, ctx, b,
 			"cannot land change set "+b.String()+": it depends on "+a.String()+" (proposed)",
-			"genesis change show "+shortID(a))
+			"rhiza change show "+shortID(a))
 	})
 
 	t.Run("NotInLog", func(t *testing.T) {
@@ -368,7 +368,7 @@ func TestLandDependencies(t *testing.T) {
 		}
 		wantLandRefused(t, ctx, b,
 			"cannot land change set "+b.String()+": it depends on "+ghost.String()+" (not in the log)",
-			"genesis change show "+shortID(ghost))
+			"rhiza change show "+shortID(ghost))
 	})
 }
 
@@ -382,9 +382,9 @@ func TestLandConflict(t *testing.T) {
 	recordWrite(t, ctx, "set", `{"ref":"base","fields":["statement=Theirs"]}`)
 
 	want := "cannot land change set " + b.String() + ": model: conflict"
-	wantLandRefused(t, ctx, b, want, "genesis check")
+	wantLandRefused(t, ctx, b, want, "rhiza check")
 	ctx.DryRun = true
-	wantLandRefused(t, ctx, b, want, "genesis check")
+	wantLandRefused(t, ctx, b, want, "rhiza check")
 }
 
 // TestLandRevisedLanded: A revises in place a field B wrote; once A has
@@ -407,7 +407,7 @@ func TestLandRevisedLanded(t *testing.T) {
 	move(t, ctx, "land", `{}`)
 
 	want := "cannot land change set " + b.String() + ": model: conflict: change set " + a.String() + " revised op "
-	wantLandRefused(t, ctx, b, want, "genesis check")
+	wantLandRefused(t, ctx, b, want, "rhiza check")
 
 	ctx.ChangeRef = b.String()
 	mustWrite(t, ctx, "set", `{"ref":"base","fields":["statement=FromBAgain"]}`)
@@ -440,7 +440,7 @@ func TestLandProblem(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := "cannot land change set " + b.String() + ": model: not found"
-	wantLandRefused(t, ctx, b, want, "genesis slice --change "+shortID(b)+" --view what-if")
+	wantLandRefused(t, ctx, b, want, "rhiza slice --change "+shortID(b)+" --view what-if")
 	ctx.DryRun = true
-	wantLandRefused(t, ctx, b, want, "genesis slice --change "+shortID(b)+" --view what-if")
+	wantLandRefused(t, ctx, b, want, "rhiza slice --change "+shortID(b)+" --view what-if")
 }

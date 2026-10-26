@@ -8,10 +8,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 // Folding turns a change set's entries into a ChangeSet. It is a pure

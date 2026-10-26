@@ -1,0 +1,20 @@
+# A fresh init survives a clone: git keeps no empty folder, so init leaves
+# .rhiza/log/.gitkeep and a clone still has the (empty) log to check.
+mkdir origin
+cd origin
+exec git init -q
+exec rhiza init
+exists .rhiza/log/.gitkeep
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+exec rhiza check
+stdout '^ok$'
+
+cd $WORK
+exec git clone -q origin clone
+cd clone
+exists .rhiza/log/.gitkeep
+exec rhiza check
+stdout '^ok$'
+! stdout fail

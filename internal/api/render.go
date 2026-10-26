@@ -1,7 +1,7 @@
 package api
 
 // This file holds the render operation: it writes the as-is model as
-// markdown under .genesis/rendered, the files check compares against. It
+// markdown under .rhiza/rendered, the files check compares against. It
 // reads the log through the store alone, never the workspace: render writes
 // no log entry and needs no change set or actor.
 
@@ -19,10 +19,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	gmodel "github.com/dphaener/genesis/internal/model"
-	"github.com/dphaener/genesis/internal/render"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/changeset"
+	gmodel "github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/render"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 // renderedDir is the rendered folder, relative to the project root and
@@ -43,7 +43,7 @@ type RenderResponse struct {
 func init() {
 	register(Operation{
 		Name:     "render",
-		Summary:  "Write the as-is model as markdown under .genesis/rendered",
+		Summary:  "Write the as-is model as markdown under .rhiza/rendered",
 		Request:  reflect.TypeFor[RenderRequest](),
 		Response: reflect.TypeFor[RenderResponse](),
 		Run:      runRender,
@@ -51,12 +51,15 @@ func init() {
 }
 
 // openStore opens the repository in root. No repository is not_found with
-// next "genesis init"; anything else wrong with it is an error.
+// next "rhiza init"; anything else wrong with it is an error.
 func openStore(root string) (*store.Store, error) {
 	st, err := store.Open(root)
 	if err != nil {
+		if errors.Is(err, store.ErrOldFolder) {
+			return nil, oldFolderError()
+		}
 		if errors.Is(err, store.ErrNotFound) {
-			return nil, NotFoundf("no Genesis repository in %s", root).WithNext("genesis init")
+			return nil, NotFoundf("no Rhiza repository in %s", root).WithNext("rhiza init")
 		}
 		return nil, Errorf("%s", err.Error())
 	}
@@ -70,7 +73,7 @@ func openStore(root string) (*store.Store, error) {
 // writes no log entry, so --dry-run is a usage error, as for init.
 func runRender(ctx *Ctx, _ any) (any, error) {
 	if ctx.DryRun {
-		return nil, Usagef("render does not take --dry-run: it writes no log entry").WithNext("genesis render")
+		return nil, Usagef("render does not take --dry-run: it writes no log entry").WithNext("rhiza render")
 	}
 	st, err := openStore(ctx.Root)
 	if err != nil {

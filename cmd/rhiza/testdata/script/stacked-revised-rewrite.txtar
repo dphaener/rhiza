@@ -1,0 +1,47 @@
+# Revised in place, then rewritten (D13). A's in-place revision overlaps the
+# field B wrote, a conflict; B writing the field again, after the revision,
+# clears it.
+
+exec rhiza init
+
+# A adds base; B depends on A and sets base's statement.
+exec rhiza change new A
+stdout 'change set 01M5PWGEF85Y185JZ2ZGCNH40N '
+exec rhiza add capability base --field statement=Base --field owner=a
+exec rhiza change new B
+stdout 'change set 01M5PWGKBGYFZMTH8Y8AF1G8GN '
+exec rhiza link 01M5PWGKBGYFZMTH8Y8AF1G8GN depends-on 01M5PWGEF85Y185JZ2ZGCNH40N
+exec rhiza set base --field statement=FromB
+
+# A revises the statement: a conflict on B's op.
+exec rhiza set base --field statement=Revised --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec rhiza render
+exec rhiza check
+stdout '^warn in-flight change set 01M5PWGKBGYFZMTH8Y8AF1G8GN, op 01M5PWGNA0MVZ1H5AXG5VQ0BY9: model: conflict: change set 01M5PWGEF85Y185JZ2ZGCNH40N revised op 01M5PWGJC82P7YGZTWYJ3Y88Z9 '
+exec rhiza ready --json
+stdout '"01M5PWGEF85Y18 revised under it: 1 operations"'
+
+# B sets the statement again, having seen Revised: the conflict is gone.
+exec rhiza show base --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
+stdout '^FromB$'
+exec rhiza set base --field statement=FromBAgain
+fold-ok
+exec rhiza check
+stdout '^ok$'
+! stdout 'conflict'
+exec rhiza ready --json
+! stdout 'revised under it'
+
+# A lands, then B.
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza propose --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec rhiza accept --reason ok --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec rhiza land --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec rhiza land --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
+fold-ok
+exec rhiza show base
+stdout '^FromBAgain$'
+exec rhiza render
+exec rhiza check
+stdout '^ok$'

@@ -51,10 +51,10 @@ import (
 	"slices"
 	"unicode/utf8"
 
-	"github.com/dphaener/genesis/internal/canon"
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // ErrInvalid is wrapped by every error for a body that is not valid.

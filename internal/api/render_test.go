@@ -30,7 +30,7 @@ func readRendered(t *testing.T, ctx *Ctx, p string) string {
 func TestRenderEmpty(t *testing.T) {
 	ctx := initCtx(t)
 	r := renderOK(t, ctx)
-	if !slices.Equal(r.Written, []string{".genesis/rendered/index.md"}) || len(r.Removed) != 0 || r.Unchanged != 0 {
+	if !slices.Equal(r.Written, []string{".rhiza/rendered/index.md"}) || len(r.Removed) != 0 || r.Unchanged != 0 {
 		t.Fatalf("first render = %+v", r)
 	}
 	if got := readRendered(t, ctx, "index.md"); got != "# Model\n\nNothing has landed yet.\n" {
@@ -69,10 +69,10 @@ func TestRenderWritesAndRemoves(t *testing.T) {
 	}
 
 	r := renderOK(t, ctx)
-	wantWritten := []string{".genesis/rendered/actor/test.md", ".genesis/rendered/capability/store.md", ".genesis/rendered/index.md"}
-	wantRemoved := []string{".genesis/rendered/.render-123", ".genesis/rendered/empty",
-		".genesis/rendered/extra.md", ".genesis/rendered/old", ".genesis/rendered/old/deep",
-		".genesis/rendered/old/deep/page.md"}
+	wantWritten := []string{".rhiza/rendered/actor/test.md", ".rhiza/rendered/capability/store.md", ".rhiza/rendered/index.md"}
+	wantRemoved := []string{".rhiza/rendered/.render-123", ".rhiza/rendered/empty",
+		".rhiza/rendered/extra.md", ".rhiza/rendered/old", ".rhiza/rendered/old/deep",
+		".rhiza/rendered/old/deep/page.md"}
 	if !slices.Equal(r.Written, wantWritten) || !slices.Equal(r.Removed, wantRemoved) || r.Unchanged != 0 {
 		t.Fatalf("render = %+v", r)
 	}
@@ -92,7 +92,7 @@ func TestRenderWritesAndRemoves(t *testing.T) {
 	}
 	out := human(t, r)
 	for _, s := range []string{"Rendered 3 files (3 written, 6 removed, 0 unchanged).",
-		"- wrote .genesis/rendered/index.md", "- removed .genesis/rendered/extra.md"} {
+		"- wrote .rhiza/rendered/index.md", "- removed .rhiza/rendered/extra.md"} {
 		if !strings.Contains(out, s) {
 			t.Errorf("human lacks %q:\n%s", s, out)
 		}
@@ -103,7 +103,7 @@ func TestRenderWritesAndRemoves(t *testing.T) {
 		t.Fatal(err)
 	}
 	r = renderOK(t, ctx)
-	if !slices.Equal(r.Written, []string{".genesis/rendered/index.md"}) || len(r.Removed) != 0 || r.Unchanged != 2 {
+	if !slices.Equal(r.Written, []string{".rhiza/rendered/index.md"}) || len(r.Removed) != 0 || r.Unchanged != 2 {
 		t.Errorf("third render = %+v", r)
 	}
 }
@@ -112,13 +112,13 @@ func TestRenderErrors(t *testing.T) {
 	ctx := testCtx(t.TempDir())
 	_, err := callOp(t, ctx, "render", `{}`)
 	wantExit(t, err, 4)
-	wantNext(t, err, "genesis init")
+	wantNext(t, err, "rhiza init")
 
 	ctx = initCtx(t)
 	ctx.DryRun = true
 	_, err = callOp(t, ctx, "render", `{}`)
 	wantExit(t, err, 2)
-	wantNext(t, err, "genesis render")
+	wantNext(t, err, "rhiza render")
 	if _, serr := os.Stat(filepath.Join(ctx.Root, renderedDir)); serr == nil {
 		t.Error("a dry run wrote the rendered folder")
 	}

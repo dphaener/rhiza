@@ -1,5 +1,5 @@
-// Package guide holds the agent guide that ships in the binary: the genesis
-// skill, the genesis-scrub skill and the topics an agent reads on demand.
+// Package guide holds the agent guide that ships in the binary: the rhiza
+// skill, the rhiza-scrub skill and the topics an agent reads on demand.
 //
 // The guide comes in three layers, each with a size cap measured in
 // estimated tokens (Tokens): the session start a hook prints (StartCap),
@@ -28,7 +28,7 @@ const MaxDescription = 1024
 
 // Text is one text of the guide.
 type Text struct {
-	// Name is what genesis guide takes: genesis, scrub or a topic name.
+	// Name is what rhiza guide takes: rhiza, scrub or a topic name.
 	Name string
 	// Description says when to load it; for a skill it is the SKILL.md
 	// description.
@@ -59,11 +59,11 @@ type entry struct {
 // skills lists the two skills, the main one first.
 var skills = []entry{
 	{
-		name: "genesis",
-		file: "genesis.md",
-		description: "Work with the product model of a repository that has a .genesis/ folder: " +
+		name: "rhiza",
+		file: "rhiza.md",
+		description: "Work with the product model of a repository that has a .rhiza/ folder: " +
 			"capabilities, intents, constraints, decisions, questions, evidence and sources, written " +
-			"through change sets with the genesis CLI. Load it before changing code in such a repo, " +
+			"through change sets with the rhiza CLI. Load it before changing code in such a repo, " +
 			"when asked to add or change a capability, feature, requirement or spec, record a decision " +
 			"or ADR, raise a question, record what existing code does, or work on a change set.",
 		skill: true,
@@ -72,19 +72,19 @@ var skills = []entry{
 		name: "scrub",
 		file: "scrub.md",
 		description: "Turn a raw conversation (a chat transcript, meeting notes, an interview) into a " +
-			"Genesis Source: summarise it, keep the owner's exact words wherever something was decided, " +
-			"remove secrets, personal data and noise, then store it with genesis source add. Load it " +
-			"when asked to record, scrub or save a conversation as a source in a repo with a .genesis/ folder.",
+			"Rhiza Source: summarise it, keep the owner's exact words wherever something was decided, " +
+			"remove secrets, personal data and noise, then store it with rhiza source add. Load it " +
+			"when asked to record, scrub or save a conversation as a source in a repo with a .rhiza/ folder.",
 		skill: true,
 	},
 }
 
 // topics lists the topics, sorted by name.
 var topics = []entry{
-	{name: "apply", file: "apply.md", description: "The genesis apply file format: many writes in one JSON file."},
+	{name: "apply", file: "apply.md", description: "The rhiza apply file format: many writes in one JSON file."},
 	{name: "carving", file: "carving.md", description: "Carving: moving nodes from one change set to another under the same IDs, what moves, the rules."},
 	{name: "change-sets", file: "change-sets.md", description: "Change sets: intention and record, the lifecycle, which change set a write goes into, --record."},
-	{name: "sources", file: "sources.md", description: "Source nodes: the stored fields, the raw material's hash, and how scrub feeds genesis source add."},
+	{name: "sources", file: "sources.md", description: "Source nodes: the stored fields, the raw material's hash, and how scrub feeds rhiza source add."},
 }
 
 // texts holds every text in List order, read once from the embedded files.
@@ -100,17 +100,17 @@ var texts = func() []Text {
 	return out
 }()
 
-// List returns every text: the genesis skill, the scrub skill, then the
+// List returns every text: the rhiza skill, the scrub skill, then the
 // topics sorted by name.
 func List() []Text {
 	return slices.Clone(texts)
 }
 
-// Lookup returns the text called name. "" and "genesis" name the genesis
-// skill, "scrub" the genesis-scrub skill; anything else is a topic name.
+// Lookup returns the text called name. "" and "rhiza" name the rhiza
+// skill, "scrub" the rhiza-scrub skill; anything else is a topic name.
 func Lookup(name string) (Text, bool) {
 	if name == "" {
-		name = "genesis"
+		name = "rhiza"
 	}
 	for _, t := range texts {
 		if t.Name == name {

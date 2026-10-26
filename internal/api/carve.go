@@ -31,11 +31,11 @@ import (
 	"reflect"
 	"slices"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
-	gmodel "github.com/dphaener/genesis/internal/model"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
+	gmodel "github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 func init() {
@@ -169,7 +169,7 @@ func runCarve(ctx *Ctx, r CarveRequest) (any, error) {
 		resp.Links = slices.SortedFunc(slices.Values(p.links), id.Compare)
 	}
 	if c, _ := w.changeSet(p.from); len(c.Ops) == 0 {
-		resp.Next = "genesis withdraw --change " + shortID(p.from)
+		resp.Next = "rhiza withdraw --change " + shortID(p.from)
 	}
 	if ctx.DryRun {
 		resp.SourceEntry, resp.TargetEntry = id.ID{}, id.ID{}
@@ -212,7 +212,7 @@ func carveSide(w *workspace, ref, role string) (changeset.ChangeSet, error) {
 // source's entry ID and the target's), so a dry run predicts the real one.
 func planCarve(w *workspace, r CarveRequest) (carvePlan, error) {
 	if len(r.Nodes) == 0 {
-		return carvePlan{}, Usagef("carve needs at least one node").WithNext("genesis describe carve")
+		return carvePlan{}, Usagef("carve needs at least one node").WithNext("rhiza describe carve")
 	}
 	src, err := carveSide(w, r.From, "from")
 	if err != nil {
@@ -223,7 +223,7 @@ func planCarve(w *workspace, r CarveRequest) (carvePlan, error) {
 		return carvePlan{}, err
 	}
 	if src.ID == tgt.ID {
-		return carvePlan{}, Usagef("--from and --to are both change set %s", src.ID).WithNext("genesis describe carve")
+		return carvePlan{}, Usagef("--from and --to are both change set %s", src.ID).WithNext("rhiza describe carve")
 	}
 	p := carvePlan{from: src.ID, to: tgt.ID, handles: map[id.ID]string{}}
 
@@ -249,7 +249,7 @@ func planCarve(w *workspace, r CarveRequest) (carvePlan, error) {
 		}
 		if _, ok := created[n.ID]; !ok {
 			return carvePlan{}, Usagef("%s (%s) is not created in change set %s; carve moves only nodes the source creates",
-				ref, n.ID, src.ID).WithNext("genesis change show " + shortID(src.ID))
+				ref, n.ID, src.ID).WithNext("rhiza change show " + shortID(src.ID))
 		}
 		add(n)
 	}
@@ -303,7 +303,7 @@ func planCarve(w *workspace, r CarveRequest) (carvePlan, error) {
 			why = "ops in " + p.restsIn.String()
 		}
 		return carvePlan{}, Conflictf("%s rest on what moves, so %s would depend on %s, and that would close a loop: %s already depends on %s",
-			why, src.ID, tgt.ID, tgt.ID, src.ID).WithNext("genesis change show " + shortID(tgt.ID))
+			why, src.ID, tgt.ID, tgt.ID, src.ID).WithNext("rhiza change show " + shortID(tgt.ID))
 	}
 
 	newID := func() (id.ID, error) {
@@ -353,7 +353,7 @@ func planCarve(w *workspace, r CarveRequest) (carvePlan, error) {
 	p.target.Carve = &changeset.Carve{From: src.ID, Entry: p.srcEntry}
 	for _, b := range []changeset.Ops{p.source, p.target} {
 		if err := b.Validate(); err != nil {
-			return carvePlan{}, Usagef("%s", err.Error()).WithNext("genesis describe carve")
+			return carvePlan{}, Usagef("%s", err.Error()).WithNext("rhiza describe carve")
 		}
 	}
 	return p, nil
@@ -402,7 +402,7 @@ func checkCarve(w *workspace, p carvePlan) error {
 				}
 			}
 			return Conflictf("the carve would not apply in change set %s: %s: %v", cs, what, x.Err).
-				WithNext("genesis slice --change " + shortID(cs) + " --view what-if")
+				WithNext("rhiza slice --change " + shortID(cs) + " --view what-if")
 		}
 	}
 	return nil

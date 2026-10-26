@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/rhiza/internal/id"
 )
 
 // idPattern matches the canonical spelling of an id.ID.

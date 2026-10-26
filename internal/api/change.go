@@ -13,11 +13,11 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 func init() {
@@ -53,7 +53,7 @@ func init() {
 }
 
 // changeLsNext is the next command when a change set must be named.
-const changeLsNext = "genesis change ls"
+const changeLsNext = "rhiza change ls"
 
 // ChangeNewRequest opens a change set.
 type ChangeNewRequest struct {
@@ -89,7 +89,7 @@ func runChangeNew(ctx *Ctx, req any) (any, error) {
 	}
 	if !slices.Contains(changeset.Kinds(), kind) {
 		return nil, Usagef("unknown change set kind %q: want intention or record", r.Kind).
-			WithNext("genesis describe change.new")
+			WithNext("rhiza describe change.new")
 	}
 	current, err := w.current()
 	if err != nil {
@@ -111,7 +111,7 @@ func runChangeNew(ctx *Ctx, req any) (any, error) {
 	sources = slices.Compact(sources)
 	open := changeset.Open{Kind: kind, Intent: r.Intent, Sources: sources}
 	if err := open.Validate(); err != nil {
-		return nil, Usagef("%s", err.Error()).WithNext("genesis describe change.new")
+		return nil, Usagef("%s", err.Error()).WithNext("rhiza describe change.new")
 	}
 	actor, forID, err := w.resolveActor(current, ctx)
 	if err != nil {
@@ -164,7 +164,7 @@ func runChangeUse(ctx *Ctx, req any) (any, error) {
 	ref := strings.TrimSpace(r.Ref)
 	if (ref == "") == !r.None {
 		return nil, Usagef("change use takes a change set or --none, not both or neither").
-			WithNext("genesis change ls")
+			WithNext("rhiza change ls")
 	}
 	w, err := openCtxWorkspace(ctx)
 	if err != nil {

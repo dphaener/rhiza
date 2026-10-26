@@ -1,4 +1,0 @@
-# genesis version prints its name and a non-empty version on stdout.
-exec genesis version
-stdout '\Agenesis \S+\n\z'
-! stderr .

@@ -17,9 +17,9 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/id"
-	gmodel "github.com/dphaener/genesis/internal/model"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
+	gmodel "github.com/dphaener/rhiza/internal/model"
 )
 
 func init() {
@@ -123,11 +123,11 @@ func legalNext(c changeset.ChangeSet) string {
 	case c.State.Terminal() || c.State == "":
 		return newEntryNext
 	case c.Open.Kind == changeset.KindRecord || c.State == changeset.StateAccepted:
-		return "genesis land"
+		return "rhiza land"
 	case c.State == changeset.StateDraft:
-		return "genesis propose"
+		return "rhiza propose"
 	}
-	return "genesis accept"
+	return "rhiza accept"
 }
 
 // run checks the move and writes its entry.
@@ -141,7 +141,7 @@ func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
 	}
 	body := v.body(rule, reason)
 	if err := body.Validate(); err != nil {
-		return nil, Usagef("%s", err.Error()).WithNext("genesis describe " + v.name)
+		return nil, Usagef("%s", err.Error()).WithNext("rhiza describe " + v.name)
 	}
 	w, err := openCtxWorkspace(ctx)
 	if err != nil {
@@ -197,7 +197,7 @@ func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
 
 // checkLand refuses to land cs while a change set it depends on has not
 // landed, naming the first by ID, or while cs's what-if view has a problem
-// on cs itself or one of its own ops: a conflict (next genesis check) or
+// on cs itself or one of its own ops: a conflict (next rhiza check) or
 // any other, such as an op resting on a node that is gone (next the what-if
 // slice), so nothing lands that check would then fail.
 func checkLand(sets []changeset.ChangeSet, cs id.ID) error {
@@ -214,9 +214,9 @@ func checkLand(sets []changeset.ChangeSet, cs id.ID) error {
 		if !ok {
 			what = "not in the log"
 		}
-		next := "genesis change show " + shortID(dep)
+		next := "rhiza change show " + shortID(dep)
 		if state == changeset.StateAccepted {
-			next = "genesis land --change " + shortID(dep)
+			next = "rhiza land --change " + shortID(dep)
 		}
 		return Conflictf("cannot land change set %s: it depends on %s (%s)", cs, dep, what).WithNext(next)
 	}
@@ -225,9 +225,9 @@ func checkLand(sets []changeset.ChangeSet, cs id.ID) error {
 		if p.ChangeSet != cs {
 			continue
 		}
-		next := "genesis slice --change " + shortID(cs) + " --view what-if"
+		next := "rhiza slice --change " + shortID(cs) + " --view what-if"
 		if errors.Is(p.Err, gmodel.ErrConflict) {
-			next = "genesis check"
+			next = "rhiza check"
 		}
 		return Conflictf("cannot land change set %s: %v", cs, p.Err).WithNext(next)
 	}
@@ -257,8 +257,8 @@ func (r LifecycleResponse) Human(w io.Writer) {
 	}
 	switch r.To {
 	case changeset.StateProposed:
-		fmt.Fprintln(w, "next: genesis accept")
+		fmt.Fprintln(w, "next: rhiza accept")
 	case changeset.StateAccepted:
-		fmt.Fprintln(w, "next: genesis land")
+		fmt.Fprintln(w, "next: rhiza land")
 	}
 }

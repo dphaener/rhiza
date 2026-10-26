@@ -1,7 +1,7 @@
 package api
 
 // This file holds the ci.install operation: it writes a GitHub workflow that
-// runs genesis check on pull requests and pushes to main, and marks the
+// runs rhiza check on pull requests and pushes to main, and marks the
 // rendered folder as generated in .gitattributes so reviews fold it away.
 
 import (
@@ -20,7 +20,7 @@ import (
 
 // The files ci.install writes, relative to the project root, with slashes.
 const (
-	workflowPath      = ".github/workflows/genesis.yml"
+	workflowPath      = ".github/workflows/rhiza.yml"
 	gitattributesPath = ".gitattributes"
 )
 
@@ -29,15 +29,15 @@ const (
 const gitattribute = renderedDir + "/** linguist-generated=true"
 
 // workflowTemplate is the workflow; %s is the version go install fetches.
-// The runner and action versions match the Genesis repository's own CI.
-const workflowTemplate = `# Written by ` + "`genesis ci install`" + `. Rerun ` + "`genesis ci install --force`" + ` to
+// The runner and action versions match the Rhiza repository's own CI.
+const workflowTemplate = `# Written by ` + "`rhiza ci install`" + `. Rerun ` + "`rhiza ci install --force`" + ` to
 # replace it with the current template.
 #
-# It checks the Genesis model on every pull request against its base branch
+# It checks the Rhiza model on every pull request against its base branch
 # and on every push to main against the commit before the push. The go
-# install step needs read access to github.com/dphaener/genesis: while that
+# install step needs read access to github.com/dphaener/rhiza: while that
 # repository is private, set GOPRIVATE and give git a token that can read it.
-name: Genesis
+name: Rhiza
 
 on:
   push:
@@ -58,22 +58,22 @@ jobs:
       with:
         go-version: stable
 
-    - name: Install genesis
-      run: go install github.com/dphaener/genesis/cmd/genesis@%s
+    - name: Install rhiza
+      run: go install github.com/dphaener/rhiza/cmd/rhiza@%s
 
     - name: Check against the base branch
       if: github.event_name == 'pull_request'
-      run: genesis check --base origin/${{ github.base_ref }}
+      run: rhiza check --base origin/${{ github.base_ref }}
 
     - name: Check against the commit before the push
       if: github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000'
-      run: genesis check --base ${{ github.event.before }}
+      run: rhiza check --base ${{ github.event.before }}
 
     # A branch's first push has no commit before it: github.event.before is
     # all zeros, so check runs with its default base.
     - name: Check a first push
       if: github.event_name == 'push' && github.event.before == '0000000000000000000000000000000000000000'
-      run: genesis check
+      run: rhiza check
 `
 
 // CIInstallRequest asks for the workflow, overwriting a different one only
@@ -93,7 +93,7 @@ type CIInstallResponse struct {
 func init() {
 	register(Operation{
 		Name:     "ci.install",
-		Summary:  "Install the Genesis check as a GitHub workflow",
+		Summary:  "Install the Rhiza check as a GitHub workflow",
 		Request:  reflect.TypeFor[CIInstallRequest](),
 		Response: reflect.TypeFor[CIInstallResponse](),
 		Run:      runCIInstall,
@@ -143,7 +143,7 @@ func withGitattribute(have []byte) ([]byte, bool) {
 func runCIInstall(ctx *Ctx, req any) (any, error) {
 	r := req.(CIInstallRequest)
 	if ctx.DryRun {
-		return nil, Usagef("ci install does not take --dry-run: it writes no log entry").WithNext("genesis ci install")
+		return nil, Usagef("ci install does not take --dry-run: it writes no log entry").WithNext("rhiza ci install")
 	}
 	if _, err := openStore(ctx.Root); err != nil {
 		return nil, err
@@ -156,7 +156,7 @@ func runCIInstall(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	if wf != nil && !bytes.Equal(wf, want[workflowPath]) && !r.Force {
-		return nil, Conflictf("%s exists and differs from the template", workflowPath).WithNext("genesis ci install --force")
+		return nil, Conflictf("%s exists and differs from the template", workflowPath).WithNext("rhiza ci install --force")
 	}
 	ga, err := readOptional(ctx.Root, gitattributesPath)
 	if err != nil {
@@ -196,7 +196,7 @@ func readOptional(root, p string) ([]byte, error) {
 
 // Human reports the counts, then each path written.
 func (r CIInstallResponse) Human(w io.Writer) {
-	fmt.Fprintf(w, "Installed the Genesis check (%d written, %d unchanged).\n", len(r.Written), len(r.Unchanged))
+	fmt.Fprintf(w, "Installed the Rhiza check (%d written, %d unchanged).\n", len(r.Written), len(r.Unchanged))
 	if len(r.Written) == 0 {
 		return
 	}

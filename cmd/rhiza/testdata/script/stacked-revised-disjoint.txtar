@@ -1,0 +1,47 @@
+# Revised in place, disjoint (D13). A revises its create of base in place,
+# changing a field B does not write: no overlap, no conflict anywhere, and B
+# sees A's latest content.
+
+exec rhiza init
+
+# A adds base; B depends on A and sets base's statement.
+exec rhiza change new A
+stdout 'change set 01M5PWGEF85Y185JZ2ZGCNH40N '
+exec rhiza add capability base --field statement=Base --field owner=a
+exec rhiza change new B
+stdout 'change set 01M5PWGKBGYFZMTH8Y8AF1G8GN '
+exec rhiza link 01M5PWGKBGYFZMTH8Y8AF1G8GN depends-on 01M5PWGEF85Y185JZ2ZGCNH40N
+exec rhiza set base --field statement=FromB
+
+# A revises owner, a field B never wrote.
+exec rhiza set base --field owner=revised --change 01M5PWGEF85Y185JZ2ZGCNH40N
+fold-ok
+
+# No conflict in check or ready.
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+! stdout 'conflict'
+exec rhiza ready --json
+! stdout 'revised under it'
+
+# B's what-if has A's revised owner and B's own statement.
+exec rhiza show base --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
+stdout '^- View: what-if:01M5PWGKBGYFZMTH8Y8AF1G8GN$'
+stdout '^revised$'
+stdout '^FromB$'
+
+# Accepted, A lands, then B, cleanly.
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza propose --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec rhiza accept --reason ok --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec rhiza land --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec rhiza land --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
+fold-ok
+exec rhiza show base
+stdout '^revised$'
+stdout '^FromB$'
+exec rhiza render
+exec rhiza check
+stdout '^ok$'

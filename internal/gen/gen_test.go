@@ -10,11 +10,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dphaener/genesis/internal/changeset"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/model"
-	"github.com/dphaener/genesis/internal/op"
-	"github.com/dphaener/genesis/internal/store"
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 var genOut = flag.String("gen.out", "", "write the default model into this folder (TestWriteDemo)")
@@ -91,7 +91,7 @@ func TestDeterministic(t *testing.T) {
 	if same == len(ta) && len(ta) == len(tc) {
 		t.Fatal("a different seed wrote the same files")
 	}
-	if !bytes.Equal(ta[".genesis/repo.json"], tb[".genesis/repo.json"]) || bytes.Equal(ta[".genesis/repo.json"], tc[".genesis/repo.json"]) {
+	if !bytes.Equal(ta[".rhiza/repo.json"], tb[".rhiza/repo.json"]) || bytes.Equal(ta[".rhiza/repo.json"], tc[".rhiza/repo.json"]) {
 		t.Fatal("repo.json should follow the seed")
 	}
 }

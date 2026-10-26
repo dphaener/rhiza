@@ -9,9 +9,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/model"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // touched returns the change set's touched nodes that the view has, sorted

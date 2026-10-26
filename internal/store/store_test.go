@@ -13,9 +13,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dphaener/genesis/internal/canon"
-	"github.com/dphaener/genesis/internal/entry"
-	"github.com/dphaener/genesis/internal/id"
+	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/entry"
+	"github.com/dphaener/rhiza/internal/id"
 )
 
 const (
@@ -269,7 +269,7 @@ func TestOpenErrors(t *testing.T) {
 			t.Fatal(err)
 		}
 	})
-	t.Run(".genesis is a file", func(t *testing.T) {
+	t.Run(".rhiza is a file", func(t *testing.T) {
 		root := t.TempDir()
 		if err := os.WriteFile(filepath.Join(root, Dir), []byte("x"), 0o644); err != nil {
 			t.Fatal(err)
@@ -290,7 +290,7 @@ func TestOpenErrors(t *testing.T) {
 }
 
 func TestOpenNotFound(t *testing.T) {
-	t.Run("no .genesis", func(t *testing.T) {
+	t.Run("no .rhiza", func(t *testing.T) {
 		if _, err := Open(t.TempDir()); !errors.Is(err, ErrNotFound) {
 			t.Fatalf("err = %v, want ErrNotFound", err)
 		}
@@ -302,6 +302,42 @@ func TestOpenNotFound(t *testing.T) {
 		}
 		if _, err := Open(root); !errors.Is(err, ErrNotFound) {
 			t.Fatalf("err = %v, want ErrNotFound", err)
+		}
+	})
+}
+
+func TestOldFolder(t *testing.T) {
+	old := func(t *testing.T) string {
+		root := t.TempDir()
+		if err := os.Mkdir(filepath.Join(root, OldDir), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		return root
+	}
+	t.Run("open", func(t *testing.T) {
+		if _, err := Open(old(t)); !errors.Is(err, ErrOldFolder) {
+			t.Fatalf("err = %v, want ErrOldFolder", err)
+		}
+	})
+	t.Run("init refuses and changes nothing", func(t *testing.T) {
+		root := old(t)
+		if _, err := Init(root, id.Default()); !errors.Is(err, ErrOldFolder) {
+			t.Fatalf("err = %v, want ErrOldFolder", err)
+		}
+		if _, err := os.Stat(filepath.Join(root, Dir)); err == nil {
+			t.Fatal("Init created " + Dir)
+		}
+	})
+	t.Run("both folders use the new one", func(t *testing.T) {
+		root, _ := mustInit(t)
+		if err := os.Mkdir(filepath.Join(root, OldDir), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := Open(root); err != nil {
+			t.Fatalf("Open with both folders: %v", err)
+		}
+		if _, err := Init(root, id.Default()); !errors.Is(err, ErrExists) {
+			t.Fatalf("Init with both folders: %v, want ErrExists", err)
 		}
 	})
 }

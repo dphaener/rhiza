@@ -1,0 +1,500 @@
+# slice with no ref is a change slice of the effective change set
+# (--change, else RHIZA_CHANGE, else the current one): every node it
+# touches is a Focus item, the other sections their union, and its intent
+# heads the slice. The default view follows the change set: what-if for a
+# draft or proposed one, to-be for an accepted one, as-is for none.
+
+exec rhiza init
+exec rhiza apply model.json --record
+exec rhiza change new 'Add a read cache'
+exec rhiza add capability cache --parent store --field 'statement=Caches reads'
+exec rhiza link cache depends-on log
+exec rhiza set log --field 'statement=Appends entries in batches'
+
+# The current draft: what-if, and the same bytes every time.
+exec rhiza slice
+cmp stdout change.md
+! stderr .
+exec rhiza slice
+cmp stdout change.md
+exec rhiza slice --json
+cmp stdout change.json
+exec rhiza slice --json
+cmp stdout change.json
+
+# A node slice through the change set: cache exists only in what-if.
+exec rhiza slice cache
+cmp stdout cache.md
+exec rhiza slice cache
+cmp stdout cache.md
+
+# With no current change set there is nothing to slice without a ref.
+exec rhiza change use --none
+! exec rhiza slice
+stderr '^rhiza: no change set to slice'
+stderr '^next: rhiza slice <ref>$'
+! exec rhiza slice --json
+stdout '"code": "usage"'
+
+# --change by a unique prefix, any case, and RHIZA_CHANGE: the same slice.
+exec rhiza slice --change 01M5PWGMAR
+cmp stdout change.md
+env RHIZA_CHANGE=01m5pwgmar
+exec rhiza slice
+cmp stdout change.md
+env RHIZA_CHANGE=
+
+# --view as-is: the touched nodes as they are, without the new one.
+exec rhiza slice --change 01M5PWGMAR --view as-is
+cmp stdout change-as-is.md
+exec rhiza slice --change 01M5PWGMAR --view as-is
+cmp stdout change-as-is.md
+
+# what-if needs a change set.
+! exec rhiza slice log --view what-if
+stderr '^rhiza: --view what-if needs a change set'
+stderr '^next: rhiza change ls$'
+! exec rhiza slice log --view what-if --json
+stdout '"code": "usage"'
+
+# Accepted: the default is to-be.
+exec rhiza change use 01M5PWGMAR
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza slice
+cmp stdout accepted.md
+exec rhiza slice
+cmp stdout accepted.md
+
+# A second draft that also touches log: the accepted one is in flight.
+exec rhiza change new 'Tune the log'
+exec rhiza set log --field 'owner=core team'
+exec rhiza slice log
+cmp stdout in-flight.md
+exec rhiza slice log
+cmp stdout in-flight.md
+
+-- model.json --
+{"writes":[
+  {"op":"add","kind":"capability","handle":"store","fields":["statement=Keeps the log on disk"]},
+  {"op":"add","kind":"capability","handle":"log","parent":"store","fields":["statement=Appends entries, one file each","owner=storage team"]},
+  {"op":"add","kind":"capability","handle":"segment","parent":"log","fields":["statement=Splits the log into segments"]},
+  {"op":"add","kind":"capability","handle":"index","fields":["statement=Answers queries fast"]},
+  {"op":"add","kind":"constraint","handle":"no-network","fields":["statement=Never touches the network"]},
+  {"op":"add","kind":"constraint","handle":"plain-json","fields":["statement=Every file is plain JSON"]},
+  {"op":"link","from":"no-network","type":"constrains","to":"store"},
+  {"op":"link","from":"plain-json","type":"constrains","to":"store"},
+  {"op":"add","kind":"decision","handle":"binary-segments","fields":["statement=Segments may be binary"]},
+  {"op":"link","from":"log","type":"exempts","to":"plain-json","note":"Segments are packed","decision":"binary-segments"},
+  {"op":"add","kind":"decision","handle":"use-sqlite","fields":["statement=Keep the log in SQLite"]},
+  {"op":"add","kind":"decision","handle":"use-files","fields":["statement=One file per entry"]},
+  {"op":"link","from":"log","type":"decided-by","to":"use-sqlite"},
+  {"op":"link","from":"log","type":"decided-by","to":"use-files"},
+  {"op":"link","from":"use-files","type":"supersedes","to":"use-sqlite"},
+  {"op":"add","kind":"decision","handle":"git-friendly","fields":["statement=Diffs stay readable in git"]},
+  {"op":"link","from":"store","type":"decided-by","to":"git-friendly"},
+  {"op":"add","kind":"question","handle":"which-fs","fields":["statement=Which file systems must we support?"]},
+  {"op":"link","from":"which-fs","type":"blocks","to":"log"},
+  {"op":"add","kind":"question","handle":"max-size","fields":["statement=How large may one entry be?"]},
+  {"op":"link","from":"max-size","type":"relates-to","to":"log","note":"Bounds the file size"},
+  {"op":"add","kind":"question","handle":"one-dir","fields":["statement=One folder per change set?"]},
+  {"op":"link","from":"one-dir","type":"blocks","to":"log"},
+  {"op":"link","from":"use-files","type":"answers","to":"one-dir"},
+  {"op":"add","kind":"evidence","handle":"log-tests","fields":["statement=The log tests pass","status=verified"]},
+  {"op":"link","from":"log-tests","type":"verifies","to":"log"},
+  {"op":"add","kind":"evidence","handle":"fsync-bench","fields":["statement=fsync stays under 2 ms","status=failing"]},
+  {"op":"link","from":"fsync-bench","type":"verifies","to":"segment"},
+  {"op":"add","kind":"anchor","handle":"log-go","fields":["statement=internal/store/log.go"]},
+  {"op":"link","from":"log-go","type":"implements","to":"log"},
+  {"op":"link","from":"log","type":"depends-on","to":"index"},
+  {"op":"add","kind":"capability","handle":"render","fields":["statement=Writes markdown"]},
+  {"op":"link","from":"render","type":"depends-on","to":"log"},
+  {"op":"link","from":"log","type":"relates-to","to":"render","note":"Render reads the log"}
+]}
+-- change.md --
+# Slice · change 01M5PWGM "Add a read cache" · what-if
+
+## Focus
+
+**cache** `01M5PWGN` · capability · evidence: none
+Caches reads
+Proposed: new
+
+**log** `01M5PWGEF85Y185JZ35S` · capability · evidence: verified
+Appends entries in batches
+owner: storage team
+Proposed: statement: Appends entries, one file each → Appends entries in batches
+
+## Context
+
+- store `01M5PWGEF85Y185JZ35M` — Keeps the log on disk
+
+## Constraints
+
+- no-network `01M5PWGEF85Y185JZ36G` — Never touches the network · from store
+- plain-json `01M5PWGEF85Y185JZ36R` — Every file is plain JSON · from store
+
+## Decisions
+
+- git-friendly `01M5PWGEF85Y185JZ38` — Diffs stay readable in git · from store
+- use-files `01M5PWGEF85Y185JZ37X` — One file per entry
+
+## Open questions
+
+- which-fs `01M5PWGEF85Y185JZ397` — Which file systems must we support? · blocks
+- max-size `01M5PWGEF85Y185JZ39H` — How large may one entry be? · relates-to · Bounds the file size
+
+## Anchors
+
+- log-go `01M5PWGEF85Y185JZ3B3` — internal/store/log.go
+
+## Evidence
+
+- log-tests `01M5PWGEF85Y185JZ3AD` — The log tests pass · verified
+
+## Children
+
+- segment `01M5PWGEF85Y185JZ361` — Splits the log into segments · failing
+
+## Neighbours
+
+- index `01M5PWGEF85Y185JZ368` — Answers queries fast · needs
+- render `01M5PWGEF85Y185JZ3BM` — Writes markdown · needed by
+- render `01M5PWGEF85Y185JZ3BM` — Writes markdown · relates-to · Render reads the log
+-- change.json --
+{
+  "anchors": [
+    {
+      "handle": "log-go",
+      "id": "01M5PWGEF85Y185JZ3B3S680H1",
+      "kind": "anchor",
+      "short": "01M5PWGEF85Y185JZ3B3",
+      "statement": "internal/store/log.go"
+    }
+  ],
+  "budget": 4000,
+  "change": {
+    "id": "01M5PWGMARA1WR6BD0MEF4Y76P",
+    "intent": "Add a read cache",
+    "short": "01M5PWGM",
+    "state": "draft"
+  },
+  "children": [
+    {
+      "handle": "segment",
+      "id": "01M5PWGEF85Y185JZ361BRVY6W",
+      "kind": "capability",
+      "short": "01M5PWGEF85Y185JZ361",
+      "statement": "Splits the log into segments",
+      "status": "failing"
+    }
+  ],
+  "constraints": [
+    {
+      "from": "store",
+      "handle": "no-network",
+      "id": "01M5PWGEF85Y185JZ36G0YTYKG",
+      "kind": "constraint",
+      "short": "01M5PWGEF85Y185JZ36G",
+      "statement": "Never touches the network"
+    },
+    {
+      "from": "store",
+      "handle": "plain-json",
+      "id": "01M5PWGEF85Y185JZ36R85NNSR",
+      "kind": "constraint",
+      "short": "01M5PWGEF85Y185JZ36R",
+      "statement": "Every file is plain JSON"
+    }
+  ],
+  "context": [
+    {
+      "handle": "store",
+      "id": "01M5PWGEF85Y185JZ35MBP5BKA",
+      "kind": "capability",
+      "relation": "ancestor",
+      "short": "01M5PWGEF85Y185JZ35M",
+      "statement": "Keeps the log on disk"
+    }
+  ],
+  "decisions": [
+    {
+      "from": "store",
+      "handle": "git-friendly",
+      "id": "01M5PWGEF85Y185JZ38T5CFFDZ",
+      "kind": "decision",
+      "short": "01M5PWGEF85Y185JZ38",
+      "statement": "Diffs stay readable in git"
+    },
+    {
+      "handle": "use-files",
+      "id": "01M5PWGEF85Y185JZ37X9DHB5Y",
+      "kind": "decision",
+      "short": "01M5PWGEF85Y185JZ37X",
+      "statement": "One file per entry"
+    }
+  ],
+  "evidence": [
+    {
+      "handle": "log-tests",
+      "id": "01M5PWGEF85Y185JZ3ADX963TY",
+      "kind": "evidence",
+      "short": "01M5PWGEF85Y185JZ3AD",
+      "statement": "The log tests pass",
+      "status": "verified"
+    }
+  ],
+  "focus": [
+    {
+      "fields": {
+        "statement": "Caches reads"
+      },
+      "handle": "cache",
+      "id": "01M5PWGNA0MVZ1H5AXG5VQ0BY9",
+      "kind": "capability",
+      "proposed": [
+        "new"
+      ],
+      "retired": false,
+      "short": "01M5PWGN",
+      "statement": "Caches reads",
+      "status": "none"
+    },
+    {
+      "fields": {
+        "owner": "storage team",
+        "statement": "Appends entries in batches"
+      },
+      "handle": "log",
+      "id": "01M5PWGEF85Y185JZ35S9GSQJR",
+      "kind": "capability",
+      "proposed": [
+        "statement: Appends entries, one file each → Appends entries in batches"
+      ],
+      "retired": false,
+      "short": "01M5PWGEF85Y185JZ35S",
+      "statement": "Appends entries in batches",
+      "status": "verified"
+    }
+  ],
+  "in_flight": [],
+  "neighbours": [
+    {
+      "handle": "index",
+      "id": "01M5PWGEF85Y185JZ368ZPMXTH",
+      "kind": "capability",
+      "relation": "needs",
+      "short": "01M5PWGEF85Y185JZ368",
+      "statement": "Answers queries fast"
+    },
+    {
+      "handle": "render",
+      "id": "01M5PWGEF85Y185JZ3BMBW66CC",
+      "kind": "capability",
+      "relation": "needed by",
+      "short": "01M5PWGEF85Y185JZ3BM",
+      "statement": "Writes markdown"
+    },
+    {
+      "handle": "render",
+      "id": "01M5PWGEF85Y185JZ3BMBW66CC",
+      "kind": "capability",
+      "note": "Render reads the log",
+      "relation": "relates-to",
+      "short": "01M5PWGEF85Y185JZ3BM",
+      "statement": "Writes markdown"
+    }
+  ],
+  "omitted": [],
+  "over_budget": false,
+  "questions": [
+    {
+      "handle": "which-fs",
+      "id": "01M5PWGEF85Y185JZ3971TJ5VV",
+      "kind": "question",
+      "relation": "blocks",
+      "short": "01M5PWGEF85Y185JZ397",
+      "statement": "Which file systems must we support?"
+    },
+    {
+      "handle": "max-size",
+      "id": "01M5PWGEF85Y185JZ39HA81FYK",
+      "kind": "question",
+      "note": "Bounds the file size",
+      "relation": "relates-to",
+      "short": "01M5PWGEF85Y185JZ39H",
+      "statement": "How large may one entry be?"
+    }
+  ],
+  "ref": "01M5PWGM",
+  "tokens": 1036,
+  "view": "what-if"
+}
+-- cache.md --
+# Slice · cache · what-if (change 01M5PWGM "Add a read cache")
+
+## Focus
+
+**cache** `01M5PWGN` · capability · evidence: none
+Caches reads
+Proposed: new
+
+## Context
+
+- store `01M5PWGEF85Y185JZ35M` — Keeps the log on disk
+
+## Constraints
+
+- no-network `01M5PWGEF85Y185JZ36G` — Never touches the network · from store
+- plain-json `01M5PWGEF85Y185JZ36R` — Every file is plain JSON · from store
+
+## Decisions
+
+- git-friendly `01M5PWGEF85Y185JZ38` — Diffs stay readable in git · from store
+
+## Neighbours
+
+- log `01M5PWGEF85Y185JZ35S` — Appends entries in batches · needs
+-- change-as-is.md --
+# Slice · change 01M5PWGM "Add a read cache" · as-is
+
+## Focus
+
+**log** `01M5PWGEF85Y185JZ35S` · capability · evidence: verified
+Appends entries, one file each
+owner: storage team
+
+## Context
+
+- store `01M5PWGEF85Y185JZ35M` — Keeps the log on disk
+
+## Constraints
+
+- no-network `01M5PWGEF85Y185JZ36G` — Never touches the network · from store
+
+## Decisions
+
+- git-friendly `01M5PWGEF85Y185JZ38` — Diffs stay readable in git · from store
+- use-files `01M5PWGEF85Y185JZ37X` — One file per entry
+
+## Open questions
+
+- which-fs `01M5PWGEF85Y185JZ397` — Which file systems must we support? · blocks
+- max-size `01M5PWGEF85Y185JZ39H` — How large may one entry be? · relates-to · Bounds the file size
+
+## Anchors
+
+- log-go `01M5PWGEF85Y185JZ3B3` — internal/store/log.go
+
+## Evidence
+
+- log-tests `01M5PWGEF85Y185JZ3AD` — The log tests pass · verified
+
+## Children
+
+- segment `01M5PWGEF85Y185JZ361` — Splits the log into segments · failing
+
+## Neighbours
+
+- index `01M5PWGEF85Y185JZ368` — Answers queries fast · needs
+- render `01M5PWGEF85Y185JZ3BM` — Writes markdown · needed by
+- render `01M5PWGEF85Y185JZ3BM` — Writes markdown · relates-to · Render reads the log
+-- accepted.md --
+# Slice · change 01M5PWGM "Add a read cache" · to-be
+
+## Focus
+
+**cache** `01M5PWGN` · capability · evidence: none
+Caches reads
+Proposed: new
+
+**log** `01M5PWGEF85Y185JZ35S` · capability · evidence: verified
+Appends entries in batches
+owner: storage team
+Proposed: statement: Appends entries, one file each → Appends entries in batches
+
+## Context
+
+- store `01M5PWGEF85Y185JZ35M` — Keeps the log on disk
+
+## Constraints
+
+- no-network `01M5PWGEF85Y185JZ36G` — Never touches the network · from store
+- plain-json `01M5PWGEF85Y185JZ36R` — Every file is plain JSON · from store
+
+## Decisions
+
+- git-friendly `01M5PWGEF85Y185JZ38` — Diffs stay readable in git · from store
+- use-files `01M5PWGEF85Y185JZ37X` — One file per entry
+
+## Open questions
+
+- which-fs `01M5PWGEF85Y185JZ397` — Which file systems must we support? · blocks
+- max-size `01M5PWGEF85Y185JZ39H` — How large may one entry be? · relates-to · Bounds the file size
+
+## Anchors
+
+- log-go `01M5PWGEF85Y185JZ3B3` — internal/store/log.go
+
+## Evidence
+
+- log-tests `01M5PWGEF85Y185JZ3AD` — The log tests pass · verified
+
+## Children
+
+- segment `01M5PWGEF85Y185JZ361` — Splits the log into segments · failing
+
+## Neighbours
+
+- index `01M5PWGEF85Y185JZ368` — Answers queries fast · needs
+- render `01M5PWGEF85Y185JZ3BM` — Writes markdown · needed by
+- render `01M5PWGEF85Y185JZ3BM` — Writes markdown · relates-to · Render reads the log
+-- in-flight.md --
+# Slice · log · what-if (change 01M5PWGT "Tune the log")
+
+## Focus
+
+**log** `01M5PWGEF85Y185JZ35S` · capability · evidence: verified
+Appends entries, one file each
+owner: core team
+Proposed: owner: storage team → core team
+
+## Context
+
+- store `01M5PWGEF85Y185JZ35M` — Keeps the log on disk
+
+## Constraints
+
+- no-network `01M5PWGEF85Y185JZ36G` — Never touches the network · from store
+
+## Decisions
+
+- git-friendly `01M5PWGEF85Y185JZ38` — Diffs stay readable in git · from store
+- use-files `01M5PWGEF85Y185JZ37X` — One file per entry
+
+## Open questions
+
+- which-fs `01M5PWGEF85Y185JZ397` — Which file systems must we support? · blocks
+- max-size `01M5PWGEF85Y185JZ39H` — How large may one entry be? · relates-to · Bounds the file size
+
+## Anchors
+
+- log-go `01M5PWGEF85Y185JZ3B3` — internal/store/log.go
+
+## Evidence
+
+- log-tests `01M5PWGEF85Y185JZ3AD` — The log tests pass · verified
+
+## Children
+
+- segment `01M5PWGEF85Y185JZ361` — Splits the log into segments · failing
+
+## Neighbours
+
+- index `01M5PWGEF85Y185JZ368` — Answers queries fast · needs
+- render `01M5PWGEF85Y185JZ3BM` — Writes markdown · needed by
+- render `01M5PWGEF85Y185JZ3BM` — Writes markdown · relates-to · Render reads the log
+
+## In flight
+
+- `01M5PWGM` accepted — Add a read cache

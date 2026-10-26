@@ -22,8 +22,8 @@ package changeset
 import (
 	"slices"
 
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // Dropped reports whether s is withdrawn, rejected or superseded.

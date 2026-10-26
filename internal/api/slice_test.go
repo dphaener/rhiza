@@ -6,10 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/canon"
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/index"
-	"github.com/dphaener/genesis/internal/slice"
+	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/index"
+	"github.com/dphaener/rhiza/internal/slice"
 )
 
 // sliceCtx is initCtx with the user cache dir (where the index lives) in a
@@ -204,7 +204,7 @@ func TestSliceErrors(t *testing.T) {
 
 	_, err = callSlice(t, ctx, `{}`)
 	wantExit(t, err, 2)
-	if AsError(err).Next != "genesis slice <ref>" {
+	if AsError(err).Next != "rhiza slice <ref>" {
 		t.Errorf("no change set: next %q", AsError(err).Next)
 	}
 
@@ -229,7 +229,7 @@ func TestSliceErrors(t *testing.T) {
 	out := testCtx(t.TempDir())
 	_, err = callSlice(t, out, `{"ref":"log"}`)
 	wantExit(t, err, 4)
-	if AsError(err).Next != "genesis init" {
+	if AsError(err).Next != "rhiza init" {
 		t.Errorf("outside a repo: next %q", AsError(err).Next)
 	}
 }

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/guide"
+	"github.com/dphaener/rhiza/internal/guide"
 )
 
 var pluginPaths = []string{pluginManifestPath, pluginSkillPath, pluginHooksPath, pluginScrubPath}
@@ -48,7 +48,7 @@ func TestYAMLQuote(t *testing.T) {
 }
 
 func TestSkillFileFrontmatter(t *testing.T) {
-	for _, tc := range []struct{ name, text string }{{"genesis", "genesis"}, {"genesis-scrub", "scrub"}} {
+	for _, tc := range []struct{ name, text string }{{"rhiza", "rhiza"}, {"rhiza-scrub", "scrub"}} {
 		b, err := skillFile(tc.name, tc.text)
 		if err != nil {
 			t.Fatal(err)
@@ -65,7 +65,7 @@ func TestGuideInstall(t *testing.T) {
 	ctx := testCtx(t.TempDir())
 	ctx.Home = t.TempDir()
 	ctx.Version = "v1.2.3"
-	dir := filepath.Join(ctx.Home, ".claude", "skills", "genesis")
+	dir := filepath.Join(ctx.Home, ".claude", "skills", "rhiza")
 
 	r := guideInstall(t, ctx, `{"agent":"claude"}`)
 	if r.Dir != dir || !slices.Equal(r.Written, pluginPaths) || len(r.Unchanged) != 0 {
@@ -93,13 +93,13 @@ func TestGuideInstall(t *testing.T) {
 func TestGuideInstallForeign(t *testing.T) {
 	ctx := testCtx(t.TempDir())
 	ctx.Home = t.TempDir()
-	dir := filepath.Join(ctx.Home, ".claude", "skills", "genesis")
+	dir := filepath.Join(ctx.Home, ".claude", "skills", "rhiza")
 	writePath(t, filepath.Join(dir, "SKILL.md"), "mine\n")
 	writePath(t, filepath.Join(dir, "extra.txt"), "keep\n")
 
 	_, err := callOp(t, ctx, "guide.install", `{"agent":"claude"}`)
 	var e *Error
-	if !errors.As(err, &e) || e.Code != CodeConflict || e.Next != "genesis guide install --agent claude --force" {
+	if !errors.As(err, &e) || e.Code != CodeConflict || e.Next != "rhiza guide install --agent claude --force" {
 		t.Fatalf("foreign install err = %v", err)
 	}
 	if b, _ := os.ReadFile(filepath.Join(dir, "SKILL.md")); string(b) != "mine\n" {
@@ -123,11 +123,11 @@ func TestInstalledVersion(t *testing.T) {
 		name, manifest, version string
 		ok                      bool
 	}{
-		{"Ours", `{"name":"genesis","version":"v1","genesis":{"installed_by":"genesis guide install"}}`, "v1", true},
-		{"EmptyMarker", `{"name":"genesis","version":"v1","genesis":{}}`, "v1", true},
-		{"NoMarker", `{"name":"genesis","version":"v1"}`, "", false},
-		{"MarkerNotObject", `{"name":"genesis","version":"v1","genesis":"yes"}`, "", false},
-		{"OtherName", `{"name":"other","version":"v1","genesis":{}}`, "", false},
+		{"Ours", `{"name":"rhiza","version":"v1","rhiza":{"installed_by":"rhiza guide install"}}`, "v1", true},
+		{"EmptyMarker", `{"name":"rhiza","version":"v1","rhiza":{}}`, "v1", true},
+		{"NoMarker", `{"name":"rhiza","version":"v1"}`, "", false},
+		{"MarkerNotObject", `{"name":"rhiza","version":"v1","rhiza":"yes"}`, "", false},
+		{"OtherName", `{"name":"other","version":"v1","rhiza":{}}`, "", false},
 		{"NotJSON", `{`, "", false},
 		{"Missing", "", "", false},
 	} {
@@ -152,10 +152,10 @@ func TestGuideInstallErrors(t *testing.T) {
 		code      Code
 		next      string
 	}{
-		{"OtherAgent", `{"agent":"agents-md"}`, false, CodeUsage, "genesis guide install --agent claude"},
-		{"NoHome", `{"agent":"claude"}`, false, CodeUsage, "genesis guide install --agent claude --project"},
-		{"ProjectNoRepo", `{"agent":"claude","project":true}`, false, CodeNotFound, "genesis init"},
-		{"DryRun", `{"agent":"claude","project":true}`, true, CodeUsage, "genesis guide install --agent claude --project"},
+		{"OtherAgent", `{"agent":"agents-md"}`, false, CodeUsage, "rhiza guide install --agent claude"},
+		{"NoHome", `{"agent":"claude"}`, false, CodeUsage, "rhiza guide install --agent claude --project"},
+		{"ProjectNoRepo", `{"agent":"claude","project":true}`, false, CodeNotFound, "rhiza init"},
+		{"DryRun", `{"agent":"claude","project":true}`, true, CodeUsage, "rhiza guide install --agent claude --project"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx.DryRun = tc.dryRun
@@ -177,7 +177,7 @@ func TestGuideInstallErrors(t *testing.T) {
 func TestGuideInstallEmptyFolder(t *testing.T) {
 	ctx := testCtx(t.TempDir())
 	ctx.Home = t.TempDir()
-	dir := filepath.Join(ctx.Home, ".claude", "skills", "genesis")
+	dir := filepath.Join(ctx.Home, ".claude", "skills", "rhiza")
 	writePath(t, filepath.Join(dir, "notes.txt"), "keep\n")
 
 	r := guideInstall(t, ctx, `{"agent":"claude"}`)
@@ -192,7 +192,7 @@ func TestGuideInstallEmptyFolder(t *testing.T) {
 func TestGuideInstallFileInTheWay(t *testing.T) {
 	ctx := testCtx(t.TempDir())
 	ctx.Home = t.TempDir()
-	dir := filepath.Join(ctx.Home, ".claude", "skills", "genesis")
+	dir := filepath.Join(ctx.Home, ".claude", "skills", "rhiza")
 	writePath(t, dir, "a file\n")
 
 	for _, req := range []string{`{"agent":"claude"}`, `{"agent":"claude","force":true}`} {
@@ -227,7 +227,7 @@ func TestGuideInstallConcurrent(t *testing.T) {
 			t.Error(err)
 		}
 	}
-	if v, ok := installedVersion(filepath.Join(ctx.Home, ".claude", "skills", "genesis")); !ok || v != ctx.Version {
+	if v, ok := installedVersion(filepath.Join(ctx.Home, ".claude", "skills", "rhiza")); !ok || v != ctx.Version {
 		t.Errorf("installedVersion = %q, %v", v, ok)
 	}
 }

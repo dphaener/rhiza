@@ -20,11 +20,11 @@ package slice
 // slice may measure exactly the budget.
 //
 // Each cut section gets a command that shows what was left out. For
-// Children in a node slice it is "genesis tree <focus handle>". Anything
+// Children in a node slice it is "rhiza tree <focus handle>". Anything
 // else, Children in a change slice included (a change slice has no single
 // tree to show), gets the slice command with " --budget <B>", B the uncut
 // slice's tokens rounded up to the next 1,000 above it. The slice command
-// is "genesis slice <ref>" for a node slice and "genesis slice --change
+// is "rhiza slice <ref>" for a node slice and "rhiza slice --change
 // <ref>" for a change slice, plus " --view <view>" when the view is not the
 // request's default (DefaultView). A ref or handle that is not plain is
 // single-quoted for the shell.
@@ -34,8 +34,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/canon"
-	"github.com/dphaener/genesis/internal/changeset"
+	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/changeset"
 )
 
 // The views.
@@ -205,11 +205,11 @@ func (f *fitter) render(tiers [numSections]Tier, over bool) (Result, error) {
 // command returns the command that shows what cutting sec left out.
 func (f *fitter) command(sec part) string {
 	if sec == secChildren && !f.s.ChangeSlice && len(f.s.Focus) > 0 {
-		return "genesis tree " + shellQuote(f.s.Focus[0].Handle)
+		return "rhiza tree " + shellQuote(f.s.Focus[0].Handle)
 	}
-	c := "genesis slice " + shellQuote(f.ref)
+	c := "rhiza slice " + shellQuote(f.ref)
 	if f.s.ChangeSlice {
-		c = "genesis slice --change " + shellQuote(f.ref)
+		c = "rhiza slice --change " + shellQuote(f.ref)
 	}
 	if f.s.View != f.opts.DefaultView {
 		c += " --view " + shellQuote(f.s.View)

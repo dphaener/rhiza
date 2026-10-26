@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/canon"
+	"github.com/dphaener/rhiza/internal/canon"
 )
 
 func TestExitCode(t *testing.T) {
@@ -34,11 +34,11 @@ func TestExitCode(t *testing.T) {
 }
 
 func TestErrorMessageAndNext(t *testing.T) {
-	e := Conflictf("handle %q is taken", "core").WithNext("genesis show core")
+	e := Conflictf("handle %q is taken", "core").WithNext("rhiza show core")
 	if e.Error() != `handle "core" is taken` {
 		t.Errorf("Error() = %q", e.Error())
 	}
-	if e.Code != CodeConflict || e.Next != "genesis show core" {
+	if e.Code != CodeConflict || e.Next != "rhiza show core" {
 		t.Errorf("got %+v", e)
 	}
 	base := Usagef("x")
@@ -54,8 +54,8 @@ func TestErrorJSON(t *testing.T) {
 		err  error
 		want string
 	}{
-		{"api error", fmt.Errorf("wrap: %w", NotFoundf("no node %q", "x").WithNext("genesis add")),
-			"{\n  \"error\": {\n    \"code\": \"not_found\",\n    \"message\": \"no node \\\"x\\\"\",\n    \"next\": \"genesis add\"\n  }\n}\n"},
+		{"api error", fmt.Errorf("wrap: %w", NotFoundf("no node %q", "x").WithNext("rhiza add")),
+			"{\n  \"error\": {\n    \"code\": \"not_found\",\n    \"message\": \"no node \\\"x\\\"\",\n    \"next\": \"rhiza add\"\n  }\n}\n"},
 		{"plain error", errors.New("disk full"),
 			"{\n  \"error\": {\n    \"code\": \"error\",\n    \"message\": \"disk full\",\n    \"next\": \"\"\n  }\n}\n"},
 	}

@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/genesis/internal/canon"
-	"github.com/dphaener/genesis/internal/guide"
+	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/guide"
 )
 
 func statusOf(t *testing.T, ctx *Ctx, req string) StatusResponse {
@@ -73,11 +73,11 @@ func TestStatusHookCap(t *testing.T) {
 		t.Errorf("hook output is %d tokens, cap %d", n, guide.StartCap)
 	}
 	for _, want := range []string{
-		"This repo uses Genesis",
+		"This repo uses Rhiza",
 		"(draft): Make the onboarding",
 		"…\n",
 		"In flight: 1 draft, 0 proposed, 0 accepted.",
-		"`genesis guide install --agent claude`, `genesis guide install --agent claude --project`",
+		"`rhiza guide install --agent claude`, `rhiza guide install --agent claude --project`",
 	} {
 		if !strings.Contains(out, want) {
 			t.Errorf("hook output lacks %q", want)

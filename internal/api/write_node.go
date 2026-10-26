@@ -10,9 +10,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/key"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/key"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 func init() {
@@ -111,7 +111,7 @@ type RetireRequest struct {
 func buildAdd(b writeBase, r AddRequest) (edit, error) {
 	kind := op.Kind(r.Kind)
 	if !slices.Contains(op.Kinds(), kind) {
-		return edit{}, Usagef("unknown kind %q: want one of %s", r.Kind, joinKinds()).WithNext("genesis describe add")
+		return edit{}, Usagef("unknown kind %q: want one of %s", r.Kind, joinKinds()).WithNext("rhiza describe add")
 	}
 	fields, err := parseFields(r.Fields, r.JSONFields)
 	if err != nil {
@@ -143,7 +143,7 @@ func buildAdd(b writeBase, r AddRequest) (edit, error) {
 	}
 	o := op.Op{ID: opID, Type: op.TypeNodeCreate, Node: node, Kind: kind, Handle: r.Handle, Parent: parent, Key: k, Fields: fields}
 	if err := o.Validate(); err != nil {
-		return edit{}, Usagef("%s", err.Error()).WithNext("genesis describe add")
+		return edit{}, Usagef("%s", err.Error()).WithNext("rhiza describe add")
 	}
 	if err := handleFree(b, r.Handle, id.ID{}); err != nil {
 		return edit{}, err
@@ -158,7 +158,7 @@ func buildAdd(b writeBase, r AddRequest) (edit, error) {
 func buildSet(b writeBase, r SetRequest) (edit, error) {
 	if r.Handle == "" && len(r.Fields)+len(r.JSONFields)+len(r.Unset) == 0 {
 		return edit{}, Usagef("nothing to change: give --handle, --field, --json-field or --unset").
-			WithNext("genesis describe set")
+			WithNext("rhiza describe set")
 	}
 	n, err := writableNode(b, r.Ref)
 	if err != nil {
@@ -173,7 +173,7 @@ func buildSet(b writeBase, r SetRequest) (edit, error) {
 		// Check the name by op's own rules: a probe update unsetting it.
 		probe := op.Op{ID: n.ID, Type: op.TypeNodeUpdate, Node: n.ID, Base: n.ID, Unset: []string{name}}
 		if err := probe.Validate(); err != nil {
-			return edit{}, Usagef("--unset: %v", err).WithNext("genesis describe set")
+			return edit{}, Usagef("--unset: %v", err).WithNext("rhiza describe set")
 		}
 		if _, ok := set[name]; ok {
 			return edit{}, Usagef("field %q is both set and unset", name)
@@ -246,7 +246,7 @@ func buildMv(b writeBase, r MvRequest) (edit, error) {
 		return edit{}, Usagef("give --parent or --root, not both")
 	}
 	if !r.Root && r.Parent == "" && r.Before == "" && r.After == "" {
-		return edit{}, Usagef("nothing to move: give --parent, --root, --before or --after").WithNext("genesis describe mv")
+		return edit{}, Usagef("nothing to move: give --parent, --root, --before or --after").WithNext("rhiza describe mv")
 	}
 	parent := n.Parent
 	switch {
@@ -294,7 +294,7 @@ func buildMv(b writeBase, r MvRequest) (edit, error) {
 // and the links created here that end at it.
 func buildRetire(b writeBase, r RetireRequest) (edit, error) {
 	if strings.TrimSpace(r.Reason) == "" {
-		return edit{}, Usagef("retire needs a --reason").WithNext("genesis describe retire")
+		return edit{}, Usagef("retire needs a --reason").WithNext("rhiza describe retire")
 	}
 	n, err := writableNode(b, r.Ref)
 	if err != nil {
@@ -338,7 +338,7 @@ func writableNode(b writeBase, ref string) (Node, error) {
 		return Node{}, Conflictf("node %s (%s) is retired", n.ID, n.Handle)
 	}
 	if n.Conflict {
-		return Node{}, Conflictf("node %s (%s) has conflicting changes", n.ID, n.Handle).WithNext("genesis check")
+		return Node{}, Conflictf("node %s (%s) has conflicting changes", n.ID, n.Handle).WithNext("rhiza check")
 	}
 	return n, nil
 }

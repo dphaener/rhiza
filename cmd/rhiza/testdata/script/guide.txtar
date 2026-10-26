@@ -1,0 +1,85 @@
+# guide prints the agent guide that ships in the binary, and guide ls lists
+# its texts. Neither needs a repository: this script starts with none.
+
+! exists .rhiza
+
+# rhiza guide prints the rhiza skill, the same as guide rhiza.
+exec rhiza guide
+stdout '^# Rhiza$'
+stdout '^## The core loop$'
+stdout '^## Hard rules$'
+! stderr .
+cp stdout skill.md
+exec rhiza guide rhiza
+cmp stdout skill.md
+
+# --json carries the name, the version and the same text; api call gives
+# the same bytes.
+exec rhiza guide --json
+stdout '"name": "rhiza"'
+stdout '"version": "'
+stdout '"text": "# Rhiza\\n'
+stdout 'The core loop'
+cp stdout guide.json
+exec rhiza api call guide '{}'
+cmp stdout guide.json
+exec rhiza guide sources --json
+cp stdout sources.json
+exec rhiza api call guide '{"name":"sources"}'
+cmp stdout sources.json
+
+# The scrub skill.
+exec rhiza guide scrub
+stdout '^# rhiza-scrub$'
+stdout '^## Steps$'
+
+# Each topic.
+exec rhiza guide apply
+stdout '^# apply$'
+stdout '^## The file$'
+exec rhiza guide carving
+stdout '^# Carving$'
+stdout '^## Known limit$'
+exec rhiza guide change-sets
+stdout '^# Change sets$'
+stdout '^## Lifecycle$'
+exec rhiza guide sources
+stdout '^# Sources$'
+stdout '^## Stored fields$'
+
+# guide ls lists all six texts with their kinds and sizes.
+exec rhiza guide ls
+stdout -count=6 '^- '
+stdout '^- rhiza +skill +[0-9]+ tokens  Work with the product model'
+stdout '^- scrub +skill +[0-9]+ tokens  '
+stdout '^- apply +topic +[0-9]+ tokens  '
+stdout '^- carving +topic +[0-9]+ tokens  '
+stdout '^- change-sets +topic +[0-9]+ tokens  '
+stdout '^- sources +topic +[0-9]+ tokens  '
+exec rhiza guide ls --json
+stdout '"texts": \['
+stdout '"kind": "skill"'
+stdout '"kind": "topic"'
+stdout '"tokens": [0-9]+'
+cp stdout ls.json
+exec rhiza api call guide.ls '{}'
+cmp stdout ls.json
+
+# An unknown name is not_found, exit 4, with a next.
+! exec rhiza guide nope
+stderr '^rhiza: no guide text "nope"$'
+stderr '^next: rhiza guide ls$'
+! stdout .
+exec sh -c 'rhiza guide nope 2>/dev/null; echo exit $?'
+stdout '^exit 4$'
+! exec rhiza guide nope --json
+stdout '"code": "not_found"'
+stdout '"next": "rhiza guide ls"'
+
+# Nothing above made a repository; inside one guide works the same.
+! exists .rhiza
+exec rhiza init
+exec rhiza guide
+cmp stdout skill.md
+exec rhiza guide ls --json
+cmp stdout ls.json

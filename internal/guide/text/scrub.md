@@ -1,4 +1,4 @@
-# genesis-scrub
+# rhiza-scrub
 
 Turn a raw conversation (a chat transcript, meeting notes, an interview) into a Source node.
 The Source is committed to the repo; the raw transcript never is.
@@ -39,13 +39,13 @@ The Source is committed to the repo; the raw transcript never is.
    required; `by` (who said it, a role or handle) and `where` (when or where in the material)
    are optional.
 6. Store it:
-   - inside a change set: `genesis source add <handle> <file.json> --raw <transcript> --json`
-   - on its own: `genesis source add <handle> <file.json> --raw <transcript> --record --json`
+   - inside a change set: `rhiza source add <handle> <file.json> --raw <transcript> --json`
+   - on its own: `rhiza source add <handle> <file.json> --raw <transcript> --record --json`
    `--raw` hashes the transcript (sha256) and stores only the hash. If the transcript is not on
    this machine, pass `--raw-sha256 <hex>` instead. Check first with `--dry-run`.
 7. Link what came from it: decisions and capabilities derived from the conversation get a
-   `derived-from` link to the source (`genesis link <node> derived-from <handle> --json`, or in
-   an `apply` file). Pass `--source <handle>` to `genesis change new` when a change set comes
+   `derived-from` link to the source (`rhiza link <node> derived-from <handle> --json`, or in
+   an `apply` file). Pass `--source <handle>` to `rhiza change new` when a change set comes
    from it.
 
 ## Rules
@@ -57,4 +57,4 @@ The Source is committed to the repo; the raw transcript never is.
 - When unsure whether something is sensitive, leave it out.
 - Handles are lower-case words joined by dashes, such as `export-call-2026-10-20`.
 
-`genesis guide sources` covers the stored fields.
+`rhiza guide sources` covers the stored fields.

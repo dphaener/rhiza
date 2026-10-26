@@ -1,4 +1,4 @@
-// Package canon reads and writes Genesis's canonical JSON: sorted keys,
+// Package canon reads and writes Rhiza's canonical JSON: sorted keys,
 // two-space indentation, integers only, minimal string escaping, raw UTF-8
 // and exactly one final newline. The same value always has the same bytes,
 // so canonical documents can be compared, hashed and stored byte for byte.
@@ -20,7 +20,7 @@ import (
 	"unicode/utf8"
 )
 
-// ErrInvalid is wrapped by every error for input that is not JSON Genesis
+// ErrInvalid is wrapped by every error for input that is not JSON Rhiza
 // accepts: malformed JSON, duplicate keys, invalid UTF-8, non-integer or
 // out-of-range numbers, or nesting deeper than the limit.
 var ErrInvalid = errors.New("canon: invalid JSON")

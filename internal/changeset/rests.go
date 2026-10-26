@@ -3,8 +3,8 @@ package changeset
 import (
 	"slices"
 
-	"github.com/dphaener/genesis/internal/id"
-	"github.com/dphaener/genesis/internal/op"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 )
 
 // Resting is the ops of one change set that rest on a dropped change set:

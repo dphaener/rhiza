@@ -1,0 +1,76 @@
+# Stacked change sets end to end. B depends on A (a depends-on link written
+# inside B) and builds on A's in-flight work: a leaf under A's capability, a
+# field on it and a link to it. B's writes and its what-if view see A; land
+# takes A first, then B.
+
+exec rhiza init
+
+# A adds the capability base.
+exec rhiza change new A
+stdout 'change set 01M5PWGEF85Y185JZ2ZGCNH40N '
+exec rhiza add capability base --field statement=Base
+stdout '^- node 01M5PWGJC82P7YGZTWYFFZ0VJG \(base\)$'
+
+# B depends on A, from inside B.
+exec rhiza change new B
+stdout 'change set 01M5PWGKBGYFZMTH8Y8AF1G8GN '
+exec rhiza link 01M5PWGKBGYFZMTH8Y8AF1G8GN depends-on 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout 'to change set 01M5PWGKBGYFZMTH8Y8AF1G8GN\.$'
+
+# B's writes resolve base through A: a leaf under it, a field on it, a link
+# to it.
+exec rhiza add capability leaf --parent base --field statement=Leaf
+stdout '^- node 01M5PWGNA0MVZ1H5AXG5VQ0BY9 \(leaf\)$'
+exec rhiza set base --field owner=b
+stdout '^- node 01M5PWGJC82P7YGZTWYFFZ0VJG \(base\)$'
+exec rhiza link leaf relates-to base --note why
+fold-ok
+
+# B's what-if slice holds base (with B's field) and leaf.
+exec rhiza slice --change 01M5PWGKBGYFZMTH8Y8AF1G8GN --view what-if --json
+stdout '"view": "what-if"'
+stdout '"handle": "base"'
+stdout '"owner": "b"'
+stdout '"handle": "leaf"'
+stdout '"in_flight": \[\n +\{\n +"id": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+
+# show through a draft B is what-if by default, so A's base is there too.
+exec rhiza show leaf --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
+stdout '^- Path: base$'
+stdout '^- View: what-if:01M5PWGKBGYFZMTH8Y8AF1G8GN$'
+stdout '^- relates-to base \(01M5PWGJC82P7Y\) — why$'
+exec rhiza show base --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
+stdout '^- Created: 01M5PWGEF85Y185JZ2ZGCNH40N$'
+stdout '^- capability leaf \(01M5PWGNA0MVZ1\)$'
+
+# Accept both, B first.
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza propose --change 01M5PWGEF85Y185JZ2ZGCNH40N
+exec rhiza accept --reason ok --change 01M5PWGEF85Y185JZ2ZGCNH40N
+
+# B cannot land before A: exit 3, naming A and how to land it.
+! exec rhiza land --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
+stderr '^rhiza: cannot land change set 01M5PWGKBGYFZMTH8Y8AF1G8GN: it depends on 01M5PWGEF85Y185JZ2ZGCNH40N \(accepted\)$'
+stderr '^next: rhiza land --change 01M5PWGEF85Y18$'
+! exec rhiza land --change 01M5PWGKBGYFZMTH8Y8AF1G8GN --json
+stdout '"code": "conflict"'
+stdout '"next": "rhiza land --change 01M5PWGEF85Y18"'
+exec sh -c 'rhiza land --change 01M5PWGKBGYFZMTH8Y8AF1G8GN 2>/dev/null; echo exit $?'
+stdout '^exit 3$'
+
+# A, then B.
+exec rhiza land --change 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^Landed change set 01M5PWGEF85Y185JZ2ZGCNH40N \(accepted → landed\)\.$'
+exec rhiza land --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
+stdout '^Landed change set 01M5PWGKBGYFZMTH8Y8AF1G8GN \(accepted → landed\)\.$'
+fold-ok
+
+# Landed, the model has both: base with B's field, leaf under it.
+exec rhiza show base
+stdout '^b$'
+stdout '^- capability leaf \(01M5PWGNA0MVZ1\)$'
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+! stdout 'depends-on'
