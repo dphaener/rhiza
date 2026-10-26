@@ -1,6 +1,7 @@
 package run
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -531,5 +532,241 @@ func TestRetriedRoundTrip(t *testing.T) {
 	}
 	if got := j.Entries[1]; !reflect.DeepEqual(got, e) {
 		t.Fatalf("got %+v, want %+v", got, e)
+	}
+}
+
+// Message entries fold into Messages in journal order, with every field.
+func TestFoldMessages(t *testing.T) {
+	j := Journal{ID: "r", Entries: []Entry{
+		startedEntry("a", 0),
+		{Type: TypeEntered, At: at(1), Step: "a", Visit: 1},
+		{Type: TypeSession, At: at(2), Step: "a", Session: "S1"},
+		{Type: TypeMessage, At: at(3), Step: "a", Session: "S1", Actor: "claude-code-f436602f",
+			To: "reviewer", Text: "Please look at the diff.", Summary: "review ask"},
+		{Type: TypeMessage, At: at(4), Step: "a", Session: "S1", Actor: "claude-code-f436602f",
+			To: "team-lead", Text: `{"type":"shutdown_response"}`, Structured: true},
+	}}
+	st := j.State()
+	want := []Message{
+		{Step: "a", Session: "S1", Actor: "claude-code-f436602f", To: "reviewer",
+			Text: "Please look at the diff.", Summary: "review ask", At: at(3)},
+		{Step: "a", Session: "S1", Actor: "claude-code-f436602f", To: "team-lead",
+			Text: `{"type":"shutdown_response"}`, Structured: true, At: at(4)},
+	}
+	if !reflect.DeepEqual(st.Messages, want) {
+		t.Fatalf("messages = %+v, want %+v", st.Messages, want)
+	}
+}
+
+// The last tokens entry for a session wins.
+func TestFoldTokensLastWins(t *testing.T) {
+	first := &TokenUse{Session: TokenCounts{Input: 10, Output: 20, CacheCreation: 30, CacheRead: 40}}
+	last := &TokenUse{
+		Session: TokenCounts{Input: 11, Output: 22, CacheCreation: 33, CacheRead: 44},
+		Helpers: TokenCounts{Input: 1, Output: 2, CacheCreation: 3, CacheRead: 4},
+	}
+	other := &TokenUse{Session: TokenCounts{Input: 7}}
+	j := Journal{ID: "r", Entries: []Entry{
+		startedEntry("a", 0),
+		{Type: TypeEntered, At: at(1), Step: "a", Visit: 1},
+		{Type: TypeSession, At: at(2), Step: "a", Session: "S1"},
+		{Type: TypeTokens, At: at(3), Step: "a", Session: "S1", Tokens: first},
+		{Type: TypeTokens, At: at(4), Step: "b", Session: "S2", Tokens: other},
+		{Type: TypeTokens, At: at(5), Step: "a", Session: "S1", Tokens: last},
+		{Type: TypeTokens, At: at(6), Step: "a", Session: "S1"},
+	}}
+	st := j.State()
+	want := map[string]TokenUse{"S1": *last, "S2": *other}
+	if !reflect.DeepEqual(st.Tokens, want) {
+		t.Fatalf("tokens = %+v, want %+v", st.Tokens, want)
+	}
+	if fresh := (Journal{ID: "r"}).State(); fresh.Tokens == nil {
+		t.Fatal("Tokens map is nil on a fresh fold")
+	}
+}
+
+// A tokens entry for a session with no session entry adds the session,
+// with the step from that entry.
+func TestFoldTokensAddsSession(t *testing.T) {
+	j := Journal{ID: "r", Entries: []Entry{
+		startedEntry("a", 0),
+		{Type: TypeEntered, At: at(1), Step: "a", Visit: 1},
+		{Type: TypeSession, At: at(2), Step: "a", Session: "S1"},
+		{Type: TypeTokens, At: at(3), Step: "b", Session: "S9", Tokens: &TokenUse{Session: TokenCounts{Input: 5}}},
+		{Type: TypeSession, At: at(4), Step: "c", Session: "S9"},
+	}}
+	st := j.State()
+	want := []RunSession{{Step: "a", Session: "S1"}, {Step: "b", Session: "S9"}}
+	if !reflect.DeepEqual(st.Sessions, want) {
+		t.Fatalf("sessions = %+v, want %+v", st.Sessions, want)
+	}
+}
+
+// Sessions keeps one entry per distinct session, in first-seen order,
+// across a revisited and a retried step.
+func TestFoldTokensSessionsOrder(t *testing.T) {
+	j := Journal{ID: "r", Entries: []Entry{
+		startedEntry("a", 0),
+		{Type: TypeEntered, At: at(1), Step: "a", Visit: 1},
+		{Type: TypeSession, At: at(2), Step: "a", Session: "S1"},
+		{Type: TypeTokens, At: at(3), Step: "a", Session: "S1", Tokens: &TokenUse{}},
+		{Type: TypeEnded, At: at(4), Step: "a", Visit: 1, Outcome: "pass", Next: "b"},
+		{Type: TypeEntered, At: at(5), Step: "b", Visit: 1},
+		{Type: TypeSession, At: at(6), Step: "b", Session: "S2"},
+		{Type: TypeEnded, At: at(7), Step: "b", Visit: 1, Outcome: "fail", Next: "a"},
+		// Revisit of a: the same session resumed, then a second session.
+		{Type: TypeEntered, At: at(8), Step: "a", Visit: 2},
+		{Type: TypeSession, At: at(9), Step: "a", Session: "S1"},
+		{Type: TypeSession, At: at(10), Step: "a", Session: "S3"},
+		{Type: TypeEnded, At: at(11), Step: "a", Visit: 2, Outcome: "fail", End: Failed},
+		{Type: TypeFinished, At: at(12), Step: "a", End: Failed},
+		{Type: TypeRetried, At: at(13), Step: "a", Detail: "failed"},
+		{Type: TypeEntered, At: at(14), Step: "a", Visit: 3},
+		{Type: TypeSession, At: at(15), Step: "a", Session: "S3"},
+		{Type: TypeTokens, At: at(16), Step: "a", Session: "S3", Tokens: &TokenUse{}},
+	}}
+	st := j.State()
+	want := []RunSession{{Step: "a", Session: "S1"}, {Step: "b", Session: "S2"}, {Step: "a", Session: "S3"}}
+	if !reflect.DeepEqual(st.Sessions, want) {
+		t.Fatalf("sessions = %+v, want %+v", st.Sessions, want)
+	}
+}
+
+// Message and tokens entries change nothing else in the fold: interleaved
+// with a journal's other entries, Current, Visits, Steps, Blocked, Stopped
+// and the rest come out as they do without them.
+func TestFoldMessagesAndTokensChangeNothingElse(t *testing.T) {
+	b := &Block{Kind: "question", Question: "Ship it?"}
+	msg := func(n int, step, sess string) Entry {
+		return Entry{Type: TypeMessage, At: at(n), Step: step, Session: sess, Actor: "claude-code-f436602f", To: "x", Text: "hi"}
+	}
+	tok := func(n int, step, sess string) Entry {
+		return Entry{Type: TypeTokens, At: at(n), Step: step, Session: sess, Tokens: &TokenUse{Session: TokenCounts{Input: int64(n)}}}
+	}
+	cases := []struct {
+		name    string
+		entries []Entry
+		extra   map[int][]Entry // inserted after the entry at that index
+	}{
+		{
+			name: "finished after a revisit",
+			entries: []Entry{
+				startedEntry("a", 0),
+				{Type: TypeEntered, At: at(1), Step: "a", Visit: 1},
+				{Type: TypeSession, At: at(2), Step: "a", Session: "S1"},
+				{Type: TypeEnded, At: at(3), Step: "a", Visit: 1, Outcome: "pass", Next: "b"},
+				{Type: TypeEntered, At: at(4), Step: "b", Visit: 1},
+				{Type: TypeEnded, At: at(5), Step: "b", Visit: 1, Outcome: "fail", Next: "a"},
+				{Type: TypeEntered, At: at(6), Step: "a", Visit: 2},
+				{Type: TypeEnded, At: at(7), Step: "a", Visit: 2, Outcome: "pass", End: Succeeded},
+				{Type: TypeFinished, At: at(8), End: Succeeded},
+			},
+			extra: map[int][]Entry{
+				2: {msg(20, "a", "S1"), tok(21, "a", "S1")},
+				3: {tok(22, "a", "S1")},
+				5: {msg(23, "b", "S2")},
+				8: {tok(24, "a", "S1")},
+			},
+		},
+		{
+			name: "blocked step",
+			entries: []Entry{
+				startedEntry("a", 0),
+				{Type: TypeEntered, At: at(1), Step: "a", Visit: 1},
+				{Type: TypeSession, At: at(2), Step: "a", Session: "S1"},
+				{Type: TypeBlocked, At: at(3), Step: "a", Session: "S1", Block: b},
+			},
+			extra: map[int][]Entry{
+				2: {tok(20, "a", "S1")},
+				3: {msg(21, "a", "S1"), tok(22, "a", "S1")},
+			},
+		},
+		{
+			name: "stopped step",
+			entries: []Entry{
+				startedEntry("a", 0),
+				{Type: TypeEntered, At: at(1), Step: "a", Visit: 1},
+				{Type: TypeStopped, At: at(2), Step: "a", Detail: "waiting: test -f go"},
+			},
+			extra: map[int][]Entry{
+				2: {msg(20, "a", "S1"), tok(21, "a", "S1")},
+			},
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			var with []Entry
+			for i, e := range c.entries {
+				with = append(with, e)
+				with = append(with, c.extra[i]...)
+			}
+			before := Journal{ID: "r", Entries: c.entries}.State()
+			after := Journal{ID: "r", Entries: with}.State()
+			if len(after.Messages) == 0 && len(after.Tokens) == 0 {
+				t.Fatal("the interleaved entries folded to nothing")
+			}
+			after.Messages, after.Sessions, after.Tokens = nil, nil, nil
+			before.Messages, before.Sessions, before.Tokens = nil, nil, nil
+			if !reflect.DeepEqual(after, before) {
+				t.Fatalf("message/tokens entries changed the fold:\nafter  %+v\nbefore %+v", after, before)
+			}
+		})
+	}
+}
+
+// A tokens entry round-trips through the store with the documented keys,
+// and a line written before these fields existed still decodes.
+func TestTokensRoundTrip(t *testing.T) {
+	s := newStore(t)
+	if err := s.Create("01TOKENS", startedEntry("a", 0)); err != nil {
+		t.Fatal(err)
+	}
+	e := Entry{Type: TypeTokens, At: at(1), Step: "a", Session: "S1", Tokens: &TokenUse{
+		Session: TokenCounts{Input: 1, Output: 2, CacheCreation: 3, CacheRead: 4},
+		Helpers: TokenCounts{Input: 5, Output: 6, CacheCreation: 7, CacheRead: 8},
+	}}
+	m := Entry{Type: TypeMessage, At: at(2), Step: "a", Session: "S1", Actor: "claude-code-f436602f",
+		To: "reviewer", Text: "hi", Summary: "greet", Structured: true}
+	for _, x := range []Entry{e, m} {
+		if err := s.Append("01TOKENS", x); err != nil {
+			t.Fatal(err)
+		}
+	}
+	j, err := s.Read("01TOKENS")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(j.Entries) != 3 || !reflect.DeepEqual(j.Entries[1], e) || !reflect.DeepEqual(j.Entries[2], m) {
+		t.Fatalf("got %+v, want %+v and %+v", j.Entries, e, m)
+	}
+	raw, err := os.ReadFile(s.path("01TOKENS"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{
+		`"type":"tokens"`,
+		`"tokens":{"session":{"input":1,"output":2,"cache_creation":3,"cache_read":4},"helpers":{"input":5,"output":6,"cache_creation":7,"cache_read":8}}`,
+		`"type":"message"`, `"to":"reviewer"`, `"text":"hi"`, `"summary":"greet"`, `"structured":true`,
+	} {
+		if !strings.Contains(string(raw), want) {
+			t.Errorf("journal lacks %s:\n%s", want, raw)
+		}
+	}
+	// The started line carries none of the new keys.
+	first := strings.SplitN(string(raw), "\n", 2)[0]
+	for _, key := range []string{`"to"`, `"text"`, `"summary"`, `"structured"`, `"tokens"`} {
+		if strings.Contains(first, key) {
+			t.Errorf("started line has %s: %s", key, first)
+		}
+	}
+
+	old := `{"type":"ended","at":"2026-10-26T12:03:00Z","step":"a","visit":1,"outcome":"pass","next":"b","session":"S1"}`
+	var got Entry
+	if err := json.Unmarshal([]byte(old), &got); err != nil {
+		t.Fatal(err)
+	}
+	wantOld := Entry{Type: TypeEnded, At: at(3), Step: "a", Visit: 1, Outcome: "pass", Next: "b", Session: "S1"}
+	if !reflect.DeepEqual(got, wantOld) {
+		t.Fatalf("old line decoded to %+v, want %+v", got, wantOld)
 	}
 }
