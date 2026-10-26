@@ -119,6 +119,9 @@ type payload struct {
 // askTool is the tool the agent calls to put a question to the owner.
 const askTool = "AskUserQuestion"
 
+// sendTool is the tool the agent calls to send another session a message.
+const sendTool = "SendMessage"
+
 // questionText joins the questions of an ask call with " / ". Each is
 // trimmed and has its control characters, newlines included, replaced by a
 // space; empty questions are dropped.
@@ -173,6 +176,61 @@ func (Adapter) HookStatus(event string, raw []byte) (adapter.HookReport, bool, e
 		return adapter.HookReport{}, false, fmt.Errorf("unknown hook event %q", event)
 	}
 	return r, true, nil
+}
+
+// sendPayload is the part of a hook payload a send call's message is read
+// from. ToolInput stays raw until the tool is known to be the send tool.
+type sendPayload struct {
+	SessionID string          `json:"session_id"`
+	ToolName  string          `json:"tool_name"`
+	ToolInput json.RawMessage `json:"tool_input"`
+}
+
+// sendInput is a send call's input. To is a pointer and Message raw so that
+// absent, null and empty can be told apart.
+type sendInput struct {
+	To      *string         `json:"to"`
+	Summary string          `json:"summary"`
+	Message json.RawMessage `json:"message"`
+}
+
+// HookMessage implements adapter.Adapter. Only a PostToolUse event for the
+// send tool carries a message, so the message is read once the call has run.
+// A string message is its text, verbatim; any other JSON value is kept as
+// its raw JSON and marked Structured.
+func (Adapter) HookMessage(event string, raw []byte) (adapter.Message, bool, error) {
+	var p sendPayload
+	if len(raw) > 0 {
+		if err := json.Unmarshal(raw, &p); err != nil {
+			return adapter.Message{}, false, fmt.Errorf("%s hook payload: %w", event, err)
+		}
+	}
+	m := adapter.Message{SessionID: p.SessionID}
+	if event != "PostToolUse" || p.ToolName != sendTool {
+		return m, false, nil
+	}
+	var in sendInput
+	if len(p.ToolInput) > 0 {
+		if err := json.Unmarshal(p.ToolInput, &in); err != nil {
+			return adapter.Message{}, false, fmt.Errorf("%s hook payload: %s input: %w", event, sendTool, err)
+		}
+	}
+	if in.To == nil || *in.To == "" {
+		return adapter.Message{}, false, fmt.Errorf("%s hook payload: %s call has no recipient", event, sendTool)
+	}
+	msg := bytes.TrimSpace(in.Message)
+	if len(msg) == 0 || string(msg) == "null" {
+		return adapter.Message{}, false, fmt.Errorf("%s hook payload: %s call has no message", event, sendTool)
+	}
+	m.To, m.Summary = *in.To, in.Summary
+	if msg[0] == '"' {
+		if err := json.Unmarshal(msg, &m.Text); err != nil {
+			return adapter.Message{}, false, fmt.Errorf("%s hook payload: %w", event, err)
+		}
+	} else {
+		m.Text, m.Structured = string(msg), true
+	}
+	return m, true, nil
 }
 
 // TranscriptGlobs implements adapter.Adapter. Claude Code keeps a session's
