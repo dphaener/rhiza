@@ -25,6 +25,10 @@ the assistant's summary in the founding conversation
 
 - derived-from [founding-conversation](../source/founding-conversation.md)
 
+### In
+
+- decided-by [ship-change-workflow](../capability/rhiza/workflows/built-in-workflows/ship-change-workflow.md)
+
 ## History
 
 - `01M5SWRGHKJKT6JZY6ZVMQEGWN` Founding record: the Sources, the root intents and constraints, and the founding decisions

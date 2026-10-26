@@ -27,6 +27,8 @@ the orchestrator's summary in the founding conversation
 ### In
 
 - decided-by [orchestration](../capability/rhiza/orchestration.md)
+- decided-by [wait-green-pr](../capability/rhiza/orchestration/shipping/wait-green-pr.md)
+- decided-by [pinned-merge](../capability/rhiza/orchestration/shipping/pinned-merge.md)
 
 ## History
 
