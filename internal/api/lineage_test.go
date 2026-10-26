@@ -240,6 +240,9 @@ func TestLogNode(t *testing.T) {
 		if landed != (c.State == changeset.StateLanded) || landed != lineageAtRe.MatchString(c.At) || landed == c.Actor.IsZero() {
 			t.Errorf("change set %d: state %s at %q actor %s", k, c.State, c.At, c.Actor)
 		}
+		if c.Events != nil {
+			t.Errorf("change set %d never reopened has events %+v", k, c.Events)
+		}
 	}
 	if r.ChangeSets[0].At > r.ChangeSets[1].At {
 		t.Errorf("land times out of order: %s, %s", r.ChangeSets[0].At, r.ChangeSets[1].At)
@@ -259,6 +262,63 @@ func TestLogNode(t *testing.T) {
 		if !strings.Contains(out, s) {
 			t.Errorf("Human lacks %q:\n%s", s, out)
 		}
+	}
+}
+
+func TestLogReopened(t *testing.T) {
+	ctx := readCtx(t)
+	cs := relanded(t, ctx)
+	r := logOf(t, ctx, `{"ref":"store"}`)
+	if len(r.ChangeSets) != 1 {
+		t.Fatalf("change sets %+v", r.ChangeSets)
+	}
+	c := r.ChangeSets[0]
+	if c.ID != cs || c.State != changeset.StateLanded || len(c.Events) != 3 {
+		t.Fatalf("change set %+v", c)
+	}
+	var lines string
+	for k, e := range c.Events {
+		want := []entry.Type{entry.TypeLand, entry.TypeReopen, entry.TypeLand}[k]
+		if e.Type != want || e.Entry.IsZero() || e.Actor.IsZero() || !lineageAtRe.MatchString(e.At) {
+			t.Errorf("event %d = %+v, want %s", k, e, want)
+		}
+		verb := map[entry.Type]string{entry.TypeLand: "Landed", entry.TypeReopen: "Reopened"}[e.Type]
+		lines += "- " + verb + " " + e.At + " by " + e.Actor.String() + "\n"
+	}
+	// The existing fields still name the last land.
+	if last := c.Events[2]; c.At != last.At || c.Actor != last.Actor {
+		t.Errorf("at %q actor %s, want the last land %+v", c.At, c.Actor, last)
+	}
+	var b bytes.Buffer
+	r.Human(&b)
+	if out := b.String(); !strings.Contains(out, " landed intention: X\n\n"+lines+"- ") {
+		t.Errorf("Human lacks\n%s in:\n%s", lines, out)
+	}
+}
+
+func TestLogReopenedAccepted(t *testing.T) {
+	// Reopened and not yet relanded: one Landed and one Reopened line, no
+	// stale at or actor.
+	ctx := readCtx(t)
+	cs := landed(t, ctx)
+	ctx.Git = branchGit("").run
+	ctx.ChangeRef = cs.String()
+	move(t, ctx, "reopen", `{}`)
+	r := logOf(t, ctx, `{"ref":"store","view":"to-be"}`)
+	if len(r.ChangeSets) != 1 {
+		t.Fatalf("change sets %+v", r.ChangeSets)
+	}
+	c := r.ChangeSets[0]
+	if c.State != changeset.StateAccepted || c.At != "" || !c.Actor.IsZero() || len(c.Events) != 2 {
+		t.Fatalf("change set %+v", c)
+	}
+	var b bytes.Buffer
+	r.Human(&b)
+	out := b.String()
+	want := "- Landed " + c.Events[0].At + " by " + c.Events[0].Actor.String() + "\n- Reopened " +
+		c.Events[1].At + " by " + c.Events[1].Actor.String() + "\n"
+	if !strings.Contains(out, want) || strings.Count(out, "- Landed") != 1 {
+		t.Errorf("Human lacks %q:\n%s", want, out)
 	}
 }
 

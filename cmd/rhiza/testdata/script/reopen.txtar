@@ -1,0 +1,60 @@
+# rhiza reopen moves a change set that landed only on its branch back to
+# accepted and makes it current, so it takes one more write and lands
+# again; rhiza check then passes and the log holds land, reopen and land.
+
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+exec git add -A
+exec git commit -qm 'Init'
+exec git push -q -u origin main
+
+# A change set accepted and landed on branch cs/x, then committed there.
+exec git checkout -q -b cs/x
+exec rhiza change new 'Store things' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability store --field 'statement=Stores things'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land --json
+stdout '"cleared_current": true'
+exec rhiza render
+exec git add -A
+exec git commit -qm 'Land Store things'
+
+# Its land is on cs/x only, so it reopens, back to accepted and current.
+exec rhiza reopen --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout '"from": "landed"'
+stdout '"to": "accepted"'
+! stdout cleared_current
+grep '^01M5PWGEF85Y185JZ2ZGCNH40N$' .rhiza/local/change
+exec rhiza change show --json
+stdout '"id": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+stdout '"state": "accepted"'
+exec rhiza status
+stdout 01M5PWGEF85Y185JZ2ZGCNH40N
+
+# One more write, land again, commit: check passes.
+exec rhiza add capability shelve --field 'statement=Shelves things'
+exec rhiza land --json
+stdout '"to": "landed"'
+exec rhiza render
+exec git add -A
+exec git commit -qm 'Land Store things again'
+exec rhiza check --json
+stdout '"ok": true'
+fold-ok
+
+# Its history holds propose, accept, land, reopen and land, in order, and
+# its log one line per land and reopen.
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout '(?s)"history": \[\s*\{[^}]*"type": "propose"\s*\},\s*\{[^}]*"type": "accept"\s*\},\s*\{[^}]*"type": "land"\s*\},\s*\{[^}]*"type": "reopen"\s*\},\s*\{[^}]*"type": "land"\s*\}\s*\]'
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '(?s)## History\n\n- propose \S+ by \S+\n- accept \S+ by \S+\n- land \S+ by \S+\n- reopen \S+ by \S+\n- land \S+ by \S+\n'
+exec rhiza log store
+stdout '(?s)landed intention: Store things\n\n- Landed \S+ by \S+\n- Reopened \S+ by \S+\n- Landed \S+ by \S+\n- node.create'
+exec rhiza log store --json
+stdout '"events": \['

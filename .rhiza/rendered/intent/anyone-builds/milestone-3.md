@@ -33,6 +33,10 @@ Rhiza's own workflows: milestone 4 is planned, built and reviewed by Rhiza, with
 - decided-by [budget-timed-alone](../../decision/budget-timed-alone.md)
 - derived-from [milestone-3-conversation](../../source/milestone-3-conversation.md)
 
+### In
+
+- serves change set `01M5WPTRX1DDQ7BAGDF7T29QPW` (Reopening a change set: rhiza reopen lets a change set landed only on its branch take more writes and land again, so no session deletes a log entry to fix its work.)
+
 ## History
 
 - `01M5WPTHR3EBHDNNH1CFX7A0T0` Milestone 3 planning record: the conversation, the milestone-3 intent and its done points, and its decisions

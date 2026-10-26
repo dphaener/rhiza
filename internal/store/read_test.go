@@ -50,8 +50,8 @@ func TestReadLogProblems(t *testing.T) {
 	other := testEntry(t)
 	other.ID = mustID(t, sOtherID)
 
-	v3 := bytes.Replace(mustEncode(t, other), []byte(`"v": 1`), []byte(`"v": 3`), 1)
-	if bytes.Equal(v3, mustEncode(t, other)) {
+	v4 := bytes.Replace(mustEncode(t, other), []byte(`"v": 1`), []byte(`"v": 4`), 1)
+	if bytes.Equal(v4, mustEncode(t, other)) {
 		t.Fatal(`no "v": 1 in the encoding`)
 	}
 	nonCanon := bytes.TrimSuffix(mustEncode(t, other), []byte("\n"))
@@ -73,7 +73,7 @@ func TestReadLogProblems(t *testing.T) {
 		{"mismatch file name and id", cs + "/01JB000000000000000000000Z.json", file(mustEncode(t, other)), cs + "/01JB000000000000000000000Z.json", ErrMismatch},
 		{"mismatch wrong change set folder", "log/" + sOtherCS + "/" + sOtherID + ".json", file(mustEncode(t, other)), "log/" + sOtherCS + "/" + sOtherID + ".json", ErrMismatch},
 		{"non-canonical file", cs + "/" + sOtherID + ".json", file(nonCanon), cs + "/" + sOtherID + ".json", entry.ErrInvalid},
-		{"newer format file", cs + "/" + sOtherID + ".json", file(v3), cs + "/" + sOtherID + ".json", entry.ErrNewerFormat},
+		{"newer format file", cs + "/" + sOtherID + ".json", file(v4), cs + "/" + sOtherID + ".json", entry.ErrNewerFormat},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -215,6 +215,7 @@ func genLog(t *rapid.T) fstest.MapFS {
 		for _, eid := range ids {
 			after := rapid.SliceOfNDistinct(genStoreID(), 0, 3, func(i id.ID) id.ID { return i }).Draw(t, "after")
 			slices.SortFunc(after, id.Compare)
+			typ := rapid.SampledFrom(entry.Types()).Draw(t, "type")
 			e := entry.Entry{
 				V:         1,
 				ID:        eid,
@@ -223,8 +224,12 @@ func genLog(t *rapid.T) fstest.MapFS {
 				For:       genStoreID().Draw(t, "for"),
 				At:        time.Unix(rapid.Int64Range(0, 4102444800).Draw(t, "at"), 0).UTC(),
 				After:     after,
-				Type:      rapid.SampledFrom(entry.Types()).Draw(t, "type"),
+				Type:      typ,
 				Body:      json.RawMessage("{}"),
+			}
+			// A reopen entry is spelled only in format 3.
+			if typ == entry.TypeReopen {
+				e.V = 3
 			}
 			b, err := entry.Encode(e)
 			if err != nil {

@@ -103,6 +103,7 @@ func golden(t testing.TB) []struct {
   "by": "` + sBy + `"
 }`, Supersede{By: mustID(t, sBy)}},
 		{entry.TypeLand, `{}`, Land{}},
+		{entry.TypeReopen, `{}`, Reopen{}},
 		{entry.TypeNote, `{
   "text": "Line one\nline \"two\""
 }`, Note{Text: "Line one\nline \"two\""}},
@@ -122,7 +123,7 @@ func TestBodyRoundTrip(t *testing.T) {
 			if err := canon.Check([]byte(g.doc + "\n")); err != nil {
 				t.Fatalf("golden is not canonical: %v", err)
 			}
-			b, err := DecodeBody(entry.Entry{Type: g.typ, Body: json.RawMessage(g.doc)})
+			b, err := DecodeBody(entry.Entry{V: EntryVersion(g.want), Type: g.typ, Body: json.RawMessage(g.doc)})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -597,7 +598,10 @@ func TestCarveNeedsFormat2(t *testing.T) {
 
 func TestVersionsWithoutCarve(t *testing.T) {
 	for _, g := range golden(t) {
-		for _, v := range []int{1, 2} {
+		if g.typ == entry.TypeReopen {
+			continue // format 3 only; see TestReopenNeedsFormat3
+		}
+		for _, v := range []int{1, 2, 3} {
 			b, err := DecodeBody(entry.Entry{V: v, Type: g.typ, Body: json.RawMessage(g.doc)})
 			if err != nil {
 				t.Fatalf("v%d %s: %v", v, g.typ, err)
@@ -610,6 +614,41 @@ func TestVersionsWithoutCarve(t *testing.T) {
 			t.Fatalf("EntryVersion(%s) = %d, want 1", g.typ, v)
 		}
 	}
+}
+
+func TestReopenNeedsFormat3(t *testing.T) {
+	out, err := EncodeBody(Reopen{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(out) != `{}` {
+		t.Fatalf("EncodeBody(Reopen{}) = %s, want {}", out)
+	}
+	if v := EntryVersion(Reopen{}); v != 3 {
+		t.Fatalf("EntryVersion(Reopen{}) = %d, want 3", v)
+	}
+	for _, canonical := range []bool{false, true} {
+		b, err := decodeBody(entry.Entry{V: 3, Type: entry.TypeReopen, Body: json.RawMessage(`{}`)}, canonical)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if b != (Reopen{}) {
+			t.Fatalf("decodeBody = %#v, want Reopen{}", b)
+		}
+		// Formats 1 and 2 cannot spell a reopen entry.
+		for _, v := range []int{0, 1, 2} {
+			_, err := decodeBody(entry.Entry{V: v, Type: entry.TypeReopen, Body: json.RawMessage(`{}`)}, canonical)
+			checkErr(t, err, "type", nil)
+			if !strings.Contains(err.Error(), "format 3") {
+				t.Fatalf("v%d: error %q, want it to name format 3", v, err)
+			}
+		}
+	}
+	// The body is empty, as a land body is.
+	_, err = DecodeBody(entry.Entry{V: 3, Type: entry.TypeReopen, Body: json.RawMessage(`{
+  "x": 1
+}`)})
+	checkErr(t, err, "x", nil)
 }
 
 // setCarve sets fields on an ops body's carve object.
@@ -699,7 +738,7 @@ func TestCarveInvalid(t *testing.T) {
 // of them.
 func TestDecodeBodyCanonicalMatches(t *testing.T) {
 	for _, g := range golden(t) {
-		e := entry.Entry{V: 2, Type: g.typ, Body: json.RawMessage(g.doc)}
+		e := entry.Entry{V: 3, Type: g.typ, Body: json.RawMessage(g.doc)}
 		want, err := DecodeBody(e)
 		if err != nil {
 			t.Fatalf("%s: %v", g.typ, err)

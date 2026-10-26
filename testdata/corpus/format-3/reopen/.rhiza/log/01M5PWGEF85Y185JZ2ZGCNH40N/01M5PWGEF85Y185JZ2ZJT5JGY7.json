@@ -1,0 +1,15 @@
+{
+  "actor": "01M5PWGEF85Y185JZ2Z5MPYCA4",
+  "after": [],
+  "at": "2026-10-24T12:00:01Z",
+  "body": {
+    "intent": "Let people archive reports",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M5PWGEF85Y185JZ2ZGCNH40N",
+  "for": "01M5PWGEF85Y185JZ2Z5MPYCA4",
+  "id": "01M5PWGEF85Y185JZ2ZJT5JGY7",
+  "type": "open",
+  "v": 1
+}

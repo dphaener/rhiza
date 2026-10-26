@@ -43,18 +43,24 @@ stdout '^## Known limit$'
 exec rhiza guide change-sets
 stdout '^# Change sets$'
 stdout '^## Lifecycle$'
+stdout 'landed --reopen--> accepted'
+exec rhiza guide reopening
+stdout '^# Reopening$'
+stdout 'rhiza reopen --change <id>'
+stdout '^## Never delete or edit log entries$'
 exec rhiza guide sources
 stdout '^# Sources$'
 stdout '^## Stored fields$'
 
-# guide ls lists all six texts with their kinds and sizes.
+# guide ls lists all seven texts with their kinds and sizes.
 exec rhiza guide ls
-stdout -count=6 '^- '
+stdout -count=7 '^- '
 stdout '^- rhiza +skill +[0-9]+ tokens  Work with the product model'
 stdout '^- scrub +skill +[0-9]+ tokens  '
 stdout '^- apply +topic +[0-9]+ tokens  '
 stdout '^- carving +topic +[0-9]+ tokens  '
 stdout '^- change-sets +topic +[0-9]+ tokens  '
+stdout '^- reopening +topic +[0-9]+ tokens  '
 stdout '^- sources +topic +[0-9]+ tokens  '
 exec rhiza guide ls --json
 stdout '"texts": \['

@@ -887,6 +887,40 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "history": {
+            "description": "The lifecycle entries that applied, in causal order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "actor": {
+                  "description": "Who wrote it",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "at": {
+                  "description": "When it was written (RFC 3339, UTC)",
+                  "type": "string"
+                },
+                "entry": {
+                  "description": "The lifecycle entry",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "propose, accept, reject, withdraw, supersede, land or reopen",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "actor",
+                "at",
+                "entry",
+                "type"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "id": {
             "description": "The change set's ID",
             "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
@@ -938,6 +972,7 @@ cmp stdout describe.golden.json
           "applied",
           "current",
           "heads",
+          "history",
           "id",
           "intent",
           "kind",
@@ -1620,6 +1655,40 @@ cmp stdout describe.golden.json
                   },
                   "type": "array"
                 },
+                "events": {
+                  "description": "Its applied land and reopen entries, in causal order; absent unless it was ever reopened",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "actor": {
+                        "description": "Who landed or reopened it",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      },
+                      "at": {
+                        "description": "When it was written (RFC 3339, UTC)",
+                        "type": "string"
+                      },
+                      "entry": {
+                        "description": "The land or reopen entry",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      },
+                      "type": {
+                        "description": "land or reopen",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "actor",
+                      "at",
+                      "entry",
+                      "type"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
                 "id": {
                   "description": "The change set's ID",
                   "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
@@ -2148,6 +2217,67 @@ cmp stdout describe.golden.json
       },
       "summary": "Write the as-is model as markdown under .rhiza/rendered",
       "write": false
+    },
+    {
+      "name": "reopen",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "base": {
+            "description": "The git revision the change set's land must not be in; default the merge-base of HEAD with origin/HEAD, origin/main or main",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The change set moved",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "cleared_current": {
+            "description": "True if the move ended the current change set and cleared it",
+            "type": "boolean"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The entry written; absent in a dry run",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "from": {
+            "description": "The state before the move",
+            "type": "string"
+          },
+          "reason": {
+            "description": "The reason of an accept or reject",
+            "type": "string"
+          },
+          "rule": {
+            "description": "The rule of an accept or reject",
+            "type": "string"
+          },
+          "to": {
+            "description": "The state after the move",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change_set",
+          "from",
+          "to"
+        ],
+        "type": "object"
+      },
+      "summary": "Reopen a change set landed only on its branch, so it takes writes and lands again",
+      "write": true
     },
     {
       "name": "retire",

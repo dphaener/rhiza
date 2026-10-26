@@ -1,0 +1,29 @@
+{
+  "actor": "01M5PWGEF85Y185JZ2Z5MPYCA4",
+  "after": [
+    "01M5PWGQ8GB4618G4RH2TV0ZAH"
+  ],
+  "at": "2026-10-24T12:00:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Restore an archived report."
+        },
+        "handle": "archive-restore",
+        "id": "01M5PWGR7R6T3BKSK9V6N2KZSR",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5PWGR7R6T3BKSK9V4MCGPCP",
+        "op": "node.create",
+        "parent": "01M5PWGJC82P7YGZTWYFFZ0VJG"
+      }
+    ]
+  },
+  "change_set": "01M5PWGEF85Y185JZ2ZGCNH40N",
+  "for": "01M5PWGEF85Y185JZ2Z5MPYCA4",
+  "id": "01M5PWGR7R6T3BKSK9V76DZ19Q",
+  "type": "ops",
+  "v": 1
+}

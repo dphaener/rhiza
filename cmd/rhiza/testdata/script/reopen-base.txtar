@@ -1,0 +1,68 @@
+# rhiza reopen refuses a change set whose land is in the base (exit 3):
+# landed work on main is final, so the error points at a new change set
+# linked discovered-from it. A land only on the branch reopens. With no git
+# there is no base, and reopen refuses; an accepted set is not reopened.
+
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+
+# A record landed, committed on main and pushed.
+exec rhiza add capability store --record --field 'statement=Stores things'
+exec rhiza render
+exec git add -A
+exec git commit -qm 'Store things'
+exec git push -q -u origin main
+
+# (a) On a branch, its land is in the base: refused, nothing written.
+exec git checkout -q -b cs/x
+exec sh -c 'rhiza reopen --change 01M5PWGEF85Y185JZ2ZNP53DGX --json; echo exit=$?'
+stdout '^exit=3$'
+stdout '"code": "conflict"'
+stdout 'landed work on main is final'
+stdout 'discovered-from'
+stdout '"next": "rhiza change new \\"<intent>\\" --json"'
+exec rhiza change show 01M5PWGEF85Y185JZ2ZNP53DGX --json
+stdout '"state": "landed"'
+! exists .rhiza/local/change
+
+# --base names another revision with the same rule.
+exec sh -c 'rhiza reopen --change 01M5PWGEF85Y185JZ2ZNP53DGX --base main --json; echo exit=$?'
+stdout '^exit=3$'
+stdout 'it landed on the base \(main\)'
+
+# (b) A record landed and committed only on cs/x reopens.
+exec rhiza add capability shelve --record --field 'statement=Shelves things' --json
+stdout '"change_set": "01M5PWGMARA1WR6BD0MJ9F50JK"'
+exec rhiza render
+exec git add -A
+exec git commit -qm 'Shelve things'
+exec rhiza reopen --change 01M5PWGMARA1WR6BD0MJ9F50JK --json
+stdout '"to": "accepted"'
+grep '^01M5PWGMARA1WR6BD0MJ9F50JK$' .rhiza/local/change
+exec rhiza change show --json
+stdout '"id": "01M5PWGMARA1WR6BD0MJ9F50JK"'
+stdout '"state": "accepted"'
+fold-ok
+
+# (d) An accepted change set does not reopen.
+exec sh -c 'rhiza reopen --json; echo exit=$?'
+stdout '^exit=3$'
+stdout 'cannot reopen change set 01M5PWGMARA1WR6BD0MJ9F50JK: it is accepted'
+stdout '"next": "rhiza land"'
+
+# (c) With no git there is no base, so reopen refuses.
+cd $WORK
+mkdir nogit
+cd nogit
+exec rhiza init
+exec rhiza add capability store --record --field 'statement=Stores things' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZNP53DGX"'
+exec sh -c 'rhiza reopen --change 01M5PWGEF85Y185JZ2ZNP53DGX --json; echo exit=$?'
+stdout '^exit=3$'
+stdout 'no base to show its land is only on this branch \(not a git work tree\)'
+exec rhiza change show 01M5PWGEF85Y185JZ2ZNP53DGX --json
+stdout '"state": "landed"'

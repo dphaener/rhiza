@@ -328,8 +328,9 @@ func (w *workspace) appendEntryID(cs id.ID, body changeset.Body, actor, forID, e
 // and V the lowest entry format that can spell body.
 //
 // A non-open body needs cs in the log (else not_found), and anything but a
-// note into a terminal change set is a conflict. Whether a lifecycle move is
-// legal in a non-terminal state is the caller's check.
+// note into a terminal change set is a conflict, save a reopen of a landed
+// one. Whether a lifecycle move is legal in a non-terminal state is the
+// caller's check.
 func (w *workspace) buildEntry(cs id.ID, body changeset.Body, actor, forID, eid id.ID) (entry.Entry, error) {
 	es := entriesOf(w.log(), cs)
 	var after []id.ID
@@ -342,7 +343,8 @@ func (w *workspace) buildEntry(cs id.ID, body changeset.Body, actor, forID, eid 
 			return entry.Entry{}, NotFoundf("no change set %s", cs).WithNext("rhiza change ls")
 		}
 		c, _ := changeset.Fold(cs, es)
-		if c.State.Terminal() && body.Type() != entry.TypeNote {
+		reopen := body.Type() == entry.TypeReopen && c.State == changeset.StateLanded
+		if c.State.Terminal() && body.Type() != entry.TypeNote && !reopen {
 			return entry.Entry{}, Conflictf("change set %s is %s", cs, c.State).WithNext(newEntryNext)
 		}
 		after = c.Heads

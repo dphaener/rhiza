@@ -417,6 +417,62 @@ func TestChangeShow(t *testing.T) {
 	wantExit(t, err, 4)
 }
 
+// relanded lands an intention change set on its branch, reopens it, adds
+// one more node and lands it again, leaving none current.
+func relanded(t *testing.T, ctx *Ctx) id.ID {
+	t.Helper()
+	cs := landed(t, ctx)
+	ctx.Git = branchGit("").run
+	ctx.ChangeRef = cs.String()
+	move(t, ctx, "reopen", `{}`)
+	ctx.ChangeRef = ""
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"more"}`)
+	move(t, ctx, "land", `{}`)
+	return cs
+}
+
+func TestChangeShowHistory(t *testing.T) {
+	ctx := initCtx(t)
+	cs := relanded(t, ctx)
+	resp, err := callOp(t, ctx, "change.show", `{"ref":"`+cs.String()+`"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := resp.(ChangeShowResponse)
+	var types []entry.Type
+	for _, e := range r.History {
+		types = append(types, e.Type)
+		if e.Entry.IsZero() || e.Actor.IsZero() || !lineageAtRe.MatchString(e.At) {
+			t.Errorf("history event %+v", e)
+		}
+	}
+	want := []entry.Type{entry.TypePropose, entry.TypeAccept, entry.TypeLand, entry.TypeReopen, entry.TypeLand}
+	if !slices.Equal(types, want) {
+		t.Errorf("history = %v, want %v", types, want)
+	}
+	out := human(t, r)
+	block := "\n## History\n\n"
+	for _, e := range r.History {
+		block += "- " + string(e.Type) + " " + e.At + " by " + e.Actor.String() + "\n"
+	}
+	if !strings.Contains(out, block) {
+		t.Errorf("human output lacks %q:\n%s", block, out)
+	}
+
+	// A fresh draft has an empty history, never null.
+	other := newChange(t, ctx, `{"intent":"Other"}`).ChangeSet
+	resp, err = callOp(t, ctx, "change.show", `{"ref":"`+other.String()+`"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if h := resp.(ChangeShowResponse).History; h == nil || len(h) != 0 {
+		t.Errorf("draft history = %#v", h)
+	}
+	if out := human(t, resp); !strings.Contains(out, "## History\n\nNo lifecycle moves yet.\n") {
+		t.Errorf("draft human:\n%s", out)
+	}
+}
+
 func TestChangeLs(t *testing.T) {
 	ctx := initCtx(t)
 	resp, err := callOp(t, ctx, "change.ls", `{}`)

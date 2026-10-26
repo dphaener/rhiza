@@ -130,8 +130,9 @@ Single writes exist too: `rhiza add`, `rhiza set`, `rhiza mv`, `rhiza retire`,
 ## Change sets
 
 - `rhiza change new "<intent>" --json` opens an intention change set and makes it current.
-- `rhiza propose`, `rhiza accept`, `rhiza reject`, `rhiza withdraw`, `rhiza land`
-  move it through its lifecycle.
+- `rhiza propose`, `rhiza accept`, `rhiza reject`, `rhiza withdraw`, `rhiza land`,
+  `rhiza reopen` move it through its lifecycle.
+- To write after it landed on a branch, `rhiza reopen` it. Never delete or edit log entries.
 - `rhiza change ls --json` lists them all.
 
 ## Errors
@@ -144,5 +145,6 @@ or explains the problem. `rhiza describe <command> --json` gives any command's a
 
 `rhiza guide <topic>` prints a topic; `rhiza guide ls` lists them.
 Topics: `change-sets` (lifecycle, intention vs record, `--record`), `carving` (moving nodes
-between change sets), `apply` (the file format), `sources` (recording a conversation). To turn
-a raw conversation into a Source, use the rhiza-scrub skill (`rhiza guide scrub`).
+between change sets), `apply` (the file format), `sources` (recording a conversation),
+`reopening` (writing after a land). To turn a raw conversation into a Source, use the
+rhiza-scrub skill (`rhiza guide scrub`).

@@ -7,8 +7,9 @@
 //     is never edited in place; everything that happens to it is appended to
 //     the log as an entry naming that ID.
 //   - An entry is one appended fact about a change set: its envelope (see
-//     package entry) plus a typed body. There are nine entry types: open,
-//     ops, propose, accept, reject, withdraw, supersede, land and note.
+//     package entry) plus a typed body. There are ten entry types: open,
+//     ops, propose, accept, reject, withdraw, supersede, land, reopen and
+//     note.
 //   - An operation (see package op) is one change to the model. An ops entry
 //     carries operations and the IDs of operations it drops.
 //   - A revision is an ops entry after the first: it adds operations,
@@ -41,7 +42,8 @@
 // Format 1 cannot spell either: DecodeBody reads them only in an entry of
 // format 2 or later and treats them as unknown fields in a format-1 entry,
 // and EntryVersion tells a writer which format a body needs, so every other
-// entry is still written as format 1.
+// entry is still written as format 1. A reopen body needs format 3, the
+// first with a reopen entry: DecodeBody refuses one in an earlier format.
 package changeset
 
 import (
@@ -150,6 +152,10 @@ type Supersede struct {
 // Land is the body of a land entry: {}.
 type Land struct{}
 
+// Reopen is the body of a reopen entry: {}. It moves a landed change set
+// back to accepted.
+type Reopen struct{}
+
 // Note is the body of a note entry: {text}.
 type Note struct {
 	Text string
@@ -163,6 +169,7 @@ func (Reject) Type() entry.Type    { return entry.TypeReject }
 func (Withdraw) Type() entry.Type  { return entry.TypeWithdraw }
 func (Supersede) Type() entry.Type { return entry.TypeSupersede }
 func (Land) Type() entry.Type      { return entry.TypeLand }
+func (Reopen) Type() entry.Type    { return entry.TypeReopen }
 func (Note) Type() entry.Type      { return entry.TypeNote }
 
 // shapes lists each entry type's body fields in the order DecodeBody checks
@@ -176,6 +183,7 @@ var shapes = map[entry.Type][]string{
 	entry.TypeWithdraw:  {},
 	entry.TypeSupersede: {"by"},
 	entry.TypeLand:      {},
+	entry.TypeReopen:    {},
 	entry.TypeNote:      {"text"},
 }
 
@@ -183,11 +191,13 @@ var shapes = map[entry.Type][]string{
 // exactly one of the last two is present.
 var carveShape = []string{"entry", "from", "to"}
 
-// EntryVersion returns the lowest entry format that can spell b: 2 for an
-// ops body with a carve or an open body with a title, 1 for every other
-// body. A writer stamps it as the entry's v.
+// EntryVersion returns the lowest entry format that can spell b: 3 for a
+// reopen body, 2 for an ops body with a carve or an open body with a title,
+// 1 for every other body. A writer stamps it as the entry's v.
 func EntryVersion(b Body) int {
 	switch b := b.(type) {
+	case Reopen:
+		return 3
 	case Ops:
 		if b.Carve != nil {
 			return 2
@@ -343,6 +353,9 @@ func (s Supersede) Validate() error {
 // Validate always succeeds: a land body has no fields.
 func (Land) Validate() error { return nil }
 
+// Validate always succeeds: a reopen body has no fields.
+func (Reopen) Validate() error { return nil }
+
 // Validate reports the first rule n breaks.
 func (n Note) Validate() error { return text("text", n.Text, true) }
 
@@ -397,7 +410,7 @@ func EncodeBody(b Body) (json.RawMessage, error) {
 		m = map[string]any{"by": b.By}
 	case Note:
 		m = map[string]any{"text": b.Text}
-	case Propose, Withdraw, Land:
+	case Propose, Withdraw, Land, Reopen:
 		m = map[string]any{}
 	default:
 		return nil, fmt.Errorf("%w: unknown body type %T", ErrInvalid, b)
@@ -417,7 +430,8 @@ func EncodeBody(b Body) (json.RawMessage, error) {
 // op.ErrInvalid. An ops body may also hold carve, and an open body title,
 // when e.V is 2 or later; in a format-1 entry each is an unknown field. A
 // carve's own fields are checked the same way and reported as
-// "carve.<field>".
+// "carve.<field>". A reopen body is read only when e.V is 3 or later; in an
+// earlier format it is reported on field "type".
 func DecodeBody(e entry.Entry) (Body, error) {
 	return decodeBody(e, false)
 }
@@ -429,6 +443,9 @@ func decodeBody(e entry.Entry, canonical bool) (Body, error) {
 	shape, ok := shapes[e.Type]
 	if !ok {
 		return nil, invalid("type", "unknown entry type %q", e.Type)
+	}
+	if e.Type == entry.TypeReopen && e.V < 3 {
+		return nil, invalid("type", "%q needs format 3, entry is format %d", e.Type, e.V)
 	}
 	data := []byte(e.Body)
 	if !canonical {
@@ -501,6 +518,8 @@ func decodeBody(e entry.Entry, canonical bool) (Body, error) {
 		b = Supersede{By: by}
 	case entry.TypeLand:
 		b = Land{}
+	case entry.TypeReopen:
+		b = Reopen{}
 	case entry.TypeNote:
 		var s string
 		if s, err = str(fields["text"]); err != nil {

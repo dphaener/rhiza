@@ -76,9 +76,12 @@ func mk(t testing.TB, cs id.ID, n int, b Body, after ...int) entry.Entry {
 	}
 	return entry.Entry{
 		V: EntryVersion(b), ID: fid(n), ChangeSet: cs, Actor: actor, For: owner,
-		At: time.Unix(1_800_000_000+int64(n), 0).UTC(), After: as, Type: b.Type(), Body: raw,
+		At: at(n), After: as, Type: b.Type(), Body: raw,
 	}
 }
+
+// at is the time of fixture entry n.
+func at(n int) time.Time { return time.Unix(1_800_000_000+int64(n), 0).UTC() }
 
 // e builds entry n of csA.
 func e(t testing.TB, n int, b Body, after ...int) entry.Entry {
@@ -181,6 +184,8 @@ func TestFoldLifecycle(t *testing.T) {
 		{"supersede", Supersede{By: csB}, KindIntention, inFlight, StateSuperseded},
 		{"land intention", Land{}, KindIntention, []State{StateAccepted}, StateLanded},
 		{"land record", Land{}, KindRecord, inFlight, StateLanded},
+		{"reopen", Reopen{}, KindIntention, []State{StateLanded}, StateAccepted},
+		{"reopen record", Reopen{}, KindRecord, []State{StateLanded}, StateAccepted},
 		{"note", Note{Text: "hi"}, KindIntention, States(), ""},
 	}
 	for _, m := range moves {
@@ -219,6 +224,12 @@ func TestFoldLifecycle(t *testing.T) {
 				if !allowed && m.name == "ops" && got.Ops != nil {
 					t.Errorf("Ops = %v, want nil after a skipped ops entry", got.Ops)
 				}
+				if lifecycle(m.body.Type()) {
+					moved := slices.ContainsFunc(got.Lifecycle, func(mv Move) bool { return mv.Entry == fid(last) })
+					if moved != allowed {
+						t.Errorf("Lifecycle = %+v, last entry in it %v, want %v", got.Lifecycle, moved, allowed)
+					}
+				}
 			})
 		}
 	}
@@ -250,7 +261,12 @@ func TestFoldFull(t *testing.T) {
 			opID(3): {{Entry: fid(2), Op: retire(3, 3, "c")}},
 			opID(4): {{Entry: fid(3), Op: retire(4, 4, "d")}},
 		},
-		Drops:         map[id.ID]Revision{opID(1): {Entry: fid(3), First: fid(2), Op: retire(1, 1, "a")}},
+		Drops: map[id.ID]Revision{opID(1): {Entry: fid(3), First: fid(2), Op: retire(1, 1, "a")}},
+		Lifecycle: []Move{
+			{Type: entry.TypePropose, Entry: fid(5), At: at(5), Actor: actor, For: owner},
+			{Type: entry.TypeAccept, Entry: fid(6), At: at(6), Actor: actor, For: owner},
+			{Type: entry.TypeLand, Entry: fid(7), At: at(7), Actor: actor, For: owner},
+		},
 		TerminalEntry: fid(7),
 		Heads:         []id.ID{fid(7)},
 		Applied:       []id.ID{fid(1), fid(2), fid(3), fid(4), fid(5), fid(6), fid(7)},
@@ -618,6 +634,91 @@ func TestFoldConcurrentLandWithdraw(t *testing.T) {
 	}
 }
 
+// TestFoldReopen lands, reopens, revises and relands a change set: it ends
+// landed by the second land, with both ops entries' ops and every move in
+// Lifecycle. Right after the reopen it is accepted, not terminal, and still
+// carries the accept.
+func TestFoldReopen(t *testing.T) {
+	es := []entry.Entry{
+		e(t, 1, intention()),
+		e(t, 2, Ops{Ops: []op.Op{retire(1, 1, "a")}}, 1),
+		e(t, 3, Propose{}, 2), e(t, 4, acceptBody, 3), e(t, 5, Land{}, 4),
+		e(t, 6, Reopen{}, 5),
+		e(t, 7, Ops{Ops: []op.Op{retire(2, 2, "b")}}, 6),
+		e(t, 8, Land{}, 7),
+	}
+	mv := func(typ entry.Type, n int) Move {
+		return Move{Type: typ, Entry: fid(n), At: at(n), Actor: actor, For: owner}
+	}
+
+	got, ps := Fold(csA, es[:6])
+	checkProblems(t, ps, csA, nil)
+	if got.State != StateAccepted || !got.TerminalEntry.IsZero() || got.Decided == nil || got.Decided.Entry != fid(4) {
+		t.Errorf("reopened: State %s, TerminalEntry %s, Decided %+v; want accepted, zero, the accept", got.State, got.TerminalEntry, got.Decided)
+	}
+	wantL := []Move{mv(entry.TypePropose, 3), mv(entry.TypeAccept, 4), mv(entry.TypeLand, 5), mv(entry.TypeReopen, 6)}
+	if !reflect.DeepEqual(got.Lifecycle, wantL) {
+		t.Errorf("reopened: Lifecycle = %+v, want %+v", got.Lifecycle, wantL)
+	}
+
+	got, ps = Fold(csA, es)
+	checkProblems(t, ps, csA, nil)
+	if got.State != StateLanded || got.TerminalEntry != fid(8) || got.Decided == nil || got.Decided.Entry != fid(4) {
+		t.Errorf("relanded: State %s, TerminalEntry %s, Decided %+v", got.State, got.TerminalEntry, got.Decided)
+	}
+	if !reflect.DeepEqual(opIDs(got.Ops), opIDsOf(1, 2)) {
+		t.Errorf("relanded: Ops = %v, want both ops entries' ops", opIDs(got.Ops))
+	}
+	wantL = append(wantL, mv(entry.TypeLand, 8))
+	if !reflect.DeepEqual(got.Lifecycle, wantL) {
+		t.Errorf("relanded: Lifecycle = %+v, want %+v", got.Lifecycle, wantL)
+	}
+
+	// A record change set reopens to accepted too.
+	got, ps = Fold(csA, []entry.Entry{e(t, 1, record()), e(t, 2, Land{}, 1), e(t, 3, Reopen{}, 2)})
+	checkProblems(t, ps, csA, nil)
+	if got.State != StateAccepted || !got.TerminalEntry.IsZero() || got.Decided != nil {
+		t.Errorf("record reopened: %+v", got)
+	}
+}
+
+// TestFoldReopenSkipped: a reopen from a state other than landed is
+// skipped and stays out of Lifecycle; so do notes and ops.
+func TestFoldReopenSkipped(t *testing.T) {
+	got, ps := Fold(csA, []entry.Entry{
+		e(t, 1, intention()), e(t, 2, Note{Text: "n"}, 1), e(t, 3, Propose{}, 2), e(t, 4, Reopen{}, 3),
+	})
+	checkProblems(t, ps, csA, []want{{4, ErrTransition}})
+	want := []Move{{Type: entry.TypePropose, Entry: fid(3), At: at(3), Actor: actor, For: owner}}
+	if got.State != StateProposed || !reflect.DeepEqual(got.Lifecycle, want) {
+		t.Errorf("State %s, Lifecycle %+v; want proposed, %+v", got.State, got.Lifecycle, want)
+	}
+	got, _ = Fold(csA, []entry.Entry{e(t, 1, intention()), e(t, 2, Ops{Ops: []op.Op{retire(1, 1, "a")}}, 1)})
+	if got.Lifecycle != nil {
+		t.Errorf("no moves: Lifecycle = %+v, want nil", got.Lifecycle)
+	}
+}
+
+// TestFoldConcurrentReopen: a reopen is a lifecycle entry, so a reopen and
+// a land, or two reopens, after the same land are reported concurrent.
+func TestFoldConcurrentReopen(t *testing.T) {
+	landed := []entry.Entry{e(t, 1, intention()), e(t, 2, Propose{}, 1), e(t, 3, acceptBody, 2), e(t, 4, Land{}, 3)}
+
+	// The reopen (5) folds first, so the land (6) is legal and wins.
+	got, ps := Fold(csA, append(slices.Clone(landed), e(t, 5, Reopen{}, 4), e(t, 6, Land{}, 4)))
+	checkProblems(t, ps, csA, []want{{6, ErrConcurrent}})
+	if got.State != StateLanded || got.TerminalEntry != fid(6) {
+		t.Errorf("reopen and land: State %s by %s, want landed by 6", got.State, got.TerminalEntry)
+	}
+
+	// Two reopens: the second is concurrent and, from accepted, illegal.
+	got, ps = Fold(csA, append(slices.Clone(landed), e(t, 5, Reopen{}, 4), e(t, 6, Reopen{}, 4)))
+	checkProblems(t, ps, csA, []want{{6, ErrConcurrent}, {6, ErrTransition}})
+	if got.State != StateAccepted || len(got.Lifecycle) != 4 {
+		t.Errorf("two reopens: State %s, Lifecycle %+v", got.State, got.Lifecycle)
+	}
+}
+
 func countIs(ps []Problem, target error) int {
 	n := 0
 	for _, p := range ps {
@@ -764,11 +865,11 @@ func genHistory(t *rapid.T) []entry.Entry {
 		if after == nil {
 			after = []id.ID{}
 		}
-		return entry.Entry{V: 1, ID: eids[i], ChangeSet: cs, Actor: actor, For: owner, At: at, After: after, Type: b.Type(), Body: raw}
+		return entry.Entry{V: EntryVersion(b), ID: eids[i], ChangeSet: cs, Actor: actor, For: owner, At: at, After: after, Type: b.Type(), Body: raw}
 	}
 	es := []entry.Entry{build(0, csA, Open{Kind: kind, Intent: "i"}, nil)}
 	types := []entry.Type{entry.TypeOps, entry.TypeOps, entry.TypeOps, entry.TypeNote, entry.TypePropose, entry.TypeAccept,
-		entry.TypeReject, entry.TypeWithdraw, entry.TypeSupersede, entry.TypeLand, entry.TypeOpen}
+		entry.TypeReject, entry.TypeWithdraw, entry.TypeSupersede, entry.TypeLand, entry.TypeReopen, entry.TypeOpen}
 	for i := 1; i <= n; i++ {
 		var after []id.ID
 		for _, j := range rapid.SliceOfNDistinct(rapid.IntRange(0, i-1), 1, 3, func(j int) int { return j }).Draw(t, "after") {
@@ -807,6 +908,8 @@ func genHistory(t *rapid.T) []entry.Entry {
 			b = Supersede{By: rapid.SampledFrom([]id.ID{csA, csB}).Draw(t, "by")}
 		case entry.TypeLand:
 			b = Land{}
+		case entry.TypeReopen:
+			b = Reopen{}
 		case entry.TypeOpen:
 			b = Open{Kind: kind, Intent: "again"}
 			if rapid.Bool().Draw(t, "open after?") {

@@ -54,6 +54,11 @@ var corpusExpect = map[string][]corpusWant{
 		{intent: "Ship report export", state: changeset.StateProposed,
 			handles: []string{"reports", "report-export", "csv-first", ""}},
 	},
+	"format-3/reopen": {
+		{intent: "Record actor ada@example.com", state: changeset.StateLanded, handles: []string{"ada"}},
+		{intent: "Let people archive reports", state: changeset.StateLanded,
+			handles: []string{"archive", "archive-list", "archive-restore"}, decided: entry.TypeAccept},
+	},
 }
 
 func TestCorpusFolds(t *testing.T) {
@@ -135,6 +140,8 @@ func TestCorpusFolds(t *testing.T) {
 				checkRevisions(t, got[0])
 			case "format-2/carve":
 				checkCarve(t, l.Entries, got[1], got[2])
+			case "format-3/reopen":
+				checkReopen(t, l.Entries, got[1])
 			}
 		})
 	}
@@ -178,6 +185,30 @@ func checkRevisions(t *testing.T, cs changeset.ChangeSet) {
 	}
 	if cs.Decided == nil || cs.Decided.Rule != "owner" {
 		t.Errorf("Decided = %+v, want rule owner", cs.Decided)
+	}
+}
+
+// checkReopen checks the reopen case in detail: the change set landed,
+// was reopened by its one v3 entry, and landed again; every other entry is
+// v1.
+func checkReopen(t *testing.T, entries []entry.Entry, cs changeset.ChangeSet) {
+	t.Helper()
+	var types []entry.Type
+	for _, e := range entries {
+		want := 1
+		if e.Type == entry.TypeReopen {
+			want = 3
+		}
+		if e.V != want {
+			t.Errorf("entry %s: v%d %s, want v%d", e.ID, e.V, e.Type, want)
+		}
+		if e.ChangeSet == cs.ID && (e.Type == entry.TypeLand || e.Type == entry.TypeReopen) {
+			types = append(types, e.Type)
+		}
+	}
+	want := []entry.Type{entry.TypeLand, entry.TypeReopen, entry.TypeLand}
+	if !slices.Equal(types, want) {
+		t.Errorf("%s: land and reopen entries %v, want %v", cs.ID, types, want)
 	}
 }
 

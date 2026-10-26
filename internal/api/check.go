@@ -111,15 +111,9 @@ func runCheck(ctx *Ctx, req any) (any, error) {
 	}
 	in.Rev, in.Skipped = base, skipped
 	if base != "" {
-		args := []string{"ls-tree", "-r", "-z", base, "--", store.Dir + "/" + store.LogDir}
-		if legacyDir != store.Dir {
-			args = append(args, legacyDir+"/"+store.LogDir)
+		if in.Base, err = logAt(ctx, base); err != nil {
+			return nil, err
 		}
-		out, err := ctx.Git(args...)
-		if err != nil {
-			return nil, Errorf("list the log at %s: %v", base, err)
-		}
-		in.Base = parseLsTree(out)
 		if in.Current, err = currentEntries(ctx.Root); err != nil {
 			return nil, Errorf("read the log: %v", err)
 		}
@@ -165,6 +159,20 @@ func checkBase(git func(...string) (string, error), base string) (rev, from, ski
 		}
 	}
 	return "", "", "no base: none of " + strings.Join(baseCandidates, ", ") + " resolves", nil
+}
+
+// logAt lists the log entries at git revision rev: one ls-tree of the
+// store's log folder and the legacy one, parsed by parseLsTree.
+func logAt(ctx *Ctx, rev string) ([]check.Entry, error) {
+	args := []string{"ls-tree", "-r", "-z", rev, "--", store.Dir + "/" + store.LogDir}
+	if legacyDir != store.Dir {
+		args = append(args, legacyDir+"/"+store.LogDir)
+	}
+	out, err := ctx.Git(args...)
+	if err != nil {
+		return nil, Errorf("list the log at %s: %v", rev, err)
+	}
+	return parseLsTree(out), nil
 }
 
 // parseLsTree parses `git ls-tree -r -z`: per line a mode, a type and an

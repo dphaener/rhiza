@@ -506,6 +506,15 @@ type LogChangeSet struct {
 	At     string          `json:"at,omitempty" desc:"When it landed (RFC 3339, UTC); absent unless landed"`
 	Actor  id.ID           `json:"actor,omitzero" desc:"Who landed it; absent unless landed"`
 	Carves []LogCarve      `json:"carves,omitempty" desc:"Its carve entries that moved the target in or out, in the order found; absent when none"`
+	Events []LogEvent      `json:"events,omitempty" desc:"Its applied land and reopen entries, in causal order; absent unless it was ever reopened"`
+}
+
+// LogEvent is one applied land or reopen of a change set.
+type LogEvent struct {
+	Type  entry.Type `json:"type" desc:"land or reopen"`
+	Entry id.ID      `json:"entry" desc:"The land or reopen entry"`
+	At    string     `json:"at" desc:"When it was written (RFC 3339, UTC)"`
+	Actor id.ID      `json:"actor" desc:"Who landed or reopened it"`
 }
 
 // LogCarve is one carve entry of a change set that moved the target. On the
@@ -560,10 +569,12 @@ func runLog(ctx *Ctx, req any) (any, error) {
 	for _, c := range css {
 		lc := LogChangeSet{ID: c.info.ID, State: c.info.State, Kind: c.info.Kind, Intent: c.info.Intent, Ops: []LogOp{},
 			Carves: carves[c.info.ID]}
-		types := logOpTypes(c)
+		folded, _ := changeset.Fold(c.info.ID, c.entries)
+		types := logOpTypes(folded)
 		for _, o := range c.ops {
 			lc.Ops = append(lc.Ops, LogOp{ID: o, Type: types[o]})
 		}
+		lc.Events = logEvents(folded)
 		if c.info.State == changeset.StateLanded {
 			if e, ok := lineageEntry(c, c.info.TerminalEntry); ok {
 				lc.At, lc.Actor = e.At.UTC().Format(lineageAtLayout), e.Actor
@@ -680,9 +691,26 @@ func logCarveBody(e entry.Entry) (changeset.Ops, bool) {
 	return o, ok && o.Carve != nil
 }
 
-// logOpTypes maps each operation of c's folded change set to its type.
-func logOpTypes(c lineageCS) map[id.ID]op.Type {
-	folded, _ := changeset.Fold(c.info.ID, c.entries)
+// logEvents is folded's applied land and reopen entries, in causal order,
+// or nil when it was never reopened: a land alone is At and Actor.
+func logEvents(folded changeset.ChangeSet) []LogEvent {
+	var out []LogEvent
+	reopened := false
+	for _, m := range folded.Lifecycle {
+		if m.Type != entry.TypeLand && m.Type != entry.TypeReopen {
+			continue
+		}
+		reopened = reopened || m.Type == entry.TypeReopen
+		out = append(out, LogEvent{Type: m.Type, Entry: m.Entry, At: m.At.UTC().Format(lineageAtLayout), Actor: m.Actor})
+	}
+	if !reopened {
+		return nil
+	}
+	return out
+}
+
+// logOpTypes maps each operation of the folded change set to its type.
+func logOpTypes(folded changeset.ChangeSet) map[id.ID]op.Type {
 	out := make(map[id.ID]op.Type, len(folded.Ops))
 	for _, o := range folded.Ops {
 		out[o.ID] = o.Type
@@ -702,7 +730,14 @@ func (r LogResponse) Human(w io.Writer) {
 	}
 	for _, c := range r.ChangeSets {
 		fmt.Fprintf(w, "\n## %s %s %s: %s\n\n", c.ID, c.State, c.Kind, c.Intent)
-		if c.At != "" {
+		for _, e := range c.Events {
+			verb := "Landed"
+			if e.Type == entry.TypeReopen {
+				verb = "Reopened"
+			}
+			fmt.Fprintf(w, "- %s %s by %s\n", verb, e.At, e.Actor)
+		}
+		if c.At != "" && len(c.Events) == 0 {
 			fmt.Fprintf(w, "- Landed %s by %s\n", c.At, c.Actor)
 		}
 		for _, k := range c.Carves {
