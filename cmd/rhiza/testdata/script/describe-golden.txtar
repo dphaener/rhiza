@@ -687,6 +687,10 @@ cmp stdout describe.golden.json
                 "state": {
                   "description": "The lifecycle state; empty without a valid open",
                   "type": "string"
+                },
+                "title": {
+                  "description": "The change set's title, else its intent's first clause",
+                  "type": "string"
                 }
               },
               "required": [
@@ -694,7 +698,8 @@ cmp stdout describe.golden.json
                 "id",
                 "intent",
                 "kind",
-                "state"
+                "state",
+                "title"
               ],
               "type": "object"
             },
@@ -740,6 +745,10 @@ cmp stdout describe.golden.json
               "type": "string"
             },
             "type": "array"
+          },
+          "title": {
+            "description": "A short name for the change set, one line of at most 30 characters; default the intent's first clause",
+            "type": "string"
           }
         },
         "required": [
@@ -784,12 +793,17 @@ cmp stdout describe.golden.json
               "type": "string"
             },
             "type": "array"
+          },
+          "title": {
+            "description": "The change set's title, else its intent's first clause",
+            "type": "string"
           }
         },
         "required": [
           "change_set",
           "intent",
-          "kind"
+          "kind",
+          "title"
         ],
         "type": "object"
       },
@@ -914,6 +928,10 @@ cmp stdout describe.golden.json
             "description": "The change set that superseded it, if any",
             "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
             "type": "string"
+          },
+          "title": {
+            "description": "The change set's title, else its intent's first clause",
+            "type": "string"
           }
         },
         "required": [
@@ -926,7 +944,8 @@ cmp stdout describe.golden.json
           "ops",
           "problems",
           "sources",
-          "state"
+          "state",
+          "title"
         ],
         "type": "object"
       },
@@ -2341,6 +2360,1165 @@ cmp stdout describe.golden.json
       },
       "summary": "Show the proposed and accepted change sets: milestone groups first, then the backlog",
       "write": false
+    },
+    {
+      "name": "session.hook",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "event": {
+            "description": "The hook event, as the agent names it; the payload is read from stdin",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "description": "What a blocked session waits for",
+            "type": "string"
+          },
+          "recorded": {
+            "description": "Whether the hook report was recorded",
+            "type": "boolean"
+          },
+          "session": {
+            "description": "The session the payload names, if Rhiza launched it",
+            "type": "string"
+          },
+          "state": {
+            "description": "The state recorded",
+            "enum": [
+              "starting",
+              "working",
+              "idle",
+              "blocked",
+              "done",
+              "error",
+              "exited"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "recorded"
+        ],
+        "type": "object"
+      },
+      "summary": "Record the status an agent hook reports, read from stdin; the agent's hooks run this",
+      "write": false
+    },
+    {
+      "name": "session.ls",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "sessions": {
+            "description": "Every session, oldest first",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "agent": {
+                  "description": "The agent adapter",
+                  "type": "string"
+                },
+                "branch": {
+                  "description": "The worktree's branch",
+                  "type": "string"
+                },
+                "change": {
+                  "description": "The change set it works on",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The session ID, also the agent's own session ID",
+                  "type": "string"
+                },
+                "permission_mode": {
+                  "description": "The agent's permission mode",
+                  "type": "string"
+                },
+                "source": {
+                  "description": "Who reported the resolved status: hook, rex, exit, or default when no one has",
+                  "enum": [
+                    "hook",
+                    "rex",
+                    "exit",
+                    "default"
+                  ],
+                  "type": "string"
+                },
+                "started_at": {
+                  "description": "When it was launched, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The resolved status",
+                  "enum": [
+                    "starting",
+                    "working",
+                    "idle",
+                    "blocked",
+                    "done",
+                    "error",
+                    "exited"
+                  ],
+                  "type": "string"
+                },
+                "step": {
+                  "description": "The step it works on",
+                  "type": "string"
+                },
+                "tab": {
+                  "additionalProperties": false,
+                  "description": "The terminal tab it runs in",
+                  "properties": {
+                    "block": {
+                      "description": "The Rex block running the agent; empty until the tab opened",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The Rex session; empty when Rex chose it",
+                      "type": "string"
+                    },
+                    "title": {
+                      "description": "The tab title",
+                      "type": "string"
+                    },
+                    "window": {
+                      "description": "The Rex window ID; empty until the tab opened",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "block",
+                    "session",
+                    "title",
+                    "window"
+                  ],
+                  "type": "object"
+                },
+                "title": {
+                  "description": "The change set's title",
+                  "type": "string"
+                },
+                "worktree": {
+                  "description": "The worktree it runs in",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "agent",
+                "branch",
+                "change",
+                "id",
+                "permission_mode",
+                "source",
+                "started_at",
+                "status",
+                "step",
+                "tab",
+                "title",
+                "worktree"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "sessions"
+        ],
+        "type": "object"
+      },
+      "summary": "List the agent sessions with their change set, tab, worktree and status",
+      "write": false
+    },
+    {
+      "name": "session.run",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "description": "The session: its full ID or a unique prefix of 4+ characters",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "argv": {
+            "description": "The agent's command",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "code": {
+            "description": "The agent's exit code, which is also this command's; 128 plus the signal number if a signal ended it",
+            "type": "integer"
+          },
+          "dry_run": {
+            "description": "True if nothing was started or written",
+            "type": "boolean"
+          },
+          "env": {
+            "description": "The variables set over this terminal's environment for the agent",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "session": {
+            "additionalProperties": false,
+            "description": "The session as recorded after the agent ended",
+            "properties": {
+              "actor": {
+                "description": "The agent's actor handle in the worktree's model",
+                "type": "string"
+              },
+              "agent": {
+                "description": "The agent adapter",
+                "type": "string"
+              },
+              "branch": {
+                "description": "The worktree's branch",
+                "type": "string"
+              },
+              "change": {
+                "description": "The change set it works on",
+                "type": "string"
+              },
+              "for": {
+                "description": "The actor the agent acts for: the launcher",
+                "type": "string"
+              },
+              "id": {
+                "description": "The session ID, also the agent's own session ID",
+                "type": "string"
+              },
+              "permission_mode": {
+                "description": "The agent's permission mode",
+                "type": "string"
+              },
+              "reports": {
+                "additionalProperties": false,
+                "description": "The latest report of each source that has spoken",
+                "properties": {
+                  "exit": {
+                    "additionalProperties": false,
+                    "description": "The process exit, or a launch failure",
+                    "properties": {
+                      "at": {
+                        "description": "When it was reported, RFC 3339 UTC",
+                        "type": "string"
+                      },
+                      "code": {
+                        "description": "The process exit code; only the exit source sets it",
+                        "type": "integer"
+                      },
+                      "detail": {
+                        "description": "Free text from the source",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "What a blocked session waits for: permission, question or auth",
+                        "type": "string"
+                      },
+                      "state": {
+                        "description": "The state",
+                        "enum": [
+                          "starting",
+                          "working",
+                          "idle",
+                          "blocked",
+                          "done",
+                          "error",
+                          "exited"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "state"
+                    ],
+                    "type": "object"
+                  },
+                  "hook": {
+                    "additionalProperties": false,
+                    "description": "The agent's hooks",
+                    "properties": {
+                      "at": {
+                        "description": "When it was reported, RFC 3339 UTC",
+                        "type": "string"
+                      },
+                      "code": {
+                        "description": "The process exit code; only the exit source sets it",
+                        "type": "integer"
+                      },
+                      "detail": {
+                        "description": "Free text from the source",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "What a blocked session waits for: permission, question or auth",
+                        "type": "string"
+                      },
+                      "state": {
+                        "description": "The state",
+                        "enum": [
+                          "starting",
+                          "working",
+                          "idle",
+                          "blocked",
+                          "done",
+                          "error",
+                          "exited"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "state"
+                    ],
+                    "type": "object"
+                  },
+                  "rex": {
+                    "additionalProperties": false,
+                    "description": "Rex's status for the tab",
+                    "properties": {
+                      "at": {
+                        "description": "When it was reported, RFC 3339 UTC",
+                        "type": "string"
+                      },
+                      "code": {
+                        "description": "The process exit code; only the exit source sets it",
+                        "type": "integer"
+                      },
+                      "detail": {
+                        "description": "Free text from the source",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "What a blocked session waits for: permission, question or auth",
+                        "type": "string"
+                      },
+                      "state": {
+                        "description": "The state",
+                        "enum": [
+                          "starting",
+                          "working",
+                          "idle",
+                          "blocked",
+                          "done",
+                          "error",
+                          "exited"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "state"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [],
+                "type": "object"
+              },
+              "run": {
+                "description": "The run the launch belongs to, if any",
+                "type": "string"
+              },
+              "source": {
+                "description": "Who reported the resolved status: hook, rex, exit, or default when no one has",
+                "enum": [
+                  "hook",
+                  "rex",
+                  "exit",
+                  "default"
+                ],
+                "type": "string"
+              },
+              "started_at": {
+                "description": "When it was launched, RFC 3339 UTC",
+                "type": "string"
+              },
+              "status": {
+                "additionalProperties": false,
+                "description": "The resolved status: hooks first, then Rex, then the process exit",
+                "properties": {
+                  "at": {
+                    "description": "When it was reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "code": {
+                    "description": "The process exit code; only the exit source sets it",
+                    "type": "integer"
+                  },
+                  "detail": {
+                    "description": "Free text from the source",
+                    "type": "string"
+                  },
+                  "kind": {
+                    "description": "What a blocked session waits for: permission, question or auth",
+                    "type": "string"
+                  },
+                  "state": {
+                    "description": "The state",
+                    "enum": [
+                      "starting",
+                      "working",
+                      "idle",
+                      "blocked",
+                      "done",
+                      "error",
+                      "exited"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "at",
+                  "state"
+                ],
+                "type": "object"
+              },
+              "step": {
+                "description": "The step it works on",
+                "type": "string"
+              },
+              "tab": {
+                "additionalProperties": false,
+                "description": "The terminal tab it runs in",
+                "properties": {
+                  "block": {
+                    "description": "The Rex block running the agent; empty until the tab opened",
+                    "type": "string"
+                  },
+                  "session": {
+                    "description": "The Rex session; empty when Rex chose it",
+                    "type": "string"
+                  },
+                  "title": {
+                    "description": "The tab title",
+                    "type": "string"
+                  },
+                  "window": {
+                    "description": "The Rex window ID; empty until the tab opened",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "block",
+                  "session",
+                  "title",
+                  "window"
+                ],
+                "type": "object"
+              },
+              "title": {
+                "description": "The change set's title",
+                "type": "string"
+              },
+              "worktree": {
+                "description": "The worktree it runs in",
+                "type": "string"
+              }
+            },
+            "required": [
+              "actor",
+              "agent",
+              "branch",
+              "change",
+              "for",
+              "id",
+              "permission_mode",
+              "reports",
+              "source",
+              "started_at",
+              "status",
+              "step",
+              "tab",
+              "title",
+              "worktree"
+            ],
+            "type": "object"
+          },
+          "warnings": {
+            "description": "Status reports that could not be copied while the agent ran",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "argv",
+          "code",
+          "env",
+          "session"
+        ],
+        "type": "object"
+      },
+      "summary": "Run a session's agent in this terminal and record its status and exit; its tab runs this",
+      "write": false
+    },
+    {
+      "name": "session.show",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "description": "The session: its full ID or a unique prefix of 4+ characters",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "actor": {
+            "description": "The agent's actor handle in the worktree's model",
+            "type": "string"
+          },
+          "agent": {
+            "description": "The agent adapter",
+            "type": "string"
+          },
+          "branch": {
+            "description": "The worktree's branch",
+            "type": "string"
+          },
+          "change": {
+            "description": "The change set it works on",
+            "type": "string"
+          },
+          "for": {
+            "description": "The actor the agent acts for: the launcher",
+            "type": "string"
+          },
+          "id": {
+            "description": "The session ID, also the agent's own session ID",
+            "type": "string"
+          },
+          "permission_mode": {
+            "description": "The agent's permission mode",
+            "type": "string"
+          },
+          "reports": {
+            "additionalProperties": false,
+            "description": "The latest report of each source that has spoken",
+            "properties": {
+              "exit": {
+                "additionalProperties": false,
+                "description": "The process exit, or a launch failure",
+                "properties": {
+                  "at": {
+                    "description": "When it was reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "code": {
+                    "description": "The process exit code; only the exit source sets it",
+                    "type": "integer"
+                  },
+                  "detail": {
+                    "description": "Free text from the source",
+                    "type": "string"
+                  },
+                  "kind": {
+                    "description": "What a blocked session waits for: permission, question or auth",
+                    "type": "string"
+                  },
+                  "state": {
+                    "description": "The state",
+                    "enum": [
+                      "starting",
+                      "working",
+                      "idle",
+                      "blocked",
+                      "done",
+                      "error",
+                      "exited"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "at",
+                  "state"
+                ],
+                "type": "object"
+              },
+              "hook": {
+                "additionalProperties": false,
+                "description": "The agent's hooks",
+                "properties": {
+                  "at": {
+                    "description": "When it was reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "code": {
+                    "description": "The process exit code; only the exit source sets it",
+                    "type": "integer"
+                  },
+                  "detail": {
+                    "description": "Free text from the source",
+                    "type": "string"
+                  },
+                  "kind": {
+                    "description": "What a blocked session waits for: permission, question or auth",
+                    "type": "string"
+                  },
+                  "state": {
+                    "description": "The state",
+                    "enum": [
+                      "starting",
+                      "working",
+                      "idle",
+                      "blocked",
+                      "done",
+                      "error",
+                      "exited"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "at",
+                  "state"
+                ],
+                "type": "object"
+              },
+              "rex": {
+                "additionalProperties": false,
+                "description": "Rex's status for the tab",
+                "properties": {
+                  "at": {
+                    "description": "When it was reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "code": {
+                    "description": "The process exit code; only the exit source sets it",
+                    "type": "integer"
+                  },
+                  "detail": {
+                    "description": "Free text from the source",
+                    "type": "string"
+                  },
+                  "kind": {
+                    "description": "What a blocked session waits for: permission, question or auth",
+                    "type": "string"
+                  },
+                  "state": {
+                    "description": "The state",
+                    "enum": [
+                      "starting",
+                      "working",
+                      "idle",
+                      "blocked",
+                      "done",
+                      "error",
+                      "exited"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "at",
+                  "state"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "run": {
+            "description": "The run the launch belongs to, if any",
+            "type": "string"
+          },
+          "source": {
+            "description": "Who reported the resolved status: hook, rex, exit, or default when no one has",
+            "enum": [
+              "hook",
+              "rex",
+              "exit",
+              "default"
+            ],
+            "type": "string"
+          },
+          "started_at": {
+            "description": "When it was launched, RFC 3339 UTC",
+            "type": "string"
+          },
+          "status": {
+            "additionalProperties": false,
+            "description": "The resolved status: hooks first, then Rex, then the process exit",
+            "properties": {
+              "at": {
+                "description": "When it was reported, RFC 3339 UTC",
+                "type": "string"
+              },
+              "code": {
+                "description": "The process exit code; only the exit source sets it",
+                "type": "integer"
+              },
+              "detail": {
+                "description": "Free text from the source",
+                "type": "string"
+              },
+              "kind": {
+                "description": "What a blocked session waits for: permission, question or auth",
+                "type": "string"
+              },
+              "state": {
+                "description": "The state",
+                "enum": [
+                  "starting",
+                  "working",
+                  "idle",
+                  "blocked",
+                  "done",
+                  "error",
+                  "exited"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "at",
+              "state"
+            ],
+            "type": "object"
+          },
+          "step": {
+            "description": "The step it works on",
+            "type": "string"
+          },
+          "tab": {
+            "additionalProperties": false,
+            "description": "The terminal tab it runs in",
+            "properties": {
+              "block": {
+                "description": "The Rex block running the agent; empty until the tab opened",
+                "type": "string"
+              },
+              "session": {
+                "description": "The Rex session; empty when Rex chose it",
+                "type": "string"
+              },
+              "title": {
+                "description": "The tab title",
+                "type": "string"
+              },
+              "window": {
+                "description": "The Rex window ID; empty until the tab opened",
+                "type": "string"
+              }
+            },
+            "required": [
+              "block",
+              "session",
+              "title",
+              "window"
+            ],
+            "type": "object"
+          },
+          "title": {
+            "description": "The change set's title",
+            "type": "string"
+          },
+          "worktree": {
+            "description": "The worktree it runs in",
+            "type": "string"
+          }
+        },
+        "required": [
+          "actor",
+          "agent",
+          "branch",
+          "change",
+          "for",
+          "id",
+          "permission_mode",
+          "reports",
+          "source",
+          "started_at",
+          "status",
+          "step",
+          "tab",
+          "title",
+          "worktree"
+        ],
+        "type": "object"
+      },
+      "summary": "Show one agent session with every status report",
+      "write": false
+    },
+    {
+      "name": "session.start",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "agent": {
+            "description": "The agent adapter to launch; default the built-in default adapter",
+            "type": "string"
+          },
+          "change": {
+            "description": "The change set: a full ID or a unique prefix of 4+ characters; default --change, else the current one",
+            "type": "string"
+          },
+          "permission_mode": {
+            "description": "The agent's permission mode, always explicit: one the agent accepts; modes that bypass its permission checks are refused",
+            "type": "string"
+          },
+          "rex_session": {
+            "description": "The Rex session to open the tab in; default the caller's REX_SESSION, else Rex chooses",
+            "type": "string"
+          },
+          "run": {
+            "description": "The run the launch belongs to, if any",
+            "type": "string"
+          },
+          "step": {
+            "description": "The step the session works on, lower-case words joined by dashes; default build, which the tab title leaves out",
+            "type": "string"
+          }
+        },
+        "required": [
+          "permission_mode"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "description": "True if nothing was written or run",
+            "type": "boolean"
+          },
+          "rex_argv": {
+            "description": "The Rex command that opens the tab",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "session": {
+            "additionalProperties": false,
+            "description": "The session as recorded",
+            "properties": {
+              "actor": {
+                "description": "The agent's actor handle in the worktree's model",
+                "type": "string"
+              },
+              "agent": {
+                "description": "The agent adapter",
+                "type": "string"
+              },
+              "branch": {
+                "description": "The worktree's branch",
+                "type": "string"
+              },
+              "change": {
+                "description": "The change set it works on",
+                "type": "string"
+              },
+              "for": {
+                "description": "The actor the agent acts for: the launcher",
+                "type": "string"
+              },
+              "id": {
+                "description": "The session ID, also the agent's own session ID",
+                "type": "string"
+              },
+              "permission_mode": {
+                "description": "The agent's permission mode",
+                "type": "string"
+              },
+              "reports": {
+                "additionalProperties": false,
+                "description": "The latest report of each source that has spoken",
+                "properties": {
+                  "exit": {
+                    "additionalProperties": false,
+                    "description": "The process exit, or a launch failure",
+                    "properties": {
+                      "at": {
+                        "description": "When it was reported, RFC 3339 UTC",
+                        "type": "string"
+                      },
+                      "code": {
+                        "description": "The process exit code; only the exit source sets it",
+                        "type": "integer"
+                      },
+                      "detail": {
+                        "description": "Free text from the source",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "What a blocked session waits for: permission, question or auth",
+                        "type": "string"
+                      },
+                      "state": {
+                        "description": "The state",
+                        "enum": [
+                          "starting",
+                          "working",
+                          "idle",
+                          "blocked",
+                          "done",
+                          "error",
+                          "exited"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "state"
+                    ],
+                    "type": "object"
+                  },
+                  "hook": {
+                    "additionalProperties": false,
+                    "description": "The agent's hooks",
+                    "properties": {
+                      "at": {
+                        "description": "When it was reported, RFC 3339 UTC",
+                        "type": "string"
+                      },
+                      "code": {
+                        "description": "The process exit code; only the exit source sets it",
+                        "type": "integer"
+                      },
+                      "detail": {
+                        "description": "Free text from the source",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "What a blocked session waits for: permission, question or auth",
+                        "type": "string"
+                      },
+                      "state": {
+                        "description": "The state",
+                        "enum": [
+                          "starting",
+                          "working",
+                          "idle",
+                          "blocked",
+                          "done",
+                          "error",
+                          "exited"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "state"
+                    ],
+                    "type": "object"
+                  },
+                  "rex": {
+                    "additionalProperties": false,
+                    "description": "Rex's status for the tab",
+                    "properties": {
+                      "at": {
+                        "description": "When it was reported, RFC 3339 UTC",
+                        "type": "string"
+                      },
+                      "code": {
+                        "description": "The process exit code; only the exit source sets it",
+                        "type": "integer"
+                      },
+                      "detail": {
+                        "description": "Free text from the source",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "What a blocked session waits for: permission, question or auth",
+                        "type": "string"
+                      },
+                      "state": {
+                        "description": "The state",
+                        "enum": [
+                          "starting",
+                          "working",
+                          "idle",
+                          "blocked",
+                          "done",
+                          "error",
+                          "exited"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "state"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [],
+                "type": "object"
+              },
+              "run": {
+                "description": "The run the launch belongs to, if any",
+                "type": "string"
+              },
+              "source": {
+                "description": "Who reported the resolved status: hook, rex, exit, or default when no one has",
+                "enum": [
+                  "hook",
+                  "rex",
+                  "exit",
+                  "default"
+                ],
+                "type": "string"
+              },
+              "started_at": {
+                "description": "When it was launched, RFC 3339 UTC",
+                "type": "string"
+              },
+              "status": {
+                "additionalProperties": false,
+                "description": "The resolved status: hooks first, then Rex, then the process exit",
+                "properties": {
+                  "at": {
+                    "description": "When it was reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "code": {
+                    "description": "The process exit code; only the exit source sets it",
+                    "type": "integer"
+                  },
+                  "detail": {
+                    "description": "Free text from the source",
+                    "type": "string"
+                  },
+                  "kind": {
+                    "description": "What a blocked session waits for: permission, question or auth",
+                    "type": "string"
+                  },
+                  "state": {
+                    "description": "The state",
+                    "enum": [
+                      "starting",
+                      "working",
+                      "idle",
+                      "blocked",
+                      "done",
+                      "error",
+                      "exited"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "at",
+                  "state"
+                ],
+                "type": "object"
+              },
+              "step": {
+                "description": "The step it works on",
+                "type": "string"
+              },
+              "tab": {
+                "additionalProperties": false,
+                "description": "The terminal tab it runs in",
+                "properties": {
+                  "block": {
+                    "description": "The Rex block running the agent; empty until the tab opened",
+                    "type": "string"
+                  },
+                  "session": {
+                    "description": "The Rex session; empty when Rex chose it",
+                    "type": "string"
+                  },
+                  "title": {
+                    "description": "The tab title",
+                    "type": "string"
+                  },
+                  "window": {
+                    "description": "The Rex window ID; empty until the tab opened",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "block",
+                  "session",
+                  "title",
+                  "window"
+                ],
+                "type": "object"
+              },
+              "title": {
+                "description": "The change set's title",
+                "type": "string"
+              },
+              "worktree": {
+                "description": "The worktree it runs in",
+                "type": "string"
+              }
+            },
+            "required": [
+              "actor",
+              "agent",
+              "branch",
+              "change",
+              "for",
+              "id",
+              "permission_mode",
+              "reports",
+              "source",
+              "started_at",
+              "status",
+              "step",
+              "tab",
+              "title",
+              "worktree"
+            ],
+            "type": "object"
+          },
+          "worktree_reused": {
+            "description": "Whether the worktree already existed on the branch",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "rex_argv",
+          "session",
+          "worktree_reused"
+        ],
+        "type": "object"
+      },
+      "summary": "Launch an agent for a change set in its own worktree and terminal tab",
+      "write": true
     },
     {
       "name": "set",

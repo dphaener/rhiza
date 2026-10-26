@@ -1,0 +1,175 @@
+# session start opens one Rex tab running `rhiza session run <id>` in the
+# change set's own worktree <repo>.<slug> on branch cs/<slug>, with an
+# explicit permission mode; session ls and show read the session files.
+# The fake rex logs its argv, prints a window and runs nothing.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza change new 'Readable tabs: the tab says what it works on' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+stdout '"title": "Readable tabs"'
+exec git add -A
+exec git commit -qm init
+
+# No sessions yet.
+exec rhiza session ls
+stdout '^No sessions yet\.$'
+exec rhiza session ls --json
+stdout '"sessions": \[\]'
+
+# A change set opened after HEAD's commit, with a title: it is current.
+exec rhiza change new 'Add the session commands' --title 'Session commands' --json
+stdout '"change_set": "01M5PWGJC82P7YGZTWYFFZ0VJG"'
+
+# The permission mode is never defaulted: none is a usage error, exit 2.
+! exec rhiza session start --json
+stdout '"code": "usage"'
+stdout 'permission-mode'
+stdout '"next": "rhiza describe session.start"'
+! exists $WORK/rex.log
+! exists $WORK/repo.session-commands
+
+# One the agent does not know is a usage error too.
+! exec rhiza session start --permission-mode yolo --json
+stdout '"code": "usage"'
+stdout 'unknown permission mode'
+
+# Bypassing permission checks is refused, exit 1: no machine is trusted.
+exec sh -c 'rhiza session start --permission-mode bypassPermissions --json; echo exit=$?'
+stdout '"code": "error"'
+stdout 'trust = \\"dedicated\\"'
+stdout '^exit=1$'
+! exists $WORK/rex.log
+! exists $WORK/repo.session-commands
+
+# A dry run plans the worktree, branch, tab and command and does nothing.
+exec rhiza session start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --dry-run
+stdout '^Would start session [0-9a-f-]{36} for change set 01M5PWGEF85Y185JZ2ZGCNH40N: Readable tabs$'
+stdout '^- Worktree: '${WORK@R}'/repo\.readable-tabs on cs/readable-tabs \(to create\)$'
+stdout '^- Tab: repo: Readable tabs \(not open\)$'
+stdout '^- Command: rex window new repo: Readable tabs -c '${WORK@R}'/repo\.readable-tabs --json -- .*rhiza session run [0-9a-f-]{36}$'
+! exists $WORK/rex.log
+! exists $WORK/repo.readable-tabs
+exec rhiza session ls --json
+stdout '"sessions": \[\]'
+
+# A launch with a permission mode opens exactly one tab, titled
+# <repo>: <title>, in the new worktree, running rhiza session run.
+exec rhiza session start --permission-mode manual --json
+stdout '"worktree_reused": false'
+stdout '"id": "f3ff4d45-1e42-4e18-a215-01a16dc84d70"'
+exec grep -c 'window new' $WORK/rex.log
+stdout '^1$'
+exec cat $WORK/rex.log
+stdout '^window new repo: Session commands -c '${WORK@R}'/repo\.session-commands --json -- \S+/rhiza session run f3ff4d45-1e42-4e18-a215-01a16dc84d70$'
+
+# The worktree is on cs/<slug>, its current change set is this one (copied
+# into its log, since HEAD predates it), and the agent's actor is recorded
+# there, not here.
+exec git -C $WORK/repo.session-commands branch --show-current
+stdout '^cs/session-commands$'
+exec cat $WORK/repo.session-commands/.rhiza/local/change
+stdout '^01M5PWGJC82P7YGZTWYFFZ0VJG$'
+exists $WORK/repo.session-commands/.rhiza/log/01M5PWGJC82P7YGZTWYFFZ0VJG
+fold-ok $WORK/repo.session-commands/.rhiza
+! exec rhiza show claude-code-f3ff4d45
+cd $WORK/repo.session-commands
+exec rhiza show claude-code-f3ff4d45 --json
+stdout '"kind": "actor"'
+stdout '"session": "f3ff4d45-1e42-4e18-a215-01a16dc84d70"'
+stdout '"role": "runs change set 01M5PWGJC82P7YGZTWYFFZ0VJG"'
+stdout '"for": "01M5PWGEF85Y185JZ2Z5MPYCA4"'
+
+# Sessions are shared by every worktree: ls and show work from here too.
+exec rhiza session ls --json
+stdout '"id": "f3ff4d45-1e42-4e18-a215-01a16dc84d70"'
+cd $WORK/repo
+
+# ls and show report the change set, tab, worktree, permission mode and
+# status: starting, since no source has spoken yet.
+exec rhiza session ls --json
+stdout '"change": "01M5PWGJC82P7YGZTWYFFZ0VJG"'
+stdout '"title": "repo: Session commands"'
+stdout '"window": "window:w1"'
+stdout '"block": "block:b1"'
+stdout '"worktree": "'${WORK@R}'/repo\.session-commands"'
+stdout '"branch": "cs/session-commands"'
+stdout '"permission_mode": "manual"'
+stdout '"status": "starting"'
+stdout '"source": "default"'
+exec rhiza session ls
+stdout '^- f3ff4d45-1e42-4e18-a215-01a16dc84d70 starting \(default\) 01M5PWGJC82P7YGZTWYFFZ0VJG: repo: Session commands, manual, '${WORK@R}'/repo\.session-commands$'
+exec rhiza session show f3ff4d45-1e42-4e18-a215-01a16dc84d70 --json
+stdout '"change": "01M5PWGJC82P7YGZTWYFFZ0VJG"'
+stdout '"actor": "claude-code-f3ff4d45"'
+stdout '"permission_mode": "manual"'
+stdout '"worktree": "'${WORK@R}'/repo\.session-commands"'
+stdout '"window": "window:w1"'
+stdout '"state": "starting"'
+stdout '"source": "default"'
+stdout '"reports": \{\}'
+exec rhiza session show f3ff
+stdout '^# Session f3ff4d45-1e42-4e18-a215-01a16dc84d70$'
+stdout '^- Tab: repo: Session commands \(window window:w1, block block:b1\)$'
+stdout '^- Status: starting at 2026-10-24T12:00:\d\dZ \(from default\)$'
+stdout '^- hook: none$'
+
+# An unknown session is not_found, exit 4.
+exec sh -c 'rhiza session show deadbeef --json; echo exit=$?'
+stdout '"code": "not_found"'
+stdout '^exit=4$'
+
+# The untitled change set, at another step: the tab title names the step,
+# and the worktree is named for the intent's first clause.
+exec rhiza session start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode plan --step review --json
+stdout '"title": "repo: Readable tabs · review"'
+stdout '"step": "review"'
+exec grep -c 'window new' $WORK/rex.log
+stdout '^2$'
+exec cat $WORK/rex.log
+stdout '^window new repo: Readable tabs · review -c '${WORK@R}'/repo\.readable-tabs --json -- '
+exec git -C $WORK/repo.readable-tabs branch --show-current
+stdout '^cs/readable-tabs$'
+
+# Launching again reuses the worktree.
+exec rhiza session start --permission-mode manual --json
+stdout '"worktree_reused": true'
+exec rhiza session ls --json
+stdout -count=3 '"permission_mode"'
+
+# A folder in the worktree's place that is not that worktree is a conflict,
+# exit 3, before anything runs.
+exec rhiza change new 'Squatted' --json
+mkdir $WORK/repo.squatted
+exec sh -c 'rhiza session start --permission-mode manual --json; echo exit=$?'
+stdout '"code": "conflict"'
+stdout '^exit=3$'
+exec grep -c 'window new' $WORK/rex.log
+stdout '^3$'
+
+# When Rex fails, the session records the error and start exits 1 with
+# Rex's message.
+rm $WORK/repo.squatted
+env REX_FAIL=1
+exec sh -c 'rhiza session start --permission-mode manual --json; echo exit=$?'
+stdout '"code": "error"'
+stdout 'rex is not running'
+stdout '^exit=1$'
+env REX_FAIL=
+exec rhiza session ls
+stdout ' error \(exit\) .*repo: Squatted'
+
+fold-ok
+
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+if [ -n "$REX_FAIL" ]; then
+	echo 'rex is not running' >&2
+	exit 1
+fi
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

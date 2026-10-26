@@ -60,6 +60,7 @@ type ChangeNewRequest struct {
 	Intent  string   `json:"intent" arg:"0" desc:"What the change set is for, in a sentence"`
 	Kind    string   `json:"kind,omitempty" enum:"intention,record" desc:"intention (reviewed before it lands) or record (lands as is); default intention"`
 	Sources []string `json:"sources,omitempty" flag:"source" desc:"A source node the change set comes from: an ID, ID prefix or handle"`
+	Title   string   `json:"title,omitempty" desc:"A short name for the change set, one line of at most 30 characters; default the intent's first clause"`
 }
 
 // ChangeNewResponse names the new change set and its open entry.
@@ -68,6 +69,7 @@ type ChangeNewResponse struct {
 	Entry     id.ID          `json:"entry,omitzero" desc:"The open entry's ID; absent in a dry run"`
 	Kind      changeset.Kind `json:"kind" desc:"intention or record"`
 	Intent    string         `json:"intent" desc:"The change set's intent"`
+	Title     string         `json:"title" desc:"The change set's title, else its intent's first clause"`
 	Sources   []id.ID        `json:"sources,omitempty" desc:"The source node IDs, sorted"`
 	Actor     id.ID          `json:"actor,omitzero" desc:"Who opened it; absent in a dry run before any actor is recorded"`
 	DryRun    bool           `json:"dry_run,omitempty" desc:"True if nothing was written"`
@@ -109,7 +111,7 @@ func runChangeNew(ctx *Ctx, req any) (any, error) {
 	}
 	slices.SortFunc(sources, id.Compare)
 	sources = slices.Compact(sources)
-	open := changeset.Open{Kind: kind, Intent: r.Intent, Sources: sources}
+	open := changeset.Open{Kind: kind, Intent: r.Intent, Sources: sources, Title: r.Title}
 	if err := open.Validate(); err != nil {
 		return nil, Usagef("%s", err.Error()).WithNext("rhiza describe change.new")
 	}
@@ -125,7 +127,7 @@ func runChangeNew(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	resp := ChangeNewResponse{ChangeSet: cs, Entry: e.ID, Kind: kind, Intent: r.Intent,
-		Sources: sources, Actor: actor, DryRun: ctx.DryRun}
+		Title: open.DisplayTitle(), Sources: sources, Actor: actor, DryRun: ctx.DryRun}
 	if ctx.DryRun {
 		resp.Entry = id.ID{}
 	}
@@ -215,6 +217,7 @@ type ChangeShowResponse struct {
 	ID           id.ID             `json:"id" desc:"The change set's ID"`
 	Kind         changeset.Kind    `json:"kind" desc:"intention or record; empty without a valid open"`
 	Intent       string            `json:"intent" desc:"The change set's intent"`
+	Title        string            `json:"title" desc:"The change set's title, else its intent's first clause"`
 	Sources      []id.ID           `json:"sources" desc:"The source node IDs"`
 	State        changeset.State   `json:"state" desc:"The lifecycle state; empty without a valid open"`
 	Current      bool              `json:"current" desc:"Whether it is the current change set"`
@@ -269,6 +272,7 @@ func runChangeShow(ctx *Ctx, req any) (any, error) {
 		ID:           cs,
 		Kind:         c.Open.Kind,
 		Intent:       c.Open.Intent,
+		Title:        c.Open.DisplayTitle(),
 		Sources:      orEmpty(c.Open.Sources),
 		State:        c.State,
 		Current:      cs == current,
@@ -295,6 +299,7 @@ func runChangeShow(ctx *Ctx, req any) (any, error) {
 // and its problems.
 func (r ChangeShowResponse) Human(w io.Writer) {
 	fmt.Fprintf(w, "# Change set %s\n\n", r.ID)
+	fmt.Fprintf(w, "- Title: %s\n", r.Title)
 	fmt.Fprintf(w, "- Intent: %s\n", r.Intent)
 	fmt.Fprintf(w, "- Kind: %s\n", r.Kind)
 	state := string(r.State)
@@ -351,6 +356,7 @@ type ChangeSetSummary struct {
 	Kind    changeset.Kind  `json:"kind" desc:"intention or record; empty without a valid open"`
 	State   changeset.State `json:"state" desc:"The lifecycle state; empty without a valid open"`
 	Intent  string          `json:"intent" desc:"The change set's intent"`
+	Title   string          `json:"title" desc:"The change set's title, else its intent's first clause"`
 	Current bool            `json:"current" desc:"Whether it is the current change set"`
 }
 
@@ -371,7 +377,8 @@ func runChangeLs(ctx *Ctx, _ any) (any, error) {
 	resp.Problems = append(resp.Problems, foldProblems(problems)...)
 	for _, c := range sets {
 		resp.ChangeSets = append(resp.ChangeSets, ChangeSetSummary{
-			ID: c.ID, Kind: c.Open.Kind, State: c.State, Intent: c.Open.Intent, Current: c.ID == current,
+			ID: c.ID, Kind: c.Open.Kind, State: c.State, Intent: c.Open.Intent, Title: c.Open.DisplayTitle(),
+			Current: c.ID == current,
 		})
 	}
 	return resp, nil
@@ -384,6 +391,11 @@ func (r ChangeLsResponse) Human(w io.Writer) {
 	}
 	for _, c := range r.ChangeSets {
 		line := fmt.Sprintf("- %s %s %s: %s", c.ID, c.State, c.Kind, c.Intent)
+		// A title the intent does not start with is news; the fallback,
+		// the intent's first clause, never is.
+		if !strings.HasPrefix(strings.TrimSpace(c.Intent), c.Title) {
+			line = fmt.Sprintf("- %s %s %s: %s (%s)", c.ID, c.State, c.Kind, c.Title, c.Intent)
+		}
 		if c.Current {
 			line += " (current)"
 		}

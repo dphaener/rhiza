@@ -115,49 +115,56 @@ cmp stdout expected-ls.json
       "id": "01M5PWGEF85Y185JZ2ZAN43Q1G",
       "intent": "Record actor test@rhiza.invalid",
       "kind": "record",
-      "state": "landed"
+      "state": "landed",
+      "title": "Record actor"
     },
     {
       "current": false,
       "id": "01M5PWGEF85Y185JZ2ZGCNH40N",
       "intent": "Build the store",
       "kind": "intention",
-      "state": "landed"
+      "state": "landed",
+      "title": "Build the store"
     },
     {
       "current": false,
       "id": "01M5PWH110D047SG185KJEHG9J",
       "intent": "set store",
       "kind": "record",
-      "state": "landed"
+      "state": "landed",
+      "title": "set store"
     },
     {
       "current": false,
       "id": "01M5PWH3YRZ17GS4S9J2VTJ19E",
       "intent": "mv render",
       "kind": "record",
-      "state": "landed"
+      "state": "landed",
+      "title": "mv render"
     },
     {
       "current": false,
       "id": "01M5PWH6WG057XVB12H9VV67F6",
       "intent": "unlink render decided-by d2",
       "kind": "record",
-      "state": "landed"
+      "state": "landed",
+      "title": "unlink render decided-by d2"
     },
     {
       "current": false,
       "id": "01M5PWH9T8J593SXB602CWGJRN",
       "intent": "retire d2",
       "kind": "record",
-      "state": "landed"
+      "state": "landed",
+      "title": "retire d2"
     },
     {
       "current": false,
       "id": "01M5PWHCR04898T0FGJGBHRJTW",
       "intent": "add capability cli",
       "kind": "record",
-      "state": "landed"
+      "state": "landed",
+      "title": "add capability cli"
     }
   ],
   "problems": []

@@ -1,0 +1,259 @@
+{
+  "actor": "01M5W8BT5ZSHQ96V8JRFP7MB71",
+  "after": [
+    "01M5TZAM5HZJ5TZ2KZMQ2M3Z24"
+  ],
+  "at": "2026-10-26T14:49:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "cmd/rhiza/testdata/script/session-start.txtar passes, and internal/api/session_test.go TestSessionStartCreatesWorktree passes; the manual Rex check of the real tab is pending (the conductor adds its result later)"
+        },
+        "handle": "rex-tab-launch-test",
+        "id": "01M5WAZ89Y96XVX6ABHA151CHV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WAZ89Y96XVX6ABH7T99PF0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WAZ89Y96XVX6ABH7T99PF0",
+        "id": "01M5WAZ8D4ZV12KJGWJEFWCGY3",
+        "link": "01M5WAZ8D4ZV12KJGWJBMMH8VZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYCWXMBHC1V7Q27ZRG3JKQ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "internal/session/names_test.go TestTabTitle passes"
+        },
+        "handle": "tab-title-test",
+        "id": "01M5WAZ8GAQY01BVGA1QKTKYZ0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WAZ8GAQY01BVGA1NNNPVQW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WAZ8GAQY01BVGA1NNNPVQW",
+        "id": "01M5WAZ8KH9PS6YG38KSTEADKC",
+        "link": "01M5WAZ8KH9PS6YG38KSKPTMEM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYCX7CHJ1H823GCD762206",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "internal/session/names_test.go TestSlugBranchWorktreeFromOneTitle passes, and cmd/rhiza/testdata/script/change-title.txtar passes"
+        },
+        "handle": "title-slug-test",
+        "id": "01M5WAZ8PQWW503524YHWAHJJH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WAZ8PQWW503524YH9KNSRP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WAZ8PQWW503524YH9KNSRP",
+        "id": "01M5WAZ8SWECB6XNTGFY4FMNFK",
+        "link": "01M5WAZ8SWECB6XNTGFWR2K9GS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYCXMES38V9E8DBVEZMFV4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "cmd/rhiza/testdata/script/session-start.txtar and cmd/rhiza/testdata/script/session-run.txtar pass"
+        },
+        "handle": "session-commands-test",
+        "id": "01M5WAZ8X39JMPZZWZ54K37WQB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WAZ8X39JMPZZWZ532GG534",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WAZ8X39JMPZZWZ532GG534",
+        "id": "01M5WAZ909PPA0K3KZERSQ0BWC",
+        "link": "01M5WAZ909PPA0K3KZENAT7MMN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYCXTZ9SNZZF3524Q9REGP",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "internal/adapter/claudecode/claudecode_test.go TestCommandRefusesBadMode and TestBypass pass, and internal/api/session_test.go TestSessionStartRefusals passes"
+        },
+        "handle": "explicit-permission-mode-test",
+        "id": "01M5WAZ93GNCDP4P2QXVGB6Y3K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WAZ93GNCDP4P2QXT8GJN72",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WAZ93GNCDP4P2QXT8GJN72",
+        "id": "01M5WAZ96Q0WJX66SA3AEGJKPK",
+        "link": "01M5WAZ96Q0WJX66SA37F0BEJK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYCY4T4VXA86X91CZAXTMT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "internal/adapter/claudecode/claudecode_test.go TestCommandForEachMode passes"
+        },
+        "handle": "known-session-id-test",
+        "id": "01M5WAZ99YY2ZK6CZFBANCD62X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WAZ99YY2ZK6CZFB878B2MA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WAZ99YY2ZK6CZFB878B2MA",
+        "id": "01M5WAZ9D3XJ2J4RG5GZ50XVKZ",
+        "link": "01M5WAZ9D3XJ2J4RG5GVAA42RE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYCYETKM4SSWXPGEJ4Z8SF",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "internal/api/session_test.go TestSessionRun passes, and cmd/rhiza/testdata/script/session-run.txtar passes"
+        },
+        "handle": "launch-env-stamping-test",
+        "id": "01M5WAZ9GADF5YF9N83WQ8FT5X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WAZ9GADF5YF9N83WN7D9DN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WAZ9GADF5YF9N83WN7D9DN",
+        "id": "01M5WAZ9KJGN4Q0EQ7BYGA94CV",
+        "link": "01M5WAZ9KJGN4Q0EQ7BTXT6DKM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYCYNEBVFGQ1B2YH1KDDQP",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "internal/session/status_test.go TestResolvePrecedence passes"
+        },
+        "handle": "status-precedence-test",
+        "id": "01M5WAZ9PS21FRW2373CA03TRF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WAZ9PS21FRW2373AP9WF5P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WAZ9PS21FRW2373AP9WF5P",
+        "id": "01M5WAZ9T1MBV9XRC7WJBKKNPC",
+        "link": "01M5WAZ9T1MBV9XRC7WFYPZNME",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYCYW9FJ42M36KXMA9BT99",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "internal/session/store_test.go TestStoreWriteReadAtomic passes, and internal/api/session_test.go TestSessionLsShow passes"
+        },
+        "handle": "status-in-genesis-files-test",
+        "id": "01M5WAZ9XHM6Y0QGGMC8492JQX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WAZ9XHM6Y0QGGMC4RW2VH2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WAZ9XHM6Y0QGGMC4RW2VH2",
+        "id": "01M5WAZA0WCXC2W77JZ9CNHMBX",
+        "link": "01M5WAZA0WCXC2W77JZ82NE7XG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYCZ35E465M8SEAF8N9XNZ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "internal/changeset/title_test.go TestDisplayTitle and TestTitleRoundTrip pass, and cmd/rhiza/testdata/script/change-title.txtar passes"
+        },
+        "handle": "change-set-title-test",
+        "id": "01M5WAZA44NPBF4A77M62EVBMB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WAZA44NPBF4A77M39GB6R1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WAZA44NPBF4A77M39GB6R1",
+        "id": "01M5WAZA7BK0DPWYZFDSJREJ9S",
+        "link": "01M5WAZA7BK0DPWYZFDNSFM6H0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYCZA314H413P69D60GNVC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "When the agent exits while its last hook report still says working or blocked, should the exit override the hook status?"
+        },
+        "handle": "stale-hook-status-after-exit",
+        "id": "01M5WAZAAJYHCRX79TPT17WRJS",
+        "key": null,
+        "kind": "question",
+        "node": "01M5WAZAAJYHCRX79TPRZVV393",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WAZAAJYHCRX79TPRZVV393",
+        "id": "01M5WAZADSG56Z4X5N7APPHAAQ",
+        "link": "01M5WAZADSG56Z4X5N792SHYTD",
+        "note": "Status resolves hook, then Rex events, then exit, so a stale hook report outranks the exit.",
+        "op": "link.create",
+        "to": "01M5TYCYW9FJ42M36KXMA9BT99",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M5SZHY68YGJZETXGP786ASR7",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WAZAJMC8D458BPB85ZFBJ3",
+  "type": "ops",
+  "v": 1
+}

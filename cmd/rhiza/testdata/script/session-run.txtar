@@ -1,0 +1,171 @@
+# session run is what a session's tab runs: it starts the agent in the
+# worktree with a stamped environment, the recorded session ID and the
+# explicit permission mode; copies the tab's Rex status reports into the
+# record; records the exit; and exits with the agent's code. session hook
+# records what each agent hook reports. The status lives in Rhiza's own
+# files, so session show needs no Rex.
+#
+# The fake agent logs its environment and argv, waits until the session
+# records the Rex report (so no two writers race), runs two hooks and exits
+# 3. The fake rex opens a window for `window new` and, for `events`, prints
+# a status report for another block, then one for block:b1, and exits.
+
+cp rex.bak bin/rex
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Run the agent' --title 'Agent runs' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+
+# A launch that belongs to a run.
+exec rhiza session start --permission-mode manual --run run-1 --json
+stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+stdout '"actor": "claude-code-158fe87f"'
+
+# A dry run shows the agent's command and environment and starts nothing.
+exec rhiza session run 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --dry-run
+stdout '^Would run session 158fe87f-5cf3-4ff0-ae50-01a16dc84988 '
+stdout '^- Command: claude --session-id 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --permission-mode manual --settings '
+stdout '^- Environment: RHIZA_CHANGE=01M5PWGEF85Y185JZ2ZGCNH40N RHIZA_ACTOR=claude-code-158fe87f RHIZA_FOR=01M5PWGEF85Y185JZ2Z5MPYCA4 RHIZA_RUN=run-1$'
+! exists $WORK/claude.args
+
+# Run it in tab block:b1 of Rex session session:s1: it exits as the agent did.
+env REX_BLOCK=block:b1
+env REX_SESSION=session:s1
+exec sh -c 'rhiza session run 158fe87f-5cf3-4ff0-ae50-01a16dc84988; echo exit=$?'
+stdout '^Session 158fe87f-5cf3-4ff0-ae50-01a16dc84988 ended: the agent exited with code 3\.$'
+stdout '^exit=3$'
+! stdout 'Warning'
+env REX_BLOCK=
+env REX_SESSION=
+
+# The agent ran in the worktree with the change set, its actor, the
+# launcher and the run stamped in its environment (launch-env-stamping)...
+exec cat $WORK/claude.pwd
+stdout '^'${WORK@R}'/repo\.agent-runs$'
+exec cat $WORK/claude.env
+stdout '^PWD='${WORK@R}'/repo\.agent-runs$'
+stdout '^RHIZA_CHANGE=01M5PWGEF85Y185JZ2ZGCNH40N$'
+stdout '^RHIZA_ACTOR=claude-code-158fe87f$'
+stdout '^RHIZA_FOR=01M5PWGEF85Y185JZ2Z5MPYCA4$'
+stdout '^RHIZA_RUN=run-1$'
+# ...with the recorded session ID and the explicit permission mode
+# (known-session-id, explicit-permission-mode), and hooks calling rhiza.
+exec cat $WORK/claude.args
+stdout '--session-id 158fe87f-5cf3-4ff0-ae50-01a16dc84988 '
+stdout '--permission-mode manual '
+stdout '--settings \{"hooks":'
+stdout 'rhiza session hook Notification'
+# Rex was followed for the tab's own session; the hooks printed nothing.
+exec cat $WORK/rex.log
+stdout '^events -s session:s1 --json$'
+exec cat $WORK/hook.out
+! stdout .
+
+# Each source keeps its own report; the hook wins (status-precedence).
+exec rhiza session show 158fe87f-5cf3-4ff0-ae50-01a16dc84988
+stdout '^- Status: blocked permission: Claude needs your permission to use Bash at \S+ \(from hook\)$'
+stdout '^- hook: blocked permission: Claude needs your permission to use Bash at '
+stdout '^- rex: working: Running tests at '
+stdout '^- exit: exited code 3 at '
+exec rhiza session show 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json
+stdout '"source": "hook"'
+stdout '"code": 3'
+exec rhiza session ls
+stdout '^- 158fe87f-5cf3-4ff0-ae50-01a16dc84988 blocked \(hook\) '
+
+# The status is in Rhiza's own files: with no rex at all, show still
+# reports it (status-in-genesis-files).
+rm $WORK/bin/rex
+exec rhiza session show 158fe87f-5cf3-4ff0-ae50-01a16dc84988
+stdout '^- Status: blocked permission: Claude needs your permission to use Bash at \S+ \(from hook\)$'
+stdout '^- rex: working: Running tests at '
+stdout '^- exit: exited code 3 at '
+
+# A launch with no run: RHIZA_RUN is absent, even if this terminal has one.
+cp $WORK/rex.bak $WORK/bin/rex
+chmod 755 $WORK/bin/rex
+exec rhiza session start --permission-mode plan --json
+stdout '"id": "f3ff4d45-1e42-4e18-a215-01a16dc84d70"'
+env RHIZA_RUN=stale-run
+exec sh -c 'rhiza session run f3ff4d45-1e42-4e18-a215-01a16dc84d70; echo exit=$?'
+stdout '^exit=3$'
+env RHIZA_RUN=
+exec cat $WORK/claude.env
+stdout '^RHIZA_CHANGE=01M5PWGEF85Y185JZ2ZGCNH40N$'
+! stdout 'RHIZA_RUN'
+exec cat $WORK/claude.args
+stdout '--session-id f3ff4d45-1e42-4e18-a215-01a16dc84d70 --permission-mode plan '
+# Outside Rex nothing follows Rex: only the hooks and the exit report.
+exec rhiza session show f3ff4d45-1e42-4e18-a215-01a16dc84d70
+stdout '^- rex: none$'
+stdout '^- exit: exited code 3 at '
+
+# A hook for a session Rhiza did not launch is ignored: exit 0, no output,
+# nothing written.
+stdin $WORK/unknown.json
+exec rhiza session hook Stop
+! stdout .
+! stderr .
+exec rhiza session ls --json
+stdout -count=2 '"permission_mode"'
+
+# A hook with a payload it cannot read still exits 0; the reason goes to
+# stderr only.
+stdin $WORK/bad.json
+exec rhiza session hook Stop
+! stdout .
+stderr 'session hook Stop'
+
+fold-ok
+
+-- unknown.json --
+{"session_id":"00000000-0000-4000-8000-000000000000","hook_event_name":"Stop"}
+-- bad.json --
+not json
+-- rex.bak --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+if [ "$1" = events ]; then
+	echo '{"type":"session_event","payload":{"session_id":"session:s1","event":{"type":"block_event","payload":{"block_id":"block:other","creator_name":"com.superlogical.terminal","name":"program_status_changed","payload":{"id":"","record":{"state":"error","msg":"Not this tab","updated_at":"2026-10-24T12:00:00Z"},"reason":"report"}}}}}'
+	echo '{"type":"session_event","payload":{"session_id":"session:s1","event":{"type":"block_event","payload":{"block_id":"block:b1","creator_name":"com.superlogical.terminal","name":"program_status_changed","payload":{"id":"","record":{"state":"working","msg":"Running tests","updated_at":"2026-10-24T12:00:01Z"},"reason":"report"}}}}}'
+	exit 0
+fi
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+# A fake agent: logs its environment and argv, reports through two hooks
+# and exits 3.
+env > "$WORK/claude.env"
+pwd > "$WORK/claude.pwd"
+echo "$@" > "$WORK/claude.args"
+sid=
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
+# In a Rex tab, wait until the Rex report is recorded, so the hooks below
+# never race the wrapper's write.
+if [ -n "$REX_BLOCK" ]; then
+	rec="$WORK/repo/.git/rhiza/sessions/$sid.json"
+	i=0
+	until grep -q '"rex"' "$rec"; do
+		i=$((i + 1))
+		if [ $i -gt 200 ]; then
+			echo 'no rex report recorded' >&2
+			exit 9
+		fi
+		sleep 0.05
+	done
+fi
+echo '{"session_id":"'$sid'","hook_event_name":"SessionStart","source":"startup"}' | rhiza session hook SessionStart >> "$WORK/hook.out" || exit 8
+echo '{"session_id":"'$sid'","hook_event_name":"Notification","notification_type":"permission_prompt","message":"Claude needs your permission to use Bash"}' | rhiza session hook Notification >> "$WORK/hook.out" || exit 8
+exit 3

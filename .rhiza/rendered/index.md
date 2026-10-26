@@ -457,6 +457,7 @@
 - [claude-code-9a170ddb](actor/claude-code-9a170ddb.md)
 - [claude-code-a7bf1047](actor/claude-code-a7bf1047.md)
 - [claude-code-d2f2546a](actor/claude-code-d2f2546a.md)
+- [claude-code-dd482246](actor/claude-code-dd482246.md)
 - [claude-code-orchestrator](actor/claude-code-orchestrator.md)
 - [claude-code-task-11](actor/claude-code-task-11.md)
 - [darin-haener](actor/darin-haener.md)

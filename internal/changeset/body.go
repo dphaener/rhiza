@@ -36,9 +36,10 @@
 // every rule a body can break on its own. Rules that need other entries, such
 // as open coming first or which lifecycle moves are legal, belong to folding.
 //
-// The one optional field is an ops body's carve, present only on a carve's
-// two entries. Format 1 cannot spell it: DecodeBody reads it only in an entry
-// of format 2 or later and treats it as an unknown field in a format-1 entry,
+// The two optional fields are an ops body's carve, present only on a carve's
+// two entries, and an open body's title, present only when one was given.
+// Format 1 cannot spell either: DecodeBody reads them only in an entry of
+// format 2 or later and treats them as unknown fields in a format-1 entry,
 // and EntryVersion tells a writer which format a body needs, so every other
 // entry is still written as format 1.
 package changeset
@@ -84,12 +85,16 @@ type Body interface {
 }
 
 // Open is the body of the open entry that starts a change set:
-// {kind, intent, sources}.
+// {kind, intent, sources}, plus {title} when the change set has one.
 type Open struct {
 	Kind   Kind
 	Intent string
 	// Sources is sorted and unique. It decodes to nil when empty.
 	Sources []id.ID
+	// Title is a short name for the change set, at most MaxTitle runes on
+	// one line. It is optional, and needs format 2 when set; DisplayTitle
+	// falls back to the intent's first clause without it.
+	Title string
 }
 
 // Ops is the body of an ops entry: {ops, drop}, plus {carve} on either side
@@ -179,11 +184,18 @@ var shapes = map[entry.Type][]string{
 var carveShape = []string{"entry", "from", "to"}
 
 // EntryVersion returns the lowest entry format that can spell b: 2 for an
-// ops body with a carve, 1 for every other body. A writer stamps it as the
-// entry's v.
+// ops body with a carve or an open body with a title, 1 for every other
+// body. A writer stamps it as the entry's v.
 func EntryVersion(b Body) int {
-	if o, ok := b.(Ops); ok && o.Carve != nil {
-		return 2
+	switch b := b.(type) {
+	case Ops:
+		if b.Carve != nil {
+			return 2
+		}
+	case Open:
+		if b.Title != "" {
+			return 2
+		}
 	}
 	return 1
 }
@@ -235,7 +247,10 @@ func (o Open) Validate() error {
 	if err := text("intent", o.Intent, true); err != nil {
 		return err
 	}
-	return sortedIDs("sources", o.Sources)
+	if err := sortedIDs("sources", o.Sources); err != nil {
+		return err
+	}
+	return validTitle(o.Title)
 }
 
 // Validate reports the first rule o breaks.
@@ -352,6 +367,9 @@ func EncodeBody(b Body) (json.RawMessage, error) {
 	switch b := b.(type) {
 	case Open:
 		m = map[string]any{"kind": b.Kind, "intent": b.Intent, "sources": list(b.Sources)}
+		if b.Title != "" {
+			m["title"] = b.Title
+		}
 	case Ops:
 		ops := make([]json.RawMessage, 0, len(b.Ops))
 		for i, x := range b.Ops {
@@ -396,9 +414,10 @@ func EncodeBody(b Body) (json.RawMessage, error) {
 // reported in schema order, then the first unknown field in sorted order,
 // then each field's kind and the body's rules. An invalid operation is
 // reported on its index, as field "ops[i]", and its error still wraps
-// op.ErrInvalid. An ops body may also hold carve when e.V is 2 or later; in
-// a format-1 entry carve is an unknown field. A carve's own fields are
-// checked the same way and reported as "carve.<field>".
+// op.ErrInvalid. An ops body may also hold carve, and an open body title,
+// when e.V is 2 or later; in a format-1 entry each is an unknown field. A
+// carve's own fields are checked the same way and reported as
+// "carve.<field>".
 func DecodeBody(e entry.Entry) (Body, error) {
 	return decodeBody(e, false)
 }
@@ -438,8 +457,13 @@ func decodeBody(e entry.Entry, canonical bool) (Body, error) {
 		}
 	}
 	known := shape
-	if e.Type == entry.TypeOps && e.V >= 2 {
-		known = append(slices.Clip(shape), "carve")
+	if e.V >= 2 {
+		switch e.Type {
+		case entry.TypeOps:
+			known = append(slices.Clip(shape), "carve")
+		case entry.TypeOpen:
+			known = append(slices.Clip(shape), "title")
+		}
 	}
 	if name, ok := unknownField(fields, known); ok {
 		return nil, invalid(name, "unknown field")
@@ -514,7 +538,18 @@ func decodeOpen(fields map[string]json.RawMessage) (Body, error) {
 	if err != nil {
 		return nil, invalidWrap("sources", err)
 	}
-	return Open{Kind: Kind(kind), Intent: intent, Sources: sources}, nil
+	b := Open{Kind: Kind(kind), Intent: intent, Sources: sources}
+	if raw, ok := fields["title"]; ok {
+		if b.Title, err = str(raw); err != nil {
+			return nil, invalidWrap("title", err)
+		}
+		// An absent title is the only spelling of none, so each open body
+		// has one encoding.
+		if b.Title == "" {
+			return nil, invalid("title", "empty: leave it out instead")
+		}
+	}
+	return b, nil
 }
 
 func decodeOps(fields map[string]json.RawMessage) (Body, error) {

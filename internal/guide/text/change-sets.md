@@ -19,6 +19,8 @@ draft | proposed | accepted --withdraw--> withdrawn
 ```
 
 - `rhiza change new "<intent>" --json` opens one in `draft` and makes it current.
+  `--title "<name>"` names it for good (one line, at most 30 characters); else its
+  title is the intent's first clause.
 - Writes (`rhiza apply`, `rhiza add`, ...) go in while it is draft, proposed or accepted.
 - `rhiza propose`: draft to proposed.
 - `rhiza accept --rule <rule> --reason "<why>"`: proposed to accepted. Only where policy
