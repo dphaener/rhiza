@@ -1,0 +1,32 @@
+{
+  "actor": "01M5X6WX5C600DP4NERS5774N9",
+  "after": [
+    "01M5X6XST734JNR9ZPAE95DX4P"
+  ],
+  "at": "2026-10-26T22:57:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "go test ./cmd/rhiza -run TestScripts/ship-land-branch-build -count=1 passed at 35733c1",
+          "statement": "Ship land builds and renders with the PR head's build in Rhiza's repo.",
+          "status": "verified",
+          "tests": "TestScripts/ship-land-branch-build"
+        },
+        "handle": "land-with-branch-build-tests",
+        "id": "01M5X6XT16R7JVD1GDGTVYNR3P",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5X6XT16R7JVD1GDGR2SC9QD",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5X3GBH4ZQTZVXFEHR966747",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5X6XT59QAG53JAN2JMP8SY3",
+  "type": "ops",
+  "v": 1
+}
