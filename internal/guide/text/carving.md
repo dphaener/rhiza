@@ -26,5 +26,5 @@ link starting or ending at it. `--with-children` adds the nodes created below, t
 
 A change set that depends on the source keeps working when its ops rest only on moved node or
 link IDs. One whose op has a base on a moved op (an update written against the source's create)
-gets a base conflict after the carve: `genesis check` names it, and that op must be written
-again.
+gets a base conflict after the carve, and `genesis check` names it. Clearing it is not yet
+supported by a plain command.
