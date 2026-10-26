@@ -11,6 +11,13 @@ package api
 // refuses the same: every change set it depends on has landed, and its
 // what-if view has no conflict on its own ops. Either refusal exits 3.
 //
+// Accept and reject under rule autonomous are allowed only inside an
+// autonomous run: RHIZA_RUN must name a run that is unfinished and was
+// started --autonomous, or the move is refused as usage before anything is
+// written. With no --reason the reason names that run. Once the log entry
+// is written, the run's journal gets an accepted or rejected entry naming
+// the change set and the log entry, so the run lists its own gate moves.
+//
 // Reopen moves a landed change set back to accepted, only while its land is
 // on its branch alone: none of its land entries is in the log at check's
 // base. Landed work on main is final. With no base to look at it refuses
@@ -27,6 +34,7 @@ import (
 	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
 	gmodel "github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/run"
 )
 
 func init() {
@@ -59,6 +67,15 @@ func init() {
 // defaultRule is the rule an accept or reject is made under when none is
 // given.
 const defaultRule = "owner"
+
+// autonomousRule is the rule of a gate an autonomous run moved past without
+// the owner. It is allowed only while RHIZA_RUN names an unfinished
+// autonomous run, so it always means such a run made the move.
+const autonomousRule = "autonomous"
+
+// autonomousRuleWhy is why rule autonomous is refused outside an
+// autonomous run, for its messages.
+const autonomousRuleWhy = "it is only for a move made inside a run started with rhiza run start --autonomous"
 
 // LifecycleRequest is the request of propose, withdraw and land: they act
 // on --change or the current change set and take nothing else.
@@ -166,6 +183,17 @@ func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
 	case ReopenRequest:
 		base = strings.TrimSpace(r.Base)
 	}
+	var auto *autonomousGate
+	if v.decision && rule == autonomousRule {
+		g, err := checkAutonomousRule(ctx, v.name)
+		if err != nil {
+			return nil, err
+		}
+		auto = &g
+		if strings.TrimSpace(reason) == "" {
+			reason = "autonomous run " + g.run
+		}
+	}
 	body := v.body(rule, reason)
 	if err := body.Validate(); err != nil {
 		return nil, Usagef("%s", err.Error()).WithNext("rhiza describe " + v.name)
@@ -229,7 +257,70 @@ func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
 			return nil, err
 		}
 	}
+	if auto != nil && !ctx.DryRun {
+		if err := auto.journal(ctx, v.name, cs, e.ID); err != nil {
+			return nil, err
+		}
+	}
 	return resp, nil
+}
+
+// autonomousGate is the run an accept or reject under rule autonomous is
+// made in, and the store its journal is in.
+type autonomousGate struct {
+	store *run.Store
+	run   string
+}
+
+// checkAutonomousRule finds the run RHIZA_RUN names and refuses, as
+// usage, unless it is an unfinished autonomous run.
+func checkAutonomousRule(ctx *Ctx, verb string) (autonomousGate, error) {
+	next := "rhiza describe " + verb
+	ref := strings.TrimSpace(ctxGetenv(ctx)(envRun))
+	if ref == "" {
+		return autonomousGate{}, Usagef("cannot %s under rule autonomous: %s, and %s is not set",
+			verb, autonomousRuleWhy, envRun).WithNext(next)
+	}
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return autonomousGate{}, err
+	}
+	rs := run.NewStore(run.Dir(common))
+	j, err := rs.Read(ref)
+	var nf *run.NotFoundError
+	var amb *run.AmbiguousError
+	switch {
+	case errors.As(err, &nf), errors.As(err, &amb):
+		return autonomousGate{}, Usagef("cannot %s under rule autonomous: %s, and %s=%s names no run: %v", verb, autonomousRuleWhy, envRun, ref, err).
+			WithNext(next)
+	case err != nil:
+		return autonomousGate{}, Errorf("read run %s: %v", ref, err)
+	}
+	st := j.State()
+	if !st.Autonomous {
+		return autonomousGate{}, Usagef("cannot %s under rule autonomous: %s, and run %s is not autonomous", verb, autonomousRuleWhy, j.ID).
+			WithNext(next)
+	}
+	if st.Ended {
+		return autonomousGate{}, Usagef("cannot %s under rule autonomous: %s, and run %s is finished: it %s", verb, autonomousRuleWhy, j.ID, st.Result).
+			WithNext(next)
+	}
+	return autonomousGate{store: rs, run: j.ID}, nil
+}
+
+// journal appends the move to the run's journal: accepted or rejected,
+// with the change set and the log entry written.
+func (g autonomousGate) journal(ctx *Ctx, verb string, cs, logEntry id.ID) error {
+	typ := run.TypeAccepted
+	if verb == "reject" {
+		typ = run.TypeRejected
+	}
+	e := run.Entry{Type: typ, At: ctx.Now(), Change: cs.String(), LogEntry: logEntry.String()}
+	if err := g.store.Append(g.run, e); err != nil {
+		return Errorf("journal the %s of change set %s in run %s (log entry %s is written): %v",
+			verb, cs, g.run, logEntry, err).WithNext("rhiza run status " + g.run)
+	}
+	return nil
 }
 
 // checkReopen refuses to reopen c while any of its land entries is in the

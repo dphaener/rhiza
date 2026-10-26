@@ -179,6 +179,36 @@ func TestFoldAutonomous(t *testing.T) {
 	}
 }
 
+func TestFoldAccepts(t *testing.T) {
+	es := []Entry{
+		startedEntry("a", 0),
+		{Type: TypeEntered, At: at(1), Step: "a"},
+		{Type: TypeAccepted, At: at(2), Change: "CS1", LogEntry: "E1"},
+		{Type: TypeRejected, At: at(3), Change: "CS2", LogEntry: "E2"},
+	}
+	st := (Journal{Entries: es}).State()
+	want := []Accept{
+		{Change: "CS1", LogEntry: "E1", Verb: TypeAccepted, At: at(2)},
+		{Change: "CS2", LogEntry: "E2", Verb: TypeRejected, At: at(3)},
+	}
+	if !reflect.DeepEqual(st.Accepts, want) {
+		t.Fatalf("accepts = %+v, want %+v", st.Accepts, want)
+	}
+	if st.Current != "a" || st.Ended || st.Stopped != "" {
+		t.Fatalf("accepts changed the fold: %+v", st)
+	}
+	b, err := json.Marshal(es[2])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(b), `"change":"CS1","log_entry":"E1"`) {
+		t.Fatalf("accepted entry = %s", b)
+	}
+	if b, _ := json.Marshal(es[1]); strings.Contains(string(b), "change") || strings.Contains(string(b), "log_entry") {
+		t.Fatalf("an entered entry names change or log_entry: %s", b)
+	}
+}
+
 func TestFoldFailedDetail(t *testing.T) {
 	st := Journal{Entries: []Entry{
 		startedEntry("a", 0),

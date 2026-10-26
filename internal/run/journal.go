@@ -17,6 +17,8 @@ const (
 	TypeUnblocked = "unblocked"
 	TypeAmended   = "amended"
 	TypeRetried   = "retried"
+	TypeAccepted  = "accepted"
+	TypeRejected  = "rejected"
 )
 
 // Run results, used in Entry.End and State.Result.
@@ -68,6 +70,8 @@ type Block struct {
 //	finished:  End (succeeded or failed), Detail
 //	amended:   Step, Session, Actor, File (the owner or an agent amended the step's brief)
 //	retried:   Step, Detail (a failed run reopened at Step; Detail is why it had failed)
+//	accepted:  Change, LogEntry (the run accepted a change set under rule autonomous)
+//	rejected:  Change, LogEntry (the run rejected a change set under rule autonomous)
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -82,6 +86,10 @@ type Entry struct {
 	Block   *Block    `json:"block,omitempty"`
 	Actor   string    `json:"actor,omitempty"`
 	File    string    `json:"file,omitempty"`
+	// Change and LogEntry are an accepted or rejected entry's change set
+	// and the model log entry that moved it.
+	Change   string `json:"change,omitempty"`
+	LogEntry string `json:"log_entry,omitempty"`
 }
 
 // Amendment is one amended entry: a step's brief or plan file replaced
@@ -93,6 +101,16 @@ type Amendment struct {
 	Actor   string
 	File    string
 	At      time.Time
+}
+
+// Accept is one accepted or rejected entry: the run moved change set
+// Change past the owner's gate under rule autonomous, with model log entry
+// LogEntry. Verb is the entry's type, accepted or rejected.
+type Accept struct {
+	Change   string
+	LogEntry string
+	Verb     string
+	At       time.Time
 }
 
 // Journal is a run's entries in order.
@@ -167,6 +185,9 @@ type State struct {
 	FinishedStep string
 	// Retries are the retried entries in journal order.
 	Retries []Retry
+	// Accepts are the accepted and rejected entries in journal order. They
+	// change nothing else in the fold.
+	Accepts []Accept
 	// RetryBase holds each step's Visits as they stood at the run's last
 	// retried entry. Only visits past it count against max_visits, so a
 	// retry gives every step its full cap again; visit numbers still
@@ -242,6 +263,8 @@ func (j Journal) State() State {
 			st.Amendments = append(st.Amendments, Amendment{
 				Step: e.Step, Session: e.Session, Actor: e.Actor, File: e.File, At: e.At,
 			})
+		case TypeAccepted, TypeRejected:
+			st.Accepts = append(st.Accepts, Accept{Change: e.Change, LogEntry: e.LogEntry, Verb: e.Type, At: e.At})
 		case TypeStopped:
 			st.Stopped = e.Detail
 		case TypeFinished:
