@@ -28,6 +28,7 @@ the assistant's summary in the founding conversation
 
 - decided-by [agent-status](../capability/rhiza/runtime/agent-status.md)
 - decided-by [status-precedence](../capability/rhiza/runtime/agent-status/status-precedence.md)
+- decided-by [pointer-at-prompt](../capability/rhiza/orchestration/step-messages/pointer-at-prompt.md)
 - decided-by [run-blocked-state](../capability/rhiza/orchestration/notifications/run-blocked-state.md)
 
 ## History

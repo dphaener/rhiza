@@ -28,6 +28,7 @@ the assistant's summary in the founding conversation
 
 - decided-by [actor-stamping](../capability/rhiza/runtime/actor-stamping.md)
 - decided-by [launch-env-stamping](../capability/rhiza/runtime/actor-stamping/launch-env-stamping.md)
+- decided-by [message-sender](../capability/rhiza/orchestration/step-messages/message-sender.md)
 
 ## History
 

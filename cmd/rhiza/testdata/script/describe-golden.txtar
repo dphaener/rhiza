@@ -2362,6 +2362,93 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "run.amend",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "description": "The step's brief or plan file, a path relative to the run's worktree; it must already exist",
+            "type": "string"
+          },
+          "from": {
+            "description": "A file holding the new content, or - for stdin; the content must not be blank",
+            "type": "string"
+          },
+          "run": {
+            "description": "The run: a full ID or a unique prefix of 4+ characters; default the latest run of the current change set, else the latest run",
+            "type": "string"
+          },
+          "step": {
+            "description": "The agent step to amend; default the run's current step",
+            "type": "string"
+          },
+          "timeout": {
+            "description": "How long to wait for the step's session to be at its prompt, a Go duration such as 30s or 10m; default 10m",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file",
+          "from"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "actor": {
+            "description": "The sender's actor handle",
+            "type": "string"
+          },
+          "dry_run": {
+            "description": "True if nothing was written, journaled or sent",
+            "type": "boolean"
+          },
+          "file": {
+            "description": "The amended file, relative to the run's worktree",
+            "type": "string"
+          },
+          "path": {
+            "description": "The amended file, an absolute path",
+            "type": "string"
+          },
+          "pointer": {
+            "description": "The one line typed at the session's prompt",
+            "type": "string"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          },
+          "session": {
+            "description": "The step's session, which was sent the pointer",
+            "type": "string"
+          },
+          "step": {
+            "description": "The amended step",
+            "type": "string"
+          },
+          "waited": {
+            "description": "How long it waited for the prompt, a Go duration",
+            "type": "string"
+          }
+        },
+        "required": [
+          "actor",
+          "file",
+          "path",
+          "pointer",
+          "run",
+          "session",
+          "step",
+          "waited"
+        ],
+        "type": "object"
+      },
+      "summary": "Amend a running agent step: replace its brief or plan file, journal the amendment and type a pointer to it at its prompt",
+      "write": true
+    },
+    {
       "name": "run.resume",
       "request": {
         "additionalProperties": false,
@@ -2391,6 +2478,43 @@ cmp stdout describe.golden.json
             "additionalProperties": false,
             "description": "The run as its journal stands; the command exits 1 when the run failed",
             "properties": {
+              "amendments": {
+                "description": "The amendments made to its agent steps' briefs or plans, in order",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "actor": {
+                      "description": "The sender's actor handle",
+                      "type": "string"
+                    },
+                    "at": {
+                      "description": "When it was amended, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "file": {
+                      "description": "The amended file, relative to the run's worktree",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The step's session, which was sent a pointer to the file",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The amended step",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "actor",
+                    "at",
+                    "file",
+                    "session",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "blocked": {
                 "additionalProperties": false,
                 "description": "What the run waits on while its agent step's session is blocked; absent otherwise",
@@ -2530,6 +2654,7 @@ cmp stdout describe.golden.json
               }
             },
             "required": [
+              "amendments",
               "change",
               "id",
               "started_at",
@@ -2590,6 +2715,43 @@ cmp stdout describe.golden.json
             "additionalProperties": false,
             "description": "The run as its journal stands; the command exits 1 when the run failed",
             "properties": {
+              "amendments": {
+                "description": "The amendments made to its agent steps' briefs or plans, in order",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "actor": {
+                      "description": "The sender's actor handle",
+                      "type": "string"
+                    },
+                    "at": {
+                      "description": "When it was amended, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "file": {
+                      "description": "The amended file, relative to the run's worktree",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The step's session, which was sent a pointer to the file",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The amended step",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "actor",
+                    "at",
+                    "file",
+                    "session",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "blocked": {
                 "additionalProperties": false,
                 "description": "What the run waits on while its agent step's session is blocked; absent otherwise",
@@ -2729,6 +2891,7 @@ cmp stdout describe.golden.json
               }
             },
             "required": [
+              "amendments",
               "change",
               "id",
               "started_at",
@@ -2765,6 +2928,43 @@ cmp stdout describe.golden.json
       "response": {
         "additionalProperties": false,
         "properties": {
+          "amendments": {
+            "description": "The amendments made to its agent steps' briefs or plans, in order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "actor": {
+                  "description": "The sender's actor handle",
+                  "type": "string"
+                },
+                "at": {
+                  "description": "When it was amended, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "file": {
+                  "description": "The amended file, relative to the run's worktree",
+                  "type": "string"
+                },
+                "session": {
+                  "description": "The step's session, which was sent a pointer to the file",
+                  "type": "string"
+                },
+                "step": {
+                  "description": "The amended step",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "actor",
+                "at",
+                "file",
+                "session",
+                "step"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "blocked": {
             "additionalProperties": false,
             "description": "What the run waits on while its agent step's session is blocked; absent otherwise",
@@ -2904,6 +3104,7 @@ cmp stdout describe.golden.json
           }
         },
         "required": [
+          "amendments",
           "change",
           "id",
           "started_at",
@@ -3181,6 +3382,70 @@ cmp stdout describe.golden.json
       },
       "summary": "List the agent sessions with their change set, tab, worktree and status",
       "write": false
+    },
+    {
+      "name": "session.message",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "session": {
+            "description": "The session: its full ID or a unique prefix of 4+ characters",
+            "type": "string"
+          },
+          "text": {
+            "description": "The message, kept verbatim in the file the session reads; must not be blank",
+            "type": "string"
+          },
+          "timeout": {
+            "description": "How long to wait for the session to be at its prompt, a Go duration such as 30s or 10m; default 10m",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session",
+          "text"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "description": "True if nothing was written or sent",
+            "type": "boolean"
+          },
+          "file": {
+            "description": "The message file, an absolute path inside the session's worktree",
+            "type": "string"
+          },
+          "from": {
+            "description": "The sender's actor handle",
+            "type": "string"
+          },
+          "pointer": {
+            "description": "The one line typed at the session's prompt",
+            "type": "string"
+          },
+          "session": {
+            "description": "The session's full ID",
+            "type": "string"
+          },
+          "waited": {
+            "description": "How long it waited for the prompt, a Go duration",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file",
+          "from",
+          "pointer",
+          "session",
+          "waited"
+        ],
+        "type": "object"
+      },
+      "summary": "Send a running agent session a message: a file in its worktree and a one-line pointer typed at its prompt",
+      "write": true
     },
     {
       "name": "session.run",
