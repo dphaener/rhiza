@@ -143,6 +143,6 @@ or explains the problem. `genesis describe <command> --json` gives any command's
 ## More
 
 `genesis guide <topic>` prints a topic; `genesis guide ls` lists them.
-Topics: `change-sets` (lifecycle, intention vs record, `--record`), `apply` (the file format),
-`sources` (recording a conversation). To turn a raw conversation into a Source, use the
-genesis-scrub skill (`genesis guide scrub`).
+Topics: `change-sets` (lifecycle, intention vs record, `--record`), `carving` (moving nodes
+between change sets), `apply` (the file format), `sources` (recording a conversation). To turn
+a raw conversation into a Source, use the genesis-scrub skill (`genesis guide scrub`).

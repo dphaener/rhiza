@@ -37,6 +37,9 @@ stdout '^## Steps$'
 exec genesis guide apply
 stdout '^# apply$'
 stdout '^## The file$'
+exec genesis guide carving
+stdout '^# Carving$'
+stdout '^## Known limit$'
 exec genesis guide change-sets
 stdout '^# Change sets$'
 stdout '^## Lifecycle$'
@@ -44,12 +47,13 @@ exec genesis guide sources
 stdout '^# Sources$'
 stdout '^## Stored fields$'
 
-# guide ls lists all five texts with their kinds and sizes.
+# guide ls lists all six texts with their kinds and sizes.
 exec genesis guide ls
-stdout -count=5 '^- '
+stdout -count=6 '^- '
 stdout '^- genesis +skill +[0-9]+ tokens  Work with the product model'
 stdout '^- scrub +skill +[0-9]+ tokens  '
 stdout '^- apply +topic +[0-9]+ tokens  '
+stdout '^- carving +topic +[0-9]+ tokens  '
 stdout '^- change-sets +topic +[0-9]+ tokens  '
 stdout '^- sources +topic +[0-9]+ tokens  '
 exec genesis guide ls --json

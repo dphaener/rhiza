@@ -62,6 +62,10 @@ work ends with `genesis land`, committed last.
 - A dependency dropped, or revised over what you wrote: `check` and `ready` name it. Fix by
   writing again, revising, or retiring the link. Rebase is manual.
 
+## Carving
+
+`genesis carve` moves nodes to another change set, keeping their IDs: `genesis guide carving`.
+
 ## Inspecting
 
 - `genesis change show [<id>] --json`: intent, state, operations, the accept or reject.

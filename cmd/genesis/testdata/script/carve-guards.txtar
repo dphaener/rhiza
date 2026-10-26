@@ -1,0 +1,142 @@
+# carve refuses, writing nothing: no nodes or the same change set on both
+# sides (usage, exit 2), a node the source does not create (usage, exit 2),
+# an unknown node (not_found, exit 4), a landed or terminal side (conflict,
+# exit 3), a dependency that would close a loop (conflict, exit 3), and ops
+# that would not apply in the target: a link to a node left behind, a
+# handle the target already holds (conflict, exit 3). Each names what to
+# run next, and the log is untouched after each.
+
+exec genesis init
+
+# L lands the node landed.
+exec genesis change new L
+stdout 'change set 01M5PWGEF85Y185JZ2ZGCNH40N '
+exec genesis add capability landed
+exec genesis propose
+exec genesis accept --reason ok
+exec genesis land
+
+# A creates base > leaf, other with a link to base, and dup, and updates
+# landed.
+exec genesis change new A
+stdout 'change set 01M5PWGP98GD3JXPKEPHTS0TQE '
+exec genesis add capability base
+exec genesis add capability leaf --parent base
+exec genesis add capability other
+exec genesis link other relates-to base --note x
+exec genesis add capability dup
+exec genesis set landed --field statement=x
+
+# B holds the handle dup too. W is withdrawn. Cy depends on A.
+exec genesis change new B
+stdout 'change set 01M5PWGX40FB1RBRN9YHMNJW07 '
+exec genesis add capability dup
+exec genesis change new W
+stdout 'change set 01M5PWGZ2GNMAQ31Z5VAZRKFVB '
+exec genesis withdraw
+exec genesis change new Cy
+stdout 'change set 01M5PWH110D047SG185GTXKBCB '
+exec genesis link 01M5PWH110D047SG185GTXKBCB depends-on 01M5PWGP98GD3JXPKEPHTS0TQE
+fold-ok
+
+exec ls -R .genesis/log
+cp stdout before.txt
+
+# No nodes: usage.
+! exec genesis carve --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWGX40FB1RBRN9YHMNJW07
+stderr '^genesis: carve: missing <nodes>$'
+stderr '^next: genesis describe carve$'
+! exec genesis api call carve '{"nodes":[],"from":"01M5PWGP98GD3JXPKEPHTS0TQE","to":"01M5PWGX40FB1RBRN9YHMNJW07"}'
+stdout '"code": "usage"'
+stdout '"message": "carve needs at least one node"'
+stdout '"next": "genesis describe carve"'
+exec sh -c 'genesis api call carve "{\"nodes\":[],\"from\":\"01M5PWGP98GD3JXPKEPHTS0TQE\",\"to\":\"01M5PWGX40FB1RBRN9YHMNJW07\"}" >/dev/null; echo exit $?'
+stdout '^exit 2$'
+
+# The same change set on both sides: usage.
+! exec genesis carve base --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWGP98GD3JXPKEPHTS0TQE --json
+stdout '"code": "usage"'
+stdout '"message": "--from and --to are both change set 01M5PWGP98GD3JXPKEPHTS0TQE"'
+stdout '"next": "genesis describe carve"'
+exec sh -c 'genesis carve base --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWGP98GD3JXPKEPHTS0TQE 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+exec ls -R .genesis/log
+cmp stdout before.txt
+
+# A node the source does not create (A only updates landed): usage.
+! exec genesis carve landed --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWGX40FB1RBRN9YHMNJW07
+stderr '^genesis: landed \(01M5PWGJC82P7YGZTWYFFZ0VJG\) is not created in change set 01M5PWGP98GD3JXPKEPHTS0TQE; carve moves only nodes the source creates$'
+stderr '^next: genesis change show 01M5PWGP98GD3J$'
+! exec genesis carve landed --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWGX40FB1RBRN9YHMNJW07 --json
+stdout '"code": "usage"'
+stdout '"next": "genesis change show 01M5PWGP98GD3J"'
+exec sh -c 'genesis carve landed --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWGX40FB1RBRN9YHMNJW07 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+
+# An unknown node: not_found.
+! exec genesis carve nosuch --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWGX40FB1RBRN9YHMNJW07 --json
+stdout '"code": "not_found"'
+stdout '"message": "no node matches \\"nosuch\\""'
+stdout '"next": "genesis ls"'
+exec sh -c 'genesis carve nosuch --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWGX40FB1RBRN9YHMNJW07 2>/dev/null; echo exit $?'
+stdout '^exit 4$'
+exec ls -R .genesis/log
+cmp stdout before.txt
+
+# A landed source or target, a withdrawn target: conflict.
+! exec genesis carve landed --from 01M5PWGEF85Y185JZ2ZGCNH40N --to 01M5PWGX40FB1RBRN9YHMNJW07
+stderr '^genesis: cannot carve from change set 01M5PWGEF85Y185JZ2ZGCNH40N: it is landed$'
+stderr '^next: genesis change ls$'
+! exec genesis carve base --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWGEF85Y185JZ2ZGCNH40N
+stderr '^genesis: cannot carve into change set 01M5PWGEF85Y185JZ2ZGCNH40N: it is landed$'
+stderr '^next: genesis change ls$'
+! exec genesis carve base --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWGZ2GNMAQ31Z5VAZRKFVB --json
+stdout '"code": "conflict"'
+stdout '"message": "cannot carve into change set 01M5PWGZ2GNMAQ31Z5VAZRKFVB: it is withdrawn"'
+stdout '"next": "genesis change ls"'
+exec sh -c 'genesis carve base --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWGZ2GNMAQ31Z5VAZRKFVB 2>/dev/null; echo exit $?'
+stdout '^exit 3$'
+exec ls -R .genesis/log
+cmp stdout before.txt
+
+# A cycle: leaf stays in A and rests on base, so A would depend on Cy, which
+# already depends on A.
+! exec genesis carve base --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWH110D047SG185GTXKBCB
+stderr '^genesis: ops left in 01M5PWGP98GD3JXPKEPHTS0TQE rest on what moves, so it would depend on 01M5PWH110D047SG185GTXKBCB, and that would close a loop: 01M5PWH110D047SG185GTXKBCB already depends on 01M5PWGP98GD3JXPKEPHTS0TQE$'
+stderr '^next: genesis change show 01M5PWH110D047$'
+! exec genesis carve base --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWH110D047SG185GTXKBCB --json
+stdout '"code": "conflict"'
+stdout '"next": "genesis change show 01M5PWH110D047"'
+exec sh -c 'genesis carve base --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWH110D047SG185GTXKBCB 2>/dev/null; echo exit $?'
+stdout '^exit 3$'
+exec ls -R .genesis/log
+cmp stdout before.txt
+
+# A link to a node left in the source: other's link to base moves with
+# other, but base is not in B's view.
+! exec genesis carve other --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWGX40FB1RBRN9YHMNJW07
+stderr '^genesis: the carve would not apply in change set 01M5PWGX40FB1RBRN9YHMNJW07: link.create [0-9A-Z]{26} on [0-9A-Z]{26}: model: not found: to [0-9A-Z]{26} is neither a node nor a known change set$'
+stderr '^next: genesis slice --change 01M5PWGX40FB1R --view what-if$'
+! exec genesis carve other --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWGX40FB1RBRN9YHMNJW07 --json
+stdout '"code": "conflict"'
+stdout '"next": "genesis slice --change 01M5PWGX40FB1R --view what-if"'
+exec sh -c 'genesis carve other --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWGX40FB1RBRN9YHMNJW07 2>/dev/null; echo exit $?'
+stdout '^exit 3$'
+exec ls -R .genesis/log
+cmp stdout before.txt
+
+# A handle the target already holds.
+! exec genesis carve dup --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWGX40FB1RBRN9YHMNJW07
+stderr '^genesis: the carve would not apply in change set 01M5PWGX40FB1RBRN9YHMNJW07: node.create [0-9A-Z]{26} on [0-9A-Z]{26}: model: duplicate handle: node [0-9A-Z]{26} has handle "dup", already held by node [0-9A-Z]{26}$'
+stderr '^next: genesis slice --change 01M5PWGX40FB1R --view what-if$'
+! exec genesis carve dup --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWGX40FB1RBRN9YHMNJW07 --json
+stdout '"code": "conflict"'
+exec sh -c 'genesis carve dup --from 01M5PWGP98GD3JXPKEPHTS0TQE --to 01M5PWGX40FB1RBRN9YHMNJW07 2>/dev/null; echo exit $?'
+stdout '^exit 3$'
+
+# Nothing was written by any of them.
+exec ls -R .genesis/log
+cmp stdout before.txt
+fold-ok
+exec genesis change show 01M5PWGP98GD3JXPKEPHTS0TQE
+stdout -count=4 '^- node.create '

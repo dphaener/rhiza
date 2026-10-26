@@ -1,0 +1,29 @@
+{
+  "actor": "01M5PWGEF85Y185JZ2Z5MPYCA4",
+  "after": [
+    "01M5PWGMARA1WR6BD0MJ9F50JK"
+  ],
+  "at": "2026-10-24T12:00:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "CSV before any other format."
+        },
+        "handle": "csv-first",
+        "id": "01M5PWGNA0MVZ1H5AXG69X6B7V",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5PWGNA0MVZ1H5AXG5VQ0BY9",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5PWGEF85Y185JZ2ZGCNH40N",
+  "for": "01M5PWGEF85Y185JZ2Z5MPYCA4",
+  "id": "01M5PWGNA0MVZ1H5AXG95WXKV2",
+  "type": "ops",
+  "v": 1
+}

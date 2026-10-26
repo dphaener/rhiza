@@ -1,0 +1,29 @@
+{
+  "actor": "01M5PWGEF85Y185JZ2Z5MPYCA4",
+  "after": [
+    "01M5PWGKBGYFZMTH8Y8EYJ7AS3"
+  ],
+  "at": "2026-10-24T12:00:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Email a report every week."
+        },
+        "handle": "report-schedule",
+        "id": "01M5PWGMARA1WR6BD0MGG098MY",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5PWGMARA1WR6BD0MEF4Y76P",
+        "op": "node.create",
+        "parent": "01M5PWGJC82P7YGZTWYFFZ0VJG"
+      }
+    ]
+  },
+  "change_set": "01M5PWGEF85Y185JZ2ZGCNH40N",
+  "for": "01M5PWGEF85Y185JZ2Z5MPYCA4",
+  "id": "01M5PWGMARA1WR6BD0MJ9F50JK",
+  "type": "ops",
+  "v": 1
+}

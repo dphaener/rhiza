@@ -48,6 +48,12 @@ var corpusExpect = map[string][]corpusWant{
 		{intent: "Let people export reports as CSV", state: changeset.StateLanded,
 			handles: []string{"report-export", "share-reports"}, decided: entry.TypeAccept},
 	},
+	"format-2/carve": {
+		{intent: "Record actor ada@example.com", state: changeset.StateLanded, handles: []string{"ada"}},
+		{intent: "Plan the reports area", state: changeset.StateDraft, handles: []string{"report-schedule", ""}},
+		{intent: "Ship report export", state: changeset.StateProposed,
+			handles: []string{"reports", "report-export", "csv-first", ""}},
+	},
 }
 
 func TestCorpusFolds(t *testing.T) {
@@ -124,8 +130,11 @@ func TestCorpusFolds(t *testing.T) {
 					t.Errorf("%q: decided by %q, want %q", w.intent, decided, w.decided)
 				}
 			}
-			if name == "format-1/revisions" {
+			switch name {
+			case "format-1/revisions":
 				checkRevisions(t, got[0])
+			case "format-2/carve":
+				checkCarve(t, l.Entries, got[1], got[2])
 			}
 		})
 	}
@@ -169,5 +178,59 @@ func checkRevisions(t *testing.T, cs changeset.ChangeSet) {
 	}
 	if cs.Decided == nil || cs.Decided.Rule != "owner" {
 		t.Errorf("Decided = %+v, want rule owner", cs.Decided)
+	}
+}
+
+// checkCarve checks the carve case in detail: the source's v2 entry drops
+// the moved ops and names the target's, the target's v2 entry re-creates
+// them under the same node and link IDs and names the source's, every other
+// entry is v1, and the source depends on the target.
+func checkCarve(t *testing.T, entries []entry.Entry, src, tgt changeset.ChangeSet) {
+	t.Helper()
+	var se, te *entry.Entry
+	var srcBody, tgtBody changeset.Ops
+	for i, e := range entries {
+		if e.V == 1 {
+			continue
+		}
+		if e.V != 2 || e.Type != entry.TypeOps {
+			t.Errorf("entry %s: v%d %s, want only ops entries at v2", e.ID, e.V, e.Type)
+			continue
+		}
+		b, err := changeset.DecodeBody(e)
+		if err != nil {
+			t.Fatalf("entry %s: %v", e.ID, err)
+		}
+		ops := b.(changeset.Ops)
+		switch e.ChangeSet {
+		case src.ID:
+			se, srcBody = &entries[i], ops
+		case tgt.ID:
+			te, tgtBody = &entries[i], ops
+		}
+	}
+	if se == nil || te == nil {
+		t.Fatalf("want a v2 entry in each of %s and %s", src.ID, tgt.ID)
+	}
+	if c := srcBody.Carve; c == nil || c.To != tgt.ID || c.Entry != te.ID || !c.From.IsZero() {
+		t.Errorf("source carve = %+v, want to %s, entry %s", c, tgt.ID, te.ID)
+	}
+	if c := tgtBody.Carve; c == nil || c.From != src.ID || c.Entry != se.ID || !c.To.IsZero() {
+		t.Errorf("target carve = %+v, want from %s, entry %s", c, src.ID, se.ID)
+	}
+	if len(srcBody.Drop) != len(tgtBody.Ops) || len(tgtBody.Drop) != 0 {
+		t.Errorf("source drops %d, target creates %d and drops %d", len(srcBody.Drop), len(tgtBody.Ops), len(tgtBody.Drop))
+	}
+	for _, o := range tgtBody.Ops {
+		if slices.Contains(srcBody.Drop, o.ID) {
+			t.Errorf("target op %s reuses a dropped op ID", o.ID)
+		}
+	}
+	if len(srcBody.Ops) != 1 || srcBody.Ops[0].LinkType != op.LinkDependsOn ||
+		srcBody.Ops[0].From != src.ID || srcBody.Ops[0].To != tgt.ID {
+		t.Errorf("source ops = %+v, want one depends-on link to the target", srcBody.Ops)
+	}
+	if !slices.Contains(changeset.DependsOn([]changeset.ChangeSet{src, tgt}, src.ID), tgt.ID) {
+		t.Errorf("%s does not depend on %s", src.ID, tgt.ID)
 	}
 }

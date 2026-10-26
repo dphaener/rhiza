@@ -1,0 +1,15 @@
+{
+  "actor": "01M5PWGEF85Y185JZ2Z5MPYCA4",
+  "after": [],
+  "at": "2026-10-24T12:00:10Z",
+  "body": {
+    "intent": "Ship report export",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M5PWGQ8GB4618G4RH2TV0ZAH",
+  "for": "01M5PWGEF85Y185JZ2Z5MPYCA4",
+  "id": "01M5PWGQ8GB4618G4RH53T7SX9",
+  "type": "open",
+  "v": 1
+}
