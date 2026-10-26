@@ -1,0 +1,243 @@
+{
+  "actor": "01M5WFXBCNA8DYMEQ9QAV94HT1",
+  "after": [
+    "01M5WHKEP5PSAMM56ZWFH097ND"
+  ],
+  "at": "2026-10-26T17:01:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "With a fake adapter, the step's prompt names shipit and the slice command, and the step passes once the session is idle at its prompt with a PR open, leaving the session open.",
+          "statement": "Ship-change's agent step runs shipit in the change set's worktree, starting from rhiza slice --change."
+        },
+        "handle": "shipit-agent-step",
+        "id": "01M5TYKPAXPA4NBWNPH9NCJTRD",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5TYKPAXPA4NBWNPH5WENFNK",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with fakes ends with no branch, no worktree, the session's Rex tab closed and a green main.",
+          "statement": "After the merge the branch is deleted locally and on GitHub, the worktree is removed, and CI on main is waited on until green."
+        },
+        "handle": "close-out",
+        "id": "01M5TYKQ3V9NFPG905CN91MCFV",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5TYKQ3V9NFPG905CN1RWR3B",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "fields": {
+          "acceptance": "After a fake run the change set is landed and an Evidence node names the PR and the checks.",
+          "statement": "Ship-change lands the change set on the PR branch once its CI passes, before the merge, and records the PR and its CI result as Evidence that verifies it."
+        },
+        "handle": "land-with-evidence",
+        "id": "01M5TYKQJ8YK6B2WW3AYF0MJJV",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5TYKQJ8YK6B2WW3AX1Y3C6X",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "fields": {
+          "result": "make check exit 0 at 1d113a9",
+          "statement": "The binary carries the ship-change workflow, and run start with no --workflow runs it and the journal names it builtin:ship-change.",
+          "status": "verified",
+          "tests": "TestScripts/run-ship-change; TestScripts/run-ship-change-fail; internal/workflow TestBuiltinsParse; internal/api TestWorkflowFile, TestResolveWorkflow"
+        },
+        "handle": "ship-change-workflow-tests",
+        "id": "01M5WHKBTBAK90JVBNST11SH3V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WHKBTBAK90JVBNSPZRYSAG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "result": "make check exit 0 at 1d113a9",
+          "statement": "The agent step runs shipit in the change set's worktree from rhiza slice --change; the fake claude receives that prompt, pushes the branch and sits idle, and the step passes on rhiza ship check --pr-open with the session left open. Engine tests show until is checked only while the session is idle, never while it is blocked.",
+          "status": "verified",
+          "tests": "TestScripts/run-ship-change; internal/workflow TestBuiltinsParse, TestAgentStepUntil; internal/run TestAgentUntilHoldsWhenIdle, TestAgentUntilFailsKeepsWaiting, TestAgentUntilNotCheckedWhileBlocked, TestAgentUntilErrorFailsRun; internal/api TestShipCheckPROpen"
+        },
+        "handle": "shipit-agent-step-tests",
+        "id": "01M5WHKC1RBD6E4939DJ70JM4T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WHKC1RBD6E4939DF90GQQD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "result": "make check exit 0 at 1d113a9",
+          "statement": "The run waits until the PR is open and all checks pass, and fails the pr-green step on a failed check without merging.",
+          "status": "verified",
+          "tests": "TestScripts/run-ship-change; TestScripts/run-ship-change-fail; internal/api TestShipCheckNoPR, TestShipCheckPending, TestShipCheckFailed, TestShipCheckWaitsForPushedHead, TestChecksVerdict"
+        },
+        "handle": "wait-green-pr-tests",
+        "id": "01M5WHKC9HFN1PSXE1XDF0NH3C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WHKC9HFN1PSXE1XBJP4MYK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "result": "make check exit 0 at 1d113a9",
+          "statement": "The merge is gh pr merge --squash --match-head-commit with the checked head, and a merge that did not happen is an error.",
+          "status": "verified",
+          "tests": "TestScripts/run-ship-change; internal/api TestShipCheckGreenThenMerge, TestShipMergeNotMerged"
+        },
+        "handle": "pinned-merge-tests",
+        "id": "01M5WHKCHS79BZTVXXWHANY49J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WHKCHS79BZTVXXWHAG4DG5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "result": "make check exit 0 at 1d113a9",
+          "statement": "After the merge the worktree, the session's Rex tab, the local branch and the origin branch are gone, main is pulled, and CI on main is waited on until green; a tab Rex no longer has counts as closed.",
+          "status": "verified",
+          "tests": "TestScripts/run-ship-change; internal/api TestShipCloseOut, TestShipCloseOutDirtyWorktree, TestShipCloseOutClosesTabs"
+        },
+        "handle": "close-out-tests",
+        "id": "01M5WHKCS2YZ3B5EKX96M7NMZV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WHKCS2YZ3B5EKX96BWSJ3X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "result": "make check exit 0 at 1d113a9",
+          "statement": "The repo's .rhiza/workflows/ship.sh runs once, after main is green, in the main checkout; without it the command reports there is nothing to ship.",
+          "status": "verified",
+          "tests": "TestScripts/run-ship-change; TestScripts/run-ship-change-fail; internal/api TestShipCommand"
+        },
+        "handle": "repo-ship-command-tests",
+        "id": "01M5WHKD0PWADHFWMYHEBKEKP0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WHKD0PWADHFWMYHE6KW2D7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "result": "make check exit 0 at 1d113a9",
+          "statement": "The change set is landed on the PR branch with the PR and its CI result written as Evidence that verifies each capability, resume-safe and refusing to land onto main.",
+          "status": "verified",
+          "tests": "TestScripts/run-ship-change; internal/api TestShipLand, TestShipLandAfterAgentLanded, TestShipLandRefusals, TestShipEvidenceHandle, TestShipEvidenceFields"
+        },
+        "handle": "land-with-evidence-tests",
+        "id": "01M5WHKD7Y22PB4S8Y0EV938RA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WHKD7Y22PB4S8Y0CTJPBXH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "Ship-change lands the change set on the PR branch after its CI passes, pushes that, waits for CI again and merges pinned to that head, so main gets the model and code in one reviewed squash.",
+          "wording": "the building agent's design, accepted by the orchestrator on PR #30 (the owner authorized it to approve plans)"
+        },
+        "handle": "ship-lands-before-merge",
+        "id": "01M5WHKDW15YK8DX5DY5TPX6MG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WHKDW15YK8DX5DY3NTMP3B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "An agent step may have an until command, as a wait step does. The step passes as soon as the session is idle at its prompt (not blocked, not working) and until exits 0; it still passes on exit 0 and fails on a non-zero exit. The session is then left open: the tab stays, and the owner can still read it. until is checked at the step's interval (default 30s) only while the session is idle; a blocked session is never passed over. In ship-change, build gets until = \"rhiza ship check --pr-open\", meaning a PR is open from cs/{slug}.",
+          "wording": "the orchestrator's ruling, under the owner's authorization to amend plans"
+        },
+        "handle": "agent-step-until",
+        "id": "01M5WJJGTMG3YS0TYDVXJ24VWS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WJJGTMG3YS0TYDVTNHMXX4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "Close-out closes the run's Rex tab after the worktree is gone, so the owner's close-out list (branches, worktree, CI on main, ship command, tab) is whole. It goes through the Rex layer from change set 3, and a missing tab is not an error.",
+          "wording": "the orchestrator's ruling, under the owner's authorization to amend plans"
+        },
+        "handle": "close-out-closes-tab",
+        "id": "01M5WJJGYJB8MCA7732KABCG6N",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WJJGYJB8MCA7732HE21C0F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "Close-out fast-forwards the main checkout (git pull --ff-only origin main) only when it is on main with no changes to tracked files; otherwise the step fails and says why.",
+          "wording": "the building agent's design, accepted by the orchestrator on PR #30 (the owner authorized it to approve plans)"
+        },
+        "handle": "close-out-fast-forwards-main",
+        "id": "01M5WJJH2DGK6848BWH230MXV4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WJJH2DGK6848BWH1S5GD3A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5TYKPAXPA4NBWNPH5WENFNK",
+        "id": "01M5WJJH9TAV2W7GT4ERW1T28Y",
+        "link": "01M5WJJH9TAV2W7GT4ENSAVYD9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WJJGTMG3YS0TYDVTNHMXX4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYKQ3V9NFPG905CN1RWR3B",
+        "id": "01M5WJJHDCGQDW11VEXMP89M69",
+        "link": "01M5WJJHDCGQDW11VEXK4ETPHJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WJJGYJB8MCA7732HE21C0F",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5TYKQ3V9NFPG905CN1RWR3B",
+        "id": "01M5WJJHH3DPER5K5CJN9NEP7V",
+        "link": "01M5WJJHH3DPER5K5CJKQEWPTB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WJJH2DGK6848BWH1S5GD3A",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SZJ03NQS0A389JF8TTMF6M",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WJJJTWXAZ7QGGSPSJ9KXNG",
+  "type": "ops",
+  "v": 1
+}
