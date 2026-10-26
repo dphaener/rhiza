@@ -82,7 +82,10 @@ func TestWorkflowFile(t *testing.T) {
 			t.Errorf("workflowFile(%q) = %q, %v; want %q", c.ref, got, err, c.want)
 		}
 	}
-	for _, ref := range []string{"", "  ", ".", ".."} {
+	if got, err := workflowFile(root, ""); err != nil || got != filepath.Join(root, ".rhiza", "workflows", "ship-change.toml") {
+		t.Errorf("workflowFile(\"\") = %q, %v; want the ship-change name", got, err)
+	}
+	for _, ref := range []string{".", ".."} {
 		_, err := workflowFile(root, ref)
 		wantExit(t, err, 2)
 	}
@@ -621,5 +624,39 @@ func TestRexReportEncoder(t *testing.T) {
 	n := rexNotice(run.Notice{Change: "CS1", Step: "build", Session: "S1", Blocked: true, Block: &run.Block{}})
 	if got := rexReports(t, string(n))[0]["msg"]; got != "CS1: build waits on you in tab S1" {
 		t.Errorf("msg with no title, tab or question = %q", got)
+	}
+}
+
+func TestResolveWorkflow(t *testing.T) {
+	root := t.TempDir()
+	for _, ref := range []string{"", "ship-change"} {
+		path, def, data, err := resolveWorkflow(root, ref)
+		if err != nil || path != "builtin:ship-change" || def.Name != "ship-change" || len(data) == 0 {
+			t.Errorf("resolveWorkflow(%q) = %q, %v, %v; want the built-in", ref, path, def, err)
+		}
+	}
+	writeWorkflow(t, root, "ship-change", twoCommands)
+	path, def, _, err := resolveWorkflow(root, "")
+	want := filepath.Join(root, ".rhiza", "workflows", "ship-change.toml")
+	if err != nil || path != want || def.Start != "one" {
+		t.Errorf("a repo file did not replace the built-in: %q, %v, %v", path, def, err)
+	}
+	_, _, _, err = resolveWorkflow(root, "nope")
+	wantExit(t, err, 2)
+	if e := AsError(err); !strings.Contains(e.Message, "ship-change") {
+		t.Errorf("error %q does not name the built-ins", e.Message)
+	}
+}
+
+func TestStepRunnerDirFallsBackToMainCheckout(t *testing.T) {
+	main, gone := t.TempDir(), filepath.Join(t.TempDir(), "gone")
+	ctx := &Ctx{Root: "/elsewhere", Git: func(args ...string) (string, error) {
+		return "worktree " + main + "\nHEAD abc\nbranch refs/heads/main\n\nworktree " + gone + "\n", nil
+	}}
+	if got := (&stepRunner{ctx: ctx, worktree: main}).dir(); got != main {
+		t.Errorf("dir with a worktree = %q; want %q", got, main)
+	}
+	if got := (&stepRunner{ctx: ctx, worktree: gone}).dir(); got != main {
+		t.Errorf("dir without a worktree = %q; want the main checkout %q", got, main)
 	}
 }

@@ -2572,13 +2572,11 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "workflow": {
-            "description": "The workflow: a .toml file (a path with a / or ending in .toml), else a name in .rhiza/workflows/<name>.toml",
+            "description": "The workflow: a .toml file (a path with a / or ending in .toml), else a name: .rhiza/workflows/<name>.toml, else a built-in; default ship-change",
             "type": "string"
           }
         },
-        "required": [
-          "workflow"
-        ],
+        "required": [],
         "type": "object"
       },
       "response": {
@@ -4283,6 +4281,351 @@ cmp stdout describe.golden.json
       },
       "summary": "Change a node's handle or fields",
       "write": true
+    },
+    {
+      "name": "ship.check",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "main": {
+            "description": "Check the CI runs on the merge commit that rhiza ship merge recorded, instead of the pull request",
+            "type": "boolean"
+          },
+          "settled": {
+            "description": "Exit 0 once every check has finished, passed or not, instead of only when all passed; records nothing (for a wait step)",
+            "type": "boolean"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "branch": {
+            "description": "The change set's branch",
+            "type": "string"
+          },
+          "change": {
+            "description": "The change set",
+            "type": "string"
+          },
+          "checks": {
+            "description": "The checks reported for the commit",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "conclusion": {
+                  "description": "How it finished, such as SUCCESS or FAILURE; empty until it has",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "The check's name",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "COMPLETED once it has finished, else its status, such as IN_PROGRESS or PENDING",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "status"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "commit": {
+            "description": "The commit checked: the PR's head, or the merge commit",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Why it did not pass, such as no open pull request",
+            "type": "string"
+          },
+          "failed": {
+            "description": "The names of the settled checks that did not pass",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "green": {
+            "description": "True if settled and every check passed (success, neutral or skipped)",
+            "type": "boolean"
+          },
+          "main": {
+            "description": "True if it checked the merge commit on main rather than the pull request",
+            "type": "boolean"
+          },
+          "passed": {
+            "description": "True if the check asked for holds: settled with --settled, else green; the command exits 1 otherwise",
+            "type": "boolean"
+          },
+          "pr": {
+            "description": "The pull request's number; 0 if none was found",
+            "type": "integer"
+          },
+          "settled": {
+            "description": "True if there is an open PR (or a merge commit) and every check on it has finished",
+            "type": "boolean"
+          },
+          "state": {
+            "description": "The pull request's state, such as OPEN or MERGED",
+            "type": "string"
+          },
+          "url": {
+            "description": "The pull request's URL",
+            "type": "string"
+          },
+          "written": {
+            "description": "True if the result was recorded in the state file for the next steps",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "branch",
+          "change",
+          "checks",
+          "green",
+          "passed",
+          "settled"
+        ],
+        "type": "object"
+      },
+      "summary": "Check that a change set's pull request, or main after its merge, has every CI check passed",
+      "write": false
+    },
+    {
+      "name": "ship.close-out",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "branch": {
+            "description": "The change set's branch",
+            "type": "string"
+          },
+          "change": {
+            "description": "The change set",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Why main was not updated",
+            "type": "string"
+          },
+          "main": {
+            "description": "The main checkout close-out worked from",
+            "type": "string"
+          },
+          "main_updated": {
+            "description": "True if main was fast-forwarded from origin; the command exits 1 otherwise",
+            "type": "boolean"
+          },
+          "steps": {
+            "description": "Each thing close-out does, in order, with how it went",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "detail": {
+                  "description": "Why it failed",
+                  "type": "string"
+                },
+                "result": {
+                  "description": "done, already (nothing was left to do) or failed",
+                  "type": "string"
+                },
+                "step": {
+                  "description": "What: remove-worktree, delete-branch, delete-remote-branch or update-main",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result",
+                "step"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "worktree": {
+            "description": "The change set's worktree",
+            "type": "string"
+          }
+        },
+        "required": [
+          "branch",
+          "change",
+          "main",
+          "main_updated",
+          "steps",
+          "worktree"
+        ],
+        "type": "object"
+      },
+      "summary": "After the merge, remove a change set's worktree and branch, locally and on origin, and fast-forward main",
+      "write": false
+    },
+    {
+      "name": "ship.command",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dir": {
+            "description": "The folder it ran in",
+            "type": "string"
+          },
+          "exit": {
+            "description": "Its exit code; the command exits with it",
+            "type": "integer"
+          },
+          "ran": {
+            "description": "False if the repo has no ship command",
+            "type": "boolean"
+          },
+          "script": {
+            "description": "The ship command's path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dir",
+          "exit",
+          "ran",
+          "script"
+        ],
+        "type": "object"
+      },
+      "summary": "Run the repo's own ship command, .rhiza/workflows/ship.sh, in the main checkout",
+      "write": false
+    },
+    {
+      "name": "ship.land",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change": {
+            "description": "The change set",
+            "type": "string"
+          },
+          "commit": {
+            "description": "The commit made on the PR branch; empty if nothing was staged",
+            "type": "string"
+          },
+          "evidence": {
+            "description": "The Evidence node's handle",
+            "type": "string"
+          },
+          "evidence_change": {
+            "description": "The change set the Evidence was written into: the change set itself, or a record change set when it had already landed",
+            "type": "string"
+          },
+          "evidence_written": {
+            "description": "True if this call wrote the Evidence; false if an earlier one had",
+            "type": "boolean"
+          },
+          "landed": {
+            "description": "True if this call landed the change set; false if it had already landed",
+            "type": "boolean"
+          },
+          "pr": {
+            "description": "The pull request recorded",
+            "type": "integer"
+          },
+          "pushed": {
+            "description": "The head pushed to the PR branch; empty if nothing needed pushing",
+            "type": "string"
+          },
+          "rendered": {
+            "description": "The rendered files written or removed",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "verifies": {
+            "description": "The capabilities the Evidence verifies: those the change set creates or changes",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "change",
+          "evidence",
+          "evidence_written",
+          "landed",
+          "pr",
+          "rendered",
+          "verifies"
+        ],
+        "type": "object"
+      },
+      "summary": "Record a change set's passed pull request as Evidence, land the change set, render, and commit and push it to the PR branch",
+      "write": true
+    },
+    {
+      "name": "ship.merge",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "already_merged": {
+            "description": "True if an earlier ship merge had merged it and recorded the merge commit",
+            "type": "boolean"
+          },
+          "change": {
+            "description": "The change set",
+            "type": "string"
+          },
+          "head": {
+            "description": "The head commit the merge was pinned to",
+            "type": "string"
+          },
+          "merge_commit": {
+            "description": "The squash commit on main",
+            "type": "string"
+          },
+          "pr": {
+            "description": "The pull request merged",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "change",
+          "head",
+          "merge_commit",
+          "pr"
+        ],
+        "type": "object"
+      },
+      "summary": "Squash merge a change set's pull request, pinned to the head whose checks passed",
+      "write": false
     },
     {
       "name": "show",

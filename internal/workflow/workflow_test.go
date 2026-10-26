@@ -3,6 +3,7 @@ package workflow
 import (
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -320,5 +321,53 @@ func TestAgentPrompt(t *testing.T) {
 	got := d.Steps["build"].RenderPrompt(PromptVars{Change: "01ABC", Slug: "runs", Title: "Runs", Run: "r1", Step: "build"})
 	if want := "/shipit:go 01ABC runs Runs r1 build {x"; got != want {
 		t.Errorf("RenderPrompt = %q, want %q", got, want)
+	}
+}
+
+func TestBuiltinsParse(t *testing.T) {
+	names := BuiltinNames()
+	if len(names) == 0 {
+		t.Fatal("no built-in workflows")
+	}
+	for _, n := range names {
+		data, ok := Builtin(n)
+		if !ok {
+			t.Fatalf("Builtin(%q) not found", n)
+		}
+		def, err := Parse(n, data)
+		if err != nil {
+			t.Errorf("built-in %q does not parse: %v", n, err)
+			continue
+		}
+		if def.Name != n {
+			t.Errorf("built-in %q is named %q", n, def.Name)
+		}
+	}
+	if _, ok := Builtin("nope"); ok {
+		t.Error("Builtin(nope) found")
+	}
+	if _, ok := Builtin("../x"); ok {
+		t.Error("Builtin(../x) found")
+	}
+}
+
+func TestShipChangeBuiltin(t *testing.T) {
+	data, ok := Builtin("ship-change")
+	if !ok {
+		t.Fatal("no ship-change built-in")
+	}
+	def, err := Parse("ship-change", data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	build := def.Steps["build"]
+	for _, want := range []string{"shipit", "rhiza slice --change {change}"} {
+		if !strings.Contains(build.Prompt, want) {
+			t.Errorf("build prompt lacks %q", want)
+		}
+	}
+	want := []string{"build", "wait-pr", "pr-green", "land", "wait-landed", "landed-green", "merge", "wait-main", "main-green", "close-out", "ship"}
+	if !slices.Equal(def.Order, want) {
+		t.Errorf("steps = %v; want %v", def.Order, want)
 	}
 }
