@@ -622,6 +622,34 @@ func rexWindowArgs(tab session.Tab, worktree, self, sid string) []string {
 	return append(args, tab.Title, "-c", worktree, "--json", "--", self, "session", "run", sid)
 }
 
+// rexCloseArgs is the argv after "rex" that closes the session's tab.
+func rexCloseArgs(tab session.Tab) []string {
+	args := []string{"window", "close"}
+	if tab.Session != "" {
+		args = append(args, "-s", tab.Session)
+	}
+	return append(args, tab.Window)
+}
+
+// closeSessionTab closes rec's tab in Rex, running rex in dir. It reports
+// false, with no error, when the record has no tab or Rex no longer has
+// it: a missing tab is already closed.
+func closeSessionTab(ctx *Ctx, rec session.Record, dir string) (bool, error) {
+	if rec.Tab.Window == "" {
+		return false, nil
+	}
+	if ctx.Exec == nil {
+		return false, Errorf("closing a Rex tab needs rex, and no programs can be run here")
+	}
+	if _, err := ctx.Exec("rex", rexCloseArgs(rec.Tab), dir, nil); err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			return false, nil
+		}
+		return false, Errorf("close tab %s: %v", rec.Tab.Window, err)
+	}
+	return true, nil
+}
+
 // parseRexWindow reads the window and first block from the JSON of
 // `rex window new --json` into tab.
 func parseRexWindow(tab session.Tab, out []byte) (session.Tab, error) {

@@ -82,7 +82,7 @@ const maxRunIDDraws = 100
 // RunStartRequest starts a run of a workflow on a change set.
 type RunStartRequest struct {
 	Change         string `json:"change,omitempty" arg:"0" desc:"The change set: a full ID or a unique prefix of 4+ characters; default --change, else the current one"`
-	Workflow       string `json:"workflow" desc:"The workflow: a .toml file (a path with a / or ending in .toml), else a name in .rhiza/workflows/<name>.toml"`
+	Workflow       string `json:"workflow,omitempty" desc:"The workflow: a .toml file (a path with a / or ending in .toml), else a name: .rhiza/workflows/<name>.toml, else a built-in; default ship-change"`
 	PermissionMode string `json:"permission_mode,omitempty" desc:"The permission mode of agent steps that set none; modes that bypass the agent's permission checks are refused"`
 	Agent          string `json:"agent,omitempty" desc:"The agent adapter of agent steps that name none; default the built-in default adapter"`
 	NoWait         bool   `json:"no_wait,omitempty" desc:"Stop at a wait step whose condition does not hold yet, instead of waiting; resume the run later"`
@@ -156,11 +156,7 @@ func (r RunResponse) ExitCode() int {
 // journal and runs it in the foreground. A dry run writes and runs nothing.
 func runRunStart(ctx *Ctx, req any) (any, error) {
 	r := req.(RunStartRequest)
-	path, err := workflowFile(ctx.Root, r.Workflow)
-	if err != nil {
-		return nil, err
-	}
-	def, data, err := loadWorkflow(path, r.Workflow)
+	path, def, data, err := resolveWorkflow(ctx.Root, r.Workflow)
 	if err != nil {
 		return nil, err
 	}
@@ -305,13 +301,20 @@ func readRun(rs *run.Store, ref string) (run.Journal, error) {
 	return j, nil
 }
 
+// defaultWorkflow is the workflow a run starts when none is named.
+const defaultWorkflow = "ship-change"
+
+// builtinPrefix starts the WorkflowPath of a run of a built-in workflow.
+const builtinPrefix = "builtin:"
+
 // workflowFile is the file ref names: a path when it has a separator or
 // ends in .toml (made absolute against the working directory, as apply
-// reads its file), else <root>/.rhiza/workflows/<ref>.toml.
+// reads its file), else <root>/.rhiza/workflows/<ref>.toml. An empty ref
+// names the default workflow.
 func workflowFile(root, ref string) (string, error) {
 	ref = strings.TrimSpace(ref)
 	if ref == "" {
-		return "", Usagef("run start needs --workflow: a workflow name or a .toml file").WithNext(runStartNext)
+		ref = defaultWorkflow
 	}
 	if strings.ContainsRune(ref, '/') || strings.ContainsRune(ref, filepath.Separator) || strings.HasSuffix(ref, ".toml") {
 		abs, err := filepath.Abs(ref)
@@ -324,6 +327,46 @@ func workflowFile(root, ref string) (string, error) {
 		return "", Usagef("workflow %q is not a workflow name", ref).WithNext(runStartNext)
 	}
 	return filepath.Join(root, filepath.FromSlash(workflowsDir), ref+".toml"), nil
+}
+
+// isWorkflowPath reports whether ref names a file rather than a workflow.
+func isWorkflowPath(ref string) bool {
+	return strings.ContainsRune(ref, '/') || strings.ContainsRune(ref, filepath.Separator) || strings.HasSuffix(ref, ".toml")
+}
+
+// resolveWorkflow finds the workflow ref names and returns the path to
+// record in the journal (the file, or builtin:<name> for an embedded
+// one), its definition and its source. A bare name resolves to the repo's
+// .rhiza/workflows/<name>.toml when that exists, so a repo replaces a
+// built-in by name, else to the built-in of that name.
+func resolveWorkflow(root, ref string) (string, *workflow.Definition, []byte, error) {
+	ref = strings.TrimSpace(ref)
+	if ref == "" {
+		ref = defaultWorkflow
+	}
+	path, err := workflowFile(root, ref)
+	if err != nil {
+		return "", nil, nil, err
+	}
+	if !isWorkflowPath(ref) {
+		if _, statErr := os.Stat(path); errors.Is(statErr, fs.ErrNotExist) {
+			data, ok := workflow.Builtin(ref)
+			if !ok {
+				return "", nil, nil, Usagef("no workflow %q: %s does not exist and there is no built-in of that name (built-in: %s)",
+					ref, path, strings.Join(workflow.BuiltinNames(), ", ")).WithNext(runStartNext)
+			}
+			def, err := workflow.Parse(ref, data)
+			if err != nil {
+				return "", nil, nil, Errorf("built-in workflow %s: %v", ref, err)
+			}
+			return builtinPrefix + ref, def, data, nil
+		}
+	}
+	def, data, err := loadWorkflow(path, ref)
+	if err != nil {
+		return "", nil, nil, err
+	}
+	return path, def, data, nil
 }
 
 // loadWorkflow reads and validates the workflow at path. A missing file
@@ -477,11 +520,28 @@ func (r *stepRunner) Holds(step workflow.Step, env []string) (bool, error) {
 	return code == 0, err
 }
 
+// dir is where command and wait steps run: the worktree, or the main
+// checkout once the worktree is gone. The close-out step removes the
+// worktree, so the steps after it run in the main checkout.
+func (r *stepRunner) dir() string {
+	if _, err := os.Stat(r.worktree); err == nil {
+		return r.worktree
+	}
+	if out, err := r.ctx.Git("worktree", "list", "--porcelain"); err == nil {
+		for _, line := range strings.Split(out, "\n") {
+			if p, ok := strings.CutPrefix(line, "worktree "); ok {
+				return p
+			}
+		}
+	}
+	return r.ctx.Root
+}
+
 // sh runs cmd with `sh -c` in the worktree, env laid over the caller's,
 // copying its standard output to out (nil discards it), and returns its
 // exit code. Only failing to run it is an error.
 func (r *stepRunner) sh(cmd string, env []string, out io.Writer) (int, error) {
-	p, err := r.ctx.Start(Program{Name: "sh", Args: []string{"-c", cmd}, Dir: r.worktree, Env: env})
+	p, err := r.ctx.Start(Program{Name: "sh", Args: []string{"-c", cmd}, Dir: r.dir(), Env: env})
 	if err != nil {
 		return 0, fmt.Errorf("start sh -c %q: %v", cmd, err)
 	}
@@ -520,14 +580,15 @@ func (r *stepRunner) StartAgent(step workflow.Step, _ []string) (string, error) 
 // AgentStatus reads the session's record: it is done once its process
 // has exited (exit-is-final), with pass for exit 0, else fail. Until then
 // it is blocked while its resolved report is blocked, on that report's
-// kind and detail, in the record's tab.
+// kind and detail, in the record's tab, and idle while it resolves to idle.
 func (r *stepRunner) AgentStatus(sid string) (run.AgentStatus, error) {
 	rec, err := readSession(r.sessions, sid)
 	if err != nil {
 		return run.AgentStatus{}, err
 	}
 	if !rec.Status.Exited() {
-		return run.AgentStatus{Blocked: recordBlock(rec)}, nil
+		rep, _ := session.Resolve(rec)
+		return run.AgentStatus{Blocked: recordBlock(rec), Idle: rep.State == session.StateIdle}, nil
 	}
 	x := rec.Status.Exit
 	switch {
