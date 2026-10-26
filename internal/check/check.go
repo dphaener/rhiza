@@ -40,11 +40,14 @@
 //   - evidence-actor warns once on each live Evidence with a live as-is
 //     verifies link to a capability when the Evidence's actor (the actor of
 //     its create, model.CreatedBy) is named, by handle or ID, in an Actor:
-//     trailer of a commit whose Change: trailers name the change set that
-//     created the capability and whose Leaf: trailers, if it has any, name
-//     the capability by handle or ID: whoever wrote a leaf's code should not
-//     be the one to verify it. The finding names the oldest such commit.
-//     Without git (Input.Commits nil) the rule is skipped silently.
+//     trailer of a commit that changes a file outside .rhiza/, whose
+//     Change: trailers name the change set that created the capability and
+//     whose Leaf: trailers, if it has any, name the capability by handle or
+//     ID: whoever wrote a leaf's code should not be the one to verify it. A
+//     commit of model writes alone is not a leaf's code, so its caller lists
+//     only commits that change a file outside .rhiza/ (Input.Commits). The
+//     finding names the oldest such commit. Without git (Input.Commits nil)
+//     the rule is skipped silently.
 //   - render fails on each rendered file that differs from what
 //     render.Render writes, is missing or is extra, and on a missing
 //     rendered folder.
@@ -123,8 +126,10 @@ type Input struct {
 	Skipped string
 	// Base are the log entries at Rev, Current those in the work tree.
 	Base, Current []Entry
-	// Commits are the commits of HEAD's history, newest first as git log
-	// lists them. Nil means no git, and the evidence-actor rule is skipped.
+	// Commits are the commits of HEAD's history that change a file outside
+	// .rhiza/, newest first as git log lists them; a commit of model writes
+	// alone is not listed. Nil means no git, and the evidence-actor rule is
+	// skipped.
 	Commits []Commit
 }
 

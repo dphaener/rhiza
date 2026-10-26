@@ -396,7 +396,9 @@ func TestParseTrailerLog(t *testing.T) {
 }
 
 func TestGitCommits(t *testing.T) {
-	logArgs := "log --format=" + trailerLogFormat + " HEAD"
+	// Only commits that change a file outside the store folder, anywhere
+	// in the repository, and on every branch merged in.
+	logArgs := "log --full-history --format=" + trailerLogFormat + " HEAD -- :/ :(exclude).rhiza"
 	if got := gitCommits(nil); got != nil {
 		t.Errorf("no git: %+v", got)
 	}

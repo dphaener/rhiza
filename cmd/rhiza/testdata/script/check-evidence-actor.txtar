@@ -1,12 +1,14 @@
 # check's evidence-actor rule warns when the actor that wrote Evidence
 # verifying a capability is named in an Actor: trailer of a commit carrying
-# the Change: trailer of the change set that added the capability. It only
-# warns, so check still exits 0. Commit hashes depend on the clock, so they
+# the Change: trailer of the change set that added the capability and
+# changes a file outside .rhiza/: a commit of model writes alone is not a
+# leaf's code. It only warns, so check still exits 0. Commit hashes depend on the clock, so they
 # are matched by pattern; IDs are deterministic, so every folder below gets
 # the same change set 01M5PWGQ8GB4618G4RH79NNPGS for capability leaf. Each
 # project gets its own folder: none sits below another's .rhiza.
 
-# The builder wrote the leaf's code and its Evidence: one warning.
+# The builder wrote the leaf's code and its Evidence: one warning. The
+# commit changes both .rhiza/ and code, and counts.
 mkdir builder
 cd builder
 exec git init -q
@@ -15,6 +17,7 @@ exec rhiza add actor builder --record
 exec rhiza add actor verifier --record
 exec rhiza add capability leaf --field 'statement=Does the thing' --record --json
 stdout '"change_set": "01M5PWGQ8GB4618G4RH79NNPGS"'
+cp $WORK/leaf.go leaf.go
 exec git add -A
 exec git commit -qF $WORK/msg-builder.txt
 env RHIZA_ACTOR=builder
@@ -50,6 +53,7 @@ exec rhiza add actor builder --record
 exec rhiza add actor verifier --record
 exec rhiza add capability leaf --field 'statement=Does the thing' --record --json
 stdout '"change_set": "01M5PWGQ8GB4618G4RH79NNPGS"'
+cp $WORK/leaf.go leaf.go
 exec git add -A
 exec git commit -qF $WORK/msg-builder.txt
 env RHIZA_ACTOR=verifier
@@ -75,9 +79,12 @@ exec rhiza add actor builder --record
 exec rhiza add actor verifier --record
 exec rhiza add capability leaf --field 'statement=Does the thing' --record --json
 stdout '"change_set": "01M5PWGQ8GB4618G4RH79NNPGS"'
+cp $WORK/leaf.go leaf.go
 exec git add -A
 exec git commit -qF $WORK/msg-no-actor.txt
-exec git commit -q --allow-empty -F $WORK/msg-other-leaf.txt
+cp $WORK/other.go other.go
+exec git add -A
+exec git commit -qF $WORK/msg-other-leaf.txt
 env RHIZA_ACTOR=builder
 exec rhiza add evidence leaf-ok --field 'statement=leaf does the thing' --field result=PASS --record
 exec rhiza link leaf-ok verifies leaf --record
@@ -88,10 +95,48 @@ exec git commit -qm evidence
 exec rhiza check --json
 stdout '"ok": true'
 ! stdout 'evidence-actor'
-exec git commit -q --allow-empty -F $WORK/msg-this-leaf.txt
+cp $WORK/leaf2.go leaf.go
+exec git add -A
+exec git commit -qF $WORK/msg-this-leaf.txt
 exec rhiza check --json
 stdout -count=1 '"rule": "evidence-actor"'
 stdout '"message": "evidence leaf-ok verifies capability leaf, but its actor builder wrote that capability in commit [0-9a-f]{12}",'
+fold-ok
+
+# A commit with the builder's trailers that changes only .rhiza/ files,
+# such as ship's land commit, is model writes, not the leaf's code: no
+# warning. An empty commit changes no code either. A later code commit
+# with the same trailers counts.
+cd $WORK
+mkdir modelonly
+cd modelonly
+exec git init -q
+exec rhiza init
+exec rhiza add actor builder --record
+exec rhiza add actor verifier --record
+exec rhiza add capability leaf --field 'statement=Does the thing' --record --json
+stdout '"change_set": "01M5PWGQ8GB4618G4RH79NNPGS"'
+exec git add -A
+exec git commit -qF $WORK/msg-builder.txt
+exec git commit -q --allow-empty -F $WORK/msg-builder.txt
+env RHIZA_ACTOR=builder
+exec rhiza add evidence leaf-ok --field 'statement=leaf does the thing' --field result=PASS --record
+exec rhiza link leaf-ok verifies leaf --record
+env RHIZA_ACTOR=
+exec rhiza render
+exec git add -A
+exec git commit -qF $WORK/msg-builder.txt
+exec rhiza check --json
+stdout '"ok": true'
+! stdout 'evidence-actor'
+cp $WORK/leaf.go leaf.go
+exec git add -A
+exec git commit -qF $WORK/msg-builder.txt
+exec rhiza check --json
+stdout -count=1 '"rule": "evidence-actor"'
+stdout '"message": "evidence leaf-ok verifies capability leaf, but its actor builder wrote that capability in commit [0-9a-f]{12}",'
+exec sh -c 'h=$(git log -1 --format=%H | cut -c1-12); rhiza check --json | grep -c "in commit $h\","'
+stdout '^1$'
 fold-ok
 
 # Outside a git work tree the rule is skipped, silently.
@@ -133,3 +178,11 @@ fix: the leaf
 Change: 01M5PWGQ8GB4618G4RH79NNPGS
 Actor: builder
 Leaf: leaf
+-- leaf.go --
+package leaf
+-- leaf2.go --
+package leaf
+
+func Thing() {}
+-- other.go --
+package other

@@ -27,8 +27,11 @@ package api
 //
 // For the evidence-actor rule check reads HEAD's history once with git log,
 // each commit's hash and its Change:, Actor: and Leaf: trailers (see
-// trailerLogFormat). Outside a work tree, or with no git, the rule is
-// skipped silently; a repository with no commits yet has no commits.
+// trailerLogFormat), of only the commits that change a file outside the
+// store folder: a commit of model writes alone, such as ship's land commit
+// or a verifier's Evidence commit, is not a leaf's code. Outside a work
+// tree, or with no git, the rule is skipped silently; a repository with no
+// commits yet has no commits.
 
 import (
 	"crypto/sha1"
@@ -179,14 +182,19 @@ func inWorkTree(git func(...string) (string, error)) bool {
 const trailerLogFormat = "%H%x1f%(trailers:key=Change,key=Actor,key=Leaf,unfold,separator=%x1f)%x1e"
 
 // gitCommits is HEAD's history with its trailers, newest first, for the
-// evidence-actor rule: nil when git (nil for none) is not in a work tree,
-// so the rule is skipped. When git log fails, as on a repository with no
-// commits yet, there are no commits, and check goes on.
+// evidence-actor rule: the commits that change a file outside the store
+// folder, anywhere in the repository (":/" is its top; the exclude is
+// relative to Root, where git runs). --full-history keeps such commits on a
+// merged branch that history simplification would drop. It is nil when git
+// (nil for none) is not in a work tree, so the rule is skipped. When git
+// log fails, as on a repository with no commits yet, there are no commits,
+// and check goes on.
 func gitCommits(git func(...string) (string, error)) []check.Commit {
 	if !inWorkTree(git) {
 		return nil
 	}
-	out, err := git("log", "--format="+trailerLogFormat, "HEAD")
+	out, err := git("log", "--full-history", "--format="+trailerLogFormat, "HEAD",
+		"--", ":/", ":(exclude)"+store.Dir)
 	if err != nil {
 		return []check.Commit{}
 	}
