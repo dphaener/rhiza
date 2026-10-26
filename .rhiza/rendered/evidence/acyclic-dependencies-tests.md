@@ -18,7 +18,7 @@ go test: TestCycles, TestWouldCycle (internal/changeset), TestLinkCycle (interna
 
 ### Out
 
-- verifies [acyclic-dependencies](../capability/genesis/change-sets/acyclic-dependencies.md)
+- verifies [acyclic-dependencies](../capability/rhiza/change-sets/acyclic-dependencies.md)
 
 ## History
 

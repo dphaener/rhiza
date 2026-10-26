@@ -18,7 +18,7 @@ go test: TestCarveRefused, TestCarveDryRun (internal/api); testscript: carve-gua
 
 ### Out
 
-- verifies [carve-guards](../capability/genesis/change-sets/carve-guards.md)
+- verifies [carve-guards](../capability/rhiza/change-sets/carve-guards.md)
 
 ## History
 

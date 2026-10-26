@@ -1,6 +1,6 @@
 # lineage
 
-capability · `01M5SWRH0SFXQJK9MEZJ9DTX9K` · parent [genesis](../genesis.md)
+capability · `01M5SWRH0SFXQJK9MEZJ9DTX9K` · parent [rhiza](../rhiza.md)
 
 ## statement
 

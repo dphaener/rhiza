@@ -1,6 +1,6 @@
 # model
 
-capability · `01M5SWRGZDB2NV1W7MBBRW2HNX` · parent [genesis](../genesis.md)
+capability · `01M5SWRGZDB2NV1W7MBBRW2HNX` · parent [rhiza](../rhiza.md)
 
 ## statement
 

@@ -27,7 +27,7 @@ agent of milestone-1 task 2 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [operation-log](../capability/genesis/model/operation-log.md)
+- decided-by [operation-log](../capability/rhiza/model/operation-log.md)
 
 ## History
 

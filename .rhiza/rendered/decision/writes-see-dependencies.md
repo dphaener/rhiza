@@ -26,7 +26,7 @@ the orchestrator's proposal in the milestone-2 conversation, accepted by the own
 
 ### In
 
-- decided-by [dependent-writes](../capability/genesis/change-sets/dependent-writes.md)
+- decided-by [dependent-writes](../capability/rhiza/change-sets/dependent-writes.md)
 
 ## History
 

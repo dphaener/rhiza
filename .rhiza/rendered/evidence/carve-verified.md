@@ -18,7 +18,7 @@ go test: TestCarve (internal/api: KeepsIDs, BasesRewritten, WithChildren, ChildL
 
 ### Out
 
-- verifies [carve](../capability/genesis/change-sets/carve.md)
+- verifies [carve](../capability/rhiza/change-sets/carve.md)
 
 ## History
 

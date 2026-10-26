@@ -27,7 +27,7 @@ agent of milestone-1 task 9 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [render](../capability/genesis/integrity/render.md)
+- decided-by [render](../capability/rhiza/integrity/render.md)
 
 ## History
 

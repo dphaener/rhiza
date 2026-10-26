@@ -28,7 +28,7 @@ agent of milestone-2 change set 2 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [backlog-group](../capability/genesis/views/roadmap/backlog-group.md)
+- decided-by [backlog-group](../capability/rhiza/views/roadmap/backlog-group.md)
 
 ## History
 

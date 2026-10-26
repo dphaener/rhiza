@@ -32,7 +32,7 @@ agent of milestone-1 task 8 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [slice](../capability/genesis/views/slice.md)
+- decided-by [slice](../capability/rhiza/views/slice.md)
 
 ## History
 

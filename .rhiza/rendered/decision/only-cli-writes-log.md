@@ -27,7 +27,7 @@ the assistant's summary in the founding conversation
 
 ### In
 
-- decided-by [integrity](../capability/genesis/integrity.md)
+- decided-by [integrity](../capability/rhiza/integrity.md)
 
 ## History
 

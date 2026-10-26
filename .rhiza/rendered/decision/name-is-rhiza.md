@@ -26,7 +26,7 @@ the orchestrator's proposal in the milestone-2 conversation, accepted by the own
 
 ### In
 
-- decided-by [genesis](../capability/genesis.md)
+- decided-by [rhiza](../capability/rhiza.md)
 
 ## History
 

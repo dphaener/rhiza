@@ -1,6 +1,6 @@
 # guide
 
-capability · `01M5SWRH2T1D9HHQ2X71NNVZJ9` · parent [genesis](../genesis.md)
+capability · `01M5SWRH2T1D9HHQ2X71NNVZJ9` · parent [rhiza](../rhiza.md)
 
 ## statement
 

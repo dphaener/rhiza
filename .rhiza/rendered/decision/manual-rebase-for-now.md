@@ -27,7 +27,7 @@ the orchestrator's proposal in the milestone-2 conversation, accepted by the own
 ### In
 
 - relates-to [revised-in-place-conflicts](revised-in-place-conflicts.md) — applies manual-rebase-for-now to a dependency revised in place: the conflict shows only where fields overlap
-- decided-by [conflicts](../capability/genesis/change-sets/conflicts.md)
+- decided-by [conflicts](../capability/rhiza/change-sets/conflicts.md)
 
 ## History
 

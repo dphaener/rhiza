@@ -18,7 +18,7 @@ go test: TestStackedWrites (internal/api), TestModel/Dependencies (internal/api)
 
 ### Out
 
-- verifies [dependent-writes](../capability/genesis/change-sets/dependent-writes.md)
+- verifies [dependent-writes](../capability/rhiza/change-sets/dependent-writes.md)
 
 ## History
 

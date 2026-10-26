@@ -1,6 +1,6 @@
 # change-sets
 
-capability · `01M5SWRH04THTBE60MQHT9H1ZJ` · parent [genesis](../genesis.md)
+capability · `01M5SWRH04THTBE60MQHT9H1ZJ` · parent [rhiza](../rhiza.md)
 
 ## statement
 

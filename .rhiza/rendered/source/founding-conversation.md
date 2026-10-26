@@ -233,13 +233,13 @@ The founding conversation, with the owner
 
 ### In
 
-- derived-from [genesis](../capability/genesis.md)
-- derived-from [model](../capability/genesis/model.md)
-- derived-from [change-sets](../capability/genesis/change-sets.md)
-- derived-from [lineage](../capability/genesis/lineage.md)
-- derived-from [views](../capability/genesis/views.md)
-- derived-from [integrity](../capability/genesis/integrity.md)
-- derived-from [guide](../capability/genesis/guide.md)
+- derived-from [rhiza](../capability/rhiza.md)
+- derived-from [model](../capability/rhiza/model.md)
+- derived-from [change-sets](../capability/rhiza/change-sets.md)
+- derived-from [lineage](../capability/rhiza/lineage.md)
+- derived-from [views](../capability/rhiza/views.md)
+- derived-from [integrity](../capability/rhiza/integrity.md)
+- derived-from [guide](../capability/rhiza/guide.md)
 - derived-from [anyone-builds](../intent/anyone-builds.md)
 - derived-from [model-tells-truth](../intent/model-tells-truth.md)
 - derived-from [small-accurate-context](../intent/small-accurate-context.md)

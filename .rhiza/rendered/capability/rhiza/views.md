@@ -1,6 +1,6 @@
 # views
 
-capability · `01M5SWRH1E8SA4049QPHPK0HXW` · parent [genesis](../genesis.md)
+capability · `01M5SWRH1E8SA4049QPHPK0HXW` · parent [rhiza](../rhiza.md)
 
 ## statement
 

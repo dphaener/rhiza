@@ -26,7 +26,7 @@ the orchestrator's proposal in the milestone-2 conversation, accepted by the own
 
 ### In
 
-- decided-by [carve-dependency](../capability/genesis/change-sets/carve-dependency.md)
+- decided-by [carve-dependency](../capability/rhiza/change-sets/carve-dependency.md)
 
 ## History
 

@@ -1,6 +1,6 @@
 # integrity
 
-capability · `01M5SWRH24XWT6HVZH28QQEFYX` · parent [genesis](../genesis.md)
+capability · `01M5SWRH24XWT6HVZH28QQEFYX` · parent [rhiza](../rhiza.md)
 
 ## statement
 

@@ -27,7 +27,7 @@ agent of milestone-1 task 10 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [session-start](../capability/genesis/guide/session-start.md)
+- decided-by [session-start](../capability/rhiza/guide/session-start.md)
 
 ## History
 

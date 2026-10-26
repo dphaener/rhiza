@@ -26,7 +26,7 @@ the orchestrator's proposal in the milestone-2 conversation, accepted by the own
 
 ### In
 
-- decided-by [acyclic-dependencies](../capability/genesis/change-sets/acyclic-dependencies.md)
+- decided-by [acyclic-dependencies](../capability/rhiza/change-sets/acyclic-dependencies.md)
 
 ## History
 

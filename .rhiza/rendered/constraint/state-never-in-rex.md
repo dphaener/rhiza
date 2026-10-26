@@ -10,7 +10,7 @@ Our state never lives in Rex.
 
 ### Out
 
-- constrains [genesis](../capability/genesis.md)
+- constrains [rhiza](../capability/rhiza.md)
 - derived-from [founding-conversation](../source/founding-conversation.md)
 
 ## History

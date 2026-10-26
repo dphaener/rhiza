@@ -24,13 +24,13 @@ Shipit plan, milestone 1 task 6: the CLI frame and writes
 
 ### In
 
-- derived-from [repo-init](../capability/genesis/model/repo-init.md)
-- derived-from [current-change](../capability/genesis/change-sets/current-change.md)
-- derived-from [record-shortcut](../capability/genesis/change-sets/record-shortcut.md)
-- derived-from [model-writes](../capability/genesis/change-sets/model-writes.md)
-- derived-from [apply-files](../capability/genesis/change-sets/apply-files.md)
-- derived-from [actors](../capability/genesis/lineage/actors.md)
-- derived-from [command-schemas](../capability/genesis/guide/command-schemas.md)
+- derived-from [repo-init](../capability/rhiza/model/repo-init.md)
+- derived-from [current-change](../capability/rhiza/change-sets/current-change.md)
+- derived-from [record-shortcut](../capability/rhiza/change-sets/record-shortcut.md)
+- derived-from [model-writes](../capability/rhiza/change-sets/model-writes.md)
+- derived-from [apply-files](../capability/rhiza/change-sets/apply-files.md)
+- derived-from [actors](../capability/rhiza/lineage/actors.md)
+- derived-from [command-schemas](../capability/rhiza/guide/command-schemas.md)
 - derived-from [t6-d1-narrow-model-seam](../decision/t6-d1-narrow-model-seam.md)
 - derived-from [t6-d2-frame-writes-init-scope](../decision/t6-d2-frame-writes-init-scope.md)
 - derived-from [t6-d3-api-registry](../decision/t6-d3-api-registry.md)

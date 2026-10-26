@@ -27,8 +27,8 @@ agent of milestone-1 task 4 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [handles](../capability/genesis/model/handles.md)
-- decided-by [capability-tree](../capability/genesis/model/capability-tree.md)
+- decided-by [handles](../capability/rhiza/model/handles.md)
+- decided-by [capability-tree](../capability/rhiza/model/capability-tree.md)
 
 ## History
 

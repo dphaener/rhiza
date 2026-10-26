@@ -27,7 +27,7 @@ agent of milestone-1 task 10 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [source-add](../capability/genesis/lineage/source-add.md)
+- decided-by [source-add](../capability/rhiza/lineage/source-add.md)
 
 ## History
 

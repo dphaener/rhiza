@@ -27,7 +27,7 @@ agent of milestone-1 task 3 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [node-kinds](../capability/genesis/model/node-kinds.md)
+- decided-by [node-kinds](../capability/rhiza/model/node-kinds.md)
 
 ## History
 

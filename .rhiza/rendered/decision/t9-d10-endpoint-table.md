@@ -27,8 +27,8 @@ agent of milestone-1 task 9 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [check](../capability/genesis/integrity/check.md)
-- decided-by [typed-links](../capability/genesis/model/typed-links.md)
+- decided-by [check](../capability/rhiza/integrity/check.md)
+- decided-by [typed-links](../capability/rhiza/model/typed-links.md)
 
 ## History
 

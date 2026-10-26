@@ -24,9 +24,9 @@ Shipit plan, milestone 1 task 4: projection
 
 ### In
 
-- derived-from [capability-tree](../capability/genesis/model/capability-tree.md)
-- derived-from [conflicts](../capability/genesis/change-sets/conflicts.md)
-- derived-from [overlays](../capability/genesis/views/overlays.md)
+- derived-from [capability-tree](../capability/rhiza/model/capability-tree.md)
+- derived-from [conflicts](../capability/rhiza/change-sets/conflicts.md)
+- derived-from [overlays](../capability/rhiza/views/overlays.md)
 - derived-from [t4-d1-pure-package](../decision/t4-d1-pure-package.md)
 - derived-from [t4-d2-internal-model](../decision/t4-d2-internal-model.md)
 - derived-from [t4-d3-causal-order](../decision/t4-d3-causal-order.md)

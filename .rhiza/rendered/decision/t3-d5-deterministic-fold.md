@@ -27,7 +27,7 @@ agent of milestone-1 task 3 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [change-lifecycle](../capability/genesis/change-sets/change-lifecycle.md)
+- decided-by [change-lifecycle](../capability/rhiza/change-sets/change-lifecycle.md)
 
 ## History
 

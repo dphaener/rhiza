@@ -24,7 +24,7 @@ Shipit plan, milestone 1 task 5: the SQLite index
 
 ### In
 
-- derived-from [fast-reads](../capability/genesis/views/fast-reads.md)
+- derived-from [fast-reads](../capability/rhiza/views/fast-reads.md)
 - derived-from [t5-d1-index-scope](../decision/t5-d1-index-scope.md)
 - derived-from [t5-d2-modernc-sqlite](../decision/t5-d2-modernc-sqlite.md)
 - derived-from [t5-d3-index-location](../decision/t5-d3-index-location.md)

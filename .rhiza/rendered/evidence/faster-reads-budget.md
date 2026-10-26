@@ -18,7 +18,7 @@ go test: TestReadBudget (internal/api), the freshness tests (internal/index), De
 
 ### Out
 
-- verifies [fast-reads](../capability/genesis/views/fast-reads.md)
+- verifies [fast-reads](../capability/rhiza/views/fast-reads.md)
 
 ## History
 

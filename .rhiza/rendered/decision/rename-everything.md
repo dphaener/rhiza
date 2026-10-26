@@ -24,6 +24,10 @@ the orchestrator's proposal in the milestone-2 conversation, accepted by the own
 
 - derived-from [milestone-2-conversation](../source/milestone-2-conversation.md)
 
+### In
+
+- decided-by [rhiza](../capability/rhiza.md)
+
 ## History
 
 - `01M5TW3V7ES5JW5MYWM44RNNMS` Milestone 2 planning record, part 3: the rename to Rhiza

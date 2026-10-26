@@ -26,7 +26,7 @@ the orchestrator's proposal in the milestone-2 conversation, accepted by the own
 
 ### In
 
-- decided-by [ordered-landing](../capability/genesis/change-sets/ordered-landing.md)
+- decided-by [ordered-landing](../capability/rhiza/change-sets/ordered-landing.md)
 
 ## History
 

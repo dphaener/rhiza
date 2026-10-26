@@ -27,7 +27,7 @@ the orchestrator's proposal in the milestone-2 conversation, accepted by the own
 ### In
 
 - decided-by [milestone-2](../intent/anyone-builds/milestone-2.md)
-- decided-by [milestone-groups](../capability/genesis/views/roadmap/milestone-groups.md)
+- decided-by [milestone-groups](../capability/rhiza/views/roadmap/milestone-groups.md)
 
 ## History
 

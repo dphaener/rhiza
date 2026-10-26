@@ -28,7 +28,7 @@ agent of milestone-1 task 5 (shipit plan), accepted by the owner
 ### In
 
 - relates-to [fresh-read-by-folder-stats](fresh-read-by-folder-stats.md) — refines it: the stat fingerprint is a pre-check that skips the listing when nothing changed; names still decide freshness on any mismatch
-- decided-by [fast-reads](../capability/genesis/views/fast-reads.md)
+- decided-by [fast-reads](../capability/rhiza/views/fast-reads.md)
 
 ## History
 

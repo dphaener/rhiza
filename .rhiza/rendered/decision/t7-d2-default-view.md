@@ -32,7 +32,7 @@ agent of milestone-1 task 7 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [overlays](../capability/genesis/views/overlays.md)
+- decided-by [overlays](../capability/rhiza/views/overlays.md)
 
 ## History
 

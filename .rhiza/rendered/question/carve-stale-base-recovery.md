@@ -10,7 +10,7 @@ After a carve, how does a change set that depends on the source clear an op whos
 
 ### Out
 
-- relates-to [carve-dependency](../capability/genesis/change-sets/carve-dependency.md) — Open follow-up on the known limit of carve-dependency: a dependent's op with a base on a moved op gets a base conflict after a carve. Parked, outside change set 9's intent.
+- relates-to [carve-dependency](../capability/rhiza/change-sets/carve-dependency.md) — Open follow-up on the known limit of carve-dependency: a dependent's op with a base on a moved op gets a base conflict after a carve. Parked, outside change set 9's intent.
 
 ## History
 

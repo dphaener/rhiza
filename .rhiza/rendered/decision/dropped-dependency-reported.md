@@ -26,7 +26,7 @@ the orchestrator's proposal in the milestone-2 conversation, accepted by the own
 
 ### In
 
-- decided-by [dropped-dependencies](../capability/genesis/change-sets/dropped-dependencies.md)
+- decided-by [dropped-dependencies](../capability/rhiza/change-sets/dropped-dependencies.md)
 
 ## History
 

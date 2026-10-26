@@ -24,9 +24,9 @@ Shipit plan, milestone 1 task 2: log foundation
 
 ### In
 
-- derived-from [node-ids](../capability/genesis/model/node-ids.md)
-- derived-from [operation-log](../capability/genesis/model/operation-log.md)
-- derived-from [format-compat](../capability/genesis/model/format-compat.md)
+- derived-from [node-ids](../capability/rhiza/model/node-ids.md)
+- derived-from [operation-log](../capability/rhiza/model/operation-log.md)
+- derived-from [format-compat](../capability/rhiza/model/format-compat.md)
 - derived-from [t2-d1-library-only](../decision/t2-d1-library-only.md)
 - derived-from [t2-d2-ulid-ids](../decision/t2-d2-ulid-ids.md)
 - derived-from [t2-d3-oklog-ulid](../decision/t2-d3-oklog-ulid.md)

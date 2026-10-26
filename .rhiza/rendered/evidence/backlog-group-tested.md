@@ -10,7 +10,7 @@ go test ./internal/api (TestPlanServesNothingInBacklog, TestPlanBacklogOrder, Te
 
 ### Out
 
-- verifies [backlog-group](../capability/genesis/views/roadmap/backlog-group.md)
+- verifies [backlog-group](../capability/rhiza/views/roadmap/backlog-group.md)
 
 ## History
 

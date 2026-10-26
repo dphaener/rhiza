@@ -32,7 +32,7 @@ agent of milestone-1 task 7 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [why-walk](../capability/genesis/lineage/why-walk.md)
+- decided-by [why-walk](../capability/rhiza/lineage/why-walk.md)
 
 ## History
 

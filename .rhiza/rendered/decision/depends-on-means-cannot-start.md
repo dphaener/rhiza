@@ -26,9 +26,9 @@ the orchestrator's proposal in the milestone-2 conversation, accepted by the own
 
 ### In
 
-- decided-by [roadmap](../capability/genesis/views/roadmap.md)
-- decided-by [milestone-groups](../capability/genesis/views/roadmap/milestone-groups.md)
-- decided-by [backlog-group](../capability/genesis/views/roadmap/backlog-group.md)
+- decided-by [roadmap](../capability/rhiza/views/roadmap.md)
+- decided-by [milestone-groups](../capability/rhiza/views/roadmap/milestone-groups.md)
+- decided-by [backlog-group](../capability/rhiza/views/roadmap/backlog-group.md)
 
 ## History
 

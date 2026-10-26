@@ -27,7 +27,7 @@ agent of milestone-1 task 2 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [format-compat](../capability/genesis/model/format-compat.md)
+- decided-by [format-compat](../capability/rhiza/model/format-compat.md)
 
 ## History
 

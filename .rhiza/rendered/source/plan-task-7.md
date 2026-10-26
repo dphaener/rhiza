@@ -24,14 +24,14 @@ Shipit plan, milestone 1 task 7: the reads
 
 ### In
 
-- derived-from [why-walk](../capability/genesis/lineage/why-walk.md)
-- derived-from [change-history](../capability/genesis/lineage/change-history.md)
-- derived-from [node-show](../capability/genesis/views/node-show.md)
-- derived-from [tree-view](../capability/genesis/views/tree-view.md)
-- derived-from [node-list](../capability/genesis/views/node-list.md)
-- derived-from [roadmap](../capability/genesis/views/roadmap.md)
-- derived-from [ready-next](../capability/genesis/views/ready-next.md)
-- derived-from [paged-lists](../capability/genesis/views/paged-lists.md)
+- derived-from [why-walk](../capability/rhiza/lineage/why-walk.md)
+- derived-from [change-history](../capability/rhiza/lineage/change-history.md)
+- derived-from [node-show](../capability/rhiza/views/node-show.md)
+- derived-from [tree-view](../capability/rhiza/views/tree-view.md)
+- derived-from [node-list](../capability/rhiza/views/node-list.md)
+- derived-from [roadmap](../capability/rhiza/views/roadmap.md)
+- derived-from [ready-next](../capability/rhiza/views/ready-next.md)
+- derived-from [paged-lists](../capability/rhiza/views/paged-lists.md)
 - derived-from [t7-d1-reads-scope](../decision/t7-d1-reads-scope.md)
 - derived-from [t7-d2-default-view](../decision/t7-d2-default-view.md)
 - derived-from [t7-d3-reads-use-index](../decision/t7-d3-reads-use-index.md)

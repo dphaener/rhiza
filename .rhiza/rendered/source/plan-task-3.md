@@ -24,12 +24,12 @@ Shipit plan, milestone 1 task 3: change sets
 
 ### In
 
-- derived-from [node-kinds](../capability/genesis/model/node-kinds.md)
-- derived-from [typed-links](../capability/genesis/model/typed-links.md)
-- derived-from [handles](../capability/genesis/model/handles.md)
-- derived-from [six-operations](../capability/genesis/model/six-operations.md)
-- derived-from [change-lifecycle](../capability/genesis/change-sets/change-lifecycle.md)
-- derived-from [revisions](../capability/genesis/change-sets/revisions.md)
+- derived-from [node-kinds](../capability/rhiza/model/node-kinds.md)
+- derived-from [typed-links](../capability/rhiza/model/typed-links.md)
+- derived-from [handles](../capability/rhiza/model/handles.md)
+- derived-from [six-operations](../capability/rhiza/model/six-operations.md)
+- derived-from [change-lifecycle](../capability/rhiza/change-sets/change-lifecycle.md)
+- derived-from [revisions](../capability/rhiza/change-sets/revisions.md)
 - derived-from [t3-d1-pure-packages](../decision/t3-d1-pure-packages.md)
 - derived-from [t3-d2-stable-op-ids](../decision/t3-d2-stable-op-ids.md)
 - derived-from [t3-d3-revise-keeps-state](../decision/t3-d3-revise-keeps-state.md)

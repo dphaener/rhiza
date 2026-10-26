@@ -26,7 +26,7 @@ the assistant's summary in the founding conversation
 
 ### In
 
-- decided-by [genesis](../capability/genesis.md)
+- decided-by [rhiza](../capability/rhiza.md)
 
 ## History
 

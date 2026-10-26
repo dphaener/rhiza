@@ -27,7 +27,7 @@ agent of milestone-1 task 9 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [self-check](../capability/genesis/integrity/self-check.md)
+- decided-by [self-check](../capability/rhiza/integrity/self-check.md)
 
 ## History
 

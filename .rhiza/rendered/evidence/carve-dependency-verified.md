@@ -18,7 +18,7 @@ go test: TestCarve/ChildLeftBehind, TestCarve/DependentRests, TestCarve/Transiti
 
 ### Out
 
-- verifies [carve-dependency](../capability/genesis/change-sets/carve-dependency.md)
+- verifies [carve-dependency](../capability/rhiza/change-sets/carve-dependency.md)
 
 ## History
 

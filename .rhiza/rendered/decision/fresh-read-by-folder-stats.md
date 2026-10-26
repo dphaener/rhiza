@@ -22,7 +22,7 @@ agent of change set 01M5SWTJ, in autonomous mode
 
 ### In
 
-- decided-by [fast-reads](../capability/genesis/views/fast-reads.md)
+- decided-by [fast-reads](../capability/rhiza/views/fast-reads.md)
 
 ## History
 

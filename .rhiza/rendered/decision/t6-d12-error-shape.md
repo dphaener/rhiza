@@ -27,7 +27,7 @@ agent of milestone-1 task 6 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [command-schemas](../capability/genesis/guide/command-schemas.md)
+- decided-by [command-schemas](../capability/rhiza/guide/command-schemas.md)
 
 ## History
 

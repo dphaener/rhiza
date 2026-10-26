@@ -27,8 +27,8 @@ agent of milestone-1 task 6 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [change-lifecycle](../capability/genesis/change-sets/change-lifecycle.md)
-- decided-by [record-shortcut](../capability/genesis/change-sets/record-shortcut.md)
+- decided-by [change-lifecycle](../capability/rhiza/change-sets/change-lifecycle.md)
+- decided-by [record-shortcut](../capability/rhiza/change-sets/record-shortcut.md)
 
 ## History
 

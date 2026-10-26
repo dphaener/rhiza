@@ -27,7 +27,7 @@ agent of milestone-1 task 7 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [change-history](../capability/genesis/lineage/change-history.md)
+- decided-by [change-history](../capability/rhiza/lineage/change-history.md)
 
 ## History
 

@@ -18,7 +18,7 @@ go test: TestLogCarve (internal/api), TestCarveRoundTrip, TestCarveInvalid, Test
 
 ### Out
 
-- verifies [carve-entries](../capability/genesis/change-sets/carve-entries.md)
+- verifies [carve-entries](../capability/rhiza/change-sets/carve-entries.md)
 
 ## History
 

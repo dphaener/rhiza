@@ -26,7 +26,7 @@ the assistant's summary in the founding conversation
 
 ### In
 
-- decided-by [lineage](../capability/genesis/lineage.md)
+- decided-by [lineage](../capability/rhiza/lineage.md)
 
 ## History
 

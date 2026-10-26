@@ -27,7 +27,7 @@ agent of milestone-1 task 7 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [fast-reads](../capability/genesis/views/fast-reads.md)
+- decided-by [fast-reads](../capability/rhiza/views/fast-reads.md)
 
 ## History
 

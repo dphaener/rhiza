@@ -18,7 +18,7 @@ the orchestrator's amendment to change set 1, under the owner's authorization to
 
 ### In
 
-- decided-by [conflicts](../capability/genesis/change-sets/conflicts.md)
+- decided-by [conflicts](../capability/rhiza/change-sets/conflicts.md)
 
 ## History
 

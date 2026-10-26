@@ -27,7 +27,7 @@ agent of milestone-1 task 9 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [ci-install](../capability/genesis/integrity/ci-install.md)
+- decided-by [ci-install](../capability/rhiza/integrity/ci-install.md)
 
 ## History
 

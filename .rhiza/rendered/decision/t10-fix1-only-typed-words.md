@@ -31,8 +31,8 @@ the orchestrator's review at sign-off, applied by task 10's agent
 
 ### In
 
-- decided-by [scrubbing](../capability/genesis/lineage/scrubbing.md)
-- decided-by [skills](../capability/genesis/guide/skills.md)
+- decided-by [scrubbing](../capability/rhiza/lineage/scrubbing.md)
+- decided-by [skills](../capability/rhiza/guide/skills.md)
 
 ## History
 

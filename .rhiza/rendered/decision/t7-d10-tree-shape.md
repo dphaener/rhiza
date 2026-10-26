@@ -27,7 +27,7 @@ agent of milestone-1 task 7 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [tree-view](../capability/genesis/views/tree-view.md)
+- decided-by [tree-view](../capability/rhiza/views/tree-view.md)
 
 ## History
 

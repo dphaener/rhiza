@@ -24,7 +24,7 @@ Shipit plan, milestone 1 task 8: slice
 
 ### In
 
-- derived-from [slice](../capability/genesis/views/slice.md)
+- derived-from [slice](../capability/rhiza/views/slice.md)
 - derived-from [t8-d1-slice-shape](../decision/t8-d1-slice-shape.md)
 - derived-from [t8-d2-budget-stored-views](../decision/t8-d2-budget-stored-views.md)
 - derived-from [t8-d3-budget-printed-bytes](../decision/t8-d3-budget-printed-bytes.md)

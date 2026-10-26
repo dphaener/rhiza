@@ -1,10 +1,10 @@
-# genesis
+# rhiza
 
 capability · `01M5SWRGYQGD0QD427DMK4RTM2`
 
 ## statement
 
-Genesis keeps the model of a product, what it is, why it is that way and what is planned, inside its repo, so anyone can build quality software with agents.
+Rhiza keeps the model of a product, what it is, why it is that way and what is planned, inside its repo, so anyone can build quality software with agents.
 
 ## Links
 
@@ -22,6 +22,7 @@ Genesis keeps the model of a product, what it is, why it is that way and what is
 - decided-by [twelve-areas](../decision/twelve-areas.md)
 - decided-by [root-intents-and-constraints](../decision/root-intents-and-constraints.md)
 - decided-by [name-is-rhiza](../decision/name-is-rhiza.md)
+- decided-by [rename-everything](../decision/rename-everything.md)
 - derived-from [founding-conversation](../source/founding-conversation.md)
 
 ### In
@@ -37,3 +38,4 @@ Genesis keeps the model of a product, what it is, why it is that way and what is
 ## History
 
 - `01M5SWRGHKJKT6JZY6ZVMQEGWN` Founding record: the Sources, the root intents and constraints, and the founding decisions
+- `01M5TW3X2FX0DVZ9XZGXMQVC2Q` The rename to Rhiza: the module, repo, binary, .rhiza/ folder, RHIZA_* variables, skills, guide, cache and root handle all become rhiza, with check identifying entries by ID and bytes so the log can move.

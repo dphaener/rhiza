@@ -10,7 +10,7 @@ go test ./internal/api (TestPlanMilestonesThenBacklog, TestPlanMilestoneAndPlain
 
 ### Out
 
-- verifies [milestone-groups](../capability/genesis/views/roadmap/milestone-groups.md)
+- verifies [milestone-groups](../capability/rhiza/views/roadmap/milestone-groups.md)
 
 ## History
 

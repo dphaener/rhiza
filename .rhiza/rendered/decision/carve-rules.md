@@ -26,7 +26,7 @@ the orchestrator's proposal in the milestone-2 conversation, accepted by the own
 
 ### In
 
-- decided-by [carve-guards](../capability/genesis/change-sets/carve-guards.md)
+- decided-by [carve-guards](../capability/rhiza/change-sets/carve-guards.md)
 
 ## History
 

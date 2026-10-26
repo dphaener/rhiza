@@ -24,10 +24,10 @@ Shipit plan, milestone 1 task 9: integrity
 
 ### In
 
-- derived-from [check](../capability/genesis/integrity/check.md)
-- derived-from [render](../capability/genesis/integrity/render.md)
-- derived-from [ci-install](../capability/genesis/integrity/ci-install.md)
-- derived-from [self-check](../capability/genesis/integrity/self-check.md)
+- derived-from [check](../capability/rhiza/integrity/check.md)
+- derived-from [render](../capability/rhiza/integrity/render.md)
+- derived-from [ci-install](../capability/rhiza/integrity/ci-install.md)
+- derived-from [self-check](../capability/rhiza/integrity/self-check.md)
 - derived-from [t9-d1-render-as-is](../decision/t9-d1-render-as-is.md)
 - derived-from [t9-d2-render-explicit](../decision/t9-d2-render-explicit.md)
 - derived-from [t9-d3-check-fail-warn](../decision/t9-d3-check-fail-warn.md)

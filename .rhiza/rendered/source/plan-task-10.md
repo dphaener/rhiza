@@ -24,13 +24,13 @@ Shipit plan, milestone 1 task 10: the agent guide
 
 ### In
 
-- derived-from [source-add](../capability/genesis/lineage/source-add.md)
-- derived-from [scrubbing](../capability/genesis/lineage/scrubbing.md)
-- derived-from [agent-guide](../capability/genesis/guide/agent-guide.md)
-- derived-from [skills](../capability/genesis/guide/skills.md)
-- derived-from [guide-install](../capability/genesis/guide/guide-install.md)
-- derived-from [session-start](../capability/genesis/guide/session-start.md)
-- derived-from [guide-size-cap](../capability/genesis/guide/guide-size-cap.md)
+- derived-from [source-add](../capability/rhiza/lineage/source-add.md)
+- derived-from [scrubbing](../capability/rhiza/lineage/scrubbing.md)
+- derived-from [agent-guide](../capability/rhiza/guide/agent-guide.md)
+- derived-from [skills](../capability/rhiza/guide/skills.md)
+- derived-from [guide-install](../capability/rhiza/guide/guide-install.md)
+- derived-from [session-start](../capability/rhiza/guide/session-start.md)
+- derived-from [guide-size-cap](../capability/rhiza/guide/guide-size-cap.md)
 - derived-from [t10-d1-minimal-status](../decision/t10-d1-minimal-status.md)
 - derived-from [t10-d2-source-add-shape](../decision/t10-d2-source-add-shape.md)
 - derived-from [t10-d3-size-cap](../decision/t10-d3-size-cap.md)

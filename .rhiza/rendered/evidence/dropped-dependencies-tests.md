@@ -18,7 +18,7 @@ go test: TestRestsOn, TestRestsOnSelf (internal/changeset), TestRunRestsOn (inte
 
 ### Out
 
-- verifies [dropped-dependencies](../capability/genesis/change-sets/dropped-dependencies.md)
+- verifies [dropped-dependencies](../capability/rhiza/change-sets/dropped-dependencies.md)
 
 ## History
 

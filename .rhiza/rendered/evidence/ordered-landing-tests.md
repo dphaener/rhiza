@@ -18,7 +18,7 @@ go test: TestLandDependencies, TestLandConflict, TestLandRevisedLanded, TestLand
 
 ### Out
 
-- verifies [ordered-landing](../capability/genesis/change-sets/ordered-landing.md)
+- verifies [ordered-landing](../capability/rhiza/change-sets/ordered-landing.md)
 
 ## History
 

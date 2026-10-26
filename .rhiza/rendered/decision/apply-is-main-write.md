@@ -26,7 +26,7 @@ the assistant's summary in the founding conversation
 
 ### In
 
-- decided-by [change-sets](../capability/genesis/change-sets.md)
+- decided-by [change-sets](../capability/rhiza/change-sets.md)
 
 ## History
 

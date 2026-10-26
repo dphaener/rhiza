@@ -27,7 +27,7 @@ agent of milestone-1 task 4 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [conflicts](../capability/genesis/change-sets/conflicts.md)
+- decided-by [conflicts](../capability/rhiza/change-sets/conflicts.md)
 
 ## History
 

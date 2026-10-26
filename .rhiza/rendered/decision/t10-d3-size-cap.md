@@ -27,7 +27,7 @@ agent of milestone-1 task 10 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [guide-size-cap](../capability/genesis/guide/guide-size-cap.md)
+- decided-by [guide-size-cap](../capability/rhiza/guide/guide-size-cap.md)
 
 ## History
 

@@ -27,7 +27,7 @@ agent of milestone-1 task 6 (shipit plan), accepted by the owner
 
 ### In
 
-- decided-by [model-writes](../capability/genesis/change-sets/model-writes.md)
+- decided-by [model-writes](../capability/rhiza/change-sets/model-writes.md)
 
 ## History
 
