@@ -24,6 +24,11 @@ package api
 // not an entry and deleting it passes the rule. Comparing blob IDs assumes
 // no content filter on log files (none in .gitattributes) and a SHA-1
 // object format.
+//
+// For the evidence-actor rule check reads HEAD's history once with git log,
+// each commit's hash and its Change:, Actor: and Leaf: trailers (see
+// trailerLogFormat). Outside a work tree, or with no git, the rule is
+// skipped silently; a repository with no commits yet has no commits.
 
 import (
 	"crypto/sha1"
@@ -63,13 +68,13 @@ type CheckResponse struct {
 	Base        string         `json:"base" desc:"The git revision the append-only rule compared against; empty when it was skipped"`
 	MergeBaseOf string         `json:"merge_base_of,omitempty" desc:"The ref whose merge-base with HEAD is the default base; absent with --base"`
 	Skipped     string         `json:"skipped,omitempty" desc:"Why the append-only rule was skipped, if it was"`
-	Findings    []CheckFinding `json:"findings" desc:"Every finding, sorted by rule (log, fold, model, in-flight, link, render, append-only), then path and IDs"`
+	Findings    []CheckFinding `json:"findings" desc:"Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, render, append-only), then path and IDs"`
 }
 
 // CheckFinding is one thing check found.
 type CheckFinding struct {
 	Severity  string `json:"severity" enum:"fail,warn" desc:"fail makes the check fail; warn does not"`
-	Rule      string `json:"rule" enum:"log,fold,model,in-flight,link,render,append-only" desc:"The rule that found it"`
+	Rule      string `json:"rule" enum:"log,fold,model,in-flight,link,depends-on,evidence-actor,render,append-only" desc:"The rule that found it"`
 	Path      string `json:"path,omitempty" desc:"The file, relative to the project root"`
 	ChangeSet string `json:"change_set,omitempty" desc:"The change set's ID"`
 	Entry     string `json:"entry,omitempty" desc:"The entry's ID"`
@@ -118,6 +123,7 @@ func runCheck(ctx *Ctx, req any) (any, error) {
 			return nil, Errorf("read the log: %v", err)
 		}
 	}
+	in.Commits = gitCommits(ctx.Git)
 	rep := check.Run(in)
 	resp := CheckResponse{OK: rep.OK, Base: rep.Base, MergeBaseOf: from, Skipped: skipped,
 		Findings: make([]CheckFinding, 0, len(rep.Findings))}
@@ -132,10 +138,7 @@ func runCheck(ctx *Ctx, req any) (any, error) {
 // from is the ref the default came from; skipped says why there is no
 // base. An explicit base that does not resolve is a usage error.
 func checkBase(git func(...string) (string, error), base string) (rev, from, skipped string, err error) {
-	if git == nil {
-		return "", "", "not a git work tree", nil
-	}
-	if out, err := git("rev-parse", "--is-inside-work-tree"); err != nil || strings.TrimSpace(out) != "true" {
+	if !inWorkTree(git) {
 		return "", "", "not a git work tree", nil
 	}
 	resolves := func(r string) bool {
@@ -159,6 +162,65 @@ func checkBase(git func(...string) (string, error), base string) (rev, from, ski
 		}
 	}
 	return "", "", "no base: none of " + strings.Join(baseCandidates, ", ") + " resolves", nil
+}
+
+// inWorkTree reports whether git (nil for none) runs inside a work tree.
+func inWorkTree(git func(...string) (string, error)) bool {
+	if git == nil {
+		return false
+	}
+	out, err := git("rev-parse", "--is-inside-work-tree")
+	return err == nil && strings.TrimSpace(out) == "true"
+}
+
+// trailerLogFormat has git log write, per commit, its hash and then each
+// Change:, Actor: and Leaf: trailer as "Key: value", unfolded, all
+// separated by US (0x1f) and the commit ended by RS (0x1e).
+const trailerLogFormat = "%H%x1f%(trailers:key=Change,key=Actor,key=Leaf,unfold,separator=%x1f)%x1e"
+
+// gitCommits is HEAD's history with its trailers, newest first, for the
+// evidence-actor rule: nil when git (nil for none) is not in a work tree,
+// so the rule is skipped. When git log fails, as on a repository with no
+// commits yet, there are no commits, and check goes on.
+func gitCommits(git func(...string) (string, error)) []check.Commit {
+	if !inWorkTree(git) {
+		return nil
+	}
+	out, err := git("log", "--format="+trailerLogFormat, "HEAD")
+	if err != nil {
+		return []check.Commit{}
+	}
+	return parseTrailerLog(out)
+}
+
+// parseTrailerLog parses git log output in trailerLogFormat. Trailer keys
+// match case-insensitively, as git's do; values are trimmed and empty ones
+// dropped. The result is never nil.
+func parseTrailerLog(out string) []check.Commit {
+	cs := []check.Commit{}
+	for _, rec := range strings.Split(out, "\x1e") {
+		fields := strings.Split(strings.TrimSpace(rec), "\x1f")
+		if fields[0] == "" {
+			continue
+		}
+		c := check.Commit{Hash: fields[0]}
+		for _, f := range fields[1:] {
+			k, v, ok := strings.Cut(f, ":")
+			if v = strings.TrimSpace(v); !ok || v == "" {
+				continue
+			}
+			switch strings.ToLower(strings.TrimSpace(k)) {
+			case "change":
+				c.Changes = append(c.Changes, v)
+			case "actor":
+				c.Actors = append(c.Actors, v)
+			case "leaf":
+				c.Leaves = append(c.Leaves, v)
+			}
+		}
+		cs = append(cs, c)
+	}
+	return cs
 }
 
 // logAt lists the log entries at git revision rev: one ls-tree of the

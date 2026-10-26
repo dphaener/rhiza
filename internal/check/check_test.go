@@ -55,6 +55,8 @@ type set struct {
 	r    *repo
 	id   id.ID
 	last id.ID
+	// by is the actor of the set's entries; zero means actor.
+	by id.ID
 }
 
 func (r *repo) open(kind changeset.Kind, intent string) *set {
@@ -71,6 +73,15 @@ func (r *repo) record(intent string, ops ...op.Op) *set {
 	return s
 }
 
+// recordBy is record with every entry written by actor who.
+func (r *repo) recordBy(who id.ID, intent string, ops ...op.Op) *set {
+	s := &set{r: r, id: r.next(), by: who}
+	s.add(changeset.Open{Kind: changeset.KindRecord, Intent: intent}, nil)
+	s.then(changeset.Ops{Ops: ops})
+	s.then(changeset.Land{})
+	return s
+}
+
 // then adds body after the last entry added.
 func (s *set) then(b changeset.Body) id.ID { return s.add(b, []id.ID{s.last}) }
 
@@ -81,7 +92,11 @@ func (s *set) add(b changeset.Body, after []id.ID) id.ID {
 	if err != nil {
 		s.r.t.Fatal(err)
 	}
-	e := entry.Entry{V: changeset.EntryVersion(b), ID: s.r.next(), ChangeSet: s.id, Actor: actor, For: actor,
+	who := actor
+	if !s.by.IsZero() {
+		who = s.by
+	}
+	e := entry.Entry{V: changeset.EntryVersion(b), ID: s.r.next(), ChangeSet: s.id, Actor: who, For: who,
 		At: time.Date(2026, 10, 24, 12, 0, 0, 0, time.UTC), After: after, Type: b.Type(), Body: body}
 	data, err := entry.Encode(e)
 	if err != nil {
@@ -398,9 +413,13 @@ func TestRunOrder(t *testing.T) {
 	la := r.open(changeset.KindIntention, "Loop A")
 	lb := r.open(changeset.KindIntention, "Loop B")
 	r.record("Loop", dependsOn(r, la.id, lb.id), dependsOn(r, lb.id, la.id))
+	leaf, ev := r.next(), r.next()
+	leafSet := r.record("Leaf", mkNode(r.next(), leaf, op.KindCapability, "leaf"))
+	r.record("Verify", mkNode(r.next(), ev, op.KindEvidence, "seen"), mkLink(r.next(), r.next(), op.LinkVerifies, ev, leaf))
 	in := r.input()
 	in.Rendered = nil
 	in.Skipped = "no git"
+	in.Commits = []Commit{{Hash: "abc", Changes: []string{leafSet.id.String()}, Actors: []string{actor.String()}}}
 
 	rep := Run(in)
 	var rules []string
@@ -408,7 +427,8 @@ func TestRunOrder(t *testing.T) {
 		rules = append(rules, f.Rule)
 	}
 	rules = slices.Compact(rules)
-	want := []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleRender, RuleAppendOnly}
+	want := []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleEvidenceActor,
+		RuleRender, RuleAppendOnly}
 	if !reflect.DeepEqual(rules, want) {
 		t.Fatalf("rules %q, want %q\n%+v", rules, want, rep.Findings)
 	}
@@ -770,6 +790,130 @@ func TestRunCapabilityLoop(t *testing.T) {
 		rep := Run(r.input())
 		if fs := ofRule(rep, RuleDependsOn); len(fs) != 0 || !rep.OK {
 			t.Errorf("depends-on findings %+v\nall %+v", fs, rep.Findings)
+		}
+	})
+}
+
+// The actors of the evidence-actor fixture, each recorded as an actor node
+// whose ID is the actor ID its entries carry.
+var (
+	builder  = fid(9001)
+	verifier = fid(9002)
+)
+
+// evidenceRepo lands actors builder and verifier, capabilities leaf and
+// other in change set cs, then Evidence ev verifying leaf over link l,
+// written by who. ev's create op is evOp and l's evLinkOp.
+type evidenceRepo struct {
+	r                                   *repo
+	cs, leaf, ev, l, evOp, evLinkOp, by id.ID
+}
+
+func newEvidenceRepo(t *testing.T, who id.ID) evidenceRepo {
+	r := newRepo(t)
+	clean(r)
+	r.record("Actors", mkNode(r.next(), builder, op.KindActor, "builder"),
+		mkNode(r.next(), verifier, op.KindActor, "verifier"))
+	x := evidenceRepo{r: r, leaf: r.next(), by: who}
+	x.cs = r.record("Leaf", mkNode(r.next(), x.leaf, op.KindCapability, "leaf"),
+		mkNode(r.next(), r.next(), op.KindCapability, "other")).id
+	x.ev, x.l, x.evOp, x.evLinkOp = r.next(), r.next(), r.next(), r.next()
+	r.recordBy(who, "Verify", mkNode(x.evOp, x.ev, op.KindEvidence, "leaf-verified"),
+		mkLink(x.evLinkOp, x.l, op.LinkVerifies, x.ev, x.leaf))
+	return x
+}
+
+func TestRunEvidenceActor(t *testing.T) {
+	const hash = "0123456789abcdef0123456789abcdef01234567"
+	commit := func(cs id.ID, actors, leaves []string) Commit {
+		return Commit{Hash: hash, Changes: []string{cs.String()}, Actors: actors, Leaves: leaves}
+	}
+	t.Run("Builder", func(t *testing.T) {
+		x := newEvidenceRepo(t, builder)
+		in := x.r.input()
+		in.Commits = []Commit{commit(x.cs, []string{"builder"}, nil)}
+		rep := Run(in)
+		fs := ofRule(rep, RuleEvidenceActor)
+		want := Finding{Severity: SeverityWarn, Rule: RuleEvidenceActor, ChangeSet: x.cs.String(), Link: x.l.String(),
+			Message: "evidence leaf-verified verifies capability leaf, but its actor builder wrote that " +
+				"capability in commit 0123456789ab",
+			Next: "rhiza show leaf-verified"}
+		if len(fs) != 1 || fs[0] != want {
+			t.Fatalf("evidence-actor findings %+v, want %+v\nall %+v", fs, want, rep.Findings)
+		}
+		if !rep.OK {
+			t.Errorf("not OK on a warning: %+v", rep.Findings)
+		}
+	})
+	cases := []struct {
+		name    string
+		who     id.ID
+		commits func(x evidenceRepo) []Commit
+		want    int
+	}{
+		{"OtherActor", verifier, func(x evidenceRepo) []Commit {
+			return []Commit{commit(x.cs, []string{"builder"}, nil)}
+		}, 0},
+		{"NoActor", builder, func(x evidenceRepo) []Commit { return []Commit{commit(x.cs, nil, nil)} }, 0},
+		{"OtherChange", builder, func(x evidenceRepo) []Commit {
+			return []Commit{commit(x.ev, []string{"builder"}, nil)}
+		}, 0},
+		{"OtherLeaf", builder, func(x evidenceRepo) []Commit {
+			return []Commit{commit(x.cs, []string{"builder"}, []string{"other"})}
+		}, 0},
+		{"ThisLeaf", builder, func(x evidenceRepo) []Commit {
+			return []Commit{commit(x.cs, []string{"builder"}, []string{"other", "leaf"})}
+		}, 1},
+		{"ThisLeafByID", builder, func(x evidenceRepo) []Commit {
+			return []Commit{commit(x.cs, []string{"builder"}, []string{x.leaf.String()})}
+		}, 1},
+		{"ActorByID", builder, func(x evidenceRepo) []Commit {
+			return []Commit{commit(x.cs, []string{builder.String()}, nil)}
+		}, 1},
+		{"ManyCommits", builder, func(x evidenceRepo) []Commit {
+			return []Commit{commit(x.cs, []string{"builder"}, nil), commit(x.cs, []string{"builder"}, nil)}
+		}, 1},
+		{"NoGit", builder, func(evidenceRepo) []Commit { return nil }, 0},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			x := newEvidenceRepo(t, tc.who)
+			in := x.r.input()
+			in.Commits = tc.commits(x)
+			rep := Run(in)
+			if fs := ofRule(rep, RuleEvidenceActor); len(fs) != tc.want || !rep.OK {
+				t.Errorf("evidence-actor findings %+v, want %d\nall %+v", fs, tc.want, rep.Findings)
+			}
+		})
+	}
+	t.Run("Oldest", func(t *testing.T) {
+		// Commits come newest first; the finding names the oldest match.
+		x := newEvidenceRepo(t, builder)
+		in := x.r.input()
+		newer, older := commit(x.cs, []string{"builder"}, nil), commit(x.cs, []string{"builder"}, nil)
+		newer.Hash, older.Hash = strings.Repeat("a", 40), strings.Repeat("b", 40)
+		in.Commits = []Commit{newer, older}
+		fs := ofRule(Run(in), RuleEvidenceActor)
+		if len(fs) != 1 || !strings.HasSuffix(fs[0].Message, "commit bbbbbbbbbbbb") {
+			t.Errorf("evidence-actor findings %+v", fs)
+		}
+	})
+	t.Run("RetiredEvidence", func(t *testing.T) {
+		x := newEvidenceRepo(t, builder)
+		x.r.record("Retire", op.Op{ID: x.r.next(), Type: op.TypeNodeRetire, Node: x.ev, Base: x.evOp, Reason: "stale"})
+		in := x.r.input()
+		in.Commits = []Commit{commit(x.cs, []string{"builder"}, nil)}
+		if fs := ofRule(Run(in), RuleEvidenceActor); len(fs) != 0 {
+			t.Errorf("evidence-actor findings %+v", fs)
+		}
+	})
+	t.Run("RetiredLink", func(t *testing.T) {
+		x := newEvidenceRepo(t, builder)
+		x.r.record("Unlink", op.Op{ID: x.r.next(), Type: op.TypeLinkRetire, Link: x.l, Base: x.evLinkOp})
+		in := x.r.input()
+		in.Commits = []Commit{commit(x.cs, []string{"builder"}, nil)}
+		if fs := ofRule(Run(in), RuleEvidenceActor); len(fs) != 0 {
+			t.Errorf("evidence-actor findings %+v", fs)
 		}
 	})
 }

@@ -1080,7 +1080,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "findings": {
-            "description": "Every finding, sorted by rule (log, fold, model, in-flight, link, render, append-only), then path and IDs",
+            "description": "Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, render, append-only), then path and IDs",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -1120,6 +1120,8 @@ cmp stdout describe.golden.json
                     "model",
                     "in-flight",
                     "link",
+                    "depends-on",
+                    "evidence-actor",
                     "render",
                     "append-only"
                   ],

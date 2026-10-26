@@ -1,0 +1,135 @@
+# check's evidence-actor rule warns when the actor that wrote Evidence
+# verifying a capability is named in an Actor: trailer of a commit carrying
+# the Change: trailer of the change set that added the capability. It only
+# warns, so check still exits 0. Commit hashes depend on the clock, so they
+# are matched by pattern; IDs are deterministic, so every folder below gets
+# the same change set 01M5PWGQ8GB4618G4RH79NNPGS for capability leaf. Each
+# project gets its own folder: none sits below another's .rhiza.
+
+# The builder wrote the leaf's code and its Evidence: one warning.
+mkdir builder
+cd builder
+exec git init -q
+exec rhiza init
+exec rhiza add actor builder --record
+exec rhiza add actor verifier --record
+exec rhiza add capability leaf --field 'statement=Does the thing' --record --json
+stdout '"change_set": "01M5PWGQ8GB4618G4RH79NNPGS"'
+exec git add -A
+exec git commit -qF $WORK/msg-builder.txt
+env RHIZA_ACTOR=builder
+exec rhiza add evidence leaf-ok --field 'statement=leaf does the thing' --field result=PASS --record
+exec rhiza link leaf-ok verifies leaf --record
+env RHIZA_ACTOR=
+exec rhiza render
+exec git add -A
+exec git commit -qm evidence
+exec rhiza check --json
+stdout '"ok": true'
+stdout -count=1 '"rule": "evidence-actor"'
+stdout '"message": "evidence leaf-ok verifies capability leaf, but its actor builder wrote that capability in commit [0-9a-f]{12}",'
+stdout '"severity": "warn"'
+! stdout '"severity": "fail"'
+# The commit it names is the one with the trailers, by its first 12 digits.
+exec sh -c 'h=$(git log -1 --skip=1 --format=%H | cut -c1-12); rhiza check --json | grep -c "in commit $h\","'
+stdout '^1$'
+# Human output: a warn line, with the change set and the link, and its next.
+exec rhiza check
+stdout '^ok$'
+stdout '^warn evidence-actor change set 01M5PWGQ8GB4618G4RH79NNPGS, link [0-9A-Z]{26}: evidence leaf-ok verifies capability leaf, but its actor builder wrote that capability in commit [0-9a-f]{12}$'
+stdout '^  next: rhiza show leaf-ok$'
+fold-ok
+
+# The same commit, but the verifier wrote the Evidence: no warning.
+cd $WORK
+mkdir verifier
+cd verifier
+exec git init -q
+exec rhiza init
+exec rhiza add actor builder --record
+exec rhiza add actor verifier --record
+exec rhiza add capability leaf --field 'statement=Does the thing' --record --json
+stdout '"change_set": "01M5PWGQ8GB4618G4RH79NNPGS"'
+exec git add -A
+exec git commit -qF $WORK/msg-builder.txt
+env RHIZA_ACTOR=verifier
+exec rhiza add evidence leaf-ok --field 'statement=leaf does the thing' --field result=PASS --record
+exec rhiza link leaf-ok verifies leaf --record
+env RHIZA_ACTOR=
+exec rhiza render
+exec git add -A
+exec git commit -qm evidence
+exec rhiza check --json
+stdout '"ok": true'
+! stdout 'evidence-actor'
+fold-ok
+
+# Commits with no Actor: trailer, or whose Leaf: trailer names another
+# leaf, do not count; one whose Leaf: names this leaf does.
+cd $WORK
+mkdir trailers
+cd trailers
+exec git init -q
+exec rhiza init
+exec rhiza add actor builder --record
+exec rhiza add actor verifier --record
+exec rhiza add capability leaf --field 'statement=Does the thing' --record --json
+stdout '"change_set": "01M5PWGQ8GB4618G4RH79NNPGS"'
+exec git add -A
+exec git commit -qF $WORK/msg-no-actor.txt
+exec git commit -q --allow-empty -F $WORK/msg-other-leaf.txt
+env RHIZA_ACTOR=builder
+exec rhiza add evidence leaf-ok --field 'statement=leaf does the thing' --field result=PASS --record
+exec rhiza link leaf-ok verifies leaf --record
+env RHIZA_ACTOR=
+exec rhiza render
+exec git add -A
+exec git commit -qm evidence
+exec rhiza check --json
+stdout '"ok": true'
+! stdout 'evidence-actor'
+exec git commit -q --allow-empty -F $WORK/msg-this-leaf.txt
+exec rhiza check --json
+stdout -count=1 '"rule": "evidence-actor"'
+stdout '"message": "evidence leaf-ok verifies capability leaf, but its actor builder wrote that capability in commit [0-9a-f]{12}",'
+fold-ok
+
+# Outside a git work tree the rule is skipped, silently.
+cd $WORK
+mkdir nogit
+cd nogit
+exec rhiza init
+exec rhiza add actor builder --record
+exec rhiza add capability leaf --field 'statement=Does the thing' --record
+env RHIZA_ACTOR=builder
+exec rhiza add evidence leaf-ok --field 'statement=leaf does the thing' --field result=PASS --record
+exec rhiza link leaf-ok verifies leaf --record
+env RHIZA_ACTOR=
+exec rhiza render
+exec rhiza check --json
+stdout '"ok": true'
+stdout '"skipped": "not a git work tree"'
+! stdout 'evidence-actor'
+fold-ok
+
+-- msg-builder.txt --
+feat: the leaf
+
+Change: 01M5PWGQ8GB4618G4RH79NNPGS
+Actor: builder
+-- msg-no-actor.txt --
+feat: the leaf
+
+Change: 01M5PWGQ8GB4618G4RH79NNPGS
+-- msg-other-leaf.txt --
+fix: another leaf
+
+Change: 01M5PWGQ8GB4618G4RH79NNPGS
+Actor: builder
+Leaf: other
+-- msg-this-leaf.txt --
+fix: the leaf
+
+Change: 01M5PWGQ8GB4618G4RH79NNPGS
+Actor: builder
+Leaf: leaf

@@ -3,7 +3,8 @@
 // kinds its type allows, that the rendered markdown is current and that the
 // log has only grown since a base revision. It is what `rhiza check` and
 // CI run. Run is a pure function of its Input: it reads nothing but the
-// fs.FS it is given, runs no git and never panics.
+// fs.FS it is given, runs no git and never panics. What git knows, the base
+// entries and the commits' trailers, its caller gathers into the Input.
 //
 // The vocabulary:
 //
@@ -36,6 +37,14 @@
 //   - depends-on fails once on each depends-on loop among change sets
 //     (changeset.Cycles), whatever their states, and once on each loop of
 //     live as-is depends-on links among capabilities.
+//   - evidence-actor warns once on each live Evidence with a live as-is
+//     verifies link to a capability when the Evidence's actor (the actor of
+//     its create, model.CreatedBy) is named, by handle or ID, in an Actor:
+//     trailer of a commit whose Change: trailers name the change set that
+//     created the capability and whose Leaf: trailers, if it has any, name
+//     the capability by handle or ID: whoever wrote a leaf's code should not
+//     be the one to verify it. The finding names the oldest such commit.
+//     Without git (Input.Commits nil) the rule is skipped silently.
 //   - render fails on each rendered file that differs from what
 //     render.Render writes, is missing or is extra, and on a missing
 //     rendered folder.
@@ -77,19 +86,21 @@ const (
 
 // The rules, in report order.
 const (
-	RuleLog        = "log"
-	RuleFold       = "fold"
-	RuleModel      = "model"
-	RuleInFlight   = "in-flight"
-	RuleLink       = "link"
-	RuleDependsOn  = "depends-on"
-	RuleRender     = "render"
-	RuleAppendOnly = "append-only"
+	RuleLog           = "log"
+	RuleFold          = "fold"
+	RuleModel         = "model"
+	RuleInFlight      = "in-flight"
+	RuleLink          = "link"
+	RuleDependsOn     = "depends-on"
+	RuleEvidenceActor = "evidence-actor"
+	RuleRender        = "render"
+	RuleAppendOnly    = "append-only"
 )
 
 // Rules returns the rules in report order.
 func Rules() []string {
-	return []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleRender, RuleAppendOnly}
+	return []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleEvidenceActor, RuleRender,
+		RuleAppendOnly}
 }
 
 // Paths in findings are relative to the project root.
@@ -112,6 +123,18 @@ type Input struct {
 	Skipped string
 	// Base are the log entries at Rev, Current those in the work tree.
 	Base, Current []Entry
+	// Commits are the commits of HEAD's history, newest first as git log
+	// lists them. Nil means no git, and the evidence-actor rule is skipped.
+	Commits []Commit
+}
+
+// Commit is one git commit and the values of its trailers: Changes of its
+// Change: trailers (change set IDs), Actors of its Actor: trailers (actor
+// handles or IDs) and Leaves of its Leaf: trailers (capability handles or
+// IDs). Hash is the full commit hash.
+type Commit struct {
+	Hash                    string
+	Changes, Actors, Leaves []string
 }
 
 // Entry is one log entry file: its entry ID (the file name minus .json),
@@ -156,6 +179,7 @@ func Run(in Input) Report {
 	c.links(asIs, sets)
 	c.dependsOn(sets)
 	c.capabilityLoops(asIs)
+	c.evidenceActor(asIs, sets)
 	c.render(asIs, sets)
 	c.appendOnly()
 
@@ -362,6 +386,65 @@ func (c *checker) capabilityLoops(m model.Model) {
 			msg = "depends-on loop among capabilities " + strings.Join(names, ", ")
 		}
 		c.add(Finding{Severity: SeverityFail, Rule: RuleDependsOn, Message: msg, Next: "rhiza show " + names[0]})
+	}
+}
+
+// evidenceActor warns on each Evidence whose actor wrote the code of a
+// capability it verifies (see the package comment), once per Evidence and
+// capability, naming the oldest matching commit by its first 12 hex digits.
+func (c *checker) evidenceActor(m model.Model, sets []changeset.ChangeSet) {
+	if len(c.in.Commits) == 0 {
+		return
+	}
+	name := func(n model.Node) string {
+		if n.Handle != "" {
+			return n.Handle
+		}
+		return n.ID.String()
+	}
+	type pair struct{ ev, capab id.ID }
+	seen := map[pair]bool{}
+	for _, l := range m.Links() {
+		if l.Retired || l.Type != op.LinkVerifies || seen[pair{l.From, l.To}] {
+			continue
+		}
+		ev, okEv := m.Node(l.From)
+		capab, okCap := m.Node(l.To)
+		if !okEv || !okCap || ev.Retired || ev.Kind != op.KindEvidence || capab.Kind != op.KindCapability {
+			continue
+		}
+		who, ok := model.CreatedBy(ev, sets)
+		if !ok {
+			continue
+		}
+		actorNames := []string{who.String()}
+		actorName := who.String()
+		if a, ok := m.Node(who); ok && a.Handle != "" {
+			actorNames = append(actorNames, a.Handle)
+			actorName = a.Handle
+		}
+		var hit *Commit
+		for i := range c.in.Commits {
+			cm := &c.in.Commits[i]
+			if slices.Contains(cm.Changes, capab.Created.String()) &&
+				(len(cm.Leaves) == 0 || (capab.Handle != "" && slices.Contains(cm.Leaves, capab.Handle)) ||
+					slices.Contains(cm.Leaves, capab.ID.String())) &&
+				slices.ContainsFunc(cm.Actors, func(a string) bool { return slices.Contains(actorNames, a) }) {
+				hit = cm
+			}
+		}
+		if hit == nil {
+			continue
+		}
+		seen[pair{l.From, l.To}] = true
+		hash := hit.Hash
+		if len(hash) > 12 {
+			hash = hash[:12]
+		}
+		c.add(Finding{Severity: SeverityWarn, Rule: RuleEvidenceActor, ChangeSet: str(capab.Created), Link: l.ID.String(),
+			Message: fmt.Sprintf("evidence %s verifies capability %s, but its actor %s wrote that capability in commit %s",
+				name(ev), name(capab), actorName, hash),
+			Next: "rhiza show " + name(ev)})
 	}
 }
 
