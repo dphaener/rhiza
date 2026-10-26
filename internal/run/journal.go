@@ -37,6 +37,10 @@ type Started struct {
 	Branch         string `json:"branch,omitempty"`
 	PermissionMode string `json:"permission_mode,omitempty"`
 	Agent          string `json:"agent,omitempty"`
+	// Autonomous is true for a run started without the owner: it skips
+	// the owner's gates and questions, recording each. It never changes
+	// an agent's permissions.
+	Autonomous bool `json:"autonomous,omitempty"`
 }
 
 // Block is what a blocked agent step waits on: the kind of block and the
@@ -130,6 +134,9 @@ type State struct {
 	Agent          string
 	Definition     string
 	StartedAt      time.Time
+	// Autonomous is the started entry's Autonomous: the run goes on
+	// without the owner, and every agent it launches is told so.
+	Autonomous bool
 	// Current is the step entered and not ended, or the next step to
 	// enter. Empty when the run is finished.
 	Current      string
@@ -187,6 +194,7 @@ func (j Journal) State() State {
 				st.PermissionMode = s.PermissionMode
 				st.Agent = s.Agent
 				st.Definition = s.Definition
+				st.Autonomous = s.Autonomous
 			}
 		case TypeEntered:
 			st.Visits[e.Step]++

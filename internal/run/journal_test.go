@@ -1,6 +1,7 @@
 package run
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -145,6 +146,36 @@ func TestFoldFinished(t *testing.T) {
 	}
 	if len(st.Session) != 0 {
 		t.Fatalf("session map not cleared: %v", st.Session)
+	}
+}
+
+func TestFoldAutonomous(t *testing.T) {
+	plain := startedEntry("a", 0)
+	if st := (Journal{Entries: []Entry{plain}}).State(); st.Autonomous {
+		t.Fatalf("a run started without autonomous folds autonomous: %+v", st)
+	}
+	b, err := json.Marshal(plain)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(b), "autonomous") {
+		t.Fatalf("a plain started entry names autonomous: %s", b)
+	}
+	auto := startedEntry("a", 0)
+	auto.Started.Autonomous = true
+	b, err = json.Marshal(auto)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(b), `"autonomous":true`) {
+		t.Fatalf("an autonomous started entry lacks autonomous: %s", b)
+	}
+	var back Entry
+	if err := json.Unmarshal(b, &back); err != nil {
+		t.Fatal(err)
+	}
+	if st := (Journal{Entries: []Entry{back, {Type: TypeEntered, At: at(1), Step: "a"}}}).State(); !st.Autonomous {
+		t.Fatalf("an autonomous run folds not autonomous: %+v", st)
 	}
 }
 

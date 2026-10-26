@@ -45,6 +45,8 @@ const (
 	envActor  = "RHIZA_ACTOR"
 	envFor    = "RHIZA_FOR"
 	envRun    = "RHIZA_RUN"
+	// envAutonomous is set to 1 for an agent an autonomous run launched.
+	envAutonomous = "RHIZA_AUTONOMOUS"
 )
 
 // The Rex event that carries a block's status report, and its envelopes.
@@ -201,7 +203,8 @@ func captureAfterRun(ctx *Ctx, rec session.Record, warnings []string) ([]string,
 // launchEnv is what the agent's environment gets over the terminal's: the
 // change set, the agent's actor, the actor it acts for, the session (so
 // `rhiza session done` needs no argument) and, only when the launch belongs
-// to one, the run. A run the terminal had is removed.
+// to one, the run, and RHIZA_AUTONOMOUS=1 when that run is autonomous. A
+// run or autonomous mark the terminal had is removed.
 func launchEnv(rec session.Record) (set, unset []string) {
 	set = []string{
 		envChange + "=" + rec.Change,
@@ -210,9 +213,16 @@ func launchEnv(rec session.Record) (set, unset []string) {
 		envSession + "=" + rec.ID,
 	}
 	if rec.Run != "" {
-		return append(set, envRun+"="+rec.Run), nil
+		set = append(set, envRun+"="+rec.Run)
+	} else {
+		unset = append(unset, envRun)
 	}
-	return set, []string{envRun}
+	if rec.Autonomous {
+		set = append(set, envAutonomous+"=1")
+	} else {
+		unset = append(unset, envAutonomous)
+	}
+	return set, unset
 }
 
 // recordRunFailure records that the agent could not run as the exit

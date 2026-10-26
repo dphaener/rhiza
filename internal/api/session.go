@@ -86,6 +86,9 @@ type SessionStartRequest struct {
 	Run            string `json:"run,omitempty" desc:"The run the launch belongs to, if any"`
 	Prompt         string `json:"prompt,omitempty" desc:"The agent's first prompt; default none"`
 	RexSession     string `json:"rex_session,omitempty" desc:"The Rex session to open the tab in; default the caller's REX_SESSION, else Rex chooses"`
+	// autonomous marks the session as launched by an autonomous run. Only
+	// a run's StartAgent sets it, so it stays off the request schema.
+	autonomous bool
 }
 
 // SessionStartResponse is the session launched, or in a dry run the one
@@ -203,7 +206,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 	tab := session.Tab{Session: rexSession, Title: session.TabTitle(repo, title, step)}
 	reuse := t.reuse
 	rec := session.Record{
-		ID: sid, Agent: a.Name(), Change: cs.String(), Title: title, Step: step, Run: r.Run,
+		ID: sid, Agent: a.Name(), Change: cs.String(), Title: title, Step: step, Run: r.Run, Autonomous: r.autonomous,
 		Actor: handleSlug(a.Name() + "-" + sid[:8]), PermissionMode: r.PermissionMode, Prompt: r.Prompt,
 		Worktree: worktree, Branch: branch, Tab: tab, StartedAt: ctx.Now().UTC().Truncate(time.Second),
 	}

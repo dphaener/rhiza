@@ -87,6 +87,7 @@ type RunStartRequest struct {
 	PermissionMode string `json:"permission_mode,omitempty" desc:"The permission mode of agent steps that set none; modes that bypass the agent's permission checks are refused"`
 	Agent          string `json:"agent,omitempty" desc:"The agent adapter of agent steps that name none; default the built-in default adapter"`
 	NoWait         bool   `json:"no_wait,omitempty" desc:"Stop at a wait step whose condition does not hold yet, instead of waiting; resume the run later"`
+	Autonomous     bool   `json:"autonomous,omitempty" desc:"Run without the owner: skip the owner's gates and questions, recording each; never changes agent permissions. Resume keeps it"`
 }
 
 // RunStatusRequest names a run, or none for the latest.
@@ -116,6 +117,7 @@ type RunInfo struct {
 	Change     string         `json:"change" desc:"The change set it runs on"`
 	Title      string         `json:"title" desc:"The change set's title"`
 	Worktree   string         `json:"worktree" desc:"The worktree every step runs in"`
+	Autonomous bool           `json:"autonomous,omitempty" desc:"True for a run started with --autonomous: it goes on without the owner; absent otherwise"`
 	State      string         `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
 	Current    string         `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
 	Detail     string         `json:"detail,omitempty" desc:"Why it stopped or failed"`
@@ -199,12 +201,12 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	started := run.Started{
 		Workflow: def.Name, WorkflowPath: path, Definition: string(data),
 		Change: t.cs.String(), Title: t.title, Worktree: t.worktree, Branch: t.branch,
-		PermissionMode: r.PermissionMode, Agent: r.Agent,
+		PermissionMode: r.PermissionMode, Agent: r.Agent, Autonomous: r.Autonomous,
 	}
 	if ctx.DryRun {
 		return RunResponse{Run: RunInfo{
 			ID: rid, Workflow: def.Name, Change: started.Change, Title: t.title, Worktree: t.worktree,
-			Current: def.Start, Steps: []RunStep{}, StartedAt: rfc3339(ctx.Now()), Amendments: []RunAmendment{},
+			Autonomous: r.Autonomous, Current: def.Start, Steps: []RunStep{}, StartedAt: rfc3339(ctx.Now()), Amendments: []RunAmendment{},
 		}, DryRun: true}, nil
 	}
 	if err := canRun(ctx, def); err != nil {
@@ -216,7 +218,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err := run.Start(rs, rid, started, ctx.Now(), def); err != nil {
 		return nil, Errorf("start run %s: %v", rid, err)
 	}
-	return runEngine(ctx, rs, t.common, rid, started.Change, t.worktree, r.PermissionMode, r.Agent, r.NoWait)
+	return runEngine(ctx, rs, t.common, rid, started.Change, t.worktree, r.PermissionMode, r.Agent, started.Autonomous, r.NoWait)
 }
 
 // runRunResume continues a run that is neither finished nor running in
@@ -284,7 +286,7 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 	if err := canRun(ctx, def); err != nil {
 		return nil, err
 	}
-	resp, err := runEngineRetry(ctx, rs, common, j.ID, st.Change, st.Worktree, st.PermissionMode, st.Agent, r.NoWait, r.Retry)
+	resp, err := runEngineRetry(ctx, rs, common, j.ID, st.Change, st.Worktree, st.PermissionMode, st.Agent, st.Autonomous, r.NoWait, r.Retry)
 	if err != nil {
 		return nil, err
 	}
@@ -521,9 +523,10 @@ func newRunID(ctx *Ctx, rs *run.Store) (string, error) {
 }
 
 // runEngine runs the run in the foreground until it finishes or stops,
-// and responds with its state.
-func runEngine(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, agent string, noWait bool) (any, error) {
-	resp, err := runEngineRetry(ctx, rs, common, rid, change, worktree, mode, agent, noWait, false)
+// and responds with its state. Autonomous is the journal's: every agent
+// the run launches is marked with it.
+func runEngine(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, agent string, autonomous, noWait bool) (any, error) {
+	resp, err := runEngineRetry(ctx, rs, common, rid, change, worktree, mode, agent, autonomous, noWait, false)
 	if err != nil {
 		return nil, err
 	}
@@ -532,13 +535,13 @@ func runEngine(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, age
 
 // runEngineRetry is runEngine; with retry it runs the engine's Retry, which
 // restarts a failed run at its failed step.
-func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, agent string, noWait, retry bool) (RunResponse, error) {
+func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, agent string, autonomous, noWait, retry bool) (RunResponse, error) {
 	sessions := session.NewStore(session.Dir(common))
 	e := &run.Engine{
 		Store: rs,
 		Runner: &stepRunner{
 			ctx: ctx, change: change, run: rid, worktree: worktree, mode: mode, agent: agent,
-			sessions: sessions,
+			autonomous: autonomous, sessions: sessions,
 		},
 		Clock:  runClock,
 		Now:    ctx.Now,
@@ -574,7 +577,10 @@ type stepRunner struct {
 	worktree string
 	mode     string
 	agent    string
-	sessions *session.Store
+	// autonomous marks every session the run launches, so the agent's
+	// environment tells it the owner is not there.
+	autonomous bool
+	sessions   *session.Store
 }
 
 // Command runs the step's command, its output copied to ctx.Stderr.
@@ -628,10 +634,11 @@ func (r *stepRunner) sh(cmd string, env []string, out io.Writer) (int, error) {
 }
 
 // StartAgent starts the step's session as session.start does, on the
-// run's change set, and returns its ID.
+// run's change set, and returns its ID. An autonomous run's session is
+// recorded autonomous.
 func (r *stepRunner) StartAgent(step workflow.Step, _ []string) (string, error) {
 	req := agentStepRequest(step, r.mode, r.agent)
-	req.Change, req.Run = r.change, r.run
+	req.Change, req.Run, req.autonomous = r.change, r.run, r.autonomous
 	t, err := resolveChangeWorktree(r.ctx, r.change, "no agent can work on it")
 	if err != nil {
 		return "", err
@@ -795,7 +802,7 @@ func rexField(s string, limit int) string {
 func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 	info := RunInfo{
 		ID: st.ID, Workflow: st.Workflow, Change: st.Change, Title: st.Title, Worktree: st.Worktree,
-		Current: st.Current, Steps: []RunStep{}, StartedAt: rfc3339(st.StartedAt),
+		Autonomous: st.Autonomous, Current: st.Current, Steps: []RunStep{}, StartedAt: rfc3339(st.StartedAt),
 		Amendments: []RunAmendment{},
 	}
 	switch {
@@ -898,12 +905,15 @@ func (r RunInfo) Human(w io.Writer) {
 	}
 }
 
-// runLines are a run's workflow, change set, worktree, current step and
-// detail, one per line.
+// runLines are a run's workflow, change set, worktree, whether it is
+// autonomous, current step and detail, one per line.
 func runLines(w io.Writer, r RunInfo) {
 	fmt.Fprintf(w, "- Workflow: %s\n", r.Workflow)
 	fmt.Fprintf(w, "- Change set: %s: %s\n", r.Change, r.Title)
 	fmt.Fprintf(w, "- Worktree: %s\n", r.Worktree)
+	if r.Autonomous {
+		fmt.Fprintf(w, "- Autonomous: yes\n")
+	}
 	fmt.Fprintf(w, "- Started: %s\n", r.StartedAt)
 	if r.Current != "" {
 		fmt.Fprintf(w, "- Current step: %s\n", r.Current)

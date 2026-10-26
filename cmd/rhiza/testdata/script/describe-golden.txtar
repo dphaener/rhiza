@@ -2687,6 +2687,10 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "autonomous": {
+                "description": "True for a run started with --autonomous: it goes on without the owner; absent otherwise",
+                "type": "boolean"
+              },
               "blocked": {
                 "additionalProperties": false,
                 "description": "What the run waits on while its agent step's session is blocked; absent otherwise",
@@ -2886,6 +2890,10 @@ cmp stdout describe.golden.json
             "description": "The agent adapter of agent steps that name none; default the built-in default adapter",
             "type": "string"
           },
+          "autonomous": {
+            "description": "Run without the owner: skip the owner's gates and questions, recording each; never changes agent permissions. Resume keeps it",
+            "type": "boolean"
+          },
           "change": {
             "description": "The change set: a full ID or a unique prefix of 4+ characters; default --change, else the current one",
             "type": "string"
@@ -2957,6 +2965,10 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "autonomous": {
+                "description": "True for a run started with --autonomous: it goes on without the owner; absent otherwise",
+                "type": "boolean"
               },
               "blocked": {
                 "additionalProperties": false,
@@ -3200,6 +3212,10 @@ cmp stdout describe.golden.json
               "type": "object"
             },
             "type": "array"
+          },
+          "autonomous": {
+            "description": "True for a run started with --autonomous: it goes on without the owner; absent otherwise",
+            "type": "boolean"
           },
           "blocked": {
             "additionalProperties": false,
