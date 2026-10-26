@@ -275,14 +275,35 @@ func (w *workspace) effectiveChangeSet(ctx *Ctx) (id.ID, error) {
 const newEntryNext = `genesis change new "<intent>"`
 
 // appendEntry appends body to change set cs as actor for forID and returns
-// the entry. It reads the log, folds cs and sets after to its heads; an open
-// starts a new change set, so cs must have no entries yet and after is
-// empty. At is the clock in UTC, truncated to the second.
+// the entry, under a freshly drawn entry ID. See buildEntry for the rules.
+func (w *workspace) appendEntry(cs id.ID, body changeset.Body, actor, forID id.ID) (entry.Entry, error) {
+	eid, err := w.ids.New()
+	if err != nil {
+		return entry.Entry{}, Errorf("%s", err.Error())
+	}
+	return w.appendEntryID(cs, body, actor, forID, eid)
+}
+
+// appendEntryID is appendEntry under the entry ID eid, drawn beforehand,
+// for writes whose entries name one another, such as carve's.
+func (w *workspace) appendEntryID(cs id.ID, body changeset.Body, actor, forID, eid id.ID) (entry.Entry, error) {
+	e, err := w.buildEntry(cs, body, actor, forID, eid)
+	if err != nil {
+		return entry.Entry{}, err
+	}
+	return e, w.writeEntry(e)
+}
+
+// buildEntry builds the entry eid appending body to change set cs as actor
+// for forID, without writing it. It reads the log, folds cs and sets after
+// to its heads; an open starts a new change set, so cs must have no entries
+// yet and after is empty. At is the clock in UTC, truncated to the second,
+// and V the lowest entry format that can spell body.
 //
 // A non-open body needs cs in the log (else not_found), and anything but a
 // note into a terminal change set is a conflict. Whether a lifecycle move is
 // legal in a non-terminal state is the caller's check.
-func (w *workspace) appendEntry(cs id.ID, body changeset.Body, actor, forID id.ID) (entry.Entry, error) {
+func (w *workspace) buildEntry(cs id.ID, body changeset.Body, actor, forID, eid id.ID) (entry.Entry, error) {
 	es := entriesOf(w.log(), cs)
 	var after []id.ID
 	if body.Type() == entry.TypeOpen {
@@ -303,11 +324,7 @@ func (w *workspace) appendEntry(cs id.ID, body changeset.Body, actor, forID id.I
 	if err != nil {
 		return entry.Entry{}, Usagef("%s", err.Error())
 	}
-	eid, err := w.ids.New()
-	if err != nil {
-		return entry.Entry{}, Errorf("%s", err.Error())
-	}
-	e := entry.Entry{
+	return entry.Entry{
 		V:         changeset.EntryVersion(body),
 		ID:        eid,
 		ChangeSet: cs,
@@ -317,15 +334,19 @@ func (w *workspace) appendEntry(cs id.ID, body changeset.Body, actor, forID id.I
 		After:     after,
 		Type:      body.Type(),
 		Body:      raw,
-	}
+	}, nil
+}
+
+// writeEntry writes e to the log, or in a dry run keeps it in pending.
+func (w *workspace) writeEntry(e entry.Entry) error {
 	if w.dryRun {
 		w.pending = append(w.pending, e)
-		return e, nil
+		return nil
 	}
 	if err := w.st.Write(e); err != nil {
-		return entry.Entry{}, Errorf("%s", err.Error())
+		return Errorf("%s", err.Error())
 	}
-	return e, nil
+	return nil
 }
 
 // openChangeSet starts a new change set with a fresh ID and returns that ID
