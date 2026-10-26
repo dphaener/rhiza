@@ -1,0 +1,31 @@
+{
+  "actor": "01M5X0WD4XCHYSACK0C37G4M68",
+  "after": [
+    "01M5X1T5059XA9SD9G45Q03HPV"
+  ],
+  "at": "2026-10-26T21:32:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS under make check at commit 92051c5 on branch cs/leaf-dependencies-and, run by an independent verifier (claude-code-b6232fc2-verifier)",
+          "statement": "In a git repo with a commit carrying Change: and Actor: builder that changes a file outside .rhiza/, Evidence written by builder verifying the change set's leaf gives check --json ok with one warn finding on rule evidence-actor naming the evidence, capability, actor and commit; written by verifier it gives none; a commit with no Actor: trailer, or a Leaf: trailer naming another leaf only, gives none; a commit with the builder's trailers that changes only .rhiza/ files, or an empty commit, gives none, and a later code commit with the same trailers gives one; outside a git work tree the rule is skipped. The Go tests run the rule on given commit trailers and skip it with no git; TestGitCommits checks that git log is asked only for commits that change a file outside .rhiza/ (pathspec :/ :(exclude).rhiza).",
+          "tests": "testscript check-evidence-actor (builder, verifier, trailers, modelonly, nogit); go test internal/check: TestRunEvidenceActor; internal/api: TestParseTrailerLog, TestGitCommits"
+        },
+        "handle": "check-evidence-actor-verified",
+        "id": "01M5X0Z3Q26XEPV9ZZ75KWZW8B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5X0Z3Q26XEPV9ZZ73ASK7ZJ",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5WPTV0NX6YECXCPMHSEJAWY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5X22JGP3YWETC4PSVKZY2FH",
+  "type": "ops",
+  "v": 1
+}
