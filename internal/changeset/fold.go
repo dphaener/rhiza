@@ -59,12 +59,12 @@ import (
 //  5. Two entries in the graph are concurrent when neither reaches the other
 //     through after links. Each concurrent pair of lifecycle entries
 //     (propose, accept, reject, withdraw, supersede, land, reopen) is
-//     reported, as is each concurrent pair of ops entries that write (add, replace or
-//     drop) a common op ID (ErrConcurrent). The report goes on the later
-//     entry in fold order. Both entries still went through steps 3 and 4 in
-//     fold order, so the later one wins when its move is legal after the
-//     earlier one, and is reported as ErrTransition too when it is not (two
-//     concurrent terminal moves: the first in fold order stands).
+//     reported, as is each concurrent pair of ops entries that write (add,
+//     replace or drop) a common op ID (ErrConcurrent). The report goes on
+//     the later entry in fold order. Both entries still went through steps
+//     3 and 4 in fold order, so the later one wins when its move is legal
+//     after the earlier one, and is reported as ErrTransition too when it is
+//     not (two concurrent terminal moves: the first in fold order stands).
 
 var (
 	// ErrBody is wrapped by a Problem's error for an entry whose body does
