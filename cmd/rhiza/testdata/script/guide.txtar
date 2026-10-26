@@ -46,6 +46,12 @@ stdout '^## The file$'
 # refused.
 stdout '"op":"link","from":"export-csv","type":"depends-on","to":"report-query"'
 stdout 'would close a loop'
+exec rhiza guide arbiter
+stdout '^# Arbiter$'
+stdout 'wording=\(assumed, would have escalated\)'
+stdout 'reasoning='
+stdout '"op":"link","from":"<handle>","type":"answers","to":"<question id>"'
+stdout '^rhiza session done$'
 exec rhiza guide carving
 stdout '^# Carving$'
 stdout '^## Known limit$'
@@ -61,12 +67,13 @@ exec rhiza guide sources
 stdout '^# Sources$'
 stdout '^## Stored fields$'
 
-# guide ls lists all seven texts with their kinds and sizes.
+# guide ls lists all eight texts with their kinds and sizes.
 exec rhiza guide ls
-stdout -count=7 '^- '
+stdout -count=8 '^- '
 stdout '^- rhiza +skill +[0-9]+ tokens  Work with the product model'
 stdout '^- scrub +skill +[0-9]+ tokens  '
 stdout '^- apply +topic +[0-9]+ tokens  '
+stdout '^- arbiter +topic +[0-9]+ tokens  '
 stdout '^- carving +topic +[0-9]+ tokens  '
 stdout '^- change-sets +topic +[0-9]+ tokens  '
 stdout '^- reopening +topic +[0-9]+ tokens  '

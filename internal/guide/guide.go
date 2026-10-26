@@ -82,6 +82,7 @@ var skills = []entry{
 // topics lists the topics, sorted by name.
 var topics = []entry{
 	{name: "apply", file: "apply.md", description: "The rhiza apply file format: many writes in one JSON file."},
+	{name: "arbiter", file: "arbiter.md", description: "The arbiter: deciding one question in an autonomous run, the one answering Decision and its wording and reasoning, then done."},
 	{name: "carving", file: "carving.md", description: "Carving: moving nodes from one change set to another under the same IDs, what moves, the rules."},
 	{name: "change-sets", file: "change-sets.md", description: "Change sets: intention and record, the lifecycle, which change set a write goes into, --record."},
 	{name: "reopening", file: "reopening.md", description: "Reopening: taking a change set landed only on its branch back to accepted, the refusal once it is on main, never deleting log entries."},
