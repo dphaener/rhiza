@@ -706,3 +706,70 @@ func TestAppendOnlyNoRev(t *testing.T) {
 		t.Errorf("findings %+v", rep.Findings)
 	}
 }
+
+// TestLoops finds a graph's loops: groups that reach one another and
+// self-loops, not chains.
+func TestLoops(t *testing.T) {
+	a, b, c, d := fid(1), fid(2), fid(3), fid(4)
+	got := loops(map[id.ID][]id.ID{a: {b}, b: {c, a}, c: {d}, d: {d}})
+	if len(got) != 2 || len(got[0]) != 1 || got[0][0] != d || len(got[1]) != 2 {
+		t.Errorf("loops = %v", got)
+	}
+}
+
+func TestRunCapabilityLoop(t *testing.T) {
+	// caps lands capabilities a, b and c and returns their IDs.
+	caps := func(r *repo) (a, b, c id.ID) {
+		a, b, c = r.next(), r.next(), r.next()
+		r.record("Caps", mkNode(r.next(), a, op.KindCapability, "a"),
+			mkNode(r.next(), b, op.KindCapability, "b"), mkNode(r.next(), c, op.KindCapability, "c"))
+		return a, b, c
+	}
+	dep := func(r *repo, from, to id.ID) op.Op {
+		return mkLink(r.next(), r.next(), op.LinkDependsOn, from, to)
+	}
+
+	t.Run("Concurrent", func(t *testing.T) {
+		// Each change set alone is a chain; landed together they loop.
+		r := newRepo(t)
+		clean(r)
+		a, b, c := caps(r)
+		r.record("Chain", dep(r, a, b), dep(r, b, c))
+		r.record("Back", dep(r, c, a))
+		rep := Run(r.input())
+		fs := ofRule(rep, RuleDependsOn)
+		if len(fs) != 1 {
+			t.Fatalf("depends-on findings %+v\nall %+v", fs, rep.Findings)
+		}
+		want := Finding{Severity: SeverityFail, Rule: RuleDependsOn,
+			Message: "depends-on loop among capabilities a, b, c", Next: "rhiza show a"}
+		if fs[0] != want {
+			t.Errorf("finding %+v, want %+v", fs[0], want)
+		}
+		if rep.OK {
+			t.Error("OK with a loop")
+		}
+	})
+	t.Run("Retired", func(t *testing.T) {
+		r := newRepo(t)
+		clean(r)
+		a, b, _ := caps(r)
+		ab, l := r.next(), r.next()
+		r.record("Chain", mkLink(ab, l, op.LinkDependsOn, a, b), dep(r, b, a))
+		r.record("Unlink", op.Op{ID: r.next(), Type: op.TypeLinkRetire, Link: l, Base: ab})
+		if fs := ofRule(Run(r.input()), RuleDependsOn); len(fs) != 0 {
+			t.Errorf("depends-on findings %+v", fs)
+		}
+	})
+	t.Run("Chain", func(t *testing.T) {
+		r := newRepo(t)
+		clean(r)
+		a, b, c := caps(r)
+		r.record("Chain", dep(r, a, b), dep(r, b, c))
+		r.record("Short", dep(r, a, c))
+		rep := Run(r.input())
+		if fs := ofRule(rep, RuleDependsOn); len(fs) != 0 || !rep.OK {
+			t.Errorf("depends-on findings %+v\nall %+v", fs, rep.Findings)
+		}
+	})
+}

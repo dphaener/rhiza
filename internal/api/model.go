@@ -38,6 +38,9 @@ type Model interface {
 	// LinkBetween finds the live link of type t from from to to. No match
 	// is a not_found Error; several are a usage Error listing them.
 	LinkBetween(from, to id.ID, t op.LinkType) (Link, error)
+	// DependsOn returns what n depends on: the To of each live depends-on
+	// link from n, sorted by ID, each once. It is nil when there are none.
+	DependsOn(n id.ID) []id.ID
 	// Children returns the live nodes of kind whose parent is parent, sorted
 	// by key, then ID. A zero parent gives the roots of that kind.
 	Children(kind op.Kind, parent id.ID) []Node
@@ -435,6 +438,17 @@ func (m *model) LinkBetween(from, to id.ID, t op.LinkType) (Link, error) {
 		return matches[0], nil
 	}
 	return Link{}, ambiguousLinks(fmt.Sprintf("%s from %s to %s", t, from, to), matches)
+}
+
+func (m *model) DependsOn(n id.ID) []id.ID {
+	var out []id.ID
+	for _, k := range m.sortedLinks(func(k *Link) bool {
+		return !k.Retired && k.From == n && k.Type == op.LinkDependsOn
+	}) {
+		out = append(out, k.To)
+	}
+	slices.SortFunc(out, id.Compare)
+	return slices.Compact(out)
 }
 
 func (m *model) Children(kind op.Kind, parent id.ID) []Node {

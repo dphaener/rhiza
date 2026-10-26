@@ -34,7 +34,8 @@
 //   - link fails on each live as-is link whose Ends the endpoint table does
 //     not allow.
 //   - depends-on fails once on each depends-on loop among change sets
-//     (changeset.Cycles), whatever their states.
+//     (changeset.Cycles), whatever their states, and once on each loop of
+//     live as-is depends-on links among capabilities.
 //   - render fails on each rendered file that differs from what
 //     render.Render writes, is missing or is extra, and on a missing
 //     rendered folder.
@@ -56,12 +57,14 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"slices"
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/render"
 	"github.com/dphaener/rhiza/internal/store"
 )
@@ -152,6 +155,7 @@ func Run(in Input) Report {
 	asIs := c.model(sets)
 	c.links(asIs, sets)
 	c.dependsOn(sets)
+	c.capabilityLoops(asIs)
 	c.render(asIs, sets)
 	c.appendOnly()
 
@@ -327,6 +331,91 @@ func (c *checker) dependsOn(sets []changeset.ChangeSet) {
 		c.add(Finding{Severity: SeverityFail, Rule: RuleDependsOn, ChangeSet: loop[0].String(), Message: msg,
 			Next: "rhiza change show " + loop[0].String()})
 	}
+}
+
+// capabilityLoops fails once on each depends-on loop among capabilities:
+// each group of two or more that reach one another over live as-is links,
+// and each that depends on itself, named by handle in handle order.
+func (c *checker) capabilityLoops(m model.Model) {
+	g := map[id.ID][]id.ID{}
+	for _, l := range m.Links() {
+		if l.Retired || l.Type != op.LinkDependsOn {
+			continue
+		}
+		from, okFrom := m.Node(l.From)
+		to, okTo := m.Node(l.To)
+		if okFrom && okTo && from.Kind == op.KindCapability && to.Kind == op.KindCapability {
+			g[l.From] = append(g[l.From], l.To)
+		}
+	}
+	for _, loop := range loops(g) {
+		names := make([]string, len(loop))
+		for i, n := range loop {
+			names[i] = n.String()
+			if v, _ := m.Node(n); v.Handle != "" {
+				names[i] = v.Handle
+			}
+		}
+		slices.Sort(names)
+		msg := "capability " + names[0] + " depends on itself"
+		if len(names) > 1 {
+			msg = "depends-on loop among capabilities " + strings.Join(names, ", ")
+		}
+		c.add(Finding{Severity: SeverityFail, Rule: RuleDependsOn, Message: msg, Next: "rhiza show " + names[0]})
+	}
+}
+
+// loops returns the loops of graph g: each strongly connected component of
+// two or more nodes, and each node with an edge to itself. It visits nodes
+// and edges in ID order, so the result is the same for the same g.
+func loops(g map[id.ID][]id.ID) [][]id.ID {
+	nodes := slices.SortedFunc(maps.Keys(g), id.Compare)
+	for _, n := range nodes {
+		slices.SortFunc(g[n], id.Compare)
+	}
+	// Tarjan's strongly connected components.
+	index := map[id.ID]int{}
+	low := map[id.ID]int{}
+	onStack := map[id.ID]bool{}
+	var stack []id.ID
+	var out [][]id.ID
+	var visit func(v id.ID)
+	visit = func(v id.ID) {
+		index[v] = len(index)
+		low[v] = index[v]
+		stack = append(stack, v)
+		onStack[v] = true
+		for _, w := range g[v] {
+			if _, ok := index[w]; !ok {
+				visit(w)
+				low[v] = min(low[v], low[w])
+			} else if onStack[w] {
+				low[v] = min(low[v], index[w])
+			}
+		}
+		if low[v] != index[v] {
+			return
+		}
+		var scc []id.ID
+		for {
+			w := stack[len(stack)-1]
+			stack = stack[:len(stack)-1]
+			onStack[w] = false
+			scc = append(scc, w)
+			if w == v {
+				break
+			}
+		}
+		if len(scc) > 1 || slices.Contains(g[v], v) {
+			out = append(out, scc)
+		}
+	}
+	for _, n := range nodes {
+		if _, ok := index[n]; !ok {
+			visit(n)
+		}
+	}
+	return out
 }
 
 func (c *checker) render(m model.Model, sets []changeset.ChangeSet) {
