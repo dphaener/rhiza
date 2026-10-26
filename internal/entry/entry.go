@@ -10,8 +10,10 @@
 // format the entry is written in, so a reader can refuse an entry from a
 // newer Rhiza instead of misreading it. Format 2 adds no envelope field: it
 // marks an entry whose body uses something format 1 cannot spell (an ops
-// body's carve). A writer stamps the lowest format that can spell the entry,
-// so every entry format 1 can spell is still written as format 1.
+// body's carve). Format 3 adds none either: it marks a reopen entry, a type
+// formats 1 and 2 do not have, so an entry of either with type reopen is
+// invalid. A writer stamps the lowest format that can spell the entry, so
+// every entry format 1 can spell is still written as format 1.
 package entry
 
 import (
@@ -29,7 +31,7 @@ import (
 
 // FormatVersion is the newest entry format this package reads and writes.
 // Every format from 1 through FormatVersion is read and written.
-const FormatVersion = 2
+const FormatVersion = 3
 
 // ErrInvalid is wrapped by every error for an entry that is not a valid
 // entry of a format from 1 through FormatVersion.
@@ -43,7 +45,8 @@ var ErrNewerFormat = errors.New("entry: newer format")
 // Type names what an entry records.
 type Type string
 
-// The nine entry types, the same in every format.
+// The ten entry types. Every format has all of them but reopen, which
+// format 3 adds.
 const (
 	TypeOpen      Type = "open"
 	TypeOps       Type = "ops"
@@ -53,12 +56,13 @@ const (
 	TypeWithdraw  Type = "withdraw"
 	TypeSupersede Type = "supersede"
 	TypeLand      Type = "land"
+	TypeReopen    Type = "reopen"
 	TypeNote      Type = "note"
 )
 
-// Types returns the nine entry types in their documented order.
+// Types returns the ten entry types in their documented order.
 func Types() []Type {
-	return []Type{TypeOpen, TypeOps, TypePropose, TypeAccept, TypeReject, TypeWithdraw, TypeSupersede, TypeLand, TypeNote}
+	return []Type{TypeOpen, TypeOps, TypePropose, TypeAccept, TypeReject, TypeWithdraw, TypeSupersede, TypeLand, TypeReopen, TypeNote}
 }
 
 // timeLayout is how at is spelled: RFC 3339 in UTC, to the second, with Z.
@@ -91,8 +95,8 @@ func invalidWrap(field string, err error) error {
 }
 
 // Validate reports the first way e breaks the envelope rules. V must be a
-// format from 1 through FormatVersion; whether the body needs that format is
-// the body's concern. The time embedded in a ULID is deliberately not
+// format from 1 through FormatVersion, and 3 or later for a reopen entry;
+// whether the body needs that format is the body's concern. The time embedded in a ULID is deliberately not
 // compared with At.
 func (e Entry) Validate() error {
 	return e.validate(false)
@@ -133,6 +137,9 @@ func (e Entry) validate(canonical bool) error {
 	}
 	if !slices.Contains(Types(), e.Type) {
 		return invalid("type", "unknown type %q", e.Type)
+	}
+	if e.Type == TypeReopen && e.V < 3 {
+		return invalid("type", "%q needs format 3, entry is format %d", e.Type, e.V)
 	}
 	if len(e.Body) == 0 || e.Body[0] != '{' {
 		return invalid("body", "not an object")

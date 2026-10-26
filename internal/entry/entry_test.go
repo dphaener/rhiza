@@ -82,6 +82,7 @@ var goldenCases = []struct {
 	{TypeWithdraw, false, `{}`, `{}`},
 	{TypeSupersede, true, "{\n  \"by\": {}\n}", "{\n    \"by\": {}\n  }"},
 	{TypeLand, false, "{\n  \"commit\": \"abc\"\n}", "{\n    \"commit\": \"abc\"\n  }"},
+	{TypeReopen, true, `{}`, `{}`},
 	{TypeNote, true, "{\n  \"ζ\": 9223372036854775807\n}", "{\n    \"ζ\": 9223372036854775807\n  }"},
 }
 
@@ -95,11 +96,17 @@ func goldenEntry(t testing.TB, i int) (Entry, string) {
 		e.After = []id.ID{mustID(t, sAfter1), mustID(t, sAfter2)}
 		after = twoAfter
 	}
-	return e, doc(after, string(tc.typ), tc.bodyInDoc)
+	d := doc(after, string(tc.typ), tc.bodyInDoc)
+	// A reopen entry needs format 3; every other type is spelled in format 1.
+	if tc.typ == TypeReopen {
+		e.V = 3
+		d = strings.Replace(d, `"v": 1`, `"v": 3`, 1)
+	}
+	return e, d
 }
 
 func TestTypes(t *testing.T) {
-	want := []Type{"open", "ops", "propose", "accept", "reject", "withdraw", "supersede", "land", "note"}
+	want := []Type{"open", "ops", "propose", "accept", "reject", "withdraw", "supersede", "land", "reopen", "note"}
 	if got := Types(); !slices.Equal(got, want) {
 		t.Fatalf("Types() = %v, want %v", got, want)
 	}
@@ -131,10 +138,10 @@ func TestGolden(t *testing.T) {
 }
 
 func TestVersions(t *testing.T) {
-	if FormatVersion != 2 {
-		t.Fatalf("FormatVersion = %d, want 2", FormatVersion)
+	if FormatVersion != 3 {
+		t.Fatalf("FormatVersion = %d, want 3", FormatVersion)
 	}
-	// Both formats read and write; the envelope is the same in each.
+	// Every format reads and writes; the envelope is the same in each.
 	for v := 1; v <= FormatVersion; v++ {
 		t.Run(strconv.Itoa(v), func(t *testing.T) {
 			in := swap(`"v": 1`, `"v": `+strconv.Itoa(v))
@@ -153,6 +160,42 @@ func TestVersions(t *testing.T) {
 				t.Fatalf("Encode =\n%s\nwant\n%s", out, in)
 			}
 		})
+	}
+}
+
+func TestReopenNeedsFormat3(t *testing.T) {
+	e := baseEntry(t)
+	e.V, e.Type = 3, TypeReopen
+	data, err := Encode(e)
+	if err != nil {
+		t.Fatalf("Encode: %v", err)
+	}
+	in := strings.Replace(doc("[]", "reopen", "{}"), `"v": 1`, `"v": 3`, 1)
+	if string(data) != in {
+		t.Fatalf("Encode =\n%s\nwant\n%s", data, in)
+	}
+	for _, decode := range []func([]byte) (Entry, error){Decode, DecodeCanonical} {
+		back, err := decode(data)
+		if err != nil {
+			t.Fatalf("decode: %v", err)
+		}
+		if !reflect.DeepEqual(back, e) {
+			t.Fatalf("decode =\n%#v\nwant\n%#v", back, e)
+		}
+	}
+	// A reader of format 1 or 2 knows no reopen entry, so neither format
+	// spells one.
+	for _, v := range []int{1, 2} {
+		old := strings.Replace(in, `"v": 3`, `"v": `+strconv.Itoa(v), 1)
+		for name, decode := range map[string]func([]byte) (Entry, error){"Decode": Decode, "DecodeCanonical": DecodeCanonical} {
+			if _, err := decode([]byte(old)); !errors.Is(err, ErrInvalid) {
+				t.Fatalf("%s of a v%d reopen: error %v, want ErrInvalid", name, v, err)
+			}
+		}
+		e.V = v
+		if _, err := Encode(e); !errors.Is(err, ErrInvalid) {
+			t.Fatalf("Encode of a v%d reopen: error %v, want ErrInvalid", v, err)
+		}
 	}
 }
 
@@ -211,8 +254,9 @@ var decodeFailures = []struct {
 	{"v negative", swap(`"v": 1`, `"v": -1`), ErrInvalid, "v", ""},
 	{"v string", swap(`"v": 1`, `"v": "1"`), ErrInvalid, "v", ""},
 	{"v missing", swap(`,`+"\n"+`  "v": 1`, ``), ErrInvalid, "v", ""},
-	{"v 3", swap(`"v": 1`, `"v": 3`), ErrNewerFormat, "v", ""},
-	{"v 3 with unknown keys", "{\n  \"future\": [],\n  \"v\": 3\n}\n", ErrNewerFormat, "v", ""},
+	{"v 4", swap(`"v": 1`, `"v": 4`), ErrNewerFormat, "v", ""},
+	{"v 4 with unknown keys", "{\n  \"future\": [],\n  \"v\": 4\n}\n", ErrNewerFormat, "v", ""},
+	{"reopen v 4", strings.Replace(swap(`"type": "note"`, `"type": "reopen"`), `"v": 1`, `"v": 4`, 1), ErrNewerFormat, "v", ""},
 	{"missing for", swap(`  "for": "`+sFor+`",`+"\n", ``), ErrInvalid, "for", "missing"},
 	{"extra key", swap(`  "for"`, `  "extra": 1,`+"\n"+`  "for"`), ErrInvalid, "extra", "unknown"},
 	{"lower-case id", swap(sID, strings.ToLower(sID)), ErrInvalid, "id", ""},
@@ -235,6 +279,8 @@ var decodeFailures = []struct {
 		ErrInvalid, "after", ""},
 	{"unknown type", swap(`"type": "note"`, `"type": "bogus"`), ErrInvalid, "type", ""},
 	{"type number", swap(`"type": "note"`, `"type": 1`), ErrInvalid, "type", ""},
+	{"reopen v 1", swap(`"type": "note"`, `"type": "reopen"`), ErrInvalid, "type", "format 3"},
+	{"reopen v 2", strings.Replace(swap(`"type": "note"`, `"type": "reopen"`), `"v": 1`, `"v": 2`, 1), ErrInvalid, "type", "format 3"},
 	{"body array", swap(`"body": {}`, `"body": []`), ErrInvalid, "body", ""},
 	{"body string", swap(`"body": {}`, `"body": "x"`), ErrInvalid, "body", ""},
 	{"body null", swap(`"body": {}`, `"body": null`), ErrInvalid, "body", ""},
@@ -305,7 +351,9 @@ func TestEncodeFailures(t *testing.T) {
 		field  string
 	}{
 		{"v 0", func(e *Entry) { e.V = 0 }, "v"},
-		{"v 3", func(e *Entry) { e.V = 3 }, "v"},
+		{"v 4", func(e *Entry) { e.V = 4 }, "v"},
+		{"reopen v 1", func(e *Entry) { e.Type = TypeReopen }, "type"},
+		{"reopen v 2", func(e *Entry) { e.Type, e.V = TypeReopen, 2 }, "type"},
 		{"v negative", func(e *Entry) { e.V = -1 }, "v"},
 		{"zero id", func(e *Entry) { e.ID = id.ID{} }, "id"},
 		{"zero change_set", func(e *Entry) { e.ChangeSet = id.ID{} }, "change_set"},
@@ -433,8 +481,14 @@ func genEntry() *rapid.Generator[Entry] {
 		if err != nil {
 			t.Fatalf("canon.Marshal body: %v", err)
 		}
+		typ := rapid.SampledFrom(Types()).Draw(t, "type")
+		// A reopen entry is valid only in format 3 or later.
+		low := 1
+		if typ == TypeReopen {
+			low = 3
+		}
 		return Entry{
-			V:         rapid.IntRange(1, FormatVersion).Draw(t, "v"),
+			V:         rapid.IntRange(low, FormatVersion).Draw(t, "v"),
 			ID:        genID().Draw(t, "id"),
 			ChangeSet: genID().Draw(t, "change_set"),
 			Actor:     genID().Draw(t, "actor"),
@@ -442,7 +496,7 @@ func genEntry() *rapid.Generator[Entry] {
 			// Years 0000 through 9999, the range RFC 3339 can spell.
 			At:    time.Unix(rapid.Int64Range(-62167219200, 253402300799).Draw(t, "at"), 0).UTC(),
 			After: after,
-			Type:  rapid.SampledFrom(Types()).Draw(t, "type"),
+			Type:  typ,
 			Body:  json.RawMessage(bytes.TrimSuffix(body, []byte("\n"))),
 		}
 	})
@@ -513,6 +567,8 @@ func TestDecodeCanonicalRejects(t *testing.T) {
 		{"unknown field", strings.Replace(good, "  \"id\"", "  \"extra\": 1,\n  \"id\"", 1), ErrInvalid, "extra"},
 		{"bad version", strings.Replace(good, `"v": 1`, `"v": 0`, 1), ErrInvalid, "v"},
 		{"newer version", strings.Replace(good, `"v": 1`, `"v": 99`, 1), ErrNewerFormat, "v"},
+		{"reopen v 1", strings.Replace(good, `"type": "note"`, `"type": "reopen"`, 1), ErrInvalid, "type"},
+		{"reopen v 2", strings.Replace(strings.Replace(good, `"type": "note"`, `"type": "reopen"`, 1), `"v": 1`, `"v": 2`, 1), ErrInvalid, "type"},
 		{"empty", "", ErrInvalid, ""},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
