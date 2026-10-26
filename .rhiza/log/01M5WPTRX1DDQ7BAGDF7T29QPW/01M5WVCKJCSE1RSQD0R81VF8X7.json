@@ -1,0 +1,83 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M5WT1R0RJHHJ22N6EJT2MTN2"
+  ],
+  "at": "2026-10-26T19:35:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "2bbd5edda976d3c11d19007d94a28caeab7042e2",
+          "pr": "https://github.com/dphaener/rhiza/pull/35",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #35 (https://github.com/dphaener/rhiza/pull/35) passed CI at 2bbd5ed",
+          "status": "verified"
+        },
+        "handle": "pr-35-reopening-a-change-set",
+        "id": "01M5WVCJVBQMWEW8HRBEZKY4CX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WVCJVBQMWEW8HRBC730J82",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WVCJVBQMWEW8HRBC730J82",
+        "id": "01M5WVCJYTJTJG6W8K0SHEATWE",
+        "link": "01M5WVCJYTJTJG6W8K0QTPMASP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTSR78R8WM8WYMGWD6WJN",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M5WVCJVBQMWEW8HRBC730J82",
+        "id": "01M5WVCK29C1PD7WFP7GHKEPXY",
+        "link": "01M5WVCK29C1PD7WFP7FDVZNQZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTSZ2FDZ6T77CRE763WAE",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M5WVCJVBQMWEW8HRBC730J82",
+        "id": "01M5WVCK5R9K3JR3VBJVQW8YQA",
+        "link": "01M5WVCK5R9K3JR3VBJV3GT891",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTT5VX3GPH672QATF03N3",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M5WVCJVBQMWEW8HRBC730J82",
+        "id": "01M5WVCK98XB2528PGYJHT08ED",
+        "link": "01M5WVCK98XB2528PGYHBJMWAK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTTCK57BZS99AG7M94C6X",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M5WVCJVBQMWEW8HRBC730J82",
+        "id": "01M5WVCKCRB1PM61W5VZFWVAGA",
+        "link": "01M5WVCKCRB1PM61W5VW1A0Y45",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTTKD0TMJ3RHTAEV4SVEE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTRX1DDQ7BAGDF7T29QPW",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WVCKJCSE1RSQD0R81VF8X7",
+  "type": "ops",
+  "v": 1
+}

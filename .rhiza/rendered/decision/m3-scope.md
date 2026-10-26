@@ -27,6 +27,11 @@ the orchestrator's proposal in the milestone-3 conversation, accepted by the own
 ### In
 
 - decided-by [milestone-3](../intent/anyone-builds/milestone-3.md)
+- decided-by [reopen](../capability/rhiza/change-sets/reopen.md)
+- decided-by [reopen-branch-only](../capability/rhiza/change-sets/reopen/reopen-branch-only.md)
+- decided-by [reopen-views](../capability/rhiza/change-sets/reopen/reopen-views.md)
+- decided-by [reopen-format](../capability/rhiza/change-sets/reopen/reopen-format.md)
+- decided-by [reopen-guide](../capability/rhiza/change-sets/reopen/reopen-guide.md)
 
 ## History
 
