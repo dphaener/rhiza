@@ -441,3 +441,95 @@ func TestAmendedRoundTrip(t *testing.T) {
 		}
 	}
 }
+
+// A retried entry reopens a failed run at its step with no open visit,
+// keeps the failure in the history, and marks the next visit of that step
+// as the retry. Visits keep counting; the cap base moves to the retry.
+func TestFoldRetried(t *testing.T) {
+	j := Journal{ID: "r", Entries: []Entry{
+		startedEntry("a", 0),
+		{Type: TypeEntered, At: at(1), Step: "a", Visit: 1},
+		{Type: TypeEnded, At: at(2), Step: "a", Visit: 1, Outcome: "pass", Next: "b"},
+		{Type: TypeEntered, At: at(3), Step: "b", Visit: 1},
+		{Type: TypeEnded, At: at(4), Step: "b", Visit: 1, Outcome: "fail", End: Failed, Detail: "exit 1"},
+		{Type: TypeFinished, At: at(5), Step: "b", End: Failed, Detail: `step "b" ended with outcome "fail"`},
+	}}
+	st := j.State()
+	if step, err := st.FailedStep(); err != nil || step != "b" {
+		t.Fatalf("FailedStep = %q, %v", step, err)
+	}
+	j.Entries = append(j.Entries, Entry{Type: TypeRetried, At: at(6), Step: "b", Detail: st.Detail})
+	st = j.State()
+	if st.Ended || st.Result != "" || st.Detail != "" || st.Current != "b" || st.CurrentVisit != 0 || st.FinishedStep != "" {
+		t.Fatalf("retried state wrong: %+v", st)
+	}
+	if _, err := st.FailedStep(); !errors.Is(err, ErrNotFailed) {
+		t.Fatalf("FailedStep of a reopened run: %v", err)
+	}
+	want := []Retry{{Step: "b", Detail: `step "b" ended with outcome "fail"`, At: at(6)}}
+	if !reflect.DeepEqual(st.Retries, want) {
+		t.Fatalf("retries = %+v", st.Retries)
+	}
+	if st.CapVisits("b") != 0 || st.CapVisits("a") != 0 || st.Visits["b"] != 1 {
+		t.Fatalf("cap visits a=%d b=%d, visits %v", st.CapVisits("a"), st.CapVisits("b"), st.Visits)
+	}
+	j.Entries = append(j.Entries,
+		Entry{Type: TypeEntered, At: at(7), Step: "b", Visit: 2},
+		Entry{Type: TypeEnded, At: at(8), Step: "b", Visit: 2, Outcome: "pass", End: Succeeded},
+		Entry{Type: TypeFinished, At: at(9), Step: "b", End: Succeeded},
+	)
+	st = j.State()
+	if !st.Ended || st.Result != Succeeded || st.CapVisits("b") != 1 || st.Visits["b"] != 2 {
+		t.Fatalf("finished after retry: %+v", st)
+	}
+	var retried []bool
+	for _, s := range st.Steps {
+		retried = append(retried, s.Retried)
+	}
+	if !reflect.DeepEqual(retried, []bool{false, false, true}) {
+		t.Fatalf("retried marks = %v", retried)
+	}
+	if _, err := st.FailedStep(); !errors.Is(err, ErrNotFailed) {
+		t.Fatalf("FailedStep of a succeeded run: %v", err)
+	}
+}
+
+// FailedStep falls back to the last ended step when the finished entry
+// names none, and has nothing for an unfinished run.
+func TestFailedStep(t *testing.T) {
+	st := Journal{Entries: []Entry{
+		startedEntry("a", 0),
+		{Type: TypeEntered, At: at(1), Step: "a", Visit: 1},
+		{Type: TypeEnded, At: at(2), Step: "a", Visit: 1, Outcome: OutcomeError, Detail: "boom"},
+		{Type: TypeFinished, At: at(3), End: Failed, Detail: "boom"},
+	}}.State()
+	if step, err := st.FailedStep(); err != nil || step != "a" {
+		t.Fatalf("FailedStep = %q, %v", step, err)
+	}
+	for name, st := range map[string]State{
+		"unfinished":     Journal{Entries: []Entry{startedEntry("a", 0)}}.State(),
+		"no step at all": Journal{Entries: []Entry{startedEntry("a", 0), {Type: TypeFinished, At: at(1), End: Failed}}}.State(),
+	} {
+		if _, err := st.FailedStep(); !errors.Is(err, ErrNotFailed) {
+			t.Errorf("%s: err = %v", name, err)
+		}
+	}
+}
+
+func TestRetriedRoundTrip(t *testing.T) {
+	s := newStore(t)
+	if err := s.Create("01RUNRRRR", startedEntry("a", 0)); err != nil {
+		t.Fatal(err)
+	}
+	e := Entry{Type: TypeRetried, At: at(1), Step: "a", Detail: "why"}
+	if err := s.Append("01RUNRRRR", e); err != nil {
+		t.Fatal(err)
+	}
+	j, err := s.Read("01RUNRRRR")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := j.Entries[1]; !reflect.DeepEqual(got, e) {
+		t.Fatalf("got %+v, want %+v", got, e)
+	}
+}

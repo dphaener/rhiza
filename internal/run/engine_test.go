@@ -920,3 +920,135 @@ func TestAgentUntilErrorFailsRun(t *testing.T) {
 		t.Fatalf("result %q steps %+v", st.Result, st.Steps)
 	}
 }
+
+// A run whose command step failed is retried at that step: the step runs
+// again and the run succeeds. The journal keeps the failure, then the
+// retried entry, then the new visit.
+func TestRetryRerunsFailedStep(t *testing.T) {
+	e, r, _, _ := setup(t, `
+name = "wf"
+[step.one]
+kind = "command"
+run = "true"
+on.pass = "two"
+
+[step.two]
+kind = "command"
+run = "test -f x"
+on.pass = "done"
+on.fail = "failed"
+`)
+	r.codes["two"] = []int{1, 0}
+	st, err := e.Run(runID)
+	if err != nil || st.Result != Failed {
+		t.Fatalf("first run: %v, %q", err, st.Result)
+	}
+	if _, err := e.Run(runID); !errors.Is(err, ErrFinished) {
+		t.Fatalf("plain resume of a failed run: %v", err)
+	}
+	st, err = e.Retry(runID[:6])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded {
+		t.Fatalf("result after retry = %q (%s)", st.Result, st.Detail)
+	}
+	if r.commands["one"] != 1 || r.commands["two"] != 2 {
+		t.Errorf("commands = %v", r.commands)
+	}
+	if got, want := outcomes(st), []string{"one:pass", "two:fail", "two:pass"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("outcomes = %v, want %v", got, want)
+	}
+	if last := st.Steps[2]; !last.Retried || last.Visit != 2 {
+		t.Errorf("retried visit = %+v", last)
+	}
+	want := []string{
+		"started:one", "entered:one", "ended:one", "entered:two", "ended:two", "finished:two",
+		"retried:two", "entered:two", "ended:two", "finished:two",
+	}
+	if got := entryTypes(t, e); !reflect.DeepEqual(got, want) {
+		t.Errorf("entries = %v\nwant %v", got, want)
+	}
+}
+
+// A run that went over a step's max_visits is retried at that step: the
+// cap counts only visits since the retry, so the step is entered again.
+func TestRetryOverCapStep(t *testing.T) {
+	e, r, _, _ := setup(t, loopWF)
+	r.codes["test"] = []int{1, 1, 0}
+	st, err := e.Run(runID)
+	if err != nil || st.Result != Failed || st.FinishedStep != "build" {
+		t.Fatalf("first run: %v, %+v", err, st)
+	}
+	st, err = e.Retry(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded {
+		t.Fatalf("result after retry = %q (%s)", st.Result, st.Detail)
+	}
+	if r.commands["build"] != 3 || r.commands["test"] != 3 {
+		t.Errorf("commands = %v", r.commands)
+	}
+	if st.Visits["build"] != 3 || st.CapVisits("build") != 1 {
+		t.Errorf("build visits %d, cap visits %d", st.Visits["build"], st.CapVisits("build"))
+	}
+}
+
+// Retrying a run that succeeded is refused and writes nothing.
+func TestRetrySucceededIsErrNotFailed(t *testing.T) {
+	e, r, _, _ := setup(t, cmdWF)
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	before := entryTypes(t, e)
+	_, err := e.Retry(runID)
+	if !errors.Is(err, ErrNotFailed) || !strings.Contains(err.Error(), "only a failed run can be retried") {
+		t.Fatalf("err = %v, want ErrNotFailed", err)
+	}
+	if got := entryTypes(t, e); !reflect.DeepEqual(got, before) {
+		t.Errorf("entries changed: %v", got)
+	}
+	if r.commands["test"] != 1 {
+		t.Errorf("test ran %d times", r.commands["test"])
+	}
+}
+
+// Retry on a run that is not finished runs it as Run does, with no
+// retried entry.
+func TestRetryUnfinishedRunResumes(t *testing.T) {
+	e, r, _, _ := setup(t, waitWF)
+	e.NoWait = true
+	if st, err := e.Run(runID); err != nil || st.Stopped == "" {
+		t.Fatalf("first run: %v, %+v", err, st)
+	}
+	e.NoWait = false
+	r.holds["ci"] = []bool{true}
+	st, err := e.Retry(runID)
+	if err != nil || st.Result != Succeeded {
+		t.Fatalf("retry of a stopped run: %v, %+v", err, st)
+	}
+	if countType(t, e, TypeRetried) != 0 || len(st.Retries) != 0 {
+		t.Errorf("a stopped run was journalled as retried")
+	}
+}
+
+// Decide counts max_visits from the last retry.
+func TestDecideCapSinceRetry(t *testing.T) {
+	def, err := workflow.Parse("wf", []byte(loopWF))
+	if err != nil {
+		t.Fatal(err)
+	}
+	st := State{Current: "build", Visits: map[string]int{"build": 2}, RetryBase: map[string]int{"build": 2}}
+	got, err := Decide(def, st)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := (Action{Kind: ActEnter, Step: "build", Visit: 3}); got != want {
+		t.Fatalf("got %+v, want %+v", got, want)
+	}
+	st.Visits["build"], st.RetryBase["build"] = 4, 2
+	if got, _ := Decide(def, st); got.Kind != ActOverCap || got.Visit != 5 {
+		t.Fatalf("over cap since retry: %+v", got)
+	}
+}

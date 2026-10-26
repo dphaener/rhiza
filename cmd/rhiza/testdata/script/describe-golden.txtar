@@ -2621,6 +2621,10 @@ cmp stdout describe.golden.json
             "description": "Stop at a wait step whose condition does not hold yet, instead of waiting",
             "type": "boolean"
           },
+          "retry": {
+            "description": "Restart a failed run at the step that failed, once its cause is fixed; the retry is journalled. A run that succeeded is refused",
+            "type": "boolean"
+          },
           "run": {
             "description": "The run: a full ID or a unique prefix of 4+ characters",
             "type": "string"
@@ -2637,6 +2641,10 @@ cmp stdout describe.golden.json
           "dry_run": {
             "description": "True if nothing was written or run",
             "type": "boolean"
+          },
+          "retry": {
+            "description": "The step a resume --retry restarted the failed run at, or in a dry run would; absent otherwise",
+            "type": "string"
           },
           "run": {
             "additionalProperties": false,
@@ -2752,6 +2760,32 @@ cmp stdout describe.golden.json
                 "description": "The run ID",
                 "type": "string"
               },
+              "retries": {
+                "description": "The retries of the run after it failed, in order; absent when it was never retried",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it was retried, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "Why the run had failed",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was restarted at",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "started_at": {
                 "description": "When it started, RFC 3339 UTC",
                 "type": "string"
@@ -2780,6 +2814,10 @@ cmp stdout describe.golden.json
                     "outcome": {
                       "description": "How it ended: pass, fail, timeout, or error when it could not run",
                       "type": "string"
+                    },
+                    "retry": {
+                      "description": "True for the first visit of the step after a retry restarted the run at it",
+                      "type": "boolean"
                     },
                     "session": {
                       "description": "An agent step's session",
@@ -2836,7 +2874,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Continue a stopped or interrupted run where its journal left it",
+      "summary": "Continue a stopped or interrupted run where its journal left it, or retry a failed run at its failed step",
       "write": true
     },
     {
@@ -2874,6 +2912,10 @@ cmp stdout describe.golden.json
           "dry_run": {
             "description": "True if nothing was written or run",
             "type": "boolean"
+          },
+          "retry": {
+            "description": "The step a resume --retry restarted the failed run at, or in a dry run would; absent otherwise",
+            "type": "string"
           },
           "run": {
             "additionalProperties": false,
@@ -2989,6 +3031,32 @@ cmp stdout describe.golden.json
                 "description": "The run ID",
                 "type": "string"
               },
+              "retries": {
+                "description": "The retries of the run after it failed, in order; absent when it was never retried",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it was retried, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "Why the run had failed",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was restarted at",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "started_at": {
                 "description": "When it started, RFC 3339 UTC",
                 "type": "string"
@@ -3017,6 +3085,10 @@ cmp stdout describe.golden.json
                     "outcome": {
                       "description": "How it ended: pass, fail, timeout, or error when it could not run",
                       "type": "string"
+                    },
+                    "retry": {
+                      "description": "True for the first visit of the step after a retry restarted the run at it",
+                      "type": "boolean"
                     },
                     "session": {
                       "description": "An agent step's session",
@@ -3202,6 +3274,32 @@ cmp stdout describe.golden.json
             "description": "The run ID",
             "type": "string"
           },
+          "retries": {
+            "description": "The retries of the run after it failed, in order; absent when it was never retried",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "at": {
+                  "description": "When it was retried, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "detail": {
+                  "description": "Why the run had failed",
+                  "type": "string"
+                },
+                "step": {
+                  "description": "The step the run was restarted at",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "at",
+                "step"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "started_at": {
             "description": "When it started, RFC 3339 UTC",
             "type": "string"
@@ -3230,6 +3328,10 @@ cmp stdout describe.golden.json
                 "outcome": {
                   "description": "How it ended: pass, fail, timeout, or error when it could not run",
                   "type": "string"
+                },
+                "retry": {
+                  "description": "True for the first visit of the step after a retry restarted the run at it",
+                  "type": "boolean"
                 },
                 "session": {
                   "description": "An agent step's session",

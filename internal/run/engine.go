@@ -18,9 +18,12 @@ var (
 	ErrLive = errors.New("run is running in another process")
 	// ErrFinished means the run has already finished.
 	ErrFinished = errors.New("run is finished")
+	// ErrNotFailed means a retry was asked of a run that did not fail:
+	// only a failed run can be retried.
+	ErrNotFailed = errors.New("run did not fail")
 )
 
-// runError names the run and wraps ErrLive or ErrFinished.
+// runError names the run and wraps ErrLive, ErrFinished or ErrNotFailed.
 type runError struct {
 	id   string
 	kind error
@@ -32,6 +35,8 @@ func (e *runError) Error() string {
 		return fmt.Sprintf("run %s is running in another process", e.id)
 	case ErrFinished:
 		return fmt.Sprintf("run %s is finished", e.id)
+	case ErrNotFailed:
+		return fmt.Sprintf("run %s did not fail: only a failed run can be retried", e.id)
 	}
 	return fmt.Sprintf("run %s: %v", e.id, e.kind)
 }
@@ -162,7 +167,9 @@ type Action struct {
 
 // Decide is the pure transition: from a definition and a folded journal it
 // says what to do next. An ended step is never run again; a step entered
-// and not ended is continued without a new visit.
+// and not ended is continued without a new visit. A step's max_visits
+// counts only its visits since the run's last retried entry (see
+// State.CapVisits), so a retry can enter a step whose cap was reached.
 func Decide(def *workflow.Definition, st State) (Action, error) {
 	if st.Ended {
 		return Action{Kind: ActFinished}, nil
@@ -183,7 +190,7 @@ func Decide(def *workflow.Definition, st State) (Action, error) {
 		return Action{Kind: ActContinue, Step: st.Current, Visit: st.CurrentVisit}, nil
 	}
 	visit := st.Visits[st.Current] + 1
-	if visit > step.Cap() {
+	if st.CapVisits(st.Current)+1 > step.Cap() {
 		return Action{
 			Kind: ActOverCap, Step: st.Current, Visit: visit, End: workflow.EndFailed,
 			Detail: fmt.Sprintf("step %q went over max_visits %d", st.Current, step.Cap()),
@@ -210,6 +217,20 @@ func endOf(def *workflow.Definition, step, outcome, detail string) (workflow.End
 // stops at a wait under NoWait. It returns the folded state either way. A
 // run another process holds returns ErrLive; a finished one ErrFinished.
 func (e *Engine) Run(id string) (State, error) {
+	return e.run(id, false)
+}
+
+// Retry reopens a failed run at the step it failed at (State.FailedStep)
+// by appending a retried entry, then runs it as Run does. The entry is
+// appended under the run's lock, after reading the journal again, so it
+// is never written beside another process's run. A run that is not
+// finished is run as Run would; one that succeeded returns ErrNotFailed
+// and writes nothing.
+func (e *Engine) Retry(id string) (State, error) {
+	return e.run(id, true)
+}
+
+func (e *Engine) run(id string, retry bool) (State, error) {
 	j, err := e.Store.Read(id)
 	if err != nil {
 		return State{}, err
@@ -227,7 +248,7 @@ func (e *Engine) Run(id string) (State, error) {
 		return State{}, err
 	}
 	st := j.State()
-	if st.Ended {
+	if st.Ended && !retry {
 		return st, &runError{id: j.ID, kind: ErrFinished}
 	}
 	def, err := definition(st)
@@ -235,6 +256,19 @@ func (e *Engine) Run(id string) (State, error) {
 		return st, err
 	}
 	r := &running{e: e, j: j, def: def}
+	if st.Ended {
+		step, err := st.FailedStep()
+		if err != nil {
+			return st, &runError{id: j.ID, kind: ErrNotFailed}
+		}
+		if _, ok := def.Steps[step]; !ok {
+			return st, fmt.Errorf("run %s: step %q is not in workflow %q", j.ID, step, def.Name)
+		}
+		if err := r.append(Entry{Type: TypeRetried, Step: step, Detail: st.Detail}); err != nil {
+			return r.j.State(), err
+		}
+		r.log("run %s: retrying step %s", j.ID, step)
+	}
 	return r.loop()
 }
 
