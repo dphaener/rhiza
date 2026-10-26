@@ -609,6 +609,7 @@
 - [claude-code-aef4c4c4](actor/claude-code-aef4c4c4.md)
 - [claude-code-b5610794](actor/claude-code-b5610794.md)
 - [claude-code-b6232fc2](actor/claude-code-b6232fc2.md)
+- [claude-code-b6232fc2-verifier](actor/claude-code-b6232fc2-verifier.md)
 - [claude-code-d2f2546a](actor/claude-code-d2f2546a.md)
 - [claude-code-dd482246](actor/claude-code-dd482246.md)
 - [claude-code-f436602f](actor/claude-code-f436602f.md)
