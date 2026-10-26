@@ -174,8 +174,9 @@ func changedCapabilities(m Model, ops []op.Op) []id.ID {
 
 // runShipLand records the PR as Evidence, lands the change set, renders,
 // and commits and pushes to the PR branch. It runs in the change set's
-// worktree (ctx.Root) on its branch. Each part is skipped when an earlier
-// call did it, so a resumed run moves on.
+// worktree (ctx.Root) on its branch. In Rhiza's own repo the land and
+// render run with rhiza built from the PR head (see ship_build.go). Each
+// part is skipped when an earlier call did it, so a resumed run moves on.
 func runShipLand(ctx *Ctx, _ any) (any, error) {
 	if err := refuseShipDryRun(ctx, "ship.land"); err != nil {
 		return nil, err
@@ -200,6 +201,13 @@ func runShipLand(ctx *Ctx, _ any) (any, error) {
 		return nil, Conflictf("ship land commits to the change set's branch %s, but %s is on %s", t.branch, ctx.Root, b)
 	}
 
+	// In Rhiza's own repo, build the PR head first: a branch that changes
+	// rendering lands with its own, and a failed build writes nothing.
+	bin, err := shipHeadBuild(ctx, t)
+	if err != nil {
+		return nil, err
+	}
+
 	resp := ShipLandResponse{Change: t.cs.String(), PR: st.PR, Evidence: shipEvidenceHandle(st.PR, t.slug), Rendered: []string{}}
 	if err := shipRecordEvidence(ctx, t, st, &resp); err != nil {
 		return nil, err
@@ -213,20 +221,16 @@ func runShipLand(ctx *Ctx, _ any) (any, error) {
 		return nil, err
 	}
 	if c, _ := w.changeSet(t.cs); c.State != changeset.StateLanded {
-		land, _ := Lookup("land")
-		lctx := *ctx
-		lctx.ChangeSet, lctx.ChangeRef, lctx.Record = t.cs, "", false
-		if _, err := land.Run(&lctx, LifecycleRequest{}); err != nil {
+		if err := shipLandWith(ctx, t, bin); err != nil {
 			return nil, err
 		}
 		resp.Landed = true
 	}
-	r, err := runRender(ctx, RenderRequest{})
+	rendered, err := shipRenderWith(ctx, bin)
 	if err != nil {
 		return nil, err
 	}
-	rr := r.(RenderResponse)
-	resp.Rendered = append(append(resp.Rendered, rr.Written...), rr.Removed...)
+	resp.Rendered = append(resp.Rendered, rendered...)
 
 	if _, err := ctx.Git("add", "--", ".rhiza"); err != nil {
 		return nil, Errorf("%v", err)

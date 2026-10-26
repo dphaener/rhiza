@@ -1,0 +1,205 @@
+# In Rhiza's own repo (its go.mod names Rhiza's module), ship land builds
+# rhiza from the PR head and lands and renders with that build, so a
+# branch whose rendering differs from the running rhiza's lands with its
+# own rendering, and the head's check finds no stale rendered files. In any
+# other repo ship land renders in-process and runs no go build. A failed
+# head build fails ship land before it writes or pushes anything.
+#
+# The running rhiza here stands for an older installed one: the test hook
+# RHIZA_TEST_RENDER_STALE makes its render write an extra stale.md that
+# check calls extra. The fake go logs its call and writes the "head build"
+# as a script that runs this test's rhiza without that hook, logging its
+# argv to head.log. With FAKE_GO_FAIL set it fails as a broken branch
+# would. The fake gh answers pr view from the bare origin: PR #7 open with
+# every check passed at the branch's head on origin.
+
+chmod 755 bin/gh
+chmod 755 bin/go
+env PATH=$WORK/bin:$PATH
+
+# Rhiza's own repo, on the change set's branch, pushed, its PR green.
+exec git init -q --bare origin.git
+env ORIGIN=$WORK/origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+cp $WORK/rhiza.mod go.mod
+exec rhiza init
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability shipping --field 'statement=Ships a change set'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+exec git checkout -q -b cs/ship-it
+cp $WORK/feature.txt feature.txt
+exec git add feature.txt
+exec git commit -qm 'Build the feature'
+exec git push -q -u origin cs/ship-it
+exec rhiza ship check --change 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout 'passed'
+
+# The running rhiza's rendering differs from the head's: with the hook,
+# its render would leave stale.md, which check calls extra.
+env RHIZA_TEST_RENDER_STALE='rendered by an older rhiza'
+exec rhiza ship land --change 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^Landed change set 01M5PWGEF85Y185JZ2ZGCNH40N\.$'
+stdout '^Pushed [0-9a-f]{7}\.$'
+
+# go built the head in the worktree, into the git common dir, and the land
+# and render ran with that build.
+exec cat $WORK/go.log
+stdout -count=1 '^repo build -o .*/repo/\.git/rhiza/ship/01M5PWGEF85Y185JZ2ZGCNH40N/rhiza \./cmd/rhiza$'
+exec cat $WORK/head.log
+stdout '^land --change 01M5PWGEF85Y185JZ2ZGCNH40N --json$'
+stdout '^render --json$'
+! exists .rhiza/rendered/stale.md
+
+# The head's check passes: no stale rendered files.
+exec .git/rhiza/ship/01M5PWGEF85Y185JZ2ZGCNH40N/rhiza check
+stdout '^ok$'
+! stdout 'stale\.md'
+
+# The land commit is pushed with its trailers, and nothing is left over.
+exec git -C $WORK/origin.git log -1 --format=%B cs/ship-it
+stdout '^Land the change set and record its CI$'
+stdout '^Change: 01M5PWGEF85Y185JZ2ZGCNH40N$'
+stdout '^Actor: test$'
+exec git status --porcelain
+! stdout .
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- State: landed'
+fold-ok
+
+# Another repo: no go build, render runs in-process (and so, with the
+# hook, leaves stale.md in the land commit).
+cd $WORK
+rm go.log
+rm head.log
+exec git init -q --bare other.git
+env ORIGIN=$WORK/other.git
+mkdir other
+cd other
+exec git init -q
+exec git remote add origin $WORK/other.git
+cp $WORK/other.mod go.mod
+env RHIZA_TEST_RENDER_STALE=
+exec rhiza init
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+exec rhiza add capability shipping --field 'statement=Ships a change set'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+exec git checkout -q -b cs/ship-it
+cp $WORK/feature.txt feature.txt
+exec git add feature.txt
+exec git commit -qm 'Build the feature'
+exec git push -q -u origin cs/ship-it
+exec rhiza ship check
+stdout 'passed'
+env RHIZA_TEST_RENDER_STALE='rendered by an older rhiza'
+exec rhiza ship land
+stdout '^Landed change set '
+! exists $WORK/go.log
+! exists $WORK/head.log
+exists .rhiza/rendered/stale.md
+exec git -C $WORK/other.git show --stat --format=%s cs/ship-it
+stdout '\.rhiza/rendered/stale\.md'
+! exec rhiza check
+stdout 'stale\.md'
+
+# Rhiza's repo again, its head failing to build: ship land fails with go's
+# error and records, lands and pushes nothing.
+cd $WORK
+exec git init -q --bare broken.git
+env ORIGIN=$WORK/broken.git
+mkdir broken
+cd broken
+exec git init -q
+exec git remote add origin $WORK/broken.git
+cp $WORK/rhiza.mod go.mod
+env RHIZA_TEST_RENDER_STALE=
+exec rhiza init
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+exec rhiza add capability shipping --field 'statement=Ships a change set'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+exec git checkout -q -b cs/ship-it
+cp $WORK/feature.txt feature.txt
+exec git add feature.txt
+exec git commit -qm 'Build the feature'
+exec git push -q -u origin cs/ship-it
+exec rhiza ship check
+stdout 'passed'
+exec git rev-parse HEAD
+cp stdout $WORK/before.sha
+env FAKE_GO_FAIL=1
+! exec rhiza ship land
+stderr 'could not build rhiza from the PR head'
+stderr 'cmd/rhiza/main\.go:1:1: syntax error'
+exec cat $WORK/go.log
+stdout '^broken build -o '
+! exists $WORK/head.log
+exec git rev-parse cs/ship-it
+cmp stdout $WORK/before.sha
+exec git -C $WORK/broken.git rev-parse cs/ship-it
+cmp stdout $WORK/before.sha
+exec git status --porcelain
+! stdout .
+exec rhiza ls --kind evidence --json
+! stdout '"handle"'
+exec rhiza change show
+stdout '^- State: accepted'
+
+-- rhiza.mod --
+module github.com/dphaener/rhiza // Rhiza itself
+
+go 1.25
+-- other.mod --
+module example.com/other
+
+go 1.25
+-- feature.txt --
+built
+-- bin/go --
+#!/bin/sh
+echo "$(basename "$(pwd -P)") $*" >> "$WORK/go.log"
+if [ -n "$FAKE_GO_FAIL" ]; then
+	echo 'cmd/rhiza/main.go:1:1: syntax error: unexpected EOF' >&2
+	exit 1
+fi
+if [ "$1 $2 $4" != "build -o ./cmd/rhiza" ]; then
+	echo "fake go: unexpected: $*" >&2
+	exit 1
+fi
+cat > "$3" <<'EOF'
+#!/bin/sh
+echo "$*" >> "$WORK/head.log"
+unset RHIZA_TEST_RENDER_STALE
+exec rhiza "$@"
+EOF
+chmod 755 "$3"
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+case "$1 $2" in
+"pr view")
+	if ! head=$(git -C "$ORIGIN" rev-parse --verify --quiet "refs/heads/$3"); then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

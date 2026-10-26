@@ -803,3 +803,173 @@ func TestShipCloseOutClosesTabs(t *testing.T) {
 		t.Errorf("err = %v", err)
 	}
 }
+
+func TestGoModule(t *testing.T) {
+	for _, c := range []struct{ in, want string }{
+		{"module github.com/dphaener/rhiza\n\ngo 1.25\n", rhizaModule},
+		{"// a comment\nmodule github.com/dphaener/rhiza // Rhiza\n", rhizaModule},
+		{"module \"github.com/dphaener/rhiza\"\n", rhizaModule},
+		{"\tmodule   github.com/dphaener/rhiza  \r\n", rhizaModule},
+		{"module example.com/other\n", "example.com/other"},
+		{"module github.com/dphaener/rhiza/v2\n", "github.com/dphaener/rhiza/v2"},
+		{"modules x\ngo 1.25\n", ""},
+		{"// module github.com/dphaener/rhiza\n", ""},
+		{"", ""},
+	} {
+		if got := goModule([]byte(c.in)); got != c.want {
+			t.Errorf("goModule(%q) = %q, want %q", c.in, got, c.want)
+		}
+	}
+}
+
+func TestIsRhizaRepo(t *testing.T) {
+	for _, c := range []struct {
+		mod  string // "" writes no go.mod
+		want bool
+	}{
+		{"", false},
+		{"module github.com/dphaener/rhiza\n", true},
+		{"module example.com/other\n", false},
+		{"module github.com/dphaener/rhiza/v2\n", false},
+	} {
+		dir := t.TempDir()
+		if c.mod != "" {
+			if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte(c.mod), 0o644); err != nil {
+				t.Fatal(err)
+			}
+		}
+		got, err := isRhizaRepo(dir)
+		if err != nil || got != c.want {
+			t.Errorf("isRhizaRepo(%q) = %v, %v; want %v", c.mod, got, err, c.want)
+		}
+	}
+}
+
+// rhizaRepoFixture is a ship land fixture whose root is Rhiza's own repo,
+// with programs answered by a shipExec, and the head build's path.
+func rhizaRepoFixture(t *testing.T) (*sessionFixture, *shipExec, string) {
+	t.Helper()
+	f, _, _ := shipLandFixture(t)
+	if err := os.WriteFile(filepath.Join(f.ctx.Root, "go.mod"), []byte("module "+rhizaModule+"\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	x := &shipExec{answers: map[string]string{}}
+	f.ctx.Exec = x.run
+	bin := filepath.Join(f.common, "rhiza", "ship", currentOf(t, f.ctx).String(), "rhiza")
+	return f, x, bin
+}
+
+func TestShipLandWithHeadBuild(t *testing.T) {
+	f, x, bin := rhizaRepoFixture(t)
+	cs := currentOf(t, f.ctx)
+	f.ctx.ActorRef = shipTestActor
+	x.answers["go build -o "+bin+" ./cmd/rhiza"] = ""
+	x.answers[bin+" land --change "+cs.String()+" --json --actor "+shipTestActor] = `{}`
+	x.answers[bin+" render --json --actor "+shipTestActor] = `{"written":[".rhiza/rendered/a.md"],"removed":[".rhiza/rendered/stale.md"],"unchanged":3}`
+	resp, err := callOp(t, f.ctx, "ship.land", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := resp.(ShipLandResponse)
+	if !r.Landed || !r.EvidenceWritten || r.Commit != "beef000111" || r.Pushed != "beef000111" ||
+		!slices.Equal(r.Rendered, []string{".rhiza/rendered/a.md", ".rhiza/rendered/stale.md"}) {
+		t.Fatalf("land = %+v", r)
+	}
+	if len(x.calls) != 3 || !strings.HasPrefix(x.calls[0], "go build") {
+		t.Fatalf("calls = %q", x.calls)
+	}
+	for _, d := range x.dirs {
+		if d != f.ctx.Root {
+			t.Errorf("ran in %s, not %s", d, f.ctx.Root)
+		}
+	}
+	if fi, err := os.Stat(filepath.Dir(bin)); err != nil || !fi.IsDir() {
+		t.Errorf("head build folder: %v", err)
+	}
+	// The head build landed it; in-process nothing did.
+	if c, _ := ctxWorkspace(t, f.ctx).changeSet(cs); c.State != changeset.StateAccepted {
+		t.Errorf("change set is %s; only the head build should land it", c.State)
+	}
+}
+
+func TestShipLandHeadBuildFails(t *testing.T) {
+	f, x, bin := rhizaRepoFixture(t)
+	cs := currentOf(t, f.ctx)
+	x.answers["go build -o "+bin+" ./cmd/rhiza"] = "!cmd/rhiza/main.go:1:1: syntax error"
+	_, err := callOp(t, f.ctx, "ship.land", `{}`)
+	wantExit(t, err, 1)
+	if !strings.Contains(err.Error(), "could not build rhiza from the PR head") || !strings.Contains(err.Error(), "syntax error") {
+		t.Errorf("err = %v", err)
+	}
+	if len(x.calls) != 1 {
+		t.Errorf("calls = %q", x.calls)
+	}
+	for _, c := range f.git.calls {
+		if strings.HasPrefix(c, "commit") || strings.HasPrefix(c, "push") || strings.HasPrefix(c, "add") {
+			t.Errorf("git %q after a failed build", c)
+		}
+	}
+	w := ctxWorkspace(t, f.ctx)
+	if c, _ := w.changeSet(cs); c.State != changeset.StateAccepted {
+		t.Errorf("change set is %s", c.State)
+	}
+	if _, err := w.model(id.ID{}).Resolve("pr-7-ship-it"); err == nil {
+		t.Error("evidence written after a failed build")
+	}
+}
+
+func TestShipRenderInProcess(t *testing.T) {
+	f, _, _ := shipLandFixture(t)
+	x := &shipExec{answers: map[string]string{}}
+	f.ctx.Exec = x.run
+	t2, err := findShipTarget(f.ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rendered, err := shipRender(f.ctx, t2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rendered) == 0 || len(x.calls) != 0 {
+		t.Errorf("rendered %q with calls %q", rendered, x.calls)
+	}
+}
+
+func TestShipActorFlags(t *testing.T) {
+	a, err := id.Parse("01M5PWGEF85Y185JZ2ZGCNH40N")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range []struct {
+		ctx  Ctx
+		want []string
+	}{
+		{Ctx{}, nil},
+		{Ctx{ActorRef: "me", ForRef: "owner"}, []string{"--actor", "me", "--for", "owner"}},
+		{Ctx{Actor: a}, []string{"--actor", a.String()}},
+		{Ctx{For: a}, []string{"--for", a.String()}},
+	} {
+		if got := shipActorFlags(&c.ctx); !slices.Equal(got, c.want) {
+			t.Errorf("shipActorFlags(%+v) = %q, want %q", c.ctx, got, c.want)
+		}
+	}
+}
+
+// The stale-render test hook applies only with RHIZA_TEST_NOW set too.
+func TestRenderStaleHookInert(t *testing.T) {
+	env := func(m map[string]string) func(string) string { return func(k string) string { return m[k] } }
+	for _, c := range []struct {
+		getenv func(string) string
+		want   string
+	}{
+		{nil, ""},
+		{env(nil), ""},
+		{env(map[string]string{"RHIZA_TEST_RENDER_STALE": "x"}), ""},
+		{env(map[string]string{"RHIZA_TEST_NOW": "2026-10-24T12:00:00Z"}), ""},
+		{env(map[string]string{"RHIZA_TEST_NOW": "2026-10-24T12:00:00Z", "RHIZA_TEST_RENDER_STALE": "x"}), "x"},
+	} {
+		if got := testRenderStale(&Ctx{Getenv: c.getenv}); got != c.want {
+			t.Errorf("testRenderStale = %q, want %q", got, c.want)
+		}
+	}
+}
