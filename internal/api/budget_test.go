@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"sync"
 	"syscall"
@@ -176,11 +177,42 @@ func runRead(g generated, rd budgetRead) (any, error) {
 	return o.Run(ctx, rd.req)
 }
 
+// openTimingLog returns a function that appends a line to the file named by
+// RHIZA_BUDGET_LOG, so that CI can print the timings after the run, passing
+// or failing. The file is opened in append mode, starts its block with a
+// header naming GOMAXPROCS and the CPU count, and is closed when t ends. An
+// open or write error fails t. With the variable unset it returns a no-op.
+func openTimingLog(t *testing.T) func(line string) {
+	t.Helper()
+	path := os.Getenv("RHIZA_BUDGET_LOG")
+	if path == "" {
+		return func(string) {}
+	}
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	if err != nil {
+		t.Fatalf("RHIZA_BUDGET_LOG: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := f.Close(); err != nil {
+			t.Errorf("RHIZA_BUDGET_LOG %s: %v", path, err)
+		}
+	})
+	write := func(line string) {
+		t.Helper()
+		if _, err := fmt.Fprintln(f, line); err != nil {
+			t.Fatalf("RHIZA_BUDGET_LOG %s: %v", path, err)
+		}
+	}
+	write(fmt.Sprintf("read budget: GOMAXPROCS=%d NumCPU=%d", runtime.GOMAXPROCS(0), runtime.NumCPU()))
+	return write
+}
+
 func TestReadBudget(t *testing.T) {
 	if testing.Short() {
 		t.Skip("the read budget generates the 50,000-node model; skipped under -short")
 	}
 	budgetLock(t)
+	timingLog := openTimingLog(t)
 	g := defaultModel(t)
 	for _, v := range []string{viewAsIs, viewToBe} {
 		for _, rd := range budgetReads(g, v) {
@@ -199,7 +231,9 @@ func TestReadBudget(t *testing.T) {
 			}
 			slices.Sort(times)
 			median := (times[readBudgetRuns/2-1] + times[readBudgetRuns/2]) / 2
-			t.Logf("%-7s %-5s median %v (min %v, max %v), size %d", rd.name, v, median, times[0], times[len(times)-1], size)
+			line := fmt.Sprintf("%-7s %-5s median %v (min %v, max %v), size %d", rd.name, v, median, times[0], times[len(times)-1], size)
+			t.Log(line)
+			timingLog(line)
 			if median >= readBudget {
 				t.Errorf("%s %s median %v, want < %v", rd.name, v, median, readBudget)
 			}
