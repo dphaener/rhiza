@@ -24,6 +24,10 @@ the owner's request in the milestone-2 conversation
 
 - derived-from [milestone-2-conversation](../source/milestone-2-conversation.md)
 
+### In
+
+- decided-by [tab-title](../capability/rhiza/runtime/rex-sessions/tab-title.md)
+
 ## History
 
 - `01M5TYA5K3Y0VJRJ4GJ5X73T1D` Milestone 2 planning record, part 4: tab names and change set titles

@@ -24,6 +24,11 @@ the assistant's summary in the founding conversation
 
 - derived-from [founding-conversation](../source/founding-conversation.md)
 
+### In
+
+- decided-by [agent-status](../capability/rhiza/runtime/agent-status.md)
+- decided-by [status-precedence](../capability/rhiza/runtime/agent-status/status-precedence.md)
+
 ## History
 
 - `01M5SWRGHKJKT6JZY6ZVMQEGWN` Founding record: the Sources, the root intents and constraints, and the founding decisions
