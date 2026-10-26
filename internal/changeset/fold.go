@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
@@ -44,6 +45,7 @@ import (
 //     supersede  draft, proposed, accepted          superseded
 //     land       intention: accepted                landed
 //                record: draft, proposed, accepted
+//     reopen     landed                             accepted
 //     note       any state                          nothing
 //
 //     Any other move, and a supersede by the change set itself, is skipped
@@ -56,8 +58,8 @@ import (
 //     whole entry (ErrRevision): an entry applies entirely or not at all.
 //  5. Two entries in the graph are concurrent when neither reaches the other
 //     through after links. Each concurrent pair of lifecycle entries
-//     (propose, accept, reject, withdraw, supersede, land) is reported, as
-//     is each concurrent pair of ops entries that write (add, replace or
+//     (propose, accept, reject, withdraw, supersede, land, reopen) is
+//     reported, as is each concurrent pair of ops entries that write (add, replace or
 //     drop) a common op ID (ErrConcurrent). The report goes on the later
 //     entry in fold order. Both entries still went through steps 3 and 4 in
 //     fold order, so the later one wins when its move is legal after the
@@ -164,8 +166,13 @@ type ChangeSet struct {
 	// superseded.
 	SupersededBy id.ID
 	// TerminalEntry is the entry that moved the change set to its terminal
-	// state, zero while it is not terminal.
+	// state, zero while it is not terminal. A reopen clears it.
 	TerminalEntry id.ID
+	// Lifecycle is every lifecycle entry that applied (propose, accept,
+	// reject, withdraw, supersede, land, reopen), in fold (causal) order.
+	// Skipped entries are left out, and so are open, ops and note. Like
+	// History it lives in memory only, and is nil when empty.
+	Lifecycle []Move
 	// Heads are the entries in the graph that no entry in the graph lists in
 	// its after, sorted by ID. A new entry would name them in its after.
 	Heads []id.ID
@@ -174,6 +181,17 @@ type ChangeSet struct {
 	// ErrRevision), which were folded but changed nothing; it excludes
 	// entries that left the graph.
 	Applied []id.ID
+}
+
+// Move is one applied lifecycle entry, as Lifecycle lists it.
+type Move struct {
+	// Type is the entry's type: propose, accept, reject, withdraw,
+	// supersede, land or reopen.
+	Type  entry.Type
+	Entry id.ID
+	At    time.Time
+	Actor id.ID
+	For   id.ID
 }
 
 // Revision is one version of an op, as written by an ops entry.
@@ -467,6 +485,8 @@ func fold(cs id.ID, entries []entry.Entry, canonical bool) (ChangeSet, []Problem
 	for _, n := range order[1:] {
 		if err := f.apply(&out, &rev, n); err != nil {
 			f.report(n.e.ID, err)
+		} else if lifecycle(n.e.Type) {
+			out.Lifecycle = append(out.Lifecycle, Move{Type: n.e.Type, Entry: n.e.ID, At: n.e.At, Actor: n.e.Actor, For: n.e.For})
 		}
 	}
 	if len(rev.ops) > 0 {
@@ -497,7 +517,8 @@ func fold(cs id.ID, entries []entry.Entry, canonical bool) (ChangeSet, []Problem
 
 func lifecycle(t entry.Type) bool {
 	switch t {
-	case entry.TypePropose, entry.TypeAccept, entry.TypeReject, entry.TypeWithdraw, entry.TypeSupersede, entry.TypeLand:
+	case entry.TypePropose, entry.TypeAccept, entry.TypeReject, entry.TypeWithdraw, entry.TypeSupersede, entry.TypeLand,
+		entry.TypeReopen:
 		return true
 	}
 	return false
@@ -584,6 +605,12 @@ func (f *folder) apply(out *ChangeSet, rev *revision, n *node) error {
 			return fmt.Errorf("%w: land of %s change set in state %s", ErrTransition, out.Open.Kind, from)
 		}
 		terminal(StateLanded)
+	case Reopen:
+		if from != StateLanded {
+			return transition(n.e.Type, from)
+		}
+		out.State = StateAccepted
+		out.TerminalEntry = id.ID{}
 	case Note:
 	}
 	return nil

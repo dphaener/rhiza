@@ -96,8 +96,8 @@ func invalidWrap(field string, err error) error {
 
 // Validate reports the first way e breaks the envelope rules. V must be a
 // format from 1 through FormatVersion, and 3 or later for a reopen entry;
-// whether the body needs that format is the body's concern. The time embedded in a ULID is deliberately not
-// compared with At.
+// whether the body needs that format is the body's concern. The time
+// embedded in a ULID is deliberately not compared with At.
 func (e Entry) Validate() error {
 	return e.validate(false)
 }
