@@ -25,6 +25,10 @@
     - [ordered-landing](capability/genesis/change-sets/ordered-landing.md)
     - [dropped-dependencies](capability/genesis/change-sets/dropped-dependencies.md)
     - [acyclic-dependencies](capability/genesis/change-sets/acyclic-dependencies.md)
+    - [carve](capability/genesis/change-sets/carve.md)
+    - [carve-entries](capability/genesis/change-sets/carve-entries.md)
+    - [carve-dependency](capability/genesis/change-sets/carve-dependency.md)
+    - [carve-guards](capability/genesis/change-sets/carve-guards.md)
   - [lineage](capability/genesis/lineage.md)
     - [why-walk](capability/genesis/lineage/why-walk.md)
     - [change-history](capability/genesis/lineage/change-history.md)
@@ -402,11 +406,16 @@
 ## Questions
 
 - [area-gap](question/area-gap.md)
+- [carve-stale-base-recovery](question/carve-stale-base-recovery.md)
 
 ## Evidence
 
 - [acyclic-dependencies-tests](evidence/acyclic-dependencies-tests.md)
 - [backlog-group-tested](evidence/backlog-group-tested.md)
+- [carve-dependency-verified](evidence/carve-dependency-verified.md)
+- [carve-entries-verified](evidence/carve-entries-verified.md)
+- [carve-guards-verified](evidence/carve-guards-verified.md)
+- [carve-verified](evidence/carve-verified.md)
 - [dependent-writes-tests](evidence/dependent-writes-tests.md)
 - [dropped-dependencies-tests](evidence/dropped-dependencies-tests.md)
 - [milestone-groups-tested](evidence/milestone-groups-tested.md)

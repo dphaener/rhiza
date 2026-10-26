@@ -24,6 +24,10 @@ the orchestrator's proposal in the milestone-2 conversation, accepted by the own
 
 - derived-from [milestone-2-conversation](../source/milestone-2-conversation.md)
 
+### In
+
+- decided-by [carve-dependency](../capability/genesis/change-sets/carve-dependency.md)
+
 ## History
 
 - `01M5TS2AA3FSV9JC3HA19Y5MJ8` Milestone 2 planning record, part 2: carving that keeps IDs
