@@ -1,0 +1,33 @@
+{
+  "actor": "01M5TYA1ZV6XHZWWSDKVWR70B3",
+  "after": [
+    "01M5TS2EZR65Z565V3KEPVNTX5"
+  ],
+  "at": "2026-10-26T01:53:34Z",
+  "body": {
+    "carve": {
+      "entry": "01M5TYKE6N598DK5QSJDPJFP1H",
+      "from": "01M5SWT91P766X04ESJABB0Q44"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The binary ships the plan, build, review and ship workflows."
+        },
+        "handle": "built-in-workflows",
+        "id": "01M5TYKE6N598DK5QSJB5M7A22",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5SWT9EFKV8YB9VXVTRK4755",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      }
+    ]
+  },
+  "change_set": "01M5SZJ03NQS0A389JF8TTMF6M",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5TYKE6N598DK5QSJHCK63KN",
+  "type": "ops",
+  "v": 2
+}
