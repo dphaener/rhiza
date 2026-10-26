@@ -1,0 +1,229 @@
+{
+  "actor": "01M5WQN7KJ2ZXWF65BCCX1CS52",
+  "after": [
+    "01M5WQAK6J4JEHXFZ55N4822QH"
+  ],
+  "at": "2026-10-26T19:12:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The reopen entry is format 3: only reopen entries carry v 3, so older readers fail with ErrNewerFormat and formats 1 and 2 stay byte-identical.",
+          "wording": "the implementing agent's choice, accepted by the orchestrator acting as arbiter"
+        },
+        "handle": "reopen-format-three",
+        "id": "01M5WT1NX9GMS5QQJ5ZQHJA9MZ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WT1NX9GMS5QQJ5ZNS44ZK3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "Reopen is refused when any land entry of the change set is in the tree at check's base, and when there is no git or no base to show it.",
+          "wording": "the implementing agent's choice, accepted by the orchestrator acting as arbiter"
+        },
+        "handle": "reopen-any-land-on-base",
+        "id": "01M5WT1P0XW67RKGFVWT38T7MM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WT1P0XW67RKGFVWS588PNV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "A reopen makes the change set the worktree's current one.",
+          "wording": "the implementing agent's choice, accepted by the orchestrator acting as arbiter"
+        },
+        "handle": "reopen-makes-current",
+        "id": "01M5WT1P4HGAWZR5R1TA411KPX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WT1P4HGAWZR5R1T8QQRAEK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "The reopen body is empty: no reason or rule.",
+          "wording": "the implementing agent's choice, accepted by the orchestrator acting as arbiter"
+        },
+        "handle": "reopen-empty-body",
+        "id": "01M5WT1P83Z5CHBZPPCZWX65Y0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WT1P83Z5CHBZPPCY3413W8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTTCK57BZS99AG7M94C6X",
+        "id": "01M5WT1PBQYPY2MSMZ4H0MQ06P",
+        "link": "01M5WT1PBQYPY2MSMZ4GKWZWRH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WT1NX9GMS5QQJ5ZNS44ZK3",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTSZ2FDZ6T77CRE763WAE",
+        "id": "01M5WT1PFCT4VV5APJEH9EB7VN",
+        "link": "01M5WT1PFCT4VV5APJEGETJTC6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WT1P0XW67RKGFVWS588PNV",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTSR78R8WM8WYMGWD6WJN",
+        "id": "01M5WT1PK05HD8BZ25V6820MT2",
+        "link": "01M5WT1PK05HD8BZ25V5WR216J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WT1P4HGAWZR5R1T8QQRAEK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTSR78R8WM8WYMGWD6WJN",
+        "id": "01M5WT1PPM7MPH23HBTD87SSZ1",
+        "link": "01M5WT1PPM7MPH23HBTD3HWKG9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WT1P83Z5CHBZPPCY3413W8",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "result": "PASS under make check at commit afc1020 on branch cs/reopening-a-change-set, run by an independent verifier",
+          "statement": "A testscript lands a change set on its branch, reopens it back to accepted and current, writes into it once more and relands it, with rhiza check passing and change show and log holding the land, reopen and land; rhiza check on this repo reports no findings.",
+          "tests": "testscript: reopen.txtar (TestScripts/reopen); rhiza check --json (no findings), also run by make self-check"
+        },
+        "handle": "reopen-verified",
+        "id": "01M5WT1PT758E697WGX5D5D0SP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WT1PT758E697WGX1HNBW1R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "result": "PASS under make check at commit afc1020 on branch cs/reopening-a-change-set, run by an independent verifier",
+          "statement": "A testscript and Go tests show reopen succeeding when the land entry is only on the branch, refused with a conflict when a land entry is on the base or there is no git or base, refused from every state but landed, and no writes to a landed set.",
+          "tests": "testscript: reopen-base.txtar (TestScripts/reopen-base); go test internal/api: TestReopenOnBranch, TestReopenLandedOnBase, TestReopenNoBase (NoGit, NoRef), TestReopenIllegal (draft, accepted, rejected, withdrawn), TestReopenNoWritesToLanded"
+        },
+        "handle": "reopen-branch-only-verified",
+        "id": "01M5WT1PXSTBVVDZ7TMBEREFC0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WT1PXSTBVVDZ7TM7G8CRV6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "result": "PASS under make check at commit afc1020 on branch cs/reopening-a-change-set, run by an independent verifier",
+          "statement": "Go tests fold landed, reopened and relanded change sets (including skipped and concurrent reopens), check as-is and to-be at each step, and show the land and reopen history in change show and log.",
+          "tests": "go test internal/changeset: TestFoldReopen, TestFoldReopenSkipped, TestFoldConcurrentReopen; internal/model: TestViewsReopen (landed, reopened, reopened_with_an_op, relanded); internal/api: TestChangeShowHistory, TestLogReopened, TestLogReopenedAccepted"
+        },
+        "handle": "reopen-views-verified",
+        "id": "01M5WT1Q1CNJW3MX4Z80Z4DVR4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WT1Q1CNJW3MX4Z80365DDM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "result": "PASS under make check at commit afc1020 on branch cs/reopening-a-change-set, run by an independent verifier",
+          "statement": "Corpus and golden tests read, fold and render the unchanged format-1 and format-2 cases and a new format-3 reopen case, and entry tests show reopen needs format 3 with each version stamped as before.",
+          "tests": "go test: TestCorpusFolds (internal/changeset), TestCorpus and TestCorpusCorrupt (internal/store), TestCorpus (internal/model), TestGolden (internal/render), each over format-1/*, format-2/carve and format-3/reopen; TestTypes, TestVersions (1, 2, 3), TestReopenNeedsFormat3 (internal/entry); TestVersionsWithoutCarve, TestReopenNeedsFormat3 (internal/changeset); git diff --stat main -- testdata/corpus/format-1 testdata/corpus/format-2 is empty"
+        },
+        "handle": "reopen-format-verified",
+        "id": "01M5WT1Q51QNZFYAZXN2X3EE79",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WT1Q51QNZFYAZXN1CGBGX6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "result": "PASS under make check at commit afc1020 on branch cs/reopening-a-change-set, run by an independent verifier",
+          "statement": "The guide tests pass within the size caps, the guide testscripts pass, and rhiza guide reopening names rhiza reopen.",
+          "tests": "go test internal/guide: TestCaps, TestCapCatchesOversize, TestListOrder, TestEveryFileListed, TestLookup, TestTokens, TestDescriptions, TestList; testscript: guide.txtar, guide-install.txtar; rhiza guide reopening prints 'rhiza reopen --change <id> [--base <rev>] --json'"
+        },
+        "handle": "reopen-guide-verified",
+        "id": "01M5WT1Q8PAAARWE2WS07M2KV1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WT1Q8PAAARWE2WRXXPQGAP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WT1PT758E697WGX1HNBW1R",
+        "id": "01M5WT1QCB6XJ0ST0ZR11S9RXY",
+        "link": "01M5WT1QCB6XJ0ST0ZR0YYXB5Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTSR78R8WM8WYMGWD6WJN",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M5WT1PXSTBVVDZ7TM7G8CRV6",
+        "id": "01M5WT1QFZP202VV94H0Y0QEW8",
+        "link": "01M5WT1QFZP202VV94GX94MYDH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTSZ2FDZ6T77CRE763WAE",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M5WT1Q1CNJW3MX4Z80365DDM",
+        "id": "01M5WT1QKJB5MS886G3707Q6EK",
+        "link": "01M5WT1QKJB5MS886G36PHT43X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTT5VX3GPH672QATF03N3",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M5WT1Q51QNZFYAZXN1CGBGX6",
+        "id": "01M5WT1QQ5A9FRK4NAENJ0QEFG",
+        "link": "01M5WT1QQ5A9FRK4NAEJZP09AS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTTCK57BZS99AG7M94C6X",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M5WT1Q8PAAARWE2WRXXPQGAP",
+        "id": "01M5WT1QTYKDHVK4S3Q7652Z6J",
+        "link": "01M5WT1QTYKDHVK4S3Q3K2P4GE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTTKD0TMJ3RHTAEV4SVEE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTRX1DDQ7BAGDF7T29QPW",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WT1R0RJHHJ22N6EJT2MTN2",
+  "type": "ops",
+  "v": 1
+}
