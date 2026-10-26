@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5TWT3TSAFE3A18X57KNTD0A"
+  ],
+  "at": "2026-10-26T01:22:15Z",
+  "body": {
+    "reason": "The owner, in the milestone-2 conversation: \"I turned on extra usage and I have $140 in credits so I want to keep it rolling. You can start the remaining sessions in autonomous mode.\"",
+    "rule": "owner"
+  },
+  "change_set": "01M5SWTJY0AZP9TR3V1QJ54HMY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5TWT41NHA6R8RF565V8FHJC",
+  "type": "accept",
+  "v": 1
+}
