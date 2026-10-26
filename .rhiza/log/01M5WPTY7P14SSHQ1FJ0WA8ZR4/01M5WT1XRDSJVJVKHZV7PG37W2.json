@@ -1,0 +1,65 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5WQAKZ26CZ02RMMGHHR5BPY"
+  ],
+  "at": "2026-10-26T19:12:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quote": "I like the idea of having what step the run is on and which leaf, etc. Let's add it as a leaf.",
+          "quote_where": "milestone-3 conversation, on OSC 7501 program status",
+          "statement": "A run reports its progress to Rex through OSC 7501 program status: the run is the root record, with its current step and progress as leaves done out of all; each live leaf is a child record with a hierarchical ID, the builder or verifier working or blocked; and the run ends done or error.",
+          "wording": "the orchestrator's proposal in the milestone-3 conversation, accepted by the owner"
+        },
+        "handle": "run-reports-progress",
+        "id": "01M5WT1X52NSSH59BY5PV84EPZ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WT1X52NSSH59BY5KP418D0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WT1X52NSSH59BY5KP418D0",
+        "id": "01M5WT1X9WHR4KYMV9CT2CEWGE",
+        "link": "01M5WT1X9WHR4KYMV9CQMCZWJ5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTJ0WSM5QRW0M2WS7J4E6",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A test captures the bytes a run writes with a fake Rex through a build of three leaves and finds, in order, root working with the step, child records for each leaf with builder then verifier, progress rising to 100, a blocked child while a fake session waits, and root done; a failing run ends with root error.",
+          "statement": "While a run goes, its process keeps Rex's program status current through OSC 7501: a root record with the current step in its message and, in the build workflow, progress as the share of leaves with Evidence; a child record per live leaf (hierarchical ID per the spec) saying which leaf, builder or verifier, and working or blocked; and a final root state of done when the run succeeds or error when it fails."
+        },
+        "handle": "run-program-status",
+        "id": "01M5WT1XEJY38RKEE9K75KCC4M",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5WT1XEJY38RKEE9K473K3V1",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M5WT1XEJY38RKEE9K473K3V1",
+        "id": "01M5WT1XJE9199T2F4EYH1BY25",
+        "link": "01M5WT1XJE9199T2F4EWF0NH59",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WT1X52NSSH59BY5KP418D0",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5WPTY7P14SSHQ1FJ0WA8ZR4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WT1XRDSJVJVKHZV7PG37W2",
+  "type": "ops",
+  "v": 1
+}
