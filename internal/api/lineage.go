@@ -23,7 +23,13 @@ package api
 //
 // The log is the target's history: each distinct change set in apply order,
 // with the operations it applied to the target, and for a landed one the
-// time and actor of its land entry.
+// time and actor of its land entry. A change set's carve entries that
+// moved the target are listed with it, naming the other side: the target
+// change set's entry re-created some of the target's operations, and the
+// source's entry, found through it, dropped them. A source missing from the
+// history (its operations were all dropped) is listed just before the
+// change set it was carved into, with no operations, and is followed back
+// the same way when it was itself carved into.
 //
 // Both read a bounded number of rows per node visited and the entries of
 // the change sets in the target's history only.
@@ -499,6 +505,16 @@ type LogChangeSet struct {
 	Ops    []LogOp         `json:"ops" desc:"The operations it applied to the target, in apply order"`
 	At     string          `json:"at,omitempty" desc:"When it landed (RFC 3339, UTC); absent unless landed"`
 	Actor  id.ID           `json:"actor,omitzero" desc:"Who landed it; absent unless landed"`
+	Carves []LogCarve      `json:"carves,omitempty" desc:"Its carve entries that moved the target in or out, in the order found; absent when none"`
+}
+
+// LogCarve is one carve entry of a change set that moved the target. On the
+// target change set's entry it names the source, on the source's the target.
+type LogCarve struct {
+	Entry      id.ID `json:"entry" desc:"The carve entry, in this change set"`
+	CarvedFrom id.ID `json:"carved_from,omitzero" desc:"The change set the target was carved from; set on the target change set's entry"`
+	CarvedInto id.ID `json:"carved_into,omitzero" desc:"The change set the target was carved into; set on the source change set's entry"`
+	CarveEntry id.ID `json:"carve_entry" desc:"The other change set's entry of the same carve"`
 }
 
 // LogOp is one operation applied to the target.
@@ -536,9 +552,14 @@ func runLog(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	css, carves, err := logCarves(r, css)
+	if err != nil {
+		return nil, err
+	}
 	resp := LogResponse{Target: target, ChangeSets: []LogChangeSet{}, View: r.View()}
 	for _, c := range css {
-		lc := LogChangeSet{ID: c.info.ID, State: c.info.State, Kind: c.info.Kind, Intent: c.info.Intent, Ops: []LogOp{}}
+		lc := LogChangeSet{ID: c.info.ID, State: c.info.State, Kind: c.info.Kind, Intent: c.info.Intent, Ops: []LogOp{},
+			Carves: carves[c.info.ID]}
 		types := logOpTypes(c)
 		for _, o := range c.ops {
 			lc.Ops = append(lc.Ops, LogOp{ID: o, Type: types[o]})
@@ -551,6 +572,112 @@ func runLog(ctx *Ctx, req any) (any, error) {
 		resp.ChangeSets = append(resp.ChangeSets, lc)
 	}
 	return resp, nil
+}
+
+// logCarveWalk is the state of finding the carves of one log.
+type logCarveWalk struct {
+	r *reader
+	// listed holds the change sets already in the log.
+	listed map[id.ID]bool
+	// infos is every change set's info, read when a source must be listed.
+	infos map[id.ID]index.ChangeSetInfo
+	// added holds the sources to list before the change set being walked.
+	added  []lineageCS
+	carves map[id.ID][]LogCarve
+	seen   map[id.ID]bool
+}
+
+// logCarves returns css with the sources the target was carved out of
+// added, each before the change set it was carved into, and each change
+// set's carve entries that moved the target. Only entries of format 2 or
+// later can carry a carve, so a log without carves decodes nothing more.
+func logCarves(r *reader, css []lineageCS) ([]lineageCS, map[id.ID][]LogCarve, error) {
+	l := &logCarveWalk{r: r, listed: map[id.ID]bool{}, carves: map[id.ID][]LogCarve{}, seen: map[id.ID]bool{}}
+	for _, c := range css {
+		l.listed[c.info.ID] = true
+	}
+	var out []lineageCS
+	for _, c := range css {
+		l.added = nil
+		if err := l.walk(c, c.ops); err != nil {
+			return nil, nil, err
+		}
+		out = append(append(out, l.added...), c)
+	}
+	return out, l.carves, nil
+}
+
+// walk records the carve entries of c that re-created any of ops, and the
+// source entries they name, then walks each source with the ops its entry
+// dropped. A source not yet listed is added after its own sources.
+func (l *logCarveWalk) walk(c lineageCS, ops []id.ID) error {
+	for _, e := range c.entries {
+		o, ok := logCarveBody(e)
+		if !ok || o.Carve.From.IsZero() || l.seen[e.ID] ||
+			!slices.ContainsFunc(o.Ops, func(x op.Op) bool { return slices.Contains(ops, x.ID) }) {
+			continue
+		}
+		l.seen[e.ID] = true
+		l.carves[c.info.ID] = append(l.carves[c.info.ID], LogCarve{Entry: e.ID, CarvedFrom: o.Carve.From, CarveEntry: o.Carve.Entry})
+		src, err := l.source(o.Carve.From)
+		if err != nil {
+			return err
+		}
+		se, ok := lineageEntry(src, o.Carve.Entry)
+		if !ok || l.seen[se.ID] {
+			continue
+		}
+		so, ok := logCarveBody(se)
+		if !ok || so.Carve.To != c.info.ID {
+			continue
+		}
+		l.seen[se.ID] = true
+		l.carves[src.info.ID] = append(l.carves[src.info.ID], LogCarve{Entry: se.ID, CarvedInto: c.info.ID, CarveEntry: e.ID})
+		if err := l.walk(src, so.Drop); err != nil {
+			return err
+		}
+		if !l.listed[src.info.ID] {
+			l.listed[src.info.ID] = true
+			l.added = append(l.added, src)
+		}
+	}
+	return nil
+}
+
+// source is change set cs with its entries and no operations.
+func (l *logCarveWalk) source(cs id.ID) (lineageCS, error) {
+	if l.infos == nil {
+		infos, err := l.r.ChangeSets()
+		if err != nil {
+			return lineageCS{}, err
+		}
+		l.infos = make(map[id.ID]index.ChangeSetInfo, len(infos))
+		for _, info := range infos {
+			l.infos[info.ID] = info
+		}
+	}
+	info, ok := l.infos[cs]
+	if !ok {
+		info = index.ChangeSetInfo{ID: cs}
+	}
+	es, err := l.r.Entries(cs)
+	if err != nil {
+		return lineageCS{}, err
+	}
+	return lineageCS{info: info, entries: es}, nil
+}
+
+// logCarveBody is e's ops body when it carries a carve.
+func logCarveBody(e entry.Entry) (changeset.Ops, bool) {
+	if e.V < 2 || e.Type != entry.TypeOps {
+		return changeset.Ops{}, false
+	}
+	b, err := changeset.DecodeBody(e)
+	if err != nil {
+		return changeset.Ops{}, false
+	}
+	o, ok := b.(changeset.Ops)
+	return o, ok && o.Carve != nil
 }
 
 // logOpTypes maps each operation of c's folded change set to its type.
@@ -577,6 +704,13 @@ func (r LogResponse) Human(w io.Writer) {
 		fmt.Fprintf(w, "\n## %s %s %s: %s\n\n", c.ID, c.State, c.Kind, c.Intent)
 		if c.At != "" {
 			fmt.Fprintf(w, "- Landed %s by %s\n", c.At, c.Actor)
+		}
+		for _, k := range c.Carves {
+			from, into := k.CarvedFrom, c.ID
+			if from.IsZero() {
+				from, into = c.ID, k.CarvedInto
+			}
+			fmt.Fprintf(w, "- Carved from %s into %s\n", shortID(from), shortID(into))
 		}
 		for _, o := range c.Ops {
 			fmt.Fprintf(w, "- %s %s\n", o.Type, o.ID)

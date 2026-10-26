@@ -1444,6 +1444,40 @@ cmp stdout describe.golden.json
                   "description": "When it landed (RFC 3339, UTC); absent unless landed",
                   "type": "string"
                 },
+                "carves": {
+                  "description": "Its carve entries that moved the target in or out, in the order found; absent when none",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "carve_entry": {
+                        "description": "The other change set's entry of the same carve",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      },
+                      "carved_from": {
+                        "description": "The change set the target was carved from; set on the target change set's entry",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      },
+                      "carved_into": {
+                        "description": "The change set the target was carved into; set on the source change set's entry",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      },
+                      "entry": {
+                        "description": "The carve entry, in this change set",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "carve_entry",
+                      "entry"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
                 "id": {
                   "description": "The change set's ID",
                   "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
