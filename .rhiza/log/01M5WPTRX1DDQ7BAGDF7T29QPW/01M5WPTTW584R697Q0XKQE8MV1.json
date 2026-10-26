@@ -1,0 +1,132 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5WPTSJ5SCCA9KNQP7KE79TX"
+  ],
+  "at": "2026-10-26T18:16:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript lands a change set on a branch, reopens it, applies one more write, lands again, and rhiza check passes; the log holds land, reopen and land entries in order.",
+          "statement": "rhiza reopen reopens a landed change set whose land is not yet on the base: it appends a reopen entry, the change set is accepted again, takes further writes, and lands again with rhiza land. No log entry is ever deleted."
+        },
+        "handle": "reopen",
+        "id": "01M5WPTSR78R8WM8WYMMCFZS2X",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M5WPTSR78R8WM8WYMGWD6WJN",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTSR78R8WM8WYMGWD6WJN",
+        "id": "01M5WPTSVM4PTXFFC6SX3CYPD6",
+        "link": "01M5WPTSVM4PTXFFC6STDAYPGV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTQ8TH17R4YA0Y81CQN0V",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript where the land entry is in the base gets a non-zero exit and that message; one where it is only on the branch succeeds.",
+          "statement": "Reopening is refused once the change set's land entry is on the base (the merge-base with the default branch's remote, as check uses): landed work on main is final, and the error says so and points to a new change set linked discovered-from."
+        },
+        "handle": "reopen-branch-only",
+        "id": "01M5WPTSZ2FDZ6T77CRG0AWAMV",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5WPTSZ2FDZ6T77CRE763WAE",
+        "op": "node.create",
+        "parent": "01M5WPTSR78R8WM8WYMGWD6WJN"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTSZ2FDZ6T77CRE763WAE",
+        "id": "01M5WPTT2FBPPA7V59AZP2A5T5",
+        "link": "01M5WPTT2FBPPA7V59AX4XY3WQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTQ8TH17R4YA0Y81CQN0V",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests fold a landed, reopened, relanded change set and check as-is, to-be and the history at each step.",
+          "statement": "Views treat a reopened change set as accepted until it lands again: as-is leaves it out, to-be and what-if include it, and change show and log show the land, reopen and land history."
+        },
+        "handle": "reopen-views",
+        "id": "01M5WPTT5VX3GPH672QEG8RPFP",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5WPTT5VX3GPH672QATF03N3",
+        "op": "node.create",
+        "parent": "01M5WPTSR78R8WM8WYMGWD6WJN"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTT5VX3GPH672QATF03N3",
+        "id": "01M5WPTT974R7G85BRGWHRYFA6",
+        "link": "01M5WPTT974R7G85BRGSXHE7GJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTQ8TH17R4YA0Y81CQN0V",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "The format-1 and format-2 corpus pass unchanged, and a new corpus case with a reopen entry reads and renders.",
+          "statement": "The reopen entry is a new entry type. Format 1 and 2 entries stay byte-identical; if the type needs a new format number, older readers fail with ErrNewerFormat, as carve's did."
+        },
+        "handle": "reopen-format",
+        "id": "01M5WPTTCK57BZS99AGAXENN4X",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5WPTTCK57BZS99AG7M94C6X",
+        "op": "node.create",
+        "parent": "01M5WPTSR78R8WM8WYMGWD6WJN"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTTCK57BZS99AG7M94C6X",
+        "id": "01M5WPTTG0CNJBXJQQKRG866R1",
+        "link": "01M5WPTTG0CNJBXJQQKNAJ8DSN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTQ8TH17R4YA0Y81CQN0V",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "rhiza guide change-sets (or a topic of its own if change-sets is at its size cap) names rhiza reopen, and the guide tests pass.",
+          "statement": "The guide tells agents to reopen a change set, never to delete or edit log entries, when they must write after landing on a branch."
+        },
+        "handle": "reopen-guide",
+        "id": "01M5WPTTKD0TMJ3RHTAJDJECRF",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5WPTTKD0TMJ3RHTAEV4SVEE",
+        "op": "node.create",
+        "parent": "01M5WPTSR78R8WM8WYMGWD6WJN"
+      },
+      {
+        "decision": null,
+        "from": "01M5WPTTKD0TMJ3RHTAEV4SVEE",
+        "id": "01M5WPTTPTSMY6Z13KHD78KMNZ",
+        "link": "01M5WPTTPTSMY6Z13KHCF9AFBJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTQ8TH17R4YA0Y81CQN0V",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5WPTRX1DDQ7BAGDF7T29QPW",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WPTTW584R697Q0XKQE8MV1",
+  "type": "ops",
+  "v": 1
+}

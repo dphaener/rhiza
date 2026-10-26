@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-26T18:16:14Z",
+  "body": {
+    "intent": "Reopening a change set: rhiza reopen lets a change set landed only on its branch take more writes and land again, so no session deletes a log entry to fix its work.",
+    "kind": "intention",
+    "sources": [
+      "01M5WPTJ0WSM5QRW0M2WS7J4E6"
+    ]
+  },
+  "change_set": "01M5WPTRX1DDQ7BAGDF7T29QPW",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WPTRX1DDQ7BAGDF7ZHV0V6",
+  "type": "open",
+  "v": 1
+}

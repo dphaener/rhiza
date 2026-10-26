@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-26T18:16:19Z",
+  "body": {
+    "intent": "The plan workflow: Rhiza interviews the owner one topic at a time and writes a milestone or change set straight into the model, with a Source, Decisions quoting the owner's typed words, a capped plan review, and acceptance as the gate.",
+    "kind": "intention",
+    "sources": [
+      "01M5WPTJ0WSM5QRW0M2WS7J4E6"
+    ]
+  },
+  "change_set": "01M5WPTXDS9R3BJVS8PNJQZ834",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WPTXDS9R3BJVS8PPW3JQ0G",
+  "type": "open",
+  "v": 1
+}

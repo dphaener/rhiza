@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-26T18:16:16Z",
+  "body": {
+    "intent": "Leaf dependencies and Evidence's actor: leaves link depends-on each other, Evidence names the actor that wrote it, and rhiza check warns when that actor also wrote the leaf's code.",
+    "kind": "intention",
+    "sources": [
+      "01M5WPTJ0WSM5QRW0M2WS7J4E6"
+    ]
+  },
+  "change_set": "01M5WPTV0NX6YECXCPMHSEJAWY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WPTV0NX6YECXCPMN6Y17HM",
+  "type": "open",
+  "v": 1
+}

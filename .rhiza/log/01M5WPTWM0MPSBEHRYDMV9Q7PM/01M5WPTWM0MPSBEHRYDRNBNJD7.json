@@ -1,0 +1,17 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-26T18:16:18Z",
+  "body": {
+    "intent": "Session messages and token use in the journal: every message between a run's sessions is recorded with its sender and recipient through a SendMessage hook, and each session's token use is recorded.",
+    "kind": "intention",
+    "sources": [
+      "01M5WPTJ0WSM5QRW0M2WS7J4E6"
+    ]
+  },
+  "change_set": "01M5WPTWM0MPSBEHRYDMV9Q7PM",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WPTWM0MPSBEHRYDRNBNJD7",
+  "type": "open",
+  "v": 1
+}
