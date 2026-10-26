@@ -2,6 +2,7 @@ package run
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -24,9 +25,12 @@ func (c *fakeClock) Sleep(d time.Duration) {
 
 // fakeRunner scripts each step's results and counts calls.
 type fakeRunner struct {
-	codes    map[string][]int  // command exit codes per step, in call order
-	holds    map[string][]bool // wait results per step; past the end, the last
-	agentOut map[string][]bool // done per poll per session; past the end, true
+	codes    map[string][]int         // command exit codes per step, in call order
+	holds    map[string][]bool        // wait results per step; past the end, the last
+	agentOut map[string][]bool        // done per poll per session; past the end, true
+	agentSeq map[string][]AgentStatus // status per poll per session; past the end, agentOut
+	agentErr map[string]error         // error per session once its scripted polls run out
+	onPoll   func(session string, n int)
 	outcome  map[string]string // agent outcome per session
 	failOn   map[string]error  // runner error per step
 	commands map[string]int
@@ -38,6 +42,7 @@ type fakeRunner struct {
 func newFakeRunner() *fakeRunner {
 	return &fakeRunner{
 		codes: map[string][]int{}, holds: map[string][]bool{}, agentOut: map[string][]bool{},
+		agentSeq: map[string][]AgentStatus{}, agentErr: map[string]error{},
 		outcome: map[string]string{}, failOn: map[string]error{},
 		commands: map[string]int{}, polls: map[string]int{}, starts: map[string]int{},
 		envs: map[string][]string{},
@@ -84,13 +89,22 @@ func (f *fakeRunner) StartAgent(step workflow.Step, env []string) (string, error
 	return "S-" + step.Name, nil
 }
 
-func (f *fakeRunner) AgentOutcome(session string) (bool, string, string, error) {
+func (f *fakeRunner) AgentStatus(session string) (AgentStatus, error) {
 	n := f.polls[session]
 	f.polls[session]++
-	if seq := f.agentOut[session]; n < len(seq) && !seq[n] {
-		return false, "", "", nil
+	if f.onPoll != nil {
+		f.onPoll(session, n)
 	}
-	return true, f.outcome[session], "exit 0", nil
+	if seq := f.agentSeq[session]; n < len(seq) {
+		return seq[n], nil
+	}
+	if seq := f.agentOut[session]; n < len(seq) && !seq[n] {
+		return AgentStatus{}, nil
+	}
+	if err := f.agentErr[session]; err != nil {
+		return AgentStatus{}, err
+	}
+	return AgentStatus{Done: true, Outcome: f.outcome[session], Detail: "exit 0"}, nil
 }
 
 const runID = "01RUNAAAAAAAAAAAAAAAAAAAAA"
@@ -103,7 +117,7 @@ func setup(t *testing.T, src string) (*Engine, *fakeRunner, *fakeClock, *workflo
 		t.Fatal(err)
 	}
 	store := newStore(t)
-	if err := Start(store, runID, Started{Workflow: "wf", Definition: src, Change: "CS1"}, t0, def); err != nil {
+	if err := Start(store, runID, Started{Workflow: "wf", Definition: src, Change: "CS1", Title: "Blocked runs"}, t0, def); err != nil {
 		t.Fatal(err)
 	}
 	r := newFakeRunner()
@@ -533,6 +547,239 @@ func TestAgentStartErrorFailsRun(t *testing.T) {
 	}
 }
 
+// Fake session statuses for the blocked-step tests.
+var (
+	idle     = AgentStatus{}
+	question = &Block{
+		Kind: "question", Question: "Ship it?",
+		TabSession: "rex-1", TabWindow: "w-2", TabBlock: "b-3", TabTitle: "build",
+	}
+	blocked = AgentStatus{Blocked: question}
+)
+
+// noticeLog collects the engine's notices.
+func noticeLog(e *Engine) *[]Notice {
+	var ns []Notice
+	e.Notify = func(n Notice) { ns = append(ns, n) }
+	return &ns
+}
+
+func countType(t *testing.T, e *Engine, typ string) int {
+	t.Helper()
+	n := 0
+	for _, en := range entryTypes(t, e) {
+		if strings.HasPrefix(en, typ+":") {
+			n++
+		}
+	}
+	return n
+}
+
+// TestAgentBlockedAndBack drives a fake session idle, blocked, blocked,
+// idle and exited: one blocked and one unblocked entry, one notice for the
+// block and one for its end, and the folded state reads blocked between.
+func TestAgentBlockedAndBack(t *testing.T) {
+	e, r, _, _ := setup(t, agentWF)
+	ns := noticeLog(e)
+	var lines []string
+	e.Log = func(l string) { lines = append(lines, l) }
+	r.agentSeq["S-build"] = []AgentStatus{idle, blocked, blocked, idle}
+	r.outcome["S-build"] = "pass"
+	seen := map[int]*Block{}
+	r.onPoll = func(session string, n int) {
+		j, err := e.Store.Read(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		st := j.State()
+		seen[n] = st.Blocked
+		if st.Blocked != nil && (st.BlockedStep != "build" || st.BlockedSession != session) {
+			t.Errorf("poll %d: blocked step %q session %q", n, st.BlockedStep, st.BlockedSession)
+		}
+	}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || st.Blocked != nil {
+		t.Fatalf("result %q blocked %+v", st.Result, st.Blocked)
+	}
+	// State at each poll, before the poll's own status is acted on.
+	for n, want := range []bool{false, false, true, true, false} {
+		if got := seen[n] != nil; got != want {
+			t.Errorf("poll %d: state blocked = %v, want %v", n, got, want)
+		}
+	}
+	if !reflect.DeepEqual(seen[2], question) {
+		t.Errorf("folded block = %+v, want %+v", seen[2], question)
+	}
+	want := []string{
+		"started:build", "entered:build", "session:build", "blocked:build",
+		"unblocked:build", "ended:build", "finished:build",
+	}
+	if got := entryTypes(t, e); !reflect.DeepEqual(got, want) {
+		t.Errorf("journal = %v\nwant      %v", got, want)
+	}
+	wantNotices := []Notice{
+		{Run: runID, Change: "CS1", Title: "Blocked runs", Step: "build", Session: "S-build", Blocked: true, Block: question},
+		{Run: runID, Change: "CS1", Title: "Blocked runs", Step: "build", Session: "S-build", Blocked: false, Block: question},
+	}
+	if !reflect.DeepEqual(*ns, wantNotices) {
+		t.Errorf("notices = %+v\nwant %+v", *ns, wantNotices)
+	}
+	var progress []string
+	for _, l := range lines {
+		if strings.Contains(l, "blocked") {
+			progress = append(progress, l)
+		}
+	}
+	if want := []string{"step build: blocked on question", "step build: unblocked"}; !reflect.DeepEqual(progress, want) {
+		t.Errorf("log = %v, want %v", progress, want)
+	}
+}
+
+// TestAgentResumeWhileBlocked resumes a step whose journal already shows
+// its session blocked: no second blocked entry or notice, one for the end.
+func TestAgentResumeWhileBlocked(t *testing.T) {
+	e, r, _, _ := setup(t, agentWF)
+	for _, en := range []Entry{
+		{Type: TypeEntered, At: at(1), Step: "build", Visit: 1},
+		{Type: TypeSession, At: at(1), Step: "build", Session: "S-earlier"},
+		{Type: TypeBlocked, At: at(1), Step: "build", Session: "S-earlier", Block: question},
+	} {
+		if err := e.Store.Append(runID, en); err != nil {
+			t.Fatal(err)
+		}
+	}
+	ns := noticeLog(e)
+	r.agentSeq["S-earlier"] = []AgentStatus{blocked, blocked, blocked}
+	r.outcome["S-earlier"] = "pass"
+	blockedNotices := func() int {
+		n := 0
+		for _, x := range *ns {
+			if x.Blocked {
+				n++
+			}
+		}
+		return n
+	}
+	r.onPoll = func(_ string, n int) {
+		if n == 3 { // still blocked through three polls
+			if b := blockedNotices(); b != 0 {
+				t.Errorf("blocked notices while still blocked = %d, want 0", b)
+			}
+			if c := countType(t, e, TypeBlocked); c != 1 {
+				t.Errorf("blocked entries while still blocked = %d, want 1", c)
+			}
+		}
+	}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || r.starts["build"] != 0 || r.polls["S-earlier"] != 4 {
+		t.Fatalf("result %q starts %v polls %v", st.Result, r.starts, r.polls)
+	}
+	t.Logf("blocked notices on resume: %d; blocked entries: %d", blockedNotices(), countType(t, e, TypeBlocked))
+	if blockedNotices() != 0 || countType(t, e, TypeBlocked) != 1 {
+		t.Fatalf("blocked notices %d, blocked entries %d; want 0 and 1", blockedNotices(), countType(t, e, TypeBlocked))
+	}
+	if len(*ns) != 1 || (*ns)[0].Blocked || (*ns)[0].Session != "S-earlier" || !reflect.DeepEqual((*ns)[0].Block, question) {
+		t.Fatalf("notices = %+v, want one end of the block", *ns)
+	}
+}
+
+// TestAgentBlockedThenExit ends the session while it is blocked: the
+// unblocked entry comes before the ended one.
+func TestAgentBlockedThenExit(t *testing.T) {
+	e, r, _, _ := setup(t, agentWF)
+	ns := noticeLog(e)
+	r.agentSeq["S-build"] = []AgentStatus{blocked, {Done: true, Outcome: "pass", Detail: "exit 0", Blocked: question}}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || st.Blocked != nil || st.Steps[0].Outcome != "pass" {
+		t.Fatalf("result %q blocked %+v steps %+v", st.Result, st.Blocked, st.Steps)
+	}
+	want := []string{
+		"started:build", "entered:build", "session:build", "blocked:build",
+		"unblocked:build", "ended:build", "finished:build",
+	}
+	if got := entryTypes(t, e); !reflect.DeepEqual(got, want) {
+		t.Errorf("journal = %v\nwant      %v", got, want)
+	}
+	if len(*ns) != 2 || !(*ns)[0].Blocked || (*ns)[1].Blocked {
+		t.Errorf("notices = %+v", *ns)
+	}
+}
+
+// TestAgentBlockedThenRunnerError ends the step with an error outcome
+// while blocked: the block still ends before the step does.
+func TestAgentBlockedThenRunnerError(t *testing.T) {
+	e, r, _, _ := setup(t, agentWF)
+	ns := noticeLog(e)
+	r.agentSeq["S-build"] = []AgentStatus{blocked}
+	r.agentErr["S-build"] = errors.New("session record unreadable")
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Failed || st.Detail != "session record unreadable" || st.Blocked != nil {
+		t.Fatalf("result %q detail %q blocked %+v", st.Result, st.Detail, st.Blocked)
+	}
+	want := []string{
+		"started:build", "entered:build", "session:build", "blocked:build",
+		"unblocked:build", "ended:build", "finished:build",
+	}
+	if got := entryTypes(t, e); !reflect.DeepEqual(got, want) {
+		t.Errorf("journal = %v\nwant      %v", got, want)
+	}
+	if len(*ns) != 2 || (*ns)[1].Blocked {
+		t.Errorf("notices = %+v", *ns)
+	}
+}
+
+// TestAgentSecondBlockNotifiesAgain blocks, answers and blocks again in
+// one step: each block is journalled and notified.
+func TestAgentSecondBlockNotifiesAgain(t *testing.T) {
+	e, r, _, _ := setup(t, agentWF)
+	ns := noticeLog(e)
+	permission := &Block{Kind: "permission", Question: "Run rm?", TabTitle: "build"}
+	r.agentSeq["S-build"] = []AgentStatus{blocked, idle, {Blocked: permission}, {Blocked: permission}}
+	r.outcome["S-build"] = "pass"
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	want := []string{
+		"started:build", "entered:build", "session:build", "blocked:build", "unblocked:build",
+		"blocked:build", "unblocked:build", "ended:build", "finished:build",
+	}
+	if got := entryTypes(t, e); !reflect.DeepEqual(got, want) {
+		t.Errorf("journal = %v\nwant      %v", got, want)
+	}
+	var got []string
+	for _, n := range *ns {
+		got = append(got, fmt.Sprintf("%v:%s", n.Blocked, n.Block.Question))
+	}
+	if want := []string{"true:Ship it?", "false:Ship it?", "true:Run rm?", "false:Run rm?"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("notices = %v, want %v", got, want)
+	}
+}
+
+// TestAgentBlockWithoutNotify journals the block when no Notify is set.
+func TestAgentBlockWithoutNotify(t *testing.T) {
+	e, r, _, _ := setup(t, agentWF)
+	r.agentSeq["S-build"] = []AgentStatus{blocked, idle}
+	r.outcome["S-build"] = "pass"
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	if countType(t, e, TypeBlocked) != 1 || countType(t, e, TypeUnblocked) != 1 {
+		t.Errorf("journal = %v", entryTypes(t, e))
+	}
+}
+
 // TestDecide covers the pure transition apart from any execution.
 func TestDecide(t *testing.T) {
 	def, err := workflow.Parse("wf", []byte(cmdWF+`
@@ -591,5 +838,85 @@ max_visits = 2
 				t.Errorf("got %+v\nwant %+v", got, tc.want)
 			}
 		})
+	}
+}
+
+const agentUntilWF = `
+name = "wf"
+[step.build]
+kind = "agent"
+prompt = "build {change}"
+until = "pr-open"
+interval = "2s"
+on.pass = "done"
+`
+
+// An idle session whose until holds passes the step and is left open: the
+// engine never waits for its exit.
+func TestAgentUntilHoldsWhenIdle(t *testing.T) {
+	e, r, _, _ := setup(t, agentUntilWF)
+	r.agentSeq["S-build"] = []AgentStatus{{}, {Idle: true}}
+	r.agentErr["S-build"] = errors.New("polled past the pass")
+	r.holds["build"] = []bool{true}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || r.polls["S-build"] != 2 || r.polls["build"] != 1 {
+		t.Fatalf("result %q detail %q polls %v", st.Result, st.Detail, r.polls)
+	}
+	if got := st.Steps[0].Detail; got != "idle and until held; session left open" {
+		t.Errorf("detail = %q", got)
+	}
+}
+
+// An idle session whose until does not hold keeps the step waiting, with
+// the condition checked once per idle poll; it still ends on the exit.
+func TestAgentUntilFailsKeepsWaiting(t *testing.T) {
+	e, r, c, _ := setup(t, agentUntilWF)
+	r.agentSeq["S-build"] = []AgentStatus{{Idle: true}, {Idle: true}, {}}
+	r.holds["build"] = []bool{false}
+	r.outcome["S-build"] = "pass"
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || r.polls["S-build"] != 4 || r.polls["build"] != 2 {
+		t.Fatalf("result %q polls %v", st.Result, r.polls)
+	}
+	if st.Steps[0].Detail != "exit 0" || len(c.sleeps) != 3 {
+		t.Errorf("detail %q sleeps %v", st.Steps[0].Detail, c.sleeps)
+	}
+}
+
+// A blocked session is never passed over, even when until holds and the
+// session also reads idle.
+func TestAgentUntilNotCheckedWhileBlocked(t *testing.T) {
+	e, r, _, _ := setup(t, agentUntilWF)
+	b := &Block{Kind: "question", Question: "Ship it?"}
+	r.agentSeq["S-build"] = []AgentStatus{{Blocked: b}, {Idle: true, Blocked: b}}
+	r.holds["build"] = []bool{true}
+	r.outcome["S-build"] = "fail"
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Failed || r.polls["build"] != 0 {
+		t.Fatalf("result %q polls %v: until was checked while blocked", st.Result, r.polls)
+	}
+}
+
+// A runner error from until ends the step with the error outcome.
+func TestAgentUntilErrorFailsRun(t *testing.T) {
+	e, r, _, _ := setup(t, agentUntilWF)
+	r.agentSeq["S-build"] = []AgentStatus{{Idle: true}}
+	// Only until fails: the session has started by the first poll.
+	r.onPoll = func(string, int) { r.failOn["build"] = errors.New("sh missing") }
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Failed || r.starts["build"] != 1 || !strings.Contains(st.Steps[0].Detail, "sh missing") {
+		t.Fatalf("result %q steps %+v", st.Result, st.Steps)
 	}
 }

@@ -12,6 +12,7 @@ package api
 // agent.
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -20,6 +21,8 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
@@ -63,7 +66,12 @@ const (
 const (
 	runRunning = "running"
 	runStopped = "stopped"
+	runBlocked = "blocked"
 )
+
+// runClock is the clock run.start and run.resume poll by; tests replace
+// it to drive a session's status between polls.
+var runClock run.Clock = run.RealClock{}
 
 // workflowsDir is where named workflows live, under the project root.
 const workflowsDir = store.Dir + "/workflows"
@@ -74,7 +82,7 @@ const maxRunIDDraws = 100
 // RunStartRequest starts a run of a workflow on a change set.
 type RunStartRequest struct {
 	Change         string `json:"change,omitempty" arg:"0" desc:"The change set: a full ID or a unique prefix of 4+ characters; default --change, else the current one"`
-	Workflow       string `json:"workflow" desc:"The workflow: a .toml file (a path with a / or ending in .toml), else a name in .rhiza/workflows/<name>.toml"`
+	Workflow       string `json:"workflow,omitempty" desc:"The workflow: a .toml file (a path with a / or ending in .toml), else a name: .rhiza/workflows/<name>.toml, else a built-in; default ship-change"`
 	PermissionMode string `json:"permission_mode,omitempty" desc:"The permission mode of agent steps that set none; modes that bypass the agent's permission checks are refused"`
 	Agent          string `json:"agent,omitempty" desc:"The agent adapter of agent steps that name none; default the built-in default adapter"`
 	NoWait         bool   `json:"no_wait,omitempty" desc:"Stop at a wait step whose condition does not hold yet, instead of waiting; resume the run later"`
@@ -100,16 +108,38 @@ type RunResponse struct {
 
 // RunInfo is a run folded from its journal.
 type RunInfo struct {
-	ID        string    `json:"id" desc:"The run ID"`
-	Workflow  string    `json:"workflow" desc:"The workflow's name"`
-	Change    string    `json:"change" desc:"The change set it runs on"`
-	Title     string    `json:"title" desc:"The change set's title"`
-	Worktree  string    `json:"worktree" desc:"The worktree every step runs in"`
-	State     string    `json:"state" desc:"running (another process runs it now), stopped (resumable), succeeded or failed; empty in a dry run"`
-	Current   string    `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
-	Detail    string    `json:"detail,omitempty" desc:"Why it stopped or failed"`
-	Steps     []RunStep `json:"steps" desc:"The steps done, in order"`
-	StartedAt string    `json:"started_at" desc:"When it started, RFC 3339 UTC"`
+	ID         string         `json:"id" desc:"The run ID"`
+	Workflow   string         `json:"workflow" desc:"The workflow's name"`
+	Change     string         `json:"change" desc:"The change set it runs on"`
+	Title      string         `json:"title" desc:"The change set's title"`
+	Worktree   string         `json:"worktree" desc:"The worktree every step runs in"`
+	State      string         `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
+	Current    string         `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
+	Detail     string         `json:"detail,omitempty" desc:"Why it stopped or failed"`
+	Steps      []RunStep      `json:"steps" desc:"The steps done, in order"`
+	StartedAt  string         `json:"started_at" desc:"When it started, RFC 3339 UTC"`
+	Blocked    *RunBlocked    `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
+	Amendments []RunAmendment `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
+}
+
+// RunAmendment is one amendment journaled in a run: a step's brief or
+// plan file replaced while the step ran.
+type RunAmendment struct {
+	Step    string `json:"step" desc:"The amended step"`
+	Session string `json:"session" desc:"The step's session, which was sent a pointer to the file"`
+	Actor   string `json:"actor" desc:"The sender's actor handle"`
+	File    string `json:"file" desc:"The amended file, relative to the run's worktree"`
+	At      string `json:"at" desc:"When it was amended, RFC 3339 UTC"`
+}
+
+// RunBlocked is what a blocked run waits on, read from its agent step's
+// session record when the run is reported.
+type RunBlocked struct {
+	Step     string     `json:"step" desc:"The agent step that waits"`
+	Session  string     `json:"session" desc:"The step's session"`
+	Kind     string     `json:"kind,omitempty" desc:"What kind of block: permission, question or auth; empty when the session gave none"`
+	Question string     `json:"question,omitempty" desc:"What the session asks the owner, as it reported it; empty when it gave nothing"`
+	Tab      SessionTab `json:"tab" desc:"The terminal tab the session runs in, where the owner answers"`
 }
 
 // RunStep is one step a run has done.
@@ -137,11 +167,7 @@ func (r RunResponse) ExitCode() int {
 // journal and runs it in the foreground. A dry run writes and runs nothing.
 func runRunStart(ctx *Ctx, req any) (any, error) {
 	r := req.(RunStartRequest)
-	path, err := workflowFile(ctx.Root, r.Workflow)
-	if err != nil {
-		return nil, err
-	}
-	def, data, err := loadWorkflow(path, r.Workflow)
+	path, def, data, err := resolveWorkflow(ctx.Root, r.Workflow)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +191,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if ctx.DryRun {
 		return RunResponse{Run: RunInfo{
 			ID: rid, Workflow: def.Name, Change: started.Change, Title: t.title, Worktree: t.worktree,
-			Current: def.Start, Steps: []RunStep{}, StartedAt: rfc3339(ctx.Now()),
+			Current: def.Start, Steps: []RunStep{}, StartedAt: rfc3339(ctx.Now()), Amendments: []RunAmendment{},
 		}, DryRun: true}, nil
 	}
 	if err := canRun(ctx, def); err != nil {
@@ -214,7 +240,7 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	if ctx.DryRun {
-		return RunResponse{Run: runInfo(st, false), DryRun: true}, nil
+		return RunResponse{Run: runInfo(st, false, session.NewStore(session.Dir(common))), DryRun: true}, nil
 	}
 	if err := canRun(ctx, def); err != nil {
 		return nil, err
@@ -238,7 +264,7 @@ func runRunStatus(ctx *Ctx, req any) (any, error) {
 	} else if j, err = latestRun(ctx, rs); err != nil {
 		return nil, err
 	}
-	return runInfo(j.State(), rs.Live(j.ID)), nil
+	return runInfo(j.State(), rs.Live(j.ID), session.NewStore(session.Dir(common))), nil
 }
 
 // latestRun is the latest started run of the effective change set, else
@@ -286,13 +312,20 @@ func readRun(rs *run.Store, ref string) (run.Journal, error) {
 	return j, nil
 }
 
+// defaultWorkflow is the workflow a run starts when none is named.
+const defaultWorkflow = "ship-change"
+
+// builtinPrefix starts the WorkflowPath of a run of a built-in workflow.
+const builtinPrefix = "builtin:"
+
 // workflowFile is the file ref names: a path when it has a separator or
 // ends in .toml (made absolute against the working directory, as apply
-// reads its file), else <root>/.rhiza/workflows/<ref>.toml.
+// reads its file), else <root>/.rhiza/workflows/<ref>.toml. An empty ref
+// names the default workflow.
 func workflowFile(root, ref string) (string, error) {
 	ref = strings.TrimSpace(ref)
 	if ref == "" {
-		return "", Usagef("run start needs --workflow: a workflow name or a .toml file").WithNext(runStartNext)
+		ref = defaultWorkflow
 	}
 	if strings.ContainsRune(ref, '/') || strings.ContainsRune(ref, filepath.Separator) || strings.HasSuffix(ref, ".toml") {
 		abs, err := filepath.Abs(ref)
@@ -305,6 +338,46 @@ func workflowFile(root, ref string) (string, error) {
 		return "", Usagef("workflow %q is not a workflow name", ref).WithNext(runStartNext)
 	}
 	return filepath.Join(root, filepath.FromSlash(workflowsDir), ref+".toml"), nil
+}
+
+// isWorkflowPath reports whether ref names a file rather than a workflow.
+func isWorkflowPath(ref string) bool {
+	return strings.ContainsRune(ref, '/') || strings.ContainsRune(ref, filepath.Separator) || strings.HasSuffix(ref, ".toml")
+}
+
+// resolveWorkflow finds the workflow ref names and returns the path to
+// record in the journal (the file, or builtin:<name> for an embedded
+// one), its definition and its source. A bare name resolves to the repo's
+// .rhiza/workflows/<name>.toml when that exists, so a repo replaces a
+// built-in by name, else to the built-in of that name.
+func resolveWorkflow(root, ref string) (string, *workflow.Definition, []byte, error) {
+	ref = strings.TrimSpace(ref)
+	if ref == "" {
+		ref = defaultWorkflow
+	}
+	path, err := workflowFile(root, ref)
+	if err != nil {
+		return "", nil, nil, err
+	}
+	if !isWorkflowPath(ref) {
+		if _, statErr := os.Stat(path); errors.Is(statErr, fs.ErrNotExist) {
+			data, ok := workflow.Builtin(ref)
+			if !ok {
+				return "", nil, nil, Usagef("no workflow %q: %s does not exist and there is no built-in of that name (built-in: %s)",
+					ref, path, strings.Join(workflow.BuiltinNames(), ", ")).WithNext(runStartNext)
+			}
+			def, err := workflow.Parse(ref, data)
+			if err != nil {
+				return "", nil, nil, Errorf("built-in workflow %s: %v", ref, err)
+			}
+			return builtinPrefix + ref, def, data, nil
+		}
+	}
+	def, data, err := loadWorkflow(path, ref)
+	if err != nil {
+		return "", nil, nil, err
+	}
+	return path, def, data, nil
 }
 
 // loadWorkflow reads and validates the workflow at path. A missing file
@@ -406,18 +479,22 @@ func newRunID(ctx *Ctx, rs *run.Store) (string, error) {
 // runEngine runs the run in the foreground until it finishes or stops,
 // and responds with its state.
 func runEngine(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, agent string, noWait bool) (any, error) {
+	sessions := session.NewStore(session.Dir(common))
 	e := &run.Engine{
 		Store: rs,
 		Runner: &stepRunner{
 			ctx: ctx, change: change, run: rid, worktree: worktree, mode: mode, agent: agent,
-			sessions: session.NewStore(session.Dir(common)),
+			sessions: sessions,
 		},
-		Clock:  run.RealClock{},
+		Clock:  runClock,
 		Now:    ctx.Now,
 		NoWait: noWait,
 	}
 	if ctx.Stderr != nil {
 		e.Log = func(line string) { fmt.Fprintf(ctx.Stderr, "rhiza: %s\n", line) }
+	}
+	if ctx.Rex != nil {
+		e.Notify = func(n run.Notice) { ctx.Rex.Write(rexNotice(n)) }
 	}
 	st, err := e.Run(rid)
 	switch {
@@ -426,7 +503,7 @@ func runEngine(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, age
 	case err != nil:
 		return nil, Errorf("run %s: %v", rid, err).WithNext("rhiza run status " + rid)
 	}
-	return RunResponse{Run: runInfo(st, false)}, nil
+	return RunResponse{Run: runInfo(st, false, sessions)}, nil
 }
 
 // stepRunner is the engine's run.Runner: command and wait steps run
@@ -454,11 +531,28 @@ func (r *stepRunner) Holds(step workflow.Step, env []string) (bool, error) {
 	return code == 0, err
 }
 
+// dir is where command and wait steps run: the worktree, or the main
+// checkout once the worktree is gone. The close-out step removes the
+// worktree, so the steps after it run in the main checkout.
+func (r *stepRunner) dir() string {
+	if _, err := os.Stat(r.worktree); err == nil {
+		return r.worktree
+	}
+	if out, err := r.ctx.Git("worktree", "list", "--porcelain"); err == nil {
+		for _, line := range strings.Split(out, "\n") {
+			if p, ok := strings.CutPrefix(line, "worktree "); ok {
+				return p
+			}
+		}
+	}
+	return r.ctx.Root
+}
+
 // sh runs cmd with `sh -c` in the worktree, env laid over the caller's,
 // copying its standard output to out (nil discards it), and returns its
 // exit code. Only failing to run it is an error.
 func (r *stepRunner) sh(cmd string, env []string, out io.Writer) (int, error) {
-	p, err := r.ctx.Start(Program{Name: "sh", Args: []string{"-c", cmd}, Dir: r.worktree, Env: env})
+	p, err := r.ctx.Start(Program{Name: "sh", Args: []string{"-c", cmd}, Dir: r.dir(), Env: env})
 	if err != nil {
 		return 0, fmt.Errorf("start sh -c %q: %v", cmd, err)
 	}
@@ -494,36 +588,154 @@ func (r *stepRunner) StartAgent(step workflow.Step, _ []string) (string, error) 
 	return resp.(SessionStartResponse).Session.ID, nil
 }
 
-// AgentOutcome reads the session's record: it is done once its process
-// has exited (exit-is-final), with pass for exit 0, else fail.
-func (r *stepRunner) AgentOutcome(sid string) (bool, string, string, error) {
+// AgentStatus reads the session's record: it is done once its process
+// has exited (exit-is-final), with pass for exit 0, else fail. Until then
+// it is blocked while its resolved report is blocked, on that report's
+// kind and detail, in the record's tab, and idle while it resolves to idle.
+func (r *stepRunner) AgentStatus(sid string) (run.AgentStatus, error) {
 	rec, err := readSession(r.sessions, sid)
 	if err != nil {
-		return false, "", "", err
+		return run.AgentStatus{}, err
 	}
 	if !rec.Status.Exited() {
-		return false, "", "", nil
+		rep, _ := session.Resolve(rec)
+		return run.AgentStatus{Blocked: recordBlock(rec), Idle: rep.State == session.StateIdle}, nil
 	}
 	x := rec.Status.Exit
 	switch {
 	case x.Code != nil && *x.Code == 0:
-		return true, workflow.OutcomePass, "exit 0", nil
+		return run.AgentStatus{Done: true, Outcome: workflow.OutcomePass, Detail: "exit 0"}, nil
 	case x.Code != nil:
-		return true, workflow.OutcomeFail, fmt.Sprintf("exit %d", *x.Code), nil
+		return run.AgentStatus{Done: true, Outcome: workflow.OutcomeFail, Detail: fmt.Sprintf("exit %d", *x.Code)}, nil
 	}
 	detail := x.State
 	if x.Detail != "" {
 		detail += ": " + x.Detail
 	}
-	return true, workflow.OutcomeFail, detail, nil
+	return run.AgentStatus{Done: true, Outcome: workflow.OutcomeFail, Detail: detail}, nil
+}
+
+// recordBlock is what a live session waits on when its resolved report
+// is blocked, else nil.
+func recordBlock(rec session.Record) *run.Block {
+	if rec.Status.Exited() {
+		return nil
+	}
+	rep, _ := session.Resolve(rec)
+	if rep.State != session.StateBlocked {
+		return nil
+	}
+	return &run.Block{
+		Kind: rep.Kind, Question: rep.Detail,
+		TabSession: rec.Tab.Session, TabWindow: rec.Tab.Window, TabBlock: rec.Tab.Block, TabTitle: rec.Tab.Title,
+	}
+}
+
+// runBlockedNow is what an unfinished run waits on now: its current
+// step's session, read from its record, when that resolves to blocked.
+// A record that cannot be read leaves the run not blocked.
+func runBlockedNow(st run.State, sessions *session.Store) *RunBlocked {
+	sid := st.Session[st.Current]
+	if st.Ended || sid == "" || sessions == nil {
+		return nil
+	}
+	rec, err := sessions.Read(sid)
+	if err != nil {
+		return nil
+	}
+	b := recordBlock(rec)
+	if b == nil {
+		return nil
+	}
+	return &RunBlocked{
+		Step: st.Current, Session: sid, Kind: b.Kind, Question: b.Question,
+		Tab: SessionTab{Session: b.TabSession, Window: b.TabWindow, Block: b.TabBlock, Title: b.TabTitle},
+	}
+}
+
+// Limits of a Program Status report's fields, in decoded bytes.
+const (
+	rexTitleMax = 192
+	rexMsgMax   = 2048
+)
+
+// rexNotice is the OSC 7501 root-record report of a notice: blocked, with
+// the kind, the agent's tab as title and a message naming the change set,
+// the step, the tab and the question; or working once the block ends.
+func rexNotice(n run.Notice) []byte {
+	if !n.Blocked || n.Block == nil {
+		return rexReport("working", "", "", "")
+	}
+	b := n.Block
+	what := n.Title
+	if what == "" {
+		what = n.Change
+	}
+	tab := b.TabTitle
+	if tab == "" {
+		tab = n.Session
+	}
+	msg := fmt.Sprintf("%s: %s waits on you in tab %s", what, n.Step, tab)
+	if q := strings.TrimSpace(b.Question); q != "" {
+		msg += ": " + q
+	}
+	return rexReport("blocked", b.Kind, b.TabTitle, msg)
+}
+
+// rexReport encodes one OSC 7501 root-record report from app rhiza. The
+// kind is kept only on a blocked state and only when Rex knows it; title
+// and msg have their control characters replaced with spaces, are capped
+// on a UTF-8 boundary and are base64-encoded, and are left out when empty.
+func rexReport(state, kind, title, msg string) []byte {
+	var b strings.Builder
+	b.WriteString("\x1b]7501;state=")
+	b.WriteString(state)
+	if state == session.StateBlocked {
+		switch kind {
+		case session.KindPermission, session.KindQuestion, session.KindAuth:
+			b.WriteString(":kind=" + kind)
+		}
+	}
+	b.WriteString(":app=rhiza")
+	if t := rexField(title, rexTitleMax); t != "" {
+		b.WriteString(":title=" + base64.StdEncoding.EncodeToString([]byte(t)))
+	}
+	if m := rexField(msg, rexMsgMax); m != "" {
+		b.WriteString(":msg=" + base64.StdEncoding.EncodeToString([]byte(m)))
+	}
+	b.WriteString("\x1b\\")
+	return []byte(b.String())
+}
+
+// rexField is s as valid UTF-8 with every control character replaced by
+// a space, trimmed and cut to at most limit bytes without splitting a rune.
+func rexField(s string, limit int) string {
+	s = strings.ToValidUTF8(s, "\uFFFD")
+	s = strings.Map(func(r rune) rune {
+		if unicode.IsControl(r) {
+			return ' '
+		}
+		return r
+	}, s)
+	s = strings.TrimSpace(s)
+	if len(s) <= limit {
+		return s
+	}
+	cut := limit
+	for cut > 0 && !utf8.RuneStart(s[cut]) {
+		cut--
+	}
+	return strings.TrimSpace(s[:cut])
 }
 
 // runInfo is the response form of a folded journal; live says another
-// process holds the run.
-func runInfo(st run.State, live bool) RunInfo {
+// process holds the run. An unfinished run whose current step's session
+// is blocked reads blocked, with what it waits on from sessions.
+func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 	info := RunInfo{
 		ID: st.ID, Workflow: st.Workflow, Change: st.Change, Title: st.Title, Worktree: st.Worktree,
 		Current: st.Current, Steps: []RunStep{}, StartedAt: rfc3339(st.StartedAt),
+		Amendments: []RunAmendment{},
 	}
 	switch {
 	case st.Ended:
@@ -533,10 +745,18 @@ func runInfo(st run.State, live bool) RunInfo {
 	default:
 		info.State, info.Detail = runStopped, st.Stopped
 	}
+	if b := runBlockedNow(st, sessions); b != nil {
+		info.State, info.Blocked = runBlocked, b
+	}
 	for _, s := range st.Steps {
 		info.Steps = append(info.Steps, RunStep{
 			Step: s.Step, Visit: s.Visit, Outcome: s.Outcome, Next: s.Next, Detail: s.Detail,
 			Session: s.Session, At: rfc3339(s.At),
+		})
+	}
+	for _, a := range st.Amendments {
+		info.Amendments = append(info.Amendments, RunAmendment{
+			Step: a.Step, Session: a.Session, Actor: a.Actor, File: a.File, At: rfc3339(a.At),
 		})
 	}
 	return info
@@ -574,11 +794,23 @@ func (r RunInfo) Human(w io.Writer) {
 			fmt.Fprintf(w, "\n")
 		}
 	}
+	if len(r.Amendments) > 0 {
+		fmt.Fprintf(w, "\n## Amendments\n\n")
+		for _, a := range r.Amendments {
+			fmt.Fprintf(w, "- %s %s amended %s (step %s)\n", a.At, a.Actor, a.File, a.Step)
+		}
+	}
 	switch r.State {
 	case runStopped:
 		fmt.Fprintf(w, "\nnext: rhiza run resume %s\n", r.ID)
 	case runRunning:
 		fmt.Fprintf(w, "\nnext: rhiza run status %s\n", r.ID)
+	case runBlocked:
+		if r.Blocked != nil && r.Blocked.Tab.Block != "" {
+			fmt.Fprintf(w, "\nnext: rex focus -b %s\n", r.Blocked.Tab.Block)
+		} else if r.Blocked != nil {
+			fmt.Fprintf(w, "\nnext: rhiza session show %s\n", r.Blocked.Session)
+		}
 	}
 }
 
@@ -594,5 +826,19 @@ func runLines(w io.Writer, r RunInfo) {
 	}
 	if r.Detail != "" {
 		fmt.Fprintf(w, "- Detail: %s\n", r.Detail)
+	}
+	if b := r.Blocked; b != nil {
+		tab := b.Tab.Title
+		if tab == "" {
+			tab = b.Session
+		}
+		fmt.Fprintf(w, "- Blocked: %s waits on the owner in tab %s", b.Step, tab)
+		if b.Tab.Window != "" {
+			fmt.Fprintf(w, " (window %s)", b.Tab.Window)
+		}
+		fmt.Fprintf(w, "\n")
+		if b.Question != "" {
+			fmt.Fprintf(w, "- Question: %s\n", b.Question)
+		}
 	}
 }

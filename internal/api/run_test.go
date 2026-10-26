@@ -1,11 +1,16 @@
 package api
 
 import (
+	"bytes"
+	"encoding/base64"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
+	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
@@ -77,7 +82,10 @@ func TestWorkflowFile(t *testing.T) {
 			t.Errorf("workflowFile(%q) = %q, %v; want %q", c.ref, got, err, c.want)
 		}
 	}
-	for _, ref := range []string{"", "  ", ".", ".."} {
+	if got, err := workflowFile(root, ""); err != nil || got != filepath.Join(root, ".rhiza", "workflows", "ship-change.toml") {
+		t.Errorf("workflowFile(\"\") = %q, %v; want the ship-change name", got, err)
+	}
+	for _, ref := range []string{".", ".."} {
 		_, err := workflowFile(root, ref)
 		wantExit(t, err, 2)
 	}
@@ -339,5 +347,316 @@ func TestRunAgentStepEndsWithTheSessionExit(t *testing.T) {
 		if len(f.rex.calls) != 1 {
 			t.Errorf("rex ran %d times, want 1", len(f.rex.calls))
 		}
+	}
+}
+
+// scriptClock is a run.Clock whose every Sleep (one per poll of an agent
+// step) runs the next step of a script, so a test drives a session's
+// record between polls.
+type scriptClock struct {
+	t      *testing.T
+	now    time.Time
+	script []func()
+	sleeps int
+}
+
+func (c *scriptClock) Now() time.Time { return c.now }
+
+func (c *scriptClock) Sleep(d time.Duration) {
+	c.now = c.now.Add(d)
+	if c.sleeps >= len(c.script) {
+		c.t.Fatalf("poll %d: the script has ended but the run still polls", c.sleeps+1)
+	}
+	c.sleeps++
+	c.script[c.sleeps-1]()
+}
+
+// useClock makes run.start and run.resume poll by c for the test.
+func useClock(t *testing.T, c run.Clock) {
+	t.Helper()
+	old := runClock
+	runClock = c
+	t.Cleanup(func() { runClock = old })
+}
+
+// rexReports splits what was written to Rex into OSC 7501 reports, each
+// a map of its fields with title and msg base64-decoded.
+func rexReports(t *testing.T, out string) []map[string]string {
+	t.Helper()
+	var reports []map[string]string
+	for _, part := range strings.Split(out, "\x1b]7501;")[1:] {
+		body, ok := strings.CutSuffix(part, "\x1b\\")
+		if !ok {
+			t.Fatalf("report %q is not ended by ST", part)
+		}
+		fields := map[string]string{}
+		for _, kv := range strings.Split(body, ":") {
+			k, v, _ := strings.Cut(kv, "=")
+			if k == "title" || k == "msg" {
+				d, err := base64.StdEncoding.DecodeString(v)
+				if err != nil {
+					t.Fatalf("%s %q: %v", k, v, err)
+				}
+				v = string(d)
+			}
+			fields[k] = v
+		}
+		reports = append(reports, fields)
+	}
+	return reports
+}
+
+// A run's agent step is driven blocked, still blocked, answered, blocked
+// again and exited: run.status reads blocked with the tab and question
+// only while it is, and Rex gets one blocked report per block and one
+// working report per end.
+func TestRunBlockedStatusAndRexReports(t *testing.T) {
+	f := newSessionFixture(t, "blocked-runs")
+	newChange(t, f.ctx, `{"intent":"X","title":"Blocked runs"}`)
+	writeWorkflow(t, f.ctx.Root, "w", agentWorkflow+"interval = \"1s\"\n")
+	f.ctx.Start = (&shStart{}).start
+	rex := &bytes.Buffer{}
+	f.ctx.Rex = rex
+	sessions := session.NewStore(session.Dir(f.common))
+	var sid string
+	hook := func(state, kind, detail string) {
+		t.Helper()
+		if _, err := sessions.Update(sid, func(r *session.Record) {
+			r.Status.Hook = &session.Report{State: state, Kind: kind, Detail: detail}
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+		f.rex.run(name, args, dir, env)
+		sid = args[len(args)-1]
+		hook(session.StateBlocked, session.KindQuestion, "Ship it?")
+		return []byte(rexWindowJSON), nil
+	}
+	status := func() RunInfo {
+		t.Helper()
+		resp, err := callOp(t, f.ctx, "run.status", `{}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return resp.(RunInfo)
+	}
+	blockedReports := func() int {
+		n := 0
+		for _, r := range rexReports(t, rex.String()) {
+			if r["state"] == "blocked" {
+				n++
+			}
+		}
+		return n
+	}
+	clock := &scriptClock{t: t, now: time.Unix(0, 0)}
+	clock.script = []func(){
+		func() {
+			info := status()
+			b := info.Blocked
+			if info.State != runBlocked || b == nil || b.Step != "build" || b.Session != sid ||
+				b.Kind != session.KindQuestion || b.Question != "Ship it?" ||
+				b.Tab.Window != "window:w1" || b.Tab.Block != "block:b1" || b.Tab.Title == "" {
+				t.Fatalf("blocked status = %+v, blocked %+v", info, b)
+			}
+			out := human(t, info)
+			for _, want := range []string{
+				"Run " + info.ID + " blocked\n",
+				"- Blocked: build waits on the owner in tab " + b.Tab.Title + " (window window:w1)\n",
+				"- Question: Ship it?\n",
+				"next: rex focus -b block:b1\n",
+			} {
+				if !strings.Contains(out, want) {
+					t.Errorf("markdown lacks %q:\n%s", want, out)
+				}
+			}
+			if n := blockedReports(); n != 1 {
+				t.Errorf("%d blocked reports after the first poll, want 1", n)
+			}
+		},
+		func() {}, // still blocked
+		func() { hook(session.StateWorking, "", "") },
+		func() {
+			if info := status(); info.State != runRunning || info.Blocked != nil {
+				t.Errorf("answered status = %+v", info)
+			}
+			hook(session.StateBlocked, session.KindPermission, "Allow rm?")
+		},
+		func() {
+			code := 0
+			if _, err := sessions.Update(sid, func(r *session.Record) {
+				r.Status.Exit = &session.Report{State: session.StateExited, Code: &code}
+			}); err != nil {
+				t.Fatal(err)
+			}
+		},
+	}
+	useClock(t, clock)
+
+	resp, err := callOp(t, f.ctx, "run.start", `{"workflow":"w","permission_mode":"manual"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	info := resp.(RunResponse).Run
+	if info.State != run.Succeeded || info.Blocked != nil || clock.sleeps != len(clock.script) {
+		t.Fatalf("run = %+v after %d polls", info, clock.sleeps)
+	}
+	reports := rexReports(t, rex.String())
+	var states []string
+	for _, r := range reports {
+		states = append(states, r["state"])
+		if r["app"] != "rhiza" {
+			t.Errorf("report %v: app is not rhiza", r)
+		}
+	}
+	if want := []string{"blocked", "working", "blocked", "working"}; !slices.Equal(states, want) {
+		t.Fatalf("reports %v, want %v", states, want)
+	}
+	first, title := reports[0], reports[0]["title"]
+	wantMsg := "Blocked runs: build waits on you in tab " + title + ": Ship it?"
+	if title == "" || first["kind"] != "question" || first["msg"] != wantMsg {
+		t.Errorf("first report %v; want msg %q", first, wantMsg)
+	}
+	if reports[2]["kind"] != "permission" || !strings.HasSuffix(reports[2]["msg"], ": Allow rm?") {
+		t.Errorf("second block report %v", reports[2])
+	}
+	if _, ok := reports[1]["msg"]; ok || len(reports[1]) != 2 {
+		t.Errorf("working report %v, want state and app only", reports[1])
+	}
+	if s := status(); s.State != run.Succeeded || s.Blocked != nil {
+		t.Errorf("final status = %+v", s)
+	}
+}
+
+// Without Rex nothing is written: the run still reports blocked.
+func TestRunBlockedWithoutRexWritesNothing(t *testing.T) {
+	f := newSessionFixture(t, "x")
+	newChange(t, f.ctx, `{"intent":"X","title":"X"}`)
+	writeWorkflow(t, f.ctx.Root, "w", agentWorkflow)
+	f.ctx.Start = (&shStart{}).start
+	stderr := &bytes.Buffer{}
+	f.ctx.Stderr = stderr
+	sessions := session.NewStore(session.Dir(f.common))
+	var sid string
+	f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+		f.rex.run(name, args, dir, env)
+		sid = args[len(args)-1]
+		if _, err := sessions.Update(sid, func(r *session.Record) {
+			r.Status.Hook = &session.Report{State: session.StateBlocked, Kind: session.KindQuestion}
+		}); err != nil {
+			t.Fatal(err)
+		}
+		return []byte(rexWindowJSON), nil
+	}
+	useClock(t, &scriptClock{t: t, script: []func(){func() {
+		code := 0
+		if _, err := sessions.Update(sid, func(r *session.Record) {
+			r.Status.Exit = &session.Report{State: session.StateExited, Code: &code}
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}}})
+	resp, err := callOp(t, f.ctx, "run.start", `{"workflow":"w","permission_mode":"manual"}`)
+	if err != nil || resp.(RunResponse).Run.State != run.Succeeded {
+		t.Fatalf("run = %+v, %v", resp, err)
+	}
+	if strings.Contains(stderr.String(), "\x1b") {
+		t.Errorf("stderr holds an escape sequence:\n%q", stderr.String())
+	}
+	if !strings.Contains(stderr.String(), "step build: blocked on question") {
+		t.Errorf("stderr lacks the blocked progress line:\n%s", stderr.String())
+	}
+}
+
+// A blocked run with no question, in a tab not yet opened, reads blocked
+// without a question line and points at the session.
+func TestRunInfoHumanBlockedWithoutQuestion(t *testing.T) {
+	info := RunInfo{
+		ID: "R1", State: runBlocked, Current: "build", Steps: []RunStep{},
+		Blocked: &RunBlocked{Step: "build", Session: "S1", Kind: "auth", Tab: SessionTab{Title: "x-build"}},
+	}
+	out := human(t, info)
+	if !strings.Contains(out, "- Blocked: build waits on the owner in tab x-build\n") ||
+		strings.Contains(out, "Question") || !strings.Contains(out, "next: rhiza session show S1\n") {
+		t.Errorf("markdown:\n%s", out)
+	}
+}
+
+func TestRexReportEncoder(t *testing.T) {
+	long := strings.Repeat("é", 200) // 400 bytes
+	msg := "line one\nline two\x1b[31m\tend" + strings.Repeat("x", 3000)
+	out := string(rexReport("blocked", "question", long, msg))
+	if !strings.HasPrefix(out, "\x1b]7501;state=blocked:kind=question:app=rhiza:title=") || !strings.HasSuffix(out, "\x1b\\") {
+		t.Fatalf("report %q", out)
+	}
+	body := strings.TrimSuffix(strings.TrimPrefix(out, "\x1b]7501;"), "\x1b\\")
+	for _, r := range body {
+		if unicode.IsControl(r) {
+			t.Fatalf("report body holds control character %U", r)
+		}
+	}
+	r := rexReports(t, out)[0]
+	if title := r["title"]; len(title) > rexTitleMax || !utf8.ValidString(title) || title != strings.Repeat("é", 96) {
+		t.Errorf("title is %d bytes, valid %v", len(title), utf8.ValidString(title))
+	}
+	m := r["msg"]
+	if len(m) != rexMsgMax || !strings.HasPrefix(m, "line one line two [31m end") {
+		t.Errorf("msg is %d bytes: %.40q", len(m), m)
+	}
+	for _, c := range m {
+		if unicode.IsControl(c) {
+			t.Fatalf("msg holds control character %U", c)
+		}
+	}
+	for _, c := range []struct{ state, kind, want string }{
+		{"blocked", "nonsense", "\x1b]7501;state=blocked:app=rhiza\x1b\\"},
+		{"working", "question", "\x1b]7501;state=working:app=rhiza\x1b\\"},
+	} {
+		if got := string(rexReport(c.state, c.kind, "", "")); got != c.want {
+			t.Errorf("rexReport(%s, %s) = %q, want %q", c.state, c.kind, got, c.want)
+		}
+	}
+	end := string(rexNotice(run.Notice{Step: "build", Block: &run.Block{Kind: "question"}}))
+	if end != "\x1b]7501;state=working:app=rhiza\x1b\\" {
+		t.Errorf("end notice %q", end)
+	}
+	n := rexNotice(run.Notice{Change: "CS1", Step: "build", Session: "S1", Blocked: true, Block: &run.Block{}})
+	if got := rexReports(t, string(n))[0]["msg"]; got != "CS1: build waits on you in tab S1" {
+		t.Errorf("msg with no title, tab or question = %q", got)
+	}
+}
+
+func TestResolveWorkflow(t *testing.T) {
+	root := t.TempDir()
+	for _, ref := range []string{"", "ship-change"} {
+		path, def, data, err := resolveWorkflow(root, ref)
+		if err != nil || path != "builtin:ship-change" || def.Name != "ship-change" || len(data) == 0 {
+			t.Errorf("resolveWorkflow(%q) = %q, %v, %v; want the built-in", ref, path, def, err)
+		}
+	}
+	writeWorkflow(t, root, "ship-change", twoCommands)
+	path, def, _, err := resolveWorkflow(root, "")
+	want := filepath.Join(root, ".rhiza", "workflows", "ship-change.toml")
+	if err != nil || path != want || def.Start != "one" {
+		t.Errorf("a repo file did not replace the built-in: %q, %v, %v", path, def, err)
+	}
+	_, _, _, err = resolveWorkflow(root, "nope")
+	wantExit(t, err, 2)
+	if e := AsError(err); !strings.Contains(e.Message, "ship-change") {
+		t.Errorf("error %q does not name the built-ins", e.Message)
+	}
+}
+
+func TestStepRunnerDirFallsBackToMainCheckout(t *testing.T) {
+	main, gone := t.TempDir(), filepath.Join(t.TempDir(), "gone")
+	ctx := &Ctx{Root: "/elsewhere", Git: func(args ...string) (string, error) {
+		return "worktree " + main + "\nHEAD abc\nbranch refs/heads/main\n\nworktree " + gone + "\n", nil
+	}}
+	if got := (&stepRunner{ctx: ctx, worktree: main}).dir(); got != main {
+		t.Errorf("dir with a worktree = %q; want %q", got, main)
+	}
+	if got := (&stepRunner{ctx: ctx, worktree: gone}).dir(); got != main {
+		t.Errorf("dir without a worktree = %q; want the main checkout %q", got, main)
 	}
 }

@@ -61,13 +61,42 @@ type Runner interface {
 	// Command runs a command step's `run` once and returns its exit code.
 	// A non-zero exit is not an error; failing to run it is.
 	Command(step workflow.Step, env []string) (code int, detail string, err error)
-	// Holds runs a wait step's `until` condition once.
+	// Holds runs a wait or agent step's `until` condition once.
 	Holds(step workflow.Step, env []string) (bool, error)
 	// StartAgent launches an agent step's session and returns its ID.
 	StartAgent(step workflow.Step, env []string) (session string, err error)
-	// AgentOutcome reports whether a session has ended, and with which
-	// outcome (pass or fail).
-	AgentOutcome(session string) (done bool, outcome string, detail string, err error)
+	// AgentStatus reports where a session is: ended, and with which
+	// outcome (pass or fail), or still running and perhaps blocked on the
+	// owner.
+	AgentStatus(session string) (AgentStatus, error)
+}
+
+// AgentStatus is one poll of an agent step's session.
+type AgentStatus struct {
+	// Done is true once the session's process has exited; exit is final.
+	Done bool
+	// Outcome (pass or fail) and Detail are set when Done.
+	Outcome string
+	Detail  string
+	// Blocked is what the session waits on, nil when it is not blocked.
+	// It is ignored once Done.
+	Blocked *Block
+	// Idle is true while the live session sits at its prompt: neither
+	// working nor blocked. It is ignored once Done.
+	Idle bool
+}
+
+// Notice tells the caller that a run's agent step became blocked on the
+// owner (Blocked true) or that the block ended (Blocked false). Block is
+// what the step waits, or waited, on.
+type Notice struct {
+	Run     string
+	Change  string
+	Title   string
+	Step    string
+	Session string
+	Blocked bool
+	Block   *Block
 }
 
 // Engine runs a run's steps in the foreground, journalling each one.
@@ -83,6 +112,10 @@ type Engine struct {
 	NoWait bool
 	// Log, when set, receives one progress line per event.
 	Log func(string)
+	// Notify, when set, is called once when an agent step becomes blocked
+	// and once when that block ends. A resume of a step whose journal
+	// already shows the block calls it only when the block ends.
+	Notify func(Notice)
 }
 
 // Start creates a run's journal with its started entry. The run begins at
@@ -385,7 +418,10 @@ func (r *running) wait(step workflow.Step, env []string) result {
 }
 
 // agent launches the step's session, unless the journal already has one
-// for this visit (a resume), and polls it until it ends.
+// for this visit (a resume), and polls it until it ends. A step with an
+// `until` also passes when a poll finds the session idle at its prompt and
+// the condition holds; the session is left open. The condition is never
+// checked while the session works or is blocked on the owner.
 func (r *running) agent(step workflow.Step, env []string) (result, error) {
 	session := r.j.State().Session[step.Name]
 	if session == "" {
@@ -407,16 +443,94 @@ func (r *running) agent(step workflow.Step, env []string) (result, error) {
 		interval = workflow.DefaultInterval
 	}
 	for {
-		done, outcome, detail, err := r.e.Runner.AgentOutcome(session)
+		status, err := r.e.Runner.AgentStatus(session)
 		if err != nil {
+			// The step ends with an error outcome: end its block first.
+			if err := r.unblock(step.Name, session); err != nil {
+				return result{}, err
+			}
 			return errResult(err), nil
 		}
-		if done {
+		if status.Done {
+			if err := r.unblock(step.Name, session); err != nil {
+				return result{}, err
+			}
+			outcome := status.Outcome
 			if outcome == "" {
 				outcome = workflow.OutcomeFail
 			}
-			return result{outcome: outcome, detail: detail}, nil
+			return result{outcome: outcome, detail: status.Detail}, nil
+		}
+		if status.Blocked != nil {
+			err = r.block(step.Name, session, status.Blocked)
+		} else {
+			err = r.unblock(step.Name, session)
+		}
+		if err != nil {
+			return result{}, err
+		}
+		if step.Until != "" && status.Idle && status.Blocked == nil {
+			held, err := r.e.Runner.Holds(step, env)
+			if err != nil {
+				return errResult(err), nil
+			}
+			if held {
+				return result{outcome: workflow.OutcomePass, detail: "idle and until held; session left open"}, nil
+			}
 		}
 		c.Sleep(interval)
 	}
+}
+
+// blockedOn reports whether the journal shows session blocked.
+func (r *running) blockedOn(session string) (State, bool) {
+	st := r.j.State()
+	return st, st.Blocked != nil && st.BlockedSession == session
+}
+
+// block journals that step's session became blocked on b and notifies,
+// unless the journal already shows it blocked: one notice per block, a
+// resume included.
+func (r *running) block(step, session string, b *Block) error {
+	st, already := r.blockedOn(session)
+	if already {
+		return nil
+	}
+	cp := *b
+	if err := r.append(Entry{Type: TypeBlocked, Step: step, Session: session, Block: &cp}); err != nil {
+		return err
+	}
+	on := cp.Kind
+	if on == "" {
+		on = "the owner"
+	}
+	r.log("step %s: blocked on %s", step, on)
+	r.notify(st, step, session, true, &cp)
+	return nil
+}
+
+// unblock journals the end of session's block and notifies, when the
+// journal shows it blocked; otherwise it does nothing.
+func (r *running) unblock(step, session string) error {
+	st, blocked := r.blockedOn(session)
+	if !blocked {
+		return nil
+	}
+	if err := r.append(Entry{Type: TypeUnblocked, Step: step, Session: session}); err != nil {
+		return err
+	}
+	r.log("step %s: unblocked", step)
+	r.notify(st, step, session, false, st.Blocked)
+	return nil
+}
+
+func (r *running) notify(st State, step, session string, blocked bool, b *Block) {
+	if r.e.Notify == nil {
+		return
+	}
+	cp := *b
+	r.e.Notify(Notice{
+		Run: r.j.ID, Change: st.Change, Title: st.Title, Step: step,
+		Session: session, Blocked: blocked, Block: &cp,
+	})
 }

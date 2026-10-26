@@ -1,0 +1,62 @@
+name = "ship-change"
+
+[step.build]
+kind = "agent"
+prompt = "/shipit:go Carry out Rhiza change set {change} ({title}). Start from `rhiza slice --change {change} --json`, then follow `rhiza guide`. Work on branch cs/{slug} in this worktree, push it and open a pull request, then stop. Don't run rhiza land and don't merge: this run waits for CI, lands the change set, merges and closes out."
+until = "rhiza ship check --pr-open"
+on.pass = "wait-pr"
+
+[step.wait-pr]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "2h"
+interval = "30s"
+on.pass = "pr-green"
+
+[step.pr-green]
+kind = "command"
+run = "rhiza ship check"
+on.pass = "land"
+
+[step.land]
+kind = "command"
+run = "rhiza ship land"
+on.pass = "wait-landed"
+
+[step.wait-landed]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "2h"
+interval = "30s"
+on.pass = "landed-green"
+
+[step.landed-green]
+kind = "command"
+run = "rhiza ship check"
+on.pass = "merge"
+
+[step.merge]
+kind = "command"
+run = "rhiza ship merge"
+on.pass = "wait-main"
+
+[step.wait-main]
+kind = "wait"
+until = "rhiza ship check --main --settled"
+timeout = "1h"
+interval = "30s"
+on.pass = "main-green"
+
+[step.main-green]
+kind = "command"
+run = "rhiza ship check --main"
+on.pass = "close-out"
+
+[step.close-out]
+kind = "command"
+run = "rhiza ship close-out"
+on.pass = "ship"
+
+[step.ship]
+kind = "command"
+run = "rhiza ship command"

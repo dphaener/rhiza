@@ -1,0 +1,113 @@
+{
+  "actor": "01M5WHPVXDDV1HS00PC55QATAM",
+  "after": [
+    "01M5W98C7SNKN4YR1BX13ZWW0H"
+  ],
+  "at": "2026-10-26T17:00:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "pass 2026-10-26",
+          "statement": "The session-message testscript shows the message file is found and exactly one pointer line naming it is typed.",
+          "tests": "testscript: session-message.txtar (cmd/rhiza/testdata/script)"
+        },
+        "handle": "message-file-script",
+        "id": "01M5WJG1S74KYZZSPSFBDJBKVR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WJG1S74KYZZSPSF8YR7Z16",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WJG1S74KYZZSPSF8YR7Z16",
+        "id": "01M5WJG1X1MFDR2QFFP5NMCMS9",
+        "link": "01M5WJG1X1MFDR2QFFP4V83ZJ0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYN36XRCJ78CJZC61QCSNC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "pass 2026-10-26",
+          "statement": "The session-message testscript shows the message file names the sender's actor.",
+          "tests": "testscript: session-message.txtar (cmd/rhiza/testdata/script)"
+        },
+        "handle": "message-sender-script",
+        "id": "01M5WJG20YN5NN2K8TTDBTT1MB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WJG20YN5NN2K8TTCNKW8K0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WJG20YN5NN2K8TTCNKW8K0",
+        "id": "01M5WJG24PNSQGK2VW1QYVPT3J",
+        "link": "01M5WJG24PNSQGK2VW1QSZBWWB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYN3E1GHAA2F3FCNGZRHMX",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "pass 2026-10-26",
+          "statement": "The session-message testscript shows that with a blocked status no keys are sent, and with an idle status the pointer is sent once.",
+          "tests": "testscript: session-message.txtar (cmd/rhiza/testdata/script)"
+        },
+        "handle": "pointer-at-prompt-script",
+        "id": "01M5WJG28FVC5NCV0Q1QMQCAMT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WJG28FVC5NCV0Q1MEKHCK0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WJG28FVC5NCV0Q1MEKHCK0",
+        "id": "01M5WJG2CAYRXGH2FDMJQKRRRB",
+        "link": "01M5WJG2CAYRXGH2FDMGKSBEPE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYN3RQJHQJKFATJ8K4ZMQW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "pass 2026-10-26",
+          "statement": "The run-amend testscript shows run amend rewrites the brief, journals one amended entry and types one pointer line.",
+          "tests": "testscript: run-amend.txtar (cmd/rhiza/testdata/script)"
+        },
+        "handle": "step-amend-script",
+        "id": "01M5WJG2G376Z8E40F9CTF6PCJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WJG2G376Z8E40F9B2P8NQM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WJG2G376Z8E40F9B2P8NQM",
+        "id": "01M5WJG2M51S5TG723V69AK158",
+        "link": "01M5WJG2M51S5TG723V511B3EM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5W98BZJ7N8NSBPBMMNWV70F",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTQ11MR7CP75QWPYFBQFQ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WJG2TE1N6Y4M93G0AZ4482",
+  "type": "ops",
+  "v": 1
+}

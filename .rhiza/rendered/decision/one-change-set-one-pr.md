@@ -27,6 +27,7 @@ the assistant's summary in the founding conversation
 ### In
 
 - decided-by [workflows](../capability/rhiza/workflows.md)
+- decided-by [land-with-evidence](../capability/rhiza/orchestration/shipping/land-with-evidence.md)
 
 ## History
 

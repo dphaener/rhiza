@@ -7,12 +7,15 @@ import "time"
 
 // Entry types.
 const (
-	TypeStarted  = "started"
-	TypeEntered  = "entered"
-	TypeSession  = "session"
-	TypeEnded    = "ended"
-	TypeStopped  = "stopped"
-	TypeFinished = "finished"
+	TypeStarted   = "started"
+	TypeEntered   = "entered"
+	TypeSession   = "session"
+	TypeEnded     = "ended"
+	TypeStopped   = "stopped"
+	TypeFinished  = "finished"
+	TypeBlocked   = "blocked"
+	TypeUnblocked = "unblocked"
+	TypeAmended   = "amended"
 )
 
 // Run results, used in Entry.End and State.Result.
@@ -35,14 +38,30 @@ type Started struct {
 	Agent          string `json:"agent,omitempty"`
 }
 
+// Block is what a blocked agent step waits on: the kind of block and the
+// question, as the session's blocked report gave them, and the tab its
+// session runs in. The tab is plain strings so this package stays free of
+// the session records it comes from.
+type Block struct {
+	Kind       string `json:"kind,omitempty"`
+	Question   string `json:"question,omitempty"`
+	TabSession string `json:"tab_session,omitempty"`
+	TabWindow  string `json:"tab_window,omitempty"`
+	TabBlock   string `json:"tab_block,omitempty"`
+	TabTitle   string `json:"tab_title,omitempty"`
+}
+
 // Entry is one line of a journal.
 //
-//	started:  Step is the start step, Started holds the run's setup
-//	entered:  Step, Visit
-//	session:  Step, Session (an agent step's launched session)
-//	ended:    Step, Outcome, and Next (a step) or End (the run ends)
-//	stopped:  Step, Detail (why it stopped, e.g. waiting)
-//	finished: End (succeeded or failed), Detail
+//	started:   Step is the start step, Started holds the run's setup
+//	entered:   Step, Visit
+//	session:   Step, Session (an agent step's launched session)
+//	blocked:   Step, Session, Block (the session began waiting on the owner)
+//	unblocked: Step, Session (the block ended: answered, or the session ended)
+//	ended:     Step, Outcome, and Next (a step) or End (the run ends)
+//	stopped:   Step, Detail (why it stopped, e.g. waiting)
+//	finished:  End (succeeded or failed), Detail
+//	amended:   Step, Session, Actor, File (the owner or an agent amended the step's brief)
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -54,6 +73,20 @@ type Entry struct {
 	Session string    `json:"session,omitempty"`
 	Started *Started  `json:"started,omitempty"`
 	End     string    `json:"end,omitempty"`
+	Block   *Block    `json:"block,omitempty"`
+	Actor   string    `json:"actor,omitempty"`
+	File    string    `json:"file,omitempty"`
+}
+
+// Amendment is one amended entry: a step's brief or plan file replaced
+// while the step ran. File is relative to the run's worktree and Actor is
+// the sender's actor handle.
+type Amendment struct {
+	Step    string
+	Session string
+	Actor   string
+	File    string
+	At      time.Time
 }
 
 // Journal is a run's entries in order.
@@ -99,6 +132,16 @@ type State struct {
 	// Stopped is the detail of the last stopped entry after the last
 	// entered or ended entry, if any.
 	Stopped string
+	// Blocked is what the current agent step waits on, from its last
+	// blocked entry; nil once an unblocked, its step's ended or a
+	// finished entry follows. BlockedStep and BlockedSession name the
+	// step and session it belongs to.
+	Blocked        *Block
+	BlockedStep    string
+	BlockedSession string
+	// Amendments are the amended entries in journal order. An amendment
+	// changes nothing else in the fold.
+	Amendments []Amendment
 }
 
 // State folds the journal.
@@ -128,6 +171,14 @@ func (j Journal) State() State {
 			st.Stopped = ""
 		case TypeSession:
 			st.Session[e.Step] = e.Session
+		case TypeBlocked:
+			b := Block{}
+			if e.Block != nil {
+				b = *e.Block
+			}
+			st.Blocked, st.BlockedStep, st.BlockedSession = &b, e.Step, e.Session
+		case TypeUnblocked:
+			st.clearBlock()
 		case TypeEnded:
 			visit := e.Visit
 			if visit == 0 {
@@ -138,12 +189,20 @@ func (j Journal) State() State {
 				Detail: e.Detail, Session: st.Session[e.Step], At: e.At,
 			})
 			delete(st.Session, e.Step)
+			if st.BlockedStep == e.Step {
+				st.clearBlock()
+			}
 			st.Current = e.Next
 			st.CurrentVisit = 0
 			st.Stopped = ""
+		case TypeAmended:
+			st.Amendments = append(st.Amendments, Amendment{
+				Step: e.Step, Session: e.Session, Actor: e.Actor, File: e.File, At: e.At,
+			})
 		case TypeStopped:
 			st.Stopped = e.Detail
 		case TypeFinished:
+			st.clearBlock()
 			st.Ended = true
 			st.Result = e.End
 			st.Detail = e.Detail
@@ -152,4 +211,8 @@ func (j Journal) State() State {
 		}
 	}
 	return st
+}
+
+func (st *State) clearBlock() {
+	st.Blocked, st.BlockedStep, st.BlockedSession = nil, "", ""
 }

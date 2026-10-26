@@ -1,0 +1,300 @@
+{
+  "actor": "01M5WFXBCNA8DYMEQ9QAV94HT1",
+  "after": [
+    "01M5TZAMFN93JVAGPRMAY8EF7Y"
+  ],
+  "at": "2026-10-26T16:44:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript starts a run without naming a workflow and its journal names ship-change.",
+          "statement": "The binary ships the ship-change workflow, and rhiza run start <change set> runs it by default."
+        },
+        "handle": "ship-change-workflow",
+        "id": "01M5TYKP0BBSKRGKDXXFJPQWVB",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5TYKP0BBSKRGKDXXCBVWT65",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "fields": {
+          "acceptance": "With a fake adapter, the step's prompt names shipit and the slice command.",
+          "statement": "Ship-change's agent step runs shipit in the change set's worktree, starting from rhiza slice --change."
+        },
+        "handle": "shipit-agent-step",
+        "id": "01M5TYKPAXPA4NBWNPH9NCJTRD",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5TYKPAXPA4NBWNPH5WENFNK",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript's repo ship command runs once, after CI on main is green.",
+          "statement": "Close-out ends with the repo's own ship command from .rhiza/workflows/ (make install for Rhiza)."
+        },
+        "handle": "repo-ship-command",
+        "id": "01M5TYKQB1VWPAN3DBN08P52JR",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5TYKQB1VWPAN3DBN01K0BB0",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "fields": {
+          "result": "make check exit 0 at 84d07c4",
+          "statement": "The binary carries the ship-change workflow, and run start with no --workflow runs it and the journal names it builtin:ship-change.",
+          "status": "verified",
+          "tests": "TestScripts/run-ship-change; TestScripts/run-ship-change-fail; internal/workflow TestBuiltinsParse; internal/api TestWorkflowFile, TestResolveWorkflow"
+        },
+        "handle": "ship-change-workflow-tests",
+        "id": "01M5WHKBTBAK90JVBNST11SH3V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WHKBTBAK90JVBNSPZRYSAG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WHKBTBAK90JVBNSPZRYSAG",
+        "id": "01M5WHKBY4Y4EMB7BCKCT2SB4H",
+        "link": "01M5WHKBY4Y4EMB7BCKCHAXM6K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYKP0BBSKRGKDXXCBVWT65",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "make check exit 0 at 84d07c4",
+          "statement": "The agent step runs shipit in the change set's worktree from rhiza slice --change; the fake claude receives that prompt and pushes the branch.",
+          "status": "verified",
+          "tests": "TestScripts/run-ship-change; internal/workflow TestBuiltinsParse"
+        },
+        "handle": "shipit-agent-step-tests",
+        "id": "01M5WHKC1RBD6E4939DJ70JM4T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WHKC1RBD6E4939DF90GQQD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WHKC1RBD6E4939DF90GQQD",
+        "id": "01M5WHKC5MYT5KMRZZGG2SN66Q",
+        "link": "01M5WHKC5MYT5KMRZZGFNHWSPQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYKPAXPA4NBWNPH5WENFNK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "make check exit 0 at 84d07c4",
+          "statement": "The run waits until the PR is open and all checks pass, and fails the pr-green step on a failed check without merging.",
+          "status": "verified",
+          "tests": "TestScripts/run-ship-change; TestScripts/run-ship-change-fail; internal/api TestShipCheckNoPR, TestShipCheckPending, TestShipCheckFailed, TestShipCheckWaitsForPushedHead, TestChecksVerdict"
+        },
+        "handle": "wait-green-pr-tests",
+        "id": "01M5WHKC9HFN1PSXE1XDF0NH3C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WHKC9HFN1PSXE1XBJP4MYK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WHKC9HFN1PSXE1XBJP4MYK",
+        "id": "01M5WHKCDBS9W943DM3S2HSVSX",
+        "link": "01M5WHKCDBS9W943DM3NZ0KMDV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYKPJ0FNX289H8PNJRM1TT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "make check exit 0 at 84d07c4",
+          "statement": "The merge is gh pr merge --squash --match-head-commit with the checked head, and a merge that did not happen is an error.",
+          "status": "verified",
+          "tests": "TestScripts/run-ship-change; internal/api TestShipCheckGreenThenMerge, TestShipMergeNotMerged"
+        },
+        "handle": "pinned-merge-tests",
+        "id": "01M5WHKCHS79BZTVXXWHANY49J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WHKCHS79BZTVXXWHAG4DG5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WHKCHS79BZTVXXWHAG4DG5",
+        "id": "01M5WHKCND9WCH4KEDH9V6D3BJ",
+        "link": "01M5WHKCND9WCH4KEDH8AJ6CJT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYKPWPQZ4D8ZTFYP2SWH9N",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "make check exit 0 at 84d07c4",
+          "statement": "After the merge the worktree, local branch and origin branch are gone, main is pulled, and CI on main is waited on until green.",
+          "status": "verified",
+          "tests": "TestScripts/run-ship-change; internal/api TestShipCloseOut, TestShipCloseOutDirtyWorktree"
+        },
+        "handle": "close-out-tests",
+        "id": "01M5WHKCS2YZ3B5EKX96M7NMZV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WHKCS2YZ3B5EKX96BWSJ3X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WHKCS2YZ3B5EKX96BWSJ3X",
+        "id": "01M5WHKCWVKW54Q59D6J136JBN",
+        "link": "01M5WHKCWVKW54Q59D6ECF0KS8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYKQ3V9NFPG905CN1RWR3B",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "make check exit 0 at 84d07c4",
+          "statement": "The repo's .rhiza/workflows/ship.sh runs once, after main is green, in the main checkout; without it the command reports there is nothing to ship.",
+          "status": "verified",
+          "tests": "TestScripts/run-ship-change; TestScripts/run-ship-change-fail; internal/api TestShipCommand"
+        },
+        "handle": "repo-ship-command-tests",
+        "id": "01M5WHKD0PWADHFWMYHEBKEKP0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WHKD0PWADHFWMYHE6KW2D7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WHKD0PWADHFWMYHE6KW2D7",
+        "id": "01M5WHKD492YBYCSMQKFF1R0BF",
+        "link": "01M5WHKD492YBYCSMQKC70V14N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYKQB1VWPAN3DBN01K0BB0",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "make check exit 0 at 84d07c4",
+          "statement": "The change set is landed on the PR branch with the PR and its CI result written as Evidence that verifies each capability, resume-safe and refusing to land onto main.",
+          "status": "verified",
+          "tests": "TestScripts/run-ship-change; internal/api TestShipLand, TestShipLandAfterAgentLanded, TestShipLandRefusals, TestShipEvidenceHandle, TestShipEvidenceFields"
+        },
+        "handle": "land-with-evidence-tests",
+        "id": "01M5WHKD7Y22PB4S8Y0EV938RA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5WHKD7Y22PB4S8Y0CTJPBXH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WHKD7Y22PB4S8Y0CTJPBXH",
+        "id": "01M5WHKDBN9QH4C09CSXS78K19",
+        "link": "01M5WHKDBN9QH4C09CSTX6EVPE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYKQJ8YK6B2WW3AX1Y3C6X",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "statement": "Ship-change lands the change set on the PR branch after its CI passes, pushes that, waits for CI again and merges pinned to that head, so main gets the model and code in one reviewed squash.",
+          "wording": "the building agent's design, assumed in autonomous mode"
+        },
+        "handle": "ship-lands-before-merge",
+        "id": "01M5WHKDW15YK8DX5DY5TPX6MG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WHKDW15YK8DX5DY3NTMP3B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5TYKQJ8YK6B2WW3AX1Y3C6X",
+        "id": "01M5WHKE05ZRWVMTEXG3WRBNXX",
+        "link": "01M5WHKE05ZRWVMTEXG2Q42YXT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WHKDW15YK8DX5DY3NTMP3B",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Ship-change's steps pass the PR, the checked head and the merge commit through a state file per change set under the git common dir, kept out of the log.",
+          "wording": "the building agent's design, assumed in autonomous mode"
+        },
+        "handle": "ship-state-file",
+        "id": "01M5WHKE4GAD2E52F12WBSYJJF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WHKE4GAD2E52F12RC7MAK3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5TYKPWPQZ4D8ZTFYP2SWH9N",
+        "id": "01M5WHKE8DG95TD8WQNY7AE34X",
+        "link": "01M5WHKE8DG95TD8WQNW7D23XA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WHKE4GAD2E52F12RC7MAK3",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "The repo's ship command is .rhiza/workflows/ship.sh, run with sh in the main checkout after main is green; without it there is nothing to ship.",
+          "wording": "the building agent's design, assumed in autonomous mode"
+        },
+        "handle": "ship-command-file",
+        "id": "01M5WHKECCYCDGPBCEH31TA8KQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5WHKECCYCDGPBCEH2E92FY1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5TYKQB1VWPAN3DBN01K0BB0",
+        "id": "01M5WHKEGEQX7GWEZ5615GE5BV",
+        "link": "01M5WHKEGEQX7GWEZ55Y2MRF32",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WHKECCYCDGPBCEH2E92FY1",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SZJ03NQS0A389JF8TTMF6M",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5WHKEP5PSAMM56ZWFH097ND",
+  "type": "ops",
+  "v": 1
+}

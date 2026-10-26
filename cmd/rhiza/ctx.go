@@ -61,6 +61,11 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		RexBlock:   getenv("REX_BLOCK"),
 		Stderr:     os.Stderr,
 	}
+	// Inside Rex, standard error is the terminal Rex shows: status
+	// reports written there become Rex's notifications.
+	if ctx.RexBlock != "" {
+		ctx.Rex = os.Stderr
+	}
 	ctx.Git = gitIn(ctx.Root)
 	if _, ok := api.FindRoot(wd); ok {
 		if p, err := index.DefaultPath(ctx.Root); err == nil {

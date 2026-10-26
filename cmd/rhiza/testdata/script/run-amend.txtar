@@ -1,0 +1,145 @@
+# run amend replaces a running agent step's brief in the run's worktree,
+# journals one amended entry naming the sender's actor and the file, and
+# types one pointer line naming the file into the step's Rex tab once the
+# session waits at its prompt. run status shows the amendment.
+#
+# The fake rex logs its argv, runs the tab's command in the background so
+# `window new` returns at once, and prints a window with a block. The fake
+# claude reports SessionStart (idle) through the real hook path, waits
+# (bounded) for $WORK/release and exits 0.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+cp $WORK/brief.md brief.md
+mkdir .rhiza/workflows
+cp $WORK/build.toml .rhiza/workflows/build.toml
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Amend runs' --title 'Amend runs' --json
+
+# Inside Rex, the run starts in the background.
+env REX_BLOCK=block:root
+env REX_SESSION=session:s1
+exec rhiza run start --workflow build --permission-mode manual &
+
+# Poll (bounded) until the step's session waits at its prompt.
+exec sh -c 'i=0; while [ $i -lt 400 ]; do rhiza session ls | grep -q idle && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
+exec cat $WORK/repo.amend-runs/brief.md
+stdout '^Build the red dashboard\.$'
+
+# A path that escapes the worktree is a usage error and writes nothing.
+exec sh -c 'rhiza run amend --file ../escape.md --from "$WORK"/new-brief.md --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout '^exit=2$'
+! exists $WORK/escape.md
+exec cat $WORK/repo.amend-runs/brief.md
+stdout '^Build the red dashboard\.$'
+! exec grep -c '^send' $WORK/rex.log
+
+# The amendment: the brief changes, the journal records it with the
+# sender's actor, and one pointer line naming the file is typed.
+exec rhiza run amend --file brief.md --from $WORK/new-brief.md --json
+stdout '"step": "build"'
+stdout '"file": "brief.md"'
+stdout '"actor": "test"'
+stdout '"pointer": "rhiza: test amended brief.md: read it again and carry on from it."'
+exec cat $WORK/repo.amend-runs/brief.md
+stdout '^Build the blue dashboard\.$'
+! stdout 'red'
+exec sh -c 'grep -h "\"type\":\"amended\"" "$WORK"/repo/.git/rhiza/runs/*.jsonl'
+stdout -count=1 '"type":"amended"'
+stdout '"actor":"test"'
+stdout '"file":"brief.md"'
+exec grep -c '^send -b block:b1 rhiza: test amended brief.md: read it again and carry on from it.$' $WORK/rex.log
+stdout '^1$'
+exec grep -c '^send-key -b block:b1 enter$' $WORK/rex.log
+stdout '^1$'
+exec grep -c '^send' $WORK/rex.log
+stdout '^2$'
+
+# run status shows the amendment.
+exec rhiza run status
+stdout '^## Amendments$'
+stdout '^- \S+ test amended brief\.md \(step build\)$'
+exec rhiza run status --json
+stdout '"amendments": \['
+stdout '"actor": "test"'
+
+# The agent finishes: the run succeeds, and its journal still shows the
+# amendment.
+exec sh -c 'echo > $WORK/release'
+wait
+stdout '^Run [0-9A-Z]{26} succeeded$'
+exec rhiza run status
+stdout '^Run [0-9A-Z]{26} succeeded$'
+stdout '^- \S+ test amended brief\.md \(step build\)$'
+
+# A finished run takes no amendment.
+exec sh -c 'rhiza run amend --file brief.md --from "$WORK"/new-brief.md --json; echo exit=$?'
+stdout '"code": "conflict"'
+stdout '^exit=3$'
+exec grep -c '^send' $WORK/rex.log
+stdout '^2$'
+
+fold-ok
+
+-- brief.md --
+# Brief
+
+Build the red dashboard.
+-- new-brief.md --
+# Brief
+
+Build the blue dashboard.
+-- build.toml --
+name = "build"
+
+[step.build]
+kind = "agent"
+prompt = "Follow brief.md for {change}"
+interval = "50ms"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+case "$1" in
+events | send | send-key) exit 0 ;;
+esac
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >"$WORK/tab.out" 2>&1 </dev/null &
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+sid=
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
+echo '{"session_id":"'$sid'","hook_event_name":"SessionStart"}' | rhiza session hook SessionStart >> "$WORK/hook.out" || exit 8
+i=0
+until [ -f "$WORK/release" ]; do
+	i=$((i + 1))
+	if [ $i -gt 800 ]; then
+		echo 'no release' >&2
+		exit 9
+	fi
+	sleep 0.025
+done
+exit 0
