@@ -93,6 +93,10 @@ type SessionStartRequest struct {
 	// WritesRecord. Only a run's StartArbiter sets them.
 	writes       string
 	writesRecord bool
+	// leaf and attempt are the session record's Leaf and Attempt. Only a
+	// run's StartLeaf sets them.
+	leaf    string
+	attempt int
 }
 
 // SessionStartResponse is the session launched, or in a dry run the one
@@ -228,7 +232,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 		ID: sid, Agent: a.Name(), Change: cs.String(), Title: title, Step: step, Run: r.Run, Autonomous: r.autonomous,
 		Actor: handleSlug(a.Name() + "-" + sid[:8]), PermissionMode: r.PermissionMode, Prompt: r.Prompt,
 		Worktree: worktree, Branch: branch, Tab: tab, StartedAt: ctx.Now().UTC().Truncate(time.Second),
-		Writes: r.writes, WritesRecord: r.writesRecord,
+		Writes: r.writes, WritesRecord: r.writesRecord, Leaf: r.leaf, Attempt: r.attempt,
 	}
 	self := ctx.Self
 	if self == "" {

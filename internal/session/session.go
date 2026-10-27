@@ -30,7 +30,11 @@ type Record struct {
 	Run          string `json:"run,omitempty"`
 	// Autonomous is true when an autonomous run launched the session: the
 	// owner is not there to answer it.
-	Autonomous     bool      `json:"autonomous,omitempty"`
+	Autonomous bool `json:"autonomous,omitempty"`
+	// Leaf is the handle of the leaf a leaves step launched the session
+	// on, and Attempt the leaf's attempt; empty for every other session.
+	Leaf           string    `json:"leaf,omitempty"`
+	Attempt        int       `json:"attempt,omitempty"`
 	Actor          string    `json:"actor"`
 	For            string    `json:"for"`
 	PermissionMode string    `json:"permission_mode"`

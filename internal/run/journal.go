@@ -3,7 +3,10 @@
 // model's log. It runs no program and names no agent.
 package run
 
-import "time"
+import (
+	"slices"
+	"time"
+)
 
 // Entry types.
 const (
@@ -28,6 +31,19 @@ const (
 	TypeFindings   = "findings"
 	TypeVerdict    = "verdict"
 	TypeGated      = "gated"
+	// TypeLeafSession, TypeLeafAttempt and TypeLeaf are a leaves step's
+	// entries: a leaf's session started, a session's work judged, and a
+	// leaf's outcome.
+	TypeLeafSession = "leaf-session"
+	TypeLeafAttempt = "leaf-attempt"
+	TypeLeaf        = "leaf"
+)
+
+// Leaf outcomes, a leaf entry's Outcome.
+const (
+	LeafPassed  = "passed"
+	LeafFailed  = "failed"
+	LeafSkipped = "skipped"
 )
 
 // Finding kinds: what a plan reviewer's finding says is wrong with a node.
@@ -123,6 +139,13 @@ type Block struct {
 //	verdict:   Verdicts (a critic's verdicts on findings of the latest round)
 //	gated:     Changes (run gate ended the plan: its change sets, by ID; the
 //	           latest gated entry wins)
+//	leaf-session: Step, Leaf, Handle, Role (builder or verifier), Attempt, Session,
+//	           Model, Commit (a verifier's), Detail (a leaves step started a session
+//	           on leaf node Leaf, handle Handle)
+//	leaf-attempt: Step, Leaf, Handle, Role, Attempt, Outcome (pass or fail), Detail
+//	           (the role's session of the attempt was judged)
+//	leaf:      Step, Leaf, Handle, Outcome (passed, failed or skipped), Question (for
+//	           failed), Detail (the leaf's outcome)
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -158,6 +181,15 @@ type Entry struct {
 	Verdicts []Verdict `json:"verdicts,omitempty"`
 	// Changes are a gated entry's plan change sets, by ID.
 	Changes []string `json:"changes,omitempty"`
+	// Leaf is a leaf entry's leaf node ID, and Role its session's role:
+	// builder or verifier. Attempt counts a leaf's attempts from 1. Model
+	// is the model a leaf session runs; Commit the commit a verifier
+	// checks.
+	Leaf    string `json:"leaf,omitempty"`
+	Role    string `json:"role,omitempty"`
+	Attempt int    `json:"attempt,omitempty"`
+	Model   string `json:"model,omitempty"`
+	Commit  string `json:"commit,omitempty"`
 }
 
 // Finding is one finding of a plan review round: node Node (its handle
@@ -313,6 +345,72 @@ type Arbitration struct {
 // Open reports whether the arbitration has no verdict yet.
 func (a Arbitration) Open() bool { return a.Outcome == "" }
 
+// LeafSession is one leaf-session entry: a session of role Role (builder
+// or verifier) on the leaf's attempt Attempt.
+type LeafSession struct {
+	Role    string
+	Attempt int
+	Session string
+	Model   string
+	Commit  string
+	Detail  string
+	At      time.Time
+}
+
+// LeafAttempt is one leaf-attempt entry: role Role's session of attempt
+// Attempt was judged pass or fail (Outcome), for Detail.
+type LeafAttempt struct {
+	Role    string
+	Attempt int
+	Outcome string
+	Detail  string
+	At      time.Time
+}
+
+// LeafState is one leaf of a leaves step, folded from its entries: its
+// sessions and judged attempts in journal order, and its outcome (passed,
+// failed or skipped) once a leaf entry has one; empty while it is open.
+type LeafState struct {
+	Step     string
+	Leaf     string
+	Handle   string
+	Sessions []LeafSession
+	Attempts []LeafAttempt
+	Outcome  string
+	Question string
+	Detail   string
+}
+
+// Session is the leaf's session of role on attempt, if it has one.
+func (l LeafState) Session(role string, attempt int) (LeafSession, bool) {
+	for i := len(l.Sessions) - 1; i >= 0; i-- {
+		if s := l.Sessions[i]; s.Role == role && s.Attempt == attempt {
+			return s, true
+		}
+	}
+	return LeafSession{}, false
+}
+
+// Judged is the judgement of role's session on attempt, if it has one.
+func (l LeafState) Judged(role string, attempt int) (LeafAttempt, bool) {
+	for i := len(l.Attempts) - 1; i >= 0; i-- {
+		if a := l.Attempts[i]; a.Role == role && a.Attempt == attempt {
+			return a, true
+		}
+	}
+	return LeafAttempt{}, false
+}
+
+// Attempt is the leaf's latest attempt: the highest one any session has,
+// or 0 before its first session.
+func (l LeafState) Attempt() int {
+	n := 0
+	for _, s := range l.Sessions {
+		n = max(n, s.Attempt)
+	}
+	return n
+}
+
 // Journal is a run's entries in order.
 type Journal struct {
 	ID      string
@@ -423,6 +521,36 @@ type State struct {
 	// Gated are the plan's change sets the latest gated entry names, by
 	// ID; nil before run gate. They change nothing else in the fold.
 	Gated []string
+	// Leaves are the leaves of the leaves steps, in the order their first
+	// entry appears. A new visit of a leaves step starts its leaves anew:
+	// its entered entry drops the step's earlier leaves. A leaf session is
+	// also in Sessions; nothing else in the fold changes.
+	Leaves []LeafState
+}
+
+// Leaf is step's leaf with node ID leaf, if the journal has one.
+func (st State) Leaf(step, leaf string) (LeafState, bool) {
+	for _, l := range st.Leaves {
+		if l.Step == step && l.Leaf == leaf {
+			return l, true
+		}
+	}
+	return LeafState{}, false
+}
+
+// leaf is step's leaf state for e, added in first-seen order when new;
+// it takes e's handle when it had none.
+func (st *State) leaf(e Entry) *LeafState {
+	for i := range st.Leaves {
+		if l := &st.Leaves[i]; l.Step == e.Step && l.Leaf == e.Leaf {
+			if l.Handle == "" {
+				l.Handle = e.Handle
+			}
+			return l
+		}
+	}
+	st.Leaves = append(st.Leaves, LeafState{Step: e.Step, Leaf: e.Leaf, Handle: e.Handle})
+	return &st.Leaves[len(st.Leaves)-1]
 }
 
 // State folds the journal.
@@ -458,6 +586,19 @@ func (j Journal) State() State {
 				st.retryVisit[e.Step] = st.CurrentVisit
 			}
 			st.retryNext = ""
+			st.Leaves = slices.DeleteFunc(st.Leaves, func(l LeafState) bool { return l.Step == e.Step })
+		case TypeLeafSession:
+			l := st.leaf(e)
+			l.Sessions = append(l.Sessions, LeafSession{
+				Role: e.Role, Attempt: e.Attempt, Session: e.Session, Model: e.Model, Commit: e.Commit, Detail: e.Detail, At: e.At,
+			})
+			st.addSession(e.Step, e.Session)
+		case TypeLeafAttempt:
+			l := st.leaf(e)
+			l.Attempts = append(l.Attempts, LeafAttempt{Role: e.Role, Attempt: e.Attempt, Outcome: e.Outcome, Detail: e.Detail, At: e.At})
+		case TypeLeaf:
+			l := st.leaf(e)
+			l.Outcome, l.Question, l.Detail = e.Outcome, e.Question, e.Detail
 		case TypeSession:
 			st.Session[e.Step] = e.Session
 			st.addSession(e.Step, e.Session)

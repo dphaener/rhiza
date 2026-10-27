@@ -17,6 +17,7 @@ import (
 	"io"
 	"io/fs"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/adapter"
@@ -49,6 +50,9 @@ const (
 	envRun    = "RHIZA_RUN"
 	// envAutonomous is set to 1 for an agent an autonomous run launched.
 	envAutonomous = "RHIZA_AUTONOMOUS"
+	// envLeaf and envAttempt are a leaf session's leaf handle and attempt.
+	envLeaf    = run.EnvLeaf
+	envAttempt = run.EnvAttempt
 )
 
 // The Rex event that carries a block's status report, and its envelopes.
@@ -278,8 +282,9 @@ func captureAfterRun(ctx *Ctx, rec session.Record, warnings []string) ([]string,
 // launchEnv is what the agent's environment gets over the terminal's: the
 // change set, the agent's actor, the actor it acts for, the session (so
 // `rhiza session done` needs no argument) and, only when the launch belongs
-// to one, the run, and RHIZA_AUTONOMOUS=1 when that run is autonomous. A
-// run or autonomous mark the terminal had is removed.
+// to one, the run, RHIZA_AUTONOMOUS=1 when that run is autonomous, and a
+// leaf session's RHIZA_LEAF and RHIZA_ATTEMPT. A run, autonomous or leaf
+// mark the terminal had is removed.
 func launchEnv(rec session.Record) (set, unset []string) {
 	change := rec.Change
 	if rec.Writes != "" {
@@ -300,6 +305,11 @@ func launchEnv(rec session.Record) (set, unset []string) {
 		set = append(set, envAutonomous+"=1")
 	} else {
 		unset = append(unset, envAutonomous)
+	}
+	if rec.Leaf != "" {
+		set = append(set, envLeaf+"="+rec.Leaf, envAttempt+"="+strconv.Itoa(rec.Attempt))
+	} else {
+		unset = append(unset, envLeaf, envAttempt)
 	}
 	return set, unset
 }

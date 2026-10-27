@@ -3001,6 +3001,123 @@ cmp stdout describe.golden.json
                 "description": "The run ID",
                 "type": "string"
               },
+              "leaves": {
+                "description": "The leaves its leaves steps conducted, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "attempts": {
+                      "description": "The judgements of its sessions' work, in order",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "at": {
+                            "description": "When it was judged, RFC 3339 UTC",
+                            "type": "string"
+                          },
+                          "attempt": {
+                            "description": "The leaf's attempt, from 1",
+                            "type": "integer"
+                          },
+                          "detail": {
+                            "description": "Why: the session's exit, or that its agent said done",
+                            "type": "string"
+                          },
+                          "outcome": {
+                            "description": "pass or fail",
+                            "type": "string"
+                          },
+                          "role": {
+                            "description": "builder or verifier",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "at",
+                          "attempt",
+                          "outcome",
+                          "role"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "detail": {
+                      "description": "Why the leaf ended as it did",
+                      "type": "string"
+                    },
+                    "handle": {
+                      "description": "The leaf capability's handle",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf capability's ID",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "passed, failed or skipped; empty while the leaf is open",
+                      "type": "string"
+                    },
+                    "question": {
+                      "description": "The question node a failed leaf raised, if any",
+                      "type": "string"
+                    },
+                    "sessions": {
+                      "description": "The leaf's sessions, in the order they started",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "at": {
+                            "description": "When it started, RFC 3339 UTC",
+                            "type": "string"
+                          },
+                          "attempt": {
+                            "description": "The leaf's attempt it works on, from 1",
+                            "type": "integer"
+                          },
+                          "commit": {
+                            "description": "The commit a verifier checks",
+                            "type": "string"
+                          },
+                          "model": {
+                            "description": "The model it runs; empty for the agent's default",
+                            "type": "string"
+                          },
+                          "role": {
+                            "description": "builder or verifier",
+                            "type": "string"
+                          },
+                          "session": {
+                            "description": "The session's ID",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "at",
+                          "attempt",
+                          "role",
+                          "session"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "step": {
+                      "description": "The leaves step",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "attempts",
+                    "handle",
+                    "leaf",
+                    "sessions",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "messages": {
                 "description": "The messages its sessions sent each other, in order",
                 "items": {
@@ -3792,6 +3909,123 @@ cmp stdout describe.golden.json
                 "description": "The run ID",
                 "type": "string"
               },
+              "leaves": {
+                "description": "The leaves its leaves steps conducted, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "attempts": {
+                      "description": "The judgements of its sessions' work, in order",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "at": {
+                            "description": "When it was judged, RFC 3339 UTC",
+                            "type": "string"
+                          },
+                          "attempt": {
+                            "description": "The leaf's attempt, from 1",
+                            "type": "integer"
+                          },
+                          "detail": {
+                            "description": "Why: the session's exit, or that its agent said done",
+                            "type": "string"
+                          },
+                          "outcome": {
+                            "description": "pass or fail",
+                            "type": "string"
+                          },
+                          "role": {
+                            "description": "builder or verifier",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "at",
+                          "attempt",
+                          "outcome",
+                          "role"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "detail": {
+                      "description": "Why the leaf ended as it did",
+                      "type": "string"
+                    },
+                    "handle": {
+                      "description": "The leaf capability's handle",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf capability's ID",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "passed, failed or skipped; empty while the leaf is open",
+                      "type": "string"
+                    },
+                    "question": {
+                      "description": "The question node a failed leaf raised, if any",
+                      "type": "string"
+                    },
+                    "sessions": {
+                      "description": "The leaf's sessions, in the order they started",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "at": {
+                            "description": "When it started, RFC 3339 UTC",
+                            "type": "string"
+                          },
+                          "attempt": {
+                            "description": "The leaf's attempt it works on, from 1",
+                            "type": "integer"
+                          },
+                          "commit": {
+                            "description": "The commit a verifier checks",
+                            "type": "string"
+                          },
+                          "model": {
+                            "description": "The model it runs; empty for the agent's default",
+                            "type": "string"
+                          },
+                          "role": {
+                            "description": "builder or verifier",
+                            "type": "string"
+                          },
+                          "session": {
+                            "description": "The session's ID",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "at",
+                          "attempt",
+                          "role",
+                          "session"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "step": {
+                      "description": "The leaves step",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "attempts",
+                    "handle",
+                    "leaf",
+                    "sessions",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "messages": {
                 "description": "The messages its sessions sent each other, in order",
                 "items": {
@@ -4431,6 +4665,123 @@ cmp stdout describe.golden.json
           "id": {
             "description": "The run ID",
             "type": "string"
+          },
+          "leaves": {
+            "description": "The leaves its leaves steps conducted, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "attempts": {
+                  "description": "The judgements of its sessions' work, in order",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "at": {
+                        "description": "When it was judged, RFC 3339 UTC",
+                        "type": "string"
+                      },
+                      "attempt": {
+                        "description": "The leaf's attempt, from 1",
+                        "type": "integer"
+                      },
+                      "detail": {
+                        "description": "Why: the session's exit, or that its agent said done",
+                        "type": "string"
+                      },
+                      "outcome": {
+                        "description": "pass or fail",
+                        "type": "string"
+                      },
+                      "role": {
+                        "description": "builder or verifier",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "attempt",
+                      "outcome",
+                      "role"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "detail": {
+                  "description": "Why the leaf ended as it did",
+                  "type": "string"
+                },
+                "handle": {
+                  "description": "The leaf capability's handle",
+                  "type": "string"
+                },
+                "leaf": {
+                  "description": "The leaf capability's ID",
+                  "type": "string"
+                },
+                "outcome": {
+                  "description": "passed, failed or skipped; empty while the leaf is open",
+                  "type": "string"
+                },
+                "question": {
+                  "description": "The question node a failed leaf raised, if any",
+                  "type": "string"
+                },
+                "sessions": {
+                  "description": "The leaf's sessions, in the order they started",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "at": {
+                        "description": "When it started, RFC 3339 UTC",
+                        "type": "string"
+                      },
+                      "attempt": {
+                        "description": "The leaf's attempt it works on, from 1",
+                        "type": "integer"
+                      },
+                      "commit": {
+                        "description": "The commit a verifier checks",
+                        "type": "string"
+                      },
+                      "model": {
+                        "description": "The model it runs; empty for the agent's default",
+                        "type": "string"
+                      },
+                      "role": {
+                        "description": "builder or verifier",
+                        "type": "string"
+                      },
+                      "session": {
+                        "description": "The session's ID",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "attempt",
+                      "role",
+                      "session"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "step": {
+                  "description": "The leaves step",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "attempts",
+                "handle",
+                "leaf",
+                "sessions",
+                "step"
+              ],
+              "type": "object"
+            },
+            "type": "array"
           },
           "messages": {
             "description": "The messages its sessions sent each other, in order",

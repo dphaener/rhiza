@@ -447,6 +447,8 @@ func (r *running) runStep(step workflow.Step, change string) (result, error) {
 		return r.wait(step, env), nil
 	case workflow.KindAgent:
 		return r.agent(step, env)
+	case workflow.KindLeaves:
+		return r.leaves(step, env)
 	}
 	return errResult(fmt.Errorf("step %q: unknown kind %q", step.Name, step.Kind)), nil
 }

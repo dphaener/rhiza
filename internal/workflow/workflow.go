@@ -34,6 +34,22 @@ const (
 	// KindArbiter is the step an autonomous run's engine calls to decide a
 	// question an agent step raised. It is never a transition target.
 	KindArbiter = "arbiter"
+	// KindLeaves conducts the run change set's leaves: a builder session
+	// and then a verifier session for each leaf.
+	KindLeaves = "leaves"
+)
+
+// Leaves step roles: the sub-tables of a leaves step.
+const (
+	RoleBuilder  = "builder"
+	RoleVerifier = "verifier"
+)
+
+// Split values: how a leaves step lays out its panes.
+const (
+	SplitAuto  = "auto"
+	SplitRight = "right"
+	SplitBelow = "below"
 )
 
 // ArbiterName is the name of the built-in arbiter step, used when a file
@@ -83,12 +99,16 @@ var (
 // Placeholders an agent step's prompt may use.
 var placeholders = []string{"change", "slug", "title", "run", "step"}
 
+// Placeholders a leaves step's builder or verifier prompt may use.
+var leafPlaceholders = append(slices.Clone(placeholders), "leaf", "attempt")
+
 // kindOutcomes lists the outcomes each step kind can produce.
 var kindOutcomes = map[string][]string{
 	KindAgent:   {OutcomePass, OutcomeFail},
 	KindWait:    {OutcomePass, OutcomeTimeout},
 	KindCommand: {OutcomePass, OutcomeFail},
 	KindArbiter: {OutcomePass, OutcomeFail},
+	KindLeaves:  {OutcomePass, OutcomeFail},
 }
 
 // Definition is a loaded, validated workflow.
@@ -134,10 +154,70 @@ type Step struct {
 	// Prompt is an agent step's first prompt to its agent, a template over
 	// {change}, {slug}, {title}, {run} and {step}.
 	Prompt string
+	// Models is an agent step's model list; empty means the agent's
+	// default.
+	Models []string
+	// Builder and Verifier are a leaves step's roles; nil on other steps.
+	Builder, Verifier *Role
+	// Split is how a leaves step lays out its panes: SplitAuto (the
+	// default), SplitRight or SplitBelow. Empty on other steps.
+	Split string
 	// MaxVisits caps how often a run may enter the step; 0 means 1.
 	MaxVisits int
 	// On maps an outcome to the next step, or to done or failed.
 	On map[string]string
+}
+
+// Role is one session kind of a leaves step: its builder or its verifier.
+type Role struct {
+	// Prompt is the role's first prompt to its agent, a template over
+	// {change}, {slug}, {title}, {run}, {step}, {leaf} and {attempt}.
+	Prompt string
+	// Agent is the role's adapter name; empty means the run's.
+	Agent string
+	// PermissionMode is the role's permission mode; empty means the run's.
+	PermissionMode string
+	// Models is the role's model by attempt: attempt n takes the nth, and
+	// the last stays for every later attempt.
+	Models []string
+}
+
+// Model is the model for attempt (1-based): Models[min(attempt, len)-1],
+// or "" when the role names no model.
+func (r Role) Model(attempt int) string {
+	if len(r.Models) == 0 {
+		return ""
+	}
+	return r.Models[max(1, min(attempt, len(r.Models)))-1]
+}
+
+// LeafVars are the values a leaves role's prompt placeholders take: a
+// step's, plus the leaf's handle and the attempt.
+type LeafVars struct {
+	PromptVars
+	Leaf    string
+	Attempt int
+}
+
+// RenderPrompt fills the role's prompt placeholders from v. Validation has
+// already refused an unknown placeholder.
+func (r Role) RenderPrompt(v LeafVars) string {
+	return renderPlaceholders(r.Prompt, map[string]string{
+		"change": v.Change, "slug": v.Slug, "title": v.Title, "run": v.Run, "step": v.Step,
+		"leaf": v.Leaf, "attempt": fmt.Sprint(v.Attempt),
+	})
+}
+
+// Role is a leaves step's builder or verifier by name (RoleBuilder or
+// RoleVerifier); nil for any other name or step.
+func (s Step) Role(name string) *Role {
+	switch name {
+	case RoleBuilder:
+		return s.Builder
+	case RoleVerifier:
+		return s.Verifier
+	}
+	return nil
 }
 
 // Cap is how many times a run may enter the step.
@@ -172,10 +252,15 @@ type PromptVars struct {
 // RenderPrompt fills the step's prompt placeholders from v. Validation has
 // already refused an unknown placeholder.
 func (s Step) RenderPrompt(v PromptVars) string {
-	values := map[string]string{
+	return renderPlaceholders(s.Prompt, map[string]string{
 		"change": v.Change, "slug": v.Slug, "title": v.Title, "run": v.Run, "step": v.Step,
-	}
-	return placeholderPattern.ReplaceAllStringFunc(s.Prompt, func(m string) string {
+	})
+}
+
+// renderPlaceholders replaces each {name} in prompt that values has, and
+// leaves the rest.
+func renderPlaceholders(prompt string, values map[string]string) string {
+	return placeholderPattern.ReplaceAllStringFunc(prompt, func(m string) string {
 		if val, ok := values[m[1:len(m)-1]]; ok {
 			return val
 		}
@@ -250,7 +335,19 @@ type fileStep struct {
 	PermissionMode string            `toml:"permission_mode"`
 	Prompt         string            `toml:"prompt"`
 	MaxVisits      int               `toml:"max_visits"`
+	Models         []string          `toml:"models"`
+	Split          string            `toml:"split"`
+	Builder        *fileRole         `toml:"builder"`
+	Verifier       *fileRole         `toml:"verifier"`
 	On             map[string]string `toml:"on"`
+}
+
+// fileRole is the TOML shape of a leaves step's builder or verifier.
+type fileRole struct {
+	Prompt         string   `toml:"prompt"`
+	Agent          string   `toml:"agent"`
+	PermissionMode string   `toml:"permission_mode"`
+	Models         []string `toml:"models"`
 }
 
 // Load reads and parses the workflow file at path. A file without a `name`
@@ -326,6 +423,9 @@ func Parse(name string, data []byte) (*Definition, error) {
 
 // unknownKey names a key the format does not know, by step when it is in one.
 func unknownKey(k toml.Key) error {
+	if len(k) >= 4 && k[0] == "step" && (k[2] == RoleBuilder || k[2] == RoleVerifier) {
+		return fmt.Errorf("step %q: %s: unknown key %q; want prompt, agent, permission_mode or models", k[1], k[2], toml.Key(k[3:]).String())
+	}
 	if len(k) >= 3 && k[0] == "step" {
 		return fmt.Errorf("step %q: unknown key %q", k[1], toml.Key(k[2:]).String())
 	}
@@ -391,6 +491,7 @@ func buildStep(name string, fs fileStep) (Step, error) {
 		PermissionMode: fs.PermissionMode,
 		Prompt:         fs.Prompt,
 		MaxVisits:      fs.MaxVisits,
+		Models:         fs.Models,
 		On:             fs.On,
 	}
 	if s.On == nil {
@@ -398,13 +499,39 @@ func buildStep(name string, fs fileStep) (Step, error) {
 	}
 
 	switch fs.Kind {
-	case KindAgent, KindWait, KindCommand:
+	case KindAgent, KindWait, KindCommand, KindArbiter, KindLeaves:
+	case "":
+		return fail("no kind: want agent, wait, command, arbiter or leaves")
+	default:
+		return fail("unknown kind %q: want agent, wait, command, arbiter or leaves", fs.Kind)
+	}
+	if fs.Models != nil && fs.Kind != KindAgent {
+		if fs.Kind == KindLeaves {
+			return fail("models is only for agent steps and a leaves step's builder and verifier; set it under [step.%s.builder] or [step.%s.verifier]", name, name)
+		}
+		return fail("models is only for agent steps and a leaves step's builder and verifier; %s step cannot have it", article(fs.Kind))
+	}
+	if fs.Split != "" && fs.Kind != KindLeaves {
+		return fail("split is only for leaves steps; %s step cannot have it", article(fs.Kind))
+	}
+	if fs.Kind != KindLeaves {
+		for _, r := range []struct {
+			role string
+			set  bool
+		}{{RoleBuilder, fs.Builder != nil}, {RoleVerifier, fs.Verifier != nil}} {
+			if r.set {
+				return fail("%s is only for leaves steps; %s step cannot have it", r.role, article(fs.Kind))
+			}
+		}
+	}
+	if err := checkModels(fs.Models); err != nil {
+		return fail("models %v", err)
+	}
+	switch fs.Kind {
 	case KindArbiter:
 		return buildArbiter(s, fs, fail)
-	case "":
-		return fail("no kind: want agent, wait, command or arbiter")
-	default:
-		return fail("unknown kind %q: want agent, wait, command or arbiter", fs.Kind)
+	case KindLeaves:
+		return buildLeaves(s, fs, fail)
 	}
 
 	if fs.Run != "" && fs.Kind != KindCommand {
@@ -484,6 +611,78 @@ func buildStep(name string, fs fileStep) (Step, error) {
 		}
 	}
 	return s, nil
+}
+
+// buildLeaves finishes a leaves step: it needs a builder and a verifier,
+// each with a prompt, takes split (SplitAuto when unset), interval
+// (DefaultInterval when unset) and max_visits, and refuses the session keys
+// that belong in its sub-tables.
+func buildLeaves(s Step, fs fileStep, fail func(string, ...any) (Step, error)) (Step, error) {
+	perRole := fmt.Sprintf("each role has its own; set it under [step.%s.builder] or [step.%s.verifier]", s.Name, s.Name)
+	refused := []struct {
+		key string
+		set bool
+		why string
+	}{
+		{"prompt", fs.Prompt != "", perRole},
+		{"agent", fs.Agent != "", perRole},
+		{"permission_mode", fs.PermissionMode != "", perRole},
+		{"run", fs.Run != "", "it runs agents, not a command"},
+		{"until", fs.Until != "", "it ends when every leaf has passed or failed"},
+		{"until_when", fs.UntilWhen != "", "it ends when every leaf has passed or failed"},
+	}
+	for _, r := range refused {
+		if r.set {
+			return fail("a leaves step cannot have %s: %s; remove it", r.key, r.why)
+		}
+	}
+	s.Split = SplitAuto
+	if fs.Split != "" {
+		if fs.Split != SplitAuto && fs.Split != SplitRight && fs.Split != SplitBelow {
+			return fail("split %q: want %q (by the tab's shape), %q or %q", fs.Split, SplitAuto, SplitRight, SplitBelow)
+		}
+		s.Split = fs.Split
+	}
+	for _, r := range []struct {
+		name string
+		fr   *fileRole
+		dst  **Role
+	}{{RoleBuilder, fs.Builder, &s.Builder}, {RoleVerifier, fs.Verifier, &s.Verifier}} {
+		if r.fr == nil {
+			return fail("a leaves step needs a [step.%s.%s] table with prompt = \"<what the %s should do>\"", s.Name, r.name, r.name)
+		}
+		if strings.TrimSpace(r.fr.Prompt) == "" {
+			return fail("%s needs prompt = \"<what the %s should do>\"; it may use {%s}", r.name, r.name, strings.Join(leafPlaceholders, "}, {"))
+		}
+		for _, m := range placeholderPattern.FindAllStringSubmatch(r.fr.Prompt, -1) {
+			if !slices.Contains(leafPlaceholders, m[1]) {
+				return fail("%s: prompt uses unknown placeholder {%s}; want one of {%s}", r.name, m[1], strings.Join(leafPlaceholders, "}, {"))
+			}
+		}
+		if err := checkModels(r.fr.Models); err != nil {
+			return fail("%s: models %v", r.name, err)
+		}
+		*r.dst = &Role{Prompt: r.fr.Prompt, Agent: r.fr.Agent, PermissionMode: r.fr.PermissionMode, Models: r.fr.Models}
+	}
+	s.Interval = DefaultInterval
+	if fs.Interval != "" {
+		d, err := positiveDuration(fs.Interval)
+		if err != nil {
+			return fail("interval %v", err)
+		}
+		s.Interval = d
+	}
+	return s, nil
+}
+
+// checkModels refuses a blank model name.
+func checkModels(models []string) error {
+	for i, m := range models {
+		if strings.TrimSpace(m) == "" {
+			return fmt.Errorf("entry %d is blank; want a model name, like \"opus\"", i+1)
+		}
+	}
+	return nil
 }
 
 // buildArbiter finishes an arbiter step: it takes agent, permission_mode

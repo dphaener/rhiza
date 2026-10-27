@@ -138,6 +138,38 @@ type RunInfo struct {
 	Questions  []RunQuestion   `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
 	Rounds     []RunRound      `json:"rounds,omitempty" desc:"The plan review rounds journalled by run findings and run verdict, in order; absent when there were none"`
 	Waiting    []RunWaiting    `json:"waiting,omitempty" desc:"The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does"`
+	Leaves     []RunLeaf       `json:"leaves,omitempty" desc:"The leaves its leaves steps conducted, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none"`
+}
+
+// RunLeaf is one leaf a leaves step conducted.
+type RunLeaf struct {
+	Step     string           `json:"step" desc:"The leaves step"`
+	Leaf     string           `json:"leaf" desc:"The leaf capability's ID"`
+	Handle   string           `json:"handle" desc:"The leaf capability's handle"`
+	Sessions []RunLeafSession `json:"sessions" desc:"The leaf's sessions, in the order they started"`
+	Attempts []RunLeafAttempt `json:"attempts" desc:"The judgements of its sessions' work, in order"`
+	Outcome  string           `json:"outcome,omitempty" desc:"passed, failed or skipped; empty while the leaf is open"`
+	Question string           `json:"question,omitempty" desc:"The question node a failed leaf raised, if any"`
+	Detail   string           `json:"detail,omitempty" desc:"Why the leaf ended as it did"`
+}
+
+// RunLeafSession is one session a leaves step started on a leaf.
+type RunLeafSession struct {
+	Role    string `json:"role" desc:"builder or verifier"`
+	Attempt int    `json:"attempt" desc:"The leaf's attempt it works on, from 1"`
+	Session string `json:"session" desc:"The session's ID"`
+	Model   string `json:"model,omitempty" desc:"The model it runs; empty for the agent's default"`
+	Commit  string `json:"commit,omitempty" desc:"The commit a verifier checks"`
+	At      string `json:"at" desc:"When it started, RFC 3339 UTC"`
+}
+
+// RunLeafAttempt is one judgement of a leaf session's work.
+type RunLeafAttempt struct {
+	Role    string `json:"role" desc:"builder or verifier"`
+	Attempt int    `json:"attempt" desc:"The leaf's attempt, from 1"`
+	Outcome string `json:"outcome" desc:"pass or fail"`
+	Detail  string `json:"detail,omitempty" desc:"Why: the session's exit, or that its agent said done"`
+	At      string `json:"at" desc:"When it was judged, RFC 3339 UTC"`
 }
 
 // RunWaiting is one of the plan's change sets run gate named that waits
@@ -543,18 +575,28 @@ func loadWorkflow(path, ref string) (*workflow.Definition, []byte, error) {
 // checks its own: a mode is required, it must be the adapter's, and a mode
 // that bypasses permission checks is refused. An autonomous run's arbiter
 // (the file's arbiter step or the built-in one) is checked the same way
-// when the workflow has an agent step: only an autonomous run launches it,
-// and only on an agent step's question.
+// when the workflow has an agent or leaves step: only an autonomous run
+// launches it, and only on an agent session's question. A leaves step's
+// builder and verifier are checked as agent steps are.
 func checkAgentSteps(def *workflow.Definition, mode, agent string, autonomous bool, next string) error {
 	agents := false
 	for _, name := range def.Order {
 		s := def.Steps[name]
-		if s.Kind != workflow.KindAgent {
-			continue
-		}
-		agents = true
-		if err := checkAgentStep(s, "an agent step", mode, agent, next); err != nil {
-			return err
+		switch s.Kind {
+		case workflow.KindAgent:
+			agents = true
+			if err := checkAgentStep(s, "an agent step", mode, agent, next); err != nil {
+				return err
+			}
+		case workflow.KindLeaves:
+			agents = true
+			for _, role := range []string{workflow.RoleBuilder, workflow.RoleVerifier} {
+				r := s.Role(role)
+				rs := workflow.Step{Name: s.Name, Agent: r.Agent, PermissionMode: r.PermissionMode}
+				if err := checkAgentStep(rs, "a leaves step whose "+role+" runs", mode, agent, next); err != nil {
+					return err
+				}
+			}
 		}
 	}
 	if autonomous && agents {
@@ -598,7 +640,7 @@ func canRun(ctx *Ctx, def *workflow.Definition) error {
 		return Errorf("cannot run a workflow: this caller starts no programs")
 	}
 	for _, s := range def.Steps {
-		if s.Kind != workflow.KindAgent {
+		if s.Kind != workflow.KindAgent && s.Kind != workflow.KindLeaves {
 			continue
 		}
 		switch {
@@ -1301,6 +1343,23 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 		}
 		info.Rounds = append(info.Rounds, rr)
 	}
+	for _, l := range st.Leaves {
+		rl := RunLeaf{
+			Step: l.Step, Leaf: l.Leaf, Handle: l.Handle, Sessions: []RunLeafSession{}, Attempts: []RunLeafAttempt{},
+			Outcome: l.Outcome, Question: l.Question, Detail: l.Detail,
+		}
+		for _, ls := range l.Sessions {
+			rl.Sessions = append(rl.Sessions, RunLeafSession{
+				Role: ls.Role, Attempt: ls.Attempt, Session: ls.Session, Model: ls.Model, Commit: ls.Commit, At: rfc3339(ls.At),
+			})
+		}
+		for _, a := range l.Attempts {
+			rl.Attempts = append(rl.Attempts, RunLeafAttempt{
+				Role: a.Role, Attempt: a.Attempt, Outcome: a.Outcome, Detail: a.Detail, At: rfc3339(a.At),
+			})
+		}
+		info.Leaves = append(info.Leaves, rl)
+	}
 	return info
 }
 
@@ -1360,6 +1419,32 @@ func (r RunInfo) Human(w io.Writer) {
 				fmt.Fprintf(w, ": %s", s.Detail)
 			}
 			fmt.Fprintf(w, "\n")
+		}
+	}
+	if len(r.Leaves) > 0 {
+		fmt.Fprintf(w, "\n## Leaves\n\n")
+		for _, l := range r.Leaves {
+			outcome := l.Outcome
+			if outcome == "" {
+				outcome = "open"
+			}
+			fmt.Fprintf(w, "- %s (step %s): %s", l.Handle, l.Step, outcome)
+			if l.Detail != "" {
+				fmt.Fprintf(w, ": %s", l.Detail)
+			}
+			fmt.Fprintf(w, "\n")
+			for _, ls := range l.Sessions {
+				fmt.Fprintf(w, "  - attempt %d %s, session %s", ls.Attempt, ls.Role, ls.Session)
+				for _, a := range l.Attempts {
+					if a.Role == ls.Role && a.Attempt == ls.Attempt {
+						fmt.Fprintf(w, ": %s", a.Outcome)
+						if a.Detail != "" {
+							fmt.Fprintf(w, " (%s)", a.Detail)
+						}
+					}
+				}
+				fmt.Fprintf(w, "\n")
+			}
 		}
 	}
 	if len(r.Accepts) > 0 {

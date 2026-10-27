@@ -49,7 +49,7 @@ func TestLoadRefused(t *testing.T) {
 		file string
 		want []string
 	}{
-		{"unknown-kind.toml", []string{`step "repeat": unknown kind "loop": want agent, wait, command or arbiter`}},
+		{"unknown-kind.toml", []string{`step "repeat": unknown kind "loop": want agent, wait, command, arbiter or leaves`}},
 		{"missing-target.toml", []string{`step "build": on.pass names "nope", which is not a step; want a step or done or failed`}},
 		{"bad-outcome.toml", []string{`step "build": on.sucess: a command step has no outcome "sucess"; want on.pass or on.fail`}},
 	}
@@ -147,11 +147,11 @@ func TestParseErrors(t *testing.T) {
 		want string
 	}{
 		{"unknown kind", "[step.x]\nkind = \"loop\"\n",
-			`step "x": unknown kind "loop": want agent, wait, command or arbiter`},
+			`step "x": unknown kind "loop": want agent, wait, command, arbiter or leaves`},
 		{"workflow kind is later", "[step.x]\nkind = \"workflow\"\n",
 			`step "x": unknown kind "workflow"`},
 		{"no kind", "[step.x]\nrun = \"true\"\n",
-			`step "x": no kind: want agent, wait, command or arbiter`},
+			`step "x": no kind: want agent, wait, command, arbiter or leaves`},
 		{"missing target", cmd + "on.pass = \"nope\"\n",
 			`step "a": on.pass names "nope", which is not a step; want a step or done or failed`},
 		{"unknown step key", cmd + "retries = 2\n",
@@ -622,6 +622,129 @@ func TestArbiterStepRefused(t *testing.T) {
 			`step "decide" is an arbiter step and cannot be the start step`},
 		{"target", "[step.build]\nkind = \"agent\"\nprompt = \"go\"\non.fail = \"decide\"\n" + arb,
 			`step "build": on.fail names "decide", an arbiter step; no step goes to it`},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Parse("w", []byte(tt.src))
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Errorf("error %v; want %q", err, tt.want)
+			}
+		})
+	}
+}
+
+const leavesBase = "[step.build]\nkind = \"leaves\"\n"
+const leavesRoles = "[step.build.builder]\nprompt = \"build {leaf} of {change}, attempt {attempt}\"\n" +
+	"[step.build.verifier]\nprompt = \"verify {leaf}\"\n"
+
+// A leaves step loads with both sub-tables, its split, models per role
+// and the leaves prompt placeholders.
+func TestLeavesStepLoads(t *testing.T) {
+	src := "[step.build]\nkind = \"leaves\"\nsplit = \"below\"\ninterval = \"5s\"\non.fail = \"failed\"\n" +
+		"[step.build.builder]\nprompt = \"build {leaf} of {change}, attempt {attempt}\"\nagent = \"claude-code\"\n" +
+		"permission_mode = \"acceptEdits\"\nmodels = [\"sonnet\", \"opus\"]\n" +
+		"[step.build.verifier]\nprompt = \"verify {leaf}\"\nmodels = [\"opus\"]\n"
+	d, err := Parse("w", []byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := Step{
+		Name: "build", Kind: KindLeaves, Split: SplitBelow, Interval: 5 * time.Second,
+		On: map[string]string{"fail": "failed"},
+		Builder: &Role{Prompt: "build {leaf} of {change}, attempt {attempt}", Agent: "claude-code",
+			PermissionMode: "acceptEdits", Models: []string{"sonnet", "opus"}},
+		Verifier: &Role{Prompt: "verify {leaf}", Models: []string{"opus"}},
+	}
+	if got := d.Steps["build"]; !reflect.DeepEqual(got, want) {
+		t.Errorf("step = %+v\nwant %+v", got, want)
+	}
+	got := d.Steps["build"].Builder.RenderPrompt(LeafVars{PromptVars: PromptVars{Change: "01ABC"}, Leaf: "leaf-a", Attempt: 2})
+	if want := "build leaf-a of 01ABC, attempt 2"; got != want {
+		t.Errorf("RenderPrompt = %q, want %q", got, want)
+	}
+
+	d, err = Parse("w", []byte(leavesBase+leavesRoles))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s := d.Steps["build"]; s.Split != SplitAuto || s.Interval != DefaultInterval {
+		t.Errorf("defaults: split %q, interval %v; want %q, %v", s.Split, s.Interval, SplitAuto, DefaultInterval)
+	}
+
+	d, err = Parse("w", []byte("[step.a]\nkind = \"agent\"\nprompt = \"go\"\nmodels = [\"opus\"]\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := d.Steps["a"].Models; !reflect.DeepEqual(got, []string{"opus"}) {
+		t.Errorf("agent step Models = %v, want [opus]", got)
+	}
+}
+
+// Role.Model takes the attempt's model, keeps the last for later
+// attempts, and is empty without models.
+func TestLeavesRoleModel(t *testing.T) {
+	r := Role{Models: []string{"sonnet", "opus", "opus-max"}}
+	for attempt, want := range map[int]string{0: "sonnet", 1: "sonnet", 2: "opus", 3: "opus-max", 7: "opus-max"} {
+		if got := r.Model(attempt); got != want {
+			t.Errorf("Model(%d) = %q, want %q", attempt, got, want)
+		}
+	}
+	if got := (Role{}).Model(1); got != "" {
+		t.Errorf("Model without models = %q, want empty", got)
+	}
+}
+
+// A leaves step refuses a missing role, an unknown sub-table key, models
+// and split where they do not belong, a bad split, and the session keys
+// that belong in its sub-tables.
+func TestLeavesStepRefused(t *testing.T) {
+	builder := "[step.build.builder]\nprompt = \"build {leaf}\"\n"
+	verifier := "[step.build.verifier]\nprompt = \"verify {leaf}\"\n"
+	cmd := "[step.c]\nkind = \"command\"\nrun = \"true\"\n"
+	wait := "[step.w]\nkind = \"wait\"\nuntil = \"true\"\ntimeout = \"1m\"\n"
+	agent := "[step.a]\nkind = \"agent\"\nprompt = \"go\"\n"
+	for _, tt := range []struct {
+		name, src, want string
+	}{
+		{"missing builder", leavesBase + verifier,
+			`step "build": a leaves step needs a [step.build.builder] table with prompt = `},
+		{"missing verifier", leavesBase + builder,
+			`step "build": a leaves step needs a [step.build.verifier] table with prompt = `},
+		{"blank builder prompt", leavesBase + "[step.build.builder]\nprompt = \" \"\n" + verifier,
+			`step "build": builder needs prompt = "<what the builder should do>"; it may use {change}, {slug}, {title}, {run}, {step}, {leaf}, {attempt}`},
+		{"unknown placeholder", leavesBase + builder + "[step.build.verifier]\nprompt = \"verify {leef}\"\n",
+			`step "build": verifier: prompt uses unknown placeholder {leef}`},
+		{"unknown sub-table key", leavesBase + builder + verifier + "retries = 3\n",
+			`step "build": verifier: unknown key "retries"; want prompt, agent, permission_mode or models`},
+		{"models on a wait step", wait + "models = [\"opus\"]\n",
+			`step "w": models is only for agent steps and a leaves step's builder and verifier; a wait step cannot have it`},
+		{"models on a command step", cmd + "models = [\"opus\"]\n",
+			`step "c": models is only for agent steps and a leaves step's builder and verifier; a command step cannot have it`},
+		{"models on a leaves step", leavesBase + "models = [\"opus\"]\n" + builder + verifier,
+			`step "build": models is only for agent steps and a leaves step's builder and verifier; set it under [step.build.builder] or [step.build.verifier]`},
+		{"blank model", leavesBase + builder + verifier + "models = [\"opus\", \"\"]\n",
+			`step "build": verifier: models entry 2 is blank`},
+		{"split on an agent step", agent + "split = \"right\"\n",
+			`step "a": split is only for leaves steps; an agent step cannot have it`},
+		{"bad split", leavesBase + "split = \"diagonal\"\n" + builder + verifier,
+			`step "build": split "diagonal": want "auto" (by the tab's shape), "right" or "below"`},
+		{"builder on an agent step", agent + "[step.a.builder]\nprompt = \"x\"\n",
+			`step "a": builder is only for leaves steps; an agent step cannot have it`},
+		{"prompt on a leaves step", leavesBase + "prompt = \"x\"\n" + builder + verifier,
+			`step "build": a leaves step cannot have prompt: each role has its own`},
+		{"agent on a leaves step", leavesBase + "agent = \"x\"\n" + builder + verifier,
+			`step "build": a leaves step cannot have agent: each role has its own`},
+		{"permission_mode on a leaves step", leavesBase + "permission_mode = \"x\"\n" + builder + verifier,
+			`step "build": a leaves step cannot have permission_mode: each role has its own`},
+		{"run on a leaves step", leavesBase + "run = \"x\"\n" + builder + verifier,
+			`step "build": a leaves step cannot have run`},
+		{"until on a leaves step", leavesBase + "until = \"x\"\n" + builder + verifier,
+			`step "build": a leaves step cannot have until`},
+		{"until_when on a leaves step", leavesBase + "until_when = \"done\"\n" + builder + verifier,
+			`step "build": a leaves step cannot have until_when`},
+		{"leaf placeholder on an agent step", "[step.a]\nkind = \"agent\"\nprompt = \"do {leaf}\"\n",
+			`step "a": prompt uses unknown placeholder {leaf}`},
+		{"bad outcome", leavesBase + "on.timeout = \"done\"\n" + builder + verifier,
+			`step "build": on.timeout: a leaves step has no outcome "timeout"; want on.pass or on.fail`},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := Parse("w", []byte(tt.src))

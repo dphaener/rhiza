@@ -49,6 +49,10 @@ type fakeRunner struct {
 	ended      []string          // "step:session" per AgentEnded call, in order
 	endedErr   error             // what AgentEnded returns
 	onCommand  func(step string) // called as each command step runs
+	leaves     []Leaf            // what Leaves returns
+	leavesErr  error             // Leaves' error, when set
+	leafSpecs  []LeafSpec        // each StartLeaf call's spec, in order
+	leafErr    map[string]error  // StartLeaf's error per "<handle> <role>"
 }
 
 func newFakeRunner() *fakeRunner {
