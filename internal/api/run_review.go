@@ -510,11 +510,15 @@ func reviewQuestionText(n int, f run.Finding, reason string) string {
 // runRunReviewCheck reads the run's latest review round. With no round
 // it fails; with no confirmed finding it passes. Before round 3 a
 // confirmed finding fails it (exit 1), writing nothing. From round 3 it
-// adds a question node per confirmed finding to the run's change set, in
-// one entry as the caller, linked blocks to the finding's node when that
-// is a capability; journals an asked entry for each (Step RHIZA_STEP, no
-// Session), so an autonomous run's arbiter decides it; and passes. A
-// question already added, or already journalled, is not again.
+// adds a question node per confirmed finding, linked blocks to the
+// finding's node when that is a live capability where the question goes
+// (reviewQuestionTarget): the run's change set while it is open; once it
+// has landed, as a milestone plan's record does after the interview, the
+// open plan change set that created the node, else a record write. It
+// writes one entry per target as the caller, journals an asked entry for
+// each question (Step RHIZA_STEP, no Session), so an autonomous run's
+// arbiter decides it, and passes. A question already created in any open
+// or landed change set, or already journalled, is not again.
 func runRunReviewCheck(ctx *Ctx, _ any) (any, error) {
 	const cmd = "run review-check"
 	rr, err := openReviewRun(ctx, cmd, runReviewCheckNext)
@@ -552,63 +556,65 @@ func runRunReviewCheck(ctx *Ctx, _ any) (any, error) {
 	if !ok {
 		return nil, NotFoundf("run %s's change set %s is not in the log", rr.id, rr.change).WithNext("rhiza run status " + rr.id)
 	}
-	m := w.model(rr.change)
+	sets := w.changeSets()
+	var plan []changeset.ChangeSet
+	if c.State.Terminal() {
+		if plan, err = planChangeSets(sets, w.model(rr.change), rr.change); err != nil {
+			return nil, Errorf("%s: %v", cmd, err).WithNext("rhiza run status " + rr.id)
+		}
+	}
 	asked := map[string]bool{}
 	for _, a := range rr.state.Asked {
 		asked[a.Handle] = true
 	}
-	var items []applyItem
+	var targets []reviewTarget
+	items := map[reviewTarget][]applyItem{}
 	for _, f := range confirmed {
 		v, _ := rd.Verdict(f.ID)
 		q := RunReviewQuestion{Handle: reviewQuestionHandle(rr.id, rd.Number, f.ID), Finding: f.ID}
-		if n, ok := m.Node(mustParseID(f.Node)); ok && n.Kind == op.KindCapability && !n.Retired {
+		t := reviewQuestionTarget(c, plan, mustParseID(f.Node))
+		if n, ok := w.model(t.cs).Node(mustParseID(f.Node)); ok && n.Kind == op.KindCapability && !n.Retired {
 			q.Blocks = n.ID.String()
 		}
-		if !answerProposed(m, c.Ops, q.Handle) {
+		if qid, ok := reviewQuestionNode(sets, q.Handle); ok {
+			q.ID = qid.String()
+		} else {
 			q.Added = true
+			if _, ok := items[t]; !ok {
+				targets = append(targets, t)
+			}
 			add := AddRequest{Kind: string(op.KindQuestion), Handle: q.Handle,
 				Fields: []string{"statement=" + reviewQuestionText(rd.Number, f, v.Reason)}}
-			items = append(items, applyItem{op: "add", build: func(b writeBase) (edit, error) { return buildAdd(b, add) }})
+			items[t] = append(items[t], applyItem{op: "add", build: func(b writeBase) (edit, error) { return buildAdd(b, add) }})
 			if q.Blocks != "" {
 				link := LinkRequest{From: q.Handle, Type: string(op.LinkBlocks), To: q.Blocks}
-				items = append(items, applyItem{op: "link", build: func(b writeBase) (edit, error) { return buildLink(b, link) }})
+				items[t] = append(items[t], applyItem{op: "link", build: func(b writeBase) (edit, error) { return buildLink(b, link) }})
 			}
 		}
 		resp.Questions = append(resp.Questions, q)
 	}
-	var created []op.Op
-	if len(items) > 0 {
-		if c.State.Terminal() {
-			return nil, Conflictf("change set %s is %s; no question can be added to it", rr.change, c.State).
-				WithNext("rhiza change show " + rr.change.String())
-		}
-		actor, forID, err := w.resolveActor(rr.change, ctx)
+	created := map[string]string{}
+	for _, t := range targets {
+		wctx := *ctx
+		wctx.ChangeSet, wctx.ChangeRef, wctx.Record = t.cs, "", t.record
+		intent := fmt.Sprintf("Leave the questions of plan review round %d of run %s", rd.Number, rr.id)
+		r, err := runWriteOn(&wctx, "add", intent, func(w *workspace, cs id.ID) (edit, error) {
+			return buildApply(w, cs, ctx.IDs, items[t])
+		})
 		if err != nil {
 			return nil, err
 		}
-		e, err := buildApply(w, rr.change, ctx.IDs, items)
-		if err == nil {
-			err = e.check("add")
+		for n, h := range r.(WriteResponse).handles {
+			created[h] = n.String()
 		}
-		if err != nil {
-			return nil, err
-		}
-		if _, err := w.appendEntry(rr.change, changeset.Ops{Ops: e.ops, Drop: e.drop}, actor, forID); err != nil {
-			return nil, err
-		}
-		created = e.ops
 	}
-	created = append(created, c.Ops...)
 	step := strings.TrimSpace(ctxGetenv(ctx)("RHIZA_STEP"))
 	for i, q := range resp.Questions {
-		for _, o := range created {
-			if o.Type == op.TypeNodeCreate && o.Handle == q.Handle {
-				resp.Questions[i].ID = o.Node.String()
-				break
-			}
+		if q.Added {
+			resp.Questions[i].ID = created[q.Handle]
 		}
 		if resp.Questions[i].ID == "" {
-			return nil, Errorf("question %s has no node in change set %s", q.Handle, rr.change)
+			return nil, Errorf("question %s has no node", q.Handle)
 		}
 		if asked[q.Handle] {
 			continue
@@ -623,6 +629,49 @@ func runRunReviewCheck(ctx *Ctx, _ any) (any, error) {
 	}
 	resp.Passed = true
 	return resp, nil
+}
+
+// reviewTarget is where run.review-check writes a question: change set
+// cs, or with record a record change set it opens and lands.
+type reviewTarget struct {
+	cs     id.ID
+	record bool
+}
+
+// reviewQuestionTarget is where the question on node goes: the run's
+// change set rc while it is open; else the draft, proposed or accepted
+// change set among plan whose ops create node; else a record write
+// (decision review-questions-follow-the-node).
+func reviewQuestionTarget(rc changeset.ChangeSet, plan []changeset.ChangeSet, node id.ID) reviewTarget {
+	if !rc.State.Terminal() {
+		return reviewTarget{cs: rc.ID}
+	}
+	for _, c := range plan {
+		if !planInFlight(c.State) {
+			continue
+		}
+		if slices.ContainsFunc(c.Ops, func(o op.Op) bool { return o.Type == op.TypeNodeCreate && o.Node == node }) {
+			return reviewTarget{cs: c.ID}
+		}
+	}
+	return reviewTarget{record: true}
+}
+
+// reviewQuestionNode is the node an earlier check created for the question
+// with handle h: a node.create op with that handle in any change set that
+// is open or landed.
+func reviewQuestionNode(sets []changeset.ChangeSet, h string) (id.ID, bool) {
+	for _, c := range sets {
+		if c.State.Terminal() && c.State != changeset.StateLanded {
+			continue
+		}
+		for _, o := range c.Ops {
+			if o.Type == op.TypeNodeCreate && o.Handle == h {
+				return o.Node, true
+			}
+		}
+	}
+	return id.ID{}, false
 }
 
 // mustParseID parses s, or is the zero ID when s is not one.
