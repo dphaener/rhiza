@@ -1,8 +1,8 @@
 # A run whose agent step's session blocks on a question tells the owner:
 # `run status` reads blocked (text and --json) with the tab and the question,
 # and the process running the run writes exactly one OSC 7501 blocked report
-# to the terminal Rex shows it in, then one working report when the owner
-# answers.
+# to the terminal Rex shows it in, then, when the owner answers, the run's
+# working status again (it is also the first report, and done the last).
 #
 # The fake rex runs the tab's command in the background, so `window new`
 # returns at once, and prints a window with a block. The fake claude reports
@@ -54,11 +54,13 @@ exec sh -c 'echo > $WORK/answer'
 wait
 stdout '^Run [0-9A-Z]{26} succeeded$'
 
-# Exactly one blocked report and one working report reached the terminal.
+# Exactly one blocked report reached the terminal; the run's working status
+# came before it and again once the block ended, and done came last.
 stderr -count=1 'state=blocked'
-stderr -count=1 'state=working'
+stderr -count=2 'state=working'
 stderr -count=1 ']7501;state=blocked:kind=question:app=rhiza:'
-stderr -count=1 ']7501;state=working:app=rhiza'
+stderr -count=2 ']7501;state=working:app=rhiza:title='
+stderr -count=1 ']7501;state=done:app=rhiza:'
 
 # The block is over.
 exec rhiza run status

@@ -359,6 +359,11 @@ func (r *running) conductLeaves(lr LeafRunner, step workflow.Step, env []string)
 	if err != nil {
 		return errResult(err), nil
 	}
+	if r.leafList == nil {
+		r.leafList = map[string][]Leaf{}
+	}
+	r.leafList[step.Name] = leaves
+	r.status("")
 	interval := step.Interval
 	if interval <= 0 {
 		interval = workflow.DefaultInterval

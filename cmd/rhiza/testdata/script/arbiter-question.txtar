@@ -46,7 +46,7 @@ stderr 'step build: blocked on question'
 stderr 'step build: session [0-9a-f-]+ asked question question-[0-9a-f]{8}-1 \([0-9A-Z]{26}\); the arbiter answers it'
 stderr 'step build: arbiter pass on question [0-9A-Z]{26}: answered by assume-blue'
 ! stderr 'state=blocked'
-! stderr 'state=working'
+stderr -count=1 'state=working'
 
 # The run's change set has the question node, its statement the question
 # the session reported and its session field the asking session.
@@ -107,9 +107,10 @@ exec sh -c 'i=0; while [ $i -lt 400 ]; do grep -l "\"type\":\"blocked\"" .git/rh
 exec sh -c 'echo > $WORK/answer'
 wait
 stdout '^Run [0-9A-Z]{26} succeeded$'
-# The owner was told of the block, and of its end.
+# The owner was told of the block, and of its end: the run's working
+# status again, as it was before the block.
 stderr -count=1 ']7501;state=blocked:kind=question:app=rhiza:'
-stderr -count=1 ']7501;state=working:app=rhiza'
+stderr -count=2 ']7501;state=working:app=rhiza:title='
 
 fold-ok
 

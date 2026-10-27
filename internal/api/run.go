@@ -13,6 +13,7 @@ package api
 // agent.
 
 import (
+	"bytes"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -728,7 +729,7 @@ func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode
 		e.Log = func(line string) { fmt.Fprintf(ctx.Stderr, "rhiza: %s\n", line) }
 	}
 	if ctx.Rex != nil {
-		e.Notify = func(n run.Notice) { ctx.Rex.Write(rexNotice(n)) }
+		reportToRex(e, ctx.Rex)
 	}
 	run1 := e.Run
 	if retry {
@@ -1249,21 +1250,36 @@ func rexNotice(n run.Notice) []byte {
 	return rexReport("blocked", b.Kind, b.TabTitle, msg)
 }
 
-// rexReport encodes one OSC 7501 root-record report from app rhiza. The
-// kind is kept only on a blocked state and only when Rex knows it; title
-// and msg have their control characters replaced with spaces, are capped
-// on a UTF-8 boundary and are base64-encoded, and are left out when empty.
+// rexReport encodes one OSC 7501 root-record report from app rhiza (see
+// rexRecord).
 func rexReport(state, kind, title, msg string) []byte {
+	return rexRecord("", state, kind, title, msg, nil)
+}
+
+// rexRecord encodes one OSC 7501 report from app rhiza on record id (""
+// for the root record). The kind is kept only on a blocked state and only
+// when Rex knows it, progress only on working or blocked; title and msg
+// have their control characters replaced with spaces, are capped on a
+// UTF-8 boundary and are base64-encoded, and are left out when empty.
+func rexRecord(id, state, kind, title, msg string, progress *int) []byte {
 	var b strings.Builder
 	b.WriteString("\x1b]7501;state=")
 	b.WriteString(state)
+	if id != "" {
+		b.WriteString(":id=" + id)
+	}
 	if state == session.StateBlocked {
 		switch kind {
 		case session.KindPermission, session.KindQuestion, session.KindAuth:
 			b.WriteString(":kind=" + kind)
 		}
 	}
-	b.WriteString(":app=rhiza")
+	if progress != nil && (state == session.StateWorking || state == session.StateBlocked) {
+		b.WriteString(":progress=" + strconv.Itoa(min(100, max(0, *progress))))
+	}
+	if state != "clear" {
+		b.WriteString(":app=rhiza")
+	}
 	if t := rexField(title, rexTitleMax); t != "" {
 		b.WriteString(":title=" + base64.StdEncoding.EncodeToString([]byte(t)))
 	}
@@ -1272,6 +1288,163 @@ func rexReport(state, kind, title, msg string) []byte {
 	}
 	b.WriteString("\x1b\\")
 	return []byte(b.String())
+}
+
+// runRex writes a run's program status to Rex: the root record says
+// the run's step (and a leaves step's progress), then done or error; a
+// child record leaf/<n> per live leaf of a leaves step says its role and
+// whether it works or is blocked, and is cleared when the leaf is no
+// longer live. While a session's block is noticed (rexNotice), the root
+// record is that blocked notice, as before; once no noticed block is
+// left, the root record goes back to the run's status.
+type runRex struct {
+	w io.Writer
+	// root is the last root status record, "" before the first.
+	root []byte
+	// wrote is the last root record written.
+	wrote []byte
+	// blocks are the open noticed blocks' reports, by session, and order
+	// the sessions in the order they blocked.
+	blocks map[string][]byte
+	order  []string
+	// leaves are the child records written, by ID, until cleared.
+	leaves map[string][]byte
+}
+
+// reportToRex has e's notices and status written to Rex, w, by one runRex.
+func reportToRex(e *run.Engine, w io.Writer) {
+	x := &runRex{w: w, blocks: map[string][]byte{}}
+	e.Notify = x.notice
+	e.Status = x.status
+}
+
+func (x *runRex) write(b []byte) {
+	x.w.Write(b)
+}
+
+func (x *runRex) writeRoot(b []byte) {
+	if !bytes.Equal(b, x.wrote) {
+		x.write(b)
+		x.wrote = b
+	}
+}
+
+// notice writes a blocked notice as the root record, or once a block ends
+// the next open one's, else the run's status (or a bare working report
+// before any status).
+func (x *runRex) notice(n run.Notice) {
+	if n.Blocked && n.Block != nil {
+		if _, ok := x.blocks[n.Session]; !ok {
+			x.order = append(x.order, n.Session)
+		}
+		x.blocks[n.Session] = rexNotice(n)
+		x.writeRoot(x.blocks[n.Session])
+		return
+	}
+	delete(x.blocks, n.Session)
+	x.order = slices.DeleteFunc(x.order, func(s string) bool { return s == n.Session })
+	switch {
+	case len(x.order) > 0:
+		x.writeRoot(x.blocks[x.order[len(x.order)-1]])
+	case x.root != nil:
+		x.writeRoot(x.root)
+	default:
+		x.writeRoot(rexNotice(n))
+	}
+}
+
+// status writes rep: a clear for each ended leaf, a record for each live
+// one, and the root record unless a noticed block holds it. A finished or
+// stopped run's root record is written whatever blocks were noticed.
+func (x *runRex) status(rep run.StatusReport) {
+	if x.leaves == nil {
+		x.leaves = map[string][]byte{}
+	}
+	for _, l := range rep.Ended {
+		x.write(rexRecord(rexLeafID(l), "clear", "", "", "", nil))
+		delete(x.leaves, rexLeafID(l))
+	}
+	for _, l := range rep.Live {
+		state := session.StateWorking
+		if l.Blocked {
+			state = session.StateBlocked
+		}
+		id := rexLeafID(l)
+		if b := rexRecord(id, state, l.Kind, l.Handle, rexLeafMsg(l), nil); !bytes.Equal(b, x.leaves[id]) {
+			x.write(b)
+			x.leaves[id] = b
+		}
+	}
+	x.root = rexRoot(rep)
+	if rep.State != run.StatusWorking {
+		clear(x.blocks)
+		x.order = nil
+	}
+	if len(x.order) == 0 {
+		x.writeRoot(x.root)
+	}
+}
+
+// rexLeafID is a live leaf's record ID: leaf/<n>, n its position in leaf
+// order, since a handle may be longer than an ID segment.
+func rexLeafID(l run.LeafStatus) string { return "leaf/" + strconv.Itoa(l.N) }
+
+// rexLeafMsg says a live leaf's role and whether it works or waits.
+func rexLeafMsg(l run.LeafStatus) string {
+	msg := l.Handle + ": " + l.Role
+	switch {
+	case l.Arbiter:
+		msg += " waits on the arbiter's answer"
+	case l.Blocked:
+		msg += " blocked on " + rexKindText(l.Kind)
+	default:
+		msg += " working"
+	}
+	if l.Attempt > 1 {
+		msg += fmt.Sprintf(" (attempt %d)", l.Attempt)
+	}
+	return msg
+}
+
+// rexKindText names what a blocked kind waits on.
+func rexKindText(kind string) string {
+	switch kind {
+	case session.KindPermission:
+		return "a permission"
+	case session.KindQuestion:
+		return "a question"
+	case session.KindAuth:
+		return "a login"
+	}
+	return "the owner"
+}
+
+// rexRoot is the root record of rep: titled with the run's title (else
+// its change set), its msg naming the step and a leaves step's leaves
+// passed, or how the run finished or why it stopped, on one line.
+func rexRoot(rep run.StatusReport) []byte {
+	title := rep.Title
+	if title == "" {
+		title = rep.Change
+	}
+	var msg string
+	switch rep.State {
+	case run.StatusDone:
+		msg = "run succeeded"
+	case run.StatusError:
+		msg = "run failed"
+	case run.StatusIdle:
+		msg = "run stopped at step " + rep.Step
+	default:
+		msg = "step " + rep.Step
+		if rep.Progress != nil {
+			msg += fmt.Sprintf(" · %d of %d leaves passed", rep.Passed, rep.Leaves)
+		}
+	}
+	if d, _, _ := strings.Cut(strings.TrimSpace(rep.Detail), "\n"); d != "" && rep.State != run.StatusWorking {
+		msg += ": " + d
+	}
+	return rexRecord("", rep.State, "", title, msg, rep.Progress)
 }
 
 // rexField is s as valid UTF-8 with every control character replaced by

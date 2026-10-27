@@ -167,6 +167,11 @@ type Engine struct {
 	// autonomous run's question is the arbiter's, not the owner's: it is
 	// never notified.
 	Notify func(Notice)
+	// Status, when set, is called with the run's StatusReport each time
+	// it changes: as a step is entered or continued, as a leaves step's
+	// leaf sessions start, block, unblock and are judged and its leaves
+	// end, and once as the run finishes (done or error) or stops (idle).
+	Status func(StatusReport)
 }
 
 // Start creates a run's journal with its started entry. The run begins at
@@ -332,6 +337,10 @@ type running struct {
 	e   *Engine
 	j   Journal
 	def *workflow.Definition
+	// leafList holds each leaves step's leaves, once read, for status.
+	leafList map[string][]Leaf
+	// lastStatus is the last report given to Engine.Status.
+	lastStatus *StatusReport
 }
 
 func (r *running) clock() Clock {
@@ -361,6 +370,7 @@ func (r *running) append(en Entry) error {
 		return err
 	}
 	r.j.Entries = append(r.j.Entries, en)
+	r.status("")
 	return nil
 }
 
@@ -382,6 +392,9 @@ func (r *running) loop() (State, error) {
 		act, err := Decide(r.def, st)
 		if err != nil {
 			return st, err
+		}
+		if act.Kind == ActContinue {
+			r.status("")
 		}
 		switch act.Kind {
 		case ActFinished:
@@ -406,6 +419,7 @@ func (r *running) loop() (State, error) {
 				return r.j.State(), err
 			}
 			r.log("step %s: stopped, %s", step.Name, res.stopped)
+			r.status(res.stopped)
 			return r.j.State(), nil
 		}
 		next, end := r.def.Next(step.Name, res.outcome)
