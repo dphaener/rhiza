@@ -111,20 +111,22 @@ type RunResponse struct {
 
 // RunInfo is a run folded from its journal.
 type RunInfo struct {
-	ID         string         `json:"id" desc:"The run ID"`
-	Workflow   string         `json:"workflow" desc:"The workflow's name"`
-	Change     string         `json:"change" desc:"The change set it runs on"`
-	Title      string         `json:"title" desc:"The change set's title"`
-	Worktree   string         `json:"worktree" desc:"The worktree every step runs in"`
-	State      string         `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
-	Current    string         `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
-	Detail     string         `json:"detail,omitempty" desc:"Why it stopped or failed"`
-	Steps      []RunStep      `json:"steps" desc:"The steps done, in order"`
-	StartedAt  string         `json:"started_at" desc:"When it started, RFC 3339 UTC"`
-	Blocked    *RunBlocked    `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
-	Amendments []RunAmendment `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
-	Messages   []RunMessage   `json:"messages" desc:"The messages its sessions sent each other, in order"`
-	Retries    []RunRetry     `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
+	ID         string          `json:"id" desc:"The run ID"`
+	Workflow   string          `json:"workflow" desc:"The workflow's name"`
+	Change     string          `json:"change" desc:"The change set it runs on"`
+	Title      string          `json:"title" desc:"The change set's title"`
+	Worktree   string          `json:"worktree" desc:"The worktree every step runs in"`
+	State      string          `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
+	Current    string          `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
+	Detail     string          `json:"detail,omitempty" desc:"Why it stopped or failed"`
+	Steps      []RunStep       `json:"steps" desc:"The steps done, in order"`
+	StartedAt  string          `json:"started_at" desc:"When it started, RFC 3339 UTC"`
+	Blocked    *RunBlocked     `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
+	Amendments []RunAmendment  `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
+	Messages   []RunMessage    `json:"messages" desc:"The messages its sessions sent each other, in order"`
+	Sessions   []RunSession    `json:"sessions" desc:"The sessions it launched or read token use for, in order of first appearance, each with its latest reading"`
+	Totals     SessionTokenUse `json:"totals" desc:"The sums of the sessions with recorded token use, the session's own and helpers' kept apart"`
+	Retries    []RunRetry      `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
 }
 
 // RunRetry is one retry journalled in a run: the run had failed and
@@ -155,7 +157,15 @@ type RunMessage struct {
 	To         string `json:"to" desc:"The recipient, as the sender named it"`
 	Text       string `json:"text" desc:"The message; a structured one is its raw JSON"`
 	Summary    string `json:"summary,omitempty" desc:"The sender's summary of it; absent when it gave none"`
-	Structured bool   `json:"structured,omitempty" desc:"True if the message was a JSON object rather than text"`
+	Structured bool   `json:"structured,omitempty" desc:"True if the message was not a string, so text holds its raw JSON"`
+}
+
+// RunSession is one session of a run, under the step it first appeared
+// in, with the latest reading of its token use.
+type RunSession struct {
+	Step    string           `json:"step" desc:"The step the session first appeared under"`
+	Session string           `json:"session" desc:"The session ID"`
+	Tokens  *SessionTokenUse `json:"tokens,omitempty" desc:"The latest reading of its token use; absent when none was recorded, and then left out of the totals"`
 }
 
 // RunBlocked is what a blocked run waits on, read from its agent step's
@@ -219,7 +229,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		return RunResponse{Run: RunInfo{
 			ID: rid, Workflow: def.Name, Change: started.Change, Title: t.title, Worktree: t.worktree,
 			Current: def.Start, Steps: []RunStep{}, StartedAt: rfc3339(ctx.Now()), Amendments: []RunAmendment{},
-			Messages: []RunMessage{},
+			Messages: []RunMessage{}, Sessions: []RunSession{},
 		}, DryRun: true}, nil
 	}
 	if err := canRun(ctx, def); err != nil {
@@ -824,7 +834,7 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 	info := RunInfo{
 		ID: st.ID, Workflow: st.Workflow, Change: st.Change, Title: st.Title, Worktree: st.Worktree,
 		Current: st.Current, Steps: []RunStep{}, StartedAt: rfc3339(st.StartedAt),
-		Amendments: []RunAmendment{}, Messages: []RunMessage{},
+		Amendments: []RunAmendment{}, Messages: []RunMessage{}, Sessions: []RunSession{},
 	}
 	switch {
 	case st.Ended:
@@ -857,7 +867,32 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 			To: m.To, Text: m.Text, Summary: m.Summary, Structured: m.Structured,
 		})
 	}
+	for _, s := range st.Sessions {
+		rs := RunSession{Step: s.Step, Session: s.Session}
+		if u, ok := st.Tokens[s.Session]; ok {
+			rs.Tokens = runTokens(u)
+			addTokens(&info.Totals.Session, rs.Tokens.Session)
+			addTokens(&info.Totals.Helpers, rs.Tokens.Helpers)
+		}
+		info.Sessions = append(info.Sessions, rs)
+	}
 	return info
+}
+
+// runTokens is the response form of a journaled token use reading.
+func runTokens(u run.TokenUse) *SessionTokenUse {
+	c := func(t run.TokenCounts) SessionTokens {
+		return SessionTokens{Input: t.Input, Output: t.Output, CacheCreation: t.CacheCreation, CacheRead: t.CacheRead}
+	}
+	return &SessionTokenUse{Session: c(u.Session), Helpers: c(u.Helpers)}
+}
+
+// addTokens adds t's counts into sum.
+func addTokens(sum *SessionTokens, t SessionTokens) {
+	sum.Input += t.Input
+	sum.Output += t.Output
+	sum.CacheCreation += t.CacheCreation
+	sum.CacheRead += t.CacheRead
 }
 
 // Human reports the run, or the plan of a dry run.
@@ -928,9 +963,19 @@ func (r RunInfo) Human(w io.Writer) {
 			if m.Structured {
 				note += ", structured"
 			}
-			text := strings.ReplaceAll(m.Text, "\n", "\n  ")
-			fmt.Fprintf(w, "- %s %s to %s (step %s%s): %s\n", m.At, m.Actor, m.To, m.Step, note, text)
+			fmt.Fprintf(w, "- %s %s to %s (step %s%s): %s\n", m.At, m.Actor, m.To, m.Step, note, indentRest(m.Text))
 		}
+	}
+	if len(r.Sessions) > 0 {
+		fmt.Fprintf(w, "\n## Sessions\n\n")
+		for _, s := range r.Sessions {
+			if s.Tokens == nil {
+				fmt.Fprintf(w, "- %s, session %s: no token use recorded\n", s.Step, s.Session)
+				continue
+			}
+			fmt.Fprintf(w, "- %s, session %s: %s\n", s.Step, s.Session, tokenUseLine(*s.Tokens))
+		}
+		fmt.Fprintf(w, "\nTotals: %s\n", tokenUseLine(r.Totals))
 	}
 	switch r.State {
 	case runStopped:
@@ -944,6 +989,24 @@ func (r RunInfo) Human(w io.Writer) {
 			fmt.Fprintf(w, "\nnext: rhiza session show %s\n", r.Blocked.Session)
 		}
 	}
+}
+
+// indentRest indents every non-empty line of s after the first by two
+// spaces, so a multi-line text stays inside its markdown bullet.
+func indentRest(s string) string {
+	lines := strings.Split(s, "\n")
+	for i := 1; i < len(lines); i++ {
+		if lines[i] != "" {
+			lines[i] = "  " + lines[i]
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
+// tokenUseLine is a token use reading as "tokens <counts>; helper tokens
+// <counts>".
+func tokenUseLine(u SessionTokenUse) string {
+	return "tokens " + tokensLine(u.Session) + "; helper tokens " + tokensLine(u.Helpers)
 }
 
 // runLines are a run's workflow, change set, worktree, current step and
