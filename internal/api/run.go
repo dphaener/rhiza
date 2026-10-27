@@ -159,7 +159,7 @@ type RunLeafSession struct {
 	Attempt int    `json:"attempt" desc:"The leaf's attempt it works on, from 1"`
 	Session string `json:"session" desc:"The session's ID"`
 	Model   string `json:"model,omitempty" desc:"The model it runs; empty for the agent's default"`
-	Commit  string `json:"commit,omitempty" desc:"The commit a verifier checks"`
+	Commit  string `json:"commit,omitempty" desc:"A builder's: the worktree's HEAD when it started; a verifier's: the commit it checks"`
 	At      string `json:"at" desc:"When it started, RFC 3339 UTC"`
 }
 
@@ -168,7 +168,8 @@ type RunLeafAttempt struct {
 	Role    string `json:"role" desc:"builder or verifier"`
 	Attempt int    `json:"attempt" desc:"The leaf's attempt, from 1"`
 	Outcome string `json:"outcome" desc:"pass or fail"`
-	Detail  string `json:"detail,omitempty" desc:"Why: the session's exit, or that its agent said done"`
+	Commit  string `json:"commit,omitempty" desc:"A passed builder's commit naming its leaf"`
+	Detail  string `json:"detail,omitempty" desc:"Why: the session's exit, that its agent said done, or that a builder left no commit naming its leaf"`
 	At      string `json:"at" desc:"When it was judged, RFC 3339 UTC"`
 }
 
@@ -1355,7 +1356,7 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 		}
 		for _, a := range l.Attempts {
 			rl.Attempts = append(rl.Attempts, RunLeafAttempt{
-				Role: a.Role, Attempt: a.Attempt, Outcome: a.Outcome, Detail: a.Detail, At: rfc3339(a.At),
+				Role: a.Role, Attempt: a.Attempt, Outcome: a.Outcome, Commit: a.Commit, Detail: a.Detail, At: rfc3339(a.At),
 			})
 		}
 		info.Leaves = append(info.Leaves, rl)

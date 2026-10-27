@@ -54,6 +54,10 @@ type fakeRunner struct {
 	leavesErr  error             // Leaves' error, when set
 	leafSpecs  []LeafSpec        // each StartLeaf call's spec, in order
 	leafErr    map[string]error  // StartLeaf's error per "<handle> <role>"
+	// leafCommit is LeafCommit's commit and detail per leaf handle; a
+	// missing handle has commit "C-<handle>".
+	leafCommit map[string][2]string
+	leafSince  []string // "<handle> <since>" per LeafCommit call
 }
 
 func newFakeRunner() *fakeRunner {

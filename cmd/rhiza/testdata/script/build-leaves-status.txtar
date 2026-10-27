@@ -5,8 +5,10 @@
 # judged attempts and outcome, in text and --json.
 #
 # The fake rex runs the tab's command synchronously in the window's
-# directory, then prints a window; the fake claude logs its leaf, attempt
-# and prompt, then exits 0.
+# directory, then prints a window; the fake claude logs its role, leaf,
+# attempt and prompt. As a builder it commits with its leaf's Leaf:
+# trailer, which a builder's pass needs; as a verifier it logs that the
+# commit it got is HEAD. It exits 0.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -40,8 +42,9 @@ exec sh -c 'rhiza run start --workflow build --permission-mode manual --json; ec
 stdout '"state": "succeeded"'
 stdout '^exit=0$'
 
-# Each session ran with its leaf and attempt, builder then verifier, leaf
-# by leaf, with its role's prompt filled.
+# Each session ran with its role, leaf and attempt, builder then verifier,
+# leaf by leaf, with its role's prompt filled; each verifier got its
+# builder's commit.
 exec cat $WORK/claude.log
 cmp stdout $WORK/want.log
 
@@ -53,18 +56,19 @@ exec rhiza run status --json
 stdout -count=1 '"handle": "first",'
 stdout -count=1 '"handle": "second",'
 stdout -count=2 '"outcome": "passed"'
-stdout -count=2 '"attempt": 1,\n\s+"role": "builder",\n\s+"session": "[0-9a-f-]{36}"'
-stdout -count=2 '"attempt": 1,\n\s+"role": "verifier",\n\s+"session": "[0-9a-f-]{36}"'
-stdout -count=4 '"attempt": 1,\n\s+"detail": "exit 0",\n\s+"outcome": "pass",'
+stdout -count=2 '"attempt": 1,\n\s+"commit": "[0-9a-f]{40}",\n\s+"role": "builder",\n\s+"session": "[0-9a-f-]{36}"'
+stdout -count=2 '"attempt": 1,\n\s+"commit": "[0-9a-f]{40}",\n\s+"role": "verifier",\n\s+"session": "[0-9a-f-]{36}"'
+stdout -count=2 '"attempt": 1,\n\s+"commit": "[0-9a-f]{40}",\n\s+"detail": "exit 0",\n\s+"outcome": "pass",\n\s+"role": "builder"'
+stdout -count=2 '"attempt": 1,\n\s+"detail": "exit 0",\n\s+"outcome": "pass",\n\s+"role": "verifier"'
 stdout '"leaves": \[\n(.*\n)*?\s+"handle": "first",(.*\n)*?\s+"handle": "second",'
 
 fold-ok
 
 -- want.log --
-leaf=first attempt=1 prompt=Build first, attempt 1
-leaf=first attempt=1 prompt=Verify first
-leaf=second attempt=1 prompt=Build second, attempt 1
-leaf=second attempt=1 prompt=Verify second
+role=builder leaf=first attempt=1 prompt=Build first, attempt 1
+role=verifier leaf=first attempt=1 commit=head prompt=Verify first
+role=builder leaf=second attempt=1 prompt=Build second, attempt 1
+role=verifier leaf=second attempt=1 commit=head prompt=Verify second
 -- build.toml --
 name = "build"
 
@@ -96,5 +100,12 @@ echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
 -- bin/claude --
 #!/bin/sh
 for a; do last=$a; done
-echo "leaf=$RHIZA_LEAF attempt=$RHIZA_ATTEMPT prompt=$last" >> "$WORK/claude.log"
+if [ "$RHIZA_ROLE" = builder ]; then
+	echo "role=$RHIZA_ROLE leaf=$RHIZA_LEAF attempt=$RHIZA_ATTEMPT prompt=$last" >> "$WORK/claude.log"
+	git commit -q --allow-empty -m "build $RHIZA_LEAF" -m "Leaf: $RHIZA_LEAF"
+else
+	commit=other
+	[ "$RHIZA_COMMIT" = "$(git rev-parse HEAD)" ] && commit=head
+	echo "role=$RHIZA_ROLE leaf=$RHIZA_LEAF attempt=$RHIZA_ATTEMPT commit=$commit prompt=$last" >> "$WORK/claude.log"
+fi
 exit 0

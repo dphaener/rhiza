@@ -50,9 +50,12 @@ const (
 	envRun    = "RHIZA_RUN"
 	// envAutonomous is set to 1 for an agent an autonomous run launched.
 	envAutonomous = "RHIZA_AUTONOMOUS"
-	// envLeaf and envAttempt are a leaf session's leaf handle and attempt.
+	// envLeaf, envAttempt, envRole and envCommit are a leaf session's leaf
+	// handle, attempt, role and, for a verifier, the commit it checks.
 	envLeaf    = run.EnvLeaf
 	envAttempt = run.EnvAttempt
+	envRole    = run.EnvRole
+	envCommit  = run.EnvCommit
 )
 
 // The Rex event that carries a block's status report, and its envelopes.
@@ -284,8 +287,8 @@ func captureAfterRun(ctx *Ctx, rec session.Record, warnings []string) ([]string,
 // change set, the agent's actor, the actor it acts for, the session (so
 // `rhiza session done` needs no argument) and, only when the launch belongs
 // to one, the run, RHIZA_AUTONOMOUS=1 when that run is autonomous, and a
-// leaf session's RHIZA_LEAF and RHIZA_ATTEMPT. A run, autonomous or leaf
-// mark the terminal had is removed.
+// leaf session's RHIZA_LEAF, RHIZA_ATTEMPT, RHIZA_ROLE and, for a verifier,
+// RHIZA_COMMIT. A run, autonomous or leaf mark the terminal had is removed.
 func launchEnv(rec session.Record) (set, unset []string) {
 	change := rec.Change
 	if rec.Writes != "" {
@@ -308,9 +311,14 @@ func launchEnv(rec session.Record) (set, unset []string) {
 		unset = append(unset, envAutonomous)
 	}
 	if rec.Leaf != "" {
-		set = append(set, envLeaf+"="+rec.Leaf, envAttempt+"="+strconv.Itoa(rec.Attempt))
+		set = append(set, envLeaf+"="+rec.Leaf, envAttempt+"="+strconv.Itoa(rec.Attempt), envRole+"="+rec.Role)
 	} else {
-		unset = append(unset, envLeaf, envAttempt)
+		unset = append(unset, envLeaf, envAttempt, envRole)
+	}
+	if rec.Commit != "" {
+		set = append(set, envCommit+"="+rec.Commit)
+	} else {
+		unset = append(unset, envCommit)
 	}
 	return set, unset
 }

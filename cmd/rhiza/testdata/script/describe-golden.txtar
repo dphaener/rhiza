@@ -3019,8 +3019,12 @@ cmp stdout describe.golden.json
                             "description": "The leaf's attempt, from 1",
                             "type": "integer"
                           },
+                          "commit": {
+                            "description": "A passed builder's commit naming its leaf",
+                            "type": "string"
+                          },
                           "detail": {
-                            "description": "Why: the session's exit, or that its agent said done",
+                            "description": "Why: the session's exit, that its agent said done, or that a builder left no commit naming its leaf",
                             "type": "string"
                           },
                           "outcome": {
@@ -3076,7 +3080,7 @@ cmp stdout describe.golden.json
                             "type": "integer"
                           },
                           "commit": {
-                            "description": "The commit a verifier checks",
+                            "description": "A builder's: the worktree's HEAD when it started; a verifier's: the commit it checks",
                             "type": "string"
                           },
                           "model": {
@@ -3927,8 +3931,12 @@ cmp stdout describe.golden.json
                             "description": "The leaf's attempt, from 1",
                             "type": "integer"
                           },
+                          "commit": {
+                            "description": "A passed builder's commit naming its leaf",
+                            "type": "string"
+                          },
                           "detail": {
-                            "description": "Why: the session's exit, or that its agent said done",
+                            "description": "Why: the session's exit, that its agent said done, or that a builder left no commit naming its leaf",
                             "type": "string"
                           },
                           "outcome": {
@@ -3984,7 +3992,7 @@ cmp stdout describe.golden.json
                             "type": "integer"
                           },
                           "commit": {
-                            "description": "The commit a verifier checks",
+                            "description": "A builder's: the worktree's HEAD when it started; a verifier's: the commit it checks",
                             "type": "string"
                           },
                           "model": {
@@ -4684,8 +4692,12 @@ cmp stdout describe.golden.json
                         "description": "The leaf's attempt, from 1",
                         "type": "integer"
                       },
+                      "commit": {
+                        "description": "A passed builder's commit naming its leaf",
+                        "type": "string"
+                      },
                       "detail": {
-                        "description": "Why: the session's exit, or that its agent said done",
+                        "description": "Why: the session's exit, that its agent said done, or that a builder left no commit naming its leaf",
                         "type": "string"
                       },
                       "outcome": {
@@ -4741,7 +4753,7 @@ cmp stdout describe.golden.json
                         "type": "integer"
                       },
                       "commit": {
-                        "description": "The commit a verifier checks",
+                        "description": "A builder's: the worktree's HEAD when it started; a verifier's: the commit it checks",
                         "type": "string"
                       },
                       "model": {

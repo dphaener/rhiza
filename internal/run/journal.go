@@ -140,10 +140,12 @@ type Block struct {
 //	gated:     Changes (run gate ended the plan: its change sets, by ID; the
 //	           latest gated entry wins)
 //	leaf-session: Step, Leaf, Handle, Role (builder or verifier), Attempt, Session,
-//	           Model, Commit (a verifier's), Detail (a leaves step started a session
-//	           on leaf node Leaf, handle Handle)
-//	leaf-attempt: Step, Leaf, Handle, Role, Attempt, Outcome (pass or fail), Detail
-//	           (the role's session of the attempt was judged)
+//	           Model, Commit (a builder's: the worktree's HEAD when it started; a
+//	           verifier's: the commit it checks), Detail (a leaves step started a
+//	           session on leaf node Leaf, handle Handle)
+//	leaf-attempt: Step, Leaf, Handle, Role, Attempt, Outcome (pass or fail), Commit
+//	           (a passed builder's leaf commit), Detail (the role's session of the
+//	           attempt was judged)
 //	leaf:      Step, Leaf, Handle, Outcome (passed, failed or skipped), Question (for
 //	           failed), Detail (the leaf's outcome)
 type Entry struct {
@@ -183,8 +185,10 @@ type Entry struct {
 	Changes []string `json:"changes,omitempty"`
 	// Leaf is a leaf entry's leaf node ID, and Role its session's role:
 	// builder or verifier. Attempt counts a leaf's attempts from 1. Model
-	// is the model a leaf session runs; Commit the commit a verifier
-	// checks.
+	// is the model a leaf session runs. Commit is, on a builder's
+	// leaf-session, the worktree's HEAD when it started; on a verifier's,
+	// the commit it checks; on a passed builder's leaf-attempt, the commit
+	// naming its leaf.
 	Leaf    string `json:"leaf,omitempty"`
 	Role    string `json:"role,omitempty"`
 	Attempt int    `json:"attempt,omitempty"`
@@ -346,7 +350,8 @@ type Arbitration struct {
 func (a Arbitration) Open() bool { return a.Outcome == "" }
 
 // LeafSession is one leaf-session entry: a session of role Role (builder
-// or verifier) on the leaf's attempt Attempt.
+// or verifier) on the leaf's attempt Attempt. A builder's Commit is the
+// worktree's HEAD when it started; a verifier's is the commit it checks.
 type LeafSession struct {
 	Role    string
 	Attempt int
@@ -358,11 +363,13 @@ type LeafSession struct {
 }
 
 // LeafAttempt is one leaf-attempt entry: role Role's session of attempt
-// Attempt was judged pass or fail (Outcome), for Detail.
+// Attempt was judged pass or fail (Outcome), for Detail. A passed
+// builder's Commit is the new commit naming its leaf.
 type LeafAttempt struct {
 	Role    string
 	Attempt int
 	Outcome string
+	Commit  string
 	Detail  string
 	At      time.Time
 }
@@ -598,7 +605,7 @@ func (j Journal) State() State {
 			st.addSession(e.Step, e.Session)
 		case TypeLeafAttempt:
 			l := st.leaf(e)
-			l.Attempts = append(l.Attempts, LeafAttempt{Role: e.Role, Attempt: e.Attempt, Outcome: e.Outcome, Detail: e.Detail, At: e.At})
+			l.Attempts = append(l.Attempts, LeafAttempt{Role: e.Role, Attempt: e.Attempt, Outcome: e.Outcome, Commit: e.Commit, Detail: e.Detail, At: e.At})
 		case TypeLeaf:
 			l := st.leaf(e)
 			l.Outcome, l.Question, l.Detail = e.Outcome, e.Question, e.Detail

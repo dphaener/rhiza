@@ -27,6 +27,19 @@ func (f *fakeRunner) StartLeaf(spec LeafSpec) (string, error) {
 	return leafSID(spec.Leaf.Handle, spec.Role, spec.Attempt), nil
 }
 
+// fakeHead is the fake runner's worktree HEAD.
+const fakeHead = "H0"
+
+func (f *fakeRunner) Head() (string, error) { return fakeHead, nil }
+
+func (f *fakeRunner) LeafCommit(leaf Leaf, since string) (string, string, error) {
+	f.leafSince = append(f.leafSince, leaf.Handle+" "+since)
+	if c, ok := f.leafCommit[leaf.Handle]; ok {
+		return c[0], c[1], nil
+	}
+	return "C-" + leaf.Handle, "", nil
+}
+
 // leafSID is the fake runner's session ID for a leaf session.
 func leafSID(handle, role string, attempt int) string {
 	return "S-" + handle + "-" + role + "-" + strconv.Itoa(attempt)
@@ -535,5 +548,76 @@ func TestLeafOrderBlocksPerSession(t *testing.T) {
 	want := map[string]int{av + " true": 1, av + " false": 1, bb + " true": 2, bb + " false": 2}
 	if !reflect.DeepEqual(count, want) {
 		t.Errorf("notices = %v, want counts %v", notices, want)
+	}
+}
+
+// A builder that exits 0 passes only with a commit naming its leaf: with
+// none its attempt fails with LeafCommit's detail and no verifier starts;
+// with one its attempt records the commit, and the verifier starts on it,
+// its leaf-session journalling it and its env carrying RHIZA_COMMIT. The
+// builder's leaf-session journals HEAD as it started, the since of
+// LeafCommit.
+func TestLeavesStepLeafCommit(t *testing.T) {
+	e, r, _, _ := setup(t, leavesWF)
+	r.leaves = []Leaf{{ID: "L1", Handle: "leaf-a"}, {ID: "L2", Handle: "leaf-b"}}
+	passAll(r, twoLeaves)
+	r.leafCommit = map[string][2]string{"leaf-a": {"", "no new commit since H0"}, "leaf-b": {"abc123", ""}}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"build:fail"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	a, b := st.Leaves[0], st.Leaves[1]
+	if j, _ := a.Judged(workflow.RoleBuilder, 1); j.Outcome != workflow.OutcomeFail || j.Detail != "no new commit since H0" || j.Commit != "" {
+		t.Errorf("leaf-a builder attempt = %+v", j)
+	}
+	if _, ok := a.Session(workflow.RoleVerifier, 1); ok || a.Outcome != LeafFailed {
+		t.Errorf("leaf-a = %+v, want failed with no verifier", a)
+	}
+	if !strings.Contains(a.Detail, "no new commit since H0") {
+		t.Errorf("leaf-a detail = %q", a.Detail)
+	}
+	if s, _ := a.Session(workflow.RoleBuilder, 1); s.Commit != fakeHead {
+		t.Errorf("leaf-a builder session commit = %q, want %q", s.Commit, fakeHead)
+	}
+	if j, _ := b.Judged(workflow.RoleBuilder, 1); j.Outcome != workflow.OutcomePass || j.Commit != "abc123" {
+		t.Errorf("leaf-b builder attempt = %+v", j)
+	}
+	if s, _ := b.Session(workflow.RoleVerifier, 1); s.Commit != "abc123" {
+		t.Errorf("leaf-b verifier session commit = %q", s.Commit)
+	}
+	if b.Outcome != LeafPassed {
+		t.Errorf("leaf-b = %+v", b)
+	}
+	var verifier LeafSpec
+	for _, s := range r.leafSpecs {
+		if s.Leaf.Handle == "leaf-b" && s.Role == workflow.RoleVerifier {
+			verifier = s
+		}
+		if s.Role == workflow.RoleBuilder && (s.Commit != "" || !slices.Contains(s.Env, "RHIZA_ROLE=builder")) {
+			t.Errorf("builder spec = %+v", s)
+		}
+	}
+	if verifier.Commit != "abc123" || !slices.Contains(verifier.Env, "RHIZA_COMMIT=abc123") || !slices.Contains(verifier.Env, "RHIZA_ROLE=verifier") {
+		t.Errorf("verifier spec = %+v", verifier)
+	}
+	if want := []string{"leaf-a H0", "leaf-b H0"}; !reflect.DeepEqual(r.leafSince, want) {
+		t.Errorf("LeafCommit calls = %v, want %v", r.leafSince, want)
+	}
+}
+
+// A builder that exits non-zero fails on its exit alone: LeafCommit is not
+// asked.
+func TestLeavesStepBuilderExitFailsWithoutCommitCheck(t *testing.T) {
+	e, r, _, _ := setup(t, leavesWF)
+	r.leaves = []Leaf{{ID: "L1", Handle: "leaf-a"}}
+	r.outcome[leafSID("leaf-a", workflow.RoleBuilder, 1)] = workflow.OutcomeFail
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	if len(r.leafSince) != 0 {
+		t.Errorf("LeafCommit calls = %v, want none", r.leafSince)
 	}
 }

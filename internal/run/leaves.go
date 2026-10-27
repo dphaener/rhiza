@@ -18,6 +18,13 @@ type LeafRunner interface {
 	Leaves(change string) ([]Leaf, error)
 	// StartLeaf launches the session spec names and returns its ID.
 	StartLeaf(spec LeafSpec) (session string, err error)
+	// Head is the commit at HEAD of the worktree builders work in.
+	Head() (string, error)
+	// LeafCommit is the newest commit in since..HEAD of that worktree
+	// whose Leaf: trailer names leaf's handle. When there is none, commit
+	// is "" and detail says why: no new commit, or the new commits name
+	// other leaves or none.
+	LeafCommit(leaf Leaf, since string) (commit, detail string, err error)
 }
 
 // Leaf is one leaf of a change set: its capability node's ID and handle,
@@ -30,14 +37,17 @@ type Leaf struct {
 
 // LeafSpec is one leaf session to launch: role Role (builder or verifier)
 // of leaves step Step on Leaf, for attempt Attempt (from 1). Model is the
-// model to run, "" for the agent's default. Env holds the session's
-// RHIZA_* variables, the step's plus RHIZA_LEAF and RHIZA_ATTEMPT.
+// model to run, "" for the agent's default. Commit is, for a verifier,
+// the builder's commit it checks; "" for a builder. Env holds the
+// session's RHIZA_* variables, the step's plus RHIZA_LEAF, RHIZA_ATTEMPT,
+// RHIZA_ROLE and, for a verifier, RHIZA_COMMIT.
 type LeafSpec struct {
 	Step    workflow.Step
 	Role    string
 	Leaf    Leaf
 	Attempt int
 	Model   string
+	Commit  string
 	Env     []string
 }
 
@@ -45,6 +55,10 @@ type LeafSpec struct {
 const (
 	EnvLeaf    = "RHIZA_LEAF"
 	EnvAttempt = "RHIZA_ATTEMPT"
+	// EnvRole is the session's role: builder or verifier.
+	EnvRole = "RHIZA_ROLE"
+	// EnvCommit is the commit a verifier checks.
+	EnvCommit = "RHIZA_COMMIT"
 )
 
 // leafActionKind is what the conductor does next for a leaves step.
@@ -69,6 +83,8 @@ type leafAction struct {
 	role    string
 	attempt int
 	session string
+	// commit is, for a verifier's start, the builder's commit it checks.
+	commit  string
 	outcome string
 	detail  string
 }
@@ -164,13 +180,18 @@ func lostDependency(lf Leaf, states map[string]LeafState, known map[string]bool,
 	return "", false
 }
 
-// nextForLeaf is the next move on an open leaf l whose builder started.
+// nextForLeaf is the next move on an open leaf l whose builder started. A
+// verifier starts on the commit its builder's passed attempt recorded.
 func nextForLeaf(lf Leaf, l LeafState) leafAction {
 	attempt := max(1, l.Attempt())
 	for _, role := range []string{workflow.RoleBuilder, workflow.RoleVerifier} {
 		s, started := l.Session(role, attempt)
 		if !started {
-			return leafAction{kind: leafStart, leaf: lf, role: role, attempt: attempt}
+			a := leafAction{kind: leafStart, leaf: lf, role: role, attempt: attempt}
+			if b, ok := l.Judged(workflow.RoleBuilder, attempt); ok && role == workflow.RoleVerifier {
+				a.commit = b.Commit
+			}
+			return a
 		}
 		j, judged := l.Judged(role, attempt)
 		if !judged {
@@ -238,7 +259,7 @@ func (r *running) leaves(step workflow.Step, env []string) (result, error) {
 				r.log("step %s: leaf %s %s", step.Name, a.leaf.Handle, a.outcome)
 				progressed = true
 			case leafPoll:
-				judged, res, ended, err := r.pollLeaf(step, a)
+				judged, res, ended, err := r.pollLeaf(lr, step, a)
 				if err != nil || ended {
 					return res, err
 				}
@@ -251,15 +272,29 @@ func (r *running) leaves(step workflow.Step, env []string) (result, error) {
 	}
 }
 
-// startLeaf launches a's session and journals its leaf-session entry. A
-// launch that fails ends the step (failed true) with an error outcome.
+// startLeaf launches a's session and journals its leaf-session entry: a
+// builder's with the worktree's HEAD before it started, which its leaf
+// commit must follow, and a verifier's with the commit it checks. A launch
+// that fails ends the step (failed true) with an error outcome.
 func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a leafAction) (result, bool, error) {
 	spec := LeafSpec{
-		Step: step, Role: a.role, Leaf: a.leaf, Attempt: a.attempt,
-		Env: append(append([]string{}, env...), EnvLeaf+"="+a.leaf.Handle, EnvAttempt+"="+strconv.Itoa(a.attempt)),
+		Step: step, Role: a.role, Leaf: a.leaf, Attempt: a.attempt, Commit: a.commit,
+		Env: append(append([]string{}, env...),
+			EnvLeaf+"="+a.leaf.Handle, EnvAttempt+"="+strconv.Itoa(a.attempt), EnvRole+"="+a.role),
+	}
+	if a.commit != "" {
+		spec.Env = append(spec.Env, EnvCommit+"="+a.commit)
 	}
 	if role := step.Role(a.role); role != nil {
 		spec.Model = role.Model(a.attempt)
+	}
+	commit := a.commit
+	if a.role == workflow.RoleBuilder {
+		head, err := lr.Head()
+		if err != nil {
+			return errResult(fmt.Errorf("leaf %s: read the worktree's HEAD: %v", a.leaf.Handle, err)), true, nil
+		}
+		commit = head
 	}
 	s, err := lr.StartLeaf(spec)
 	if err != nil {
@@ -267,7 +302,7 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 	}
 	if err := r.append(Entry{
 		Type: TypeLeafSession, Step: step.Name, Leaf: a.leaf.ID, Handle: a.leaf.Handle,
-		Role: a.role, Attempt: a.attempt, Session: s, Model: spec.Model,
+		Role: a.role, Attempt: a.attempt, Session: s, Model: spec.Model, Commit: commit,
 	}); err != nil {
 		return result{}, false, err
 	}
@@ -277,10 +312,12 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 
 // pollLeaf polls a's session once. When it has exited or its agent said
 // done, it journals the attempt's judgement (judged true) and reports the
-// session's end to the Runner. A live session's block is journalled and
+// session's end to the Runner. A builder judged pass passes only with a
+// new commit since its start naming its leaf (LeafCommit), journalled on
+// the attempt; without one its attempt fails with LeafCommit's detail. A live session's block is journalled and
 // notified as an agent step's, and in an autonomous run its question goes
 // to the arbiter; a failed verdict ends the step (ended true) with res.
-func (r *running) pollLeaf(step workflow.Step, a leafAction) (judged bool, res result, ended bool, err error) {
+func (r *running) pollLeaf(lr LeafRunner, step workflow.Step, a leafAction) (judged bool, res result, ended bool, err error) {
 	status, err := r.e.Runner.AgentStatus(a.session)
 	if err != nil {
 		if err := r.unblock(step.Name, a.session); err != nil {
@@ -299,9 +336,22 @@ func (r *running) pollLeaf(step workflow.Step, a leafAction) (judged bool, res r
 				outcome = workflow.OutcomeFail
 			}
 		}
+		commit := ""
+		if a.role == workflow.RoleBuilder && outcome == workflow.OutcomePass {
+			s, _ := r.leafStates(step.Name)[a.leaf.ID].Session(a.role, a.attempt)
+			c, why, err := lr.LeafCommit(a.leaf, s.Commit)
+			switch {
+			case err != nil:
+				outcome, detail = workflow.OutcomeFail, fmt.Sprintf("find its leaf commit: %v", err)
+			case c == "":
+				outcome, detail = workflow.OutcomeFail, why
+			default:
+				commit = c
+			}
+		}
 		if err := r.append(Entry{
 			Type: TypeLeafAttempt, Step: step.Name, Leaf: a.leaf.ID, Handle: a.leaf.Handle,
-			Role: a.role, Attempt: a.attempt, Outcome: outcome, Detail: detail,
+			Role: a.role, Attempt: a.attempt, Outcome: outcome, Commit: commit, Detail: detail,
 		}); err != nil {
 			return false, result{}, false, err
 		}
