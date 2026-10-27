@@ -31,6 +31,11 @@ the orchestrator's proposal in the milestone-3 conversation, accepted by the own
 - decided-by [evidence-names-actor](../capability/rhiza/integrity/evidence-actor/evidence-names-actor.md)
 - decided-by [commit-actor-trailer](../capability/rhiza/integrity/evidence-actor/commit-actor-trailer.md)
 - decided-by [check-evidence-actor](../capability/rhiza/integrity/evidence-actor/check-evidence-actor.md)
+- decided-by [build-verifier-checkout](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-verifier-checkout.md)
+- decided-by [build-evidence-commit](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-evidence-commit.md)
+- decided-by [build-verifier-findings](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-verifier-findings.md)
+- decided-by [build-check](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-check.md)
+- decided-by [build-guide](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-guide.md)
 
 ## History
 

@@ -26,11 +26,22 @@ the orchestrator's proposal in the milestone-3 conversation, accepted by the own
 
 ### In
 
+- relates-to [answer-ab54d544-6](answer-ab54d544-6.md) — Amends build-workflow-shape's "one commit per leaf": the owner picked a fix commit per retry with the same Leaf: trailer over autosquashing to one commit at the end, so a leaf's work is every commit with its Leaf: trailer.
+- relates-to [answer-ab54d544-7](answer-ab54d544-7.md) — Amends build-workflow-shape's "one commit per leaf": besides the builder's commits, the engine adds the leaf's Evidence entry as its own chore(rhiza) commit.
 - decided-by [milestone-3](../intent/anyone-builds/milestone-3.md)
 - decided-by [leaf-dependencies](../capability/rhiza/model/leaf-dependencies.md)
 - decided-by [leaf-depends-on-acyclic](../capability/rhiza/model/leaf-dependencies/leaf-depends-on-acyclic.md)
 - decided-by [leaf-order](../capability/rhiza/model/leaf-dependencies/leaf-order.md)
 - decided-by [leaf-depends-on-guide](../capability/rhiza/model/leaf-dependencies/leaf-depends-on-guide.md)
+- decided-by [build-workflow](../capability/rhiza/workflows/built-in-workflows/build-workflow.md)
+- decided-by [build-leaves-step](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-leaves-step.md)
+- decided-by [build-model-ladder](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-model-ladder.md)
+- decided-by [build-leaf-order](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-leaf-order.md)
+- decided-by [build-leaf-commit](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-leaf-commit.md)
+- decided-by [build-retries](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-retries.md)
+- decided-by [build-leaf-fails](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-leaf-fails.md)
+- decided-by [build-guide](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-guide.md)
+- decided-by [build-workflow-file](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-workflow-file.md)
 
 ## History
 
