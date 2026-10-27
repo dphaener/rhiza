@@ -135,6 +135,16 @@ type RunInfo struct {
 	Retries    []RunRetry      `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
 	Accepts    []RunAccept     `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
 	Questions  []RunQuestion   `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
+	Rounds     []RunRound      `json:"rounds,omitempty" desc:"The plan review rounds journalled by run findings and run verdict, in order; absent when there were none"`
+}
+
+// RunRound is one plan review round: a reviewer's findings, each with the
+// critic's latest verdict.
+type RunRound struct {
+	Round     int          `json:"round" desc:"The round's number, from 1"`
+	At        string       `json:"at" desc:"When its findings were journalled, RFC 3339 UTC"`
+	Findings  []RunFinding `json:"findings" desc:"The reviewer's findings, in order; empty for a clean review"`
+	Confirmed int          `json:"confirmed" desc:"How many findings the critic's latest verdict confirms"`
 }
 
 // RunAccept is one accepted or rejected entry journalled in an autonomous
@@ -1129,6 +1139,13 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 		}
 		info.Questions = append(info.Questions, rq)
 	}
+	for _, rd := range st.Rounds {
+		rr := RunRound{Round: rd.Number, At: rfc3339(rd.At), Findings: []RunFinding{}, Confirmed: len(rd.Confirmed())}
+		for _, f := range rd.Findings {
+			rr.Findings = append(rr.Findings, runFinding(f, rd))
+		}
+		info.Rounds = append(info.Rounds, rr)
+	}
 	return info
 }
 
@@ -1212,6 +1229,19 @@ func (r RunInfo) Human(w io.Writer) {
 				fmt.Fprintf(w, " — open")
 			}
 			fmt.Fprintf(w, "\n")
+		}
+	}
+	if len(r.Rounds) > 0 {
+		fmt.Fprintf(w, "\n## Review rounds\n\n")
+		for _, rd := range r.Rounds {
+			if len(rd.Findings) == 0 {
+				fmt.Fprintf(w, "- Round %d: no findings\n", rd.Round)
+				continue
+			}
+			fmt.Fprintf(w, "- Round %d: %d %s, %d confirmed\n", rd.Round, len(rd.Findings), shipPlural(len(rd.Findings), "finding", "findings"), rd.Confirmed)
+			for _, f := range rd.Findings {
+				fmt.Fprintf(w, "  - %s\n", findingLine(f))
+			}
 		}
 	}
 	if len(r.Retries) > 0 {

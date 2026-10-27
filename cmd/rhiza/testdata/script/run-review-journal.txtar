@@ -1,0 +1,142 @@
+# A plan review round is journalled in its run. With RHIZA_RUN naming an
+# unfinished run, run findings records a reviewer's findings (each opens
+# nothing but its round: one call is one round) and run verdict records a
+# critic's verdict on each. run status shows the rounds. A verdict naming a
+# finding the round does not hold, a finding of an unknown kind, or one
+# naming no node is usage (exit 2) and writes nothing; so is either
+# command with no RHIZA_RUN.
+#
+# The run stops at a wait step whose until does not hold, so it stays
+# unfinished and launches no agent.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Review rounds' --title 'Review rounds' --json
+stdout '"change_set": "[0-9A-Z]{26}"'
+exec rhiza add capability cap-a --field 'statement=Does A'
+exec rhiza add capability cap-b --field 'statement=Does B'
+mkdir .rhiza/workflows
+cp $WORK/hold.toml .rhiza/workflows/hold.toml
+exec rhiza run start --workflow hold --no-wait
+stdout '^Run (01[0-9A-Z]{24}) stopped$'
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+
+# No rounds yet: status has none.
+exec rhiza run status --json
+! stdout '"rounds"'
+exec rhiza run status
+! stdout '^## Review rounds'
+
+# No RHIZA_RUN: both commands are usage.
+exec sh -c 'rhiza run findings $WORK/findings.json --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout 'RHIZA_RUN is not set'
+stdout '^exit=2$'
+exec sh -c 'rhiza run verdict $WORK/verdict.json 2>/dev/null; echo exit=$?'
+stdout '^exit=2$'
+exec sh -c 'wc -l < .git/rhiza/runs/$(cat $WORK/runid).jsonl | tr -d " "'
+stdout '^3$'
+
+# A finding of an unknown kind, or naming no node: usage, nothing written.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/badkind.json --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout 'finding 1: kind \\"style\\" is not one of missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction'
+stdout '^exit=2$'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/badnode.json --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout 'finding 2: node \\"no-such-node\\"'
+stdout '^exit=2$'
+# A verdict with no round yet: usage.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run verdict $WORK/verdict.json --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout 'no review round'
+stdout '^exit=2$'
+exec sh -c 'wc -l < .git/rhiza/runs/$(cat $WORK/runid).jsonl | tr -d " "'
+stdout '^3$'
+
+# Two findings, from stdin: round 1, f1 and f2.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings - --json < $WORK/findings.json'
+stdout '"round": 1'
+stdout '"id": "f1"'
+stdout '"handle": "cap-a"'
+stdout '"kind": "missing-acceptance"'
+stdout '"id": "f2"'
+stdout '"kind": "contradiction"'
+exec sh -c 'grep -c "\"type\":\"findings\",.*\"id\":\"f1\",\"node\":\"[0-9A-Z]\{26\}\",\"handle\":\"cap-a\",\"kind\":\"missing-acceptance\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+stdout '^1$'
+
+# A critic naming a third finding: usage, nothing written.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run verdict $WORK/f3.json --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout 'verdict 2: round 1 holds no finding \\"f3\\"'
+stdout '^exit=2$'
+exec sh -c 'wc -l < .git/rhiza/runs/$(cat $WORK/runid).jsonl | tr -d " "'
+stdout '^4$'
+
+# The verdict: f1 confirmed, f2 dropped.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run verdict $WORK/verdict.json'
+stdout '^Recorded verdicts on round 1 of run 01[0-9A-Z]{24}$'
+stdout '^- f1: confirmed: It has none$'
+stdout '^- f2: dropped: They agree$'
+exec sh -c 'grep -c "\"type\":\"verdict\",.*\"verdicts\":\[{\"finding\":\"f1\",\"verdict\":\"confirmed\",\"reason\":\"It has none\"},{\"finding\":\"f2\",\"verdict\":\"dropped\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+stdout '^1$'
+
+# Status shows round 1 with one confirmed finding.
+exec rhiza run status --json
+stdout '"rounds": \['
+stdout '"round": 1'
+stdout '"confirmed": 1'
+stdout '"verdict": "confirmed"'
+stdout '"verdict": "dropped"'
+exec rhiza run status
+stdout '^## Review rounds$'
+stdout '^- Round 1: 2 findings, 1 confirmed$'
+stdout '^  - f1 missing-acceptance on cap-a: No acceptance criteria — confirmed: It has none$'
+stdout '^  - f2 contradiction on cap-b: Says both — dropped: They agree$'
+
+# A clean reviewer records an empty findings file: round 2, no findings.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/clean.json'
+stdout '^Recorded round 2 of run 01[0-9A-Z]{24}: no findings$'
+exec rhiza run status
+stdout '^- Round 2: no findings$'
+
+fold-ok
+
+-- hold.toml --
+name = "hold"
+
+[step.gate]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
+-- findings.json --
+{"findings":[
+  {"node":"cap-a","kind":"missing-acceptance","reason":"No acceptance criteria"},
+  {"node":"cap-b","kind":"contradiction","reason":"Says both"}
+]}
+-- badkind.json --
+{"findings":[{"node":"cap-a","kind":"style","reason":"Ugly"}]}
+-- badnode.json --
+{"findings":[
+  {"node":"cap-a","kind":"missing-acceptance","reason":"No acceptance criteria"},
+  {"node":"no-such-node","kind":"contradiction","reason":"Says both"}
+]}
+-- f3.json --
+{"verdicts":[
+  {"finding":"f1","verdict":"confirmed","reason":"It has none"},
+  {"finding":"f3","verdict":"confirmed","reason":"Another one"}
+]}
+-- verdict.json --
+{"verdicts":[
+  {"finding":"f1","verdict":"confirmed","reason":"It has none"},
+  {"finding":"f2","verdict":"dropped","reason":"They agree"}
+]}
+-- clean.json --
+{"findings":[]}

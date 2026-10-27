@@ -2613,6 +2613,134 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "input": {
+        "additionalProperties": false,
+        "properties": {
+          "findings": {
+            "description": "The findings, in order; empty for a clean review. They are numbered f1, f2, ... in the round",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "description": "What is wrong with the node",
+                  "enum": [
+                    "missing-acceptance",
+                    "missing-provenance",
+                    "unreal-depends-on",
+                    "outside-intent",
+                    "contradiction"
+                  ]
+                },
+                "node": {
+                  "description": "The node: a full ID, a unique prefix of 4+ characters or a handle, in the run's change set's view",
+                  "type": "string"
+                },
+                "reason": {
+                  "description": "Why",
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "node",
+                "reason"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "findings"
+        ],
+        "type": "object"
+      },
+      "name": "run.findings",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "description": "A JSON file of findings, or - for stdin (see the input schema)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "description": "True if nothing was journalled",
+            "type": "boolean"
+          },
+          "findings": {
+            "description": "The findings recorded, in order; empty for a clean review",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "handle": {
+                  "description": "The node's handle when the finding was recorded; absent when it had none",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The finding's ID in its round: f1, f2, ...",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction",
+                  "type": "string"
+                },
+                "node": {
+                  "description": "The node it is about, by ID",
+                  "type": "string"
+                },
+                "reason": {
+                  "description": "Why the reviewer found it",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                  "type": "string"
+                },
+                "verdict_reason": {
+                  "description": "Why the critic gave it; absent before a verdict",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "kind",
+                "node",
+                "reason"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "round": {
+            "description": "The round the findings opened, from 1",
+            "type": "integer"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "findings",
+          "round",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Journal a plan reviewer's findings as the next review round of the run RHIZA_RUN names",
+      "write": true
+    },
+    {
       "name": "run.resume",
       "request": {
         "additionalProperties": false,
@@ -2916,6 +3044,78 @@ cmp stdout describe.golden.json
                   "required": [
                     "at",
                     "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "rounds": {
+                "description": "The plan review rounds journalled by run findings and run verdict, in order; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When its findings were journalled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "confirmed": {
+                      "description": "How many findings the critic's latest verdict confirms",
+                      "type": "integer"
+                    },
+                    "findings": {
+                      "description": "The reviewer's findings, in order; empty for a clean review",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "handle": {
+                            "description": "The node's handle when the finding was recorded; absent when it had none",
+                            "type": "string"
+                          },
+                          "id": {
+                            "description": "The finding's ID in its round: f1, f2, ...",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction",
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node it is about, by ID",
+                            "type": "string"
+                          },
+                          "reason": {
+                            "description": "Why the reviewer found it",
+                            "type": "string"
+                          },
+                          "verdict": {
+                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "type": "string"
+                          },
+                          "verdict_reason": {
+                            "description": "Why the critic gave it; absent before a verdict",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "kind",
+                          "node",
+                          "reason"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "round": {
+                      "description": "The round's number, from 1",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "confirmed",
+                    "findings",
+                    "round"
                   ],
                   "type": "object"
                 },
@@ -3494,6 +3694,78 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "rounds": {
+                "description": "The plan review rounds journalled by run findings and run verdict, in order; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When its findings were journalled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "confirmed": {
+                      "description": "How many findings the critic's latest verdict confirms",
+                      "type": "integer"
+                    },
+                    "findings": {
+                      "description": "The reviewer's findings, in order; empty for a clean review",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "handle": {
+                            "description": "The node's handle when the finding was recorded; absent when it had none",
+                            "type": "string"
+                          },
+                          "id": {
+                            "description": "The finding's ID in its round: f1, f2, ...",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction",
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node it is about, by ID",
+                            "type": "string"
+                          },
+                          "reason": {
+                            "description": "Why the reviewer found it",
+                            "type": "string"
+                          },
+                          "verdict": {
+                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "type": "string"
+                          },
+                          "verdict_reason": {
+                            "description": "Why the critic gave it; absent before a verdict",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "kind",
+                          "node",
+                          "reason"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "round": {
+                      "description": "The round's number, from 1",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "confirmed",
+                    "findings",
+                    "round"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "sessions": {
                 "description": "The sessions it launched or read token use for, in order of first appearance, each with its latest reading",
                 "items": {
@@ -4035,6 +4307,78 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "rounds": {
+            "description": "The plan review rounds journalled by run findings and run verdict, in order; absent when there were none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "at": {
+                  "description": "When its findings were journalled, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "confirmed": {
+                  "description": "How many findings the critic's latest verdict confirms",
+                  "type": "integer"
+                },
+                "findings": {
+                  "description": "The reviewer's findings, in order; empty for a clean review",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "handle": {
+                        "description": "The node's handle when the finding was recorded; absent when it had none",
+                        "type": "string"
+                      },
+                      "id": {
+                        "description": "The finding's ID in its round: f1, f2, ...",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction",
+                        "type": "string"
+                      },
+                      "node": {
+                        "description": "The node it is about, by ID",
+                        "type": "string"
+                      },
+                      "reason": {
+                        "description": "Why the reviewer found it",
+                        "type": "string"
+                      },
+                      "verdict": {
+                        "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                        "type": "string"
+                      },
+                      "verdict_reason": {
+                        "description": "Why the critic gave it; absent before a verdict",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "kind",
+                      "node",
+                      "reason"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "round": {
+                  "description": "The round's number, from 1",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "at",
+                "confirmed",
+                "findings",
+                "round"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "sessions": {
             "description": "The sessions it launched or read token use for, in order of first appearance, each with its latest reading",
             "items": {
@@ -4282,6 +4626,115 @@ cmp stdout describe.golden.json
       },
       "summary": "Show a run's state and the steps it has done, from its journal",
       "write": false
+    },
+    {
+      "input": {
+        "additionalProperties": false,
+        "properties": {
+          "verdicts": {
+            "description": "The verdicts, each on a different finding of the latest round",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "finding": {
+                  "description": "The finding's ID in the latest round: f1, f2, ...",
+                  "type": "string"
+                },
+                "reason": {
+                  "description": "Why",
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "confirmed or dropped",
+                  "enum": [
+                    "confirmed",
+                    "dropped"
+                  ]
+                }
+              },
+              "required": [
+                "finding",
+                "reason",
+                "verdict"
+              ],
+              "type": "object"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "verdicts"
+        ],
+        "type": "object"
+      },
+      "name": "run.verdict",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "description": "A JSON file of verdicts, or - for stdin (see the input schema)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "description": "True if nothing was journalled",
+            "type": "boolean"
+          },
+          "round": {
+            "description": "The round judged: the latest",
+            "type": "integer"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          },
+          "verdicts": {
+            "description": "The verdicts recorded, in order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "finding": {
+                  "description": "The finding's ID in the round",
+                  "type": "string"
+                },
+                "reason": {
+                  "description": "Why",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "confirmed or dropped",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "finding",
+                "reason",
+                "verdict"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "round",
+          "run",
+          "verdicts"
+        ],
+        "type": "object"
+      },
+      "summary": "Journal a critic's verdicts on the findings of the latest review round of the run RHIZA_RUN names",
+      "write": true
     },
     {
       "name": "session.done",

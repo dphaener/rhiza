@@ -25,6 +25,36 @@ const (
 	TypeAnswered   = "answered"
 	TypeMessage    = "message"
 	TypeTokens     = "tokens"
+	TypeFindings   = "findings"
+	TypeVerdict    = "verdict"
+)
+
+// Finding kinds: what a plan reviewer's finding says is wrong with a node.
+const (
+	KindMissingAcceptance = "missing-acceptance"
+	KindMissingProvenance = "missing-provenance"
+	KindUnrealDependsOn   = "unreal-depends-on"
+	KindOutsideIntent     = "outside-intent"
+	KindContradiction     = "contradiction"
+)
+
+// Kinds are the finding kinds, in the order they are documented.
+var Kinds = []string{KindMissingAcceptance, KindMissingProvenance, KindUnrealDependsOn, KindOutsideIntent, KindContradiction}
+
+// ValidKind reports whether kind is one of Kinds.
+func ValidKind(kind string) bool {
+	for _, k := range Kinds {
+		if k == kind {
+			return true
+		}
+	}
+	return false
+}
+
+// Verdicts a critic gives a finding.
+const (
+	Confirmed = "confirmed"
+	Dropped   = "dropped"
 )
 
 // Run results, used in Entry.End and State.Result.
@@ -87,6 +117,9 @@ type Block struct {
 //	           handle Handle, for the arbiter)
 //	message:   Step, Session, Actor (the sender), To, Text, Summary, Structured (a session sent another a message)
 //	tokens:    Step, Session, Tokens (a reading of the session's token use; the latest counts)
+//	findings:  Findings (a plan reviewer's findings, maybe none; each findings entry
+//	           opens the next review round)
+//	verdict:   Verdicts (a critic's verdicts on findings of the latest round)
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -117,6 +150,69 @@ type Entry struct {
 	Summary    string    `json:"summary,omitempty"`
 	Structured bool      `json:"structured,omitempty"`
 	Tokens     *TokenUse `json:"tokens,omitempty"`
+	// Findings are a findings entry's findings; Verdicts a verdict entry's.
+	Findings []Finding `json:"findings,omitempty"`
+	Verdicts []Verdict `json:"verdicts,omitempty"`
+}
+
+// Finding is one finding of a plan review round: node Node (its handle
+// Handle when it was recorded) has a problem of kind Kind, for Reason. ID
+// is f1, f2, ... in the round.
+type Finding struct {
+	ID     string `json:"id"`
+	Node   string `json:"node"`
+	Handle string `json:"handle,omitempty"`
+	Kind   string `json:"kind"`
+	Reason string `json:"reason"`
+}
+
+// Verdict is a critic's verdict on the finding with ID Finding: confirmed
+// or dropped, for Reason.
+type Verdict struct {
+	Finding string `json:"finding"`
+	Verdict string `json:"verdict"`
+	Reason  string `json:"reason"`
+}
+
+// Round is one plan review round: a findings entry, numbered from 1 in
+// journal order, and the verdicts journalled after it and before the next.
+type Round struct {
+	Number   int
+	At       time.Time
+	Findings []Finding
+	Verdicts []Verdict
+}
+
+// Finding is the round's finding with ID id.
+func (r Round) Finding(id string) (Finding, bool) {
+	for _, f := range r.Findings {
+		if f.ID == id {
+			return f, true
+		}
+	}
+	return Finding{}, false
+}
+
+// Verdict is the latest verdict on the finding with ID id.
+func (r Round) Verdict(id string) (Verdict, bool) {
+	for i := len(r.Verdicts) - 1; i >= 0; i-- {
+		if r.Verdicts[i].Finding == id {
+			return r.Verdicts[i], true
+		}
+	}
+	return Verdict{}, false
+}
+
+// Confirmed are the round's findings whose latest verdict is confirmed, in
+// order.
+func (r Round) Confirmed() []Finding {
+	var out []Finding
+	for _, f := range r.Findings {
+		if v, ok := r.Verdict(f.ID); ok && v.Verdict == Confirmed {
+			out = append(out, f)
+		}
+	}
+	return out
 }
 
 // Asked is one asked entry: in an autonomous run, agent step Step's
@@ -315,6 +411,10 @@ type State struct {
 	// the last tokens entry wins. A tokens entry changes nothing else in
 	// the fold.
 	Tokens map[string]TokenUse
+	// Rounds are the plan review rounds in journal order. A verdict entry
+	// before any findings entry belongs to no round and is dropped. Rounds
+	// change nothing else in the fold.
+	Rounds []Round
 }
 
 // State folds the journal.
@@ -415,6 +515,12 @@ func (j Journal) State() State {
 			if e.Tokens != nil {
 				st.Tokens[e.Session] = *e.Tokens
 			}
+		case TypeFindings:
+			st.Rounds = append(st.Rounds, Round{Number: len(st.Rounds) + 1, At: e.At, Findings: e.Findings})
+		case TypeVerdict:
+			if n := len(st.Rounds); n > 0 {
+				st.Rounds[n-1].Verdicts = append(st.Rounds[n-1].Verdicts, e.Verdicts...)
+			}
 		case TypeStopped:
 			st.Stopped = e.Detail
 		case TypeFinished:
@@ -463,6 +569,14 @@ func (st *State) arbitrated(e Entry) {
 	st.Arbitrations = append(st.Arbitrations, Arbitration{
 		Step: e.Step, Question: e.Question, Outcome: e.Outcome, Detail: e.Detail, Decision: e.Decision, At: e.At,
 	})
+}
+
+// LatestRound is the run's latest plan review round, if it has one.
+func (st State) LatestRound() (Round, bool) {
+	if n := len(st.Rounds); n > 0 {
+		return st.Rounds[n-1], true
+	}
+	return Round{}, false
 }
 
 // OpenArbitration is the open arbitration of question, the latest when
