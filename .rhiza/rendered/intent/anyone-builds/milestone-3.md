@@ -39,6 +39,7 @@ Rhiza's own workflows: milestone 4 is planned, built and reviewed by Rhiza, with
 - serves change set `01M5WPTV0NX6YECXCPMHSEJAWY` (Leaf dependencies and Evidence's actor: leaves link depends-on each other, Evidence names the actor that wrote it, and rhiza check warns when that actor also wrote the leaf's code.)
 - serves change set `01M5WPTVT93DTC076WJNB7E2KX` (Autonomous mode and the arbiter: a run can skip the owner's gates and questions, recording them as rule autonomous and (assumed, would have escalated), and the engine calls a fresh arbiter session at a decision point; agent permissions are never bypassed.)
 - serves change set `01M5WPTWM0MPSBEHRYDMV9Q7PM` (Session messages and token use in the journal: every message between a run's sessions is recorded with its sender and recipient through a SendMessage hook, and each session's token use is recorded.)
+- serves change set `01M5WPTXDS9R3BJVS8PNJQZ834` (The plan workflow: Rhiza interviews the owner one topic at a time and writes a milestone or change set straight into the model, with a Source, Decisions quoting the owner's typed words, a capped plan review, and acceptance as the gate.)
 - serves change set `01M5X3GBH4ZQTZVXFEHR966747` (ship-change that holds up: the agent step passes only when the agent says it is done, land renders with the branch's own build in Rhiza's repo, a PR that main has moved past is rebased, and a failed run can be resumed from the step that failed.)
 
 ## History

@@ -21,6 +21,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"unicode"
@@ -135,6 +136,25 @@ type RunInfo struct {
 	Retries    []RunRetry      `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
 	Accepts    []RunAccept     `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
 	Questions  []RunQuestion   `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
+	Rounds     []RunRound      `json:"rounds,omitempty" desc:"The plan review rounds journalled by run findings and run verdict, in order; absent when there were none"`
+	Waiting    []RunWaiting    `json:"waiting,omitempty" desc:"The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does"`
+}
+
+// RunWaiting is one of the plan's change sets run gate named that waits
+// proposed for the owner's accept.
+type RunWaiting struct {
+	Change string `json:"change" desc:"The change set's ID"`
+	Title  string `json:"title" desc:"Its title"`
+	Next   string `json:"next" desc:"The owner's command to accept it: rhiza accept --rule owner --change <id>"`
+}
+
+// RunRound is one plan review round: a reviewer's findings, each with the
+// critic's latest verdict.
+type RunRound struct {
+	Round     int          `json:"round" desc:"The round's number, from 1"`
+	At        string       `json:"at" desc:"When its findings were journalled, RFC 3339 UTC"`
+	Findings  []RunFinding `json:"findings" desc:"The reviewer's findings, in order; empty for a clean review"`
+	Confirmed int          `json:"confirmed" desc:"How many findings the critic's latest verdict confirms"`
 }
 
 // RunAccept is one accepted or rejected entry journalled in an autonomous
@@ -363,7 +383,28 @@ func runRunStatus(ctx *Ctx, req any) (any, error) {
 	} else if j, err = latestRun(ctx, rs); err != nil {
 		return nil, err
 	}
-	return runInfo(j.State(), rs.Live(j.ID), session.NewStore(session.Dir(common))), nil
+	st := j.State()
+	info := runInfo(st, rs.Live(j.ID), session.NewStore(session.Dir(common)))
+	if len(st.Gated) > 0 {
+		if w, err := openCtxWorkspace(ctx); err == nil {
+			info.Waiting = runWaiting(st.Gated, w.changeSets())
+		}
+	}
+	return info, nil
+}
+
+// runWaiting is the change sets among gated, the latest gated entry's,
+// that are proposed now in sets, in gated's order.
+func runWaiting(gated []string, sets []changeset.ChangeSet) []RunWaiting {
+	var out []RunWaiting
+	for _, g := range gated {
+		for _, c := range sets {
+			if c.ID.String() == g && c.State == changeset.StateProposed {
+				out = append(out, RunWaiting{Change: g, Title: c.Open.DisplayTitle(), Next: ownerAcceptNext(g)})
+			}
+		}
+	}
+	return out
 }
 
 // latestRun is the latest started run of the effective change set, else
@@ -735,41 +776,165 @@ const arbiterWording = "(assumed, would have escalated)"
 // StartArbiter starts the arbiter step's session as StartAgent starts an
 // agent step's (the step's adapter and mode, else the run's; autonomous as
 // the run is), on the run's change set, with a prompt that names only
-// question and the arbiter guide topic.
+// question and the arbiter guide topic. The arbiter writes where the
+// question lives (see arbiterWrites).
 func (r *stepRunner) StartArbiter(step workflow.Step, question string, _ []string) (string, error) {
 	req := agentStepRequest(step, r.mode, r.agent)
 	req.Change, req.Run, req.autonomous = r.change, r.run, r.autonomous
 	req.Prompt = fmt.Sprintf(arbiterPrompt, question)
+	var err error
+	if req.writes, req.writesRecord, err = r.arbiterWrites(question); err != nil {
+		return "", err
+	}
 	resp, err := runSessionStart(r.ctx, req)
 	if err != nil {
+		if req.writesRecord {
+			if why := r.settleArbiterRecord(req.writes, false); why != "" {
+				err = withNote(err, why)
+			}
+		}
 		return "", err
 	}
 	return resp.(SessionStartResponse).Session.ID, nil
 }
 
-// Answer reads the model as the run's change set sees it in the run's
-// worktree, where its sessions write, and looks for a live Decision with a
-// live answers link to question node question, wording arbiterWording and
-// a reasoning. The first such Decision, by link ID, is the answer; with
-// none, Why names what the nearest one lacks.
-func (r *stepRunner) Answer(question string) (run.Answer, error) {
+// worktreeWorkspace opens the model as the run's worktree holds it, where
+// its sessions write; read only unless write.
+func (r *stepRunner) worktreeWorkspace(write bool) (*workspace, error) {
+	prefix, err := r.ctx.Git("rev-parse", "--show-prefix")
+	if err != nil {
+		return nil, err
+	}
+	return openWorkspace(filepath.Join(r.worktree, strings.TrimSpace(prefix)), r.ctx.Now, r.ctx.IDs, !write || r.ctx.DryRun)
+}
+
+// questionHome is the change set whose ops create node q, in the run's
+// worktree: the change set the question lives in.
+func questionHome(ww *workspace, q id.ID) (changeset.ChangeSet, bool) {
+	for _, c := range ww.changeSets() {
+		if slices.ContainsFunc(c.Ops, func(o op.Op) bool { return o.Type == op.TypeNodeCreate && o.Node == q }) {
+			return c, true
+		}
+	}
+	return changeset.ChangeSet{}, false
+}
+
+// arbiterIntent is the intent of the record change set an arbiter answers
+// a question in when the question's own change set has landed.
+const arbiterIntent = "The arbiter's answer to question %s"
+
+// arbiterWrites is the change set the arbiter of question writes into,
+// when that is not the run's: empty when the question lives in the run's
+// change set (a session's question), or nowhere that can be told. When
+// it lives in another open change set (a review question left in the
+// plan's draft), that change set. When its change set has landed (a review
+// question written as a record, or left in the run's landed change set), a
+// record change set opened here for the answer, with record true; Answer
+// lands it once the answer passes.
+func (r *stepRunner) arbiterWrites(question string) (string, bool, error) {
+	q, err := id.Parse(question)
+	if err != nil {
+		return "", false, nil
+	}
+	ww, err := r.worktreeWorkspace(true)
+	if err != nil {
+		return "", false, err
+	}
+	home, ok := questionHome(ww, q)
+	switch {
+	case !ok || home.ID.String() == r.change:
+		return "", false, nil
+	case !home.State.Terminal():
+		return home.ID.String(), false, nil
+	case home.State != changeset.StateLanded:
+		return "", false, nil
+	}
+	handle := question
+	if n, ok := ww.model(id.ID{}).Node(q); ok && n.Handle != "" {
+		handle = n.Handle
+	}
+	actor, forID, err := ww.resolveActor(id.ID{}, r.ctx)
+	if err != nil {
+		return "", false, err
+	}
+	cs, _, err := ww.openChangeSet(changeset.Open{Kind: changeset.KindRecord, Intent: fmt.Sprintf(arbiterIntent, handle)}, actor, forID)
+	if err != nil {
+		return "", false, err
+	}
+	return cs.String(), true, nil
+}
+
+// settleArbiterRecord lands the arbiter's record change set ref when ok,
+// else withdraws it; one that is already terminal is left alone. It
+// returns what went wrong, or "".
+func (r *stepRunner) settleArbiterRecord(ref string, ok bool) string {
+	cs, err := id.Parse(ref)
+	if err != nil {
+		return err.Error()
+	}
+	ww, err := r.worktreeWorkspace(true)
+	if err != nil {
+		return err.Error()
+	}
+	if c, found := ww.changeSet(cs); !found || c.State.Terminal() {
+		return ""
+	}
+	actor, forID, err := ww.resolveActor(id.ID{}, r.ctx)
+	if err != nil {
+		return AsError(err).Message
+	}
+	var body changeset.Body = changeset.Land{}
+	what := "land"
+	if !ok {
+		body, what = changeset.Withdraw{}, "withdraw"
+	}
+	if _, err := ww.appendEntry(cs, body, actor, forID); err != nil {
+		return fmt.Sprintf("%s the arbiter's record change set %s: %s", what, cs, AsError(err).Message)
+	}
+	return ""
+}
+
+// Answer reads the model in the run's worktree, where its sessions write,
+// as the change set arbiter session sid writes into sees it (the run's,
+// unless the question lives elsewhere: see arbiterWrites), and looks for a
+// live Decision with a live answers link to question node question,
+// wording arbiterWording and a reasoning. The first such Decision, by link
+// ID, is the answer; with none, Why names what the nearest one lacks. A
+// record change set opened for the arbiter lands with a valid answer and
+// is withdrawn without one.
+func (r *stepRunner) Answer(question, sid string) (run.Answer, error) {
 	q, err := id.Parse(question)
 	if err != nil {
 		return run.Answer{}, fmt.Errorf("question %q is not a node ID: %v", question, err)
 	}
-	cs, err := id.Parse(r.change)
-	if err != nil {
-		return run.Answer{}, fmt.Errorf("run %s names change set %q: %v", r.run, r.change, err)
+	ref, record := r.change, false
+	if sid != "" {
+		rec, err := readSession(r.sessions, sid)
+		if err != nil {
+			return run.Answer{}, err
+		}
+		if rec.Writes != "" {
+			ref, record = rec.Writes, rec.WritesRecord
+		}
 	}
-	prefix, err := r.ctx.Git("rev-parse", "--show-prefix")
+	cs, err := id.Parse(ref)
+	if err != nil {
+		return run.Answer{}, fmt.Errorf("run %s names change set %q: %v", r.run, ref, err)
+	}
+	ww, err := r.worktreeWorkspace(false)
 	if err != nil {
 		return run.Answer{}, err
 	}
-	ww, err := openWorkspace(filepath.Join(r.worktree, strings.TrimSpace(prefix)), r.ctx.Now, r.ctx.IDs, true)
-	if err != nil {
-		return run.Answer{}, err
+	ans := arbiterAnswer(ww.model(cs), q)
+	if record {
+		if why := r.settleArbiterRecord(ref, ans.OK); why != "" {
+			if ans.OK {
+				return run.Answer{Why: why}, nil
+			}
+			ans.Why += "; " + why
+		}
 	}
-	return arbiterAnswer(ww.model(cs), q), nil
+	return ans, nil
 }
 
 // questionHandlePrefix starts the handle of every question node a run adds
@@ -1129,6 +1294,13 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 		}
 		info.Questions = append(info.Questions, rq)
 	}
+	for _, rd := range st.Rounds {
+		rr := RunRound{Round: rd.Number, At: rfc3339(rd.At), Findings: []RunFinding{}, Confirmed: len(rd.Confirmed())}
+		for _, f := range rd.Findings {
+			rr.Findings = append(rr.Findings, runFinding(f, rd))
+		}
+		info.Rounds = append(info.Rounds, rr)
+	}
 	return info
 }
 
@@ -1212,6 +1384,25 @@ func (r RunInfo) Human(w io.Writer) {
 				fmt.Fprintf(w, " — open")
 			}
 			fmt.Fprintf(w, "\n")
+		}
+	}
+	if len(r.Rounds) > 0 {
+		fmt.Fprintf(w, "\n## Review rounds\n\n")
+		for _, rd := range r.Rounds {
+			if len(rd.Findings) == 0 {
+				fmt.Fprintf(w, "- Round %d: no findings\n", rd.Round)
+				continue
+			}
+			fmt.Fprintf(w, "- Round %d: %d %s, %d confirmed\n", rd.Round, len(rd.Findings), shipPlural(len(rd.Findings), "finding", "findings"), rd.Confirmed)
+			for _, f := range rd.Findings {
+				fmt.Fprintf(w, "  - %s\n", findingLine(f))
+			}
+		}
+	}
+	if len(r.Waiting) > 0 {
+		fmt.Fprintf(w, "\n## Waiting on the owner\n\n")
+		for _, c := range r.Waiting {
+			fmt.Fprintf(w, "- %s %s: proposed: %s\n", c.Change, c.Title, c.Next)
 		}
 	}
 	if len(r.Retries) > 0 {

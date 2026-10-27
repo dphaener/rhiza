@@ -1277,7 +1277,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "name": {
-            "description": "The text to print: rhiza (the default), scrub or a topic name; rhiza guide ls lists them",
+            "description": "The text to print: rhiza (the default), scrub, plan or a topic name; rhiza guide ls lists them",
             "type": "string"
           }
         },
@@ -1307,7 +1307,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Print the agent guide: the rhiza skill, the scrub skill or a topic",
+      "summary": "Print the agent guide: the rhiza skill, the scrub skill, the plan skill or a topic",
       "write": false
     },
     {
@@ -1380,7 +1380,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "texts": {
-            "description": "The texts: the rhiza skill, the scrub skill, then the topics by name",
+            "description": "The texts: the rhiza, scrub and plan skills, then the topics by name",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -2613,6 +2613,211 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "input": {
+        "additionalProperties": false,
+        "properties": {
+          "findings": {
+            "description": "The findings, in order; empty for a clean review. They are numbered f1, f2, ... in the round",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "description": "What is wrong with the node",
+                  "enum": [
+                    "missing-acceptance",
+                    "missing-provenance",
+                    "unreal-depends-on",
+                    "outside-intent",
+                    "contradiction"
+                  ]
+                },
+                "node": {
+                  "description": "The node: a full ID, a unique prefix of 4+ characters or a handle, in the run's change set's view",
+                  "type": "string"
+                },
+                "reason": {
+                  "description": "Why",
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "node",
+                "reason"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "findings"
+        ],
+        "type": "object"
+      },
+      "name": "run.findings",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "description": "A JSON file of findings, or - for stdin (see the input schema)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "description": "True if nothing was journalled",
+            "type": "boolean"
+          },
+          "findings": {
+            "description": "The findings recorded, in order; empty for a clean review",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "handle": {
+                  "description": "The node's handle when the finding was recorded; absent when it had none",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The finding's ID in its round: f1, f2, ...",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction",
+                  "type": "string"
+                },
+                "node": {
+                  "description": "The node it is about, by ID",
+                  "type": "string"
+                },
+                "reason": {
+                  "description": "Why the reviewer found it",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                  "type": "string"
+                },
+                "verdict_reason": {
+                  "description": "Why the critic gave it; absent before a verdict",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "kind",
+                "node",
+                "reason"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "round": {
+            "description": "The round the findings opened, from 1",
+            "type": "integer"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "findings",
+          "round",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Journal a plan reviewer's findings as the next review round of the run RHIZA_RUN names",
+      "write": true
+    },
+    {
+      "name": "run.gate",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "autonomous": {
+            "description": "True if the run is autonomous, so the gate accepted in the owner's place",
+            "type": "boolean"
+          },
+          "change_sets": {
+            "description": "The plan's change sets: the run's change set and every change set serving an intent it adds, by ID",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "from": {
+                  "description": "Its state before the gate",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The change set's ID",
+                  "type": "string"
+                },
+                "moves": {
+                  "description": "What the gate did, in order: proposed, accepted; absent when it left the change set as it was",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "next": {
+                  "description": "The owner's command when it waits proposed in a normal run; absent otherwise",
+                  "type": "string"
+                },
+                "state": {
+                  "description": "Its state after the gate (in a dry run, the state it would have)",
+                  "type": "string"
+                },
+                "title": {
+                  "description": "Its title",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "from",
+                "id",
+                "state",
+                "title"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "description": "True if nothing was written or journalled",
+            "type": "boolean"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "autonomous",
+          "change_sets",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "End the plan of the run RHIZA_RUN names: propose each draft among its change sets; an autonomous run whose review passed accepts each under rule autonomous",
+      "write": true
+    },
+    {
       "name": "run.resume",
       "request": {
         "additionalProperties": false,
@@ -2921,6 +3126,78 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "rounds": {
+                "description": "The plan review rounds journalled by run findings and run verdict, in order; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When its findings were journalled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "confirmed": {
+                      "description": "How many findings the critic's latest verdict confirms",
+                      "type": "integer"
+                    },
+                    "findings": {
+                      "description": "The reviewer's findings, in order; empty for a clean review",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "handle": {
+                            "description": "The node's handle when the finding was recorded; absent when it had none",
+                            "type": "string"
+                          },
+                          "id": {
+                            "description": "The finding's ID in its round: f1, f2, ...",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction",
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node it is about, by ID",
+                            "type": "string"
+                          },
+                          "reason": {
+                            "description": "Why the reviewer found it",
+                            "type": "string"
+                          },
+                          "verdict": {
+                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "type": "string"
+                          },
+                          "verdict_reason": {
+                            "description": "Why the critic gave it; absent before a verdict",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "kind",
+                          "node",
+                          "reason"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "round": {
+                      "description": "The round's number, from 1",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "confirmed",
+                    "findings",
+                    "round"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "sessions": {
                 "description": "The sessions it launched or read token use for, in order of first appearance, each with its latest reading",
                 "items": {
@@ -3141,6 +3418,33 @@ cmp stdout describe.golden.json
                 ],
                 "type": "object"
               },
+              "waiting": {
+                "description": "The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "change": {
+                      "description": "The change set's ID",
+                      "type": "string"
+                    },
+                    "next": {
+                      "description": "The owner's command to accept it: rhiza accept --rule owner --change <id>",
+                      "type": "string"
+                    },
+                    "title": {
+                      "description": "Its title",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "change",
+                    "next",
+                    "title"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "workflow": {
                 "description": "The workflow's name",
                 "type": "string"
@@ -3173,6 +3477,125 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "Continue a stopped or interrupted run where its journal left it, or retry a failed run at its failed step",
+      "write": true
+    },
+    {
+      "name": "run.review-check",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmed": {
+            "description": "The round's findings the critic confirmed, in order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "handle": {
+                  "description": "The node's handle when the finding was recorded; absent when it had none",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The finding's ID in its round: f1, f2, ...",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction",
+                  "type": "string"
+                },
+                "node": {
+                  "description": "The node it is about, by ID",
+                  "type": "string"
+                },
+                "reason": {
+                  "description": "Why the reviewer found it",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                  "type": "string"
+                },
+                "verdict_reason": {
+                  "description": "Why the critic gave it; absent before a verdict",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "kind",
+                "node",
+                "reason"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "description": "True if nothing was written or journalled",
+            "type": "boolean"
+          },
+          "passed": {
+            "description": "True: the review may go on to the gate",
+            "type": "boolean"
+          },
+          "questions": {
+            "description": "From round 3, the question nodes left for the confirmed findings, in order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "added": {
+                  "description": "True if this check added it; false if an earlier check had",
+                  "type": "boolean"
+                },
+                "blocks": {
+                  "description": "The capability it blocks, by ID; absent when the finding names another kind of node",
+                  "type": "string"
+                },
+                "finding": {
+                  "description": "The finding it holds, by ID in the round",
+                  "type": "string"
+                },
+                "handle": {
+                  "description": "Its handle: review-<run8>-r<round>-<finding>",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The question node's ID",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "added",
+                "finding",
+                "handle",
+                "id"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "round": {
+            "description": "The latest review round, from 1",
+            "type": "integer"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirmed",
+          "passed",
+          "round",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Check the latest review round of the run RHIZA_RUN names: pass with no confirmed finding, fail with one before round 3, else leave each as a question and pass",
       "write": true
     },
     {
@@ -3494,6 +3917,78 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "rounds": {
+                "description": "The plan review rounds journalled by run findings and run verdict, in order; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When its findings were journalled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "confirmed": {
+                      "description": "How many findings the critic's latest verdict confirms",
+                      "type": "integer"
+                    },
+                    "findings": {
+                      "description": "The reviewer's findings, in order; empty for a clean review",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "handle": {
+                            "description": "The node's handle when the finding was recorded; absent when it had none",
+                            "type": "string"
+                          },
+                          "id": {
+                            "description": "The finding's ID in its round: f1, f2, ...",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction",
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node it is about, by ID",
+                            "type": "string"
+                          },
+                          "reason": {
+                            "description": "Why the reviewer found it",
+                            "type": "string"
+                          },
+                          "verdict": {
+                            "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                            "type": "string"
+                          },
+                          "verdict_reason": {
+                            "description": "Why the critic gave it; absent before a verdict",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "kind",
+                          "node",
+                          "reason"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "round": {
+                      "description": "The round's number, from 1",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "confirmed",
+                    "findings",
+                    "round"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "sessions": {
                 "description": "The sessions it launched or read token use for, in order of first appearance, each with its latest reading",
                 "items": {
@@ -3713,6 +4208,33 @@ cmp stdout describe.golden.json
                   "session"
                 ],
                 "type": "object"
+              },
+              "waiting": {
+                "description": "The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "change": {
+                      "description": "The change set's ID",
+                      "type": "string"
+                    },
+                    "next": {
+                      "description": "The owner's command to accept it: rhiza accept --rule owner --change <id>",
+                      "type": "string"
+                    },
+                    "title": {
+                      "description": "Its title",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "change",
+                    "next",
+                    "title"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
               },
               "workflow": {
                 "description": "The workflow's name",
@@ -4035,6 +4557,78 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "rounds": {
+            "description": "The plan review rounds journalled by run findings and run verdict, in order; absent when there were none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "at": {
+                  "description": "When its findings were journalled, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "confirmed": {
+                  "description": "How many findings the critic's latest verdict confirms",
+                  "type": "integer"
+                },
+                "findings": {
+                  "description": "The reviewer's findings, in order; empty for a clean review",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "handle": {
+                        "description": "The node's handle when the finding was recorded; absent when it had none",
+                        "type": "string"
+                      },
+                      "id": {
+                        "description": "The finding's ID in its round: f1, f2, ...",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction",
+                        "type": "string"
+                      },
+                      "node": {
+                        "description": "The node it is about, by ID",
+                        "type": "string"
+                      },
+                      "reason": {
+                        "description": "Why the reviewer found it",
+                        "type": "string"
+                      },
+                      "verdict": {
+                        "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                        "type": "string"
+                      },
+                      "verdict_reason": {
+                        "description": "Why the critic gave it; absent before a verdict",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "kind",
+                      "node",
+                      "reason"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "round": {
+                  "description": "The round's number, from 1",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "at",
+                "confirmed",
+                "findings",
+                "round"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "sessions": {
             "description": "The sessions it launched or read token use for, in order of first appearance, each with its latest reading",
             "items": {
@@ -4255,6 +4849,33 @@ cmp stdout describe.golden.json
             ],
             "type": "object"
           },
+          "waiting": {
+            "description": "The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "change": {
+                  "description": "The change set's ID",
+                  "type": "string"
+                },
+                "next": {
+                  "description": "The owner's command to accept it: rhiza accept --rule owner --change <id>",
+                  "type": "string"
+                },
+                "title": {
+                  "description": "Its title",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "change",
+                "next",
+                "title"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "workflow": {
             "description": "The workflow's name",
             "type": "string"
@@ -4282,6 +4903,115 @@ cmp stdout describe.golden.json
       },
       "summary": "Show a run's state and the steps it has done, from its journal",
       "write": false
+    },
+    {
+      "input": {
+        "additionalProperties": false,
+        "properties": {
+          "verdicts": {
+            "description": "The verdicts, each on a different finding of the latest round",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "finding": {
+                  "description": "The finding's ID in the latest round: f1, f2, ...",
+                  "type": "string"
+                },
+                "reason": {
+                  "description": "Why",
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "confirmed or dropped",
+                  "enum": [
+                    "confirmed",
+                    "dropped"
+                  ]
+                }
+              },
+              "required": [
+                "finding",
+                "reason",
+                "verdict"
+              ],
+              "type": "object"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "verdicts"
+        ],
+        "type": "object"
+      },
+      "name": "run.verdict",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "description": "A JSON file of verdicts, or - for stdin (see the input schema)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "description": "True if nothing was journalled",
+            "type": "boolean"
+          },
+          "round": {
+            "description": "The round judged: the latest",
+            "type": "integer"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          },
+          "verdicts": {
+            "description": "The verdicts recorded, in order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "finding": {
+                  "description": "The finding's ID in the round",
+                  "type": "string"
+                },
+                "reason": {
+                  "description": "Why",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "confirmed or dropped",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "finding",
+                "reason",
+                "verdict"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "round",
+          "run",
+          "verdicts"
+        ],
+        "type": "object"
+      },
+      "summary": "Journal a critic's verdicts on the findings of the latest review round of the run RHIZA_RUN names",
+      "write": true
     },
     {
       "name": "session.done",
@@ -4405,7 +5135,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "change": {
-            "description": "The session's change set, which the Decisions go into",
+            "description": "The session's change set, which the Decisions go into while it is open",
             "type": "string"
           },
           "dry_run": {
@@ -4444,6 +5174,10 @@ cmp stdout describe.golden.json
               "type": "object"
             },
             "type": "array"
+          },
+          "record": {
+            "description": "The landed record change set the Decisions were written in, when the session's change set had landed",
+            "type": "string"
           },
           "session": {
             "description": "The session ID",
@@ -7537,11 +8271,15 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "raw": {
-            "description": "The raw material's file, hashed with sha256; its content and path are not stored. Give this or --raw-sha256",
+            "description": "The raw material's file, hashed with sha256; its content and path are not stored. Give one of --raw, --raw-sha256 and --raw-session",
+            "type": "string"
+          },
+          "raw_session": {
+            "description": "A Rhiza session (full ID or unique prefix) whose agent transcript is the raw material, hashed with sha256 and named in a session field; its content and path are not stored. Give one of --raw, --raw-sha256 and --raw-session",
             "type": "string"
           },
           "raw_sha256": {
-            "description": "The raw material's sha256, 64 lower-case hex characters. Give this or --raw",
+            "description": "The raw material's sha256, 64 lower-case hex characters. Give one of --raw, --raw-sha256 and --raw-session",
             "type": "string"
           }
         },
@@ -7687,7 +8425,7 @@ cmp stdout describe.golden.json
               "additionalProperties": false,
               "properties": {
                 "current": {
-                  "description": "Whether that version is the running rhiza's",
+                  "description": "Whether it is the running rhiza's version and every file it installs is on disk as that version writes it",
                   "type": "boolean"
                 },
                 "dir": {

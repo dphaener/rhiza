@@ -14,7 +14,7 @@ rhiza slice --json
 ```
 
 The question, what it touches, why it was asked, and the change set's slice (`RHIZA_CHANGE`
-is already the run's change set). Read the code if it helps. Then decide: pick the answer the
+is already set: the change set your answer goes in). Read the code if it helps. Then decide: pick the answer the
 model, the code and the change set's intent support best.
 
 ## Write one Decision

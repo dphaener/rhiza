@@ -19,9 +19,15 @@ type Record struct {
 	ID     string `json:"id"`
 	Agent  string `json:"agent"`
 	Change string `json:"change"`
-	Title  string `json:"title"`
-	Step   string `json:"step"`
-	Run    string `json:"run,omitempty"`
+	// Writes is the change set the agent writes into (its RHIZA_CHANGE)
+	// when that is not Change: an arbiter answers a question in the change
+	// set the question lives in. WritesRecord marks Writes as a record
+	// change set opened for the agent, landed once its work passes.
+	Writes       string `json:"writes,omitempty"`
+	WritesRecord bool   `json:"writes_record,omitempty"`
+	Title        string `json:"title"`
+	Step         string `json:"step"`
+	Run          string `json:"run,omitempty"`
 	// Autonomous is true when an autonomous run launched the session: the
 	// owner is not there to answer it.
 	Autonomous     bool      `json:"autonomous,omitempty"`

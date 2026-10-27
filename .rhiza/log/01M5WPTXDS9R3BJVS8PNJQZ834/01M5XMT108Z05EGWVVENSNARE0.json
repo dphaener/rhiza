@@ -1,0 +1,353 @@
+{
+  "actor": "01M5XMG534DGFFVMWR66A4Y1RB",
+  "after": [
+    "01M5XKGJEKEXMTKT3VWVHQYNE0"
+  ],
+  "at": "2026-10-27T03:00:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 5fff4c7 (code as of 2963c0f) on branch cs/the-plan-workflow, re-run with -count=1 by an independent verifier (claude-code-c3d71038-verifier)",
+          "statement": "Testscript plan-workflow runs rhiza run start <record> --workflow plan --permission-mode manual on a committed draft record change set with one fake agent playing every role: the interview writes the milestone and lands the record, a fresh reviewer records one missing-acceptance finding, the critic confirms it, review-check fails (exit 1) and routes to revise, the reviser adds the acceptance, round 2 is clean, check passes and the gate runs; the run succeeds, the planned change set is proposed and holds the reviser's acceptance, csv-streaming quotes the owner's typed words and links derived-from, git status --porcelain in the worktree shows only .rhiza/ paths, and after render rhiza check prints ok. Hands-on: the scratch build's rhiza run start --workflow plan --permission-mode manual --dry-run in a scratch repo printed 'Run ... would start', workflow plan, current step interview, nothing written.",
+          "tests": "go test -count=1 ./cmd/rhiza -run 'TestScripts/plan-workflow$'; hands-on: rhiza run start --workflow plan --permission-mode manual --dry-run in a scratch repo"
+        },
+        "handle": "plan-workflow-verified",
+        "id": "01M5XMSX5Q71VCM576RSXMX877",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XMSX5Q71VCM576RPGGBNSB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XMSX5Q71VCM576RPGGBNSB",
+        "id": "01M5XMSXA09JBWF0CZHG3E3V2V",
+        "link": "01M5XMSXA09JBWF0CZHE25S9F4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGC24VYV3Y9D1N4WQ39PC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 5fff4c7 (code as of 2963c0f) on branch cs/the-plan-workflow, re-run with -count=1 by an independent verifier (claude-code-c3d71038-verifier)",
+          "statement": "TestPlanKinds finds plan as a skill (# rhiza-plan, ## Steps) and plan-review as a topic; TestPlanText finds in the plan text rhiza apply, a statement= and acceptance= recipe with a decided-by link, 'no plan file' and 'no checkboxes'; TestCaps and TestDescriptions keep every text within SkillCap/TopicCap and every description within MaxDescription; testscript guide shows guide ls listing '- plan skill ... Plan with the owner' and guide plan printing the decided-by apply line. Hands-on: the scratch build's guide ls listed plan as a skill (1517 tokens, under SkillCap 2000) and guide plan held the decided-by recipe and 'no plan file'.",
+          "tests": "go test -count=1 ./internal/guide -run 'TestPlan|TestDescriptions|Cap'; go test -count=1 ./cmd/rhiza -run 'TestScripts/guide$'; hands-on: rhiza guide ls; rhiza guide plan | grep"
+        },
+        "handle": "plan-guide-verified",
+        "id": "01M5XMSXEA9NQVB2QJYTD4YWRM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XMSXEA9NQVB2QJYRTRVYWA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XMSXEA9NQVB2QJYRTRVYWA",
+        "id": "01M5XMSXJJNXWRPGJN9BBRXAPE",
+        "link": "01M5XMSXJJNXWRPGJN9824DDM1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGC647VGCTM55KP1WAART",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 5fff4c7 (code as of 2963c0f) on branch cs/the-plan-workflow, re-run with -count=1 by an independent verifier (claude-code-c3d71038-verifier)",
+          "statement": "Testscript guide-install, with its own HOME, finds skills/rhiza-plan/SKILL.md after guide install, its frontmatter naming rhiza-plan with the plan text's description, and its body (after the frontmatter) byte-equal to rhiza guide plan; after the file is removed status reports the install out of date with next rhiza guide install, and a second install restores it as current. Testscript status repeats this for --json (current false) and --hook; TestStatusGuideFiles checks every installed file, missing or changed, makes the install not current. Hands-on: in a scratch HOME the scratch build's guide install wrote skills/rhiza-plan/SKILL.md with name: rhiza-plan; after deleting it status said '(out of date)' with next rhiza guide install, and a second install wrote only that file and status said '(current)'.",
+          "tests": "go test -count=1 ./cmd/rhiza -run 'TestScripts/guide-install$'; go test -count=1 ./cmd/rhiza -run 'TestScripts/status$'; go test -count=1 ./internal/api -run TestStatusGuideFiles; hands-on: guide install, rm the rhiza-plan SKILL.md, status, guide install, status in a scratch HOME"
+        },
+        "handle": "plan-guide-install-verified",
+        "id": "01M5XMSXPTW024R9B5QH20P5JM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XMSXPTW024R9B5QGPJSMRT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XMSXPTW024R9B5QGPJSMRT",
+        "id": "01M5XMSXV2F0564HPRJCKCXTP7",
+        "link": "01M5XMSXV2F0564HPRJ9N4E8N2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGCA14V3HZZFPJ4A1WXVB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 5fff4c7 (code as of 2963c0f) on branch cs/the-plan-workflow, re-run with -count=1 by an independent verifier (claude-code-c3d71038-verifier)",
+          "statement": "TestPlanText (plan-scope) finds in rhiza guide plan both scopes (`intention` and `record`), milestone, the serves rule, child intents, rhiza change new, 'intent only' for change sets not planned now, rhiza land of the record, 'before review', depends-on and drafts left for the gate; the cap test keeps the text within SkillCap. Hands-on: the scratch build's guide plan printed 'child intents' and rhiza change new, at 1517 tokens.",
+          "tests": "go test -count=1 ./internal/guide -run 'TestPlanText|Cap'; hands-on: rhiza guide plan | grep"
+        },
+        "handle": "plan-scope-verified",
+        "id": "01M5XMSXZAF1PJZW7SKJ6YJ98H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XMSXZAF1PJZW7SKJ0P4H31",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XMSXZAF1PJZW7SKJ0P4H31",
+        "id": "01M5XMSY3JM35KEXHE59R80585",
+        "link": "01M5XMSY3JM35KEXHE592JJP96",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGCDYWW0Y5W9GK5WNWWZB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 5fff4c7 (code as of 2963c0f) on branch cs/the-plan-workflow, re-run with -count=1 by an independent verifier (claude-code-c3d71038-verifier)",
+          "statement": "TestPlanText (plan-interview) finds rhiza slice and rhiza why, 'Never ask a fact', 'One topic per message', recommendation, AskUserQuestion, 'Only typed words are quoted', the wording and quote fields, and the question recipe with a blocks link; the cap test keeps it within SkillCap. Hands-on: the scratch build's guide plan printed 'Never ask a fact', 'Only typed words are quoted', rhiza slice and AskUserQuestion.",
+          "tests": "go test -count=1 ./internal/guide -run 'TestPlanText|Cap'; hands-on: rhiza guide plan | grep"
+        },
+        "handle": "plan-interview-verified",
+        "id": "01M5XMSY7W1NR7B5EHP4RV0G6R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XMSY7W1NR7B5EHP4CPPM3F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XMSY7W1NR7B5EHP4CPPM3F",
+        "id": "01M5XMSYC3XW3HBNJFP6WBHTXD",
+        "link": "01M5XMSYC3XW3HBNJFP673C8BE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGCHV0CA8YQD9WWH9YNXJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 5fff4c7 (code as of 2963c0f) on branch cs/the-plan-workflow, re-run with -count=1 by an independent verifier (claude-code-c3d71038-verifier)",
+          "statement": "TestPlanText (plan-autonomous-interview) finds RHIZA_AUTONOMOUS=1, arbiter, '(assumed, would have escalated)', 'ask the owner nothing' and 'Quote no owner words' in rhiza guide plan. Testscript plan-workflow-autonomous runs --workflow plan --autonomous on fake agents whose planner raises one question: the arbiter answers with assume-streaming (wording '(assumed, would have escalated)', answers link), the answer is delivered to the planner, the journal reads started entered session blocked asked arbiter arbitrated answered unblocked ... ended entered, no owner block, and the interview step passes on to review, critic, check and gate, which accepts the plan with rule autonomous. Hands-on: the scratch build's guide plan printed RHIZA_AUTONOMOUS=1 and '(assumed, would have escalated)'.",
+          "tests": "go test -count=1 ./internal/guide -run 'TestPlanText'; go test -count=1 ./cmd/rhiza -run 'TestScripts/plan-workflow-autonomous$'; hands-on: rhiza guide plan | grep"
+        },
+        "handle": "plan-autonomous-interview-verified",
+        "id": "01M5XMSYGA3QN9EWPKVXN942KZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XMSYGA3QN9EWPKVXM5Z9AX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XMSYGA3QN9EWPKVXM5Z9AX",
+        "id": "01M5XMSYMJAMXZB1Q4VWV1T8E2",
+        "link": "01M5XMSYMJAMXZB1Q4VSTCHCJ5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGCNQDGV9W6JFMSXNQ17J",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 5fff4c7 (code as of 2963c0f) on branch cs/the-plan-workflow, re-run with -count=1 by an independent verifier (claude-code-c3d71038-verifier)",
+          "statement": "Testscript source-raw-session launches a fake agent whose env log has RHIZA_SESSION=<session id>; source add --raw-session gives raw_sha256 equal to shasum -a 256 of the fake transcript and a session field naming the session, and grep finds neither the transcript's marker text nor its path under .rhiza/; an unknown session is not_found, exit 4; --raw-session with --raw or --raw-sha256 is usage, exit 2, and nothing is written. TestPlanText (plan-source) finds --raw-session \"$RHIZA_SESSION\" in rhiza guide plan; describe-golden passes. Hands-on: in a scratch change set the scratch build's source add --raw-session 00000000-... exited 4 (no session matches), with --raw too exited 2, and show plan stayed not found; guide plan printed --raw-session \"$RHIZA_SESSION\".",
+          "tests": "go test -count=1 ./cmd/rhiza -run 'TestScripts/source-raw-session$'; go test -count=1 ./cmd/rhiza -run 'TestScripts/source-add$'; go test -count=1 ./cmd/rhiza -run 'TestScripts/describe-golden$'; go test -count=1 ./internal/guide -run 'TestPlanText'; hands-on: rhiza source add --raw-session (unknown -> exit 4, with --raw -> exit 2)"
+        },
+        "handle": "plan-source-verified",
+        "id": "01M5XMSYRWZJ3N0S929BQBTE11",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XMSYRWZJ3N0S9298EKZ3N9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XMSYRWZJ3N0S9298EKZ3N9",
+        "id": "01M5XMSYX4HNDSV9P2Z93017TA",
+        "link": "01M5XMSYX4HNDSV9P2Z6AXQE8B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGCSYNYA9BFQX50REASAY",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 5fff4c7 (code as of 2963c0f) on branch cs/the-plan-workflow, re-run with -count=1 by an independent verifier (claude-code-c3d71038-verifier)",
+          "statement": "Testscript session-interview-source adds a Source with --raw-session for a fake session whose transcript holds one picked and one typed answer, then runs session interview: answer-1 has picked Blue and wording, answer-2 the quote 'Something like DuckDB, but local', both link derived-from the Source (two link.create ops), a second run adds nothing; with no such Source both are proposed with empty links_out. session-interview-landed covers the same after the record landed (a landed record change set). TestPlanText (plan-decisions-from-source) finds derived-from and 'quotes the owner's typed words'. Hands-on: the scratch build's guide plan carried the derived-from rule (counted among 12 matching lines).",
+          "tests": "go test -count=1 ./cmd/rhiza -run 'TestScripts/session-interview-source$'; go test -count=1 ./cmd/rhiza -run 'TestScripts/session-interview-landed$'; go test -count=1 ./internal/guide -run 'TestPlanText'; hands-on: rhiza guide plan | grep derived-from"
+        },
+        "handle": "plan-decisions-from-source-verified",
+        "id": "01M5XMSZ1BG4TS2A51AT7VTG0X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XMSZ1BG4TS2A51APK78SQE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XMSZ1BG4TS2A51APK78SQE",
+        "id": "01M5XMSZ5NEPJCDM6XSENK2BA6",
+        "link": "01M5XMSZ5NEPJCDM6XSDF85GGW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGCY2WM4E3XGQ2T8R1ET8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 5fff4c7 (code as of 2963c0f) on branch cs/the-plan-workflow, re-run with -count=1 by an independent verifier (claude-code-c3d71038-verifier)",
+          "statement": "Testscript run-review-journal, with RHIZA_RUN naming a held run, records two findings (f1 missing-acceptance on cap-a, f2 contradiction) and a verdict confirming f1 and dropping f2: the journal holds the findings and verdict entries, run status --json shows round 1 with confirmed 1 and its markdown '- Round 1: 2 findings, 1 confirmed'; a verdict naming f3, a finding of kind style, and one naming no-such-node each exit 2 with the journal line count unchanged; with no RHIZA_RUN both commands exit 2. TestFoldRounds folds rounds; describe-golden passes. Hands-on: in a scratch held run the scratch build exited 2 for findings with no RHIZA_RUN, for kind style, and for a verdict naming f9, and run status showed '## Review rounds' with 'Round 1: 1 finding, 1 confirmed'.",
+          "tests": "go test -count=1 ./cmd/rhiza -run 'TestScripts/run-review-journal$'; go test -count=1 ./internal/run -run TestFoldRounds; go test -count=1 ./cmd/rhiza -run 'TestScripts/describe-golden$'; hands-on: rhiza run findings/verdict/status in a scratch held run"
+        },
+        "handle": "plan-review-journal-verified",
+        "id": "01M5XMSZ9X7WGCPCK8E77T6P4P",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XMSZ9X7WGCPCK8E71S0AYT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XMSZ9X7WGCPCK8E71S0AYT",
+        "id": "01M5XMSZE65KV09G543R4S7GDY",
+        "link": "01M5XMSZE65KV09G543PGZGA6B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGD28YB7NQC8BQR8MCVFM",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 5fff4c7 (code as of 2963c0f) on branch cs/the-plan-workflow, re-run with -count=1 by an independent verifier (claude-code-c3d71038-verifier)",
+          "statement": "TestPlanReviewText finds in the plan-review topic the five kinds (missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction), rhiza run findings and rhiza run verdict with their JSON file formats, how the plan's change sets are found ('serving an intent it adds', rhiza change show, rhiza slice, rhiza why) and 'Never add a finding'; TestPlanKinds finds it a topic; the cap test keeps it within TopicCap; testscript guide shows guide ls listing it. Hands-on: the scratch build's guide ls listed plan-review as a topic of 499 tokens and guide plan-review printed all five kinds and 'Never add a finding'.",
+          "tests": "go test -count=1 ./internal/guide -run 'TestPlanReviewText|TestPlanKinds|Cap'; go test -count=1 ./cmd/rhiza -run 'TestScripts/guide$'; hands-on: rhiza guide ls; rhiza guide plan-review | grep"
+        },
+        "handle": "plan-review-guide-verified",
+        "id": "01M5XMSZJF7E1F13XK6QVYSCB9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XMSZJF7E1F13XK6NX7BQYA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XMSZJF7E1F13XK6NX7BQYA",
+        "id": "01M5XMSZPRN08EEZ53BXW8145A",
+        "link": "01M5XMSZPRN08EEZ53BXPYRJDP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGD6GSZAS9X5C75R728DG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 5fff4c7 (code as of 2963c0f) on branch cs/the-plan-workflow, re-run with -count=1 by an independent verifier (claude-code-c3d71038-verifier)",
+          "statement": "Testscript run-review-check in a held run: no round fails; a finding confirmed in round 1 fails (exit 1), names f1 and adds no question and no asked entry; a clean round 2 passes; round 3 with two confirmed findings passes and adds review-<run>-r3-f1 (statement holding the finding and the critic's reason, blocks cap-a) and r3-f2 (on a decision, no blocks link), with two asked entries; a second check adds nothing; no RHIZA_RUN is usage. run-review-check-landed covers the questions after the record landed early. Hands-on: in a scratch autonomous held run with one finding confirmed each round, the scratch build's review-check exited 1 in round 1 and in round 2 (the round-2 failure the testscript does not show) and 0 in round 3, adding question review-...-r3-f1 and one asked entry.",
+          "tests": "go test -count=1 ./cmd/rhiza -run 'TestScripts/run-review-check$'; go test -count=1 ./cmd/rhiza -run 'TestScripts/run-review-check-landed$'; hands-on: rhiza run findings/verdict/review-check over three rounds in a scratch held run"
+        },
+        "handle": "plan-review-rounds-verified",
+        "id": "01M5XMSZV2WCFFNCNCKYPESSK9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XMSZV2WCFFNCNCKYD8WN8F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XMSZV2WCFFNCNCKYD8WN8F",
+        "id": "01M5XMSZZBT7A4H5P5ZDSH9CVW",
+        "link": "01M5XMSZZBT7A4H5P5ZANTMX9N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGDAB8W8BWQX6VEWR1FVY",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 5fff4c7 (code as of 2963c0f) on branch cs/the-plan-workflow, re-run with -count=1 by an independent verifier (claude-code-c3d71038-verifier)",
+          "statement": "Testscript run-arbitrate-asked runs an autonomous workflow whose review command step makes review-check add a round-3 question with a session-less asked entry: the fake arbiter answers it, the journal has asked, arbiter and arbitrated (outcome pass, decision assume-a) entries for that question, and the run enters and ends its next step; with an arbiter that writes nothing the run fails naming 'arbiter failed on question review-...-r3-f1' and the next step does not run; a normal run runs no arbiter (no arbit* entries) and succeeds with the question asked and open. engine_test.go's TestCommandAsked* cover arbitrated, fail, normal-run, not-twice, resume and retry. Hands-on: the scratch held run's review-check journaled the session-less asked entry the engine's arbitrateAsked reads, and engine.go arbitrates only when the journal's state is autonomous.",
+          "tests": "go test -count=1 ./cmd/rhiza -run 'TestScripts/run-arbitrate-asked$'; go test -count=1 ./internal/run -run 'TestCommandAsked|TestAskedWithoutSession'; hands-on: grep the asked entry in a scratch run's journal"
+        },
+        "handle": "plan-review-arbitrated-verified",
+        "id": "01M5XMT03W0FBD5PQ7CJ142R08",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XMT03W0FBD5PQ7CFHSDPCV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XMT03W0FBD5PQ7CFHSDPCV",
+        "id": "01M5XMT08AERY7P6TGXT405GZ0",
+        "link": "01M5XMT08AERY7P6TGXS3289TC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XG434N2323BPMA11HAJ0JP",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 5fff4c7 (code as of 2963c0f) on branch cs/the-plan-workflow, re-run with -count=1 by an independent verifier (claude-code-c3d71038-verifier)",
+          "statement": "Testscript run-gate: a normal run whose record (landed after the interview) adds want-a, served by two drafts: the gate proposes both, accepts none, leaves the record landed, and run status --json names rhiza accept --rule owner --change <id> for each; autonomous with a clean review both are accepted with rule autonomous and reason 'autonomous run <run>', two accepted journal entries; autonomous with a round-3 question both stay proposed and the gate exits 1 naming review-...-r3-f1, then after a Decision answers it both are accepted; a run on an intention change set serving an existing intent proposes that change set; no RHIZA_RUN is usage. Hands-on: in a scratch autonomous run with an open review question the scratch build's run gate exited 1 saying it 'accepts nothing until a Decision answers each' and named the question, leaving the change set proposed; with no RHIZA_RUN it exited 2.",
+          "tests": "go test -count=1 ./cmd/rhiza -run 'TestScripts/run-gate$'; hands-on: rhiza run gate in a scratch autonomous run with an open review question (exit 1) and with no RHIZA_RUN (exit 2)"
+        },
+        "handle": "plan-gate-verified",
+        "id": "01M5XMT0CM0BE90MT9XXHZNFE5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XMT0CM0BE90MT9XVR93T2G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XMT0CM0BE90MT9XVR93T2G",
+        "id": "01M5XMT0GXC3HQ8JVYM4MD6291",
+        "link": "01M5XMT0GXC3HQ8JVYM49X7YZ0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGDEE854PFE4BXJM13CWS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 5fff4c7 (code as of 2963c0f) on branch cs/the-plan-workflow, re-run with -count=1 by an independent verifier (claude-code-c3d71038-verifier)",
+          "statement": "TestPlanBuiltin finds plan in BuiltinNames, parses its file into interview, review, critic, check, revise, gate; the interview prompt names rhiza-plan and rhiza guide plan; the review, critic and revise prompts use only the {change} placeholder and name rhiza guide plan-review and never a plan file; check runs rhiza run review-check (fail -> revise) and gate runs rhiza run gate. Testscripts plan-workflow and plan-workflow-autonomous run the built-in with fake agents to the gate, and git status in the worktree shows only .rhiza/ paths. Hands-on: read internal/workflow/builtin/plan.toml (no plan file named) and the scratch build's run start --workflow plan --permission-mode manual --dry-run would start at step interview.",
+          "tests": "go test -count=1 ./internal/workflow -run TestPlanBuiltin; go test -count=1 ./cmd/rhiza -run 'TestScripts/plan-workflow$'; go test -count=1 ./cmd/rhiza -run 'TestScripts/plan-workflow-autonomous$'; hands-on: rhiza run start --workflow plan --permission-mode manual --dry-run"
+        },
+        "handle": "plan-workflow-file-verified",
+        "id": "01M5XMT0NATVRAQAYYPZQW23PN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XMT0NATVRAQAYYPYXME13C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XMT0NATVRAQAYYPYXME13C",
+        "id": "01M5XMT0SJ1GK6H4AQBGPQQ0GG",
+        "link": "01M5XMT0SJ1GK6H4AQBFE3JP1C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGDJMV9EEVE603M22PTYT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTXDS9R3BJVS8PNJQZ834",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5XMT108Z05EGWVVENSNARE0",
+  "type": "ops",
+  "v": 1
+}

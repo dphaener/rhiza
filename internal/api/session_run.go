@@ -281,8 +281,12 @@ func captureAfterRun(ctx *Ctx, rec session.Record, warnings []string) ([]string,
 // to one, the run, and RHIZA_AUTONOMOUS=1 when that run is autonomous. A
 // run or autonomous mark the terminal had is removed.
 func launchEnv(rec session.Record) (set, unset []string) {
+	change := rec.Change
+	if rec.Writes != "" {
+		change = rec.Writes
+	}
 	set = []string{
-		envChange + "=" + rec.Change,
+		envChange + "=" + change,
 		envActor + "=" + rec.Actor,
 		envFor + "=" + rec.For,
 		envSession + "=" + rec.ID,

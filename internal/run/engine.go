@@ -78,9 +78,10 @@ type Runner interface {
 	// node question, on the run's change set, and returns its ID. Its
 	// prompt names only the question and how to decide it.
 	StartArbiter(step workflow.Step, question string, env []string) (session string, err error)
-	// Answer reports whether the model, as the run's change set sees it,
-	// holds a valid answer to question node question, and if not, why.
-	Answer(question string) (Answer, error)
+	// Answer reports whether the model, as the change set arbiter session
+	// session writes into sees it (the run's, or the one the question lives
+	// in), holds a valid answer to question node question, and if not, why.
+	Answer(question, session string) (Answer, error)
 	// AddQuestion adds what session asked the owner, text, as one question
 	// node in the run's change set, written as the session's actor, and
 	// returns the node. It refuses when the change set is finished.
@@ -437,7 +438,11 @@ func (r *running) runStep(step workflow.Step, change string) (result, error) {
 	env := r.stepEnv(step.Name, change)
 	switch step.Kind {
 	case workflow.KindCommand:
-		return r.command(step, env), nil
+		res := r.command(step, env)
+		if res.outcome == OutcomeError {
+			return res, nil
+		}
+		return r.arbitrateAsked(step, res)
 	case workflow.KindWait:
 		return r.wait(step, env), nil
 	case workflow.KindAgent:
@@ -468,6 +473,75 @@ func (r *running) command(step workflow.Step, env []string) result {
 		return result{outcome: workflow.OutcomePass, detail: d}
 	}
 	return result{outcome: workflow.OutcomeFail, detail: d}
+}
+
+// arbitrateAsked has the arbiter decide, in an autonomous run, each
+// question a command step's process journalled (an asked entry with no
+// session, such as `rhiza run review-check` writes) that it has not
+// decided yet, once the step's command has run with result res. The
+// process appended to the journal without the run's lock, so the journal
+// is read again first. No session asked, so nothing is delivered: the
+// answering Decision is in the model. A failed verdict ends the step with
+// an error outcome naming the question, so the run fails whatever the
+// step's on. entries say; otherwise res stands. A normal run leaves the
+// questions open for the owner. The error return is for journal failures.
+func (r *running) arbitrateAsked(step workflow.Step, res result) (result, error) {
+	if !r.j.State().Autonomous {
+		return res, nil
+	}
+	j, err := r.e.Store.Read(r.j.ID)
+	if err != nil {
+		return result{}, err
+	}
+	r.j = j
+	for _, asked := range undecidedAsks(r.j.Entries) {
+		v, err := r.arbitrate(step, asked.Question)
+		if err != nil {
+			return result{}, err
+		}
+		if v.outcome != workflow.OutcomePass {
+			return result{
+				outcome: OutcomeError,
+				detail:  fmt.Sprintf("arbiter failed on question %s (%s): %s", asked.Handle, asked.Question, v.detail),
+			}, nil
+		}
+	}
+	return res, nil
+}
+
+// undecidedAsks are the session-less asked entries, in journal order, whose
+// question has no verdict yet (an open arbitration is rejoined). A verdict
+// other than pass counts only until the next retried entry: a retry has the
+// arbiter decide the question anew.
+func undecidedAsks(entries []Entry) []Asked {
+	var asks []Asked
+	verdict := map[string]string{}
+	for _, e := range entries {
+		switch e.Type {
+		case TypeAsked:
+			if e.Session == "" {
+				asks = append(asks, Asked{Step: e.Step, Question: e.Question, Handle: e.Handle, Text: e.Detail, At: e.At})
+			}
+		case TypeArbitrated:
+			verdict[e.Question] = e.Outcome
+		case TypeRetried:
+			for q, o := range verdict {
+				if o != workflow.OutcomePass {
+					delete(verdict, q)
+				}
+			}
+		}
+	}
+	var out []Asked
+	seen := map[string]bool{}
+	for _, a := range asks {
+		if _, ok := verdict[a.Question]; ok || seen[a.Question] {
+			continue
+		}
+		seen[a.Question] = true
+		out = append(out, a)
+	}
+	return out
 }
 
 // wait checks the condition until it holds or the timeout passes, measured
@@ -650,7 +724,7 @@ func (r *running) ask(step workflow.Step, session string, b *Block) (result, boo
 func (r *running) answer(step workflow.Step, session string, asked Asked) (result, bool, error) {
 	if asked.Answered == "" {
 		a, _ := r.j.State().Arbitration(asked.Question)
-		ans, err := r.e.Runner.Answer(asked.Question)
+		ans, err := r.e.Runner.Answer(asked.Question, a.Session)
 		if err == nil && !ans.OK {
 			err = errors.New(ans.Why)
 		}
@@ -814,7 +888,7 @@ func (r *running) arbitrate(asking workflow.Step, question string) (result, erro
 		}
 		r.clock().Sleep(interval)
 	}
-	ans, err := r.e.Runner.Answer(question)
+	ans, err := r.e.Runner.Answer(question, session)
 	if err != nil {
 		return r.arbitrated(asking, question, errResult(err), "")
 	}

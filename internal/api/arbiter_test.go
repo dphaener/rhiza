@@ -87,7 +87,7 @@ func TestArbiterAnswer(t *testing.T) {
 	}
 	answer := func(q id.ID) string {
 		t.Helper()
-		a, err := r.Answer(q.String())
+		a, err := r.Answer(q.String(), "")
 		if err != nil {
 			t.Fatal(err)
 		}

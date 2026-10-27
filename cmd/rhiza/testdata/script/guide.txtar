@@ -38,6 +38,14 @@ exec rhiza guide scrub
 stdout '^# rhiza-scrub$'
 stdout '^## Steps$'
 
+# The plan skill.
+exec rhiza guide plan
+stdout '^# rhiza-plan$'
+stdout '^## Steps$'
+stdout 'rhiza source add <handle> <file.json> --raw-session "\$RHIZA_SESSION" --json'
+stdout '"op":"link","from":"export-csv","type":"decided-by","to":"csv-streaming"'
+stdout 'RHIZA_AUTONOMOUS=1'
+
 # Each topic.
 exec rhiza guide apply
 stdout '^# apply$'
@@ -59,6 +67,11 @@ exec rhiza guide change-sets
 stdout '^# Change sets$'
 stdout '^## Lifecycle$'
 stdout 'landed --reopen--> accepted'
+exec rhiza guide plan-review
+stdout '^# Plan review$'
+stdout '^## Critic$'
+stdout 'rhiza run findings <file> --json'
+stdout 'rhiza run verdict <file> --json'
 exec rhiza guide reopening
 stdout '^# Reopening$'
 stdout 'rhiza reopen --change <id>'
@@ -67,15 +80,17 @@ exec rhiza guide sources
 stdout '^# Sources$'
 stdout '^## Stored fields$'
 
-# guide ls lists all eight texts with their kinds and sizes.
+# guide ls lists all ten texts with their kinds and sizes.
 exec rhiza guide ls
-stdout -count=8 '^- '
+stdout -count=10 '^- '
 stdout '^- rhiza +skill +[0-9]+ tokens  Work with the product model'
 stdout '^- scrub +skill +[0-9]+ tokens  '
+stdout '^- plan +skill +[0-9]+ tokens  Plan with the owner'
 stdout '^- apply +topic +[0-9]+ tokens  '
 stdout '^- arbiter +topic +[0-9]+ tokens  '
 stdout '^- carving +topic +[0-9]+ tokens  '
 stdout '^- change-sets +topic +[0-9]+ tokens  '
+stdout '^- plan-review +topic +[0-9]+ tokens  Plan review'
 stdout '^- reopening +topic +[0-9]+ tokens  '
 stdout '^- sources +topic +[0-9]+ tokens  '
 exec rhiza guide ls --json

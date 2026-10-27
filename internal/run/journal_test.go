@@ -830,3 +830,67 @@ func TestTokensRoundTrip(t *testing.T) {
 		t.Fatalf("old line decoded to %+v, want %+v", got, wantOld)
 	}
 }
+
+// Each findings entry opens the next round, an empty one too; a verdict
+// entry adds its verdicts to the latest round, and the latest verdict on a
+// finding wins. Rounds change nothing else in the fold.
+func TestFoldRounds(t *testing.T) {
+	f1 := Finding{ID: "f1", Node: "N1", Handle: "cap-a", Kind: KindMissingAcceptance, Reason: "no acceptance"}
+	f2 := Finding{ID: "f2", Node: "N2", Kind: KindContradiction, Reason: "says both"}
+	es := []Entry{
+		startedEntry("a", 0),
+		{Type: TypeEntered, At: at(1), Step: "a"},
+		{Type: TypeVerdict, At: at(2), Verdicts: []Verdict{{Finding: "f1", Verdict: Confirmed, Reason: "orphan"}}},
+		{Type: TypeFindings, At: at(3), Findings: []Finding{f1, f2}},
+		{Type: TypeVerdict, At: at(4), Verdicts: []Verdict{
+			{Finding: "f1", Verdict: Confirmed, Reason: "it has none"},
+			{Finding: "f2", Verdict: Confirmed, Reason: "first look"},
+		}},
+		{Type: TypeVerdict, At: at(5), Verdicts: []Verdict{{Finding: "f2", Verdict: Dropped, Reason: "they agree"}}},
+		{Type: TypeFindings, At: at(6)},
+	}
+	st := (Journal{Entries: es}).State()
+	if len(st.Rounds) != 2 {
+		t.Fatalf("rounds = %+v, want 2", st.Rounds)
+	}
+	r1 := st.Rounds[0]
+	if r1.Number != 1 || !r1.At.Equal(at(3)) || !reflect.DeepEqual(r1.Findings, []Finding{f1, f2}) || len(r1.Verdicts) != 3 {
+		t.Fatalf("round 1 = %+v", r1)
+	}
+	if v, ok := r1.Verdict("f2"); !ok || v.Verdict != Dropped || v.Reason != "they agree" {
+		t.Fatalf("f2 verdict = %+v, %v", v, ok)
+	}
+	if _, ok := r1.Finding("f3"); ok {
+		t.Fatal("round 1 holds f3")
+	}
+	if got := r1.Confirmed(); !reflect.DeepEqual(got, []Finding{f1}) {
+		t.Fatalf("confirmed = %+v, want f1", got)
+	}
+	r2, ok := st.LatestRound()
+	if !ok || r2.Number != 2 || len(r2.Findings) != 0 || len(r2.Confirmed()) != 0 {
+		t.Fatalf("latest round = %+v, %v", r2, ok)
+	}
+	if st.Current != "a" || st.Ended || st.Stopped != "" {
+		t.Fatalf("rounds changed the fold: %+v", st)
+	}
+	if _, ok := (Journal{Entries: es[:3]}).State().LatestRound(); ok {
+		t.Fatal("a journal with no findings entry has a round")
+	}
+	b, err := json.Marshal(es[3])
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := `{"type":"findings","at":"2026-10-26T12:03:00Z","findings":[` +
+		`{"id":"f1","node":"N1","handle":"cap-a","kind":"missing-acceptance","reason":"no acceptance"},` +
+		`{"id":"f2","node":"N2","kind":"contradiction","reason":"says both"}]}`
+	if string(b) != want {
+		t.Fatalf("findings entry = %s\nwant %s", b, want)
+	}
+	var back Entry
+	if err := json.Unmarshal(b, &back); err != nil || !reflect.DeepEqual(back, es[3]) {
+		t.Fatalf("round trip = %+v, %v", back, err)
+	}
+	if !ValidKind(KindOutsideIntent) || ValidKind("style") {
+		t.Fatal("ValidKind")
+	}
+}

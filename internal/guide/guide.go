@@ -1,5 +1,6 @@
 // Package guide holds the agent guide that ships in the binary: the rhiza
-// skill, the rhiza-scrub skill and the topics an agent reads on demand.
+// skill, the rhiza-scrub skill, the rhiza-plan skill and the topics an
+// agent reads on demand.
 //
 // The guide comes in three layers, each with a size cap measured in
 // estimated tokens (Tokens): the session start a hook prints (StartCap),
@@ -28,14 +29,14 @@ const MaxDescription = 1024
 
 // Text is one text of the guide.
 type Text struct {
-	// Name is what rhiza guide takes: rhiza, scrub or a topic name.
+	// Name is what rhiza guide takes: rhiza, scrub, plan or a topic name.
 	Name string
 	// Description says when to load it; for a skill it is the SKILL.md
 	// description.
 	Description string
 	// Body is the markdown.
 	Body string
-	// Skill is true for the two skills, false for topics.
+	// Skill is true for the skills, false for topics.
 	Skill bool
 }
 
@@ -56,7 +57,7 @@ type entry struct {
 	skill                   bool
 }
 
-// skills lists the two skills, the main one first.
+// skills lists the skills, the main one first.
 var skills = []entry{
 	{
 		name: "rhiza",
@@ -77,6 +78,17 @@ var skills = []entry{
 			"when asked to record, scrub or save a conversation as a source in a repo with a .rhiza/ folder.",
 		skill: true,
 	},
+	{
+		name: "plan",
+		file: "plan.md",
+		description: "Plan with the owner straight into a Rhiza product model: a milestone (an intent, " +
+			"its done points and the change sets that serve it) or one change set's leaves, each with " +
+			"an acceptance check, Decisions quoting the owner and parked questions, all written with " +
+			"rhiza apply, the interview kept as a Source. Load it when you run as the planner of a plan " +
+			"run, or are asked to plan a milestone or a change set's leaves with the owner in a repo " +
+			"with a .rhiza/ folder.",
+		skill: true,
+	},
 }
 
 // topics lists the topics, sorted by name.
@@ -85,6 +97,7 @@ var topics = []entry{
 	{name: "arbiter", file: "arbiter.md", description: "The arbiter: deciding one question in an autonomous run, the one answering Decision and its wording and reasoning, then done."},
 	{name: "carving", file: "carving.md", description: "Carving: moving nodes from one change set to another under the same IDs, what moves, the rules."},
 	{name: "change-sets", file: "change-sets.md", description: "Change sets: intention and record, the lifecycle, which change set a write goes into, --record."},
+	{name: "plan-review", file: "plan-review.md", description: "Plan review: finding a plan's change sets, recording findings of five kinds, a critic's verdicts and a reviser's fixes."},
 	{name: "reopening", file: "reopening.md", description: "Reopening: taking a change set landed only on its branch back to accepted, the refusal once it is on main, never deleting log entries."},
 	{name: "sources", file: "sources.md", description: "Source nodes: the stored fields, the raw material's hash, and how scrub feeds rhiza source add."},
 }
@@ -102,14 +115,15 @@ var texts = func() []Text {
 	return out
 }()
 
-// List returns every text: the rhiza skill, the scrub skill, then the
+// List returns every text: the rhiza, scrub and plan skills, then the
 // topics sorted by name.
 func List() []Text {
 	return slices.Clone(texts)
 }
 
 // Lookup returns the text called name. "" and "rhiza" name the rhiza
-// skill, "scrub" the rhiza-scrub skill; anything else is a topic name.
+// skill, "scrub" the rhiza-scrub skill, "plan" the rhiza-plan skill;
+// anything else is a topic name.
 func Lookup(name string) (Text, bool) {
 	if name == "" {
 		name = "rhiza"

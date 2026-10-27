@@ -1,0 +1,53 @@
+{
+  "actor": "01M5XFGQZ7NK2G8H8M6VE5S90G",
+  "after": [
+    "01M5XG5P6BEKPM4Z2WEMR747B2"
+  ],
+  "at": "2026-10-27T02:18:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript in a run with journaled rounds: no confirmed finding passes; one confirmed in round 1 or 2 fails and adds nothing; one confirmed in round 3 adds a question node whose statement holds the finding and its reason, linked blocks to the capability it names, journals it with an asked entry per added question, and passes.",
+          "statement": "rhiza run review-check passes when the latest round's critic confirmed no finding and fails when it confirmed any in round 1 or 2; after a third round that still has confirmed findings it adds each as a question node (in the run's change set while it is open, else where review-questions-follow-the-node puts it), linked blocks to the node it names when that is a capability, journals them, and passes, so the plan reaches the gate with those questions open. It also journals each question it adds as an asked entry, so that in an autonomous run the arbiter decides it."
+        },
+        "handle": "plan-review-rounds",
+        "id": "01M5WSGDAB8W8BWQX6VG29YKDV",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M5WSGDAB8W8BWQX6VEWR1FVY",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "fields": {
+          "statement": "When the run's change set has already landed, as a milestone plan's record does after the interview, rhiza run review-check puts each question it leaves into the open plan change set that created the finding's node, or lands it with a record write when that node has landed too; while the run's change set is open the questions go there.",
+          "wording": "the orchestrator's choice while building leaf plan-review-rounds, following plan-record-lands-early"
+        },
+        "handle": "review-questions-follow-the-node",
+        "id": "01M5XJE78JBK74E28PP9X4XDYM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XJE78JBK74E28PP81Y1YK1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDAB8W8BWQX6VEWR1FVY",
+        "id": "01M5XJE7H63KGZCKG36JTBNMC3",
+        "link": "01M5XJE7H63KGZCKG36FCSA4XW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XJE78JBK74E28PP81Y1YK1",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5WPTXDS9R3BJVS8PNJQZ834",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5XJE7QW1C0ZS5DNATCHJGW0",
+  "type": "ops",
+  "v": 1
+}

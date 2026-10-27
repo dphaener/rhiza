@@ -72,7 +72,7 @@ type StatusGuide struct {
 	Scope   string `json:"scope" enum:"user,project" desc:"user (in the home directory) or project (in the repository)"`
 	Dir     string `json:"dir" desc:"The plugin folder"`
 	Version string `json:"version" desc:"The version it was installed by"`
-	Current bool   `json:"current" desc:"Whether that version is the running rhiza's"`
+	Current bool   `json:"current" desc:"Whether it is the running rhiza's version and every file it installs is on disk as that version writes it"`
 }
 
 // oldFolderNotice is the hook's one line for an old-style root.
@@ -145,7 +145,7 @@ func status(ctx *Ctx) (StatusResponse, error) {
 		if !ok {
 			continue
 		}
-		g := StatusGuide{Scope: p.scope, Dir: dir, Version: v, Current: v == ctx.Version}
+		g := StatusGuide{Scope: p.scope, Dir: dir, Version: v, Current: v == ctx.Version && pluginCurrent(dir, ctx.Version)}
 		resp.Guide = append(resp.Guide, g)
 		if !g.Current {
 			resp.Next = append(resp.Next, p.next)

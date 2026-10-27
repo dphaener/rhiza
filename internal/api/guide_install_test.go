@@ -11,7 +11,7 @@ import (
 	"github.com/dphaener/rhiza/internal/guide"
 )
 
-var pluginPaths = []string{pluginManifestPath, pluginSkillPath, pluginHooksPath, pluginScrubPath}
+var pluginPaths = []string{pluginManifestPath, pluginSkillPath, pluginHooksPath, pluginPlanPath, pluginScrubPath}
 
 func guideInstall(t *testing.T, ctx *Ctx, req string) GuideInstallResponse {
 	t.Helper()
@@ -48,7 +48,7 @@ func TestYAMLQuote(t *testing.T) {
 }
 
 func TestSkillFileFrontmatter(t *testing.T) {
-	for _, tc := range []struct{ name, text string }{{"rhiza", "rhiza"}, {"rhiza-scrub", "scrub"}} {
+	for _, tc := range []struct{ name, text string }{{"rhiza", "rhiza"}, {"rhiza-scrub", "scrub"}, {"rhiza-plan", "plan"}} {
 		b, err := skillFile(tc.name, tc.text)
 		if err != nil {
 			t.Fatal(err)

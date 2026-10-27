@@ -33,6 +33,8 @@ the owner's own words in the milestone-3 conversation ("autonomous mode that ski
 - decided-by [autonomous-gate-rule](../capability/rhiza/workflows/autonomous-runs/autonomous-gate-rule.md)
 - decided-by [autonomous-review](../capability/rhiza/workflows/autonomous-runs/autonomous-review.md)
 - decided-by [arbiter-on-question](../capability/rhiza/workflows/arbiter-sessions/arbiter-on-question.md)
+- decided-by [plan-autonomous-interview](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-autonomous-interview.md)
+- decided-by [plan-gate](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-gate.md)
 
 ## History
 

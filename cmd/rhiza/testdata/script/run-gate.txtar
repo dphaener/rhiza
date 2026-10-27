@@ -1,0 +1,198 @@
+# run gate ends a plan. The plan's change sets are the run's change set
+# and every change set serving an intent the run's change set adds. The
+# gate proposes each draft among them and leaves landed or accepted ones
+# as they are. In a normal run it accepts nothing, and run status names
+# rhiza accept --rule owner for each proposed one. In an autonomous run it
+# accepts each with rule autonomous once the review passed and every
+# question the review left is answered; while one is open it accepts
+# nothing and exits 1 naming it. With no RHIZA_RUN it is usage.
+#
+# Every run stops at a wait step whose until does not hold, so it stays
+# unfinished and launches no agent.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+mkdir .rhiza/workflows
+cp $WORK/hold.toml .rhiza/workflows/hold.toml
+
+# No RHIZA_RUN: usage.
+exec sh -c 'rhiza run gate --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout 'RHIZA_RUN is not set'
+stdout '^exit=2$'
+
+# --- Normal run: a record change set adds want-a, landed after the
+# interview; two drafts serve want-a.
+exec rhiza change new 'Plan A' --kind record --title 'Plan A' --json
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/ra'
+exec rhiza add intent want-a
+exec rhiza run start --workflow hold --no-wait
+stdout '^Run (01[0-9A-Z]{24}) stopped$'
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runa'
+exec rhiza land
+exec sh -c 'rhiza change new "Serve A one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/a1'
+exec sh -c 'rhiza link $(cat $WORK/a1) serves want-a'
+exec sh -c 'rhiza change new "Serve A two" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/a2'
+exec sh -c 'rhiza link $(cat $WORK/a2) serves want-a'
+
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runa) rhiza run gate --json; echo exit=$?'
+stdout '^exit=0$'
+stdout '"autonomous": false'
+stdout '"state": "landed"'
+! stdout '"state": "accepted"'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runa) rhiza run gate --json | grep -c "\"state\": \"proposed\""'
+stdout '^2$'
+exec sh -c 'rhiza change show $(cat $WORK/a1) --json'
+stdout '"state": "proposed"'
+exec sh -c 'rhiza change show $(cat $WORK/a2) --json'
+stdout '"state": "proposed"'
+exec sh -c 'rhiza change show $(cat $WORK/ra) --json'
+stdout '"state": "landed"'
+exec sh -c 'grep -c "\"type\":\"accepted\"" .git/rhiza/runs/$(cat $WORK/runa).jsonl; true'
+stdout '^0$'
+
+# run status names the owner's accept for each waiting change set.
+exec sh -c 'rhiza run status $(cat $WORK/runa) --json'
+stdout '"waiting": \['
+stdout '"next": "rhiza accept --rule owner --change [0-9A-Z]{26}"'
+exec sh -c 'rhiza run status $(cat $WORK/runa) --json | grep -c "rhiza accept --rule owner --change $(cat $WORK/a1)"'
+stdout '^1$'
+exec sh -c 'rhiza run status $(cat $WORK/runa)'
+stdout '^## Waiting on the owner$'
+stdout 'rhiza accept --rule owner --change '
+# The gate in a human form names the next command too.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runa) rhiza run gate'
+stdout '^next: rhiza accept --rule owner --change '
+
+# Once the owner accepts one, status no longer names it.
+exec sh -c 'rhiza accept --rule owner --reason ok --change $(cat $WORK/a1)'
+exec sh -c 'rhiza run status $(cat $WORK/runa) --json | grep -c "rhiza accept --rule owner --change $(cat $WORK/a1)"; true'
+stdout '^0$'
+exec sh -c 'rhiza run status $(cat $WORK/runa) --json | grep -c "rhiza accept --rule owner --change $(cat $WORK/a2)"'
+stdout '^1$'
+
+# --- Autonomous run whose review passed: both drafts are accepted with
+# rule autonomous, the reason naming the run.
+exec rhiza change new 'Plan B' --kind record --title 'Plan B' --json
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/rb'
+exec rhiza add intent want-b
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/before'
+exec rhiza run start --workflow hold --autonomous --no-wait
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runb'
+exec rhiza land
+exec sh -c 'rhiza change new "Serve B one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/b1'
+exec sh -c 'rhiza link $(cat $WORK/b1) serves want-b'
+exec sh -c 'rhiza change new "Serve B two" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/b2'
+exec sh -c 'rhiza link $(cat $WORK/b2) serves want-b'
+
+# No review round yet: it proposes, accepts nothing and fails.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runb) rhiza run gate; echo exit=$?'
+stdout '^exit=1$'
+stderr 'no review round'
+exec sh -c 'rhiza change show $(cat $WORK/b1) --json'
+stdout '"state": "proposed"'
+
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runb) rhiza run findings $WORK/clean.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runb) rhiza run gate --json; echo exit=$?'
+stdout '^exit=0$'
+stdout '"autonomous": true'
+exec sh -c 'rhiza change show $(cat $WORK/b1) --json'
+stdout '"state": "accepted"'
+stdout '"rule": "autonomous"'
+exec sh -c 'rhiza change show $(cat $WORK/b1) --json | grep -c "\"reason\": \"autonomous run $(cat $WORK/runb)\""'
+stdout '^1$'
+exec sh -c 'rhiza change show $(cat $WORK/b2) --json | grep -c "\"reason\": \"autonomous run $(cat $WORK/runb)\""'
+stdout '^1$'
+exec sh -c 'rhiza change show $(cat $WORK/rb) --json'
+stdout '"state": "landed"'
+exec sh -c 'grep -c "\"type\":\"accepted\"" .git/rhiza/runs/$(cat $WORK/runb).jsonl'
+stdout '^2$'
+exec sh -c 'rhiza run status $(cat $WORK/runb) --json'
+! stdout '"waiting"'
+# Again: nothing more to do.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runb) rhiza run gate --json; echo exit=$?'
+stdout '^exit=0$'
+exec sh -c 'grep -c "\"type\":\"accepted\"" .git/rhiza/runs/$(cat $WORK/runb).jsonl'
+stdout '^2$'
+
+# --- Autonomous run whose review left a question: nothing is accepted
+# and the gate names the question until the arbiter's Decision answers it.
+exec rhiza change new 'Plan C' --kind record --title 'Plan C' --json
+exec rhiza add intent want-c
+exec rhiza add decision dec-c --field 'statement=Use C'
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/before'
+exec rhiza run start --workflow hold --autonomous --no-wait
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runc'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run findings $WORK/findings.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run findings $WORK/findings.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run findings $WORK/findings.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run verdict $WORK/verdict.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) RHIZA_STEP=check rhiza run review-check --json'
+stdout '"passed": true'
+exec sh -c 'echo review-$(cut -c1-8 $WORK/runc | tr A-Z a-z)-r3-f1 > $WORK/qc'
+exec rhiza land
+exec sh -c 'rhiza change new "Serve C one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/c1'
+exec sh -c 'rhiza link $(cat $WORK/c1) serves want-c'
+exec sh -c 'rhiza change new "Serve C two" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/c2'
+exec sh -c 'rhiza link $(cat $WORK/c2) serves want-c'
+
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run gate; echo exit=$?'
+stdout '^exit=1$'
+stderr 'review-[0-9a-z]{8}-r3-f1 \(01[0-9A-Z]{24}\)'
+stderr 'accepts nothing'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run gate 2>&1 | grep -c "$(cat $WORK/qc)"'
+stdout '^1$'
+exec sh -c 'rhiza change show $(cat $WORK/c1) --json'
+stdout '"state": "proposed"'
+exec sh -c 'rhiza change show $(cat $WORK/c2) --json'
+stdout '"state": "proposed"'
+exec sh -c 'grep -c "\"type\":\"accepted\"" .git/rhiza/runs/$(cat $WORK/runc).jsonl; true'
+stdout '^0$'
+
+# The arbiter's Decision answers it: both are accepted.
+exec rhiza add decision ans-c --field 'statement=Settled' --record
+exec sh -c 'rhiza link ans-c answers $(cat $WORK/qc) --record'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run gate --json; echo exit=$?'
+stdout '^exit=0$'
+exec sh -c 'rhiza change show $(cat $WORK/c1) --json | grep -c "\"reason\": \"autonomous run $(cat $WORK/runc)\""'
+stdout '^1$'
+exec sh -c 'rhiza change show $(cat $WORK/c2) --json | grep -c "\"reason\": \"autonomous run $(cat $WORK/runc)\""'
+stdout '^1$'
+
+# --- A run on an intention change set serving an existing intent
+# proposes that change set itself.
+exec rhiza add intent want-d --record
+exec sh -c 'rhiza change new "Do D" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/d1'
+exec sh -c 'rhiza link $(cat $WORK/d1) serves want-d'
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/before'
+exec rhiza run start --workflow hold --no-wait
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/rund'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/rund) rhiza run gate --json; echo exit=$?'
+stdout '^exit=0$'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/rund) rhiza run gate --json | grep -c "\"id\": \"$(cat $WORK/d1)\""'
+stdout '^1$'
+exec sh -c 'rhiza change show $(cat $WORK/d1) --json'
+stdout '"state": "proposed"'
+
+fold-ok
+
+-- hold.toml --
+name = "hold"
+
+[step.gate]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
+-- clean.json --
+{"findings":[]}
+-- findings.json --
+{"findings":[{"node":"dec-c","kind":"contradiction","reason":"Contradicts want-c"}]}
+-- verdict.json --
+{"verdicts":[{"finding":"f1","verdict":"confirmed","reason":"It does"}]}

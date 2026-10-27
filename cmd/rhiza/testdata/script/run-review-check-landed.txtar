@@ -1,0 +1,172 @@
+# run review-check after an early landing. A milestone plan's record
+# change set lands after the interview, before review, so round 3 cannot
+# leave its questions there. Each question goes into the open plan change
+# set whose ops created the finding's node (blocking it when it is a
+# capability), or, when that node has landed too, lands in a record change
+# set of its own. One asked entry per question is journalled either way,
+# a second check adds nothing, and the autonomous gate sees both open
+# until a Decision answers each.
+#
+# run findings finds cap-l, which only the draft holds, across the plan's
+# change sets. The run stops at a wait step whose until does not hold, so it stays
+# unfinished and launches no agent.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+mkdir .rhiza/workflows
+cp $WORK/hold.toml .rhiza/workflows/hold.toml
+
+# The plan's record: an intent and a decision, landed after the interview.
+exec rhiza change new 'Plan L' --kind record --title 'Plan L' --json
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/rl'
+exec rhiza add intent want-l
+exec rhiza add decision dec-l --field 'statement=Use L'
+exec rhiza run start --workflow hold --autonomous --no-wait
+stdout '^Run (01[0-9A-Z]{24}) stopped$'
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec rhiza land
+exec sh -c 'rhiza change show $(cat $WORK/rl) --json'
+stdout '"state": "landed"'
+exec sh -c 'rhiza show dec-l --json | sed -n "s/^    \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/dec'
+
+# A draft serves want-l with a capability.
+exec sh -c 'rhiza change new "Serve L" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/s1'
+exec sh -c 'rhiza link $(cat $WORK/s1) serves want-l'
+exec rhiza add capability cap-l --field 'statement=Does L'
+exec sh -c 'rhiza show cap-l --json | sed -n "s/^    \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/cap'
+
+# A second draft serves want-l; it and the first each add a cap-x, so
+# cap-x names different nodes in the plan: a finding on it is usage.
+exec sh -c 'rhiza change new "Serve L two" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/s2'
+exec sh -c 'rhiza link $(cat $WORK/s2) serves want-l'
+exec rhiza add capability cap-x --field 'statement=Does X'
+exec sh -c 'rhiza add capability cap-x --field "statement=Does X too" --change $(cat $WORK/s1)'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/dup.json --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout 'finding 1: node \\"cap-x\\": names different nodes in the plan.s change sets: 01[0-9A-Z]{24}, 01[0-9A-Z]{24}'
+stdout '^exit=2$'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/nowhere.json --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout 'finding 1: node \\"no-such-node\\"'
+stdout '^exit=2$'
+exec sh -c 'grep -c "\"type\":\"findings\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl; true'
+stdout '^0$'
+exec sh -c 'cat $WORK/dec $WORK/cap'
+stdout '^01[0-9A-Z]{24}\n01[0-9A-Z]{24}\n$'
+
+# Rounds 1 and 2 clean; round 3 finds cap-l and dec-l, both confirmed.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/clean.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/clean.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/findings.json --json > $WORK/r3.json'
+exec cat $WORK/r3.json
+stdout '"round": 3'
+stdout '"handle": "cap-l"'
+stdout '"handle": "dec-l"'
+exec sh -c 'grep -c -e "\"node\": \"$(cat $WORK/cap)\"" -e "\"node\": \"$(cat $WORK/dec)\"" $WORK/r3.json'
+stdout '^2$'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run verdict $WORK/verdict.json'
+exec sh -c 'echo review-$(cut -c1-8 $WORK/runid | tr A-Z a-z)-r3-f1 > $WORK/q1'
+exec sh -c 'echo review-$(cut -c1-8 $WORK/runid | tr A-Z a-z)-r3-f2 > $WORK/q2'
+
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) RHIZA_STEP=check rhiza run review-check --json; echo exit=$?'
+stdout '"round": 3'
+stdout '"passed": true'
+stdout '"handle": "review-[0-9a-z]{8}-r3-f1"'
+stdout '"handle": "review-[0-9a-z]{8}-r3-f2"'
+stdout '^exit=0$'
+
+# f1's question is in the draft that created cap-l, and blocks it.
+exec sh -c 'rhiza change show $(cat $WORK/s1) --json | grep -c "$(cat $WORK/q1)"'
+stdout '^1$'
+exec sh -c 'rhiza show $(cat $WORK/q1) --change $(cat $WORK/s1) --json'
+stdout '"kind": "question"'
+stdout 'finding f1 \(missing-acceptance on cap-l\): No acceptance criteria'
+stdout '"type": "blocks"'
+stdout '"handle": "cap-l"'
+exec sh -c 'rhiza show $(cat $WORK/q1) --change $(cat $WORK/s1) --json | grep -c "\"created\": \"$(cat $WORK/s1)\""'
+stdout '^1$'
+
+# f2's question has landed in a record change set of its own.
+exec sh -c 'rhiza show $(cat $WORK/q2) --json'
+stdout '"kind": "question"'
+stdout 'finding f2 \(contradiction on dec-l\): Says both'
+! stdout '"type": "blocks"'
+exec sh -c 'rhiza show $(cat $WORK/q2) --json | grep "\"created\": " > $WORK/q2cs'
+exec sh -c 'grep -c "$(cat $WORK/s1)" $WORK/q2cs; true'
+stdout '^0$'
+exec sh -c 'rhiza change show $(sed "s/.*\"\([0-9A-Z]*\)\".*/\1/" $WORK/q2cs) --json'
+stdout '"kind": "record"'
+stdout '"state": "landed"'
+
+# One asked entry each, with the step and no session.
+exec sh -c 'grep -c "\"type\":\"asked\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+stdout '^2$'
+exec sh -c 'grep "\"type\":\"asked\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+stdout '"step":"check".*"question":"[0-9A-Z]{26}","handle":"review-[0-9a-z]{8}-r3-f1"'
+stdout '"step":"check".*"question":"[0-9A-Z]{26}","handle":"review-[0-9a-z]{8}-r3-f2"'
+! stdout '"session"'
+
+# Checked again: nothing added, nothing journalled, still passes.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run review-check --json; echo exit=$?'
+stdout '^exit=0$'
+stdout '"added": false'
+! stdout '"added": true'
+exec sh -c 'grep -c "\"type\":\"asked\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+stdout '^2$'
+exec sh -c 'rhiza change show $(cat $WORK/s1) --json | grep -c "\"handle\": \"$(cat $WORK/q1)\""'
+stdout '^1$'
+
+# The autonomous gate sees both open and accepts nothing.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run gate; echo exit=$?'
+stdout '^exit=1$'
+stderr '2 question\(s\) from the plan review are open'
+stderr 'review-[0-9a-z]{8}-r3-f1 \(01[0-9A-Z]{24}\)'
+stderr 'review-[0-9a-z]{8}-r3-f2 \(01[0-9A-Z]{24}\)'
+
+# A Decision in the draft answers f1's; a record Decision answers f2's.
+exec sh -c 'rhiza add decision ans-1 --field "statement=Add criteria" --change $(cat $WORK/s1)'
+exec sh -c 'rhiza link ans-1 answers $(cat $WORK/q1) --change $(cat $WORK/s1)'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run gate; echo exit=$?'
+stdout '^exit=1$'
+stderr '1 question\(s\) from the plan review are open'
+stderr 'r3-f2'
+! stderr 'r3-f1'
+exec rhiza add decision ans-2 --field 'statement=Settled' --record
+exec sh -c 'rhiza link ans-2 answers $(cat $WORK/q2) --record'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run gate --json; echo exit=$?'
+stdout '^exit=0$'
+exec sh -c 'rhiza change show $(cat $WORK/s1) --json'
+stdout '"state": "accepted"'
+
+fold-ok
+
+-- hold.toml --
+name = "hold"
+
+[step.gate]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
+-- clean.json --
+{"findings":[]}
+-- findings.json --
+{"findings":[
+  {"node":"cap-l","kind":"missing-acceptance","reason":"No acceptance criteria"},
+  {"node":"dec-l","kind":"contradiction","reason":"Says both"}
+]}
+-- dup.json --
+{"findings":[{"node":"cap-x","kind":"outside-intent","reason":"Twice"}]}
+-- nowhere.json --
+{"findings":[{"node":"no-such-node","kind":"outside-intent","reason":"Gone"}]}
+-- verdict.json --
+{"verdicts":[
+  {"finding":"f1","verdict":"confirmed","reason":"It has none"},
+  {"finding":"f2","verdict":"confirmed","reason":"They clash"}
+]}

@@ -14,7 +14,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "guide",
-		Summary:  "Print the agent guide: the rhiza skill, the scrub skill or a topic",
+		Summary:  "Print the agent guide: the rhiza skill, the scrub skill, the plan skill or a topic",
 		Request:  reflect.TypeFor[GuideRequest](),
 		Response: reflect.TypeFor[GuideResponse](),
 		Run:      runGuide,
@@ -30,7 +30,7 @@ func init() {
 
 // GuideRequest asks for one text of the guide.
 type GuideRequest struct {
-	Name string `json:"name,omitempty" arg:"0" desc:"The text to print: rhiza (the default), scrub or a topic name; rhiza guide ls lists them"`
+	Name string `json:"name,omitempty" arg:"0" desc:"The text to print: rhiza (the default), scrub, plan or a topic name; rhiza guide ls lists them"`
 }
 
 // GuideResponse is one text of the guide.
@@ -50,7 +50,7 @@ type GuideLsRequest struct{}
 
 // GuideLsResponse lists the guide's texts.
 type GuideLsResponse struct {
-	Texts []GuideTextInfo `json:"texts" desc:"The texts: the rhiza skill, the scrub skill, then the topics by name"`
+	Texts []GuideTextInfo `json:"texts" desc:"The texts: the rhiza, scrub and plan skills, then the topics by name"`
 }
 
 // GuideTextInfo describes one text of the guide.

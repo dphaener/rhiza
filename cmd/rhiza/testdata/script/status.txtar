@@ -82,6 +82,23 @@ stdout '"current": true'
 exec rhiza status --hook
 ! stdout 'out of date'
 
+# At the binary's version, a missing installed file is out of date too;
+# a second install restores it.
+rm $HOME/.claude/skills/rhiza/skills/rhiza-plan/SKILL.md
+exec rhiza status
+stdout '^- Guide \(user\): dev in .*/home/\.claude/skills/rhiza \(out of date\)$'
+stdout '^next: rhiza guide install --agent claude$'
+exec rhiza status --json
+stdout '"current": false'
+exec rhiza status --hook
+stdout '^The installed rhiza guide is out of date: run `rhiza guide install --agent claude`\.$'
+exec rhiza guide install --agent claude
+stdout '\(1 written, 4 unchanged\)\.$'
+stdout '^- wrote skills/rhiza-plan/SKILL\.md$'
+exec rhiza status
+stdout '\(current\)$'
+! stdout 'next: rhiza guide install'
+
 # At another version it is out of date: a mismatch line and the update.
 exec sh -c 'sed "s/\"dev\"/\"0.0.1\"/" $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json > p.tmp && mv p.tmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json'
 exec rhiza status

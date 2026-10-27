@@ -1,0 +1,30 @@
+{
+  "actor": "01M5XFGQZ7NK2G8H8M6VE5S90G",
+  "after": [
+    "01M5XQ8V9N4VEVACTNVCRD0M45"
+  ],
+  "at": "2026-10-27T03:49:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "When the run's change set has already landed, as a milestone plan's record does after the interview, rhiza run review-check puts each question it leaves into the open plan change set that created the finding's node, or lands it with a record write when that node has landed too; while the run's change set is open the questions go there.",
+          "wording": "the building agent's choice while building leaf plan-review-rounds, following plan-record-lands-early"
+        },
+        "handle": "review-questions-follow-the-node",
+        "id": "01M5XJE78JBK74E28PP9X4XDYM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XJE78JBK74E28PP81Y1YK1",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5WPTXDS9R3BJVS8PNJQZ834",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5XQKVXA92F3D9KNS02X3EGQ",
+  "type": "ops",
+  "v": 1
+}

@@ -4,8 +4,8 @@ package api
 // into Claude Code as a skills-directory plugin, a folder in
 // ~/.claude/skills/ (or a repository's .claude/skills/) that Claude Code
 // loads with no install step. The plugin holds the rhiza skill, the
-// rhiza-scrub skill and a SessionStart hook that runs rhiza status
-// --hook.
+// rhiza-scrub skill, the rhiza-plan skill and a SessionStart hook that
+// runs rhiza status --hook.
 
 import (
 	"bytes"
@@ -29,6 +29,7 @@ const (
 	pluginManifestPath = ".claude-plugin/plugin.json"
 	pluginSkillPath    = "SKILL.md"
 	pluginHooksPath    = "hooks/hooks.json"
+	pluginPlanPath     = "skills/rhiza-plan/SKILL.md"
 	pluginScrubPath    = "skills/rhiza-scrub/SKILL.md"
 )
 
@@ -36,7 +37,7 @@ const (
 const pluginName = "rhiza"
 
 // pluginDescription is the plugin manifest's description.
-const pluginDescription = "The Rhiza agent guide: the rhiza and rhiza-scrub skills, and a " +
+const pluginDescription = "The Rhiza agent guide: the rhiza, rhiza-scrub and rhiza-plan skills, and a " +
 	"SessionStart hook that runs rhiza status --hook."
 
 // pluginMarker is the manifest's ownership marker: a plugin.json holding
@@ -70,7 +71,7 @@ func init() {
 	})
 }
 
-// runGuideInstall writes the plugin's four files, plugin.json first. A
+// runGuideInstall writes the plugin's five files, plugin.json first. A
 // folder that exists and is not ours (see pluginForeign) is a conflict
 // unless req.Force, and so is a file where the folder goes; then nothing
 // is written. Each file is written atomically, and only when its
@@ -116,7 +117,7 @@ func runGuideInstall(ctx *Ctx, req any) (any, error) {
 	}
 
 	resp := GuideInstallResponse{Dir: dir, Written: []string{}, Unchanged: []string{}}
-	for _, p := range []string{pluginManifestPath, pluginSkillPath, pluginHooksPath, pluginScrubPath} {
+	for _, p := range []string{pluginManifestPath, pluginSkillPath, pluginHooksPath, pluginPlanPath, pluginScrubPath} {
 		dst := filepath.Join(dir, filepath.FromSlash(p))
 		have, err := os.ReadFile(dst)
 		if err != nil && !errors.Is(err, fs.ErrNotExist) {
@@ -177,10 +178,15 @@ func pluginFiles(version string) (map[string][]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	plan, err := skillFile("rhiza-plan", "plan")
+	if err != nil {
+		return nil, err
+	}
 	return map[string][]byte{
 		pluginManifestPath: manifest,
 		pluginSkillPath:    skill,
 		pluginHooksPath:    hooks,
+		pluginPlanPath:     plan,
 		pluginScrubPath:    scrub,
 	}, nil
 }
@@ -261,12 +267,28 @@ func pluginForeign(dir string) bool {
 		m, ok := readPluginManifest(dir)
 		return !ok || !pluginOwned(m)
 	}
-	for _, p := range []string{pluginSkillPath, pluginHooksPath, pluginScrubPath} {
+	for _, p := range []string{pluginSkillPath, pluginHooksPath, pluginPlanPath, pluginScrubPath} {
 		if _, err := os.Lstat(filepath.Join(dir, filepath.FromSlash(p))); err == nil {
 			return true
 		}
 	}
 	return false
+}
+
+// pluginCurrent reports whether every file pluginFiles(version) holds is
+// in dir with exactly those bytes. Other files in dir do not matter.
+func pluginCurrent(dir, version string) bool {
+	want, err := pluginFiles(version)
+	if err != nil {
+		return false
+	}
+	for p, b := range want {
+		have, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(p)))
+		if err != nil || !bytes.Equal(have, b) {
+			return false
+		}
+	}
+	return true
 }
 
 // installedVersion is the rhiza version that installed the plugin in

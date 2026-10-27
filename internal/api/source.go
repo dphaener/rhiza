@@ -16,6 +16,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/canon"
 )
 
@@ -37,10 +38,11 @@ func init() {
 
 // SourceAddRequest adds a source node.
 type SourceAddRequest struct {
-	Handle    string `json:"handle" arg:"0" desc:"The source's handle: lower-case words joined by single dashes, unique among live nodes"`
-	File      string `json:"file" arg:"1" desc:"A JSON file of the source's title, summary and quotes (see the input schema)"`
-	Raw       string `json:"raw,omitempty" desc:"The raw material's file, hashed with sha256; its content and path are not stored. Give this or --raw-sha256"`
-	RawSHA256 string `json:"raw_sha256,omitempty" desc:"The raw material's sha256, 64 lower-case hex characters. Give this or --raw"`
+	Handle     string `json:"handle" arg:"0" desc:"The source's handle: lower-case words joined by single dashes, unique among live nodes"`
+	File       string `json:"file" arg:"1" desc:"A JSON file of the source's title, summary and quotes (see the input schema)"`
+	Raw        string `json:"raw,omitempty" desc:"The raw material's file, hashed with sha256; its content and path are not stored. Give one of --raw, --raw-sha256 and --raw-session"`
+	RawSHA256  string `json:"raw_sha256,omitempty" desc:"The raw material's sha256, 64 lower-case hex characters. Give one of --raw, --raw-sha256 and --raw-session"`
+	RawSession string `json:"raw_session,omitempty" desc:"A Rhiza session (full ID or unique prefix) whose agent transcript is the raw material, hashed with sha256 and named in a session field; its content and path are not stored. Give one of --raw, --raw-sha256 and --raw-session"`
 }
 
 // sourceFile is the decoded JSON file. Quotes is a pointer so a missing
@@ -91,8 +93,14 @@ func sourceFileSchema() map[string]any {
 func runSourceAdd(ctx *Ctx, req any) (any, error) {
 	r := req.(SourceAddRequest)
 	const next = "rhiza describe source.add"
-	if (r.Raw == "") == (r.RawSHA256 == "") {
-		return nil, Usagef("source add needs exactly one of --raw or --raw-sha256").WithNext(next)
+	given := 0
+	for _, v := range []string{r.Raw, r.RawSHA256, r.RawSession} {
+		if v != "" {
+			given++
+		}
+	}
+	if given != 1 {
+		return nil, Usagef("source add needs exactly one of --raw, --raw-sha256 or --raw-session").WithNext(next)
 	}
 	if r.File == "" {
 		return nil, Usagef("source add needs a file").WithNext(next)
@@ -106,14 +114,24 @@ func runSourceAdd(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	sum := r.RawSHA256
-	if r.Raw != "" {
+	var extra []string
+	switch {
+	case r.Raw != "":
 		raw, err := readSourceFile("--raw", r.Raw)
 		if err != nil {
 			return nil, err
 		}
 		h := sha256.Sum256(raw)
 		sum = hex.EncodeToString(h[:])
-	} else if !isSHA256Hex(sum) {
+	case r.RawSession != "":
+		sid, raw, err := sessionTranscript(ctx, r.RawSession)
+		if err != nil {
+			return nil, err
+		}
+		h := sha256.Sum256(raw)
+		sum = hex.EncodeToString(h[:])
+		extra = append(extra, "session="+sid)
+	case !isSHA256Hex(sum):
 		return nil, Usagef("--raw-sha256 %q: want 64 lower-case hex characters", sum).WithNext(next)
 	}
 	quotes, err := canon.Marshal(*f.Quotes)
@@ -123,11 +141,35 @@ func runSourceAdd(ctx *Ctx, req any) (any, error) {
 	add := AddRequest{
 		Kind:       "source",
 		Handle:     r.Handle,
-		Fields:     []string{"title=" + f.Title, "summary=" + f.Summary, "raw_sha256=" + sum},
+		Fields:     append([]string{"title=" + f.Title, "summary=" + f.Summary, "raw_sha256=" + sum}, extra...),
 		JSONFields: []string{"quotes=" + strings.TrimSuffix(string(quotes), "\n")},
 	}
 	return runWrite(ctx, "source.add", commandLine("source", "add", r.Handle),
 		func(b writeBase) (edit, error) { return buildAdd(b, add) })
+}
+
+// sessionTranscript reads the agent transcript of the session ref names (a
+// full ID or unique prefix) and returns the session's full ID with it. An
+// unknown session is not_found; a session without a transcript is an error.
+func sessionTranscript(ctx *Ctx, ref string) (string, []byte, error) {
+	st, err := sessionStore(ctx)
+	if err != nil {
+		return "", nil, err
+	}
+	rec, err := readSession(st, strings.TrimSpace(ref))
+	if err != nil {
+		return "", nil, err
+	}
+	a, ok := adapter.Lookup(rec.Agent)
+	if !ok {
+		return "", nil, Errorf("session %s names agent %q, which this rhiza does not know: want one of %s",
+			rec.ID, rec.Agent, strings.Join(adapter.Names(), ", "))
+	}
+	raw, err := readTranscript(ctx, a, rec.ID)
+	if err != nil {
+		return "", nil, err
+	}
+	return rec.ID, raw, nil
 }
 
 // readSourceFile reads file; a missing one is not_found, any other failure

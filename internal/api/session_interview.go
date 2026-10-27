@@ -54,7 +54,8 @@ type SessionInterviewRequest struct {
 // those that would be.
 type SessionInterviewResponse struct {
 	Session  string             `json:"session" desc:"The session ID"`
-	Change   string             `json:"change" desc:"The session's change set, which the Decisions go into"`
+	Change   string             `json:"change" desc:"The session's change set, which the Decisions go into while it is open"`
+	Record   string             `json:"record,omitempty" desc:"The landed record change set the Decisions were written in, when the session's change set had landed"`
 	Proposed []ProposedDecision `json:"proposed" desc:"The Decisions proposed, in transcript order"`
 	Skipped  []string           `json:"skipped" desc:"Handles of answers already proposed in the change set, left alone"`
 	DryRun   bool               `json:"dry_run,omitempty" desc:"True if nothing was written"`
@@ -97,6 +98,12 @@ func runSessionInterview(ctx *Ctx, req any) (any, error) {
 // worktree, as rec's agent actor for rec's for-actor, in one entry. Answers
 // whose handle the change set already has are skipped, so a second capture
 // of the same transcript writes nothing. Ctx.DryRun writes nothing.
+//
+// When rec's change set has landed, as a milestone planner's record does
+// before the planner exits, the Decisions and their derived-from links go
+// into one landed record change set over the landed view instead; answers
+// whose handle the landed view has are skipped. Any other terminal state is
+// a conflict.
 func captureInterview(ctx *Ctx, rec session.Record) (SessionInterviewResponse, error) {
 	resp := SessionInterviewResponse{Session: rec.ID, Change: rec.Change, Proposed: []ProposedDecision{},
 		Skipped: []string{}, DryRun: ctx.DryRun}
@@ -126,7 +133,19 @@ func captureInterview(ctx *Ctx, rec session.Record) (SessionInterviewResponse, e
 		return resp, err
 	}
 	c, _ := ww.changeSet(cs)
-	m := ww.model(cs)
+	// A landed change set takes no more ops: the Decisions go into a record
+	// write over the landed view, where its Source is too. A milestone
+	// planner lands its record before it exits.
+	landed := c.State == changeset.StateLanded
+	view := cs
+	if landed {
+		view = id.ID{}
+	}
+	m := ww.model(view)
+	sources := sessionSources(m, c.Ops, rec.ID)
+	if landed {
+		sources = landedSessionSources(m, sources, rec.ID)
+	}
 	var items []applyItem
 	for _, w := range writes {
 		if answerProposed(m, c.Ops, w.add.Handle) {
@@ -137,11 +156,15 @@ func captureInterview(ctx *Ctx, rec session.Record) (SessionInterviewResponse, e
 			Picked: w.answer.Picked, Typed: w.answer.Typed})
 		add := w.add
 		items = append(items, applyItem{op: "add", build: func(b writeBase) (edit, error) { return buildAdd(b, add) }})
+		for _, src := range sources {
+			link := LinkRequest{From: add.Handle, Type: string(op.LinkDerivedFrom), To: src.String()}
+			items = append(items, applyItem{op: "link", build: func(b writeBase) (edit, error) { return buildLink(b, link) }})
+		}
 	}
 	if len(items) == 0 {
 		return resp, nil
 	}
-	if c.State.Terminal() {
+	if c.State.Terminal() && !landed {
 		return resp, Conflictf("change set %s is %s; no Decision can be proposed in it", cs, c.State).
 			WithNext("rhiza change show " + cs.String())
 	}
@@ -154,6 +177,24 @@ func captureInterview(ctx *Ctx, rec session.Record) (SessionInterviewResponse, e
 	if err != nil {
 		return resp, Errorf("session %s's for-actor %s: %s", rec.ID, rec.For, AsError(err).Message).
 			WithNext("rhiza session show " + rec.ID)
+	}
+	if landed {
+		e, err := buildApply(ww, id.ID{}, ctx.IDs, items)
+		if err == nil {
+			err = e.check("add")
+		}
+		if err != nil {
+			return resp, err
+		}
+		intent := fmt.Sprintf("Record the answers of session %s, whose change set %s has landed", rec.ID, cs)
+		rc, _, err := ww.writeRecord(intent, e.ops, actor, forID)
+		if err != nil {
+			return resp, err
+		}
+		if !ctx.DryRun {
+			resp.Record = rc.String()
+		}
+		return resp, nil
 	}
 	e, err := buildApply(ww, cs, ctx.IDs, items)
 	if err == nil {
@@ -252,6 +293,36 @@ func answerProposed(m Model, ops []op.Op, h string) bool {
 	return slices.ContainsFunc(ops, func(o op.Op) bool { return o.Type == op.TypeNodeCreate && o.Handle == h })
 }
 
+// sessionSources lists the Sources the change set's ops create whose
+// session field names session sid, in op order: those a source add
+// --raw-session of that session wrote, still live in m.
+func sessionSources(m Model, ops []op.Op, sid string) []id.ID {
+	var out []id.ID
+	for _, o := range ops {
+		if o.Type != op.TypeNodeCreate || o.Kind != op.KindSource {
+			continue
+		}
+		n, ok := m.Node(o.Node)
+		if !ok || n.Retired || fieldText(n.Fields["session"]) != sid || slices.Contains(out, o.Node) {
+			continue
+		}
+		out = append(out, o.Node)
+	}
+	return out
+}
+
+// landedSessionSources adds to found every other live landed Source whose
+// session field names session sid, by ID: one added with --record, say.
+func landedSessionSources(m Model, found []id.ID, sid string) []id.ID {
+	out := slices.Clone(found)
+	for _, n := range m.Children(op.KindSource, id.ID{}) {
+		if !n.Retired && fieldText(n.Fields["session"]) == sid && !slices.Contains(out, n.ID) {
+			out = append(out, n.ID)
+		}
+	}
+	return out
+}
+
 // liveActor resolves ref to a live actor node.
 func liveActor(m Model, ref string) (id.ID, error) {
 	n, err := resolveActorRef(m, ref)
@@ -335,6 +406,9 @@ func (r SessionInterviewResponse) Human(w io.Writer) {
 	}
 	if len(r.Proposed) == 0 {
 		fmt.Fprintf(w, "No new answered question in session %s: nothing to propose in change set %s.\n", r.Session, r.Change)
+	} else if r.Record != "" {
+		fmt.Fprintf(w, "Recorded %d decision(s) from session %s in record change set %s: change set %s has landed.\n\n",
+			len(r.Proposed), r.Session, r.Record, r.Change)
 	} else {
 		fmt.Fprintf(w, "%s %d decision(s) in change set %s from session %s:\n\n", verb, len(r.Proposed), r.Change, r.Session)
 	}

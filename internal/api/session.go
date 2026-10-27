@@ -89,6 +89,10 @@ type SessionStartRequest struct {
 	// autonomous marks the session as launched by an autonomous run. Only
 	// a run's StartAgent sets it, so it stays off the request schema.
 	autonomous bool
+	// writes and writesRecord are the session record's Writes and
+	// WritesRecord. Only a run's StartArbiter sets them.
+	writes       string
+	writesRecord bool
 }
 
 // SessionStartResponse is the session launched, or in a dry run the one
@@ -224,6 +228,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 		ID: sid, Agent: a.Name(), Change: cs.String(), Title: title, Step: step, Run: r.Run, Autonomous: r.autonomous,
 		Actor: handleSlug(a.Name() + "-" + sid[:8]), PermissionMode: r.PermissionMode, Prompt: r.Prompt,
 		Worktree: worktree, Branch: branch, Tab: tab, StartedAt: ctx.Now().UTC().Truncate(time.Second),
+		Writes: r.writes, WritesRecord: r.writesRecord,
 	}
 	self := ctx.Self
 	if self == "" {

@@ -53,7 +53,7 @@ stdout '^Dry run: would write 1 operation\(s\)'
 
 # Exactly one of --raw and --raw-sha256.
 ! exec rhiza source add x s.json --record
-stderr 'exactly one of --raw or --raw-sha256'
+stderr 'exactly one of --raw, --raw-sha256 or --raw-session'
 stderr '^next: rhiza describe source.add$'
 ! exec rhiza source add x s.json --raw raw.txt --raw-sha256 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef --record --json
 stdout '"code": "usage"'

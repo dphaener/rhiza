@@ -1,0 +1,73 @@
+# source add --raw-session hashes a session's transcript as the source's raw
+# material and names the session in a field. The transcript's text, and its
+# path, never reach .rhiza/. The launched agent finds its session ID in
+# RHIZA_SESSION, so it can name its own session. The fake rex opens a window
+# and runs nothing; the fake agent logs its environment, writes a transcript
+# and exits 0.
+
+mkdir $HOME/.claude/projects/p
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Plan sources' --title 'Plan sources' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza session start --permission-mode manual --json
+stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+
+# The launched agent finds its session in RHIZA_SESSION.
+exec rhiza session run 158fe87f-5cf3-4ff0-ae50-01a16dc84988
+exec cat $WORK/claude.env
+stdout '^RHIZA_SESSION=158fe87f-5cf3-4ff0-ae50-01a16dc84988$'
+exists $HOME/.claude/projects/p/158fe87f-5cf3-4ff0-ae50-01a16dc84988.jsonl
+
+# The transcript's sha256, computed here.
+exec shasum -a 256 $HOME/.claude/projects/p/158fe87f-5cf3-4ff0-ae50-01a16dc84988.jsonl
+stdout '^547b40a5f17ce38449321b649e400aea473fb41eacd1d24f00873ad2275b8641 '
+
+# --raw-session with --raw, or with --raw-sha256: usage, exit 2, nothing written.
+exec sh -c 'rhiza source add plan $WORK/s.json --raw-session 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --raw $WORK/s.json --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout 'exactly one of --raw, --raw-sha256 or --raw-session'
+stdout '^exit=2$'
+exec sh -c 'rhiza source add plan $WORK/s.json --raw-session 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --raw-sha256 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout '^exit=2$'
+! exec rhiza show plan
+stderr 'no node or link matches'
+
+# An unknown session: not_found, exit 4, nothing written.
+exec sh -c 'rhiza source add plan $WORK/s.json --raw-session 00000000-0000-4000-8000-000000000000 --json; echo exit=$?'
+stdout '"code": "not_found"'
+stdout 'no session matches'
+stdout '^exit=4$'
+! exec rhiza show plan
+stderr 'no node or link matches'
+
+# The session's transcript: hashed, with the session named.
+exec rhiza source add plan $WORK/s.json --raw-session 158fe87f --json
+stdout '"nodes": \['
+exec rhiza show plan --json
+stdout '"raw_sha256": "547b40a5f17ce38449321b649e400aea473fb41eacd1d24f00873ad2275b8641"'
+stdout '"session": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+! exec grep -r 'TRANSCRIPT-MARKER' .rhiza
+! exec grep -r '.claude/projects' .rhiza
+! exec grep -r '158fe87f-5cf3-4ff0-ae50-01a16dc84988.jsonl' .rhiza
+fold-ok
+
+-- s.json --
+{"title":"Planning interview","summary":"The owner answered the planning questions.","quotes":[]}
+-- bin/rex --
+#!/bin/sh
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+# A fake agent: logs its environment, writes a fixed transcript and exits 0.
+env > "$WORK/claude.env"
+printf '%s\n' '{"type":"user","message":{"role":"user","content":"TRANSCRIPT-MARKER plan this"}}' > "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl"
+exit 0
