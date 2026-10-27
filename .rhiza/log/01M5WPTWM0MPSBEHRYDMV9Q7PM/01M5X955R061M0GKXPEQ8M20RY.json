@@ -1,0 +1,247 @@
+{
+  "actor": "01M5X7SM81C997JR1QK3WBS4AM",
+  "after": [
+    "01M5WRWZ5JAFPNZKBG5EP276V4"
+  ],
+  "at": "2026-10-26T23:36:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go adapter tests feed PostToolUse payloads shaped like a real SendMessage call, with made-up content (one plain, one with newlines and quotes in its text, one whose message is a JSON object, one with an empty-string message), a PostToolUse payload for another tool, SendMessage inputs with no recipient and with no message, and each other hook event: SendMessage gives the recipient, the verbatim text and the summary, the object gives its raw JSON marked structured, the rest give no message, the malformed inputs are errors, and HookStatus returns the same report as before for all of them. The settings JSON still installs one PostToolUse hook with no matcher.",
+          "statement": "The Claude Code adapter reads a PostToolUse hook payload whose tool is SendMessage as a message: the recipient, the text exactly as the tool's input gives it (a message that is not a string kept as its raw JSON and marked structured) and its summary, if any. Input with no recipient or no message is malformed. Every other tool and every other event gives no message, and the status the hook reports is unchanged."
+        },
+        "handle": "message-hook-payload",
+        "id": "01M5WRWWNXTXNFMZMGZJR480PY",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5WRWWNXTXNFMZMGZFM46D6F",
+        "op": "node.create",
+        "parent": "01M5WRWWARC3CG3GN0Y485B6NJ"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript launches a session in a run with a fake Rex, then pipes a SendMessage PostToolUse payload naming that session into rhiza session hook PostToolUse: the run's journal gains one message entry with the step, the session ID, the session's actor, the recipient and the text, and the session's recorded status is the same as for any PostToolUse. The same payload for a session outside any run, and for a run whose journal is unwritable, exits 0 and adds no entry; the journal's existing entries still fold. A structured message is journaled marked structured.",
+          "statement": "When a session that belongs to a run sends a message, rhiza session hook appends a message entry to that run's journal: the step, the sending session, its actor as sender, the recipient, the text, whether it is structured, and the summary, at the time of the hook, even after the session's exit is recorded. A session that belongs to no run journals nothing, and a failure to journal is reported on stderr and never fails the agent's tool call."
+        },
+        "handle": "message-journal",
+        "id": "01M5WRWX0ZGMQPHT667T9N3SX7",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5WRWX0ZGMQPHT667PFCEY26",
+        "op": "node.create",
+        "parent": "01M5WRWWARC3CG3GN0Y485B6NJ"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript journals two messages in a run through rhiza session hook: run status --json has a messages list with both in order and every field, the markdown shows each with its sender, recipient and text, and a run with no messages has an empty list. describe-golden is regenerated for the new response field.",
+          "statement": "rhiza run status lists a run's journaled messages in order, each with its time, step, sending session, sender, recipient, text, summary and whether it is structured, so the conversation between its sessions can be read back after the run."
+        },
+        "handle": "run-status-messages",
+        "id": "01M5WRWXC0MEDRAPVSV7SV52H8",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5WRWXC0MEDRAPVSV5P23ZVK",
+        "op": "node.create",
+        "parent": "01M5WRWWARC3CG3GN0Y485B6NJ"
+      },
+      {
+        "fields": {
+          "acceptance": "Go adapter tests read a transcript fixture with three assistant messages, one of them split over several lines that repeat its usage, two sidechain assistant lines of one helper message, plus a user line and a broken line: the session's totals equal the sum over the three messages counted once each, the helper totals equal the helper message's counts once; an empty transcript gives zeros.",
+          "statement": "An adapter reads a session's token use from its own transcript: for Claude Code, the input, output, cache-creation and cache-read tokens of its assistant messages, each message counted once however many transcript lines repeat it, with lines its helper agents left in the same transcript counted as a separate helper total. Helper agents' own transcripts are not counted, and unreadable lines are skipped, not fatal."
+        },
+        "handle": "transcript-token-use",
+        "id": "01M5WRWXQ0MVD3SNCJ9H140DAV",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5WRWXQ0MVD3SNCJ9GFXZ6KK",
+        "op": "node.create",
+        "parent": "01M5WRWWARC3CG3GN0Y485B6NJ"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs a session in a run with a fake agent that leaves a transcript fixture where TranscriptGlobs points, says done, adds to the transcript and exits: session show --json and its markdown give the counts of the later reading, and the run's journal has a tokens entry at done and one at exit with the step, session and counts. A Go engine test shows each agent step's end reports its session once, including a session left open. With no transcript, session done and session run warn, session run exits with the agent's code, and neither the record nor the journal gains token use. describe-golden is regenerated for the new response field.",
+          "statement": "When a session says done, when its step ends, and again when its agent exits, rhiza reads its token use from the transcript, records it on the session record and, when the session belongs to a run, appends a tokens entry with the step, session and the four counts of the session and of its helper agents to the run's journal; the later reading wins. rhiza session show shows it. A transcript that cannot be read is a warning and records no token use."
+        },
+        "handle": "session-token-use",
+        "id": "01M5WRWXYCPD79ST702XMKBT3H",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5WRWXYCPD79ST702XJ65GAF",
+        "op": "node.create",
+        "parent": "01M5WRWWARC3CG3GN0Y485B6NJ"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs a two-step workflow whose two fake agents leave transcripts with known usage: run status --json lists both sessions with their steps and counts and totals equal to their sums, the markdown shows the same, and a session whose token use was not recorded is listed with no counts and left out of the totals. describe-golden is regenerated for the new response field.",
+          "statement": "rhiza run status shows each of a run's sessions with its step, its journaled token use and its helpers', and the run's totals of each, the latest reading of each session counting, so the token cost of a run can be read when it is over."
+        },
+        "handle": "run-status-tokens",
+        "id": "01M5WRWY9E4NFEB9ZYE9VGJFXH",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5WRWY9E4NFEB9ZYE7K54AXK",
+        "op": "node.create",
+        "parent": "01M5WRWWARC3CG3GN0Y485B6NJ"
+      },
+      {
+        "fields": {
+          "statement": "Sidechain lines in a session's transcript are counted as a separate helper-agents total beside the session's own, not skipped.",
+          "wording": "the orchestrator's ruling as arbiter for the owner"
+        },
+        "handle": "helper-token-total",
+        "id": "01M5X953TYPADEF6C33CQERH45",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5X953TYPADEF6C33A0SA23E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "A SendMessage whose message is not a string is journaled as its raw JSON marked structured; only input with no recipient or no message is malformed.",
+          "wording": "the orchestrator's ruling as arbiter for the owner"
+        },
+        "handle": "structured-messages-journaled",
+        "id": "01M5X953Z19VAN334QMRMPR4QS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5X953Z19VAN334QMR0BAZ8Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "Token use is read when a session says done or its step ends, and again on exit; the later reading wins.",
+          "wording": "the orchestrator's ruling as arbiter for the owner"
+        },
+        "handle": "token-use-read-at-done-and-step-end",
+        "id": "01M5X95435CPCXPF0W5B46GTTH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5X95435CPCXPF0W59M0E3A8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "SendMessage's summary is journaled with the message and shown in run status.",
+          "wording": "the agent's option, picked by the orchestrator as arbiter for the owner"
+        },
+        "handle": "message-summary-journaled",
+        "id": "01M5X9547A3G5CSZA4PTQN227E",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5X9547A3G5CSZA4PRSAXHGV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWXQ0MVD3SNCJ9GFXZ6KK",
+        "id": "01M5X954BF41J7JTY3C1CXED2A",
+        "link": "01M5X954BF41J7JTY3BZY4HN2B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X953TYPADEF6C33A0SA23E",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWXYCPD79ST702XJ65GAF",
+        "id": "01M5X954FRRM3T5CZFAV9839XV",
+        "link": "01M5X954FRRM3T5CZFASQV5PG1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X953TYPADEF6C33A0SA23E",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWY9E4NFEB9ZYE7K54AXK",
+        "id": "01M5X954KXC0VE7BCPKR804YDS",
+        "link": "01M5X954KXC0VE7BCPKR4AKA7N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X953TYPADEF6C33A0SA23E",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWWNXTXNFMZMGZFM46D6F",
+        "id": "01M5X954R4NBKH2HGX4N3R15GE",
+        "link": "01M5X954R4NBKH2HGX4MG7XH0Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X953Z19VAN334QMR0BAZ8Z",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWX0ZGMQPHT667PFCEY26",
+        "id": "01M5X954WAZW8CBRCEYWZBS5XH",
+        "link": "01M5X954WAZW8CBRCEYW5F1JX7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X953Z19VAN334QMR0BAZ8Z",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWXYCPD79ST702XJ65GAF",
+        "id": "01M5X9550GFPDV66GX753SMCS6",
+        "link": "01M5X9550GFPDV66GX71N03G19",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X95435CPCXPF0W59M0E3A8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWY9E4NFEB9ZYE7K54AXK",
+        "id": "01M5X9554ZSR8RSGNMQ7TX2PWG",
+        "link": "01M5X9554ZSR8RSGNMQ4ATKXR7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X95435CPCXPF0W59M0E3A8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWWNXTXNFMZMGZFM46D6F",
+        "id": "01M5X9559518V7KFSRXZ45SPPE",
+        "link": "01M5X9559518V7KFSRXYAMB3KZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X9547A3G5CSZA4PRSAXHGV",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWX0ZGMQPHT667PFCEY26",
+        "id": "01M5X955DF5PF3K72XR7N89JKQ",
+        "link": "01M5X955DF5PF3K72XR5GYMJSN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X9547A3G5CSZA4PRSAXHGV",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRWXC0MEDRAPVSV5P23ZVK",
+        "id": "01M5X955HMPQH3VXEA60C2DB5F",
+        "link": "01M5X955HMPQH3VXEA5XC8AZ7H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5X9547A3G5CSZA4PRSAXHGV",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5WPTWM0MPSBEHRYDMV9Q7PM",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5X955R061M0GKXPEQ8M20RY",
+  "type": "ops",
+  "v": 1
+}

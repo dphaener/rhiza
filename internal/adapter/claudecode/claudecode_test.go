@@ -206,6 +206,128 @@ func TestSettingsInstallsPostToolUse(t *testing.T) {
 	}
 }
 
+// sendHookPayload returns a PostToolUse payload for a SendMessage call with the
+// given tool_input, shaped like the agent's hook stdin. The content is made up.
+func sendHookPayload(event, tool, input string) string {
+	return `{"session_id":"s","transcript_path":"/tmp/x.jsonl","cwd":"/tmp/w","hook_event_name":"` + event +
+		`","tool_name":"` + tool + `","tool_input":` + input +
+		`,"tool_response":{"success":true},"tool_use_id":"toolu_01ABC"}`
+}
+
+var sendInputs = []struct {
+	name, input string
+	want        adapter.Message
+	err         bool
+}{
+	{"plain", `{"to":"reviewer","summary":"Ready for review","message":"Change set 2 is ready."}`,
+		adapter.Message{SessionID: "s", To: "reviewer", Text: "Change set 2 is ready.", Summary: "Ready for review"}, false},
+	{"escapes", `{"to":"reviewer","summary":"Two lines","message":"Line one\nsaid \"done\""}`,
+		adapter.Message{SessionID: "s", To: "reviewer", Text: "Line one\nsaid \"done\"", Summary: "Two lines"}, false},
+	{"structured", `{"to":"lead","summary":"Status","message":{"type":"status","ok":true}}`,
+		adapter.Message{SessionID: "s", To: "lead", Text: `{"type":"status","ok":true}`, Summary: "Status", Structured: true}, false},
+	{"empty text", `{"to":"reviewer","summary":"Nothing","message":""}`,
+		adapter.Message{SessionID: "s", To: "reviewer", Text: "", Summary: "Nothing"}, false},
+	{"no summary", `{"to":"reviewer","message":"Hello"}`,
+		adapter.Message{SessionID: "s", To: "reviewer", Text: "Hello"}, false},
+	{"no to", `{"summary":"x","message":"Hello"}`, adapter.Message{}, true},
+	{"null to", `{"to":null,"message":"Hello"}`, adapter.Message{}, true},
+	{"empty to", `{"to":"","message":"Hello"}`, adapter.Message{}, true},
+	{"no message", `{"to":"reviewer","summary":"x"}`, adapter.Message{}, true},
+	{"null message", `{"to":"reviewer","message":null}`, adapter.Message{}, true},
+}
+
+func TestHookMessage(t *testing.T) {
+	for _, c := range sendInputs {
+		t.Run(c.name, func(t *testing.T) {
+			m, ok, err := Adapter{}.HookMessage("PostToolUse", []byte(sendHookPayload("PostToolUse", sendTool, c.input)))
+			if c.err {
+				if err == nil || ok {
+					t.Fatalf("want an error, got %+v ok=%v err=%v", m, ok, err)
+				}
+				return
+			}
+			if err != nil || !ok || m != c.want {
+				t.Fatalf("got %+v ok=%v err=%v, want %+v", m, ok, err, c.want)
+			}
+		})
+	}
+}
+
+func TestHookMessageEscapesDecoded(t *testing.T) {
+	m, _, err := Adapter{}.HookMessage("PostToolUse", []byte(sendHookPayload("PostToolUse", "SendMessage",
+		`{"to":"reviewer","message":"a\nb \"c\""}`)))
+	if err != nil || !strings.Contains(m.Text, "\n") || !strings.Contains(m.Text, `"c"`) || strings.Contains(m.Text, `\`) {
+		t.Fatalf("%q %v", m.Text, err)
+	}
+}
+
+func TestHookMessageNoMessage(t *testing.T) {
+	input := `{"to":"reviewer","summary":"x","message":"Hello"}`
+	cases := []struct{ name, event, tool string }{
+		{"other tool", "PostToolUse", "Bash"},
+		{"SessionStart", "SessionStart", "SendMessage"},
+		{"UserPromptSubmit", "UserPromptSubmit", "SendMessage"},
+		{"PreToolUse", "PreToolUse", "SendMessage"},
+		{"Notification", "Notification", "SendMessage"},
+		{"Stop", "Stop", "SendMessage"},
+		{"SessionEnd", "SessionEnd", "SendMessage"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			m, ok, err := Adapter{}.HookMessage(c.event, []byte(sendHookPayload(c.event, c.tool, input)))
+			if err != nil || ok || m.To != "" || m.Text != "" {
+				t.Fatalf("got %+v ok=%v err=%v", m, ok, err)
+			}
+		})
+	}
+	for _, ev := range hookEvents {
+		if ev == "PostToolUse" {
+			continue
+		}
+		if _, ok, err := (Adapter{}).HookMessage(ev, []byte(sendHookPayload(ev, sendTool, input))); ok || err != nil {
+			t.Errorf("%s: ok=%v err=%v", ev, ok, err)
+		}
+	}
+	if _, ok, err := (Adapter{}).HookMessage("PostToolUse", []byte(sendHookPayload("PostToolUse", "Bash", `{"to":5,"message":null}`))); ok || err != nil {
+		t.Errorf("other tool's input: ok=%v err=%v", ok, err)
+	}
+	if _, ok, err := (Adapter{}).HookMessage("PostToolUse", []byte("not json")); err == nil || ok {
+		t.Errorf("bad JSON: ok=%v err=%v", ok, err)
+	}
+}
+
+func TestHookStatusUnchangedBySendMessage(t *testing.T) {
+	want := adapter.HookReport{SessionID: "s", State: "working"}
+	for _, c := range sendInputs {
+		t.Run(c.name, func(t *testing.T) {
+			r, ok, err := Adapter{}.HookStatus("PostToolUse", []byte(sendHookPayload("PostToolUse", sendTool, c.input)))
+			if err != nil || !ok || r != want {
+				t.Fatalf("got %+v ok=%v err=%v, want %+v", r, ok, err, want)
+			}
+		})
+	}
+}
+
+func TestSettingsOnePostToolUseGroupWithoutMatcher(t *testing.T) {
+	s, err := Settings(hook)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got struct {
+		Hooks map[string][]map[string]json.RawMessage `json:"hooks"`
+	}
+	if err := json.Unmarshal([]byte(s), &got); err != nil {
+		t.Fatal(err)
+	}
+	groups := got.Hooks["PostToolUse"]
+	if len(groups) != 1 {
+		t.Fatalf("PostToolUse groups = %d, want 1: %s", len(groups), s)
+	}
+	if _, has := groups[0]["matcher"]; has {
+		t.Fatalf("PostToolUse group has a matcher: %s", s)
+	}
+}
+
 type opt struct {
 	Label       string `json:"label"`
 	Description string `json:"description"`
@@ -487,5 +609,66 @@ func TestTranscriptGlobsMatchOnlyTheSessionsOwn(t *testing.T) {
 	}
 	if !reflect.DeepEqual(got, []string{own}) {
 		t.Fatalf("matches = %q, want %q", got, []string{own})
+	}
+}
+
+// tokenTranscript is made-up content in the shape of a Claude Code
+// transcript: msg_B is split over three lines that repeat its usage, and the
+// helper's msg_H is logged twice on sidechain lines.
+const tokenTranscript = `{"type":"user","isSidechain":false,"message":{"role":"user","content":"hi"}}
+{"type":"assistant","isSidechain":false,"message":{"id":"msg_A","usage":{"input_tokens":3,"output_tokens":10,"cache_creation_input_tokens":100,"cache_read_input_tokens":1000}}}
+{"type":"assistant","isSidechain":false,"message":{"id":"msg_B","usage":{"input_tokens":5,"output_tokens":20,"cache_creation_input_tokens":200,"cache_read_input_tokens":2000}}}
+{"type":"assistant","isSidechain":false,"message":{"id":"msg_B","usage":{"input_tokens":5,"output_tokens":20,"cache_creation_input_tokens":200,"cache_read_input_tokens":2000}}}
+{not json
+{"type":"assistant","isSidechain":false,"message":{"id":"msg_B","usage":{"input_tokens":5,"output_tokens":20,"cache_creation_input_tokens":200,"cache_read_input_tokens":2000}}}
+{"type":"assistant","isSidechain":true,"message":{"id":"msg_H","usage":{"input_tokens":11,"output_tokens":40,"cache_creation_input_tokens":400,"cache_read_input_tokens":4000}}}
+{"type":"assistant","isSidechain":true,"message":{"id":"msg_H","usage":{"input_tokens":11,"output_tokens":40,"cache_creation_input_tokens":400,"cache_read_input_tokens":4000}}}
+{"type":"user","isSidechain":false,"message":{"role":"user","content":"more","usage":{"input_tokens":999}}}
+{"type":"assistant","isSidechain":false,"message":{"id":"msg_C","usage":{"input_tokens":7,"output_tokens":30,"cache_creation_input_tokens":300,"cache_read_input_tokens":3000}}}
+{"type":"assistant","isSidechain":false,"message":{"usage":{"input_tokens":1,"output_tokens":2,"cache_creation_input_tokens":4,"cache_read_input_tokens":8}}}
+{"type":"assistant","isSidechain":false,"message":{"id":"msg_D"}}
+`
+
+func TestTokenUse(t *testing.T) {
+	got, err := Adapter{}.TokenUse([]byte(tokenTranscript))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := adapter.TokenUse{
+		Session: adapter.TokenCounts{Input: 3 + 5 + 7 + 1, Output: 10 + 20 + 30 + 2,
+			CacheCreation: 100 + 200 + 300 + 4, CacheRead: 1000 + 2000 + 3000 + 8},
+		Helpers: adapter.TokenCounts{Input: 11, Output: 40, CacheCreation: 400, CacheRead: 4000},
+	}
+	if got != want {
+		t.Fatalf("TokenUse = %+v, want %+v", got, want)
+	}
+}
+
+func TestTokenUseEmpty(t *testing.T) {
+	for _, in := range []string{"", "\n\n"} {
+		got, err := Adapter{}.TokenUse([]byte(in))
+		if err != nil || got != (adapter.TokenUse{}) {
+			t.Fatalf("TokenUse(%q) = %+v, %v; want zeros, nil", in, got, err)
+		}
+	}
+}
+
+func TestTokenUseBroken(t *testing.T) {
+	got, err := Adapter{}.TokenUse([]byte("{not json\n[1,2]\n\"usage\"\n{\"type\":\"assistant\",\"message\":{\"usage\":\"x\"}}"))
+	if err != nil || got != (adapter.TokenUse{}) {
+		t.Fatalf("TokenUse = %+v, %v; want zeros, nil", got, err)
+	}
+}
+
+func TestTokenUseLongLine(t *testing.T) {
+	pad := strings.Repeat("x", 70*1024)
+	in := `{"type":"assistant","isSidechain":false,"pad":"` + pad + `","message":{"id":"msg_L","usage":{"input_tokens":2,"output_tokens":3,"cache_creation_input_tokens":5,"cache_read_input_tokens":7}}}` + "\n"
+	got, err := Adapter{}.TokenUse([]byte(in))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := adapter.TokenUse{Session: adapter.TokenCounts{Input: 2, Output: 3, CacheCreation: 5, CacheRead: 7}}
+	if got != want {
+		t.Fatalf("TokenUse = %+v, want %+v", got, want)
 	}
 }

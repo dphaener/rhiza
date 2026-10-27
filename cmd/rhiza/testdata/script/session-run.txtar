@@ -43,7 +43,10 @@ env REX_SESSION=session:s1
 exec sh -c 'rhiza session run 158fe87f-5cf3-4ff0-ae50-01a16dc84988; echo exit=$?'
 stdout '^Session 158fe87f-5cf3-4ff0-ae50-01a16dc84988 ended: the agent exited with code 3\.$'
 stdout '^exit=3$'
-! stdout 'Warning'
+# The only warning: run-1 has no journal, so the token use read from the
+# transcript is recorded but cannot be journaled.
+stdout -count=1 'Warning'
+stdout '^- Warning: record token use: journal session 158fe87f-5cf3-4ff0-ae50-01a16dc84988''s token use in run run-1: no run matches "run-1"$'
 stdout '^- Proposed decision answer-158fe87f-1$'
 env REX_BLOCK=
 env REX_SESSION=

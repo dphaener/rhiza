@@ -74,6 +74,12 @@ type Runner interface {
 	// outcome (pass or fail), or still running and perhaps blocked on the
 	// owner.
 	AgentStatus(session string) (AgentStatus, error)
+	// AgentEnded reports the end of an agent step to its session: it is
+	// called once each time an agent step ends with a session, whatever its
+	// outcome (pass, fail, timeout or error), the session perhaps left
+	// open; never for a step that stopped, nor when StartAgent failed. An
+	// error is logged and changes nothing.
+	AgentEnded(step workflow.Step, session string) error
 }
 
 // AgentStatus is one poll of an agent step's session.
@@ -462,7 +468,8 @@ func (r *running) wait(step workflow.Step, env []string) result {
 // has said its work is done: idle alone is then not enough. The condition
 // is never checked while the session is blocked on the owner. A step that
 // waits for done also checks it when the session exits 0, and passes only
-// if it holds; any other exit fails, as on every agent step.
+// if it holds; any other exit fails, as on every agent step. Once the step
+// ends with an outcome, the Runner hears of it (Runner.AgentEnded).
 func (r *running) agent(step workflow.Step, env []string) (result, error) {
 	session := r.j.State().Session[step.Name]
 	if session == "" {
@@ -478,6 +485,18 @@ func (r *running) agent(step workflow.Step, env []string) (result, error) {
 	} else {
 		r.log("step %s: rejoining session %s", step.Name, session)
 	}
+	res, err := r.pollAgent(step, env, session)
+	if err != nil || res.stopped != "" {
+		return res, err
+	}
+	if err := r.e.Runner.AgentEnded(step, session); err != nil {
+		r.log("step %s: %v", step.Name, err)
+	}
+	return res, nil
+}
+
+// pollAgent polls the step's session until the step ends (see agent).
+func (r *running) pollAgent(step workflow.Step, env []string, session string) (result, error) {
 	c := r.clock()
 	interval := step.Interval
 	if interval <= 0 {

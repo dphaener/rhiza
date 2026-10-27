@@ -1,0 +1,73 @@
+# run status lists the messages a run's sessions sent each other, in order,
+# from the run's journal: in --json every field of each, and in markdown a
+# Messages section with one bullet per message. A multi-line text stays in
+# its bullet, its continuation lines indented. A run with no messages lists
+# none. The fake rex opens a window and runs nothing.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Journal messages' --title 'Messages' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+mkdir .rhiza/workflows
+cp ../one.toml .rhiza/workflows/one.toml
+exec rhiza run start --workflow one
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
+
+exec rhiza session start --permission-mode manual --run 01M5PWGJC82P7YGZTWYFFZ0VJG --step talk --json
+stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+
+# Before any message: an empty list, and no Messages section.
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG --json
+stdout '"messages": \[\]'
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG
+! stdout '## Messages'
+
+# Two messages: a plain one with a summary and a text with a blank line
+# in it, then a
+# structured one with no summary.
+stdin $WORK/send.json
+exec rhiza session hook PostToolUse
+! stderr .
+stdin $WORK/structured.json
+exec rhiza session hook PostToolUse
+! stderr .
+
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG --json
+stdout '"messages": \[\n\s+\{\n\s+"actor": "claude-code-158fe87f",\n\s+"at": "\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ",\n\s+"session": "158fe87f-5cf3-4ff0-ae50-01a16dc84988",\n\s+"step": "talk",\n\s+"summary": "Ready",\n\s+"text": "Line one\\n\\nsaid \\"done\\"",\n\s+"to": "reviewer"\n\s+\},\n\s+\{\n\s+"actor": "claude-code-158fe87f",\n\s+"at": "\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ",\n\s+"session": "158fe87f-5cf3-4ff0-ae50-01a16dc84988",\n\s+"step": "talk",\n\s+"structured": true,\n\s+"text": "\{\\"verdict\\":\\"pass\\",\\"n\\":2\}",\n\s+"to": "lead"\n\s+\}\n\s+\]'
+stdout -count=2 '"actor": '
+! stdout '"structured": false'
+
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG
+stdout '^## Messages\n\n- \d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ claude-code-158fe87f to reviewer \(step talk, summary: Ready\): Line one\n\n  said "done"\n- \d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ claude-code-158fe87f to lead \(step talk, structured\): \{"verdict":"pass","n":2\}\n'
+stdout -count=2 '^- \d{4}-'
+# The blank line stays blank: only non-empty continuation lines are indented.
+! stdout '^ +$'
+
+# Another run, with no messages, lists none.
+exec rhiza run start --workflow one
+stdout '^Run 01M5PWGKBGYFZMTH8Y8AF1G8GN succeeded$'
+exec rhiza run status 01M5PWGKBGYFZMTH8Y8AF1G8GN --json
+stdout '"messages": \[\]'
+
+fold-ok
+
+-- one.toml --
+name = "one"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- send.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","transcript_path":"/tmp/x.jsonl","cwd":"/tmp/w","hook_event_name":"PostToolUse","tool_name":"SendMessage","tool_input":{"to":"reviewer","summary":"Ready","message":"Line one\n\nsaid \"done\""},"tool_response":{"success":true},"tool_use_id":"toolu_01X"}
+-- structured.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","transcript_path":"/tmp/x.jsonl","cwd":"/tmp/w","hook_event_name":"PostToolUse","tool_name":"SendMessage","tool_input":{"to":"lead","message":{"verdict":"pass","n":2}},"tool_response":{"success":true},"tool_use_id":"toolu_01Y"}
+-- bin/rex --
+#!/bin/sh
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

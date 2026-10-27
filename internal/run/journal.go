@@ -17,6 +17,8 @@ const (
 	TypeUnblocked = "unblocked"
 	TypeAmended   = "amended"
 	TypeRetried   = "retried"
+	TypeMessage   = "message"
+	TypeTokens    = "tokens"
 )
 
 // Run results, used in Entry.End and State.Result.
@@ -64,20 +66,64 @@ type Block struct {
 //	finished:  End (succeeded or failed), Detail
 //	amended:   Step, Session, Actor, File (the owner or an agent amended the step's brief)
 //	retried:   Step, Detail (a failed run reopened at Step; Detail is why it had failed)
+//	message:   Step, Session, Actor (the sender), To, Text, Summary, Structured (a session sent another a message)
+//	tokens:    Step, Session, Tokens (a reading of the session's token use; the latest counts)
 type Entry struct {
-	Type    string    `json:"type"`
-	At      time.Time `json:"at"`
-	Step    string    `json:"step,omitempty"`
-	Visit   int       `json:"visit,omitempty"`
-	Outcome string    `json:"outcome,omitempty"`
-	Next    string    `json:"next,omitempty"`
-	Detail  string    `json:"detail,omitempty"`
-	Session string    `json:"session,omitempty"`
-	Started *Started  `json:"started,omitempty"`
-	End     string    `json:"end,omitempty"`
-	Block   *Block    `json:"block,omitempty"`
-	Actor   string    `json:"actor,omitempty"`
-	File    string    `json:"file,omitempty"`
+	Type       string    `json:"type"`
+	At         time.Time `json:"at"`
+	Step       string    `json:"step,omitempty"`
+	Visit      int       `json:"visit,omitempty"`
+	Outcome    string    `json:"outcome,omitempty"`
+	Next       string    `json:"next,omitempty"`
+	Detail     string    `json:"detail,omitempty"`
+	Session    string    `json:"session,omitempty"`
+	Started    *Started  `json:"started,omitempty"`
+	End        string    `json:"end,omitempty"`
+	Block      *Block    `json:"block,omitempty"`
+	Actor      string    `json:"actor,omitempty"`
+	File       string    `json:"file,omitempty"`
+	To         string    `json:"to,omitempty"`
+	Text       string    `json:"text,omitempty"`
+	Summary    string    `json:"summary,omitempty"`
+	Structured bool      `json:"structured,omitempty"`
+	Tokens     *TokenUse `json:"tokens,omitempty"`
+}
+
+// TokenCounts are the tokens a set of model calls used, by kind.
+type TokenCounts struct {
+	Input         int64 `json:"input"`
+	Output        int64 `json:"output"`
+	CacheCreation int64 `json:"cache_creation"`
+	CacheRead     int64 `json:"cache_read"`
+}
+
+// TokenUse is a reading of a session's token use. Session counts the
+// session's own calls; Helpers counts the calls its helper agents logged in
+// its transcript.
+type TokenUse struct {
+	Session TokenCounts `json:"session"`
+	Helpers TokenCounts `json:"helpers"`
+}
+
+// Message is one message entry: a session sent another a message while its
+// step ran. Actor is the sender's actor handle; Structured is true when the
+// message was a structured one rather than plain text.
+type Message struct {
+	Step       string
+	Session    string
+	Actor      string
+	To         string
+	Text       string
+	Summary    string
+	Structured bool
+	At         time.Time
+}
+
+// RunSession is one session the run launched or read token use for, with
+// the step it first appeared under.
+type RunSession struct {
+	Step    string
+	Session string
 }
 
 // Amendment is one amended entry: a step's brief or plan file replaced
@@ -169,11 +215,21 @@ type State struct {
 	// until its next entered entry marks that visit as the retry.
 	retryNext  string
 	retryVisit map[string]int
+	// Messages are the message entries in journal order. A message changes
+	// nothing else in the fold.
+	Messages []Message
+	// Sessions holds one entry per distinct session ID, in the order of its
+	// first session or tokens entry, with the step from that entry.
+	Sessions []RunSession
+	// Tokens holds each session's latest token use, keyed by session ID:
+	// the last tokens entry wins. A tokens entry changes nothing else in
+	// the fold.
+	Tokens map[string]TokenUse
 }
 
 // State folds the journal.
 func (j Journal) State() State {
-	st := State{ID: j.ID, Visits: map[string]int{}, Session: map[string]string{}}
+	st := State{ID: j.ID, Visits: map[string]int{}, Session: map[string]string{}, Tokens: map[string]TokenUse{}}
 	for _, e := range j.Entries {
 		switch e.Type {
 		case TypeStarted:
@@ -205,6 +261,7 @@ func (j Journal) State() State {
 			st.retryNext = ""
 		case TypeSession:
 			st.Session[e.Step] = e.Session
+			st.addSession(e.Step, e.Session)
 		case TypeBlocked:
 			b := Block{}
 			if e.Block != nil {
@@ -234,6 +291,16 @@ func (j Journal) State() State {
 			st.Amendments = append(st.Amendments, Amendment{
 				Step: e.Step, Session: e.Session, Actor: e.Actor, File: e.File, At: e.At,
 			})
+		case TypeMessage:
+			st.Messages = append(st.Messages, Message{
+				Step: e.Step, Session: e.Session, Actor: e.Actor, To: e.To,
+				Text: e.Text, Summary: e.Summary, Structured: e.Structured, At: e.At,
+			})
+		case TypeTokens:
+			st.addSession(e.Step, e.Session)
+			if e.Tokens != nil {
+				st.Tokens[e.Session] = *e.Tokens
+			}
 		case TypeStopped:
 			st.Stopped = e.Detail
 		case TypeFinished:
@@ -295,4 +362,14 @@ func (st State) FailedStep() (string, error) {
 
 func (st *State) clearBlock() {
 	st.Blocked, st.BlockedStep, st.BlockedSession = nil, "", ""
+}
+
+// addSession records session under step in Sessions if it is not there yet.
+func (st *State) addSession(step, session string) {
+	for _, s := range st.Sessions {
+		if s.Session == session {
+			return
+		}
+	}
+	st.Sessions = append(st.Sessions, RunSession{Step: step, Session: session})
 }
