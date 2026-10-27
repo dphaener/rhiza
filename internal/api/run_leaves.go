@@ -94,17 +94,28 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	if spec.Dir != "" {
 		req.dir, req.root = spec.Dir, filepath.Join(t.worktree, t.prefix)
 	}
-	req.Prompt = role.RenderPrompt(workflow.LeafVars{
-		PromptVars: workflow.PromptVars{
-			Change: t.cs.String(), Slug: session.Slug(t.title), Title: t.title, Run: r.run, Step: spec.Step.Name,
-		},
-		Leaf: spec.Leaf.Handle, Attempt: spec.Attempt,
+	req.Prompt = leafPrompt(*role, spec, workflow.PromptVars{
+		Change: t.cs.String(), Slug: session.Slug(t.title), Title: t.title, Run: r.run, Step: spec.Step.Name,
 	})
 	resp, err := runSessionStart(r.ctx, req)
 	if err != nil {
 		return "", err
 	}
 	return resp.(SessionStartResponse).Session.ID, nil
+}
+
+// leafPrompt is role's prompt for spec's session, rendered with vars and
+// the leaf and attempt. A retry builder's (attempt past 1) ends with a
+// line naming the leaf and the attempt and telling it to read the earlier
+// attempts' findings from the run and add a fix commit for the leaf.
+func leafPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars) string {
+	p := role.RenderPrompt(workflow.LeafVars{PromptVars: vars, Leaf: spec.Leaf.Handle, Attempt: spec.Attempt})
+	if spec.Role != workflow.RoleBuilder || spec.Attempt <= 1 {
+		return p
+	}
+	return strings.TrimRight(p, "\n") + fmt.Sprintf("\n\nThis is attempt %d of %d on leaf %s: earlier attempts failed. "+
+		"Read their findings with `rhiza run status --json`, then add a fix commit with the trailer `Leaf: %s`.",
+		spec.Attempt, run.MaxAttempts, spec.Leaf.Handle, spec.Leaf.Handle)
 }
 
 // Head is the commit at HEAD of the run's worktree, where builders work.

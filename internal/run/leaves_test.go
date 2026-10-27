@@ -30,7 +30,14 @@ func (f *fakeRunner) StartLeaf(spec LeafSpec) (string, error) {
 // fakeHead is the fake runner's worktree HEAD.
 const fakeHead = "H0"
 
-func (f *fakeRunner) Head() (string, error) { return fakeHead, nil }
+func (f *fakeRunner) Head() (string, error) {
+	if len(f.heads) > 0 {
+		h := f.heads[0]
+		f.heads = f.heads[1:]
+		return h, nil
+	}
+	return fakeHead, nil
+}
 
 func (f *fakeRunner) LeafCommit(leaf Leaf, since string) (string, string, error) {
 	f.leafSince = append(f.leafSince, leaf.Handle+" "+since)
@@ -98,6 +105,16 @@ func passAll(r *fakeRunner, leaves []Leaf) {
 			r.outcome[leafSID(l.Handle, role, 1)] = workflow.OutcomePass
 		}
 	}
+}
+
+// builderFails are the leaf entries of a leaf whose builder fails each of
+// its MaxAttempts attempts.
+func builderFails(handle string) []string {
+	var out []string
+	for n := 1; n <= MaxAttempts; n++ {
+		out = append(out, "leaf-session "+handle+" builder "+strconv.Itoa(n), "leaf-attempt "+handle+" builder "+strconv.Itoa(n)+" fail")
+	}
+	return append(out, "leaf "+handle+" failed")
 }
 
 // leafEntries are the journal's leaf entries as "type leaf role attempt
@@ -179,9 +196,9 @@ func TestLeavesStepTwoLeaves(t *testing.T) {
 	}
 }
 
-// A builder that fails fails its leaf with no verifier; the next leaf,
-// independent of it, still runs, and the step fails naming the leaf that
-// did not pass.
+// A builder that fails each attempt fails its leaf with no verifier, its
+// retries going before the next leaf; the next leaf, independent of it,
+// still runs, and the step fails naming the leaf that did not pass.
 func TestLeavesStepBuilderFails(t *testing.T) {
 	e, r, _, _ := setup(t, leavesWF)
 	r.leaves = []Leaf{twoLeaves[0], {ID: "L2", Handle: "leaf-b"}}
@@ -194,11 +211,10 @@ func TestLeavesStepBuilderFails(t *testing.T) {
 	if got := outcomes(st); !reflect.DeepEqual(got, []string{"build:fail"}) {
 		t.Fatalf("outcomes = %v", got)
 	}
-	want := []string{
-		"leaf-session leaf-a builder 1", "leaf-attempt leaf-a builder 1 fail", "leaf leaf-a failed",
+	want := append(builderFails("leaf-a"),
 		"leaf-session leaf-b builder 1", "leaf-attempt leaf-b builder 1 pass",
 		"leaf-session leaf-b verifier 1", "leaf-attempt leaf-b verifier 1 pass", "leaf leaf-b passed",
-	}
+	)
 	if got := leafEntries(t, e); !reflect.DeepEqual(got, want) {
 		t.Errorf("leaf entries =\n%v\nwant\n%v", got, want)
 	}
@@ -207,12 +223,14 @@ func TestLeavesStepBuilderFails(t *testing.T) {
 	}
 }
 
-// A verifier's fail fails the leaf.
+// A verifier's fail on the last attempt fails the leaf.
 func TestLeavesStepVerifierFails(t *testing.T) {
 	e, r, _, _ := setup(t, leavesWF)
 	r.leaves = twoLeaves[:1]
-	passAll(r, twoLeaves)
-	r.outcome[leafSID("leaf-a", "verifier", 1)] = workflow.OutcomeFail
+	for n := 1; n <= MaxAttempts; n++ {
+		r.outcome[leafSID("leaf-a", "builder", n)] = workflow.OutcomePass
+		r.outcome[leafSID("leaf-a", "verifier", n)] = workflow.OutcomeFail
+	}
 	st, err := e.Run(runID)
 	if err != nil {
 		t.Fatal(err)
@@ -220,7 +238,7 @@ func TestLeavesStepVerifierFails(t *testing.T) {
 	if got := outcomes(st); !reflect.DeepEqual(got, []string{"build:fail"}) {
 		t.Fatalf("outcomes = %v", got)
 	}
-	if l := st.Leaves[0]; l.Outcome != LeafFailed || !strings.Contains(l.Detail, "verifier failed") {
+	if l := st.Leaves[0]; l.Outcome != LeafFailed || !strings.HasPrefix(l.Detail, "attempt 3: verifier failed") {
 		t.Errorf("leaf = %+v", l)
 	}
 }
@@ -417,7 +435,7 @@ func TestLeavesStepDependencyFailedSkips(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := []string{"leaf-session leaf-a builder 1", "leaf-attempt leaf-a builder 1 fail", "leaf leaf-a failed", "leaf leaf-b skipped"}
+	want := append(builderFails("leaf-a"), "leaf leaf-b skipped")
 	if got := leafEntries(t, e); !reflect.DeepEqual(got, want) {
 		t.Errorf("leaf entries =\n%v\nwant\n%v", got, want)
 	}
@@ -597,6 +615,9 @@ func TestLeavesStepLeafCommit(t *testing.T) {
 	r.leaves = []Leaf{{ID: "L1", Handle: "leaf-a"}, {ID: "L2", Handle: "leaf-b"}}
 	passAll(r, twoLeaves)
 	r.leafCommit = map[string][2]string{"leaf-a": {"", "no new commit since H0"}, "leaf-b": {"abc123", ""}}
+	for n := 2; n <= MaxAttempts; n++ {
+		r.outcome[leafSID("leaf-a", "builder", n)] = workflow.OutcomePass
+	}
 	st, err := e.Run(runID)
 	if err != nil {
 		t.Fatal(err)
@@ -638,7 +659,7 @@ func TestLeavesStepLeafCommit(t *testing.T) {
 	if verifier.Commit != "abc123" || !slices.Contains(verifier.Env, "RHIZA_COMMIT=abc123") || !slices.Contains(verifier.Env, "RHIZA_ROLE=verifier") {
 		t.Errorf("verifier spec = %+v", verifier)
 	}
-	if want := []string{"leaf-a H0", "leaf-b H0"}; !reflect.DeepEqual(r.leafSince, want) {
+	if want := []string{"leaf-a H0", "leaf-a H0", "leaf-a H0", "leaf-b H0"}; !reflect.DeepEqual(r.leafSince, want) {
 		t.Errorf("LeafCommit calls = %v, want %v", r.leafSince, want)
 	}
 }
@@ -850,7 +871,7 @@ func TestLeavesStepVerifierCheckout(t *testing.T) {
 			if want := []string{"open " + dir + " C-leaf-a", "remove " + dir}; !reflect.DeepEqual(r.checkouts, want) {
 				t.Errorf("checkouts = %v, want %v", r.checkouts, want)
 			}
-			if len(r.leafSpecs) != 2 || r.leafSpecs[0].Dir != "" || r.leafSpecs[1].Dir != dir {
+			if len(r.leafSpecs) < 2 || r.leafSpecs[0].Dir != "" || r.leafSpecs[1].Dir != dir {
 				t.Errorf("specs = %+v", r.leafSpecs)
 			}
 			if s, _ := st.Leaves[0].Session(workflow.RoleVerifier, 1); s.Detail != dir {
@@ -951,5 +972,194 @@ func TestNextForLeafEvidenceCommitResume(t *testing.T) {
 	a := nextForLeaf(Leaf{ID: "L1", Handle: "leaf-a"}, l)
 	if a.kind != leafEnd || a.outcome != LeafPassed || a.commit != "E1" {
 		t.Errorf("nextForLeaf = %+v, want leafEnd passed with E1", a)
+	}
+}
+
+// retriesWF is leavesWF with a model ladder on the builder.
+var retriesWF = strings.Replace(leavesWF, "prompt = \"build {leaf}\"\n", "prompt = \"build {leaf}\"\nmodels = [\"sonnet\", \"opus\", \"opus\"]\n", 1)
+
+// builderSpecs are r's builder LeafSpecs as "<handle> <attempt> <model>
+// <RHIZA_ATTEMPT>", in start order.
+func builderSpecs(r *fakeRunner) []string {
+	var out []string
+	for _, s := range r.leafSpecs {
+		if s.Role != workflow.RoleBuilder {
+			continue
+		}
+		env := ""
+		for _, kv := range s.Env {
+			if v, ok := strings.CutPrefix(kv, EnvAttempt+"="); ok {
+				env = v
+			}
+		}
+		out = append(out, s.Leaf.Handle+" "+strconv.Itoa(s.Attempt)+" "+s.Model+" "+env)
+	}
+	return out
+}
+
+// A verifier that fails twice, once with findings and once on its exit,
+// sends each failed attempt to a fresh builder session on the next model
+// of the ladder, its spec and RHIZA_ATTEMPT naming the attempt and its
+// commit check measured from its own start HEAD; the third attempt's
+// verifier passes the leaf. The earlier attempts' findings stay in the
+// run for the retry builder to read.
+func TestLeavesStepRetries(t *testing.T) {
+	e, r, _, _ := setup(t, retriesWF)
+	r.leaves = twoLeaves[:1]
+	r.heads = []string{"H1", "H2", "H3"}
+	for n := 1; n <= 3; n++ {
+		r.outcome[leafSID("leaf-a", "builder", n)] = workflow.OutcomePass
+	}
+	v1 := leafSID("leaf-a", "verifier", 1)
+	r.outcome[v1] = workflow.OutcomePass
+	r.agentSeq[v1] = []AgentStatus{{}}
+	r.onPoll = func(session string, n int) {
+		if session != v1 || n != 0 {
+			return
+		}
+		if err := e.Store.Append(runID, Entry{
+			Type: TypeFindings, At: at(2), Step: "build", Leaf: "L1", Handle: "leaf-a", Attempt: 1,
+			Findings: []Finding{{ID: "f1", Reason: "no test"}},
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	r.outcome[leafSID("leaf-a", "verifier", 2)] = workflow.OutcomeFail
+	r.outcome[leafSID("leaf-a", "verifier", 3)] = workflow.OutcomePass
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"build:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	if want := []string{"leaf-a 1 sonnet 1", "leaf-a 2 opus 2", "leaf-a 3 opus 3"}; !reflect.DeepEqual(builderSpecs(r), want) {
+		t.Errorf("builders = %q, want %q", builderSpecs(r), want)
+	}
+	l := st.Leaves[0]
+	if l.Outcome != LeafPassed || l.Detail != "attempt 3: verifier passed" || l.Commit != "E-leaf-a" {
+		t.Errorf("leaf = %+v", l)
+	}
+	seen := map[string]bool{}
+	for n := 1; n <= 3; n++ {
+		s, ok := l.Session(workflow.RoleBuilder, n)
+		if !ok || seen[s.Session] || s.Commit != "H"+strconv.Itoa(n) {
+			t.Errorf("builder session %d = %+v (ok %v)", n, s, ok)
+		}
+		seen[s.Session] = true
+	}
+	if want := []string{"leaf-a H1", "leaf-a H2", "leaf-a H3"}; !reflect.DeepEqual(r.leafSince, want) {
+		t.Errorf("LeafCommit calls = %v, want %v", r.leafSince, want)
+	}
+	if f := l.AttemptFindings(1); len(f) != 1 || f[0].Reason != "no test" {
+		t.Errorf("attempt 1 findings = %+v", f)
+	}
+}
+
+// A verifier that fails all MaxAttempts attempts fails the leaf after the
+// third builder: no fourth builder starts.
+func TestLeavesStepRetriesCap(t *testing.T) {
+	e, r, _, _ := setup(t, retriesWF)
+	r.leaves = twoLeaves[:1]
+	for n := 1; n <= MaxAttempts+1; n++ {
+		r.outcome[leafSID("leaf-a", "builder", n)] = workflow.OutcomePass
+		r.outcome[leafSID("leaf-a", "verifier", n)] = workflow.OutcomeFail
+	}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"build:fail"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	if want := []string{"leaf-a 1 sonnet 1", "leaf-a 2 opus 2", "leaf-a 3 opus 3"}; !reflect.DeepEqual(builderSpecs(r), want) {
+		t.Errorf("builders = %q, want %q", builderSpecs(r), want)
+	}
+	l := st.Leaves[0]
+	if l.Outcome != LeafFailed || l.Detail != "attempt 3: verifier failed: exit 0" {
+		t.Errorf("leaf = %+v", l)
+	}
+	if _, ok := l.Session(workflow.RoleBuilder, 4); ok || l.Attempt() != 3 {
+		t.Errorf("a fourth attempt started: %+v", l.Sessions)
+	}
+}
+
+// A builder that fails, on its exit or with no leaf commit, uses up an
+// attempt as a verifier's fail does: the next attempt's builder starts,
+// with no verifier on the failed one.
+func TestLeavesStepRetriesBuilderFailCounts(t *testing.T) {
+	e, r, _, _ := setup(t, retriesWF)
+	r.leaves = twoLeaves[:1]
+	r.outcome[leafSID("leaf-a", "builder", 1)] = workflow.OutcomeFail
+	r.outcome[leafSID("leaf-a", "builder", 2)] = workflow.OutcomePass
+	r.outcome[leafSID("leaf-a", "verifier", 2)] = workflow.OutcomePass
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{
+		"leaf-session leaf-a builder 1", "leaf-attempt leaf-a builder 1 fail",
+		"leaf-session leaf-a builder 2", "leaf-attempt leaf-a builder 2 pass",
+		"leaf-session leaf-a verifier 2", "leaf-attempt leaf-a verifier 2 pass",
+		"leaf leaf-a passed",
+	}
+	if got := leafEntries(t, e); !reflect.DeepEqual(got, want) {
+		t.Errorf("leaf entries =\n%v\nwant\n%v", got, want)
+	}
+	if l := st.Leaves[0]; l.Outcome != LeafPassed || l.Detail != "attempt 2: verifier passed" {
+		t.Errorf("leaf = %+v", l)
+	}
+}
+
+// A retrying leaf's next builder goes before a new leaf's first one, and
+// waits while another builder is live.
+func TestLeavesRetryOrder(t *testing.T) {
+	leaves := []Leaf{{ID: "LA", Handle: "a"}, {ID: "LB", Handle: "b"}}
+	failedA := LeafState{Leaf: "LA",
+		Sessions: []LeafSession{{Role: "builder", Attempt: 1, Session: "SAb"}, {Role: "verifier", Attempt: 1, Session: "SAv"}},
+		Attempts: []LeafAttempt{{Role: "builder", Attempt: 1, Outcome: "pass"}, {Role: "verifier", Attempt: 1, Outcome: "fail"}}}
+	got := nextLeafActions(leaves, map[string]LeafState{"LA": failedA})
+	if len(got) != 1 || got[0].kind != leafStart || got[0].leaf.ID != "LA" || got[0].role != workflow.RoleBuilder || got[0].attempt != 2 {
+		t.Fatalf("retry first: %+v", got)
+	}
+	liveB := LeafState{Leaf: "LB", Sessions: []LeafSession{{Role: "builder", Attempt: 1, Session: "SBb"}}}
+	got = nextLeafActions(leaves, map[string]LeafState{"LA": failedA, "LB": liveB})
+	if len(got) != 1 || got[0].kind != leafPoll || got[0].session != "SBb" {
+		t.Fatalf("retry waits on a live builder: %+v", got)
+	}
+}
+
+// A journal cut after attempt 1's verifier failed resumes with attempt 2's
+// builder, starting nothing of attempt 1 again.
+func TestLeavesStepRetriesResume(t *testing.T) {
+	e, r, _, _ := setup(t, retriesWF)
+	r.leaves = twoLeaves[:1]
+	r.outcome[leafSID("leaf-a", "builder", 2)] = workflow.OutcomePass
+	r.outcome[leafSID("leaf-a", "verifier", 2)] = workflow.OutcomePass
+	for _, en := range []Entry{
+		{Type: TypeEntered, Step: "build", Visit: 1},
+		{Type: TypeLeafSession, Step: "build", Leaf: "L1", Handle: "leaf-a", Role: "builder", Attempt: 1, Session: leafSID("leaf-a", "builder", 1), Commit: "H0"},
+		{Type: TypeLeafAttempt, Step: "build", Leaf: "L1", Handle: "leaf-a", Role: "builder", Attempt: 1, Outcome: "pass", Commit: "C-leaf-a"},
+		{Type: TypeLeafSession, Step: "build", Leaf: "L1", Handle: "leaf-a", Role: "verifier", Attempt: 1, Session: leafSID("leaf-a", "verifier", 1), Commit: "C-leaf-a"},
+		{Type: TypeLeafAttempt, Step: "build", Leaf: "L1", Handle: "leaf-a", Role: "verifier", Attempt: 1, Outcome: "fail", Detail: "verifier found 1 problem(s)"},
+	} {
+		en.At = at(1)
+		if err := e.Store.Append(runID, en); err != nil {
+			t.Fatal(err)
+		}
+	}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var started []string
+	for _, s := range r.leafSpecs {
+		started = append(started, s.Leaf.Handle+" "+s.Role+" "+strconv.Itoa(s.Attempt)+" "+s.Model)
+	}
+	if want := []string{"leaf-a builder 2 opus", "leaf-a verifier 2 "}; !reflect.DeepEqual(started, want) {
+		t.Errorf("started %q, want %q", started, want)
+	}
+	if l := st.Leaves[0]; l.Outcome != LeafPassed || l.Detail != "attempt 2: verifier passed" {
+		t.Errorf("leaf = %+v", l)
 	}
 }

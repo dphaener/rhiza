@@ -81,6 +81,12 @@ const (
 	EnvCommit = "RHIZA_COMMIT"
 )
 
+// MaxAttempts is how many attempts a leaf gets in a round: each failed
+// attempt but the last goes to a fresh builder session for the next
+// attempt, on the next model of the builder's ladder; once the last fails
+// the leaf fails.
+const MaxAttempts = 3
+
 // leafActionKind is what the conductor does next for a leaves step.
 type leafActionKind int
 
@@ -114,9 +120,12 @@ type leafAction struct {
 // set's leaves, in leaf order, and the step's folded leaf states, the moves
 // to make now. A leaf's attempt starts with its builder; a builder judged
 // pass is followed by its verifier, whose pass passes the leaf. A fail of
-// either fails the leaf. Builders run one at a time: while none is live,
-// the next starts on the first leaf in leaf order not yet started whose
-// depends-on leaves have all passed. A built leaf's verifier runs
+// either goes to a fresh builder on the next attempt, up to MaxAttempts;
+// the last one's fail fails the leaf. Builders run one at a time: while
+// none is live, a retrying leaf's next builder starts first, in leaf
+// order, else the next builder starts on the first leaf in leaf order not
+// yet started whose depends-on leaves have all passed. A built leaf's
+// verifier runs
 // alongside the next builder. A leaf whose dependency failed or was
 // skipped is skipped. Once every leaf has an outcome the step ends: pass
 // when every leaf passed, else fail.
@@ -127,6 +136,7 @@ func nextLeafActions(leaves []Leaf, states map[string]LeafState) []leafAction {
 	}
 	var acts []leafAction
 	var ready []Leaf
+	var retries []leafAction
 	builderLive := false
 	passed, failed := 0, []string{}
 	for _, lf := range leaves {
@@ -141,6 +151,10 @@ func nextLeafActions(leaves []Leaf, states map[string]LeafState) []leafAction {
 		}
 		if _, started := l.Session(workflow.RoleBuilder, max(1, l.Attempt())); started {
 			a := nextForLeaf(lf, l)
+			if a.kind == leafStart && a.role == workflow.RoleBuilder {
+				retries = append(retries, a)
+				continue
+			}
 			builderLive = builderLive || (a.kind == leafPoll && a.role == workflow.RoleBuilder)
 			acts = append(acts, a)
 			continue
@@ -154,10 +168,14 @@ func nextLeafActions(leaves []Leaf, states map[string]LeafState) []leafAction {
 			ready = append(ready, lf)
 		}
 	}
-	if !builderLive && len(ready) > 0 {
+	switch {
+	case builderLive:
+	case len(retries) > 0:
+		acts = append(acts, retries[0])
+	case len(ready) > 0:
 		acts = append(acts, leafAction{kind: leafStart, leaf: ready[0], role: workflow.RoleBuilder, attempt: 1})
 	}
-	if len(acts) > 0 {
+	if len(acts) > 0 || len(retries) > 0 {
 		return acts
 	}
 	open := len(leaves) - passed - len(failed)
@@ -204,7 +222,9 @@ func lostDependency(lf Leaf, states map[string]LeafState, known map[string]bool,
 // nextForLeaf is the next move on an open leaf l whose builder started. A
 // verifier starts on the commit its builder's passed attempt recorded; a
 // passed leaf ends with the Evidence commit its verifier's attempt
-// recorded.
+// recorded. A failed attempt before MaxAttempts starts a fresh builder on
+// the next attempt; the caller decides when, as builders run one at a
+// time. The last attempt's fail fails the leaf.
 func nextForLeaf(lf Leaf, l LeafState) leafAction {
 	attempt := max(1, l.Attempt())
 	for _, role := range []string{workflow.RoleBuilder, workflow.RoleVerifier} {
@@ -221,6 +241,9 @@ func nextForLeaf(lf Leaf, l LeafState) leafAction {
 			return leafAction{kind: leafPoll, leaf: lf, role: role, attempt: attempt, session: s.Session}
 		}
 		if j.Outcome != workflow.OutcomePass {
+			if attempt < MaxAttempts {
+				return leafAction{kind: leafStart, leaf: lf, role: workflow.RoleBuilder, attempt: attempt + 1}
+			}
 			return leafAction{kind: leafEnd, leaf: lf, outcome: LeafFailed,
 				detail: fmt.Sprintf("attempt %d: %s failed: %s", attempt, role, j.Detail)}
 		}

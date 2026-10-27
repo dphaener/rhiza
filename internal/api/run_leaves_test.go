@@ -398,3 +398,26 @@ func TestEvidenceCommitNone(t *testing.T) {
 		t.Errorf("HEAD moved to %s", head)
 	}
 }
+
+// A builder's prompt is its role's, rendered with the leaf and attempt; a
+// retry builder's also names the leaf and its attempt and points it at
+// the earlier attempts' findings. A verifier's gets no retry line.
+func TestLeafPrompt(t *testing.T) {
+	role := workflow.Role{Prompt: "build {leaf} attempt {attempt} of {change}"}
+	vars := workflow.PromptVars{Change: "CS1"}
+	spec := run.LeafSpec{Role: workflow.RoleBuilder, Leaf: run.Leaf{Handle: "leaf-a"}, Attempt: 1}
+	if got := leafPrompt(role, spec, vars); got != "build leaf-a attempt 1 of CS1" {
+		t.Errorf("attempt 1 = %q", got)
+	}
+	spec.Attempt = 2
+	got := leafPrompt(role, spec, vars)
+	for _, want := range []string{"build leaf-a attempt 2 of CS1\n\n", "This is attempt 2 of 3 on leaf leaf-a", "rhiza run status --json", "Leaf: leaf-a"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("attempt 2 = %q, lacks %q", got, want)
+		}
+	}
+	spec.Role = workflow.RoleVerifier
+	if got := leafPrompt(role, spec, vars); got != "build leaf-a attempt 2 of CS1" {
+		t.Errorf("verifier attempt 2 = %q", got)
+	}
+}

@@ -36,7 +36,8 @@ stdout '"state": "succeeded"'
 stdout '^exit=0$'
 exec rhiza run status
 stdout '^- good \(step build\): passed: attempt 1: verifier passed$'
-stdout '^- bad \(step build\): failed: attempt 1: verifier failed: exit 1$'
+stdout '^- bad \(step build\): failed: attempt 3: builder failed: exit 1$'
+stdout '^  - attempt 1 verifier, session [0-9a-f-]{36}: fail \(exit 1\)$'
 
 # Each verifier ran in a detached checkout of its leaf's commit, not in
 # the build worktree, with RHIZA_ROOT naming the build worktree.
@@ -101,6 +102,9 @@ done
 echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
 -- bin/claude --
 #!/bin/sh
+# A retry builder (attempt 2 on) gives up at once, so each leaf's verdict
+# is its first attempt's.
+[ "$RHIZA_ROLE" = builder ] && [ "$RHIZA_ATTEMPT" != 1 ] && exit 1
 if [ "$RHIZA_ROLE" = builder ]; then
 	pwd -P > "$WORK/build.pwd"
 	echo "$RHIZA_LEAF" > "$RHIZA_LEAF.txt"

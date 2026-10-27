@@ -61,8 +61,8 @@ stdout '^1$'
 # builder's Evidence does not count; third's own Evidence passes it.
 exec rhiza run status
 stdout '^- build \(visit 1\): fail, then end: 1 of 3 leaves passed; not passed: first, second$'
-stdout '\n- first \(step build\): failed: attempt 1: verifier failed: verifier found 2 problem\(s\)\n  - attempt 1 builder, session [0-9a-f-]{36}: pass \(exit 0\)\n  - attempt 1 verifier, session [0-9a-f-]{36}: fail \(verifier found 2 problem\(s\)\)\n  - attempt 1 finding f1: no test for the exit code\n  - attempt 1 finding f2: help text names the wrong flag\n'
-stdout '\n- second \(step build\): failed: attempt 1: verifier failed: verifier ended with no Evidence of its own and no findings: Evidence second-ok was written by claude-code-[0-9a-z-]+, not by the verifier''s actor claude-code-[0-9a-z-]+\n'
+stdout '\n- first \(step build\): failed: attempt 3: builder failed: exit 1\n  - attempt 1 builder, session [0-9a-f-]{36}: pass \(exit 0\)\n  - attempt 1 verifier, session [0-9a-f-]{36}: fail \(verifier found 2 problem\(s\)\)\n  - attempt 2 builder, session [0-9a-f-]{36}: fail \(exit 1\)\n  - attempt 3 builder, session [0-9a-f-]{36}: fail \(exit 1\)\n  - attempt 1 finding f1: no test for the exit code\n  - attempt 1 finding f2: help text names the wrong flag\n'
+stdout '\n- second \(step build\): failed: attempt 3: builder failed: exit 1\n  - attempt 1 builder, session [0-9a-f-]{36}: pass \(exit 0\)\n  - attempt 1 verifier, session [0-9a-f-]{36}: fail \(verifier ended with no Evidence of its own and no findings: Evidence second-ok was written by claude-code-[0-9a-z-]+, not by the verifier''s actor claude-code-[0-9a-z-]+\)\n'
 stdout '\n- third \(step build\): passed: attempt 1: verifier passed\n'
 ! stdout '^## Review rounds'
 
@@ -72,9 +72,9 @@ stdout -count=1 '"findings": \['
 stdout '"findings": \[\n\s+\{\n\s+"at": "[^"]+",\n\s+"attempt": 1,\n\s+"id": "f1",\n\s+"reason": "no test for the exit code"\n\s+\},\n\s+\{\n\s+"at": "[^"]+",\n\s+"attempt": 1,\n\s+"id": "f2",\n\s+"reason": "help text names the wrong flag"\n\s+\}\n\s+\]'
 
 # The builder's actor, which the fake builder logged, wrote second's
-# Evidence: the detail names it, on the leaf and on its verifier's attempt.
+# Evidence: the detail of its verifier's attempt names it.
 exec sh -c 'rhiza run status | grep -c "written by $(cat $WORK/builder-actor), not"'
-stdout '^2$'
+stdout '^1$'
 
 fold-ok
 
@@ -126,6 +126,9 @@ done
 echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
 -- bin/claude --
 #!/bin/sh
+# A retry builder (attempt 2 on) gives up at once, so each leaf's verdict
+# is its first attempt's.
+[ "$RHIZA_ROLE" = builder ] && [ "$RHIZA_ATTEMPT" != 1 ] && exit 1
 journal="$(git rev-parse --git-common-dir)/rhiza/runs/$RHIZA_RUN.jsonl"
 # try <label> <args...> runs rhiza run findings and logs its exit and
 # whether the journal grew.

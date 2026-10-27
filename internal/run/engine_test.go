@@ -69,6 +69,7 @@ type fakeRunner struct {
 	checkouts         []string // "open <dir> <commit>" and "remove <dir>" per call, in order
 	checkoutErr       error    // OpenCheckout's error, when set
 	removeErr         error    // RemoveCheckout's error, when set
+	heads             []string // Head's result per call, in order; past the end, fakeHead
 }
 
 // fakeEvidence is one leaf's scripted Evidence result.
