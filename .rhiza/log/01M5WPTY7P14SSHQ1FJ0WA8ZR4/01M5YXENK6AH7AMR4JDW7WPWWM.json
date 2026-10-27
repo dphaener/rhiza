@@ -1,0 +1,180 @@
+{
+  "actor": "01M5YXCC0PXWNV9F3B02FGF38Z",
+  "after": [
+    "01M5YXDS7NN7P4QCY1AZA6DPJ6"
+  ],
+  "at": "2026-10-27T14:50:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Parse tests load a leaves step with both sub-tables and reject one missing builder or verifier, an unknown sub-table key, `models` on a step kind other than agent or leaves, `split` on a step kind other than leaves, and a bad `split` value; an engine test with a fake runner over two leaves finds a journal entry per leaf session, attempt and outcome, and `rhiza run status` shows them per leaf.",
+          "statement": "Workflow files take a `leaves` step kind with `builder` and `verifier` sub-tables (prompt, agent, permission_mode, models) and a `split` setting, and the engine runs it as one step that conducts the run change set's leaves, journaling each leaf's sessions, attempts and outcome."
+        },
+        "handle": "build-leaves-step",
+        "id": "01M5YX3BA0JVJ2PHZ2N8T42Y6B",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5YX3BA0JVJ2PHZ2N4TX9SX9",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3BA0JVJ2PHZ2N4TX9SX9",
+        "id": "01M5YXEKCVVZVFTQ78P24AS25D",
+        "link": "01M5YXEKCVVZVFTQ78P1GTZRB6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YXDP69HTCN3BYNMC1HDVN3",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3DGKC5HY4KRTCXA5450D",
+        "id": "01M5YXEKHBJ10C76PC1TDF00RX",
+        "link": "01M5YXEKHBJ10C76PC1Q6HABZW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YXDPFDQ5MJ4S3SXPCXZRTY",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3F9R6BSD6XKKTVQXYSDZ",
+        "id": "01M5YXEKNXWDH19WR7ZPPCWPNP",
+        "link": "01M5YXEKNXWDH19WR7ZJVH8W4S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YXDPRC4RR89R6FCZ6HQF2E",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3BVJ20HMXE6GY00WB69Y",
+        "id": "01M5YXEKTE9MHEZD7EEGVS3QRN",
+        "link": "01M5YXEKTE9MHEZD7EEEPQB0XV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YXDQ1B8KVS69T81K5H343V",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3F9R6BSD6XKKTVQXYSDZ",
+        "id": "01M5YXEKYZX44QKTEEBT24MD0H",
+        "link": "01M5YXEKYZX44QKTEEBPK7W5VB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YXDQAA3QNYTX32K8K85ZEV",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3ER7D48Q8364S1JXKAW7",
+        "id": "01M5YXEM3ENNVD3XYADD51CCJW",
+        "link": "01M5YXEM3ENNVD3XYADADDRXC8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YXDQAA3QNYTX32K8K85ZEV",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3CYY6077G7P5ZTRA65M9",
+        "id": "01M5YXEM7YTHKSD37GYCYAM87T",
+        "link": "01M5YXEM7YTHKSD37GY97B2DWJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YXDQKBNNMN7YAEVERBKTPE",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3E6THKN8CJCSJKQRFXC2",
+        "id": "01M5YXEMCGWAJPR5RK7N9A1NYJ",
+        "link": "01M5YXEMCGWAJPR5RK7K5XY4X2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YXDQWBT73S6NM5CP9TZ0R2",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3GT71M5KWXZYCZA684DF",
+        "id": "01M5YXEMH19JV68X28FQ7TS2EY",
+        "link": "01M5YXEMH19JV68X28FMAWKJTB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YXDR5BKREGY0XRZJPF7P1V",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3GT71M5KWXZYCZA684DF",
+        "id": "01M5YXEMNJE25GS8WHTCPNMNEF",
+        "link": "01M5YXEMNJE25GS8WHTAH145C1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YXDRED740NQPB23GKGQ2JK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3G453SY3XT0RGZ5Z0C4A",
+        "id": "01M5YXEMT35R9WD137B1CA54E0",
+        "link": "01M5YXEMT35R9WD137B05C5A7S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YXDRQE1WY6HHNKYZ08N1AJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3G453SY3XT0RGZ5Z0C4A",
+        "id": "01M5YXEMYKBMN1XAY7M28P5K0G",
+        "link": "01M5YXEMYKBMN1XAY7M1AJ8RCJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YXDS0JNM7MD2YFMZKDN0D4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3HBR6XX5W3QXW7PNB5TS",
+        "id": "01M5YXEN34B9DX3QJRVGWSK113",
+        "link": "01M5YXEN34B9DX3QJRVG9XB8P8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YXDS0JNM7MD2YFMZKDN0D4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YXDQKBNNMN7YAEVERBKTPE",
+        "id": "01M5YXEN7NR8ZGJKBVDBQPGJP0",
+        "link": "01M5YXEN7NR8ZGJKBVDAK7SP4W",
+        "note": "Amends build-workflow-shape's \"one commit per leaf\": the owner picked a fix commit per retry with the same Leaf: trailer over autosquashing to one commit at the end, so a leaf's work is every commit with its Leaf: trailer.",
+        "op": "link.create",
+        "to": "01M5WPTMRWPNYM2AMVSMDREY04",
+        "type": "relates-to"
+      },
+      {
+        "decision": null,
+        "from": "01M5YXDQWBT73S6NM5CP9TZ0R2",
+        "id": "01M5YXENC75FJZEGT6FQT485AQ",
+        "link": "01M5YXENC75FJZEGT6FPCVJAJ6",
+        "note": "Amends build-workflow-shape's \"one commit per leaf\": besides the builder's commits, the engine adds the leaf's Evidence entry as its own chore(rhiza) commit.",
+        "op": "link.create",
+        "to": "01M5WPTMRWPNYM2AMVSMDREY04",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M5WPTY7P14SSHQ1FJ0WA8ZR4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5YXENK6AH7AMR4JDW7WPWWM",
+  "type": "ops",
+  "v": 1
+}
