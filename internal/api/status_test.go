@@ -1,6 +1,9 @@
 package api
 
 import (
+	"os"
+	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -91,6 +94,50 @@ func TestStatusHookCap(t *testing.T) {
 	b, _ := canon.Marshal(r)
 	if string(a) != string(b) {
 		t.Errorf("hook JSON differs from status JSON:\n%s\n%s", b, a)
+	}
+}
+
+// TestStatusGuideFiles checks an install at the running version is current
+// only while every file it writes is on disk as written.
+func TestStatusGuideFiles(t *testing.T) {
+	root := t.TempDir()
+	ctx := testCtx(root)
+	ctx.Home = t.TempDir()
+	if _, err := callOp(t, ctx, "init", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	guideInstall(t, ctx, `{"agent":"claude"}`)
+	guideInstall(t, ctx, `{"agent":"claude","project":true}`)
+	dir := filepath.Join(ctx.Home, ".claude", "skills", "rhiza")
+	if r := statusOf(t, ctx, `{}`); len(r.Guide) != 2 || !r.Guide[0].Current || !r.Guide[1].Current {
+		t.Fatalf("after install guide = %+v", r.Guide)
+	}
+	for _, p := range pluginPaths[1:] {
+		t.Run(p, func(t *testing.T) {
+			f := filepath.Join(dir, filepath.FromSlash(p))
+			for _, tc := range []struct {
+				name  string
+				spoil func() error
+			}{
+				{"Missing", func() error { return os.Remove(f) }},
+				{"Changed", func() error { return os.WriteFile(f, []byte("changed\n"), 0o644) }},
+			} {
+				if err := tc.spoil(); err != nil {
+					t.Fatal(err)
+				}
+				r := statusOf(t, ctx, `{}`)
+				if len(r.Guide) != 2 || r.Guide[0].Current || r.Guide[0].Version != ctx.Version || !r.Guide[1].Current {
+					t.Errorf("%s: guide = %+v", tc.name, r.Guide)
+				}
+				if !slices.Contains(r.Next, "rhiza guide install --agent claude") {
+					t.Errorf("%s: next = %v", tc.name, r.Next)
+				}
+				guideInstall(t, ctx, `{"agent":"claude"}`)
+				if r := statusOf(t, ctx, `{}`); !r.Guide[0].Current {
+					t.Errorf("%s: reinstall not current: %+v", tc.name, r.Guide)
+				}
+			}
+		})
 	}
 }
 

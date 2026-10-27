@@ -3,7 +3,7 @@
 # repository's .claude/skills/rhiza with --project. HOME is $WORK/home,
 # set by the harness, never the real one.
 
-# A user install needs no repository and writes the four files.
+# A user install needs no repository and writes the five files.
 ! exists .rhiza
 exec rhiza guide install --agent claude
 cmpenv stdout first.txt
@@ -11,6 +11,7 @@ cmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json plugin.json
 cmp $HOME/.claude/skills/rhiza/hooks/hooks.json hooks.json
 exists $HOME/.claude/skills/rhiza/SKILL.md
 exists $HOME/.claude/skills/rhiza/skills/rhiza-scrub/SKILL.md
+exists $HOME/.claude/skills/rhiza/skills/rhiza-plan/SKILL.md
 
 # Each SKILL.md starts with its frontmatter, then the guide text.
 exec head -3 $HOME/.claude/skills/rhiza/SKILL.md
@@ -18,6 +19,33 @@ stdout '\A---\nname: rhiza\ndescription: "Work with the product model of a repos
 grep '^# Rhiza$' $HOME/.claude/skills/rhiza/SKILL.md
 exec head -3 $HOME/.claude/skills/rhiza/skills/rhiza-scrub/SKILL.md
 stdout '\A---\nname: rhiza-scrub\ndescription: "Turn a raw conversation .*"\n\z'
+exec head -4 $HOME/.claude/skills/rhiza/skills/rhiza-plan/SKILL.md
+stdout '\A---\nname: rhiza-plan\ndescription: "Plan with the owner straight into a Rhiza product model: .*"\n---\n\z'
+
+# The rhiza-plan skill's body, after the frontmatter and a blank line, is
+# rhiza guide plan's text.
+exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-plan/SKILL.md
+cp stdout plan-body.txt
+exec rhiza guide plan
+cmp stdout plan-body.txt
+
+# A missing skill file makes the install out of date at the same version;
+# a second install restores it.
+rm $HOME/.claude/skills/rhiza/skills/rhiza-plan/SKILL.md
+mkdir repo
+cd repo
+exec rhiza init
+exec rhiza status
+stdout '^- Guide \(user\): dev in .* \(out of date\)$'
+stdout '^next: rhiza guide install --agent claude$'
+exec rhiza guide install --agent claude
+cmpenv stdout $WORK/restored.txt
+exec rhiza status
+stdout '^- Guide \(user\): dev in .* \(current\)$'
+! stdout 'next: rhiza guide install'
+cd $WORK
+exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-plan/SKILL.md
+cmp stdout plan-body.txt
 
 # A second install writes nothing.
 exec rhiza guide install --agent claude
@@ -73,7 +101,7 @@ exec sh -c 'rhiza guide install --agent claude 2>/dev/null; echo exit $?'
 stdout '^exit 3$'
 cmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json foreign-plugin.json
 
-# --force writes the four files and keeps the others.
+# --force writes the five files and keeps the others.
 exec rhiza guide install --agent claude --force
 cmpenv stdout first.txt
 cmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json plugin.json
@@ -93,11 +121,12 @@ mkdir proj
 cd proj
 exec rhiza init
 exec rhiza guide install --agent claude --project
-stdout '^Installed the Rhiza guide in .*/proj/\.claude/skills/rhiza \(4 written, 0 unchanged\)\.$'
+stdout '^Installed the Rhiza guide in .*/proj/\.claude/skills/rhiza \(5 written, 0 unchanged\)\.$'
 cmp .claude/skills/rhiza/.claude-plugin/plugin.json $WORK/plugin.json
 cmp .claude/skills/rhiza/hooks/hooks.json $WORK/hooks.json
 exists .claude/skills/rhiza/SKILL.md
 exists .claude/skills/rhiza/skills/rhiza-scrub/SKILL.md
+exists .claude/skills/rhiza/skills/rhiza-plan/SKILL.md
 fold-ok
 
 # A project conflict's next keeps --project.
@@ -106,21 +135,26 @@ exec sh -c 'rm .claude/skills/rhiza/.claude-plugin/plugin.json'
 stderr '^next: rhiza guide install --agent claude --force --project$'
 
 -- first.txt --
-Installed the Rhiza guide in $HOME/.claude/skills/rhiza (4 written, 0 unchanged).
+Installed the Rhiza guide in $HOME/.claude/skills/rhiza (5 written, 0 unchanged).
 
 - wrote .claude-plugin/plugin.json
 - wrote SKILL.md
 - wrote hooks/hooks.json
+- wrote skills/rhiza-plan/SKILL.md
 - wrote skills/rhiza-scrub/SKILL.md
 -- again.txt --
-Installed the Rhiza guide in $HOME/.claude/skills/rhiza (0 written, 4 unchanged).
+Installed the Rhiza guide in $HOME/.claude/skills/rhiza (0 written, 5 unchanged).
 -- version.txt --
-Installed the Rhiza guide in $HOME/.claude/skills/rhiza (1 written, 3 unchanged).
+Installed the Rhiza guide in $HOME/.claude/skills/rhiza (1 written, 4 unchanged).
 
 - wrote .claude-plugin/plugin.json
+-- restored.txt --
+Installed the Rhiza guide in $HOME/.claude/skills/rhiza (1 written, 4 unchanged).
+
+- wrote skills/rhiza-plan/SKILL.md
 -- plugin.json --
 {
-  "description": "The Rhiza agent guide: the rhiza and rhiza-scrub skills, and a SessionStart hook that runs rhiza status --hook.",
+  "description": "The Rhiza agent guide: the rhiza, rhiza-scrub and rhiza-plan skills, and a SessionStart hook that runs rhiza status --hook.",
   "name": "rhiza",
   "rhiza": {
     "installed_by": "rhiza guide install"

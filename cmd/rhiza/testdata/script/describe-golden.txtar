@@ -8425,7 +8425,7 @@ cmp stdout describe.golden.json
               "additionalProperties": false,
               "properties": {
                 "current": {
-                  "description": "Whether that version is the running rhiza's",
+                  "description": "Whether it is the running rhiza's version and every file it installs is on disk as that version writes it",
                   "type": "boolean"
                 },
                 "dir": {
