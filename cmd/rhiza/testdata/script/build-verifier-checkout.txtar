@@ -1,0 +1,135 @@
+# Each verifier works in a throwaway detached worktree at its leaf's
+# commit, under the git common dir, removed once its session ends whether
+# it passed or failed, while its rhiza writes go into the build worktree's
+# log through RHIZA_ROOT. The builder's uncommitted edits in the build
+# worktree stay as they were.
+#
+# The fake rex runs the tab's command synchronously in the window's
+# directory. The fake claude, as a builder, commits a file with its leaf's
+# Leaf: trailer and logs the commit and its directory; the second builder
+# then leaves a staged and an unstaged edit and an untracked file behind
+# and snapshots them. As a verifier it logs where it runs and what it
+# sees; the verifier of good writes its Evidence as its own actor and
+# passes, the verifier of bad exits 1.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new 'Checkouts' --title 'Checkouts'
+exec rhiza add capability good
+exec rhiza add capability bad
+exec rhiza link bad depends-on good
+mkdir .rhiza/workflows
+cp $WORK/build.toml .rhiza/workflows/build.toml
+exec git add -A
+exec git commit -qm leaves
+
+exec sh -c 'rhiza run start --workflow build --permission-mode manual --json; echo exit=$?'
+stdout '"state": "succeeded"'
+stdout '^exit=0$'
+exec rhiza run status
+stdout '^- good \(step build\): passed: attempt 1: verifier passed$'
+stdout '^- bad \(step build\): failed: attempt 1: verifier failed: exit 1$'
+
+# Each verifier ran in a detached checkout of its leaf's commit, not in
+# the build worktree, with RHIZA_ROOT naming the build worktree.
+exec cat $WORK/verifier.log
+cmp stdout $WORK/want.log
+grep '/repo/\.git/rhiza/checkouts/[0-9A-Z]+-good-1$' $WORK/good.pwd
+grep '/repo/\.git/rhiza/checkouts/[0-9A-Z]+-bad-1$' $WORK/bad.pwd
+
+# Both checkouts are gone after their sessions ended, pass and fail.
+exec sh -c 'for l in good bad; do test -e "$(cat $WORK/$l.pwd)" && echo "$l left"; done; git worktree list'
+! stdout 'left'
+! stdout 'rhiza/checkouts'
+! stdout 'detached'
+
+# The Evidence the passing verifier wrote is in the build worktree's log,
+# and the checkout's log never got it.
+exec sh -c 'grep -rl "good-ok" "$(cat $WORK/build.pwd)/.rhiza/log"'
+stdout '\.json$'
+grep '^good clean$' $WORK/checkout-status.log
+
+# The builder's staged, unstaged and untracked edits are untouched.
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git diff > $WORK/after.diff && git diff --cached > $WORK/after.cached && git status --porcelain --untracked-files=all -- notes.txt scratch.txt > $WORK/after.status'
+cmp $WORK/after.diff $WORK/before.diff
+cmp $WORK/after.cached $WORK/before.cached
+cmp $WORK/after.status $WORK/before.status
+grep 'unstaged' $WORK/after.diff
+grep 'staged' $WORK/after.cached
+grep '^\?\? scratch.txt$' $WORK/after.status
+
+fold-ok
+
+-- want.log --
+leaf=good dir=checkout head=leaf-commit branch=HEAD root=build
+leaf=bad dir=checkout head=leaf-commit branch=HEAD root=build
+-- build.toml --
+name = "build"
+
+[step.build]
+kind = "leaves"
+on.pass = "done"
+on.fail = "done"
+
+[step.build.builder]
+prompt = "Build {leaf}"
+
+[step.build.verifier]
+prompt = "Verify {leaf}"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+if [ "$RHIZA_ROLE" = builder ]; then
+	pwd -P > "$WORK/build.pwd"
+	echo "$RHIZA_LEAF" > "$RHIZA_LEAF.txt"
+	git add "$RHIZA_LEAF.txt"
+	git commit -q -m "build $RHIZA_LEAF" -m "Leaf: $RHIZA_LEAF" -- "$RHIZA_LEAF.txt" || exit 1
+	git rev-parse HEAD > "$WORK/$RHIZA_LEAF.commit"
+	if [ "$RHIZA_LEAF" = bad ]; then
+		echo staged > notes.txt
+		git add notes.txt
+		echo unstaged >> notes.txt
+		echo scratch > scratch.txt
+		git diff > "$WORK/before.diff"
+		git diff --cached > "$WORK/before.cached"
+		git status --porcelain --untracked-files=all -- notes.txt scratch.txt > "$WORK/before.status"
+	fi
+	exit 0
+fi
+pwd -P > "$WORK/$RHIZA_LEAF.pwd"
+dir=build
+[ "$(pwd -P)" != "$(cat "$WORK/build.pwd")" ] && dir=checkout
+head=other
+[ "$(git rev-parse HEAD)" = "$(cat "$WORK/$RHIZA_LEAF.commit")" ] && [ "$RHIZA_COMMIT" = "$(git rev-parse HEAD)" ] && head=leaf-commit
+root=other
+[ "$(cd "$RHIZA_ROOT" && pwd -P)" = "$(cat "$WORK/build.pwd")" ] && root=build
+echo "leaf=$RHIZA_LEAF dir=$dir head=$head branch=$(git rev-parse --abbrev-ref HEAD) root=$root" >> "$WORK/verifier.log"
+if [ "$RHIZA_LEAF" = bad ]; then
+	exit 1
+fi
+rhiza add evidence "$RHIZA_LEAF-ok" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+rhiza link "$RHIZA_LEAF-ok" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+[ -z "$(git status --porcelain)" ] && echo "$RHIZA_LEAF clean" >> "$WORK/checkout-status.log"
+exit 0

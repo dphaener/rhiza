@@ -56,6 +56,9 @@ const (
 	envAttempt = run.EnvAttempt
 	envRole    = run.EnvRole
 	envCommit  = run.EnvCommit
+	// envRoot is the Rhiza root a verifier's rhiza writes go to: the build
+	// worktree's, while it works in a checkout of its own.
+	envRoot = "RHIZA_ROOT"
 )
 
 // The Rex event that carries a block's status report, and its envelopes.
@@ -109,7 +112,8 @@ type SessionHookResponse struct {
 // when its hook denies a question to the owner.
 const autonomousAskReason = "This run is autonomous: no owner will answer. Your question is recorded and the arbiter will decide it; its answer arrives as a message. End your turn now and wait at your prompt."
 
-// runSessionRun starts the session's agent in its worktree with this
+// runSessionRun starts the session's agent in its worktree (a verifier's
+// in its checkout, agentDir) with this
 // terminal, its environment stamped with the change set, actor, for-actor
 // and run; copies this tab's Rex status reports while the agent runs; and
 // records the exit; then proposes a Decision for each question the owner
@@ -171,7 +175,7 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 	}
 
 	follow := followRex(ctx, st, rec.ID)
-	p, err := ctx.Start(Program{Name: argv[0], Args: argv[1:], Dir: rec.Worktree, Env: env, Unset: unset, Terminal: true})
+	p, err := ctx.Start(Program{Name: argv[0], Args: argv[1:], Dir: agentDir(rec), Env: env, Unset: unset, Terminal: true})
 	if err != nil {
 		follow.stop()
 		return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("start %s: %v", a.Name(), err))
@@ -288,7 +292,8 @@ func captureAfterRun(ctx *Ctx, rec session.Record, warnings []string) ([]string,
 // `rhiza session done` needs no argument) and, only when the launch belongs
 // to one, the run, RHIZA_AUTONOMOUS=1 when that run is autonomous, and a
 // leaf session's RHIZA_LEAF, RHIZA_ATTEMPT, RHIZA_ROLE and, for a verifier,
-// RHIZA_COMMIT. A run, autonomous or leaf mark the terminal had is removed.
+// RHIZA_COMMIT, and RHIZA_ROOT for one that works outside its worktree. A
+// run, autonomous, leaf or root mark the terminal had is removed.
 func launchEnv(rec session.Record) (set, unset []string) {
 	change := rec.Change
 	if rec.Writes != "" {
@@ -320,7 +325,21 @@ func launchEnv(rec session.Record) (set, unset []string) {
 	} else {
 		unset = append(unset, envCommit)
 	}
+	if rec.Root != "" {
+		set = append(set, envRoot+"="+rec.Root)
+	} else {
+		unset = append(unset, envRoot)
+	}
 	return set, unset
+}
+
+// agentDir is where the session's agent runs: its record's Dir (a
+// verifier's checkout) when set, else its worktree.
+func agentDir(rec session.Record) string {
+	if rec.Dir != "" {
+		return rec.Dir
+	}
+	return rec.Worktree
 }
 
 // recordRunFailure records that the agent could not run as the exit

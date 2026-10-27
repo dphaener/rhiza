@@ -30,6 +30,13 @@ type LeafRunner interface {
 	// says why: "" when no Evidence verifies the leaf at all, else which
 	// other actor wrote the Evidence that does.
 	Evidence(leaf Leaf, session string) (ok bool, detail string, err error)
+	// OpenCheckout adds a throwaway detached worktree at commit, where
+	// leaf's verifier on attempt works, and returns its path. It never
+	// touches the builders' worktree.
+	OpenCheckout(leaf Leaf, attempt int, commit string) (dir string, err error)
+	// RemoveCheckout removes a checkout OpenCheckout added; one already
+	// gone is no error.
+	RemoveCheckout(dir string) error
 }
 
 // Leaf is one leaf of a change set: its capability node's ID and handle,
@@ -45,7 +52,8 @@ type Leaf struct {
 // model to run, "" for the agent's default. Commit is, for a verifier,
 // the builder's commit it checks; "" for a builder. Env holds the
 // session's RHIZA_* variables, the step's plus RHIZA_LEAF, RHIZA_ATTEMPT,
-// RHIZA_ROLE and, for a verifier, RHIZA_COMMIT.
+// RHIZA_ROLE and, for a verifier, RHIZA_COMMIT. Dir is, for a verifier,
+// the checkout of Commit it works in; "" for a builder.
 type LeafSpec struct {
 	Step    workflow.Step
 	Role    string
@@ -53,6 +61,7 @@ type LeafSpec struct {
 	Attempt int
 	Model   string
 	Commit  string
+	Dir     string
 	Env     []string
 }
 
@@ -244,6 +253,7 @@ func (r *running) leaves(step workflow.Step, env []string) (result, error) {
 	if interval <= 0 {
 		interval = workflow.DefaultInterval
 	}
+	r.removeEndedCheckouts(lr, step)
 	for {
 		progressed := false
 		for _, a := range nextLeafActions(leaves, r.leafStates(step.Name)) {
@@ -279,8 +289,10 @@ func (r *running) leaves(step workflow.Step, env []string) (result, error) {
 
 // startLeaf launches a's session and journals its leaf-session entry: a
 // builder's with the worktree's HEAD before it started, which its leaf
-// commit must follow, and a verifier's with the commit it checks. A launch
-// that fails ends the step (failed true) with an error outcome.
+// commit must follow, and a verifier's with the commit it checks and, as
+// Detail, the checkout of it opened for the verifier to work in. A launch
+// that fails ends the step (failed true) with an error outcome, its
+// checkout removed.
 func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a leafAction) (result, bool, error) {
 	spec := LeafSpec{
 		Step: step, Role: a.role, Leaf: a.leaf, Attempt: a.attempt, Commit: a.commit,
@@ -301,13 +313,23 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 		}
 		commit = head
 	}
+	if a.role == workflow.RoleVerifier {
+		dir, err := lr.OpenCheckout(a.leaf, a.attempt, a.commit)
+		if err != nil {
+			return errResult(fmt.Errorf("leaf %s: check out %s for its verifier: %v", a.leaf.Handle, a.commit, err)), true, nil
+		}
+		spec.Dir = dir
+	}
 	s, err := lr.StartLeaf(spec)
 	if err != nil {
+		if spec.Dir != "" {
+			r.removeCheckout(lr, step, spec.Dir)
+		}
 		return errResult(fmt.Errorf("leaf %s: start its %s: %v", a.leaf.Handle, a.role, err)), true, nil
 	}
 	if err := r.append(Entry{
 		Type: TypeLeafSession, Step: step.Name, Leaf: a.leaf.ID, Handle: a.leaf.Handle,
-		Role: a.role, Attempt: a.attempt, Session: s, Model: spec.Model, Commit: commit,
+		Role: a.role, Attempt: a.attempt, Session: s, Model: spec.Model, Commit: commit, Detail: spec.Dir,
 	}); err != nil {
 		return result{}, false, err
 	}
@@ -316,8 +338,9 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 }
 
 // pollLeaf polls a's session once. When it has exited or its agent said
-// done, it journals the attempt's judgement (judged true) and reports the
-// session's end to the Runner. A builder judged pass passes only with a
+// done, it journals the attempt's judgement (judged true), removes a
+// verifier's checkout whatever the judgement, and reports the session's
+// end to the Runner. A builder judged pass passes only with a
 // new commit since its start naming its leaf (LeafCommit), journalled on
 // the attempt; without one its attempt fails with LeafCommit's detail. A
 // verifier judged pass passes only as judgeVerifier finds. A live session's block is journalled and
@@ -367,6 +390,9 @@ func (r *running) pollLeaf(lr LeafRunner, step workflow.Step, a leafAction) (jud
 			return false, result{}, false, err
 		}
 		r.log("step %s: leaf %s attempt %d: %s %s", step.Name, a.leaf.Handle, a.attempt, a.role, outcome)
+		if s, ok := r.leafStates(step.Name)[a.leaf.ID].Session(a.role, a.attempt); ok && a.role == workflow.RoleVerifier && s.Detail != "" {
+			r.removeCheckout(lr, step, s.Detail)
+		}
 		if err := r.e.Runner.AgentEnded(step, a.session); err != nil {
 			r.log("step %s: %v", step.Name, err)
 		}
@@ -414,4 +440,31 @@ func (r *running) judgeVerifier(lr LeafRunner, step workflow.Step, a leafAction)
 		return workflow.OutcomeFail, "verifier ended with neither Evidence nor findings", nil
 	}
 	return workflow.OutcomeFail, "verifier ended with no Evidence of its own and no findings: " + why, nil
+}
+
+// removeEndedCheckouts removes the checkout of every verifier of step
+// whose attempt is judged: on a resume, one whose removal a killed run
+// never reached. A live verifier's checkout stays.
+func (r *running) removeEndedCheckouts(lr LeafRunner, step workflow.Step) {
+	for _, l := range r.j.State().Leaves {
+		if l.Step != step.Name {
+			continue
+		}
+		for _, s := range l.Sessions {
+			if s.Role != workflow.RoleVerifier || s.Detail == "" {
+				continue
+			}
+			if _, judged := l.Judged(s.Role, s.Attempt); judged {
+				r.removeCheckout(lr, step, s.Detail)
+			}
+		}
+	}
+}
+
+// removeCheckout removes a verifier's checkout dir. A failure is logged,
+// never fatal: a leftover checkout wastes space but changes no outcome.
+func (r *running) removeCheckout(lr LeafRunner, step workflow.Step, dir string) {
+	if err := lr.RemoveCheckout(dir); err != nil {
+		r.log("step %s: remove checkout %s: %v", step.Name, dir, err)
+	}
 }

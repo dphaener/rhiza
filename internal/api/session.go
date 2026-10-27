@@ -102,6 +102,10 @@ type SessionStartRequest struct {
 	// model is the session record's Model. Only a run's StartAgent and
 	// StartLeaf set it, from the step's or role's models.
 	model string
+	// dir and root are the session record's Dir and Root: a verifier's
+	// checkout, and the build worktree's Rhiza root its writes go to. Only
+	// a run's StartLeaf sets them.
+	dir, root string
 }
 
 // SessionStartResponse is the session launched, or in a dry run the one
@@ -238,6 +242,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 		Actor: handleSlug(a.Name() + "-" + sid[:8]), PermissionMode: r.PermissionMode, Prompt: r.Prompt,
 		Worktree: worktree, Branch: branch, Tab: tab, StartedAt: ctx.Now().UTC().Truncate(time.Second),
 		Writes: r.writes, WritesRecord: r.writesRecord, Leaf: r.leaf, Attempt: r.attempt, Role: r.role, Commit: r.commit, Model: r.model,
+		Dir: r.dir, Root: r.root,
 	}
 	self := ctx.Self
 	if self == "" {

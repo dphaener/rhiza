@@ -41,7 +41,12 @@ type Record struct {
 	Commit  string `json:"commit,omitempty"`
 	// Model is the model the agent starts on; "" means the agent's
 	// default.
-	Model          string    `json:"model,omitempty"`
+	Model string `json:"model,omitempty"`
+	// Dir is where the agent runs when that is not Worktree: a verifier's
+	// throwaway checkout of the commit it checks. Root is then the Rhiza
+	// root its rhiza writes go to (its RHIZA_ROOT), in Worktree.
+	Dir            string    `json:"dir,omitempty"`
+	Root           string    `json:"root,omitempty"`
 	Actor          string    `json:"actor"`
 	For            string    `json:"for"`
 	PermissionMode string    `json:"permission_mode"`

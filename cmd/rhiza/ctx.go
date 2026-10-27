@@ -29,6 +29,10 @@ import (
 // under the user cache dir, when a root was found; otherwise, or when the
 // cache dir is unknown, it is empty and reads fail. RHIZA_TEST_NOW
 // (RFC 3339) and RHIZA_TEST_SEED fix the clock and ID seed for tests.
+// RHIZA_ROOT, when set, is the root instead of the one found from the
+// working directory: it must hold .rhiza, else the call fails rather than
+// write to another log. A run sets it for a verifier, which works in a
+// throwaway checkout while its rhiza writes go to the build worktree.
 // Each process starts afresh, so both are offset by the repo's entry files,
 // plus one for repo.json, plus the git repository's session records: every
 // run draws fresh, deterministic IDs, and a dry run predicts the next real
@@ -38,8 +42,18 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 	if err != nil {
 		return nil, fmt.Errorf("working directory: %w", err)
 	}
+	root, found := findRoot(wd), false
+	if _, ok := api.FindRoot(wd); ok {
+		found = true
+	}
+	if env := getenv(envRoot); env != "" {
+		if root, err = rootFromEnv(env); err != nil {
+			return nil, err
+		}
+		found = true
+	}
 	ctx := &api.Ctx{
-		Root:      findRoot(wd),
+		Root:      root,
 		ChangeRef: pick(g.change, g.changeSet, getenv("RHIZA_CHANGE")),
 		ActorRef:  pick(g.actor, g.actorSet, getenv("RHIZA_ACTOR")),
 		ForRef:    pick(g.forRef, g.forSet, getenv("RHIZA_FOR")),
@@ -67,7 +81,7 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		ctx.Rex = os.Stderr
 	}
 	ctx.Git = gitIn(ctx.Root)
-	if _, ok := api.FindRoot(wd); ok {
+	if found {
 		if p, err := index.DefaultPath(ctx.Root); err == nil {
 			ctx.IndexPath = p
 		}
@@ -149,6 +163,25 @@ func pick(flag string, set bool, env string) string {
 		return flag
 	}
 	return env
+}
+
+// envRoot names the root to use in place of the working directory's.
+const envRoot = "RHIZA_ROOT"
+
+// rootFromEnv is RHIZA_ROOT's value made absolute, or an error when it
+// holds no .rhiza folder.
+func rootFromEnv(v string) (string, error) {
+	abs, err := filepath.Abs(v)
+	if err != nil {
+		return "", api.Usagef("%s %q: %v", envRoot, v, err)
+	}
+	for _, name := range []string{store.Dir, store.OldDir} {
+		if fi, err := os.Stat(filepath.Join(abs, name)); err == nil && fi.IsDir() {
+			return abs, nil
+		}
+	}
+	return "", api.Usagef("%s is %s, which holds no %s folder", envRoot, abs, store.Dir).
+		WithNext("unset " + envRoot + ", or set it to the folder that holds " + store.Dir)
 }
 
 // findRoot is api.FindRoot, falling back to dir when no ancestor holds

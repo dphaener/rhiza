@@ -8,8 +8,11 @@ package api
 // worktree.
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -69,7 +72,11 @@ func (r *stepRunner) Leaves(ref string) ([]run.Leaf, error) {
 // with {leaf} and {attempt} too. The session record carries the leaf's
 // handle, the attempt, the role and a verifier's commit, which its agent
 // gets as RHIZA_LEAF, RHIZA_ATTEMPT, RHIZA_ROLE and RHIZA_COMMIT, and the
-// model spec names.
+// model spec names. A spec with a Dir (a verifier's checkout) runs its
+// agent there, with RHIZA_ROOT set to the worktree's Rhiza root so its
+// rhiza writes reach the build worktree's log. Its tab still opens in the
+// worktree: `rhiza session run` writes there too, and the checkout is
+// removed once the session ends while the tab may stay.
 func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	role := spec.Step.Role(spec.Role)
 	if role == nil {
@@ -82,6 +89,9 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	t, err := resolveChangeWorktree(r.ctx, r.change, "no agent can work on it")
 	if err != nil {
 		return "", err
+	}
+	if spec.Dir != "" {
+		req.dir, req.root = spec.Dir, filepath.Join(t.worktree, t.prefix)
 	}
 	req.Prompt = role.RenderPrompt(workflow.LeafVars{
 		PromptVars: workflow.PromptVars{
@@ -222,6 +232,43 @@ func nodeCreator(sets []changeset.ChangeSet, n id.ID) (id.ID, bool) {
 		}
 	}
 	return id.ID{}, false
+}
+
+// OpenCheckout adds a throwaway detached worktree at commit for leaf's
+// verifier on attempt, under the git common dir's rhiza/checkouts, and
+// returns its path. A leftover at that path (a launch that never got
+// journalled) is removed first. The build worktree's index and files are
+// never touched: a new worktree has its own.
+func (r *stepRunner) OpenCheckout(leaf run.Leaf, attempt int, commit string) (string, error) {
+	out, err := r.worktreeGit("rev-parse", "--path-format=absolute", "--git-common-dir")
+	if err != nil {
+		return "", err
+	}
+	common := strings.TrimSpace(out)
+	dir := filepath.Join(common, "rhiza", "checkouts", fmt.Sprintf("%s-%s-%d", r.run, leaf.Handle, attempt))
+	if err := os.MkdirAll(filepath.Dir(dir), 0o755); err != nil {
+		return "", fmt.Errorf("checkout folder: %v", err)
+	}
+	if _, err := os.Stat(dir); err == nil {
+		if err := r.RemoveCheckout(dir); err != nil {
+			return "", err
+		}
+	}
+	if _, err := r.worktreeGit("worktree", "add", "--detach", dir, commit); err != nil {
+		return "", err
+	}
+	return dir, nil
+}
+
+// RemoveCheckout removes a checkout OpenCheckout added, uncommitted
+// changes and all. One already gone is only pruned from git's list.
+func (r *stepRunner) RemoveCheckout(dir string) error {
+	if _, err := os.Stat(dir); errors.Is(err, fs.ErrNotExist) {
+		_, err := r.worktreeGit("worktree", "prune")
+		return err
+	}
+	_, err := r.worktreeGit("worktree", "remove", "--force", dir)
+	return err
 }
 
 // worktreeGit runs git in the run's worktree and returns its output.

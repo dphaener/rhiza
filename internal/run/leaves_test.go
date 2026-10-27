@@ -48,6 +48,25 @@ func (f *fakeRunner) Evidence(leaf Leaf, session string) (bool, string, error) {
 	return true, "", nil
 }
 
+// checkoutDir is the fake runner's checkout for a leaf's verifier.
+func checkoutDir(handle string, attempt int) string {
+	return "/checkouts/" + handle + "-" + strconv.Itoa(attempt)
+}
+
+func (f *fakeRunner) OpenCheckout(leaf Leaf, attempt int, commit string) (string, error) {
+	if f.checkoutErr != nil {
+		return "", f.checkoutErr
+	}
+	dir := checkoutDir(leaf.Handle, attempt)
+	f.checkouts = append(f.checkouts, "open "+dir+" "+commit)
+	return dir, nil
+}
+
+func (f *fakeRunner) RemoveCheckout(dir string) error {
+	f.checkouts = append(f.checkouts, "remove "+dir)
+	return f.removeErr
+}
+
 // leafSID is the fake runner's session ID for a leaf session.
 func leafSID(handle, role string, attempt int) string {
 	return "S-" + handle + "-" + role + "-" + strconv.Itoa(attempt)
@@ -737,5 +756,119 @@ func TestLeavesStepVerifierExitFails(t *testing.T) {
 	}
 	if j := verifierAttempt(t, st); j.Outcome != workflow.OutcomeFail || len(r.evidenceCalls) != 0 {
 		t.Errorf("verifier judged %+v; Evidence calls %v", j, r.evidenceCalls)
+	}
+}
+
+// A verifier works in a checkout of its builder's commit, opened before
+// it starts, named in its LeafSpec and leaf-session Detail, and removed
+// once it is judged, whether it passed or failed. A removal that fails is
+// only logged.
+func TestLeavesStepVerifierCheckout(t *testing.T) {
+	for _, tc := range []struct {
+		name, outcome, leaf string
+		removeErr           error
+	}{
+		{"pass", workflow.OutcomePass, LeafPassed, nil},
+		{"fail", workflow.OutcomeFail, LeafFailed, nil},
+		{"remove fails", workflow.OutcomePass, LeafPassed, errors.New("locked")},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			e, r, _, _ := setup(t, leavesWF)
+			r.leaves = twoLeaves[:1]
+			passAll(r, twoLeaves)
+			r.outcome[leafSID("leaf-a", "verifier", 1)] = tc.outcome
+			r.removeErr = tc.removeErr
+			st, err := e.Run(runID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if st.Leaves[0].Outcome != tc.leaf {
+				t.Fatalf("leaf = %+v", st.Leaves[0])
+			}
+			dir := checkoutDir("leaf-a", 1)
+			if want := []string{"open " + dir + " C-leaf-a", "remove " + dir}; !reflect.DeepEqual(r.checkouts, want) {
+				t.Errorf("checkouts = %v, want %v", r.checkouts, want)
+			}
+			if len(r.leafSpecs) != 2 || r.leafSpecs[0].Dir != "" || r.leafSpecs[1].Dir != dir {
+				t.Errorf("specs = %+v", r.leafSpecs)
+			}
+			if s, _ := st.Leaves[0].Session(workflow.RoleVerifier, 1); s.Detail != dir {
+				t.Errorf("verifier session = %+v", s)
+			}
+		})
+	}
+}
+
+// A checkout that cannot be opened ends the step with an error, and no
+// verifier starts.
+func TestLeavesStepVerifierCheckoutFails(t *testing.T) {
+	e, r, _, _ := setup(t, leavesWF)
+	r.leaves = twoLeaves[:1]
+	passAll(r, twoLeaves)
+	r.checkoutErr = errors.New("no such commit")
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"build:error"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	if len(r.leafSpecs) != 1 {
+		t.Errorf("specs = %+v", r.leafSpecs)
+	}
+}
+
+// A verifier whose launch fails has its checkout removed.
+func TestLeavesStepVerifierStartFailsRemovesCheckout(t *testing.T) {
+	e, r, _, _ := setup(t, leavesWF)
+	r.leaves = twoLeaves[:1]
+	passAll(r, twoLeaves)
+	r.leafErr = map[string]error{"leaf-a verifier": errors.New("no rex")}
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	dir := checkoutDir("leaf-a", 1)
+	if want := []string{"open " + dir + " C-leaf-a", "remove " + dir}; !reflect.DeepEqual(r.checkouts, want) {
+		t.Errorf("checkouts = %v, want %v", r.checkouts, want)
+	}
+}
+
+// On a resume, the checkout of a verifier already judged is removed (a
+// killed run never reached it), while a live verifier's stays until it is
+// judged.
+func TestLeavesStepResumeRemovesEndedCheckouts(t *testing.T) {
+	e, r, _, _ := setup(t, leavesWF)
+	r.leaves = []Leaf{{ID: "L1", Handle: "leaf-a"}, {ID: "L2", Handle: "leaf-b"}}
+	passAll(r, r.leaves)
+	for _, en := range []Entry{
+		{Type: TypeEntered, Step: "build", Visit: 1},
+		{Type: TypeLeafSession, Step: "build", Leaf: "L1", Handle: "leaf-a", Role: "builder", Attempt: 1, Session: leafSID("leaf-a", "builder", 1)},
+		{Type: TypeLeafAttempt, Step: "build", Leaf: "L1", Handle: "leaf-a", Role: "builder", Attempt: 1, Outcome: "pass", Commit: "C-leaf-a"},
+		{Type: TypeLeafSession, Step: "build", Leaf: "L1", Handle: "leaf-a", Role: "verifier", Attempt: 1, Session: leafSID("leaf-a", "verifier", 1), Commit: "C-leaf-a", Detail: "/old/a"},
+		{Type: TypeLeafAttempt, Step: "build", Leaf: "L1", Handle: "leaf-a", Role: "verifier", Attempt: 1, Outcome: "pass"},
+		{Type: TypeLeafSession, Step: "build", Leaf: "L2", Handle: "leaf-b", Role: "builder", Attempt: 1, Session: leafSID("leaf-b", "builder", 1)},
+		{Type: TypeLeafAttempt, Step: "build", Leaf: "L2", Handle: "leaf-b", Role: "builder", Attempt: 1, Outcome: "pass", Commit: "C-leaf-b"},
+		{Type: TypeLeafSession, Step: "build", Leaf: "L2", Handle: "leaf-b", Role: "verifier", Attempt: 1, Session: leafSID("leaf-b", "verifier", 1), Commit: "C-leaf-b", Detail: "/old/b"},
+	} {
+		en.At = at(1)
+		if err := e.Store.Append(runID, en); err != nil {
+			t.Fatal(err)
+		}
+	}
+	r.agentSeq[leafSID("leaf-b", "verifier", 1)] = []AgentStatus{{Idle: true}}
+	r.onPoll = func(session string, n int) {
+		if session == leafSID("leaf-b", "verifier", 1) && n == 1 && len(r.checkouts) != 1 {
+			t.Errorf("checkouts while leaf-b's verifier is live = %v", r.checkouts)
+		}
+	}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"build:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	if want := []string{"remove /old/a", "remove /old/b"}; !reflect.DeepEqual(r.checkouts, want) {
+		t.Errorf("checkouts = %v, want %v", r.checkouts, want)
 	}
 }
