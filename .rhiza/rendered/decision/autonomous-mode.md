@@ -27,6 +27,12 @@ the owner's own words in the milestone-3 conversation ("autonomous mode that ski
 ### In
 
 - decided-by [milestone-3](../intent/anyone-builds/milestone-3.md)
+- decided-by [autonomous-runs](../capability/rhiza/workflows/autonomous-runs.md)
+- decided-by [run-start-autonomous](../capability/rhiza/workflows/autonomous-runs/run-start-autonomous.md)
+- decided-by [autonomous-keeps-permissions](../capability/rhiza/workflows/autonomous-runs/autonomous-keeps-permissions.md)
+- decided-by [autonomous-gate-rule](../capability/rhiza/workflows/autonomous-runs/autonomous-gate-rule.md)
+- decided-by [autonomous-review](../capability/rhiza/workflows/autonomous-runs/autonomous-review.md)
+- decided-by [arbiter-on-question](../capability/rhiza/workflows/arbiter-sessions/arbiter-on-question.md)
 
 ## History
 

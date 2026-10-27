@@ -27,6 +27,11 @@ the orchestrator's proposal in the milestone-3 conversation, accepted by the own
 ### In
 
 - decided-by [milestone-3](../intent/anyone-builds/milestone-3.md)
+- decided-by [arbiter-sessions](../capability/rhiza/workflows/arbiter-sessions.md)
+- decided-by [arbiter-guide](../capability/rhiza/workflows/arbiter-sessions/arbiter-guide.md)
+- decided-by [arbiter-step](../capability/rhiza/workflows/arbiter-sessions/arbiter-step.md)
+- decided-by [arbiter-on-question](../capability/rhiza/workflows/arbiter-sessions/arbiter-on-question.md)
+- decided-by [arbiter-answer-to-session](../capability/rhiza/workflows/arbiter-sessions/arbiter-answer-to-session.md)
 
 ## History
 
