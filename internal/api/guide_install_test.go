@@ -11,7 +11,7 @@ import (
 	"github.com/dphaener/rhiza/internal/guide"
 )
 
-var pluginPaths = []string{pluginManifestPath, pluginSkillPath, pluginHooksPath, pluginPlanPath, pluginScrubPath}
+var pluginPaths = []string{pluginManifestPath, pluginSkillPath, pluginHooksPath, pluginBuildPath, pluginPlanPath, pluginScrubPath}
 
 func guideInstall(t *testing.T, ctx *Ctx, req string) GuideInstallResponse {
 	t.Helper()
@@ -48,7 +48,7 @@ func TestYAMLQuote(t *testing.T) {
 }
 
 func TestSkillFileFrontmatter(t *testing.T) {
-	for _, tc := range []struct{ name, text string }{{"rhiza", "rhiza"}, {"rhiza-scrub", "scrub"}, {"rhiza-plan", "plan"}} {
+	for _, tc := range []struct{ name, text string }{{"rhiza", "rhiza"}, {"rhiza-scrub", "scrub"}, {"rhiza-plan", "plan"}, {"rhiza-build", "build"}} {
 		b, err := skillFile(tc.name, tc.text)
 		if err != nil {
 			t.Fatal(err)
@@ -87,6 +87,30 @@ func TestGuideInstall(t *testing.T) {
 	}
 	if v, _ := installedVersion(dir); v != "v1.2.4" {
 		t.Errorf("installedVersion after upgrade = %q", v)
+	}
+}
+
+// TestGuideInstallBuild finds the build topic in the installed plugin, as
+// the rhiza-build skill: frontmatter, then rhiza guide build's text.
+func TestGuideInstallBuild(t *testing.T) {
+	ctx := testCtx(t.TempDir())
+	ctx.Home = t.TempDir()
+	r := guideInstall(t, ctx, `{"agent":"claude"}`)
+	if !slices.Contains(r.Written, "skills/rhiza-build/SKILL.md") {
+		t.Fatalf("install wrote %v, want skills/rhiza-build/SKILL.md", r.Written)
+	}
+	b, err := os.ReadFile(filepath.Join(r.Dir, "skills", "rhiza-build", "SKILL.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	g, _ := guide.Lookup("build")
+	if !strings.HasPrefix(string(b), "---\nname: rhiza-build\ndescription: ") || !strings.HasSuffix(string(b), "\n---\n\n"+g.Body) {
+		t.Errorf("rhiza-build SKILL.md is not the frontmatter plus the build topic:\n%s", b)
+	}
+	for _, p := range []string{"Leaf: ", "discovered-from", "rhiza run findings --leaf"} {
+		if !strings.Contains(string(b), p) {
+			t.Errorf("rhiza-build SKILL.md: no %q", p)
+		}
 	}
 }
 

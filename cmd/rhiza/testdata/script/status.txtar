@@ -93,7 +93,7 @@ stdout '"current": false'
 exec rhiza status --hook
 stdout '^The installed rhiza guide is out of date: run `rhiza guide install --agent claude`\.$'
 exec rhiza guide install --agent claude
-stdout '\(1 written, 4 unchanged\)\.$'
+stdout '\(1 written, 5 unchanged\)\.$'
 stdout '^- wrote skills/rhiza-plan/SKILL\.md$'
 exec rhiza status
 stdout '\(current\)$'
