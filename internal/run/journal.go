@@ -21,6 +21,7 @@ const (
 	TypeRejected   = "rejected"
 	TypeArbiter    = "arbiter"
 	TypeArbitrated = "arbitrated"
+	TypeAsked      = "asked"
 )
 
 // Run results, used in Entry.End and State.Result.
@@ -78,6 +79,9 @@ type Block struct {
 //	           node Question, asked from agent step Step)
 //	arbitrated: Step, Question, Outcome (pass, fail or error), Detail, Decision (the
 //	           arbiter's verdict on Question; Decision is the answering Decision's handle)
+//	asked:     Step, Session, Question, Handle, Detail (an autonomous run's agent step's
+//	           session asked the owner Detail; the engine added question node Question,
+//	           handle Handle, for the arbiter)
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -101,6 +105,20 @@ type Entry struct {
 	// Decision is an arbitrated entry's answering Decision's handle, when
 	// the arbiter passed.
 	Decision string `json:"decision,omitempty"`
+	// Handle is an asked entry's question node handle.
+	Handle string `json:"handle,omitempty"`
+}
+
+// Asked is one asked entry: in an autonomous run, agent step Step's
+// session Session asked the owner Text, and the engine added question node
+// Question (handle Handle) to the run's change set for the arbiter.
+type Asked struct {
+	Step     string
+	Session  string
+	Question string
+	Handle   string
+	Text     string
+	At       time.Time
 }
 
 // Amendment is one amended entry: a step's brief or plan file replaced
@@ -222,6 +240,9 @@ type State struct {
 	// Arbitrations are the arbiter entries in journal order, each completed
 	// by its arbitrated entry. They change nothing else in the fold.
 	Arbitrations []Arbitration
+	// Asked are the asked entries in journal order. They change nothing
+	// else in the fold.
+	Asked []Asked
 	// RetryBase holds each step's Visits as they stood at the run's last
 	// retried entry. Only visits past it count against max_visits, so a
 	// retry gives every step its full cap again; visit numbers still
@@ -231,6 +252,9 @@ type State struct {
 	// until its next entered entry marks that visit as the retry.
 	retryNext  string
 	retryVisit map[string]int
+	// blockAsked is 1 + the index in Asked of the asked entry for the
+	// current block, 0 when the block has none (or there is no block).
+	blockAsked int
 }
 
 // State folds the journal.
@@ -274,6 +298,7 @@ func (j Journal) State() State {
 				b = *e.Block
 			}
 			st.Blocked, st.BlockedStep, st.BlockedSession = &b, e.Step, e.Session
+			st.blockAsked = 0
 		case TypeUnblocked:
 			st.clearBlock()
 		case TypeEnded:
@@ -305,6 +330,13 @@ func (j Journal) State() State {
 			})
 		case TypeArbitrated:
 			st.arbitrated(e)
+		case TypeAsked:
+			st.Asked = append(st.Asked, Asked{
+				Step: e.Step, Session: e.Session, Question: e.Question, Handle: e.Handle, Text: e.Detail, At: e.At,
+			})
+			if st.Blocked != nil && st.BlockedSession == e.Session {
+				st.blockAsked = len(st.Asked)
+			}
 		case TypeStopped:
 			st.Stopped = e.Detail
 		case TypeFinished:
@@ -367,6 +399,27 @@ func (st State) OpenArbitration(question string) (Arbitration, bool) {
 	return Arbitration{}, false
 }
 
+// Arbitration is the latest arbitration of question, open or judged.
+func (st State) Arbitration(question string) (Arbitration, bool) {
+	for i := len(st.Arbitrations) - 1; i >= 0; i-- {
+		if a := st.Arbitrations[i]; a.Question == question {
+			return a, true
+		}
+	}
+	return Arbitration{}, false
+}
+
+// BlockAsked is the asked entry of the current block: the question the
+// engine raised for it, so a session still blocked is never asked twice
+// for one block. It has none when the run is not blocked, or its block
+// has not been asked yet.
+func (st State) BlockAsked() (Asked, bool) {
+	if st.Blocked == nil || st.blockAsked == 0 {
+		return Asked{}, false
+	}
+	return st.Asked[st.blockAsked-1], true
+}
+
 // CapVisits is how many visits of step count against its max_visits: those
 // since the run's last retried entry, or all of them when it has none.
 func (st State) CapVisits(step string) int {
@@ -393,4 +446,5 @@ func (st State) FailedStep() (string, error) {
 
 func (st *State) clearBlock() {
 	st.Blocked, st.BlockedStep, st.BlockedSession = nil, "", ""
+	st.blockAsked = 0
 }

@@ -81,6 +81,16 @@ type Runner interface {
 	// Answer reports whether the model, as the run's change set sees it,
 	// holds a valid answer to question node question, and if not, why.
 	Answer(question string) (Answer, error)
+	// AddQuestion adds what session asked the owner, text, as one question
+	// node in the run's change set, written as the session's actor, and
+	// returns the node. It refuses when the change set is finished.
+	AddQuestion(session, text string) (Question, error)
+}
+
+// Question is a question node the Runner added: its ID and handle.
+type Question struct {
+	ID     string
+	Handle string
 }
 
 // Answer is the Runner's verdict on an arbiter's work: OK when a live
@@ -140,7 +150,9 @@ type Engine struct {
 	Log func(string)
 	// Notify, when set, is called once when an agent step becomes blocked
 	// and once when that block ends. A resume of a step whose journal
-	// already shows the block calls it only when the block ends.
+	// already shows the block calls it only when the block ends. An
+	// autonomous run's question is the arbiter's, not the owner's: it is
+	// never notified.
 	Notify func(Notice)
 }
 
@@ -536,6 +548,12 @@ func (r *running) agent(step workflow.Step, env []string) (result, error) {
 		if err != nil {
 			return result{}, err
 		}
+		if r.arbitrates(status.Blocked) {
+			res, ended, err := r.ask(step, session, status.Blocked)
+			if err != nil || ended {
+				return res, err
+			}
+		}
 		if ready, why := readyForUntil(step, status); ready {
 			held, err := r.e.Runner.Holds(step, env)
 			if err != nil {
@@ -547,6 +565,64 @@ func (r *running) agent(step workflow.Step, env []string) (result, error) {
 		}
 		c.Sleep(interval)
 	}
+}
+
+// arbitrates reports whether the engine, not the owner, answers block b:
+// only a question, and only in an autonomous run.
+func (r *running) arbitrates(b *Block) bool {
+	return b != nil && b.Kind == "question" && r.j.State().Autonomous
+}
+
+// ask has the arbiter answer the question step's session is blocked on,
+// in an autonomous run. Once per block (the journal's asked entry for it,
+// State.BlockAsked), it adds the question as a node in the run's change
+// set and journals an asked entry; then it arbitrates the question, or
+// rejoins its open arbitration (a resume), or reads its verdict. A failed
+// verdict ends the step (ended true) with an error outcome naming the
+// question, its block ended first, so the run finishes failed whatever
+// the step's on. entries say. On a pass the step goes on polling its
+// session: the arbiter's answer is the run's, and the session's own
+// outcome decides the step. The error return is for journal failures.
+func (r *running) ask(step workflow.Step, session string, b *Block) (result, bool, error) {
+	asked, ok := r.j.State().BlockAsked()
+	if !ok {
+		q, err := r.e.Runner.AddQuestion(session, b.Question)
+		if err != nil {
+			return r.askFailed(step, session, errResult(fmt.Errorf("add the question session %s asked: %v", session, err)))
+		}
+		asked = Asked{Step: step.Name, Session: session, Question: q.ID, Handle: q.Handle, Text: b.Question}
+		if err := r.append(Entry{
+			Type: TypeAsked, Step: step.Name, Session: session, Question: q.ID, Handle: q.Handle, Detail: b.Question,
+		}); err != nil {
+			return result{}, false, err
+		}
+		r.log("step %s: session %s asked question %s (%s); the arbiter answers it", step.Name, session, q.Handle, q.ID)
+	}
+	var res result
+	if a, ok := r.j.State().Arbitration(asked.Question); ok && !a.Open() {
+		res = result{outcome: a.Outcome, detail: a.Detail}
+	} else {
+		var err error
+		if res, err = r.arbitrate(step, asked.Question); err != nil {
+			return result{}, false, err
+		}
+	}
+	if res.outcome == workflow.OutcomePass {
+		// Task 8 delivers the arbiter's answer to the asking session here.
+		return result{}, false, nil
+	}
+	return r.askFailed(step, session, result{
+		outcome: OutcomeError,
+		detail:  fmt.Sprintf("arbiter failed on question %s (%s): %s", asked.Handle, asked.Question, res.detail),
+	})
+}
+
+// askFailed ends session's block and returns res as the step's outcome.
+func (r *running) askFailed(step workflow.Step, session string, res result) (result, bool, error) {
+	if err := r.unblock(step.Name, session); err != nil {
+		return result{}, false, err
+	}
+	return res, true, nil
 }
 
 // readyForUntil reports whether a live session's poll lets the step check
@@ -600,7 +676,9 @@ func (r *running) block(step, session string, b *Block) error {
 		on = "the owner"
 	}
 	r.log("step %s: blocked on %s", step, on)
-	r.notify(st, step, session, true, &cp)
+	if !r.arbitrates(&cp) {
+		r.notify(st, step, session, true, &cp)
+	}
 	return nil
 }
 
@@ -615,7 +693,9 @@ func (r *running) unblock(step, session string) error {
 		return err
 	}
 	r.log("step %s: unblocked", step)
-	r.notify(st, step, session, false, st.Blocked)
+	if !r.arbitrates(st.Blocked) {
+		r.notify(st, step, session, false, st.Blocked)
+	}
 	return nil
 }
 

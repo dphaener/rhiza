@@ -21,10 +21,12 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
@@ -719,6 +721,72 @@ func (r *stepRunner) Answer(question string) (run.Answer, error) {
 		return run.Answer{}, err
 	}
 	return arbiterAnswer(ww.model(cs), q), nil
+}
+
+// questionHandlePrefix starts the handle of every question node a run adds
+// for its arbiter: question-<sid8>-<n>.
+const questionHandlePrefix = "question-"
+
+// AddQuestion writes what session sid asked the owner, text, as one
+// question node question-<sid8>-<n> (n the next number free in the change
+// set's view) with fields statement and session, into the run's change
+// set, in the workspace of the session's worktree, as the session's actor
+// for its for-actor, in one entry. It refuses a session of another change
+// set, and a change set that is finished.
+func (r *stepRunner) AddQuestion(sid, text string) (run.Question, error) {
+	rec, err := readSession(r.sessions, sid)
+	if err != nil {
+		return run.Question{}, err
+	}
+	if rec.Change != r.change {
+		return run.Question{}, Errorf("session %s is on change set %s, not the run's %s", rec.ID, rec.Change, r.change)
+	}
+	if len(rec.ID) < 8 {
+		return run.Question{}, Errorf("session ID %q is shorter than 8 characters", rec.ID)
+	}
+	ww, cs, err := sessionWorkspace(r.ctx, rec)
+	if err != nil {
+		return run.Question{}, err
+	}
+	c, _ := ww.changeSet(cs)
+	if c.State.Terminal() {
+		return run.Question{}, Conflictf("change set %s is %s; no question can be added to it", cs, c.State).
+			WithNext("rhiza change show " + cs.String())
+	}
+	m := ww.model(cs)
+	prefix := questionHandlePrefix + strings.ToLower(rec.ID[:8]) + "-"
+	handle := ""
+	for n := 1; handle == ""; n++ {
+		if h := prefix + strconv.Itoa(n); !answerProposed(m, c.Ops, h) {
+			handle = h
+		}
+	}
+	actor, err := liveActor(m, rec.Actor)
+	if err != nil {
+		return run.Question{}, Errorf("session %s's actor %s: %s", rec.ID, rec.Actor, AsError(err).Message)
+	}
+	forID, err := sessionForActor(r.ctx, m, rec.For)
+	if err != nil {
+		return run.Question{}, Errorf("session %s's for-actor %s: %s", rec.ID, rec.For, AsError(err).Message)
+	}
+	items := []applyItem{{op: "add", build: func(b writeBase) (edit, error) {
+		return buildAdd(b, AddRequest{Kind: string(op.KindQuestion), Handle: handle,
+			Fields: []string{"statement=" + text, "session=" + rec.ID}})
+	}}}
+	e, err := buildApply(ww, cs, r.ctx.IDs, items)
+	if err == nil {
+		err = e.check("add")
+	}
+	if err != nil {
+		return run.Question{}, err
+	}
+	if len(e.nodes) != 1 {
+		return run.Question{}, Errorf("adding question %s touched %d nodes, not 1", handle, len(e.nodes))
+	}
+	if _, err := ww.appendEntry(cs, changeset.Ops{Ops: e.ops, Drop: e.drop}, actor, forID); err != nil {
+		return run.Question{}, err
+	}
+	return run.Question{ID: e.nodes[0].String(), Handle: handle}, nil
 }
 
 // arbiterAnswer is Answer's verdict over model m on question q.
