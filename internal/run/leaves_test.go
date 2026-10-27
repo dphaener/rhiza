@@ -131,11 +131,12 @@ func TestLeavesStepTwoLeaves(t *testing.T) {
 	}
 }
 
-// A builder that fails fails its leaf with no verifier; the next leaf
-// still runs, and the step fails naming the leaf that did not pass.
+// A builder that fails fails its leaf with no verifier; the next leaf,
+// independent of it, still runs, and the step fails naming the leaf that
+// did not pass.
 func TestLeavesStepBuilderFails(t *testing.T) {
 	e, r, _, _ := setup(t, leavesWF)
-	r.leaves = twoLeaves
+	r.leaves = []Leaf{twoLeaves[0], {ID: "L2", Handle: "leaf-b"}}
 	passAll(r, twoLeaves)
 	r.outcome[leafSID("leaf-a", "builder", 1)] = workflow.OutcomeFail
 	st, err := e.Run(runID)
@@ -354,5 +355,185 @@ func TestLeavesModel(t *testing.T) {
 		if en.Type == TypeLeafSession && en.Role == workflow.RoleBuilder && en.Model != "sonnet" {
 			t.Errorf("builder leaf-session model = %q, want sonnet", en.Model)
 		}
+	}
+}
+
+// A leaf whose dependency failed is skipped, naming the dependency, and
+// never started.
+func TestLeavesStepDependencyFailedSkips(t *testing.T) {
+	e, r, _, _ := setup(t, leavesWF)
+	r.leaves = twoLeaves
+	passAll(r, twoLeaves)
+	r.outcome[leafSID("leaf-a", "builder", 1)] = workflow.OutcomeFail
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"leaf-session leaf-a builder 1", "leaf-attempt leaf-a builder 1 fail", "leaf leaf-a failed", "leaf leaf-b skipped"}
+	if got := leafEntries(t, e); !reflect.DeepEqual(got, want) {
+		t.Errorf("leaf entries =\n%v\nwant\n%v", got, want)
+	}
+	if l := st.Leaves[1]; l.Outcome != LeafSkipped || !strings.Contains(l.Detail, "leaf-a") {
+		t.Errorf("leaf-b = %+v", l)
+	}
+	if d := st.Steps[0].Detail; d != "0 of 2 leaves passed; not passed: leaf-a, leaf-b" {
+		t.Errorf("detail = %q", d)
+	}
+}
+
+// abcLeaves are leaves A, B and C in leaf order, C depending on A.
+var abcLeaves = []Leaf{{ID: "LA", Handle: "a"}, {ID: "LB", Handle: "b"}, {ID: "LC", Handle: "c", DependsOn: []string{"LA"}}}
+
+// Builders run one at a time in leaf order, while a built leaf's verifier
+// runs alongside the next builder: B's builder starts while A's verifier
+// is still live, and C, which depends on A, starts only once A passed.
+func TestLeafOrderOverlapAndGating(t *testing.T) {
+	e, r, _, _ := setup(t, leavesWF)
+	r.leaves = abcLeaves
+	passAll(r, abcLeaves)
+	av := leafSID("a", "verifier", 1)
+	// A's verifier runs for five polls; B's builder finishes on its third.
+	r.agentOut[av] = []bool{false, false, false, false, false}
+	r.agentOut[leafSID("b", "builder", 1)] = []bool{false, false}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"build:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	got := leafEntries(t, e)
+	bStart, avDone := slices.Index(got, "leaf-session b builder 1"), slices.Index(got, "leaf-attempt a verifier 1 pass")
+	avStart := slices.Index(got, "leaf-session a verifier 1")
+	if bStart < 0 || avStart < 0 || !(avStart < bStart && bStart < avDone) {
+		t.Errorf("B's builder did not start while A's verifier was live:\n%v", got)
+	}
+	cStart, aPassed := slices.Index(got, "leaf-session c builder 1"), slices.Index(got, "leaf a passed")
+	if cStart < 0 || aPassed < 0 || cStart < aPassed {
+		t.Errorf("C's builder started before A passed:\n%v", got)
+	}
+	// One builder live at a time: each builder starts only after the one
+	// before it was judged.
+	var builders []string
+	for _, en := range got {
+		if strings.HasPrefix(en, "leaf-session") && strings.Contains(en, "builder") {
+			builders = append(builders, en)
+		}
+	}
+	if want := []string{"leaf-session a builder 1", "leaf-session b builder 1", "leaf-session c builder 1"}; !reflect.DeepEqual(builders, want) {
+		t.Errorf("builders started %v, want %v", builders, want)
+	}
+	if slices.Index(got, "leaf-attempt a builder 1 pass") > bStart || slices.Index(got, "leaf-attempt b builder 1 pass") > cStart {
+		t.Errorf("a builder started while another was live:\n%v", got)
+	}
+	seen := map[string]bool{}
+	for _, s := range r.leafSpecs {
+		if k := s.Leaf.Handle + " " + s.Role; seen[k] {
+			t.Errorf("%s started twice", k)
+		} else {
+			seen[k] = true
+		}
+	}
+	if len(r.leafSpecs) != 6 {
+		t.Errorf("started %d sessions, want 6", len(r.leafSpecs))
+	}
+}
+
+// nextLeafActions polls a live verifier and starts the next ready builder
+// in the same turn, holds back a leaf whose dependency is in flight, and
+// starts no builder while one is live.
+func TestLeafOrderNextActions(t *testing.T) {
+	built := LeafState{Leaf: "LA",
+		Sessions: []LeafSession{{Role: "builder", Attempt: 1, Session: "SAb"}, {Role: "verifier", Attempt: 1, Session: "SAv"}},
+		Attempts: []LeafAttempt{{Role: "builder", Attempt: 1, Outcome: "pass"}}}
+	got := nextLeafActions(abcLeaves, map[string]LeafState{"LA": built})
+	if len(got) != 2 || got[0].kind != leafPoll || got[0].session != "SAv" ||
+		got[1].kind != leafStart || got[1].leaf.ID != "LB" || got[1].role != workflow.RoleBuilder {
+		t.Fatalf("verifier live: %+v", got)
+	}
+	states := map[string]LeafState{"LA": built, "LB": {Leaf: "LB", Sessions: []LeafSession{{Role: "builder", Attempt: 1, Session: "SBb"}}}}
+	got = nextLeafActions(abcLeaves, states)
+	if len(got) != 2 || got[0].session != "SAv" || got[1].session != "SBb" {
+		t.Fatalf("builder live: %+v", got)
+	}
+	// B passed, A's verifier still live: C waits on A, nothing starts.
+	states["LB"] = LeafState{Leaf: "LB", Outcome: LeafPassed}
+	got = nextLeafActions(abcLeaves, states)
+	if len(got) != 1 || got[0].kind != leafPoll || got[0].session != "SAv" {
+		t.Fatalf("C waits: %+v", got)
+	}
+	states["LA"] = LeafState{Leaf: "LA", Outcome: LeafPassed}
+	got = nextLeafActions(abcLeaves, states)
+	if len(got) != 1 || got[0].kind != leafStart || got[0].leaf.ID != "LC" {
+		t.Fatalf("C ready: %+v", got)
+	}
+}
+
+// A journal cut while A's verifier and B's builder are live rejoins both
+// sessions, starting neither again.
+func TestLeafOrderResume(t *testing.T) {
+	e, r, _, _ := setup(t, leavesWF)
+	r.leaves = abcLeaves
+	passAll(r, abcLeaves)
+	av, bb := leafSID("a", "verifier", 1), leafSID("b", "builder", 1)
+	for _, en := range []Entry{
+		{Type: TypeEntered, Step: "build", Visit: 1},
+		{Type: TypeLeafSession, Step: "build", Leaf: "LA", Handle: "a", Role: "builder", Attempt: 1, Session: leafSID("a", "builder", 1)},
+		{Type: TypeLeafAttempt, Step: "build", Leaf: "LA", Handle: "a", Role: "builder", Attempt: 1, Outcome: "pass"},
+		{Type: TypeLeafSession, Step: "build", Leaf: "LA", Handle: "a", Role: "verifier", Attempt: 1, Session: av},
+		{Type: TypeLeafSession, Step: "build", Leaf: "LB", Handle: "b", Role: "builder", Attempt: 1, Session: bb},
+	} {
+		en.At = at(1)
+		if err := e.Store.Append(runID, en); err != nil {
+			t.Fatal(err)
+		}
+	}
+	r.agentOut[av] = []bool{false}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"build:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	var started []string
+	for _, s := range r.leafSpecs {
+		started = append(started, s.Leaf.Handle+" "+s.Role)
+	}
+	if want := []string{"b verifier", "c builder", "c verifier"}; !reflect.DeepEqual(started, want) {
+		t.Errorf("started %v, want %v", started, want)
+	}
+	if r.polls[av] != 2 || r.polls[bb] != 1 {
+		t.Errorf("polls: A verifier %d, B builder %d; want both rejoined (2, 1)", r.polls[av], r.polls[bb])
+	}
+	for _, l := range st.Leaves {
+		if l.Outcome != LeafPassed || len(l.Sessions) != 2 {
+			t.Errorf("leaf %s = %+v", l.Handle, l)
+		}
+	}
+}
+
+// Two leaf sessions blocked together each get one blocked and one
+// unblocked notice, however often they are polled.
+func TestLeafOrderBlocksPerSession(t *testing.T) {
+	e, r, _, _ := setup(t, leavesWF)
+	r.leaves = abcLeaves[:2]
+	passAll(r, abcLeaves)
+	av, bb := leafSID("a", "verifier", 1), leafSID("b", "builder", 1)
+	blk := AgentStatus{Blocked: &Block{Kind: "permission"}}
+	r.agentSeq[av] = []AgentStatus{blk, blk, blk, blk}
+	r.agentSeq[bb] = []AgentStatus{blk, blk, {}, blk, blk}
+	var notices []string
+	e.Notify = func(n Notice) { notices = append(notices, n.Session+" "+strconv.FormatBool(n.Blocked)) }
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	count := map[string]int{}
+	for _, n := range notices {
+		count[n]++
+	}
+	want := map[string]int{av + " true": 1, av + " false": 1, bb + " true": 2, bb + " false": 2}
+	if !reflect.DeepEqual(count, want) {
+		t.Errorf("notices = %v, want counts %v", notices, want)
 	}
 }

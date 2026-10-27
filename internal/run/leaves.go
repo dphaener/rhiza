@@ -75,11 +75,22 @@ type leafAction struct {
 
 // nextLeafActions is the pure decision of a leaves step: from the change
 // set's leaves, in leaf order, and the step's folded leaf states, the moves
-// to make now. Leaves go one at a time, in order. A leaf's attempt starts
-// with its builder; a builder judged pass is followed by a verifier, whose
-// pass passes the leaf. A fail of either fails the leaf. Once every leaf
-// has an outcome the step ends: pass when every leaf passed, else fail.
+// to make now. A leaf's attempt starts with its builder; a builder judged
+// pass is followed by its verifier, whose pass passes the leaf. A fail of
+// either fails the leaf. Builders run one at a time: while none is live,
+// the next starts on the first leaf in leaf order not yet started whose
+// depends-on leaves have all passed. A built leaf's verifier runs
+// alongside the next builder. A leaf whose dependency failed or was
+// skipped is skipped. Once every leaf has an outcome the step ends: pass
+// when every leaf passed, else fail.
 func nextLeafActions(leaves []Leaf, states map[string]LeafState) []leafAction {
+	known := map[string]bool{}
+	for _, lf := range leaves {
+		known[lf.ID] = true
+	}
+	var acts []leafAction
+	var ready []Leaf
+	builderLive := false
 	passed, failed := 0, []string{}
 	for _, lf := range leaves {
 		l := states[lf.ID]
@@ -91,7 +102,31 @@ func nextLeafActions(leaves []Leaf, states map[string]LeafState) []leafAction {
 			failed = append(failed, lf.Handle)
 			continue
 		}
-		return []leafAction{nextForLeaf(lf, l)}
+		if _, started := l.Session(workflow.RoleBuilder, max(1, l.Attempt())); started {
+			a := nextForLeaf(lf, l)
+			builderLive = builderLive || (a.kind == leafPoll && a.role == workflow.RoleBuilder)
+			acts = append(acts, a)
+			continue
+		}
+		if dep, ok := lostDependency(lf, states, known, leaves); ok {
+			acts = append(acts, leafAction{kind: leafEnd, leaf: lf, outcome: LeafSkipped,
+				detail: fmt.Sprintf("its dependency %s did not pass", dep)})
+			continue
+		}
+		if dependenciesPassed(lf, states, known) {
+			ready = append(ready, lf)
+		}
+	}
+	if !builderLive && len(ready) > 0 {
+		acts = append(acts, leafAction{kind: leafStart, leaf: ready[0], role: workflow.RoleBuilder, attempt: 1})
+	}
+	if len(acts) > 0 {
+		return acts
+	}
+	open := len(leaves) - passed - len(failed)
+	if open > 0 {
+		return []leafAction{{kind: leavesDone, outcome: workflow.OutcomeFail,
+			detail: fmt.Sprintf("%d of %d leaves passed; %d cannot start", passed, len(leaves), open)}}
 	}
 	if len(failed) == 0 {
 		return []leafAction{{kind: leavesDone, outcome: workflow.OutcomePass, detail: fmt.Sprintf("%d of %d leaves passed", passed, len(leaves))}}
@@ -100,7 +135,36 @@ func nextLeafActions(leaves []Leaf, states map[string]LeafState) []leafAction {
 		detail: fmt.Sprintf("%d of %d leaves passed; not passed: %s", passed, len(leaves), strings.Join(failed, ", "))}}
 }
 
-// nextForLeaf is the next move on an open leaf l.
+// dependenciesPassed reports whether every leaf lf depends on, among the
+// step's leaves, has passed.
+func dependenciesPassed(lf Leaf, states map[string]LeafState, known map[string]bool) bool {
+	for _, d := range lf.DependsOn {
+		if known[d] && states[d].Outcome != LeafPassed {
+			return false
+		}
+	}
+	return true
+}
+
+// lostDependency is the handle of the first leaf lf depends on that failed
+// or was skipped, if any.
+func lostDependency(lf Leaf, states map[string]LeafState, known map[string]bool, leaves []Leaf) (string, bool) {
+	for _, d := range lf.DependsOn {
+		if !known[d] {
+			continue
+		}
+		if o := states[d].Outcome; o == LeafFailed || o == LeafSkipped {
+			for _, l := range leaves {
+				if l.ID == d {
+					return l.Handle, true
+				}
+			}
+		}
+	}
+	return "", false
+}
+
+// nextForLeaf is the next move on an open leaf l whose builder started.
 func nextForLeaf(lf Leaf, l LeafState) leafAction {
 	attempt := max(1, l.Attempt())
 	for _, role := range []string{workflow.RoleBuilder, workflow.RoleVerifier} {
@@ -133,7 +197,9 @@ func (r *running) leafStates(step string) map[string]LeafState {
 
 // leaves conducts a leaves step over the run change set's leaves: one loop
 // on this goroutine that acts on nextLeafActions, journalling each change,
-// and sleeps the step's interval when a turn only polled. A session in the
+// and sleeps the step's interval when a turn started, judged and ended
+// nothing. Each turn polls every live session: the builder and any
+// verifiers alongside it. A session in the
 // journal is rejoined, never started again. A session's attempt is judged
 // once its process exits (pass on exit 0) or its agent says done (pass);
 // idle alone is never enough. Blocks, notices and an autonomous run's
@@ -153,7 +219,7 @@ func (r *running) leaves(step workflow.Step, env []string) (result, error) {
 		interval = workflow.DefaultInterval
 	}
 	for {
-		waiting := false
+		progressed := false
 		for _, a := range nextLeafActions(leaves, r.leafStates(step.Name)) {
 			switch a.kind {
 			case leavesDone:
@@ -162,6 +228,7 @@ func (r *running) leaves(step workflow.Step, env []string) (result, error) {
 				if res, failed, err := r.startLeaf(lr, step, env, a); err != nil || failed {
 					return res, err
 				}
+				progressed = true
 			case leafEnd:
 				if err := r.append(Entry{
 					Type: TypeLeaf, Step: step.Name, Leaf: a.leaf.ID, Handle: a.leaf.Handle, Outcome: a.outcome, Detail: a.detail,
@@ -169,15 +236,16 @@ func (r *running) leaves(step workflow.Step, env []string) (result, error) {
 					return result{}, err
 				}
 				r.log("step %s: leaf %s %s", step.Name, a.leaf.Handle, a.outcome)
+				progressed = true
 			case leafPoll:
 				judged, res, ended, err := r.pollLeaf(step, a)
 				if err != nil || ended {
 					return res, err
 				}
-				waiting = waiting || !judged
+				progressed = progressed || judged
 			}
 		}
-		if waiting {
+		if !progressed {
 			r.clock().Sleep(interval)
 		}
 	}

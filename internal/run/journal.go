@@ -468,13 +468,19 @@ type State struct {
 	// Stopped is the detail of the last stopped entry after the last
 	// entered or ended entry, if any.
 	Stopped string
-	// Blocked is what the current agent step waits on, from its last
-	// blocked entry; nil once an unblocked, its step's ended or a
-	// finished entry follows. BlockedStep and BlockedSession name the
-	// step and session it belongs to.
+	// Blocked is the latest open block of Blocks: what the run waits on,
+	// from the last blocked entry still open; nil when no block is open.
+	// BlockedStep and BlockedSession name the step and session it belongs
+	// to.
 	Blocked        *Block
 	BlockedStep    string
 	BlockedSession string
+	// Blocks are the open blocks, one per session, in the order of their
+	// blocked entries. A session's block is open from its blocked entry
+	// until an unblocked entry for the session, an ended entry of its step,
+	// or a finished or retried entry. A leaves step polls several sessions
+	// at once, so several can be blocked together.
+	Blocks []SessionBlock
 	// Amendments are the amended entries in journal order. An amendment
 	// changes nothing else in the fold.
 	Amendments []Amendment
@@ -501,9 +507,6 @@ type State struct {
 	// until its next entered entry marks that visit as the retry.
 	retryNext  string
 	retryVisit map[string]int
-	// blockAsked is 1 + the index in Asked of the asked entry for the
-	// current block, 0 when the block has none (or there is no block).
-	blockAsked int
 	// Messages are the message entries in journal order. A message changes
 	// nothing else in the fold.
 	Messages []Message
@@ -607,10 +610,11 @@ func (j Journal) State() State {
 			if e.Block != nil {
 				b = *e.Block
 			}
-			st.Blocked, st.BlockedStep, st.BlockedSession = &b, e.Step, e.Session
-			st.blockAsked = 0
+			st.setBlocks(append(st.blocksBut(func(o SessionBlock) bool { return o.Session == e.Session }),
+				SessionBlock{Step: e.Step, Session: e.Session, Block: b}))
 		case TypeUnblocked:
-			st.clearBlock()
+			// An unblocked entry with no session ends every block.
+			st.setBlocks(st.blocksBut(func(o SessionBlock) bool { return e.Session == "" || o.Session == e.Session }))
 		case TypeEnded:
 			visit := e.Visit
 			if visit == 0 {
@@ -622,9 +626,7 @@ func (j Journal) State() State {
 				Retried: visit > 0 && st.retryVisit[e.Step] == visit,
 			})
 			delete(st.Session, e.Step)
-			if st.BlockedStep == e.Step {
-				st.clearBlock()
-			}
+			st.setBlocks(st.blocksBut(func(o SessionBlock) bool { return o.Step == e.Step }))
 			st.Current = e.Next
 			st.CurrentVisit = 0
 			st.Stopped = ""
@@ -646,8 +648,12 @@ func (j Journal) State() State {
 			})
 			// Only a session's question is its block's: a command step's
 			// asked entry has no session.
-			if e.Session != "" && st.Blocked != nil && st.BlockedSession == e.Session {
-				st.blockAsked = len(st.Asked)
+			if e.Session != "" {
+				for i := range st.Blocks {
+					if st.Blocks[i].Session == e.Session {
+						st.Blocks[i].asked = len(st.Asked)
+					}
+				}
 			}
 		case TypeAnswered:
 			for i := len(st.Asked) - 1; i >= 0; i-- {
@@ -754,15 +760,37 @@ func (st State) Arbitration(question string) (Arbitration, bool) {
 	return Arbitration{}, false
 }
 
-// BlockAsked is the asked entry of the current block: the question the
-// engine raised for it, so a session still blocked is never asked twice
-// for one block. It has none when the run is not blocked, or its block
-// has not been asked yet.
-func (st State) BlockAsked() (Asked, bool) {
-	if st.Blocked == nil || st.blockAsked == 0 {
+// SessionBlock is one session's open block: what session, of step Step,
+// waits on.
+type SessionBlock struct {
+	Step    string
+	Session string
+	Block   Block
+	// asked is 1 + the index in Asked of the asked entry for this block,
+	// 0 when the block has none.
+	asked int
+}
+
+// BlockAsked is the asked entry of session's open block: the question
+// the engine raised for it, so a session still blocked is never asked
+// twice for one block. It has none when the session is not blocked, or
+// its block has not been asked yet.
+func (st State) BlockAsked(session string) (Asked, bool) {
+	b, ok := st.BlockOf(session)
+	if !ok || b.asked == 0 {
 		return Asked{}, false
 	}
-	return st.Asked[st.blockAsked-1], true
+	return st.Asked[b.asked-1], true
+}
+
+// BlockOf is session's open block, if it has one.
+func (st State) BlockOf(session string) (SessionBlock, bool) {
+	for _, b := range st.Blocks {
+		if b.Session == session {
+			return b, true
+		}
+	}
+	return SessionBlock{}, false
 }
 
 // CapVisits is how many visits of step count against its max_visits: those
@@ -790,8 +818,29 @@ func (st State) FailedStep() (string, error) {
 }
 
 func (st *State) clearBlock() {
+	st.setBlocks(nil)
+}
+
+// blocksBut is a new slice of the open blocks drop does not match.
+func (st *State) blocksBut(drop func(SessionBlock) bool) []SessionBlock {
+	var out []SessionBlock
+	for _, b := range st.Blocks {
+		if !drop(b) {
+			out = append(out, b)
+		}
+	}
+	return out
+}
+
+// setBlocks sets the open blocks, and Blocked, BlockedStep and
+// BlockedSession to the latest of them.
+func (st *State) setBlocks(bs []SessionBlock) {
+	st.Blocks = bs
 	st.Blocked, st.BlockedStep, st.BlockedSession = nil, "", ""
-	st.blockAsked = 0
+	if n := len(bs); n > 0 {
+		b := bs[n-1].Block
+		st.Blocked, st.BlockedStep, st.BlockedSession = &b, bs[n-1].Step, bs[n-1].Session
+	}
 }
 
 // addSession records session under step in Sessions if it is not there yet.

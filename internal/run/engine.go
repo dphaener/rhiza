@@ -685,7 +685,7 @@ func (r *running) arbitrates(b *Block) bool {
 // session: the arbiter's answer is the run's, and the session's own
 // outcome decides the step. The error return is for journal failures.
 func (r *running) ask(step workflow.Step, session string, b *Block) (result, bool, error) {
-	asked, ok := r.j.State().BlockAsked()
+	asked, ok := r.j.State().BlockAsked(session)
 	if !ok {
 		q, err := r.e.Runner.AddQuestion(session, b.Question)
 		if err != nil {
@@ -789,17 +789,21 @@ func (r *running) exitedUntil(step workflow.Step, env []string, detail string) r
 	return result{outcome: workflow.OutcomeFail, detail: detail + " but until did not hold"}
 }
 
-// blockedOn reports whether the journal shows session blocked.
-func (r *running) blockedOn(session string) (State, bool) {
+// blockedOn is session's open block in the journal, if it has one.
+func (r *running) blockedOn(session string) (State, *Block, bool) {
 	st := r.j.State()
-	return st, st.Blocked != nil && st.BlockedSession == session
+	sb, ok := st.BlockOf(session)
+	if !ok {
+		return st, nil, false
+	}
+	return st, &sb.Block, true
 }
 
 // block journals that step's session became blocked on b and notifies,
 // unless the journal already shows it blocked: one notice per block, a
 // resume included.
 func (r *running) block(step, session string, b *Block) error {
-	st, already := r.blockedOn(session)
+	st, _, already := r.blockedOn(session)
 	if already {
 		return nil
 	}
@@ -821,7 +825,7 @@ func (r *running) block(step, session string, b *Block) error {
 // unblock journals the end of session's block and notifies, when the
 // journal shows it blocked; otherwise it does nothing.
 func (r *running) unblock(step, session string) error {
-	st, blocked := r.blockedOn(session)
+	st, b, blocked := r.blockedOn(session)
 	if !blocked {
 		return nil
 	}
@@ -829,8 +833,8 @@ func (r *running) unblock(step, session string) error {
 		return err
 	}
 	r.log("step %s: unblocked", step)
-	if !r.arbitrates(st.Blocked) {
-		r.notify(st, step, session, false, st.Blocked)
+	if !r.arbitrates(b) {
+		r.notify(st, step, session, false, b)
 	}
 	return nil
 }

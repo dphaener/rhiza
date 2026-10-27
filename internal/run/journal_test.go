@@ -894,3 +894,47 @@ func TestFoldRounds(t *testing.T) {
 		t.Fatal("ValidKind")
 	}
 }
+
+// Two sessions block and unblock independently: each has its own block,
+// Blocked is the latest open one, and an unblocked entry ends only its
+// session's block.
+func TestFoldBlocksPerSession(t *testing.T) {
+	j := Journal{ID: "r", Entries: []Entry{
+		startedEntry("a", 0),
+		{Type: TypeEntered, At: at(1), Step: "a", Visit: 1},
+		{Type: TypeBlocked, At: at(2), Step: "a", Session: "S1", Block: &Block{Kind: "permission"}},
+		{Type: TypeBlocked, At: at(3), Step: "a", Session: "S2", Block: &Block{Kind: "question", Question: "Q?"}},
+		{Type: TypeAsked, At: at(4), Step: "a", Session: "S2", Question: "Q1"},
+	}}
+	st := j.State()
+	if len(st.Blocks) != 2 || st.BlockedSession != "S2" || st.Blocked.Kind != "question" {
+		t.Fatalf("two blocks: %+v latest %q", st.Blocks, st.BlockedSession)
+	}
+	if _, ok := st.BlockAsked("S1"); ok {
+		t.Errorf("S1's block was asked")
+	}
+	if a, ok := st.BlockAsked("S2"); !ok || a.Question != "Q1" {
+		t.Errorf("S2's block asked = %+v %v", a, ok)
+	}
+	j.Entries = append(j.Entries, Entry{Type: TypeUnblocked, At: at(5), Step: "a", Session: "S2"})
+	st = j.State()
+	if b, ok := st.BlockOf("S1"); !ok || b.Block.Kind != "permission" || st.BlockedSession != "S1" || len(st.Blocks) != 1 {
+		t.Fatalf("after S2 unblocked: %+v latest %q", st.Blocks, st.BlockedSession)
+	}
+	if _, ok := st.BlockOf("S2"); ok {
+		t.Errorf("S2 still blocked")
+	}
+	j.Entries = append(j.Entries,
+		Entry{Type: TypeBlocked, At: at(6), Step: "a", Session: "S2", Block: &Block{Kind: "permission"}},
+		Entry{Type: TypeUnblocked, At: at(7), Step: "a", Session: "S1"})
+	if st = j.State(); len(st.Blocks) != 1 || st.BlockedSession != "S2" {
+		t.Fatalf("after S1 unblocked: %+v", st.Blocks)
+	}
+	if _, ok := st.BlockAsked("S2"); ok {
+		t.Errorf("S2's new block carries the old block's asked entry")
+	}
+	j.Entries = append(j.Entries, Entry{Type: TypeEnded, At: at(8), Step: "a", Visit: 1, Outcome: "pass", Next: "b"})
+	if st = j.State(); len(st.Blocks) != 0 || st.Blocked != nil {
+		t.Fatalf("after ended: %+v", st.Blocks)
+	}
+}

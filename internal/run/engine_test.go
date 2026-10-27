@@ -2038,7 +2038,7 @@ func TestAskedWithoutSessionIsNotTheBlocks(t *testing.T) {
 		{Type: TypeBlocked, At: at(1), Step: "build", Block: &Block{Kind: "question"}},
 		{Type: TypeAsked, At: at(1), Step: "check", Question: "Q9", Handle: "review-x-r3-f1"},
 	}}
-	if a, ok := j.State().BlockAsked(); ok {
+	if a, ok := j.State().BlockAsked(""); ok {
 		t.Errorf("block asked %+v", a)
 	}
 }
