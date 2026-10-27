@@ -130,6 +130,30 @@ type RunInfo struct {
 	Blocked    *RunBlocked    `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
 	Amendments []RunAmendment `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
 	Retries    []RunRetry     `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
+	Accepts    []RunAccept    `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
+	Questions  []RunQuestion  `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
+}
+
+// RunAccept is one accepted or rejected entry journalled in an autonomous
+// run: it moved a change set past the owner's gate under rule autonomous.
+type RunAccept struct {
+	Change string `json:"change" desc:"The change set accepted or rejected"`
+	Entry  string `json:"entry" desc:"The model log entry ID of the accept or reject"`
+	Verb   string `json:"verb" desc:"accepted or rejected"`
+	At     string `json:"at" desc:"When it was journalled, RFC 3339 UTC"`
+}
+
+// RunQuestion is one question an autonomous run's agent step asked, which
+// the engine put to the arbiter as a question node.
+type RunQuestion struct {
+	Question string `json:"question" desc:"The question node's ID"`
+	Handle   string `json:"handle" desc:"The question node's handle"`
+	Text     string `json:"text" desc:"What the session asked"`
+	Step     string `json:"step" desc:"The agent step that asked"`
+	Outcome  string `json:"outcome,omitempty" desc:"The arbiter's verdict: pass, fail or error; empty while it is open"`
+	Decision string `json:"decision,omitempty" desc:"The handle of the Decision that answers it, once the arbiter passed; empty otherwise"`
+	Answered bool   `json:"answered,omitempty" desc:"True once the answer was delivered to the asking session"`
+	At       string `json:"at" desc:"When it was asked, RFC 3339 UTC"`
 }
 
 // RunRetry is one retry journalled in a run: the run had failed and
@@ -1036,6 +1060,22 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 			Step: a.Step, Session: a.Session, Actor: a.Actor, File: a.File, At: rfc3339(a.At),
 		})
 	}
+	for _, a := range st.Accepts {
+		info.Accepts = append(info.Accepts, RunAccept{Change: a.Change, Entry: a.LogEntry, Verb: a.Verb, At: rfc3339(a.At)})
+	}
+	for _, q := range st.Asked {
+		rq := RunQuestion{
+			Question: q.Question, Handle: q.Handle, Text: q.Text, Step: q.Step,
+			Decision: q.Answered, Answered: q.Answered != "", At: rfc3339(q.At),
+		}
+		if a, ok := st.Arbitration(q.Question); ok {
+			rq.Outcome = a.Outcome
+			if rq.Decision == "" && a.Outcome == workflow.OutcomePass {
+				rq.Decision = a.Decision
+			}
+		}
+		info.Questions = append(info.Questions, rq)
+	}
 	return info
 }
 
@@ -1077,6 +1117,30 @@ func (r RunInfo) Human(w io.Writer) {
 			}
 			if s.Detail != "" {
 				fmt.Fprintf(w, ": %s", s.Detail)
+			}
+			fmt.Fprintf(w, "\n")
+		}
+	}
+	if len(r.Accepts) > 0 {
+		fmt.Fprintf(w, "\n## Accepted in the owner's place\n\n")
+		for _, a := range r.Accepts {
+			fmt.Fprintf(w, "- %s %s change set %s (log entry %s)\n", a.At, a.Verb, a.Change, a.Entry)
+		}
+	}
+	if len(r.Questions) > 0 {
+		fmt.Fprintf(w, "\n## Questions the arbiter decided\n\n")
+		for _, q := range r.Questions {
+			fmt.Fprintf(w, "- %s (%s): %s", q.Handle, q.Question, q.Text)
+			switch {
+			case q.Decision != "":
+				fmt.Fprintf(w, " — decision %s", q.Decision)
+				if !q.Answered {
+					fmt.Fprintf(w, ", not yet delivered")
+				}
+			case q.Outcome != "":
+				fmt.Fprintf(w, " — arbiter failed: %s", q.Outcome)
+			default:
+				fmt.Fprintf(w, " — open")
 			}
 			fmt.Fprintf(w, "\n")
 		}
