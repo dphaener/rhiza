@@ -1,0 +1,15 @@
+{
+  "actor": "01M5Z9Z4J617SPBYNCZY0T76BB",
+  "after": [],
+  "at": "2026-10-27T21:56:40Z",
+  "body": {
+    "intent": "Builder sessions' actor records are committed with the work they sign: after a build run no builder's actor record is left untracked in the build worktree, so every Actor: trailer names a committed actor.",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M5ZNV3K796MKWEZM3TBQXGZ8",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5ZNV3K796MKWEZM3VTKMDG6",
+  "type": "open",
+  "v": 1
+}
