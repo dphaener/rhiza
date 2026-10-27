@@ -1,0 +1,15 @@
+{
+  "actor": "01M5XFGQZ7NK2G8H8M6VE5S90G",
+  "after": [],
+  "at": "2026-10-27T02:54:43Z",
+  "body": {
+    "intent": "add actor claude-code-c3d71038-verifier",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M5XMG57K0F26WE9F39X9RXPH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5XMG57K0F26WE9F3DCVTE2Q",
+  "type": "open",
+  "v": 1
+}
