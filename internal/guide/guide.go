@@ -95,6 +95,7 @@ var skills = []entry{
 var topics = []entry{
 	{name: "apply", file: "apply.md", description: "The rhiza apply file format: many writes in one JSON file."},
 	{name: "arbiter", file: "arbiter.md", description: "The arbiter: deciding one question in an autonomous run, the one answering Decision and its wording and reasoning, then done."},
+	{name: "build", file: "build.md", description: "Building a change set's leaves: a builder's one commit with a Leaf: trailer, outside work as a question or a discovered-from draft change set, a verifier's Evidence or findings. Load it when you run as a builder or verifier of a build run."},
 	{name: "carving", file: "carving.md", description: "Carving: moving nodes from one change set to another under the same IDs, what moves, the rules."},
 	{name: "change-sets", file: "change-sets.md", description: "Change sets: intention and record, the lifecycle, which change set a write goes into, --record."},
 	{name: "plan-review", file: "plan-review.md", description: "Plan review: finding a plan's change sets, recording findings of five kinds, a critic's verdicts and a reviser's fixes."},

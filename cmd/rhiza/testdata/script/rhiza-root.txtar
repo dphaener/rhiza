@@ -1,0 +1,42 @@
+# RHIZA_ROOT, when set, is the root a command reads and writes instead of
+# the one found from the working directory: a verifier working in a
+# throwaway checkout writes to the build worktree's model through it. A
+# RHIZA_ROOT that holds no .rhiza is refused rather than written beside.
+
+mkdir repo
+cd repo
+exec rhiza init
+exec rhiza change new 'Root' --title 'Root'
+exec rhiza add capability here
+
+# Another folder with a model of its own, and one with none.
+mkdir $WORK/other
+cd $WORK/other
+exec rhiza init
+mkdir $WORK/bare
+
+# From the other model's folder, RHIZA_ROOT reads and writes repo's.
+env RHIZA_ROOT=$WORK/repo
+exec rhiza change show
+stdout '^- here$'
+exec rhiza add capability there
+exec rhiza change show
+stdout '^- there$'
+
+# From a folder with no model at all, too.
+cd $WORK/bare
+exec rhiza show there --json
+stdout '"handle": "there"'
+
+# The other model never got the write; repo's log did.
+env RHIZA_ROOT=
+cd $WORK/other
+! exec rhiza show there
+cd $WORK/repo
+exec rhiza show there --json
+stdout '"handle": "there"'
+
+# A RHIZA_ROOT with no .rhiza is refused, naming it.
+env RHIZA_ROOT=$WORK/bare
+! exec rhiza change show
+stderr 'RHIZA_ROOT is .*bare, which holds no .rhiza folder'

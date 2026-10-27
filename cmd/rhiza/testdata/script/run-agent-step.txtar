@@ -65,6 +65,8 @@ stdout '^RHIZA_RUN=01M5PWGJC82P7YGZTWYFFZ0VJG$'
 exec cat $WORK/claude.args
 stdout '--permission-mode manual '
 ! stdout 'bypass'
+# A step naming no models passes no --model: the agent's default.
+! stdout '--model'
 # The step's prompt, its placeholders filled, is Claude Code's positional
 # prompt: the last argument.
 exec cat $WORK/claude.prompt
@@ -83,6 +85,9 @@ exec rhiza run status
 stdout '^- build \(visit 1\): fail, then recover, session [0-9a-f-]{36}: exit 2$'
 stdout '^- recover \(visit 1\): pass, then end: exit 0$'
 exists $WORK/repo.agent-steps/recovered.txt
+# A step naming models = ["opus"] starts its first visit on opus.
+exec cat $WORK/claude.args
+stdout ' --model opus Build '
 
 # Each session records its own run and step.
 exec rhiza session ls --json
@@ -127,6 +132,7 @@ name = "fails"
 [step.build]
 kind = "agent"
 prompt = "Build {change}"
+models = ["opus"]
 on.pass = "done"
 on.fail = "recover"
 

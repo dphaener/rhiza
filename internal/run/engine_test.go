@@ -38,6 +38,7 @@ type fakeRunner struct {
 	commands   map[string]int
 	polls      map[string]int
 	starts     map[string]int
+	models     []string // each StartAgent call's model, in order
 	envs       map[string][]string
 	answers    map[string]Answer // Answer per question; missing is not OK
 	answerN    map[string]int    // Answer calls per question
@@ -49,6 +50,43 @@ type fakeRunner struct {
 	ended      []string          // "step:session" per AgentEnded call, in order
 	endedErr   error             // what AgentEnded returns
 	onCommand  func(step string) // called as each command step runs
+	leaves     []Leaf            // what Leaves returns
+	leavesErr  error             // Leaves' error, when set
+	leafSpecs  []LeafSpec        // each StartLeaf call's spec, in order
+	leafErr    map[string]error  // StartLeaf's error per "<handle> <role>"
+	// leafCommit is LeafCommit's commit and detail per leaf handle; a
+	// missing handle has commit "C-<handle>".
+	leafCommit map[string][2]string
+	leafSince  []string // "<handle> <since>" per LeafCommit call
+	// evidence is Evidence's ok and detail per leaf handle; a missing
+	// handle has the verifier's own Evidence (ok).
+	evidence      map[string]fakeEvidence
+	evidenceCalls []string // "<handle> <session>" per Evidence call
+	// evidenceCommitErr is CommitEvidence's error per leaf handle; a
+	// missing handle commits "E-<handle>".
+	evidenceCommitErr map[string]error
+	commitCalls       []string // "<handle> <session>" per CommitEvidence call
+	checkouts         []string // "open <dir> <commit>" and "remove <dir>" per call, in order
+	checkoutErr       error    // OpenCheckout's error, when set
+	removeErr         error    // RemoveCheckout's error, when set
+	heads             []string // Head's result per call, in order; past the end, fakeHead
+	// leafQuestions are "<handle> <text>" per AddLeafQuestion call; the
+	// nth question is QL<n>, handle leaf-failed-<n>.
+	leafQuestions   []string
+	leafQuestionErr error // AddLeafQuestion's error, when set
+	// leafAnswers are LeafAnswer's decision and statement per question;
+	// a missing question has no answer.
+	leafAnswers map[string][2]string
+	leafAnswerN map[string]int // LeafAnswer calls per question
+	closed      []string       // the session of each ClosePane call, in order
+	closeErr    error          // ClosePane's error, when set
+}
+
+// fakeEvidence is one leaf's scripted Evidence result.
+type fakeEvidence struct {
+	ok     bool
+	detail string
+	err    error
 }
 
 func newFakeRunner() *fakeRunner {
@@ -58,6 +96,7 @@ func newFakeRunner() *fakeRunner {
 		outcome: map[string]string{}, failOn: map[string]error{},
 		commands: map[string]int{}, polls: map[string]int{}, starts: map[string]int{},
 		envs: map[string][]string{}, answers: map[string]Answer{}, answerN: map[string]int{},
+		leafAnswers: map[string][2]string{}, leafAnswerN: map[string]int{},
 	}
 }
 
@@ -95,12 +134,13 @@ func (f *fakeRunner) Holds(step workflow.Step, env []string) (bool, error) {
 	return hs[len(hs)-1], nil
 }
 
-func (f *fakeRunner) StartAgent(step workflow.Step, env []string) (string, error) {
+func (f *fakeRunner) StartAgent(step workflow.Step, model string, env []string) (string, error) {
 	f.envs[step.Name] = env
 	if err := f.failOn[step.Name]; err != nil {
 		return "", err
 	}
 	f.starts[step.Name]++
+	f.models = append(f.models, model)
 	return "S-" + step.Name, nil
 }
 
@@ -531,6 +571,47 @@ prompt = "build {change}"
 interval = "2s"
 on.pass = "done"
 `
+
+const ladderWF = `
+name = "wf"
+[step.build]
+kind = "agent"
+prompt = "build {change}"
+models = ["sonnet", "opus"]
+max_visits = 3
+on.pass = "done"
+on.fail = "build"
+`
+
+// An agent step revisited climbs its model ladder by visit, the last
+// model kept past the end of the list.
+func TestAgentModelLadder(t *testing.T) {
+	e, r, _, _ := setup(t, ladderWF)
+	r.outcome["S-build"] = workflow.OutcomeFail
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Failed || st.Visits["build"] != 3 {
+		t.Fatalf("result %q visits %v", st.Result, st.Visits)
+	}
+	if want := []string{"sonnet", "opus", "opus"}; !reflect.DeepEqual(r.models, want) {
+		t.Errorf("models = %q, want %q", r.models, want)
+	}
+	t.Logf("visits 1, 2, 3 started on %q", r.models)
+}
+
+// An agent step with no models starts on the agent's default.
+func TestAgentModelDefault(t *testing.T) {
+	e, r, _, _ := setup(t, agentWF)
+	r.outcome["S-build"] = workflow.OutcomePass
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	if want := []string{""}; !reflect.DeepEqual(r.models, want) {
+		t.Errorf("models = %q, want %q", r.models, want)
+	}
+}
 
 func TestAgentPollsUntilDone(t *testing.T) {
 	e, r, c, _ := setup(t, agentWF)
@@ -1991,7 +2072,7 @@ func TestAskedWithoutSessionIsNotTheBlocks(t *testing.T) {
 		{Type: TypeBlocked, At: at(1), Step: "build", Block: &Block{Kind: "question"}},
 		{Type: TypeAsked, At: at(1), Step: "check", Question: "Q9", Handle: "review-x-r3-f1"},
 	}}
-	if a, ok := j.State().BlockAsked(); ok {
+	if a, ok := j.State().BlockAsked(""); ok {
 		t.Errorf("block asked %+v", a)
 	}
 }

@@ -31,13 +31,14 @@ import (
 func init() {
 	register(Operation{
 		Name:     "run.findings",
-		Summary:  "Journal a plan reviewer's findings as the next review round of the run RHIZA_RUN names",
+		Summary:  "Journal a plan reviewer's findings as the next review round of the run RHIZA_RUN names, or with --leaf a verifier's findings on a leaf's current attempt",
 		Write:    true,
 		Request:  reflect.TypeFor[RunFindingsRequest](),
 		Response: reflect.TypeFor[RunFindingsResponse](),
 		Input: &Input{
-			Summary: `{"findings":[{"node":...,"kind":...,"reason":...},...]}, maybe empty for a clean review; kind is one of ` + strings.Join(run.Kinds, ", "),
-			Schema:  findingsFileSchema,
+			Summary: `{"findings":[{"node":...,"kind":...,"reason":...},...]}, maybe empty for a clean review; kind is one of ` + strings.Join(run.Kinds, ", ") +
+				`. With --leaf: {"findings":[{"reason":...},...]}, at least one`,
+			Schema: findingsFileSchema,
 		},
 		Run: runRunFindings,
 	})
@@ -74,6 +75,7 @@ func init() {
 // RunFindingsRequest names the file of findings.
 type RunFindingsRequest struct {
 	File string `json:"file" arg:"0" desc:"A JSON file of findings, or - for stdin (see the input schema)"`
+	Leaf string `json:"leaf,omitempty" flag:"leaf" desc:"A leaf of the run's change set, by handle or ID: journal a verifier's findings, each just a reason, on the leaf's current attempt in the run's leaves step instead of a plan review round"`
 }
 
 // RunVerdictRequest names the file of verdicts.
@@ -85,9 +87,9 @@ type RunVerdictRequest struct {
 // once a critic gave one.
 type RunFinding struct {
 	ID            string `json:"id" desc:"The finding's ID in its round: f1, f2, ..."`
-	Node          string `json:"node" desc:"The node it is about, by ID"`
+	Node          string `json:"node,omitempty" desc:"The node it is about, by ID; absent for a leaf's finding"`
 	Handle        string `json:"handle,omitempty" desc:"The node's handle when the finding was recorded; absent when it had none"`
-	Kind          string `json:"kind" desc:"What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction"`
+	Kind          string `json:"kind,omitempty" desc:"What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's finding"`
 	Reason        string `json:"reason" desc:"Why the reviewer found it"`
 	Verdict       string `json:"verdict,omitempty" desc:"The critic's latest verdict, confirmed or dropped; absent before one"`
 	VerdictReason string `json:"verdict_reason,omitempty" desc:"Why the critic gave it; absent before a verdict"`
@@ -100,10 +102,13 @@ type RunVerdict struct {
 	Reason  string `json:"reason" desc:"Why"`
 }
 
-// RunFindingsResponse is the round the findings opened.
+// RunFindingsResponse is the round the findings opened, or the leaf
+// attempt they were journalled on.
 type RunFindingsResponse struct {
 	Run      string       `json:"run" desc:"The run's full ID"`
-	Round    int          `json:"round" desc:"The round the findings opened, from 1"`
+	Round    int          `json:"round,omitempty" desc:"The round the findings opened, from 1; absent for a leaf's findings"`
+	Leaf     string       `json:"leaf,omitempty" desc:"With --leaf: the leaf's handle"`
+	Attempt  int          `json:"attempt,omitempty" desc:"With --leaf: the leaf's attempt the findings are on, from 1"`
 	Findings []RunFinding `json:"findings" desc:"The findings recorded, in order; empty for a clean review"`
 	DryRun   bool         `json:"dry_run,omitempty" desc:"True if nothing was journalled"`
 }
@@ -129,6 +134,11 @@ type reviewRun struct {
 // unless it is an unfinished run. cmd names the command for messages,
 // e.g. "run findings"; next is where a caller learns more.
 func openReviewRun(ctx *Ctx, cmd, next string) (reviewRun, error) {
+	return openRun(ctx, cmd, next, false)
+}
+
+// openRun is openReviewRun; with finished it takes a finished run too.
+func openRun(ctx *Ctx, cmd, next string, finished bool) (reviewRun, error) {
 	ref := strings.TrimSpace(ctxGetenv(ctx)(envRun))
 	if ref == "" {
 		return reviewRun{}, Usagef("%s works inside a run, and %s is not set: run it from a step of the run", cmd, envRun).WithNext(next)
@@ -148,7 +158,7 @@ func openReviewRun(ctx *Ctx, cmd, next string) (reviewRun, error) {
 		return reviewRun{}, Errorf("read run %s: %v", ref, err)
 	}
 	st := j.State()
-	if st.Ended {
+	if st.Ended && !finished {
 		return reviewRun{}, Usagef("%s works inside an unfinished run, and run %s is finished: it %s", cmd, j.ID, st.Result).
 			WithNext("rhiza run status " + j.ID)
 	}
@@ -240,6 +250,9 @@ func runRunFindings(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	if r.Leaf != "" {
+		return runLeafFindings(ctx, rr, r)
+	}
 	var f findingsFile
 	if err := readReviewFile(ctx, cmd, runFindingsNext, r.File, &f); err != nil {
 		return nil, err
@@ -280,6 +293,77 @@ func runRunFindings(ctx *Ctx, req any) (any, error) {
 	}
 	e := run.Entry{Type: run.TypeFindings, At: ctx.Now(), Findings: found}
 	if err := rr.journal(ctx, "findings of round "+strconv.Itoa(resp.Round), e); err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+// leafFindingsFile is run.findings' input with --leaf: each finding is
+// just a reason.
+type leafFindingsFile struct {
+	Findings []struct {
+		Reason string `json:"reason"`
+	} `json:"findings"`
+}
+
+// runLeafFindings is run.findings with --leaf: it checks the leaf is one
+// of the run change set's leaves, open with a current attempt in the leaves
+// step the run is in, then the findings, at least one, each with a
+// reason. Only then does it journal one findings entry carrying the leaf
+// and attempt, its findings numbered on from those the attempt has.
+func runLeafFindings(ctx *Ctx, rr reviewRun, r RunFindingsRequest) (any, error) {
+	const cmd = "run findings --leaf"
+	statusNext := "rhiza run status " + rr.id
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return nil, err
+	}
+	c, ok := w.changeSet(rr.change)
+	if !ok {
+		return nil, Errorf("run %s's change set %s is not in the log", rr.id, rr.change)
+	}
+	m := w.model(rr.change)
+	ref := strings.TrimSpace(r.Leaf)
+	node, err := m.Resolve(ref)
+	if err == nil && !slices.ContainsFunc(changeLeaves(m, c.Ops), func(l ChangeLeaf) bool { return l.ID == node.ID }) {
+		err = Usagef("%s is not one of change set %s's leaves", ref, rr.change)
+	}
+	if err != nil {
+		return nil, Usagef("%s: leaf %q: %s", cmd, ref, AsError(err).Message).WithNext("rhiza change show " + rr.change.String())
+	}
+	step := rr.state.Current
+	l, ok := rr.state.Leaf(step, node.ID.String())
+	switch {
+	case !ok || l.Attempt() == 0:
+		return nil, Usagef("%s: leaf %s has no attempt in a leaves step of run %s: a verifier journals findings while its leaf's attempt runs",
+			cmd, node.Handle, rr.id).WithNext(statusNext)
+	case l.Outcome != "":
+		return nil, Usagef("%s: leaf %s already %s in run %s", cmd, node.Handle, l.Outcome, rr.id).WithNext(statusNext)
+	}
+	var f leafFindingsFile
+	if err := readReviewFile(ctx, cmd, runFindingsNext, r.File, &f); err != nil {
+		return nil, err
+	}
+	if len(f.Findings) == 0 {
+		return nil, Usagef(`%s file: want {"findings":[{"reason":...},...]}, at least one`, cmd).WithNext(runFindingsNext)
+	}
+	attempt := l.Attempt()
+	have := len(l.AttemptFindings(attempt))
+	found := make([]run.Finding, 0, len(f.Findings))
+	for i, in := range f.Findings {
+		if strings.TrimSpace(in.Reason) == "" {
+			return nil, Usagef("finding %d: no reason", i+1).WithNext(runFindingsNext)
+		}
+		found = append(found, run.Finding{ID: "f" + strconv.Itoa(have+i+1), Reason: in.Reason})
+	}
+	resp := RunFindingsResponse{Run: rr.id, Leaf: node.Handle, Attempt: attempt, Findings: make([]RunFinding, 0, len(found)), DryRun: ctx.DryRun}
+	for _, fd := range found {
+		resp.Findings = append(resp.Findings, runFinding(fd, run.Round{}))
+	}
+	e := run.Entry{
+		Type: run.TypeFindings, At: ctx.Now(), Step: step, Leaf: node.ID.String(), Handle: node.Handle, Attempt: attempt, Findings: found,
+	}
+	if err := rr.journal(ctx, fmt.Sprintf("findings on leaf %s, attempt %d,", node.Handle, attempt), e); err != nil {
 		return nil, err
 	}
 	return resp, nil
@@ -408,15 +492,15 @@ func findingsFileSchema() map[string]any {
 		"properties": map[string]any{
 			"findings": map[string]any{
 				"type":        "array",
-				"description": "The findings, in order; empty for a clean review. They are numbered f1, f2, ... in the round",
+				"description": "The findings, in order; empty for a clean review, but at least one with --leaf. They are numbered f1, f2, ... in the round, or in the leaf's attempt",
 				"items": map[string]any{
 					"type": "object",
 					"properties": map[string]any{
-						"node":   map[string]any{"type": "string", "description": "The node: a full ID, a unique prefix of 4+ characters or a handle, in the run's change set's view"},
-						"kind":   map[string]any{"enum": stringsAny(run.Kinds), "description": "What is wrong with the node"},
+						"node":   map[string]any{"type": "string", "description": "The node: a full ID, a unique prefix of 4+ characters or a handle, in the run's change set's view. Required, except with --leaf, which refuses it"},
+						"kind":   map[string]any{"enum": stringsAny(run.Kinds), "description": "What is wrong with the node. Required, except with --leaf, which refuses it"},
 						"reason": map[string]any{"type": "string", "minLength": 1, "description": "Why"},
 					},
-					"required":             []string{"kind", "node", "reason"},
+					"required":             []string{"reason"},
 					"additionalProperties": false,
 				},
 			},
@@ -467,9 +551,15 @@ func (r RunFindingsResponse) Human(w io.Writer) {
 	if r.DryRun {
 		verb = "Would record"
 	}
-	if len(r.Findings) == 0 {
+	switch {
+	case r.Leaf != "":
+		fmt.Fprintf(w, "%s %d finding(s) on leaf %s, attempt %d, of run %s\n\n", verb, len(r.Findings), r.Leaf, r.Attempt, r.Run)
+		for _, f := range r.Findings {
+			fmt.Fprintf(w, "- %s: %s\n", f.ID, oneLine(f.Reason))
+		}
+	case len(r.Findings) == 0:
 		fmt.Fprintf(w, "%s round %d of run %s: no findings\n", verb, r.Round, r.Run)
-	} else {
+	default:
 		fmt.Fprintf(w, "%s round %d of run %s\n\n", verb, r.Round, r.Run)
 		for _, f := range r.Findings {
 			fmt.Fprintf(w, "- %s\n", findingLine(f))

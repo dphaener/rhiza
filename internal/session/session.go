@@ -30,7 +30,23 @@ type Record struct {
 	Run          string `json:"run,omitempty"`
 	// Autonomous is true when an autonomous run launched the session: the
 	// owner is not there to answer it.
-	Autonomous     bool      `json:"autonomous,omitempty"`
+	Autonomous bool `json:"autonomous,omitempty"`
+	// Leaf is the handle of the leaf a leaves step launched the session
+	// on, Attempt the leaf's attempt and Role the session's role (builder
+	// or verifier); empty for every other session. Commit is the commit a
+	// verifier checks.
+	Leaf    string `json:"leaf,omitempty"`
+	Attempt int    `json:"attempt,omitempty"`
+	Role    string `json:"role,omitempty"`
+	Commit  string `json:"commit,omitempty"`
+	// Model is the model the agent starts on; "" means the agent's
+	// default.
+	Model string `json:"model,omitempty"`
+	// Dir is where the agent runs when that is not Worktree: a verifier's
+	// throwaway checkout of the commit it checks. Root is then the Rhiza
+	// root its rhiza writes go to (its RHIZA_ROOT), in Worktree.
+	Dir            string    `json:"dir,omitempty"`
+	Root           string    `json:"root,omitempty"`
 	Actor          string    `json:"actor"`
 	For            string    `json:"for"`
 	PermissionMode string    `json:"permission_mode"`

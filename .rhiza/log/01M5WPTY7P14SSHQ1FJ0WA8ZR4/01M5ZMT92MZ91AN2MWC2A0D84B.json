@@ -1,0 +1,353 @@
+{
+  "actor": "01M5ZAV7ZTJ15EKRTXSQ01CWFE",
+  "after": [
+    "01M5ZARW7E32ZECYBMCA0MPW5Q"
+  ],
+  "at": "2026-10-27T21:38:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Parse clauses: TestLeavesStepLoads loads a leaves step with both builder and verifier sub-tables (split, interval, per-role models); TestLeavesStepRefused rejects a missing builder, a missing verifier, an unknown sub-table key (retries), models on wait, command and leaves steps, split on an agent step, and split = \"diagonal\". Engine clause: TestLeavesStepTwoLeaves runs a fake runner over two leaves and finds a leaf-session, leaf-attempt and leaf outcome entry per leaf and role in the journal. Status clause: testscript build-leaves-status finds rhiza run status listing each leaf with its builder and verifier sessions, judged attempts and outcome, in text and --json. All passed.",
+          "tests": "go test -count=1 ./internal/workflow -run 'TestLeavesStepLoads|TestLeavesStepRefused'; ./internal/run -run TestLeavesStepTwoLeaves; ./cmd/rhiza -run 'TestScripts/build-leaves-status$' (re-run 2026-10-27 at commit c095271 by claude-code-c1b3cd7b-verifier; go test ./... -count=1 also passed)"
+        },
+        "handle": "build-leaves-step-verified",
+        "id": "01M5ZMT4JXX7W9SHT0BBT20SKQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5ZMT4JXX7W9SHT0BA17T8SN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5ZMT4JXX7W9SHT0BA17T8SN",
+        "id": "01M5ZMT4QYH57WFRS4JAKWRXYV",
+        "link": "01M5ZMT4QYH57WFRS4J9434RKB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3BA0JVJ2PHZ2N4TX9SX9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Adapter clause: TestCommandModel finds --model opus before the prompt in the argv when the launch names opus, and no --model when it names none; testscript run-agent-step finds ' --model opus ' for a step with models = [\"opus\"] and no --model for a step with none. Engine clause: TestAgentModelLadder, with models = [\"sonnet\", \"opus\"], finds visits 1, 2 and 3 started on sonnet, opus, opus; TestLeavesModel and TestLeavesStepRetries find a leaves builder's attempts on its ladder (sonnet, opus, opus); TestLeavesRoleModel/TestStepModel check the last model is kept past the list. All passed.",
+          "tests": "go test -count=1 ./internal/adapter/claudecode -run TestCommandModel; ./internal/run -run 'TestAgentModelLadder|TestAgentModelDefault|TestLeavesModel'; ./internal/workflow -run 'TestLeavesRoleModel|TestStepModel'; ./cmd/rhiza -run 'TestScripts/run-agent-step$' (re-run 2026-10-27 at commit c095271 by claude-code-c1b3cd7b-verifier; go test ./... -count=1 also passed)"
+        },
+        "handle": "build-model-ladder-verified",
+        "id": "01M5ZMT4WX7YDB26W60H32QVBZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5ZMT4WX7YDB26W60EHWT184",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5ZMT4WX7YDB26W60EHWT184",
+        "id": "01M5ZMT51WKCN4FQ73X4HYWHXV",
+        "link": "01M5ZMT51WKCN4FQ73X47Q5VM3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3BVJ20HMXE6GY00WB69Y",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "TestLeafOrderOverlapAndGating runs a fake runner over leaves a, b and c, c depending on a, with a's verifier live for five polls: it finds b's builder session started after a's verifier started and before a's verifier was judged, and c's builder not started before 'leaf a passed' (which follows a's Evidence check and commit), with only one builder live at a time. TestLeafOrderNextActions and TestLeafOrderResume cover the same gating on the next-action level and on a resume. All passed.",
+          "tests": "go test -count=1 ./internal/run -run 'TestLeafOrderOverlapAndGating|TestLeafOrderNextActions|TestLeafOrderResume' (re-run 2026-10-27 at commit c095271 by claude-code-c1b3cd7b-verifier; go test ./... -count=1 also passed)"
+        },
+        "handle": "build-leaf-order-verified",
+        "id": "01M5ZMT56VESAHFQGD1FJ9ND91",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5ZMT56VESAHFQGD1C257BNX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5ZMT56VESAHFQGD1C257BNX",
+        "id": "01M5ZMT5BW1GVBSJVS75SGF40D",
+        "link": "01M5ZMT5BW1GVBSJVS74KX7HWG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3C91E50NQQES3SAZGBDB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "TestLeafCommitEngine runs the engine against a real (hermetic) git repository over three leaves: leaf-none's builder makes no commit and its attempt fails with 'no new commit since <rev>'; leaf-other's builder commits naming leaf-x and fails with 'new commits name another leaf: leaf-x'; neither starts a verifier; leaf-own's builder commits with its Leaf: trailer, passes with that commit, and its verifier's leaf-session and LeafSpec carry that commit and RHIZA_COMMIT. TestLeafCommit covers the trailer search cases; TestLeavesStepLeafCommit the engine side with a fake. All passed.",
+          "tests": "go test -count=1 ./internal/api -run 'TestLeafCommit$|TestLeafCommitEngine'; ./internal/run -run TestLeavesStepLeafCommit (re-run 2026-10-27 at commit c095271 by claude-code-c1b3cd7b-verifier; go test ./... -count=1 also passed)"
+        },
+        "handle": "build-leaf-commit-verified",
+        "id": "01M5ZMT5GWE84SZR5EQ042CCKJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5ZMT5GWE84SZR5EPY19KX6V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5ZMT5GWE84SZR5EPY19KX6V",
+        "id": "01M5ZMT5NVXXQ6WD4W9B2GSQNC",
+        "link": "01M5ZMT5NVXXQ6WD4W97ZSWZYX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3CYY6077G7P5ZTRA65M9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Testscript build-verifier-checkout runs two leaves through fake rex and claude: each verifier logs dir=checkout, HEAD at its leaf's commit (= RHIZA_COMMIT), branch=HEAD (detached), under .git/rhiza/checkouts; both checkouts (one pass, one exit 1) are gone afterwards and git worktree list shows none; the passing verifier's Evidence is in the build worktree's .rhiza/log and the checkout stayed clean; the builder's staged, unstaged and untracked edits compare equal before and after. rhiza-root covers RHIZA_ROOT sending writes to the build worktree. TestLeavesStepVerifierCheckout finds the checkout removed on pass, fail and a failed removal; the resume and start-failure tests also remove it. All passed.",
+          "tests": "go test -count=1 ./cmd/rhiza -run 'TestScripts/(build-verifier-checkout|rhiza-root)$'; ./internal/run -run 'TestLeavesStepVerifierCheckout|TestLeavesStepResumeRemovesEndedCheckouts|TestLeavesStepVerifierStartFailsRemovesCheckout' (re-run 2026-10-27 at commit c095271 by claude-code-c1b3cd7b-verifier; go test ./... -count=1 also passed)"
+        },
+        "handle": "build-verifier-checkout-verified",
+        "id": "01M5ZMT5TWDSF7027FYJRQ13A2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5ZMT5TWDSF7027FYF2PPWWW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5ZMT5TWDSF7027FYF2PPWWW",
+        "id": "01M5ZMT5ZX0WTZXPN4ZAQR511Y",
+        "link": "01M5ZMT5ZX0WTZXPN4Z9J8Y3PG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3DGKC5HY4KRTCXA5450D",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "TestEvidenceCommit, on a real git worktree with staged, unstaged and untracked builder edits, finds after CommitEvidence one new commit on the old HEAD holding only the verifier's Evidence entry files (its add and its link) plus the entries of the verifier's actor record (the 23e31f5 fix, so the Actor: trailer resolves), no builder file; git diff --cached, git diff and status of the builder's files are byte-identical before and after; a second call makes no new commit. Testscript build-evidence-commit finds the same end to end (HEAD^ is the builder's commit, MM notes.txt and ?? scratch.txt unchanged). TestLeavesStepEvidenceCommit covers the engine calling it once on a pass. All passed. Note: 'only the Evidence entry's file' is met as the Evidence entries plus the verifier actor's record entries.",
+          "tests": "go test -count=1 ./internal/api -run TestEvidenceCommit; ./cmd/rhiza -run 'TestScripts/build-evidence-commit$'; ./internal/run -run TestLeavesStepEvidenceCommit (re-run 2026-10-27 at commit c095271 by claude-code-c1b3cd7b-verifier; go test ./... -count=1 also passed)"
+        },
+        "handle": "build-evidence-commit-verified",
+        "id": "01M5ZMT64Y4FXZBXZEA6XVMY42",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5ZMT64Y4FXZBXZEA30WE404",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5ZMT64Y4FXZBXZEA30WE404",
+        "id": "01M5ZMT69YZ4ZW52SBX7X91KSE",
+        "link": "01M5ZMT69YZ4ZW52SBX55YW1V6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3E6THKN8CJCSJKQRFXC2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Testscript build-verifier-findings: a verifier runs rhiza run findings --leaf twice and the journal holds findings f1 and f2 against that leaf's attempt 1; rhiza run status shows them per attempt in text and --json and opens no review round; refusals (outsider leaf, no attempt yet, unknown field, empty reason, no findings) exit 2. Engine clause: TestLeavesStepVerifierEvidence finds the attempt failed for a verifier ending with neither Evidence nor findings, and for Evidence written by the builder's actor; the testscript shows the real check naming the builder's actor for leaf second. TestLeavesStepVerifierFindings finds journalled findings fail the attempt. All passed.",
+          "tests": "go test -count=1 ./cmd/rhiza -run 'TestScripts/build-verifier-findings$'; ./internal/run -run 'TestLeavesStepVerifierEvidence|TestLeavesStepVerifierFindings' (re-run 2026-10-27 at commit c095271 by claude-code-c1b3cd7b-verifier; go test ./... -count=1 also passed)"
+        },
+        "handle": "build-verifier-findings-verified",
+        "id": "01M5ZMT6F19NTKP4RRYMN4K5QA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5ZMT6F19NTKP4RRYK58SA2A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5ZMT6F19NTKP4RRYK58SA2A",
+        "id": "01M5ZMT6M2WN409A0G33FX1EBT",
+        "link": "01M5ZMT6M2WN409A0G31WH7T7W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3ER7D48Q8364S1JXKAW7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "TestLeavesStepRetries: the verifier fails twice (findings, then exit) and then passes; it finds three builder sessions, distinct, on sonnet, opus, opus, each LeafSpec and RHIZA_ATTEMPT naming attempts 1, 2, 3, and the leaf passed at attempt 3. TestLeafPrompt finds the builder prompt rendered from that spec naming its attempt ('This is attempt 2 of 3 on leaf leaf-a'), and StartLeaf renders the prompt with it. TestLeavesStepRetriesCap: three verifier fails start no fourth builder and the leaf failed. TestLeavesStepRetriesBuilderFailCounts and TestLeavesStepRetriesResume also pass. Note: the prompt text is checked by the api unit test, not inside the engine test.",
+          "tests": "go test -count=1 ./internal/run -run TestLeavesStepRetries; ./internal/api -run TestLeafPrompt (re-run 2026-10-27 at commit c095271 by claude-code-c1b3cd7b-verifier; go test ./... -count=1 also passed)"
+        },
+        "handle": "build-retries-verified",
+        "id": "01M5ZMT6S45GTS76DG822PVAGJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5ZMT6S45GTS76DG7ZDX3AMQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5ZMT6S45GTS76DG7ZDX3AMQ",
+        "id": "01M5ZMT6Y456EPG7E6EZH5BY9X",
+        "link": "01M5ZMT6Y456EPG7E6EWT8EXCR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3F9R6BSD6XKKTVQXYSDZ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "TestLeafFails, over leaves a, b and c with c depending on a and a failing: one question raised for a (AddLeafQuestion, which TestAddLeafQuestion shows writes a question linked blocks to the leaf), c skipped, b built and verified, the run failed. TestLeafFailsResume: after an answering Decision, Retry starts a's builder afresh (attempt 4, round 2, ladder's first model) with the Decision and its answer in its spec, then c; testscript build-leaf-fails finds the Decision text in the real builder's prompt and order alpha 4 then beta 1. TestLeafFailsAutonomous: the arbiter is started on a's question and a second failure ends the run failed. All passed.",
+          "tests": "go test -count=1 ./internal/run -run TestLeafFails; ./internal/api -run 'TestAddLeafQuestion|TestLeafPrompt'; ./cmd/rhiza -run 'TestScripts/build-leaf-fails$' (re-run 2026-10-27 at commit c095271 by claude-code-c1b3cd7b-verifier; go test ./... -count=1 also passed)"
+        },
+        "handle": "build-leaf-fails-verified",
+        "id": "01M5ZMT73521QGV6MJ864629Z0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5ZMT73521QGV6MJ84APMRQ1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5ZMT73521QGV6MJ84APMRQ1",
+        "id": "01M5ZMT787PK7WEG56CK7QQC3Q",
+        "link": "01M5ZMT787PK7WEG56CFGM5D2B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3G453SY3XT0RGZ5Z0C4A",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Fake rex: TestOpenSessionPane finds split right for a landscape size, below for a portrait one, and the override honored without asking the size; TestSplitFor covers the same. Testscript build-panes with a fake rex finds, landscape, every split right, b's verifier splitting a's live verifier pane (the verifier half), a passed verifier's pane closed and the failed sessions' panes closed only at the step's end; portrait splits below; split = \"below\" overrides a landscape pane. TestLeavesStepPanes finds the same anchors and close order in the journal. All passed.",
+          "tests": "go test -count=1 ./internal/session -run TestSplitFor; ./internal/api -run 'TestOpenSessionPane|TestCloseSessionPane'; ./internal/run -run 'TestLeafPaneAnchor|TestLeavesStepPane|TestLeavesStepLivePaneStays'; ./cmd/rhiza -run 'TestScripts/build-panes$' (re-run 2026-10-27 at commit c095271 by claude-code-c1b3cd7b-verifier; go test ./... -count=1 also passed)"
+        },
+        "handle": "build-panes-verified",
+        "id": "01M5ZMT7D9TQBJGEY8EV1QE9ZC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5ZMT7D9TQBJGEY8ERWAMNND",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5ZMT7D9TQBJGEY8ERWAMNND",
+        "id": "01M5ZMT7JAGV780N9SRDPDNV5T",
+        "link": "01M5ZMT7JAGV780N9SRAJD2YDE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3GT71M5KWXZYCZA684DF",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Testscript build-check: with Evidence for alpha by the verifier actor and none for beta, build-check exits 1 naming beta ('no Evidence verifies it'); with beta's Evidence by the builder, whose commit carries its Actor: and Leaf: beta trailers, it exits 1 naming beta, the Evidence, the builder and the commit; with beta's Evidence by the verifier it exits 0. TestBuildCheck covers the same rules, including an Actor: trailer by ID. All passed.",
+          "tests": "go test -count=1 ./cmd/rhiza -run 'TestScripts/build-check$'; ./internal/api -run TestBuildCheck (re-run 2026-10-27 at commit c095271 by claude-code-c1b3cd7b-verifier; go test ./... -count=1 also passed)"
+        },
+        "handle": "build-check-verified",
+        "id": "01M5ZMT7QCQ3NZFDY7N3RMHC83",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5ZMT7QCQ3NZFDY7N0RHAR87",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5ZMT7QCQ3NZFDY7N0RHAR87",
+        "id": "01M5ZMT7WEY11PTY0S02NCDWQ8",
+        "link": "01M5ZMT7WEY11PTY0S00VXEJP5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3HBR6XX5W3QXW7PNB5TS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Testscript guide finds rhiza guide ls listing the build topic and rhiza guide build carrying the Leaf: trailer, the outside-work rule (blocks question, discovered-from draft) and the Evidence-or-findings rule; TestBuildText checks the same phrases. guide-install and TestGuideInstallBuild find rhiza guide install writing skills/rhiza-build/SKILL.md whose body equals rhiza guide build. All passed.",
+          "tests": "go test -count=1 ./internal/guide -run TestBuildText; ./internal/api -run TestGuideInstallBuild; ./cmd/rhiza -run 'TestScripts/(guide|guide-install)$' (re-run 2026-10-27 at commit c095271 by claude-code-c1b3cd7b-verifier; go test ./... -count=1 also passed)"
+        },
+        "handle": "build-guide-verified",
+        "id": "01M5ZMT81G820REYXB6G3XVJZD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5ZMT81G820REYXB6F49FHT1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5ZMT81G820REYXB6F49FHT1",
+        "id": "01M5ZMT86KEW42BGX2BTWMAMDM",
+        "link": "01M5ZMT86KEW42BGX2BR81RKJ7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3HRZCS9HFYWGDSC5TGS8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Testscript build-workflow runs rhiza run start --workflow build (built-in, no workflow file) with fake rex and claude on an accepted change set of two leaves, second depending on first: first is built and verified before second's builder, build-check passes, the run is succeeded, and the change set is still accepted. describe-golden passes against describe --json. TestBuildBuiltin checks the built-in's steps, models and no land. All passed.",
+          "tests": "go test -count=1 ./cmd/rhiza -run 'TestScripts/(build-workflow|describe-golden)$'; ./internal/workflow -run TestBuildBuiltin (re-run 2026-10-27 at commit c095271 by claude-code-c1b3cd7b-verifier; go test ./... -count=1 also passed)"
+        },
+        "handle": "build-workflow-file-verified",
+        "id": "01M5ZMT8BN7SD8X50QZ8HJBTMM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5ZMT8BN7SD8X50QZ83CVB0M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5ZMT8BN7SD8X50QZ83CVB0M",
+        "id": "01M5ZMT8GQ35YQRT415VZDNGCE",
+        "link": "01M5ZMT8GQ35YQRT415VA03WCP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3JAF2HPFAJBN420H5JM7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "TestProgramStatusBuild captures the OSC 7501 bytes a run writes to a fake Rex buffer through a build of three leaves and finds, in order: root working with 'step build' first; per leaf a child record leaf/N with builder working then verifier, then clear; root progress from 0 rising to 100; a blocked child for leaf/2 while its fake verifier waits on a question; root done last. TestProgramStatusError finds a failing leaf run and a failing command run end with root error. All passed.",
+          "tests": "go test -count=1 ./internal/api -run 'TestProgramStatusBuild|TestProgramStatusError|TestRexRecord'; ./internal/run -run 'TestEngineStatus|TestDeriveStatus' (re-run 2026-10-27 at commit c095271 by claude-code-c1b3cd7b-verifier; go test ./... -count=1 also passed)"
+        },
+        "handle": "run-program-status-verified",
+        "id": "01M5ZMT8NRXD1J1JYV0ZS3SBHG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5ZMT8NRXD1J1JYV0VV7C78M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5ZMT8NRXD1J1JYV0VV7C78M",
+        "id": "01M5ZMT8TTPS5J5WS25K8A2EAZ",
+        "link": "01M5ZMT8TTPS5J5WS25GWCZSXQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WT1XEJY38RKEE9K473K3V1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTY7P14SSHQ1FJ0WA8ZR4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5ZMT92MZ91AN2MWC2A0D84B",
+  "type": "ops",
+  "v": 1
+}

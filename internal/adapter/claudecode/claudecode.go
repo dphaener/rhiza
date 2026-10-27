@@ -41,7 +41,8 @@ func (Adapter) PermissionModes() []string { return append([]string(nil), modes..
 func (Adapter) Bypass(mode string) bool { return mode == "bypassPermissions" }
 
 // Command implements adapter.Adapter. The permission mode is always an
-// argument and never part of the settings JSON.
+// argument and never part of the settings JSON. A model is passed as
+// --model before the prompt; none leaves the flag out.
 func (a Adapter) Command(l adapter.Launch) ([]string, error) {
 	if err := adapter.CheckMode(a, l.PermissionMode); err != nil {
 		return nil, err
@@ -54,6 +55,9 @@ func (a Adapter) Command(l adapter.Launch) ([]string, error) {
 		return nil, err
 	}
 	argv := []string{"claude", "--session-id", l.SessionID, "--permission-mode", l.PermissionMode, "--settings", settings}
+	if l.Model != "" {
+		argv = append(argv, "--model", l.Model)
+	}
 	if l.Prompt != "" {
 		argv = append(argv, l.Prompt)
 	}

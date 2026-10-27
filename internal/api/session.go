@@ -93,6 +93,25 @@ type SessionStartRequest struct {
 	// WritesRecord. Only a run's StartArbiter sets them.
 	writes       string
 	writesRecord bool
+	// leaf, attempt, role and commit are the session record's Leaf,
+	// Attempt, Role and Commit. Only a run's StartLeaf sets them.
+	leaf    string
+	attempt int
+	role    string
+	commit  string
+	// model is the session record's Model. Only a run's StartAgent and
+	// StartLeaf set it, from the step's or role's models.
+	model string
+	// dir and root are the session record's Dir and Root: a verifier's
+	// checkout, and the build worktree's Rhiza root its writes go to. Only
+	// a run's StartLeaf sets them.
+	dir, root string
+	// anchor is the tab of the session whose pane this session's pane
+	// splits, in direction split ("auto", right or below; auto follows
+	// the anchor's shape); a zero anchor opens a new tab. Only a run's
+	// StartLeaf sets them.
+	anchor session.Tab
+	split  string
 }
 
 // SessionStartResponse is the session launched, or in a dry run the one
@@ -228,13 +247,21 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 		ID: sid, Agent: a.Name(), Change: cs.String(), Title: title, Step: step, Run: r.Run, Autonomous: r.autonomous,
 		Actor: handleSlug(a.Name() + "-" + sid[:8]), PermissionMode: r.PermissionMode, Prompt: r.Prompt,
 		Worktree: worktree, Branch: branch, Tab: tab, StartedAt: ctx.Now().UTC().Truncate(time.Second),
-		Writes: r.writes, WritesRecord: r.writesRecord,
+		Writes: r.writes, WritesRecord: r.writesRecord, Leaf: r.leaf, Attempt: r.attempt, Role: r.role, Commit: r.commit, Model: r.model,
+		Dir: r.dir, Root: r.root,
 	}
 	self := ctx.Self
 	if self == "" {
 		self = "rhiza"
 	}
+	label := ""
+	if r.role != "" {
+		label = fmt.Sprintf("%s %s #%d", r.role, r.leaf, r.attempt)
+	}
 	rexArgs := rexWindowArgs(tab, worktree, self, sid)
+	if r.anchor.Block != "" {
+		rexArgs = rexSplitArgs(tab, r.anchor.Block, session.SplitFor(0, 0, r.split), label, worktree, self, sid)
+	}
 	if ctx.DryRun {
 		return SessionStartResponse{Session: sessionInfo(rec), RexArgv: append([]string{"rex"}, rexArgs...),
 			WorktreeReused: reuse, DryRun: true}, nil
@@ -267,10 +294,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 	if err := st.Write(rec); err != nil {
 		return nil, Errorf("write session %s: %v", sid, err)
 	}
-	out, err := ctx.Exec("rex", rexArgs, worktree, nil)
-	if err == nil {
-		tab, err = parseRexWindow(tab, out)
-	}
+	tab, rexArgs, err = openSessionPane(ctx, tab, r.anchor, r.split, label, worktree, self, sid)
 	if err != nil {
 		msg := err.Error()
 		if _, uerr := st.Update(sid, func(r *session.Record) {
@@ -643,6 +667,140 @@ func rexWindowArgs(tab session.Tab, worktree, self, sid string) []string {
 		args = append(args, "-s", tab.Session)
 	}
 	return append(args, tab.Title, "-c", worktree, "--json", "--", self, "session", "run", sid)
+}
+
+// rexSplitArgs is the argv after "rex" that opens the session's pane by
+// splitting block anchor in direction dir, half each, in worktree, running
+// `<self> session run <sid>`, with the block labelled label when set.
+func rexSplitArgs(tab session.Tab, anchor, dir, label, worktree, self, sid string) []string {
+	args := []string{"split"}
+	if tab.Session != "" {
+		args = append(args, "-s", tab.Session)
+	}
+	args = append(args, "-b", anchor, "--split", dir, "--ratio", "50", "-c", worktree, "--json")
+	if label != "" {
+		args = append(args, "--label", label)
+	}
+	return append(args, "--", self, "session", "run", sid)
+}
+
+// rexSizeArgs is the argv after "rex" that reads block's size.
+func rexSizeArgs(tab session.Tab, block string) []string {
+	args := []string{"block", "call"}
+	if tab.Session != "" {
+		args = append(args, "-s", tab.Session)
+	}
+	return append(args, "-b", block, "size")
+}
+
+// rexBlockCloseArgs is the argv after "rex" that closes one block.
+func rexBlockCloseArgs(tab session.Tab) []string {
+	args := []string{"block", "close"}
+	if tab.Session != "" {
+		args = append(args, "-s", tab.Session)
+	}
+	return append(args, tab.Block)
+}
+
+// openSessionPane opens the session's pane and returns tab with its
+// window and block, and the rex argv that opened it. With an anchor block
+// it splits that block, in direction split when that is right or below,
+// else (auto) along the longer side in pixels of the anchor (paneSize;
+// right when the size cannot be read); an anchor Rex no longer has opens a new tab instead.
+// Without one it opens a new tab, as every session not of a leaves step
+// does.
+func openSessionPane(ctx *Ctx, tab, anchor session.Tab, split, label, worktree, self, sid string) (session.Tab, []string, error) {
+	if anchor.Block != "" {
+		dir := session.SplitFor(0, 0, split)
+		if dir != split {
+			w, h := paneSize(ctx, anchor, worktree)
+			dir = session.SplitFor(w, h, split)
+		}
+		args := rexSplitArgs(tab, anchor.Block, dir, label, worktree, self, sid)
+		out, err := ctx.Exec("rex", args, worktree, nil)
+		if err == nil {
+			t, err := parseRexSplit(tab, anchor, out)
+			return t, args, err
+		}
+		if !strings.Contains(err.Error(), "not found") {
+			return tab, args, err
+		}
+	}
+	args := rexWindowArgs(tab, worktree, self, sid)
+	out, err := ctx.Exec("rex", args, worktree, nil)
+	if err == nil {
+		tab, err = parseRexWindow(tab, out)
+	}
+	return tab, args, err
+}
+
+// paneSize is block anchor's size in pixels, read with `rex block call
+// size`: columns times cell width by rows times cell height. 0, 0 when it
+// cannot be read.
+func paneSize(ctx *Ctx, anchor session.Tab, dir string) (int, int) {
+	out, err := ctx.Exec("rex", rexSizeArgs(anchor, anchor.Block), dir, nil)
+	if err != nil {
+		return 0, 0
+	}
+	var sz struct {
+		Columns    float64 `json:"columns"`
+		Rows       float64 `json:"rows"`
+		CellWidth  float64 `json:"cell_width_px"`
+		CellHeight float64 `json:"cell_height_px"`
+	}
+	if json.Unmarshal(out, &sz) != nil {
+		return 0, 0
+	}
+	return int(sz.Columns * sz.CellWidth), int(sz.Rows * sz.CellHeight)
+}
+
+// parseRexSplit reads the new block, and its window when given, from the
+// JSON of `rex split --json` into tab. It takes block_id, or id, or the
+// first of block_ids; a missing window is the anchor's.
+func parseRexSplit(tab, anchor session.Tab, out []byte) (session.Tab, error) {
+	var sp struct {
+		BlockID  string   `json:"block_id"`
+		ID       string   `json:"id"`
+		BlockIDs []string `json:"block_ids"`
+		WindowID string   `json:"window_id"`
+	}
+	if err := json.Unmarshal(out, &sp); err != nil {
+		return tab, fmt.Errorf("rex split: unreadable JSON: %v", err)
+	}
+	block := sp.BlockID
+	if block == "" {
+		block = sp.ID
+	}
+	if block == "" && len(sp.BlockIDs) > 0 {
+		block = sp.BlockIDs[0]
+	}
+	if block == "" {
+		return tab, fmt.Errorf("rex split: no block_id in %s", strings.TrimSpace(string(out)))
+	}
+	tab.Block, tab.Window = block, sp.WindowID
+	if tab.Window == "" {
+		tab.Window = anchor.Window
+	}
+	return tab, nil
+}
+
+// closeSessionPane closes rec's block in Rex, running rex in dir. It
+// reports false, with no error, when the record has no block or Rex no
+// longer has it: a missing block is already closed.
+func closeSessionPane(ctx *Ctx, rec session.Record, dir string) (bool, error) {
+	if rec.Tab.Block == "" {
+		return false, nil
+	}
+	if ctx.Exec == nil {
+		return false, Errorf("closing a Rex pane needs rex, and no programs can be run here")
+	}
+	if _, err := ctx.Exec("rex", rexBlockCloseArgs(rec.Tab), dir, nil); err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			return false, nil
+		}
+		return false, Errorf("close pane %s: %v", rec.Tab.Block, err)
+	}
+	return true, nil
 }
 
 // rexCloseArgs is the argv after "rex" that closes the session's tab.

@@ -1,0 +1,173 @@
+package run
+
+import (
+	"reflect"
+
+	"github.com/dphaener/rhiza/internal/workflow"
+)
+
+// The root states of a StatusReport.
+const (
+	// StatusWorking: the run is going, at Step.
+	StatusWorking = "working"
+	// StatusIdle: the run stopped (at a wait under NoWait) and can be
+	// resumed; Detail says why.
+	StatusIdle = "idle"
+	// StatusDone: the run finished and succeeded.
+	StatusDone = "done"
+	// StatusError: the run finished and failed; Detail says why.
+	StatusError = "error"
+)
+
+// StatusReport is where a run stands, for the caller to show (Engine.Status):
+// the run's state at its current step and, while that step is a leaves
+// step, its progress and live leaves. It is derived from the journal
+// alone (deriveStatus), so this package writes nothing for it.
+type StatusReport struct {
+	Run    string
+	Change string
+	Title  string
+	// Step is the current step, or the step the run finished or stopped at.
+	Step string
+	// State is StatusWorking, StatusIdle, StatusDone or StatusError.
+	State string
+	// Detail is, when finished or stopped, why; "" otherwise.
+	Detail string
+	// Leaves and Passed are, while Step is a leaves step whose leaves are
+	// known, how many leaves it has and how many passed (have Evidence).
+	Leaves int
+	Passed int
+	// Progress is Passed × 100 / Leaves under the same condition, nil
+	// otherwise (and once the run finished or stopped).
+	Progress *int
+	// Live are the leaves step's open leaves with a session, in leaf order.
+	Live []LeafStatus
+	// Ended are the leaves live in the last report and not in this one:
+	// the caller clears what it showed for them.
+	Ended []LeafStatus
+}
+
+// LeafStatus is one live leaf of a StatusReport: the leaf at position N
+// (from 1, in leaf order) and its latest session's role on its current
+// attempt. Blocked is set while that session waits on the owner, on Kind;
+// Arbiter while it waits on the arbiter (an autonomous run's question).
+type LeafStatus struct {
+	N       int
+	Leaf    string
+	Handle  string
+	Role    string
+	Attempt int
+	Session string
+	Blocked bool
+	Kind    string
+	Arbiter bool
+}
+
+// deriveStatus is the pure report of a run from its folded journal st,
+// its definition and, when its current step is a leaves step, that
+// step's leaves in leaf order (nil when not known yet).
+func deriveStatus(st State, def *workflow.Definition, leaves []Leaf) StatusReport {
+	rep := StatusReport{Run: st.ID, Change: st.Change, Title: st.Title, Step: st.Current, State: StatusWorking}
+	if rep.Step == "" {
+		rep.Step = st.FinishedStep
+	}
+	if rep.Step == "" && len(st.Steps) > 0 {
+		rep.Step = st.Steps[len(st.Steps)-1].Step
+	}
+	if st.Ended {
+		rep.State, rep.Detail = StatusDone, st.Detail
+		if st.Result != Succeeded {
+			rep.State = StatusError
+		}
+		return rep
+	}
+	step, ok := def.Steps[st.Current]
+	if !ok || step.Kind != workflow.KindLeaves || leaves == nil {
+		return rep
+	}
+	rep.Leaves = len(leaves)
+	for i, lf := range leaves {
+		l, ok := st.Leaf(step.Name, lf.ID)
+		if !ok {
+			continue
+		}
+		if l.Outcome == LeafPassed {
+			rep.Passed++
+		}
+		if l.Outcome != "" {
+			continue
+		}
+		s, ok := latestSession(l)
+		if !ok {
+			continue
+		}
+		ls := LeafStatus{N: i + 1, Leaf: lf.ID, Handle: lf.Handle, Role: s.Role, Attempt: s.Attempt, Session: s.Session}
+		if b, ok := st.BlockOf(s.Session); ok {
+			if st.Autonomous && b.Block.Kind == "question" {
+				ls.Arbiter = true
+			} else {
+				ls.Blocked, ls.Kind = true, b.Block.Kind
+			}
+		}
+		rep.Live = append(rep.Live, ls)
+	}
+	p := 100
+	if rep.Leaves > 0 {
+		p = rep.Passed * 100 / rep.Leaves
+	}
+	rep.Progress = &p
+	return rep
+}
+
+// latestSession is the last started session of l's current attempt.
+func latestSession(l LeafState) (LeafSession, bool) {
+	attempt := l.Attempt()
+	var out LeafSession
+	found := false
+	for _, s := range l.Sessions {
+		if s.Attempt == attempt && (!found || s.Seq > out.Seq) {
+			out, found = s, true
+		}
+	}
+	return out, found
+}
+
+// endedLeaves are the leaves of prev's Live not in next's.
+func endedLeaves(prev, next []LeafStatus) []LeafStatus {
+	var out []LeafStatus
+	for _, p := range prev {
+		live := false
+		for _, n := range next {
+			live = live || n.N == p.N
+		}
+		if !live {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+// status reports the run to Engine.Status when the report derived from
+// the journal differs from the last one reported. A non-empty stopped
+// reports the run idle, stopped for that reason.
+func (r *running) status(stopped string) {
+	if r.e.Status == nil {
+		return
+	}
+	st := r.j.State()
+	rep := deriveStatus(st, r.def, r.leafList[st.Current])
+	if stopped != "" {
+		rep.State, rep.Detail, rep.Progress, rep.Live = StatusIdle, stopped, nil, nil
+	}
+	var prev []LeafStatus
+	if r.lastStatus != nil {
+		if reflect.DeepEqual(*r.lastStatus, rep) {
+			return
+		}
+		prev = r.lastStatus.Live
+	}
+	last := rep
+	r.lastStatus = &last
+	rep.Ended = endedLeaves(prev, rep.Live)
+	r.e.Status(rep)
+}

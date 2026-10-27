@@ -3,7 +3,10 @@
 // model's log. It runs no program and names no agent.
 package run
 
-import "time"
+import (
+	"slices"
+	"time"
+)
 
 // Entry types.
 const (
@@ -28,6 +31,24 @@ const (
 	TypeFindings   = "findings"
 	TypeVerdict    = "verdict"
 	TypeGated      = "gated"
+	// TypeLeafSession, TypeLeafAttempt and TypeLeaf are a leaves step's
+	// entries: a leaf's session started, a session's work judged, and a
+	// leaf's outcome.
+	TypeLeafSession = "leaf-session"
+	TypeLeafAttempt = "leaf-attempt"
+	TypeLeaf        = "leaf"
+	// TypeLeafRound gives a failed leaf a fresh round of attempts, once a
+	// Decision answers the question its failure raised.
+	TypeLeafRound = "leaf-round"
+	// TypePaneClosed records that a leaf session's pane was closed.
+	TypePaneClosed = "pane-closed"
+)
+
+// Leaf outcomes, a leaf entry's Outcome.
+const (
+	LeafPassed  = "passed"
+	LeafFailed  = "failed"
+	LeafSkipped = "skipped"
 )
 
 // Finding kinds: what a plan reviewer's finding says is wrong with a node.
@@ -119,10 +140,29 @@ type Block struct {
 //	message:   Step, Session, Actor (the sender), To, Text, Summary, Structured (a session sent another a message)
 //	tokens:    Step, Session, Tokens (a reading of the session's token use; the latest counts)
 //	findings:  Findings (a plan reviewer's findings, maybe none; each findings entry
-//	           opens the next review round)
+//	           opens the next review round). With Leaf set it is instead a
+//	           verifier's findings on leaf Leaf (handle Handle) of leaves step
+//	           Step, for its attempt Attempt; plan review rounds skip it
 //	verdict:   Verdicts (a critic's verdicts on findings of the latest round)
 //	gated:     Changes (run gate ended the plan: its change sets, by ID; the
 //	           latest gated entry wins)
+//	leaf-session: Step, Leaf, Handle, Role (builder or verifier), Attempt, Session,
+//	           Model, Commit (a builder's: the worktree's HEAD when it started; a
+//	           verifier's: the commit it checks), Detail (a leaves step started a
+//	           session on leaf node Leaf, handle Handle)
+//	leaf-attempt: Step, Leaf, Handle, Role, Attempt, Outcome (pass or fail), Commit
+//	           (a passed builder's leaf commit; a passed verifier's Evidence
+//	           commit), Detail (the role's session of the attempt was judged)
+//	leaf:      Step, Leaf, Handle, Outcome (passed, failed or skipped), Question and
+//	           QuestionHandle (for failed: the question node its failure raised),
+//	           Commit (a passed leaf's Evidence commit), Detail (the leaf's outcome)
+//	leaf-round: Step, Leaf, Handle, Question, QuestionHandle, Decision (failed leaf
+//	           Leaf gets a fresh round of MaxAttempts attempts: Decision, by
+//	           handle, answers Question, which its failure raised; the leaf is
+//	           open again, and the step's skipped leaves with it)
+//	pane-closed: Step, Leaf, Handle, Session (the pane of leaf session Session was
+//	           closed: its session passed, the next builder took its place, or
+//	           its leaves step ended)
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -144,7 +184,7 @@ type Entry struct {
 	// Question is an arbiter or arbitrated entry's question node ID.
 	Question string `json:"question,omitempty"`
 	// Decision is an arbitrated entry's answering Decision's handle, when
-	// the arbiter passed.
+	// the arbiter passed, and a leaf-round entry's.
 	Decision string `json:"decision,omitempty"`
 	// Handle is an asked entry's question node handle.
 	Handle     string    `json:"handle,omitempty"`
@@ -158,16 +198,37 @@ type Entry struct {
 	Verdicts []Verdict `json:"verdicts,omitempty"`
 	// Changes are a gated entry's plan change sets, by ID.
 	Changes []string `json:"changes,omitempty"`
+	// Leaf is a leaf entry's leaf node ID, and Role its session's role:
+	// builder or verifier. Attempt counts a leaf's attempts from 1. Model
+	// is the model a leaf session runs. Commit is, on a builder's
+	// leaf-session, the worktree's HEAD when it started; on a verifier's,
+	// the commit it checks; on a passed builder's leaf-attempt, the commit
+	// naming its leaf; on a passed verifier's leaf-attempt and a passed
+	// leaf entry, the commit of its Evidence entries alone.
+	Leaf    string `json:"leaf,omitempty"`
+	Role    string `json:"role,omitempty"`
+	Attempt int    `json:"attempt,omitempty"`
+	Model   string `json:"model,omitempty"`
+	Commit  string `json:"commit,omitempty"`
+	// QuestionHandle is a failed leaf's or a leaf-round entry's question
+	// node handle (Question is its ID).
+	QuestionHandle string `json:"question_handle,omitempty"`
 }
 
-// Finding is one finding of a plan review round: node Node (its handle
-// Handle when it was recorded) has a problem of kind Kind, for Reason. ID
-// is f1, f2, ... in the round.
+// Finding is one finding: of a plan review round, node Node (its handle
+// Handle when it was recorded) has a problem of kind Kind, for Reason; of
+// a leaf's verifier, only ID and Reason are set. ID is f1, f2, ... in the
+// round, or in the leaf's attempt.
+//
+// Every field but ID and Reason is optional, so the review workflow's
+// findings (change set 01M5WPTZ) can add check, severity, leaf and place
+// as further omitempty fields without reshaping a finding already
+// journalled.
 type Finding struct {
 	ID     string `json:"id"`
-	Node   string `json:"node"`
+	Node   string `json:"node,omitempty"`
 	Handle string `json:"handle,omitempty"`
-	Kind   string `json:"kind"`
+	Kind   string `json:"kind,omitempty"`
 	Reason string `json:"reason"`
 }
 
@@ -313,6 +374,145 @@ type Arbitration struct {
 // Open reports whether the arbitration has no verdict yet.
 func (a Arbitration) Open() bool { return a.Outcome == "" }
 
+// LeafSession is one leaf-session entry: a session of role Role (builder
+// or verifier) on the leaf's attempt Attempt. A builder's Commit is the
+// worktree's HEAD when it started; a verifier's is the commit it checks.
+//
+// Seq is the position of its entry in the journal, which orders a step's
+// sessions across leaves. PaneClosed is true once a pane-closed entry
+// names the session: its pane is gone from the change set's tab.
+type LeafSession struct {
+	Role       string
+	Attempt    int
+	Session    string
+	Model      string
+	Commit     string
+	Detail     string
+	At         time.Time
+	Seq        int
+	PaneClosed bool
+}
+
+// LeafAttempt is one leaf-attempt entry: role Role's session of attempt
+// Attempt was judged pass or fail (Outcome), for Detail. A passed
+// builder's Commit is the new commit naming its leaf; a passed verifier's
+// is the commit of its Evidence entries.
+type LeafAttempt struct {
+	Role    string
+	Attempt int
+	Outcome string
+	Commit  string
+	Detail  string
+	At      time.Time
+}
+
+// LeafFinding is one finding a verifier journalled on a leaf's attempt
+// Attempt with `rhiza run findings --leaf`.
+type LeafFinding struct {
+	Attempt int
+	Finding Finding
+	At      time.Time
+}
+
+// LeafRound is one leaf-round entry: the leaf's round Round (from 2)
+// began after attempt After, because Decision (by handle) answers question
+// Question (ID; handle QuestionHandle) its failure in the round before
+// raised.
+type LeafRound struct {
+	Round          int
+	After          int
+	Question       string
+	QuestionHandle string
+	Decision       string
+	At             time.Time
+}
+
+// LeafState is one leaf of a leaves step, folded from its entries: its
+// sessions, judged attempts and findings in journal order, and its outcome
+// (passed, failed or skipped) once a leaf entry has one; empty while it is
+// open. Attempts are numbered across rounds: round 2 of a leaf that used
+// its 3 attempts starts at attempt 4.
+type LeafState struct {
+	Step     string
+	Leaf     string
+	Handle   string
+	Sessions []LeafSession
+	Attempts []LeafAttempt
+	Findings []LeafFinding
+	// Rounds are the leaf's fresh rounds, in order; none in round 1.
+	Rounds  []LeafRound
+	Outcome string
+	// Question and QuestionHandle are the question node a failed leaf's
+	// failure raised, if any.
+	Question       string
+	QuestionHandle string
+	// Commit is a passed leaf's Evidence commit.
+	Commit string
+	Detail string
+}
+
+// Round is the leaf's current round, from 1.
+func (l LeafState) Round() int { return len(l.Rounds) + 1 }
+
+// RoundBase is how many attempts came before the current round: 0 in
+// round 1.
+func (l LeafState) RoundBase() int {
+	if n := len(l.Rounds); n > 0 {
+		return l.Rounds[n-1].After
+	}
+	return 0
+}
+
+// LastRound is the leaf's latest fresh round, if it has one.
+func (l LeafState) LastRound() (LeafRound, bool) {
+	if n := len(l.Rounds); n > 0 {
+		return l.Rounds[n-1], true
+	}
+	return LeafRound{}, false
+}
+
+// AttemptFindings are the findings journalled on the leaf's attempt, in
+// order.
+func (l LeafState) AttemptFindings(attempt int) []Finding {
+	var out []Finding
+	for _, f := range l.Findings {
+		if f.Attempt == attempt {
+			out = append(out, f.Finding)
+		}
+	}
+	return out
+}
+
+// Session is the leaf's session of role on attempt, if it has one.
+func (l LeafState) Session(role string, attempt int) (LeafSession, bool) {
+	for i := len(l.Sessions) - 1; i >= 0; i-- {
+		if s := l.Sessions[i]; s.Role == role && s.Attempt == attempt {
+			return s, true
+		}
+	}
+	return LeafSession{}, false
+}
+
+// Judged is the judgement of role's session on attempt, if it has one.
+func (l LeafState) Judged(role string, attempt int) (LeafAttempt, bool) {
+	for i := len(l.Attempts) - 1; i >= 0; i-- {
+		if a := l.Attempts[i]; a.Role == role && a.Attempt == attempt {
+			return a, true
+		}
+	}
+	return LeafAttempt{}, false
+}
+
+// Attempt is the leaf's latest attempt: the highest one any session has,
+// or 0 before its first session.
+func (l LeafState) Attempt() int {
+	n := 0
+	for _, s := range l.Sessions {
+		n = max(n, s.Attempt)
+	}
+	return n
+}
+
 // Journal is a run's entries in order.
 type Journal struct {
 	ID      string
@@ -370,13 +570,19 @@ type State struct {
 	// Stopped is the detail of the last stopped entry after the last
 	// entered or ended entry, if any.
 	Stopped string
-	// Blocked is what the current agent step waits on, from its last
-	// blocked entry; nil once an unblocked, its step's ended or a
-	// finished entry follows. BlockedStep and BlockedSession name the
-	// step and session it belongs to.
+	// Blocked is the latest open block of Blocks: what the run waits on,
+	// from the last blocked entry still open; nil when no block is open.
+	// BlockedStep and BlockedSession name the step and session it belongs
+	// to.
 	Blocked        *Block
 	BlockedStep    string
 	BlockedSession string
+	// Blocks are the open blocks, one per session, in the order of their
+	// blocked entries. A session's block is open from its blocked entry
+	// until an unblocked entry for the session, an ended entry of its step,
+	// or a finished or retried entry. A leaves step polls several sessions
+	// at once, so several can be blocked together.
+	Blocks []SessionBlock
 	// Amendments are the amended entries in journal order. An amendment
 	// changes nothing else in the fold.
 	Amendments []Amendment
@@ -403,9 +609,6 @@ type State struct {
 	// until its next entered entry marks that visit as the retry.
 	retryNext  string
 	retryVisit map[string]int
-	// blockAsked is 1 + the index in Asked of the asked entry for the
-	// current block, 0 when the block has none (or there is no block).
-	blockAsked int
 	// Messages are the message entries in journal order. A message changes
 	// nothing else in the fold.
 	Messages []Message
@@ -423,12 +626,44 @@ type State struct {
 	// Gated are the plan's change sets the latest gated entry names, by
 	// ID; nil before run gate. They change nothing else in the fold.
 	Gated []string
+	// Leaves are the leaves of the leaves steps, in the order their first
+	// entry appears. A new visit of a leaves step starts its leaves anew:
+	// its entered entry drops the step's earlier leaves, except the visit
+	// a retried entry reopened the run at, which keeps them, so passed
+	// leaves stay passed. A leaf session is also in Sessions; nothing else
+	// in the fold changes.
+	Leaves []LeafState
+}
+
+// Leaf is step's leaf with node ID leaf, if the journal has one.
+func (st State) Leaf(step, leaf string) (LeafState, bool) {
+	for _, l := range st.Leaves {
+		if l.Step == step && l.Leaf == leaf {
+			return l, true
+		}
+	}
+	return LeafState{}, false
+}
+
+// leaf is step's leaf state for e, added in first-seen order when new;
+// it takes e's handle when it had none.
+func (st *State) leaf(e Entry) *LeafState {
+	for i := range st.Leaves {
+		if l := &st.Leaves[i]; l.Step == e.Step && l.Leaf == e.Leaf {
+			if l.Handle == "" {
+				l.Handle = e.Handle
+			}
+			return l
+		}
+	}
+	st.Leaves = append(st.Leaves, LeafState{Step: e.Step, Leaf: e.Leaf, Handle: e.Handle})
+	return &st.Leaves[len(st.Leaves)-1]
 }
 
 // State folds the journal.
 func (j Journal) State() State {
 	st := State{ID: j.ID, Visits: map[string]int{}, Session: map[string]string{}, Tokens: map[string]TokenUse{}}
-	for _, e := range j.Entries {
+	for seq, e := range j.Entries {
 		switch e.Type {
 		case TypeStarted:
 			st.StartedAt = e.At
@@ -457,7 +692,44 @@ func (j Journal) State() State {
 				}
 				st.retryVisit[e.Step] = st.CurrentVisit
 			}
+			retried := st.retryNext == e.Step
 			st.retryNext = ""
+			if !retried {
+				st.Leaves = slices.DeleteFunc(st.Leaves, func(l LeafState) bool { return l.Step == e.Step })
+			}
+		case TypeLeafSession:
+			l := st.leaf(e)
+			l.Sessions = append(l.Sessions, LeafSession{
+				Role: e.Role, Attempt: e.Attempt, Session: e.Session, Model: e.Model, Commit: e.Commit, Detail: e.Detail, At: e.At,
+				Seq: seq,
+			})
+			st.addSession(e.Step, e.Session)
+		case TypeLeafAttempt:
+			l := st.leaf(e)
+			l.Attempts = append(l.Attempts, LeafAttempt{Role: e.Role, Attempt: e.Attempt, Outcome: e.Outcome, Commit: e.Commit, Detail: e.Detail, At: e.At})
+		case TypeLeaf:
+			l := st.leaf(e)
+			l.Outcome, l.Question, l.QuestionHandle, l.Commit, l.Detail = e.Outcome, e.Question, e.QuestionHandle, e.Commit, e.Detail
+		case TypePaneClosed:
+			l := st.leaf(e)
+			for i := range l.Sessions {
+				if l.Sessions[i].Session == e.Session {
+					l.Sessions[i].PaneClosed = true
+				}
+			}
+		case TypeLeafRound:
+			l := st.leaf(e)
+			l.Rounds = append(l.Rounds, LeafRound{
+				Round: l.Round() + 1, After: l.Attempt(), Question: e.Question, QuestionHandle: e.QuestionHandle, Decision: e.Decision, At: e.At,
+			})
+			l.Outcome, l.Question, l.QuestionHandle, l.Commit, l.Detail = "", "", "", "", ""
+			// Leaves skipped for a failed dependency may start again; the
+			// conductor skips anew any whose dependency is still lost.
+			for i := range st.Leaves {
+				if o := &st.Leaves[i]; o.Step == e.Step && o.Outcome == LeafSkipped {
+					o.Outcome, o.Detail = "", ""
+				}
+			}
 		case TypeSession:
 			st.Session[e.Step] = e.Session
 			st.addSession(e.Step, e.Session)
@@ -466,10 +738,11 @@ func (j Journal) State() State {
 			if e.Block != nil {
 				b = *e.Block
 			}
-			st.Blocked, st.BlockedStep, st.BlockedSession = &b, e.Step, e.Session
-			st.blockAsked = 0
+			st.setBlocks(append(st.blocksBut(func(o SessionBlock) bool { return o.Session == e.Session }),
+				SessionBlock{Step: e.Step, Session: e.Session, Block: b}))
 		case TypeUnblocked:
-			st.clearBlock()
+			// An unblocked entry with no session ends every block.
+			st.setBlocks(st.blocksBut(func(o SessionBlock) bool { return e.Session == "" || o.Session == e.Session }))
 		case TypeEnded:
 			visit := e.Visit
 			if visit == 0 {
@@ -481,9 +754,7 @@ func (j Journal) State() State {
 				Retried: visit > 0 && st.retryVisit[e.Step] == visit,
 			})
 			delete(st.Session, e.Step)
-			if st.BlockedStep == e.Step {
-				st.clearBlock()
-			}
+			st.setBlocks(st.blocksBut(func(o SessionBlock) bool { return o.Step == e.Step }))
 			st.Current = e.Next
 			st.CurrentVisit = 0
 			st.Stopped = ""
@@ -505,8 +776,12 @@ func (j Journal) State() State {
 			})
 			// Only a session's question is its block's: a command step's
 			// asked entry has no session.
-			if e.Session != "" && st.Blocked != nil && st.BlockedSession == e.Session {
-				st.blockAsked = len(st.Asked)
+			if e.Session != "" {
+				for i := range st.Blocks {
+					if st.Blocks[i].Session == e.Session {
+						st.Blocks[i].asked = len(st.Asked)
+					}
+				}
 			}
 		case TypeAnswered:
 			for i := len(st.Asked) - 1; i >= 0; i-- {
@@ -528,6 +803,13 @@ func (j Journal) State() State {
 		case TypeGated:
 			st.Gated = e.Changes
 		case TypeFindings:
+			if e.Leaf != "" {
+				l := st.leaf(e)
+				for _, f := range e.Findings {
+					l.Findings = append(l.Findings, LeafFinding{Attempt: e.Attempt, Finding: f, At: e.At})
+				}
+				break
+			}
 			st.Rounds = append(st.Rounds, Round{Number: len(st.Rounds) + 1, At: e.At, Findings: e.Findings})
 		case TypeVerdict:
 			if n := len(st.Rounds); n > 0 {
@@ -613,15 +895,37 @@ func (st State) Arbitration(question string) (Arbitration, bool) {
 	return Arbitration{}, false
 }
 
-// BlockAsked is the asked entry of the current block: the question the
-// engine raised for it, so a session still blocked is never asked twice
-// for one block. It has none when the run is not blocked, or its block
-// has not been asked yet.
-func (st State) BlockAsked() (Asked, bool) {
-	if st.Blocked == nil || st.blockAsked == 0 {
+// SessionBlock is one session's open block: what session, of step Step,
+// waits on.
+type SessionBlock struct {
+	Step    string
+	Session string
+	Block   Block
+	// asked is 1 + the index in Asked of the asked entry for this block,
+	// 0 when the block has none.
+	asked int
+}
+
+// BlockAsked is the asked entry of session's open block: the question
+// the engine raised for it, so a session still blocked is never asked
+// twice for one block. It has none when the session is not blocked, or
+// its block has not been asked yet.
+func (st State) BlockAsked(session string) (Asked, bool) {
+	b, ok := st.BlockOf(session)
+	if !ok || b.asked == 0 {
 		return Asked{}, false
 	}
-	return st.Asked[st.blockAsked-1], true
+	return st.Asked[b.asked-1], true
+}
+
+// BlockOf is session's open block, if it has one.
+func (st State) BlockOf(session string) (SessionBlock, bool) {
+	for _, b := range st.Blocks {
+		if b.Session == session {
+			return b, true
+		}
+	}
+	return SessionBlock{}, false
 }
 
 // CapVisits is how many visits of step count against its max_visits: those
@@ -649,8 +953,29 @@ func (st State) FailedStep() (string, error) {
 }
 
 func (st *State) clearBlock() {
+	st.setBlocks(nil)
+}
+
+// blocksBut is a new slice of the open blocks drop does not match.
+func (st *State) blocksBut(drop func(SessionBlock) bool) []SessionBlock {
+	var out []SessionBlock
+	for _, b := range st.Blocks {
+		if !drop(b) {
+			out = append(out, b)
+		}
+	}
+	return out
+}
+
+// setBlocks sets the open blocks, and Blocked, BlockedStep and
+// BlockedSession to the latest of them.
+func (st *State) setBlocks(bs []SessionBlock) {
+	st.Blocks = bs
 	st.Blocked, st.BlockedStep, st.BlockedSession = nil, "", ""
-	st.blockAsked = 0
+	if n := len(bs); n > 0 {
+		b := bs[n-1].Block
+		st.Blocked, st.BlockedStep, st.BlockedSession = &b, bs[n-1].Step, bs[n-1].Session
+	}
 }
 
 // addSession records session under step in Sessions if it is not there yet.

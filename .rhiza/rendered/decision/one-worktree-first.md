@@ -27,6 +27,8 @@ the owner's own words in the milestone-3 conversation, choosing between the orch
 ### In
 
 - decided-by [milestone-3](../intent/anyone-builds/milestone-3.md)
+- decided-by [build-leaf-order](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-leaf-order.md)
+- decided-by [build-verifier-checkout](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-verifier-checkout.md)
 
 ## History
 

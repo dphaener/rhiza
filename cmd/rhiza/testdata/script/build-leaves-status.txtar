@@ -1,0 +1,115 @@
+# A leaves step conducts the run change set's leaves, one at a time in
+# leaf order: a builder session, then a verifier session, each through
+# session.start's path (a Rex tab running `rhiza session run <id>`), each
+# judged by its exit. run status lists every leaf with its sessions,
+# judged attempts and outcome, in text and --json.
+#
+# The fake rex runs the tab's command synchronously in the window's
+# directory, then prints a window; the fake claude logs its role, leaf,
+# attempt and prompt. As a builder it commits with its leaf's Leaf:
+# trailer, which a builder's pass needs; as a verifier it logs that the
+# commit it got is HEAD and writes, as its own actor, the Evidence that
+# verifies the leaf, which a verifier's pass needs. It exits 0.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+# Two leaf capabilities: second depends on first, so first goes first.
+exec rhiza change new 'Leaves' --title 'Leaves'
+exec rhiza add capability second
+exec rhiza add capability first
+exec rhiza link second depends-on first
+exec rhiza change show
+stdout '## Leaves\n\n- first\n- second \(needs first\)\n'
+mkdir .rhiza/workflows
+cp $WORK/build.toml .rhiza/workflows/build.toml
+exec git add -A
+exec git commit -qm leaves
+
+# A leaves step's role with no permission mode is refused before anything
+# runs.
+! exec rhiza run start --workflow build
+stderr 'step "build" is a leaves step whose builder runs with no permission mode'
+! exists $WORK/rex.log
+
+exec sh -c 'rhiza run start --workflow build --permission-mode manual --json; echo exit=$?'
+stdout '"state": "succeeded"'
+stdout '^exit=0$'
+
+# Each session ran with its role, leaf and attempt, builder then verifier,
+# leaf by leaf, with its role's prompt filled; each verifier got its
+# builder's commit.
+exec cat $WORK/claude.log
+cmp stdout $WORK/want.log
+
+exec rhiza run status
+stdout '^- build \(visit 1\): pass, then end: 2 of 2 leaves passed$'
+stdout '\n## Leaves\n\n- first \(step build\): passed: attempt 1: verifier passed\n  - attempt 1 builder, session [0-9a-f-]{36}: pass \(exit 0\)\n  - attempt 1 verifier, session [0-9a-f-]{36}: pass \(Evidence written by the verifier\)\n- second \(step build\): passed: attempt 1: verifier passed\n  - attempt 1 builder, session [0-9a-f-]{36}: pass \(exit 0\)\n  - attempt 1 verifier, session [0-9a-f-]{36}: pass \(Evidence written by the verifier\)\n'
+
+exec rhiza run status --json
+stdout -count=1 '"handle": "first",'
+stdout -count=1 '"handle": "second",'
+stdout -count=2 '"outcome": "passed"'
+stdout -count=2 '"attempt": 1,\n\s+"commit": "[0-9a-f]{40}",\n\s+"role": "builder",\n\s+"session": "[0-9a-f-]{36}"'
+stdout -count=2 '"attempt": 1,\n\s+"commit": "[0-9a-f]{40}",\n\s+"role": "verifier",\n\s+"session": "[0-9a-f-]{36}"'
+stdout -count=2 '"attempt": 1,\n\s+"commit": "[0-9a-f]{40}",\n\s+"detail": "exit 0",\n\s+"outcome": "pass",\n\s+"role": "builder"'
+stdout -count=2 '"attempt": 1,\n\s+"commit": "[0-9a-f]{40}",\n\s+"detail": "Evidence written by the verifier",\n\s+"outcome": "pass",\n\s+"role": "verifier"'
+stdout -count=2 '"commit": "[0-9a-f]{40}",\n\s+"detail": "attempt 1: verifier passed",'
+stdout '"leaves": \[\n(.*\n)*?\s+"handle": "first",(.*\n)*?\s+"handle": "second",'
+
+fold-ok
+
+-- want.log --
+role=builder leaf=first attempt=1 prompt=Build first, attempt 1
+role=verifier leaf=first attempt=1 commit=head prompt=Verify first
+role=builder leaf=second attempt=1 prompt=Build second, attempt 1
+role=verifier leaf=second attempt=1 commit=head prompt=Verify second
+-- build.toml --
+name = "build"
+
+[step.build]
+kind = "leaves"
+on.pass = "done"
+
+[step.build.builder]
+prompt = "Build {leaf}, attempt {attempt}"
+
+[step.build.verifier]
+prompt = "Verify {leaf}"
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+for a; do last=$a; done
+if [ "$RHIZA_ROLE" = builder ]; then
+	echo "role=$RHIZA_ROLE leaf=$RHIZA_LEAF attempt=$RHIZA_ATTEMPT prompt=$last" >> "$WORK/claude.log"
+	git commit -q --allow-empty -m "build $RHIZA_LEAF" -m "Leaf: $RHIZA_LEAF"
+else
+	commit=other
+	[ "$RHIZA_COMMIT" = "$(git rev-parse HEAD)" ] && commit=head
+	echo "role=$RHIZA_ROLE leaf=$RHIZA_LEAF attempt=$RHIZA_ATTEMPT commit=$commit prompt=$last" >> "$WORK/claude.log"
+	rhiza add evidence "$RHIZA_LEAF-ok" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link "$RHIZA_LEAF-ok" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+fi
+exit 0

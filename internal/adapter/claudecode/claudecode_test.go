@@ -74,6 +74,28 @@ func TestCommandPrompt(t *testing.T) {
 	}
 }
 
+// A launch naming a model passes --model before the prompt; one naming
+// none passes no --model.
+func TestCommandModel(t *testing.T) {
+	l := launch("manual")
+	argv, err := Adapter{}.Command(l)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if slices.Contains(argv, "--model") {
+		t.Errorf("no model: argv = %q, want no --model", argv)
+	}
+	l.Model, l.Prompt = "opus", "go"
+	with, err := Adapter{}.Command(l)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("argv ends %q", with[len(with)-3:])
+	if i := slices.Index(with, "--model"); i < 0 || with[i+1] != "opus" || i+2 != len(with)-1 || with[len(with)-1] != "go" {
+		t.Errorf("model: argv = %q, want --model opus before the prompt", with)
+	}
+}
+
 func TestCommandRefusesBadMode(t *testing.T) {
 	for _, m := range []string{"", "yolo"} {
 		argv, err := Adapter{}.Command(launch(m))

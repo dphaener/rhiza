@@ -1,0 +1,118 @@
+# The built-in build workflow, run by name with no workflow file in the
+# repo, on an accepted change set of two leaves, second depending on
+# first: first is built and verified, then second; build-check passes;
+# the run succeeds and the change set stays accepted, unlanded. Each
+# leaf's Evidence is committed by the engine. Builders run on the first
+# model of their ladder (sonnet) and verifiers on opus.
+#
+# The fake rex runs the tab's command synchronously in the window's
+# directory. The fake claude logs its role, leaf, attempt and model. As a
+# builder it commits with the change set, its actor and its leaf as
+# trailers; as a verifier it writes, as its own actor, the Evidence that
+# verifies the leaf. It exits 0.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new 'Two leaves' --title 'Two leaves'
+exec rhiza add capability second --field 'statement=Does second'
+exec rhiza add capability first --field 'statement=Does first'
+exec rhiza link second depends-on first
+exec rhiza change show
+stdout '- first\n- second \(needs first\)\n'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza change show --json
+stdout '"state": "accepted"'
+! exists .rhiza/workflows
+exec git add -A
+exec git commit -qm leaves
+
+exec sh -c 'rhiza run start --workflow build --permission-mode manual --json; echo exit=$?'
+stdout '"state": "succeeded"'
+stdout '"workflow": "build"'
+stdout '^exit=0$'
+
+# first was built and verified before second's builder started; each
+# builder ran on sonnet, each verifier on opus.
+exec cat $WORK/claude.log
+cmp stdout $WORK/want.log
+
+# Both leaves passed, the build step passed and went to check, and
+# build-check passed, ending the run.
+exec rhiza run status
+stdout '^- build \(visit 1\): pass, then check: 2 of 2 leaves passed$'
+stdout '^- check \(visit 1\): pass'
+stdout '- first \(step build\): passed: attempt 1: verifier passed\n'
+stdout '- second \(step build\): passed: attempt 1: verifier passed\n'
+exec rhiza run status --json
+stdout '"state": "succeeded"'
+exec sh -c 'cat .git/rhiza/runs/*.jsonl'
+stdout '"builtin:build"'
+stdout '"type":"finished",.*"step":"check","end":"succeeded"'
+
+# The change set is still accepted: the run did not land it.
+exec rhiza change show --json
+stdout '"state": "accepted"'
+! stdout '"state": "landed"'
+
+# Each leaf's Evidence is committed in the build worktree, first's
+# before second's.
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git log --format=%s'
+stdout 'chore\(rhiza\): evidence for second\nbuild second\nchore\(rhiza\): evidence for first\nbuild first\n'
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git log -1 --format=%B HEAD~1'
+stdout '^Leaf: second$'
+stdout '^Actor: claude-code-[0-9a-z-]+$'
+stdout '^Change: [0-9A-Z]{26}$'
+
+fold-ok
+
+-- want.log --
+role=builder leaf=first attempt=1 model=sonnet
+role=verifier leaf=first attempt=1 model=opus
+role=builder leaf=second attempt=1 model=sonnet
+role=verifier leaf=second attempt=1 model=opus
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+model=none
+while [ $# -gt 0 ]; do
+	if [ "$1" = --model ]; then
+		model=$2
+	fi
+	shift
+done
+echo "role=$RHIZA_ROLE leaf=$RHIZA_LEAF attempt=$RHIZA_ATTEMPT model=$model" >> "$WORK/claude.log"
+if [ "$RHIZA_ROLE" = builder ]; then
+	pwd -P > "$WORK/build.pwd"
+	echo "$RHIZA_LEAF" > "$RHIZA_LEAF.txt"
+	git add "$RHIZA_LEAF.txt"
+	git commit -q -m "build $RHIZA_LEAF" -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR
+Leaf: $RHIZA_LEAF" -- "$RHIZA_LEAF.txt" || exit 1
+	exit 0
+fi
+rhiza add evidence "$RHIZA_LEAF-verified" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+rhiza link "$RHIZA_LEAF-verified" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+exit 0

@@ -27,6 +27,7 @@ the owner's own words in the milestone-3 conversation
 ### In
 
 - decided-by [milestone-3](../intent/anyone-builds/milestone-3.md)
+- decided-by [build-panes](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-panes.md)
 
 ## History
 

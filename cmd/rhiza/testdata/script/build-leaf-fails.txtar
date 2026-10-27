@@ -1,0 +1,142 @@
+# A leaf that fails all 3 attempts raises a question in the run's change
+# set, linked blocks to it; its dependent is skipped, the independent leaf
+# is built and verified, and the run ends failed. Once the owner's
+# Decision answers the question, run resume --retry keeps the passed
+# leaf, gives the failed one a fresh round with the Decision in its
+# builder's prompt, then builds its dependent, and the run succeeds. run
+# status shows the question and the round.
+#
+# The fake rex runs the tab's command synchronously in the window's
+# directory. The fake claude, as a builder, fails on alpha until
+# $WORK/answered exists, else commits with its leaf's Leaf: trailer; it
+# logs each builder's leaf, attempt and model, and whether its prompt
+# names the Decision. As a verifier it writes its own Evidence.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new 'Failing leaves' --title 'Failing leaves'
+exec rhiza add capability alpha
+exec rhiza add capability beta
+exec rhiza add capability gamma
+exec rhiza link beta depends-on alpha
+mkdir .rhiza/workflows
+cp $WORK/build.toml .rhiza/workflows/build.toml
+exec git add -A
+exec git commit -qm leaves
+
+! exec rhiza run start --workflow build --permission-mode manual
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec cat $WORK/builders.log
+cmp stdout $WORK/want-round1.log
+
+exec rhiza run status
+stdout '^- build \(visit 1\): fail, then end: 1 of 3 leaves passed; not passed: alpha, beta$'
+stdout '\n- alpha \(step build\): failed: attempt 3: builder failed: exit 1\n  - question leaf-failed-[0-9a-z]{8}-1 \([0-9A-Z]{26}\) blocks it\n'
+stdout '\n- beta \(step build\): skipped: its dependency alpha did not pass\n'
+stdout '\n- gamma \(step build\): passed: attempt 1: verifier passed\n'
+
+# The question is a node in the run's change set, in the build worktree,
+# naming the leaf's attempts, and it blocks alpha.
+exec sh -c 'echo leaf-failed-$(tr A-Z a-z < $WORK/runid | cut -c1-8)-1 > $WORK/question'
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && rhiza show "$(cat $WORK/question)" --json'
+stdout '"kind": "question"'
+stdout '"statement": "Leaf alpha failed all 3 attempts of round 1: attempt 1 builder failed: exit 1; attempt 2 builder failed: exit 1; attempt 3 builder failed: exit 1. How should it be built, or should it change\?"'
+stdout '"type": "blocks"'
+stdout '"handle": "alpha"'
+
+# A retry with the question unanswered starts nothing and fails again.
+exec sh -c 'rhiza run resume --retry "$(cat $WORK/runid)" --json; echo exit=$?'
+stdout '"state": "failed"'
+stdout '^exit=1$'
+exec cat $WORK/builders.log
+cmp stdout $WORK/want-round1.log
+
+# The owner answers in the build worktree; the retry gives alpha round 2.
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && rhiza add decision use-a-map --field "statement=Use a map, not a list." --change "$(rhiza run status --json | sed -n "s/.*\"change\": \"\([0-9A-Z]*\)\".*/\1/p" | head -1)" && rhiza link use-a-map answers "$(cat $WORK/question)" --change "$(rhiza run status --json | sed -n "s/.*\"change\": \"\([0-9A-Z]*\)\".*/\1/p" | head -1)"'
+exec touch $WORK/answered
+exec sh -c 'rhiza run resume --retry "$(cat $WORK/runid)"'
+exec cat $WORK/builders.log
+cmp stdout $WORK/want-round2.log
+
+exec rhiza run status
+stdout '\n- alpha \(step build\): passed in round 2: attempt 4: verifier passed\n  - round 2 from attempt 4: decision use-a-map answers question leaf-failed-[0-9a-z]{8}-1 \([0-9A-Z]{26}\)\n'
+stdout '\n- beta \(step build\): passed: attempt 1: verifier passed\n'
+stdout '\n- gamma \(step build\): passed: attempt 1: verifier passed\n'
+exec rhiza run status --json
+stdout '"state": "succeeded"'
+stdout '"round": 2'
+stdout '"decision": "use-a-map"'
+
+fold-ok
+
+-- want-round1.log --
+alpha 1 model=sonnet decision=no
+alpha 2 model=opus decision=no
+alpha 3 model=opus decision=no
+gamma 1 model=sonnet decision=no
+-- want-round2.log --
+alpha 1 model=sonnet decision=no
+alpha 2 model=opus decision=no
+alpha 3 model=opus decision=no
+gamma 1 model=sonnet decision=no
+alpha 4 model=sonnet decision=yes
+beta 1 model=sonnet decision=no
+-- build.toml --
+name = "build"
+
+[step.build]
+kind = "leaves"
+on.pass = "done"
+
+[step.build.builder]
+prompt = "Build {leaf}"
+models = ["sonnet", "opus", "opus"]
+
+[step.build.verifier]
+prompt = "Verify {leaf}"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+model=
+prompt=
+while [ $# -gt 0 ]; do
+	[ "$1" = --model ] && model=$2
+	prompt=$1
+	shift
+done
+if [ "$RHIZA_ROLE" = builder ]; then
+	pwd -P > "$WORK/build.pwd"
+	decision=no
+	case $prompt in
+	*"Decision use-a-map answers it:"*"Use a map, not a list."*) decision=yes ;;
+	esac
+	echo "$RHIZA_LEAF $RHIZA_ATTEMPT model=$model decision=$decision" >> "$WORK/builders.log"
+	[ "$RHIZA_LEAF" = alpha ] && [ ! -e "$WORK/answered" ] && exit 1
+	git commit -q --allow-empty -m "build $RHIZA_LEAF" -m "Leaf: $RHIZA_LEAF"
+	exit 0
+fi
+rhiza add evidence "$RHIZA_LEAF-ok" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+rhiza link "$RHIZA_LEAF-ok" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+exit 0

@@ -1,0 +1,127 @@
+# When a verifier passes a leaf, the engine commits the log entry files of
+# that verifier's Evidence and of its actor's record, and only them, as
+# its own chore(rhiza) commit naming the leaf, with the run's Change: and the verifier's Actor:
+# trailers and no Leaf: trailer. The builder's staged, unstaged and
+# untracked edits in the build worktree stay exactly as they were. The
+# commit is journalled on the passed leaf.
+#
+# The fake rex runs the tab's command synchronously in the window's
+# directory. The fake claude, as the builder, commits its leaf's file with
+# a Leaf: trailer, then leaves a staged and an unstaged edit and an
+# untracked file behind and snapshots them; as the verifier it writes its
+# Evidence as its own actor with an add and a link: two entries.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new 'Evidence' --title 'Evidence'
+exec rhiza add capability good
+mkdir .rhiza/workflows
+cp $WORK/build.toml .rhiza/workflows/build.toml
+exec git add -A
+exec git commit -qm leaves
+
+exec sh -c 'rhiza run start --workflow build --permission-mode manual --json; echo exit=$?'
+stdout '"state": "succeeded"'
+stdout '^exit=0$'
+
+# HEAD is one new commit on the builder's leaf commit, holding only the
+# verifier's two Evidence entry files in the run's change set and the
+# entries of its actor's record change set.
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git rev-parse HEAD^'
+cmp stdout $WORK/want.commit
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git log -1 --format=%B && git show --name-only --format= HEAD'
+stdout '^chore\(rhiza\): evidence for good$'
+stdout '^Change: [0-9A-Z]{26}$'
+stdout '^Actor: claude-code-[0-9a-z-]+$'
+! stdout 'Leaf:'
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git show --name-only --format= HEAD | cut -d/ -f3 | sort | uniq -c'
+stdout -count=2 '^ +[0-9]+ [0-9A-Z]{26}$'
+stdout '^ +2 '
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && for f in $(git show --name-only --format= HEAD); do grep -l good-ok "$f"; grep -l verifies "$f"; done; true'
+stdout -count=2 '\.json$'
+
+# The actor the Actor: trailer names is created in the commit's tree; the
+# builder's actor record is not committed and stays untracked.
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && a=$(git log -1 --format="%(trailers:key=Actor,valueonly)" | tr -d "[:space:]") && git show --name-only --format= HEAD | xargs grep -l "\"handle\": *\"$a\"" && git show --name-only --format= HEAD | xargs grep -l "\"kind\": *\"actor\""'
+stdout -count=2 '\.json$'
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git status --porcelain --untracked-files=all -- .rhiza | cut -d/ -f3 | sort -u'
+stdout -count=1 '^[0-9A-Z]{26}$'
+
+# The leaf passed with that commit journalled on it.
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git rev-parse HEAD > $WORK/evidence.commit'
+exec rhiza run status --json
+stdout '"detail": "attempt 1: verifier passed",'
+exec sh -c 'rhiza run status --json | grep -c "\"commit\": \"$(cat $WORK/evidence.commit)\""'
+stdout '^2$'
+
+# The builder's staged, unstaged and untracked edits are untouched, and
+# the committed entries show clean.
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git diff > $WORK/after.diff && git diff --cached > $WORK/after.cached && git status --porcelain --untracked-files=all -- notes.txt scratch.txt > $WORK/after.status && git status --porcelain --untracked-files=all -- $(git show --name-only --format= HEAD)'
+! stdout .
+cmp $WORK/after.diff $WORK/before.diff
+cmp $WORK/after.cached $WORK/before.cached
+cmp $WORK/after.status $WORK/before.status
+grep 'unstaged' $WORK/after.diff
+grep 'staged' $WORK/after.cached
+grep '^MM notes.txt$' $WORK/after.status
+grep '^\?\? scratch.txt$' $WORK/after.status
+
+fold-ok
+
+-- build.toml --
+name = "build"
+
+[step.build]
+kind = "leaves"
+on.pass = "done"
+on.fail = "done"
+
+[step.build.builder]
+prompt = "Build {leaf}"
+
+[step.build.verifier]
+prompt = "Verify {leaf}"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+if [ "$RHIZA_ROLE" = builder ]; then
+	pwd -P > "$WORK/build.pwd"
+	echo base > notes.txt
+	echo "$RHIZA_LEAF" > "$RHIZA_LEAF.txt"
+	git add "$RHIZA_LEAF.txt" notes.txt
+	git commit -q -m "build $RHIZA_LEAF" -m "Leaf: $RHIZA_LEAF" -- "$RHIZA_LEAF.txt" notes.txt || exit 1
+	git rev-parse HEAD > "$WORK/want.commit"
+	echo staged >> notes.txt
+	git add notes.txt
+	echo unstaged >> notes.txt
+	echo scratch > scratch.txt
+	git diff > "$WORK/before.diff"
+	git diff --cached > "$WORK/before.cached"
+	git status --porcelain --untracked-files=all -- notes.txt scratch.txt > "$WORK/before.status"
+	exit 0
+fi
+rhiza add evidence "$RHIZA_LEAF-ok" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+rhiza link "$RHIZA_LEAF-ok" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+exit 0

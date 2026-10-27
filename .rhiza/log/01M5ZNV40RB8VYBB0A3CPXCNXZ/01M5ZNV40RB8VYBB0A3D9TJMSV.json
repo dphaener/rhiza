@@ -1,0 +1,15 @@
+{
+  "actor": "01M5Z9Z4J617SPBYNCZY0T76BB",
+  "after": [],
+  "at": "2026-10-27T21:56:40Z",
+  "body": {
+    "intent": "rhiza run findings numbers findings under the run's lock, so concurrent calls in one session never journal two findings with the same ID (leaf findings and plan review findings alike).",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M5ZNV40RB8VYBB0A3CPXCNXZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5ZNV40RB8VYBB0A3D9TJMSV",
+  "type": "open",
+  "v": 1
+}

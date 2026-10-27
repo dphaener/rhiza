@@ -93,6 +93,9 @@ type Launch struct {
 	HookCommand []string
 	// Prompt is the agent's first prompt; empty starts it with none.
 	Prompt string
+	// Model is the model the agent starts on; "" means the agent's
+	// default.
+	Model string
 }
 
 // HookReport is the status a hook event reports.

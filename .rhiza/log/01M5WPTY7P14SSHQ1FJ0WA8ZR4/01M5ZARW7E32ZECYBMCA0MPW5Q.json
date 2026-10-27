@@ -1,0 +1,297 @@
+{
+  "actor": "01M5Z9Z4J617SPBYNCZY0T76BB",
+  "after": [
+    "01M5YXENK6AH7AMR4JDW7WPWWM"
+  ],
+  "at": "2026-10-27T18:43:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "One polling loop",
+            "Goroutine per session"
+          ],
+          "picked": "One polling loop",
+          "question": "How should the leaves step conduct a builder and parallel verifiers inside the deterministic engine?",
+          "session": "c1b3cd7b-ff97-477d-b892-01a17e9f9184",
+          "statement": "How should the leaves step conduct a builder and parallel verifiers inside the deterministic engine? — One polling loop. The leaves step is one polling loop on the engine's goroutine over every live leaf session, one builder and any number of verifiers, journaling each change; no goroutine per session.",
+          "wording": "picked by the orchestrator acting as arbiter"
+        },
+        "handle": "build-ruling-1",
+        "id": "01M5ZARS4Y57P2RCNQ29365FEA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZARS4Y57P2RCNQ25X4ZBKX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "RHIZA_ROOT env",
+            "--root global flag"
+          ],
+          "picked": "RHIZA_ROOT env",
+          "question": "How do a verifier's rhiza writes reach the build worktree's log from its detached checkout?",
+          "session": "c1b3cd7b-ff97-477d-b892-01a17e9f9184",
+          "statement": "How do a verifier's rhiza writes reach the build worktree's log from its detached checkout? — RHIZA_ROOT env. A verifier's rhiza writes reach the build worktree's log through RHIZA_ROOT: the CLI takes its root from it when set, and the engine sets it only for verifier sessions.",
+          "wording": "picked by the orchestrator acting as arbiter"
+        },
+        "handle": "build-ruling-2",
+        "id": "01M5ZARS9RT9KNMCK8YPYZS97W",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZARS9RT9KNMCK8YMQ6KQF1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "Take the old pane's place",
+            "New tab each builder"
+          ],
+          "picked": "Take the old pane's place",
+          "question": "Where does the next builder's pane go once the previous builder passes and its pane closes?",
+          "session": "c1b3cd7b-ff97-477d-b892-01a17e9f9184",
+          "statement": "Where does the next builder's pane go once the previous builder passes and its pane closes? — Take the old pane's place. The next builder takes the passed builder's pane: the engine splits the old builder pane, then closes the old one, and opens a new tab only when the change set's tab is gone.",
+          "wording": "picked by the orchestrator acting as arbiter"
+        },
+        "handle": "build-ruling-3",
+        "id": "01M5ZARSENEQS7RK867HTTVQ3Z",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZARSENEQS7RK867GMCN97Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "Reason-only list",
+            "Reuse plan finding kinds"
+          ],
+          "picked": "Reason-only list",
+          "question": "What shape do a verifier's findings take in `rhiza run findings --leaf <leaf>`?",
+          "session": "c1b3cd7b-ff97-477d-b892-01a17e9f9184",
+          "statement": "What shape do a verifier's findings take in `rhiza run findings --leaf <leaf>`? — Reason-only list. `rhiza run findings --leaf <leaf>` takes {\"findings\":[{\"reason\":\"...\"}]}, journaled as a findings entry carrying the leaf and attempt, and plan rounds ignore it; the leaf finding shape stays open to the check, severity, leaf and place fields change set 01M5WPTZ1V0JVVW8FPX0QYMRWJ (the review workflow) adds.",
+          "wording": "picked by the orchestrator acting as arbiter"
+        },
+        "handle": "build-ruling-4",
+        "id": "01M5ZARSKJE9V1QJ1K5AYAJEC1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZARSKJE9V1QJ1K58HRHG0R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "14 leaves only",
+            "Also switch ship-change"
+          ],
+          "picked": "14 leaves only",
+          "question": "Is the scope the 14 leaves exactly, with worktree-per-leaf/max_parallel, switching ship-change over to build, and landing all left out?",
+          "session": "c1b3cd7b-ff97-477d-b892-01a17e9f9184",
+          "statement": "Is the scope the 14 leaves exactly, with worktree-per-leaf/max_parallel, switching ship-change over to build, and landing all left out? — 14 leaves only. The scope is the 14 leaves only: no worktree per leaf or max_parallel, no switch of ship-change over to build, no rhiza land and no merge.",
+          "wording": "picked by the orchestrator acting as arbiter"
+        },
+        "handle": "build-ruling-5",
+        "id": "01M5ZARSRDH8X95CH3QM5TE1K1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZARSRDH8X95CH3QJDTNNT1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "Tests with each leaf",
+            "TDD strictly"
+          ],
+          "picked": "Tests with each leaf",
+          "question": "What is the test strategy?",
+          "session": "c1b3cd7b-ff97-477d-b892-01a17e9f9184",
+          "statement": "What is the test strategy? — Tests with each leaf. Each task writes the tests its leaf's acceptance names (engine tests with a fake runner and clock, adapter tests, and testscripts with fake rex and claude), all hermetic, with package tests per task and make check before each commit.",
+          "wording": "picked by the orchestrator acting as arbiter"
+        },
+        "handle": "build-ruling-6",
+        "id": "01M5ZARSX9TBVG4JD0CQDYPKFM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZARSX9TBVG4JD0CKHA82J6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "On session done or exit",
+            "On idle too"
+          ],
+          "picked": "On session done or exit",
+          "question": "When does a builder or verifier session count as finished?",
+          "session": "c1b3cd7b-ff97-477d-b892-01a17e9f9184",
+          "statement": "When does a builder or verifier session count as finished? — On session done or exit. A builder or verifier attempt is judged once its agent runs rhiza session done or its process exits, never on idle alone.",
+          "wording": "picked by the orchestrator acting as arbiter"
+        },
+        "handle": "build-ruling-7",
+        "id": "01M5ZART24K8H2ANBT4CVWJXD2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZART24K8H2ANBT4AKCKFVJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "Separate verifier actor",
+            "No Evidence now"
+          ],
+          "picked": "Separate verifier actor",
+          "question": "Who writes this change set's own leaf Evidence before sign-off?",
+          "session": "c1b3cd7b-ff97-477d-b892-01a17e9f9184",
+          "statement": "Who writes this change set's own leaf Evidence before sign-off? — Separate verifier actor. This change set's Evidence is written by a separately recorded verifier actor that wrote no code, one Evidence per leaf.",
+          "wording": "picked by the orchestrator acting as arbiter"
+        },
+        "handle": "build-ruling-8",
+        "id": "01M5ZART6Z0XS13JYFEDXWGDHV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZART6Z0XS13JYFEBN1FCDC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "Closed when the run ends",
+            "Kept open after the run"
+          ],
+          "picked": "Closed when the run ends",
+          "question": "Are a failed or blocked session's panes closed when the run ends?",
+          "session": "c1b3cd7b-ff97-477d-b892-01a17e9f9184",
+          "statement": "Are a failed or blocked session's panes closed when the run ends? — Closed when the run ends. build-panes' \"stays until the run ends\" means the engine closes every remaining pane, failed or blocked sessions' included, when the run finishes.",
+          "wording": "the orchestrator's reading, confirmed in session c1b3cd7b-ff97-477d-b892-01a17e9f9184"
+        },
+        "handle": "build-ruling-9",
+        "id": "01M5ZARTBVNX6Q40T6Y2V78F7C",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZARTBVNX6Q40T6Y0WJF517",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3BA0JVJ2PHZ2N4TX9SX9",
+        "id": "01M5ZARTGQ387SQ7K5QPG5HK6A",
+        "link": "01M5ZARTGQ387SQ7K5QPDHAFVH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZARS4Y57P2RCNQ25X4ZBKX",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3C91E50NQQES3SAZGBDB",
+        "id": "01M5ZARTNM3B89GF3M5JCCPM6B",
+        "link": "01M5ZARTNM3B89GF3M5HK085ZJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZARS4Y57P2RCNQ25X4ZBKX",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3DGKC5HY4KRTCXA5450D",
+        "id": "01M5ZARTTJJ85CKYB9CQQBW2KY",
+        "link": "01M5ZARTTJJ85CKYB9CM3AZEJD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZARS9RT9KNMCK8YMQ6KQF1",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3GT71M5KWXZYCZA684DF",
+        "id": "01M5ZARTZQ3BS3W8S4Y2337V6H",
+        "link": "01M5ZARTZQ3BS3W8S4XZSFZQ2D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZARSENEQS7RK867GMCN97Y",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3ER7D48Q8364S1JXKAW7",
+        "id": "01M5ZARV4RB8ABN96CSW1WPSEK",
+        "link": "01M5ZARV4RB8ABN96CSS1K2AXQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZARSKJE9V1QJ1K58HRHG0R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3AWPBAH862Q9ZEHM84NW",
+        "id": "01M5ZARV9RBYTHYX3HTCBYPC4Z",
+        "link": "01M5ZARV9RBYTHYX3HTA5RB67J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZARSRDH8X95CH3QJDTNNT1",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3AWPBAH862Q9ZEHM84NW",
+        "id": "01M5ZARVFX0QD9SH1W67QF7ZC0",
+        "link": "01M5ZARVFX0QD9SH1W64EVEE2B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZARSX9TBVG4JD0CKHA82J6",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3BA0JVJ2PHZ2N4TX9SX9",
+        "id": "01M5ZARVMZK7PG1Y7YQDCDVSHV",
+        "link": "01M5ZARVMZK7PG1Y7YQA997N3M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZART24K8H2ANBT4AKCKFVJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3AWPBAH862Q9ZEHM84NW",
+        "id": "01M5ZARVTF00YA5KG0G1E9E028",
+        "link": "01M5ZARVTF00YA5KG0FYJD1AMA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZART6Z0XS13JYFEBN1FCDC",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3GT71M5KWXZYCZA684DF",
+        "id": "01M5ZARVZNQNCJV9FJ1VTSE4AT",
+        "link": "01M5ZARVZNQNCJV9FJ1TSSJTD8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZARTBVNX6Q40T6Y0WJF517",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5WPTY7P14SSHQ1FJ0WA8ZR4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5ZARW7E32ZECYBMCA0MPW5Q",
+  "type": "ops",
+  "v": 1
+}

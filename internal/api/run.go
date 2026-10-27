@@ -13,6 +13,7 @@ package api
 // agent.
 
 import (
+	"bytes"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -138,6 +139,62 @@ type RunInfo struct {
 	Questions  []RunQuestion   `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
 	Rounds     []RunRound      `json:"rounds,omitempty" desc:"The plan review rounds journalled by run findings and run verdict, in order; absent when there were none"`
 	Waiting    []RunWaiting    `json:"waiting,omitempty" desc:"The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does"`
+	Leaves     []RunLeaf       `json:"leaves,omitempty" desc:"The leaves its leaves steps conducted, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none"`
+}
+
+// RunLeaf is one leaf a leaves step conducted.
+type RunLeaf struct {
+	Step           string           `json:"step" desc:"The leaves step"`
+	Leaf           string           `json:"leaf" desc:"The leaf capability's ID"`
+	Handle         string           `json:"handle" desc:"The leaf capability's handle"`
+	Sessions       []RunLeafSession `json:"sessions" desc:"The leaf's sessions, in the order they started"`
+	Attempts       []RunLeafAttempt `json:"attempts" desc:"The judgements of its sessions' work, in order"`
+	Findings       []RunLeafFinding `json:"findings,omitempty" desc:"The findings its verifiers journalled with run findings --leaf, in order; absent when there were none"`
+	Outcome        string           `json:"outcome,omitempty" desc:"passed, failed or skipped; empty while the leaf is open"`
+	Question       string           `json:"question,omitempty" desc:"The question node a failed leaf raised, by ID, if any"`
+	QuestionHandle string           `json:"question_handle,omitempty" desc:"That question node's handle"`
+	Round          int              `json:"round" desc:"The leaf's current round of attempts, from 1"`
+	Rounds         []RunLeafRound   `json:"rounds,omitempty" desc:"Its fresh rounds, each given once a Decision answered the question its failure raised; absent in round 1"`
+	Commit         string           `json:"commit,omitempty" desc:"A passed leaf's Evidence commit: its verifier's Evidence entries, committed alone"`
+	Detail         string           `json:"detail,omitempty" desc:"Why the leaf ended as it did"`
+}
+
+// RunLeafRound is one fresh round a failed leaf was given.
+type RunLeafRound struct {
+	Round          int    `json:"round" desc:"The round, from 2"`
+	After          int    `json:"after" desc:"The attempts before it: its first attempt is after + 1"`
+	Question       string `json:"question" desc:"The question node the leaf's failure raised, by ID"`
+	QuestionHandle string `json:"question_handle,omitempty" desc:"That question node's handle"`
+	Decision       string `json:"decision" desc:"The handle of the Decision that answers it"`
+	At             string `json:"at" desc:"When the round began, RFC 3339 UTC"`
+}
+
+// RunLeafSession is one session a leaves step started on a leaf.
+type RunLeafSession struct {
+	Role    string `json:"role" desc:"builder or verifier"`
+	Attempt int    `json:"attempt" desc:"The leaf's attempt it works on, from 1"`
+	Session string `json:"session" desc:"The session's ID"`
+	Model   string `json:"model,omitempty" desc:"The model it runs; empty for the agent's default"`
+	Commit  string `json:"commit,omitempty" desc:"A builder's: the worktree's HEAD when it started; a verifier's: the commit it checks"`
+	At      string `json:"at" desc:"When it started, RFC 3339 UTC"`
+}
+
+// RunLeafAttempt is one judgement of a leaf session's work.
+type RunLeafAttempt struct {
+	Role    string `json:"role" desc:"builder or verifier"`
+	Attempt int    `json:"attempt" desc:"The leaf's attempt, from 1"`
+	Outcome string `json:"outcome" desc:"pass or fail"`
+	Commit  string `json:"commit,omitempty" desc:"A passed builder's commit naming its leaf; a passed verifier's Evidence commit"`
+	Detail  string `json:"detail,omitempty" desc:"Why: the session's exit, that its agent said done, or that a builder left no commit naming its leaf"`
+	At      string `json:"at" desc:"When it was judged, RFC 3339 UTC"`
+}
+
+// RunLeafFinding is one finding a verifier journalled on a leaf's attempt.
+type RunLeafFinding struct {
+	Attempt int    `json:"attempt" desc:"The leaf's attempt it is on, from 1"`
+	ID      string `json:"id" desc:"The finding's ID in the attempt: f1, f2, ..."`
+	Reason  string `json:"reason" desc:"What the verifier found wrong"`
+	At      string `json:"at" desc:"When it was journalled, RFC 3339 UTC"`
 }
 
 // RunWaiting is one of the plan's change sets run gate named that waits
@@ -543,18 +600,28 @@ func loadWorkflow(path, ref string) (*workflow.Definition, []byte, error) {
 // checks its own: a mode is required, it must be the adapter's, and a mode
 // that bypasses permission checks is refused. An autonomous run's arbiter
 // (the file's arbiter step or the built-in one) is checked the same way
-// when the workflow has an agent step: only an autonomous run launches it,
-// and only on an agent step's question.
+// when the workflow has an agent or leaves step: only an autonomous run
+// launches it, and only on an agent session's question. A leaves step's
+// builder and verifier are checked as agent steps are.
 func checkAgentSteps(def *workflow.Definition, mode, agent string, autonomous bool, next string) error {
 	agents := false
 	for _, name := range def.Order {
 		s := def.Steps[name]
-		if s.Kind != workflow.KindAgent {
-			continue
-		}
-		agents = true
-		if err := checkAgentStep(s, "an agent step", mode, agent, next); err != nil {
-			return err
+		switch s.Kind {
+		case workflow.KindAgent:
+			agents = true
+			if err := checkAgentStep(s, "an agent step", mode, agent, next); err != nil {
+				return err
+			}
+		case workflow.KindLeaves:
+			agents = true
+			for _, role := range []string{workflow.RoleBuilder, workflow.RoleVerifier} {
+				r := s.Role(role)
+				rs := workflow.Step{Name: s.Name, Agent: r.Agent, PermissionMode: r.PermissionMode}
+				if err := checkAgentStep(rs, "a leaves step whose "+role+" runs", mode, agent, next); err != nil {
+					return err
+				}
+			}
 		}
 	}
 	if autonomous && agents {
@@ -598,7 +665,7 @@ func canRun(ctx *Ctx, def *workflow.Definition) error {
 		return Errorf("cannot run a workflow: this caller starts no programs")
 	}
 	for _, s := range def.Steps {
-		if s.Kind != workflow.KindAgent {
+		if s.Kind != workflow.KindAgent && s.Kind != workflow.KindLeaves {
 			continue
 		}
 		switch {
@@ -662,7 +729,7 @@ func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode
 		e.Log = func(line string) { fmt.Fprintf(ctx.Stderr, "rhiza: %s\n", line) }
 	}
 	if ctx.Rex != nil {
-		e.Notify = func(n run.Notice) { ctx.Rex.Write(rexNotice(n)) }
+		reportToRex(e, ctx.Rex)
 	}
 	run1 := e.Run
 	if retry {
@@ -745,11 +812,11 @@ func (r *stepRunner) sh(cmd string, env []string, out io.Writer) (int, error) {
 }
 
 // StartAgent starts the step's session as session.start does, on the
-// run's change set, and returns its ID. An autonomous run's session is
-// recorded autonomous.
-func (r *stepRunner) StartAgent(step workflow.Step, _ []string) (string, error) {
+// run's change set, on model, and returns its ID. An autonomous run's
+// session is recorded autonomous.
+func (r *stepRunner) StartAgent(step workflow.Step, model string, _ []string) (string, error) {
 	req := agentStepRequest(step, r.mode, r.agent)
-	req.Change, req.Run, req.autonomous = r.change, r.run, r.autonomous
+	req.Change, req.Run, req.autonomous, req.model = r.change, r.run, r.autonomous, model
 	t, err := resolveChangeWorktree(r.ctx, r.change, "no agent can work on it")
 	if err != nil {
 		return "", err
@@ -1183,21 +1250,36 @@ func rexNotice(n run.Notice) []byte {
 	return rexReport("blocked", b.Kind, b.TabTitle, msg)
 }
 
-// rexReport encodes one OSC 7501 root-record report from app rhiza. The
-// kind is kept only on a blocked state and only when Rex knows it; title
-// and msg have their control characters replaced with spaces, are capped
-// on a UTF-8 boundary and are base64-encoded, and are left out when empty.
+// rexReport encodes one OSC 7501 root-record report from app rhiza (see
+// rexRecord).
 func rexReport(state, kind, title, msg string) []byte {
+	return rexRecord("", state, kind, title, msg, nil)
+}
+
+// rexRecord encodes one OSC 7501 report from app rhiza on record id (""
+// for the root record). The kind is kept only on a blocked state and only
+// when Rex knows it, progress only on working or blocked; title and msg
+// have their control characters replaced with spaces, are capped on a
+// UTF-8 boundary and are base64-encoded, and are left out when empty.
+func rexRecord(id, state, kind, title, msg string, progress *int) []byte {
 	var b strings.Builder
 	b.WriteString("\x1b]7501;state=")
 	b.WriteString(state)
+	if id != "" {
+		b.WriteString(":id=" + id)
+	}
 	if state == session.StateBlocked {
 		switch kind {
 		case session.KindPermission, session.KindQuestion, session.KindAuth:
 			b.WriteString(":kind=" + kind)
 		}
 	}
-	b.WriteString(":app=rhiza")
+	if progress != nil && (state == session.StateWorking || state == session.StateBlocked) {
+		b.WriteString(":progress=" + strconv.Itoa(min(100, max(0, *progress))))
+	}
+	if state != "clear" {
+		b.WriteString(":app=rhiza")
+	}
 	if t := rexField(title, rexTitleMax); t != "" {
 		b.WriteString(":title=" + base64.StdEncoding.EncodeToString([]byte(t)))
 	}
@@ -1206,6 +1288,163 @@ func rexReport(state, kind, title, msg string) []byte {
 	}
 	b.WriteString("\x1b\\")
 	return []byte(b.String())
+}
+
+// runRex writes a run's program status to Rex: the root record says
+// the run's step (and a leaves step's progress), then done or error; a
+// child record leaf/<n> per live leaf of a leaves step says its role and
+// whether it works or is blocked, and is cleared when the leaf is no
+// longer live. While a session's block is noticed (rexNotice), the root
+// record is that blocked notice, as before; once no noticed block is
+// left, the root record goes back to the run's status.
+type runRex struct {
+	w io.Writer
+	// root is the last root status record, "" before the first.
+	root []byte
+	// wrote is the last root record written.
+	wrote []byte
+	// blocks are the open noticed blocks' reports, by session, and order
+	// the sessions in the order they blocked.
+	blocks map[string][]byte
+	order  []string
+	// leaves are the child records written, by ID, until cleared.
+	leaves map[string][]byte
+}
+
+// reportToRex has e's notices and status written to Rex, w, by one runRex.
+func reportToRex(e *run.Engine, w io.Writer) {
+	x := &runRex{w: w, blocks: map[string][]byte{}}
+	e.Notify = x.notice
+	e.Status = x.status
+}
+
+func (x *runRex) write(b []byte) {
+	x.w.Write(b)
+}
+
+func (x *runRex) writeRoot(b []byte) {
+	if !bytes.Equal(b, x.wrote) {
+		x.write(b)
+		x.wrote = b
+	}
+}
+
+// notice writes a blocked notice as the root record, or once a block ends
+// the next open one's, else the run's status (or a bare working report
+// before any status).
+func (x *runRex) notice(n run.Notice) {
+	if n.Blocked && n.Block != nil {
+		if _, ok := x.blocks[n.Session]; !ok {
+			x.order = append(x.order, n.Session)
+		}
+		x.blocks[n.Session] = rexNotice(n)
+		x.writeRoot(x.blocks[n.Session])
+		return
+	}
+	delete(x.blocks, n.Session)
+	x.order = slices.DeleteFunc(x.order, func(s string) bool { return s == n.Session })
+	switch {
+	case len(x.order) > 0:
+		x.writeRoot(x.blocks[x.order[len(x.order)-1]])
+	case x.root != nil:
+		x.writeRoot(x.root)
+	default:
+		x.writeRoot(rexNotice(n))
+	}
+}
+
+// status writes rep: a clear for each ended leaf, a record for each live
+// one, and the root record unless a noticed block holds it. A finished or
+// stopped run's root record is written whatever blocks were noticed.
+func (x *runRex) status(rep run.StatusReport) {
+	if x.leaves == nil {
+		x.leaves = map[string][]byte{}
+	}
+	for _, l := range rep.Ended {
+		x.write(rexRecord(rexLeafID(l), "clear", "", "", "", nil))
+		delete(x.leaves, rexLeafID(l))
+	}
+	for _, l := range rep.Live {
+		state := session.StateWorking
+		if l.Blocked {
+			state = session.StateBlocked
+		}
+		id := rexLeafID(l)
+		if b := rexRecord(id, state, l.Kind, l.Handle, rexLeafMsg(l), nil); !bytes.Equal(b, x.leaves[id]) {
+			x.write(b)
+			x.leaves[id] = b
+		}
+	}
+	x.root = rexRoot(rep)
+	if rep.State != run.StatusWorking {
+		clear(x.blocks)
+		x.order = nil
+	}
+	if len(x.order) == 0 {
+		x.writeRoot(x.root)
+	}
+}
+
+// rexLeafID is a live leaf's record ID: leaf/<n>, n its position in leaf
+// order, since a handle may be longer than an ID segment.
+func rexLeafID(l run.LeafStatus) string { return "leaf/" + strconv.Itoa(l.N) }
+
+// rexLeafMsg says a live leaf's role and whether it works or waits.
+func rexLeafMsg(l run.LeafStatus) string {
+	msg := l.Handle + ": " + l.Role
+	switch {
+	case l.Arbiter:
+		msg += " waits on the arbiter's answer"
+	case l.Blocked:
+		msg += " blocked on " + rexKindText(l.Kind)
+	default:
+		msg += " working"
+	}
+	if l.Attempt > 1 {
+		msg += fmt.Sprintf(" (attempt %d)", l.Attempt)
+	}
+	return msg
+}
+
+// rexKindText names what a blocked kind waits on.
+func rexKindText(kind string) string {
+	switch kind {
+	case session.KindPermission:
+		return "a permission"
+	case session.KindQuestion:
+		return "a question"
+	case session.KindAuth:
+		return "a login"
+	}
+	return "the owner"
+}
+
+// rexRoot is the root record of rep: titled with the run's title (else
+// its change set), its msg naming the step and a leaves step's leaves
+// passed, or how the run finished or why it stopped, on one line.
+func rexRoot(rep run.StatusReport) []byte {
+	title := rep.Title
+	if title == "" {
+		title = rep.Change
+	}
+	var msg string
+	switch rep.State {
+	case run.StatusDone:
+		msg = "run succeeded"
+	case run.StatusError:
+		msg = "run failed"
+	case run.StatusIdle:
+		msg = "run stopped at step " + rep.Step
+	default:
+		msg = "step " + rep.Step
+		if rep.Progress != nil {
+			msg += fmt.Sprintf(" · %d of %d leaves passed", rep.Passed, rep.Leaves)
+		}
+	}
+	if d, _, _ := strings.Cut(strings.TrimSpace(rep.Detail), "\n"); d != "" && rep.State != run.StatusWorking {
+		msg += ": " + d
+	}
+	return rexRecord("", rep.State, "", title, msg, rep.Progress)
 }
 
 // rexField is s as valid UTF-8 with every control character replaced by
@@ -1301,6 +1540,31 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 		}
 		info.Rounds = append(info.Rounds, rr)
 	}
+	for _, l := range st.Leaves {
+		rl := RunLeaf{
+			Step: l.Step, Leaf: l.Leaf, Handle: l.Handle, Sessions: []RunLeafSession{}, Attempts: []RunLeafAttempt{},
+			Outcome: l.Outcome, Question: l.Question, QuestionHandle: l.QuestionHandle, Round: l.Round(), Commit: l.Commit, Detail: l.Detail,
+		}
+		for _, rd := range l.Rounds {
+			rl.Rounds = append(rl.Rounds, RunLeafRound{
+				Round: rd.Round, After: rd.After, Question: rd.Question, QuestionHandle: rd.QuestionHandle, Decision: rd.Decision, At: rfc3339(rd.At),
+			})
+		}
+		for _, ls := range l.Sessions {
+			rl.Sessions = append(rl.Sessions, RunLeafSession{
+				Role: ls.Role, Attempt: ls.Attempt, Session: ls.Session, Model: ls.Model, Commit: ls.Commit, At: rfc3339(ls.At),
+			})
+		}
+		for _, a := range l.Attempts {
+			rl.Attempts = append(rl.Attempts, RunLeafAttempt{
+				Role: a.Role, Attempt: a.Attempt, Outcome: a.Outcome, Commit: a.Commit, Detail: a.Detail, At: rfc3339(a.At),
+			})
+		}
+		for _, f := range l.Findings {
+			rl.Findings = append(rl.Findings, RunLeafFinding{Attempt: f.Attempt, ID: f.Finding.ID, Reason: f.Finding.Reason, At: rfc3339(f.At)})
+		}
+		info.Leaves = append(info.Leaves, rl)
+	}
 	return info
 }
 
@@ -1360,6 +1624,44 @@ func (r RunInfo) Human(w io.Writer) {
 				fmt.Fprintf(w, ": %s", s.Detail)
 			}
 			fmt.Fprintf(w, "\n")
+		}
+	}
+	if len(r.Leaves) > 0 {
+		fmt.Fprintf(w, "\n## Leaves\n\n")
+		for _, l := range r.Leaves {
+			outcome := l.Outcome
+			if outcome == "" {
+				outcome = "open"
+			}
+			fmt.Fprintf(w, "- %s (step %s): %s", l.Handle, l.Step, outcome)
+			if l.Round > 1 {
+				fmt.Fprintf(w, " in round %d", l.Round)
+			}
+			if l.Detail != "" {
+				fmt.Fprintf(w, ": %s", l.Detail)
+			}
+			fmt.Fprintf(w, "\n")
+			if l.Question != "" {
+				fmt.Fprintf(w, "  - question %s (%s) blocks it\n", l.QuestionHandle, l.Question)
+			}
+			for _, rd := range l.Rounds {
+				fmt.Fprintf(w, "  - round %d from attempt %d: decision %s answers question %s (%s)\n", rd.Round, rd.After+1, rd.Decision, rd.QuestionHandle, rd.Question)
+			}
+			for _, ls := range l.Sessions {
+				fmt.Fprintf(w, "  - attempt %d %s, session %s", ls.Attempt, ls.Role, ls.Session)
+				for _, a := range l.Attempts {
+					if a.Role == ls.Role && a.Attempt == ls.Attempt {
+						fmt.Fprintf(w, ": %s", a.Outcome)
+						if a.Detail != "" {
+							fmt.Fprintf(w, " (%s)", a.Detail)
+						}
+					}
+				}
+				fmt.Fprintf(w, "\n")
+			}
+			for _, f := range l.Findings {
+				fmt.Fprintf(w, "  - attempt %d finding %s: %s\n", f.Attempt, f.ID, oneLine(f.Reason))
+			}
 		}
 	}
 	if len(r.Accepts) > 0 {

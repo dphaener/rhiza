@@ -510,19 +510,27 @@ func TestRunBlockedStatusAndRexReports(t *testing.T) {
 			t.Errorf("report %v: app is not rhiza", r)
 		}
 	}
-	if want := []string{"blocked", "working", "blocked", "working"}; !slices.Equal(states, want) {
+	// The run's status (working at its step, then done) frames the
+	// blocked notices; each block's end restores that status in full, as
+	// a report replaces its record.
+	if want := []string{"working", "blocked", "working", "blocked", "working", "done"}; !slices.Equal(states, want) {
 		t.Fatalf("reports %v, want %v", states, want)
 	}
-	first, title := reports[0], reports[0]["title"]
+	first, title := reports[1], reports[1]["title"]
 	wantMsg := "Blocked runs: build waits on you in tab " + title + ": Ship it?"
 	if title == "" || first["kind"] != "question" || first["msg"] != wantMsg {
-		t.Errorf("first report %v; want msg %q", first, wantMsg)
+		t.Errorf("first block report %v; want msg %q", first, wantMsg)
 	}
-	if reports[2]["kind"] != "permission" || !strings.HasSuffix(reports[2]["msg"], ": Allow rm?") {
-		t.Errorf("second block report %v", reports[2])
+	if reports[3]["kind"] != "permission" || !strings.HasSuffix(reports[3]["msg"], ": Allow rm?") {
+		t.Errorf("second block report %v", reports[3])
 	}
-	if _, ok := reports[1]["msg"]; ok || len(reports[1]) != 2 {
-		t.Errorf("working report %v, want state and app only", reports[1])
+	for _, i := range []int{0, 2, 4} {
+		if r := reports[i]; r["msg"] != "step build" || r["title"] != "Blocked runs" || r["id"] != "" {
+			t.Errorf("working report %v, want the run's root status at step build", r)
+		}
+	}
+	if r := reports[5]; r["msg"] != "run succeeded" || r["title"] != "Blocked runs" {
+		t.Errorf("final report %v", r)
 	}
 	if s := status(); s.State != run.Succeeded || s.Blocked != nil {
 		t.Errorf("final status = %+v", s)

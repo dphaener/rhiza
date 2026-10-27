@@ -68,8 +68,9 @@ type Runner interface {
 	Command(step workflow.Step, env []string) (code int, detail string, err error)
 	// Holds runs a wait or agent step's `until` condition once.
 	Holds(step workflow.Step, env []string) (bool, error)
-	// StartAgent launches an agent step's session and returns its ID.
-	StartAgent(step workflow.Step, env []string) (session string, err error)
+	// StartAgent launches an agent step's session on model ("" for the
+	// agent's default) and returns its ID.
+	StartAgent(step workflow.Step, model string, env []string) (session string, err error)
 	// AgentStatus reports where a session is: ended, and with which
 	// outcome (pass or fail), or still running and perhaps blocked on the
 	// owner.
@@ -166,6 +167,11 @@ type Engine struct {
 	// autonomous run's question is the arbiter's, not the owner's: it is
 	// never notified.
 	Notify func(Notice)
+	// Status, when set, is called with the run's StatusReport each time
+	// it changes: as a step is entered or continued, as a leaves step's
+	// leaf sessions start, block, unblock and are judged and its leaves
+	// end, and once as the run finishes (done or error) or stops (idle).
+	Status func(StatusReport)
 }
 
 // Start creates a run's journal with its started entry. The run begins at
@@ -331,6 +337,10 @@ type running struct {
 	e   *Engine
 	j   Journal
 	def *workflow.Definition
+	// leafList holds each leaves step's leaves, once read, for status.
+	leafList map[string][]Leaf
+	// lastStatus is the last report given to Engine.Status.
+	lastStatus *StatusReport
 }
 
 func (r *running) clock() Clock {
@@ -360,6 +370,7 @@ func (r *running) append(en Entry) error {
 		return err
 	}
 	r.j.Entries = append(r.j.Entries, en)
+	r.status("")
 	return nil
 }
 
@@ -381,6 +392,9 @@ func (r *running) loop() (State, error) {
 		act, err := Decide(r.def, st)
 		if err != nil {
 			return st, err
+		}
+		if act.Kind == ActContinue {
+			r.status("")
 		}
 		switch act.Kind {
 		case ActFinished:
@@ -405,6 +419,7 @@ func (r *running) loop() (State, error) {
 				return r.j.State(), err
 			}
 			r.log("step %s: stopped, %s", step.Name, res.stopped)
+			r.status(res.stopped)
 			return r.j.State(), nil
 		}
 		next, end := r.def.Next(step.Name, res.outcome)
@@ -447,6 +462,8 @@ func (r *running) runStep(step workflow.Step, change string) (result, error) {
 		return r.wait(step, env), nil
 	case workflow.KindAgent:
 		return r.agent(step, env)
+	case workflow.KindLeaves:
+		return r.leaves(step, env)
 	}
 	return errResult(fmt.Errorf("step %q: unknown kind %q", step.Name, step.Kind)), nil
 }
@@ -587,7 +604,7 @@ func (r *running) wait(step workflow.Step, env []string) result {
 func (r *running) agent(step workflow.Step, env []string) (result, error) {
 	session := r.j.State().Session[step.Name]
 	if session == "" {
-		s, err := r.e.Runner.StartAgent(step, env)
+		s, err := r.e.Runner.StartAgent(step, step.Model(r.j.State().CurrentVisit), env)
 		if err != nil {
 			return errResult(err), nil
 		}
@@ -682,7 +699,7 @@ func (r *running) arbitrates(b *Block) bool {
 // session: the arbiter's answer is the run's, and the session's own
 // outcome decides the step. The error return is for journal failures.
 func (r *running) ask(step workflow.Step, session string, b *Block) (result, bool, error) {
-	asked, ok := r.j.State().BlockAsked()
+	asked, ok := r.j.State().BlockAsked(session)
 	if !ok {
 		q, err := r.e.Runner.AddQuestion(session, b.Question)
 		if err != nil {
@@ -786,17 +803,21 @@ func (r *running) exitedUntil(step workflow.Step, env []string, detail string) r
 	return result{outcome: workflow.OutcomeFail, detail: detail + " but until did not hold"}
 }
 
-// blockedOn reports whether the journal shows session blocked.
-func (r *running) blockedOn(session string) (State, bool) {
+// blockedOn is session's open block in the journal, if it has one.
+func (r *running) blockedOn(session string) (State, *Block, bool) {
 	st := r.j.State()
-	return st, st.Blocked != nil && st.BlockedSession == session
+	sb, ok := st.BlockOf(session)
+	if !ok {
+		return st, nil, false
+	}
+	return st, &sb.Block, true
 }
 
 // block journals that step's session became blocked on b and notifies,
 // unless the journal already shows it blocked: one notice per block, a
 // resume included.
 func (r *running) block(step, session string, b *Block) error {
-	st, already := r.blockedOn(session)
+	st, _, already := r.blockedOn(session)
 	if already {
 		return nil
 	}
@@ -818,7 +839,7 @@ func (r *running) block(step, session string, b *Block) error {
 // unblock journals the end of session's block and notifies, when the
 // journal shows it blocked; otherwise it does nothing.
 func (r *running) unblock(step, session string) error {
-	st, blocked := r.blockedOn(session)
+	st, b, blocked := r.blockedOn(session)
 	if !blocked {
 		return nil
 	}
@@ -826,8 +847,8 @@ func (r *running) unblock(step, session string) error {
 		return err
 	}
 	r.log("step %s: unblocked", step)
-	if !r.arbitrates(st.Blocked) {
-		r.notify(st, step, session, false, st.Blocked)
+	if !r.arbitrates(b) {
+		r.notify(st, step, session, false, b)
 	}
 	return nil
 }
