@@ -100,6 +100,7 @@ var topics = []entry{
 	{name: "change-sets", file: "change-sets.md", description: "Change sets: intention and record, the lifecycle, which change set a write goes into, --record."},
 	{name: "plan-review", file: "plan-review.md", description: "Plan review: finding a plan's change sets, recording findings of five kinds, a critic's verdicts and a reviser's fixes."},
 	{name: "reopening", file: "reopening.md", description: "Reopening: taking a change set landed only on its branch back to accepted, the refusal once it is on main, never deleting log entries."},
+	{name: "review", file: "review.md", description: "Reviewing a built change set: five checks' findings with severities from the merge-base, a critic's verdicts that add no finding, fixers' commits with a Leaf: or Review: trailer, outside work as a question or a discovered-from draft change set, the QA check's Evidence. Load it when you run as a check, critic or fixer of a review run."},
 	{name: "sources", file: "sources.md", description: "Source nodes: the stored fields, the raw material's hash, and how scrub feeds rhiza source add."},
 }
 
