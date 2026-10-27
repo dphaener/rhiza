@@ -83,7 +83,12 @@ type fakeRunner struct {
 	store *Store
 	// noRound names the check sessions whose agent records no findings
 	// round; every other check session records an empty one.
-	noRound    map[string]bool
+	noRound map[string]bool
+	// findings are the findings a check session's agent records in its
+	// round, by session; verdicts the verdicts a critic session's agent
+	// records on its check's latest round, by session.
+	findings   map[string][]Finding
+	verdicts   map[string][]Verdict
 	closed     []string    // the session of each ClosePane call, in order
 	closeErr   error       // ClosePane's error, when set
 	checkSpecs []CheckSpec // each StartCheck call's spec, in order
@@ -105,7 +110,7 @@ func newFakeRunner() *fakeRunner {
 		commands: map[string]int{}, polls: map[string]int{}, starts: map[string]int{},
 		envs: map[string][]string{}, answers: map[string]Answer{}, answerN: map[string]int{},
 		leafAnswers: map[string][2]string{}, leafAnswerN: map[string]int{},
-		noRound: map[string]bool{},
+		noRound: map[string]bool{}, findings: map[string][]Finding{}, verdicts: map[string][]Verdict{},
 	}
 }
 

@@ -385,8 +385,9 @@ type checkFindingsFile struct {
 // runCheckFindings is run.findings with --check in a review run: it checks
 // each finding, a known severity, a place, a reason and, when it names
 // one, a leaf of the run's change set. Only then does it journal them,
-// numbered f1, f2, ..., as check's next round, in the step's latest
-// cycle when that cycle runs check (its session may write before the
+// numbered f1, f2, ..., as check's next round, in the cycle RHIZA_CYCLE
+// names when it is one of the step's that runs check, else in the step's
+// latest cycle when that cycle runs check (its session may write before the
 // engine journals it), else the cycle of the check's latest session, else
 // the step's latest cycle. An empty list is a round with no findings.
 func runCheckFindings(ctx *Ctx, rr reviewRun, step workflow.Step, check, file string) (any, error) {
@@ -438,11 +439,13 @@ func runCheckFindings(ctx *Ctx, rr reviewRun, step workflow.Step, check, file st
 		found = append(found, fd)
 	}
 	cs, _ := rr.state.Check(step.Name, check)
-	cycle := 0
+	cycle := envCheckCycle(ctx, rr.state, step.Name, check)
 	cy, latest := rr.state.LatestCycle(step.Name)
-	if n := len(cs.Sessions); n > 0 && !(latest && slices.Contains(cy.Checks, check)) {
+	switch n := len(cs.Sessions); {
+	case cycle > 0:
+	case n > 0 && !(latest && slices.Contains(cy.Checks, check)):
 		cycle = cs.Sessions[n-1].Cycle
-	} else if latest {
+	case latest:
 		cycle = cy.Cycle
 	}
 	resp := RunFindingsResponse{
@@ -456,6 +459,22 @@ func runCheckFindings(ctx *Ctx, rr reviewRun, step workflow.Step, check, file st
 		return nil, err
 	}
 	return resp, nil
+}
+
+// envCheckCycle is the cycle the caller's RHIZA_CYCLE names, which the
+// engine sets on every check and critic session, when it is a cycle of
+// step that runs check; else 0, and the cycle is inferred.
+func envCheckCycle(ctx *Ctx, st run.State, step, check string) int {
+	n, err := strconv.Atoi(strings.TrimSpace(ctxGetenv(ctx)(envCycle)))
+	if err != nil || n < 1 {
+		return 0
+	}
+	for _, cy := range st.Cycles {
+		if cy.Step == step && cy.Cycle == n && slices.Contains(cy.Checks, check) {
+			return n
+		}
+	}
+	return 0
 }
 
 // leafFindingsFile is run.findings' input with --leaf: each finding is

@@ -20,7 +20,14 @@ func (f *fakeRunner) StartCheck(spec CheckSpec) (string, error) {
 	if spec.Role == workflow.RoleCheck && !f.noRound[sid] && f.store != nil {
 		// The session's agent records an empty findings round, as `rhiza
 		// run findings --check` does, outside the engine's lock.
-		if err := f.store.Append(runID, Entry{Type: TypeFindings, Step: spec.Step.Name, Check: spec.Check.Name, Cycle: spec.Cycle, At: at(1)}); err != nil {
+		if err := f.store.Append(runID, Entry{Type: TypeFindings, Step: spec.Step.Name, Check: spec.Check.Name, Cycle: spec.Cycle, Findings: f.findings[sid], At: at(1)}); err != nil {
+			return "", err
+		}
+	}
+	if spec.Role == workflow.RoleCritic && len(f.verdicts[sid]) > 0 && f.store != nil {
+		// The critic's agent records its verdicts, as `rhiza run verdict
+		// --check` does.
+		if err := f.store.Append(runID, Entry{Type: TypeVerdict, Step: spec.Step.Name, Check: spec.Check.Name, Verdicts: f.verdicts[sid], At: at(1)}); err != nil {
 			return "", err
 		}
 	}
@@ -348,6 +355,11 @@ func TestNextCheckActions(t *testing.T) {
 		return c
 	}
 	cyc := func(n int, checks ...string) CheckCycle { return CheckCycle{Step: "review", Cycle: n, Checks: checks} }
+	round := func(c CheckState, cycle int, fs ...Finding) CheckState {
+		c.Rounds = append(c.Rounds, Round{Number: len(c.Rounds) + 1, Cycle: cycle, Findings: fs})
+		return c
+	}
+	serious := round(sess(1, "pass"), 1, sev("f1", SeverityMajor))
 	for _, tt := range []struct {
 		name   string
 		cycles []CheckCycle
@@ -359,6 +371,12 @@ func TestNextCheckActions(t *testing.T) {
 			[]string{"2:b:1:", "3:a:1:"}},
 		{"end judged", []CheckCycle{cyc(1, "a", "b")}, map[string]CheckState{"a": sess(1, "fail"), "b": sess(1, "")},
 			[]string{"4:a:1:failed", "3:b:1:"}},
+		{"critic waits for the cycle's checks", []CheckCycle{cyc(1, "a", "b")},
+			map[string]CheckState{"a": serious, "b": sess(1, "")},
+			[]string{"3:b:1:"}},
+		{"critic starts after the cycle", []CheckCycle{cyc(1, "a", "b")},
+			map[string]CheckState{"a": serious, "b": round(sess(1, "pass"), 1, sev("f1", SeverityMinor))},
+			[]string{"2:a:1:", "4:b:1:passed"}},
 		{"next cycle with failed only", []CheckCycle{cyc(1, "a", "b")},
 			map[string]CheckState{"a": ended(sess(1, "fail"), 1, CheckFailed), "b": ended(sess(1, "pass"), 1, CheckPassed)},
 			[]string{"1:a:2:"}},
@@ -621,5 +639,183 @@ func TestChecksStepNoFindingsRound(t *testing.T) {
 	}
 	if len(r.checkSpecs) != 4 {
 		t.Errorf("%d sessions started, want 4", len(r.checkSpecs))
+	}
+}
+
+// sev is a review finding of severity at id.
+func sev(id, severity string) Finding {
+	return Finding{ID: id, Severity: severity, Place: "a.go:1", Reason: "bad " + id}
+}
+
+// roles are each started session's "check role cycle", in order.
+func roles(r *fakeRunner) []string {
+	var out []string
+	for _, s := range r.checkSpecs {
+		out = append(out, s.Check.Name+" "+s.Role+" "+strconv.Itoa(s.Cycle))
+	}
+	return out
+}
+
+// A clean check and one with only minor and nit findings start no
+// critic, and both pass.
+func TestCriticNoneForCleanOrMinor(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	passChecks(r, 1, threeChecks...)
+	r.findings[checkSID("beta", "check", 1)] = []Finding{sev("f1", SeverityMinor), sev("f2", SeverityNit)}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	if want := []string{"alpha check 1", "beta check 1", "gamma check 1"}; !reflect.DeepEqual(roles(r), want) {
+		t.Errorf("started %v, want %v", roles(r), want)
+	}
+	for _, name := range []string{"alpha", "beta"} {
+		c, _ := st.Check("review", name)
+		if o, ok := c.Outcome(1); !ok || o.Outcome != CheckPassed {
+			t.Errorf("%s's outcome = %+v", name, o)
+		}
+	}
+}
+
+// A check with a major finding gets a critic once every check of the
+// cycle is judged: in its own checkout, with its own env and the critic's
+// prompt; the critic drops the finding and the check passes.
+func TestCriticDropsMajor(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	passChecks(r, 1, threeChecks...)
+	r.findings[checkSID("alpha", "check", 1)] = []Finding{sev("f1", SeverityMajor), sev("f2", SeverityMinor)}
+	crit := checkSID("alpha", "critic", 1)
+	r.outcome[crit] = workflow.OutcomePass
+	r.verdicts[crit] = []Verdict{{Finding: "f1", Verdict: Dropped, Reason: "not a bug"}}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	if want := []string{"alpha check 1", "beta check 1", "gamma check 1", "alpha critic 1"}; !reflect.DeepEqual(roles(r), want) {
+		t.Fatalf("started %v, want %v", roles(r), want)
+	}
+	sp := r.checkSpecs[3]
+	if sp.Dir != checkCheckoutDir("alpha", "critic", 1) || sp.Model != "" {
+		t.Errorf("critic's spec = %+v", sp)
+	}
+	for _, v := range []string{EnvCheck + "=alpha", EnvCycle + "=1", EnvRole + "=critic"} {
+		if !slices.Contains(sp.Env, v) {
+			t.Errorf("critic's env %v lacks %s", sp.Env, v)
+		}
+	}
+	want := []string{
+		"check-cycle 1 alpha beta gamma",
+		"check-session alpha check 1", "check-session beta check 1", "check-session gamma check 1",
+		"check-judged alpha check 1 pass", "check-judged beta check 1 pass", "check-judged gamma check 1 pass",
+		"check-session alpha critic 1", "check beta 1 passed", "check gamma 1 passed",
+		"check-judged alpha critic 1 pass", "check alpha 1 passed",
+	}
+	if got := checkEntries(t, e); !reflect.DeepEqual(got, want) {
+		t.Errorf("check entries =\n%v\nwant\n%v", got, want)
+	}
+	c, _ := st.Check("review", "alpha")
+	if o, _ := c.Outcome(1); o.Detail != "cycle 1: critic dropped f1" {
+		t.Errorf("alpha's detail = %q", o.Detail)
+	}
+	if !slices.Contains(r.checkouts, "remove "+checkCheckoutDir("alpha", "critic", 1)) {
+		t.Errorf("critic's checkout not removed: %v", r.checkouts)
+	}
+}
+
+// A critic confirming a blocker fails its check, which re-runs next
+// cycle.
+func TestCriticConfirmsBlocker(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	passChecks(r, 1, threeChecks...)
+	passChecks(r, 2, "beta")
+	r.findings[checkSID("beta", "check", 1)] = []Finding{sev("f1", SeverityBlocker), sev("f2", SeverityMajor)}
+	crit := checkSID("beta", "critic", 1)
+	r.outcome[crit] = workflow.OutcomePass
+	r.verdicts[crit] = []Verdict{{Finding: "f1", Verdict: Confirmed, Reason: "real"}, {Finding: "f2", Verdict: Dropped, Reason: "no"}}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	c, _ := st.Check("review", "beta")
+	if o, _ := c.Outcome(1); o.Outcome != CheckFailed || o.Detail != "cycle 1: confirmed f1 (blocker)" {
+		t.Errorf("beta's cycle 1 outcome = %+v", o)
+	}
+	if want := []string{"alpha check 1", "beta check 1", "gamma check 1", "beta critic 1", "beta check 2"}; !reflect.DeepEqual(roles(r), want) {
+		t.Errorf("started %v, want %v", roles(r), want)
+	}
+}
+
+// R8: a serious finding the critic gave no verdict on counts as
+// confirmed, so the check fails.
+func TestCriticNoVerdictConfirms(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	passChecks(r, 1, threeChecks...)
+	passChecks(r, 2, "alpha")
+	r.findings[checkSID("alpha", "check", 1)] = []Finding{sev("f1", SeverityMajor)}
+	r.outcome[checkSID("alpha", "critic", 1)] = workflow.OutcomePass
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, _ := st.Check("review", "alpha")
+	if o, _ := c.Outcome(1); o.Outcome != CheckFailed || o.Detail != "cycle 1: confirmed f1 (major)" {
+		t.Errorf("alpha's cycle 1 outcome = %+v", o)
+	}
+}
+
+// A critic session that fails fails its check, which re-runs next cycle.
+func TestCriticFails(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	passChecks(r, 1, threeChecks...)
+	passChecks(r, 2, "alpha")
+	r.findings[checkSID("alpha", "check", 1)] = []Finding{sev("f1", SeverityMajor)}
+	r.outcome[checkSID("alpha", "critic", 1)] = workflow.OutcomeFail
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, _ := st.Check("review", "alpha")
+	if o, _ := c.Outcome(1); o.Outcome != CheckFailed || !strings.HasPrefix(o.Detail, "cycle 1: critic failed: ") {
+		t.Errorf("alpha's cycle 1 outcome = %+v", o)
+	}
+	if o, _ := c.Outcome(2); o.Outcome != CheckPassed {
+		t.Errorf("alpha's cycle 2 outcome = %+v", o)
+	}
+}
+
+// Two checks with serious findings get their critics in parallel: both
+// start before either is polled.
+func TestCriticParallel(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	passChecks(r, 1, threeChecks...)
+	for _, c := range []string{"alpha", "gamma"} {
+		r.findings[checkSID(c, "check", 1)] = []Finding{sev("f1", SeverityMajor)}
+		crit := checkSID(c, "critic", 1)
+		r.outcome[crit] = workflow.OutcomePass
+		r.verdicts[crit] = []Verdict{{Finding: "f1", Verdict: Dropped, Reason: "no"}}
+	}
+	r.onPoll = func(session string, n int) {
+		if strings.Contains(session, "-critic-") && n == 0 && len(r.checkSpecs) != 5 {
+			t.Errorf("critic %s polled after %d sessions started, want 5", session, len(r.checkSpecs))
+		}
+	}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	if want := []string{"alpha check 1", "beta check 1", "gamma check 1", "alpha critic 1", "gamma critic 1"}; !reflect.DeepEqual(roles(r), want) {
+		t.Errorf("started %v, want %v", roles(r), want)
 	}
 }

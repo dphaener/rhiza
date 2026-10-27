@@ -7,8 +7,9 @@
 # A command step first leaves staged, unstaged and untracked edits in the
 # run worktree and snapshots them and the branch head. The fake rex runs
 # the tab's command synchronously in the window's directory. The fake claude, as a check, logs where it runs and what it
-# sees. Check alpha records a finding and writes Evidence; check beta
-# fails in cycle 1 and records an empty round in cycle 2.
+# sees. Check alpha records a major finding and writes Evidence, and its
+# critic, in a checkout of its own, drops the finding; check beta fails in
+# cycle 1 and records an empty round in cycle 2.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -37,19 +38,20 @@ exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
 # in the run worktree, with RHIZA_ROOT naming the run worktree.
 exec cat $WORK/check.log
 cmp stdout $WORK/want.log
-grep '/repo/\.git/rhiza/checkouts/[0-9A-Z]+/alpha-check-1$' $WORK/alpha-1.pwd
-grep '/repo/\.git/rhiza/checkouts/[0-9A-Z]+/beta-check-1$' $WORK/beta-1.pwd
-grep '/repo/\.git/rhiza/checkouts/[0-9A-Z]+/beta-check-2$' $WORK/beta-2.pwd
+grep '/repo/\.git/rhiza/checkouts/[0-9A-Z]+/alpha-check-1$' $WORK/alpha-check-1.pwd
+grep '/repo/\.git/rhiza/checkouts/[0-9A-Z]+/alpha-critic-1$' $WORK/alpha-critic-1.pwd
+grep '/repo/\.git/rhiza/checkouts/[0-9A-Z]+/beta-check-1$' $WORK/beta-check-1.pwd
+grep '/repo/\.git/rhiza/checkouts/[0-9A-Z]+/beta-check-2$' $WORK/beta-check-2.pwd
 
 # Every checkout is gone after its session ended, pass and fail.
-exec sh -c 'for l in alpha-1 beta-1 beta-2; do test -e "$(cat $WORK/$l.pwd)" && echo "$l left"; done; git worktree list'
+exec sh -c 'for l in alpha-check-1 alpha-critic-1 beta-check-1 beta-check-2; do test -e "$(cat $WORK/$l.pwd)" && echo "$l left"; done; git worktree list'
 ! stdout 'left'
 ! stdout 'rhiza/checkouts'
 ! stdout 'detached'
 
 # The check-session entries name their checkouts.
-exec sh -c 'grep -c "\"type\":\"check-session\",.*\"detail\":\"[^\"]*/rhiza/checkouts/[0-9A-Z]*/[a-z]*-check-[12]\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
-stdout '^3$'
+exec sh -c 'grep -c "\"type\":\"check-session\",.*\"detail\":\"[^\"]*/rhiza/checkouts/[0-9A-Z]*/[a-z]*-\(check\|critic\)-[12]\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+stdout '^4$'
 
 # alpha's finding is in the run's journal, its Evidence in the run
 # worktree's log; the checkout stayed clean.
@@ -74,13 +76,16 @@ grep '^\?\? scratch.txt$' $WORK/after.status
 fold-ok
 
 -- want.log --
-check=alpha cycle=1 dir=checkout head=branch-head detached=yes root=run
-check=beta cycle=1 dir=checkout head=branch-head detached=yes root=run
-check=beta cycle=2 dir=checkout head=branch-head detached=yes root=run
+check=alpha role=check cycle=1 dir=checkout head=branch-head detached=yes root=run
+check=beta role=check cycle=1 dir=checkout head=branch-head detached=yes root=run
+check=alpha role=critic cycle=1 dir=checkout head=branch-head detached=yes root=run
+check=beta role=check cycle=2 dir=checkout head=branch-head detached=yes root=run
 -- notes.txt --
 notes
 -- alpha.json --
 {"findings":[{"severity":"major","place":"main.go:12","reason":"panics on empty input"}]}
+-- drop.json --
+{"verdicts":[{"finding":"f1","verdict":"dropped","reason":"not reproduced"}]}
 -- empty.json --
 {"findings":[]}
 -- dirty.sh --
@@ -137,7 +142,7 @@ echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
 -- bin/claude --
 #!/bin/sh
 run="$(cat "$WORK/run.pwd")"
-pwd -P > "$WORK/$RHIZA_CHECK-$RHIZA_CYCLE.pwd"
+pwd -P > "$WORK/$RHIZA_CHECK-$RHIZA_ROLE-$RHIZA_CYCLE.pwd"
 dir=run
 [ "$(pwd -P)" != "$(cd "$run" && pwd -P)" ] && dir=checkout
 head=other
@@ -146,14 +151,17 @@ detached=no
 git symbolic-ref -q HEAD > /dev/null || detached=yes
 root=other
 [ "$(cd "$RHIZA_ROOT" && pwd -P)" = "$(cd "$run" && pwd -P)" ] && root=run
-echo "check=$RHIZA_CHECK cycle=$RHIZA_CYCLE dir=$dir head=$head detached=$detached root=$root" >> "$WORK/check.log"
-case $RHIZA_CHECK-$RHIZA_CYCLE in
-alpha-1)
+echo "check=$RHIZA_CHECK role=$RHIZA_ROLE cycle=$RHIZA_CYCLE dir=$dir head=$head detached=$detached root=$root" >> "$WORK/check.log"
+case $RHIZA_CHECK-$RHIZA_ROLE-$RHIZA_CYCLE in
+alpha-critic-1)
+	rhiza run verdict --check alpha "$WORK/drop.json" >&2 || exit 1
+	;;
+alpha-check-1)
 	rhiza run findings --check alpha "$WORK/alpha.json" >&2 || exit 1
 	rhiza add evidence alpha-ok --field "statement=alpha looked" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
 	[ -z "$(git status --porcelain)" ] && echo "alpha clean" >> "$WORK/checkout-status.log"
 	;;
-beta-1)
+beta-check-1)
 	exit 1
 	;;
 *)

@@ -350,6 +350,31 @@ func (r Round) Confirmed() []Finding {
 	return out
 }
 
+// Serious are the round's blocker and major findings, in order: those a
+// review check's critic weighs.
+func (r Round) Serious() []Finding {
+	var out []Finding
+	for _, f := range r.Findings {
+		if Serious(f.Severity) {
+			out = append(out, f)
+		}
+	}
+	return out
+}
+
+// Standing are the round's serious findings no verdict dropped, in order:
+// one with no verdict stands, as confirmed (R8). A review check fails
+// while any stands.
+func (r Round) Standing() []Finding {
+	var out []Finding
+	for _, f := range r.Serious() {
+		if v, ok := r.Verdict(f.ID); !ok || v.Verdict != Dropped {
+			out = append(out, f)
+		}
+	}
+	return out
+}
+
 // Asked is one asked entry: in an autonomous run, agent step Step's
 // session Session asked the owner Text, and the engine added question node
 // Question (handle Handle) to the run's change set for the arbiter.

@@ -94,10 +94,16 @@ type checkAction struct {
 // moves to make now. Cycle 1 runs every check; each later cycle only
 // those the cycle before failed, up to MaxFixCycles further cycles. In a
 // cycle every check's session starts before any is polled, so they all
-// run in parallel: the moves list each start before any poll or end. A
-// check judged is ended by checkVerdict. Once each check of the cycle has
-// an outcome the next cycle begins over the failed ones; with none
-// failed the step passes, and with no cycle left it fails.
+// run in parallel: the moves list each start before any poll or end.
+//
+// After the cycle, once every check session of it is judged, each check
+// whose session passed with a blocker or major finding in its round gets
+// a critic session (needsCritic), all of them started before any is
+// polled, so the critics run in parallel too. A check judged, and its
+// critic's session if it needs one, is ended by checkVerdict. Once each
+// check of the cycle has an outcome the next cycle begins over the failed
+// ones; with none failed the step passes, and with no cycle left it
+// fails.
 func nextCheckActions(step workflow.Step, cycles []CheckCycle, states map[string]CheckState) []checkAction {
 	if len(cycles) == 0 {
 		var all []string
@@ -108,7 +114,8 @@ func nextCheckActions(step workflow.Step, cycles []CheckCycle, states map[string
 	}
 	cur := cycles[len(cycles)-1]
 	var starts, rest []checkAction
-	var failed []string
+	var failed, critics []string
+	allJudged := true
 	for _, name := range cur.Checks {
 		c := states[name]
 		if o, ok := c.Outcome(cur.Cycle); ok {
@@ -119,14 +126,36 @@ func nextCheckActions(step workflow.Step, cycles []CheckCycle, states map[string
 		}
 		s, started := c.Session(workflow.RoleCheck, cur.Cycle)
 		if !started {
+			allJudged = false
 			starts = append(starts, checkAction{kind: checkStart, check: name, role: workflow.RoleCheck, cycle: cur.Cycle})
 			continue
 		}
-		if outcome, detail, ok := checkVerdict(c, cur.Cycle); ok {
-			rest = append(rest, checkAction{kind: checkEnd, check: name, cycle: cur.Cycle, outcome: outcome, detail: detail})
+		if _, judged := c.Judgement(workflow.RoleCheck, cur.Cycle); !judged {
+			allJudged = false
+			rest = append(rest, checkAction{kind: checkPoll, check: name, role: workflow.RoleCheck, cycle: cur.Cycle, session: s.Session})
 			continue
 		}
-		rest = append(rest, checkAction{kind: checkPoll, check: name, role: workflow.RoleCheck, cycle: cur.Cycle, session: s.Session})
+		if needsCritic(c, cur.Cycle) {
+			critics = append(critics, name)
+			continue
+		}
+		outcome, detail, _ := checkVerdict(c, cur.Cycle)
+		rest = append(rest, checkAction{kind: checkEnd, check: name, cycle: cur.Cycle, outcome: outcome, detail: detail})
+	}
+	if allJudged {
+		for _, name := range critics {
+			c := states[name]
+			s, started := c.Session(workflow.RoleCritic, cur.Cycle)
+			if !started {
+				starts = append(starts, checkAction{kind: checkStart, check: name, role: workflow.RoleCritic, cycle: cur.Cycle})
+				continue
+			}
+			if outcome, detail, ok := checkVerdict(c, cur.Cycle); ok {
+				rest = append(rest, checkAction{kind: checkEnd, check: name, cycle: cur.Cycle, outcome: outcome, detail: detail})
+				continue
+			}
+			rest = append(rest, checkAction{kind: checkPoll, check: name, role: workflow.RoleCritic, cycle: cur.Cycle, session: s.Session})
+		}
 	}
 	if acts := append(starts, rest...); len(acts) > 0 {
 		return acts
@@ -151,24 +180,63 @@ func nextCheckActions(step workflow.Step, cycles []CheckCycle, states map[string
 		detail: fmt.Sprintf("%d of %d checks passed after %d cycles; failed: %s", passed, len(step.Checks), cur.Cycle, strings.Join(lost, ", "))}}
 }
 
-// checkVerdict is the check's outcome in cycle once its session's work is
-// judged: passed when the session passed having recorded a findings round
-// for the cycle, else failed. A session that passed with no round fails
-// its check ("no findings round"), so it gets no critic and re-runs next
-// cycle. ok is false while the session is unjudged. It is the seam where
-// a check's findings and its critic's verdicts will weigh in.
+// needsCritic says whether the check's session of cycle passed having
+// recorded, in its round for the cycle, a blocker or major finding: only
+// then does a critic weigh in. Minor and nit findings never call one.
+func needsCritic(c CheckState, cycle int) bool {
+	j, judged := c.Judgement(workflow.RoleCheck, cycle)
+	if !judged || j.Outcome != workflow.OutcomePass {
+		return false
+	}
+	r, ok := c.RoundFor(cycle)
+	return ok && len(r.Serious()) > 0
+}
+
+// checkVerdict is the check's outcome in cycle once its session's work,
+// and its critic's if it needs one, is judged. A session that failed
+// fails its check; one that passed with no round for the cycle fails it
+// too ("no findings round"), so it gets no critic and re-runs next cycle.
+// A round with no blocker or major finding passes, with no critic. Else
+// the critic decides: a critic session that failed fails the check
+// ("critic failed"), and otherwise the check fails iff a serious finding
+// stands (Round.Standing: confirmed, or given no verdict). A critic can
+// only confirm or drop the round's findings, never add one. ok is false
+// while a session the outcome waits on is unjudged.
 func checkVerdict(c CheckState, cycle int) (outcome, detail string, ok bool) {
 	j, judged := c.Judgement(workflow.RoleCheck, cycle)
 	if !judged {
 		return "", "", false
 	}
-	if j.Outcome == workflow.OutcomePass {
-		if _, ok := c.RoundFor(cycle); !ok {
-			return CheckFailed, fmt.Sprintf("cycle %d: no findings round", cycle), true
-		}
+	if j.Outcome != workflow.OutcomePass {
+		return CheckFailed, fmt.Sprintf("cycle %d: check failed: %s", cycle, j.Detail), true
+	}
+	r, ok := c.RoundFor(cycle)
+	if !ok {
+		return CheckFailed, fmt.Sprintf("cycle %d: no findings round", cycle), true
+	}
+	serious := r.Serious()
+	if len(serious) == 0 {
 		return CheckPassed, fmt.Sprintf("cycle %d: check passed", cycle), true
 	}
-	return CheckFailed, fmt.Sprintf("cycle %d: check failed: %s", cycle, j.Detail), true
+	cj, judged := c.Judgement(workflow.RoleCritic, cycle)
+	if !judged {
+		return "", "", false
+	}
+	if cj.Outcome != workflow.OutcomePass {
+		return CheckFailed, fmt.Sprintf("cycle %d: critic failed: %s", cycle, cj.Detail), true
+	}
+	if standing := r.Standing(); len(standing) > 0 {
+		var ids []string
+		for _, f := range standing {
+			ids = append(ids, f.ID+" ("+f.Severity+")")
+		}
+		return CheckFailed, fmt.Sprintf("cycle %d: confirmed %s", cycle, strings.Join(ids, ", ")), true
+	}
+	var ids []string
+	for _, f := range serious {
+		ids = append(ids, f.ID)
+	}
+	return CheckPassed, fmt.Sprintf("cycle %d: critic dropped %s", cycle, strings.Join(ids, ", ")), true
 }
 
 // checkStates are step's folded checks, by name.
@@ -327,12 +395,20 @@ func (r *running) startCheck(cr CheckRunner, step workflow.Step, env []string, a
 	if !ok {
 		return errResult(fmt.Errorf("check %s is not in step %q", a.check, step.Name)), true, nil
 	}
+	model := check.Model(a.cycle)
+	if a.role != workflow.RoleCheck {
+		role := step.Role(a.role)
+		if role == nil {
+			return errResult(fmt.Errorf("check %s: step %q has no %s", a.check, step.Name, a.role)), true, nil
+		}
+		model = role.Model(a.cycle)
+	}
 	dir, err := r.openCheckCheckout(cr, a)
 	if err != nil {
 		return errResult(fmt.Errorf("check %s: %v", a.check, err)), true, nil
 	}
 	spec := CheckSpec{
-		Step: step, Role: a.role, Check: check, Cycle: a.cycle, Model: check.Model(a.cycle), Dir: dir,
+		Step: step, Role: a.role, Check: check, Cycle: a.cycle, Model: model, Dir: dir,
 		Env: append(append([]string{}, env...),
 			EnvCheck+"="+a.check, EnvCycle+"="+strconv.Itoa(a.cycle), EnvRole+"="+a.role),
 		Anchor: checkPane(r.checkStates(step.Name)),
@@ -340,7 +416,7 @@ func (r *running) startCheck(cr CheckRunner, step workflow.Step, env []string, a
 	s, err := cr.StartCheck(spec)
 	if err != nil {
 		r.removeCheckout(cr, step, dir)
-		return errResult(fmt.Errorf("check %s: start its session: %v", a.check, err)), true, nil
+		return errResult(fmt.Errorf("check %s: start its %s: %v", a.check, sessionWord(a.role), err)), true, nil
 	}
 	if err := r.append(Entry{
 		Type: TypeCheckSession, Step: step.Name, Check: a.check, Role: a.role, Cycle: a.cycle,
@@ -350,6 +426,15 @@ func (r *running) startCheck(cr CheckRunner, step workflow.Step, env []string, a
 	}
 	r.log("step %s: check %s cycle %d: %s session %s", step.Name, a.check, a.cycle, a.role, s)
 	return result{}, false, nil
+}
+
+// sessionWord names a session of role in an error: "session" for a
+// check's own, "critic session" for its critic's.
+func sessionWord(role string) string {
+	if role == workflow.RoleCheck {
+		return "session"
+	}
+	return role + " session"
 }
 
 // pollCheck polls a's session once. When it has exited or its agent said
