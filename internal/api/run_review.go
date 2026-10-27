@@ -385,9 +385,10 @@ type checkFindingsFile struct {
 // runCheckFindings is run.findings with --check in a review run: it checks
 // each finding, a known severity, a place, a reason and, when it names
 // one, a leaf of the run's change set. Only then does it journal them,
-// numbered f1, f2, ..., as check's next round, in the cycle of the
-// check's latest session (else the step's latest cycle). An empty list is
-// a round with no findings.
+// numbered f1, f2, ..., as check's next round, in the step's latest
+// cycle when that cycle runs check (its session may write before the
+// engine journals it), else the cycle of the check's latest session, else
+// the step's latest cycle. An empty list is a round with no findings.
 func runCheckFindings(ctx *Ctx, rr reviewRun, step workflow.Step, check, file string) (any, error) {
 	const cmd = "run findings --check"
 	var f checkFindingsFile
@@ -438,9 +439,10 @@ func runCheckFindings(ctx *Ctx, rr reviewRun, step workflow.Step, check, file st
 	}
 	cs, _ := rr.state.Check(step.Name, check)
 	cycle := 0
-	if n := len(cs.Sessions); n > 0 {
+	cy, latest := rr.state.LatestCycle(step.Name)
+	if n := len(cs.Sessions); n > 0 && !(latest && slices.Contains(cy.Checks, check)) {
 		cycle = cs.Sessions[n-1].Cycle
-	} else if cy, ok := rr.state.LatestCycle(step.Name); ok {
+	} else if latest {
 		cycle = cy.Cycle
 	}
 	resp := RunFindingsResponse{

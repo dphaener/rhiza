@@ -16,7 +16,29 @@ func (f *fakeRunner) StartCheck(spec CheckSpec) (string, error) {
 		return "", f.checkErr
 	}
 	f.checkSpecs = append(f.checkSpecs, spec)
-	return checkSID(spec.Check.Name, spec.Role, spec.Cycle), nil
+	sid := checkSID(spec.Check.Name, spec.Role, spec.Cycle)
+	if spec.Role == workflow.RoleCheck && !f.noRound[sid] && f.store != nil {
+		// The session's agent records an empty findings round, as `rhiza
+		// run findings --check` does, outside the engine's lock.
+		if err := f.store.Append(runID, Entry{Type: TypeFindings, Step: spec.Step.Name, Check: spec.Check.Name, Cycle: spec.Cycle, At: at(1)}); err != nil {
+			return "", err
+		}
+	}
+	return sid, nil
+}
+
+// checkCheckoutDir is the fake runner's checkout for a check session.
+func checkCheckoutDir(check, role string, cycle int) string {
+	return "/checkouts/check-" + check + "-" + role + "-" + strconv.Itoa(cycle)
+}
+
+func (f *fakeRunner) OpenCheckCheckout(check, role string, cycle int, commit string) (string, error) {
+	if f.checkoutErr != nil {
+		return "", f.checkoutErr
+	}
+	dir := checkCheckoutDir(check, role, cycle)
+	f.checkouts = append(f.checkouts, "open "+dir+" "+commit)
+	return dir, nil
 }
 
 // checkSID is the fake runner's session ID for a check session.
@@ -225,8 +247,10 @@ func TestChecksStepResumeRejoins(t *testing.T) {
 		{Type: TypeEntered, Step: "review", Visit: 1},
 		{Type: TypeCheckCycle, Step: "review", Cycle: 1, Checks: threeChecks},
 		{Type: TypeCheckSession, Step: "review", Check: "alpha", Role: "check", Cycle: 1, Session: checkSID("alpha", "check", 1)},
+		{Type: TypeFindings, Step: "review", Check: "alpha", Cycle: 1},
 		{Type: TypeCheckJudged, Step: "review", Check: "alpha", Role: "check", Cycle: 1, Outcome: "pass"},
 		{Type: TypeCheckSession, Step: "review", Check: "beta", Role: "check", Cycle: 1, Session: checkSID("beta", "check", 1)},
+		{Type: TypeFindings, Step: "review", Check: "beta", Cycle: 1},
 	} {
 		en.At = at(1)
 		if err := e.Store.Append(runID, en); err != nil {
@@ -436,5 +460,166 @@ func TestDeriveStatusChecks(t *testing.T) {
 	}
 	if !reflect.DeepEqual(rep.Live, want) {
 		t.Errorf("Live = %+v\nwant %+v", rep.Live, want)
+	}
+}
+
+// Each check session works in a checkout of the run worktree's HEAD,
+// opened before it starts and journalled as its check-session's detail,
+// and removed once the session is judged, pass or fail.
+func TestChecksStepCheckouts(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	passChecks(r, 1, "beta", "gamma")
+	r.outcome[checkSID("alpha", "check", 1)] = workflow.OutcomeFail
+	passChecks(r, 2, "alpha")
+	r.onPoll = func(session string, n int) {
+		if n == 0 && session == checkSID("alpha", "check", 1) && len(r.checkouts) != 3 {
+			t.Errorf("checkouts at alpha's first poll = %v, want 3 opened", r.checkouts)
+		}
+	}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	a1, b1, g1, a2 := checkCheckoutDir("alpha", "check", 1), checkCheckoutDir("beta", "check", 1), checkCheckoutDir("gamma", "check", 1), checkCheckoutDir("alpha", "check", 2)
+	want := []string{
+		"open " + a1 + " " + fakeHead, "open " + b1 + " " + fakeHead, "open " + g1 + " " + fakeHead,
+		"remove " + a1, "remove " + b1, "remove " + g1,
+		"open " + a2 + " " + fakeHead, "remove " + a2,
+	}
+	if !reflect.DeepEqual(r.checkouts, want) {
+		t.Errorf("checkouts =\n%v\nwant\n%v", r.checkouts, want)
+	}
+	var dirs []string
+	for _, sp := range r.checkSpecs {
+		dirs = append(dirs, sp.Dir)
+	}
+	if !reflect.DeepEqual(dirs, []string{a1, b1, g1, a2}) {
+		t.Errorf("spec dirs = %v", dirs)
+	}
+	c, _ := st.Check("review", "alpha")
+	if s, ok := c.Session("check", 2); !ok || s.Detail != a2 {
+		t.Errorf("alpha's cycle 2 session = %+v", s)
+	}
+}
+
+// A resume removes the checkout of every judged check session, which a
+// killed run never reached, and keeps a live one's.
+func TestChecksStepCheckoutResume(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	passChecks(r, 1, threeChecks...)
+	a1, b1 := checkCheckoutDir("alpha", "check", 1), checkCheckoutDir("beta", "check", 1)
+	for _, en := range []Entry{
+		{Type: TypeEntered, Step: "review", Visit: 1},
+		{Type: TypeCheckCycle, Step: "review", Cycle: 1, Checks: threeChecks},
+		{Type: TypeCheckSession, Step: "review", Check: "alpha", Role: "check", Cycle: 1, Session: checkSID("alpha", "check", 1), Detail: a1},
+		{Type: TypeFindings, Step: "review", Check: "alpha", Cycle: 1},
+		{Type: TypeCheckJudged, Step: "review", Check: "alpha", Role: "check", Cycle: 1, Outcome: "pass"},
+		{Type: TypeCheckSession, Step: "review", Check: "beta", Role: "check", Cycle: 1, Session: checkSID("beta", "check", 1), Detail: b1},
+		{Type: TypeFindings, Step: "review", Check: "beta", Cycle: 1},
+	} {
+		en.At = at(1)
+		if err := e.Store.Append(runID, en); err != nil {
+			t.Fatal(err)
+		}
+	}
+	r.onPoll = func(session string, n int) {
+		if session == checkSID("beta", "check", 1) && n == 0 && !reflect.DeepEqual(r.checkouts[:1], []string{"remove " + a1}) {
+			t.Errorf("checkouts at beta's first poll = %v, want alpha's removed first", r.checkouts)
+		}
+	}
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	g1 := checkCheckoutDir("gamma", "check", 1)
+	want := []string{"remove " + a1, "open " + g1 + " " + fakeHead, "remove " + b1, "remove " + g1}
+	if !reflect.DeepEqual(r.checkouts, want) {
+		t.Errorf("checkouts = %v, want %v", r.checkouts, want)
+	}
+}
+
+// A checkout that cannot open ends the step with an error outcome; a
+// session that cannot start has its checkout removed; a checkout that
+// cannot be removed is logged, never fatal; and when the step ends on a
+// failure, the checkout of each exited session not yet judged goes too.
+func TestChecksStepCheckoutErrors(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	r.checkoutErr = errors.New("disk full")
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:error"}) || !strings.Contains(st.Steps[0].Detail, "check alpha: check out") {
+		t.Errorf("open fails: %v %q", got, st.Steps[0].Detail)
+	}
+	if len(r.checkSpecs) != 0 {
+		t.Errorf("a session started without its checkout: %+v", r.checkSpecs)
+	}
+
+	e, r, _, _ = setup(t, checksWF)
+	r.checkErr = errors.New("no tab")
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	a1 := checkCheckoutDir("alpha", "check", 1)
+	if want := []string{"open " + a1 + " " + fakeHead, "remove " + a1}; !reflect.DeepEqual(r.checkouts, want) {
+		t.Errorf("start fails: checkouts = %v, want %v", r.checkouts, want)
+	}
+
+	e, r, _, _ = setup(t, checksWF)
+	passChecks(r, 1, threeChecks...)
+	r.removeErr = errors.New("busy")
+	st, err = e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+		t.Errorf("remove fails: outcomes = %v", got)
+	}
+
+	e, r, _, _ = setup(t, checksWF)
+	r.agentErr[checkSID("alpha", "check", 1)] = errors.New("gone")
+	r.agentSeq[checkSID("alpha", "check", 1)] = []AgentStatus{}
+	st, err = e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:error"}) {
+		t.Fatalf("poll fails: outcomes = %v", got)
+	}
+	b1, g1 := checkCheckoutDir("beta", "check", 1), checkCheckoutDir("gamma", "check", 1)
+	got := r.checkouts[3:]
+	if want := []string{"remove " + b1, "remove " + g1}; !reflect.DeepEqual(got, want) {
+		t.Errorf("poll fails: removals = %v, want %v (alpha's session is not known to have exited)", got, want)
+	}
+}
+
+// D10: a check whose session passed but recorded no findings round for
+// its cycle fails, with no critic, and re-runs in the next cycle.
+func TestChecksStepNoFindingsRound(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	passChecks(r, 1, threeChecks...)
+	passChecks(r, 2, "alpha")
+	r.noRound[checkSID("alpha", "check", 1)] = true
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	a, _ := st.Check("review", "alpha")
+	if len(a.Outcomes) != 2 || a.Outcomes[0].Outcome != CheckFailed || a.Outcomes[0].Detail != "cycle 1: no findings round" || a.Outcomes[1].Outcome != CheckPassed {
+		t.Errorf("alpha's outcomes = %+v", a.Outcomes)
+	}
+	for _, sp := range r.checkSpecs {
+		if sp.Role != workflow.RoleCheck {
+			t.Errorf("a %s session started: %+v", sp.Role, sp)
+		}
+	}
+	if len(r.checkSpecs) != 4 {
+		t.Errorf("%d sessions started, want 4", len(r.checkSpecs))
 	}
 }

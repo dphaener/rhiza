@@ -19,6 +19,12 @@ type CheckRunner interface {
 	LeafRunner
 	// StartCheck launches the session spec names and returns its ID.
 	StartCheck(spec CheckSpec) (session string, err error)
+	// OpenCheckCheckout adds a throwaway detached worktree at commit,
+	// where check's session in role on cycle works, and returns its path.
+	// Its path is check's, role's and cycle's alone, apart from every
+	// leaf verifier's checkout. It never touches the run's worktree; the
+	// LeafRunner's RemoveCheckout removes it.
+	OpenCheckCheckout(check, role string, cycle int, commit string) (dir string, err error)
 }
 
 // CheckSpec is one check session to launch: role Role (check) of checks
@@ -26,7 +32,8 @@ type CheckRunner interface {
 // run, "" for the agent's default, from the check's ladder at Cycle. Env
 // holds the session's RHIZA_* variables, the step's plus RHIZA_CHECK,
 // RHIZA_CYCLE and RHIZA_ROLE. Dir is where the session works, "" for the
-// run's worktree. Anchor is the check session whose pane the session's
+// run's worktree: the engine gives each session a throwaway checkout of
+// the run worktree's HEAD (OpenCheckCheckout). Anchor is the check session whose pane the session's
 // pane splits, the split's direction following Step's split; "" opens the
 // change set's tab anew. Its prompt names only the change set and the
 // check: the Runner renders Check's prompt, nothing more.
@@ -145,15 +152,20 @@ func nextCheckActions(step workflow.Step, cycles []CheckCycle, states map[string
 }
 
 // checkVerdict is the check's outcome in cycle once its session's work is
-// judged: passed when the session passed, else failed; ok false while the
-// session is unjudged. It is the seam where a check's findings and its
-// critic's verdicts will weigh in.
+// judged: passed when the session passed having recorded a findings round
+// for the cycle, else failed. A session that passed with no round fails
+// its check ("no findings round"), so it gets no critic and re-runs next
+// cycle. ok is false while the session is unjudged. It is the seam where
+// a check's findings and its critic's verdicts will weigh in.
 func checkVerdict(c CheckState, cycle int) (outcome, detail string, ok bool) {
 	j, judged := c.Judgement(workflow.RoleCheck, cycle)
 	if !judged {
 		return "", "", false
 	}
 	if j.Outcome == workflow.OutcomePass {
+		if _, ok := c.RoundFor(cycle); !ok {
+			return CheckFailed, fmt.Sprintf("cycle %d: no findings round", cycle), true
+		}
 		return CheckPassed, fmt.Sprintf("cycle %d: check passed", cycle), true
 	}
 	return CheckFailed, fmt.Sprintf("cycle %d: check failed: %s", cycle, j.Detail), true
@@ -200,6 +212,7 @@ func (r *running) checks(step workflow.Step, env []string) (result, error) {
 	if !ok {
 		return errResult(fmt.Errorf("step %q is a checks step, and this runner cannot run checks", step.Name)), nil
 	}
+	r.removeCheckCheckouts(cr, step, false)
 	res, err := r.conductChecks(cr, step, env)
 	if err != nil {
 		return res, err
@@ -207,7 +220,59 @@ func (r *running) checks(step workflow.Step, env []string) (result, error) {
 	if err := r.closeEndedCheckPanes(cr, step); err != nil {
 		return result{}, err
 	}
+	r.removeCheckCheckouts(cr, step, true)
 	return res, nil
+}
+
+// openCheckCheckout opens the throwaway checkout a's session works in: a
+// detached worktree at the run worktree's HEAD, named for a's check, role
+// and cycle. Check and critic sessions alike work in one.
+func (r *running) openCheckCheckout(cr CheckRunner, a checkAction) (string, error) {
+	head, err := cr.Head()
+	if err != nil {
+		return "", fmt.Errorf("read the worktree's HEAD: %v", err)
+	}
+	dir, err := cr.OpenCheckCheckout(a.check, a.role, a.cycle, head)
+	if err != nil {
+		return "", fmt.Errorf("check out %s for its %s: %v", head, a.role, err)
+	}
+	return dir, nil
+}
+
+// removeCheckCheckout removes the checkout of check's session in role on
+// cycle, if the journal names one. A failure is logged, never fatal.
+func (r *running) removeCheckCheckout(cr CheckRunner, step workflow.Step, check, role string, cycle int) {
+	if s, ok := r.checkStates(step.Name)[check].Session(role, cycle); ok && s.Detail != "" {
+		r.removeCheckout(cr, step, s.Detail)
+	}
+}
+
+// removeCheckCheckouts removes the checkout of every judged session of
+// step, whatever its role: on a resume (atEnd false), one whose removal a
+// killed run never reached. As the step ends (atEnd true) it removes
+// instead that of each session not yet judged whose process has exited,
+// one the step ended on before judging it. A live session keeps its
+// checkout.
+func (r *running) removeCheckCheckouts(cr CheckRunner, step workflow.Step, atEnd bool) {
+	for _, c := range r.j.State().Checks {
+		if c.Step != step.Name {
+			continue
+		}
+		for _, s := range c.Sessions {
+			if s.Detail == "" {
+				continue
+			}
+			_, judged := c.Judgement(s.Role, s.Cycle)
+			switch {
+			case judged && !atEnd:
+				r.removeCheckout(cr, step, s.Detail)
+			case !judged && atEnd:
+				if st, err := r.e.Runner.AgentStatus(s.Session); err == nil && st.Done {
+					r.removeCheckout(cr, step, s.Detail)
+				}
+			}
+		}
+	}
 }
 
 // conductChecks is the checks step's loop, as checks describes.
@@ -240,7 +305,7 @@ func (r *running) conductChecks(cr CheckRunner, step workflow.Step, env []string
 				r.log("step %s: check %s cycle %d: %s", step.Name, a.check, a.cycle, a.outcome)
 				progressed = true
 			case checkPoll:
-				judged, res, ended, err := r.pollCheck(step, a)
+				judged, res, ended, err := r.pollCheck(cr, step, a)
 				if err != nil || ended {
 					return res, err
 				}
@@ -254,21 +319,27 @@ func (r *running) conductChecks(cr CheckRunner, step workflow.Step, env []string
 }
 
 // startCheck launches a's session, on the check's model for the cycle, in
-// a pane checkPane places, and journals its check-session entry. A launch
+// a pane checkPane places and in a checkout openCheckCheckout opens, and
+// journals its check-session entry, the checkout as its detail. A launch
 // that fails ends the step (failed true) with an error outcome.
 func (r *running) startCheck(cr CheckRunner, step workflow.Step, env []string, a checkAction) (result, bool, error) {
 	check, ok := step.Check(a.check)
 	if !ok {
 		return errResult(fmt.Errorf("check %s is not in step %q", a.check, step.Name)), true, nil
 	}
+	dir, err := r.openCheckCheckout(cr, a)
+	if err != nil {
+		return errResult(fmt.Errorf("check %s: %v", a.check, err)), true, nil
+	}
 	spec := CheckSpec{
-		Step: step, Role: a.role, Check: check, Cycle: a.cycle, Model: check.Model(a.cycle),
+		Step: step, Role: a.role, Check: check, Cycle: a.cycle, Model: check.Model(a.cycle), Dir: dir,
 		Env: append(append([]string{}, env...),
 			EnvCheck+"="+a.check, EnvCycle+"="+strconv.Itoa(a.cycle), EnvRole+"="+a.role),
 		Anchor: checkPane(r.checkStates(step.Name)),
 	}
 	s, err := cr.StartCheck(spec)
 	if err != nil {
+		r.removeCheckout(cr, step, dir)
 		return errResult(fmt.Errorf("check %s: start its session: %v", a.check, err)), true, nil
 	}
 	if err := r.append(Entry{
@@ -282,11 +353,13 @@ func (r *running) startCheck(cr CheckRunner, step workflow.Step, env []string, a
 }
 
 // pollCheck polls a's session once. When it has exited or its agent said
-// done, it journals the session's judgement (judged true) and reports
-// its end to the Runner. A live session's block is journalled and
+// done, it reads the journal again (the session's `rhiza run findings`
+// appended to it without the run's lock), journals the session's
+// judgement (judged true), removes its checkout whatever the judgement,
+// and reports its end to the Runner. A live session's block is journalled and
 // notified as an agent step's, and in an autonomous run its question goes
 // to the arbiter; a failed verdict ends the step (ended true) with res.
-func (r *running) pollCheck(step workflow.Step, a checkAction) (judged bool, res result, ended bool, err error) {
+func (r *running) pollCheck(cr CheckRunner, step workflow.Step, a checkAction) (judged bool, res result, ended bool, err error) {
 	status, err := r.e.Runner.AgentStatus(a.session)
 	if err != nil {
 		if err := r.unblock(step.Name, a.session); err != nil {
@@ -305,12 +378,18 @@ func (r *running) pollCheck(step workflow.Step, a checkAction) (judged bool, res
 				outcome = workflow.OutcomeFail
 			}
 		}
+		j, err := r.e.Store.Read(r.j.ID)
+		if err != nil {
+			return false, result{}, false, err
+		}
+		r.j = j
 		if err := r.append(Entry{
 			Type: TypeCheckJudged, Step: step.Name, Check: a.check, Role: a.role, Cycle: a.cycle, Outcome: outcome, Detail: detail,
 		}); err != nil {
 			return false, result{}, false, err
 		}
 		r.log("step %s: check %s cycle %d: %s %s", step.Name, a.check, a.cycle, a.role, outcome)
+		r.removeCheckCheckout(cr, step, a.check, a.role, a.cycle)
 		if err := r.e.Runner.AgentEnded(step, a.session); err != nil {
 			r.log("step %s: %v", step.Name, err)
 		}

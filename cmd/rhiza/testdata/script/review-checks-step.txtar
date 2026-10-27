@@ -7,7 +7,8 @@
 #
 # The fake rex runs the tab's command synchronously in the window's
 # directory, then prints a window; the fake claude logs its role, check,
-# cycle and prompt, and fails as check beta in cycle 1.
+# cycle and prompt, and fails as check beta in cycle 1; otherwise it
+# records an empty findings round, as a passing check must.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -47,7 +48,7 @@ stdout '^3$'
 
 exec rhiza run status
 stdout '^- review \(visit 1\): pass, then end: 3 of 3 checks passed$'
-stdout '\n## Checks\n\n- alpha \(step review\): passed after 1 cycle\n  - cycle 1: passed, check session [0-9a-f-]{36} pass \(exit 0\)\n- beta \(step review\): passed after 2 cycles\n  - cycle 1: failed, check session [0-9a-f-]{36} fail \(exit 1\)\n  - cycle 2: passed, check session [0-9a-f-]{36} pass \(exit 0\)\n- gamma \(step review\): passed after 1 cycle\n  - cycle 1: passed, check session [0-9a-f-]{36} pass \(exit 0\)\n'
+stdout '\n## Checks\n\n- alpha \(step review\): passed after 1 cycle\n  - cycle 1: passed, check session [0-9a-f-]{36} pass \(exit 0\)\n  - round 1 \(cycle 1\): no findings\n- beta \(step review\): passed after 2 cycles\n  - cycle 1: failed, check session [0-9a-f-]{36} fail \(exit 1\)\n  - cycle 2: passed, check session [0-9a-f-]{36} pass \(exit 0\)\n  - round 1 \(cycle 2\): no findings\n- gamma \(step review\): passed after 1 cycle\n  - cycle 1: passed, check session [0-9a-f-]{36} pass \(exit 0\)\n  - round 1 \(cycle 1\): no findings\n'
 
 exec rhiza run status --json
 stdout -count=3 '"check": "(alpha|beta|gamma)",'
@@ -57,6 +58,8 @@ stdout '"role": "check",'
 
 fold-ok
 
+-- empty.json --
+{"findings":[]}
 -- review.toml --
 [step.review]
 kind = "checks"
@@ -103,4 +106,5 @@ echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
 for a; do last=$a; done
 echo "role=$RHIZA_ROLE check=$RHIZA_CHECK cycle=$RHIZA_CYCLE leaf=$RHIZA_LEAF prompt=$last" >> "$WORK/claude.log"
 [ "$RHIZA_CHECK" = beta ] && [ "$RHIZA_CYCLE" = 1 ] && exit 1
+rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty.json" >&2 || exit 1
 exit 0

@@ -64,3 +64,12 @@ func (r *stepRunner) StartCheck(spec run.CheckSpec) (string, error) {
 	}
 	return resp.(SessionStartResponse).Session.ID, nil
 }
+
+// OpenCheckCheckout adds a throwaway detached worktree at commit where
+// check's session in role on cycle works, as OpenCheckout does a
+// verifier's: under the git common dir's rhiza/checkouts, in a folder of
+// the run's own (<run>/<check>-<role>-<cycle>), so it never meets a leaf
+// verifier's <run>-<leaf>-<attempt>. The run's worktree is never touched.
+func (r *stepRunner) OpenCheckCheckout(check, role string, cycle int, commit string) (string, error) {
+	return r.openCheckout(filepath.Join(r.run, fmt.Sprintf("%s-%s-%d", check, role, cycle)), commit)
+}

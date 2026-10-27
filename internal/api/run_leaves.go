@@ -573,12 +573,19 @@ func evidenceEntries(m Model, sets []changeset.ChangeSet, leaf, actor id.ID) []e
 // journalled) is removed first. The build worktree's index and files are
 // never touched: a new worktree has its own.
 func (r *stepRunner) OpenCheckout(leaf run.Leaf, attempt int, commit string) (string, error) {
+	return r.openCheckout(fmt.Sprintf("%s-%s-%d", r.run, leaf.Handle, attempt), commit)
+}
+
+// openCheckout adds a throwaway detached worktree at commit at name under
+// the git common dir's rhiza/checkouts, as OpenCheckout describes, and
+// returns its path.
+func (r *stepRunner) openCheckout(name, commit string) (string, error) {
 	out, err := r.worktreeGit("rev-parse", "--path-format=absolute", "--git-common-dir")
 	if err != nil {
 		return "", err
 	}
 	common := strings.TrimSpace(out)
-	dir := filepath.Join(common, "rhiza", "checkouts", fmt.Sprintf("%s-%s-%d", r.run, leaf.Handle, attempt))
+	dir := filepath.Join(common, "rhiza", "checkouts", name)
 	if err := os.MkdirAll(filepath.Dir(dir), 0o755); err != nil {
 		return "", fmt.Errorf("checkout folder: %v", err)
 	}

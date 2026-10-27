@@ -22,6 +22,9 @@ type statusLeafRunner struct {
 	polls  map[string][]run.AgentStatus // by session
 	fail   map[string]bool              // by leaf handle: every session exits 1
 	code   int
+	// store is the run's journal, where each check session records an
+	// empty findings round as it starts, so a check that passes has one.
+	store *run.Store
 }
 
 func statusSID(spec run.LeafSpec) string {
@@ -78,7 +81,16 @@ func (f *statusLeafRunner) LeafAnswer(string) (string, string, bool, error) {
 }
 func (f *statusLeafRunner) ClosePane(string) error { return nil }
 func (f *statusLeafRunner) StartCheck(spec run.CheckSpec) (string, error) {
+	if f.store != nil {
+		e := run.Entry{Type: run.TypeFindings, Step: spec.Step.Name, Check: spec.Check.Name, Cycle: spec.Cycle}
+		if err := f.store.Append("R1", e); err != nil {
+			return "", err
+		}
+	}
 	return spec.Check.Name + "-" + spec.Role + "-" + strconv.Itoa(spec.Cycle), nil
+}
+func (f *statusLeafRunner) OpenCheckCheckout(check, role string, cycle int, _ string) (string, error) {
+	return "/checkouts/" + check + "-" + role + "-" + strconv.Itoa(cycle), nil
 }
 
 // statusRun runs workflow src over f with Rex reporting as run.start
@@ -94,6 +106,7 @@ func statusRun(t *testing.T, src string, f *statusLeafRunner) []map[string]strin
 	if err := run.Start(store, "R1", run.Started{Workflow: "wf", Definition: src, Change: "CS1", Title: "Status runs"}, now, def); err != nil {
 		t.Fatal(err)
 	}
+	f.store = store
 	rex := &bytes.Buffer{}
 	e := &run.Engine{Store: store, Runner: f, Clock: noSleep{}, Now: func() time.Time { return now }}
 	reportToRex(e, rex)
