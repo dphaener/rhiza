@@ -40,6 +40,8 @@ const (
 	// TypeLeafRound gives a failed leaf a fresh round of attempts, once a
 	// Decision answers the question its failure raised.
 	TypeLeafRound = "leaf-round"
+	// TypePaneClosed records that a leaf session's pane was closed.
+	TypePaneClosed = "pane-closed"
 )
 
 // Leaf outcomes, a leaf entry's Outcome.
@@ -158,6 +160,9 @@ type Block struct {
 //	           Leaf gets a fresh round of MaxAttempts attempts: Decision, by
 //	           handle, answers Question, which its failure raised; the leaf is
 //	           open again, and the step's skipped leaves with it)
+//	pane-closed: Step, Leaf, Handle, Session (the pane of leaf session Session was
+//	           closed: its session passed, the next builder took its place, or
+//	           its leaves step ended)
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -372,14 +377,20 @@ func (a Arbitration) Open() bool { return a.Outcome == "" }
 // LeafSession is one leaf-session entry: a session of role Role (builder
 // or verifier) on the leaf's attempt Attempt. A builder's Commit is the
 // worktree's HEAD when it started; a verifier's is the commit it checks.
+//
+// Seq is the position of its entry in the journal, which orders a step's
+// sessions across leaves. PaneClosed is true once a pane-closed entry
+// names the session: its pane is gone from the change set's tab.
 type LeafSession struct {
-	Role    string
-	Attempt int
-	Session string
-	Model   string
-	Commit  string
-	Detail  string
-	At      time.Time
+	Role       string
+	Attempt    int
+	Session    string
+	Model      string
+	Commit     string
+	Detail     string
+	At         time.Time
+	Seq        int
+	PaneClosed bool
 }
 
 // LeafAttempt is one leaf-attempt entry: role Role's session of attempt
@@ -652,7 +663,7 @@ func (st *State) leaf(e Entry) *LeafState {
 // State folds the journal.
 func (j Journal) State() State {
 	st := State{ID: j.ID, Visits: map[string]int{}, Session: map[string]string{}, Tokens: map[string]TokenUse{}}
-	for _, e := range j.Entries {
+	for seq, e := range j.Entries {
 		switch e.Type {
 		case TypeStarted:
 			st.StartedAt = e.At
@@ -690,6 +701,7 @@ func (j Journal) State() State {
 			l := st.leaf(e)
 			l.Sessions = append(l.Sessions, LeafSession{
 				Role: e.Role, Attempt: e.Attempt, Session: e.Session, Model: e.Model, Commit: e.Commit, Detail: e.Detail, At: e.At,
+				Seq: seq,
 			})
 			st.addSession(e.Step, e.Session)
 		case TypeLeafAttempt:
@@ -698,6 +710,13 @@ func (j Journal) State() State {
 		case TypeLeaf:
 			l := st.leaf(e)
 			l.Outcome, l.Question, l.QuestionHandle, l.Commit, l.Detail = e.Outcome, e.Question, e.QuestionHandle, e.Commit, e.Detail
+		case TypePaneClosed:
+			l := st.leaf(e)
+			for i := range l.Sessions {
+				if l.Sessions[i].Session == e.Session {
+					l.Sessions[i].PaneClosed = true
+				}
+			}
 		case TypeLeafRound:
 			l := st.leaf(e)
 			l.Rounds = append(l.Rounds, LeafRound{

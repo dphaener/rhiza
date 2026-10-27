@@ -165,6 +165,9 @@ func (g *gitLeafRunner) CommitEvidence(leaf run.Leaf, _ string) (string, error) 
 	return "E-" + leaf.Handle, nil
 }
 
+// ClosePane closes nothing: its sessions are fakes with no pane.
+func (g *gitLeafRunner) ClosePane(string) error { return nil }
+
 type noSleep struct{}
 
 func (noSleep) Now() time.Time      { return time.Date(2026, 10, 27, 0, 0, 0, 0, time.UTC) }

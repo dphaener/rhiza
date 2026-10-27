@@ -99,6 +99,14 @@ func (f *fakeRunner) RemoveCheckout(dir string) error {
 	return f.removeErr
 }
 
+func (f *fakeRunner) ClosePane(session string) error {
+	if f.closeErr != nil {
+		return f.closeErr
+	}
+	f.closed = append(f.closed, session)
+	return nil
+}
+
 // leafSID is the fake runner's session ID for a leaf session.
 func leafSID(handle, role string, attempt int) string {
 	return "S-" + handle + "-" + role + "-" + strconv.Itoa(attempt)

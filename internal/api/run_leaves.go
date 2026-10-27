@@ -78,7 +78,10 @@ func (r *stepRunner) Leaves(ref string) ([]run.Leaf, error) {
 // agent there, with RHIZA_ROOT set to the worktree's Rhiza root so its
 // rhiza writes reach the build worktree's log. Its tab still opens in the
 // worktree: `rhiza session run` writes there too, and the checkout is
-// removed once the session ends while the tab may stay.
+// removed once the session ends while the tab may stay. A spec with an
+// Anchor splits that session's pane, in the direction the step's split
+// gives (auto: along the anchor's longer side); an anchor with no record
+// opens a new tab.
 func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	role := spec.Step.Role(spec.Role)
 	if role == nil {
@@ -95,6 +98,12 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	if spec.Dir != "" {
 		req.dir, req.root = spec.Dir, filepath.Join(t.worktree, t.prefix)
 	}
+	req.split = spec.Step.Split
+	if spec.Anchor != "" {
+		if a, err := r.sessions.Read(spec.Anchor); err == nil {
+			req.anchor = a.Tab
+		}
+	}
 	req.Prompt = leafPrompt(*role, spec, workflow.PromptVars{
 		Change: t.cs.String(), Slug: session.Slug(t.title), Title: t.title, Run: r.run, Step: spec.Step.Name,
 	})
@@ -103,6 +112,18 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 		return "", err
 	}
 	return resp.(SessionStartResponse).Session.ID, nil
+}
+
+// ClosePane closes leaf session sid's pane: the block its record names,
+// with `rex block close`. A session with no block, or a block Rex no
+// longer has, is already closed.
+func (r *stepRunner) ClosePane(sid string) error {
+	rec, err := r.sessions.Read(sid)
+	if err != nil {
+		return err
+	}
+	_, err = closeSessionPane(r.ctx, rec, r.dir())
+	return err
 }
 
 // leafPrompt is role's prompt for spec's session, rendered with vars and

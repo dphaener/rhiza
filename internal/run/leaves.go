@@ -2,6 +2,7 @@ package run
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -52,6 +53,9 @@ type LeafRunner interface {
 	// handle and statement. Any Decision does: the owner's needs no
 	// arbiter wording.
 	LeafAnswer(question string) (decision, statement string, ok bool, err error)
+	// ClosePane closes leaf session session's pane in the change set's
+	// tab. A pane already gone is no error.
+	ClosePane(session string) error
 }
 
 // Leaf is one leaf of a change set: its capability node's ID and handle,
@@ -73,7 +77,9 @@ type Leaf struct {
 // the builder's commit it checks; "" for a builder. Env holds the
 // session's RHIZA_* variables, the step's plus RHIZA_LEAF, RHIZA_ATTEMPT,
 // RHIZA_ROLE and, for a verifier, RHIZA_COMMIT. Dir is, for a verifier,
-// the checkout of Commit it works in; "" for a builder.
+// the checkout of Commit it works in; "" for a builder. Anchor is the
+// leaf session whose pane the session's pane splits, the split's
+// direction following Step's split; "" opens the change set's tab anew.
 type LeafSpec struct {
 	Step         workflow.Step
 	Role         string
@@ -88,6 +94,7 @@ type LeafSpec struct {
 	Question     string
 	Decision     string
 	Answer       string
+	Anchor       string
 }
 
 // The environment variables a leaf session gets beyond a step's.
@@ -302,11 +309,52 @@ func (r *running) leafStates(step string) map[string]LeafState {
 // retry, which keeps the step's leaves) a failed leaf whose question a
 // Decision now answers gets a fresh round (reviveLeaves). In an autonomous
 // run the arbiter answers a leaf's first failure's question at once.
+//
+// Each session runs in a pane of the change set's tab, placed by leafPane.
+// A verifier's pane closes once it passes; a builder's once the next
+// builder takes its place. When the step ends, whatever its outcome, the
+// pane of every judged session still open is closed, so a failed
+// session's pane stays until then, and the checkout of a verifier that
+// exited unjudged is removed. A live session's pane and checkout stay: a
+// resume rejoins it.
 func (r *running) leaves(step workflow.Step, env []string) (result, error) {
 	lr, ok := r.e.Runner.(LeafRunner)
 	if !ok {
 		return errResult(fmt.Errorf("step %q is a leaves step, and this runner cannot run leaves", step.Name)), nil
 	}
+	res, err := r.conductLeaves(lr, step, env)
+	if err != nil {
+		return res, err
+	}
+	if err := r.closeEndedPanes(lr, step); err != nil {
+		return result{}, err
+	}
+	r.removeExitedCheckouts(lr, step)
+	return res, nil
+}
+
+// removeExitedCheckouts removes, as the step ends, the checkout of each
+// verifier of step not yet judged whose process has exited: one the step
+// ended on before it was judged. A verifier still running keeps its
+// checkout; a judged one's went when it was judged.
+func (r *running) removeExitedCheckouts(lr LeafRunner, step workflow.Step) {
+	for _, l := range r.leafStates(step.Name) {
+		for _, s := range l.Sessions {
+			if s.Role != workflow.RoleVerifier || s.Detail == "" {
+				continue
+			}
+			if _, judged := l.Judged(s.Role, s.Attempt); judged {
+				continue
+			}
+			if st, err := r.e.Runner.AgentStatus(s.Session); err == nil && st.Done {
+				r.removeCheckout(lr, step, s.Detail)
+			}
+		}
+	}
+}
+
+// conductLeaves is the leaves step's loop, as leaves describes.
+func (r *running) conductLeaves(lr LeafRunner, step workflow.Step, env []string) (result, error) {
 	leaves, err := lr.Leaves(r.j.State().Change)
 	if err != nil {
 		return errResult(err), nil
@@ -398,6 +446,8 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 		}
 		spec.Dir = dir
 	}
+	anchor, replaces := leafPane(r.leafStates(step.Name), a)
+	spec.Anchor = anchor
 	s, err := lr.StartLeaf(spec)
 	if err != nil {
 		if spec.Dir != "" {
@@ -412,6 +462,11 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 		return result{}, false, err
 	}
 	r.log("step %s: leaf %s attempt %d: %s session %s", step.Name, a.leaf.Handle, a.attempt, a.role, s)
+	if replaces != "" {
+		if err := r.closePane(lr, step, replaces); err != nil {
+			return result{}, false, err
+		}
+	}
 	return result{}, false, nil
 }
 
@@ -471,6 +526,11 @@ func (r *running) pollLeaf(lr LeafRunner, step workflow.Step, a leafAction) (jud
 		r.log("step %s: leaf %s attempt %d: %s %s", step.Name, a.leaf.Handle, a.attempt, a.role, outcome)
 		if s, ok := r.leafStates(step.Name)[a.leaf.ID].Session(a.role, a.attempt); ok && a.role == workflow.RoleVerifier && s.Detail != "" {
 			r.removeCheckout(lr, step, s.Detail)
+		}
+		if a.role == workflow.RoleVerifier && outcome == workflow.OutcomePass {
+			if err := r.closePane(lr, step, a.session); err != nil {
+				return false, result{}, false, err
+			}
 		}
 		if err := r.e.Runner.AgentEnded(step, a.session); err != nil {
 			r.log("step %s: %v", step.Name, err)
@@ -544,6 +604,115 @@ func (r *running) removeEndedCheckouts(lr LeafRunner, step workflow.Step) {
 			}
 		}
 	}
+}
+
+// openPane is a leaf session whose pane is still open, and whether its
+// attempt was judged and passed.
+type openPane struct {
+	s      LeafSession
+	judged bool
+	passed bool
+}
+
+// openPanes are the step's leaf sessions whose panes are open (no
+// pane-closed entry names them), in the order they started.
+func openPanes(states map[string]LeafState) []openPane {
+	var out []openPane
+	for _, l := range states {
+		for _, s := range l.Sessions {
+			if s.PaneClosed {
+				continue
+			}
+			j, judged := l.Judged(s.Role, s.Attempt)
+			out = append(out, openPane{s: s, judged: judged, passed: judged && j.Outcome == workflow.OutcomePass})
+		}
+	}
+	slices.SortFunc(out, func(a, b openPane) int { return a.s.Seq - b.s.Seq })
+	return out
+}
+
+// leafPane is the pure choice of where a's session's pane opens, from the
+// step's leaf states: anchor is the leaf session whose pane it splits ("" for
+// a new tab: no pane of the step is open), and replaces a passed builder
+// whose pane closes once the new one opens. A verifier splits the most
+// recent open verifier pane, so later verifiers share the verifier half;
+// the first one alive splits its builder's pane. A builder splits the
+// most recent open builder pane, and takes its place when that builder
+// passed; a failed builder's pane stays. Failing those, any open pane is
+// split, the most recent first.
+func leafPane(states map[string]LeafState, a leafAction) (anchor, replaces string) {
+	open := openPanes(states)
+	latest := func(role string) (openPane, bool) {
+		for i := len(open) - 1; i >= 0; i-- {
+			if role == "" || open[i].s.Role == role {
+				return open[i], true
+			}
+		}
+		return openPane{}, false
+	}
+	switch a.role {
+	case workflow.RoleVerifier:
+		if p, ok := latest(workflow.RoleVerifier); ok {
+			return p.s.Session, ""
+		}
+		if b, ok := states[a.leaf.ID].Session(workflow.RoleBuilder, a.attempt); ok && !b.PaneClosed {
+			return b.Session, ""
+		}
+	case workflow.RoleBuilder:
+		if p, ok := latest(workflow.RoleBuilder); ok {
+			if p.passed {
+				return p.s.Session, p.s.Session
+			}
+			return p.s.Session, ""
+		}
+	}
+	if p, ok := latest(""); ok {
+		return p.s.Session, ""
+	}
+	return "", ""
+}
+
+// endedPanes are the open panes of the step's judged sessions, in the
+// order they started: those its end closes.
+func endedPanes(states map[string]LeafState) []string {
+	var out []string
+	for _, p := range openPanes(states) {
+		if p.judged {
+			out = append(out, p.s.Session)
+		}
+	}
+	return out
+}
+
+// closeEndedPanes closes the pane of every judged session of step still
+// open (endedPanes).
+func (r *running) closeEndedPanes(lr LeafRunner, step workflow.Step) error {
+	for _, s := range endedPanes(r.leafStates(step.Name)) {
+		if err := r.closePane(lr, step, s); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// closePane closes leaf session session's pane (ClosePane) and journals a
+// pane-closed entry. A failure is logged, never fatal, and leaves the
+// pane open in the journal, so the step's end tries again. The error
+// return is for journal failures.
+func (r *running) closePane(lr LeafRunner, step workflow.Step, session string) error {
+	var leaf LeafState
+	for _, l := range r.leafStates(step.Name) {
+		for _, s := range l.Sessions {
+			if s.Session == session {
+				leaf = l
+			}
+		}
+	}
+	if err := lr.ClosePane(session); err != nil {
+		r.log("step %s: close the pane of session %s: %v", step.Name, session, err)
+		return nil
+	}
+	return r.append(Entry{Type: TypePaneClosed, Step: step.Name, Leaf: leaf.Leaf, Handle: leaf.Handle, Session: session})
 }
 
 // removeCheckout removes a verifier's checkout dir. A failure is logged,

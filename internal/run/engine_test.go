@@ -78,6 +78,8 @@ type fakeRunner struct {
 	// a missing question has no answer.
 	leafAnswers map[string][2]string
 	leafAnswerN map[string]int // LeafAnswer calls per question
+	closed      []string       // the session of each ClosePane call, in order
+	closeErr    error          // ClosePane's error, when set
 }
 
 // fakeEvidence is one leaf's scripted Evidence result.
