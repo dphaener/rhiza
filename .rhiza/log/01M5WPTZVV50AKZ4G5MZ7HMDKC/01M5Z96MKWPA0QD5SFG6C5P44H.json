@@ -1,0 +1,314 @@
+{
+  "actor": "01M5Z93W5W02REHMNNYCDA4KZX",
+  "after": [
+    "01M5Z8XV2VAJ5D9T28QKY870RF"
+  ],
+  "at": "2026-10-27T18:15:46Z",
+  "body": {
+    "drop": [
+      "01M5Z8XTVB49F7QP06YPBJ1YH4"
+    ],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Testscripts with fake agents and a fake gh find a ship-change run waiting at sign-off after green CI with run status naming the PR URL and run summary, moving on to land only after `rhiza run approve`; `run request-changes` with one finding naming a leaf starts a fixer and that leaf's verifier, re-runs only the check it names as a new cycle of review's checks step journaled under the review workflow step of the same run, calls ship open-pr again, waits for CI and waits at sign-off again; both commands still exit 2 on a run not waiting at a sign-off step; an autonomous run reaches land with no wait and an entry with rule autonomous; a failing CI check ends the run failed naming the check, as today.",
+          "statement": "ship-change waits for the owner's sign-off once the PR's CI is green, `rhiza run status` naming the PR's URL and `rhiza run summary`, and this leaf widens `rhiza run approve` and `rhiza run request-changes <file>` from a review run waiting at sign-off to any run waiting at a sign-off step, ship-change's included: `rhiza run approve` moves on to rebase, land and merge, and `rhiza run request-changes <file>` journals the owner's findings as confirmed and runs one fix cycle outside the cap as review does (a fixer per named leaf, then its verifier), then goes back into the review workflow step at review's checks step, which re-runs only the failed checks with review's sign-off still skipped, after which ship open-pr pushes and replaces the PR body, the run waits for CI and returns to ship-change's sign-off; an autonomous run skips the wait and journals the skip with rule autonomous."
+        },
+        "handle": "ship-signoff",
+        "id": "01M5Z8XRQTCA20KGMAN5V3CJ4E",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5Z8XRQTCA20KGMAN4KKZJ5D",
+        "op": "node.create",
+        "parent": "01M5Z8XQC9YFR1TWS0QNGF2HZC"
+      },
+      {
+        "fields": {
+          "options": [
+            "Workflow step kind (Recommended)",
+            "Inline copies",
+            "Nested runs"
+          ],
+          "picked": "Workflow step kind (Recommended)",
+          "question": "How should ship-change run Rhiza's build and review in place of the shipit agent step?",
+          "session": "cb8bd934-a417-493a-aebe-01a17e247ca8",
+          "statement": "How should ship-change run Rhiza's build and review in place of the shipit agent step? — Workflow step kind (Recommended) This departs from four-workflows, which has ship-change's agent step run build then review: ship-change has no agent step, it runs build and review as two `workflow` steps in its own run and journal.",
+          "wording": "the agent's option, picked by the owner in session cb8bd934-a417-493a-aebe-01a17e247ca8"
+        },
+        "handle": "answer-cb8bd934-1",
+        "id": "01M5Z96GNPBDMZK3YCFZE1A3JV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z96GNPBDMZK3YCFVNRP7ME",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z96GNPBDMZK3YCFVNRP7ME",
+        "id": "01M5Z96GTTZM6D1T0HE0WYM0HW",
+        "link": "01M5Z96GTTZM6D1T0HE0AA3HKS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8WDQW7G4Q29WE96XWJEH9",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Before sign-off (Recommended)",
+            "After sign-off",
+            "After build"
+          ],
+          "picked": "Before sign-off (Recommended)",
+          "question": "When does ship-change push the branch and open the pull request?",
+          "session": "cb8bd934-a417-493a-aebe-01a17e247ca8",
+          "statement": "When does ship-change push the branch and open the pull request? — Before sign-off (Recommended)",
+          "wording": "the agent's option, picked by the owner in session cb8bd934-a417-493a-aebe-01a17e247ca8"
+        },
+        "handle": "answer-cb8bd934-2",
+        "id": "01M5Z96GZQ5GDEQM8ZF4DS1VK2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z96GZQ5GDEQM8ZF1XH5HVB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z96GZQ5GDEQM8ZF1XH5HVB",
+        "id": "01M5Z96H4JCHZ7X1BZP88M73FP",
+        "link": "01M5Z96H4JCHZ7X1BZP66V9NQF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8WDQW7G4Q29WE96XWJEH9",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Fix, recheck, repush (Recommended)",
+            "Fix and repush only"
+          ],
+          "picked": "Fix, recheck, repush (Recommended)",
+          "question": "At ship-change's sign-off you run `rhiza run request-changes <file>`. What follows?",
+          "session": "cb8bd934-a417-493a-aebe-01a17e247ca8",
+          "statement": "At ship-change's sign-off you run `rhiza run request-changes <file>`. What follows? — Fix, recheck, repush (Recommended)",
+          "wording": "the agent's option, picked by the owner in session cb8bd934-a417-493a-aebe-01a17e247ca8"
+        },
+        "handle": "answer-cb8bd934-3",
+        "id": "01M5Z96H9EYNS630CYCJEW7T6R",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z96H9EYNS630CYCEYBTE7K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z96H9EYNS630CYCEYBTE7K",
+        "id": "01M5Z96HE9SSZ3601R17ZP4G24",
+        "link": "01M5Z96HE9SSZ3601R16SFRGDG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8WDQW7G4Q29WE96XWJEH9",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Run fails, as today (Recommended)",
+            "CI fixer, capped"
+          ],
+          "picked": "Run fails, as today (Recommended)",
+          "question": "CI fails on the PR (before sign-off, or after a rebase onto main). What does the run do?",
+          "session": "cb8bd934-a417-493a-aebe-01a17e247ca8",
+          "statement": "CI fails on the PR (before sign-off, or after a rebase onto main). What does the run do? — Run fails, as today (Recommended)",
+          "wording": "the agent's option, picked by the owner in session cb8bd934-a417-493a-aebe-01a17e247ca8"
+        },
+        "handle": "answer-cb8bd934-4",
+        "id": "01M5Z96HK52M8M6K82CNZ32AK5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z96HK52M8M6K82CJR6GE2E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z96HK52M8M6K82CJR6GE2E",
+        "id": "01M5Z96HQZ99F1W24X9WM70FR7",
+        "link": "01M5Z96HQZ99F1W24X9V6QH555",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8WDQW7G4Q29WE96XWJEH9",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Replace it (Recommended)",
+            "Keep as fallback"
+          ],
+          "picked": "Replace it (Recommended)",
+          "question": "What happens to the shipit-driven ship-change?",
+          "session": "cb8bd934-a417-493a-aebe-01a17e247ca8",
+          "statement": "What happens to the shipit-driven ship-change? — Replace it (Recommended)",
+          "wording": "the agent's option, picked by the owner in session cb8bd934-a417-493a-aebe-01a17e247ca8"
+        },
+        "handle": "answer-cb8bd934-5",
+        "id": "01M5Z96HWRC492KNBZX7Z1GRA7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z96HWRC492KNBZX7EHBX9R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z96HWRC492KNBZX7EHBX9R",
+        "id": "01M5Z96J1JRS5N7N4T7G4J51SA",
+        "link": "01M5Z96J1JRS5N7N4T7CYRM1VX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8WDQW7G4Q29WE96XWJEH9",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z96GNPBDMZK3YCFVNRP7ME",
+        "id": "01M5Z96J6CGHTQS3NS627G4FRT",
+        "link": "01M5Z96J6CGHTQS3NS614N70AK",
+        "note": "refines four-workflows: ship-change runs build and review as two workflow steps, not through an agent step",
+        "op": "link.create",
+        "to": "01M5WPTKG9YSWM6HVRQSFEWMWN",
+        "type": "relates-to"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XQC9YFR1TWS0QNGF2HZC",
+        "id": "01M5Z96JB6RSBQPG6CV3AECTVQ",
+        "link": "01M5Z96JB6RSBQPG6CV0GERE25",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z96GNPBDMZK3YCFVNRP7ME",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XQC9YFR1TWS0QNGF2HZC",
+        "id": "01M5Z96JFZ7R803J85R75MV18N",
+        "link": "01M5Z96JFZ7R803J85R6PWQ72S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z96GZQ5GDEQM8ZF1XH5HVB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XQC9YFR1TWS0QNGF2HZC",
+        "id": "01M5Z96JMSZHDF6M4BP146VSVB",
+        "link": "01M5Z96JMSZHDF6M4BNY3519VC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z96HWRC492KNBZX7EHBX9R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XQV4XPRTXNA7KE1AKET4",
+        "id": "01M5Z96JSK5TMXCGZQADNFCSEQ",
+        "link": "01M5Z96JSK5TMXCGZQACTBW5CM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z96GNPBDMZK3YCFVNRP7ME",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XR9JBAHCDW9FXRCVJRFW",
+        "id": "01M5Z96JYDMQ8WQ6B03MDBRKSE",
+        "link": "01M5Z96JYDMQ8WQ6B03JGFA6PJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z96GZQ5GDEQM8ZF1XH5HVB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XRQTCA20KGMAN4KKZJ5D",
+        "id": "01M5Z96K3754YHYFZN9PH133K9",
+        "link": "01M5Z96K3754YHYFZN9MYT9NEG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z96GZQ5GDEQM8ZF1XH5HVB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XRQTCA20KGMAN4KKZJ5D",
+        "id": "01M5Z96K8TJ0GKP2NWX9C7XKXN",
+        "link": "01M5Z96K8TJ0GKP2NWX5CRPSM4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z96H9EYNS630CYCEYBTE7K",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XRQTCA20KGMAN4KKZJ5D",
+        "id": "01M5Z96KDN8BWKE82CJRZJJ3BP",
+        "link": "01M5Z96KDN8BWKE82CJRCFSV9R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z96HK52M8M6K82CJR6GE2E",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XSFSMXX93SBZP3ZZPZTQ",
+        "id": "01M5Z96KJHBQN9WK54BSPFM8GY",
+        "link": "01M5Z96KJHBQN9WK54BPXX5XSM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z96HWRC492KNBZX7EHBX9R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "id": "01M5Z96KQDQTMN1TRJPNZ9DQSB",
+        "link": "01M5Z96KQDQTMN1TRJPMMNMA80",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z96GNPBDMZK3YCFVNRP7ME",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "id": "01M5Z96KW9JTZZG1J8CQ77MNGC",
+        "link": "01M5Z96KW9JTZZG1J8CKMXJFZ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z96GZQ5GDEQM8ZF1XH5HVB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "id": "01M5Z96M14YA9C6RXY4BQ88W26",
+        "link": "01M5Z96M14YA9C6RXY4B4N5DT5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z96HWRC492KNBZX7EHBX9R",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5Z96MKWPA0QD5SFG6C5P44H",
+  "type": "ops",
+  "v": 1
+}
