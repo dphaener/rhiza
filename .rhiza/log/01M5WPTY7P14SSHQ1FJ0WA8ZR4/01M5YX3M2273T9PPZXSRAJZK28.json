@@ -1,0 +1,718 @@
+{
+  "actor": "01M5YWFXNVB8MQM2TVY9HF92GN",
+  "after": [
+    "01M5YX1WBWMMCX73VGQ9CAP29E"
+  ],
+  "at": "2026-10-27T14:44:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The build workflow builds a change set's leaves: a builder session and then a fresh verifier session per leaf, in panes of the change set's tab, with only the verifier writing the leaf's Evidence and retries capped on stronger models."
+        },
+        "handle": "build-workflow",
+        "id": "01M5YX3AWPBAH862Q9ZGZZCA32",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5YX3AWPBAH862Q9ZEHM84NW",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3AWPBAH862Q9ZEHM84NW",
+        "id": "01M5YX3B16SZ2VB30CPDKFKR2S",
+        "link": "01M5YX3B16SZ2VB30CPBSDESVY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMRWPNYM2AMVSMDREY04",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3AWPBAH862Q9ZEHM84NW",
+        "id": "01M5YX3B5MPCSPQERBRG3XTKT3",
+        "link": "01M5YX3B5MPCSPQERBRE3HFV8S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Parse tests load a leaves step with both sub-tables and reject one missing builder or verifier, an unknown sub-table key, `models` or `split` on another step kind, and a bad `split` value; an engine test with a fake runner over two leaves finds a journal entry per leaf session, attempt and outcome, and `rhiza run status` shows them per leaf.",
+          "statement": "Workflow files take a `leaves` step kind with `builder` and `verifier` sub-tables (prompt, agent, permission_mode, models) and a `split` setting, and the engine runs it as one step that conducts the run change set's leaves, journaling each leaf's sessions, attempts and outcome."
+        },
+        "handle": "build-leaves-step",
+        "id": "01M5YX3BA0JVJ2PHZ2N8T42Y6B",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5YX3BA0JVJ2PHZ2N4TX9SX9",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3BA0JVJ2PHZ2N4TX9SX9",
+        "id": "01M5YX3BECM4JF4FGJVP32EPXX",
+        "link": "01M5YX3BECM4JF4FGJVJRJ1M7A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMRWPNYM2AMVSMDREY04",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3BA0JVJ2PHZ2N4TX9SX9",
+        "id": "01M5YX3BJNKZ45365AMBT9R8WT",
+        "link": "01M5YX3BJNKZ45365AM8QFWHRY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTNPTV7PZ8EGVV8WM6421",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3BA0JVJ2PHZ2N4TX9SX9",
+        "id": "01M5YX3BQ1DQBM3WHPZHP8ZDV9",
+        "link": "01M5YX3BQ1DQBM3WHPZG6S0FFX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Adapter tests find `--model opus` in the argv for a step naming opus and no `--model` for one naming none; an engine test finds attempts 1, 2 and 3 started on sonnet, opus and opus from `models = [\"sonnet\", \"opus\"]`.",
+          "statement": "An agent step or a leaves sub-table names models by attempt, the last reused past the end of the list, and the Claude adapter starts the session with that model."
+        },
+        "handle": "build-model-ladder",
+        "id": "01M5YX3BVJ20HMXE6GY2A1QWEA",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5YX3BVJ20HMXE6GY00WB69Y",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3BVJ20HMXE6GY00WB69Y",
+        "id": "01M5YX3C01FCQYY5025HT31PBD",
+        "link": "01M5YX3C01FCQYY5025EDBCDEB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMRWPNYM2AMVSMDREY04",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3BVJ20HMXE6GY00WB69Y",
+        "id": "01M5YX3C4HAQQ9NM0WAXECH479",
+        "link": "01M5YX3C4HAQQ9NM0WAW14CH7M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "An engine test with a fake runner over leaves A, B and C, C depending on A, finds B's builder started while A's verifier is still running, and C's builder not started before A's Evidence exists.",
+          "statement": "In a leaves step builders run one at a time in the change set's leaf order, a leaf starting only once every leaf it depends-on has Evidence, while a built leaf's verifier runs alongside the next builder."
+        },
+        "handle": "build-leaf-order",
+        "id": "01M5YX3C91E50NQQES3W5SEYH6",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5YX3C91E50NQQES3SAZGBDB",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3C91E50NQQES3SAZGBDB",
+        "id": "01M5YX3CDHWQZVEQSV5Q1A50V8",
+        "link": "01M5YX3CDHWQZVEQSV5K1MHT9H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMRWPNYM2AMVSMDREY04",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3C91E50NQQES3SAZGBDB",
+        "id": "01M5YX3CHWF51JXBZ08CMCQ4QR",
+        "link": "01M5YX3CHWF51JXBZ08BW3C73E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTP0QZZGT2S0XRWNR402A",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3C91E50NQQES3SAZGBDB",
+        "id": "01M5YX3CP8Q1JCJ7BHS51NCG1M",
+        "link": "01M5YX3CP8Q1JCJ7BHS36TEJBD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3C91E50NQQES3SAZGBDB",
+        "id": "01M5YX3CTJ7GC3RFW74J20DHHA",
+        "link": "01M5YX3CTJ7GC3RFW74HBJ7KEW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3BA0JVJ2PHZ2N4TX9SX9",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "An engine test against a real git repo finds a builder that ends with no new commit, or with one naming another leaf, counted as a failed attempt with that detail, and a builder whose commit names its leaf followed by a verifier given that commit.",
+          "statement": "A builder attempt passes only when it leaves a new commit whose `Leaf:` trailer names its leaf, and a retry adds a fix commit with the same trailer; the verifier starts on that commit."
+        },
+        "handle": "build-leaf-commit",
+        "id": "01M5YX3CYY6077G7P5ZWP6N4AS",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5YX3CYY6077G7P5ZTRA65M9",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3CYY6077G7P5ZTRA65M9",
+        "id": "01M5YX3D3AMGTVGQXNE05X8VND",
+        "link": "01M5YX3D3AMGTVGQXNDYRVWRJX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMRWPNYM2AMVSMDREY04",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3CYY6077G7P5ZTRA65M9",
+        "id": "01M5YX3D7NVNNK0VAQDTM228PW",
+        "link": "01M5YX3D7NVNNK0VAQDTDNHRNZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3CYY6077G7P5ZTRA65M9",
+        "id": "01M5YX3DC23KXVGVJMYN6MX9H2",
+        "link": "01M5YX3DC23KXVGVJMYHW9VFNE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3BA0JVJ2PHZ2N4TX9SX9",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A test finds the verifier session's working directory a detached worktree at the leaf's commit, gone after the session ends whatever its outcome, the Evidence entry it wrote in the build worktree's .rhiza/log, and the builder's uncommitted edits in the build worktree untouched.",
+          "statement": "Each verifier works in a throwaway detached worktree at its leaf's commit, removed once its session ends, while its rhiza writes go into the build worktree's log."
+        },
+        "handle": "build-verifier-checkout",
+        "id": "01M5YX3DGKC5HY4KRTD04GZ725",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5YX3DGKC5HY4KRTCXA5450D",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3DGKC5HY4KRTCXA5450D",
+        "id": "01M5YX3DN17DK8RTSJQ60B2VZP",
+        "link": "01M5YX3DN17DK8RTSJQ46A1HBS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTN2W3ZB386XFG74VKD8B",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3DGKC5HY4KRTCXA5450D",
+        "id": "01M5YX3DSESCG825S9BPSNMEG4",
+        "link": "01M5YX3DSESCG825S9BKYK8GHS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTP0QZZGT2S0XRWNR402A",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3DGKC5HY4KRTCXA5450D",
+        "id": "01M5YX3DXTSNVZNWJZ69AG7MH4",
+        "link": "01M5YX3DXTSNVZNWJZ679TCT93",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3DGKC5HY4KRTCXA5450D",
+        "id": "01M5YX3E2ETEYNQVW4EHTVGRRK",
+        "link": "01M5YX3E2ETEYNQVW4EEFMJ0SR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3CYY6077G7P5ZTRA65M9",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A test with staged and unstaged builder edits in the build worktree finds, after a verifier passes, one new commit holding only the Evidence entry's file, and the builder's edits still staged and unstaged as before.",
+          "statement": "When a verifier passes a leaf, the engine commits only that leaf's Evidence entry's path, as its own chore(rhiza) commit naming the leaf, never the builder's work in the worktree."
+        },
+        "handle": "build-evidence-commit",
+        "id": "01M5YX3E6THKN8CJCSJPH2FQ5K",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5YX3E6THKN8CJCSJKQRFXC2",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3E6THKN8CJCSJKQRFXC2",
+        "id": "01M5YX3EB61ZPHTGPKPDNDK5XQ",
+        "link": "01M5YX3EB61ZPHTGPKPB0R4SSQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTN2W3ZB386XFG74VKD8B",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3E6THKN8CJCSJKQRFXC2",
+        "id": "01M5YX3EFJGAFW5JWQ4E2PZ6R3",
+        "link": "01M5YX3EFJGAFW5JWQ4ADAYWRX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3E6THKN8CJCSJKQRFXC2",
+        "id": "01M5YX3EKWXBRJ0KP7NQG1R0GB",
+        "link": "01M5YX3EKWXBRJ0KP7NMN9M65P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3DGKC5HY4KRTCXA5450D",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Testscripts find `rhiza run findings` with a leaf journal findings against that leaf's current attempt and `rhiza run status` show them; an engine test finds an attempt failed when its verifier ends with neither, and when the leaf's Evidence names the builder's actor.",
+          "statement": "A verifier ends a leaf's attempt with Evidence written as its own actor, or with findings it journals against the leaf and attempt; a verifier that ends with neither fails the attempt, and Evidence written by any other actor does not pass it."
+        },
+        "handle": "build-verifier-findings",
+        "id": "01M5YX3ER7D48Q8364S5E2CBJF",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5YX3ER7D48Q8364S1JXKAW7",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3ER7D48Q8364S1JXKAW7",
+        "id": "01M5YX3EWJN5152YK4MGPZ31RG",
+        "link": "01M5YX3EWJN5152YK4MD5DMN02",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTN2W3ZB386XFG74VKD8B",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3ER7D48Q8364S1JXKAW7",
+        "id": "01M5YX3F0ZJ22RM35AV0NQA0X8",
+        "link": "01M5YX3F0ZJ22RM35ATZAXY0GB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3ER7D48Q8364S1JXKAW7",
+        "id": "01M5YX3F5D1AZBX7R70NREVR4C",
+        "link": "01M5YX3F5D1AZBX7R70K4QMJB9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3BA0JVJ2PHZ2N4TX9SX9",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "An engine test whose verifier fails twice then passes finds three builder sessions on the ladder's models, each prompt naming its attempt, and the leaf passed; one whose verifier fails three times finds no fourth builder and the leaf failed.",
+          "statement": "A failed attempt goes to a fresh builder session on the next model of the ladder, its prompt naming the leaf and the attempt, which reads the earlier attempts' findings from the run; after 3 failed attempts the leaf fails."
+        },
+        "handle": "build-retries",
+        "id": "01M5YX3F9R6BSD6XKKTZP56B1Y",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M5YX3F9R6BSD6XKKTVQXYSDZ",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3F9R6BSD6XKKTVQXYSDZ",
+        "id": "01M5YX3FE5C08Y0W8T62VHQQYB",
+        "link": "01M5YX3FE5C08Y0W8T624GA472",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMRWPNYM2AMVSMDREY04",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3F9R6BSD6XKKTVQXYSDZ",
+        "id": "01M5YX3FJHY2H5FRX4MNAQ5S0F",
+        "link": "01M5YX3FJHY2H5FRX4MM14AEQ8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3F9R6BSD6XKKTVQXYSDZ",
+        "id": "01M5YX3FPZ6Y29P725ZY69669B",
+        "link": "01M5YX3FPZ6Y29P725ZWW2JS7X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3BVJ20HMXE6GY00WB69Y",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3F9R6BSD6XKKTVQXYSDZ",
+        "id": "01M5YX3FVBH1V5FXTZRMS9MT1D",
+        "link": "01M5YX3FVBH1V5FXTZRMHBHQSQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3ER7D48Q8364S1JXKAW7",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3F9R6BSD6XKKTVQXYSDZ",
+        "id": "01M5YX3FZRB39E8XMFWVBA17SC",
+        "link": "01M5YX3FZRB39E8XMFWRFQ3PRT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3CYY6077G7P5ZTRA65M9",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "An engine test over leaves A, B and C, C depending on A and A failing, finds a question blocking A, C skipped, B built and verified, and the run failed; after an answering Decision a resume builds A afresh with the Decision in its prompt and then C; in an autonomous run the arbiter is started on A's question and a second failure of A ends the run failed.",
+          "statement": "A leaf that fails becomes a question linked blocks to it and its dependents are skipped, while leaves that don't depend on it carry on, and the run ends failed once nothing more can proceed; a resume after the question is answered gives the leaf a fresh 3 attempts with the answering Decision in its builder's prompt, and in an autonomous run the arbiter answers at once and the leaf gets that one fresh round."
+        },
+        "handle": "build-leaf-fails",
+        "id": "01M5YX3G453SY3XT0RH18RN2BP",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M5YX3G453SY3XT0RGZ5Z0C4A",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3G453SY3XT0RGZ5Z0C4A",
+        "id": "01M5YX3G8JHF82MVA7J5H4MWRK",
+        "link": "01M5YX3G8JHF82MVA7J4MAM1C6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMRWPNYM2AMVSMDREY04",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3G453SY3XT0RGZ5Z0C4A",
+        "id": "01M5YX3GCYK6KFSRA1A0SWJ885",
+        "link": "01M5YX3GCYK6KFSRA19XB5ZR9W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPMQ4KMTMGSXG178SMBS",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3G453SY3XT0RGZ5Z0C4A",
+        "id": "01M5YX3GHB0DT7MBV36NBWS2BB",
+        "link": "01M5YX3GHB0DT7MBV36MWHCEQP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3G453SY3XT0RGZ5Z0C4A",
+        "id": "01M5YX3GNS9D62AJXMQYZ6EPY9",
+        "link": "01M5YX3GNS9D62AJXMQYGJS4PP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3F9R6BSD6XKKTVQXYSDZ",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests with a fake rex find the split `right` for a landscape pane size, `below` for a portrait one, the override honored, later verifiers splitting the verifier half, a passed session's pane closed, and a failed one's left open until the run ends.",
+          "statement": "A leaves step opens one tab for the change set with the builder in its first pane and each verifier in a pane split along the longer side in pixels (the builder keeping half), unless the step's `split` fixes right or below; a pane closes when its session passes, and a failed or blocked session's pane stays until the run ends."
+        },
+        "handle": "build-panes",
+        "id": "01M5YX3GT71M5KWXZYCZZSTF7Y",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M5YX3GT71M5KWXZYCZA684DF",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3GT71M5KWXZYCZA684DF",
+        "id": "01M5YX3GYJW6DX24Z2509G85TQ",
+        "link": "01M5YX3GYJW6DX24Z24XHG05QA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTNCV49ARCE8JJE2GM65B",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3GT71M5KWXZYCZA684DF",
+        "id": "01M5YX3H2XEAK6HF4BVNQWSPK9",
+        "link": "01M5YX3H2XEAK6HF4BVN6YVFF4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3GT71M5KWXZYCZA684DF",
+        "id": "01M5YX3H7C3QR7V0K18Y3WCGAG",
+        "link": "01M5YX3H7C3QR7V0K18X8NRGJ2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3BA0JVJ2PHZ2N4TX9SX9",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Testscripts find build-check passing on a change set whose leaves each have Evidence by a verifier actor, and failing, naming the leaf, for a leaf with no Evidence and for one whose Evidence's actor wrote a commit with its Leaf: trailer.",
+          "statement": "`rhiza run build-check` passes when every leaf of the run's change set has live Evidence whose actor wrote none of the leaf's commits, and otherwise fails naming each leaf that lacks it."
+        },
+        "handle": "build-check",
+        "id": "01M5YX3HBR6XX5W3QXW9YMEGNE",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M5YX3HBR6XX5W3QXW7PNB5TS",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3HBR6XX5W3QXW7PNB5TS",
+        "id": "01M5YX3HG4VE7Q54JBM5FJM6W9",
+        "link": "01M5YX3HG4VE7Q54JBM35X4J4A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTN2W3ZB386XFG74VKD8B",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3HBR6XX5W3QXW7PNB5TS",
+        "id": "01M5YX3HMHMRK9GN0SJ05AH5QQ",
+        "link": "01M5YX3HMHMRK9GN0SHY3F31QD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "`rhiza guide ls` lists the build topic; a testscript finds the trailer, the outside-work rule, and the Evidence-or-findings rule in it; `rhiza guide install` writes it into the plugin.",
+          "statement": "`rhiza guide build` tells builders and verifiers their part: where to start, the Leaf: trailer, needed outside work as a question and noticed-only work as a discovered-from draft change set never built in the run, and the verifier's Evidence or findings; guide install installs it."
+        },
+        "handle": "build-guide",
+        "id": "01M5YX3HRZCS9HFYWGDSNSNMZW",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M5YX3HRZCS9HFYWGDSC5TGS8",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3HRZCS9HFYWGDSC5TGS8",
+        "id": "01M5YX3HXBSM8W02RPZSTW4GSV",
+        "link": "01M5YX3HXBSM8W02RPZRJPXWTR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMRWPNYM2AMVSMDREY04",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3HRZCS9HFYWGDSC5TGS8",
+        "id": "01M5YX3J1R0KP0TM53XZHF34M8",
+        "link": "01M5YX3J1R0KP0TM53XZ0RN4CK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTN2W3ZB386XFG74VKD8B",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3HRZCS9HFYWGDSC5TGS8",
+        "id": "01M5YX3J63QF4NWY6WX3BXB1XX",
+        "link": "01M5YX3J63QF4NWY6WX2QF2YWG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with fake agents runs `rhiza run start build` on a change set of two leaves, one depending on the other, and finds both built and verified in order, build-check passed, the run done and the change set still accepted; `describe-golden` is regenerated.",
+          "statement": "Rhiza ships a built-in `build` workflow: a leaves step (builder models sonnet, opus, opus; verifier opus; split auto) followed by `rhiza run build-check`, ending done without landing the change set."
+        },
+        "handle": "build-workflow-file",
+        "id": "01M5YX3JAF2HPFAJBN44G2D869",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M5YX3JAF2HPFAJBN420H5JM7",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3JAF2HPFAJBN420H5JM7",
+        "id": "01M5YX3JEY5R3T935PAHK59CMX",
+        "link": "01M5YX3JEY5R3T935PADVY8PKT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTMRWPNYM2AMVSMDREY04",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3JAF2HPFAJBN420H5JM7",
+        "id": "01M5YX3JKCJ9NQ042C7YG9WFKF",
+        "link": "01M5YX3JKCJ9NQ042C7XFHWHT8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTKG9YSWM6HVRQSFEWMWN",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3JAF2HPFAJBN420H5JM7",
+        "id": "01M5YX3JQTQGDB4E99HW0QA5ZM",
+        "link": "01M5YX3JQTQGDB4E99HRCRGA2J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3JAF2HPFAJBN420H5JM7",
+        "id": "01M5YX3JW8YXYZGQ4FS82KKSMY",
+        "link": "01M5YX3JW8YXYZGQ4FS5CG5FR4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3C91E50NQQES3SAZGBDB",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3JAF2HPFAJBN420H5JM7",
+        "id": "01M5YX3K0SR9HZWS1K7QZWC1B8",
+        "link": "01M5YX3K0SR9HZWS1K7QFBHEQ3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3F9R6BSD6XKKTVQXYSDZ",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3JAF2HPFAJBN420H5JM7",
+        "id": "01M5YX3K574TMJNMQQ41Z6P6R9",
+        "link": "01M5YX3K574TMJNMQQ40SZJ4JH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3G453SY3XT0RGZ5Z0C4A",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3JAF2HPFAJBN420H5JM7",
+        "id": "01M5YX3K9KT7CXF6Y5NDBMZ1EZ",
+        "link": "01M5YX3K9KT7CXF6Y5NCB2Z85A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3GT71M5KWXZYCZA684DF",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3JAF2HPFAJBN420H5JM7",
+        "id": "01M5YX3KDZ54S8SFXKGW9EQ0M9",
+        "link": "01M5YX3KDZ54S8SFXKGSZFPCHW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3HBR6XX5W3QXW7PNB5TS",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3JAF2HPFAJBN420H5JM7",
+        "id": "01M5YX3KJE8TBK4C45YTYS5YCW",
+        "link": "01M5YX3KJE8TBK4C45YT30C5N7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3HRZCS9HFYWGDSC5TGS8",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3JAF2HPFAJBN420H5JM7",
+        "id": "01M5YX3KPW1K8ASGQNYW3565KB",
+        "link": "01M5YX3KPW1K8ASGQNYTKKF5P1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3E6THKN8CJCSJKQRFXC2",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5WT1XEJY38RKEE9K473K3V1",
+        "id": "01M5YX3KVAPZ1Y789Y74W87FC4",
+        "link": "01M5YX3KVAPZ1Y789Y73PA9WTX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3BA0JVJ2PHZ2N4TX9SX9",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M5WPTY7P14SSHQ1FJ0WA8ZR4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5YX3M2273T9PPZXSRAJZK28",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,351 @@
+{
+  "actor": "01M5YWFXNVB8MQM2TVY9HF92GN",
+  "after": [
+    "01M5YX3M2273T9PPZXSRAJZK28"
+  ],
+  "at": "2026-10-27T14:49:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "A `leaves` step kind (Recommended)",
+            "Generic for_each on steps",
+            "A command that conducts"
+          ],
+          "picked": "A `leaves` step kind (Recommended)",
+          "question": "How should the build workflow's per-leaf loop sit in the run engine?",
+          "session": "ab54d544-8c72-4c39-ab01-01a17dc7f611",
+          "statement": "How should the build workflow's per-leaf loop sit in the run engine? — A `leaves` step kind (Recommended)",
+          "wording": "the agent's option, picked by the owner in session ab54d544-8c72-4c39-ab01-01a17dc7f611"
+        },
+        "handle": "answer-ab54d544-1",
+        "id": "01M5YXDP69HTCN3BYNMFAA5XZG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5YXDP69HTCN3BYNMC1HDVN3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5YXDP69HTCN3BYNMC1HDVN3",
+        "id": "01M5YXDPAY2BC07WEN1NTHYEAC",
+        "link": "01M5YXDPAY2BC07WEN1KXCP5TE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Detached checkout (Recommended)",
+            "Serial in the worktree"
+          ],
+          "picked": "Detached checkout (Recommended)",
+          "question": "Where does a leaf's verifier run, given the next builder is editing the same worktree?",
+          "session": "ab54d544-8c72-4c39-ab01-01a17dc7f611",
+          "statement": "Where does a leaf's verifier run, given the next builder is editing the same worktree? — Detached checkout (Recommended)",
+          "wording": "the agent's option, picked by the owner in session ab54d544-8c72-4c39-ab01-01a17dc7f611"
+        },
+        "handle": "answer-ab54d544-2",
+        "id": "01M5YXDPFDQ5MJ4S3SXPWGRRH6",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5YXDPFDQ5MJ4S3SXPCXZRTY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5YXDPFDQ5MJ4S3SXPCXZRTY",
+        "id": "01M5YXDPKX2M26H8332PFEYM6M",
+        "link": "01M5YXDPKX2M26H8332NGCEX95",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "3 in all (Recommended)",
+            "1 + 3 retries"
+          ],
+          "picked": "3 in all (Recommended)",
+          "question": "How many builder attempts does a leaf get before it fails?",
+          "session": "ab54d544-8c72-4c39-ab01-01a17dc7f611",
+          "statement": "How many builder attempts does a leaf get before it fails? — 3 in all (Recommended)",
+          "wording": "the agent's option, picked by the owner in session ab54d544-8c72-4c39-ab01-01a17dc7f611"
+        },
+        "handle": "answer-ab54d544-3",
+        "id": "01M5YXDPRC4RR89R6FD1RHV02T",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5YXDPRC4RR89R6FCZ6HQF2E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5YXDPRC4RR89R6FCZ6HQF2E",
+        "id": "01M5YXDPWVF0CKK5Y71ANAC6ZX",
+        "link": "01M5YXDPWVF0CKK5Y717HZBXJV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "sonnet, opus, opus (Recommended)",
+            "opus throughout",
+            "sonnet, opus, fable"
+          ],
+          "picked": "sonnet, opus, opus (Recommended)",
+          "question": "What is the default builder model ladder in build.toml?",
+          "session": "ab54d544-8c72-4c39-ab01-01a17dc7f611",
+          "statement": "What is the default builder model ladder in build.toml? — sonnet, opus, opus (Recommended)",
+          "wording": "the agent's option, picked by the owner in session ab54d544-8c72-4c39-ab01-01a17dc7f611"
+        },
+        "handle": "answer-ab54d544-4",
+        "id": "01M5YXDQ1B8KVS69T81K6B1Z7R",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5YXDQ1B8KVS69T81K5H343V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5YXDQ1B8KVS69T81K5H343V",
+        "id": "01M5YXDQ5V2Y339X0XNS5A1ZC1",
+        "link": "01M5YXDQ5V2Y339X0XNR3NM8BN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Fresh session, journal (Recommended)",
+            "Message the old builder"
+          ],
+          "picked": "Fresh session, journal (Recommended)",
+          "question": "How does a retry builder get the verifier's findings?",
+          "session": "ab54d544-8c72-4c39-ab01-01a17dc7f611",
+          "statement": "How does a retry builder get the verifier's findings? — Fresh session, journal (Recommended)",
+          "wording": "the agent's option, picked by the owner in session ab54d544-8c72-4c39-ab01-01a17dc7f611"
+        },
+        "handle": "answer-ab54d544-5",
+        "id": "01M5YXDQAA3QNYTX32K8WVNBBM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5YXDQAA3QNYTX32K8K85ZEV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5YXDQAA3QNYTX32K8K85ZEV",
+        "id": "01M5YXDQEV43ZBWHVK0QS9DPNT",
+        "link": "01M5YXDQEV43ZBWHVK0N04M274",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Fix commit, same trailer (Recommended)",
+            "Autosquash at the end"
+          ],
+          "picked": "Fix commit, same trailer (Recommended)",
+          "question": "How does a retry commit its fix?",
+          "session": "ab54d544-8c72-4c39-ab01-01a17dc7f611",
+          "statement": "How does a retry commit its fix? — Fix commit, same trailer (Recommended)",
+          "wording": "the agent's option, picked by the owner in session ab54d544-8c72-4c39-ab01-01a17dc7f611"
+        },
+        "handle": "answer-ab54d544-6",
+        "id": "01M5YXDQKBNNMN7YAEVGBMZJP9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5YXDQKBNNMN7YAEVERBKTPE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5YXDQKBNNMN7YAEVERBKTPE",
+        "id": "01M5YXDQQVCJB8NY9GG09MS9AB",
+        "link": "01M5YXDQQVCJB8NY9GFXDXSWAT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Engine, path only (Recommended)",
+            "Next builder's commit"
+          ],
+          "picked": "Engine, path only (Recommended)",
+          "question": "Who commits the verifier's Evidence entry?",
+          "session": "ab54d544-8c72-4c39-ab01-01a17dc7f611",
+          "statement": "Who commits the verifier's Evidence entry? — Engine, path only (Recommended)",
+          "wording": "the agent's option, picked by the owner in session ab54d544-8c72-4c39-ab01-01a17dc7f611"
+        },
+        "handle": "answer-ab54d544-7",
+        "id": "01M5YXDQWBT73S6NM5CQDM3CNK",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5YXDQWBT73S6NM5CP9TZ0R2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5YXDQWBT73S6NM5CP9TZ0R2",
+        "id": "01M5YXDR0TGD8ZWYNJCD5JN9EV",
+        "link": "01M5YXDR0TGD8ZWYNJC967546T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Close on pass (Recommended)",
+            "Keep all until run ends",
+            "Reuse two panes"
+          ],
+          "question": "How do builder and verifier panes live in the change set's tab?",
+          "quote": "I like 1, but let's be smart about splitting panes. For instance, I am using a monitor in portait mode right now so a different split strategy may be desired.",
+          "quote_where": "session ab54d544-8c72-4c39-ab01-01a17dc7f611, answering \"How do builder and verifier panes live in the change set's tab?\"",
+          "session": "ab54d544-8c72-4c39-ab01-01a17dc7f611",
+          "statement": "How do builder and verifier panes live in the change set's tab? — I like 1, but let's be smart about splitting panes. For instance, I am using a monitor in portait mode right now so a different split strategy may be desired."
+        },
+        "handle": "answer-ab54d544-8",
+        "id": "01M5YXDR5BKREGY0XRZNK2JZX3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5YXDR5BKREGY0XRZJPF7P1V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5YXDR5BKREGY0XRZJPF7P1V",
+        "id": "01M5YXDR9VPQD4ZYR7H6C38BHH",
+        "link": "01M5YXDR9VPQD4ZYR7H5PT9G2P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Auto + override (Recommended)",
+            "Auto, no override",
+            "Per-machine setting"
+          ],
+          "picked": "Auto + override (Recommended)",
+          "question": "Is this the split strategy: auto by the pane's pixel shape (longer side), builder keeps half, override in build.toml?",
+          "session": "ab54d544-8c72-4c39-ab01-01a17dc7f611",
+          "statement": "Is this the split strategy: auto by the pane's pixel shape (longer side), builder keeps half, override in build.toml? — Auto + override (Recommended)",
+          "wording": "the agent's option, picked by the owner in session ab54d544-8c72-4c39-ab01-01a17dc7f611"
+        },
+        "handle": "answer-ab54d544-9",
+        "id": "01M5YXDRED740NQPB23HX98XZG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5YXDRED740NQPB23GKGQ2JK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5YXDRED740NQPB23GKGQ2JK",
+        "id": "01M5YXDRJWJ6CC7KK225WDKT52",
+        "link": "01M5YXDRJWJ6CC7KK224EW4A1G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Carry on, end failed (Recommended)",
+            "Stop at first failure"
+          ],
+          "picked": "Carry on, end failed (Recommended)",
+          "question": "When a leaf fails for good, what does the run do?",
+          "session": "ab54d544-8c72-4c39-ab01-01a17dc7f611",
+          "statement": "When a leaf fails for good, what does the run do? — Carry on, end failed (Recommended)",
+          "wording": "the agent's option, picked by the owner in session ab54d544-8c72-4c39-ab01-01a17dc7f611"
+        },
+        "handle": "answer-ab54d544-10",
+        "id": "01M5YXDRQE1WY6HHNKZ1GPTCA5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5YXDRQE1WY6HHNKYZ08N1AJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5YXDRQE1WY6HHNKYZ08N1AJ",
+        "id": "01M5YXDRW3XYB6ZZ0WH9M4C1FH",
+        "link": "01M5YXDRW3XYB6ZZ0WH76V7WR2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Yes, both (Recommended)",
+            "No build-check step"
+          ],
+          "picked": "Yes, both (Recommended)",
+          "question": "Are the outside-work rule and the closing build-check right?",
+          "session": "ab54d544-8c72-4c39-ab01-01a17dc7f611",
+          "statement": "Are the outside-work rule and the closing build-check right? — Yes, both (Recommended)",
+          "wording": "the agent's option, picked by the owner in session ab54d544-8c72-4c39-ab01-01a17dc7f611"
+        },
+        "handle": "answer-ab54d544-11",
+        "id": "01M5YXDS0JNM7MD2YFN1SYP9S1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5YXDS0JNM7MD2YFMZKDN0D4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5YXDS0JNM7MD2YFMZKDN0D4",
+        "id": "01M5YXDS53VM4Z4B8WADQX6436",
+        "link": "01M5YXDS53VM4Z4B8WADENB6SB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX1W7CJR6Q5S775HFJ52CN",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M5WPTY7P14SSHQ1FJ0WA8ZR4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5YXDS7NN7P4QCY1AZA6DPJ6",
+  "type": "ops",
+  "v": 1
+}
