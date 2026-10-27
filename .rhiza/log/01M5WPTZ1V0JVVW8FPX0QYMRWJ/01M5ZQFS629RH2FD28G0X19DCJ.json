@@ -1,0 +1,370 @@
+{
+  "actor": "01M5ZPK2CP01WFSKZSV1715668",
+  "after": [
+    "01M5Z1QHPAE1EXAHKR2XC0KCMV"
+  ],
+  "at": "2026-10-27T22:25:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "Run ends failed at once (Recommended)",
+            "Blocker to the fix cycle"
+          ],
+          "picked": "Run ends failed at once (Recommended)",
+          "question": "Question review-code-check-fails: when the review's code check (rhiza check + build-check) fails, should the run end failed at once?",
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "Question review-code-check-fails: when the review's code check (rhiza check + build-check) fails, should the run end failed at once? — Run ends failed at once (Recommended). The built-in review's code-check step has no on.fail, so a failed code check ends the run failed, and a repo override may route it elsewhere.",
+          "wording": "picked by the orchestrator acting as arbiter"
+        },
+        "handle": "review-ruling-1",
+        "id": "01M5ZQFN92JF2814QMT62ZEPHZ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZQFN92JF2814QMT3YJGTMX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "Drop it; journal only (Recommended)",
+            "Owner-overruled as Decisions",
+            "Critic-dropped as Decisions"
+          ],
+          "picked": "Drop it; journal only (Recommended)",
+          "question": "Question review-overruled-findings: should this change set leave out the 'overruled findings as decisions' part of review-feeds-model, so dropped findings stay only in the journal and the summary?",
+          "reason": "answer-a5ffc966-12",
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "Question review-overruled-findings: should this change set leave out the 'overruled findings as decisions' part of review-feeds-model, so dropped findings stay only in the journal and the summary? — Drop it; journal only (Recommended). Dropped findings stay in the run journal and the summary only, because the owner's own topic-4 pick, answer-a5ffc966-12, has the review feed the model through QA Evidence and proposed rules and not through overruled findings.",
+          "wording": "picked by the orchestrator acting as arbiter"
+        },
+        "handle": "review-ruling-2",
+        "id": "01M5ZQFNE4184DZEDG5PKFEWYT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZQFNE4184DZEDG5P8DH7QZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "12 leaves only (Recommended)",
+            "Also wire ship-change"
+          ],
+          "picked": "12 leaves only (Recommended)",
+          "question": "Is the scope all 12 leaves and nothing else?",
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "Is the scope all 12 leaves and nothing else? — 12 leaves only (Recommended). The change set builds its 12 leaves and leaves ship-change running review, and the PR-body summary of change set 8, out.",
+          "wording": "picked by the orchestrator acting as arbiter"
+        },
+        "handle": "review-ruling-3",
+        "id": "01M5ZQFNK5825YE2KXMS2VWQBG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZQFNK5825YE2KXMPJEGRC9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "TDD per leaf (Recommended)",
+            "Tests after, per leaf"
+          ],
+          "picked": "TDD per leaf (Recommended)",
+          "question": "Test strategy?",
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "Test strategy? — TDD per leaf (Recommended). Each leaf is built test-first against its acceptance with Go tests and testscripts, and make check is green before each commit.",
+          "wording": "picked by the orchestrator acting as arbiter"
+        },
+        "handle": "review-ruling-4",
+        "id": "01M5ZQFNR77KRSHM5GEZ80FC02",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZQFNR77KRSHM5GEW7550K4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "Accept these guardrails (Recommended)",
+            "Allow refactoring leaves.go"
+          ],
+          "picked": "Accept these guardrails (Recommended)",
+          "question": "Guardrails?",
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "Guardrails? — Accept these guardrails (Recommended). The build workflow and the plan-review findings stay unchanged except for additive extensions, no test touches the network, Rex, agents, gh or a unix socket, and review never lands the change set.",
+          "wording": "picked by the orchestrator acting as arbiter"
+        },
+        "handle": "review-ruling-5",
+        "id": "01M5ZQFNX8PZ3P0HC1FS4V69H3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZQFNX8PZ3P0HC1FQM53GHS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "Same as PR #44 (Recommended)",
+            "Evidence at the end only"
+          ],
+          "picked": "Same as PR #44 (Recommended)",
+          "question": "Verification?",
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "Verification? — Same as PR #44 (Recommended). Each leaf gets one commit with a Leaf: trailer, then a fresh verifier as actor claude-code-0e5a9d92-verifier writes that leaf's Evidence, and build-check must pass.",
+          "wording": "picked by the orchestrator acting as arbiter"
+        },
+        "handle": "review-ruling-6",
+        "id": "01M5ZQFP2AEGNBB6RS55XTECJD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZQFP2AEGNBB6RS53C6A323",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "Record as arbiter Decisions (Recommended)",
+            "Plan file only"
+          ],
+          "picked": "Record as Decisions linked decided-by from the leaves, worded as the agent's choice in its plan approved by the orchestrator acting as arbiter at plan approval",
+          "question": "Where are implementation rulings recorded?",
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "Where are implementation rulings recorded? — Record as Decisions linked decided-by from the leaves, worded as the agent's choice in its plan approved by the orchestrator acting as arbiter at plan approval. The plan's own implementation rulings become Decisions that the leaves they settle link decided-by, each worded as the agent's choice approved at plan approval.",
+          "wording": "stated by the orchestrator acting as arbiter"
+        },
+        "handle": "review-ruling-7",
+        "id": "01M5ZQFP7FP60GE17VKX00JHWY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZQFP7FP60GE17VKTENVV64",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "New signoff step kind (Recommended)",
+            "Tail of the checks step",
+            "Wait step + command"
+          ],
+          "picked": "New signoff step kind (Recommended)",
+          "question": "How does sign-off sit in the workflow?",
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "How does sign-off sit in the workflow? — New signoff step kind (Recommended). A signoff step has outcomes pass and changes, its on.changes must name a checks step, and it waits by stopping the run until run approve or run request-changes resumes it.",
+          "wording": "picked by the orchestrator acting as arbiter"
+        },
+        "handle": "review-ruling-8",
+        "id": "01M5ZQFPCGMFAN7TERGPZ3W945",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZQFPCGMFAN7TERGKYGPE7D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "Required verifier sub-table (Recommended)",
+            "Optional, defaults to build's"
+          ],
+          "picked": "Required verifier sub-table (Recommended)",
+          "question": "Where does a checks step get its verifier?",
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "Where does a checks step get its verifier? — Required verifier sub-table (Recommended). A checks step requires a [step.X.verifier] sub-table beside critic and fixer.",
+          "wording": "picked by the orchestrator acting as arbiter"
+        },
+        "handle": "review-ruling-9",
+        "id": "01M5ZQFPHKF4D1TW9598BY25PB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZQFPHKF4D1TW9595NFDCD1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "Fails, re-runs next cycle (Recommended)",
+            "Passes as clean"
+          ],
+          "picked": "Fails, re-runs next cycle (Recommended)",
+          "question": "A check session ending without any findings round?",
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "A check session ending without any findings round? — Fails, re-runs next cycle (Recommended). A check session that records no findings round fails its check, gets no critic and no fixer, and re-runs in the next cycle.",
+          "wording": "picked by the orchestrator acting as arbiter"
+        },
+        "handle": "review-ruling-10",
+        "id": "01M5ZQFPPN4SK89F9MW534QWDC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZQFPPN4SK89F9MW1MNEJ59",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "options": [
+            "[[step.X.check]] array (Recommended)",
+            "[step.X.checks.<name>] map"
+          ],
+          "picked": "[[step.X.check]] array (Recommended)",
+          "question": "How are checks declared in TOML?",
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "How are checks declared in TOML? — [[step.X.check]] array (Recommended). Checks are an array of tables, [[step.X.check]] with name = \"...\", run in file order.",
+          "wording": "picked by the orchestrator acting as arbiter"
+        },
+        "handle": "review-ruling-11",
+        "id": "01M5ZQFPVRDXEF6N3X7RD08CTT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5ZQFPVRDXEF6N3X7R36Z2SK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5ZQFN92JF2814QMT3YJGTMX",
+        "id": "01M5ZQFQ0TR2Z2KT30MWDZ4XHT",
+        "link": "01M5ZQFQ0TR2Z2KT30MTQR18M5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EMAXRRZG1BGYVB51H9RX",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EKX3DVJHR6SVG5QX87J1",
+        "id": "01M5ZQFQ5WDT5DK5X1CXHJH356",
+        "link": "01M5ZQFQ5WDT5DK5X1CWBQQ4M4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZQFN92JF2814QMT3YJGTMX",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5ZQFNE4184DZEDG5P8DH7QZ",
+        "id": "01M5ZQFQAZWNT1V81YTWZHSGVD",
+        "link": "01M5ZQFQAZWNT1V81YTTSYZ290",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0NC1ECW8S0JXHMG1SWS92",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0ENY6PDKAQS7QEY0AR5RN",
+        "id": "01M5ZQFQG2T1EPXPTCFPAA5PC4",
+        "link": "01M5ZQFQG2T1EPXPTCFKJFPFMP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZQFNE4184DZEDG5P8DH7QZ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EFR7RVGGDDPQF4B9TQN4",
+        "id": "01M5ZQFQN7EQR7W7F4M3XZ4EHW",
+        "link": "01M5ZQFQN7EQR7W7F4M0AX7B9T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZQFNK5825YE2KXMPJEGRC9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EFR7RVGGDDPQF4B9TQN4",
+        "id": "01M5ZQFQTCC9CARQT403JVMY87",
+        "link": "01M5ZQFQTCC9CARQT4021DT9MB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZQFNR77KRSHM5GEW7550K4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EFR7RVGGDDPQF4B9TQN4",
+        "id": "01M5ZQFQZGR7RJK5CRQ81MWXCM",
+        "link": "01M5ZQFQZGR7RJK5CRQ62MJFA5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZQFNX8PZ3P0HC1FQM53GHS",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EFR7RVGGDDPQF4B9TQN4",
+        "id": "01M5ZQFR4P7PMPY2EZYGWS9WT9",
+        "link": "01M5ZQFR4P7PMPY2EZYEDWCZDK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZQFP2AEGNBB6RS53C6A323",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EFR7RVGGDDPQF4B9TQN4",
+        "id": "01M5ZQFR9SG12ZZVB7G43PTBD6",
+        "link": "01M5ZQFR9SG12ZZVB7G0TVCXS8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZQFP7FP60GE17VKTENVV64",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EMM6HBY40F6M5QVK0TX0",
+        "id": "01M5ZQFREVWAKVVCSPYDZGK56P",
+        "link": "01M5ZQFREVWAKVVCSPYB3E27CH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZQFPCGMFAN7TERGKYGPE7D",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EG65NMPZAKN41R95EQYB",
+        "id": "01M5ZQFRKYQN9D0C4BXDVRCSX9",
+        "link": "01M5ZQFRKYQN9D0C4BXB5BANC9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZQFPHKF4D1TW9595NFDCD1",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EG65NMPZAKN41R95EQYB",
+        "id": "01M5ZQFRS1108PA77NGCYAKANW",
+        "link": "01M5ZQFRS1108PA77NG9ZECABD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZQFPVRDXEF6N3X7R36Z2SK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EHF5WMV1Y0X96EJ0NCPZ",
+        "id": "01M5ZQFRY4YNCSB5VE9X0CR5KM",
+        "link": "01M5ZQFRY4YNCSB5VE9WWJS4D4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZQFPPN4SK89F9MW1MNEJ59",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZ1V0JVVW8FPX0QYMRWJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5ZQFS629RH2FD28G0X19DCJ",
+  "type": "ops",
+  "v": 1
+}

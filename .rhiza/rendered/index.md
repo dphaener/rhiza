@@ -780,6 +780,8 @@
 ## Actors
 
 - [claude-code-01m5szj4](actor/claude-code-01m5szj4.md)
+- [claude-code-0e5a9d92](actor/claude-code-0e5a9d92.md)
+- [claude-code-0e5a9d92-verifier](actor/claude-code-0e5a9d92-verifier.md)
 - [claude-code-1275fa8d](actor/claude-code-1275fa8d.md)
 - [claude-code-1b903c33](actor/claude-code-1b903c33.md)
 - [claude-code-24d8eb87](actor/claude-code-24d8eb87.md)
