@@ -30,6 +30,12 @@ type LeafRunner interface {
 	// says why: "" when no Evidence verifies the leaf at all, else which
 	// other actor wrote the Evidence that does.
 	Evidence(leaf Leaf, session string) (ok bool, detail string, err error)
+	// CommitEvidence commits, on HEAD of the builders' worktree, only the
+	// log entry files holding the Evidence of leaf that verifier session
+	// session's actor wrote, as its own commit, and returns it. The
+	// builder's staged and unstaged edits stay as they were. Called again
+	// once that commit exists, it returns it and commits nothing.
+	CommitEvidence(leaf Leaf, session string) (commit string, err error)
 	// OpenCheckout adds a throwaway detached worktree at commit, where
 	// leaf's verifier on attempt works, and returns its path. It never
 	// touches the builders' worktree.
@@ -97,7 +103,8 @@ type leafAction struct {
 	role    string
 	attempt int
 	session string
-	// commit is, for a verifier's start, the builder's commit it checks.
+	// commit is, for a verifier's start, the builder's commit it checks,
+	// and for a passed leaf's end its Evidence commit.
 	commit  string
 	outcome string
 	detail  string
@@ -195,7 +202,9 @@ func lostDependency(lf Leaf, states map[string]LeafState, known map[string]bool,
 }
 
 // nextForLeaf is the next move on an open leaf l whose builder started. A
-// verifier starts on the commit its builder's passed attempt recorded.
+// verifier starts on the commit its builder's passed attempt recorded; a
+// passed leaf ends with the Evidence commit its verifier's attempt
+// recorded.
 func nextForLeaf(lf Leaf, l LeafState) leafAction {
 	attempt := max(1, l.Attempt())
 	for _, role := range []string{workflow.RoleBuilder, workflow.RoleVerifier} {
@@ -216,7 +225,9 @@ func nextForLeaf(lf Leaf, l LeafState) leafAction {
 				detail: fmt.Sprintf("attempt %d: %s failed: %s", attempt, role, j.Detail)}
 		}
 	}
-	return leafAction{kind: leafEnd, leaf: lf, outcome: LeafPassed, detail: fmt.Sprintf("attempt %d: verifier passed", attempt)}
+	v, _ := l.Judged(workflow.RoleVerifier, attempt)
+	return leafAction{kind: leafEnd, leaf: lf, outcome: LeafPassed, commit: v.Commit,
+		detail: fmt.Sprintf("attempt %d: verifier passed", attempt)}
 }
 
 // leafStates are step's folded leaves, by leaf ID.
@@ -267,7 +278,7 @@ func (r *running) leaves(step workflow.Step, env []string) (result, error) {
 				progressed = true
 			case leafEnd:
 				if err := r.append(Entry{
-					Type: TypeLeaf, Step: step.Name, Leaf: a.leaf.ID, Handle: a.leaf.Handle, Outcome: a.outcome, Detail: a.detail,
+					Type: TypeLeaf, Step: step.Name, Leaf: a.leaf.ID, Handle: a.leaf.Handle, Outcome: a.outcome, Commit: a.commit, Detail: a.detail,
 				}); err != nil {
 					return result{}, err
 				}
@@ -343,7 +354,8 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 // end to the Runner. A builder judged pass passes only with a
 // new commit since its start naming its leaf (LeafCommit), journalled on
 // the attempt; without one its attempt fails with LeafCommit's detail. A
-// verifier judged pass passes only as judgeVerifier finds. A live session's block is journalled and
+// verifier judged pass passes only as judgeVerifier finds, its Evidence
+// commit journalled on the attempt. A live session's block is journalled and
 // notified as an agent step's, and in an autonomous run its question goes
 // to the arbiter; a failed verdict ends the step (ended true) with res.
 func (r *running) pollLeaf(lr LeafRunner, step workflow.Step, a leafAction) (judged bool, res result, ended bool, err error) {
@@ -367,7 +379,7 @@ func (r *running) pollLeaf(lr LeafRunner, step workflow.Step, a leafAction) (jud
 		}
 		commit := ""
 		if a.role == workflow.RoleVerifier && outcome == workflow.OutcomePass {
-			if outcome, detail, err = r.judgeVerifier(lr, step, a); err != nil {
+			if outcome, detail, commit, err = r.judgeVerifier(lr, step, a); err != nil {
 				return false, result{}, false, err
 			}
 		}
@@ -418,28 +430,34 @@ func (r *running) pollLeaf(lr LeafRunner, step workflow.Step, a leafAction) (jud
 // judgeVerifier judges a verifier session of a that ended well: it fails
 // the attempt when the verifier journalled findings on it, else passes
 // only when the leaf has Evidence the verifier's own actor wrote
-// (Evidence). Findings win over Evidence. The verifier's `rhiza run
+// (Evidence), and that Evidence's entries are committed alone
+// (CommitEvidence), whose commit it returns. A commit that fails fails
+// the attempt. Findings win over Evidence. The verifier's `rhiza run
 // findings` appended to the journal without the run's lock, so the
 // journal is read again first. The error return is for journal failures.
-func (r *running) judgeVerifier(lr LeafRunner, step workflow.Step, a leafAction) (outcome, detail string, err error) {
+func (r *running) judgeVerifier(lr LeafRunner, step workflow.Step, a leafAction) (outcome, detail, commit string, err error) {
 	j, err := r.e.Store.Read(r.j.ID)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 	r.j = j
 	if n := len(r.leafStates(step.Name)[a.leaf.ID].AttemptFindings(a.attempt)); n > 0 {
-		return workflow.OutcomeFail, fmt.Sprintf("verifier found %d problem(s)", n), nil
+		return workflow.OutcomeFail, fmt.Sprintf("verifier found %d problem(s)", n), "", nil
 	}
 	ok, why, err := lr.Evidence(a.leaf, a.session)
 	switch {
 	case err != nil:
-		return workflow.OutcomeFail, fmt.Sprintf("read its Evidence: %v", err), nil
+		return workflow.OutcomeFail, fmt.Sprintf("read its Evidence: %v", err), "", nil
 	case ok:
-		return workflow.OutcomePass, "Evidence written by the verifier", nil
+		c, err := lr.CommitEvidence(a.leaf, a.session)
+		if err != nil {
+			return workflow.OutcomeFail, fmt.Sprintf("commit its Evidence: %v", err), "", nil
+		}
+		return workflow.OutcomePass, "Evidence written by the verifier", c, nil
 	case why == "":
-		return workflow.OutcomeFail, "verifier ended with neither Evidence nor findings", nil
+		return workflow.OutcomeFail, "verifier ended with neither Evidence nor findings", "", nil
 	}
-	return workflow.OutcomeFail, "verifier ended with no Evidence of its own and no findings: " + why, nil
+	return workflow.OutcomeFail, "verifier ended with no Evidence of its own and no findings: " + why, "", nil
 }
 
 // removeEndedCheckouts removes the checkout of every verifier of step

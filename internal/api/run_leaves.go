@@ -5,7 +5,7 @@ package api
 // leaf session started through session.start's path, as an agent step's
 // is, with the leaf and attempt in its record and environment, and the
 // commits a builder's work is judged by, read with git in the run's
-// worktree.
+// worktree, and a passed verifier's Evidence entries committed there alone.
 
 import (
 	"errors"
@@ -22,6 +22,7 @@ import (
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
+	"github.com/dphaener/rhiza/internal/store"
 	"github.com/dphaener/rhiza/internal/workflow"
 )
 
@@ -232,6 +233,150 @@ func nodeCreator(sets []changeset.ChangeSet, n id.ID) (id.ID, bool) {
 		}
 	}
 	return id.ID{}, false
+}
+
+// CommitEvidence commits the log entry files holding the Evidence of
+// leaf that verifier session session's actor wrote (the entries that
+// wrote its create and its verifies link to the leaf), and nothing else,
+// on HEAD of the run's worktree, as its own chore(rhiza) commit naming the
+// leaf, with Change: and Actor: (the verifier's) trailers and no Leaf:
+// trailer. It builds the commit in a temporary index, so the builder's
+// staged and unstaged edits stay as they were; the real index is only
+// brought up to the new HEAD for the committed paths. When those files
+// are already committed and unchanged (a resume after the commit), it
+// makes no new commit and returns the last one that touched them.
+func (r *stepRunner) CommitEvidence(leaf run.Leaf, session string) (string, error) {
+	cs, err := id.Parse(r.change)
+	if err != nil {
+		return "", fmt.Errorf("run %s names change set %q: %v", r.run, r.change, err)
+	}
+	lid, err := id.Parse(leaf.ID)
+	if err != nil {
+		return "", fmt.Errorf("leaf %s has ID %q: %v", leaf.Handle, leaf.ID, err)
+	}
+	rec, err := r.sessions.Read(session)
+	if err != nil {
+		return "", fmt.Errorf("read session %s: %v", session, err)
+	}
+	w, err := r.worktreeWorkspace(false)
+	if err != nil {
+		return "", err
+	}
+	m := w.model(cs)
+	actor, err := liveActor(m, rec.Actor)
+	if err != nil {
+		return "", fmt.Errorf("session %s's actor %s: %s", session, rec.Actor, AsError(err).Message)
+	}
+	entries := evidenceEntries(m, w.changeSets(), lid, actor)
+	if len(entries) == 0 {
+		return "", fmt.Errorf("no Evidence by %s verifies %s", nodeName(m, actor), leaf.Handle)
+	}
+	prefix, err := r.worktreeGit("rev-parse", "--show-prefix")
+	if err != nil {
+		return "", err
+	}
+	paths := make([]string, 0, len(entries))
+	for _, e := range entries {
+		paths = append(paths, filepath.ToSlash(filepath.Join(strings.TrimSpace(prefix), store.Dir, store.LogDir, e.cs.String(), e.entry.String()+".json")))
+	}
+	status, err := r.worktreeGit(append([]string{"status", "--porcelain", "--untracked-files=all", "--"}, paths...)...)
+	if err != nil {
+		return "", err
+	}
+	if strings.TrimSpace(status) == "" {
+		out, err := r.worktreeGit(append([]string{"log", "-1", "--format=%H", "--"}, paths...)...)
+		if err != nil {
+			return "", err
+		}
+		if c := strings.TrimSpace(out); c != "" {
+			return c, nil
+		}
+		return "", fmt.Errorf("the Evidence entries of %s are neither committed nor to be committed: %s", leaf.Handle, strings.Join(paths, ", "))
+	}
+	name := nodeName(m, actor)
+	msg := fmt.Sprintf("chore(rhiza): evidence for %s\n\nChange: %s\nActor: %s\n", leaf.Handle, cs, name)
+	return r.commitOnly(paths, msg)
+}
+
+// commitOnly commits paths, as the worktree holds them, on HEAD with
+// message msg, through a temporary index read from HEAD, and moves HEAD
+// (its branch) to the new commit only if it has not moved meanwhile. The
+// real index is then updated for paths alone, so they show as committed
+// while every other staged or unstaged change stays as it was.
+func (r *stepRunner) commitOnly(paths []string, msg string) (string, error) {
+	old, err := r.Head()
+	if err != nil {
+		return "", err
+	}
+	tmp, err := os.MkdirTemp("", "rhiza-index-")
+	if err != nil {
+		return "", fmt.Errorf("temporary index: %v", err)
+	}
+	defer os.RemoveAll(tmp)
+	env := append(os.Environ(), "GIT_INDEX_FILE="+filepath.Join(tmp, "index"))
+	git := func(args ...string) (string, error) {
+		out, err := r.ctx.Exec("git", append([]string{"-C", r.worktree}, args...), r.worktree, env)
+		return strings.TrimSpace(string(out)), err
+	}
+	if _, err := git("read-tree", old); err != nil {
+		return "", err
+	}
+	if _, err := git(append([]string{"update-index", "--add", "--"}, paths...)...); err != nil {
+		return "", err
+	}
+	tree, err := git("write-tree")
+	if err != nil {
+		return "", err
+	}
+	commit, err := git("commit-tree", tree, "-p", old, "-m", msg)
+	if err != nil {
+		return "", err
+	}
+	if _, err := r.worktreeGit("update-ref", "-m", "commit: "+strings.SplitN(msg, "\n", 2)[0], "HEAD", commit, old); err != nil {
+		return "", err
+	}
+	if _, err := r.worktreeGit(append([]string{"update-index", "--add", "--"}, paths...)...); err != nil {
+		return "", err
+	}
+	return commit, nil
+}
+
+// evidenceEntry is one log entry, in change set cs, that wrote an
+// Evidence node's create or its verifies link.
+type evidenceEntry struct {
+	cs, entry id.ID
+}
+
+// evidenceEntries are the entries that wrote the create of the first
+// live Evidence node actor created with a live verifies link to leaf, and
+// that link's create (every version of each), in the order first seen and
+// without repeats: one entry when an apply wrote both, two when an add and
+// a link did. They are none when actor wrote no such Evidence.
+func evidenceEntries(m Model, sets []changeset.ChangeSet, leaf, actor id.ID) []evidenceEntry {
+	for _, l := range m.LinksTo(leaf, op.LinkVerifies) {
+		ev, ok := m.Node(l.From)
+		if !ok || ev.Retired || ev.Kind != op.KindEvidence {
+			continue
+		}
+		if who, ok := nodeCreator(sets, ev.ID); !ok || who != actor {
+			continue
+		}
+		var out []evidenceEntry
+		for _, c := range sets {
+			for _, o := range c.Ops {
+				if !(o.Type == op.TypeNodeCreate && o.Node == ev.ID) && !(o.Type == op.TypeLinkCreate && o.Link == l.ID) {
+					continue
+				}
+				for _, rv := range c.History[o.ID] {
+					if e := (evidenceEntry{c.ID, rv.Entry}); !slices.Contains(out, e) {
+						out = append(out, e)
+					}
+				}
+			}
+		}
+		return out
+	}
+	return nil
 }
 
 // OpenCheckout adds a throwaway detached worktree at commit for leaf's

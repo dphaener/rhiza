@@ -146,10 +146,11 @@ type Block struct {
 //	           verifier's: the commit it checks), Detail (a leaves step started a
 //	           session on leaf node Leaf, handle Handle)
 //	leaf-attempt: Step, Leaf, Handle, Role, Attempt, Outcome (pass or fail), Commit
-//	           (a passed builder's leaf commit), Detail (the role's session of the
-//	           attempt was judged)
+//	           (a passed builder's leaf commit; a passed verifier's Evidence
+//	           commit), Detail (the role's session of the attempt was judged)
 //	leaf:      Step, Leaf, Handle, Outcome (passed, failed or skipped), Question (for
-//	           failed), Detail (the leaf's outcome)
+//	           failed), Commit (a passed leaf's Evidence commit), Detail (the
+//	           leaf's outcome)
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -190,7 +191,8 @@ type Entry struct {
 	// is the model a leaf session runs. Commit is, on a builder's
 	// leaf-session, the worktree's HEAD when it started; on a verifier's,
 	// the commit it checks; on a passed builder's leaf-attempt, the commit
-	// naming its leaf.
+	// naming its leaf; on a passed verifier's leaf-attempt and a passed
+	// leaf entry, the commit of its Evidence entries alone.
 	Leaf    string `json:"leaf,omitempty"`
 	Role    string `json:"role,omitempty"`
 	Attempt int    `json:"attempt,omitempty"`
@@ -372,7 +374,8 @@ type LeafSession struct {
 
 // LeafAttempt is one leaf-attempt entry: role Role's session of attempt
 // Attempt was judged pass or fail (Outcome), for Detail. A passed
-// builder's Commit is the new commit naming its leaf.
+// builder's Commit is the new commit naming its leaf; a passed verifier's
+// is the commit of its Evidence entries.
 type LeafAttempt struct {
 	Role    string
 	Attempt int
@@ -403,7 +406,9 @@ type LeafState struct {
 	Findings []LeafFinding
 	Outcome  string
 	Question string
-	Detail   string
+	// Commit is a passed leaf's Evidence commit.
+	Commit string
+	Detail string
 }
 
 // AttemptFindings are the findings journalled on the leaf's attempt, in
@@ -638,7 +643,7 @@ func (j Journal) State() State {
 			l.Attempts = append(l.Attempts, LeafAttempt{Role: e.Role, Attempt: e.Attempt, Outcome: e.Outcome, Commit: e.Commit, Detail: e.Detail, At: e.At})
 		case TypeLeaf:
 			l := st.leaf(e)
-			l.Outcome, l.Question, l.Detail = e.Outcome, e.Question, e.Detail
+			l.Outcome, l.Question, l.Commit, l.Detail = e.Outcome, e.Question, e.Commit, e.Detail
 		case TypeSession:
 			st.Session[e.Step] = e.Session
 			st.addSession(e.Step, e.Session)

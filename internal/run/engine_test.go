@@ -62,9 +62,13 @@ type fakeRunner struct {
 	// handle has the verifier's own Evidence (ok).
 	evidence      map[string]fakeEvidence
 	evidenceCalls []string // "<handle> <session>" per Evidence call
-	checkouts     []string // "open <dir> <commit>" and "remove <dir>" per call, in order
-	checkoutErr   error    // OpenCheckout's error, when set
-	removeErr     error    // RemoveCheckout's error, when set
+	// evidenceCommitErr is CommitEvidence's error per leaf handle; a
+	// missing handle commits "E-<handle>".
+	evidenceCommitErr map[string]error
+	commitCalls       []string // "<handle> <session>" per CommitEvidence call
+	checkouts         []string // "open <dir> <commit>" and "remove <dir>" per call, in order
+	checkoutErr       error    // OpenCheckout's error, when set
+	removeErr         error    // RemoveCheckout's error, when set
 }
 
 // fakeEvidence is one leaf's scripted Evidence result.

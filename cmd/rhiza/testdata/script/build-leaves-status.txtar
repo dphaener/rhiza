@@ -60,7 +60,8 @@ stdout -count=2 '"outcome": "passed"'
 stdout -count=2 '"attempt": 1,\n\s+"commit": "[0-9a-f]{40}",\n\s+"role": "builder",\n\s+"session": "[0-9a-f-]{36}"'
 stdout -count=2 '"attempt": 1,\n\s+"commit": "[0-9a-f]{40}",\n\s+"role": "verifier",\n\s+"session": "[0-9a-f-]{36}"'
 stdout -count=2 '"attempt": 1,\n\s+"commit": "[0-9a-f]{40}",\n\s+"detail": "exit 0",\n\s+"outcome": "pass",\n\s+"role": "builder"'
-stdout -count=2 '"attempt": 1,\n\s+"detail": "Evidence written by the verifier",\n\s+"outcome": "pass",\n\s+"role": "verifier"'
+stdout -count=2 '"attempt": 1,\n\s+"commit": "[0-9a-f]{40}",\n\s+"detail": "Evidence written by the verifier",\n\s+"outcome": "pass",\n\s+"role": "verifier"'
+stdout -count=2 '"commit": "[0-9a-f]{40}",\n\s+"detail": "attempt 1: verifier passed",'
 stdout '"leaves": \[\n(.*\n)*?\s+"handle": "first",(.*\n)*?\s+"handle": "second",'
 
 fold-ok

@@ -6,12 +6,15 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
+	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/workflow"
 )
 
@@ -28,9 +31,12 @@ func hermeticExec(t *testing.T, dir string) func(string, []string, string, []str
 		t.Fatal(err)
 	}
 	env := append(os.Environ(), "HOME="+home, "GIT_CONFIG_NOSYSTEM=1", "GIT_CONFIG_GLOBAL="+cfg)
-	return func(name string, args []string, d string, _ []string) ([]byte, error) {
+	return func(name string, args []string, d string, e []string) ([]byte, error) {
 		cmd := exec.Command(name, args...)
 		cmd.Dir, cmd.Env = d, env
+		if e != nil {
+			cmd.Env = append(append([]string{}, e...), env[len(env)-3:]...)
+		}
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr
 		out, err := cmd.Output()
@@ -154,6 +160,11 @@ func (g *gitLeafRunner) AgentEnded(workflow.Step, string) error { return nil }
 // with no record to read.
 func (g *gitLeafRunner) Evidence(run.Leaf, string) (bool, string, error) { return true, "", nil }
 
+// CommitEvidence commits nothing: there is no Evidence entry to commit.
+func (g *gitLeafRunner) CommitEvidence(leaf run.Leaf, _ string) (string, error) {
+	return "E-" + leaf.Handle, nil
+}
+
 type noSleep struct{}
 
 func (noSleep) Now() time.Time      { return time.Date(2026, 10, 27, 0, 0, 0, 0, time.UTC) }
@@ -219,5 +230,148 @@ func TestLeafCommitEngine(t *testing.T) {
 	spec := g.specs[len(g.specs)-1]
 	if spec.Role != "verifier" || spec.Commit != own || !slices.Contains(spec.Env, run.EnvCommit+"="+own) {
 		t.Errorf("verifier spec = %+v", spec)
+	}
+}
+
+// evidenceCommitRunner is a stepRunner on a real git worktree holding a
+// Rhiza repository, committed, whose change set has leaf "leaf-a", and a
+// verifier session "S-v" whose actor is ada, recorded and committed too.
+// It returns the runner, a git runner there, the context (to write as
+// ada), the leaf and ada.
+func evidenceCommitRunner(t *testing.T) (*stepRunner, func(...string) string, *Ctx, run.Leaf, id.ID) {
+	t.Helper()
+	tmp := t.TempDir()
+	wt := filepath.Join(tmp, "wt")
+	if err := os.MkdirAll(wt, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	ctx := testCtx(wt)
+	ctx.Exec = hermeticExec(t, tmp)
+	git := func(args ...string) string {
+		t.Helper()
+		out, err := ctx.Exec("git", args, wt, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return strings.TrimSpace(string(out))
+	}
+	ctx.Git = func(args ...string) (string, error) {
+		out, err := ctx.Exec("git", args, wt, nil)
+		return string(out), err
+	}
+	git("init", "-q")
+	if _, err := callOp(t, ctx, "init", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	cs := newChange(t, ctx, `{"intent":"Build"}`).ChangeSet
+	leaf := mustWrite(t, ctx, "add", `{"kind":"capability","handle":"leaf-a"}`).Nodes[0]
+	ada := recordAda(t, ctx, "ada@example.com")
+	git("add", "-A")
+	git("commit", "-q", "-m", "model")
+	sessions := session.NewStore(filepath.Join(tmp, "sessions"))
+	if err := sessions.Write(session.Record{ID: "S-v", Actor: ada.String(), Change: cs.String()}); err != nil {
+		t.Fatal(err)
+	}
+	r := &stepRunner{ctx: ctx, change: cs.String(), run: "R1", worktree: wt, sessions: sessions}
+	return r, git, ctx, run.Leaf{ID: leaf.String(), Handle: "leaf-a"}, ada
+}
+
+// After a verifier passes, its Evidence entry files, and only they, are
+// committed on HEAD as one chore(rhiza) commit naming the leaf, with the
+// run's Change: and the verifier's Actor: trailers and no Leaf: trailer.
+// The builder's staged, unstaged and untracked edits stay exactly as they
+// were, and the committed entries show clean. A second call (a resume)
+// makes no new commit and returns the same one.
+func TestEvidenceCommit(t *testing.T) {
+	r, git, ctx, leaf, ada := evidenceCommitRunner(t)
+	if err := os.WriteFile(filepath.Join(r.worktree, "notes.txt"), []byte("base\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	git("add", "notes.txt")
+	git("commit", "-q", "-m", "notes")
+	write := func(name, body string) {
+		t.Helper()
+		if err := os.WriteFile(filepath.Join(r.worktree, name), []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("notes.txt", "base\nstaged\n")
+	write("new.txt", "staged new file\n")
+	git("add", "notes.txt", "new.txt")
+	write("notes.txt", "base\nstaged\nunstaged\n")
+	write("scratch.txt", "untracked\n")
+
+	// The verifier writes its Evidence as its own actor: an add and a link,
+	// two entries.
+	v := *ctx
+	v.Actor = ada
+	ev := mustWrite(t, &v, "add", `{"kind":"evidence","handle":"leaf-a-ok","fields":["statement=leaf-a works","result=PASS"]}`)
+	ln := mustWrite(t, &v, "link", `{"from":"leaf-a-ok","type":"verifies","to":"leaf-a"}`)
+	want := []string{
+		fmt.Sprintf(".rhiza/log/%s/%s.json", r.change, ev.Entry),
+		fmt.Sprintf(".rhiza/log/%s/%s.json", r.change, ln.Entry),
+	}
+	slices.Sort(want)
+
+	cached, diff := git("diff", "--cached"), git("diff")
+	status := git("status", "--porcelain", "--untracked-files=all", "--", "notes.txt", "new.txt", "scratch.txt")
+	old := git("rev-parse", "HEAD")
+
+	c, err := r.CommitEvidence(leaf, "S-v")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if head := git("rev-parse", "HEAD"); head != c {
+		t.Fatalf("HEAD = %s, want the Evidence commit %s", head, c)
+	}
+	if parents := git("rev-list", "--parents", "-n1", c); parents != c+" "+old {
+		t.Errorf("commit parents = %q, want one new commit on %s", parents, old)
+	}
+	show := git("show", "--stat", "--format=%s%n%n%b", c)
+	t.Logf("git show --stat:\n%s", show)
+	files := strings.Split(git("show", "--name-only", "--format=", c), "\n")
+	if !reflect.DeepEqual(files, want) {
+		t.Errorf("committed files = %v, want only the Evidence entries %v", files, want)
+	}
+	msg := git("log", "-1", "--format=%B", c)
+	if subject := strings.SplitN(msg, "\n", 2)[0]; subject != "chore(rhiza): evidence for leaf-a" {
+		t.Errorf("subject = %q", subject)
+	}
+	trailers := git("log", "-1", "--format=%(trailers:unfold)", c)
+	if want := "Change: " + r.change + "\nActor: " + nodeName(ctxWorkspace(t, ctx).model(id.ID{}), ada); trailers != want {
+		t.Errorf("trailers = %q, want %q", trailers, want)
+	}
+	if strings.Contains(msg, "Leaf:") {
+		t.Errorf("message has a Leaf: trailer:\n%s", msg)
+	}
+	if a, b := git("diff", "--cached"), git("diff"); a != cached || b != diff {
+		t.Errorf("builder's edits changed:\ncached before:\n%s\nafter:\n%s\ndiff before:\n%s\nafter:\n%s", cached, a, diff, b)
+	}
+	if s := git("status", "--porcelain", "--untracked-files=all", "--", "notes.txt", "new.txt", "scratch.txt"); s != status {
+		t.Errorf("builder's status = %q, want %q", s, status)
+	}
+	if s := git("status", "--porcelain", "--untracked-files=all", "--", ".rhiza"); s != "" {
+		t.Errorf("the .rhiza folder is not clean after the commit:\n%s", s)
+	}
+	t.Logf("git diff --cached (before = after):\n%s\ngit diff (before = after):\n%s\nstatus (before = after):\n%s", cached, diff, status)
+
+	again, err := r.CommitEvidence(leaf, "S-v")
+	if err != nil || again != c {
+		t.Errorf("second CommitEvidence = %q, %v; want %s", again, err, c)
+	}
+	if head := git("rev-parse", "HEAD"); head != c {
+		t.Errorf("second call moved HEAD to %s", head)
+	}
+}
+
+// With no Evidence of the verifier's own actor, nothing is committed.
+func TestEvidenceCommitNone(t *testing.T) {
+	r, git, _, leaf, _ := evidenceCommitRunner(t)
+	old := git("rev-parse", "HEAD")
+	if _, err := r.CommitEvidence(leaf, "S-v"); err == nil || !strings.Contains(err.Error(), "no Evidence by") {
+		t.Errorf("CommitEvidence err = %v", err)
+	}
+	if head := git("rev-parse", "HEAD"); head != old {
+		t.Errorf("HEAD moved to %s", head)
 	}
 }

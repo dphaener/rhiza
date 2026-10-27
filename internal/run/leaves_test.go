@@ -48,6 +48,14 @@ func (f *fakeRunner) Evidence(leaf Leaf, session string) (bool, string, error) {
 	return true, "", nil
 }
 
+func (f *fakeRunner) CommitEvidence(leaf Leaf, session string) (string, error) {
+	f.commitCalls = append(f.commitCalls, leaf.Handle+" "+session)
+	if err := f.evidenceCommitErr[leaf.Handle]; err != nil {
+		return "", err
+	}
+	return "E-" + leaf.Handle, nil
+}
+
 // checkoutDir is the fake runner's checkout for a leaf's verifier.
 func checkoutDir(handle string, attempt int) string {
 	return "/checkouts/" + handle + "-" + strconv.Itoa(attempt)
@@ -704,6 +712,59 @@ func TestLeavesStepVerifierEvidence(t *testing.T) {
 	}
 }
 
+// A verifier judged pass has its Evidence committed once, the commit
+// journalled on its attempt and on the passed leaf; a commit that fails
+// fails the attempt, and so the leaf, with that detail. A verifier with
+// no Evidence of its own commits nothing.
+func TestLeavesStepEvidenceCommit(t *testing.T) {
+	t.Run("pass", func(t *testing.T) {
+		e, r, _, _ := setup(t, leavesWF)
+		r.leaves = twoLeaves[:1]
+		passAll(r, twoLeaves)
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := []string{"leaf-a " + leafSID("leaf-a", "verifier", 1)}; !reflect.DeepEqual(r.commitCalls, want) {
+			t.Errorf("CommitEvidence calls = %v, want %v", r.commitCalls, want)
+		}
+		if j := verifierAttempt(t, st); j.Outcome != workflow.OutcomePass || j.Commit != "E-leaf-a" {
+			t.Errorf("verifier judged %+v, want pass with E-leaf-a", j)
+		}
+		if l := st.Leaves[0]; l.Outcome != LeafPassed || l.Commit != "E-leaf-a" {
+			t.Errorf("leaf = %+v, want passed with E-leaf-a", l)
+		}
+	})
+	t.Run("commit fails", func(t *testing.T) {
+		e, r, _, _ := setup(t, leavesWF)
+		r.leaves = twoLeaves[:1]
+		passAll(r, twoLeaves)
+		r.evidenceCommitErr = map[string]error{"leaf-a": errors.New("index.lock exists")}
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if j := verifierAttempt(t, st); j.Outcome != workflow.OutcomeFail || j.Detail != "commit its Evidence: index.lock exists" || j.Commit != "" {
+			t.Errorf("verifier judged %+v", j)
+		}
+		if l := st.Leaves[0]; l.Outcome != LeafFailed || l.Commit != "" {
+			t.Errorf("leaf = %+v, want failed with no commit", l)
+		}
+	})
+	t.Run("no Evidence", func(t *testing.T) {
+		e, r, _, _ := setup(t, leavesWF)
+		r.leaves = twoLeaves[:1]
+		passAll(r, twoLeaves)
+		r.evidence = map[string]fakeEvidence{"leaf-a": {}}
+		if _, err := e.Run(runID); err != nil {
+			t.Fatal(err)
+		}
+		if len(r.commitCalls) != 0 {
+			t.Errorf("CommitEvidence called without Evidence: %v", r.commitCalls)
+		}
+	})
+}
+
 // Findings a verifier's process journals on its attempt, outside the
 // engine, fail the attempt even when its own Evidence is there too; the
 // engine reads the journal again before judging.
@@ -870,5 +931,25 @@ func TestLeavesStepResumeRemovesEndedCheckouts(t *testing.T) {
 	}
 	if want := []string{"remove /old/a", "remove /old/b"}; !reflect.DeepEqual(r.checkouts, want) {
 		t.Errorf("checkouts = %v, want %v", r.checkouts, want)
+	}
+}
+
+// A leaf whose verifier's pass was journalled with its Evidence commit, but
+// whose leaf entry was not (a run killed in between), ends passed with
+// that commit, without asking for another.
+func TestNextForLeafEvidenceCommitResume(t *testing.T) {
+	l := LeafState{
+		Sessions: []LeafSession{
+			{Role: workflow.RoleBuilder, Attempt: 1, Session: "b"},
+			{Role: workflow.RoleVerifier, Attempt: 1, Session: "v"},
+		},
+		Attempts: []LeafAttempt{
+			{Role: workflow.RoleBuilder, Attempt: 1, Outcome: workflow.OutcomePass, Commit: "C1"},
+			{Role: workflow.RoleVerifier, Attempt: 1, Outcome: workflow.OutcomePass, Commit: "E1"},
+		},
+	}
+	a := nextForLeaf(Leaf{ID: "L1", Handle: "leaf-a"}, l)
+	if a.kind != leafEnd || a.outcome != LeafPassed || a.commit != "E1" {
+		t.Errorf("nextForLeaf = %+v, want leafEnd passed with E1", a)
 	}
 }

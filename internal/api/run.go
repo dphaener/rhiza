@@ -151,6 +151,7 @@ type RunLeaf struct {
 	Findings []RunLeafFinding `json:"findings,omitempty" desc:"The findings its verifiers journalled with run findings --leaf, in order; absent when there were none"`
 	Outcome  string           `json:"outcome,omitempty" desc:"passed, failed or skipped; empty while the leaf is open"`
 	Question string           `json:"question,omitempty" desc:"The question node a failed leaf raised, if any"`
+	Commit   string           `json:"commit,omitempty" desc:"A passed leaf's Evidence commit: its verifier's Evidence entries, committed alone"`
 	Detail   string           `json:"detail,omitempty" desc:"Why the leaf ended as it did"`
 }
 
@@ -169,7 +170,7 @@ type RunLeafAttempt struct {
 	Role    string `json:"role" desc:"builder or verifier"`
 	Attempt int    `json:"attempt" desc:"The leaf's attempt, from 1"`
 	Outcome string `json:"outcome" desc:"pass or fail"`
-	Commit  string `json:"commit,omitempty" desc:"A passed builder's commit naming its leaf"`
+	Commit  string `json:"commit,omitempty" desc:"A passed builder's commit naming its leaf; a passed verifier's Evidence commit"`
 	Detail  string `json:"detail,omitempty" desc:"Why: the session's exit, that its agent said done, or that a builder left no commit naming its leaf"`
 	At      string `json:"at" desc:"When it was judged, RFC 3339 UTC"`
 }
@@ -1356,7 +1357,7 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 	for _, l := range st.Leaves {
 		rl := RunLeaf{
 			Step: l.Step, Leaf: l.Leaf, Handle: l.Handle, Sessions: []RunLeafSession{}, Attempts: []RunLeafAttempt{},
-			Outcome: l.Outcome, Question: l.Question, Detail: l.Detail,
+			Outcome: l.Outcome, Question: l.Question, Commit: l.Commit, Detail: l.Detail,
 		}
 		for _, ls := range l.Sessions {
 			rl.Sessions = append(rl.Sessions, RunLeafSession{

@@ -3027,7 +3027,7 @@ cmp stdout describe.golden.json
                             "type": "integer"
                           },
                           "commit": {
-                            "description": "A passed builder's commit naming its leaf",
+                            "description": "A passed builder's commit naming its leaf; a passed verifier's Evidence commit",
                             "type": "string"
                           },
                           "detail": {
@@ -3052,6 +3052,10 @@ cmp stdout describe.golden.json
                         "type": "object"
                       },
                       "type": "array"
+                    },
+                    "commit": {
+                      "description": "A passed leaf's Evidence commit: its verifier's Evidence entries, committed alone",
+                      "type": "string"
                     },
                     "detail": {
                       "description": "Why the leaf ended as it did",
@@ -3967,7 +3971,7 @@ cmp stdout describe.golden.json
                             "type": "integer"
                           },
                           "commit": {
-                            "description": "A passed builder's commit naming its leaf",
+                            "description": "A passed builder's commit naming its leaf; a passed verifier's Evidence commit",
                             "type": "string"
                           },
                           "detail": {
@@ -3992,6 +3996,10 @@ cmp stdout describe.golden.json
                         "type": "object"
                       },
                       "type": "array"
+                    },
+                    "commit": {
+                      "description": "A passed leaf's Evidence commit: its verifier's Evidence entries, committed alone",
+                      "type": "string"
                     },
                     "detail": {
                       "description": "Why the leaf ended as it did",
@@ -4758,7 +4766,7 @@ cmp stdout describe.golden.json
                         "type": "integer"
                       },
                       "commit": {
-                        "description": "A passed builder's commit naming its leaf",
+                        "description": "A passed builder's commit naming its leaf; a passed verifier's Evidence commit",
                         "type": "string"
                       },
                       "detail": {
@@ -4783,6 +4791,10 @@ cmp stdout describe.golden.json
                     "type": "object"
                   },
                   "type": "array"
+                },
+                "commit": {
+                  "description": "A passed leaf's Evidence commit: its verifier's Evidence entries, committed alone",
+                  "type": "string"
                 },
                 "detail": {
                   "description": "Why the leaf ended as it did",
