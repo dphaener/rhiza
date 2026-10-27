@@ -16,12 +16,15 @@ type Tab struct {
 
 // Record is one session, stored as <id>.json.
 type Record struct {
-	ID             string    `json:"id"`
-	Agent          string    `json:"agent"`
-	Change         string    `json:"change"`
-	Title          string    `json:"title"`
-	Step           string    `json:"step"`
-	Run            string    `json:"run,omitempty"`
+	ID     string `json:"id"`
+	Agent  string `json:"agent"`
+	Change string `json:"change"`
+	Title  string `json:"title"`
+	Step   string `json:"step"`
+	Run    string `json:"run,omitempty"`
+	// Autonomous is true when an autonomous run launched the session: the
+	// owner is not there to answer it.
+	Autonomous     bool      `json:"autonomous,omitempty"`
 	Actor          string    `json:"actor"`
 	For            string    `json:"for"`
 	PermissionMode string    `json:"permission_mode"`

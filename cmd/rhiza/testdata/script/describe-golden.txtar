@@ -2650,6 +2650,38 @@ cmp stdout describe.golden.json
             "additionalProperties": false,
             "description": "The run as its journal stands; the command exits 1 when the run failed",
             "properties": {
+              "accepts": {
+                "description": "The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it was journalled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "change": {
+                      "description": "The change set accepted or rejected",
+                      "type": "string"
+                    },
+                    "entry": {
+                      "description": "The model log entry ID of the accept or reject",
+                      "type": "string"
+                    },
+                    "verb": {
+                      "description": "accepted or rejected",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "change",
+                    "entry",
+                    "verb"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "amendments": {
                 "description": "The amendments made to its agent steps' briefs or plans, in order",
                 "items": {
@@ -2686,6 +2718,10 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "autonomous": {
+                "description": "True for a run started with --autonomous: it goes on without the owner; absent otherwise",
+                "type": "boolean"
               },
               "blocked": {
                 "additionalProperties": false,
@@ -2805,6 +2841,55 @@ cmp stdout describe.golden.json
                     "step",
                     "text",
                     "to"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "questions": {
+                "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "answered": {
+                      "description": "True once the answer was delivered to the asking session",
+                      "type": "boolean"
+                    },
+                    "at": {
+                      "description": "When it was asked, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "decision": {
+                      "description": "The handle of the Decision that answers it, once the arbiter passed; empty otherwise",
+                      "type": "string"
+                    },
+                    "handle": {
+                      "description": "The question node's handle",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "The arbiter's verdict: pass, fail or error; empty while it is open",
+                      "type": "string"
+                    },
+                    "question": {
+                      "description": "The question node's ID",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The agent step that asked",
+                      "type": "string"
+                    },
+                    "text": {
+                      "description": "What the session asked",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "handle",
+                    "question",
+                    "step",
+                    "text"
                   ],
                   "type": "object"
                 },
@@ -3099,6 +3184,10 @@ cmp stdout describe.golden.json
             "description": "The agent adapter of agent steps that name none; default the built-in default adapter",
             "type": "string"
           },
+          "autonomous": {
+            "description": "Run without the owner: skip the owner's gates and questions, recording each; never changes agent permissions. Resume keeps it",
+            "type": "boolean"
+          },
           "change": {
             "description": "The change set: a full ID or a unique prefix of 4+ characters; default --change, else the current one",
             "type": "string"
@@ -3134,6 +3223,38 @@ cmp stdout describe.golden.json
             "additionalProperties": false,
             "description": "The run as its journal stands; the command exits 1 when the run failed",
             "properties": {
+              "accepts": {
+                "description": "The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it was journalled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "change": {
+                      "description": "The change set accepted or rejected",
+                      "type": "string"
+                    },
+                    "entry": {
+                      "description": "The model log entry ID of the accept or reject",
+                      "type": "string"
+                    },
+                    "verb": {
+                      "description": "accepted or rejected",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "change",
+                    "entry",
+                    "verb"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "amendments": {
                 "description": "The amendments made to its agent steps' briefs or plans, in order",
                 "items": {
@@ -3170,6 +3291,10 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "autonomous": {
+                "description": "True for a run started with --autonomous: it goes on without the owner; absent otherwise",
+                "type": "boolean"
               },
               "blocked": {
                 "additionalProperties": false,
@@ -3289,6 +3414,55 @@ cmp stdout describe.golden.json
                     "step",
                     "text",
                     "to"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "questions": {
+                "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "answered": {
+                      "description": "True once the answer was delivered to the asking session",
+                      "type": "boolean"
+                    },
+                    "at": {
+                      "description": "When it was asked, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "decision": {
+                      "description": "The handle of the Decision that answers it, once the arbiter passed; empty otherwise",
+                      "type": "string"
+                    },
+                    "handle": {
+                      "description": "The question node's handle",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "The arbiter's verdict: pass, fail or error; empty while it is open",
+                      "type": "string"
+                    },
+                    "question": {
+                      "description": "The question node's ID",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The agent step that asked",
+                      "type": "string"
+                    },
+                    "text": {
+                      "description": "What the session asked",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "handle",
+                    "question",
+                    "step",
+                    "text"
                   ],
                   "type": "object"
                 },
@@ -3590,6 +3764,38 @@ cmp stdout describe.golden.json
       "response": {
         "additionalProperties": false,
         "properties": {
+          "accepts": {
+            "description": "The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "at": {
+                  "description": "When it was journalled, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "change": {
+                  "description": "The change set accepted or rejected",
+                  "type": "string"
+                },
+                "entry": {
+                  "description": "The model log entry ID of the accept or reject",
+                  "type": "string"
+                },
+                "verb": {
+                  "description": "accepted or rejected",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "at",
+                "change",
+                "entry",
+                "verb"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "amendments": {
             "description": "The amendments made to its agent steps' briefs or plans, in order",
             "items": {
@@ -3626,6 +3832,10 @@ cmp stdout describe.golden.json
               "type": "object"
             },
             "type": "array"
+          },
+          "autonomous": {
+            "description": "True for a run started with --autonomous: it goes on without the owner; absent otherwise",
+            "type": "boolean"
           },
           "blocked": {
             "additionalProperties": false,
@@ -3745,6 +3955,55 @@ cmp stdout describe.golden.json
                 "step",
                 "text",
                 "to"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "questions": {
+            "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "answered": {
+                  "description": "True once the answer was delivered to the asking session",
+                  "type": "boolean"
+                },
+                "at": {
+                  "description": "When it was asked, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "decision": {
+                  "description": "The handle of the Decision that answers it, once the arbiter passed; empty otherwise",
+                  "type": "string"
+                },
+                "handle": {
+                  "description": "The question node's handle",
+                  "type": "string"
+                },
+                "outcome": {
+                  "description": "The arbiter's verdict: pass, fail or error; empty while it is open",
+                  "type": "string"
+                },
+                "question": {
+                  "description": "The question node's ID",
+                  "type": "string"
+                },
+                "step": {
+                  "description": "The agent step that asked",
+                  "type": "string"
+                },
+                "text": {
+                  "description": "What the session asked",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "at",
+                "handle",
+                "question",
+                "step",
+                "text"
               ],
               "type": "object"
             },

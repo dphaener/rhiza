@@ -4,6 +4,12 @@
 // The package is pure. It parses bytes and decides transitions; it runs no
 // program, writes no file and keeps no journal. An agent step's `agent` is an
 // opaque adapter name, resolved elsewhere.
+//
+// An arbiter step is not a state of the machine: no step goes to it and the
+// run never starts at it. The engine calls it, in an autonomous run, to decide
+// a question an agent step raised. A file declares at most one, only to set
+// its agent, permission mode and interval; its prompt is fixed. Without one,
+// Definition.Arbiter gives a built-in arbiter step.
 package workflow
 
 import (
@@ -25,7 +31,14 @@ const (
 	KindAgent   = "agent"
 	KindWait    = "wait"
 	KindCommand = "command"
+	// KindArbiter is the step an autonomous run's engine calls to decide a
+	// question an agent step raised. It is never a transition target.
+	KindArbiter = "arbiter"
 )
+
+// ArbiterName is the name of the built-in arbiter step, used when a file
+// declares none.
+const ArbiterName = "arbiter"
 
 // Reserved targets: an `on.<outcome>` naming one of these ends the run.
 const (
@@ -75,6 +88,7 @@ var kindOutcomes = map[string][]string{
 	KindAgent:   {OutcomePass, OutcomeFail},
 	KindWait:    {OutcomePass, OutcomeTimeout},
 	KindCommand: {OutcomePass, OutcomeFail},
+	KindArbiter: {OutcomePass, OutcomeFail},
 }
 
 // Definition is a loaded, validated workflow.
@@ -111,10 +125,11 @@ type Step struct {
 	// (AgentUntilInterval on an agent step with until), and zero on a
 	// command step.
 	Interval time.Duration
-	// Agent is an agent step's adapter name; empty means the default.
+	// Agent is an agent or arbiter step's adapter name; empty means the
+	// run's, else the default.
 	Agent string
-	// PermissionMode is an agent step's permission mode; empty means the
-	// run's.
+	// PermissionMode is an agent or arbiter step's permission mode; empty
+	// means the run's.
 	PermissionMode string
 	// Prompt is an agent step's first prompt to its agent, a template over
 	// {change}, {slug}, {title}, {run} and {step}.
@@ -131,6 +146,18 @@ func (s Step) Cap() int {
 		return s.MaxVisits
 	}
 	return 1
+}
+
+// Arbiter is the step that decides an autonomous run's questions: the
+// file's arbiter step, or a built-in one (the run's agent and mode, checked
+// every DefaultInterval) when the file declares none.
+func (d *Definition) Arbiter() Step {
+	for _, n := range d.Order {
+		if s := d.Steps[n]; s.Kind == KindArbiter {
+			return s
+		}
+	}
+	return Step{Name: ArbiterName, Kind: KindArbiter, Interval: DefaultInterval, On: map[string]string{}}
 }
 
 // WaitsForDone reports whether the step checks its `until` only once its
@@ -264,10 +291,17 @@ func Parse(name string, data []byte) (*Definition, error) {
 
 	d := &Definition{Name: name, Steps: make(map[string]Step, len(f.Step))}
 	d.Order = stepOrder(md.Keys(), f.Step)
+	arbiter := ""
 	for _, n := range d.Order {
 		s, err := buildStep(n, f.Step[n])
 		if err != nil {
 			return nil, err
+		}
+		if s.Kind == KindArbiter {
+			if arbiter != "" {
+				return nil, fmt.Errorf("steps %q and %q are both arbiter steps; a workflow has at most one", arbiter, n)
+			}
+			arbiter = n
 		}
 		d.Steps[n] = s
 	}
@@ -283,6 +317,9 @@ func Parse(name string, data []byte) (*Definition, error) {
 			return nil, fmt.Errorf("start names %q, which is not a step; want one of %s", f.Start, strings.Join(d.Order, ", "))
 		}
 		d.Start = f.Start
+	}
+	if d.Steps[d.Start].Kind == KindArbiter {
+		return nil, fmt.Errorf("step %q is an arbiter step and cannot be the start step: the engine calls it on a question; start at another step", d.Start)
 	}
 	return d, nil
 }
@@ -362,10 +399,12 @@ func buildStep(name string, fs fileStep) (Step, error) {
 
 	switch fs.Kind {
 	case KindAgent, KindWait, KindCommand:
+	case KindArbiter:
+		return buildArbiter(s, fs, fail)
 	case "":
-		return fail("no kind: want agent, wait or command")
+		return fail("no kind: want agent, wait, command or arbiter")
 	default:
-		return fail("unknown kind %q: want agent, wait or command", fs.Kind)
+		return fail("unknown kind %q: want agent, wait, command or arbiter", fs.Kind)
 	}
 
 	if fs.Run != "" && fs.Kind != KindCommand {
@@ -392,10 +431,10 @@ func buildStep(name string, fs fileStep) (Step, error) {
 		return fail("interval is only for wait and agent steps; a command step cannot have it")
 	}
 	if fs.Agent != "" && fs.Kind != KindAgent {
-		return fail("agent is only for agent steps; a %s step cannot have it", fs.Kind)
+		return fail("agent is only for agent and arbiter steps; a %s step cannot have it", fs.Kind)
 	}
 	if fs.PermissionMode != "" && fs.Kind != KindAgent {
-		return fail("permission_mode is only for agent steps; a %s step cannot have it", fs.Kind)
+		return fail("permission_mode is only for agent and arbiter steps; a %s step cannot have it", fs.Kind)
 	}
 	if fs.Prompt != "" && fs.Kind != KindAgent {
 		return fail("prompt is only for agent steps; a %s step cannot have it", fs.Kind)
@@ -447,6 +486,47 @@ func buildStep(name string, fs fileStep) (Step, error) {
 	return s, nil
 }
 
+// buildArbiter finishes an arbiter step: it takes agent, permission_mode
+// and interval (DefaultInterval when unset) and refuses every other key,
+// its prompt above all, which is fixed so that the arbiter is handed only
+// the question.
+func buildArbiter(s Step, fs fileStep, fail func(string, ...any) (Step, error)) (Step, error) {
+	refused := []struct {
+		key string
+		set bool
+		why string
+	}{
+		{"prompt", fs.Prompt != "", "its prompt is fixed: it names only the question and rhiza guide arbiter"},
+		{"run", fs.Run != "", "it runs an agent, not a command"},
+		{"until", fs.Until != "", "it ends when its agent says done or exits"},
+		{"until_when", fs.UntilWhen != "", "it ends when its agent says done or exits"},
+		{"timeout", fs.Timeout != "", "it ends when its agent says done or exits"},
+		{"max_visits", fs.MaxVisits != 0, "no step goes to it, so it has no visits"},
+	}
+	for _, r := range refused {
+		if r.set {
+			return fail("an arbiter step cannot have %s: %s; remove it", r.key, r.why)
+		}
+	}
+	if len(fs.On) > 0 {
+		outcomes := make([]string, 0, len(fs.On))
+		for o := range fs.On {
+			outcomes = append(outcomes, o)
+		}
+		sort.Strings(outcomes)
+		return fail("on.%s: an arbiter step cannot have on.: its outcome goes back to the step that asked; remove it", outcomes[0])
+	}
+	s.Interval = DefaultInterval
+	if fs.Interval != "" {
+		d, err := positiveDuration(fs.Interval)
+		if err != nil {
+			return fail("interval %v", err)
+		}
+		s.Interval = d
+	}
+	return s, nil
+}
+
 func positiveDuration(v string) (time.Duration, error) {
 	d, err := time.ParseDuration(v)
 	if err != nil {
@@ -459,8 +539,8 @@ func positiveDuration(v string) (time.Duration, error) {
 }
 
 // checkTargets refuses an outcome name that does not match the pattern or
-// that the step's kind cannot produce, and a target that is neither a step
-// nor done or failed.
+// that the step's kind cannot produce, a target that is neither a step nor
+// done or failed, and a target that is the arbiter step.
 func checkTargets(s Step, steps map[string]Step) error {
 	outcomes := make([]string, 0, len(s.On))
 	for o := range s.On {
@@ -478,8 +558,12 @@ func checkTargets(s Step, steps map[string]Step) error {
 		if t == TargetDone || t == TargetFailed {
 			continue
 		}
-		if _, ok := steps[t]; !ok {
+		ts, ok := steps[t]
+		if !ok {
 			return fmt.Errorf("step %q: on.%s names %q, which is not a step; want a step or done or failed", s.Name, o, t)
+		}
+		if ts.Kind == KindArbiter {
+			return fmt.Errorf("step %q: on.%s names %q, an arbiter step; no step goes to it (the engine calls it on a question): want another step or done or failed", s.Name, o, t)
 		}
 	}
 	return nil
@@ -487,7 +571,7 @@ func checkTargets(s Step, steps map[string]Step) error {
 
 // article prefixes a step kind with "a" or "an".
 func article(kind string) string {
-	if kind == KindAgent {
+	if kind == KindAgent || kind == KindArbiter {
 		return "an " + kind
 	}
 	return "a " + kind

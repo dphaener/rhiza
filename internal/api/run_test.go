@@ -583,6 +583,61 @@ func TestRunInfoHumanBlockedWithoutQuestion(t *testing.T) {
 	}
 }
 
+func TestRunInfoAcceptsAndQuestions(t *testing.T) {
+	at := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
+	st := run.State{
+		ID: "R1", Autonomous: true, Ended: true, Result: run.Succeeded,
+		Accepts: []run.Accept{{Change: "C1", LogEntry: "E1", Verb: run.TypeAccepted, At: at}},
+		Asked: []run.Asked{
+			{Step: "build", Question: "Q1", Handle: "open-q", Text: "Which?", At: at},
+			{Step: "build", Question: "Q2", Handle: "failed-q", Text: "How?", At: at},
+			{Step: "build", Question: "Q3", Handle: "answered-q", Text: "Why?", At: at, Answered: "use-x"},
+			{Step: "build", Question: "Q4", Handle: "passed-q", Text: "When?", At: at},
+		},
+		Arbitrations: []run.Arbitration{
+			{Step: "build", Session: "S1", Question: "Q1", At: at},
+			{Step: "build", Session: "S2", Question: "Q2", Outcome: "fail", At: at},
+			{Step: "build", Session: "S3", Question: "Q3", Outcome: "pass", Decision: "use-x", At: at},
+			{Step: "build", Session: "S4", Question: "Q4", Outcome: "pass", Decision: "use-y", At: at},
+		},
+	}
+	info := runInfo(st, false, nil)
+	want := []RunAccept{{Change: "C1", Entry: "E1", Verb: "accepted", At: "2026-01-02T03:04:05Z"}}
+	if !slices.Equal(info.Accepts, want) {
+		t.Errorf("accepts = %+v", info.Accepts)
+	}
+	got := []RunQuestion{}
+	for _, q := range info.Questions {
+		got = append(got, RunQuestion{Question: q.Question, Outcome: q.Outcome, Decision: q.Decision, Answered: q.Answered})
+	}
+	wantQ := []RunQuestion{
+		{Question: "Q1"},
+		{Question: "Q2", Outcome: "fail"},
+		{Question: "Q3", Outcome: "pass", Decision: "use-x", Answered: true},
+		{Question: "Q4", Outcome: "pass", Decision: "use-y"},
+	}
+	if !slices.Equal(got, wantQ) {
+		t.Errorf("questions = %+v", got)
+	}
+	out := human(t, info)
+	for _, s := range []string{
+		"## Accepted in the owner's place\n\n- 2026-01-02T03:04:05Z accepted change set C1 (log entry E1)\n",
+		"## Questions put to the arbiter\n\n",
+		"- open-q (Q1): Which? — open\n",
+		"- failed-q (Q2): How? — not decided: the arbiter's verdict was fail\n",
+		"- answered-q (Q3): Why? — decision use-x\n",
+		"- passed-q (Q4): When? — decision use-y, not yet delivered\n",
+	} {
+		if !strings.Contains(out, s) {
+			t.Errorf("markdown lacks %q:\n%s", s, out)
+		}
+	}
+	plain := human(t, runInfo(run.State{ID: "R2"}, false, nil))
+	if strings.Contains(plain, "owner's place") || strings.Contains(plain, "put to the arbiter") {
+		t.Errorf("a normal run's markdown:\n%s", plain)
+	}
+}
+
 func TestRexReportEncoder(t *testing.T) {
 	long := strings.Repeat("é", 200) // 400 bytes
 	msg := "line one\nline two\x1b[31m\tend" + strings.Repeat("x", 3000)

@@ -148,5 +148,5 @@ or explains the problem. `rhiza describe <command> --json` gives any command's a
 `rhiza guide <topic>` prints a topic; `rhiza guide ls` lists them.
 Topics: `change-sets` (lifecycle, intention vs record, `--record`), `carving` (moving nodes
 between change sets), `apply` (the file format), `sources` (recording a conversation),
-`reopening` (writing after a land). To turn a raw conversation into a Source, use the
-rhiza-scrub skill (`rhiza guide scrub`).
+`reopening` (writing after a land), `arbiter` (deciding a question in an autonomous run).
+To turn a raw conversation into a Source, use the rhiza-scrub skill (`rhiza guide scrub`).

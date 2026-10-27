@@ -49,7 +49,7 @@ func TestLoadRefused(t *testing.T) {
 		file string
 		want []string
 	}{
-		{"unknown-kind.toml", []string{`step "repeat": unknown kind "loop": want agent, wait or command`}},
+		{"unknown-kind.toml", []string{`step "repeat": unknown kind "loop": want agent, wait, command or arbiter`}},
 		{"missing-target.toml", []string{`step "build": on.pass names "nope", which is not a step; want a step or done or failed`}},
 		{"bad-outcome.toml", []string{`step "build": on.sucess: a command step has no outcome "sucess"; want on.pass or on.fail`}},
 	}
@@ -147,11 +147,11 @@ func TestParseErrors(t *testing.T) {
 		want string
 	}{
 		{"unknown kind", "[step.x]\nkind = \"loop\"\n",
-			`step "x": unknown kind "loop": want agent, wait or command`},
+			`step "x": unknown kind "loop": want agent, wait, command or arbiter`},
 		{"workflow kind is later", "[step.x]\nkind = \"workflow\"\n",
 			`step "x": unknown kind "workflow"`},
 		{"no kind", "[step.x]\nrun = \"true\"\n",
-			`step "x": no kind: want agent, wait or command`},
+			`step "x": no kind: want agent, wait, command or arbiter`},
 		{"missing target", cmd + "on.pass = \"nope\"\n",
 			`step "a": on.pass names "nope", which is not a step; want a step or done or failed`},
 		{"unknown step key", cmd + "retries = 2\n",
@@ -193,9 +193,9 @@ func TestParseErrors(t *testing.T) {
 		{"interval on command", cmd + "interval = \"1s\"\n",
 			`step "a": interval is only for wait and agent steps`},
 		{"agent on command", cmd + "agent = \"x\"\n",
-			`step "a": agent is only for agent steps`},
+			`step "a": agent is only for agent and arbiter steps`},
 		{"permission_mode on wait", "[step.w]\nkind = \"wait\"\nuntil = \"true\"\ntimeout = \"1m\"\npermission_mode = \"manual\"\n",
-			`step "w": permission_mode is only for agent steps`},
+			`step "w": permission_mode is only for agent and arbiter steps`},
 		{"negative max_visits", cmd + "max_visits = -1\n",
 			`step "a": max_visits is -1; want 0 or more`},
 		{"start not a step", "start = \"nope\"\n" + cmd,
@@ -439,6 +439,92 @@ func TestAgentStepUntilWhen(t *testing.T) {
 			`step "w": until_when is only for agent steps; a wait step cannot have it`},
 		{"command step", "[step.a]\nkind = \"command\"\nrun = \"true\"\nuntil_when = \"idle\"\n",
 			`step "a": until_when is only for agent steps; a command step cannot have it`},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Parse("w", []byte(tt.src))
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Errorf("error %v; want %q", err, tt.want)
+			}
+		})
+	}
+}
+
+// arbiterBase is a workflow whose agent step starts it, for the arbiter
+// step tests to add an arbiter step to.
+const arbiterBase = "[step.build]\nkind = \"agent\"\nprompt = \"go\"\n"
+
+// A file may declare one arbiter step, with agent, permission_mode and
+// interval; it defaults to DefaultInterval and produces pass or fail.
+func TestArbiterStepLoads(t *testing.T) {
+	src := arbiterBase + "[step.decide]\nkind = \"arbiter\"\nagent = \"x\"\npermission_mode = \"manual\"\ninterval = \"5s\"\n"
+	d, err := Parse("w", []byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := Step{Name: "decide", Kind: KindArbiter, Agent: "x", PermissionMode: "manual", Interval: 5 * time.Second, On: map[string]string{}}
+	if got := d.Steps["decide"]; !reflect.DeepEqual(got, want) {
+		t.Errorf("arbiter step = %+v\nwant %+v", got, want)
+	}
+	if got := d.Arbiter(); !reflect.DeepEqual(got, want) {
+		t.Errorf("Arbiter() = %+v, want the file's step", got)
+	}
+	if d.Start != "build" {
+		t.Errorf("start = %q, want build", d.Start)
+	}
+	if want := []string{OutcomePass, OutcomeFail}; !slices.Equal(kindOutcomes[KindArbiter], want) {
+		t.Errorf("arbiter outcomes = %v, want %v", kindOutcomes[KindArbiter], want)
+	}
+
+	d, err = Parse("w", []byte(arbiterBase+"[step.decide]\nkind = \"arbiter\"\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := d.Arbiter().Interval; got != DefaultInterval {
+		t.Errorf("arbiter interval = %v, want %v", got, DefaultInterval)
+	}
+}
+
+// Without an arbiter step, Arbiter gives the built-in one: the run's agent
+// and mode, every DefaultInterval.
+func TestArbiterBuiltin(t *testing.T) {
+	d, err := Parse("w", []byte(arbiterBase))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := Step{Name: ArbiterName, Kind: KindArbiter, Interval: DefaultInterval, On: map[string]string{}}
+	if got := d.Arbiter(); !reflect.DeepEqual(got, want) {
+		t.Errorf("Arbiter() = %+v, want %+v", got, want)
+	}
+	if _, ok := d.Steps[ArbiterName]; ok {
+		t.Error("the built-in arbiter became a step of the file")
+	}
+}
+
+// An arbiter step refuses a prompt and every key but agent,
+// permission_mode and interval; a file has at most one, it is never the
+// start step and no on. goes to it.
+func TestArbiterStepRefused(t *testing.T) {
+	arb := "[step.decide]\nkind = \"arbiter\"\n"
+	for _, tt := range []struct {
+		name, src, want string
+	}{
+		{"prompt", arbiterBase + arb + "prompt = \"decide {change}\"\n",
+			`step "decide": an arbiter step cannot have prompt: its prompt is fixed`},
+		{"run", arbiterBase + arb + "run = \"true\"\n", `step "decide": an arbiter step cannot have run`},
+		{"until", arbiterBase + arb + "until = \"true\"\n", `step "decide": an arbiter step cannot have until`},
+		{"until_when", arbiterBase + arb + "until_when = \"done\"\n", `step "decide": an arbiter step cannot have until_when`},
+		{"timeout", arbiterBase + arb + "timeout = \"1m\"\n", `step "decide": an arbiter step cannot have timeout`},
+		{"max_visits", arbiterBase + arb + "max_visits = 2\n", `step "decide": an arbiter step cannot have max_visits`},
+		{"on", arbiterBase + arb + "on.pass = \"build\"\n", `step "decide": on.pass: an arbiter step cannot have on.`},
+		{"bad interval", arbiterBase + arb + "interval = \"soon\"\n", `step "decide": interval "soon" is not a duration`},
+		{"two arbiters", arbiterBase + arb + "[step.again]\nkind = \"arbiter\"\n",
+			`steps "decide" and "again" are both arbiter steps; a workflow has at most one`},
+		{"first step", arb + arbiterBase,
+			`step "decide" is an arbiter step and cannot be the start step`},
+		{"start", "start = \"decide\"\n" + arbiterBase + arb,
+			`step "decide" is an arbiter step and cannot be the start step`},
+		{"target", "[step.build]\nkind = \"agent\"\nprompt = \"go\"\non.fail = \"decide\"\n" + arb,
+			`step "build": on.fail names "decide", an arbiter step; no step goes to it`},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := Parse("w", []byte(tt.src))

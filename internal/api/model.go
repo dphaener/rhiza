@@ -38,6 +38,9 @@ type Model interface {
 	// LinkBetween finds the live link of type t from from to to. No match
 	// is a not_found Error; several are a usage Error listing them.
 	LinkBetween(from, to id.ID, t op.LinkType) (Link, error)
+	// LinksTo returns the live links of type t whose To is to, sorted by
+	// ID. It is nil when there are none.
+	LinksTo(to id.ID, t op.LinkType) []Link
 	// DependsOn returns what n depends on: the To of each live depends-on
 	// link from n, sorted by ID, each once. It is nil when there are none.
 	DependsOn(n id.ID) []id.ID
@@ -438,6 +441,10 @@ func (m *model) LinkBetween(from, to id.ID, t op.LinkType) (Link, error) {
 		return matches[0], nil
 	}
 	return Link{}, ambiguousLinks(fmt.Sprintf("%s from %s to %s", t, from, to), matches)
+}
+
+func (m *model) LinksTo(to id.ID, t op.LinkType) []Link {
+	return m.sortedLinks(func(k *Link) bool { return !k.Retired && k.To == to && k.Type == t })
 }
 
 func (m *model) DependsOn(n id.ID) []id.ID {

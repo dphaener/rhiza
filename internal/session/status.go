@@ -51,6 +51,12 @@ type Status struct {
 	// nothing of whether the session works, waits or has exited, and is
 	// read on its own (SaidDone).
 	Done *Report `json:"done,omitempty"`
+	// Asked is a question the agent of an autonomous session put to the
+	// owner, which its hook denied: the session waits for the arbiter's
+	// answer, which arrives as a message. Later hooks do not touch it; it is
+	// cleared once the answer is delivered. Like Done, Resolve does not
+	// weigh it.
+	Asked *Report `json:"asked,omitempty"`
 }
 
 // SaidDone reports whether the agent has said its work is done.

@@ -149,6 +149,66 @@ func TestFoldFinished(t *testing.T) {
 	}
 }
 
+func TestFoldAutonomous(t *testing.T) {
+	plain := startedEntry("a", 0)
+	if st := (Journal{Entries: []Entry{plain}}).State(); st.Autonomous {
+		t.Fatalf("a run started without autonomous folds autonomous: %+v", st)
+	}
+	b, err := json.Marshal(plain)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(b), "autonomous") {
+		t.Fatalf("a plain started entry names autonomous: %s", b)
+	}
+	auto := startedEntry("a", 0)
+	auto.Started.Autonomous = true
+	b, err = json.Marshal(auto)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(b), `"autonomous":true`) {
+		t.Fatalf("an autonomous started entry lacks autonomous: %s", b)
+	}
+	var back Entry
+	if err := json.Unmarshal(b, &back); err != nil {
+		t.Fatal(err)
+	}
+	if st := (Journal{Entries: []Entry{back, {Type: TypeEntered, At: at(1), Step: "a"}}}).State(); !st.Autonomous {
+		t.Fatalf("an autonomous run folds not autonomous: %+v", st)
+	}
+}
+
+func TestFoldAccepts(t *testing.T) {
+	es := []Entry{
+		startedEntry("a", 0),
+		{Type: TypeEntered, At: at(1), Step: "a"},
+		{Type: TypeAccepted, At: at(2), Change: "CS1", LogEntry: "E1"},
+		{Type: TypeRejected, At: at(3), Change: "CS2", LogEntry: "E2"},
+	}
+	st := (Journal{Entries: es}).State()
+	want := []Accept{
+		{Change: "CS1", LogEntry: "E1", Verb: TypeAccepted, At: at(2)},
+		{Change: "CS2", LogEntry: "E2", Verb: TypeRejected, At: at(3)},
+	}
+	if !reflect.DeepEqual(st.Accepts, want) {
+		t.Fatalf("accepts = %+v, want %+v", st.Accepts, want)
+	}
+	if st.Current != "a" || st.Ended || st.Stopped != "" {
+		t.Fatalf("accepts changed the fold: %+v", st)
+	}
+	b, err := json.Marshal(es[2])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(b), `"change":"CS1","log_entry":"E1"`) {
+		t.Fatalf("accepted entry = %s", b)
+	}
+	if b, _ := json.Marshal(es[1]); strings.Contains(string(b), "change") || strings.Contains(string(b), "log_entry") {
+		t.Fatalf("an entered entry names change or log_entry: %s", b)
+	}
+}
+
 func TestFoldFailedDetail(t *testing.T) {
 	st := Journal{Entries: []Entry{
 		startedEntry("a", 0),

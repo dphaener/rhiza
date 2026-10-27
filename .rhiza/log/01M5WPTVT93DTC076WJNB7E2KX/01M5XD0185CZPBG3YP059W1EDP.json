@@ -1,0 +1,209 @@
+{
+  "actor": "01M5XCXQV2D7ZGBZT8MCF08JRR",
+  "after": [
+    "01M5XCKZBKQMQPQT1B1N8ZT7RX"
+  ],
+  "at": "2026-10-27T00:43:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 9b213db (code as of 8b72ad5) on branch cs/autonomous-mode-and-the, re-run with -count=1 by an independent verifier (claude-code-54c93d5c-verifier)",
+          "statement": "Testscript run-autonomous starts a two-agent workflow with --autonomous on fake rex and claude: a dry run prints \"autonomous\": true and launches nothing; the journal's started entry has \"autonomous\":true; run status --json gives \"autonomous\": true and the markdown '- Autonomous: yes'; the fake agent logs RHIZA_AUTONOMOUS=1; after the wait stop, run resume without the flag launches step two with RHIZA_AUTONOMOUS=1. A run started without the flag (even with RHIZA_AUTONOMOUS=1 in the terminal) has no autonomous in the journal, status or agent env. describe-golden holds the new autonomous request and response fields and passes. TestFoldAutonomous folds the flag from the started entry. Hands-on: the worktree build, in a scratch repo with RHIZA_* unset, after rhiza init, change new 'X' and commits, run start --autonomous --permission-mode manual --dry-run --json printed \"autonomous\": true, exit 0.",
+          "tests": "go test -count=1 ./cmd/rhiza -run 'TestScripts/run-autonomous$'; go test -count=1 ./internal/run -run TestFoldAutonomous; go test -count=1 ./cmd/rhiza -run TestScripts/describe-golden (in make check); hands-on: go build -o $TMPDIR/rhiza-ver ./cmd/rhiza; rhiza run start --autonomous --permission-mode manual --dry-run --json"
+        },
+        "handle": "run-start-autonomous-verified",
+        "id": "01M5XCZZ3V8W2PY8N0AZ517TB7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XCZZ3V8W2PY8N0AVPFB5CZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XCZZ3V8W2PY8N0AVPFB5CZ",
+        "id": "01M5XCZZ7YNMJRJVCFS8QT29R9",
+        "link": "01M5XCZZ7YNMJRJVCFS7DH5F1C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHDKXZ0Z9PQKMPRVQBC5W",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 9b213db (code as of 8b72ad5) on branch cs/autonomous-mode-and-the, re-run with -count=1 by an independent verifier (claude-code-54c93d5c-verifier)",
+          "statement": "Testscript autonomous-permissions runs one workflow on a fake adapter without and with --autonomous; both launches log --permission-mode manual and neither has bypassPermissions or dangerously. run start --autonomous --permission-mode bypassPermissions exits non-zero with 'permission mode bypassPermissions bypasses the agent's permission checks: that needs a machine with trust = \"dedicated\"' (also in --json), and the runs directory still holds 2 journals and no third launch is logged.",
+          "tests": "go test -count=1 ./cmd/rhiza -run 'TestScripts/autonomous-permissions$'"
+        },
+        "handle": "autonomous-keeps-permissions-verified",
+        "id": "01M5XCZZC44X113SBPWA0BNTXY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XCZZC44X113SBPW84AFSP4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XCZZC44X113SBPW84AFSP4",
+        "id": "01M5XCZZG7VSGR7R1NMEXV7FR7",
+        "link": "01M5XCZZG7VSGR7R1NMDZGDMYR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHDW5DG93SS5KHGSB709X",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 9b213db (code as of 8b72ad5) on branch cs/autonomous-mode-and-the, re-run with -count=1 by an independent verifier (claude-code-54c93d5c-verifier)",
+          "statement": "Testscript autonomous-gate-rule proposes a change set and runs accept --rule autonomous: with no RHIZA_RUN it is usage, exit 2, and change show stays proposed; with RHIZA_RUN naming no run, and naming a non-autonomous run, it is usage, exit 2, state proposed and no accepted journal entry; with RHIZA_RUN naming the unfinished autonomous run it accepts, and change show --json gives rule autonomous and reason 'autonomous run <run id>', with one accepted entry (change, log_entry) in that run's journal. A finished autonomous run is refused again; reject is guarded the same way. TestFoldAccepts folds accepted entries. Hands-on: the worktree build in a scratch repo, RHIZA_RUN unset, accept --rule autonomous printed 'cannot accept under rule autonomous: ... RHIZA_RUN is not set' and exited 2.",
+          "tests": "go test -count=1 ./cmd/rhiza -run 'TestScripts/autonomous-gate-rule$'; go test -count=1 ./internal/run -run TestFoldAccepts; hands-on: rhiza accept --rule autonomous (RHIZA_RUN unset) -> exit 2"
+        },
+        "handle": "autonomous-gate-rule-verified",
+        "id": "01M5XCZZM99A0K8ENVQTV9AWAB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XCZZM99A0K8ENVQTS01QKG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XCZZM99A0K8ENVQTS01QKG",
+        "id": "01M5XCZZRCAH31WB1H2BMYSDT4",
+        "link": "01M5XCZZRCAH31WB1H28V7FJNG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHE82S6TFSBBQ3VN42HGQ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 9b213db (code as of 8b72ad5) on branch cs/autonomous-mode-and-the, re-run with -count=1 by an independent verifier (claude-code-54c93d5c-verifier)",
+          "statement": "Testscript guide checks rhiza guide ls lists eight texts including '- arbiter topic N tokens', and rhiza guide arbiter prints '# Arbiter', the apply recipe with wording=(assumed, would have escalated), reasoning=, the link {\"op\":\"link\",\"from\":\"<handle>\",\"type\":\"answers\",\"to\":\"<question id>\"} and rhiza session done. internal/guide TestCaps keeps every text, arbiter included (386 tokens), within its cap, and the topic list test includes arbiter.",
+          "tests": "go test -count=1 ./internal/guide; go test -count=1 ./cmd/rhiza -run 'TestScripts/guide$'"
+        },
+        "handle": "arbiter-guide-verified",
+        "id": "01M5XCZZWHE5FDS228AXQ1NY9X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XCZZWHE5FDS228ATJ6HDVQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XCZZWHE5FDS228ATJ6HDVQ",
+        "id": "01M5XD000NJ414NGQW5T3N021K",
+        "link": "01M5XD000NJ414NGQW5S7ZHA9F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHFC1A3WK2A6G4VQMPTM6",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 9b213db (code as of 8b72ad5) on branch cs/autonomous-mode-and-the, re-run with -count=1 by an independent verifier (claude-code-54c93d5c-verifier)",
+          "statement": "TestArbiterStepLoads parses a workflow with kind = \"arbiter\" into the expected Step and Arbiter(); TestArbiterStepRefused refuses prompt ('an arbiter step cannot have prompt: its prompt is fixed') and run, until, until_when, timeout, max_visits, on.*. internal/api TestStartArbiterPrompt, TestArbiterAnswer, TestRunStartChecksArbiter pass. Testscript arbiter-step (landed with leaf arbiter-on-question's commit, since only an autonomous run's question reaches the arbiter) runs the step on a question with a fake adapter: the arbiter's prompt equals exactly 'Decide question <question ID>: follow rhiza guide arbiter.', without the change set ID, a question- handle or the title; a Decision with reasoning passes ('answered by assume-blue'), no Decision fails ('no live Decision answers question'), a Decision without reasoning fails ('has no reasoning'), and the run fails with it.",
+          "tests": "go test -count=1 ./internal/workflow -run Arbiter; go test -count=1 ./internal/api -run Arbiter; go test -count=1 ./cmd/rhiza -run 'TestScripts/arbiter-step$'"
+        },
+        "handle": "arbiter-step-verified",
+        "id": "01M5XD004RHXKC40PRFW1Y05WX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XD004RHXKC40PRFSR37Z9H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XD004RHXKC40PRFSR37Z9H",
+        "id": "01M5XD008WZXTJ3V4TQRS2BP91",
+        "link": "01M5XD008WZXTJ3V4TQQ9HXY6H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHFM7T3P6V5ZV7XVKE55Q",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 9b213db (code as of 8b72ad5) on branch cs/autonomous-mode-and-the, re-run with -count=1 by an independent verifier (claude-code-54c93d5c-verifier)",
+          "statement": "Testscript arbiter-question with a fake agent that reports a blocked question through the real hook: autonomous, the run's change set gains one question node whose statement is 'Which colour?' with the asking session, the journal has an asked entry and an arbiter entry naming its ID, and the fake arbiter's prompt carries that ID; a fake arbiter that writes nothing ends the run failed with 'arbiter failed on question question-<sid8>-1 (<id>): no live Decision answers question'; normal, run status shows blocked with '- Question: Which colour?', the question count stays 2 and no further arbiter is launched, and the owner is told of the block. Engine tests TestAutonomousQuestionGoesToArbiter, TestAutonomousArbiterFailFailsRun, TestNormalRunQuestionNotArbitrated, TestAutonomousOtherBlockNotArbitrated, TestAutonomousResumeRejoinsArbiter pass.",
+          "tests": "go test -count=1 ./cmd/rhiza -run 'TestScripts/arbiter-question$'; go test -count=1 ./internal/run -run 'Autonomous|Normal'"
+        },
+        "handle": "arbiter-on-question-verified",
+        "id": "01M5XD00CZ04HD7HXHXV62DEX9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XD00CZ04HD7HXHXS2BEC7P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XD00CZ04HD7HXHXS2BEC7P",
+        "id": "01M5XD00H6PGR4HSFD7VRQFKRS",
+        "link": "01M5XD00H6PGR4HSFD7RHFZBH0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHG053937VJ6GEJ84EJJH",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 9b213db (code as of 8b72ad5) on branch cs/autonomous-mode-and-the, re-run with -count=1 by an independent verifier (claude-code-54c93d5c-verifier)",
+          "statement": "Testscript arbiter-answer: in an autonomous run the PreToolUse hook denies the asking fake agent's question with the autonomous reason; the fake arbiter answers with Decision assume-blue; the asking agent's message file holds 'The arbiter answered your question <qid> with Decision assume-blue:', the statement 'Use blue' and 'Carry on with your work.', after the pointer was typed into its tab; the journal reads started entered session blocked asked arbiter arbitrated answered unblocked ended finished, the answered entry names step, session, question and decision, and ended is outcome pass with detail 'exit 0' (the agent's own outcome); the session's asked mark is gone. internal/api hook, AgentStatusAsked and Deliver tests and internal/adapter/... pass.",
+          "tests": "go test -count=1 ./cmd/rhiza -run 'TestScripts/arbiter-answer$'; go test -count=1 ./internal/api -run 'Hook|AgentStatusAsked|Deliver'; go test -count=1 ./internal/adapter/..."
+        },
+        "handle": "arbiter-answer-to-session-verified",
+        "id": "01M5XD00N98717XS3XQ9S4STW9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XD00N98717XS3XQ99NDERQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XD00N98717XS3XQ99NDERQ",
+        "id": "01M5XD00SDZ4Q47XYCJG30V4AM",
+        "link": "01M5XD00SDZ4Q47XYCJFCY4XY4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHGM59FSCHB3SDT7C8H75",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS on 2026-10-26 at commit 9b213db (code as of 8b72ad5) on branch cs/autonomous-mode-and-the, re-run with -count=1 by an independent verifier (claude-code-54c93d5c-verifier)",
+          "statement": "Testscript autonomous-review runs an autonomous workflow whose fake agent accepts another proposed change set under rule autonomous and asks one question its fake arbiter answers: run status --json lists accepts with verb accepted, the other change set and the log entry the journal holds, and questions with handle, text 'Which colour?', step, outcome pass, decision assume-blue and answered true; the markdown has '## Accepted in the owner's place' with the change set and log entry and '## Questions the arbiter decided' with '— decision assume-blue'. A normal run's status --json has no accepts or questions and its markdown neither section. TestRunInfoAcceptsAndQuestions passes.",
+          "tests": "go test -count=1 ./cmd/rhiza -run 'TestScripts/autonomous-review$'; go test -count=1 ./internal/api -run TestRunInfoAcceptsAndQuestions"
+        },
+        "handle": "autonomous-review-verified",
+        "id": "01M5XD00XGS9CFFECKQZVFA6HF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XD00XGS9CFFECKQW1G4WC9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XD00XGS9CFFECKQW1G4WC9",
+        "id": "01M5XD011QC1X2VAZSC4WC58H9",
+        "link": "01M5XD011QC1X2VAZSC43QK7Z9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRHEQX9FSJ95GVE3BH7EQJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTVT93DTC076WJNB7E2KX",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5XD0185CZPBG3YP059W1EDP",
+  "type": "ops",
+  "v": 1
+}

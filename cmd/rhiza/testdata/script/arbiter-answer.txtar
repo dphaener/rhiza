@@ -1,0 +1,151 @@
+# In an autonomous run, the hook denies the agent's question to the owner,
+# keeps it as the session's asked mark and tells the agent its answer
+# arrives as a message. Once the arbiter's Decision answers the question,
+# the engine sends that Decision to the asking session as a session
+# message, journals answered, ends the block, and the step carries on to
+# the agent's own outcome.
+#
+# One fake claude plays both roles, by its prompt (its last argument). The
+# asking agent pipes its question through the real PreToolUse hook and
+# keeps what the hook prints, goes idle (Stop), then waits (bounded) for
+# its message file and the typed pointer, logs the message and exits 0. The arbiter writes the answering
+# Decision with rhiza apply, says done and exits 0. The fake rex runs the
+# tab in the background and logs what is typed into it.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Answered runs' --title 'Answered runs' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+mkdir .rhiza/workflows
+cp $WORK/ask.toml .rhiza/workflows/ask.toml
+# Commit the owner's actor, so the agents' writes in the worktree can
+# name it as their for-actor.
+exec git add -A
+exec git commit -qm 'Answered runs'
+
+env REX_BLOCK=block:root
+env REX_SESSION=session:s1
+
+exec rhiza run start --workflow ask --permission-mode manual --autonomous
+stdout '^Run [0-9A-Z]{26} succeeded$'
+stderr 'step build: arbiter pass on question [0-9A-Z]{26}: answered by assume-blue'
+stderr 'step build: session [0-9a-f-]+ has the answer to question question-[0-9a-f]{8}-1: decision assume-blue'
+! stderr 'state=blocked'
+
+# The hook denied the question, with the reason, on stdout.
+exec cat $WORK/deny.out
+stdout '^\{"hookSpecificOutput":\{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"This run is autonomous: no owner will answer\. .*its answer arrives as a message\. End your turn now and wait at your prompt\."\}\}$'
+
+# The asking agent got the Decision's statement, its handle and the
+# question's ID in its message, after the run typed the pointer.
+exec sh -c 'grep "\"type\":\"asked\"" .git/rhiza/runs/*.jsonl | sed -n "s/.*\"question\":\"\([0-9A-Z]*\)\".*/\1/p" > $WORK/qid'
+exec cat $WORK/asker.log
+stdout '^got \.rhiza/local/messages/[0-9a-f-]{36}/0001\.md$'
+stdout '^Use blue$'
+stdout '^The arbiter answered your question [0-9A-Z]{26} with Decision assume-blue:$'
+stdout '^Carry on with your work\.$'
+exec sh -c 'grep -c "^The arbiter answered your question $(cat $WORK/qid) with Decision assume-blue:$" $WORK/asker.log'
+stdout '^1$'
+exec cat $WORK/typed.log
+stdout -count=1 '^send -b block:b1 rhiza: message from [a-z0-9-]+: read \.rhiza/local/messages/[0-9a-f-]{36}/0001\.md and act on it\.$'
+stdout -count=1 '^send-key -b block:b1 enter$'
+
+# The journal: blocked, asked, the arbiter, its verdict, answered, then
+# unblocked; the step ends with the agent's own exit.
+exec sh -c 'grep -o "\"type\":\"[a-z]*\"" .git/rhiza/runs/*.jsonl | sed "s/\"type\"://; s/\"//g" | tr "\n" " "'
+stdout '^started entered session blocked asked arbiter arbitrated answered unblocked ended finished $'
+exec sh -c 'grep "\"type\":\"answered\"" .git/rhiza/runs/*.jsonl'
+stdout '"step":"build","session":"[0-9a-f-]{36}","question":"[0-9A-Z]{26}","decision":"assume-blue"'
+exec sh -c 'grep "\"type\":\"ended\"" .git/rhiza/runs/*.jsonl'
+stdout '"outcome":"pass"'
+stdout '"detail":"exit 0"'
+
+# The asking session's asked mark is gone.
+exec sh -c 'grep "\"type\":\"session\"" .git/rhiza/runs/*.jsonl | sed -n "s/.*\"session\":\"\([0-9a-f-]*\)\".*/\1/p" > $WORK/sid'
+exec sh -c 'rhiza session show $(cat $WORK/sid) --json'
+stdout '"hook":'
+! stdout '"asked"'
+
+fold-ok
+
+-- ask.toml --
+name = "ask"
+
+[step.build]
+kind = "agent"
+prompt = "Build {change}"
+interval = "50ms"
+on.pass = "done"
+on.fail = "done"
+
+[step.decide]
+kind = "arbiter"
+interval = "50ms"
+-- bin/rex --
+#!/bin/sh
+case "$1" in
+events)
+	exit 0
+	;;
+send | send-key)
+	echo "$*" >> "$WORK/typed.log"
+	exit 0
+	;;
+esac
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >>"$WORK/tab.out" 2>&1 </dev/null &
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+sid=
+for a; do last=$a; done
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
+case "$last" in
+*'rhiza guide arbiter'*)
+	q=$(printf '%s\n' "$last" | sed -n 's/^Decide question \([0-9A-Z]*\):.*/\1/p')
+	printf '{"writes":[{"op":"add","kind":"decision","handle":"assume-blue","fields":["statement=Use blue","wording=(assumed, would have escalated)","reasoning=Blue is the brand colour"]},{"op":"link","from":"assume-blue","type":"answers","to":"%s"}]}\n' "$q" > "$WORK/decision.json"
+	rhiza apply "$WORK/decision.json" --json >> "$WORK/apply.out" || exit 7
+	rhiza session done >> "$WORK/done.out" || exit 6
+	exit 0
+	;;
+esac
+echo '{"session_id":"'$sid'","hook_event_name":"PreToolUse","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which colour?"}]}}' | rhiza session hook PreToolUse > "$WORK/deny.out" || exit 8
+echo '{"session_id":"'$sid'","hook_event_name":"Stop"}' | rhiza session hook Stop >> "$WORK/hook.out" || exit 8
+msg=".rhiza/local/messages/$sid/0001.md"
+i=0
+# The pointer is typed once the message is written: wait for it, so the
+# session is still there when the run types it.
+until [ -f "$msg" ] && grep -q '^send-key ' "$WORK/typed.log" 2>/dev/null; do
+	i=$((i + 1))
+	if [ $i -gt 800 ]; then
+		echo 'no answer' >&2
+		exit 9
+	fi
+	sleep 0.025
+done
+grep -q '^Use blue$' "$msg" || exit 10
+echo "got $msg" >> "$WORK/asker.log"
+cat "$msg" >> "$WORK/asker.log"
+exit 0

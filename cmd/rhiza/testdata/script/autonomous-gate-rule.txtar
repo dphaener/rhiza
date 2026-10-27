@@ -1,0 +1,103 @@
+# accept --rule autonomous is allowed only while RHIZA_RUN names an
+# unfinished autonomous run. With no RHIZA_RUN, or naming a run that is not
+# autonomous, it is usage (exit 2) and nothing is written. Inside an
+# autonomous run it accepts, the reason names the run, and the run's
+# journal gets an accepted entry. reject is guarded the same way. Other
+# rules are unchanged.
+#
+# Both runs stop at a wait step whose until does not hold, so they stay
+# unfinished and launch no agent.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Gate rule' --title 'Gate rule' --json
+stdout '"change_set": "[0-9A-Z]{26}"'
+mkdir .rhiza/workflows
+cp $WORK/hold.toml .rhiza/workflows/hold.toml
+
+# A plain run and an autonomous run, both stopped at the wait.
+exec rhiza run start --workflow hold --no-wait
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG stopped$'
+exec rhiza run start --workflow hold --autonomous --no-wait
+stdout '^Run (01[0-9A-Z]{24}) stopped$'
+exec rhiza run status --json
+stdout '"autonomous": true'
+exec rhiza propose
+
+# No RHIZA_RUN: usage, nothing written.
+! exec rhiza accept --rule autonomous --json
+stdout '"code": "usage"'
+stdout '"message": "cannot accept under rule autonomous: it is only for a move made inside a run started with rhiza run start --autonomous, and RHIZA_RUN is not set"'
+stdout '"next": "rhiza describe accept"'
+exec sh -c 'rhiza accept --rule autonomous 2>/dev/null; echo exit=$?'
+stdout '^exit=2$'
+! exec rhiza reject --rule autonomous --json
+stdout '"code": "usage"'
+stdout '"next": "rhiza describe reject"'
+exec rhiza change show --json
+stdout '"state": "proposed"'
+
+# RHIZA_RUN naming no run, and a run that is not autonomous: usage, nothing written.
+env RHIZA_RUN=01NOSUCHRUN
+! exec rhiza accept --rule autonomous --json
+stdout '"code": "usage"'
+stdout 'names no run'
+env RHIZA_RUN=01M5PWGJC82P7YGZTWYFFZ0VJG
+! exec rhiza accept --rule autonomous --json
+stdout '"code": "usage"'
+stdout 'run 01M5PWGJC82P7YGZTWYFFZ0VJG is not autonomous'
+exec sh -c 'rhiza accept --rule autonomous 2>/dev/null; echo exit=$?'
+stdout '^exit=2$'
+exec rhiza change show --json
+stdout '"state": "proposed"'
+! grep '"type":"accepted"' $WORK/repo/.git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+
+# RHIZA_RUN naming the unfinished autonomous run: accepted, with the run in the reason.
+exec sh -c 'ls .git/rhiza/runs | grep -v 01M5PWGJC82P7YGZTWYFFZ0VJG | sed "s/\.jsonl$//" > $WORK/autorun'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/autorun) rhiza accept --rule autonomous --json'
+stdout '"rule": "autonomous"'
+stdout '"reason": "autonomous run 01[0-9A-Z]{24}"'
+exec rhiza change show --json
+stdout '"state": "accepted"'
+stdout '"rule": "autonomous"'
+stdout '"reason": "autonomous run 01[0-9A-Z]{24}"'
+exec sh -c 'grep -c "\"type\":\"accepted\",.*\"change\":\"[0-9A-Z]\{26\}\",\"log_entry\":\"[0-9A-Z]\{26\}\"" .git/rhiza/runs/$(cat $WORK/autorun).jsonl'
+stdout '^1$'
+exec sh -c 'rhiza change show --json | grep -c "\"reason\": \"autonomous run $(cat $WORK/autorun)\""'
+stdout '^[1-9]$'
+
+# Once the autonomous run is finished, the rule is refused again, before
+# the move is even checked.
+exec sh -c 'echo > $WORK/go'
+exec sh -c 'rhiza run resume $(cat $WORK/autorun)'
+stdout 'succeeded$'
+exec rhiza change new 'Later' --json
+exec rhiza propose
+exec sh -c 'RHIZA_RUN=$(cat $WORK/autorun) rhiza accept --rule autonomous --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout 'is finished: it succeeded'
+stdout '^exit=2$'
+exec rhiza change show --json
+stdout '"state": "proposed"'
+
+# Other rules are unchanged.
+exec rhiza accept --rule owner --reason ok --json
+stdout '"rule": "owner"'
+stdout '"reason": "ok"'
+
+fold-ok
+
+-- hold.toml --
+name = "hold"
+
+[step.gate]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"

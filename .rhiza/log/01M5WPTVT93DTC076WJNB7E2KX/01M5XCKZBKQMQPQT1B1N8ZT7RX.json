@@ -1,0 +1,491 @@
+{
+  "actor": "01M5X7SHCTVQDF9VMDNV5AXAFE",
+  "after": [
+    "01M5WT5QRY5VNCV457QVYT7PVG"
+  ],
+  "at": "2026-10-27T00:37:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The arbiter runs inside the asking agent step and is journalled there; a workflow may declare at most one arbiter step, with no prompt, no routes and not the start step, to choose its agent, permission mode and interval, and without one a built-in arbiter with the run's agent and mode is used.",
+          "wording": "the planning agent's option, picked by the orchestrator acting as arbiter for the owner"
+        },
+        "handle": "arbiter-inline-step",
+        "id": "01M5XCKSY9JEVYAF4GK44YH5Z0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XCKSY9JEVYAF4GK2GGH2TK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHFM7T3P6V5ZV7XVKE55Q",
+        "id": "01M5XCKT2A67DSXRQCPQ7QBKAJ",
+        "link": "01M5XCKT2A67DSXRQCPMX3SYZV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKSY9JEVYAF4GK2GGH2TK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHG053937VJ6GEJ84EJJH",
+        "id": "01M5XCKT6DFX7H9DXFA2S8FG0G",
+        "link": "01M5XCKT6DFX7H9DXF9Z95WPC8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKSY9JEVYAF4GK2GGH2TK",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "The arbiter step looks for its Decision once its session has said done or exited: a valid Decision passes, anything else fails, and the arbiter's session is left open.",
+          "wording": "the planning agent's option, picked by the orchestrator acting as arbiter for the owner"
+        },
+        "handle": "arbiter-checks-decision",
+        "id": "01M5XCKTAE6R38G4JHC6P5F0XR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XCKTAE6R38G4JHC5T13WF2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHFM7T3P6V5ZV7XVKE55Q",
+        "id": "01M5XCKTEFTGR3XBVMETZ9A4RB",
+        "link": "01M5XCKTEFTGR3XBVMER3VZNT3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKTAE6R38G4JHC5T13WF2",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "The engine, not the hook, writes the question node; the hook only denies the question and keeps an asked mark on the session record that later hooks don't overwrite, so the session reports blocked on a question until the engine clears the mark after delivering the answer.",
+          "wording": "the planning agent's option, picked by the orchestrator acting as arbiter for the owner"
+        },
+        "handle": "engine-writes-question",
+        "id": "01M5XCKTJGJYAPA6PT923H7CRV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XCKTJGJYAPA6PT90M28QJJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHG053937VJ6GEJ84EJJH",
+        "id": "01M5XCKTPKPC2AMWXK3VY69KB7",
+        "link": "01M5XCKTPKPC2AMWXK3S882XJE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKTJGJYAPA6PT90M28QJJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHGM59FSCHB3SDT7C8H75",
+        "id": "01M5XCKTTP6E2KC9J7PWET7FVP",
+        "link": "01M5XCKTTP6E2KC9J7PSNVHKGB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKTJGJYAPA6PT90M28QJJ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "The engine writes the question as node question-<first eight characters of the session ID>-<n> in the run's change set, with the reported question as its statement and a session field, as the asking session's actor for its for-actor.",
+          "wording": "the planning agent's option, picked by the orchestrator acting as arbiter for the owner"
+        },
+        "handle": "question-node-shape",
+        "id": "01M5XCKTYQ7RHZJYC4WR4ATH87",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XCKTYQ7RHZJYC4WNW7CK34",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHG053937VJ6GEJ84EJJH",
+        "id": "01M5XCKV2STJV9BKECQNRPFP7T",
+        "link": "01M5XCKV2STJV9BKECQM0S18SJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKTYQ7RHZJYC4WNW7CK34",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "A question from the arbiter's own session fails the arbiter, and the run fails naming the original question; an arbiter never calls another arbiter.",
+          "wording": "the planning agent's option, picked by the orchestrator acting as arbiter for the owner"
+        },
+        "handle": "arbiter-no-recursion",
+        "id": "01M5XCKV6WFQD0DEAZXYBGQ0WM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XCKV6WFQD0DEAZXVNJ6WDJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHG053937VJ6GEJ84EJJH",
+        "id": "01M5XCKVAX9G74482FX8MFY7SH",
+        "link": "01M5XCKVAX9G74482FX8J9NT75",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKV6WFQD0DEAZXVNJ6WDJ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "A session started by an autonomous run is marked autonomous on its record when it is created; its launch environment sets RHIZA_AUTONOMOUS=1 from that mark, and the hook reads it to deny questions.",
+          "wording": "the planning agent's option, picked by the orchestrator acting as arbiter for the owner"
+        },
+        "handle": "autonomous-on-session-record",
+        "id": "01M5XCKVF033W8HSQR6F6MQN53",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XCKVF033W8HSQR6CAE3N54",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHDKXZ0Z9PQKMPRVQBC5W",
+        "id": "01M5XCKVK4Y0HXWBQ30NXP1BME",
+        "link": "01M5XCKVK4Y0HXWBQ30M69EBJ0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKVF033W8HSQR6CAE3N54",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHGM59FSCHB3SDT7C8H75",
+        "id": "01M5XCKVQ58JTREARPD66KZZB4",
+        "link": "01M5XCKVQ58JTREARPD5JBNVAQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKVF033W8HSQR6CAE3N54",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "An accept under rule autonomous also writes an accepted entry, naming the change set and the log entry, to the journal of the run it was made in, and run status reads what the run accepted from that journal.",
+          "wording": "the planning agent's option, picked by the orchestrator acting as arbiter for the owner"
+        },
+        "handle": "autonomous-accepts-journalled",
+        "id": "01M5XCKVV63JPRZWRS02Y1R0GE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XCKVV63JPRZWRRZZX5H26W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHE82S6TFSBBQ3VN42HGQ",
+        "id": "01M5XCKVZ7TN21SNXCEY9K1F08",
+        "link": "01M5XCKVZ7TN21SNXCEV3SNPW3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKVV63JPRZWRRZZX5H26W",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHEQX9FSJ95GVE3BH7EQJ",
+        "id": "01M5XCKW38DZD54ZMQ4X09WRK4",
+        "link": "01M5XCKW38DZD54ZMQ4V6FGZ61",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKVV63JPRZWRRZZX5H26W",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "The message that brings the answer to the asking session holds the Decision's statement, its handle and the question's ID.",
+          "wording": "the planning agent's option, picked by the orchestrator acting as arbiter for the owner"
+        },
+        "handle": "answer-message-contents",
+        "id": "01M5XCKW7ACHNDWEEG01NWSQ6X",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XCKW7ACHNDWEEG00FKQEYE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHGM59FSCHB3SDT7C8H75",
+        "id": "01M5XCKWBDJRYRQY2DR3KGZWSN",
+        "link": "01M5XCKWBDJRYRQY2DR34VHRRG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKW7ACHNDWEEG00FKQEYE",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "A resumed run rejoins a running arbiter from the journal's asked, arbiter and answered entries, and delivers again an answer that was judged but not yet delivered.",
+          "wording": "the planning agent's option, picked by the orchestrator acting as arbiter for the owner"
+        },
+        "handle": "resume-rejoins-arbiter",
+        "id": "01M5XCKWFHFZ58A8SS06ASGQG2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XCKWFHFZ58A8SS03S4XQFA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHG053937VJ6GEJ84EJJH",
+        "id": "01M5XCKWKKSQDKR9HCG1A4E4JZ",
+        "link": "01M5XCKWKKSQDKR9HCFYHBPVGT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKWFHFZ58A8SS03S4XQFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHGM59FSCHB3SDT7C8H75",
+        "id": "01M5XCKWQN7GAJK7WAMRSYHWRD",
+        "link": "01M5XCKWQN7GAJK7WAMMV1J5GJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKWFHFZ58A8SS03S4XQFA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "A reject under rule autonomous is guarded exactly like an accept under it.",
+          "wording": "the planning agent's option, picked by the orchestrator acting as arbiter for the owner"
+        },
+        "handle": "reject-guarded-like-accept",
+        "id": "01M5XCKWVQYYQSFEFZ43746F3B",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XCKWVQYYQSFEFZ40VE2KBS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHE82S6TFSBBQ3VN42HGQ",
+        "id": "01M5XCKWZTC3GDMV26XRV8X4ZF",
+        "link": "01M5XCKWZTC3GDMV26XMX6N21Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKWVQYYQSFEFZ40VE2KBS",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "A run's arbiter is checked at start only when the run is autonomous and its workflow has an agent step, since only agent steps raise questions and a non-autonomous run never launches the arbiter.",
+          "wording": "the building agent's choice while building leaf arbiter-step"
+        },
+        "handle": "arbiter-checked-when-needed",
+        "id": "01M5XCKX3TZXA0K6AEZXQ1YBR8",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XCKX3TZXA0K6AEZTX2CD7Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHFM7T3P6V5ZV7XVKE55Q",
+        "id": "01M5XCKX7W6JF4WKJVN7SK092J",
+        "link": "01M5XCKX7W6JF4WKJVN67BZKMC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKX3TZXA0K6AEZTX2CD7Y",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Any block of the arbiter's own session fails the arbiter, not only a question, since no owner is there to answer a permission prompt in an autonomous run.",
+          "wording": "the building agent's choice while building leaf arbiter-step"
+        },
+        "handle": "arbiter-session-block-fails",
+        "id": "01M5XCKXBX9EV94P8AP0EWF32A",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XCKXBX9EV94P8ANXEXCP48",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHFM7T3P6V5ZV7XVKE55Q",
+        "id": "01M5XCKXFZVJ87QT111QER7T4K",
+        "link": "01M5XCKXFZVJ87QT111NVSZVC5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKXBX9EV94P8ANXEXCP48",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "When the arbiter fails or errs, or the question node cannot be written, the asking step ends with an error rather than a fail, so the workflow's fail route cannot go around the arbiter.",
+          "wording": "the building agent's choice while building leaf arbiter-on-question"
+        },
+        "handle": "arbiter-fail-ends-step",
+        "id": "01M5XCKXM1AGSFCSEWF9S6FQEA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XCKXM1AGSFCSEWF812THF5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHG053937VJ6GEJ84EJJH",
+        "id": "01M5XCKXR4EQGJW4M3T3JPE310",
+        "link": "01M5XCKXR4EQGJW4M3T1VTN5BK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKXM1AGSFCSEWF812THF5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "A session's question goes to the arbiter once per block: the asked entry binds to the session's current block, and later polls of the same block do nothing more.",
+          "wording": "the building agent's choice while building leaf arbiter-on-question"
+        },
+        "handle": "one-question-per-block",
+        "id": "01M5XCKXW5YMW29B97TZNB2KPW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XCKXW5YMW29B97TW9WG2VC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHG053937VJ6GEJ84EJJH",
+        "id": "01M5XCKY09XGYTYS9GBMTYH6AK",
+        "link": "01M5XCKY09XGYTYS9GBM4DHDPA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKXW5YMW29B97TW9WG2VC",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "The answer's statement is read again from the model when it is delivered, so the run's journal holds no model text and a resumed run can still deliver it.",
+          "wording": "the building agent's choice while building leaf arbiter-answer-to-session"
+        },
+        "handle": "answer-reread-from-model",
+        "id": "01M5XCKY4C73EKKXMR1MY4FC9X",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XCKY4C73EKKXMR1JHV1KAV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHGM59FSCHB3SDT7C8H75",
+        "id": "01M5XCKY8D27SKH60M2RFAEM6J",
+        "link": "01M5XCKY8D27SKH60M2PY468AB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKY4C73EKKXMR1JHV1KAV",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "The answer message is sent as the run's caller, as run amend's messages are, not as the arbiter's actor.",
+          "wording": "the building agent's choice while building leaf arbiter-answer-to-session"
+        },
+        "handle": "answer-sent-as-caller",
+        "id": "01M5XCKYCG91WAV8Q3ZWKTRTZC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XCKYCG91WAV8Q3ZV9GQPJ1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHGM59FSCHB3SDT7C8H75",
+        "id": "01M5XCKYGJR4BPA1981GXY47E8",
+        "link": "01M5XCKYGJR4BPA1981F73CB4B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKYCG91WAV8Q3ZV9GQPJ1",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Rule autonomous may accept or reject any change set, not only the run's own, so a plan gate can accept every draft among a plan's change sets.",
+          "wording": "the building agent's choice while building leaf autonomous-gate-rule"
+        },
+        "handle": "autonomous-rule-any-change-set",
+        "id": "01M5XCKYMM56T7WX3Q9J8GRCZX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XCKYMM56T7WX3Q9FFEZ29C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHE82S6TFSBBQ3VN42HGQ",
+        "id": "01M5XCKYRPT6NSWTV84GKJBFN0",
+        "link": "01M5XCKYRPT6NSWTV84D0F4R9D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKYMM56T7WX3Q9FFEZ29C",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "If the run's journal cannot be written after an autonomous accept is in the log, the command fails naming the log entry it wrote, and the accept is not rolled back.",
+          "wording": "the building agent's choice while building leaf autonomous-gate-rule"
+        },
+        "handle": "journal-failure-reported",
+        "id": "01M5XCKYWVNQNA2HYANSK60K43",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XCKYWVNQNA2HYANR8FSEYM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5WRHE82S6TFSBBQ3VN42HGQ",
+        "id": "01M5XCKZ0ZQCYWB1AE6JQ8B964",
+        "link": "01M5XCKZ0ZQCYWB1AE6HNK81WR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XCKYWVNQNA2HYANR8FSEYM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5XCKTJGJYAPA6PT90M28QJJ",
+        "id": "01M5XCKZ57BCB56965A8NCY3FH",
+        "link": "01M5XCKZ57BCB56965A5SC3TZ1",
+        "note": "refines it: the engine, not the hook, writes the question node; the hook only denies the call and keeps the asked mark",
+        "op": "link.create",
+        "to": "01M5WT5QB5QR7Y1HX1PCB5X443",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M5WPTVT93DTC076WJNB7E2KX",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5XCKZBKQMQPQT1B1N8ZT7RX",
+  "type": "ops",
+  "v": 1
+}

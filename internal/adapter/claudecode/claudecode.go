@@ -178,6 +178,34 @@ func (Adapter) HookStatus(event string, raw []byte) (adapter.HookReport, bool, e
 	return r, true, nil
 }
 
+// AskReply implements adapter.Adapter. A PreToolUse on the ask tool is the
+// agent asking the owner; the reply denies that call with reason as the
+// PreToolUse hook's permission decision.
+func (Adapter) AskReply(event string, raw []byte, reason string) ([]byte, bool, error) {
+	if event != "PreToolUse" {
+		return nil, false, nil
+	}
+	var p payload
+	if err := json.Unmarshal(raw, &p); err != nil {
+		return nil, false, fmt.Errorf("%s hook payload: %w", event, err)
+	}
+	if p.ToolName != askTool {
+		return nil, false, nil
+	}
+	type hookOutput struct {
+		HookEventName            string `json:"hookEventName"`
+		PermissionDecision       string `json:"permissionDecision"`
+		PermissionDecisionReason string `json:"permissionDecisionReason"`
+	}
+	reply, err := json.Marshal(struct {
+		HookSpecificOutput hookOutput `json:"hookSpecificOutput"`
+	}{hookOutput{event, "deny", reason}})
+	if err != nil {
+		return nil, false, err
+	}
+	return reply, true, nil
+}
+
 // sendPayload is the part of a hook payload a send call's message is read
 // from. ToolInput stays raw until the tool is known to be the send tool.
 type sendPayload struct {

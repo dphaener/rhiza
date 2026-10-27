@@ -21,10 +21,14 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/store"
@@ -87,6 +91,7 @@ type RunStartRequest struct {
 	PermissionMode string `json:"permission_mode,omitempty" desc:"The permission mode of agent steps that set none; modes that bypass the agent's permission checks are refused"`
 	Agent          string `json:"agent,omitempty" desc:"The agent adapter of agent steps that name none; default the built-in default adapter"`
 	NoWait         bool   `json:"no_wait,omitempty" desc:"Stop at a wait step whose condition does not hold yet, instead of waiting; resume the run later"`
+	Autonomous     bool   `json:"autonomous,omitempty" desc:"Run without the owner: skip the owner's gates and questions, recording each; never changes agent permissions. Resume keeps it"`
 }
 
 // RunStatusRequest names a run, or none for the latest.
@@ -116,6 +121,7 @@ type RunInfo struct {
 	Change     string          `json:"change" desc:"The change set it runs on"`
 	Title      string          `json:"title" desc:"The change set's title"`
 	Worktree   string          `json:"worktree" desc:"The worktree every step runs in"`
+	Autonomous bool            `json:"autonomous,omitempty" desc:"True for a run started with --autonomous: it goes on without the owner; absent otherwise"`
 	State      string          `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
 	Current    string          `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
 	Detail     string          `json:"detail,omitempty" desc:"Why it stopped or failed"`
@@ -127,6 +133,30 @@ type RunInfo struct {
 	Sessions   []RunSession    `json:"sessions" desc:"The sessions it launched or read token use for, in order of first appearance, each with its latest reading"`
 	Totals     SessionTokenUse `json:"totals" desc:"The sums of the sessions with recorded token use, the session's own and helpers' kept apart"`
 	Retries    []RunRetry      `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
+	Accepts    []RunAccept     `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
+	Questions  []RunQuestion   `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
+}
+
+// RunAccept is one accepted or rejected entry journalled in an autonomous
+// run: it moved a change set past the owner's gate under rule autonomous.
+type RunAccept struct {
+	Change string `json:"change" desc:"The change set accepted or rejected"`
+	Entry  string `json:"entry" desc:"The model log entry ID of the accept or reject"`
+	Verb   string `json:"verb" desc:"accepted or rejected"`
+	At     string `json:"at" desc:"When it was journalled, RFC 3339 UTC"`
+}
+
+// RunQuestion is one question an autonomous run's agent step asked, which
+// the engine put to the arbiter as a question node.
+type RunQuestion struct {
+	Question string `json:"question" desc:"The question node's ID"`
+	Handle   string `json:"handle" desc:"The question node's handle"`
+	Text     string `json:"text" desc:"What the session asked"`
+	Step     string `json:"step" desc:"The agent step that asked"`
+	Outcome  string `json:"outcome,omitempty" desc:"The arbiter's verdict: pass, fail or error; empty while it is open"`
+	Decision string `json:"decision,omitempty" desc:"The handle of the Decision that answers it, once the arbiter passed; empty otherwise"`
+	Answered bool   `json:"answered,omitempty" desc:"True once the answer was delivered to the asking session"`
+	At       string `json:"at" desc:"When it was asked, RFC 3339 UTC"`
 }
 
 // RunRetry is one retry journalled in a run: the run had failed and
@@ -208,7 +238,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := checkAgentSteps(def, r.PermissionMode, r.Agent, runStartNext); err != nil {
+	if err := checkAgentSteps(def, r.PermissionMode, r.Agent, r.Autonomous, runStartNext); err != nil {
 		return nil, err
 	}
 	t, err := resolveChangeWorktree(ctx, r.Change, "no run can work on it")
@@ -223,12 +253,12 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	started := run.Started{
 		Workflow: def.Name, WorkflowPath: path, Definition: string(data),
 		Change: t.cs.String(), Title: t.title, Worktree: t.worktree, Branch: t.branch,
-		PermissionMode: r.PermissionMode, Agent: r.Agent,
+		PermissionMode: r.PermissionMode, Agent: r.Agent, Autonomous: r.Autonomous,
 	}
 	if ctx.DryRun {
 		return RunResponse{Run: RunInfo{
 			ID: rid, Workflow: def.Name, Change: started.Change, Title: t.title, Worktree: t.worktree,
-			Current: def.Start, Steps: []RunStep{}, StartedAt: rfc3339(ctx.Now()), Amendments: []RunAmendment{},
+			Autonomous: r.Autonomous, Current: def.Start, Steps: []RunStep{}, StartedAt: rfc3339(ctx.Now()), Amendments: []RunAmendment{},
 			Messages: []RunMessage{}, Sessions: []RunSession{},
 		}, DryRun: true}, nil
 	}
@@ -241,7 +271,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err := run.Start(rs, rid, started, ctx.Now(), def); err != nil {
 		return nil, Errorf("start run %s: %v", rid, err)
 	}
-	return runEngine(ctx, rs, t.common, rid, started.Change, t.worktree, r.PermissionMode, r.Agent, r.NoWait)
+	return runEngine(ctx, rs, t.common, rid, started.Change, t.worktree, r.PermissionMode, r.Agent, started.Autonomous, r.NoWait)
 }
 
 // runRunResume continues a run that is neither finished nor running in
@@ -289,7 +319,7 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 	}
 	// Start checked the agent steps; check again, since the journal is a
 	// file anyone can edit.
-	if err := checkAgentSteps(def, st.PermissionMode, st.Agent, "rhiza run status "+j.ID); err != nil {
+	if err := checkAgentSteps(def, st.PermissionMode, st.Agent, st.Autonomous, "rhiza run status "+j.ID); err != nil {
 		return nil, err
 	}
 	if retryStep != "" {
@@ -309,7 +339,7 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 	if err := canRun(ctx, def); err != nil {
 		return nil, err
 	}
-	resp, err := runEngineRetry(ctx, rs, common, j.ID, st.Change, st.Worktree, st.PermissionMode, st.Agent, r.NoWait, r.Retry)
+	resp, err := runEngineRetry(ctx, rs, common, j.ID, st.Change, st.Worktree, st.PermissionMode, st.Agent, st.Autonomous, r.NoWait, r.Retry)
 	if err != nil {
 		return nil, err
 	}
@@ -470,22 +500,39 @@ func loadWorkflow(path, ref string) (*workflow.Definition, []byte, error) {
 // checkAgentSteps checks every agent step's effective adapter and
 // permission mode (the step's, else mode and agent) as session.start
 // checks its own: a mode is required, it must be the adapter's, and a mode
-// that bypasses permission checks is refused.
-func checkAgentSteps(def *workflow.Definition, mode, agent, next string) error {
+// that bypasses permission checks is refused. An autonomous run's arbiter
+// (the file's arbiter step or the built-in one) is checked the same way
+// when the workflow has an agent step: only an autonomous run launches it,
+// and only on an agent step's question.
+func checkAgentSteps(def *workflow.Definition, mode, agent string, autonomous bool, next string) error {
+	agents := false
 	for _, name := range def.Order {
 		s := def.Steps[name]
 		if s.Kind != workflow.KindAgent {
 			continue
 		}
-		req := agentStepRequest(s, mode, agent)
-		if req.PermissionMode == "" {
-			return Usagef("step %q is an agent step with no permission mode: give --permission-mode or set permission_mode on the step", name).
-				WithNext(next)
+		agents = true
+		if err := checkAgentStep(s, "an agent step", mode, agent, next); err != nil {
+			return err
 		}
-		if _, err := startAdapter(req); err != nil {
-			e := AsError(err)
-			return &Error{Code: e.Code, Message: fmt.Sprintf("step %q: %s", name, e.Message), Next: next}
-		}
+	}
+	if autonomous && agents {
+		return checkAgentStep(def.Arbiter(), "the arbiter step", mode, agent, next)
+	}
+	return nil
+}
+
+// checkAgentStep checks one step's effective adapter and permission mode
+// for checkAgentSteps; what names the step's role in the message.
+func checkAgentStep(s workflow.Step, what, mode, agent, next string) error {
+	req := agentStepRequest(s, mode, agent)
+	if req.PermissionMode == "" {
+		return Usagef("step %q is %s with no permission mode: give --permission-mode or set permission_mode on the step", s.Name, what).
+			WithNext(next)
+	}
+	if _, err := startAdapter(req); err != nil {
+		e := AsError(err)
+		return &Error{Code: e.Code, Message: fmt.Sprintf("step %q: %s", s.Name, e.Message), Next: next}
 	}
 	return nil
 }
@@ -546,9 +593,10 @@ func newRunID(ctx *Ctx, rs *run.Store) (string, error) {
 }
 
 // runEngine runs the run in the foreground until it finishes or stops,
-// and responds with its state.
-func runEngine(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, agent string, noWait bool) (any, error) {
-	resp, err := runEngineRetry(ctx, rs, common, rid, change, worktree, mode, agent, noWait, false)
+// and responds with its state. Autonomous is the journal's: every agent
+// the run launches is marked with it.
+func runEngine(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, agent string, autonomous, noWait bool) (any, error) {
+	resp, err := runEngineRetry(ctx, rs, common, rid, change, worktree, mode, agent, autonomous, noWait, false)
 	if err != nil {
 		return nil, err
 	}
@@ -557,13 +605,13 @@ func runEngine(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, age
 
 // runEngineRetry is runEngine; with retry it runs the engine's Retry, which
 // restarts a failed run at its failed step.
-func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, agent string, noWait, retry bool) (RunResponse, error) {
+func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, agent string, autonomous, noWait, retry bool) (RunResponse, error) {
 	sessions := session.NewStore(session.Dir(common))
 	e := &run.Engine{
 		Store: rs,
 		Runner: &stepRunner{
 			ctx: ctx, change: change, run: rid, worktree: worktree, mode: mode, agent: agent,
-			sessions: sessions,
+			autonomous: autonomous, sessions: sessions,
 		},
 		Clock:  runClock,
 		Now:    ctx.Now,
@@ -599,7 +647,10 @@ type stepRunner struct {
 	worktree string
 	mode     string
 	agent    string
-	sessions *session.Store
+	// autonomous marks every session the run launches, so the agent's
+	// environment tells it the owner is not there.
+	autonomous bool
+	sessions   *session.Store
 }
 
 // Command runs the step's command, its output copied to ctx.Stderr.
@@ -653,10 +704,11 @@ func (r *stepRunner) sh(cmd string, env []string, out io.Writer) (int, error) {
 }
 
 // StartAgent starts the step's session as session.start does, on the
-// run's change set, and returns its ID.
+// run's change set, and returns its ID. An autonomous run's session is
+// recorded autonomous.
 func (r *stepRunner) StartAgent(step workflow.Step, _ []string) (string, error) {
 	req := agentStepRequest(step, r.mode, r.agent)
-	req.Change, req.Run = r.change, r.run
+	req.Change, req.Run, req.autonomous = r.change, r.run, r.autonomous
 	t, err := resolveChangeWorktree(r.ctx, r.change, "no agent can work on it")
 	if err != nil {
 		return "", err
@@ -669,6 +721,187 @@ func (r *stepRunner) StartAgent(step workflow.Step, _ []string) (string, error) 
 		return "", err
 	}
 	return resp.(SessionStartResponse).Session.ID, nil
+}
+
+// arbiterPrompt is the arbiter's whole prompt, over the question node's
+// ID: it names nothing else, so the arbiter reads the question and its
+// context from the model, as the guide topic tells it.
+const arbiterPrompt = "Decide question %s: follow rhiza guide arbiter."
+
+// arbiterWording is the wording field of a Decision an arbiter writes: it
+// assumed the answer in the owner's place.
+const arbiterWording = "(assumed, would have escalated)"
+
+// StartArbiter starts the arbiter step's session as StartAgent starts an
+// agent step's (the step's adapter and mode, else the run's; autonomous as
+// the run is), on the run's change set, with a prompt that names only
+// question and the arbiter guide topic.
+func (r *stepRunner) StartArbiter(step workflow.Step, question string, _ []string) (string, error) {
+	req := agentStepRequest(step, r.mode, r.agent)
+	req.Change, req.Run, req.autonomous = r.change, r.run, r.autonomous
+	req.Prompt = fmt.Sprintf(arbiterPrompt, question)
+	resp, err := runSessionStart(r.ctx, req)
+	if err != nil {
+		return "", err
+	}
+	return resp.(SessionStartResponse).Session.ID, nil
+}
+
+// Answer reads the model as the run's change set sees it in the run's
+// worktree, where its sessions write, and looks for a live Decision with a
+// live answers link to question node question, wording arbiterWording and
+// a reasoning. The first such Decision, by link ID, is the answer; with
+// none, Why names what the nearest one lacks.
+func (r *stepRunner) Answer(question string) (run.Answer, error) {
+	q, err := id.Parse(question)
+	if err != nil {
+		return run.Answer{}, fmt.Errorf("question %q is not a node ID: %v", question, err)
+	}
+	cs, err := id.Parse(r.change)
+	if err != nil {
+		return run.Answer{}, fmt.Errorf("run %s names change set %q: %v", r.run, r.change, err)
+	}
+	prefix, err := r.ctx.Git("rev-parse", "--show-prefix")
+	if err != nil {
+		return run.Answer{}, err
+	}
+	ww, err := openWorkspace(filepath.Join(r.worktree, strings.TrimSpace(prefix)), r.ctx.Now, r.ctx.IDs, true)
+	if err != nil {
+		return run.Answer{}, err
+	}
+	return arbiterAnswer(ww.model(cs), q), nil
+}
+
+// questionHandlePrefix starts the handle of every question node a run adds
+// for its arbiter: question-<sid8>-<n>.
+const questionHandlePrefix = "question-"
+
+// AddQuestion writes what session sid asked the owner, text, as one
+// question node question-<sid8>-<n> (n the next number free in the change
+// set's view) with fields statement and session, into the run's change
+// set, in the workspace of the session's worktree, as the session's actor
+// for its for-actor, in one entry. It refuses a session of another change
+// set, and a change set that is finished.
+func (r *stepRunner) AddQuestion(sid, text string) (run.Question, error) {
+	rec, err := readSession(r.sessions, sid)
+	if err != nil {
+		return run.Question{}, err
+	}
+	if rec.Change != r.change {
+		return run.Question{}, Errorf("session %s is on change set %s, not the run's %s", rec.ID, rec.Change, r.change)
+	}
+	if len(rec.ID) < 8 {
+		return run.Question{}, Errorf("session ID %q is shorter than 8 characters", rec.ID)
+	}
+	ww, cs, err := sessionWorkspace(r.ctx, rec)
+	if err != nil {
+		return run.Question{}, err
+	}
+	c, _ := ww.changeSet(cs)
+	if c.State.Terminal() {
+		return run.Question{}, Conflictf("change set %s is %s; no question can be added to it", cs, c.State).
+			WithNext("rhiza change show " + cs.String())
+	}
+	m := ww.model(cs)
+	prefix := questionHandlePrefix + strings.ToLower(rec.ID[:8]) + "-"
+	handle := ""
+	for n := 1; handle == ""; n++ {
+		if h := prefix + strconv.Itoa(n); !answerProposed(m, c.Ops, h) {
+			handle = h
+		}
+	}
+	actor, err := liveActor(m, rec.Actor)
+	if err != nil {
+		return run.Question{}, Errorf("session %s's actor %s: %s", rec.ID, rec.Actor, AsError(err).Message)
+	}
+	forID, err := sessionForActor(r.ctx, m, rec.For)
+	if err != nil {
+		return run.Question{}, Errorf("session %s's for-actor %s: %s", rec.ID, rec.For, AsError(err).Message)
+	}
+	items := []applyItem{{op: "add", build: func(b writeBase) (edit, error) {
+		return buildAdd(b, AddRequest{Kind: string(op.KindQuestion), Handle: handle,
+			Fields: []string{"statement=" + text, "session=" + rec.ID}})
+	}}}
+	e, err := buildApply(ww, cs, r.ctx.IDs, items)
+	if err == nil {
+		err = e.check("add")
+	}
+	if err != nil {
+		return run.Question{}, err
+	}
+	if len(e.nodes) != 1 {
+		return run.Question{}, Errorf("adding question %s touched %d nodes, not 1", handle, len(e.nodes))
+	}
+	if _, err := ww.appendEntry(cs, changeset.Ops{Ops: e.ops, Drop: e.drop}, actor, forID); err != nil {
+		return run.Question{}, err
+	}
+	return run.Question{ID: e.nodes[0].String(), Handle: handle}, nil
+}
+
+// deliverText is the message that gives the asking session the arbiter's
+// answer: the question's ID, the answering Decision's handle and its
+// statement.
+func deliverText(question, decision, statement string) string {
+	return fmt.Sprintf("The arbiter answered your question %s with Decision %s:\n\n%s\n\nCarry on with your work.",
+		question, decision, strings.TrimSpace(statement))
+}
+
+// Deliver sends session sid the arbiter's answer to question as a session
+// message from the run's caller, as run amend sends its pointer: the file
+// is written, and the pointer typed once the session waits at its prompt.
+// Then it clears the session's asked mark, so the session is no longer
+// blocked on the question.
+func (r *stepRunner) Deliver(sid, question, decision, statement string) error {
+	rec, err := readSession(r.sessions, sid)
+	if err != nil {
+		return err
+	}
+	if err := messageable(rec); err != nil {
+		return err
+	}
+	from, err := messageSender(r.ctx)
+	if err != nil {
+		return err
+	}
+	dir, rel, err := messageFolder(r.ctx, rec)
+	if err != nil {
+		return err
+	}
+	text := deliverText(question, decision, statement)
+	name, err := writeMessage(dir, messageContent(from, rec, rfc3339(r.ctx.Now()), text))
+	if err != nil {
+		return err
+	}
+	if _, err := typePointer(r.ctx, r.sessions, rec.ID, messagePointer(from.Handle, rel+"/"+name), defaultMessageTimeout); err != nil {
+		return withNote(err, "the answer is in "+filepath.Join(dir, name))
+	}
+	if _, err := r.sessions.Update(rec.ID, func(x *session.Record) { x.Status.Asked = nil }); err != nil {
+		return Errorf("clear session %s's asked mark: %v", rec.ID, err)
+	}
+	return nil
+}
+
+// arbiterAnswer is Answer's verdict over model m on question q.
+func arbiterAnswer(m Model, q id.ID) run.Answer {
+	if n, ok := m.Node(q); !ok || n.Retired {
+		return run.Answer{Why: fmt.Sprintf("question %s is not a live node", q)}
+	}
+	why := fmt.Sprintf("no live Decision answers question %s", q)
+	for _, l := range m.LinksTo(q, op.LinkAnswers) {
+		d, ok := m.Node(l.From)
+		if !ok || d.Retired || d.Kind != op.KindDecision {
+			continue
+		}
+		switch {
+		case fieldText(d.Fields["wording"]) != arbiterWording:
+			why = fmt.Sprintf("decision %s answers question %s but its wording is %q, not %q", d.Handle, q, fieldText(d.Fields["wording"]), arbiterWording)
+		case strings.TrimSpace(fieldText(d.Fields["reasoning"])) == "":
+			why = fmt.Sprintf("decision %s answers question %s but has no reasoning", d.Handle, q)
+		default:
+			return run.Answer{OK: true, Decision: d.Handle, Statement: fieldText(d.Fields["statement"])}
+		}
+	}
+	return run.Answer{Why: why}
 }
 
 // AgentStatus reads the session's record: it is done once its process
@@ -715,13 +948,17 @@ func (r *stepRunner) AgentEnded(_ workflow.Step, sid string) error {
 }
 
 // recordBlock is what a live session waits on when its resolved report
-// is blocked, else nil.
+// is blocked, else nil. A live session with an asked mark (a question its
+// hook denied in an autonomous run) waits on that question whatever its
+// reports say, until the answer is delivered.
 func recordBlock(rec session.Record) *run.Block {
 	if rec.Status.Exited() {
 		return nil
 	}
 	rep, _ := session.Resolve(rec)
-	if rep.State != session.StateBlocked {
+	if a := rec.Status.Asked; a != nil {
+		rep = *a
+	} else if rep.State != session.StateBlocked {
 		return nil
 	}
 	return &run.Block{
@@ -833,7 +1070,7 @@ func rexField(s string, limit int) string {
 func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 	info := RunInfo{
 		ID: st.ID, Workflow: st.Workflow, Change: st.Change, Title: st.Title, Worktree: st.Worktree,
-		Current: st.Current, Steps: []RunStep{}, StartedAt: rfc3339(st.StartedAt),
+		Autonomous: st.Autonomous, Current: st.Current, Steps: []RunStep{}, StartedAt: rfc3339(st.StartedAt),
 		Amendments: []RunAmendment{}, Messages: []RunMessage{}, Sessions: []RunSession{},
 	}
 	switch {
@@ -875,6 +1112,22 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 			addTokens(&info.Totals.Helpers, rs.Tokens.Helpers)
 		}
 		info.Sessions = append(info.Sessions, rs)
+	}
+	for _, a := range st.Accepts {
+		info.Accepts = append(info.Accepts, RunAccept{Change: a.Change, Entry: a.LogEntry, Verb: a.Verb, At: rfc3339(a.At)})
+	}
+	for _, q := range st.Asked {
+		rq := RunQuestion{
+			Question: q.Question, Handle: q.Handle, Text: q.Text, Step: q.Step,
+			Decision: q.Answered, Answered: q.Answered != "", At: rfc3339(q.At),
+		}
+		if a, ok := st.Arbitration(q.Question); ok {
+			rq.Outcome = a.Outcome
+			if rq.Decision == "" && a.Outcome == workflow.OutcomePass {
+				rq.Decision = a.Decision
+			}
+		}
+		info.Questions = append(info.Questions, rq)
 	}
 	return info
 }
@@ -933,6 +1186,30 @@ func (r RunInfo) Human(w io.Writer) {
 			}
 			if s.Detail != "" {
 				fmt.Fprintf(w, ": %s", s.Detail)
+			}
+			fmt.Fprintf(w, "\n")
+		}
+	}
+	if len(r.Accepts) > 0 {
+		fmt.Fprintf(w, "\n## Accepted in the owner's place\n\n")
+		for _, a := range r.Accepts {
+			fmt.Fprintf(w, "- %s %s change set %s (log entry %s)\n", a.At, a.Verb, a.Change, a.Entry)
+		}
+	}
+	if len(r.Questions) > 0 {
+		fmt.Fprintf(w, "\n## Questions put to the arbiter\n\n")
+		for _, q := range r.Questions {
+			fmt.Fprintf(w, "- %s (%s): %s", q.Handle, q.Question, q.Text)
+			switch {
+			case q.Decision != "":
+				fmt.Fprintf(w, " — decision %s", q.Decision)
+				if !q.Answered {
+					fmt.Fprintf(w, ", not yet delivered")
+				}
+			case q.Outcome != "":
+				fmt.Fprintf(w, " — not decided: the arbiter's verdict was %s", q.Outcome)
+			default:
+				fmt.Fprintf(w, " — open")
 			}
 			fmt.Fprintf(w, "\n")
 		}
@@ -1009,12 +1286,15 @@ func tokenUseLine(u SessionTokenUse) string {
 	return "tokens " + tokensLine(u.Session) + "; helper tokens " + tokensLine(u.Helpers)
 }
 
-// runLines are a run's workflow, change set, worktree, current step and
-// detail, one per line.
+// runLines are a run's workflow, change set, worktree, whether it is
+// autonomous, current step and detail, one per line.
 func runLines(w io.Writer, r RunInfo) {
 	fmt.Fprintf(w, "- Workflow: %s\n", r.Workflow)
 	fmt.Fprintf(w, "- Change set: %s: %s\n", r.Change, r.Title)
 	fmt.Fprintf(w, "- Worktree: %s\n", r.Worktree)
+	if r.Autonomous {
+		fmt.Fprintf(w, "- Autonomous: yes\n")
+	}
 	fmt.Fprintf(w, "- Started: %s\n", r.StartedAt)
 	if r.Current != "" {
 		fmt.Fprintf(w, "- Current step: %s\n", r.Current)

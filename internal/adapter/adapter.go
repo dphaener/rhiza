@@ -28,6 +28,11 @@ type Adapter interface {
 	// HookStatus maps one hook event and its stdin payload to a status
 	// report. The bool is false when the event leaves the status unchanged.
 	HookStatus(event string, payload []byte) (HookReport, bool, error)
+	// AskReply reports whether one hook event and its stdin payload is the
+	// agent asking the owner a question, and if so returns what the hook
+	// prints on stdout to deny that call, telling the agent reason. It is
+	// pure: it builds bytes only.
+	AskReply(event string, payload []byte, reason string) (reply []byte, ok bool, err error)
 	// HookMessage reads the message a session sent another out of one hook
 	// event and its stdin payload. The bool is false when the event carries
 	// no message. It errors on a payload it cannot read, or on a message

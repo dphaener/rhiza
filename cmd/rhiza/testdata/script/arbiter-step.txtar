@@ -1,0 +1,154 @@
+# The arbiter step decides an autonomous run's question. Its prompt names
+# the question's ID and rhiza guide arbiter, and no other node or change
+# set. It passes when the arbiter writes the answering Decision, with the
+# assumed wording and a reasoning; it fails when the arbiter writes
+# nothing, or a Decision without reasoning, and the run fails with it.
+#
+# The fake claude is arbiter-question's: the asking agent reports an
+# AskUserQuestion through the real hook, goes idle, and waits (bounded)
+# for the answer to be typed into its tab, or for a failed arbiter; the
+# arbiter logs its prompt and, per $WORK/mode, writes the
+# Decision (answer), one without reasoning (noreason) or nothing (none),
+# then says done.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Blocked runs' --title 'Blocked runs' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+mkdir .rhiza/workflows
+cp $WORK/ask.toml .rhiza/workflows/ask.toml
+exec git add -A
+exec git commit -qm 'Blocked runs'
+
+# A Decision with reasoning: the arbiter step passes, and the run goes on.
+exec sh -c 'echo answer > $WORK/mode'
+exec rhiza run start --workflow ask --permission-mode manual --autonomous
+stdout '^Run [0-9A-Z]{26} succeeded$'
+stderr 'step build: arbiter pass on question [0-9A-Z]{26}: answered by assume-blue'
+exec sh -c 'grep "\"type\":\"arbitrated\"" .git/rhiza/runs/*.jsonl'
+stdout '"outcome":"pass"'
+stdout '"decision":"assume-blue"'
+
+# The prompt is exactly the question's ID and the guide topic: not the
+# change set, not the question's handle.
+cd ../repo.blocked-runs
+exec sh -c 'rhiza ls --kind question --view what-if:01M5PWGEF85Y185JZ2ZGCNH40N --json | sed -n "s/.*\"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/qid'
+cd ../repo
+exec sh -c 'test "$(cat $WORK/arbiter.log)" = "Decide question $(cat $WORK/qid): follow rhiza guide arbiter."'
+exec cat $WORK/arbiter.log
+stdout -count=1 '^Decide question [0-9A-Z]{26}: follow rhiza guide arbiter\.$'
+! stdout '01M5PWGEF85Y185JZ2ZGCNH40N'
+! stdout 'question-'
+! stdout 'Blocked runs'
+exec sh -c 'grep -c "\"type\":\"asked\"" $WORK/repo/.git/rhiza/runs/*.jsonl'
+stdout '^1$'
+exec sh -c 'i=0; until [ "$(grep -c exited $WORK/asker.log)" = 1 ]; do i=$((i+1)); [ $i -gt 400 ] && exit 1; sleep 0.025; done'
+
+# No Decision: the arbiter step fails, and so does the run.
+rm $WORK/arbiter.done
+rm $WORK/typed.log
+exec sh -c 'echo none > $WORK/mode'
+! exec rhiza run start --workflow ask --permission-mode manual --autonomous
+stdout '^Run [0-9A-Z]{26} failed$'
+stderr 'step build: arbiter fail on question [0-9A-Z]{26}: no live Decision answers question [0-9A-Z]{26}'
+stdout 'arbiter failed on question question-[0-9a-f]{8}-1 \([0-9A-Z]{26}\): no live Decision answers question'
+exec sh -c 'i=0; until [ "$(grep -c exited $WORK/asker.log)" = 2 ]; do i=$((i+1)); [ $i -gt 400 ] && exit 1; sleep 0.025; done'
+
+# A Decision without reasoning: the arbiter step fails, and so does the
+# run.
+rm $WORK/arbiter.done
+exec sh -c 'echo noreason > $WORK/mode'
+! exec rhiza run start --workflow ask --permission-mode manual --autonomous
+stdout '^Run [0-9A-Z]{26} failed$'
+stderr 'step build: arbiter fail on question [0-9A-Z]{26}: decision assume-red answers question [0-9A-Z]{26} but has no reasoning'
+stdout 'arbiter failed on question question-[0-9a-f]{8}-1 \([0-9A-Z]{26}\): decision assume-red answers question [0-9A-Z]{26} but has no reasoning'
+exec cat $WORK/arbiter.log
+stdout -count=3 '^Decide question [0-9A-Z]{26}: follow rhiza guide arbiter\.$'
+exec sh -c 'i=0; until [ "$(grep -c exited $WORK/asker.log)" = 3 ]; do i=$((i+1)); [ $i -gt 400 ] && exit 1; sleep 0.025; done'
+
+fold-ok
+
+-- ask.toml --
+name = "ask"
+
+[step.build]
+kind = "agent"
+prompt = "Build {change}"
+interval = "50ms"
+on.pass = "done"
+on.fail = "done"
+
+[step.decide]
+kind = "arbiter"
+interval = "50ms"
+-- bin/rex --
+#!/bin/sh
+case "$1" in
+send | send-key)
+	echo "$*" >> "$WORK/typed.log"
+	exit 0
+	;;
+esac
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >>"$WORK/tab.out" 2>&1 </dev/null &
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+sid=
+for a; do last=$a; done
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
+case "$last" in
+*'rhiza guide arbiter'*)
+	echo "$last" >> "$WORK/arbiter.log"
+	q=$(printf '%s\n' "$last" | sed -n 's/^Decide question \([0-9A-Z]*\):.*/\1/p')
+	case "$(cat "$WORK/mode")" in
+	answer)
+		printf '{"writes":[{"op":"add","kind":"decision","handle":"assume-blue","fields":["statement=Use blue","wording=(assumed, would have escalated)","reasoning=Blue is the brand colour"]},{"op":"link","from":"assume-blue","type":"answers","to":"%s"}]}\n' "$q" > "$WORK/decision.json"
+		rhiza apply "$WORK/decision.json" --json >> "$WORK/apply.out" || exit 7
+		;;
+	noreason)
+		printf '{"writes":[{"op":"add","kind":"decision","handle":"assume-red","fields":["statement=Use red","wording=(assumed, would have escalated)"]},{"op":"link","from":"assume-red","type":"answers","to":"%s"}]}\n' "$q" > "$WORK/decision.json"
+		rhiza apply "$WORK/decision.json" --json >> "$WORK/apply.out" || exit 7
+		;;
+	esac
+	rhiza session done >> "$WORK/done.out" || exit 6
+	echo > "$WORK/arbiter.done"
+	exit 0
+	;;
+esac
+echo '{"session_id":"'$sid'","hook_event_name":"PreToolUse","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which colour?"}]}}' | rhiza session hook PreToolUse >> "$WORK/hook.out" || exit 8
+echo '{"session_id":"'$sid'","hook_event_name":"Stop"}' | rhiza session hook Stop >> "$WORK/hook.out" || exit 8
+i=0
+until grep -q '^send-key ' "$WORK/typed.log" 2>/dev/null ||
+	{ [ -f "$WORK/arbiter.done" ] && [ "$(cat "$WORK/mode")" != answer ]; }; do
+	i=$((i + 1))
+	if [ $i -gt 800 ]; then
+		echo 'no answer' >&2
+		exit 9
+	fi
+	sleep 0.025
+done
+echo exited >> "$WORK/asker.log"
+exit 0
