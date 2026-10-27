@@ -136,6 +136,15 @@ type RunInfo struct {
 	Accepts    []RunAccept     `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
 	Questions  []RunQuestion   `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
 	Rounds     []RunRound      `json:"rounds,omitempty" desc:"The plan review rounds journalled by run findings and run verdict, in order; absent when there were none"`
+	Waiting    []RunWaiting    `json:"waiting,omitempty" desc:"The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does"`
+}
+
+// RunWaiting is one of the plan's change sets run gate named that waits
+// proposed for the owner's accept.
+type RunWaiting struct {
+	Change string `json:"change" desc:"The change set's ID"`
+	Title  string `json:"title" desc:"Its title"`
+	Next   string `json:"next" desc:"The owner's command to accept it: rhiza accept --rule owner --change <id>"`
 }
 
 // RunRound is one plan review round: a reviewer's findings, each with the
@@ -373,7 +382,28 @@ func runRunStatus(ctx *Ctx, req any) (any, error) {
 	} else if j, err = latestRun(ctx, rs); err != nil {
 		return nil, err
 	}
-	return runInfo(j.State(), rs.Live(j.ID), session.NewStore(session.Dir(common))), nil
+	st := j.State()
+	info := runInfo(st, rs.Live(j.ID), session.NewStore(session.Dir(common)))
+	if len(st.Gated) > 0 {
+		if w, err := openCtxWorkspace(ctx); err == nil {
+			info.Waiting = runWaiting(st.Gated, w.changeSets())
+		}
+	}
+	return info, nil
+}
+
+// runWaiting is the change sets among gated, the latest gated entry's,
+// that are proposed now in sets, in gated's order.
+func runWaiting(gated []string, sets []changeset.ChangeSet) []RunWaiting {
+	var out []RunWaiting
+	for _, g := range gated {
+		for _, c := range sets {
+			if c.ID.String() == g && c.State == changeset.StateProposed {
+				out = append(out, RunWaiting{Change: g, Title: c.Open.DisplayTitle(), Next: ownerAcceptNext(g)})
+			}
+		}
+	}
+	return out
 }
 
 // latestRun is the latest started run of the effective change set, else
@@ -1242,6 +1272,12 @@ func (r RunInfo) Human(w io.Writer) {
 			for _, f := range rd.Findings {
 				fmt.Fprintf(w, "  - %s\n", findingLine(f))
 			}
+		}
+	}
+	if len(r.Waiting) > 0 {
+		fmt.Fprintf(w, "\n## Waiting on the owner\n\n")
+		for _, c := range r.Waiting {
+			fmt.Fprintf(w, "- %s %s: proposed: %s\n", c.Change, c.Title, c.Next)
 		}
 	}
 	if len(r.Retries) > 0 {

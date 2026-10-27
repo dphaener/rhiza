@@ -2,11 +2,13 @@ package api
 
 // This file holds the plan review ops of a run: run.findings journals a
 // reviewer's findings, opening the next review round, run.verdict
-// journals a critic's verdicts on the latest round's findings, and
-// run.review-check decides whether the review may go on to the gate. All
-// work only inside the run RHIZA_RUN names, which must be unfinished, and
-// all check everything before they write anything. The round count comes
-// from the journal: each run.findings call is one round.
+// journals a critic's verdicts on the latest round's findings,
+// run.review-check decides whether the review may go on to the gate, and
+// run.gate ends the plan: it proposes the plan's change sets and, in an
+// autonomous run whose review passed, accepts them. All work only inside
+// the run RHIZA_RUN names, which must be unfinished. The first three check
+// everything before they write anything. The round count comes from the
+// journal: each run.findings call is one round.
 
 import (
 	"bytes"
@@ -16,6 +18,7 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -57,6 +60,14 @@ func init() {
 		Request:  reflect.TypeFor[RunReviewCheckRequest](),
 		Response: reflect.TypeFor[RunReviewCheckResponse](),
 		Run:      runRunReviewCheck,
+	})
+	register(Operation{
+		Name:     "run.gate",
+		Summary:  "End the plan of the run RHIZA_RUN names: propose each draft among its change sets; an autonomous run whose review passed accepts each under rule autonomous",
+		Write:    true,
+		Request:  reflect.TypeFor[RunGateRequest](),
+		Response: reflect.TypeFor[RunGateResponse](),
+		Run:      runRunGate,
 	})
 }
 
@@ -644,6 +655,267 @@ func (r RunReviewCheckResponse) Human(w io.Writer) {
 	}
 	if r.DryRun {
 		fmt.Fprintf(w, "\nThis was a dry run: nothing was written or journalled.\n")
+		return
+	}
+	fmt.Fprintf(w, "\nnext: rhiza run status %s\n", r.Run)
+}
+
+const runGateNext = "rhiza describe run.gate"
+
+// RunGateRequest takes nothing: the run is RHIZA_RUN's.
+type RunGateRequest struct{}
+
+// RunGateChangeSet is one of the plan's change sets and what the gate
+// did with it.
+type RunGateChangeSet struct {
+	ID    string          `json:"id" desc:"The change set's ID"`
+	Title string          `json:"title" desc:"Its title"`
+	From  changeset.State `json:"from" desc:"Its state before the gate"`
+	State changeset.State `json:"state" desc:"Its state after the gate (in a dry run, the state it would have)"`
+	Moves []string        `json:"moves,omitempty" desc:"What the gate did, in order: proposed, accepted; absent when it left the change set as it was"`
+	Next  string          `json:"next,omitempty" desc:"The owner's command when it waits proposed in a normal run; absent otherwise"`
+}
+
+// RunGateResponse is the plan's change sets after the gate. An
+// autonomous run whose review has not passed is an error (exit 1), not a
+// response.
+type RunGateResponse struct {
+	Run        string             `json:"run" desc:"The run's full ID"`
+	Autonomous bool               `json:"autonomous" desc:"True if the run is autonomous, so the gate accepted in the owner's place"`
+	ChangeSets []RunGateChangeSet `json:"change_sets" desc:"The plan's change sets: the run's change set and every change set serving an intent it adds, by ID"`
+	DryRun     bool               `json:"dry_run,omitempty" desc:"True if nothing was written or journalled"`
+}
+
+// runRunGate ends the plan of the run RHIZA_RUN names. It proposes each
+// draft among the plan's change sets (planChangeSets) and leaves the
+// others as they are, then journals a gated entry naming them all. A
+// normal run stops there: the owner accepts, and run status names rhiza
+// accept --rule owner for each still proposed. An autonomous run then
+// checks the review (gateReview): if it has not passed it fails (exit 1)
+// having accepted nothing, the proposals kept; else it accepts each
+// proposed change set under rule autonomous, which journals an accepted
+// entry per change set. Running it again moves nothing already moved.
+func runRunGate(ctx *Ctx, _ any) (any, error) {
+	const cmd = "run gate"
+	rr, err := openReviewRun(ctx, cmd, runGateNext)
+	if err != nil {
+		return nil, err
+	}
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return nil, err
+	}
+	m := w.model(rr.change)
+	sets := w.changeSets()
+	plan, err := planChangeSets(sets, m, rr.change)
+	if err != nil {
+		return nil, Errorf("%s: %v", cmd, err).WithNext("rhiza run status " + rr.id)
+	}
+	resp := RunGateResponse{Run: rr.id, Autonomous: rr.state.Autonomous, ChangeSets: make([]RunGateChangeSet, 0, len(plan)), DryRun: ctx.DryRun}
+	propose, _ := Lookup("propose")
+	ids := make([]string, 0, len(plan))
+	for _, c := range plan {
+		g := RunGateChangeSet{ID: c.ID.String(), Title: c.Open.DisplayTitle(), From: c.State, State: c.State}
+		if c.State == changeset.StateDraft {
+			if _, err := propose.Run(gateCtx(ctx, c.ID), LifecycleRequest{}); err != nil {
+				return nil, err
+			}
+			g.State, g.Moves = changeset.StateProposed, append(g.Moves, "proposed")
+		}
+		resp.ChangeSets = append(resp.ChangeSets, g)
+		ids = append(ids, g.ID)
+	}
+	if !slices.Equal(ids, rr.state.Gated) {
+		if err := rr.journal(ctx, "gate", run.Entry{Type: run.TypeGated, At: ctx.Now(), Changes: ids}); err != nil {
+			return nil, err
+		}
+	}
+	if !rr.state.Autonomous {
+		for i, g := range resp.ChangeSets {
+			if g.State == changeset.StateProposed {
+				resp.ChangeSets[i].Next = ownerAcceptNext(g.ID)
+			}
+		}
+		return resp, nil
+	}
+	if err := gateReview(sets, m, rr); err != nil {
+		return nil, err
+	}
+	accept, _ := Lookup("accept")
+	for i, g := range resp.ChangeSets {
+		if g.State != changeset.StateProposed {
+			continue
+		}
+		if !ctx.DryRun {
+			if _, err := accept.Run(gateCtx(ctx, mustParseID(g.ID)), DecisionRequest{Rule: autonomousRule}); err != nil {
+				return nil, err
+			}
+		}
+		resp.ChangeSets[i].State, resp.ChangeSets[i].Moves = changeset.StateAccepted, append(g.Moves, "accepted")
+	}
+	return resp, nil
+}
+
+// gateCtx is ctx acting on change set cs, as the gate's propose and
+// accept do.
+func gateCtx(ctx *Ctx, cs id.ID) *Ctx {
+	c := *ctx
+	c.ChangeSet, c.ChangeRef, c.Record = cs, "", false
+	return &c
+}
+
+// ownerAcceptNext is the owner's command to accept change set cs.
+func ownerAcceptNext(cs string) string {
+	return "rhiza accept --rule owner --change " + cs
+}
+
+// planChangeSets is the plan of change set cs, sorted by ID: cs itself and
+// every change set with a serves link to an intent cs's ops create, found
+// in the change sets' own link.create ops (where a change set's serves
+// links are written) and in m's live links. Rejected, withdrawn and
+// superseded ones are left out; landed ones stay in.
+func planChangeSets(sets []changeset.ChangeSet, m Model, cs id.ID) ([]changeset.ChangeSet, error) {
+	byID := map[id.ID]changeset.ChangeSet{}
+	for _, c := range sets {
+		byID[c.ID] = c
+	}
+	own, ok := byID[cs]
+	if !ok {
+		return nil, fmt.Errorf("change set %s is not in the log", cs)
+	}
+	intents := map[id.ID]bool{}
+	for _, o := range own.Ops {
+		if o.Type == op.TypeNodeCreate && o.Kind == op.KindIntent {
+			intents[o.Node] = true
+		}
+	}
+	in := map[id.ID]bool{cs: true}
+	for i := range intents {
+		for _, l := range m.LinksTo(i, op.LinkServes) {
+			in[l.From] = true
+		}
+	}
+	for _, c := range sets {
+		for _, o := range c.Ops {
+			if o.Type == op.TypeLinkCreate && o.LinkType == op.LinkServes && intents[o.To] {
+				in[o.From] = true
+			}
+		}
+	}
+	var out []changeset.ChangeSet
+	for i := range in {
+		c, ok := byID[i]
+		if !ok || (c.State.Terminal() && c.State != changeset.StateLanded) {
+			continue
+		}
+		out = append(out, c)
+	}
+	slices.SortFunc(out, func(a, b changeset.ChangeSet) int { return id.Compare(a.ID, b.ID) })
+	return out, nil
+}
+
+// reviewQuestions are the asked entries run.review-check journalled in
+// run st: those with no Session whose handle starts review-.
+func reviewQuestions(st run.State) []run.Asked {
+	var out []run.Asked
+	for _, a := range st.Asked {
+		if a.Session == "" && strings.HasPrefix(a.Handle, reviewQuestionPrefix) {
+			out = append(out, a)
+		}
+	}
+	return out
+}
+
+// reviewAnswered reports whether question q is answered: m (the run's
+// change set's view) has a live answers link to it from a live Decision,
+// or a draft, proposed or accepted change set's ops create an answers
+// link to it.
+func reviewAnswered(sets []changeset.ChangeSet, m Model, q id.ID) bool {
+	for _, l := range m.LinksTo(q, op.LinkAnswers) {
+		if n, ok := m.Node(l.From); ok && n.Kind == op.KindDecision && !n.Retired {
+			return true
+		}
+	}
+	for _, c := range sets {
+		if !planInFlight(c.State) {
+			continue
+		}
+		for _, o := range c.Ops {
+			if o.Type == op.TypeLinkCreate && o.LinkType == op.LinkAnswers && o.To == q {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// gateReview decides whether an autonomous run's review passed, so the
+// gate may accept. With no review round it has not. Every question the
+// review left (reviewQuestions) must be answered (reviewAnswered); one
+// open fails it, naming each. Then the latest round passes with no
+// confirmed finding, or with a question left for each confirmed one.
+func gateReview(sets []changeset.ChangeSet, m Model, rr reviewRun) error {
+	const cmd = "run gate"
+	next := "rhiza run status " + rr.id
+	rd, ok := rr.state.LatestRound()
+	if !ok {
+		return Errorf("%s: run %s is autonomous and has no review round, so the plan is unreviewed and it accepts nothing: rhiza run findings opens one",
+			cmd, rr.id).WithNext("rhiza describe run.findings")
+	}
+	asked := map[string]bool{}
+	var open []string
+	for _, a := range reviewQuestions(rr.state) {
+		asked[a.Handle] = true
+		if !reviewAnswered(sets, m, mustParseID(a.Question)) {
+			open = append(open, "- "+a.Handle+" ("+a.Question+")")
+		}
+	}
+	if len(open) > 0 {
+		return Errorf("%s: run %s is autonomous and %d question(s) from the plan review are open, so it accepts nothing until a Decision answers each:\n%s",
+			cmd, rr.id, len(open), strings.Join(open, "\n")).WithNext(next)
+	}
+	for _, f := range rd.Confirmed() {
+		if !asked[reviewQuestionHandle(rr.id, rd.Number, f.ID)] {
+			return Errorf("%s: run %s is autonomous and review round %d has confirmed finding %s with no question left for it, so the review has not passed and it accepts nothing: run rhiza run review-check",
+				cmd, rr.id, rd.Number, f.ID).WithNext(runReviewCheckNext)
+		}
+	}
+	return nil
+}
+
+// Human reports the plan's change sets after the gate.
+func (r RunGateResponse) Human(w io.Writer) {
+	mode := "normal"
+	if r.Autonomous {
+		mode = "autonomous"
+	}
+	verb := "Gated"
+	if r.DryRun {
+		verb = "Would gate"
+	}
+	fmt.Fprintf(w, "%s the plan of %s run %s\n\n", verb, mode, r.Run)
+	var next []string
+	for _, c := range r.ChangeSets {
+		s := "- " + c.ID + " " + c.Title + ": " + string(c.State)
+		if len(c.Moves) > 0 {
+			s += " (by the gate: " + strings.Join(c.Moves, ", ") + ")"
+		} else {
+			s += " (left as it was)"
+		}
+		fmt.Fprintln(w, s)
+		if c.Next != "" {
+			next = append(next, c.Next)
+		}
+	}
+	if r.DryRun {
+		fmt.Fprintf(w, "\nThis was a dry run: nothing was written or journalled.\n")
+		return
+	}
+	if len(next) > 0 {
+		fmt.Fprintln(w)
+		for _, n := range next {
+			fmt.Fprintf(w, "next: %s\n", n)
+		}
 		return
 	}
 	fmt.Fprintf(w, "\nnext: rhiza run status %s\n", r.Run)

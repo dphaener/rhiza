@@ -27,6 +27,7 @@ const (
 	TypeTokens     = "tokens"
 	TypeFindings   = "findings"
 	TypeVerdict    = "verdict"
+	TypeGated      = "gated"
 )
 
 // Finding kinds: what a plan reviewer's finding says is wrong with a node.
@@ -120,6 +121,8 @@ type Block struct {
 //	findings:  Findings (a plan reviewer's findings, maybe none; each findings entry
 //	           opens the next review round)
 //	verdict:   Verdicts (a critic's verdicts on findings of the latest round)
+//	gated:     Changes (run gate ended the plan: its change sets, by ID; the
+//	           latest gated entry wins)
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -153,6 +156,8 @@ type Entry struct {
 	// Findings are a findings entry's findings; Verdicts a verdict entry's.
 	Findings []Finding `json:"findings,omitempty"`
 	Verdicts []Verdict `json:"verdicts,omitempty"`
+	// Changes are a gated entry's plan change sets, by ID.
+	Changes []string `json:"changes,omitempty"`
 }
 
 // Finding is one finding of a plan review round: node Node (its handle
@@ -415,6 +420,9 @@ type State struct {
 	// before any findings entry belongs to no round and is dropped. Rounds
 	// change nothing else in the fold.
 	Rounds []Round
+	// Gated are the plan's change sets the latest gated entry names, by
+	// ID; nil before run gate. They change nothing else in the fold.
+	Gated []string
 }
 
 // State folds the journal.
@@ -515,6 +523,8 @@ func (j Journal) State() State {
 			if e.Tokens != nil {
 				st.Tokens[e.Session] = *e.Tokens
 			}
+		case TypeGated:
+			st.Gated = e.Changes
 		case TypeFindings:
 			st.Rounds = append(st.Rounds, Round{Number: len(st.Rounds) + 1, At: e.At, Findings: e.Findings})
 		case TypeVerdict:

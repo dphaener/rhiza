@@ -2741,6 +2741,83 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "run.gate",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "autonomous": {
+            "description": "True if the run is autonomous, so the gate accepted in the owner's place",
+            "type": "boolean"
+          },
+          "change_sets": {
+            "description": "The plan's change sets: the run's change set and every change set serving an intent it adds, by ID",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "from": {
+                  "description": "Its state before the gate",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The change set's ID",
+                  "type": "string"
+                },
+                "moves": {
+                  "description": "What the gate did, in order: proposed, accepted; absent when it left the change set as it was",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "next": {
+                  "description": "The owner's command when it waits proposed in a normal run; absent otherwise",
+                  "type": "string"
+                },
+                "state": {
+                  "description": "Its state after the gate (in a dry run, the state it would have)",
+                  "type": "string"
+                },
+                "title": {
+                  "description": "Its title",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "from",
+                "id",
+                "state",
+                "title"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "description": "True if nothing was written or journalled",
+            "type": "boolean"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "autonomous",
+          "change_sets",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "End the plan of the run RHIZA_RUN names: propose each draft among its change sets; an autonomous run whose review passed accepts each under rule autonomous",
+      "write": true
+    },
+    {
       "name": "run.resume",
       "request": {
         "additionalProperties": false,
@@ -3340,6 +3417,33 @@ cmp stdout describe.golden.json
                   "session"
                 ],
                 "type": "object"
+              },
+              "waiting": {
+                "description": "The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "change": {
+                      "description": "The change set's ID",
+                      "type": "string"
+                    },
+                    "next": {
+                      "description": "The owner's command to accept it: rhiza accept --rule owner --change <id>",
+                      "type": "string"
+                    },
+                    "title": {
+                      "description": "Its title",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "change",
+                    "next",
+                    "title"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
               },
               "workflow": {
                 "description": "The workflow's name",
@@ -4105,6 +4209,33 @@ cmp stdout describe.golden.json
                 ],
                 "type": "object"
               },
+              "waiting": {
+                "description": "The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "change": {
+                      "description": "The change set's ID",
+                      "type": "string"
+                    },
+                    "next": {
+                      "description": "The owner's command to accept it: rhiza accept --rule owner --change <id>",
+                      "type": "string"
+                    },
+                    "title": {
+                      "description": "Its title",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "change",
+                    "next",
+                    "title"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "workflow": {
                 "description": "The workflow's name",
                 "type": "string"
@@ -4717,6 +4848,33 @@ cmp stdout describe.golden.json
               "session"
             ],
             "type": "object"
+          },
+          "waiting": {
+            "description": "The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "change": {
+                  "description": "The change set's ID",
+                  "type": "string"
+                },
+                "next": {
+                  "description": "The owner's command to accept it: rhiza accept --rule owner --change <id>",
+                  "type": "string"
+                },
+                "title": {
+                  "description": "Its title",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "change",
+                "next",
+                "title"
+              ],
+              "type": "object"
+            },
+            "type": "array"
           },
           "workflow": {
             "description": "The workflow's name",
