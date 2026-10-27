@@ -88,6 +88,31 @@ func ValidKind(kind string) bool {
 	return false
 }
 
+// Severities of a review finding, from the most to the least serious.
+const (
+	SeverityBlocker = "blocker"
+	SeverityMajor   = "major"
+	SeverityMinor   = "minor"
+	SeverityNit     = "nit"
+)
+
+// Severities are a review finding's severities, most serious first.
+var Severities = []string{SeverityBlocker, SeverityMajor, SeverityMinor, SeverityNit}
+
+// ValidSeverity reports whether sev is one of Severities.
+func ValidSeverity(sev string) bool {
+	for _, s := range Severities {
+		if s == sev {
+			return true
+		}
+	}
+	return false
+}
+
+// Serious reports whether a finding of severity sev is serious: blocker or
+// major, the findings a critic judges.
+func Serious(sev string) bool { return sev == SeverityBlocker || sev == SeverityMajor }
+
 // Verdicts a critic gives a finding.
 const (
 	Confirmed = "confirmed"
@@ -159,6 +184,11 @@ type Block struct {
 //	           verifier's findings on leaf Leaf (handle Handle) of leaves step
 //	           Step, for its attempt Attempt; plan review rounds skip it
 //	verdict:   Verdicts (a critic's verdicts on findings of the latest round)
+//	           With Check set, findings and verdict entries are instead a
+//	           review check's: findings opens the next round of check Check
+//	           of checks step Step, in cycle Cycle (when 0, the cycle of the
+//	           check's latest session), and verdict judges that check's
+//	           latest round; plan review rounds skip both
 //	gated:     Changes (run gate ended the plan: its change sets, by ID; the
 //	           latest gated entry wins)
 //	leaf-session: Step, Leaf, Handle, Role (builder or verifier), Attempt, Session,
@@ -248,19 +278,24 @@ type Entry struct {
 
 // Finding is one finding: of a plan review round, node Node (its handle
 // Handle when it was recorded) has a problem of kind Kind, for Reason; of
-// a leaf's verifier, only ID and Reason are set. ID is f1, f2, ... in the
-// round, or in the leaf's attempt.
+// a leaf's verifier, only ID and Reason are set; of a review check, check
+// Check found a problem of severity Severity at Place (file:line or a
+// node), about leaf node Leaf (handle LeafHandle) when it names one. ID
+// is f1, f2, ... in the round, or in the leaf's attempt.
 //
-// Every field but ID and Reason is optional, so the review workflow's
-// findings (change set 01M5WPTZ) can add check, severity, leaf and place
-// as further omitempty fields without reshaping a finding already
-// journalled.
+// Every field but ID and Reason is optional, so a finding already
+// journalled keeps its shape.
 type Finding struct {
-	ID     string `json:"id"`
-	Node   string `json:"node,omitempty"`
-	Handle string `json:"handle,omitempty"`
-	Kind   string `json:"kind,omitempty"`
-	Reason string `json:"reason"`
+	ID         string `json:"id"`
+	Node       string `json:"node,omitempty"`
+	Handle     string `json:"handle,omitempty"`
+	Kind       string `json:"kind,omitempty"`
+	Check      string `json:"check,omitempty"`
+	Severity   string `json:"severity,omitempty"`
+	Leaf       string `json:"leaf,omitempty"`
+	LeafHandle string `json:"leaf_handle,omitempty"`
+	Place      string `json:"place,omitempty"`
+	Reason     string `json:"reason"`
 }
 
 // Verdict is a critic's verdict on the finding with ID Finding: confirmed
@@ -273,8 +308,11 @@ type Verdict struct {
 
 // Round is one plan review round: a findings entry, numbered from 1 in
 // journal order, and the verdicts journalled after it and before the next.
+// A review check's rounds are the same, numbered per check, with Cycle the
+// check's cycle the round was recorded in; a plan review round's is 0.
 type Round struct {
 	Number   int
+	Cycle    int
 	At       time.Time
 	Findings []Finding
 	Verdicts []Verdict
@@ -596,6 +634,37 @@ type CheckState struct {
 	Sessions []CheckSession
 	Judged   []CheckJudged
 	Outcomes []CheckOutcome
+	// Rounds are the check's findings rounds, from findings entries naming
+	// it, each with the verdicts journalled on it.
+	Rounds []Round
+}
+
+// LatestRound is the check's latest findings round, if it has one.
+func (c CheckState) LatestRound() (Round, bool) {
+	if n := len(c.Rounds); n > 0 {
+		return c.Rounds[n-1], true
+	}
+	return Round{}, false
+}
+
+// RoundFor is the check's latest findings round recorded in cycle, if it
+// has one: none means the check's session of the cycle recorded none.
+func (c CheckState) RoundFor(cycle int) (Round, bool) {
+	for i := len(c.Rounds) - 1; i >= 0; i-- {
+		if c.Rounds[i].Cycle == cycle {
+			return c.Rounds[i], true
+		}
+	}
+	return Round{}, false
+}
+
+// latestSessionCycle is the cycle of the check's latest session, 0 with
+// none.
+func (c CheckState) latestSessionCycle() int {
+	if n := len(c.Sessions); n > 0 {
+		return c.Sessions[n-1].Cycle
+	}
+	return 0
 }
 
 // Session is the check's session of role on cycle, if it has one.
@@ -987,6 +1056,15 @@ func (j Journal) State() State {
 		case TypeGated:
 			st.Gated = e.Changes
 		case TypeFindings:
+			if e.Check != "" {
+				c := st.check(e)
+				cycle := e.Cycle
+				if cycle == 0 {
+					cycle = c.latestSessionCycle()
+				}
+				c.Rounds = append(c.Rounds, Round{Number: len(c.Rounds) + 1, Cycle: cycle, At: e.At, Findings: e.Findings})
+				break
+			}
 			if e.Leaf != "" {
 				l := st.leaf(e)
 				for _, f := range e.Findings {
@@ -996,6 +1074,13 @@ func (j Journal) State() State {
 			}
 			st.Rounds = append(st.Rounds, Round{Number: len(st.Rounds) + 1, At: e.At, Findings: e.Findings})
 		case TypeVerdict:
+			if e.Check != "" {
+				c := st.check(e)
+				if n := len(c.Rounds); n > 0 {
+					c.Rounds[n-1].Verdicts = append(c.Rounds[n-1].Verdicts, e.Verdicts...)
+				}
+				break
+			}
 			if n := len(st.Rounds); n > 0 {
 				st.Rounds[n-1].Verdicts = append(st.Rounds[n-1].Verdicts, e.Verdicts...)
 			}

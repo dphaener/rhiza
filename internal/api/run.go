@@ -148,7 +148,18 @@ type RunCheck struct {
 	Step    string          `json:"step" desc:"The checks step"`
 	Check   string          `json:"check" desc:"The check's name"`
 	Cycles  []RunCheckCycle `json:"cycles" desc:"The cycles it ran in, in order"`
+	Rounds  []RunCheckRound `json:"rounds,omitempty" desc:"Its findings rounds, journalled by run findings --check and judged by run verdict --check, in order; absent when there were none"`
 	Outcome string          `json:"outcome,omitempty" desc:"passed or failed: its latest cycle's outcome; empty while its first cycle is open"`
+}
+
+// RunCheckRound is one findings round of a review check.
+type RunCheckRound struct {
+	Round     int          `json:"round" desc:"The round's number in the check, from 1"`
+	Cycle     int          `json:"cycle" desc:"The check's cycle it was recorded in, from 1"`
+	At        string       `json:"at" desc:"When its findings were journalled, RFC 3339 UTC"`
+	Findings  []RunFinding `json:"findings" desc:"The check's findings, in order, each with its latest verdict; empty for a clean check"`
+	Verdicts  []RunVerdict `json:"verdicts,omitempty" desc:"The verdicts journalled on the round, in order; absent before any"`
+	Confirmed int          `json:"confirmed" desc:"How many findings the latest verdict confirms"`
 }
 
 // RunCheckCycle is one cycle a check ran in.
@@ -1659,6 +1670,16 @@ func runCheckInfo(st run.State, c run.CheckState) RunCheck {
 		}
 		rc.Cycles = append(rc.Cycles, rcy)
 	}
+	for _, rd := range c.Rounds {
+		rr := RunCheckRound{Round: rd.Number, Cycle: rd.Cycle, At: rfc3339(rd.At), Findings: []RunFinding{}, Confirmed: len(rd.Confirmed())}
+		for _, f := range rd.Findings {
+			rr.Findings = append(rr.Findings, runFinding(f, rd))
+		}
+		for _, v := range rd.Verdicts {
+			rr.Verdicts = append(rr.Verdicts, RunVerdict{Finding: v.Finding, Verdict: v.Verdict, Reason: v.Reason})
+		}
+		rc.Rounds = append(rc.Rounds, rr)
+	}
 	return rc
 }
 
@@ -1786,6 +1807,16 @@ func (r RunInfo) Human(w io.Writer) {
 					}
 				}
 				fmt.Fprintf(w, "\n")
+			}
+			for _, rd := range c.Rounds {
+				if len(rd.Findings) == 0 {
+					fmt.Fprintf(w, "  - round %d (cycle %d): no findings\n", rd.Round, rd.Cycle)
+					continue
+				}
+				fmt.Fprintf(w, "  - round %d (cycle %d): %d %s, %d confirmed\n", rd.Round, rd.Cycle, len(rd.Findings), shipPlural(len(rd.Findings), "finding", "findings"), rd.Confirmed)
+				for _, f := range rd.Findings {
+					fmt.Fprintf(w, "    - %s\n", findingLine(f))
+				}
 			}
 		}
 	}

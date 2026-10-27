@@ -2691,12 +2691,12 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "findings": {
-            "description": "The findings, in order; empty for a clean review, but at least one with --leaf. They are numbered f1, f2, ... in the round, or in the leaf's attempt",
+            "description": "The findings, in order; empty for a clean review or check, but at least one with --leaf. They are numbered f1, f2, ... in the round, or in the leaf's attempt",
             "items": {
               "additionalProperties": false,
               "properties": {
                 "kind": {
-                  "description": "What is wrong with the node. Required, except with --leaf, which refuses it",
+                  "description": "What is wrong with the node. Required, except with --check or --leaf, which refuse it",
                   "enum": [
                     "missing-acceptance",
                     "missing-provenance",
@@ -2705,14 +2705,32 @@ cmp stdout describe.golden.json
                     "contradiction"
                   ]
                 },
+                "leaf": {
+                  "description": "The leaf of the run's change set it is about, by handle or ID. Optional with --check, refused otherwise",
+                  "type": "string"
+                },
                 "node": {
-                  "description": "The node: a full ID, a unique prefix of 4+ characters or a handle, in the run's change set's view. Required, except with --leaf, which refuses it",
+                  "description": "The node: a full ID, a unique prefix of 4+ characters or a handle, in the run's change set's view. Required, except with --check or --leaf, which refuse it",
+                  "type": "string"
+                },
+                "place": {
+                  "description": "Where: file:line or a node. Required with --check, refused otherwise",
+                  "minLength": 1,
                   "type": "string"
                 },
                 "reason": {
                   "description": "Why",
                   "minLength": 1,
                   "type": "string"
+                },
+                "severity": {
+                  "description": "How serious it is. Required with --check, refused otherwise",
+                  "enum": [
+                    "blocker",
+                    "major",
+                    "minor",
+                    "nit"
+                  ]
                 }
               },
               "required": [
@@ -2732,6 +2750,10 @@ cmp stdout describe.golden.json
       "request": {
         "additionalProperties": false,
         "properties": {
+          "check": {
+            "description": "A check of the checks step the run is in: journal that review check's findings, each with a severity, place and reason, as its next round; required in a review run, refused outside one",
+            "type": "string"
+          },
           "file": {
             "description": "A JSON file of findings, or - for stdin (see the input schema)",
             "type": "string"
@@ -2753,6 +2775,14 @@ cmp stdout describe.golden.json
             "description": "With --leaf: the leaf's attempt the findings are on, from 1",
             "type": "integer"
           },
+          "check": {
+            "description": "With --check: the check",
+            "type": "string"
+          },
+          "cycle": {
+            "description": "With --check: the check's cycle the round is in, from 1",
+            "type": "integer"
+          },
           "dry_run": {
             "description": "True if nothing was journalled",
             "type": "boolean"
@@ -2762,6 +2792,10 @@ cmp stdout describe.golden.json
             "items": {
               "additionalProperties": false,
               "properties": {
+                "check": {
+                  "description": "A review check's finding: the check that found it",
+                  "type": "string"
+                },
                 "handle": {
                   "description": "The node's handle when the finding was recorded; absent when it had none",
                   "type": "string"
@@ -2771,15 +2805,31 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's finding",
+                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                  "type": "string"
+                },
+                "leaf": {
+                  "description": "A review check's finding: the leaf it is about, by ID; absent when it names none",
+                  "type": "string"
+                },
+                "leaf_handle": {
+                  "description": "That leaf's handle when the finding was recorded",
                   "type": "string"
                 },
                 "node": {
                   "description": "The node it is about, by ID; absent for a leaf's finding",
                   "type": "string"
                 },
+                "place": {
+                  "description": "A review check's finding: where, as file:line or a node",
+                  "type": "string"
+                },
                 "reason": {
                   "description": "Why the reviewer found it",
+                  "type": "string"
+                },
+                "severity": {
+                  "description": "A review check's finding: blocker, major, minor or nit",
                   "type": "string"
                 },
                 "verdict": {
@@ -2804,7 +2854,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "round": {
-            "description": "The round the findings opened, from 1; absent for a leaf's findings",
+            "description": "The round the findings opened, from 1 (with --check, in the check's rounds); absent for a leaf's findings",
             "type": "integer"
           },
           "run": {
@@ -2818,7 +2868,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Journal a plan reviewer's findings as the next review round of the run RHIZA_RUN names, or with --leaf a verifier's findings on a leaf's current attempt",
+      "summary": "Journal a plan reviewer's findings as the next review round of the run RHIZA_RUN names, with --check a review check's findings as that check's next round, or with --leaf a verifier's findings on a leaf's current attempt",
       "write": true
     },
     {
@@ -3151,6 +3201,128 @@ cmp stdout describe.golden.json
                     "outcome": {
                       "description": "passed or failed: its latest cycle's outcome; empty while its first cycle is open",
                       "type": "string"
+                    },
+                    "rounds": {
+                      "description": "Its findings rounds, journalled by run findings --check and judged by run verdict --check, in order; absent when there were none",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "at": {
+                            "description": "When its findings were journalled, RFC 3339 UTC",
+                            "type": "string"
+                          },
+                          "confirmed": {
+                            "description": "How many findings the latest verdict confirms",
+                            "type": "integer"
+                          },
+                          "cycle": {
+                            "description": "The check's cycle it was recorded in, from 1",
+                            "type": "integer"
+                          },
+                          "findings": {
+                            "description": "The check's findings, in order, each with its latest verdict; empty for a clean check",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "check": {
+                                  "description": "A review check's finding: the check that found it",
+                                  "type": "string"
+                                },
+                                "handle": {
+                                  "description": "The node's handle when the finding was recorded; absent when it had none",
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "description": "The finding's ID in its round: f1, f2, ...",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                                  "type": "string"
+                                },
+                                "leaf": {
+                                  "description": "A review check's finding: the leaf it is about, by ID; absent when it names none",
+                                  "type": "string"
+                                },
+                                "leaf_handle": {
+                                  "description": "That leaf's handle when the finding was recorded",
+                                  "type": "string"
+                                },
+                                "node": {
+                                  "description": "The node it is about, by ID; absent for a leaf's finding",
+                                  "type": "string"
+                                },
+                                "place": {
+                                  "description": "A review check's finding: where, as file:line or a node",
+                                  "type": "string"
+                                },
+                                "reason": {
+                                  "description": "Why the reviewer found it",
+                                  "type": "string"
+                                },
+                                "severity": {
+                                  "description": "A review check's finding: blocker, major, minor or nit",
+                                  "type": "string"
+                                },
+                                "verdict": {
+                                  "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                                  "type": "string"
+                                },
+                                "verdict_reason": {
+                                  "description": "Why the critic gave it; absent before a verdict",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "reason"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "round": {
+                            "description": "The round's number in the check, from 1",
+                            "type": "integer"
+                          },
+                          "verdicts": {
+                            "description": "The verdicts journalled on the round, in order; absent before any",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "finding": {
+                                  "description": "The finding's ID in the round",
+                                  "type": "string"
+                                },
+                                "reason": {
+                                  "description": "Why",
+                                  "type": "string"
+                                },
+                                "verdict": {
+                                  "description": "confirmed or dropped",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "finding",
+                                "reason",
+                                "verdict"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          }
+                        },
+                        "required": [
+                          "at",
+                          "confirmed",
+                          "cycle",
+                          "findings",
+                          "round"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
                     },
                     "step": {
                       "description": "The checks step",
@@ -3528,6 +3700,10 @@ cmp stdout describe.golden.json
                       "items": {
                         "additionalProperties": false,
                         "properties": {
+                          "check": {
+                            "description": "A review check's finding: the check that found it",
+                            "type": "string"
+                          },
                           "handle": {
                             "description": "The node's handle when the finding was recorded; absent when it had none",
                             "type": "string"
@@ -3537,15 +3713,31 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's finding",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "type": "string"
+                          },
+                          "leaf": {
+                            "description": "A review check's finding: the leaf it is about, by ID; absent when it names none",
+                            "type": "string"
+                          },
+                          "leaf_handle": {
+                            "description": "That leaf's handle when the finding was recorded",
                             "type": "string"
                           },
                           "node": {
                             "description": "The node it is about, by ID; absent for a leaf's finding",
                             "type": "string"
                           },
+                          "place": {
+                            "description": "A review check's finding: where, as file:line or a node",
+                            "type": "string"
+                          },
                           "reason": {
                             "description": "Why the reviewer found it",
+                            "type": "string"
+                          },
+                          "severity": {
+                            "description": "A review check's finding: blocker, major, minor or nit",
                             "type": "string"
                           },
                           "verdict": {
@@ -3877,6 +4069,10 @@ cmp stdout describe.golden.json
             "items": {
               "additionalProperties": false,
               "properties": {
+                "check": {
+                  "description": "A review check's finding: the check that found it",
+                  "type": "string"
+                },
                 "handle": {
                   "description": "The node's handle when the finding was recorded; absent when it had none",
                   "type": "string"
@@ -3886,15 +4082,31 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's finding",
+                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                  "type": "string"
+                },
+                "leaf": {
+                  "description": "A review check's finding: the leaf it is about, by ID; absent when it names none",
+                  "type": "string"
+                },
+                "leaf_handle": {
+                  "description": "That leaf's handle when the finding was recorded",
                   "type": "string"
                 },
                 "node": {
                   "description": "The node it is about, by ID; absent for a leaf's finding",
                   "type": "string"
                 },
+                "place": {
+                  "description": "A review check's finding: where, as file:line or a node",
+                  "type": "string"
+                },
                 "reason": {
                   "description": "Why the reviewer found it",
+                  "type": "string"
+                },
+                "severity": {
+                  "description": "A review check's finding: blocker, major, minor or nit",
                   "type": "string"
                 },
                 "verdict": {
@@ -4242,6 +4454,128 @@ cmp stdout describe.golden.json
                       "description": "passed or failed: its latest cycle's outcome; empty while its first cycle is open",
                       "type": "string"
                     },
+                    "rounds": {
+                      "description": "Its findings rounds, journalled by run findings --check and judged by run verdict --check, in order; absent when there were none",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "at": {
+                            "description": "When its findings were journalled, RFC 3339 UTC",
+                            "type": "string"
+                          },
+                          "confirmed": {
+                            "description": "How many findings the latest verdict confirms",
+                            "type": "integer"
+                          },
+                          "cycle": {
+                            "description": "The check's cycle it was recorded in, from 1",
+                            "type": "integer"
+                          },
+                          "findings": {
+                            "description": "The check's findings, in order, each with its latest verdict; empty for a clean check",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "check": {
+                                  "description": "A review check's finding: the check that found it",
+                                  "type": "string"
+                                },
+                                "handle": {
+                                  "description": "The node's handle when the finding was recorded; absent when it had none",
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "description": "The finding's ID in its round: f1, f2, ...",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                                  "type": "string"
+                                },
+                                "leaf": {
+                                  "description": "A review check's finding: the leaf it is about, by ID; absent when it names none",
+                                  "type": "string"
+                                },
+                                "leaf_handle": {
+                                  "description": "That leaf's handle when the finding was recorded",
+                                  "type": "string"
+                                },
+                                "node": {
+                                  "description": "The node it is about, by ID; absent for a leaf's finding",
+                                  "type": "string"
+                                },
+                                "place": {
+                                  "description": "A review check's finding: where, as file:line or a node",
+                                  "type": "string"
+                                },
+                                "reason": {
+                                  "description": "Why the reviewer found it",
+                                  "type": "string"
+                                },
+                                "severity": {
+                                  "description": "A review check's finding: blocker, major, minor or nit",
+                                  "type": "string"
+                                },
+                                "verdict": {
+                                  "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                                  "type": "string"
+                                },
+                                "verdict_reason": {
+                                  "description": "Why the critic gave it; absent before a verdict",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "reason"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "round": {
+                            "description": "The round's number in the check, from 1",
+                            "type": "integer"
+                          },
+                          "verdicts": {
+                            "description": "The verdicts journalled on the round, in order; absent before any",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "finding": {
+                                  "description": "The finding's ID in the round",
+                                  "type": "string"
+                                },
+                                "reason": {
+                                  "description": "Why",
+                                  "type": "string"
+                                },
+                                "verdict": {
+                                  "description": "confirmed or dropped",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "finding",
+                                "reason",
+                                "verdict"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          }
+                        },
+                        "required": [
+                          "at",
+                          "confirmed",
+                          "cycle",
+                          "findings",
+                          "round"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
                     "step": {
                       "description": "The checks step",
                       "type": "string"
@@ -4618,6 +4952,10 @@ cmp stdout describe.golden.json
                       "items": {
                         "additionalProperties": false,
                         "properties": {
+                          "check": {
+                            "description": "A review check's finding: the check that found it",
+                            "type": "string"
+                          },
                           "handle": {
                             "description": "The node's handle when the finding was recorded; absent when it had none",
                             "type": "string"
@@ -4627,15 +4965,31 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's finding",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                            "type": "string"
+                          },
+                          "leaf": {
+                            "description": "A review check's finding: the leaf it is about, by ID; absent when it names none",
+                            "type": "string"
+                          },
+                          "leaf_handle": {
+                            "description": "That leaf's handle when the finding was recorded",
                             "type": "string"
                           },
                           "node": {
                             "description": "The node it is about, by ID; absent for a leaf's finding",
                             "type": "string"
                           },
+                          "place": {
+                            "description": "A review check's finding: where, as file:line or a node",
+                            "type": "string"
+                          },
                           "reason": {
                             "description": "Why the reviewer found it",
+                            "type": "string"
+                          },
+                          "severity": {
+                            "description": "A review check's finding: blocker, major, minor or nit",
                             "type": "string"
                           },
                           "verdict": {
@@ -5183,6 +5537,128 @@ cmp stdout describe.golden.json
                   "description": "passed or failed: its latest cycle's outcome; empty while its first cycle is open",
                   "type": "string"
                 },
+                "rounds": {
+                  "description": "Its findings rounds, journalled by run findings --check and judged by run verdict --check, in order; absent when there were none",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "at": {
+                        "description": "When its findings were journalled, RFC 3339 UTC",
+                        "type": "string"
+                      },
+                      "confirmed": {
+                        "description": "How many findings the latest verdict confirms",
+                        "type": "integer"
+                      },
+                      "cycle": {
+                        "description": "The check's cycle it was recorded in, from 1",
+                        "type": "integer"
+                      },
+                      "findings": {
+                        "description": "The check's findings, in order, each with its latest verdict; empty for a clean check",
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "check": {
+                              "description": "A review check's finding: the check that found it",
+                              "type": "string"
+                            },
+                            "handle": {
+                              "description": "The node's handle when the finding was recorded; absent when it had none",
+                              "type": "string"
+                            },
+                            "id": {
+                              "description": "The finding's ID in its round: f1, f2, ...",
+                              "type": "string"
+                            },
+                            "kind": {
+                              "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                              "type": "string"
+                            },
+                            "leaf": {
+                              "description": "A review check's finding: the leaf it is about, by ID; absent when it names none",
+                              "type": "string"
+                            },
+                            "leaf_handle": {
+                              "description": "That leaf's handle when the finding was recorded",
+                              "type": "string"
+                            },
+                            "node": {
+                              "description": "The node it is about, by ID; absent for a leaf's finding",
+                              "type": "string"
+                            },
+                            "place": {
+                              "description": "A review check's finding: where, as file:line or a node",
+                              "type": "string"
+                            },
+                            "reason": {
+                              "description": "Why the reviewer found it",
+                              "type": "string"
+                            },
+                            "severity": {
+                              "description": "A review check's finding: blocker, major, minor or nit",
+                              "type": "string"
+                            },
+                            "verdict": {
+                              "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                              "type": "string"
+                            },
+                            "verdict_reason": {
+                              "description": "Why the critic gave it; absent before a verdict",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "reason"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "round": {
+                        "description": "The round's number in the check, from 1",
+                        "type": "integer"
+                      },
+                      "verdicts": {
+                        "description": "The verdicts journalled on the round, in order; absent before any",
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "finding": {
+                              "description": "The finding's ID in the round",
+                              "type": "string"
+                            },
+                            "reason": {
+                              "description": "Why",
+                              "type": "string"
+                            },
+                            "verdict": {
+                              "description": "confirmed or dropped",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "finding",
+                            "reason",
+                            "verdict"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "confirmed",
+                      "cycle",
+                      "findings",
+                      "round"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
                 "step": {
                   "description": "The checks step",
                   "type": "string"
@@ -5559,6 +6035,10 @@ cmp stdout describe.golden.json
                   "items": {
                     "additionalProperties": false,
                     "properties": {
+                      "check": {
+                        "description": "A review check's finding: the check that found it",
+                        "type": "string"
+                      },
                       "handle": {
                         "description": "The node's handle when the finding was recorded; absent when it had none",
                         "type": "string"
@@ -5568,15 +6048,31 @@ cmp stdout describe.golden.json
                         "type": "string"
                       },
                       "kind": {
-                        "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's finding",
+                        "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's or a review check's finding",
+                        "type": "string"
+                      },
+                      "leaf": {
+                        "description": "A review check's finding: the leaf it is about, by ID; absent when it names none",
+                        "type": "string"
+                      },
+                      "leaf_handle": {
+                        "description": "That leaf's handle when the finding was recorded",
                         "type": "string"
                       },
                       "node": {
                         "description": "The node it is about, by ID; absent for a leaf's finding",
                         "type": "string"
                       },
+                      "place": {
+                        "description": "A review check's finding: where, as file:line or a node",
+                        "type": "string"
+                      },
                       "reason": {
                         "description": "Why the reviewer found it",
+                        "type": "string"
+                      },
+                      "severity": {
+                        "description": "A review check's finding: blocker, major, minor or nit",
                         "type": "string"
                       },
                       "verdict": {
@@ -5891,7 +6387,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "verdicts": {
-            "description": "The verdicts, each on a different finding of the latest round",
+            "description": "The verdicts, each on a different finding of the latest round (with --check, of the check's latest round)",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -5932,6 +6428,10 @@ cmp stdout describe.golden.json
       "request": {
         "additionalProperties": false,
         "properties": {
+          "check": {
+            "description": "A check of the checks step the run is in: judge that review check's latest round; required in a review run, refused outside one",
+            "type": "string"
+          },
           "file": {
             "description": "A JSON file of verdicts, or - for stdin (see the input schema)",
             "type": "string"
@@ -5945,12 +6445,16 @@ cmp stdout describe.golden.json
       "response": {
         "additionalProperties": false,
         "properties": {
+          "check": {
+            "description": "With --check: the check",
+            "type": "string"
+          },
           "dry_run": {
             "description": "True if nothing was journalled",
             "type": "boolean"
           },
           "round": {
-            "description": "The round judged: the latest",
+            "description": "The round judged: the latest (with --check, the check's latest)",
             "type": "integer"
           },
           "run": {
@@ -5992,7 +6496,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Journal a critic's verdicts on the findings of the latest review round of the run RHIZA_RUN names",
+      "summary": "Journal a critic's verdicts on the findings of the latest review round of the run RHIZA_RUN names, or with --check of that review check's latest round",
       "write": true
     },
     {

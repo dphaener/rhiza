@@ -963,3 +963,67 @@ func TestFoldLeafFindings(t *testing.T) {
 		t.Errorf("attempt 2 findings = %+v", got)
 	}
 }
+
+// Findings and verdict entries naming a check go to that check's rounds,
+// each round tagged with its cycle (the entry's, else the cycle of the
+// check's latest session); a verdict joins its check's latest round. They
+// leave the plan review rounds alone, and a findings entry with no check
+// still opens a plan review round.
+func TestFoldCheckRounds(t *testing.T) {
+	fa := Finding{ID: "f1", Check: "alpha", Severity: SeverityMajor, Leaf: "L1", LeafHandle: "leaf-a", Place: "a.go:3", Reason: "off by one"}
+	fb := Finding{ID: "f1", Check: "beta", Severity: SeverityNit, Place: "README.md:1", Reason: "typo"}
+	pf := Finding{ID: "f1", Node: "N1", Kind: KindContradiction, Reason: "says both"}
+	es := []Entry{
+		startedEntry("review", 0),
+		{Type: TypeEntered, At: at(1), Step: "review"},
+		{Type: TypeCheckCycle, At: at(1), Step: "review", Cycle: 1, Checks: []string{"alpha", "beta"}},
+		{Type: TypeCheckSession, At: at(2), Step: "review", Check: "alpha", Role: "check", Cycle: 1, Session: "s1"},
+		{Type: TypeCheckSession, At: at(2), Step: "review", Check: "beta", Role: "check", Cycle: 1, Session: "s2"},
+		{Type: TypeFindings, At: at(3), Step: "review", Check: "alpha", Cycle: 1, Findings: []Finding{fa}},
+		{Type: TypeFindings, At: at(4), Step: "review", Check: "beta", Findings: []Finding{fb}},
+		{Type: TypeVerdict, At: at(5), Step: "review", Check: "alpha", Verdicts: []Verdict{{Finding: "f1", Verdict: Dropped, Reason: "fine"}}},
+		{Type: TypeFindings, At: at(6), Findings: []Finding{pf}},
+		{Type: TypeFindings, At: at(7), Step: "review", Check: "beta", Findings: []Finding{}},
+	}
+	st := (Journal{Entries: es}).State()
+	if len(st.Rounds) != 1 || !reflect.DeepEqual(st.Rounds[0].Findings, []Finding{pf}) || len(st.Rounds[0].Verdicts) != 0 {
+		t.Fatalf("plan rounds = %+v", st.Rounds)
+	}
+	a, ok := st.Check("review", "alpha")
+	if !ok || len(a.Rounds) != 1 {
+		t.Fatalf("alpha = %+v, %v", a, ok)
+	}
+	ra, ok := a.LatestRound()
+	if !ok || ra.Number != 1 || ra.Cycle != 1 || !ra.At.Equal(at(3)) || !reflect.DeepEqual(ra.Findings, []Finding{fa}) {
+		t.Fatalf("alpha round = %+v, %v", ra, ok)
+	}
+	if v, ok := ra.Verdict("f1"); !ok || v.Verdict != Dropped {
+		t.Fatalf("alpha verdict = %+v, %v", v, ok)
+	}
+	b, _ := st.Check("review", "beta")
+	if len(b.Rounds) != 2 || b.Rounds[0].Cycle != 1 || b.Rounds[1].Number != 2 || len(b.Rounds[1].Findings) != 0 || len(b.Rounds[0].Verdicts) != 0 {
+		t.Fatalf("beta rounds = %+v", b.Rounds)
+	}
+	if rd, ok := b.RoundFor(1); !ok || rd.Number != 2 {
+		t.Fatalf("beta RoundFor(1) = %+v, %v", rd, ok)
+	}
+	if _, ok := b.RoundFor(2); ok {
+		t.Fatal("beta has a round in cycle 2")
+	}
+	if _, ok := (CheckState{}).LatestRound(); ok {
+		t.Fatal("an empty check has a round")
+	}
+	raw, err := json.Marshal(es[5])
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := `{"type":"findings","at":"2026-10-26T12:03:00Z","step":"review","findings":[` +
+		`{"id":"f1","check":"alpha","severity":"major","leaf":"L1","leaf_handle":"leaf-a","place":"a.go:3","reason":"off by one"}],` +
+		`"check":"alpha","cycle":1}`
+	if string(raw) != want {
+		t.Fatalf("findings entry = %s\nwant %s", raw, want)
+	}
+	if !ValidSeverity(SeverityBlocker) || ValidSeverity("critical") || !Serious(SeverityMajor) || Serious(SeverityMinor) || Serious(SeverityNit) {
+		t.Fatal("severities")
+	}
+}
