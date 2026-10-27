@@ -1,0 +1,99 @@
+# A milestone planner lands its record before it exits, so session interview
+# may find the session's change set landed. It then writes the Decisions as
+# a record write, an opened and landed record change set, each linked
+# derived-from the session's Source, which landed with the record. A second
+# run adds nothing. A withdrawn change set still refuses. The fake rex opens
+# a window and runs nothing.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir $HOME/.claude/projects/p
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Plan M' --kind record --title 'Plan M' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza session start --permission-mode manual --json
+stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+cp $WORK/transcript.jsonl $HOME/.claude/projects/p/158fe87f-5cf3-4ff0-ae50-01a16dc84988.jsonl
+
+# The planner adds the Source to its record, then lands it.
+cd $WORK/repo.plan-m
+env RHIZA_CHANGE=01M5PWGEF85Y185JZ2ZGCNH40N
+exec rhiza source add plan $WORK/s.json --raw-session 158fe87f --json
+exec rhiza land --json
+stdout '"to": "landed"'
+env RHIZA_CHANGE=
+
+# The capture after the land. The launcher's log is shorter than the
+# worktree's, so its test IDs would repeat the worktree's: draw them from
+# another seed. A dry run writes nothing.
+cd $WORK/repo
+env RHIZA_TEST_SEED=2
+exec rhiza session interview 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --dry-run --json
+stdout -count=2 '"handle": "answer-158fe87f-'
+stdout '"dry_run": true'
+! stdout '"record"'
+cd $WORK/repo.plan-m
+! exec rhiza show answer-158fe87f-1 --json
+
+# The real run writes both Decisions in a landed record change set.
+cd $WORK/repo
+exec rhiza session interview 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json
+stdout -count=2 '"handle": "answer-158fe87f-'
+stdout '"record": "01[0-9A-Z]{24}"'
+exec rhiza session interview 158fe87f-5cf3-4ff0-ae50-01a16dc84988
+stdout 'nothing to propose'
+cd $WORK/repo.plan-m
+exec rhiza show answer-158fe87f-1 --json
+stdout '"picked": "Blue"'
+stdout '"wording": "the agent'
+! stdout '"quote"'
+stdout '"type": "derived-from"'
+exec rhiza show answer-158fe87f-2 --json
+stdout '"quote": "Something like DuckDB, but local"'
+stdout '"type": "derived-from"'
+exec rhiza show plan --json
+stdout -count=2 '"type": "derived-from"'
+exec rhiza change ls --json
+stdout -count=1 '"intent": "Record the answers of session 158fe87f-5cf3-4ff0-ae50-01a16dc84988, whose change set 01M5PWGEF85Y185JZ2ZGCNH40N has landed"'
+! stdout '"state": "draft"'
+fold-ok
+
+# A second run adds nothing.
+cd $WORK/repo
+exec rhiza session interview 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json
+stdout '"proposed": \[\]'
+stdout -count=2 '"answer-158fe87f-'
+cd $WORK/repo.plan-m
+exec rhiza change ls --json
+stdout -count=1 '"intent": "Record the answers of session 158fe87f-5cf3-4ff0-ae50-01a16dc84988, whose change set 01M5PWGEF85Y185JZ2ZGCNH40N has landed"'
+fold-ok
+env RHIZA_TEST_SEED=1
+
+# A withdrawn change set still refuses: conflict, exit 3.
+cd $WORK/repo
+exec rhiza change new 'Gone' --title 'Gone' --json
+stdout '"change_set": "(01[0-9A-Z]{24})"'
+exec rhiza session start --permission-mode manual --json
+exec sh -c 'rhiza session ls --json | sed -n "s/.*\"id\": \"\([0-9a-f-]\{36\}\)\".*/\1/p" | tail -1 > $WORK/sid2'
+exec sh -c 'cp $WORK/transcript.jsonl $HOME/.claude/projects/p/$(cat $WORK/sid2).jsonl'
+cd $WORK/repo.gone
+exec rhiza propose
+exec rhiza withdraw
+cd $WORK/repo
+exec sh -c 'rhiza session interview $(cat $WORK/sid2) --json; echo exit=$?'
+stdout '"code": "conflict"'
+stdout 'no Decision can be proposed'
+stdout '^exit=3$'
+
+-- s.json --
+{"title":"Planning interview","summary":"The owner answered the planning questions.","quotes":[]}
+-- bin/rex --
+#!/bin/sh
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- transcript.jsonl --
+{"type": "user", "message": {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "toolu_1", "content": "answered"}]}, "toolUseResult": {"questions": [{"question": "Which colour?", "header": "Colour", "multiSelect": false, "options": [{"label": "Red", "description": "d"}, {"label": "Blue", "description": "d"}]}, {"question": "Which store?", "header": "Store", "multiSelect": false, "options": [{"label": "SQLite", "description": "d"}, {"label": "Postgres", "description": "d"}]}], "answers": {"Which colour?": "Blue", "Which store?": "Something like DuckDB, but local"}}}

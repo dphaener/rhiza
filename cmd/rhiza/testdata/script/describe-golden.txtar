@@ -5135,7 +5135,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "change": {
-            "description": "The session's change set, which the Decisions go into",
+            "description": "The session's change set, which the Decisions go into while it is open",
             "type": "string"
           },
           "dry_run": {
@@ -5174,6 +5174,10 @@ cmp stdout describe.golden.json
               "type": "object"
             },
             "type": "array"
+          },
+          "record": {
+            "description": "The landed record change set the Decisions were written in, when the session's change set had landed",
+            "type": "string"
           },
           "session": {
             "description": "The session ID",
