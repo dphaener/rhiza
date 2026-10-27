@@ -1,0 +1,190 @@
+{
+  "actor": "01M5XFGQZ7NK2G8H8M6VE5S90G",
+  "after": [
+    "01M5WSGJR36XN728HCFSF2Q3FW"
+  ],
+  "at": "2026-10-27T01:38:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go guide tests find in rhiza guide plan both scopes, the serves rule that tells them apart, done points as child intents, rhiza change new for each change set of a milestone, the rule that change sets not planned now keep intent only, and the record draft landed with rhiza land after the interview; the text stays within SkillCap.",
+          "statement": "The plan text covers both scopes and how to tell them apart: run on a change set that serves an existing intent, the planner writes that change set's leaves within its intent; run on a draft opened for the plan as a record change set, it writes a milestone: an intent with its done points as child intents, and change sets made with rhiza change new that serve it, linked depends-on only where real, with leaves for the change sets the owner chooses to plan now and intent only for the rest, and the planner lands that record with rhiza land as its last act once the interview is written, before review, leaving the change sets it opened as drafts for the gate."
+        },
+        "handle": "plan-scope",
+        "id": "01M5WSGCDYWW0Y5W9GK62VY5P0",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5WSGCDYWW0Y5W9GK5WNWWZB",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript in a run with journaled rounds: no confirmed finding passes; one confirmed in round 1 or 2 fails and adds nothing; one confirmed in round 3 adds a question node whose statement holds the finding and its reason, linked blocks to the capability it names, journals it with an asked entry per added question, and passes.",
+          "statement": "rhiza run review-check passes when the latest round's critic confirmed no finding and fails when it confirmed any in round 1 or 2; after a third round that still has confirmed findings it adds each as a question node in the run's change set, linked blocks to the node it names when that is a capability, journals them, and passes, so the plan reaches the gate with those questions open. It also journals each question it adds as an asked entry, so that in an autonomous run the arbiter decides it."
+        },
+        "handle": "plan-review-rounds",
+        "id": "01M5WSGDAB8W8BWQX6VG29YKDV",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M5WSGDAB8W8BWQX6VEWR1FVY",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript ends a plan run whose draft change set adds an intent served by two draft change sets: normal, all three are proposed, none accepted, and run status --json names rhiza accept --rule owner; autonomous with a passing review, all three are accepted with rule autonomous and reasons naming the run; autonomous with a question left by the review, none is accepted and the command exits non-zero naming the question; once the arbiter's Decision answers it, all three are accepted.",
+          "statement": "rhiza run gate ends a plan: it proposes each draft among the plan's change sets (the run's change set and every change set that serves an intent the run's change set adds), leaving landed or accepted ones as they are. In a normal run they wait for the owner's rhiza accept --rule owner, which run status names; in an autonomous run it accepts each with rule autonomous once the review passed and every question from the review is answered, and accepts nothing while a question from the review is open."
+        },
+        "handle": "plan-gate",
+        "id": "01M5WSGDEE854PFE4BXM02S0H1",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M5WSGDEE854PFE4BXJM13CWS",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "fields": {
+          "ruling": "the planning record lands as soon as the interview is written, before review, as milestones 2 and 3 did",
+          "statement": "A milestone plan's planning record lands as soon as the interview is written, before review: the plan run starts on a draft opened as a record change set, the planner lands it with rhiza land as its last act, the change sets it opened stay drafts for the gate, and the reviser fixes nodes in the landed record with --record writes.",
+          "wording": "the orchestrator's ruling as arbiter for the owner, in the plan-workflow planning session"
+        },
+        "handle": "plan-record-lands-early",
+        "id": "01M5XG41ZYPSR6CTS1DPP8W0E5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XG41ZYPSR6CTS1DP0BMQ6K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XG41ZYPSR6CTS1DP0BMQ6K",
+        "id": "01M5XG424JCHN2WJ7PJ5NSFGFE",
+        "link": "01M5XG424JCHN2WJ7PJ4028VEE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGDPQXDYFT9T6V9VW3NHH",
+        "type": "answers"
+      },
+      {
+        "fields": {
+          "ruling": "the arbiter decides each finding left after round 3, then the run accepts; if the arbiter can't, the run fails with a report",
+          "statement": "In an autonomous plan run, each finding left after the third review round is decided by the arbiter: rhiza run review-check journals each question it adds as an asked entry, the engine re-reads the journal after a command step and has the arbiter decide each asked question not yet decided, and the gate then accepts; if the arbiter can't decide one, the run fails naming the question and run status is the report.",
+          "wording": "the orchestrator's ruling as arbiter for the owner, in the plan-workflow planning session"
+        },
+        "handle": "plan-review-left-arbitrated",
+        "id": "01M5XG42916B2D34M1PQCZZV0A",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XG42916B2D34M1PNYPVJPB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XG42916B2D34M1PNYPVJPB",
+        "id": "01M5XG42D9Z27SZ6VDC0ADKEKD",
+        "link": "01M5XG42D9Z27SZ6VDC08QGNR5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WSGDTSAQGM4B4GX9EEB9MZ",
+        "type": "answers"
+      },
+      {
+        "fields": {
+          "statement": "Plan review rounds are counted from the run's journal: each rhiza run findings opens the next round, and a clean reviewer records an empty findings file; rhiza run review-check judges the latest round. The plan workflow loops review, critic and check, going to the gate on a pass and to revise then review on a fail, with max_visits 3 on review, critic and check and 2 on revise.",
+          "wording": "the orchestrator's ruling as arbiter for the owner, in the plan-workflow planning session"
+        },
+        "handle": "plan-review-rounds-journalled",
+        "id": "01M5XG42J0YXYCWW173V5J8RW1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XG42J0YXYCWW173RWBQ2P4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs an autonomous workflow whose command step journals an asked entry for a question node it added: a fake arbiter answers it, the journal has arbiter and arbitrated entries for it, and the run goes on to its next step; with a failing arbiter the run fails naming the question; in a normal run no arbiter runs and the question stays open.",
+          "statement": "In an autonomous run, after a command step the engine reads the run's journal again and has the arbiter decide each asked question it has not yet decided, as it does for a session's question; if the arbiter fails, the run fails naming the question. A normal run leaves those questions open for the owner."
+        },
+        "handle": "plan-review-arbitrated",
+        "id": "01M5XG434N2323BPMA1524281X",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M5XG434N2323BPMA11HAJ0JP",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M5XG434N2323BPMA11HAJ0JP",
+        "id": "01M5XG4393FP1N5ATHFM3B4PZZ",
+        "link": "01M5XG4393FP1N5ATHFKAC3GTH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XG42916B2D34M1PNYPVJPB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGCDYWW0Y5W9GK5WNWWZB",
+        "id": "01M5XG43DVVR9NCT0F7113PX3F",
+        "link": "01M5XG43DVVR9NCT0F6Y33VGS1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XG41ZYPSR6CTS1DP0BMQ6K",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDAB8W8BWQX6VEWR1FVY",
+        "id": "01M5XG43JPE5W4V5BP84BTFY6F",
+        "link": "01M5XG43JPE5W4V5BP82X1C01P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XG42J0YXYCWW173RWBQ2P4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDAB8W8BWQX6VEWR1FVY",
+        "id": "01M5XG43Q318XC4N3SV6WNKENQ",
+        "link": "01M5XG43Q318XC4N3SV63PSR2H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XG42916B2D34M1PNYPVJPB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDEE854PFE4BXJM13CWS",
+        "id": "01M5XG43VAQFBX7F022PJ6FS3V",
+        "link": "01M5XG43VAQFBX7F022PEHS17D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XG42916B2D34M1PNYPVJPB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5WSGDJMV9EEVE603M22PTYT",
+        "id": "01M5XG43ZJXEAZGC0CMGVRMC89",
+        "link": "01M5XG43ZJXEAZGC0CMG01WX3N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XG42J0YXYCWW173RWBQ2P4",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5WPTXDS9R3BJVS8PNJQZ834",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5XG4464P053F0H9HN1KT4X6",
+  "type": "ops",
+  "v": 1
+}
