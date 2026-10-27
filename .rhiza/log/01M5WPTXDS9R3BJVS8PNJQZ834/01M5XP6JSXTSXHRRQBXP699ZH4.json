@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M5XMT108Z05EGWVVENSNARE0"
+  ],
+  "at": "2026-10-27T03:24:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The arbiter answers a question in the change set whose ops create the question node: RHIZA_CHANGE is that change set while it is open; when it has landed, the run opens a record change set for the answer, lands it once the answer passes and withdraws it otherwise. The arbiter's session record keeps that change set, so the answer is read in the same view after a resume.",
+          "wording": "the building agent's choice while fixing leaf plan-review-arbitrated"
+        },
+        "handle": "arbiter-answers-where-question-lives",
+        "id": "01M5XP6JECAGRWMJJX3DT6GD6D",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5XP6JECAGRWMJJX3AZZ2CCH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XG434N2323BPMA11HAJ0JP",
+        "id": "01M5XP6JJSZZ8XPP8F3MAG2NZZ",
+        "link": "01M5XP6JJSZZ8XPP8F3HVPBMQK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XP6JECAGRWMJJX3AZZ2CCH",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5WPTXDS9R3BJVS8PNJQZ834",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5XP6JSXTSXHRRQBXP699ZH4",
+  "type": "ops",
+  "v": 1
+}
