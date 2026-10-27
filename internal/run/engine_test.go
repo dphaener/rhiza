@@ -150,7 +150,7 @@ func (f *fakeRunner) Deliver(session, question, decision, statement string) erro
 	return f.deliverErr
 }
 
-func (f *fakeRunner) Answer(question string) (Answer, error) {
+func (f *fakeRunner) Answer(question, _ string) (Answer, error) {
 	f.answerN[question]++
 	if a, ok := f.answers[question]; ok {
 		return a, nil

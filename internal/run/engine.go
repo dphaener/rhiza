@@ -78,9 +78,10 @@ type Runner interface {
 	// node question, on the run's change set, and returns its ID. Its
 	// prompt names only the question and how to decide it.
 	StartArbiter(step workflow.Step, question string, env []string) (session string, err error)
-	// Answer reports whether the model, as the run's change set sees it,
-	// holds a valid answer to question node question, and if not, why.
-	Answer(question string) (Answer, error)
+	// Answer reports whether the model, as the change set arbiter session
+	// session writes into sees it (the run's, or the one the question lives
+	// in), holds a valid answer to question node question, and if not, why.
+	Answer(question, session string) (Answer, error)
 	// AddQuestion adds what session asked the owner, text, as one question
 	// node in the run's change set, written as the session's actor, and
 	// returns the node. It refuses when the change set is finished.
@@ -723,7 +724,7 @@ func (r *running) ask(step workflow.Step, session string, b *Block) (result, boo
 func (r *running) answer(step workflow.Step, session string, asked Asked) (result, bool, error) {
 	if asked.Answered == "" {
 		a, _ := r.j.State().Arbitration(asked.Question)
-		ans, err := r.e.Runner.Answer(asked.Question)
+		ans, err := r.e.Runner.Answer(asked.Question, a.Session)
 		if err == nil && !ans.OK {
 			err = errors.New(ans.Why)
 		}
@@ -887,7 +888,7 @@ func (r *running) arbitrate(asking workflow.Step, question string) (result, erro
 		}
 		r.clock().Sleep(interval)
 	}
-	ans, err := r.e.Runner.Answer(question)
+	ans, err := r.e.Runner.Answer(question, session)
 	if err != nil {
 		return r.arbitrated(asking, question, errResult(err), "")
 	}

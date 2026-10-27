@@ -1,0 +1,201 @@
+# An autonomous milestone plan whose review leaves findings after round 3.
+# The planner lands the record, then writes a leaf with no acceptance into
+# its serving draft. Every round the reviewer finds the leaf missing its
+# acceptance and the record's Decision contradictory, the critic confirms
+# both and the reviser does nothing. After round 3 the check leaves one
+# question in the draft (the leaf lives there) and one in a landed record
+# write (the Decision lives in the landed record). The arbiter answers
+# each where it lives: in the draft for the first, in a record change set
+# of its own, landed once its answer passes, for the second. The gate
+# accepts the draft with rule autonomous and the run succeeds.
+#
+# The fake rex and claude are plan-workflow-autonomous.txtar's, without
+# the planner's question.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir $HOME/.claude/projects/p
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new 'Plan exports' --kind record --title 'Plan exports' --json
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/rec'
+exec git add -A
+exec git commit -qm 'Plan exports'
+
+env REX_BLOCK=block:root
+env REX_SESSION=session:s1
+
+exec sh -c 'rhiza run start $(cat $WORK/rec) --workflow plan --permission-mode manual --autonomous > $WORK/out 2> $WORK/err; echo exit=$?'
+exec cat $WORK/out
+stdout '^Run [0-9A-Z]{26} succeeded$'
+stdout '^- check \(visit 3\): pass, then gate: exit 0$'
+stdout '^- gate \(visit 1\): pass, then end: exit 0$'
+exec cat $WORK/err
+stdout -count=2 'step check: arbiter pass on question [0-9A-Z]{26}: answered by settle-'
+
+# Two questions, two arbiters, two verdicts that passed.
+exec sh -c 'grep -c "\"type\":\"asked\"" .git/rhiza/runs/*.jsonl'
+stdout '^2$'
+exec sh -c 'grep -c "\"type\":\"arbiter\"" .git/rhiza/runs/*.jsonl'
+stdout '^2$'
+exec sh -c 'grep "\"type\":\"arbitrated\"" .git/rhiza/runs/*.jsonl | grep -c "\"outcome\":\"pass\""'
+stdout '^2$'
+exec cat $WORK/prompts.log
+stdout -count=3 'as the reviewer'
+stdout -count=2 'as the reviser'
+stdout -count=2 '^Decide question [0-9A-Z]{26}: follow rhiza guide arbiter\.$'
+
+# Each arbiter wrote where its question lives: the leaf's question in the
+# draft, the Decision's in a fresh record change set.
+exec cat $WORK/arbiter.log
+stdout -count=1 '^draft '
+stdout -count=1 '^record '
+! stdout 'landed'
+exec sh -c 'grep -c "^draft $(cat $WORK/cs) draft$" $WORK/arbiter.log'
+stdout '^1$'
+exec sh -c 'grep -c "^record [0-9A-Z]* draft$" $WORK/arbiter.log'
+stdout '^1$'
+
+cd $WORK/repo.plan-exports
+exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
+stdout '"state": "accepted"'
+stdout '"rule": "autonomous"'
+exec sh -c 'rhiza change ls --json'
+stdout 'The arbiter''s answer to question review-[0-9a-z]{8}-r3-f2'
+exec sh -c 'for c in $(sed -n "s/^record \([0-9A-Z]*\) .*/\1/p" $WORK/arbiter.log); do rhiza change show $c --json; done'
+stdout '"state": "landed"'
+stdout '"kind": "record"'
+
+# The record's answer is in the landed model; the draft's answer only in
+# the draft's view.
+exec sh -c 'rhiza ls --kind decision --json'
+stdout -count=1 '"handle": "settle-'
+exec sh -c 'rhiza ls --kind decision --change $(cat $WORK/cs) --json'
+stdout -count=2 '"handle": "settle-'
+fold-ok
+
+-- source.json --
+{"title":"Planning interview","summary":"An autonomous planner planned the exports milestone.","quotes":[]}
+-- record.json --
+{"writes":[
+  {"op":"add","kind":"intent","handle":"exports","fields":["statement=Users take their reports out of the product"]},
+  {"op":"add","kind":"decision","handle":"keep-flat","fields":["statement=Exports keep memory flat","wording=Keep it flat","reasoning=Reports are large"]}
+]}
+-- leaf.json --
+{"writes":[
+  {"op":"add","kind":"capability","handle":"export-csv","fields":[
+    "statement=Users export any report as CSV"]},
+  {"op":"link","from":"export-csv","type":"decided-by","to":"keep-flat"}
+]}
+-- findings.json --
+{"findings":[
+  {"node":"export-csv","kind":"missing-acceptance","reason":"No acceptance criteria"},
+  {"node":"keep-flat","kind":"contradiction","reason":"Says both"}
+]}
+-- verdict.json --
+{"verdicts":[
+  {"finding":"f1","verdict":"confirmed","reason":"It has none"},
+  {"finding":"f2","verdict":"confirmed","reason":"It clashes"}
+]}
+-- bin/rex --
+#!/bin/sh
+case "$1" in
+events)
+	exit 0
+	;;
+send | send-key)
+	echo "$*" >> "$WORK/typed.log"
+	exit 0
+	;;
+esac
+if [ "$1 $2" = "window close" ]; then
+	exit 0
+fi
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >>"$WORK/tab.out" 2>&1 </dev/null &
+		break
+	fi
+	shift
+done
+i=0
+until [ -f "$WORK/ready" ]; do
+	i=$((i + 1))
+	if [ $i -gt 1600 ]; then
+		echo 'fake rex: the agent never got ready' >&2
+		exit 1
+	fi
+	sleep 0.025
+done
+rm -f "$WORK/ready"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+sid=
+for a; do last=$a; done
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
+printf '%s\n' "$last" >> "$WORK/prompts.log"
+fail() {
+	echo "fake claude: $*" >> "$WORK/claude.err"
+	touch "$WORK/ready"
+	exit 1
+}
+case "$last" in
+/rhiza-plan*)
+	rec=$RHIZA_CHANGE
+	cp "$WORK/transcript.jsonl" "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl" 2>/dev/null
+	rhiza source add plan-interview "$WORK/source.json" --raw-session "$RHIZA_SESSION" --json >> "$WORK/agent.out" 2>&1
+	rhiza apply "$WORK/record.json" --json >> "$WORK/agent.out" || fail record
+	rhiza change new 'Export reports' --json > "$WORK/new.out" || fail new
+	sed -n 's/.*"change_set": "\([0-9A-Z]*\)".*/\1/p' "$WORK/new.out" > "$WORK/cs"
+	rhiza link "$(cat "$WORK/cs")" serves exports --change "$rec" >> "$WORK/agent.out" || fail serves
+	rhiza land --change "$rec" --json >> "$WORK/agent.out" || fail land
+	rhiza apply "$WORK/leaf.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" || fail leaf
+	;;
+*'rhiza guide arbiter'*)
+	q=$(printf '%s\n' "$last" | sed -n 's/^Decide question \([0-9A-Z]*\):.*/\1/p')
+	h=settle-$(printf '%s' "$q" | tr A-Z a-z)
+	rhiza change show "$RHIZA_CHANGE" --json > "$WORK/arb-cs.json" || fail arbiter change
+	kind=$(sed -n 's/^  "kind": "\([a-z]*\)".*/\1/p' "$WORK/arb-cs.json")
+	state=$(sed -n 's/^  "state": "\([a-z]*\)".*/\1/p' "$WORK/arb-cs.json")
+	if [ "$kind" = record ]; then
+		echo "record $RHIZA_CHANGE $state" >> "$WORK/arbiter.log"
+	else
+		echo "draft $RHIZA_CHANGE $state" >> "$WORK/arbiter.log"
+	fi
+	printf '{"writes":[{"op":"add","kind":"decision","handle":"%s","fields":["statement=Settle it","wording=(assumed, would have escalated)","reasoning=The plan says so"]},{"op":"link","from":"%s","type":"answers","to":"%s"}]}\n' "$h" "$h" "$q" > "$WORK/decision.json"
+	rhiza apply "$WORK/decision.json" --json >> "$WORK/agent.out" 2>> "$WORK/claude.err" || fail arbiter apply
+	;;
+*'as the reviewer'*)
+	rhiza run findings "$WORK/findings.json" --json >> "$WORK/agent.out" || fail findings
+	;;
+*'as the critic'*)
+	rhiza run verdict "$WORK/verdict.json" --json >> "$WORK/agent.out" || fail verdict
+	;;
+*'as the reviser'*)
+	;;
+*)
+	fail "unexpected prompt: $last"
+	;;
+esac
+rhiza session done >> "$WORK/done.out" || fail done
+touch "$WORK/ready"
+exit 0
+-- transcript.jsonl --
+{"type": "user", "message": {"role": "user", "content": "Plan the exports"}}
