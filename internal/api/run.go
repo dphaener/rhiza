@@ -123,6 +123,7 @@ type RunInfo struct {
 	StartedAt  string         `json:"started_at" desc:"When it started, RFC 3339 UTC"`
 	Blocked    *RunBlocked    `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
 	Amendments []RunAmendment `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
+	Messages   []RunMessage   `json:"messages" desc:"The messages its sessions sent each other, in order"`
 	Retries    []RunRetry     `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
 }
 
@@ -142,6 +143,19 @@ type RunAmendment struct {
 	Actor   string `json:"actor" desc:"The sender's actor handle"`
 	File    string `json:"file" desc:"The amended file, relative to the run's worktree"`
 	At      string `json:"at" desc:"When it was amended, RFC 3339 UTC"`
+}
+
+// RunMessage is one message journaled in a run: a SendMessage one of its
+// sessions sent.
+type RunMessage struct {
+	At         string `json:"at" desc:"When it was sent, RFC 3339 UTC"`
+	Step       string `json:"step" desc:"The sender's step"`
+	Session    string `json:"session" desc:"The sender's session"`
+	Actor      string `json:"actor" desc:"The sender's actor handle"`
+	To         string `json:"to" desc:"The recipient, as the sender named it"`
+	Text       string `json:"text" desc:"The message; a structured one is its raw JSON"`
+	Summary    string `json:"summary,omitempty" desc:"The sender's summary of it; absent when it gave none"`
+	Structured bool   `json:"structured,omitempty" desc:"True if the message was a JSON object rather than text"`
 }
 
 // RunBlocked is what a blocked run waits on, read from its agent step's
@@ -205,6 +219,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		return RunResponse{Run: RunInfo{
 			ID: rid, Workflow: def.Name, Change: started.Change, Title: t.title, Worktree: t.worktree,
 			Current: def.Start, Steps: []RunStep{}, StartedAt: rfc3339(ctx.Now()), Amendments: []RunAmendment{},
+			Messages: []RunMessage{},
 		}, DryRun: true}, nil
 	}
 	if err := canRun(ctx, def); err != nil {
@@ -809,7 +824,7 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 	info := RunInfo{
 		ID: st.ID, Workflow: st.Workflow, Change: st.Change, Title: st.Title, Worktree: st.Worktree,
 		Current: st.Current, Steps: []RunStep{}, StartedAt: rfc3339(st.StartedAt),
-		Amendments: []RunAmendment{},
+		Amendments: []RunAmendment{}, Messages: []RunMessage{},
 	}
 	switch {
 	case st.Ended:
@@ -834,6 +849,12 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 	for _, a := range st.Amendments {
 		info.Amendments = append(info.Amendments, RunAmendment{
 			Step: a.Step, Session: a.Session, Actor: a.Actor, File: a.File, At: rfc3339(a.At),
+		})
+	}
+	for _, m := range st.Messages {
+		info.Messages = append(info.Messages, RunMessage{
+			At: rfc3339(m.At), Step: m.Step, Session: m.Session, Actor: m.Actor,
+			To: m.To, Text: m.Text, Summary: m.Summary, Structured: m.Structured,
 		})
 	}
 	return info
@@ -895,6 +916,20 @@ func (r RunInfo) Human(w io.Writer) {
 		fmt.Fprintf(w, "\n## Amendments\n\n")
 		for _, a := range r.Amendments {
 			fmt.Fprintf(w, "- %s %s amended %s (step %s)\n", a.At, a.Actor, a.File, a.Step)
+		}
+	}
+	if len(r.Messages) > 0 {
+		fmt.Fprintf(w, "\n## Messages\n\n")
+		for _, m := range r.Messages {
+			note := ""
+			if m.Summary != "" {
+				note += ", summary: " + m.Summary
+			}
+			if m.Structured {
+				note += ", structured"
+			}
+			text := strings.ReplaceAll(m.Text, "\n", "\n  ")
+			fmt.Fprintf(w, "- %s %s to %s (step %s%s): %s\n", m.At, m.Actor, m.To, m.Step, note, text)
 		}
 	}
 	switch r.State {

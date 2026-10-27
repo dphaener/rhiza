@@ -2760,6 +2760,56 @@ cmp stdout describe.golden.json
                 "description": "The run ID",
                 "type": "string"
               },
+              "messages": {
+                "description": "The messages its sessions sent each other, in order",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "actor": {
+                      "description": "The sender's actor handle",
+                      "type": "string"
+                    },
+                    "at": {
+                      "description": "When it was sent, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The sender's session",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The sender's step",
+                      "type": "string"
+                    },
+                    "structured": {
+                      "description": "True if the message was a JSON object rather than text",
+                      "type": "boolean"
+                    },
+                    "summary": {
+                      "description": "The sender's summary of it; absent when it gave none",
+                      "type": "string"
+                    },
+                    "text": {
+                      "description": "The message; a structured one is its raw JSON",
+                      "type": "string"
+                    },
+                    "to": {
+                      "description": "The recipient, as the sender named it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "actor",
+                    "at",
+                    "session",
+                    "step",
+                    "text",
+                    "to"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "retries": {
                 "description": "The retries of the run after it failed, in order; absent when it was never retried",
                 "items": {
@@ -2859,6 +2909,7 @@ cmp stdout describe.golden.json
               "amendments",
               "change",
               "id",
+              "messages",
               "started_at",
               "state",
               "steps",
@@ -3031,6 +3082,56 @@ cmp stdout describe.golden.json
                 "description": "The run ID",
                 "type": "string"
               },
+              "messages": {
+                "description": "The messages its sessions sent each other, in order",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "actor": {
+                      "description": "The sender's actor handle",
+                      "type": "string"
+                    },
+                    "at": {
+                      "description": "When it was sent, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The sender's session",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The sender's step",
+                      "type": "string"
+                    },
+                    "structured": {
+                      "description": "True if the message was a JSON object rather than text",
+                      "type": "boolean"
+                    },
+                    "summary": {
+                      "description": "The sender's summary of it; absent when it gave none",
+                      "type": "string"
+                    },
+                    "text": {
+                      "description": "The message; a structured one is its raw JSON",
+                      "type": "string"
+                    },
+                    "to": {
+                      "description": "The recipient, as the sender named it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "actor",
+                    "at",
+                    "session",
+                    "step",
+                    "text",
+                    "to"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "retries": {
                 "description": "The retries of the run after it failed, in order; absent when it was never retried",
                 "items": {
@@ -3130,6 +3231,7 @@ cmp stdout describe.golden.json
               "amendments",
               "change",
               "id",
+              "messages",
               "started_at",
               "state",
               "steps",
@@ -3274,6 +3376,56 @@ cmp stdout describe.golden.json
             "description": "The run ID",
             "type": "string"
           },
+          "messages": {
+            "description": "The messages its sessions sent each other, in order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "actor": {
+                  "description": "The sender's actor handle",
+                  "type": "string"
+                },
+                "at": {
+                  "description": "When it was sent, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "session": {
+                  "description": "The sender's session",
+                  "type": "string"
+                },
+                "step": {
+                  "description": "The sender's step",
+                  "type": "string"
+                },
+                "structured": {
+                  "description": "True if the message was a JSON object rather than text",
+                  "type": "boolean"
+                },
+                "summary": {
+                  "description": "The sender's summary of it; absent when it gave none",
+                  "type": "string"
+                },
+                "text": {
+                  "description": "The message; a structured one is its raw JSON",
+                  "type": "string"
+                },
+                "to": {
+                  "description": "The recipient, as the sender named it",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "actor",
+                "at",
+                "session",
+                "step",
+                "text",
+                "to"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "retries": {
             "description": "The retries of the run after it failed, in order; absent when it was never retried",
             "items": {
@@ -3373,6 +3525,7 @@ cmp stdout describe.golden.json
           "amendments",
           "change",
           "id",
+          "messages",
           "started_at",
           "state",
           "steps",
