@@ -1,0 +1,41 @@
+{
+  "actor": "01M5ZQEK0WV1C5G4W87RK22B02",
+  "after": [
+    "01M5ZVA95HS46D1PQSG7AYJ52E"
+  ],
+  "at": "2026-10-27T23:44:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Re-ran the leaf's acceptance tests at ab0a2f3 in a detached worktree; all pass. Clean check: TestCriticNoneForCleanOrMinor gives alpha (no findings) outcome passed, no critic started (started = alpha/beta/gamma check 1 only). Minor+nit only: same test, beta with f1 minor and f2 nit passed, no critic. Major dropped: TestCriticDropsMajor starts 'alpha critic 1' in its own checkout with RHIZA_CHECK/CYCLE/ROLE=critic env, critic drops f1, alpha passed with detail 'cycle 1: critic dropped f1', critic checkout removed. Blocker confirmed: TestCriticConfirmsBlocker, critic confirms f1 blocker, beta cycle 1 failed 'cycle 1: confirmed f1 (blocker)' and re-runs in cycle 2. Verdict adding a finding refused: review-findings.txtar has alpha's critic run 'run verdict --check alpha' on verdict-f9.json, logged 'alpha critic-verdict-unknown exit=2 lines=same' (exit 2, journal unchanged) with stderr 'verdict 1: check alpha's round 1 holds no finding \"f9\"'. Also passing: TestCriticNoVerdictConfirms, TestCriticFails, TestCriticParallel, TestNextCheckActions, TestEnvCheckCycle, all TestScripts/review-* and go test ./...",
+          "tests": "env -u RHIZA_CHANGE -u RHIZA_ACTOR -u RHIZA_FOR -u RHIZA_RUN -u RHIZA_SESSION -u RHIZA_ROOT go test ./internal/run -run 'TestCritic|TestNextCheckActions' -v -count=1; same env go test ./internal/api -run TestEnvCheckCycle -v -count=1; same env go test ./cmd/rhiza -run 'TestScripts/review-' -v -count=1; same env go test ./... -count=1; commit ab0a2f3; run by claude-code-0e5a9d92-verifier on 2026-10-27"
+        },
+        "handle": "review-critic-verified",
+        "id": "01M5ZW15T8477W57HNTYVWH6Q3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5ZW15T8477W57HNTW5P6TVV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5ZW15T8477W57HNTW5P6TVV",
+        "id": "01M5ZW15ZMGVRR8Q4GYH1GQAKZ",
+        "link": "01M5ZW15ZMGVRR8Q4GYE6DW4Z0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EHF5WMV1Y0X96EJ0NCPZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZ1V0JVVW8FPX0QYMRWJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5ZW1682NA9ZTJGHNWMYTPTC",
+  "type": "ops",
+  "v": 1
+}
