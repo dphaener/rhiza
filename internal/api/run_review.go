@@ -134,6 +134,11 @@ type reviewRun struct {
 // unless it is an unfinished run. cmd names the command for messages,
 // e.g. "run findings"; next is where a caller learns more.
 func openReviewRun(ctx *Ctx, cmd, next string) (reviewRun, error) {
+	return openRun(ctx, cmd, next, false)
+}
+
+// openRun is openReviewRun; with finished it takes a finished run too.
+func openRun(ctx *Ctx, cmd, next string, finished bool) (reviewRun, error) {
 	ref := strings.TrimSpace(ctxGetenv(ctx)(envRun))
 	if ref == "" {
 		return reviewRun{}, Usagef("%s works inside a run, and %s is not set: run it from a step of the run", cmd, envRun).WithNext(next)
@@ -153,7 +158,7 @@ func openReviewRun(ctx *Ctx, cmd, next string) (reviewRun, error) {
 		return reviewRun{}, Errorf("read run %s: %v", ref, err)
 	}
 	st := j.State()
-	if st.Ended {
+	if st.Ended && !finished {
 		return reviewRun{}, Usagef("%s works inside an unfinished run, and run %s is finished: it %s", cmd, j.ID, st.Result).
 			WithNext("rhiza run status " + j.ID)
 	}

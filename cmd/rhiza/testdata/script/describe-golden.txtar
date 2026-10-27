@@ -2613,6 +2613,80 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "run.build-check",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change": {
+            "description": "The run's change set",
+            "type": "string"
+          },
+          "leaves": {
+            "description": "The change set's leaves in leaf order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "evidence": {
+                  "description": "The live Evidence that verifies it, by handle (ID when it has none), in link order; empty when none does",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "handle": {
+                  "description": "Its handle",
+                  "type": "string"
+                },
+                "leaf": {
+                  "description": "The leaf capability's ID",
+                  "type": "string"
+                },
+                "ok": {
+                  "description": "True if live Evidence verifies it written by an actor that wrote none of its commits",
+                  "type": "boolean"
+                },
+                "why": {
+                  "description": "Why it is not OK; absent when it is",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "evidence",
+                "handle",
+                "leaf",
+                "ok"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "passed": {
+            "description": "True if every leaf is OK",
+            "type": "boolean"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change",
+          "leaves",
+          "passed",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Check the change set of the run RHIZA_RUN names: pass when every leaf has live Evidence by an actor that wrote none of its commits, else fail naming each leaf that lacks it",
+      "write": false
+    },
+    {
       "input": {
         "additionalProperties": false,
         "properties": {

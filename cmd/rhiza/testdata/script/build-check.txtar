@@ -1,0 +1,108 @@
+# run build-check passes when every leaf of the run's change set has live
+# Evidence by an actor that wrote none of the leaf's commits (none of the
+# commits whose Leaf: trailer names it carries that actor's Actor:
+# trailer), and otherwise fails (exit 1) naming each leaf that lacks it:
+# one no Evidence verifies, and one whose Evidence's actor wrote its
+# commit. It reads the run's worktree, writes nothing, and with no
+# RHIZA_RUN is usage. A finished run is checked as an unfinished one is.
+#
+# The run stops at a wait step whose until does not hold, so it stays
+# unfinished and launches no agent; the builder's commits and the
+# verifier's Evidence are then made by hand in the run's worktree.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add actor builder --record
+exec rhiza add actor verifier --record
+exec git add -A
+exec git commit -qm init
+exec sh -c 'rhiza change new "Build check" --title "Build check" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/cs'
+grep '^[0-9A-Z]{26}$' $WORK/cs
+exec rhiza add capability alpha --field 'statement=Does alpha'
+exec rhiza add capability beta --field 'statement=Does beta'
+mkdir .rhiza/workflows
+cp $WORK/hold.toml .rhiza/workflows/hold.toml
+exec git add -A
+exec git commit -qm leaves
+exec rhiza run start --workflow hold --no-wait
+stdout '^Run (01[0-9A-Z]{24}) stopped$'
+stdout '^- Worktree: .*/repo\.build-check$'
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+
+# No RHIZA_RUN: usage, with a next.
+exec sh -c 'rhiza run build-check --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout 'RHIZA_RUN is not set'
+stdout '"next": "rhiza describe run.build-check"'
+stdout '^exit=2$'
+
+# In the worktree: the builder commits both leaves; the verifier writes
+# Evidence for alpha only.
+exec sh -c 'cd $WORK/repo.build-check && echo a > alpha.txt && git add alpha.txt && git commit -qm alpha --trailer "Change: $(cat $WORK/cs)" --trailer "Actor: builder" --trailer "Leaf: alpha"'
+exec sh -c 'cd $WORK/repo.build-check && echo b > beta.txt && git add beta.txt && git commit -qm beta --trailer "Change: $(cat $WORK/cs)" --trailer "Actor: builder" --trailer "Leaf: beta"'
+exec sh -c 'cd $WORK/repo.build-check && RHIZA_ACTOR=verifier rhiza add evidence alpha-ok --field "statement=alpha works" --field result=PASS --change $(cat $WORK/cs) && RHIZA_ACTOR=verifier rhiza link alpha-ok verifies alpha --change $(cat $WORK/cs)'
+
+# beta has no Evidence: it fails naming beta, and alpha is OK.
+exec sh -c 'cd $WORK/repo.build-check && RHIZA_RUN=$(cat $WORK/runid) rhiza run build-check; echo exit=$?'
+stdout '^build-check failed: 1 of 2 leaves lack Evidence by a verifier$'
+stdout '^- beta: no Evidence verifies it$'
+! stdout '^- alpha'
+stdout '^exit=1$'
+exec sh -c 'cd $WORK/repo.build-check && RHIZA_RUN=$(cat $WORK/runid) rhiza run build-check --json; echo exit=$?'
+stdout '"passed": false'
+stdout '"handle": "alpha",\n *"leaf": "[0-9A-Z]{26}",\n *"ok": true'
+stdout '"evidence": \[\],\n *"handle": "beta",\n *"leaf": "[0-9A-Z]{26}",\n *"ok": false,\n *"why": "no Evidence verifies it"'
+stdout '^exit=1$'
+
+# beta's Evidence written by the builder, who wrote its commit: it still
+# fails, naming beta, the Evidence, the builder and the commit.
+exec sh -c 'cd $WORK/repo.build-check && RHIZA_ACTOR=builder rhiza add evidence beta-ok --field "statement=beta works" --field result=PASS --change $(cat $WORK/cs) && RHIZA_ACTOR=builder rhiza link beta-ok verifies beta --change $(cat $WORK/cs)'
+exec sh -c 'cd $WORK/repo.build-check && git log -1 --format=%H | cut -c1-12 > $WORK/beta.commit'
+exec sh -c 'cd $WORK/repo.build-check && RHIZA_RUN=$(cat $WORK/runid) rhiza run build-check; echo exit=$?'
+stdout '^- beta: its Evidence beta-ok was written by builder, who wrote its commit [0-9a-f]{12}$'
+stdout '^exit=1$'
+exec sh -c 'cd $WORK/repo.build-check && RHIZA_RUN=$(cat $WORK/runid) rhiza run build-check | grep -c "commit $(cat $WORK/beta.commit)$"'
+stdout '^1$'
+
+# The verifier adds Evidence for beta too: it passes, exit 0.
+exec sh -c 'cd $WORK/repo.build-check && RHIZA_ACTOR=verifier rhiza add evidence beta-verified --field "statement=beta works" --field result=PASS --change $(cat $WORK/cs) && RHIZA_ACTOR=verifier rhiza link beta-verified verifies beta --change $(cat $WORK/cs)'
+exec sh -c 'cd $WORK/repo.build-check && RHIZA_RUN=$(cat $WORK/runid) rhiza run build-check; echo exit=$?'
+stdout '^build-check passed: 2 leaves have Evidence by a verifier$'
+stdout '^exit=0$'
+exec sh -c 'cd $WORK/repo.build-check && RHIZA_RUN=$(cat $WORK/runid) rhiza run build-check --json'
+stdout '"passed": true'
+! stdout '"ok": false'
+
+# From the main checkout it reads the run's worktree all the same, and it
+# wrote nothing to the journal.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run build-check; echo exit=$?'
+stdout '^build-check passed'
+stdout '^exit=0$'
+exec sh -c 'grep -c . .git/rhiza/runs/$(cat $WORK/runid).jsonl > $WORK/lines1; RHIZA_RUN=$(cat $WORK/runid) rhiza run build-check >/dev/null; grep -c . .git/rhiza/runs/$(cat $WORK/runid).jsonl > $WORK/lines2'
+cmp $WORK/lines1 $WORK/lines2
+
+# A finished run is checked too.
+exec sh -c 'touch $WORK/go && rhiza run resume $(cat $WORK/runid) --json'
+stdout '"state": "succeeded"'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run build-check; echo exit=$?'
+stdout '^build-check passed: 2 leaves'
+stdout '^exit=0$'
+
+# An unknown run: usage.
+exec sh -c 'RHIZA_RUN=01ZZZZZZZZZZZZZZZZZZZZZZZZ rhiza run build-check --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout 'names no run'
+stdout '^exit=2$'
+
+-- hold.toml --
+name = "hold"
+
+[step.gate]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
