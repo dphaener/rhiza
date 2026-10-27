@@ -1,0 +1,438 @@
+{
+  "actor": "01M5YYX4NC31F8XCA4PZ3Z3HPT",
+  "after": [
+    "01M5Z0TYM6V75XS2QGRC6BFTP3"
+  ],
+  "at": "2026-10-27T16:05:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "New `checks` step kind (Recommended)",
+            "One agent step per check"
+          ],
+          "picked": "New `checks` step kind (Recommended)",
+          "question": "How should the review's agent checks run?",
+          "session": "a5ffc966-b55d-4564-aae8-01a17dee91f5",
+          "statement": "How should the review's agent checks run? — New `checks` step kind (Recommended)",
+          "wording": "the agent's option, picked by the owner in session a5ffc966-b55d-4564-aae8-01a17dee91f5"
+        },
+        "handle": "answer-a5ffc966-1",
+        "id": "01M5Z1QDN8ADXK35FGJ6A5AEN7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z1QDN8ADXK35FGJ54Z47KY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z1QDN8ADXK35FGJ54Z47KY",
+        "id": "01M5Z1QDT4DK50DNTBWR7Q35ZP",
+        "link": "01M5Z1QDT4DK50DNTBWMG3EMC7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0BYDW9Q25H145596AEK0M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Code first, then five agents (Recommended)",
+            "Five agents, no code step"
+          ],
+          "picked": "Code first, then five agents (Recommended)",
+          "question": "Which checks does the built-in review workflow run?",
+          "session": "a5ffc966-b55d-4564-aae8-01a17dee91f5",
+          "statement": "Which checks does the built-in review workflow run? — Code first, then five agents (Recommended)",
+          "wording": "the agent's option, picked by the owner in session a5ffc966-b55d-4564-aae8-01a17dee91f5"
+        },
+        "handle": "answer-a5ffc966-2",
+        "id": "01M5Z1QDYR7CCNBXCEY9T68AWV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z1QDYR7CCNBXCEY748KYZT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z1QDYR7CCNBXCEY748KYZT",
+        "id": "01M5Z1QE3ETPSBMXF9HNCWK820",
+        "link": "01M5Z1QE3ETPSBMXF9HJYGX438",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0BYDW9Q25H145596AEK0M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Opus for all (Recommended)",
+            "Sonnet checks, opus critics"
+          ],
+          "picked": "Opus for all (Recommended)",
+          "question": "Which models do the checks and critics use?",
+          "session": "a5ffc966-b55d-4564-aae8-01a17dee91f5",
+          "statement": "Which models do the checks and critics use? — Opus for all (Recommended)",
+          "wording": "the agent's option, picked by the owner in session a5ffc966-b55d-4564-aae8-01a17dee91f5"
+        },
+        "handle": "answer-a5ffc966-3",
+        "id": "01M5Z1QE823PB2X7EAY98F9XAM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z1QE823PB2X7EAY72ECEXJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z1QE823PB2X7EAY72ECEXJ",
+        "id": "01M5Z1QECNYEFY6H3FJB0F0X5C",
+        "link": "01M5Z1QECNYEFY6H3FJ9CS71RP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0BYDW9Q25H145596AEK0M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Extend run findings (Recommended)",
+            "Separate review commands"
+          ],
+          "picked": "Extend run findings (Recommended)",
+          "question": "How are a review check's findings recorded?",
+          "session": "a5ffc966-b55d-4564-aae8-01a17dee91f5",
+          "statement": "How are a review check's findings recorded? — Extend run findings (Recommended)",
+          "wording": "the agent's option, picked by the owner in session a5ffc966-b55d-4564-aae8-01a17dee91f5"
+        },
+        "handle": "answer-a5ffc966-4",
+        "id": "01M5Z1QEH99X59FRE1ANA9BJZE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z1QEH99X59FRE1AMAKA4HS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z1QEH99X59FRE1AMAKA4HS",
+        "id": "01M5Z1QENWVX114VVHCRRAT4KE",
+        "link": "01M5Z1QENWVX114VVHCPD5PHDC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0BYDW9Q25H145596AEK0M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Critic per serious check (Recommended)",
+            "Critic on every check"
+          ],
+          "picked": "Critic per serious check (Recommended)",
+          "question": "When is a critic called, and what fails a check?",
+          "session": "a5ffc966-b55d-4564-aae8-01a17dee91f5",
+          "statement": "When is a critic called, and what fails a check? — Critic per serious check (Recommended)",
+          "wording": "the agent's option, picked by the owner in session a5ffc966-b55d-4564-aae8-01a17dee91f5"
+        },
+        "handle": "answer-a5ffc966-5",
+        "id": "01M5Z1QETHH07CP7A9H4V643C9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z1QETHH07CP7A9H18KNAE6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z1QETHH07CP7A9H18KNAE6",
+        "id": "01M5Z1QEZ8T3GTT966FQVZ30PD",
+        "link": "01M5Z1QEZ8T3GTT966FPTADGVZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0BYDW9Q25H145596AEK0M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Reported, not fixed (Recommended)",
+            "Fixed alongside"
+          ],
+          "picked": "Reported, not fixed (Recommended)",
+          "question": "What happens to minor and nit findings?",
+          "session": "a5ffc966-b55d-4564-aae8-01a17dee91f5",
+          "statement": "What happens to minor and nit findings? — Reported, not fixed (Recommended)",
+          "wording": "the agent's option, picked by the owner in session a5ffc966-b55d-4564-aae8-01a17dee91f5"
+        },
+        "handle": "answer-a5ffc966-6",
+        "id": "01M5Z1QF3T0BMY3KQV0WFCYAFE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z1QF3T0BMY3KQV0VB0EAMD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z1QF3T0BMY3KQV0VB0EAMD",
+        "id": "01M5Z1QF8M1ZDV9K5W8W5VQAC9",
+        "link": "01M5Z1QF8M1ZDV9K5W8SZRZ556",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0BYDW9Q25H145596AEK0M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Fixer, then verifier per leaf (Recommended)",
+            "Fixer per leaf, no re-verify"
+          ],
+          "picked": "Fixer, then verifier per leaf (Recommended)",
+          "question": "How does a confirmed finding go back to be fixed?",
+          "session": "a5ffc966-b55d-4564-aae8-01a17dee91f5",
+          "statement": "How does a confirmed finding go back to be fixed? — Fixer, then verifier per leaf (Recommended)",
+          "wording": "the agent's option, picked by the owner in session a5ffc966-b55d-4564-aae8-01a17dee91f5"
+        },
+        "handle": "answer-a5ffc966-7",
+        "id": "01M5Z1QFD8HA1TCGDD5RDK8AX1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z1QFD8HA1TCGDD5QEJCX22",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z1QFD8HA1TCGDD5QEJCX22",
+        "id": "01M5Z1QFHXYMNKTGJAX6FMSX6F",
+        "link": "01M5Z1QFHXYMNKTGJAX4Y6PE76",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0BYDW9Q25H145596AEK0M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "One change-set fixer (Recommended)",
+            "Every finding must name a leaf"
+          ],
+          "picked": "One change-set fixer (Recommended)",
+          "question": "What about a confirmed finding that names no leaf (cross-cutting quality, scope)?",
+          "session": "a5ffc966-b55d-4564-aae8-01a17dee91f5",
+          "statement": "What about a confirmed finding that names no leaf (cross-cutting quality, scope)? — One change-set fixer (Recommended)",
+          "wording": "the agent's option, picked by the owner in session a5ffc966-b55d-4564-aae8-01a17dee91f5"
+        },
+        "handle": "answer-a5ffc966-8",
+        "id": "01M5Z1QFPQKMBBV36H5DGMQDHX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z1QFPQKMBBV36H5ARRV53D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z1QFPQKMBBV36H5ARRV53D",
+        "id": "01M5Z1QFV9NDBV7MM6JG67AM8Y",
+        "link": "01M5Z1QFV9NDBV7MM6JFA4YAR5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0BYDW9Q25H145596AEK0M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Questions; run fails (Recommended)",
+            "Questions; on to sign-off"
+          ],
+          "picked": "Questions; run fails (Recommended)",
+          "question": "After 2 fix cycles a check still fails. Then what?",
+          "session": "a5ffc966-b55d-4564-aae8-01a17dee91f5",
+          "statement": "After 2 fix cycles a check still fails. Then what? — Questions; run fails (Recommended)",
+          "wording": "the agent's option, picked by the owner in session a5ffc966-b55d-4564-aae8-01a17dee91f5"
+        },
+        "handle": "answer-a5ffc966-9",
+        "id": "01M5Z1QFZWNGK2ZBA7339N0PA7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z1QFZWNGK2ZBA731G45SSV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z1QFZWNGK2ZBA731G45SSV",
+        "id": "01M5Z1QG4GBFZXWM5EQ8WJV4RB",
+        "link": "01M5Z1QG4GBFZXWM5EQ6RWXTBJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0BYDW9Q25H145596AEK0M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Approve or request changes (Recommended)",
+            "Approve only"
+          ],
+          "picked": "Approve or request changes (Recommended)",
+          "question": "How does your sign-off work?",
+          "session": "a5ffc966-b55d-4564-aae8-01a17dee91f5",
+          "statement": "How does your sign-off work? — Approve or request changes (Recommended)",
+          "wording": "the agent's option, picked by the owner in session a5ffc966-b55d-4564-aae8-01a17dee91f5"
+        },
+        "handle": "answer-a5ffc966-10",
+        "id": "01M5Z1QG93WG2ZXK0GDR8C5NFJ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z1QG93WG2ZXK0GDR0E8GJZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z1QG93WG2ZXK0GDR0E8GJZ",
+        "id": "01M5Z1QGDTQNHXJY6R4CS3JX81",
+        "link": "01M5Z1QGDTQNHXJY6R4BYNPP7P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0BYDW9Q25H145596AEK0M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Rendered here, posted by ship (Recommended)",
+            "Review edits the PR body"
+          ],
+          "picked": "Rendered here, posted by ship (Recommended)",
+          "question": "Where does the review's verdict summary go?",
+          "session": "a5ffc966-b55d-4564-aae8-01a17dee91f5",
+          "statement": "Where does the review's verdict summary go? — Rendered here, posted by ship (Recommended)",
+          "wording": "the agent's option, picked by the owner in session a5ffc966-b55d-4564-aae8-01a17dee91f5"
+        },
+        "handle": "answer-a5ffc966-11",
+        "id": "01M5Z1QGJH6FYR6HQ2YT8KBC78",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z1QGJH6FYR6HQ2YPVV160C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z1QGJH6FYR6HQ2YPVV160C",
+        "id": "01M5Z1QGQN533H5973MDN8B2DE",
+        "link": "01M5Z1QGQN533H5973MC2XAMB4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0BYDW9Q25H145596AEK0M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "QA Evidence + proposed rules (Recommended)",
+            "Also dropped findings as Decisions",
+            "Nothing; journal only"
+          ],
+          "picked": "QA Evidence + proposed rules (Recommended)",
+          "question": "What does review write into the model?",
+          "session": "a5ffc966-b55d-4564-aae8-01a17dee91f5",
+          "statement": "What does review write into the model? — QA Evidence + proposed rules (Recommended)",
+          "wording": "the agent's option, picked by the owner in session a5ffc966-b55d-4564-aae8-01a17dee91f5"
+        },
+        "handle": "answer-a5ffc966-12",
+        "id": "01M5Z1QGWB0A7D3J03QVB68T3M",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z1QGWB0A7D3J03QT3MAPRH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z1QGWB0A7D3J03QT3MAPRH",
+        "id": "01M5Z1QH10H1VK5442A3BMMN50",
+        "link": "01M5Z1QH10H1VK5442A2K1Z3E5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0BYDW9Q25H145596AEK0M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Throwaway worktree each (Recommended)",
+            "Shared run worktree"
+          ],
+          "picked": "Throwaway worktree each (Recommended)",
+          "question": "Where do the check sessions work?",
+          "session": "a5ffc966-b55d-4564-aae8-01a17dee91f5",
+          "statement": "Where do the check sessions work? — Throwaway worktree each (Recommended)",
+          "wording": "the agent's option, picked by the owner in session a5ffc966-b55d-4564-aae8-01a17dee91f5"
+        },
+        "handle": "answer-a5ffc966-13",
+        "id": "01M5Z1QH5NS01BYKQQ1MJ0C5FA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z1QH5NS01BYKQQ1H7CZZBF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z1QH5NS01BYKQQ1H7CZZBF",
+        "id": "01M5Z1QHAB9MC8BR8B1ET1SGMP",
+        "link": "01M5Z1QHAB9MC8BR8B1C4QC00T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0BYDW9Q25H145596AEK0M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Merge-base with main (Recommended)",
+            "Leaf commits only"
+          ],
+          "picked": "Merge-base with main (Recommended)",
+          "question": "What does the review compare against?",
+          "session": "a5ffc966-b55d-4564-aae8-01a17dee91f5",
+          "statement": "What does the review compare against? — Merge-base with main (Recommended)",
+          "wording": "the agent's option, picked by the owner in session a5ffc966-b55d-4564-aae8-01a17dee91f5"
+        },
+        "handle": "answer-a5ffc966-14",
+        "id": "01M5Z1QHF07EEM0S6R30KVJQFV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M5Z1QHF07EEM0S6R2X1924PZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z1QHF07EEM0S6R2X1924PZ",
+        "id": "01M5Z1QHKP1VNBD0H8BECE2RE1",
+        "link": "01M5Z1QHKP1VNBD0H8BAFMWPHV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0BYDW9Q25H145596AEK0M",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZ1V0JVVW8FPX0QYMRWJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5Z1QHPAE1EXAHKR2XC0KCMV",
+  "type": "ops",
+  "v": 1
+}

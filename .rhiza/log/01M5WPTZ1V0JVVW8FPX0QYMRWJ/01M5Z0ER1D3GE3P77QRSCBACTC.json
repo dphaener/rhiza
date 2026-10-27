@@ -1,0 +1,627 @@
+{
+  "actor": "01M5YYX4NC31F8XCA4PZ3Z3HPT",
+  "after": [
+    "01M5Z0BYJRSJ1HQ0QW5PTXC7CK"
+  ],
+  "at": "2026-10-27T15:42:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The review workflow reviews a built change set: a code check first, then fresh check sessions for compliance, quality, hands-on QA, scope and the model, a critic that can't add findings settling failed checks, fixes routed per leaf at most twice, and the owner's sign-off with rhiza run approve."
+        },
+        "handle": "built-in-review",
+        "id": "01M5Z0EFR7RVGGDDPQF80B4EGE",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5Z0EFR7RVGGDDPQF4B9TQN4",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EFR7RVGGDDPQF4B9TQN4",
+        "id": "01M5Z0EFWZE9ZGKHBH5SRXMZP7",
+        "link": "01M5Z0EFWZE9ZGKHBH5QDXVQG1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPYRHM3SVDQ7TR70XMNA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EFR7RVGGDDPQF4B9TQN4",
+        "id": "01M5Z0EG1KHBCH447XYGY3CE74",
+        "link": "01M5Z0EG1KHBCH447XYF41CYZ1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0BYDW9Q25H145596AEK0M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Parse tests load a checks step and reject one with no checks, a duplicate check name or an unknown sub-table key; an engine test with a fake runner over three checks finds all three sessions started before any ends, and in a second cycle after one check failed finds only that check's session started; `rhiza run status` shows each check's cycles and outcome.",
+          "statement": "Workflow files take a `checks` step kind naming its checks (each with prompt, agent, permission_mode, models) and `critic` and `fixer` sub-tables, and the engine starts every check as a fresh session in parallel, each in its own pane of the change set's tab told only the change set ID and its check name, journaling each check's session and outcome; a later cycle re-runs only the checks that failed."
+        },
+        "handle": "review-checks-step",
+        "id": "01M5Z0EG65NMPZAKN41TC9FFJJ",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5Z0EG65NMPZAKN41R95EQYB",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EG65NMPZAKN41R95EQYB",
+        "id": "01M5Z0EGAQXAKV3WVMYT295ASR",
+        "link": "01M5Z0EGAQXAKV3WVMYQRECRSG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPYRHM3SVDQ7TR70XMNA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EG65NMPZAKN41R95EQYB",
+        "id": "01M5Z0EGF9C7GHC28G1HK3N3P2",
+        "link": "01M5Z0EGF9C7GHC28G1GZ2EP2G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRN9QSDZCKQ84JHG3S49P",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EG65NMPZAKN41R95EQYB",
+        "id": "01M5Z0EGKVS6GVEWMBYTBBPARG",
+        "link": "01M5Z0EGKVS6GVEWMBYQN3KFXZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTNCV49ARCE8JJE2GM65B",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test finds a check session's working directory a detached worktree at the branch head, gone after the session ends whatever its outcome, a finding or Evidence it wrote in the run worktree's .rhiza/log or journal, and uncommitted edits in the run worktree untouched.",
+          "statement": "Each check and critic session works in a throwaway detached worktree at the run branch's head commit, removed once its session ends, while its rhiza writes go into the run worktree's log."
+        },
+        "handle": "review-check-worktree",
+        "id": "01M5Z0EGRD1KYTEXXSWDVDK913",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5Z0EGRD1KYTEXXSWDEZNJCE",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EGRD1KYTEXXSWDEZNJCE",
+        "id": "01M5Z0EGWYCM0SMVK7V8DQ7ZES",
+        "link": "01M5Z0EGWYCM0SMVK7V7MF16K3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPYRHM3SVDQ7TR70XMNA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EGRD1KYTEXXSWDEZNJCE",
+        "id": "01M5Z0EH1FVDP35XQ4TTRBDK6P",
+        "link": "01M5Z0EH1FVDP35XQ4TPZXJS4K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EG65NMPZAKN41R95EQYB",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript in a review run records findings for two checks and a verdict on one: the journal holds them per check and `run status --json` shows them; a finding with an unknown severity, an unknown check, a leaf not in the run's change set, or a verdict naming a finding its check's latest round does not hold exits 2 with nothing written; the plan-review testscripts still pass; describe-golden is regenerated.",
+          "statement": "In a review run `rhiza run findings` and `rhiza run verdict` take the check they belong to, and each review finding has a severity (blocker, major, minor, nit), the leaf it is about when there is one, a place (file:line or node) and a reason, while plan review findings keep their five kinds; `rhiza run status` shows each check's rounds with findings and verdicts."
+        },
+        "handle": "review-findings",
+        "id": "01M5Z0EH5ZG74DZQY63M4H1WKH",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5Z0EH5ZG74DZQY63G9B78WR",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EH5ZG74DZQY63G9B78WR",
+        "id": "01M5Z0EHAJX1XBX0B7YMJM04Q7",
+        "link": "01M5Z0EHAJX1XBX0B7YHQ1MXXH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPYRHM3SVDQ7TR70XMNA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "An engine test with fake sessions finds no critic for a clean check or one with only minors and nits and both passed, a critic for a check with a major that drops it and the check passed, and a critic confirming a blocker and the check failed; a verdict adding a finding is refused.",
+          "statement": "After a cycle the engine starts a fresh critic session, in parallel, only for each check whose latest round has a blocker or major finding, and the critic can only confirm or drop those findings; a check fails only when a confirmed blocker or major survives, and minor and nit findings never call a critic nor fail a check."
+        },
+        "handle": "review-critic",
+        "id": "01M5Z0EHF5WMV1Y0X96GFWCQWQ",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5Z0EHF5WMV1Y0X96EJ0NCPZ",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EHF5WMV1Y0X96EJ0NCPZ",
+        "id": "01M5Z0EHKSAGGDDABHAFGPZVK1",
+        "link": "01M5Z0EHKSAGGDDABHADQ0ES7Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPYRHM3SVDQ7TR70XMNA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EHF5WMV1Y0X96EJ0NCPZ",
+        "id": "01M5Z0EHRCSBZ4YAGYVJG4R6NP",
+        "link": "01M5Z0EHRCSBZ4YAGYVFKN6DH3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRN854WJTWVK4WKANRMEQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EHF5WMV1Y0X96EJ0NCPZ",
+        "id": "01M5Z0EHWYK4451ZY4EH6EG5GR",
+        "link": "01M5Z0EHWYK4451ZY4EG1WAJV0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EG65NMPZAKN41R95EQYB",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EHF5WMV1Y0X96EJ0NCPZ",
+        "id": "01M5Z0EJ1GDH9RXGTS6VH9J353",
+        "link": "01M5Z0EJ1GDH9RXGTS6QYERG09",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EH5ZG74DZQY63G9B78WR",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "An engine test against a real git repo finds, for a confirmed finding naming leaf A, a fixer whose prompt names A and the finding, a new commit with `Leaf: A`, A's verifier started on it and its Evidence written by the verifier's actor, then only the failed check re-run; a fixer ending with no commit naming A fails the cycle.",
+          "statement": "Each leaf with confirmed blocker or major findings goes to a fresh fixer session that reads them from the journal and adds a fix commit with that leaf's `Leaf:` trailer, after which that leaf's verifier runs again as in the build and writes fresh Evidence, and only then do the failed checks re-run."
+        },
+        "handle": "review-fix-leaf",
+        "id": "01M5Z0EJ62SZXJR5NSADNQH5P7",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5Z0EJ62SZXJR5NSAA9X48ZV",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EJ62SZXJR5NSAA9X48ZV",
+        "id": "01M5Z0EJAN90F28Z9XBMCPV9AV",
+        "link": "01M5Z0EJAN90F28Z9XBK8K23MT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPYRHM3SVDQ7TR70XMNA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EJ62SZXJR5NSAA9X48ZV",
+        "id": "01M5Z0EJF901KSJWA8PEHNWJ58",
+        "link": "01M5Z0EJF901KSJWA8PCGVQYGK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTN2W3ZB386XFG74VKD8B",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EJ62SZXJR5NSAA9X48ZV",
+        "id": "01M5Z0EJKW6F4EH4VM7PSMQN2S",
+        "link": "01M5Z0EJKW6F4EH4VM7K47GN1Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EHF5WMV1Y0X96EJ0NCPZ",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "An engine test finds two confirmed findings naming no leaf handed to a single fixer session, a new commit with a `Review:` trailer naming the run, and the failed checks re-run after it; a fixer ending without such a commit fails the cycle.",
+          "statement": "Confirmed blocker or major findings that name no leaf go to one fixer session for the change set, whose fix commit carries a `Review:` trailer naming the run, before the failed checks re-run."
+        },
+        "handle": "review-fix-change-set",
+        "id": "01M5Z0EJRDQ0F1VZBYFPFNC2B7",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5Z0EJRDQ0F1VZBYFM5K6DXX",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EJRDQ0F1VZBYFM5K6DXX",
+        "id": "01M5Z0EJX0QB9DDABD48RMXG68",
+        "link": "01M5Z0EJX0QB9DDABD47Y3CB58",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPYRHM3SVDQ7TR70XMNA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EJRDQ0F1VZBYFM5K6DXX",
+        "id": "01M5Z0EK1MSR0KFXHAQAQ75PBS",
+        "link": "01M5Z0EK1MSR0KFXHAQ7J0XF88",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EHF5WMV1Y0X96EJ0NCPZ",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "An engine test whose check fails three times finds two fix cycles, a question blocking the named leaf, no sign-off step entered and the run failed; after an answering Decision a resume runs one more cycle with the Decision in the fixer's prompt; in an autonomous run the arbiter is started on the question and a further failure ends the run failed.",
+          "statement": "A review runs at most 2 fix cycles; after that each surviving confirmed finding becomes a question, linked blocks to the leaf it names, and the run ends failed before sign-off; a resume once they are answered gives one fresh cycle with the answering Decisions in the fixers' prompts, and in an autonomous run the arbiter answers at once and the review gets that one fresh cycle, failing the run if a check fails again."
+        },
+        "handle": "review-cycle-cap",
+        "id": "01M5Z0EK65NC55WAS23HV1XYCX",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5Z0EK65NC55WAS23EJDV773",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EK65NC55WAS23EJDV773",
+        "id": "01M5Z0EKAQ6PSM154P04J92VE7",
+        "link": "01M5Z0EKAQ6PSM154P00P7YHTY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPYRHM3SVDQ7TR70XMNA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EK65NC55WAS23EJDV773",
+        "id": "01M5Z0EKFCHZS8Q0TVVXFRATBS",
+        "link": "01M5Z0EKFCHZS8Q0TVVT5T26NX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPMQ4KMTMGSXG178SMBS",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EK65NC55WAS23EJDV773",
+        "id": "01M5Z0EKKY11K8F6CH81HGMHEN",
+        "link": "01M5Z0EKKY11K8F6CH7XV005TP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EJ62SZXJR5NSAA9X48ZV",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EK65NC55WAS23EJDV773",
+        "id": "01M5Z0EKRHZEN0M996TPSCT9K1",
+        "link": "01M5Z0EKRHZEN0M996TM94A1QH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EJRDQ0F1VZBYFM5K6DXX",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Testscripts find code-check passing on a change set whose leaves have verifier Evidence and a clean model, and failing, naming the cause, on one with a leaf lacking Evidence and on one where rhiza check reports a problem; a workflow override adding a command step after it runs that command before the checks step.",
+          "statement": "`rhiza run code-check` runs `rhiza check` and `rhiza run build-check` on the run's change set and journals the result as the review's code check, and the built-in review runs it as a command step before any agent check, which a repo's workflow override can replace or extend with its own test command."
+        },
+        "handle": "review-code-check",
+        "id": "01M5Z0EKX3DVJHR6SVG7P9XMQT",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M5Z0EKX3DVJHR6SVG5QX87J1",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EKX3DVJHR6SVG5QX87J1",
+        "id": "01M5Z0EM1Q486J5WGEFS6SM1X8",
+        "link": "01M5Z0EM1Q486J5WGEFP8T156T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRN533TNXADMG66PPY5T7",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EKX3DVJHR6SVG5QX87J1",
+        "id": "01M5Z0EM69FXN59FQXG7K19ZDJ",
+        "link": "01M5Z0EM69FXN59FQXG79MSS8S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPYRHM3SVDQ7TR70XMNA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "When the review's code check fails, does the failure go to the fix cycle as a confirmed blocker naming no leaf (no critic), or does the run end failed at once?"
+        },
+        "handle": "review-code-check-fails",
+        "id": "01M5Z0EMAXRRZG1BGYVF02CMWH",
+        "key": null,
+        "kind": "question",
+        "node": "01M5Z0EMAXRRZG1BGYVB51H9RX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EMAXRRZG1BGYVB51H9RX",
+        "id": "01M5Z0EMFHDA726G3Q6TA5XWQV",
+        "link": "01M5Z0EMFHDA726G3Q6SAMSV4T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EKX3DVJHR6SVG5QX87J1",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "acceptance": "Testscripts find a review run waiting at sign-off until `rhiza run approve` and then done with an approved entry naming the actor; `run request-changes` with one finding starts a fixer for the named leaf after the cap was used and returns to the wait; outside a waiting review run both commands exit 2; an autonomous run passes sign-off with a journal entry of rule autonomous; describe-golden is regenerated.",
+          "statement": "The review's last step waits for the owner: `rhiza run approve` journals the owner's sign-off and the run ends done, and `rhiza run request-changes <file>` journals the owner's findings as already confirmed and starts one fix cycle outside the cap, after which the failed checks re-run and the run waits for the owner again; an autonomous run skips the wait and journals the skip with rule autonomous."
+        },
+        "handle": "review-signoff",
+        "id": "01M5Z0EMM6HBY40F6M5SBEY4CX",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M5Z0EMM6HBY40F6M5QVK0TX0",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EMM6HBY40F6M5QVK0TX0",
+        "id": "01M5Z0EMRSXEV84AR0SSSE7EQM",
+        "link": "01M5Z0EMRSXEV84AR0SS0F9GRQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTKTR8E370K79Z5JAA82H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EMM6HBY40F6M5QVK0TX0",
+        "id": "01M5Z0EMXDBQEZCA246TP4PPXV",
+        "link": "01M5Z0EMXDBQEZCA246R1JSZ0F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTM52804W6ND2EV8CHM5T",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EMM6HBY40F6M5QVK0TX0",
+        "id": "01M5Z0EN2ATEMJT0R43B0YN7YZ",
+        "link": "01M5Z0EN2ATEMJT0R43ASYN25Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPYRHM3SVDQ7TR70XMNA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EMM6HBY40F6M5QVK0TX0",
+        "id": "01M5Z0EN6YHGMNM1QFTMKGYGZF",
+        "link": "01M5Z0EN6YHGMNM1QFTKCXHVDR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EJ62SZXJR5NSAA9X48ZV",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript renders the summary of a journaled review with a passed check, a check that failed and was fixed in one cycle, and two minors, and compares it with a golden file; `run status` at the sign-off wait names `rhiza run summary`.",
+          "statement": "`rhiza run summary` renders a review run's verdicts as markdown from the journal: each check's outcome, its confirmed findings, the minors and nits, the fix cycles and the sign-off, and `run status` names it while the run waits at sign-off."
+        },
+        "handle": "review-summary",
+        "id": "01M5Z0ENBN0TY0Z6FXG436T3VA",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M5Z0ENBN0TY0Z6FXG03NQB0P",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0ENBN0TY0Z6FXG03NQB0P",
+        "id": "01M5Z0ENG9GTXXM1SHNC7WEC1W",
+        "link": "01M5Z0ENG9GTXXM1SHNAYKTK17",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRNEBTFABH6SN1Y543X6B",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0ENBN0TY0Z6FXG03NQB0P",
+        "id": "01M5Z0ENMX768SWXE8F7Q5ZTZE",
+        "link": "01M5Z0ENMX768SWXE8F6G7KYVP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPYRHM3SVDQ7TR70XMNA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0ENBN0TY0Z6FXG03NQB0P",
+        "id": "01M5Z0ENSJ9H0SR5ZH7AH1NJD8",
+        "link": "01M5Z0ENSJ9H0SR5ZH78V5GGTV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EH5ZG74DZQY63G9B78WR",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Go guide tests: `rhiza guide ls` lists the review topic, which names the five checks, the merge-base, the four severities, `rhiza run findings` and `rhiza run verdict` with their formats, the critic rule, both trailers, and the Evidence and discovered-from rules; the topic stays within TopicCap; `rhiza guide install` writes it into the plugin.",
+          "statement": "`rhiza guide review` tells each check, critic and fixer its part: the five checks' briefs (compliance against each leaf's acceptance, quality, hands-on QA with the built binary where fakes alone don't count, scope inside the intent and the leaves, the model), reviewing from the merge-base with the default branch, the findings format and severities, that a critic never adds a finding, the fixers' trailers, scope work outside the intent as a question or a discovered-from draft, the QA check's Evidence on each leaf it exercised and the model check's missing constraints in a discovered-from draft; guide install installs it."
+        },
+        "handle": "review-guide",
+        "id": "01M5Z0ENY6PDKAQS7QF0N0739K",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M5Z0ENY6PDKAQS7QEY0AR5RN",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0ENY6PDKAQS7QEY0AR5RN",
+        "id": "01M5Z0EP2TW3ADEK5MS6QJPBVJ",
+        "link": "01M5Z0EP2TW3ADEK5MS431FDZ8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPYRHM3SVDQ7TR70XMNA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0ENY6PDKAQS7QEY0AR5RN",
+        "id": "01M5Z0EP7DFXGECPW4PVV8Z774",
+        "link": "01M5Z0EP7DFXGECPW4PR78TFCF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRNCSXEK47CQTD53AJSBQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0ENY6PDKAQS7QEY0AR5RN",
+        "id": "01M5Z0EPC0FNG7WAYY3CE2WB6Z",
+        "link": "01M5Z0EPC0FNG7WAYY38QXSEHH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EH5ZG74DZQY63G9B78WR",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with fake agents runs `rhiza run start review` on a built change set: one check reports a major the critic confirms, a fixer and the leaf's verifier run, only that check re-runs clean, a fake QA check writes Evidence as its own actor and build-check still passes, `rhiza run approve` ends the run done and the change set stays accepted; describe-golden is regenerated.",
+          "statement": "Rhiza ships a built-in `review` workflow: the code check, then a checks step with compliance, quality, qa, scope and model checks and their critic on opus, and the sign-off, ending done without landing the change set."
+        },
+        "handle": "review-workflow-file",
+        "id": "01M5Z0EPGNJBA661QHJB419MAM",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M5Z0EPGNJBA661QHJ901DRYA",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EPGNJBA661QHJ901DRYA",
+        "id": "01M5Z0EPNA0494ZGF0VB11Z7D0",
+        "link": "01M5Z0EPNA0494ZGF0V7YSAZ7N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPYRHM3SVDQ7TR70XMNA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EPGNJBA661QHJ901DRYA",
+        "id": "01M5Z0EPSYX09DMSKVJCSRXCHH",
+        "link": "01M5Z0EPSYX09DMSKVJAHE0QFB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTKG9YSWM6HVRQSFEWMWN",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EPGNJBA661QHJ901DRYA",
+        "id": "01M5Z0EPYJFFC3BTAT1QD1D6ER",
+        "link": "01M5Z0EPYJFFC3BTAT1P5Y6JC7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRNCSXEK47CQTD53AJSBQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EPGNJBA661QHJ901DRYA",
+        "id": "01M5Z0EQ35WK5HKYAZ7Z7XPPRB",
+        "link": "01M5Z0EQ35WK5HKYAZ7VR2WZEJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EGRD1KYTEXXSWDEZNJCE",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EPGNJBA661QHJ901DRYA",
+        "id": "01M5Z0EQ7SE3VF2SDDBJDBNW1Z",
+        "link": "01M5Z0EQ7SE3VF2SDDBHBMFVZ5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EK65NC55WAS23EJDV773",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EPGNJBA661QHJ901DRYA",
+        "id": "01M5Z0EQCBD0JKF3FN6BYKYNB5",
+        "link": "01M5Z0EQCBD0JKF3FN6B56WSEQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EKX3DVJHR6SVG5QX87J1",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EPGNJBA661QHJ901DRYA",
+        "id": "01M5Z0EQH08VWKGHPFFC9K9SAR",
+        "link": "01M5Z0EQH08VWKGHPFFAXA6ZK4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EMM6HBY40F6M5QVK0TX0",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EPGNJBA661QHJ901DRYA",
+        "id": "01M5Z0EQNMBGC1HTRAN0WBTFXN",
+        "link": "01M5Z0EQNMBGC1HTRAN0VS96XX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0ENBN0TY0Z6FXG03NQB0P",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EPGNJBA661QHJ901DRYA",
+        "id": "01M5Z0EQT8PT7HK04839EV1SVE",
+        "link": "01M5Z0EQT8PT7HK04835MVQ39T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0ENY6PDKAQS7QEY0AR5RN",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZ1V0JVVW8FPX0QYMRWJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5Z0ER1D3GE3P77QRSCBACTC",
+  "type": "ops",
+  "v": 1
+}
