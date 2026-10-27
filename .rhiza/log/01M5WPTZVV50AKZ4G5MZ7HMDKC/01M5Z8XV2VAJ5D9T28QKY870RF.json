@@ -1,0 +1,274 @@
+{
+  "actor": "01M5Z28ZBAB65TGSD5FQW14547",
+  "after": [
+    "01M5Z8WDXMMHGPA82Y1VAT4ADJ"
+  ],
+  "at": "2026-10-27T18:10:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rhiza's built-in ship-change ships a change set through Rhiza's own build and review workflows: build, review's checks, the pull request opened with the review's summary, CI, the owner's sign-off, then rebase, land, merge and close-out, with no shipit step."
+        },
+        "handle": "ship-through-rhiza",
+        "id": "01M5Z8XQC9YFR1TWS0QQKEHEH2",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5Z8XQC9YFR1TWS0QNGF2HZC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XQC9YFR1TWS0QNGF2HZC",
+        "id": "01M5Z8XQH4N4QZSBDXG7WVRQ0T",
+        "link": "01M5Z8XQH4N4QZSBDXG58S0NK9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8WDQW7G4Q29WE96XWJEH9",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XQC9YFR1TWS0QNGF2HZC",
+        "id": "01M5Z8XQP5ZWTNSAW40XHK5JNE",
+        "link": "01M5Z8XQP5ZWTNSAW40SQR8BDT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTKG9YSWM6HVRQSFEWMWN",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Parse tests reject a workflow step with no `workflow`, one naming an unknown workflow, a workflow that includes itself directly or through another, `skip` naming a step the inner workflow lacks, and `workflow` or `skip` on another step kind; an engine test with a fake runner over an outer workflow whose workflow step names a three-step inner workflow skipping one finds the other two journaled in order under the inner workflow's name, the skipped one not run and the outer on.pass taken; an inner step failing fails the outer step, and `rhiza run resume` after it resumes at that inner step.",
+          "statement": "Workflow files take a `workflow` step kind naming another workflow, resolved as `rhiza run start` resolves it (a repo override included), and an optional `skip` list of its steps; the engine runs that workflow's steps inside the same run and journal, each skipped step taken as passed, and the step passes when the inner workflow ends done and fails when it ends failed."
+        },
+        "handle": "workflow-step",
+        "id": "01M5Z8XQV4XPRTXNA7KH4RPZ0B",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5Z8XQV4XPRTXNA7KE1AKET4",
+        "op": "node.create",
+        "parent": "01M5Z8XQC9YFR1TWS0QNGF2HZC"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XQV4XPRTXNA7KE1AKET4",
+        "id": "01M5Z8XQZXS96J3BKKBPYSGHPN",
+        "link": "01M5Z8XQZXS96J3BKKBPQZ4W66",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8WDQW7G4Q29WE96XWJEH9",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XQV4XPRTXNA7KE1AKET4",
+        "id": "01M5Z8XR4Q9QT16KBSNCMR5E9R",
+        "link": "01M5Z8XR4Q9QT16KBSNAWCCFJY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTNPTV7PZ8EGVV8WM6421",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests with a fake gh and a real git remote find a first call pushing the branch and creating one PR whose title is the change set's title and whose body holds the summary's text, and a second call after a new commit pushing it and editing that PR's body without creating another; `rhiza ship check` after it reads the recorded PR; a call outside a run, or in a run with no review journaled, exits non-zero naming why.",
+          "statement": "`rhiza ship open-pr` pushes the change set's branch and opens a pull request titled by the change set, its body the run's `rhiza run summary`, or, when one is already open, pushes and replaces its body, recording the PR in the ship state file for the steps after it."
+        },
+        "handle": "ship-open-pr",
+        "id": "01M5Z8XR9JBAHCDW9FXT0P6VXJ",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5Z8XR9JBAHCDW9FXRCVJRFW",
+        "op": "node.create",
+        "parent": "01M5Z8XQC9YFR1TWS0QNGF2HZC"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XR9JBAHCDW9FXRCVJRFW",
+        "id": "01M5Z8XREB7YWR90N5NTMQX4JJ",
+        "link": "01M5Z8XREB7YWR90N5NT3X1W1A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8WDQW7G4Q29WE96XWJEH9",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XR9JBAHCDW9FXRCVJRFW",
+        "id": "01M5Z8XRK2585KXSCT8S18F0HY",
+        "link": "01M5Z8XRK2585KXSCT8RQX74MW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTPYRHM3SVDQ7TR70XMNA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Testscripts with fake agents and a fake gh find a ship-change run waiting at sign-off after green CI with run status naming the PR URL and run summary, moving on to land only after `rhiza run approve`; `run request-changes` with one finding naming a leaf starts a fixer and that leaf's verifier, re-runs only the check it names, calls ship open-pr again, waits for CI and waits at sign-off again; an autonomous run reaches land with no wait and an entry with rule autonomous; a failing CI check ends the run failed naming the check, as today.",
+          "statement": "ship-change waits for the owner's sign-off once the PR's CI is green, `rhiza run status` naming the PR's URL and `rhiza run summary`: `rhiza run approve` moves on to rebase, land and merge, and `rhiza run request-changes <file>` runs one fix cycle as review does, re-runs only the failed checks, pushes and updates the PR body, waits for CI and returns to the sign-off; an autonomous run skips the wait and journals the skip with rule autonomous."
+        },
+        "handle": "ship-signoff",
+        "id": "01M5Z8XRQTCA20KGMAN5V3CJ4E",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M5Z8XRQTCA20KGMAN4KKZJ5D",
+        "op": "node.create",
+        "parent": "01M5Z8XQC9YFR1TWS0QNGF2HZC"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XRQTCA20KGMAN4KKZJ5D",
+        "id": "01M5Z8XRWKW7DF9BHQ92ZVB6TR",
+        "link": "01M5Z8XRWKW7DF9BHQ901N8Q1G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8WDQW7G4Q29WE96XWJEH9",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XRQTCA20KGMAN4KKZJ5D",
+        "id": "01M5Z8XS1BW2H3WXJZ2Y1WXQ7D",
+        "link": "01M5Z8XS1BW2H3WXJZ2Y0ME2P2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTKTR8E370K79Z5JAA82H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XRQTCA20KGMAN4KKZJ5D",
+        "id": "01M5Z8XS65SA4RSZ39SR6AG8M2",
+        "link": "01M5Z8XS65SA4RSZ39SNBRDND0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTM52804W6ND2EV8CHM5T",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XRQTCA20KGMAN4KKZJ5D",
+        "id": "01M5Z8XSB0PSXFRR4RCRC570P7",
+        "link": "01M5Z8XSB0PSXFRR4RCQNZZN8S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XR9JBAHCDW9FXRCVJRFW",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript finds `rhiza run start ship-change` on a change set without leaves exiting non-zero with the refusal and `rhiza run start plan` as next, no run journaled and no worktree made, and the same command on a change set with a leaf starting the run.",
+          "statement": "`rhiza run start ship-change` refuses a change set with no leaves before writing anything, its next command `rhiza run start plan`."
+        },
+        "handle": "ship-needs-leaves",
+        "id": "01M5Z8XSFSMXX93SBZP7T54PK0",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5Z8XSFSMXX93SBZP3ZZPZTQ",
+        "op": "node.create",
+        "parent": "01M5Z8XQC9YFR1TWS0QNGF2HZC"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XSFSMXX93SBZP3ZZPZTQ",
+        "id": "01M5Z8XSMKP1HC10FTKQM9F1Z6",
+        "link": "01M5Z8XSMKP1HC10FTKQA293HV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8WDQW7G4Q29WE96XWJEH9",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XSFSMXX93SBZP3ZZPZTQ",
+        "id": "01M5Z8XSSD0CBJWQ163RCM5MAS",
+        "link": "01M5Z8XSSD0CBJWQ163QMB9J6D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTK5ZNN67QTSAX8A5SVMA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with fake agents and a fake gh runs `rhiza run start ship-change` on a change set of two leaves, one depending on the other, and finds both built and verified, review's checks passed, the PR opened with the summary as body, the run waiting at sign-off until `rhiza run approve`, then the change set landed, the PR merged and the close-out done; workflow tests find no `shipit` in ship-change.toml; `describe-golden` is regenerated.",
+          "statement": "The built-in ship-change.toml runs a workflow step on build, a workflow step on review skipping its sign-off, ship open-pr, the wait for CI, the sign-off, and then today's rebase, land, merge, main check, close-out and ship steps, with no shipit prompt and no `ship check --pr-open` until."
+        },
+        "handle": "ship-change-file",
+        "id": "01M5Z8XSYAD7N2R7VF3MT1TK03",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "op": "node.create",
+        "parent": "01M5Z8XQC9YFR1TWS0QNGF2HZC"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "id": "01M5Z8XT386944RA20J00XMNNM",
+        "link": "01M5Z8XT386944RA20HZ5DSB3W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8WDQW7G4Q29WE96XWJEH9",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "id": "01M5Z8XT83BNEHJGRZT7NA07HD",
+        "link": "01M5Z8XT83BNEHJGRZT6ZNZ0YR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WPTKG9YSWM6HVRQSFEWMWN",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "id": "01M5Z8XTCWWXPV2WXS5ZRKK7PK",
+        "link": "01M5Z8XTCWWXPV2WXS5XFF1X3M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XQV4XPRTXNA7KE1AKET4",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "id": "01M5Z8XTHQ52J8MHPJS2DMZ0AZ",
+        "link": "01M5Z8XTHQ52J8MHPJS16V5FDR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XR9JBAHCDW9FXRCVJRFW",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "id": "01M5Z8XTPFQ9ZYH7PD7C14X43E",
+        "link": "01M5Z8XTPFQ9ZYH7PD7B6ZHRTQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XRQTCA20KGMAN4KKZJ5D",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "id": "01M5Z8XTVB49F7QP06YPBJ1YH4",
+        "link": "01M5Z8XTVB49F7QP06YMNP3B8X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSFSMXX93SBZP3ZZPZTQ",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5Z8XV2VAJ5D9T28QKY870RF",
+  "type": "ops",
+  "v": 1
+}
