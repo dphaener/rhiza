@@ -22,6 +22,7 @@ const (
 	TypeArbiter    = "arbiter"
 	TypeArbitrated = "arbitrated"
 	TypeAsked      = "asked"
+	TypeAnswered   = "answered"
 )
 
 // Run results, used in Entry.End and State.Result.
@@ -112,6 +113,8 @@ type Entry struct {
 // Asked is one asked entry: in an autonomous run, agent step Step's
 // session Session asked the owner Text, and the engine added question node
 // Question (handle Handle) to the run's change set for the arbiter.
+// Answered is the handle of the arbiter's Decision once the engine has
+// delivered it to the asking session (an answered entry), else "".
 type Asked struct {
 	Step     string
 	Session  string
@@ -119,6 +122,7 @@ type Asked struct {
 	Handle   string
 	Text     string
 	At       time.Time
+	Answered string
 }
 
 // Amendment is one amended entry: a step's brief or plan file replaced
@@ -336,6 +340,13 @@ func (j Journal) State() State {
 			})
 			if st.Blocked != nil && st.BlockedSession == e.Session {
 				st.blockAsked = len(st.Asked)
+			}
+		case TypeAnswered:
+			for i := len(st.Asked) - 1; i >= 0; i-- {
+				if st.Asked[i].Question == e.Question {
+					st.Asked[i].Answered = e.Decision
+					break
+				}
 			}
 		case TypeStopped:
 			st.Stopped = e.Detail

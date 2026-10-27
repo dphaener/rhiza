@@ -489,3 +489,29 @@ func TestTranscriptGlobsMatchOnlyTheSessionsOwn(t *testing.T) {
 		t.Fatalf("matches = %q, want %q", got, []string{own})
 	}
 }
+
+func TestAskReply(t *testing.T) {
+	ask := `{"session_id":"s","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which database?"}]}}`
+	reply, ok, err := Adapter{}.AskReply("PreToolUse", []byte(ask), `no "owner"`)
+	if err != nil || !ok {
+		t.Fatalf("ok=%v err=%v", ok, err)
+	}
+	want := `{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"no \"owner\""}}`
+	if string(reply) != want {
+		t.Errorf("reply = %s\nwant    %s", reply, want)
+	}
+	for _, c := range []struct{ event, payload string }{
+		{"PreToolUse", `{"session_id":"s","tool_name":"Bash"}`},
+		{"PostToolUse", ask},
+		{"Stop", `{"session_id":"s"}`},
+		{"Notification", `{"notification_type":"permission_prompt"}`},
+	} {
+		reply, ok, err := Adapter{}.AskReply(c.event, []byte(c.payload), "r")
+		if err != nil || ok || reply != nil {
+			t.Errorf("%s %s: reply=%s ok=%v err=%v", c.event, c.payload, reply, ok, err)
+		}
+	}
+	if _, ok, err := (Adapter{}).AskReply("PreToolUse", []byte("{"), "r"); err == nil || ok {
+		t.Errorf("bad JSON: ok=%v err=%v", ok, err)
+	}
+}

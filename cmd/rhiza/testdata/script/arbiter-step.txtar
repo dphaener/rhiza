@@ -5,8 +5,9 @@
 # nothing, or a Decision without reasoning, and the run fails with it.
 #
 # The fake claude is arbiter-question's: the asking agent reports an
-# AskUserQuestion through the real hook and waits (bounded) for the
-# arbiter; the arbiter logs its prompt and, per $WORK/mode, writes the
+# AskUserQuestion through the real hook, goes idle, and waits (bounded)
+# for the answer to be typed into its tab, or for a failed arbiter; the
+# arbiter logs its prompt and, per $WORK/mode, writes the
 # Decision (answer), one without reasoning (noreason) or nothing (none),
 # then says done.
 
@@ -52,6 +53,7 @@ exec sh -c 'i=0; until [ "$(grep -c exited $WORK/asker.log)" = 1 ]; do i=$((i+1)
 
 # No Decision: the arbiter step fails, and so does the run.
 rm $WORK/arbiter.done
+rm $WORK/typed.log
 exec sh -c 'echo none > $WORK/mode'
 ! exec rhiza run start --workflow ask --permission-mode manual --autonomous
 stdout '^Run [0-9A-Z]{26} failed$'
@@ -88,6 +90,12 @@ kind = "arbiter"
 interval = "50ms"
 -- bin/rex --
 #!/bin/sh
+case "$1" in
+send | send-key)
+	echo "$*" >> "$WORK/typed.log"
+	exit 0
+	;;
+esac
 dir=
 while [ $# -gt 0 ]; do
 	if [ "$1" = -c ]; then
@@ -131,8 +139,10 @@ case "$last" in
 	;;
 esac
 echo '{"session_id":"'$sid'","hook_event_name":"PreToolUse","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which colour?"}]}}' | rhiza session hook PreToolUse >> "$WORK/hook.out" || exit 8
+echo '{"session_id":"'$sid'","hook_event_name":"Stop"}' | rhiza session hook Stop >> "$WORK/hook.out" || exit 8
 i=0
-until [ -f "$WORK/arbiter.done" ] || [ -f "$WORK/answer" ]; do
+until grep -q '^send-key ' "$WORK/typed.log" 2>/dev/null ||
+	{ [ -f "$WORK/arbiter.done" ] && [ "$(cat "$WORK/mode")" != answer ]; }; do
 	i=$((i + 1))
 	if [ $i -gt 800 ]; then
 		echo 'no answer' >&2

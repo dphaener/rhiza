@@ -90,7 +90,14 @@ type SessionHookResponse struct {
 	Recorded bool   `json:"recorded" desc:"Whether the hook report was recorded"`
 	State    string `json:"state,omitempty" enum:"starting,working,idle,blocked,done,error,exited" desc:"The state recorded"`
 	Kind     string `json:"kind,omitempty" desc:"What a blocked session waits for"`
+	// reply is what the hook prints on stdout for the agent to read: the
+	// denial of a question in an autonomous session. Human writes it.
+	reply []byte
 }
+
+// autonomousAskReason is what the agent of an autonomous session is told
+// when its hook denies a question to the owner.
+const autonomousAskReason = "This run is autonomous: no owner will answer. Your question is recorded and the arbiter will decide it; its answer arrives as a message. End your turn now and wait at your prompt."
 
 // runSessionRun starts the session's agent in its worktree with this
 // terminal, its environment stamped with the change set, actor, for-actor
@@ -425,11 +432,26 @@ func sessionHook(ctx *Ctx, event string) (SessionHookResponse, error) {
 			return resp, fmt.Errorf("%s reported unknown state %q", name, rep.State)
 		}
 		report := session.Report{State: rep.State, Kind: rep.Kind, Detail: rep.Detail, At: ctx.Now().UTC()}
+		// In an autonomous session a question to the owner is denied and
+		// kept as the asked mark: the arbiter answers it by message.
+		var reply []byte
+		if rec.Autonomous {
+			b, ask, err := a.AskReply(event, payload, autonomousAskReason)
+			if err != nil {
+				return resp, fmt.Errorf("%s: %v", name, err)
+			}
+			if ask {
+				reply = b
+			}
+		}
 		recorded := false
 		if _, err := st.Update(rec.ID, func(r *session.Record) {
 			// A hook that arrives after the exit does not revive the session.
 			if !r.Status.Exited() {
 				r.Status.Hook, recorded = &report, true
+				if reply != nil {
+					r.Status.Asked = &session.Report{State: session.StateBlocked, Kind: session.KindQuestion, Detail: rep.Detail, At: report.At}
+				}
 			}
 		}); err != nil {
 			return resp, fmt.Errorf("record session %s: %v", rec.ID, err)
@@ -437,7 +459,7 @@ func sessionHook(ctx *Ctx, event string) (SessionHookResponse, error) {
 		if !recorded {
 			return resp, nil
 		}
-		resp.Recorded, resp.State, resp.Kind = true, report.State, report.Kind
+		resp.Recorded, resp.State, resp.Kind, resp.reply = true, report.State, report.Kind, reply
 		return resp, nil
 	}
 	return resp, errors.Join(errs...)
@@ -481,5 +503,11 @@ func (r SessionRunResponse) Human(w io.Writer) {
 	fmt.Fprintf(w, "\nnext: rhiza session show %s\n", s.ID)
 }
 
-// Human writes nothing: the agent may read what a hook prints.
-func (SessionHookResponse) Human(io.Writer) {}
+// Human writes the reply for the agent, if there is one, and nothing else:
+// the agent reads what a hook prints.
+func (r SessionHookResponse) Human(w io.Writer) {
+	if len(r.reply) > 0 {
+		w.Write(r.reply)
+		io.WriteString(w, "\n")
+	}
+}

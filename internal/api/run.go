@@ -789,6 +789,49 @@ func (r *stepRunner) AddQuestion(sid, text string) (run.Question, error) {
 	return run.Question{ID: e.nodes[0].String(), Handle: handle}, nil
 }
 
+// deliverText is the message that gives the asking session the arbiter's
+// answer: the question's ID, the answering Decision's handle and its
+// statement.
+func deliverText(question, decision, statement string) string {
+	return fmt.Sprintf("The arbiter answered your question %s with Decision %s:\n\n%s\n\nCarry on with your work.",
+		question, decision, strings.TrimSpace(statement))
+}
+
+// Deliver sends session sid the arbiter's answer to question as a session
+// message from the run's caller, as run amend sends its pointer: the file
+// is written, and the pointer typed once the session waits at its prompt.
+// Then it clears the session's asked mark, so the session is no longer
+// blocked on the question.
+func (r *stepRunner) Deliver(sid, question, decision, statement string) error {
+	rec, err := readSession(r.sessions, sid)
+	if err != nil {
+		return err
+	}
+	if err := messageable(rec); err != nil {
+		return err
+	}
+	from, err := messageSender(r.ctx)
+	if err != nil {
+		return err
+	}
+	dir, rel, err := messageFolder(r.ctx, rec)
+	if err != nil {
+		return err
+	}
+	text := deliverText(question, decision, statement)
+	name, err := writeMessage(dir, messageContent(from, rec, rfc3339(r.ctx.Now()), text))
+	if err != nil {
+		return err
+	}
+	if _, err := typePointer(r.ctx, r.sessions, rec.ID, messagePointer(from.Handle, rel+"/"+name), defaultMessageTimeout); err != nil {
+		return withNote(err, "the answer is in "+filepath.Join(dir, name))
+	}
+	if _, err := r.sessions.Update(rec.ID, func(x *session.Record) { x.Status.Asked = nil }); err != nil {
+		return Errorf("clear session %s's asked mark: %v", rec.ID, err)
+	}
+	return nil
+}
+
 // arbiterAnswer is Answer's verdict over model m on question q.
 func arbiterAnswer(m Model, q id.ID) run.Answer {
 	if n, ok := m.Node(q); !ok || n.Retired {
@@ -843,13 +886,17 @@ func (r *stepRunner) AgentStatus(sid string) (run.AgentStatus, error) {
 }
 
 // recordBlock is what a live session waits on when its resolved report
-// is blocked, else nil.
+// is blocked, else nil. A live session with an asked mark (a question its
+// hook denied in an autonomous run) waits on that question whatever its
+// reports say, until the answer is delivered.
 func recordBlock(rec session.Record) *run.Block {
 	if rec.Status.Exited() {
 		return nil
 	}
 	rep, _ := session.Resolve(rec)
-	if rep.State != session.StateBlocked {
+	if a := rec.Status.Asked; a != nil {
+		rep = *a
+	} else if rep.State != session.StateBlocked {
 		return nil
 	}
 	return &run.Block{

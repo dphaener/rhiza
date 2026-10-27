@@ -6,10 +6,12 @@
 # owner, as before: no question node, no arbiter.
 #
 # One fake claude plays both roles, by its prompt (its last argument). The
-# asking agent reports an AskUserQuestion through the real hook path, then
-# waits (bounded) for the arbiter to finish, or for $WORK/answer, and
-# exits 0. The arbiter logs its prompt, then per $WORK/mode writes the
-# answering Decision with rhiza apply (answer) or nothing (none), says
+# asking agent reports an AskUserQuestion through the real hook path (in
+# an autonomous run it then goes idle, as the denied call tells it to),
+# then waits (bounded) for the arbiter's answer to be typed as a message,
+# for a failed arbiter to finish, or for $WORK/answer, and exits 0. The
+# arbiter logs its prompt, then per $WORK/mode writes the answering
+# Decision with rhiza apply (answer) or nothing (none), says
 # done and exits 0. The fake rex runs the tab in the background, so the
 # agent step keeps polling.
 
@@ -66,10 +68,15 @@ stdout '^1$'
 exec sh -c 'grep -c "^Decide question $(cat $WORK/qid): follow rhiza guide arbiter.$" $WORK/arbiter.log'
 stdout '^1$'
 
+# The answer was typed into the asking session's tab.
+exec cat $WORK/typed.log
+stdout -count=1 '^send-key -b block:b1 enter$'
+
 # (b) Autonomous, and the arbiter writes nothing: the run fails, naming
 # the question.
 exec sh -c 'echo none > $WORK/mode'
 rm $WORK/arbiter.done
+rm $WORK/typed.log
 ! exec rhiza run start --workflow ask --permission-mode manual --autonomous
 stdout '^Run [0-9A-Z]{26} failed$'
 ! stderr 'state=blocked'
@@ -121,9 +128,15 @@ kind = "arbiter"
 interval = "50ms"
 -- bin/rex --
 #!/bin/sh
-if [ "$1" = events ]; then
+case "$1" in
+events)
 	exit 0
-fi
+	;;
+send | send-key)
+	echo "$*" >> "$WORK/typed.log"
+	exit 0
+	;;
+esac
 dir=
 while [ $# -gt 0 ]; do
 	if [ "$1" = -c ]; then
@@ -161,8 +174,12 @@ case "$last" in
 	;;
 esac
 echo '{"session_id":"'$sid'","hook_event_name":"PreToolUse","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which colour?"}]}}' | rhiza session hook PreToolUse >> "$WORK/hook.out" || exit 8
+if [ "$RHIZA_AUTONOMOUS" = 1 ]; then
+	echo '{"session_id":"'$sid'","hook_event_name":"Stop"}' | rhiza session hook Stop >> "$WORK/hook.out" || exit 8
+fi
 i=0
-until [ -f "$WORK/arbiter.done" ] || [ -f "$WORK/answer" ]; do
+until grep -q '^send-key ' "$WORK/typed.log" 2>/dev/null || [ -f "$WORK/answer" ] ||
+	{ [ -f "$WORK/arbiter.done" ] && [ "$(cat "$WORK/mode")" != answer ]; }; do
 	i=$((i + 1))
 	if [ $i -gt 800 ]; then
 		echo 'no answer' >&2

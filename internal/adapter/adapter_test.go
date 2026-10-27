@@ -16,9 +16,10 @@ func (f fake) Command(l Launch) ([]string, error) {
 	}
 	return []string{f.name, l.PermissionMode}, nil
 }
-func (fake) HookStatus(string, []byte) (HookReport, bool, error)  { return HookReport{}, false, nil }
-func (fake) TranscriptGlobs(string, func(string) string) []string { return nil }
-func (fake) Answers([]byte) ([]Answer, error)                     { return nil, nil }
+func (fake) HookStatus(string, []byte) (HookReport, bool, error)   { return HookReport{}, false, nil }
+func (fake) AskReply(string, []byte, string) ([]byte, bool, error) { return nil, false, nil }
+func (fake) TranscriptGlobs(string, func(string) string) []string  { return nil }
+func (fake) Answers([]byte) ([]Answer, error)                      { return nil, nil }
 
 func reset() {
 	mu.Lock()

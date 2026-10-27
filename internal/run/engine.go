@@ -85,6 +85,11 @@ type Runner interface {
 	// node in the run's change set, written as the session's actor, and
 	// returns the node. It refuses when the change set is finished.
 	AddQuestion(session, text string) (Question, error)
+	// Deliver gives session the arbiter's answer to question node
+	// question: Decision decision, whose statement is statement, as a
+	// message once the session waits at its prompt; then the session is no
+	// longer blocked on the question.
+	Deliver(session, question, decision, statement string) error
 }
 
 // Question is a question node the Runner added: its ID and handle.
@@ -608,13 +613,48 @@ func (r *running) ask(step workflow.Step, session string, b *Block) (result, boo
 		}
 	}
 	if res.outcome == workflow.OutcomePass {
-		// Task 8 delivers the arbiter's answer to the asking session here.
-		return result{}, false, nil
+		return r.answer(step, session, asked)
 	}
 	return r.askFailed(step, session, result{
 		outcome: OutcomeError,
 		detail:  fmt.Sprintf("arbiter failed on question %s (%s): %s", asked.Handle, asked.Question, res.detail),
 	})
+}
+
+// answer delivers the arbiter's passing answer to asked's question to the
+// asking session, journals an answered entry and ends the block; then the
+// step goes on polling the session, whose own outcome decides the step.
+// When the question already has its answered entry (a resume after the
+// delivery), it only ends the block. The statement is read anew through
+// Runner.Answer, so the journal holds no model text. A failed read or
+// delivery ends the step with an error outcome naming the question.
+func (r *running) answer(step workflow.Step, session string, asked Asked) (result, bool, error) {
+	if asked.Answered == "" {
+		a, _ := r.j.State().Arbitration(asked.Question)
+		ans, err := r.e.Runner.Answer(asked.Question)
+		if err == nil && !ans.OK {
+			err = errors.New(ans.Why)
+		}
+		if err == nil {
+			err = r.e.Runner.Deliver(session, asked.Question, a.Decision, ans.Statement)
+		}
+		if err != nil {
+			return r.askFailed(step, session, result{
+				outcome: OutcomeError,
+				detail:  fmt.Sprintf("could not deliver the answer to question %s (%s): %v", asked.Handle, asked.Question, err),
+			})
+		}
+		if err := r.append(Entry{
+			Type: TypeAnswered, Step: step.Name, Session: session, Question: asked.Question, Decision: a.Decision,
+		}); err != nil {
+			return result{}, false, err
+		}
+		r.log("step %s: session %s has the answer to question %s: decision %s", step.Name, session, asked.Handle, a.Decision)
+	}
+	if err := r.unblock(step.Name, session); err != nil {
+		return result{}, false, err
+	}
+	return result{}, false, nil
 }
 
 // askFailed ends session's block and returns res as the step's outcome.

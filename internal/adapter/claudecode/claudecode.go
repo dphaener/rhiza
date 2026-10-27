@@ -175,6 +175,34 @@ func (Adapter) HookStatus(event string, raw []byte) (adapter.HookReport, bool, e
 	return r, true, nil
 }
 
+// AskReply implements adapter.Adapter. A PreToolUse on the ask tool is the
+// agent asking the owner; the reply denies that call with reason as the
+// PreToolUse hook's permission decision.
+func (Adapter) AskReply(event string, raw []byte, reason string) ([]byte, bool, error) {
+	if event != "PreToolUse" {
+		return nil, false, nil
+	}
+	var p payload
+	if err := json.Unmarshal(raw, &p); err != nil {
+		return nil, false, fmt.Errorf("%s hook payload: %w", event, err)
+	}
+	if p.ToolName != askTool {
+		return nil, false, nil
+	}
+	type hookOutput struct {
+		HookEventName            string `json:"hookEventName"`
+		PermissionDecision       string `json:"permissionDecision"`
+		PermissionDecisionReason string `json:"permissionDecisionReason"`
+	}
+	reply, err := json.Marshal(struct {
+		HookSpecificOutput hookOutput `json:"hookSpecificOutput"`
+	}{hookOutput{event, "deny", reason}})
+	if err != nil {
+		return nil, false, err
+	}
+	return reply, true, nil
+}
+
 // TranscriptGlobs implements adapter.Adapter. Claude Code keeps a session's
 // transcript at <config>/projects/<encoded cwd>/<session-id>.jsonl, where
 // <config> is $CLAUDE_CONFIG_DIR when set and $HOME/.claude otherwise. Helper

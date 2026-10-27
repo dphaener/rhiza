@@ -31,6 +31,9 @@ func (interviewAdapter) Command(adapter.Launch) ([]string, error) {
 func (interviewAdapter) HookStatus(string, []byte) (adapter.HookReport, bool, error) {
 	return adapter.HookReport{}, false, nil
 }
+func (interviewAdapter) AskReply(string, []byte, string) ([]byte, bool, error) {
+	return nil, false, nil
+}
 func (interviewAdapter) TranscriptGlobs(sid string, getenv func(string) string) []string {
 	if getenv("HOME") == "" {
 		return nil
