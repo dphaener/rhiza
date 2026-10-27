@@ -7537,11 +7537,15 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "raw": {
-            "description": "The raw material's file, hashed with sha256; its content and path are not stored. Give this or --raw-sha256",
+            "description": "The raw material's file, hashed with sha256; its content and path are not stored. Give one of --raw, --raw-sha256 and --raw-session",
+            "type": "string"
+          },
+          "raw_session": {
+            "description": "A Rhiza session (full ID or unique prefix) whose agent transcript is the raw material, hashed with sha256 and named in a session field; its content and path are not stored. Give one of --raw, --raw-sha256 and --raw-session",
             "type": "string"
           },
           "raw_sha256": {
-            "description": "The raw material's sha256, 64 lower-case hex characters. Give this or --raw",
+            "description": "The raw material's sha256, 64 lower-case hex characters. Give one of --raw, --raw-sha256 and --raw-session",
             "type": "string"
           }
         },
