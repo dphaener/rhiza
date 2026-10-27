@@ -379,6 +379,103 @@ func TestShipChangeBuiltin(t *testing.T) {
 	}
 }
 
+// The built-in plan workflow: an interview driven by the rhiza-plan skill,
+// then review rounds (a fresh reviewer told only the change set, a critic,
+// rhiza run review-check, a reviser on a failed check), then the gate.
+func TestPlanBuiltin(t *testing.T) {
+	if !slices.Contains(BuiltinNames(), "plan") {
+		t.Fatalf("BuiltinNames = %v; want it to list plan", BuiltinNames())
+	}
+	data, ok := Builtin("plan")
+	if !ok {
+		t.Fatal("no plan built-in")
+	}
+	def, err := Parse("plan", data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if def.Name != "plan" || def.Start != "interview" {
+		t.Errorf("name %q, start %q; want plan, interview", def.Name, def.Start)
+	}
+	want := []string{"interview", "review", "critic", "check", "revise", "gate"}
+	if !slices.Equal(def.Order, want) {
+		t.Fatalf("steps = %v; want %v", def.Order, want)
+	}
+
+	interview := def.Steps["interview"]
+	if interview.Kind != KindAgent || !interview.WaitsForDone() || interview.Until == "" {
+		t.Errorf("interview = %+v; want an agent step that waits for done", interview)
+	}
+	for _, w := range []string{"rhiza-plan", "{change}", "rhiza guide plan", "rhiza session done"} {
+		if !strings.Contains(interview.Prompt, w) {
+			t.Errorf("interview prompt lacks %q: %q", w, interview.Prompt)
+		}
+	}
+
+	roles := map[string]string{"review": "reviewer", "critic": "critic", "revise": "reviser"}
+	for name, role := range roles {
+		s := def.Steps[name]
+		if s.Kind != KindAgent || !s.WaitsForDone() || s.Until == "" {
+			t.Errorf("%s = %+v; want an agent step that waits for done", name, s)
+		}
+		var ph []string
+		for _, m := range placeholderPattern.FindAllStringSubmatch(s.Prompt, -1) {
+			ph = append(ph, m[1])
+		}
+		if !slices.Equal(ph, []string{"change"}) {
+			t.Errorf("%s prompt placeholders = %v; want only {change}: %q", name, ph, s.Prompt)
+		}
+		for _, w := range []string{"rhiza guide plan-review", role, "rhiza session done"} {
+			if !strings.Contains(s.Prompt, w) {
+				t.Errorf("%s prompt lacks %q: %q", name, w, s.Prompt)
+			}
+		}
+		for _, bad := range []string{"plan file", "rhiza-plan", ".md"} {
+			if strings.Contains(s.Prompt, bad) {
+				t.Errorf("%s prompt names %q: %q", name, bad, s.Prompt)
+			}
+		}
+	}
+
+	check := def.Steps["check"]
+	if check.Kind != KindCommand || check.Run != "rhiza run review-check" {
+		t.Errorf("check = %+v; want command rhiza run review-check", check)
+	}
+	gate := def.Steps["gate"]
+	if gate.Kind != KindCommand || gate.Run != "rhiza run gate" {
+		t.Errorf("gate = %+v; want command rhiza run gate", gate)
+	}
+
+	trans := []struct {
+		step, outcome, next string
+		end                 End
+	}{
+		{"interview", OutcomePass, "review", EndNone},
+		{"interview", OutcomeFail, "", EndFailed},
+		{"review", OutcomePass, "critic", EndNone},
+		{"critic", OutcomePass, "check", EndNone},
+		{"check", OutcomePass, "gate", EndNone},
+		{"check", OutcomeFail, "revise", EndNone},
+		{"revise", OutcomePass, "review", EndNone},
+		{"revise", OutcomeFail, "", EndFailed},
+		{"gate", OutcomePass, "", EndSucceeded},
+		{"gate", OutcomeFail, "", EndFailed},
+	}
+	for _, tt := range trans {
+		next, end := def.Next(tt.step, tt.outcome)
+		if next != tt.next || end != tt.end {
+			t.Errorf("Next(%q, %q) = (%q, %v); want (%q, %v)", tt.step, tt.outcome, next, end, tt.next, tt.end)
+		}
+	}
+
+	caps := map[string]int{"interview": 1, "review": 3, "critic": 3, "check": 3, "revise": 2, "gate": 1}
+	for name, c := range caps {
+		if got := def.Steps[name].Cap(); got != c {
+			t.Errorf("%s cap = %d; want %d", name, got, c)
+		}
+	}
+}
+
 // An agent step may have until; its interval then defaults to
 // AgentUntilInterval, and a set interval still wins.
 func TestAgentStepUntil(t *testing.T) {

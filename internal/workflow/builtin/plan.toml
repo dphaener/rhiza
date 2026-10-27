@@ -1,0 +1,50 @@
+name = "plan"
+
+# The interview plans the change set with the owner, straight into the
+# model: the plan is the model, so no step writes or reads a plan file.
+[step.interview]
+kind = "agent"
+prompt = "/rhiza-plan Plan change set {change} ({title}) with the owner, straight into the model, following the rhiza-plan skill (`rhiza guide plan`). Your very last action, once the plan is written, is to run `rhiza session done`: this run moves on to a fresh review only then, never because you sit idle."
+until = "true"
+until_when = "done"
+on.pass = "review"
+
+# Each review round: a fresh reviewer told only the change set's ID, a
+# critic who confirms or drops its findings, then review-check. A failed
+# check goes to the reviser and back to a fresh review.
+[step.review]
+kind = "agent"
+prompt = "Review the plan of change set {change} as the reviewer: follow `rhiza guide plan-review`, then run `rhiza session done`."
+until = "true"
+until_when = "done"
+max_visits = 3
+on.pass = "critic"
+
+[step.critic]
+kind = "agent"
+prompt = "Judge the latest review round of the plan of change set {change} as the critic: follow `rhiza guide plan-review`, then run `rhiza session done`."
+until = "true"
+until_when = "done"
+max_visits = 3
+on.pass = "check"
+
+[step.check]
+kind = "command"
+run = "rhiza run review-check"
+max_visits = 3
+on.pass = "gate"
+on.fail = "revise"
+
+[step.revise]
+kind = "agent"
+prompt = "Fix the confirmed findings of the latest review round of the plan of change set {change} as the reviser: follow `rhiza guide plan-review`, then run `rhiza session done`."
+until = "true"
+until_when = "done"
+max_visits = 2
+on.pass = "review"
+
+# The gate proposes the plan's draft change sets: the owner accepts them,
+# or, in an autonomous run, the gate does once the review passed.
+[step.gate]
+kind = "command"
+run = "rhiza run gate"
