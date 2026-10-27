@@ -476,6 +476,83 @@ func TestPlanBuiltin(t *testing.T) {
 	}
 }
 
+// The built-in build workflow: a leaves step (builder models sonnet,
+// opus, opus; verifier opus; split auto) whose prompts follow rhiza guide
+// build, then rhiza run build-check, ending done with no land step.
+func TestBuildBuiltin(t *testing.T) {
+	if !slices.Contains(BuiltinNames(), "build") {
+		t.Fatalf("BuiltinNames = %v; want it to list build", BuiltinNames())
+	}
+	data, ok := Builtin("build")
+	if !ok {
+		t.Fatal("no build built-in")
+	}
+	def, err := Parse("build", data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if def.Name != "build" || def.Start != "build" {
+		t.Errorf("name %q, start %q; want build, build", def.Name, def.Start)
+	}
+	if want := []string{"build", "check"}; !slices.Equal(def.Order, want) {
+		t.Fatalf("steps = %v; want %v", def.Order, want)
+	}
+	build := def.Steps["build"]
+	if build.Kind != KindLeaves || build.Split != SplitAuto || build.Builder == nil || build.Verifier == nil {
+		t.Fatalf("build = %+v; want a leaves step with split auto and both roles", build)
+	}
+	if want := []string{"sonnet", "opus", "opus"}; !slices.Equal(build.Builder.Models, want) {
+		t.Errorf("builder models = %v; want %v", build.Builder.Models, want)
+	}
+	if want := []string{"opus"}; !slices.Equal(build.Verifier.Models, want) {
+		t.Errorf("verifier models = %v; want %v", build.Verifier.Models, want)
+	}
+	for role, r := range map[string]*Role{"builder": build.Builder, "verifier": build.Verifier} {
+		for _, w := range []string{"rhiza guide build", "{leaf}", "{change}", role, "rhiza session done"} {
+			if !strings.Contains(r.Prompt, w) {
+				t.Errorf("%s prompt lacks %q: %q", role, w, r.Prompt)
+			}
+		}
+		if strings.Contains(strings.ToLower(r.Prompt), "claude") {
+			t.Errorf("%s prompt names an agent product: %q", role, r.Prompt)
+		}
+	}
+	for _, w := range []string{"{attempt}", "Leaf: {leaf}"} {
+		if !strings.Contains(build.Builder.Prompt, w) {
+			t.Errorf("builder prompt lacks %q", w)
+		}
+	}
+	for _, w := range []string{"$RHIZA_COMMIT", "rhiza run findings --leaf {leaf}", "Never edit code"} {
+		if !strings.Contains(build.Verifier.Prompt, w) {
+			t.Errorf("verifier prompt lacks %q", w)
+		}
+	}
+	check := def.Steps["check"]
+	if check.Kind != KindCommand || check.Run != "rhiza run build-check" {
+		t.Errorf("check = %+v; want command rhiza run build-check", check)
+	}
+	for _, s := range def.Steps {
+		if strings.Contains(s.Run, "land") {
+			t.Errorf("step %s lands: %q", s.Name, s.Run)
+		}
+	}
+	trans := []struct {
+		step, outcome, next string
+		end                 End
+	}{
+		{"build", OutcomePass, "check", EndNone},
+		{"build", OutcomeFail, "", EndFailed},
+		{"check", OutcomePass, "", EndSucceeded},
+		{"check", OutcomeFail, "", EndFailed},
+	}
+	for _, tt := range trans {
+		next, end := def.Next(tt.step, tt.outcome)
+		if next != tt.next || end != tt.end {
+			t.Errorf("Next(%q, %q) = (%q, %v); want (%q, %v)", tt.step, tt.outcome, next, end, tt.next, tt.end)
+		}
+	}
+}
+
 // An agent step may have until; its interval then defaults to
 // AgentUntilInterval, and a set interval still wins.
 func TestAgentStepUntil(t *testing.T) {
