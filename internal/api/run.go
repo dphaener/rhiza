@@ -139,7 +139,7 @@ type RunInfo struct {
 	Questions  []RunQuestion   `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
 	Rounds     []RunRound      `json:"rounds,omitempty" desc:"The plan review rounds journalled by run findings and run verdict, in order; absent when there were none"`
 	Waiting    []RunWaiting    `json:"waiting,omitempty" desc:"The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does"`
-	Leaves     []RunLeaf       `json:"leaves,omitempty" desc:"The leaves its leaves steps conducted, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none"`
+	Leaves     []RunLeaf       `json:"leaves,omitempty" desc:"The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none"`
 	Checks     []RunCheck      `json:"checks,omitempty" desc:"The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none"`
 }
 
@@ -183,13 +183,13 @@ type RunCheckSession struct {
 
 // RunLeaf is one leaf a leaves step conducted.
 type RunLeaf struct {
-	Step           string           `json:"step" desc:"The leaves step"`
+	Step           string           `json:"step" desc:"The leaves step, or the checks step whose fixer fixed it"`
 	Leaf           string           `json:"leaf" desc:"The leaf capability's ID"`
 	Handle         string           `json:"handle" desc:"The leaf capability's handle"`
 	Sessions       []RunLeafSession `json:"sessions" desc:"The leaf's sessions, in the order they started"`
 	Attempts       []RunLeafAttempt `json:"attempts" desc:"The judgements of its sessions' work, in order"`
 	Findings       []RunLeafFinding `json:"findings,omitempty" desc:"The findings its verifiers journalled with run findings --leaf, in order; absent when there were none"`
-	Outcome        string           `json:"outcome,omitempty" desc:"passed, failed or skipped; empty while the leaf is open"`
+	Outcome        string           `json:"outcome,omitempty" desc:"passed, failed or skipped; empty while the leaf is open, and always on a checks step"`
 	Question       string           `json:"question,omitempty" desc:"The question node a failed leaf raised, by ID, if any"`
 	QuestionHandle string           `json:"question_handle,omitempty" desc:"That question node's handle"`
 	Round          int              `json:"round" desc:"The leaf's current round of attempts, from 1"`
@@ -210,20 +210,20 @@ type RunLeafRound struct {
 
 // RunLeafSession is one session a leaves step started on a leaf.
 type RunLeafSession struct {
-	Role    string `json:"role" desc:"builder or verifier"`
-	Attempt int    `json:"attempt" desc:"The leaf's attempt it works on, from 1"`
+	Role    string `json:"role" desc:"builder or verifier; on a checks step fixer or verifier"`
+	Attempt int    `json:"attempt" desc:"The leaf's attempt it works on, from 1; on a checks step, the review cycle"`
 	Session string `json:"session" desc:"The session's ID"`
 	Model   string `json:"model,omitempty" desc:"The model it runs; empty for the agent's default"`
-	Commit  string `json:"commit,omitempty" desc:"A builder's: the worktree's HEAD when it started; a verifier's: the commit it checks"`
+	Commit  string `json:"commit,omitempty" desc:"A builder's or fixer's: the worktree's HEAD when it started; a verifier's: the commit it checks"`
 	At      string `json:"at" desc:"When it started, RFC 3339 UTC"`
 }
 
 // RunLeafAttempt is one judgement of a leaf session's work.
 type RunLeafAttempt struct {
-	Role    string `json:"role" desc:"builder or verifier"`
-	Attempt int    `json:"attempt" desc:"The leaf's attempt, from 1"`
+	Role    string `json:"role" desc:"builder or verifier; on a checks step fixer or verifier"`
+	Attempt int    `json:"attempt" desc:"The leaf's attempt, from 1; on a checks step, the review cycle"`
 	Outcome string `json:"outcome" desc:"pass or fail"`
-	Commit  string `json:"commit,omitempty" desc:"A passed builder's commit naming its leaf; a passed verifier's Evidence commit"`
+	Commit  string `json:"commit,omitempty" desc:"A passed builder's or fixer's commit naming its leaf; a passed verifier's Evidence commit"`
 	Detail  string `json:"detail,omitempty" desc:"Why: the session's exit, that its agent said done, or that a builder left no commit naming its leaf"`
 	At      string `json:"at" desc:"When it was judged, RFC 3339 UTC"`
 }

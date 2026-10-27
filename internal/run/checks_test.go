@@ -388,7 +388,7 @@ func TestNextCheckActions(t *testing.T) {
 			[]string{"5::0:fail"}},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			got := kinds(nextCheckActions(step, tt.cycles, tt.states))
+			got := kinds(nextCheckActions(step, tt.cycles, tt.states, nil, nil))
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("actions = %v, want %v", got, tt.want)
 			}

@@ -74,6 +74,11 @@ const (
 	checkEnd
 	// checksDone ends the step with outcome and detail.
 	checksDone
+	// fixStart launches the fix phase's session fix names: a leaf's fixer
+	// or its verifier, on the cycle.
+	fixStart
+	// fixPoll polls the fix phase's live session fix names.
+	fixPoll
 )
 
 // checkAction is one move of the checks conductor, decided from the
@@ -87,6 +92,9 @@ type checkAction struct {
 	session string
 	outcome string
 	detail  string
+	// fix is a fixStart's or fixPoll's leaf session: role fixer or
+	// verifier, its attempt the cycle.
+	fix leafAction
 }
 
 // nextCheckActions is the pure decision of a checks step: from its
@@ -104,7 +112,15 @@ type checkAction struct {
 // check of the cycle has an outcome the next cycle begins over the failed
 // ones; with none failed the step passes, and with no cycle left it
 // fails.
-func nextCheckActions(step workflow.Step, cycles []CheckCycle, states map[string]CheckState) []checkAction {
+//
+// A cycle past the first opens with its fix phase (fixActions), before
+// any of its checks starts: the confirmed findings of its checks that
+// name a leaf (fixFindings) go to that leaf's fixer, then its verifier,
+// leaves being the change set's in leaf order and fixes the step's
+// folded leaf sessions by leaf ID. A fix phase that fails ends each check
+// of the cycle failed ("cycle N: fix failed: ...") without a session, so
+// the cycle is spent: the next one, if any is left, tries the fix again.
+func nextCheckActions(step workflow.Step, cycles []CheckCycle, states map[string]CheckState, leaves []Leaf, fixes map[string]LeafState) []checkAction {
 	if len(cycles) == 0 {
 		var all []string
 		for _, c := range step.Checks {
@@ -113,6 +129,23 @@ func nextCheckActions(step workflow.Step, cycles []CheckCycle, states map[string
 		return []checkAction{{kind: checkCycle, cycle: 1, checks: all}}
 	}
 	cur := cycles[len(cycles)-1]
+	if cur.Cycle > 1 {
+		acts, failure := fixActions(cur.Cycle, leaves, fixFindings(cur.Cycle, cur.Checks, states), fixes)
+		if len(acts) > 0 {
+			return acts
+		}
+		if failure != "" {
+			for _, name := range cur.Checks {
+				if _, ok := states[name].Outcome(cur.Cycle); !ok {
+					acts = append(acts, checkAction{kind: checkEnd, check: name, cycle: cur.Cycle, outcome: CheckFailed,
+						detail: fmt.Sprintf("cycle %d: fix failed: %s", cur.Cycle, failure)})
+				}
+			}
+			if len(acts) > 0 {
+				return acts
+			}
+		}
+	}
 	var starts, rest []checkAction
 	var failed, critics []string
 	allJudged := true
@@ -178,6 +211,110 @@ func nextCheckActions(step workflow.Step, cycles []CheckCycle, states map[string
 	}
 	return []checkAction{{kind: checksDone, outcome: workflow.OutcomeFail,
 		detail: fmt.Sprintf("%d of %d checks passed after %d cycles; failed: %s", passed, len(step.Checks), cur.Cycle, strings.Join(lost, ", "))}}
+}
+
+// fixFindings are the findings cycle's fix phase fixes, by leaf ID: for
+// each of checks (those the cycle runs, each failed the cycle before), in
+// order, the standing blocker and major findings that name a leaf, of the
+// round of the last earlier cycle the check's session ran in, provided
+// its critic was judged pass there, so they are confirmed (R8). Each
+// carries its check's name. A cycle a failed fix spent ran no session, so
+// the next one fixes the same findings again; a check whose session or
+// critic failed has none to fix and only runs again. Findings that name
+// no leaf are not a leaf fixer's: the change set's fixer takes them.
+func fixFindings(cycle int, checks []string, states map[string]CheckState) map[string][]Finding {
+	out := map[string][]Finding{}
+	for _, name := range checks {
+		c := states[name]
+		last := 0
+		for _, s := range c.Sessions {
+			if s.Role == workflow.RoleCheck && s.Cycle < cycle {
+				last = max(last, s.Cycle)
+			}
+		}
+		if j, ok := c.Judgement(workflow.RoleCritic, last); !ok || j.Outcome != workflow.OutcomePass {
+			continue
+		}
+		r, ok := c.RoundFor(last)
+		if !ok {
+			continue
+		}
+		for _, f := range r.Standing() {
+			if f.Leaf == "" {
+				continue
+			}
+			f.Check = name
+			out[f.Leaf] = append(out[f.Leaf], f)
+		}
+	}
+	return out
+}
+
+// fixActions is the pure decision of cycle's fix phase, from the change
+// set's leaves in leaf order, the findings to fix by leaf ID, and the
+// step's folded leaf sessions by leaf ID: each leaf with findings gets a
+// fixer, then, on the commit the fixer's judgement found, a verifier, both
+// on attempt cycle. Fixers run one at a time, in leaf order, as they
+// share the run's worktree; a fixed leaf's verifier runs alongside the
+// next fixer. The moves list each start before any poll. failure says
+// why the phase failed, once a fixer or verifier was judged fail: then
+// nothing more starts, and the phase is over once its live sessions are
+// judged. No moves and no failure: the phase is done, or had nothing to
+// fix.
+func fixActions(cycle int, leaves []Leaf, found map[string][]Finding, fixes map[string]LeafState) (acts []checkAction, failure string) {
+	var starts, polls []checkAction
+	fixerFree := true
+	fail := func(lf Leaf, role, detail string) {
+		if failure == "" {
+			failure = fmt.Sprintf("leaf %s: %s failed: %s", lf.Handle, role, detail)
+		}
+	}
+	for _, lf := range leaves {
+		fs := found[lf.ID]
+		if len(fs) == 0 {
+			continue
+		}
+		l := fixes[lf.ID]
+		s, started := l.Session(workflow.RoleFixer, cycle)
+		if !started {
+			if fixerFree && failure == "" {
+				starts = append(starts, checkAction{kind: fixStart, cycle: cycle,
+					fix: leafAction{kind: leafStart, leaf: lf, role: workflow.RoleFixer, attempt: cycle, findings: fs}})
+			}
+			fixerFree = false
+			continue
+		}
+		j, judged := l.Judged(workflow.RoleFixer, cycle)
+		if !judged {
+			polls = append(polls, checkAction{kind: fixPoll, cycle: cycle,
+				fix: leafAction{kind: leafPoll, leaf: lf, role: workflow.RoleFixer, attempt: cycle, session: s.Session}})
+			fixerFree = false
+			continue
+		}
+		if j.Outcome != workflow.OutcomePass {
+			fail(lf, workflow.RoleFixer, j.Detail)
+			continue
+		}
+		v, started := l.Session(workflow.RoleVerifier, cycle)
+		if !started {
+			starts = append(starts, checkAction{kind: fixStart, cycle: cycle,
+				fix: leafAction{kind: leafStart, leaf: lf, role: workflow.RoleVerifier, attempt: cycle, commit: j.Commit}})
+			continue
+		}
+		vj, judged := l.Judged(workflow.RoleVerifier, cycle)
+		if !judged {
+			polls = append(polls, checkAction{kind: fixPoll, cycle: cycle,
+				fix: leafAction{kind: leafPoll, leaf: lf, role: workflow.RoleVerifier, attempt: cycle, session: v.Session}})
+			continue
+		}
+		if vj.Outcome != workflow.OutcomePass {
+			fail(lf, workflow.RoleVerifier, vj.Detail)
+		}
+	}
+	if failure != "" {
+		starts = nil
+	}
+	return append(starts, polls...), failure
 }
 
 // needsCritic says whether the check's session of cycle passed having
@@ -281,6 +418,7 @@ func (r *running) checks(step workflow.Step, env []string) (result, error) {
 		return errResult(fmt.Errorf("step %q is a checks step, and this runner cannot run checks", step.Name)), nil
 	}
 	r.removeCheckCheckouts(cr, step, false)
+	r.removeEndedCheckouts(cr, step)
 	res, err := r.conductChecks(cr, step, env)
 	if err != nil {
 		return res, err
@@ -288,7 +426,11 @@ func (r *running) checks(step workflow.Step, env []string) (result, error) {
 	if err := r.closeEndedCheckPanes(cr, step); err != nil {
 		return result{}, err
 	}
+	if err := r.closeEndedPanes(cr, step); err != nil {
+		return result{}, err
+	}
 	r.removeCheckCheckouts(cr, step, true)
+	r.removeExitedCheckouts(cr, step)
 	return res, nil
 }
 
@@ -349,9 +491,18 @@ func (r *running) conductChecks(cr CheckRunner, step workflow.Step, env []string
 	if interval <= 0 {
 		interval = workflow.DefaultInterval
 	}
+	var leaves []Leaf
 	for {
+		cycles, states := r.stepCycles(step.Name), r.checkStates(step.Name)
+		if leaves == nil && needsLeaves(cycles, states) {
+			l, err := cr.Leaves(r.j.State().Change)
+			if err != nil {
+				return errResult(fmt.Errorf("read the change set's leaves for its fixers: %v", err)), nil
+			}
+			leaves = l
+		}
 		progressed := false
-		for _, a := range nextCheckActions(step, r.stepCycles(step.Name), r.checkStates(step.Name)) {
+		for _, a := range nextCheckActions(step, cycles, states, leaves, r.leafStates(step.Name)) {
 			switch a.kind {
 			case checksDone:
 				return result{outcome: a.outcome, detail: a.detail}, nil
@@ -378,12 +529,34 @@ func (r *running) conductChecks(cr CheckRunner, step workflow.Step, env []string
 					return res, err
 				}
 				progressed = progressed || judged
+			case fixStart:
+				if res, failed, err := r.startLeaf(cr, step, env, a.fix); err != nil || failed {
+					return res, err
+				}
+				progressed = true
+			case fixPoll:
+				judged, res, ended, err := r.pollLeaf(cr, step, a.fix)
+				if err != nil || ended {
+					return res, err
+				}
+				progressed = progressed || judged
 			}
 		}
 		if !progressed {
 			r.clock().Sleep(interval)
 		}
 	}
+}
+
+// needsLeaves says whether the latest of a checks step's cycles has
+// findings for leaf fixers, so the conductor needs the change set's
+// leaves: read only then, as a review without them never needs them.
+func needsLeaves(cycles []CheckCycle, states map[string]CheckState) bool {
+	if len(cycles) == 0 {
+		return false
+	}
+	cur := cycles[len(cycles)-1]
+	return cur.Cycle > 1 && len(fixFindings(cur.Cycle, cur.Checks, states)) > 0
 }
 
 // startCheck launches a's session, on the check's model for the cycle, in
@@ -411,7 +584,7 @@ func (r *running) startCheck(cr CheckRunner, step workflow.Step, env []string, a
 		Step: step, Role: a.role, Check: check, Cycle: a.cycle, Model: model, Dir: dir,
 		Env: append(append([]string{}, env...),
 			EnvCheck+"="+a.check, EnvCycle+"="+strconv.Itoa(a.cycle), EnvRole+"="+a.role),
-		Anchor: checkPane(r.checkStates(step.Name)),
+		Anchor: stepPane(r.checkStates(step.Name), r.leafStates(step.Name)),
 	}
 	s, err := cr.StartCheck(spec)
 	if err != nil {
@@ -532,6 +705,24 @@ func checkPane(states map[string]CheckState) string {
 		return open[n-1].s.Session
 	}
 	return ""
+}
+
+// stepPane is the pure choice of where a checks step's new session's
+// pane opens, a check's or a fixer's or verifier's alike: the most recent
+// open pane of the step's check sessions (checkPane) and its leaf
+// sessions, or "" for a new tab when none is open.
+func stepPane(states map[string]CheckState, fixes map[string]LeafState) string {
+	anchor, seq := "", -1
+	if open := openCheckPanes(states); len(open) > 0 {
+		p := open[len(open)-1]
+		anchor, seq = p.s.Session, p.s.Seq
+	}
+	if open := openPanes(fixes); len(open) > 0 {
+		if p := open[len(open)-1]; p.s.Seq > seq {
+			anchor = p.s.Session
+		}
+	}
+	return anchor
 }
 
 // closeEndedCheckPanes closes the pane of every judged check session of

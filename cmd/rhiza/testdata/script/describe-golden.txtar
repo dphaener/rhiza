@@ -3351,7 +3351,7 @@ cmp stdout describe.golden.json
                 "type": "string"
               },
               "leaves": {
-                "description": "The leaves its leaves steps conducted, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
+                "description": "The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
                 "items": {
                   "additionalProperties": false,
                   "properties": {
@@ -3365,11 +3365,11 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "attempt": {
-                            "description": "The leaf's attempt, from 1",
+                            "description": "The leaf's attempt, from 1; on a checks step, the review cycle",
                             "type": "integer"
                           },
                           "commit": {
-                            "description": "A passed builder's commit naming its leaf; a passed verifier's Evidence commit",
+                            "description": "A passed builder's or fixer's commit naming its leaf; a passed verifier's Evidence commit",
                             "type": "string"
                           },
                           "detail": {
@@ -3381,7 +3381,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "role": {
-                            "description": "builder or verifier",
+                            "description": "builder or verifier; on a checks step fixer or verifier",
                             "type": "string"
                           }
                         },
@@ -3444,7 +3444,7 @@ cmp stdout describe.golden.json
                       "type": "string"
                     },
                     "outcome": {
-                      "description": "passed, failed or skipped; empty while the leaf is open",
+                      "description": "passed, failed or skipped; empty while the leaf is open, and always on a checks step",
                       "type": "string"
                     },
                     "question": {
@@ -3510,11 +3510,11 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "attempt": {
-                            "description": "The leaf's attempt it works on, from 1",
+                            "description": "The leaf's attempt it works on, from 1; on a checks step, the review cycle",
                             "type": "integer"
                           },
                           "commit": {
-                            "description": "A builder's: the worktree's HEAD when it started; a verifier's: the commit it checks",
+                            "description": "A builder's or fixer's: the worktree's HEAD when it started; a verifier's: the commit it checks",
                             "type": "string"
                           },
                           "model": {
@@ -3522,7 +3522,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "role": {
-                            "description": "builder or verifier",
+                            "description": "builder or verifier; on a checks step fixer or verifier",
                             "type": "string"
                           },
                           "session": {
@@ -3541,7 +3541,7 @@ cmp stdout describe.golden.json
                       "type": "array"
                     },
                     "step": {
-                      "description": "The leaves step",
+                      "description": "The leaves step, or the checks step whose fixer fixed it",
                       "type": "string"
                     }
                   },
@@ -4603,7 +4603,7 @@ cmp stdout describe.golden.json
                 "type": "string"
               },
               "leaves": {
-                "description": "The leaves its leaves steps conducted, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
+                "description": "The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
                 "items": {
                   "additionalProperties": false,
                   "properties": {
@@ -4617,11 +4617,11 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "attempt": {
-                            "description": "The leaf's attempt, from 1",
+                            "description": "The leaf's attempt, from 1; on a checks step, the review cycle",
                             "type": "integer"
                           },
                           "commit": {
-                            "description": "A passed builder's commit naming its leaf; a passed verifier's Evidence commit",
+                            "description": "A passed builder's or fixer's commit naming its leaf; a passed verifier's Evidence commit",
                             "type": "string"
                           },
                           "detail": {
@@ -4633,7 +4633,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "role": {
-                            "description": "builder or verifier",
+                            "description": "builder or verifier; on a checks step fixer or verifier",
                             "type": "string"
                           }
                         },
@@ -4696,7 +4696,7 @@ cmp stdout describe.golden.json
                       "type": "string"
                     },
                     "outcome": {
-                      "description": "passed, failed or skipped; empty while the leaf is open",
+                      "description": "passed, failed or skipped; empty while the leaf is open, and always on a checks step",
                       "type": "string"
                     },
                     "question": {
@@ -4762,11 +4762,11 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "attempt": {
-                            "description": "The leaf's attempt it works on, from 1",
+                            "description": "The leaf's attempt it works on, from 1; on a checks step, the review cycle",
                             "type": "integer"
                           },
                           "commit": {
-                            "description": "A builder's: the worktree's HEAD when it started; a verifier's: the commit it checks",
+                            "description": "A builder's or fixer's: the worktree's HEAD when it started; a verifier's: the commit it checks",
                             "type": "string"
                           },
                           "model": {
@@ -4774,7 +4774,7 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "role": {
-                            "description": "builder or verifier",
+                            "description": "builder or verifier; on a checks step fixer or verifier",
                             "type": "string"
                           },
                           "session": {
@@ -4793,7 +4793,7 @@ cmp stdout describe.golden.json
                       "type": "array"
                     },
                     "step": {
-                      "description": "The leaves step",
+                      "description": "The leaves step, or the checks step whose fixer fixed it",
                       "type": "string"
                     }
                   },
@@ -5686,7 +5686,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "leaves": {
-            "description": "The leaves its leaves steps conducted, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
+            "description": "The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -5700,11 +5700,11 @@ cmp stdout describe.golden.json
                         "type": "string"
                       },
                       "attempt": {
-                        "description": "The leaf's attempt, from 1",
+                        "description": "The leaf's attempt, from 1; on a checks step, the review cycle",
                         "type": "integer"
                       },
                       "commit": {
-                        "description": "A passed builder's commit naming its leaf; a passed verifier's Evidence commit",
+                        "description": "A passed builder's or fixer's commit naming its leaf; a passed verifier's Evidence commit",
                         "type": "string"
                       },
                       "detail": {
@@ -5716,7 +5716,7 @@ cmp stdout describe.golden.json
                         "type": "string"
                       },
                       "role": {
-                        "description": "builder or verifier",
+                        "description": "builder or verifier; on a checks step fixer or verifier",
                         "type": "string"
                       }
                     },
@@ -5779,7 +5779,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "outcome": {
-                  "description": "passed, failed or skipped; empty while the leaf is open",
+                  "description": "passed, failed or skipped; empty while the leaf is open, and always on a checks step",
                   "type": "string"
                 },
                 "question": {
@@ -5845,11 +5845,11 @@ cmp stdout describe.golden.json
                         "type": "string"
                       },
                       "attempt": {
-                        "description": "The leaf's attempt it works on, from 1",
+                        "description": "The leaf's attempt it works on, from 1; on a checks step, the review cycle",
                         "type": "integer"
                       },
                       "commit": {
-                        "description": "A builder's: the worktree's HEAD when it started; a verifier's: the commit it checks",
+                        "description": "A builder's or fixer's: the worktree's HEAD when it started; a verifier's: the commit it checks",
                         "type": "string"
                       },
                       "model": {
@@ -5857,7 +5857,7 @@ cmp stdout describe.golden.json
                         "type": "string"
                       },
                       "role": {
-                        "description": "builder or verifier",
+                        "description": "builder or verifier; on a checks step fixer or verifier",
                         "type": "string"
                       },
                       "session": {
@@ -5876,7 +5876,7 @@ cmp stdout describe.golden.json
                   "type": "array"
                 },
                 "step": {
-                  "description": "The leaves step",
+                  "description": "The leaves step, or the checks step whose fixer fixed it",
                   "type": "string"
                 }
               },

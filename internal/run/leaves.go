@@ -95,6 +95,12 @@ type LeafSpec struct {
 	Decision     string
 	Answer       string
 	Anchor       string
+	// Cycle is, on a checks step, the cycle a leaf's fixer or verifier
+	// works in, its Attempt too; 0 on a leaves step. Findings are a
+	// fixer's: the confirmed review findings on its leaf, read from the
+	// journal, each with its check, for its prompt to name.
+	Cycle    int
+	Findings []Finding
 }
 
 // The environment variables a leaf session gets beyond a step's.
@@ -141,6 +147,9 @@ type leafAction struct {
 	commit  string
 	outcome string
 	detail  string
+	// findings are, for a checks step's fixer's start, the confirmed
+	// review findings on its leaf it is to fix.
+	findings []Finding
 }
 
 // nextLeafActions is the pure decision of a leaves step: from the change
@@ -406,8 +415,11 @@ func (r *running) conductLeaves(lr LeafRunner, step workflow.Step, env []string)
 // model comes from the role's ladder at the attempt within the leaf's
 // round, and a fresh round's builder is given the question the leaf's
 // failure raised and the answering Decision, its statement read anew
-// (LeafAnswer), so the journal holds no model text. A
-// builder's with the worktree's HEAD before it started, which its leaf
+// (LeafAnswer), so the journal holds no model text. On a checks step
+// the session is a leaf's fixer or verifier in cycle a.attempt: it gets
+// RHIZA_CYCLE and the cycle, a fixer its findings, and its pane opens
+// where stepPane says. A builder's or fixer's leaf-session is journalled
+// with the worktree's HEAD before it started, which its leaf
 // commit must follow, and a verifier's with the commit it checks and, as
 // Detail, the checkout of it opened for the verifier to work in. A launch
 // that fails ends the step (failed true) with an error outcome, its
@@ -436,8 +448,12 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 			spec.Answer = statement
 		}
 	}
+	if step.Kind == workflow.KindChecks {
+		spec.Cycle, spec.Findings = a.attempt, a.findings
+		spec.Env = append(spec.Env, EnvCycle+"="+strconv.Itoa(a.attempt))
+	}
 	commit := a.commit
-	if a.role == workflow.RoleBuilder {
+	if a.role == workflow.RoleBuilder || a.role == workflow.RoleFixer {
 		head, err := lr.Head()
 		if err != nil {
 			return errResult(fmt.Errorf("leaf %s: read the worktree's HEAD: %v", a.leaf.Handle, err)), true, nil
@@ -452,6 +468,9 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 		spec.Dir = dir
 	}
 	anchor, replaces := leafPane(r.leafStates(step.Name), a)
+	if step.Kind == workflow.KindChecks {
+		anchor, replaces = stepPane(r.checkStates(step.Name), r.leafStates(step.Name)), ""
+	}
 	spec.Anchor = anchor
 	s, err := lr.StartLeaf(spec)
 	if err != nil {
@@ -478,8 +497,8 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 // pollLeaf polls a's session once. When it has exited or its agent said
 // done, it journals the attempt's judgement (judged true), removes a
 // verifier's checkout whatever the judgement, and reports the session's
-// end to the Runner. A builder judged pass passes only with a
-// new commit since its start naming its leaf (LeafCommit), journalled on
+// end to the Runner. A builder (or a checks step's fixer) judged pass
+// passes only with a new commit since its start naming its leaf (LeafCommit), journalled on
 // the attempt; without one its attempt fails with LeafCommit's detail. A
 // verifier judged pass passes only as judgeVerifier finds, its Evidence
 // commit journalled on the attempt. A live session's block is journalled and
@@ -510,7 +529,7 @@ func (r *running) pollLeaf(lr LeafRunner, step workflow.Step, a leafAction) (jud
 				return false, result{}, false, err
 			}
 		}
-		if a.role == workflow.RoleBuilder && outcome == workflow.OutcomePass {
+		if (a.role == workflow.RoleBuilder || a.role == workflow.RoleFixer) && outcome == workflow.OutcomePass {
 			s, _ := r.leafStates(step.Name)[a.leaf.ID].Session(a.role, a.attempt)
 			c, why, err := lr.LeafCommit(a.leaf, s.Commit)
 			switch {

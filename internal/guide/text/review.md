@@ -1,9 +1,10 @@
 # Review
 
-A review run checks a built change set. Each session gets `RHIZA_CHANGE`, `RHIZA_CHECK`,
-`RHIZA_CYCLE` and `RHIZA_ROLE` (check, critic, fixer or verifier); a leaf fixer also
-`RHIZA_LEAF`. Start with `rhiza slice --change "$RHIZA_CHANGE" --json`. Checks and critics
-work in a throwaway checkout at the branch head; their rhiza writes reach the run's log.
+A review run checks a built change set. Each session gets `RHIZA_CHANGE`, `RHIZA_CYCLE`
+and `RHIZA_ROLE` (check, critic, fixer or verifier); checks and critics also `RHIZA_CHECK`,
+a leaf's fixer and verifier `RHIZA_LEAF`. Start with
+`rhiza slice --change "$RHIZA_CHANGE" --json`. Checks and critics work in a
+throwaway checkout at the branch head; their rhiza writes reach the run's log.
 Review the diff from the merge-base with the default branch
 (`git diff $(git merge-base origin/main HEAD)`). Each role ends with `rhiza session done`.
 
@@ -52,10 +53,10 @@ is written for them.
 
 ## Fixer
 
-Fix the confirmed findings, nothing else, in one new commit with the `Change:` and
-`Actor:` trailers plus `Leaf: <leaf>` for a leaf fixer, or `Review: <run>` ($RHIZA_RUN) for
-the change set's fixer. Never rewrite earlier commits. A verifier re-run follows
-`rhiza guide build`.
+Your prompt names the confirmed findings to fix. Fix them, nothing else, in one new
+commit with the `Change:` and `Actor:` trailers plus `Leaf: <leaf>` for a leaf fixer, or
+`Review: <run>` ($RHIZA_RUN) for the change set's fixer. Never rewrite earlier commits.
+A verifier re-run follows `rhiza guide build`.
 
 ## Outside work
 

@@ -74,7 +74,9 @@ func (r *stepRunner) Leaves(ref string) ([]run.Leaf, error) {
 // with {leaf} and {attempt} too. The session record carries the leaf's
 // handle, the attempt, the role and a verifier's commit, which its agent
 // gets as RHIZA_LEAF, RHIZA_ATTEMPT, RHIZA_ROLE and RHIZA_COMMIT, and the
-// model spec names. A spec with a Dir (a verifier's checkout) runs its
+// model spec names. On a checks step (a leaf's fixer or verifier) it
+// carries the cycle too, its agent's RHIZA_CYCLE; a fixer works in the
+// run's worktree, with the prompt fixerPrompt gives. A spec with a Dir (a verifier's checkout) runs its
 // agent there, with RHIZA_ROOT set to the worktree's Rhiza root so its
 // rhiza writes reach the build worktree's log. Its tab still opens in the
 // worktree: `rhiza session run` writes there too, and the checkout is
@@ -89,7 +91,7 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	}
 	req := agentStepRequest(workflow.Step{Name: spec.Step.Name, Agent: role.Agent, PermissionMode: role.PermissionMode}, r.mode, r.agent)
 	req.Change, req.Run, req.autonomous = r.change, r.run, r.autonomous
-	req.leaf, req.attempt, req.model = spec.Leaf.Handle, spec.Attempt, spec.Model
+	req.leaf, req.attempt, req.model, req.cycle = spec.Leaf.Handle, spec.Attempt, spec.Model, spec.Cycle
 	req.role, req.commit = spec.Role, spec.Commit
 	t, err := resolveChangeWorktree(r.ctx, r.change, "no agent can work on it")
 	if err != nil {
@@ -133,7 +135,15 @@ func (r *stepRunner) ClosePane(sid string) error {
 // builder's (attempt past 1 within its round) ends with a line naming the
 // leaf and the attempt and telling it to read the earlier attempts'
 // findings from the run and add a fix commit for the leaf.
+//
+// A checks step's fixer gets its fixer prompt, rendered with the leaf and
+// the cycle, then a line naming the leaf, the cycle and each finding it
+// is to fix (its check, ID, severity, place and reason) and telling it to
+// add a fix commit with the leaf's trailer.
 func leafPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars) string {
+	if spec.Role == workflow.RoleFixer {
+		return fixerPrompt(role, spec, vars)
+	}
 	p := role.RenderPrompt(workflow.LeafVars{PromptVars: vars, Leaf: spec.Leaf.Handle, Attempt: spec.Attempt})
 	if spec.Role != workflow.RoleBuilder {
 		return p
@@ -162,6 +172,22 @@ func leafPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars)
 		return p
 	}
 	return strings.TrimRight(p, "\n") + "\n\n" + strings.Join(lines, "\n\n")
+}
+
+// fixerPrompt is a leaf fixer's prompt, as leafPrompt describes.
+func fixerPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars) string {
+	p := role.RenderFixerPrompt(workflow.FixerVars{PromptVars: vars, Leaf: spec.Leaf.Handle, Cycle: spec.Cycle})
+	var lines []string
+	for _, f := range spec.Findings {
+		line := fmt.Sprintf("- %s %s (%s", f.Check, f.ID, f.Severity)
+		if f.Place != "" {
+			line += " at " + f.Place
+		}
+		lines = append(lines, line+"): "+oneLine(f.Reason))
+	}
+	return strings.TrimRight(p, "\n") + "\n\n" + fmt.Sprintf("Review cycle %d confirmed these findings on leaf %s:\n\n%s\n\n"+
+		"Fix them, nothing else, in one new commit with the trailer `Leaf: %s`. `rhiza run status --json` has them too.",
+		spec.Cycle, spec.Leaf.Handle, strings.Join(lines, "\n"), spec.Leaf.Handle)
 }
 
 // leafQuestionPrefix starts the handle of every question node a run adds

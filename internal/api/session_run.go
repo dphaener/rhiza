@@ -324,9 +324,14 @@ func launchEnv(rec session.Record) (set, unset []string) {
 	} else {
 		unset = append(unset, envLeaf, envAttempt)
 	}
-	if rec.Check != "" {
+	switch {
+	case rec.Check != "":
 		set = append(set, envCheck+"="+rec.Check, envCycle+"="+strconv.Itoa(rec.Cycle))
-	} else {
+	case rec.Cycle > 0:
+		// A review's leaf fixer or verifier: a cycle, no check.
+		set = append(set, envCycle+"="+strconv.Itoa(rec.Cycle))
+		unset = append(unset, envCheck)
+	default:
 		unset = append(unset, envCheck, envCycle)
 	}
 	if rec.Leaf != "" || rec.Check != "" {
