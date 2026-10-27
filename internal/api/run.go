@@ -1197,7 +1197,7 @@ func (r RunInfo) Human(w io.Writer) {
 		}
 	}
 	if len(r.Questions) > 0 {
-		fmt.Fprintf(w, "\n## Questions the arbiter decided\n\n")
+		fmt.Fprintf(w, "\n## Questions put to the arbiter\n\n")
 		for _, q := range r.Questions {
 			fmt.Fprintf(w, "- %s (%s): %s", q.Handle, q.Question, q.Text)
 			switch {
@@ -1207,7 +1207,7 @@ func (r RunInfo) Human(w io.Writer) {
 					fmt.Fprintf(w, ", not yet delivered")
 				}
 			case q.Outcome != "":
-				fmt.Fprintf(w, " — arbiter failed: %s", q.Outcome)
+				fmt.Fprintf(w, " — not decided: the arbiter's verdict was %s", q.Outcome)
 			default:
 				fmt.Fprintf(w, " — open")
 			}

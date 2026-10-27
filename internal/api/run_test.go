@@ -622,9 +622,9 @@ func TestRunInfoAcceptsAndQuestions(t *testing.T) {
 	out := human(t, info)
 	for _, s := range []string{
 		"## Accepted in the owner's place\n\n- 2026-01-02T03:04:05Z accepted change set C1 (log entry E1)\n",
-		"## Questions the arbiter decided\n\n",
+		"## Questions put to the arbiter\n\n",
 		"- open-q (Q1): Which? — open\n",
-		"- failed-q (Q2): How? — arbiter failed: fail\n",
+		"- failed-q (Q2): How? — not decided: the arbiter's verdict was fail\n",
 		"- answered-q (Q3): Why? — decision use-x\n",
 		"- passed-q (Q4): When? — decision use-y, not yet delivered\n",
 	} {
@@ -633,7 +633,7 @@ func TestRunInfoAcceptsAndQuestions(t *testing.T) {
 		}
 	}
 	plain := human(t, runInfo(run.State{ID: "R2"}, false, nil))
-	if strings.Contains(plain, "owner's place") || strings.Contains(plain, "arbiter decided") {
+	if strings.Contains(plain, "owner's place") || strings.Contains(plain, "put to the arbiter") {
 		t.Errorf("a normal run's markdown:\n%s", plain)
 	}
 }

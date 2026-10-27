@@ -1,7 +1,7 @@
 # rhiza run status on an autonomous run lists what the run did in the
 # owner's place: each accept it made under rule autonomous (change set and
-# log entry) and each question its arbiter decided, with the Decision that
-# answers it. A normal run's status lists neither.
+# log entry) and each question put to its arbiter, with the Decision that
+# answers it or why it is undecided. A normal run's status lists neither.
 #
 # The fakes are arbiter-answer's: one fake claude plays the asking agent
 # and the arbiter, by its prompt. The asking agent first accepts another
@@ -64,7 +64,7 @@ stdout '^1$'
 exec sh -c 'rhiza run status $(cat $WORK/autorun)'
 stdout '^## Accepted in the owner.s place$'
 stdout '^- [0-9T:-]+Z accepted change set [0-9A-Z]{26} \(log entry [0-9A-Z]{26}\)$'
-stdout '^## Questions the arbiter decided$'
+stdout '^## Questions put to the arbiter$'
 stdout '^- question-[0-9a-f]{8}-1 \([0-9A-Z]{26}\): Which colour\? — decision assume-blue$'
 
 # A normal run lists neither.
@@ -76,7 +76,7 @@ exec sh -c 'rhiza run status $(cat $WORK/plainrun) --json'
 ! stdout '"questions"'
 exec sh -c 'rhiza run status $(cat $WORK/plainrun)'
 ! stdout 'owner.s place'
-! stdout 'arbiter decided'
+! stdout 'put to the arbiter'
 
 fold-ok
 
