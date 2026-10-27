@@ -127,6 +127,7 @@ func captureInterview(ctx *Ctx, rec session.Record) (SessionInterviewResponse, e
 	}
 	c, _ := ww.changeSet(cs)
 	m := ww.model(cs)
+	sources := sessionSources(m, c.Ops, rec.ID)
 	var items []applyItem
 	for _, w := range writes {
 		if answerProposed(m, c.Ops, w.add.Handle) {
@@ -137,6 +138,10 @@ func captureInterview(ctx *Ctx, rec session.Record) (SessionInterviewResponse, e
 			Picked: w.answer.Picked, Typed: w.answer.Typed})
 		add := w.add
 		items = append(items, applyItem{op: "add", build: func(b writeBase) (edit, error) { return buildAdd(b, add) }})
+		for _, src := range sources {
+			link := LinkRequest{From: add.Handle, Type: string(op.LinkDerivedFrom), To: src.String()}
+			items = append(items, applyItem{op: "link", build: func(b writeBase) (edit, error) { return buildLink(b, link) }})
+		}
 	}
 	if len(items) == 0 {
 		return resp, nil
@@ -250,6 +255,24 @@ func answerProposed(m Model, ops []op.Op, h string) bool {
 		return true
 	}
 	return slices.ContainsFunc(ops, func(o op.Op) bool { return o.Type == op.TypeNodeCreate && o.Handle == h })
+}
+
+// sessionSources lists the Sources the change set's ops create whose
+// session field names session sid, in op order: those a source add
+// --raw-session of that session wrote, still live in m.
+func sessionSources(m Model, ops []op.Op, sid string) []id.ID {
+	var out []id.ID
+	for _, o := range ops {
+		if o.Type != op.TypeNodeCreate || o.Kind != op.KindSource {
+			continue
+		}
+		n, ok := m.Node(o.Node)
+		if !ok || n.Retired || fieldText(n.Fields["session"]) != sid || slices.Contains(out, o.Node) {
+			continue
+		}
+		out = append(out, o.Node)
+	}
+	return out
 }
 
 // liveActor resolves ref to a live actor node.

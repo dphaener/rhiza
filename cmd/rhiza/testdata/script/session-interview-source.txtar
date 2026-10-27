@@ -1,0 +1,88 @@
+# When the session's change set has a Source added with --raw-session for
+# that session, each Decision session interview proposes links derived-from
+# the Source: the picked answer keeps its wording, the typed one its quote.
+# With no such Source the Decisions are proposed with no derived-from link.
+# The fake rex opens a window and runs nothing.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir $HOME/.claude/projects/p
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Plan sources' --title 'Plan sources' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza session start --permission-mode manual --json
+stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+cp $WORK/transcript.jsonl $HOME/.claude/projects/p/158fe87f-5cf3-4ff0-ae50-01a16dc84988.jsonl
+
+# The session's Source, added in its worktree and change set.
+cd $WORK/repo.plan-sources
+env RHIZA_CHANGE=01M5PWGEF85Y185JZ2ZGCNH40N
+exec rhiza source add plan $WORK/s.json --raw-session 158fe87f --json
+exec rhiza show plan --json
+stdout '"session": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+env RHIZA_CHANGE=
+
+# Both Decisions link derived-from the Source, in one entry.
+cd $WORK/repo
+exec rhiza session interview 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json
+stdout -count=2 '"handle": "answer-158fe87f-'
+cd $WORK/repo.plan-sources
+exec rhiza show answer-158fe87f-1 --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout '"picked": "Blue"'
+stdout '"wording": "the agent'
+! stdout '"quote"'
+stdout '"type": "derived-from"'
+exec rhiza show answer-158fe87f-2 --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout '"quote": "Something like DuckDB, but local"'
+! stdout '"wording"'
+stdout '"type": "derived-from"'
+exec rhiza show plan --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout -count=2 '"type": "derived-from"'
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout -count=2 '"op": "link.create"'
+
+# A second run links nothing more.
+cd $WORK/repo
+exec rhiza session interview 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json
+stdout '"proposed": \[\]'
+cd $WORK/repo.plan-sources
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout -count=2 '"op": "link.create"'
+fold-ok
+
+# A session with no Source: both proposed, no derived-from link.
+cd $WORK/repo
+exec rhiza change new 'No source' --title 'No source' --json
+stdout '"change_set": "01M5PWGKBGYFZMTH8Y8AF1G8GN"'
+exec rhiza session start --permission-mode manual --json
+stdout '"id": "5079832d-a0a3-4e4f-9cd6-01a16dc85158"'
+cp $WORK/transcript.jsonl $HOME/.claude/projects/p/5079832d-a0a3-4e4f-9cd6-01a16dc85158.jsonl
+exec rhiza session interview 5079832d-a0a3-4e4f-9cd6-01a16dc85158 --json
+stdout -count=2 '"handle": "answer-5079832d-'
+cd $WORK/repo.no-source
+exec rhiza show answer-5079832d-1 --change 01M5PWGKBGYFZMTH8Y8AF1G8GN --json
+stdout '"picked": "Blue"'
+stdout '"links_out": \[\]'
+! stdout 'derived-from'
+exec rhiza show answer-5079832d-2 --change 01M5PWGKBGYFZMTH8Y8AF1G8GN --json
+stdout '"quote": "Something like DuckDB, but local"'
+stdout '"links_out": \[\]'
+! stdout 'derived-from'
+exec rhiza change show 01M5PWGKBGYFZMTH8Y8AF1G8GN --json
+! stdout '"op": "link.create"'
+fold-ok
+cd $WORK/repo
+fold-ok
+
+-- s.json --
+{"title":"Planning interview","summary":"The owner answered the planning questions.","quotes":[]}
+-- bin/rex --
+#!/bin/sh
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- transcript.jsonl --
+{"type": "user", "message": {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "toolu_1", "content": "answered"}]}, "toolUseResult": {"questions": [{"question": "Which colour?", "header": "Colour", "multiSelect": false, "options": [{"label": "Red", "description": "d"}, {"label": "Blue", "description": "d"}]}, {"question": "Which store?", "header": "Store", "multiSelect": false, "options": [{"label": "SQLite", "description": "d"}, {"label": "Postgres", "description": "d"}]}], "answers": {"Which colour?": "Blue", "Which store?": "Something like DuckDB, but local"}}}
