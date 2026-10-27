@@ -7,9 +7,8 @@
 # a second check adds nothing, and the autonomous gate sees both open
 # until a Decision answers each.
 #
-# run findings resolves nodes in the run's change set's view, which after
-# the landing holds no draft node, so round 3 is journalled by hand. The
-# run stops at a wait step whose until does not hold, so it stays
+# run findings finds cap-l, which only the draft holds, across the plan's
+# change sets. The run stops at a wait step whose until does not hold, so it stays
 # unfinished and launches no agent.
 
 mkdir repo
@@ -39,13 +38,36 @@ exec sh -c 'rhiza change new "Serve L" --json | sed -n "s/.*\"change_set\": \"\(
 exec sh -c 'rhiza link $(cat $WORK/s1) serves want-l'
 exec rhiza add capability cap-l --field 'statement=Does L'
 exec sh -c 'rhiza show cap-l --json | sed -n "s/^    \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/cap'
+
+# A second draft serves want-l; it and the first each add a cap-x, so
+# cap-x names different nodes in the plan: a finding on it is usage.
+exec sh -c 'rhiza change new "Serve L two" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/s2'
+exec sh -c 'rhiza link $(cat $WORK/s2) serves want-l'
+exec rhiza add capability cap-x --field 'statement=Does X'
+exec sh -c 'rhiza add capability cap-x --field "statement=Does X too" --change $(cat $WORK/s1)'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/dup.json --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout 'finding 1: node \\"cap-x\\": names different nodes in the plan.s change sets: 01[0-9A-Z]{24}, 01[0-9A-Z]{24}'
+stdout '^exit=2$'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/nowhere.json --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout 'finding 1: node \\"no-such-node\\"'
+stdout '^exit=2$'
+exec sh -c 'grep -c "\"type\":\"findings\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl; true'
+stdout '^0$'
 exec sh -c 'cat $WORK/dec $WORK/cap'
 stdout '^01[0-9A-Z]{24}\n01[0-9A-Z]{24}\n$'
 
 # Rounds 1 and 2 clean; round 3 finds cap-l and dec-l, both confirmed.
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/clean.json'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/clean.json'
-exec sh -c 'printf "{\"type\":\"findings\",\"at\":\"2026-01-01T00:00:00Z\",\"findings\":[{\"id\":\"f1\",\"node\":\"%s\",\"handle\":\"cap-l\",\"kind\":\"missing-acceptance\",\"reason\":\"No acceptance criteria\"},{\"id\":\"f2\",\"node\":\"%s\",\"handle\":\"dec-l\",\"kind\":\"contradiction\",\"reason\":\"Says both\"}]}\n" $(cat $WORK/cap) $(cat $WORK/dec) >> .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/findings.json --json > $WORK/r3.json'
+exec cat $WORK/r3.json
+stdout '"round": 3'
+stdout '"handle": "cap-l"'
+stdout '"handle": "dec-l"'
+exec sh -c 'grep -c -e "\"node\": \"$(cat $WORK/cap)\"" -e "\"node\": \"$(cat $WORK/dec)\"" $WORK/r3.json'
+stdout '^2$'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run verdict $WORK/verdict.json'
 exec sh -c 'echo review-$(cut -c1-8 $WORK/runid | tr A-Z a-z)-r3-f1 > $WORK/q1'
 exec sh -c 'echo review-$(cut -c1-8 $WORK/runid | tr A-Z a-z)-r3-f2 > $WORK/q2'
@@ -134,6 +156,15 @@ on.pass = "done"
 on.timeout = "failed"
 -- clean.json --
 {"findings":[]}
+-- findings.json --
+{"findings":[
+  {"node":"cap-l","kind":"missing-acceptance","reason":"No acceptance criteria"},
+  {"node":"dec-l","kind":"contradiction","reason":"Says both"}
+]}
+-- dup.json --
+{"findings":[{"node":"cap-x","kind":"outside-intent","reason":"Twice"}]}
+-- nowhere.json --
+{"findings":[{"node":"no-such-node","kind":"outside-intent","reason":"Gone"}]}
 -- verdict.json --
 {"verdicts":[
   {"finding":"f1","verdict":"confirmed","reason":"It has none"},

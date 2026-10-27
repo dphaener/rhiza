@@ -230,7 +230,8 @@ type verdictFile struct {
 }
 
 // runRunFindings checks the run, then each finding: a known kind, a
-// reason, and a node that resolves in the run's change set's view. Only
+// reason, and a node that resolves in the run's change set's view or,
+// failing that, in its plan's change sets (planResolver). Only
 // then does it journal them, numbered f1, f2, ..., as the next round.
 func runRunFindings(ctx *Ctx, req any) (any, error) {
 	r := req.(RunFindingsRequest)
@@ -250,7 +251,7 @@ func runRunFindings(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	m := w.model(rr.change)
+	r2 := planResolver{w: w, run: rr.change}
 	found := make([]run.Finding, 0, len(*f.Findings))
 	for i, in := range *f.Findings {
 		n := i + 1
@@ -264,9 +265,9 @@ func runRunFindings(ctx *Ctx, req any) (any, error) {
 		if ref == "" {
 			return nil, Usagef("finding %d: no node", n).WithNext(runFindingsNext)
 		}
-		node, err := m.Resolve(ref)
+		node, err := r2.resolve(ref)
 		if err != nil {
-			return nil, Usagef("finding %d: node %q: %s, in change set %s's view", n, ref, AsError(err).Message, rr.change).
+			return nil, Usagef("finding %d: node %q: %s", n, ref, AsError(err).Message).
 				WithNext("rhiza ls --change " + rr.change.String())
 		}
 		found = append(found, run.Finding{
@@ -282,6 +283,62 @@ func runRunFindings(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	return resp, nil
+}
+
+// planResolver resolves a finding's node across a run's plan: the run's
+// change set's view first, then the view of each of its plan's change sets
+// (planChangeSets, sorted by ID), read once on first need.
+type planResolver struct {
+	w     *workspace
+	run   id.ID
+	views []Model
+	read  bool
+}
+
+// resolve is the node ref names in the run's change set's view; failing
+// that, the node it names in the plan's change sets' views, where it must
+// name the same node in each view it resolves in. Not found anywhere it is
+// the run's view's error, naming the plan too.
+func (p *planResolver) resolve(ref string) (Node, error) {
+	runView := p.w.model(p.run)
+	node, err := runView.Resolve(ref)
+	if err == nil {
+		return node, nil
+	}
+	if !p.read {
+		p.read = true
+		sets := p.w.changeSets()
+		plan, perr := planChangeSets(sets, runView, p.run)
+		if perr != nil {
+			return Node{}, Errorf("%v", perr)
+		}
+		for _, c := range plan {
+			if c.ID != p.run {
+				p.views = append(p.views, p.w.model(c.ID))
+			}
+		}
+	}
+	var hit *Node
+	var ids []string
+	for _, v := range p.views {
+		n, verr := v.Resolve(ref)
+		if verr != nil {
+			continue
+		}
+		if hit == nil {
+			hit = &n
+		}
+		if !slices.Contains(ids, n.ID.String()) {
+			ids = append(ids, n.ID.String())
+		}
+	}
+	switch {
+	case len(ids) > 1:
+		return Node{}, Usagef("names different nodes in the plan's change sets: %s", strings.Join(ids, ", "))
+	case hit != nil:
+		return *hit, nil
+	}
+	return Node{}, Usagef("%s, in change set %s's view or any of its plan's change sets", AsError(err).Message, p.run)
 }
 
 // runRunVerdict checks the run, its latest round, then each verdict: a

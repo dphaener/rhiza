@@ -104,6 +104,18 @@ stdout '^Recorded round 2 of run 01[0-9A-Z]{24}: no findings$'
 exec rhiza run status
 stdout '^- Round 2: no findings$'
 
+# A finding may name a node only a change set of the plan holds: one
+# serving an intent the run's change set adds (the serves link written in
+# the run's change set, where want-r is).
+exec rhiza add intent want-r
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/rc'
+exec sh -c 'rhiza change new "Serve R" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/sr'
+exec sh -c 'rhiza link $(cat $WORK/sr) serves want-r --change $(cat $WORK/rc)'
+exec rhiza add capability cap-r --field 'statement=Does R'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/plan.json --json'
+stdout '"round": 3'
+stdout '"handle": "cap-r"'
+
 fold-ok
 
 -- hold.toml --
@@ -138,5 +150,7 @@ on.timeout = "failed"
   {"finding":"f1","verdict":"confirmed","reason":"It has none"},
   {"finding":"f2","verdict":"dropped","reason":"They agree"}
 ]}
+-- plan.json --
+{"findings":[{"node":"cap-r","kind":"missing-acceptance","reason":"None"}]}
 -- clean.json --
 {"findings":[]}
