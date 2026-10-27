@@ -143,16 +143,29 @@ type RunInfo struct {
 
 // RunLeaf is one leaf a leaves step conducted.
 type RunLeaf struct {
-	Step     string           `json:"step" desc:"The leaves step"`
-	Leaf     string           `json:"leaf" desc:"The leaf capability's ID"`
-	Handle   string           `json:"handle" desc:"The leaf capability's handle"`
-	Sessions []RunLeafSession `json:"sessions" desc:"The leaf's sessions, in the order they started"`
-	Attempts []RunLeafAttempt `json:"attempts" desc:"The judgements of its sessions' work, in order"`
-	Findings []RunLeafFinding `json:"findings,omitempty" desc:"The findings its verifiers journalled with run findings --leaf, in order; absent when there were none"`
-	Outcome  string           `json:"outcome,omitempty" desc:"passed, failed or skipped; empty while the leaf is open"`
-	Question string           `json:"question,omitempty" desc:"The question node a failed leaf raised, if any"`
-	Commit   string           `json:"commit,omitempty" desc:"A passed leaf's Evidence commit: its verifier's Evidence entries, committed alone"`
-	Detail   string           `json:"detail,omitempty" desc:"Why the leaf ended as it did"`
+	Step           string           `json:"step" desc:"The leaves step"`
+	Leaf           string           `json:"leaf" desc:"The leaf capability's ID"`
+	Handle         string           `json:"handle" desc:"The leaf capability's handle"`
+	Sessions       []RunLeafSession `json:"sessions" desc:"The leaf's sessions, in the order they started"`
+	Attempts       []RunLeafAttempt `json:"attempts" desc:"The judgements of its sessions' work, in order"`
+	Findings       []RunLeafFinding `json:"findings,omitempty" desc:"The findings its verifiers journalled with run findings --leaf, in order; absent when there were none"`
+	Outcome        string           `json:"outcome,omitempty" desc:"passed, failed or skipped; empty while the leaf is open"`
+	Question       string           `json:"question,omitempty" desc:"The question node a failed leaf raised, by ID, if any"`
+	QuestionHandle string           `json:"question_handle,omitempty" desc:"That question node's handle"`
+	Round          int              `json:"round" desc:"The leaf's current round of attempts, from 1"`
+	Rounds         []RunLeafRound   `json:"rounds,omitempty" desc:"Its fresh rounds, each given once a Decision answered the question its failure raised; absent in round 1"`
+	Commit         string           `json:"commit,omitempty" desc:"A passed leaf's Evidence commit: its verifier's Evidence entries, committed alone"`
+	Detail         string           `json:"detail,omitempty" desc:"Why the leaf ended as it did"`
+}
+
+// RunLeafRound is one fresh round a failed leaf was given.
+type RunLeafRound struct {
+	Round          int    `json:"round" desc:"The round, from 2"`
+	After          int    `json:"after" desc:"The attempts before it: its first attempt is after + 1"`
+	Question       string `json:"question" desc:"The question node the leaf's failure raised, by ID"`
+	QuestionHandle string `json:"question_handle,omitempty" desc:"That question node's handle"`
+	Decision       string `json:"decision" desc:"The handle of the Decision that answers it"`
+	At             string `json:"at" desc:"When the round began, RFC 3339 UTC"`
 }
 
 // RunLeafSession is one session a leaves step started on a leaf.
@@ -1357,7 +1370,12 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 	for _, l := range st.Leaves {
 		rl := RunLeaf{
 			Step: l.Step, Leaf: l.Leaf, Handle: l.Handle, Sessions: []RunLeafSession{}, Attempts: []RunLeafAttempt{},
-			Outcome: l.Outcome, Question: l.Question, Commit: l.Commit, Detail: l.Detail,
+			Outcome: l.Outcome, Question: l.Question, QuestionHandle: l.QuestionHandle, Round: l.Round(), Commit: l.Commit, Detail: l.Detail,
+		}
+		for _, rd := range l.Rounds {
+			rl.Rounds = append(rl.Rounds, RunLeafRound{
+				Round: rd.Round, After: rd.After, Question: rd.Question, QuestionHandle: rd.QuestionHandle, Decision: rd.Decision, At: rfc3339(rd.At),
+			})
 		}
 		for _, ls := range l.Sessions {
 			rl.Sessions = append(rl.Sessions, RunLeafSession{
@@ -1443,10 +1461,19 @@ func (r RunInfo) Human(w io.Writer) {
 				outcome = "open"
 			}
 			fmt.Fprintf(w, "- %s (step %s): %s", l.Handle, l.Step, outcome)
+			if l.Round > 1 {
+				fmt.Fprintf(w, " in round %d", l.Round)
+			}
 			if l.Detail != "" {
 				fmt.Fprintf(w, ": %s", l.Detail)
 			}
 			fmt.Fprintf(w, "\n")
+			if l.Question != "" {
+				fmt.Fprintf(w, "  - question %s (%s) blocks it\n", l.QuestionHandle, l.Question)
+			}
+			for _, rd := range l.Rounds {
+				fmt.Fprintf(w, "  - round %d from attempt %d: decision %s answers question %s (%s)\n", rd.Round, rd.After+1, rd.Decision, rd.QuestionHandle, rd.Question)
+			}
 			for _, ls := range l.Sessions {
 				fmt.Fprintf(w, "  - attempt %d %s, session %s", ls.Attempt, ls.Role, ls.Session)
 				for _, a := range l.Attempts {

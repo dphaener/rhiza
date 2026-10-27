@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/changeset"
@@ -105,17 +106,140 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 }
 
 // leafPrompt is role's prompt for spec's session, rendered with vars and
-// the leaf and attempt. A retry builder's (attempt past 1) ends with a
-// line naming the leaf and the attempt and telling it to read the earlier
-// attempts' findings from the run and add a fix commit for the leaf.
+// the leaf and attempt. A builder in a fresh round (spec.Decision set)
+// gets a line naming the question the leaf's failure raised and the
+// Decision that answers it, with its statement, to build by. A retry
+// builder's (attempt past 1 within its round) ends with a line naming the
+// leaf and the attempt and telling it to read the earlier attempts'
+// findings from the run and add a fix commit for the leaf.
 func leafPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars) string {
 	p := role.RenderPrompt(workflow.LeafVars{PromptVars: vars, Leaf: spec.Leaf.Handle, Attempt: spec.Attempt})
-	if spec.Role != workflow.RoleBuilder || spec.Attempt <= 1 {
+	if spec.Role != workflow.RoleBuilder {
 		return p
 	}
-	return strings.TrimRight(p, "\n") + fmt.Sprintf("\n\nThis is attempt %d of %d on leaf %s: earlier attempts failed. "+
-		"Read their findings with `rhiza run status --json`, then add a fix commit with the trailer `Leaf: %s`.",
-		spec.Attempt, run.MaxAttempts, spec.Leaf.Handle, spec.Leaf.Handle)
+	try := spec.RoundAttempt
+	if try == 0 {
+		try = spec.Attempt
+	}
+	var lines []string
+	if spec.Decision != "" {
+		line := fmt.Sprintf("Leaf %s failed every attempt of its last round and raised question %s. Decision %s answers it",
+			spec.Leaf.Handle, spec.Question, spec.Decision)
+		if a := strings.TrimSpace(spec.Answer); a != "" {
+			line += ":\n\n" + a + "\n\n"
+		} else {
+			line += ". "
+		}
+		lines = append(lines, line+fmt.Sprintf("Build the leaf as it says; this round has %d fresh attempts.", run.MaxAttempts))
+	}
+	if try > 1 {
+		lines = append(lines, fmt.Sprintf("This is attempt %d of %d on leaf %s: earlier attempts failed. "+
+			"Read their findings with `rhiza run status --json`, then add a fix commit with the trailer `Leaf: %s`.",
+			try, run.MaxAttempts, spec.Leaf.Handle, spec.Leaf.Handle))
+	}
+	if len(lines) == 0 {
+		return p
+	}
+	return strings.TrimRight(p, "\n") + "\n\n" + strings.Join(lines, "\n\n")
+}
+
+// leafQuestionPrefix starts the handle of every question node a run adds
+// for a failed leaf: leaf-failed-<run8>-<n>.
+const leafQuestionPrefix = "leaf-failed-"
+
+// AddLeafQuestion writes question node leaf-failed-<run8>-<n> (n the next
+// number free in the change set's view), with statement text, and a
+// blocks link from it to leaf, into the run's change set in the model as
+// the run's worktree holds it, where its sessions write, as the run's
+// caller's actor, in one entry. It refuses a change set that is finished
+// and a leaf that is not a live node there.
+func (r *stepRunner) AddLeafQuestion(leaf run.Leaf, text string) (run.Question, error) {
+	cs, err := id.Parse(r.change)
+	if err != nil {
+		return run.Question{}, fmt.Errorf("run %s names change set %q: %v", r.run, r.change, err)
+	}
+	lid, err := id.Parse(leaf.ID)
+	if err != nil {
+		return run.Question{}, fmt.Errorf("leaf %s has ID %q: %v", leaf.Handle, leaf.ID, err)
+	}
+	ww, err := r.worktreeWorkspace(true)
+	if err != nil {
+		return run.Question{}, err
+	}
+	c, ok := ww.changeSet(cs)
+	if !ok {
+		return run.Question{}, NotFoundf("change set %s is not in the log", cs)
+	}
+	if c.State.Terminal() {
+		return run.Question{}, Conflictf("change set %s is %s; no question can be added to it", cs, c.State).
+			WithNext("rhiza change show " + cs.String())
+	}
+	m := ww.model(cs)
+	if n, ok := m.Node(lid); !ok || n.Retired {
+		return run.Question{}, Errorf("leaf %s (%s) is not a live node in change set %s", leaf.Handle, lid, cs)
+	}
+	short := strings.ToLower(r.run)
+	if len(short) > 8 {
+		short = short[:8]
+	}
+	prefix := leafQuestionPrefix + short + "-"
+	handle := ""
+	for n := 1; handle == ""; n++ {
+		if h := prefix + strconv.Itoa(n); !answerProposed(m, c.Ops, h) {
+			handle = h
+		}
+	}
+	actor, forID, err := ww.resolveActor(cs, r.ctx)
+	if err != nil {
+		return run.Question{}, err
+	}
+	add := AddRequest{Kind: string(op.KindQuestion), Handle: handle, Fields: []string{"statement=" + text}}
+	link := LinkRequest{From: handle, Type: string(op.LinkBlocks), To: lid.String()}
+	items := []applyItem{
+		{op: "add", build: func(b writeBase) (edit, error) { return buildAdd(b, add) }},
+		{op: "link", build: func(b writeBase) (edit, error) { return buildLink(b, link) }},
+	}
+	e, err := buildApply(ww, cs, r.ctx.IDs, items)
+	if err == nil {
+		err = e.check("apply")
+	}
+	if err != nil {
+		return run.Question{}, err
+	}
+	if len(e.nodes) != 1 {
+		return run.Question{}, Errorf("adding question %s touched %d nodes, not 1", handle, len(e.nodes))
+	}
+	if _, err := ww.appendEntry(cs, changeset.Ops{Ops: e.ops, Drop: e.drop}, actor, forID); err != nil {
+		return run.Question{}, err
+	}
+	return run.Question{ID: e.nodes[0].String(), Handle: handle}, nil
+}
+
+// LeafAnswer looks, in the run change set's view of the model as the
+// run's worktree holds it, for a live Decision with a live answers link
+// to question node question: the first, by link ID, is the answer. Unlike
+// an arbiter's (Answer), the owner's Decision needs no particular wording
+// or reasoning.
+func (r *stepRunner) LeafAnswer(question string) (string, string, bool, error) {
+	q, err := id.Parse(question)
+	if err != nil {
+		return "", "", false, fmt.Errorf("question %q is not a node ID: %v", question, err)
+	}
+	cs, err := id.Parse(r.change)
+	if err != nil {
+		return "", "", false, fmt.Errorf("run %s names change set %q: %v", r.run, r.change, err)
+	}
+	ww, err := r.worktreeWorkspace(false)
+	if err != nil {
+		return "", "", false, err
+	}
+	m := ww.model(cs)
+	for _, l := range m.LinksTo(q, op.LinkAnswers) {
+		if d, ok := m.Node(l.From); ok && !d.Retired && d.Kind == op.KindDecision {
+			return d.Handle, fieldText(d.Fields["statement"]), true, nil
+		}
+	}
+	return "", "", false, nil
 }
 
 // Head is the commit at HEAD of the run's worktree, where builders work.

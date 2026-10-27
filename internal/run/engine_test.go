@@ -70,6 +70,14 @@ type fakeRunner struct {
 	checkoutErr       error    // OpenCheckout's error, when set
 	removeErr         error    // RemoveCheckout's error, when set
 	heads             []string // Head's result per call, in order; past the end, fakeHead
+	// leafQuestions are "<handle> <text>" per AddLeafQuestion call; the
+	// nth question is QL<n>, handle leaf-failed-<n>.
+	leafQuestions   []string
+	leafQuestionErr error // AddLeafQuestion's error, when set
+	// leafAnswers are LeafAnswer's decision and statement per question;
+	// a missing question has no answer.
+	leafAnswers map[string][2]string
+	leafAnswerN map[string]int // LeafAnswer calls per question
 }
 
 // fakeEvidence is one leaf's scripted Evidence result.
@@ -86,6 +94,7 @@ func newFakeRunner() *fakeRunner {
 		outcome: map[string]string{}, failOn: map[string]error{},
 		commands: map[string]int{}, polls: map[string]int{}, starts: map[string]int{},
 		envs: map[string][]string{}, answers: map[string]Answer{}, answerN: map[string]int{},
+		leafAnswers: map[string][2]string{}, leafAnswerN: map[string]int{},
 	}
 }
 

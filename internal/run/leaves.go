@@ -43,6 +43,15 @@ type LeafRunner interface {
 	// RemoveCheckout removes a checkout OpenCheckout added; one already
 	// gone is no error.
 	RemoveCheckout(dir string) error
+	// AddLeafQuestion adds a question node, statement text, to the run's
+	// change set, linked blocks to leaf, and returns it. It refuses when
+	// the change set is finished.
+	AddLeafQuestion(leaf Leaf, text string) (Question, error)
+	// LeafAnswer reports whether a live Decision answers question node
+	// question (a live answers link to it), and if so that Decision's
+	// handle and statement. Any Decision does: the owner's needs no
+	// arbiter wording.
+	LeafAnswer(question string) (decision, statement string, ok bool, err error)
 }
 
 // Leaf is one leaf of a change set: its capability node's ID and handle,
@@ -54,21 +63,31 @@ type Leaf struct {
 }
 
 // LeafSpec is one leaf session to launch: role Role (builder or verifier)
-// of leaves step Step on Leaf, for attempt Attempt (from 1). Model is the
-// model to run, "" for the agent's default. Commit is, for a verifier,
+// of leaves step Step on Leaf, for attempt Attempt (from 1, counted across
+// rounds), which is attempt RoundAttempt (from 1 to MaxAttempts) of the
+// leaf's round Round (from 1). Model is the
+// model to run, "" for the agent's default, from the role's ladder at
+// RoundAttempt. In a fresh round (Round past 1), Question is the question
+// node (ID) the leaf's failure raised, Decision the handle of the Decision
+// that answers it and Answer its statement. Commit is, for a verifier,
 // the builder's commit it checks; "" for a builder. Env holds the
 // session's RHIZA_* variables, the step's plus RHIZA_LEAF, RHIZA_ATTEMPT,
 // RHIZA_ROLE and, for a verifier, RHIZA_COMMIT. Dir is, for a verifier,
 // the checkout of Commit it works in; "" for a builder.
 type LeafSpec struct {
-	Step    workflow.Step
-	Role    string
-	Leaf    Leaf
-	Attempt int
-	Model   string
-	Commit  string
-	Dir     string
-	Env     []string
+	Step         workflow.Step
+	Role         string
+	Leaf         Leaf
+	Attempt      int
+	Round        int
+	RoundAttempt int
+	Model        string
+	Commit       string
+	Dir          string
+	Env          []string
+	Question     string
+	Decision     string
+	Answer       string
 }
 
 // The environment variables a leaf session gets beyond a step's.
@@ -84,7 +103,8 @@ const (
 // MaxAttempts is how many attempts a leaf gets in a round: each failed
 // attempt but the last goes to a fresh builder session for the next
 // attempt, on the next model of the builder's ladder; once the last fails
-// the leaf fails.
+// the leaf fails. A fresh round (a leaf-round entry) gives it MaxAttempts
+// more, the ladder starting over.
 const MaxAttempts = 3
 
 // leafActionKind is what the conductor does next for a leaves step.
@@ -222,7 +242,8 @@ func lostDependency(lf Leaf, states map[string]LeafState, known map[string]bool,
 // nextForLeaf is the next move on an open leaf l whose builder started. A
 // verifier starts on the commit its builder's passed attempt recorded; a
 // passed leaf ends with the Evidence commit its verifier's attempt
-// recorded. A failed attempt before MaxAttempts starts a fresh builder on
+// recorded. A failed attempt before the round's MaxAttempts-th (a fresh
+// round's first move is this, after the last round's failed attempt) starts a fresh builder on
 // the next attempt; the caller decides when, as builders run one at a
 // time. The last attempt's fail fails the leaf.
 func nextForLeaf(lf Leaf, l LeafState) leafAction {
@@ -241,7 +262,7 @@ func nextForLeaf(lf Leaf, l LeafState) leafAction {
 			return leafAction{kind: leafPoll, leaf: lf, role: role, attempt: attempt, session: s.Session}
 		}
 		if j.Outcome != workflow.OutcomePass {
-			if attempt < MaxAttempts {
+			if attempt-l.RoundBase() < MaxAttempts {
 				return leafAction{kind: leafStart, leaf: lf, role: workflow.RoleBuilder, attempt: attempt + 1}
 			}
 			return leafAction{kind: leafEnd, leaf: lf, outcome: LeafFailed,
@@ -274,6 +295,13 @@ func (r *running) leafStates(step string) map[string]LeafState {
 // idle alone is never enough. Blocks, notices and an autonomous run's
 // arbitration are handled as on an agent step. Runner failures are an
 // error outcome; the error return is for journal failures.
+//
+// A leaf that fails raises a question (AddLeafQuestion) linked blocks to
+// it; its dependents are skipped and the other leaves carry on, so the
+// step ends fail once nothing more can proceed. On entry (a resume, or a
+// retry, which keeps the step's leaves) a failed leaf whose question a
+// Decision now answers gets a fresh round (reviveLeaves). In an autonomous
+// run the arbiter answers a leaf's first failure's question at once.
 func (r *running) leaves(step workflow.Step, env []string) (result, error) {
 	lr, ok := r.e.Runner.(LeafRunner)
 	if !ok {
@@ -288,6 +316,9 @@ func (r *running) leaves(step workflow.Step, env []string) (result, error) {
 		interval = workflow.DefaultInterval
 	}
 	r.removeEndedCheckouts(lr, step)
+	if res, ended, err := r.reviveLeaves(lr, step); err != nil || ended {
+		return res, err
+	}
 	for {
 		progressed := false
 		for _, a := range nextLeafActions(leaves, r.leafStates(step.Name)) {
@@ -300,12 +331,9 @@ func (r *running) leaves(step workflow.Step, env []string) (result, error) {
 				}
 				progressed = true
 			case leafEnd:
-				if err := r.append(Entry{
-					Type: TypeLeaf, Step: step.Name, Leaf: a.leaf.ID, Handle: a.leaf.Handle, Outcome: a.outcome, Commit: a.commit, Detail: a.detail,
-				}); err != nil {
-					return result{}, err
+				if res, ended, err := r.endLeaf(lr, step, a); err != nil || ended {
+					return res, err
 				}
-				r.log("step %s: leaf %s %s", step.Name, a.leaf.Handle, a.outcome)
 				progressed = true
 			case leafPoll:
 				judged, res, ended, err := r.pollLeaf(lr, step, a)
@@ -321,15 +349,21 @@ func (r *running) leaves(step workflow.Step, env []string) (result, error) {
 	}
 }
 
-// startLeaf launches a's session and journals its leaf-session entry: a
+// startLeaf launches a's session and journals its leaf-session entry. Its
+// model comes from the role's ladder at the attempt within the leaf's
+// round, and a fresh round's builder is given the question the leaf's
+// failure raised and the answering Decision, its statement read anew
+// (LeafAnswer), so the journal holds no model text. A
 // builder's with the worktree's HEAD before it started, which its leaf
 // commit must follow, and a verifier's with the commit it checks and, as
 // Detail, the checkout of it opened for the verifier to work in. A launch
 // that fails ends the step (failed true) with an error outcome, its
 // checkout removed.
 func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a leafAction) (result, bool, error) {
+	l := r.leafStates(step.Name)[a.leaf.ID]
 	spec := LeafSpec{
 		Step: step, Role: a.role, Leaf: a.leaf, Attempt: a.attempt, Commit: a.commit,
+		Round: l.Round(), RoundAttempt: a.attempt - l.RoundBase(),
 		Env: append(append([]string{}, env...),
 			EnvLeaf+"="+a.leaf.Handle, EnvAttempt+"="+strconv.Itoa(a.attempt), EnvRole+"="+a.role),
 	}
@@ -337,7 +371,17 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 		spec.Env = append(spec.Env, EnvCommit+"="+a.commit)
 	}
 	if role := step.Role(a.role); role != nil {
-		spec.Model = role.Model(a.attempt)
+		spec.Model = role.Model(spec.RoundAttempt)
+	}
+	if rd, ok := l.LastRound(); ok && a.role == workflow.RoleBuilder {
+		spec.Question, spec.Decision = rd.Question, rd.Decision
+		d, statement, ok, err := lr.LeafAnswer(rd.Question)
+		if err != nil {
+			return errResult(fmt.Errorf("leaf %s: read the answer to question %s: %v", a.leaf.Handle, rd.Question, err)), true, nil
+		}
+		if ok && d == rd.Decision {
+			spec.Answer = statement
+		}
 	}
 	commit := a.commit
 	if a.role == workflow.RoleBuilder {
@@ -508,4 +552,138 @@ func (r *running) removeCheckout(lr LeafRunner, step workflow.Step, dir string) 
 	if err := lr.RemoveCheckout(dir); err != nil {
 		r.log("step %s: remove checkout %s: %v", step.Name, dir, err)
 	}
+}
+
+// endLeaf journals a's leaf outcome. A failed leaf first raises a question
+// (AddLeafQuestion) naming its round's attempts and findings, linked
+// blocks to it, journalled on the leaf entry; one that cannot be added is
+// named in the entry's detail, and the run carries on. In an autonomous
+// run, the question of a leaf's first round goes to the arbiter at once
+// (reviveLeaf). An ended step (ended true) carries res.
+func (r *running) endLeaf(lr LeafRunner, step workflow.Step, a leafAction) (res result, ended bool, err error) {
+	en := Entry{Type: TypeLeaf, Step: step.Name, Leaf: a.leaf.ID, Handle: a.leaf.Handle, Outcome: a.outcome, Commit: a.commit, Detail: a.detail}
+	if a.outcome == LeafFailed {
+		l := r.leafStates(step.Name)[a.leaf.ID]
+		q, err := lr.AddLeafQuestion(a.leaf, leafQuestionText(l))
+		if err != nil {
+			en.Detail += fmt.Sprintf("; its question could not be added: %v", err)
+		} else {
+			en.Question, en.QuestionHandle = q.ID, q.Handle
+		}
+	}
+	if err := r.append(en); err != nil {
+		return result{}, false, err
+	}
+	if en.Question != "" {
+		r.log("step %s: leaf %s %s; question %s (%s)", step.Name, a.leaf.Handle, a.outcome, en.QuestionHandle, en.Question)
+	} else {
+		r.log("step %s: leaf %s %s", step.Name, a.leaf.Handle, a.outcome)
+	}
+	l := r.leafStates(step.Name)[a.leaf.ID]
+	if en.Question != "" && r.j.State().Autonomous && l.Round() == 1 {
+		return r.reviveLeaf(lr, step, l)
+	}
+	return result{}, false, nil
+}
+
+// reviveLeaves runs reviveLeaf on each of step's failed leaves, in the
+// order the journal first names them.
+func (r *running) reviveLeaves(lr LeafRunner, step workflow.Step) (result, bool, error) {
+	var ids []string
+	for _, l := range r.j.State().Leaves {
+		if l.Step == step.Name && l.Outcome == LeafFailed && l.Question != "" {
+			ids = append(ids, l.Leaf)
+		}
+	}
+	for _, leaf := range ids {
+		if res, ended, err := r.reviveLeaf(lr, step, r.leafStates(step.Name)[leaf]); err != nil || ended {
+			return res, ended, err
+		}
+	}
+	return result{}, false, nil
+}
+
+// reviveLeaf gives failed leaf l a fresh round (a leaf-round entry) once a
+// Decision answers the question its failure raised. In an autonomous run
+// the question of the leaf's first round is the arbiter's: it is
+// arbitrated, or its open arbitration rejoined, and only a pass revives
+// the leaf; any other verdict leaves it failed. So an autonomous run
+// arbitrates a leaf once: a failure in its fresh round is never
+// arbitrated again. Otherwise the owner's answer is read (LeafAnswer);
+// with none the leaf stays failed. A LeafAnswer failure ends the step
+// (ended true) with an error outcome. The error return is for journal
+// failures.
+func (r *running) reviveLeaf(lr LeafRunner, step workflow.Step, l LeafState) (result, bool, error) {
+	if l.Outcome != LeafFailed || l.Question == "" {
+		return result{}, false, nil
+	}
+	var decision string
+	if r.j.State().Autonomous && l.Round() == 1 {
+		a, ok := r.j.State().Arbitration(l.Question)
+		if !ok || a.Open() {
+			if _, err := r.arbitrate(step, l.Question); err != nil {
+				return result{}, false, err
+			}
+			a, _ = r.j.State().Arbitration(l.Question)
+		}
+		if a.Outcome != workflow.OutcomePass {
+			r.log("step %s: leaf %s stays failed: the arbiter did not answer question %s", step.Name, l.Handle, l.QuestionHandle)
+			return result{}, false, nil
+		}
+		decision = a.Decision
+	} else {
+		d, _, ok, err := lr.LeafAnswer(l.Question)
+		if err != nil {
+			return errResult(fmt.Errorf("leaf %s: read the answer to question %s: %v", l.Handle, l.Question, err)), true, nil
+		}
+		if !ok {
+			return result{}, false, nil
+		}
+		decision = d
+	}
+	if err := r.append(Entry{
+		Type: TypeLeafRound, Step: step.Name, Leaf: l.Leaf, Handle: l.Handle,
+		Question: l.Question, QuestionHandle: l.QuestionHandle, Decision: decision,
+	}); err != nil {
+		return result{}, false, err
+	}
+	r.log("step %s: leaf %s gets round %d: decision %s answers question %s", step.Name, l.Handle, l.Round()+1, decision, l.QuestionHandle)
+	return result{}, false, nil
+}
+
+// leafQuestionText is the statement of the question failed leaf l raises:
+// its handle, round, and each attempt of the round with the role that
+// failed it, why, and its verifier's findings, each kept short.
+func leafQuestionText(l LeafState) string {
+	var parts []string
+	for n := l.RoundBase() + 1; n <= l.Attempt(); n++ {
+		part := fmt.Sprintf("attempt %d", n)
+		for _, role := range []string{workflow.RoleBuilder, workflow.RoleVerifier} {
+			if j, ok := l.Judged(role, n); ok && j.Outcome != workflow.OutcomePass {
+				part += fmt.Sprintf(" %s failed: %s", role, clip(j.Detail))
+			}
+		}
+		if fs := l.AttemptFindings(n); len(fs) > 0 {
+			var rs []string
+			for _, f := range fs {
+				rs = append(rs, f.ID+" "+clip(f.Reason))
+			}
+			part += " (" + strings.Join(rs, "; ") + ")"
+		}
+		parts = append(parts, part)
+	}
+	return fmt.Sprintf("Leaf %s failed all %d attempts of round %d: %s. How should it be built, or should it change?",
+		l.Handle, MaxAttempts, l.Round(), strings.Join(parts, "; "))
+}
+
+// clipRunes is how much of one detail or finding a leaf's question keeps.
+const clipRunes = 160
+
+// clip is s on one line, without a trailing full stop, cut to clipRunes.
+func clip(s string) string {
+	s = strings.TrimRight(strings.Join(strings.Fields(s), " "), ".")
+	if r := []rune(s); len(r) > clipRunes {
+		return string(r[:clipRunes-1]) + "…"
+	}
+	return s
 }

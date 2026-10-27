@@ -420,4 +420,81 @@ func TestLeafPrompt(t *testing.T) {
 	if got := leafPrompt(role, spec, vars); got != "build leaf-a attempt 2 of CS1" {
 		t.Errorf("verifier attempt 2 = %q", got)
 	}
+
+	// A fresh round's first builder gets the answering Decision and no
+	// retry line; its second gets both, counted within the round.
+	spec = run.LeafSpec{Role: workflow.RoleBuilder, Leaf: run.Leaf{Handle: "leaf-a"}, Attempt: 4, Round: 2, RoundAttempt: 1,
+		Question: "Q1", Decision: "use-a-map", Answer: "Use a map, not a list."}
+	got = leafPrompt(role, spec, vars)
+	want := "build leaf-a attempt 4 of CS1\n\nLeaf leaf-a failed every attempt of its last round and raised question Q1. " +
+		"Decision use-a-map answers it:\n\nUse a map, not a list.\n\nBuild the leaf as it says; this round has 3 fresh attempts."
+	if got != want {
+		t.Errorf("round 2 attempt 1 =\n%q\nwant\n%q", got, want)
+	}
+	spec.Attempt, spec.RoundAttempt = 5, 2
+	got = leafPrompt(role, spec, vars)
+	for _, want := range []string{"Decision use-a-map answers it:\n\nUse a map, not a list.", "This is attempt 2 of 3 on leaf leaf-a"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("round 2 attempt 2 = %q, lacks %q", got, want)
+		}
+	}
+	spec.Role = workflow.RoleVerifier
+	if got := leafPrompt(role, spec, vars); got != "build leaf-a attempt 5 of CS1" {
+		t.Errorf("verifier in round 2 = %q", got)
+	}
+}
+
+// AddLeafQuestion writes one question node into the run's change set,
+// in the worktree where its sessions write, with the text as its
+// statement and a blocks link to the leaf; a second gets the next handle.
+// LeafAnswer finds the owner's Decision answering it, whatever its
+// wording, and nothing before one does.
+func TestAddLeafQuestion(t *testing.T) {
+	_, r, wctx := arbiterFixture(t)
+	leaf := mustWrite(t, wctx, "add", `{"kind":"capability","handle":"leaf-a"}`).Nodes[0]
+	cs := mustParseID(r.change)
+	q, err := r.AddLeafQuestion(run.Leaf{ID: leaf.String(), Handle: "leaf-a"}, "Leaf leaf-a failed all 3 attempts of round 1. How?")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if q.Handle != "leaf-failed-01runarb-1" {
+		t.Errorf("handle %q", q.Handle)
+	}
+	ww, err := r.worktreeWorkspace(false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := ww.model(cs)
+	n, ok := m.Node(mustParseID(q.ID))
+	if !ok || n.Kind != "question" || n.Handle != q.Handle || fieldText(n.Fields["statement"]) != "Leaf leaf-a failed all 3 attempts of round 1. How?" {
+		t.Fatalf("question node %+v", n)
+	}
+	blocks := m.LinksTo(leaf, "blocks")
+	if len(blocks) != 1 || blocks[0].From.String() != q.ID {
+		t.Errorf("blocks links to the leaf: %+v", blocks)
+	}
+	c, _ := ww.changeSet(cs)
+	created := false
+	for _, o := range c.Ops {
+		created = created || (o.Type == "node.create" && o.Handle == q.Handle)
+	}
+	if !created {
+		t.Errorf("the question is not created in the run's change set %s", cs)
+	}
+	q2, err := r.AddLeafQuestion(run.Leaf{ID: leaf.String(), Handle: "leaf-a"}, "Again?")
+	if err != nil || q2.Handle != "leaf-failed-01runarb-2" {
+		t.Errorf("second question %+v, %v", q2, err)
+	}
+
+	if d, s, ok, err := r.LeafAnswer(q.ID); err != nil || ok || d != "" || s != "" {
+		t.Errorf("unanswered: %q %q %v %v", d, s, ok, err)
+	}
+	mustWrite(t, wctx, "add", `{"kind":"decision","handle":"use-a-map","fields":["statement=Use a map."]}`)
+	mustWrite(t, wctx, "link", fmt.Sprintf(`{"from":"use-a-map","type":"answers","to":%q}`, q.ID))
+	if d, s, ok, err := r.LeafAnswer(q.ID); err != nil || !ok || d != "use-a-map" || s != "Use a map." {
+		t.Errorf("answered: %q %q %v %v", d, s, ok, err)
+	}
+	if _, err := r.AddLeafQuestion(run.Leaf{ID: id.ID{}.String(), Handle: "gone"}, "?"); err == nil {
+		t.Error("a question on a leaf that is no node was added")
+	}
 }

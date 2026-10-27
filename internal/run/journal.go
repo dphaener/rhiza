@@ -37,6 +37,9 @@ const (
 	TypeLeafSession = "leaf-session"
 	TypeLeafAttempt = "leaf-attempt"
 	TypeLeaf        = "leaf"
+	// TypeLeafRound gives a failed leaf a fresh round of attempts, once a
+	// Decision answers the question its failure raised.
+	TypeLeafRound = "leaf-round"
 )
 
 // Leaf outcomes, a leaf entry's Outcome.
@@ -148,9 +151,13 @@ type Block struct {
 //	leaf-attempt: Step, Leaf, Handle, Role, Attempt, Outcome (pass or fail), Commit
 //	           (a passed builder's leaf commit; a passed verifier's Evidence
 //	           commit), Detail (the role's session of the attempt was judged)
-//	leaf:      Step, Leaf, Handle, Outcome (passed, failed or skipped), Question (for
-//	           failed), Commit (a passed leaf's Evidence commit), Detail (the
-//	           leaf's outcome)
+//	leaf:      Step, Leaf, Handle, Outcome (passed, failed or skipped), Question and
+//	           QuestionHandle (for failed: the question node its failure raised),
+//	           Commit (a passed leaf's Evidence commit), Detail (the leaf's outcome)
+//	leaf-round: Step, Leaf, Handle, Question, QuestionHandle, Decision (failed leaf
+//	           Leaf gets a fresh round of MaxAttempts attempts: Decision, by
+//	           handle, answers Question, which its failure raised; the leaf is
+//	           open again, and the step's skipped leaves with it)
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -172,7 +179,7 @@ type Entry struct {
 	// Question is an arbiter or arbitrated entry's question node ID.
 	Question string `json:"question,omitempty"`
 	// Decision is an arbitrated entry's answering Decision's handle, when
-	// the arbiter passed.
+	// the arbiter passed, and a leaf-round entry's.
 	Decision string `json:"decision,omitempty"`
 	// Handle is an asked entry's question node handle.
 	Handle     string    `json:"handle,omitempty"`
@@ -198,6 +205,9 @@ type Entry struct {
 	Attempt int    `json:"attempt,omitempty"`
 	Model   string `json:"model,omitempty"`
 	Commit  string `json:"commit,omitempty"`
+	// QuestionHandle is a failed leaf's or a leaf-round entry's question
+	// node handle (Question is its ID).
+	QuestionHandle string `json:"question_handle,omitempty"`
 }
 
 // Finding is one finding: of a plan review round, node Node (its handle
@@ -393,10 +403,24 @@ type LeafFinding struct {
 	At      time.Time
 }
 
+// LeafRound is one leaf-round entry: the leaf's round Round (from 2)
+// began after attempt After, because Decision (by handle) answers question
+// Question (ID; handle QuestionHandle) its failure in the round before
+// raised.
+type LeafRound struct {
+	Round          int
+	After          int
+	Question       string
+	QuestionHandle string
+	Decision       string
+	At             time.Time
+}
+
 // LeafState is one leaf of a leaves step, folded from its entries: its
 // sessions, judged attempts and findings in journal order, and its outcome
 // (passed, failed or skipped) once a leaf entry has one; empty while it is
-// open.
+// open. Attempts are numbered across rounds: round 2 of a leaf that used
+// its 3 attempts starts at attempt 4.
 type LeafState struct {
 	Step     string
 	Leaf     string
@@ -404,11 +428,36 @@ type LeafState struct {
 	Sessions []LeafSession
 	Attempts []LeafAttempt
 	Findings []LeafFinding
-	Outcome  string
-	Question string
+	// Rounds are the leaf's fresh rounds, in order; none in round 1.
+	Rounds  []LeafRound
+	Outcome string
+	// Question and QuestionHandle are the question node a failed leaf's
+	// failure raised, if any.
+	Question       string
+	QuestionHandle string
 	// Commit is a passed leaf's Evidence commit.
 	Commit string
 	Detail string
+}
+
+// Round is the leaf's current round, from 1.
+func (l LeafState) Round() int { return len(l.Rounds) + 1 }
+
+// RoundBase is how many attempts came before the current round: 0 in
+// round 1.
+func (l LeafState) RoundBase() int {
+	if n := len(l.Rounds); n > 0 {
+		return l.Rounds[n-1].After
+	}
+	return 0
+}
+
+// LastRound is the leaf's latest fresh round, if it has one.
+func (l LeafState) LastRound() (LeafRound, bool) {
+	if n := len(l.Rounds); n > 0 {
+		return l.Rounds[n-1], true
+	}
+	return LeafRound{}, false
 }
 
 // AttemptFindings are the findings journalled on the leaf's attempt, in
@@ -568,8 +617,10 @@ type State struct {
 	Gated []string
 	// Leaves are the leaves of the leaves steps, in the order their first
 	// entry appears. A new visit of a leaves step starts its leaves anew:
-	// its entered entry drops the step's earlier leaves. A leaf session is
-	// also in Sessions; nothing else in the fold changes.
+	// its entered entry drops the step's earlier leaves, except the visit
+	// a retried entry reopened the run at, which keeps them, so passed
+	// leaves stay passed. A leaf session is also in Sessions; nothing else
+	// in the fold changes.
 	Leaves []LeafState
 }
 
@@ -630,8 +681,11 @@ func (j Journal) State() State {
 				}
 				st.retryVisit[e.Step] = st.CurrentVisit
 			}
+			retried := st.retryNext == e.Step
 			st.retryNext = ""
-			st.Leaves = slices.DeleteFunc(st.Leaves, func(l LeafState) bool { return l.Step == e.Step })
+			if !retried {
+				st.Leaves = slices.DeleteFunc(st.Leaves, func(l LeafState) bool { return l.Step == e.Step })
+			}
 		case TypeLeafSession:
 			l := st.leaf(e)
 			l.Sessions = append(l.Sessions, LeafSession{
@@ -643,7 +697,20 @@ func (j Journal) State() State {
 			l.Attempts = append(l.Attempts, LeafAttempt{Role: e.Role, Attempt: e.Attempt, Outcome: e.Outcome, Commit: e.Commit, Detail: e.Detail, At: e.At})
 		case TypeLeaf:
 			l := st.leaf(e)
-			l.Outcome, l.Question, l.Commit, l.Detail = e.Outcome, e.Question, e.Commit, e.Detail
+			l.Outcome, l.Question, l.QuestionHandle, l.Commit, l.Detail = e.Outcome, e.Question, e.QuestionHandle, e.Commit, e.Detail
+		case TypeLeafRound:
+			l := st.leaf(e)
+			l.Rounds = append(l.Rounds, LeafRound{
+				Round: l.Round() + 1, After: l.Attempt(), Question: e.Question, QuestionHandle: e.QuestionHandle, Decision: e.Decision, At: e.At,
+			})
+			l.Outcome, l.Question, l.QuestionHandle, l.Commit, l.Detail = "", "", "", "", ""
+			// Leaves skipped for a failed dependency may start again; the
+			// conductor skips anew any whose dependency is still lost.
+			for i := range st.Leaves {
+				if o := &st.Leaves[i]; o.Step == e.Step && o.Outcome == LeafSkipped {
+					o.Outcome, o.Detail = "", ""
+				}
+			}
 		case TypeSession:
 			st.Session[e.Step] = e.Session
 			st.addSession(e.Step, e.Session)

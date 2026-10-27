@@ -58,16 +58,18 @@ exec sh -c 'grep -c "\"findings\":\[{\"id\":\"f2\",\"reason\":\"help text names 
 stdout '^1$'
 
 # Findings fail first; second's verifier ended with neither, and the
-# builder's Evidence does not count; third's own Evidence passes it.
+# builder's Evidence does not count; third's own Evidence passes it. Each
+# failed leaf raised a question that blocks it.
 exec rhiza run status
 stdout '^- build \(visit 1\): fail, then end: 1 of 3 leaves passed; not passed: first, second$'
-stdout '\n- first \(step build\): failed: attempt 3: builder failed: exit 1\n  - attempt 1 builder, session [0-9a-f-]{36}: pass \(exit 0\)\n  - attempt 1 verifier, session [0-9a-f-]{36}: fail \(verifier found 2 problem\(s\)\)\n  - attempt 2 builder, session [0-9a-f-]{36}: fail \(exit 1\)\n  - attempt 3 builder, session [0-9a-f-]{36}: fail \(exit 1\)\n  - attempt 1 finding f1: no test for the exit code\n  - attempt 1 finding f2: help text names the wrong flag\n'
-stdout '\n- second \(step build\): failed: attempt 3: builder failed: exit 1\n  - attempt 1 builder, session [0-9a-f-]{36}: pass \(exit 0\)\n  - attempt 1 verifier, session [0-9a-f-]{36}: fail \(verifier ended with no Evidence of its own and no findings: Evidence second-ok was written by claude-code-[0-9a-z-]+, not by the verifier''s actor claude-code-[0-9a-z-]+\)\n'
+stdout '\n- first \(step build\): failed: attempt 3: builder failed: exit 1\n  - question leaf-failed-[0-9a-z]{8}-1 \([0-9A-Z]{26}\) blocks it\n  - attempt 1 builder, session [0-9a-f-]{36}: pass \(exit 0\)\n  - attempt 1 verifier, session [0-9a-f-]{36}: fail \(verifier found 2 problem\(s\)\)\n  - attempt 2 builder, session [0-9a-f-]{36}: fail \(exit 1\)\n  - attempt 3 builder, session [0-9a-f-]{36}: fail \(exit 1\)\n  - attempt 1 finding f1: no test for the exit code\n  - attempt 1 finding f2: help text names the wrong flag\n'
+stdout '\n- second \(step build\): failed: attempt 3: builder failed: exit 1\n  - question leaf-failed-[0-9a-z]{8}-2 \([0-9A-Z]{26}\) blocks it\n  - attempt 1 builder, session [0-9a-f-]{36}: pass \(exit 0\)\n  - attempt 1 verifier, session [0-9a-f-]{36}: fail \(verifier ended with no Evidence of its own and no findings: Evidence second-ok was written by claude-code-[0-9a-z-]+, not by the verifier''s actor claude-code-[0-9a-z-]+\)\n'
 stdout '\n- third \(step build\): passed: attempt 1: verifier passed\n'
 ! stdout '^## Review rounds'
 
 exec rhiza run status --json
 ! stdout '"rounds"'
+stdout -count=2 '"question_handle": "leaf-failed-[0-9a-z]{8}-[12]"'
 stdout -count=1 '"findings": \['
 stdout '"findings": \[\n\s+\{\n\s+"at": "[^"]+",\n\s+"attempt": 1,\n\s+"id": "f1",\n\s+"reason": "no test for the exit code"\n\s+\},\n\s+\{\n\s+"at": "[^"]+",\n\s+"attempt": 1,\n\s+"id": "f2",\n\s+"reason": "help text names the wrong flag"\n\s+\}\n\s+\]'
 

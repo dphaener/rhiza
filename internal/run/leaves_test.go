@@ -63,6 +63,23 @@ func (f *fakeRunner) CommitEvidence(leaf Leaf, session string) (string, error) {
 	return "E-" + leaf.Handle, nil
 }
 
+func (f *fakeRunner) AddLeafQuestion(leaf Leaf, text string) (Question, error) {
+	if f.leafQuestionErr != nil {
+		return Question{}, f.leafQuestionErr
+	}
+	f.leafQuestions = append(f.leafQuestions, leaf.Handle+" "+text)
+	n := strconv.Itoa(len(f.leafQuestions))
+	return Question{ID: "QL" + n, Handle: "leaf-failed-" + n}, nil
+}
+
+func (f *fakeRunner) LeafAnswer(question string) (string, string, bool, error) {
+	f.leafAnswerN[question]++
+	if a, ok := f.leafAnswers[question]; ok {
+		return a[0], a[1], true, nil
+	}
+	return "", "", false, nil
+}
+
 // checkoutDir is the fake runner's checkout for a leaf's verifier.
 func checkoutDir(handle string, attempt int) string {
 	return "/checkouts/" + handle + "-" + strconv.Itoa(attempt)
@@ -1161,5 +1178,232 @@ func TestLeavesStepRetriesResume(t *testing.T) {
 	}
 	if l := st.Leaves[0]; l.Outcome != LeafPassed || l.Detail != "attempt 2: verifier passed" {
 		t.Errorf("leaf = %+v", l)
+	}
+}
+
+const leafFailsWF = `[step.build]
+kind = "leaves"
+interval = "5s"
+[step.build.builder]
+prompt = "build {leaf}"
+models = ["sonnet", "opus", "opus"]
+[step.build.verifier]
+prompt = "verify {leaf}"
+`
+
+// abc are leaves A, B and C, C depending on A.
+var abc = []Leaf{{ID: "LA", Handle: "leaf-a"}, {ID: "LB", Handle: "leaf-b"}, {ID: "LC", Handle: "leaf-c", DependsOn: []string{"LA"}}}
+
+// leafFailsRun runs abc with leaf-a's builder failing every attempt and
+// the other leaves passing on attempt 1; leaf-a passes from attempt from
+// on, when from > 0.
+func leafFailsRun(t *testing.T, e *Engine, r *fakeRunner, from int) State {
+	t.Helper()
+	r.leaves = abc
+	passAll(r, abc)
+	r.outcome[leafSID("leaf-a", "builder", 1)] = workflow.OutcomeFail
+	if from > 0 {
+		for _, role := range []string{workflow.RoleBuilder, workflow.RoleVerifier} {
+			r.outcome[leafSID("leaf-a", role, from)] = workflow.OutcomePass
+		}
+	}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return st
+}
+
+// leafOutcomes are each leaf's handle and outcome, in State.Leaves order.
+func leafOutcomes(st State) []string {
+	var out []string
+	for _, l := range st.Leaves {
+		out = append(out, l.Handle+":"+l.Outcome)
+	}
+	return out
+}
+
+// A leaf that fails all its attempts raises one question linked to it,
+// journalled on its leaf entry; its dependent is skipped, the independent
+// leaf is built and verified, and the run ends failed.
+func TestLeafFails(t *testing.T) {
+	e, r, _, _ := setup(t, leafFailsWF)
+	st := leafFailsRun(t, e, r, 0)
+	if st.Result != Failed || !reflect.DeepEqual(outcomes(st), []string{"build:fail"}) {
+		t.Fatalf("result %q steps %v", st.Result, outcomes(st))
+	}
+	if got, want := leafOutcomes(st), []string{"leaf-a:failed", "leaf-b:passed", "leaf-c:skipped"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("leaves %v, want %v", got, want)
+	}
+	if len(r.leafQuestions) != 1 || !strings.HasPrefix(r.leafQuestions[0], "leaf-a Leaf leaf-a failed all 3 attempts of round 1: attempt 1 builder failed: exit 0; attempt 2 builder failed") {
+		t.Errorf("questions %q", r.leafQuestions)
+	}
+	a, _ := st.Leaf("build", "LA")
+	if a.Question != "QL1" || a.QuestionHandle != "leaf-failed-1" || a.Round() != 1 {
+		t.Errorf("leaf-a = %+v", a)
+	}
+	b, _ := st.Leaf("build", "LB")
+	if _, ok := b.Judged(workflow.RoleVerifier, 1); !ok || b.Commit != "E-leaf-b" {
+		t.Errorf("leaf-b was not verified: %+v", b)
+	}
+	if c, _ := st.Leaf("build", "LC"); c.Detail != "its dependency leaf-a did not pass" || len(c.Sessions) != 0 {
+		t.Errorf("leaf-c = %+v", c)
+	}
+	if len(r.arbiters) != 0 || len(r.leafAnswerN) != 0 {
+		t.Errorf("a normal run arbitrated %v or read answers %v", r.arbiters, r.leafAnswerN)
+	}
+}
+
+// A failed verifier's findings are in its leaf's question.
+func TestLeafFailsQuestionNamesFindings(t *testing.T) {
+	l := LeafState{Handle: "leaf-a"}
+	for n := 1; n <= MaxAttempts; n++ {
+		l.Sessions = append(l.Sessions, LeafSession{Role: workflow.RoleBuilder, Attempt: n})
+		l.Attempts = append(l.Attempts,
+			LeafAttempt{Role: workflow.RoleBuilder, Attempt: n, Outcome: workflow.OutcomePass},
+			LeafAttempt{Role: workflow.RoleVerifier, Attempt: n, Outcome: workflow.OutcomeFail, Detail: "verifier found 1 problem(s)"})
+		l.Findings = append(l.Findings, LeafFinding{Attempt: n, Finding: Finding{ID: "f1", Reason: "No test.\nAt all."}})
+	}
+	got := leafQuestionText(l)
+	want := "Leaf leaf-a failed all 3 attempts of round 1: attempt 1 verifier failed: verifier found 1 problem(s) (f1 No test. At all); " +
+		"attempt 2 verifier failed: verifier found 1 problem(s) (f1 No test. At all); attempt 3 verifier failed: verifier found 1 problem(s) (f1 No test. At all). " +
+		"How should it be built, or should it change?"
+	if got != want {
+		t.Errorf("text\n%q\nwant\n%q", got, want)
+	}
+}
+
+// A question that cannot be added leaves the leaf failed without one,
+// named in its detail, and the run carries on to fail.
+func TestLeafFailsQuestionNotAdded(t *testing.T) {
+	e, r, _, _ := setup(t, leafFailsWF)
+	r.leafQuestionErr = errors.New("change set landed")
+	st := leafFailsRun(t, e, r, 0)
+	a, _ := st.Leaf("build", "LA")
+	if st.Result != Failed || a.Question != "" || !strings.HasSuffix(a.Detail, "; its question could not be added: change set landed") {
+		t.Errorf("result %q leaf-a %+v", st.Result, a)
+	}
+	if got, want := leafOutcomes(st), []string{"leaf-a:failed", "leaf-b:passed", "leaf-c:skipped"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("leaves %v, want %v", got, want)
+	}
+}
+
+// After a Decision answers the failed leaf's question, a retry keeps the
+// passed leaf, gives the failed one a fresh round of 3 attempts on the
+// ladder's first model with the Decision in its builder's spec, then
+// builds its dependent, and the run succeeds.
+func TestLeafFailsResume(t *testing.T) {
+	e, r, _, _ := setup(t, leafFailsWF)
+	if st := leafFailsRun(t, e, r, 0); st.Result != Failed {
+		t.Fatalf("first run %q", st.Result)
+	}
+	before := len(r.leafSpecs)
+	for _, role := range []string{workflow.RoleBuilder, workflow.RoleVerifier} {
+		r.outcome[leafSID("leaf-a", role, 4)] = workflow.OutcomePass
+	}
+	r.leafAnswers["QL1"] = [2]string{"use-a-map", "Use a map, not a list."}
+	st, err := e.Retry(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded {
+		t.Fatalf("retry %q: %s", st.Result, st.Detail)
+	}
+	if got, want := leafOutcomes(st), []string{"leaf-a:passed", "leaf-b:passed", "leaf-c:passed"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("leaves %v, want %v", got, want)
+	}
+	var started []string
+	for _, s := range r.leafSpecs[before:] {
+		started = append(started, s.Leaf.Handle+" "+s.Role+" "+strconv.Itoa(s.Attempt))
+	}
+	if want := []string{"leaf-a builder 4", "leaf-a verifier 4", "leaf-c builder 1", "leaf-c verifier 1"}; !reflect.DeepEqual(started, want) {
+		t.Errorf("started %v, want %v", started, want)
+	}
+	spec := r.leafSpecs[before]
+	if spec.Round != 2 || spec.RoundAttempt != 1 || spec.Model != "sonnet" || spec.Question != "QL1" ||
+		spec.Decision != "use-a-map" || spec.Answer != "Use a map, not a list." || !slices.Contains(spec.Env, "RHIZA_ATTEMPT=4") {
+		t.Errorf("fresh round spec = %+v", spec)
+	}
+	if r.leafSpecs[2].Model != "opus" || r.leafSpecs[2].Attempt != 3 {
+		t.Errorf("round 1 attempt 3 spec = %+v", r.leafSpecs[2])
+	}
+	a, _ := st.Leaf("build", "LA")
+	if want := []LeafRound{{Round: 2, After: 3, Question: "QL1", QuestionHandle: "leaf-failed-1", Decision: "use-a-map", At: at(1)}}; !reflect.DeepEqual(a.Rounds, want) {
+		t.Errorf("rounds %+v, want %+v", a.Rounds, want)
+	}
+	types := entryTypes(t, e)
+	if !slices.Contains(types, "leaf-round:build") {
+		t.Errorf("journal %v lacks leaf-round", types)
+	}
+}
+
+// A retry while the failed leaf's question is unanswered starts nothing:
+// the leaf stays failed, its dependent skipped, and the run fails again.
+func TestLeafFailsResumeUnanswered(t *testing.T) {
+	e, r, _, _ := setup(t, leafFailsWF)
+	leafFailsRun(t, e, r, 0)
+	before := len(r.leafSpecs)
+	st, err := e.Retry(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Failed || len(r.leafSpecs) != before || r.leafAnswerN["QL1"] != 1 {
+		t.Errorf("result %q, %d new sessions, %d answer reads", st.Result, len(r.leafSpecs)-before, r.leafAnswerN["QL1"])
+	}
+	if got, want := leafOutcomes(st), []string{"leaf-a:failed", "leaf-b:passed", "leaf-c:skipped"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("leaves %v, want %v", got, want)
+	}
+}
+
+// In an autonomous run the arbiter is started on the failed leaf's
+// question at once; its pass gives the leaf one fresh round, whose
+// failure raises a second question that is never arbitrated, and the run
+// ends failed.
+func TestLeafFailsAutonomous(t *testing.T) {
+	e, r := autonomousSetup(t, leafFailsWF)
+	r.answers["QL1"] = Answer{OK: true, Decision: "assume-a-map", Statement: "Use a map."}
+	r.leafAnswers["QL1"] = [2]string{"assume-a-map", "Use a map."}
+	st := leafFailsRun(t, e, r, 0)
+	if st.Result != Failed {
+		t.Fatalf("result %q", st.Result)
+	}
+	if !reflect.DeepEqual(r.arbiters, []string{"arbiter QL1"}) {
+		t.Errorf("arbiters %v, want one on QL1", r.arbiters)
+	}
+	if len(r.leafQuestions) != 2 || !strings.HasPrefix(r.leafQuestions[1], "leaf-a Leaf leaf-a failed all 3 attempts of round 2: attempt 4 builder failed") {
+		t.Errorf("questions %q", r.leafQuestions)
+	}
+	a, _ := st.Leaf("build", "LA")
+	if a.Outcome != LeafFailed || a.Question != "QL2" || len(a.Rounds) != 1 || a.Attempt() != 6 {
+		t.Errorf("leaf-a = %+v", a)
+	}
+	var round2 []string
+	for _, s := range r.leafSpecs {
+		if s.Leaf.Handle == "leaf-a" && s.Round == 2 {
+			round2 = append(round2, s.Model+" "+s.Decision+" "+s.Answer)
+		}
+	}
+	if want := []string{"sonnet assume-a-map Use a map.", "opus assume-a-map Use a map.", "opus assume-a-map Use a map."}; !reflect.DeepEqual(round2, want) {
+		t.Errorf("round 2 builders %q, want %q", round2, want)
+	}
+	if got, want := leafOutcomes(st), []string{"leaf-a:failed", "leaf-b:passed", "leaf-c:skipped"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("leaves %v, want %v", got, want)
+	}
+	if len(r.leafAnswerN) != 1 {
+		t.Errorf("answer reads %v: the second question was read", r.leafAnswerN)
+	}
+}
+
+// In an autonomous run an arbiter that fails leaves the leaf failed with
+// no fresh round, and the run ends failed.
+func TestLeafFailsAutonomousArbiterFails(t *testing.T) {
+	e, r := autonomousSetup(t, leafFailsWF)
+	st := leafFailsRun(t, e, r, 0)
+	a, _ := st.Leaf("build", "LA")
+	if st.Result != Failed || a.Outcome != LeafFailed || len(a.Rounds) != 0 || a.Attempt() != 3 {
+		t.Errorf("result %q leaf-a %+v", st.Result, a)
+	}
+	if arb, ok := st.Arbitration("QL1"); !ok || arb.Outcome != workflow.OutcomeFail || !reflect.DeepEqual(r.arbiters, []string{"arbiter QL1"}) {
+		t.Errorf("arbitration %+v arbiters %v", arb, r.arbiters)
 	}
 }

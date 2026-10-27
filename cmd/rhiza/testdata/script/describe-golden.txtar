@@ -3106,8 +3106,57 @@ cmp stdout describe.golden.json
                       "type": "string"
                     },
                     "question": {
-                      "description": "The question node a failed leaf raised, if any",
+                      "description": "The question node a failed leaf raised, by ID, if any",
                       "type": "string"
+                    },
+                    "question_handle": {
+                      "description": "That question node's handle",
+                      "type": "string"
+                    },
+                    "round": {
+                      "description": "The leaf's current round of attempts, from 1",
+                      "type": "integer"
+                    },
+                    "rounds": {
+                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised; absent in round 1",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "after": {
+                            "description": "The attempts before it: its first attempt is after + 1",
+                            "type": "integer"
+                          },
+                          "at": {
+                            "description": "When the round began, RFC 3339 UTC",
+                            "type": "string"
+                          },
+                          "decision": {
+                            "description": "The handle of the Decision that answers it",
+                            "type": "string"
+                          },
+                          "question": {
+                            "description": "The question node the leaf's failure raised, by ID",
+                            "type": "string"
+                          },
+                          "question_handle": {
+                            "description": "That question node's handle",
+                            "type": "string"
+                          },
+                          "round": {
+                            "description": "The round, from 2",
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "after",
+                          "at",
+                          "decision",
+                          "question",
+                          "round"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
                     },
                     "sessions": {
                       "description": "The leaf's sessions, in the order they started",
@@ -3158,6 +3207,7 @@ cmp stdout describe.golden.json
                     "attempts",
                     "handle",
                     "leaf",
+                    "round",
                     "sessions",
                     "step"
                   ],
@@ -4050,8 +4100,57 @@ cmp stdout describe.golden.json
                       "type": "string"
                     },
                     "question": {
-                      "description": "The question node a failed leaf raised, if any",
+                      "description": "The question node a failed leaf raised, by ID, if any",
                       "type": "string"
+                    },
+                    "question_handle": {
+                      "description": "That question node's handle",
+                      "type": "string"
+                    },
+                    "round": {
+                      "description": "The leaf's current round of attempts, from 1",
+                      "type": "integer"
+                    },
+                    "rounds": {
+                      "description": "Its fresh rounds, each given once a Decision answered the question its failure raised; absent in round 1",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "after": {
+                            "description": "The attempts before it: its first attempt is after + 1",
+                            "type": "integer"
+                          },
+                          "at": {
+                            "description": "When the round began, RFC 3339 UTC",
+                            "type": "string"
+                          },
+                          "decision": {
+                            "description": "The handle of the Decision that answers it",
+                            "type": "string"
+                          },
+                          "question": {
+                            "description": "The question node the leaf's failure raised, by ID",
+                            "type": "string"
+                          },
+                          "question_handle": {
+                            "description": "That question node's handle",
+                            "type": "string"
+                          },
+                          "round": {
+                            "description": "The round, from 2",
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "after",
+                          "at",
+                          "decision",
+                          "question",
+                          "round"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
                     },
                     "sessions": {
                       "description": "The leaf's sessions, in the order they started",
@@ -4102,6 +4201,7 @@ cmp stdout describe.golden.json
                     "attempts",
                     "handle",
                     "leaf",
+                    "round",
                     "sessions",
                     "step"
                   ],
@@ -4845,8 +4945,57 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "question": {
-                  "description": "The question node a failed leaf raised, if any",
+                  "description": "The question node a failed leaf raised, by ID, if any",
                   "type": "string"
+                },
+                "question_handle": {
+                  "description": "That question node's handle",
+                  "type": "string"
+                },
+                "round": {
+                  "description": "The leaf's current round of attempts, from 1",
+                  "type": "integer"
+                },
+                "rounds": {
+                  "description": "Its fresh rounds, each given once a Decision answered the question its failure raised; absent in round 1",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "after": {
+                        "description": "The attempts before it: its first attempt is after + 1",
+                        "type": "integer"
+                      },
+                      "at": {
+                        "description": "When the round began, RFC 3339 UTC",
+                        "type": "string"
+                      },
+                      "decision": {
+                        "description": "The handle of the Decision that answers it",
+                        "type": "string"
+                      },
+                      "question": {
+                        "description": "The question node the leaf's failure raised, by ID",
+                        "type": "string"
+                      },
+                      "question_handle": {
+                        "description": "That question node's handle",
+                        "type": "string"
+                      },
+                      "round": {
+                        "description": "The round, from 2",
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "after",
+                      "at",
+                      "decision",
+                      "question",
+                      "round"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
                 },
                 "sessions": {
                   "description": "The leaf's sessions, in the order they started",
@@ -4897,6 +5046,7 @@ cmp stdout describe.golden.json
                 "attempts",
                 "handle",
                 "leaf",
+                "round",
                 "sessions",
                 "step"
               ],
