@@ -3376,6 +3376,125 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "run.review-check",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmed": {
+            "description": "The round's findings the critic confirmed, in order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "handle": {
+                  "description": "The node's handle when the finding was recorded; absent when it had none",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The finding's ID in its round: f1, f2, ...",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction",
+                  "type": "string"
+                },
+                "node": {
+                  "description": "The node it is about, by ID",
+                  "type": "string"
+                },
+                "reason": {
+                  "description": "Why the reviewer found it",
+                  "type": "string"
+                },
+                "verdict": {
+                  "description": "The critic's latest verdict, confirmed or dropped; absent before one",
+                  "type": "string"
+                },
+                "verdict_reason": {
+                  "description": "Why the critic gave it; absent before a verdict",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "kind",
+                "node",
+                "reason"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "description": "True if nothing was written or journalled",
+            "type": "boolean"
+          },
+          "passed": {
+            "description": "True: the review may go on to the gate",
+            "type": "boolean"
+          },
+          "questions": {
+            "description": "From round 3, the question nodes left for the confirmed findings, in order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "added": {
+                  "description": "True if this check added it; false if an earlier check had",
+                  "type": "boolean"
+                },
+                "blocks": {
+                  "description": "The capability it blocks, by ID; absent when the finding names another kind of node",
+                  "type": "string"
+                },
+                "finding": {
+                  "description": "The finding it holds, by ID in the round",
+                  "type": "string"
+                },
+                "handle": {
+                  "description": "Its handle: review-<run8>-r<round>-<finding>",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The question node's ID",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "added",
+                "finding",
+                "handle",
+                "id"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "round": {
+            "description": "The latest review round, from 1",
+            "type": "integer"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirmed",
+          "passed",
+          "round",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Check the latest review round of the run RHIZA_RUN names: pass with no confirmed finding, fail with one before round 3, else leave each as a question and pass",
+      "write": true
+    },
+    {
       "name": "run.start",
       "request": {
         "additionalProperties": false,

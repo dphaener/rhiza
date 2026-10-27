@@ -1,10 +1,11 @@
 package api
 
 // This file holds the plan review ops of a run: run.findings journals a
-// reviewer's findings, opening the next review round, and run.verdict
-// journals a critic's verdicts on the latest round's findings. Both work
-// only inside the run RHIZA_RUN names, which must be unfinished, and both
-// check everything before they journal anything. The round count comes
+// reviewer's findings, opening the next review round, run.verdict
+// journals a critic's verdicts on the latest round's findings, and
+// run.review-check decides whether the review may go on to the gate. All
+// work only inside the run RHIZA_RUN names, which must be unfinished, and
+// all check everything before they write anything. The round count comes
 // from the journal: each run.findings call is one round.
 
 import (
@@ -18,7 +19,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
 )
 
@@ -46,6 +49,14 @@ func init() {
 			Schema:  verdictFileSchema,
 		},
 		Run: runRunVerdict,
+	})
+	register(Operation{
+		Name:     "run.review-check",
+		Summary:  "Check the latest review round of the run RHIZA_RUN names: pass with no confirmed finding, fail with one before round 3, else leave each as a question and pass",
+		Write:    true,
+		Request:  reflect.TypeFor[RunReviewCheckRequest](),
+		Response: reflect.TypeFor[RunReviewCheckResponse](),
+		Run:      runRunReviewCheck,
 	})
 }
 
@@ -432,4 +443,208 @@ func findingLine(f RunFinding) string {
 		s += " — " + f.Verdict + ": " + oneLine(f.VerdictReason)
 	}
 	return s
+}
+
+// reviewRoundCap is the review round from which confirmed findings no
+// longer fail the check but are left as questions for the gate.
+const reviewRoundCap = 3
+
+// reviewQuestionPrefix starts the handle of every question node
+// run.review-check adds: review-<run8>-r<round>-<finding>.
+const reviewQuestionPrefix = "review-"
+
+const runReviewCheckNext = "rhiza describe run.review-check"
+
+// RunReviewCheckRequest takes nothing: the run is RHIZA_RUN's.
+type RunReviewCheckRequest struct{}
+
+// RunReviewQuestion is a question node run.review-check left for a
+// confirmed finding.
+type RunReviewQuestion struct {
+	ID      string `json:"id" desc:"The question node's ID"`
+	Handle  string `json:"handle" desc:"Its handle: review-<run8>-r<round>-<finding>"`
+	Finding string `json:"finding" desc:"The finding it holds, by ID in the round"`
+	Blocks  string `json:"blocks,omitempty" desc:"The capability it blocks, by ID; absent when the finding names another kind of node"`
+	Added   bool   `json:"added" desc:"True if this check added it; false if an earlier check had"`
+}
+
+// RunReviewCheckResponse is the check's outcome. A failing check is an
+// error (exit 1), not a response.
+type RunReviewCheckResponse struct {
+	Run       string              `json:"run" desc:"The run's full ID"`
+	Round     int                 `json:"round" desc:"The latest review round, from 1"`
+	Passed    bool                `json:"passed" desc:"True: the review may go on to the gate"`
+	Confirmed []RunFinding        `json:"confirmed" desc:"The round's findings the critic confirmed, in order"`
+	Questions []RunReviewQuestion `json:"questions,omitempty" desc:"From round 3, the question nodes left for the confirmed findings, in order"`
+	DryRun    bool                `json:"dry_run,omitempty" desc:"True if nothing was written or journalled"`
+}
+
+// reviewQuestionHandle is the handle of the question run rid leaves for
+// finding fid of round n.
+func reviewQuestionHandle(rid string, n int, fid string) string {
+	return reviewQuestionPrefix + strings.ToLower(rid[:8]) + "-r" + strconv.Itoa(n) + "-" + fid
+}
+
+// reviewQuestionText is the statement of the question left for finding
+// f, confirmed for reason, in round n.
+func reviewQuestionText(n int, f run.Finding, reason string) string {
+	node := f.Handle
+	if node == "" {
+		node = f.Node
+	}
+	return fmt.Sprintf("Plan review round %d left finding %s (%s on %s): %s. The critic confirmed it: %s. How should it be settled?",
+		n, f.ID, f.Kind, node, strings.TrimRight(oneLine(f.Reason), "."), strings.TrimRight(oneLine(reason), "."))
+}
+
+// runRunReviewCheck reads the run's latest review round. With no round
+// it fails; with no confirmed finding it passes. Before round 3 a
+// confirmed finding fails it (exit 1), writing nothing. From round 3 it
+// adds a question node per confirmed finding to the run's change set, in
+// one entry as the caller, linked blocks to the finding's node when that
+// is a capability; journals an asked entry for each (Step RHIZA_STEP, no
+// Session), so an autonomous run's arbiter decides it; and passes. A
+// question already added, or already journalled, is not again.
+func runRunReviewCheck(ctx *Ctx, _ any) (any, error) {
+	const cmd = "run review-check"
+	rr, err := openReviewRun(ctx, cmd, runReviewCheckNext)
+	if err != nil {
+		return nil, err
+	}
+	rd, ok := rr.state.LatestRound()
+	if !ok {
+		return nil, Errorf("%s: run %s has no review round yet, so the plan is unreviewed: rhiza run findings opens one", cmd, rr.id).
+			WithNext("rhiza describe run.findings")
+	}
+	confirmed := rd.Confirmed()
+	resp := RunReviewCheckResponse{Run: rr.id, Round: rd.Number, Confirmed: make([]RunFinding, 0, len(confirmed)), DryRun: ctx.DryRun}
+	for _, f := range confirmed {
+		resp.Confirmed = append(resp.Confirmed, runFinding(f, rd))
+	}
+	if len(confirmed) == 0 {
+		resp.Passed = true
+		return resp, nil
+	}
+	if rd.Number < reviewRoundCap {
+		lines := make([]string, 0, len(resp.Confirmed))
+		for _, f := range resp.Confirmed {
+			lines = append(lines, "- "+findingLine(f))
+		}
+		return nil, Errorf("%s: review round %d of run %s has %d confirmed finding(s); revise the plan and review it again:\n%s",
+			cmd, rd.Number, rr.id, len(confirmed), strings.Join(lines, "\n")).WithNext("rhiza run status " + rr.id)
+	}
+
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return nil, err
+	}
+	c, ok := w.changeSet(rr.change)
+	if !ok {
+		return nil, NotFoundf("run %s's change set %s is not in the log", rr.id, rr.change).WithNext("rhiza run status " + rr.id)
+	}
+	m := w.model(rr.change)
+	asked := map[string]bool{}
+	for _, a := range rr.state.Asked {
+		asked[a.Handle] = true
+	}
+	var items []applyItem
+	for _, f := range confirmed {
+		v, _ := rd.Verdict(f.ID)
+		q := RunReviewQuestion{Handle: reviewQuestionHandle(rr.id, rd.Number, f.ID), Finding: f.ID}
+		if n, ok := m.Node(mustParseID(f.Node)); ok && n.Kind == op.KindCapability && !n.Retired {
+			q.Blocks = n.ID.String()
+		}
+		if !answerProposed(m, c.Ops, q.Handle) {
+			q.Added = true
+			add := AddRequest{Kind: string(op.KindQuestion), Handle: q.Handle,
+				Fields: []string{"statement=" + reviewQuestionText(rd.Number, f, v.Reason)}}
+			items = append(items, applyItem{op: "add", build: func(b writeBase) (edit, error) { return buildAdd(b, add) }})
+			if q.Blocks != "" {
+				link := LinkRequest{From: q.Handle, Type: string(op.LinkBlocks), To: q.Blocks}
+				items = append(items, applyItem{op: "link", build: func(b writeBase) (edit, error) { return buildLink(b, link) }})
+			}
+		}
+		resp.Questions = append(resp.Questions, q)
+	}
+	var created []op.Op
+	if len(items) > 0 {
+		if c.State.Terminal() {
+			return nil, Conflictf("change set %s is %s; no question can be added to it", rr.change, c.State).
+				WithNext("rhiza change show " + rr.change.String())
+		}
+		actor, forID, err := w.resolveActor(rr.change, ctx)
+		if err != nil {
+			return nil, err
+		}
+		e, err := buildApply(w, rr.change, ctx.IDs, items)
+		if err == nil {
+			err = e.check("add")
+		}
+		if err != nil {
+			return nil, err
+		}
+		if _, err := w.appendEntry(rr.change, changeset.Ops{Ops: e.ops, Drop: e.drop}, actor, forID); err != nil {
+			return nil, err
+		}
+		created = e.ops
+	}
+	created = append(created, c.Ops...)
+	step := strings.TrimSpace(ctxGetenv(ctx)("RHIZA_STEP"))
+	for i, q := range resp.Questions {
+		for _, o := range created {
+			if o.Type == op.TypeNodeCreate && o.Handle == q.Handle {
+				resp.Questions[i].ID = o.Node.String()
+				break
+			}
+		}
+		if resp.Questions[i].ID == "" {
+			return nil, Errorf("question %s has no node in change set %s", q.Handle, rr.change)
+		}
+		if asked[q.Handle] {
+			continue
+		}
+		f, _ := rd.Finding(q.Finding)
+		v, _ := rd.Verdict(q.Finding)
+		e := run.Entry{Type: run.TypeAsked, At: ctx.Now(), Step: step, Question: resp.Questions[i].ID,
+			Handle: q.Handle, Detail: reviewQuestionText(rd.Number, f, v.Reason)}
+		if err := rr.journal(ctx, "question "+q.Handle, e); err != nil {
+			return nil, err
+		}
+	}
+	resp.Passed = true
+	return resp, nil
+}
+
+// mustParseID parses s, or is the zero ID when s is not one.
+func mustParseID(s string) id.ID {
+	n, _ := id.Parse(s)
+	return n
+}
+
+// Human reports the check's outcome.
+func (r RunReviewCheckResponse) Human(w io.Writer) {
+	if len(r.Confirmed) == 0 {
+		fmt.Fprintf(w, "Review round %d of run %s passed: no confirmed finding\n", r.Round, r.Run)
+		return
+	}
+	verb := "left"
+	if r.DryRun {
+		verb = "would leave"
+	}
+	fmt.Fprintf(w, "Review round %d of run %s passed: round %d is the last, so it %s %d question(s) for the gate\n\n",
+		r.Round, r.Run, r.Round, verb, len(r.Questions))
+	for _, q := range r.Questions {
+		s := "- " + q.Handle + " for " + q.Finding
+		if q.Blocks != "" {
+			s += ", blocks " + q.Blocks
+		}
+		if !q.Added {
+			s += " (already there)"
+		}
+		fmt.Fprintln(w, s)
+	}
+	if r.DryRun {
+		fmt.Fprintf(w, "\nThis was a dry run: nothing was written or journalled.\n")
+		return
+	}
+	fmt.Fprintf(w, "\nnext: rhiza run status %s\n", r.Run)
 }

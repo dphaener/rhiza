@@ -1,0 +1,124 @@
+# run review-check caps plan review at three rounds. With RHIZA_RUN naming
+# an unfinished run: with no round it fails; if the latest round's critic
+# confirmed no finding it passes; a finding confirmed in round 1 or 2 fails
+# (exit 1) and adds nothing. After round 3 with confirmed findings it adds
+# one question node per finding to the run's change set (blocks the node it
+# names when that is a capability), journals an asked entry per question,
+# and passes, so the plan reaches the gate with them open. A second check
+# adds nothing again. With no RHIZA_RUN it is usage.
+#
+# The run stops at a wait step whose until does not hold, so it stays
+# unfinished and launches no agent.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Review check' --title 'Review check' --json
+stdout '"change_set": "[0-9A-Z]{26}"'
+exec rhiza add capability cap-a --field 'statement=Does A'
+exec rhiza add decision dec-a --field 'statement=Use A'
+mkdir .rhiza/workflows
+cp $WORK/hold.toml .rhiza/workflows/hold.toml
+exec rhiza run start --workflow hold --no-wait
+stdout '^Run (01[0-9A-Z]{24}) stopped$'
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+
+# No RHIZA_RUN: usage.
+exec sh -c 'rhiza run review-check --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout 'RHIZA_RUN is not set'
+stdout '^exit=2$'
+
+# No round yet: it fails.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run review-check --json; echo exit=$?'
+stdout '"code": "error"'
+stdout 'no review round'
+stdout '^exit=1$'
+
+# Round 1, f1 confirmed: it fails, names f1, and adds nothing.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/findings.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run verdict $WORK/verdict.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run review-check; echo exit=$?'
+stdout '^exit=1$'
+stderr 'round 1'
+stderr 'f1 missing-acceptance on cap-a: No acceptance criteria'
+! stderr 'f3'
+exec rhiza ls --kind question --json
+! stdout 'review-'
+exec sh -c 'grep -c "\"type\":\"asked\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl; true'
+stdout '^0$'
+
+# Round 2, clean: it passes.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/clean.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run review-check --json; echo exit=$?'
+stdout '"round": 2'
+stdout '"passed": true'
+stdout '^exit=0$'
+exec rhiza ls --kind question --json
+! stdout 'review-'
+
+# Round 3, f1 (on a capability) and f2 (on a decision) confirmed, f3
+# dropped: two questions, journalled, and it passes.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/findings.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run verdict $WORK/verdict.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) RHIZA_STEP=check rhiza run review-check --json; echo exit=$?'
+stdout '"round": 3'
+stdout '"passed": true'
+stdout '"handle": "review-[0-9a-z]{8}-r3-f1"'
+stdout '"handle": "review-[0-9a-z]{8}-r3-f2"'
+! stdout 'r3-f3'
+stdout '^exit=0$'
+exec sh -c 'rhiza show review-$(cut -c1-8 $WORK/runid | tr A-Z a-z)-r3-f1 --json'
+stdout '"kind": "question"'
+stdout 'Plan review round 3 left finding f1 \(missing-acceptance on cap-a\): No acceptance criteria'
+stdout 'It has none'
+stdout '"type": "blocks"'
+stdout '"handle": "cap-a"'
+exec sh -c 'rhiza show review-$(cut -c1-8 $WORK/runid | tr A-Z a-z)-r3-f2 --json'
+stdout 'finding f2 \(contradiction on dec-a\): Says both'
+! stdout '"type": "blocks"'
+exec sh -c 'grep -c "\"type\":\"asked\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+stdout '^2$'
+exec sh -c 'grep "\"type\":\"asked\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+stdout '"step":"check".*"question":"[0-9A-Z]{26}","handle":"review-[0-9a-z]{8}-r3-f1"'
+! stdout '"session"'
+exec sh -c 'grep "\"type\":\"asked\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl | grep -c "\"detail\":\"Plan review round 3"'
+stdout '^2$'
+
+# Checked again: nothing added, nothing journalled, still passes.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run review-check; echo exit=$?'
+stdout '^exit=0$'
+exec sh -c 'grep -c "\"type\":\"asked\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+stdout '^2$'
+exec sh -c 'rhiza ls --kind question --json | grep -c "\"handle\": \"review-"'
+stdout '^2$'
+
+fold-ok
+
+-- hold.toml --
+name = "hold"
+
+[step.gate]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
+-- findings.json --
+{"findings":[
+  {"node":"cap-a","kind":"missing-acceptance","reason":"No acceptance criteria"},
+  {"node":"dec-a","kind":"contradiction","reason":"Says both"},
+  {"node":"cap-a","kind":"outside-intent","reason":"Out of scope"}
+]}
+-- verdict.json --
+{"verdicts":[
+  {"finding":"f1","verdict":"confirmed","reason":"It has none"},
+  {"finding":"f2","verdict":"confirmed","reason":"They clash"},
+  {"finding":"f3","verdict":"dropped","reason":"In scope"}
+]}
+-- clean.json --
+{"findings":[]}
