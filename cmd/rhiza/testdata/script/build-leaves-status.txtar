@@ -8,7 +8,8 @@
 # directory, then prints a window; the fake claude logs its role, leaf,
 # attempt and prompt. As a builder it commits with its leaf's Leaf:
 # trailer, which a builder's pass needs; as a verifier it logs that the
-# commit it got is HEAD. It exits 0.
+# commit it got is HEAD and writes, as its own actor, the Evidence that
+# verifies the leaf, which a verifier's pass needs. It exits 0.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -50,7 +51,7 @@ cmp stdout $WORK/want.log
 
 exec rhiza run status
 stdout '^- build \(visit 1\): pass, then end: 2 of 2 leaves passed$'
-stdout '\n## Leaves\n\n- first \(step build\): passed: attempt 1: verifier passed\n  - attempt 1 builder, session [0-9a-f-]{36}: pass \(exit 0\)\n  - attempt 1 verifier, session [0-9a-f-]{36}: pass \(exit 0\)\n- second \(step build\): passed: attempt 1: verifier passed\n  - attempt 1 builder, session [0-9a-f-]{36}: pass \(exit 0\)\n  - attempt 1 verifier, session [0-9a-f-]{36}: pass \(exit 0\)\n'
+stdout '\n## Leaves\n\n- first \(step build\): passed: attempt 1: verifier passed\n  - attempt 1 builder, session [0-9a-f-]{36}: pass \(exit 0\)\n  - attempt 1 verifier, session [0-9a-f-]{36}: pass \(Evidence written by the verifier\)\n- second \(step build\): passed: attempt 1: verifier passed\n  - attempt 1 builder, session [0-9a-f-]{36}: pass \(exit 0\)\n  - attempt 1 verifier, session [0-9a-f-]{36}: pass \(Evidence written by the verifier\)\n'
 
 exec rhiza run status --json
 stdout -count=1 '"handle": "first",'
@@ -59,7 +60,7 @@ stdout -count=2 '"outcome": "passed"'
 stdout -count=2 '"attempt": 1,\n\s+"commit": "[0-9a-f]{40}",\n\s+"role": "builder",\n\s+"session": "[0-9a-f-]{36}"'
 stdout -count=2 '"attempt": 1,\n\s+"commit": "[0-9a-f]{40}",\n\s+"role": "verifier",\n\s+"session": "[0-9a-f-]{36}"'
 stdout -count=2 '"attempt": 1,\n\s+"commit": "[0-9a-f]{40}",\n\s+"detail": "exit 0",\n\s+"outcome": "pass",\n\s+"role": "builder"'
-stdout -count=2 '"attempt": 1,\n\s+"detail": "exit 0",\n\s+"outcome": "pass",\n\s+"role": "verifier"'
+stdout -count=2 '"attempt": 1,\n\s+"detail": "Evidence written by the verifier",\n\s+"outcome": "pass",\n\s+"role": "verifier"'
 stdout '"leaves": \[\n(.*\n)*?\s+"handle": "first",(.*\n)*?\s+"handle": "second",'
 
 fold-ok
@@ -107,5 +108,7 @@ else
 	commit=other
 	[ "$RHIZA_COMMIT" = "$(git rev-parse HEAD)" ] && commit=head
 	echo "role=$RHIZA_ROLE leaf=$RHIZA_LEAF attempt=$RHIZA_ATTEMPT commit=$commit prompt=$last" >> "$WORK/claude.log"
+	rhiza add evidence "$RHIZA_LEAF-ok" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link "$RHIZA_LEAF-ok" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
 fi
 exit 0

@@ -25,6 +25,11 @@ type LeafRunner interface {
 	// is "" and detail says why: no new commit, or the new commits name
 	// other leaves or none.
 	LeafCommit(leaf Leaf, since string) (commit, detail string, err error)
+	// Evidence reports whether leaf has live Evidence that verifies it,
+	// created by the actor of verifier session session. When not, detail
+	// says why: "" when no Evidence verifies the leaf at all, else which
+	// other actor wrote the Evidence that does.
+	Evidence(leaf Leaf, session string) (ok bool, detail string, err error)
 }
 
 // Leaf is one leaf of a change set: its capability node's ID and handle,
@@ -314,7 +319,8 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 // done, it journals the attempt's judgement (judged true) and reports the
 // session's end to the Runner. A builder judged pass passes only with a
 // new commit since its start naming its leaf (LeafCommit), journalled on
-// the attempt; without one its attempt fails with LeafCommit's detail. A live session's block is journalled and
+// the attempt; without one its attempt fails with LeafCommit's detail. A
+// verifier judged pass passes only as judgeVerifier finds. A live session's block is journalled and
 // notified as an agent step's, and in an autonomous run its question goes
 // to the arbiter; a failed verdict ends the step (ended true) with res.
 func (r *running) pollLeaf(lr LeafRunner, step workflow.Step, a leafAction) (judged bool, res result, ended bool, err error) {
@@ -337,6 +343,11 @@ func (r *running) pollLeaf(lr LeafRunner, step workflow.Step, a leafAction) (jud
 			}
 		}
 		commit := ""
+		if a.role == workflow.RoleVerifier && outcome == workflow.OutcomePass {
+			if outcome, detail, err = r.judgeVerifier(lr, step, a); err != nil {
+				return false, result{}, false, err
+			}
+		}
 		if a.role == workflow.RoleBuilder && outcome == workflow.OutcomePass {
 			s, _ := r.leafStates(step.Name)[a.leaf.ID].Session(a.role, a.attempt)
 			c, why, err := lr.LeafCommit(a.leaf, s.Commit)
@@ -376,4 +387,31 @@ func (r *running) pollLeaf(lr LeafRunner, step workflow.Step, a leafAction) (jud
 		}
 	}
 	return false, result{}, false, nil
+}
+
+// judgeVerifier judges a verifier session of a that ended well: it fails
+// the attempt when the verifier journalled findings on it, else passes
+// only when the leaf has Evidence the verifier's own actor wrote
+// (Evidence). Findings win over Evidence. The verifier's `rhiza run
+// findings` appended to the journal without the run's lock, so the
+// journal is read again first. The error return is for journal failures.
+func (r *running) judgeVerifier(lr LeafRunner, step workflow.Step, a leafAction) (outcome, detail string, err error) {
+	j, err := r.e.Store.Read(r.j.ID)
+	if err != nil {
+		return "", "", err
+	}
+	r.j = j
+	if n := len(r.leafStates(step.Name)[a.leaf.ID].AttemptFindings(a.attempt)); n > 0 {
+		return workflow.OutcomeFail, fmt.Sprintf("verifier found %d problem(s)", n), nil
+	}
+	ok, why, err := lr.Evidence(a.leaf, a.session)
+	switch {
+	case err != nil:
+		return workflow.OutcomeFail, fmt.Sprintf("read its Evidence: %v", err), nil
+	case ok:
+		return workflow.OutcomePass, "Evidence written by the verifier", nil
+	case why == "":
+		return workflow.OutcomeFail, "verifier ended with neither Evidence nor findings", nil
+	}
+	return workflow.OutcomeFail, "verifier ended with no Evidence of its own and no findings: " + why, nil
 }

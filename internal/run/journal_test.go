@@ -938,3 +938,28 @@ func TestFoldBlocksPerSession(t *testing.T) {
 		t.Fatalf("after ended: %+v", st.Blocks)
 	}
 }
+
+// A findings entry with Leaf set folds onto the leaf, by attempt, and
+// opens no plan review round; a plan findings entry still does.
+func TestFoldLeafFindings(t *testing.T) {
+	j := Journal{ID: "R", Entries: []Entry{
+		{Type: TypeLeafSession, Step: "build", Leaf: "L1", Handle: "leaf-a", Role: "verifier", Attempt: 1, Session: "S1"},
+		{Type: TypeFindings, Step: "build", Leaf: "L1", Handle: "leaf-a", Attempt: 1, Findings: []Finding{{ID: "f1", Reason: "r1"}}},
+		{Type: TypeFindings, Step: "build", Leaf: "L1", Handle: "leaf-a", Attempt: 2, Findings: []Finding{{ID: "f1", Reason: "r2"}}},
+		{Type: TypeFindings, Findings: []Finding{{ID: "f1", Node: "N", Kind: "contradiction", Reason: "plan"}}},
+	}}
+	st := j.State()
+	if len(st.Rounds) != 1 || st.Rounds[0].Findings[0].Reason != "plan" {
+		t.Fatalf("Rounds = %+v", st.Rounds)
+	}
+	l, ok := st.Leaf("build", "L1")
+	if !ok {
+		t.Fatal("no leaf")
+	}
+	if got := l.AttemptFindings(1); len(got) != 1 || got[0].Reason != "r1" {
+		t.Errorf("attempt 1 findings = %+v", got)
+	}
+	if got := l.AttemptFindings(2); len(got) != 1 || got[0].Reason != "r2" {
+		t.Errorf("attempt 2 findings = %+v", got)
+	}
+}

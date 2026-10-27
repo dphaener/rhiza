@@ -1,0 +1,167 @@
+# A verifier ends its leaf's attempt with Evidence it writes as its own
+# actor, or with findings it journals with `rhiza run findings --leaf`. A
+# verifier's findings fail the attempt and are journalled against the
+# leaf's current attempt, numbered on across calls; Evidence the builder's
+# actor wrote does not pass a verifier that ends with neither. run status
+# shows each leaf's findings per attempt, in text and --json, and opens no
+# plan review round for them.
+#
+# run findings --leaf refuses, as usage (exit 2) with the journal
+# unchanged: a leaf not in the run's change set, a leaf with no attempt
+# yet, an unknown field such as severity, an empty reason, and no findings.
+#
+# The fake rex runs the tab's command synchronously in the window's
+# directory, then prints a window. The fake claude, as a builder, commits
+# with its leaf's Leaf: trailer; second's builder also writes Evidence for
+# its own leaf. As a verifier: first journals findings (after trying each
+# refusal), second ends with nothing, third writes its own Evidence.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new 'Verified leaves' --title 'Verified leaves'
+exec rhiza add capability first
+exec rhiza add capability second
+exec rhiza add capability third
+exec rhiza add capability outsider --record
+mkdir .rhiza/workflows
+cp $WORK/build.toml .rhiza/workflows/build.toml
+exec git add -A
+exec git commit -qm leaves
+
+! exec rhiza run start --workflow build --permission-mode manual
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+
+# Every refusal in first's verifier exited 2 and left the journal as it
+# was; its two real calls each appended one entry.
+exec cat $WORK/verifier.log
+cmp stdout $WORK/want-verifier.log
+exec cat $WORK/refuse.log
+grep 'leaf "outsider": outsider is not one of change set [0-9A-Z]{26}''s leaves' $WORK/refuse.log
+grep 'leaf second has no attempt in a leaves step of run' $WORK/refuse.log
+grep 'unknown field "severity"' $WORK/refuse.log
+grep 'finding 1: no reason' $WORK/refuse.log
+grep 'at least one' $WORK/refuse.log
+
+# The findings entries carry the leaf, its handle and the attempt, each
+# finding just an ID and a reason, numbered on across the two calls.
+exec sh -c 'grep -c "\"type\":\"findings\",.*\"step\":\"build\",.*\"handle\":\"first\",.*\"findings\":\[{\"id\":\"f1\",\"reason\":\"no test for the exit code\"}\],\"leaf\":\"[0-9A-Z]\{26\}\",\"attempt\":1}" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+stdout '^1$'
+exec sh -c 'grep -c "\"findings\":\[{\"id\":\"f2\",\"reason\":\"help text names the wrong flag\"}\],\"leaf\":\"[0-9A-Z]\{26\}\",\"attempt\":1}" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+stdout '^1$'
+
+# Findings fail first; second's verifier ended with neither, and the
+# builder's Evidence does not count; third's own Evidence passes it.
+exec rhiza run status
+stdout '^- build \(visit 1\): fail, then end: 1 of 3 leaves passed; not passed: first, second$'
+stdout '\n- first \(step build\): failed: attempt 1: verifier failed: verifier found 2 problem\(s\)\n  - attempt 1 builder, session [0-9a-f-]{36}: pass \(exit 0\)\n  - attempt 1 verifier, session [0-9a-f-]{36}: fail \(verifier found 2 problem\(s\)\)\n  - attempt 1 finding f1: no test for the exit code\n  - attempt 1 finding f2: help text names the wrong flag\n'
+stdout '\n- second \(step build\): failed: attempt 1: verifier failed: verifier ended with no Evidence of its own and no findings: Evidence second-ok was written by claude-code-[0-9a-z-]+, not by the verifier''s actor claude-code-[0-9a-z-]+\n'
+stdout '\n- third \(step build\): passed: attempt 1: verifier passed\n'
+! stdout '^## Review rounds'
+
+exec rhiza run status --json
+! stdout '"rounds"'
+stdout -count=1 '"findings": \['
+stdout '"findings": \[\n\s+\{\n\s+"at": "[^"]+",\n\s+"attempt": 1,\n\s+"id": "f1",\n\s+"reason": "no test for the exit code"\n\s+\},\n\s+\{\n\s+"at": "[^"]+",\n\s+"attempt": 1,\n\s+"id": "f2",\n\s+"reason": "help text names the wrong flag"\n\s+\}\n\s+\]'
+
+# The builder's actor, which the fake builder logged, wrote second's
+# Evidence: the detail names it, on the leaf and on its verifier's attempt.
+exec sh -c 'rhiza run status | grep -c "written by $(cat $WORK/builder-actor), not"'
+stdout '^2$'
+
+fold-ok
+
+-- want-verifier.log --
+outsider exit=2 lines=same
+unstarted exit=2 lines=same
+severity exit=2 lines=same
+noreason exit=2 lines=same
+empty exit=2 lines=same
+findings exit=0 lines=+1
+findings exit=0 lines=+1
+-- findings.json --
+{"findings":[{"reason":"no test for the exit code"}]}
+-- more.json --
+{"findings":[{"reason":"help text names the wrong flag"}]}
+-- severity.json --
+{"findings":[{"reason":"no test","severity":"major"}]}
+-- noreason.json --
+{"findings":[{"reason":"  "}]}
+-- empty.json --
+{"findings":[]}
+-- build.toml --
+name = "build"
+
+[step.build]
+kind = "leaves"
+on.pass = "done"
+on.fail = "failed"
+
+[step.build.builder]
+prompt = "Build {leaf}"
+
+[step.build.verifier]
+prompt = "Verify {leaf}"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+journal="$(git rev-parse --git-common-dir)/rhiza/runs/$RHIZA_RUN.jsonl"
+# try <label> <args...> runs rhiza run findings and logs its exit and
+# whether the journal grew.
+try() {
+	label=$1
+	shift
+	before=$(wc -l < "$journal")
+	rhiza run findings "$@" 2>> "$WORK/refuse.log"
+	code=$?
+	after=$(wc -l < "$journal")
+	lines=same
+	[ "$after" -gt "$before" ] && lines=+$((after - before))
+	echo "$label exit=$code lines=$lines" >> "$WORK/verifier.log"
+}
+if [ "$RHIZA_ROLE" = builder ]; then
+	git commit -q --allow-empty -m "build $RHIZA_LEAF" -m "Leaf: $RHIZA_LEAF"
+	if [ "$RHIZA_LEAF" = second ]; then
+		echo "$RHIZA_ACTOR" > "$WORK/builder-actor"
+		rhiza add evidence second-ok --field "statement=second works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+		rhiza link second-ok verifies second --change "$RHIZA_CHANGE" >&2 || exit 1
+	fi
+	exit 0
+fi
+case $RHIZA_LEAF in
+first)
+	try outsider --leaf outsider "$WORK/findings.json"
+	try unstarted --leaf second "$WORK/findings.json"
+	try severity --leaf "$RHIZA_LEAF" "$WORK/severity.json"
+	try noreason --leaf "$RHIZA_LEAF" "$WORK/noreason.json"
+	try empty --leaf "$RHIZA_LEAF" "$WORK/empty.json"
+	try findings --leaf "$RHIZA_LEAF" "$WORK/findings.json"
+	try findings --leaf "$RHIZA_LEAF" - < "$WORK/more.json"
+	;;
+third)
+	rhiza add evidence third-ok --field "statement=third works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link third-ok verifies third --change "$RHIZA_CHANGE" >&2 || exit 1
+	;;
+esac
+exit 0

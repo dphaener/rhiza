@@ -148,6 +148,7 @@ type RunLeaf struct {
 	Handle   string           `json:"handle" desc:"The leaf capability's handle"`
 	Sessions []RunLeafSession `json:"sessions" desc:"The leaf's sessions, in the order they started"`
 	Attempts []RunLeafAttempt `json:"attempts" desc:"The judgements of its sessions' work, in order"`
+	Findings []RunLeafFinding `json:"findings,omitempty" desc:"The findings its verifiers journalled with run findings --leaf, in order; absent when there were none"`
 	Outcome  string           `json:"outcome,omitempty" desc:"passed, failed or skipped; empty while the leaf is open"`
 	Question string           `json:"question,omitempty" desc:"The question node a failed leaf raised, if any"`
 	Detail   string           `json:"detail,omitempty" desc:"Why the leaf ended as it did"`
@@ -171,6 +172,14 @@ type RunLeafAttempt struct {
 	Commit  string `json:"commit,omitempty" desc:"A passed builder's commit naming its leaf"`
 	Detail  string `json:"detail,omitempty" desc:"Why: the session's exit, that its agent said done, or that a builder left no commit naming its leaf"`
 	At      string `json:"at" desc:"When it was judged, RFC 3339 UTC"`
+}
+
+// RunLeafFinding is one finding a verifier journalled on a leaf's attempt.
+type RunLeafFinding struct {
+	Attempt int    `json:"attempt" desc:"The leaf's attempt it is on, from 1"`
+	ID      string `json:"id" desc:"The finding's ID in the attempt: f1, f2, ..."`
+	Reason  string `json:"reason" desc:"What the verifier found wrong"`
+	At      string `json:"at" desc:"When it was journalled, RFC 3339 UTC"`
 }
 
 // RunWaiting is one of the plan's change sets run gate named that waits
@@ -1359,6 +1368,9 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 				Role: a.Role, Attempt: a.Attempt, Outcome: a.Outcome, Commit: a.Commit, Detail: a.Detail, At: rfc3339(a.At),
 			})
 		}
+		for _, f := range l.Findings {
+			rl.Findings = append(rl.Findings, RunLeafFinding{Attempt: f.Attempt, ID: f.Finding.ID, Reason: f.Finding.Reason, At: rfc3339(f.At)})
+		}
 		info.Leaves = append(info.Leaves, rl)
 	}
 	return info
@@ -1445,6 +1457,9 @@ func (r RunInfo) Human(w io.Writer) {
 					}
 				}
 				fmt.Fprintf(w, "\n")
+			}
+			for _, f := range l.Findings {
+				fmt.Fprintf(w, "  - attempt %d finding %s: %s\n", f.Attempt, f.ID, oneLine(f.Reason))
 			}
 		}
 	}

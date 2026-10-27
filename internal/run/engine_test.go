@@ -58,6 +58,17 @@ type fakeRunner struct {
 	// missing handle has commit "C-<handle>".
 	leafCommit map[string][2]string
 	leafSince  []string // "<handle> <since>" per LeafCommit call
+	// evidence is Evidence's ok and detail per leaf handle; a missing
+	// handle has the verifier's own Evidence (ok).
+	evidence      map[string]fakeEvidence
+	evidenceCalls []string // "<handle> <session>" per Evidence call
+}
+
+// fakeEvidence is one leaf's scripted Evidence result.
+type fakeEvidence struct {
+	ok     bool
+	detail string
+	err    error
 }
 
 func newFakeRunner() *fakeRunner {

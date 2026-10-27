@@ -150,6 +150,10 @@ func (g *gitLeafRunner) AgentStatus(string) (run.AgentStatus, error) {
 
 func (g *gitLeafRunner) AgentEnded(workflow.Step, string) error { return nil }
 
+// Evidence finds every verifier's own Evidence: its sessions are fakes
+// with no record to read.
+func (g *gitLeafRunner) Evidence(run.Leaf, string) (bool, string, error) { return true, "", nil }
+
 type noSleep struct{}
 
 func (noSleep) Now() time.Time      { return time.Date(2026, 10, 27, 0, 0, 0, 0, time.UTC) }

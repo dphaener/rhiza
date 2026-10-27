@@ -40,6 +40,14 @@ func (f *fakeRunner) LeafCommit(leaf Leaf, since string) (string, string, error)
 	return "C-" + leaf.Handle, "", nil
 }
 
+func (f *fakeRunner) Evidence(leaf Leaf, session string) (bool, string, error) {
+	f.evidenceCalls = append(f.evidenceCalls, leaf.Handle+" "+session)
+	if ev, ok := f.evidence[leaf.Handle]; ok {
+		return ev.ok, ev.detail, ev.err
+	}
+	return true, "", nil
+}
+
 // leafSID is the fake runner's session ID for a leaf session.
 func leafSID(handle, role string, attempt int) string {
 	return "S-" + handle + "-" + role + "-" + strconv.Itoa(attempt)
@@ -619,5 +627,115 @@ func TestLeavesStepBuilderExitFailsWithoutCommitCheck(t *testing.T) {
 	}
 	if len(r.leafSince) != 0 {
 		t.Errorf("LeafCommit calls = %v, want none", r.leafSince)
+	}
+}
+
+// verifierAttempt is the judgement of leaf-a's verifier on attempt 1.
+func verifierAttempt(t *testing.T, st State) LeafAttempt {
+	t.Helper()
+	j, ok := st.Leaves[0].Judged(workflow.RoleVerifier, 1)
+	if !ok {
+		t.Fatalf("verifier not judged: %+v", st.Leaves[0])
+	}
+	return j
+}
+
+// A verifier that ends well passes the attempt only with Evidence its own
+// actor wrote; ending with neither Evidence nor findings, or with Evidence
+// another actor (the builder's) wrote, fails it.
+func TestLeavesStepVerifierEvidence(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		evidence   *fakeEvidence
+		outcome    string
+		detail     string
+		leafResult string
+	}{
+		{name: "own Evidence", outcome: workflow.OutcomePass, detail: "Evidence written by the verifier", leafResult: LeafPassed},
+		{name: "neither", evidence: &fakeEvidence{}, outcome: workflow.OutcomeFail,
+			detail: "verifier ended with neither Evidence nor findings", leafResult: LeafFailed},
+		{name: "builder's Evidence", evidence: &fakeEvidence{detail: "Evidence ev-a was written by claude-code-builder, not the verifier's actor claude-code-verifier"},
+			outcome:    workflow.OutcomeFail,
+			detail:     "verifier ended with no Evidence of its own and no findings: Evidence ev-a was written by claude-code-builder, not the verifier's actor claude-code-verifier",
+			leafResult: LeafFailed},
+		{name: "error", evidence: &fakeEvidence{err: errors.New("boom")}, outcome: workflow.OutcomeFail,
+			detail: "read its Evidence: boom", leafResult: LeafFailed},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			e, r, _, _ := setup(t, leavesWF)
+			r.leaves = twoLeaves[:1]
+			passAll(r, twoLeaves)
+			if tc.evidence != nil {
+				r.evidence = map[string]fakeEvidence{"leaf-a": *tc.evidence}
+			}
+			st, err := e.Run(runID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if j := verifierAttempt(t, st); j.Outcome != tc.outcome || j.Detail != tc.detail {
+				t.Errorf("verifier judged %s (%s), want %s (%s)", j.Outcome, j.Detail, tc.outcome, tc.detail)
+			}
+			if o := st.Leaves[0].Outcome; o != tc.leafResult {
+				t.Errorf("leaf outcome = %s, want %s", o, tc.leafResult)
+			}
+			if want := []string{"leaf-a " + leafSID("leaf-a", "verifier", 1)}; !reflect.DeepEqual(r.evidenceCalls, want) {
+				t.Errorf("Evidence calls = %v, want %v", r.evidenceCalls, want)
+			}
+		})
+	}
+}
+
+// Findings a verifier's process journals on its attempt, outside the
+// engine, fail the attempt even when its own Evidence is there too; the
+// engine reads the journal again before judging.
+func TestLeavesStepVerifierFindings(t *testing.T) {
+	e, r, _, _ := setup(t, leavesWF)
+	r.leaves = twoLeaves[:1]
+	passAll(r, twoLeaves)
+	v := leafSID("leaf-a", "verifier", 1)
+	r.agentSeq[v] = []AgentStatus{{}}
+	r.onPoll = func(session string, n int) {
+		if session != v || n != 0 {
+			return
+		}
+		if err := e.Store.Append(runID, Entry{
+			Type: TypeFindings, At: at(2), Step: "build", Leaf: "L1", Handle: "leaf-a", Attempt: 1,
+			Findings: []Finding{{ID: "f1", Reason: "no test"}, {ID: "f2", Reason: "wrong exit code"}},
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if j := verifierAttempt(t, st); j.Outcome != workflow.OutcomeFail || j.Detail != "verifier found 2 problem(s)" {
+		t.Errorf("verifier judged %s (%s)", j.Outcome, j.Detail)
+	}
+	l := st.Leaves[0]
+	if l.Outcome != LeafFailed || len(l.AttemptFindings(1)) != 2 || len(l.AttemptFindings(2)) != 0 {
+		t.Errorf("leaf = %+v", l)
+	}
+	if len(st.Rounds) != 0 {
+		t.Errorf("a leaf's findings opened a plan round: %+v", st.Rounds)
+	}
+	if len(r.evidenceCalls) != 0 {
+		t.Errorf("Evidence called with findings journalled: %v", r.evidenceCalls)
+	}
+}
+
+// A verifier whose process exits non-zero fails its attempt without its
+// Evidence being looked at.
+func TestLeavesStepVerifierExitFails(t *testing.T) {
+	e, r, _, _ := setup(t, leavesWF)
+	r.leaves = twoLeaves[:1]
+	passAll(r, twoLeaves)
+	r.outcome[leafSID("leaf-a", "verifier", 1)] = workflow.OutcomeFail
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if j := verifierAttempt(t, st); j.Outcome != workflow.OutcomeFail || len(r.evidenceCalls) != 0 {
+		t.Errorf("verifier judged %+v; Evidence calls %v", j, r.evidenceCalls)
 	}
 }

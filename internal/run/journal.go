@@ -135,7 +135,9 @@ type Block struct {
 //	message:   Step, Session, Actor (the sender), To, Text, Summary, Structured (a session sent another a message)
 //	tokens:    Step, Session, Tokens (a reading of the session's token use; the latest counts)
 //	findings:  Findings (a plan reviewer's findings, maybe none; each findings entry
-//	           opens the next review round)
+//	           opens the next review round). With Leaf set it is instead a
+//	           verifier's findings on leaf Leaf (handle Handle) of leaves step
+//	           Step, for its attempt Attempt; plan review rounds skip it
 //	verdict:   Verdicts (a critic's verdicts on findings of the latest round)
 //	gated:     Changes (run gate ended the plan: its change sets, by ID; the
 //	           latest gated entry wins)
@@ -196,14 +198,20 @@ type Entry struct {
 	Commit  string `json:"commit,omitempty"`
 }
 
-// Finding is one finding of a plan review round: node Node (its handle
-// Handle when it was recorded) has a problem of kind Kind, for Reason. ID
-// is f1, f2, ... in the round.
+// Finding is one finding: of a plan review round, node Node (its handle
+// Handle when it was recorded) has a problem of kind Kind, for Reason; of
+// a leaf's verifier, only ID and Reason are set. ID is f1, f2, ... in the
+// round, or in the leaf's attempt.
+//
+// Every field but ID and Reason is optional, so the review workflow's
+// findings (change set 01M5WPTZ) can add check, severity, leaf and place
+// as further omitempty fields without reshaping a finding already
+// journalled.
 type Finding struct {
 	ID     string `json:"id"`
-	Node   string `json:"node"`
+	Node   string `json:"node,omitempty"`
 	Handle string `json:"handle,omitempty"`
-	Kind   string `json:"kind"`
+	Kind   string `json:"kind,omitempty"`
 	Reason string `json:"reason"`
 }
 
@@ -374,18 +382,40 @@ type LeafAttempt struct {
 	At      time.Time
 }
 
+// LeafFinding is one finding a verifier journalled on a leaf's attempt
+// Attempt with `rhiza run findings --leaf`.
+type LeafFinding struct {
+	Attempt int
+	Finding Finding
+	At      time.Time
+}
+
 // LeafState is one leaf of a leaves step, folded from its entries: its
-// sessions and judged attempts in journal order, and its outcome (passed,
-// failed or skipped) once a leaf entry has one; empty while it is open.
+// sessions, judged attempts and findings in journal order, and its outcome
+// (passed, failed or skipped) once a leaf entry has one; empty while it is
+// open.
 type LeafState struct {
 	Step     string
 	Leaf     string
 	Handle   string
 	Sessions []LeafSession
 	Attempts []LeafAttempt
+	Findings []LeafFinding
 	Outcome  string
 	Question string
 	Detail   string
+}
+
+// AttemptFindings are the findings journalled on the leaf's attempt, in
+// order.
+func (l LeafState) AttemptFindings(attempt int) []Finding {
+	var out []Finding
+	for _, f := range l.Findings {
+		if f.Attempt == attempt {
+			out = append(out, f.Finding)
+		}
+	}
+	return out
 }
 
 // Session is the leaf's session of role on attempt, if it has one.
@@ -682,6 +712,13 @@ func (j Journal) State() State {
 		case TypeGated:
 			st.Gated = e.Changes
 		case TypeFindings:
+			if e.Leaf != "" {
+				l := st.leaf(e)
+				for _, f := range e.Findings {
+					l.Findings = append(l.Findings, LeafFinding{Attempt: e.Attempt, Finding: f, At: e.At})
+				}
+				break
+			}
 			st.Rounds = append(st.Rounds, Round{Number: len(st.Rounds) + 1, At: e.At, Findings: e.Findings})
 		case TypeVerdict:
 			if n := len(st.Rounds); n > 0 {

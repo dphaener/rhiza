@@ -13,8 +13,10 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/check"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/workflow"
@@ -137,6 +139,89 @@ func leafCommit(commits []check.Commit, handle, since string) (string, string, e
 		return "", fmt.Sprintf("%d new commit(s) since %s, none with a Leaf: trailer", len(commits), shortRev(since)), nil
 	}
 	return "", "new commits name another leaf: " + strings.Join(others, ", "), nil
+}
+
+// Evidence reports whether leaf has live Evidence verifying it that the
+// actor of verifier session session created, in the run change set's view
+// of the model as the run's worktree holds it, where its sessions write.
+// Without, detail is "" when no live Evidence verifies the leaf, else
+// names the other actors that wrote what does.
+func (r *stepRunner) Evidence(leaf run.Leaf, session string) (bool, string, error) {
+	cs, err := id.Parse(r.change)
+	if err != nil {
+		return false, "", fmt.Errorf("run %s names change set %q: %v", r.run, r.change, err)
+	}
+	lid, err := id.Parse(leaf.ID)
+	if err != nil {
+		return false, "", fmt.Errorf("leaf %s has ID %q: %v", leaf.Handle, leaf.ID, err)
+	}
+	rec, err := r.sessions.Read(session)
+	if err != nil {
+		return false, "", fmt.Errorf("read session %s: %v", session, err)
+	}
+	w, err := r.worktreeWorkspace(false)
+	if err != nil {
+		return false, "", err
+	}
+	m := w.model(cs)
+	actor, err := liveActor(m, rec.Actor)
+	if err != nil {
+		return false, "", fmt.Errorf("session %s's actor %s: %s", session, rec.Actor, AsError(err).Message)
+	}
+	ok, detail := leafEvidence(m, w.changeSets(), lid, actor)
+	return ok, detail, nil
+}
+
+// leafEvidence is Evidence's judgement over view m and the change sets
+// sets: whether a live Evidence node with a live verifies link to leaf was
+// created by actor (the actor stamped on the entry that first wrote its
+// create), and, when none was, which actors created the ones that verify
+// it ("" when none does).
+func leafEvidence(m Model, sets []changeset.ChangeSet, leaf, actor id.ID) (bool, string) {
+	name := func(n id.ID) string {
+		if a, ok := m.Node(n); ok && a.Handle != "" {
+			return a.Handle
+		}
+		return n.String()
+	}
+	var others []string
+	for _, l := range m.LinksTo(leaf, op.LinkVerifies) {
+		ev, ok := m.Node(l.From)
+		if !ok || ev.Retired || ev.Kind != op.KindEvidence {
+			continue
+		}
+		who, ok := nodeCreator(sets, ev.ID)
+		if ok && who == actor {
+			return true, ""
+		}
+		by := "an unknown actor"
+		if ok {
+			by = name(who)
+		}
+		others = append(others, fmt.Sprintf("Evidence %s was written by %s", name(ev.ID), by))
+	}
+	if len(others) == 0 {
+		return false, ""
+	}
+	return false, strings.Join(others, "; ") + ", not by the verifier's actor " + name(actor)
+}
+
+// nodeCreator is the actor stamped on the entry that first wrote node n's
+// create, in whichever of sets holds it (model.CreatedBy over the change
+// sets' ops rather than a node's history).
+func nodeCreator(sets []changeset.ChangeSet, n id.ID) (id.ID, bool) {
+	for _, c := range sets {
+		for _, o := range c.Ops {
+			if o.Type != op.TypeNodeCreate || o.Node != n {
+				continue
+			}
+			if rs := c.History[o.ID]; len(rs) > 0 && !rs[0].Actor.IsZero() {
+				return rs[0].Actor, true
+			}
+			return id.ID{}, false
+		}
+	}
+	return id.ID{}, false
 }
 
 // worktreeGit runs git in the run's worktree and returns its output.

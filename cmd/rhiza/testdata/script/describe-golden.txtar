@@ -2617,12 +2617,12 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "findings": {
-            "description": "The findings, in order; empty for a clean review. They are numbered f1, f2, ... in the round",
+            "description": "The findings, in order; empty for a clean review, but at least one with --leaf. They are numbered f1, f2, ... in the round, or in the leaf's attempt",
             "items": {
               "additionalProperties": false,
               "properties": {
                 "kind": {
-                  "description": "What is wrong with the node",
+                  "description": "What is wrong with the node. Required, except with --leaf, which refuses it",
                   "enum": [
                     "missing-acceptance",
                     "missing-provenance",
@@ -2632,7 +2632,7 @@ cmp stdout describe.golden.json
                   ]
                 },
                 "node": {
-                  "description": "The node: a full ID, a unique prefix of 4+ characters or a handle, in the run's change set's view",
+                  "description": "The node: a full ID, a unique prefix of 4+ characters or a handle, in the run's change set's view. Required, except with --leaf, which refuses it",
                   "type": "string"
                 },
                 "reason": {
@@ -2642,8 +2642,6 @@ cmp stdout describe.golden.json
                 }
               },
               "required": [
-                "kind",
-                "node",
                 "reason"
               ],
               "type": "object"
@@ -2663,6 +2661,10 @@ cmp stdout describe.golden.json
           "file": {
             "description": "A JSON file of findings, or - for stdin (see the input schema)",
             "type": "string"
+          },
+          "leaf": {
+            "description": "A leaf of the run's change set, by handle or ID: journal a verifier's findings, each just a reason, on the leaf's current attempt in the run's leaves step instead of a plan review round",
+            "type": "string"
           }
         },
         "required": [
@@ -2673,6 +2675,10 @@ cmp stdout describe.golden.json
       "response": {
         "additionalProperties": false,
         "properties": {
+          "attempt": {
+            "description": "With --leaf: the leaf's attempt the findings are on, from 1",
+            "type": "integer"
+          },
           "dry_run": {
             "description": "True if nothing was journalled",
             "type": "boolean"
@@ -2691,11 +2697,11 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction",
+                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's finding",
                   "type": "string"
                 },
                 "node": {
-                  "description": "The node it is about, by ID",
+                  "description": "The node it is about, by ID; absent for a leaf's finding",
                   "type": "string"
                 },
                 "reason": {
@@ -2713,16 +2719,18 @@ cmp stdout describe.golden.json
               },
               "required": [
                 "id",
-                "kind",
-                "node",
                 "reason"
               ],
               "type": "object"
             },
             "type": "array"
           },
+          "leaf": {
+            "description": "With --leaf: the leaf's handle",
+            "type": "string"
+          },
           "round": {
-            "description": "The round the findings opened, from 1",
+            "description": "The round the findings opened, from 1; absent for a leaf's findings",
             "type": "integer"
           },
           "run": {
@@ -2732,12 +2740,11 @@ cmp stdout describe.golden.json
         },
         "required": [
           "findings",
-          "round",
           "run"
         ],
         "type": "object"
       },
-      "summary": "Journal a plan reviewer's findings as the next review round of the run RHIZA_RUN names",
+      "summary": "Journal a plan reviewer's findings as the next review round of the run RHIZA_RUN names, or with --leaf a verifier's findings on a leaf's current attempt",
       "write": true
     },
     {
@@ -3050,6 +3057,38 @@ cmp stdout describe.golden.json
                       "description": "Why the leaf ended as it did",
                       "type": "string"
                     },
+                    "findings": {
+                      "description": "The findings its verifiers journalled with run findings --leaf, in order; absent when there were none",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "at": {
+                            "description": "When it was journalled, RFC 3339 UTC",
+                            "type": "string"
+                          },
+                          "attempt": {
+                            "description": "The leaf's attempt it is on, from 1",
+                            "type": "integer"
+                          },
+                          "id": {
+                            "description": "The finding's ID in the attempt: f1, f2, ...",
+                            "type": "string"
+                          },
+                          "reason": {
+                            "description": "What the verifier found wrong",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "at",
+                          "attempt",
+                          "id",
+                          "reason"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
                     "handle": {
                       "description": "The leaf capability's handle",
                       "type": "string"
@@ -3274,11 +3313,11 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's finding",
                             "type": "string"
                           },
                           "node": {
-                            "description": "The node it is about, by ID",
+                            "description": "The node it is about, by ID; absent for a leaf's finding",
                             "type": "string"
                           },
                           "reason": {
@@ -3296,8 +3335,6 @@ cmp stdout describe.golden.json
                         },
                         "required": [
                           "id",
-                          "kind",
-                          "node",
                           "reason"
                         ],
                         "type": "object"
@@ -3625,11 +3662,11 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction",
+                  "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's finding",
                   "type": "string"
                 },
                 "node": {
-                  "description": "The node it is about, by ID",
+                  "description": "The node it is about, by ID; absent for a leaf's finding",
                   "type": "string"
                 },
                 "reason": {
@@ -3647,8 +3684,6 @@ cmp stdout describe.golden.json
               },
               "required": [
                 "id",
-                "kind",
-                "node",
                 "reason"
               ],
               "type": "object"
@@ -3962,6 +3997,38 @@ cmp stdout describe.golden.json
                       "description": "Why the leaf ended as it did",
                       "type": "string"
                     },
+                    "findings": {
+                      "description": "The findings its verifiers journalled with run findings --leaf, in order; absent when there were none",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "at": {
+                            "description": "When it was journalled, RFC 3339 UTC",
+                            "type": "string"
+                          },
+                          "attempt": {
+                            "description": "The leaf's attempt it is on, from 1",
+                            "type": "integer"
+                          },
+                          "id": {
+                            "description": "The finding's ID in the attempt: f1, f2, ...",
+                            "type": "string"
+                          },
+                          "reason": {
+                            "description": "What the verifier found wrong",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "at",
+                          "attempt",
+                          "id",
+                          "reason"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
                     "handle": {
                       "description": "The leaf capability's handle",
                       "type": "string"
@@ -4186,11 +4253,11 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "kind": {
-                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction",
+                            "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's finding",
                             "type": "string"
                           },
                           "node": {
-                            "description": "The node it is about, by ID",
+                            "description": "The node it is about, by ID; absent for a leaf's finding",
                             "type": "string"
                           },
                           "reason": {
@@ -4208,8 +4275,6 @@ cmp stdout describe.golden.json
                         },
                         "required": [
                           "id",
-                          "kind",
-                          "node",
                           "reason"
                         ],
                         "type": "object"
@@ -4723,6 +4788,38 @@ cmp stdout describe.golden.json
                   "description": "Why the leaf ended as it did",
                   "type": "string"
                 },
+                "findings": {
+                  "description": "The findings its verifiers journalled with run findings --leaf, in order; absent when there were none",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "at": {
+                        "description": "When it was journalled, RFC 3339 UTC",
+                        "type": "string"
+                      },
+                      "attempt": {
+                        "description": "The leaf's attempt it is on, from 1",
+                        "type": "integer"
+                      },
+                      "id": {
+                        "description": "The finding's ID in the attempt: f1, f2, ...",
+                        "type": "string"
+                      },
+                      "reason": {
+                        "description": "What the verifier found wrong",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "attempt",
+                      "id",
+                      "reason"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
                 "handle": {
                   "description": "The leaf capability's handle",
                   "type": "string"
@@ -4947,11 +5044,11 @@ cmp stdout describe.golden.json
                         "type": "string"
                       },
                       "kind": {
-                        "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction",
+                        "description": "What is wrong: missing-acceptance, missing-provenance, unreal-depends-on, outside-intent or contradiction; absent for a leaf's finding",
                         "type": "string"
                       },
                       "node": {
-                        "description": "The node it is about, by ID",
+                        "description": "The node it is about, by ID; absent for a leaf's finding",
                         "type": "string"
                       },
                       "reason": {
@@ -4969,8 +5066,6 @@ cmp stdout describe.golden.json
                     },
                     "required": [
                       "id",
-                      "kind",
-                      "node",
                       "reason"
                     ],
                     "type": "object"
