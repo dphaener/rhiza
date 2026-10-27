@@ -1,0 +1,33 @@
+{
+  "actor": "01M5Z9Z4J617SPBYNCZY0T76BB",
+  "after": [
+    "01M5ZAV84TDECE74V6WMRSVNRK"
+  ],
+  "at": "2026-10-27T18:44:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "agent": "claude-code",
+          "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+          "name": "claude-code-c1b3cd7b-verifier",
+          "role": "verifies change set 01M5WPTY7P14SSHQ1FJ0WA8ZR4's leaves and wrote none of their code",
+          "session": "c1b3cd7b-ff97-477d-b892-01a17e9f9184"
+        },
+        "handle": "claude-code-c1b3cd7b-verifier",
+        "id": "01M5ZAV7ZTJ15EKRTXSSH6HKFH",
+        "key": null,
+        "kind": "actor",
+        "node": "01M5ZAV7ZTJ15EKRTXSQ01CWFE",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5ZAV84TDECE74V6WJDMCBTW",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5ZAV86F0REZMDSP1P80KCGA",
+  "type": "ops",
+  "v": 1
+}
