@@ -119,6 +119,9 @@ type payload struct {
 // askTool is the tool the agent calls to put a question to the owner.
 const askTool = "AskUserQuestion"
 
+// sendTool is the tool the agent calls to send another session a message.
+const sendTool = "SendMessage"
+
 // questionText joins the questions of an ask call with " / ". Each is
 // trimmed and has its control characters, newlines included, replaced by a
 // space; empty questions are dropped.
@@ -201,6 +204,61 @@ func (Adapter) AskReply(event string, raw []byte, reason string) ([]byte, bool, 
 		return nil, false, err
 	}
 	return reply, true, nil
+}
+
+// sendPayload is the part of a hook payload a send call's message is read
+// from. ToolInput stays raw until the tool is known to be the send tool.
+type sendPayload struct {
+	SessionID string          `json:"session_id"`
+	ToolName  string          `json:"tool_name"`
+	ToolInput json.RawMessage `json:"tool_input"`
+}
+
+// sendInput is a send call's input. To is a pointer and Message raw so that
+// absent, null and empty can be told apart.
+type sendInput struct {
+	To      *string         `json:"to"`
+	Summary string          `json:"summary"`
+	Message json.RawMessage `json:"message"`
+}
+
+// HookMessage implements adapter.Adapter. Only a PostToolUse event for the
+// send tool carries a message, so the message is read once the call has run.
+// A string message is its text, verbatim; any other JSON value is kept as
+// its raw JSON and marked Structured.
+func (Adapter) HookMessage(event string, raw []byte) (adapter.Message, bool, error) {
+	var p sendPayload
+	if len(raw) > 0 {
+		if err := json.Unmarshal(raw, &p); err != nil {
+			return adapter.Message{}, false, fmt.Errorf("%s hook payload: %w", event, err)
+		}
+	}
+	m := adapter.Message{SessionID: p.SessionID}
+	if event != "PostToolUse" || p.ToolName != sendTool {
+		return m, false, nil
+	}
+	var in sendInput
+	if len(p.ToolInput) > 0 {
+		if err := json.Unmarshal(p.ToolInput, &in); err != nil {
+			return adapter.Message{}, false, fmt.Errorf("%s hook payload: %s input: %w", event, sendTool, err)
+		}
+	}
+	if in.To == nil || *in.To == "" {
+		return adapter.Message{}, false, fmt.Errorf("%s hook payload: %s call has no recipient", event, sendTool)
+	}
+	msg := bytes.TrimSpace(in.Message)
+	if len(msg) == 0 || string(msg) == "null" {
+		return adapter.Message{}, false, fmt.Errorf("%s hook payload: %s call has no message", event, sendTool)
+	}
+	m.To, m.Summary = *in.To, in.Summary
+	if msg[0] == '"' {
+		if err := json.Unmarshal(msg, &m.Text); err != nil {
+			return adapter.Message{}, false, fmt.Errorf("%s hook payload: %w", event, err)
+		}
+	} else {
+		m.Text, m.Structured = string(msg), true
+	}
+	return m, true, nil
 }
 
 // TranscriptGlobs implements adapter.Adapter. Claude Code keeps a session's
@@ -354,6 +412,75 @@ func toolUseID(content json.RawMessage) string {
 		}
 	}
 	return ""
+}
+
+// usageLine is the part of one transcript line that TokenUse reads. Usage
+// is a pointer so that a line without usage can be told apart from one with
+// zero tokens.
+type usageLine struct {
+	Type        string `json:"type"`
+	IsSidechain bool   `json:"isSidechain"`
+	Message     struct {
+		ID    string `json:"id"`
+		Usage *struct {
+			Input         int64 `json:"input_tokens"`
+			Output        int64 `json:"output_tokens"`
+			CacheCreation int64 `json:"cache_creation_input_tokens"`
+			CacheRead     int64 `json:"cache_read_input_tokens"`
+		} `json:"usage"`
+	} `json:"message"`
+}
+
+// TokenUse implements adapter.Adapter. It reads the transcript one JSON line
+// at a time with no line-length limit, like Answers. Only assistant lines
+// with usage count. Claude Code writes one line per content block of a
+// message, each repeating the message's id and usage, so a message counts
+// once per id; a line with no id counts on its own. Sidechain lines are the
+// helper agents' and count toward Helpers, deduplicated apart from the
+// session's.
+func (Adapter) TokenUse(transcript []byte) (adapter.TokenUse, error) {
+	var use adapter.TokenUse
+	seen := [2]map[string]bool{{}, {}}
+	r := bufio.NewReader(bytes.NewReader(transcript))
+	for {
+		line, err := r.ReadBytes('\n')
+		addLineUsage(&use, &seen, line)
+		if errors.Is(err, io.EOF) {
+			return use, nil
+		}
+		if err != nil {
+			return use, err
+		}
+	}
+}
+
+// addLineUsage adds one transcript line's usage to use, unless the line has
+// none or its message was already counted in its bucket. seen holds the
+// counted message ids, the session's first and the helpers' second.
+func addLineUsage(use *adapter.TokenUse, seen *[2]map[string]bool, line []byte) {
+	line = bytes.TrimSpace(line)
+	if len(line) == 0 || line[0] != '{' {
+		return
+	}
+	var l usageLine
+	if json.Unmarshal(line, &l) != nil || l.Type != "assistant" || l.Message.Usage == nil {
+		return
+	}
+	bucket, ids := &use.Session, seen[0]
+	if l.IsSidechain {
+		bucket, ids = &use.Helpers, seen[1]
+	}
+	if id := l.Message.ID; id != "" {
+		if ids[id] {
+			return
+		}
+		ids[id] = true
+	}
+	u := l.Message.Usage
+	bucket.Input += u.Input
+	bucket.Output += u.Output
+	bucket.CacheCreation += u.CacheCreation
+	bucket.CacheRead += u.CacheRead
 }
 
 // answerSep joins the labels of a multiSelect answer.

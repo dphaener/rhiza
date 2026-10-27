@@ -54,8 +54,12 @@ func (askAdapter) AskReply(event string, raw []byte, reason string) ([]byte, boo
 	b, err := json.Marshal(map[string]string{"deny": reason})
 	return b, true, err
 }
+func (askAdapter) HookMessage(string, []byte) (adapter.Message, bool, error) {
+	return adapter.Message{}, false, nil
+}
 func (askAdapter) TranscriptGlobs(string, func(string) string) []string { return nil }
 func (askAdapter) Answers([]byte) ([]adapter.Answer, error)             { return nil, nil }
+func (askAdapter) TokenUse([]byte) (adapter.TokenUse, error)            { return adapter.TokenUse{}, nil }
 
 // askFixture is a message fixture whose session is the ask-fake agent's,
 // autonomous or not.

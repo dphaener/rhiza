@@ -4,7 +4,8 @@ package api
 // and session.hook, the command the agent's hooks run. Together they keep a
 // session's status in its record: run starts the agent, copies the tab's
 // Rex status reports while it runs and records how it exited; hook records
-// what each hook says. Each writes only its own source of the status.
+// what each hook says and, for a session in a run, journals in the run the
+// messages the session sends. Each writes only its own source of the status.
 //
 // Nothing here names an agent: the record names its adapter.
 
@@ -19,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/adapter"
+	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 )
 
@@ -71,7 +73,7 @@ type SessionRunResponse struct {
 	Env       []string    `json:"env" desc:"The variables set over this terminal's environment for the agent"`
 	Code      int         `json:"code" desc:"The agent's exit code, which is also this command's; 128 plus the signal number if a signal ended it"`
 	Decisions []string    `json:"decisions,omitempty" desc:"Handles of the Decisions proposed from the questions the owner answered (see session.interview)"`
-	Warnings  []string    `json:"warnings,omitempty" desc:"Status reports that could not be copied while the agent ran, and a failed capture of the owner's answers"`
+	Warnings  []string    `json:"warnings,omitempty" desc:"Status reports that could not be copied while the agent ran, token use that could not be recorded, and a failed capture of the owner's answers"`
 	DryRun    bool        `json:"dry_run,omitempty" desc:"True if nothing was started or written"`
 }
 
@@ -86,10 +88,11 @@ type SessionHookRequest struct {
 // SessionHookResponse says what the hook recorded. Its markdown is empty:
 // an agent may read a hook's output.
 type SessionHookResponse struct {
-	Session  string `json:"session,omitempty" desc:"The session the payload names, if Rhiza launched it"`
-	Recorded bool   `json:"recorded" desc:"Whether the hook report was recorded"`
-	State    string `json:"state,omitempty" enum:"starting,working,idle,blocked,done,error,exited" desc:"The state recorded"`
-	Kind     string `json:"kind,omitempty" desc:"What a blocked session waits for"`
+	Session   string `json:"session,omitempty" desc:"The session the payload names, if Rhiza launched it"`
+	Recorded  bool   `json:"recorded" desc:"Whether the hook report was recorded"`
+	State     string `json:"state,omitempty" enum:"starting,working,idle,blocked,done,error,exited" desc:"The state recorded"`
+	Kind      string `json:"kind,omitempty" desc:"What a blocked session waits for"`
+	Journaled bool   `json:"journaled,omitempty" desc:"Whether a message the session sent was journaled in its run"`
 	// reply is what the hook prints on stdout for the agent to read: the
 	// denial of a question in an autonomous session. Human writes it.
 	reply []byte
@@ -177,10 +180,75 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		resp.Warnings = append(resp.Warnings, fmt.Sprintf("record the exit: %v", err))
 	} else {
-		resp.Session = sessionInfo(updated)
+		rec = updated
 	}
+	if warn := recordTokenUse(ctx, st, rec); warn != "" {
+		resp.Warnings = append(resp.Warnings, warn)
+	} else if updated, err := st.Read(rec.ID); err == nil {
+		rec = updated
+	}
+	resp.Session = sessionInfo(rec)
 	resp.Decisions, resp.Warnings = captureAfterRun(ctx, rec, resp.Warnings)
 	return resp, nil
+}
+
+// recordTokenUse reads the session's token use from its transcript,
+// overwrites the record's tokens with it and, for a session in a run,
+// journals a tokens entry: the later reading wins. It runs when the
+// session says done, when its agent step ends and when its agent exits.
+// It returns a warning, never an error: a missing or unreadable transcript
+// records nothing. A caller that gives neither a home folder nor an
+// environment has no transcript to find, so nothing is read.
+func recordTokenUse(ctx *Ctx, st *session.Store, rec session.Record) string {
+	if ctx.Home == "" && ctx.Getenv == nil {
+		return ""
+	}
+	warn := func(msg string) string { return "record token use: " + msg }
+	a, ok := adapter.Lookup(rec.Agent)
+	if !ok {
+		return warn(fmt.Sprintf("session %s names agent %q, which this rhiza does not know", rec.ID, rec.Agent))
+	}
+	transcript, err := readTranscript(ctx, a, rec.ID)
+	if err != nil {
+		return warn(AsError(err).Message)
+	}
+	use, err := a.TokenUse(transcript)
+	if err != nil {
+		return warn(fmt.Sprintf("read the token use of session %s: %v", rec.ID, err))
+	}
+	tokens := sessionTokenUse(use)
+	if _, err := st.Update(rec.ID, func(r *session.Record) { r.Tokens = &tokens }); err != nil {
+		return warn(fmt.Sprintf("record session %s: %v", rec.ID, err))
+	}
+	if rec.Run == "" {
+		return ""
+	}
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return warn(AsError(err).Message)
+	}
+	ru := runTokenUse(tokens)
+	e := run.Entry{Type: run.TypeTokens, At: ctx.Now(), Step: rec.Step, Session: rec.ID, Tokens: &ru}
+	if err := run.NewStore(run.Dir(common)).Append(rec.Run, e); err != nil {
+		return warn(fmt.Sprintf("journal session %s's token use in run %s: %v", rec.ID, rec.Run, err))
+	}
+	return ""
+}
+
+// sessionTokenUse is an adapter's reading as the record keeps it.
+func sessionTokenUse(u adapter.TokenUse) session.TokenUse {
+	c := func(t adapter.TokenCounts) session.TokenCounts {
+		return session.TokenCounts{Input: t.Input, Output: t.Output, CacheCreation: t.CacheCreation, CacheRead: t.CacheRead}
+	}
+	return session.TokenUse{Session: c(u.Session), Helpers: c(u.Helpers)}
+}
+
+// runTokenUse is a record's reading as the journal keeps it.
+func runTokenUse(u session.TokenUse) run.TokenUse {
+	c := func(t session.TokenCounts) run.TokenCounts {
+		return run.TokenCounts{Input: t.Input, Output: t.Output, CacheCreation: t.CacheCreation, CacheRead: t.CacheRead}
+	}
+	return run.TokenUse{Session: c(u.Session), Helpers: c(u.Helpers)}
 }
 
 // captureAfterRun proposes the session's answered questions as Decisions
@@ -378,7 +446,8 @@ func rexStatus(line []byte, block string) (rep session.Report, exited, ok bool) 
 	return rep, false, true
 }
 
-// runSessionHook records the status a hook reports. It never fails: a hook
+// runSessionHook records the status a hook reports and journals a run's
+// messages (see sessionHook). It never fails: a hook
 // that failed would get in the agent's way, so problems go to Ctx.Stderr
 // and the call succeeds. A payload for a session Rhiza did not launch is
 // ignored without a word.
@@ -392,7 +461,10 @@ func runSessionHook(ctx *Ctx, req any) (any, error) {
 }
 
 // sessionHook finds the session the payload names, among every adapter's
-// sessions, and records the report its adapter reads from the payload.
+// sessions, records the report its adapter reads from the payload and, when
+// the session belongs to a run, journals in the run any message the payload
+// says it sent. The message is journaled whether or not the status was
+// recorded, even after the session exited.
 func sessionHook(ctx *Ctx, event string) (SessionHookResponse, error) {
 	var resp SessionHookResponse
 	if event == "" {
@@ -425,44 +497,80 @@ func sessionHook(ctx *Ctx, event string) (SessionHookResponse, error) {
 			continue
 		}
 		resp.Session = rec.ID
-		if !changed {
-			return resp, nil
-		}
-		if !session.ValidState(rep.State) {
-			return resp, fmt.Errorf("%s reported unknown state %q", name, rep.State)
-		}
-		report := session.Report{State: rep.State, Kind: rep.Kind, Detail: rep.Detail, At: ctx.Now().UTC()}
-		// In an autonomous session a question to the owner is denied and
-		// kept as the asked mark: the arbiter answers it by message.
-		var reply []byte
-		if rec.Autonomous {
-			b, ask, err := a.AskReply(event, payload, autonomousAskReason)
-			if err != nil {
-				return resp, fmt.Errorf("%s: %v", name, err)
-			}
-			if ask {
-				reply = b
-			}
-		}
-		recorded := false
-		if _, err := st.Update(rec.ID, func(r *session.Record) {
-			// A hook that arrives after the exit does not revive the session.
-			if !r.Status.Exited() {
-				r.Status.Hook, recorded = &report, true
-				if reply != nil {
-					r.Status.Asked = &session.Report{State: session.StateBlocked, Kind: session.KindQuestion, Detail: rep.Detail, At: report.At}
-				}
-			}
-		}); err != nil {
-			return resp, fmt.Errorf("record session %s: %v", rec.ID, err)
-		}
-		if !recorded {
-			return resp, nil
-		}
-		resp.Recorded, resp.State, resp.Kind, resp.reply = true, report.State, report.Kind, reply
-		return resp, nil
+		serr := recordHook(ctx, st, rec, a, event, payload, rep, changed, &resp)
+		journaled, jerr := journalHookMessage(ctx, a, rec, event, payload)
+		resp.Journaled = journaled
+		return resp, errors.Join(serr, jerr)
 	}
 	return resp, errors.Join(errs...)
+}
+
+// recordHook records the report a hook gave in the session's record and
+// says so in resp. A report that changes nothing, or arrives after the
+// session exited, is not recorded. In an autonomous session a question to
+// the owner is denied (resp's reply) and kept as the asked mark: the
+// arbiter answers it by message.
+func recordHook(ctx *Ctx, st *session.Store, rec session.Record, a adapter.Adapter, event string, payload []byte, rep adapter.HookReport, changed bool, resp *SessionHookResponse) error {
+	name := a.Name()
+	if !changed {
+		return nil
+	}
+	if !session.ValidState(rep.State) {
+		return fmt.Errorf("%s reported unknown state %q", name, rep.State)
+	}
+	report := session.Report{State: rep.State, Kind: rep.Kind, Detail: rep.Detail, At: ctx.Now().UTC()}
+	var reply []byte
+	if rec.Autonomous {
+		b, ask, err := a.AskReply(event, payload, autonomousAskReason)
+		if err != nil {
+			return fmt.Errorf("%s: %v", name, err)
+		}
+		if ask {
+			reply = b
+		}
+	}
+	recorded := false
+	if _, err := st.Update(rec.ID, func(r *session.Record) {
+		// A hook that arrives after the exit does not revive the session.
+		if !r.Status.Exited() {
+			r.Status.Hook, recorded = &report, true
+			if reply != nil {
+				r.Status.Asked = &session.Report{State: session.StateBlocked, Kind: session.KindQuestion, Detail: rep.Detail, At: report.At}
+			}
+		}
+	}); err != nil {
+		return fmt.Errorf("record session %s: %v", rec.ID, err)
+	}
+	if !recorded {
+		return nil
+	}
+	resp.Recorded, resp.State, resp.Kind, resp.reply = true, report.State, report.Kind, reply
+	return nil
+}
+
+// journalHookMessage appends the message the payload says the session sent
+// to the session's run journal, and reports whether it did. A session in
+// no run journals nothing.
+func journalHookMessage(ctx *Ctx, a adapter.Adapter, rec session.Record, event string, payload []byte) (bool, error) {
+	m, ok, err := a.HookMessage(event, payload)
+	if err != nil {
+		return false, fmt.Errorf("%s: %v", a.Name(), err)
+	}
+	if !ok || rec.Run == "" {
+		return false, nil
+	}
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return false, err
+	}
+	e := run.Entry{
+		Type: run.TypeMessage, At: ctx.Now(), Step: rec.Step, Session: rec.ID, Actor: rec.Actor,
+		To: m.To, Text: m.Text, Summary: m.Summary, Structured: m.Structured,
+	}
+	if err := run.NewStore(run.Dir(common)).Append(rec.Run, e); err != nil {
+		return false, fmt.Errorf("journal the message session %s sent in run %s: %v", rec.ID, rec.Run, err)
+	}
+	return true, nil
 }
 
 // hookSession reads the session with exactly the ID sid. A payload must

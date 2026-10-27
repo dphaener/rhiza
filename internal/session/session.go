@@ -34,4 +34,22 @@ type Record struct {
 	Tab            Tab       `json:"tab"`
 	StartedAt      time.Time `json:"started_at"`
 	Status         Status    `json:"status"`
+	// Tokens is the latest reading of the session's token use, nil until
+	// one is recorded.
+	Tokens *TokenUse `json:"tokens,omitempty"`
+}
+
+// TokenCounts are the tokens a set of model calls used, by kind.
+type TokenCounts struct {
+	Input         int64 `json:"input"`
+	Output        int64 `json:"output"`
+	CacheCreation int64 `json:"cache_creation"`
+	CacheRead     int64 `json:"cache_read"`
+}
+
+// TokenUse is a reading of a session's token use: its own calls, and
+// apart from them the calls its helper agents logged in its transcript.
+type TokenUse struct {
+	Session TokenCounts `json:"session"`
+	Helpers TokenCounts `json:"helpers"`
 }

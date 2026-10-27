@@ -1,0 +1,145 @@
+# A session's token use is read from its transcript when it says done,
+# when its agent step ends and when its agent exits: each reading
+# overwrites the record's tokens and, for a session in a run, journals a
+# tokens entry, so the later reading wins. A missing transcript is only a
+# warning: nothing is recorded, session done still succeeds and the exit
+# code is still the agent's.
+#
+# Nothing here reaches Rex or Claude Code. The fake rex runs the tab's
+# command (the argv after `--`) synchronously in the window's directory,
+# its output and exit code in $WORK/tab.out. The fake claude reads its
+# --session-id and, by $WORK/claude.mode, writes a made-up transcript in
+# Claude Code's shape to $HOME/.claude/projects/p/<sid>.jsonl (exit),
+# also says done and then adds a message (done), or writes none and exits
+# 3 (none).
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Token use' --title 'Token use' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+mkdir .rhiza/workflows
+cp $WORK/tokens.toml .rhiza/workflows/tokens.toml
+
+# (a) The agent writes a transcript and exits 0: session run reads it, and
+# so does the end of the step. The record has the counts, the session's
+# own and its helpers' apart, and the journal has a tokens entry for each
+# reading.
+cp $WORK/mode.exit $WORK/claude.mode
+exec rhiza run start --workflow tokens --permission-mode manual --json
+stdout '"state": "succeeded"'
+! stderr 'record token use'
+exec cat $WORK/tab.out
+stdout '^exit=0$'
+! stdout 'Warning'
+exec sh -c 'rhiza session show $(cat $WORK/claude.sid) --json'
+stdout '"tokens": \{\n\s+"helpers": \{\n\s+"cache_creation": 3,\n\s+"cache_read": 4,\n\s+"input": 1,\n\s+"output": 2\n\s+\},\n\s+"session": \{\n\s+"cache_creation": 30,\n\s+"cache_read": 40,\n\s+"input": 10,\n\s+"output": 20\n'
+exec sh -c 'rhiza session show $(cat $WORK/claude.sid)'
+stdout '^- Status: .*\n- Tokens: input 10, output 20, cache creation 30, cache read 40\n- Helper tokens: input 1, output 2, cache creation 3, cache read 4$'
+grep -count=2 '"type":"tokens"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+grep '^\{"type":"tokens","at":"[^"]+","step":"build","session":"[0-9a-f-]{36}","tokens":\{"session":\{"input":10,"output":20,"cache_creation":30,"cache_read":40\},"helpers":\{"input":1,"output":2,"cache_creation":3,"cache_read":4\}\}\}$' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+
+# (b) The agent writes a transcript, says done, adds a message and exits:
+# the reading at done has the first message only, the readings at exit and
+# at the step's end have both, and the later one wins.
+cp $WORK/mode.done $WORK/claude.mode
+exec rhiza run start --workflow tokens --permission-mode manual --json
+stdout '"state": "succeeded"'
+exec cat $WORK/done.out
+stdout '"session": "[0-9a-f-]{36}"'
+! stdout 'warnings'
+exec sh -c 'rhiza session show $(cat $WORK/claude.sid)'
+stdout '^- Tokens: input 110, output 220, cache creation 330, cache read 440$'
+stdout '^- Helper tokens: input 1, output 2, cache creation 3, cache read 4$'
+grep -count=3 '"type":"tokens"' .git/rhiza/runs/01M5PWGKBGYFZMTH8Y8AF1G8GN.jsonl
+grep '"tokens":\{"session":\{"input":10,"output":20,"cache_creation":30,"cache_read":40\}' .git/rhiza/runs/01M5PWGKBGYFZMTH8Y8AF1G8GN.jsonl
+exec sh -c 'grep "\"type\":\"tokens\"" .git/rhiza/runs/01M5PWGKBGYFZMTH8Y8AF1G8GN.jsonl | tail -n 1'
+stdout '"tokens":\{"session":\{"input":110,"output":220,"cache_creation":330,"cache_read":440\},"helpers":\{"input":1,"output":2,"cache_creation":3,"cache_read":4\}\}\}$'
+
+# (c) No transcript: session done warns and still succeeds, session run
+# warns and exits with the agent's code, the step's end warns, and neither
+# the record nor the journal gains token use.
+cp $WORK/mode.none $WORK/claude.mode
+exec sh -c 'rhiza run start --workflow tokens --permission-mode manual; echo exit=$?'
+stdout '^- build \(visit 1\): fail, then end, session [0-9a-f-]{36}: exit 3$'
+stdout '^exit=0$'
+stderr '^rhiza: step build: record token use: no transcript of session '
+exec cat $WORK/done.out
+stdout '"warnings": \[\n\s+"record token use: no transcript of session '
+stdout '^done-exit=0$'
+exec cat $WORK/tab.out
+stdout '^- Warning: record token use: no transcript of session '
+stdout '^exit=3$'
+exec sh -c 'rhiza session show $(cat $WORK/claude.sid) --json'
+! stdout '"tokens"'
+exec sh -c 'rhiza session show $(cat $WORK/claude.sid)'
+! stdout 'Tokens'
+! grep '"type":"tokens"' .git/rhiza/runs/01M5PWGMARA1WR6BD0MEF4Y76P.jsonl
+
+fold-ok
+
+-- mode.exit --
+exit
+-- mode.done --
+done
+-- mode.none --
+none
+-- tokens.toml --
+name = "tokens"
+
+[step.build]
+kind = "agent"
+prompt = "Build {change}"
+interval = "50ms"
+on.pass = "done"
+on.fail = "done"
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@"; echo "exit=$?") >"$WORK/tab.out" 2>&1
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+sid=
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
+echo "$sid" > "$WORK/claude.sid"
+mode=$(cat "$WORK/claude.mode")
+t="$HOME/.claude/projects/p/$sid.jsonl"
+rm -f "$WORK/done.out"
+if [ "$mode" = none ]; then
+	rhiza session done --json > "$WORK/done.out" 2>&1
+	echo "done-exit=$?" >> "$WORK/done.out"
+	exit 3
+fi
+mkdir -p "$HOME/.claude/projects/p"
+echo '{"type":"user","isSidechain":false,"message":{"role":"user","content":"Build it"}}' > "$t"
+echo '{"type":"assistant","isSidechain":false,"message":{"id":"msg_A","usage":{"input_tokens":10,"output_tokens":20,"cache_creation_input_tokens":30,"cache_read_input_tokens":40}}}' >> "$t"
+echo '{"type":"assistant","isSidechain":false,"message":{"id":"msg_A","usage":{"input_tokens":10,"output_tokens":20,"cache_creation_input_tokens":30,"cache_read_input_tokens":40}}}' >> "$t"
+echo '{"type":"assistant","isSidechain":true,"message":{"id":"msg_H","usage":{"input_tokens":1,"output_tokens":2,"cache_creation_input_tokens":3,"cache_read_input_tokens":4}}}' >> "$t"
+if [ "$mode" = done ]; then
+	rhiza session done --json > "$WORK/done.out" 2>&1 || exit 7
+	echo '{"type":"assistant","isSidechain":false,"message":{"id":"msg_B","usage":{"input_tokens":100,"output_tokens":200,"cache_creation_input_tokens":300,"cache_read_input_tokens":400}}}' >> "$t"
+fi
+exit 0

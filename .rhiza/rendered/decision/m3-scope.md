@@ -32,6 +32,11 @@ the orchestrator's proposal in the milestone-3 conversation, accepted by the own
 - decided-by [reopen-views](../capability/rhiza/change-sets/reopen/reopen-views.md)
 - decided-by [reopen-format](../capability/rhiza/change-sets/reopen/reopen-format.md)
 - decided-by [reopen-guide](../capability/rhiza/change-sets/reopen/reopen-guide.md)
+- decided-by [session-journal](../capability/rhiza/runtime/session-journal.md)
+- decided-by [message-hook-payload](../capability/rhiza/runtime/session-journal/message-hook-payload.md)
+- decided-by [transcript-token-use](../capability/rhiza/runtime/session-journal/transcript-token-use.md)
+- decided-by [session-token-use](../capability/rhiza/runtime/session-journal/session-token-use.md)
+- decided-by [run-status-tokens](../capability/rhiza/runtime/session-journal/run-status-tokens.md)
 
 ## History
 

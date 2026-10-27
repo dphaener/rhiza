@@ -1,0 +1,113 @@
+# End to end: a run's agent session journals the messages it sends and its
+# token use, and both show in run status and session show.
+#
+# Nothing here reaches Rex or Claude Code. The fake rex runs the tab's
+# command (the argv after `--`) synchronously in the window's directory.
+# The fake claude is the agent: it reaches rhiza through the hook command
+# Rhiza handed it, parsing the PostToolUse command out of its --settings
+# JSON (not through rhiza on PATH), and pipes a SendMessage PostToolUse
+# payload naming its own --session-id into it. It then writes a made-up
+# transcript with known usage to $HOME/.claude/projects/p/<sid>.jsonl and
+# exits 0.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Session journal' --title 'Session journal' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+mkdir .rhiza/workflows
+cp $WORK/talk.toml .rhiza/workflows/talk.toml
+
+exec rhiza run start --workflow talk --permission-mode manual
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
+! stderr 'record token use'
+
+# The agent used the hook command from its settings, and the hook printed
+# nothing.
+exec cat $WORK/hook.cmd
+stdout '/rhiza session hook PostToolUse$'
+exec cat $WORK/hook.out
+stdout '^hook-exit=0$'
+! stdout 'rhiza:'
+exec cat $WORK/tab.out
+stdout '^exit=0$'
+exec cat $WORK/claude.sid
+stdout '^158fe87f-5cf4-47e4-a3e9-01a16dc84988$'
+
+# The journal has the session's message and its token use.
+grep -count=1 '"type":"message"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+grep '^\{"type":"message","at":"[^"]+","step":"talk","session":"158fe87f-5cf4-47e4-a3e9-01a16dc84988","actor":"claude-code-158fe87f","to":"reviewer","text":"Built it","summary":"Done"\}$' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+grep '^\{"type":"tokens","at":"[^"]+","step":"talk","session":"158fe87f-5cf4-47e4-a3e9-01a16dc84988","tokens":\{"session":\{"input":10,"output":20,"cache_creation":30,"cache_read":40\},"helpers":\{"input":1,"output":2,"cache_creation":3,"cache_read":4\}\}\}$' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+
+# run status lists the message, the session with its token use, and totals
+# equal to it.
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG --json
+stdout '"messages": \[\n\s+\{\n\s+"actor": "claude-code-158fe87f",\n\s+"at": "\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ",\n\s+"session": "158fe87f-5cf4-47e4-a3e9-01a16dc84988",\n\s+"step": "talk",\n\s+"summary": "Done",\n\s+"text": "Built it",\n\s+"to": "reviewer"\n\s+\}\n\s+\],'
+stdout '"sessions": \[\n\s+\{\n\s+"session": "158fe87f-5cf4-47e4-a3e9-01a16dc84988",\n\s+"step": "talk",\n\s+"tokens": \{\n\s+"helpers": \{\n\s+"cache_creation": 3,\n\s+"cache_read": 4,\n\s+"input": 1,\n\s+"output": 2\n\s+\},\n\s+"session": \{\n\s+"cache_creation": 30,\n\s+"cache_read": 40,\n\s+"input": 10,\n\s+"output": 20\n\s+\}\n\s+\}\n\s+\}\n\s+\],'
+stdout '"totals": \{\n\s+"helpers": \{\n\s+"cache_creation": 3,\n\s+"cache_read": 4,\n\s+"input": 1,\n\s+"output": 2\n\s+\},\n\s+"session": \{\n\s+"cache_creation": 30,\n\s+"cache_read": 40,\n\s+"input": 10,\n\s+"output": 20\n\s+\}\n\s+\}'
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG
+stdout '^## Messages\n\n- \d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ claude-code-158fe87f to reviewer \(step talk, summary: Done\): Built it\n'
+stdout '^## Sessions\n\n- talk, session 158fe87f-5cf4-47e4-a3e9-01a16dc84988: tokens input 10, output 20, cache creation 30, cache read 40; helper tokens input 1, output 2, cache creation 3, cache read 4\n\nTotals: tokens input 10, output 20, cache creation 30, cache read 40; helper tokens input 1, output 2, cache creation 3, cache read 4\n'
+
+# session show gives the same token use.
+exec rhiza session show 158fe87f-5cf4-47e4-a3e9-01a16dc84988 --json
+stdout '"tokens": \{\n\s+"helpers": \{\n\s+"cache_creation": 3,\n\s+"cache_read": 4,\n\s+"input": 1,\n\s+"output": 2\n\s+\},\n\s+"session": \{\n\s+"cache_creation": 30,\n\s+"cache_read": 40,\n\s+"input": 10,\n\s+"output": 20\n'
+exec rhiza session show 158fe87f-5cf4-47e4-a3e9-01a16dc84988
+stdout '^- Tokens: input 10, output 20, cache creation 30, cache read 40\n- Helper tokens: input 1, output 2, cache creation 3, cache read 4$'
+
+fold-ok
+
+-- talk.toml --
+name = "talk"
+
+[step.talk]
+kind = "agent"
+prompt = "Build {change}"
+interval = "50ms"
+on.pass = "done"
+on.fail = "done"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@"; echo "exit=$?") >"$WORK/tab.out" 2>&1
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+sid=
+settings=
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	if [ "$1" = --settings ]; then
+		settings=$2
+	fi
+	shift
+done
+echo "$sid" > "$WORK/claude.sid"
+hook=$(printf '%s' "$settings" | sed -n 's/.*"PostToolUse":\[{"hooks":\[{"type":"command","command":"\([^"]*\)"}.*/\1/p')
+printf '%s\n' "$hook" > "$WORK/hook.cmd"
+printf '{"session_id":"%s","transcript_path":"/tmp/x.jsonl","cwd":"/tmp/w","hook_event_name":"PostToolUse","tool_name":"SendMessage","tool_input":{"to":"reviewer","summary":"Done","message":"Built it"},"tool_response":{"success":true},"tool_use_id":"toolu_01X"}\n' "$sid" | sh -c "$hook" > "$WORK/hook.out" 2>&1
+echo "hook-exit=$?" >> "$WORK/hook.out"
+t="$HOME/.claude/projects/p/$sid.jsonl"
+mkdir -p "$HOME/.claude/projects/p"
+echo '{"type":"user","isSidechain":false,"message":{"role":"user","content":"Build it"}}' > "$t"
+echo '{"type":"assistant","isSidechain":false,"message":{"id":"msg_A","usage":{"input_tokens":10,"output_tokens":20,"cache_creation_input_tokens":30,"cache_read_input_tokens":40}}}' >> "$t"
+echo '{"type":"assistant","isSidechain":true,"message":{"id":"msg_H","usage":{"input_tokens":1,"output_tokens":2,"cache_creation_input_tokens":3,"cache_read_input_tokens":4}}}' >> "$t"
+exit 0

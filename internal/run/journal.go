@@ -23,6 +23,8 @@ const (
 	TypeArbitrated = "arbitrated"
 	TypeAsked      = "asked"
 	TypeAnswered   = "answered"
+	TypeMessage    = "message"
+	TypeTokens     = "tokens"
 )
 
 // Run results, used in Entry.End and State.Result.
@@ -83,6 +85,8 @@ type Block struct {
 //	asked:     Step, Session, Question, Handle, Detail (an autonomous run's agent step's
 //	           session asked the owner Detail; the engine added question node Question,
 //	           handle Handle, for the arbiter)
+//	message:   Step, Session, Actor (the sender), To, Text, Summary, Structured (a session sent another a message)
+//	tokens:    Step, Session, Tokens (a reading of the session's token use; the latest counts)
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -107,7 +111,12 @@ type Entry struct {
 	// the arbiter passed.
 	Decision string `json:"decision,omitempty"`
 	// Handle is an asked entry's question node handle.
-	Handle string `json:"handle,omitempty"`
+	Handle     string    `json:"handle,omitempty"`
+	To         string    `json:"to,omitempty"`
+	Text       string    `json:"text,omitempty"`
+	Summary    string    `json:"summary,omitempty"`
+	Structured bool      `json:"structured,omitempty"`
+	Tokens     *TokenUse `json:"tokens,omitempty"`
 }
 
 // Asked is one asked entry: in an autonomous run, agent step Step's
@@ -123,6 +132,43 @@ type Asked struct {
 	Text     string
 	At       time.Time
 	Answered string
+}
+
+// TokenCounts are the tokens a set of model calls used, by kind.
+type TokenCounts struct {
+	Input         int64 `json:"input"`
+	Output        int64 `json:"output"`
+	CacheCreation int64 `json:"cache_creation"`
+	CacheRead     int64 `json:"cache_read"`
+}
+
+// TokenUse is a reading of a session's token use. Session counts the
+// session's own calls; Helpers counts the calls its helper agents logged in
+// its transcript.
+type TokenUse struct {
+	Session TokenCounts `json:"session"`
+	Helpers TokenCounts `json:"helpers"`
+}
+
+// Message is one message entry: a session sent another a message while its
+// step ran. Actor is the sender's actor handle; Structured is true when the
+// message was a structured one rather than plain text.
+type Message struct {
+	Step       string
+	Session    string
+	Actor      string
+	To         string
+	Text       string
+	Summary    string
+	Structured bool
+	At         time.Time
+}
+
+// RunSession is one session the run launched or read token use for, with
+// the step it first appeared under.
+type RunSession struct {
+	Step    string
+	Session string
 }
 
 // Amendment is one amended entry: a step's brief or plan file replaced
@@ -259,11 +305,21 @@ type State struct {
 	// blockAsked is 1 + the index in Asked of the asked entry for the
 	// current block, 0 when the block has none (or there is no block).
 	blockAsked int
+	// Messages are the message entries in journal order. A message changes
+	// nothing else in the fold.
+	Messages []Message
+	// Sessions holds one entry per distinct session ID, in the order of its
+	// first session or tokens entry, with the step from that entry.
+	Sessions []RunSession
+	// Tokens holds each session's latest token use, keyed by session ID:
+	// the last tokens entry wins. A tokens entry changes nothing else in
+	// the fold.
+	Tokens map[string]TokenUse
 }
 
 // State folds the journal.
 func (j Journal) State() State {
-	st := State{ID: j.ID, Visits: map[string]int{}, Session: map[string]string{}}
+	st := State{ID: j.ID, Visits: map[string]int{}, Session: map[string]string{}, Tokens: map[string]TokenUse{}}
 	for _, e := range j.Entries {
 		switch e.Type {
 		case TypeStarted:
@@ -296,6 +352,7 @@ func (j Journal) State() State {
 			st.retryNext = ""
 		case TypeSession:
 			st.Session[e.Step] = e.Session
+			st.addSession(e.Step, e.Session)
 		case TypeBlocked:
 			b := Block{}
 			if e.Block != nil {
@@ -347,6 +404,16 @@ func (j Journal) State() State {
 					st.Asked[i].Answered = e.Decision
 					break
 				}
+			}
+		case TypeMessage:
+			st.Messages = append(st.Messages, Message{
+				Step: e.Step, Session: e.Session, Actor: e.Actor, To: e.To,
+				Text: e.Text, Summary: e.Summary, Structured: e.Structured, At: e.At,
+			})
+		case TypeTokens:
+			st.addSession(e.Step, e.Session)
+			if e.Tokens != nil {
+				st.Tokens[e.Session] = *e.Tokens
 			}
 		case TypeStopped:
 			st.Stopped = e.Detail
@@ -458,4 +525,14 @@ func (st State) FailedStep() (string, error) {
 func (st *State) clearBlock() {
 	st.Blocked, st.BlockedStep, st.BlockedSession = nil, "", ""
 	st.blockAsked = 0
+}
+
+// addSession records session under step in Sessions if it is not there yet.
+func (st *State) addSession(step, session string) {
+	for _, s := range st.Sessions {
+		if s.Session == session {
+			return
+		}
+	}
+	st.Sessions = append(st.Sessions, RunSession{Step: step, Session: session})
 }

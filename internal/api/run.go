@@ -116,22 +116,25 @@ type RunResponse struct {
 
 // RunInfo is a run folded from its journal.
 type RunInfo struct {
-	ID         string         `json:"id" desc:"The run ID"`
-	Workflow   string         `json:"workflow" desc:"The workflow's name"`
-	Change     string         `json:"change" desc:"The change set it runs on"`
-	Title      string         `json:"title" desc:"The change set's title"`
-	Worktree   string         `json:"worktree" desc:"The worktree every step runs in"`
-	Autonomous bool           `json:"autonomous,omitempty" desc:"True for a run started with --autonomous: it goes on without the owner; absent otherwise"`
-	State      string         `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
-	Current    string         `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
-	Detail     string         `json:"detail,omitempty" desc:"Why it stopped or failed"`
-	Steps      []RunStep      `json:"steps" desc:"The steps done, in order"`
-	StartedAt  string         `json:"started_at" desc:"When it started, RFC 3339 UTC"`
-	Blocked    *RunBlocked    `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
-	Amendments []RunAmendment `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
-	Retries    []RunRetry     `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
-	Accepts    []RunAccept    `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
-	Questions  []RunQuestion  `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
+	ID         string          `json:"id" desc:"The run ID"`
+	Workflow   string          `json:"workflow" desc:"The workflow's name"`
+	Change     string          `json:"change" desc:"The change set it runs on"`
+	Title      string          `json:"title" desc:"The change set's title"`
+	Worktree   string          `json:"worktree" desc:"The worktree every step runs in"`
+	Autonomous bool            `json:"autonomous,omitempty" desc:"True for a run started with --autonomous: it goes on without the owner; absent otherwise"`
+	State      string          `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
+	Current    string          `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
+	Detail     string          `json:"detail,omitempty" desc:"Why it stopped or failed"`
+	Steps      []RunStep       `json:"steps" desc:"The steps done, in order"`
+	StartedAt  string          `json:"started_at" desc:"When it started, RFC 3339 UTC"`
+	Blocked    *RunBlocked     `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
+	Amendments []RunAmendment  `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
+	Messages   []RunMessage    `json:"messages" desc:"The messages its sessions sent each other, in order"`
+	Sessions   []RunSession    `json:"sessions" desc:"The sessions it launched or read token use for, in order of first appearance, each with its latest reading"`
+	Totals     SessionTokenUse `json:"totals" desc:"The sums of the sessions with recorded token use, the session's own and helpers' kept apart"`
+	Retries    []RunRetry      `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
+	Accepts    []RunAccept     `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
+	Questions  []RunQuestion   `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
 }
 
 // RunAccept is one accepted or rejected entry journalled in an autonomous
@@ -172,6 +175,27 @@ type RunAmendment struct {
 	Actor   string `json:"actor" desc:"The sender's actor handle"`
 	File    string `json:"file" desc:"The amended file, relative to the run's worktree"`
 	At      string `json:"at" desc:"When it was amended, RFC 3339 UTC"`
+}
+
+// RunMessage is one message journaled in a run: a SendMessage one of its
+// sessions sent.
+type RunMessage struct {
+	At         string `json:"at" desc:"When it was sent, RFC 3339 UTC"`
+	Step       string `json:"step" desc:"The sender's step"`
+	Session    string `json:"session" desc:"The sender's session"`
+	Actor      string `json:"actor" desc:"The sender's actor handle"`
+	To         string `json:"to" desc:"The recipient, as the sender named it"`
+	Text       string `json:"text" desc:"The message; a structured one is its raw JSON"`
+	Summary    string `json:"summary,omitempty" desc:"The sender's summary of it; absent when it gave none"`
+	Structured bool   `json:"structured,omitempty" desc:"True if the message was not a string, so text holds its raw JSON"`
+}
+
+// RunSession is one session of a run, under the step it first appeared
+// in, with the latest reading of its token use.
+type RunSession struct {
+	Step    string           `json:"step" desc:"The step the session first appeared under"`
+	Session string           `json:"session" desc:"The session ID"`
+	Tokens  *SessionTokenUse `json:"tokens,omitempty" desc:"The latest reading of its token use; absent when none was recorded, and then left out of the totals"`
 }
 
 // RunBlocked is what a blocked run waits on, read from its agent step's
@@ -235,6 +259,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		return RunResponse{Run: RunInfo{
 			ID: rid, Workflow: def.Name, Change: started.Change, Title: t.title, Worktree: t.worktree,
 			Autonomous: r.Autonomous, Current: def.Start, Steps: []RunStep{}, StartedAt: rfc3339(ctx.Now()), Amendments: []RunAmendment{},
+			Messages: []RunMessage{}, Sessions: []RunSession{},
 		}, DryRun: true}, nil
 	}
 	if err := canRun(ctx, def); err != nil {
@@ -909,6 +934,19 @@ func (r *stepRunner) AgentStatus(sid string) (run.AgentStatus, error) {
 	return run.AgentStatus{Done: true, Outcome: workflow.OutcomeFail, Detail: detail}, nil
 }
 
+// AgentEnded records the session's token use as its step ends (see
+// recordTokenUse); a warning comes back as the error the engine logs.
+func (r *stepRunner) AgentEnded(_ workflow.Step, sid string) error {
+	rec, err := readSession(r.sessions, sid)
+	if err != nil {
+		return err
+	}
+	if warn := recordTokenUse(r.ctx, r.sessions, rec); warn != "" {
+		return errors.New(warn)
+	}
+	return nil
+}
+
 // recordBlock is what a live session waits on when its resolved report
 // is blocked, else nil. A live session with an asked mark (a question its
 // hook denied in an autonomous run) waits on that question whatever its
@@ -1033,7 +1071,7 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 	info := RunInfo{
 		ID: st.ID, Workflow: st.Workflow, Change: st.Change, Title: st.Title, Worktree: st.Worktree,
 		Autonomous: st.Autonomous, Current: st.Current, Steps: []RunStep{}, StartedAt: rfc3339(st.StartedAt),
-		Amendments: []RunAmendment{},
+		Amendments: []RunAmendment{}, Messages: []RunMessage{}, Sessions: []RunSession{},
 	}
 	switch {
 	case st.Ended:
@@ -1060,6 +1098,21 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 			Step: a.Step, Session: a.Session, Actor: a.Actor, File: a.File, At: rfc3339(a.At),
 		})
 	}
+	for _, m := range st.Messages {
+		info.Messages = append(info.Messages, RunMessage{
+			At: rfc3339(m.At), Step: m.Step, Session: m.Session, Actor: m.Actor,
+			To: m.To, Text: m.Text, Summary: m.Summary, Structured: m.Structured,
+		})
+	}
+	for _, s := range st.Sessions {
+		rs := RunSession{Step: s.Step, Session: s.Session}
+		if u, ok := st.Tokens[s.Session]; ok {
+			rs.Tokens = runTokens(u)
+			addTokens(&info.Totals.Session, rs.Tokens.Session)
+			addTokens(&info.Totals.Helpers, rs.Tokens.Helpers)
+		}
+		info.Sessions = append(info.Sessions, rs)
+	}
 	for _, a := range st.Accepts {
 		info.Accepts = append(info.Accepts, RunAccept{Change: a.Change, Entry: a.LogEntry, Verb: a.Verb, At: rfc3339(a.At)})
 	}
@@ -1077,6 +1130,22 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 		info.Questions = append(info.Questions, rq)
 	}
 	return info
+}
+
+// runTokens is the response form of a journaled token use reading.
+func runTokens(u run.TokenUse) *SessionTokenUse {
+	c := func(t run.TokenCounts) SessionTokens {
+		return SessionTokens{Input: t.Input, Output: t.Output, CacheCreation: t.CacheCreation, CacheRead: t.CacheRead}
+	}
+	return &SessionTokenUse{Session: c(u.Session), Helpers: c(u.Helpers)}
+}
+
+// addTokens adds t's counts into sum.
+func addTokens(sum *SessionTokens, t SessionTokens) {
+	sum.Input += t.Input
+	sum.Output += t.Output
+	sum.CacheCreation += t.CacheCreation
+	sum.CacheRead += t.CacheRead
 }
 
 // Human reports the run, or the plan of a dry run.
@@ -1161,6 +1230,30 @@ func (r RunInfo) Human(w io.Writer) {
 			fmt.Fprintf(w, "- %s %s amended %s (step %s)\n", a.At, a.Actor, a.File, a.Step)
 		}
 	}
+	if len(r.Messages) > 0 {
+		fmt.Fprintf(w, "\n## Messages\n\n")
+		for _, m := range r.Messages {
+			note := ""
+			if m.Summary != "" {
+				note += ", summary: " + m.Summary
+			}
+			if m.Structured {
+				note += ", structured"
+			}
+			fmt.Fprintf(w, "- %s %s to %s (step %s%s): %s\n", m.At, m.Actor, m.To, m.Step, note, indentRest(m.Text))
+		}
+	}
+	if len(r.Sessions) > 0 {
+		fmt.Fprintf(w, "\n## Sessions\n\n")
+		for _, s := range r.Sessions {
+			if s.Tokens == nil {
+				fmt.Fprintf(w, "- %s, session %s: no token use recorded\n", s.Step, s.Session)
+				continue
+			}
+			fmt.Fprintf(w, "- %s, session %s: %s\n", s.Step, s.Session, tokenUseLine(*s.Tokens))
+		}
+		fmt.Fprintf(w, "\nTotals: %s\n", tokenUseLine(r.Totals))
+	}
 	switch r.State {
 	case runStopped:
 		fmt.Fprintf(w, "\nnext: rhiza run resume %s\n", r.ID)
@@ -1173,6 +1266,24 @@ func (r RunInfo) Human(w io.Writer) {
 			fmt.Fprintf(w, "\nnext: rhiza session show %s\n", r.Blocked.Session)
 		}
 	}
+}
+
+// indentRest indents every non-empty line of s after the first by two
+// spaces, so a multi-line text stays inside its markdown bullet.
+func indentRest(s string) string {
+	lines := strings.Split(s, "\n")
+	for i := 1; i < len(lines); i++ {
+		if lines[i] != "" {
+			lines[i] = "  " + lines[i]
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
+// tokenUseLine is a token use reading as "tokens <counts>; helper tokens
+// <counts>".
+func tokenUseLine(u SessionTokenUse) string {
+	return "tokens " + tokensLine(u.Session) + "; helper tokens " + tokensLine(u.Helpers)
 }
 
 // runLines are a run's workflow, change set, worktree, whether it is

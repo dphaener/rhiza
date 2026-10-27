@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -45,6 +46,8 @@ type fakeRunner struct {
 	askErr     error             // AddQuestion's error, when set
 	delivered  []string          // "<session> <question> <decision> <statement>" per Deliver call
 	deliverErr error             // Deliver's error, when set
+	ended      []string          // "step:session" per AgentEnded call, in order
+	endedErr   error             // what AgentEnded returns
 }
 
 func newFakeRunner() *fakeRunner {
@@ -95,6 +98,11 @@ func (f *fakeRunner) StartAgent(step workflow.Step, env []string) (string, error
 	}
 	f.starts[step.Name]++
 	return "S-" + step.Name, nil
+}
+
+func (f *fakeRunner) AgentEnded(step workflow.Step, session string) error {
+	f.ended = append(f.ended, step.Name+":"+session)
+	return f.endedErr
 }
 
 func (f *fakeRunner) AgentStatus(session string) (AgentStatus, error) {
@@ -1639,5 +1647,151 @@ func TestAutonomousResumeRedelivers(t *testing.T) {
 				t.Errorf("journal %v", entryTypes(t, e))
 			}
 		})
+	}
+}
+
+// Each agent step that ends with a session reports it to the Runner
+// exactly once, whatever its outcome: an exit, a pass that leaves the
+// session open, a fail, or an error after the session started.
+func TestAgentEndedOncePerEndedStep(t *testing.T) {
+	for _, tt := range []struct {
+		name   string
+		wf     string
+		script func(r *fakeRunner)
+		result string
+	}{
+		{"exit", agentWF, func(r *fakeRunner) {
+			r.agentOut["S-build"] = []bool{false, false}
+			r.outcome["S-build"] = "pass"
+		}, Succeeded},
+		{"fail", agentWF, func(r *fakeRunner) { r.outcome["S-build"] = "fail" }, Failed},
+		{"said done, left open", agentDoneWF, func(r *fakeRunner) {
+			r.agentSeq["S-build"] = []AgentStatus{{Idle: true}, {Idle: true, SaidDone: true}}
+			r.agentErr["S-build"] = errors.New("polled past the pass")
+			r.holds["build"] = []bool{true}
+		}, Succeeded},
+		{"idle, left open", agentUntilWF, func(r *fakeRunner) {
+			r.agentSeq["S-build"] = []AgentStatus{{Idle: true}}
+			r.agentErr["S-build"] = errors.New("polled past the pass")
+			r.holds["build"] = []bool{true}
+		}, Succeeded},
+		{"status error", agentWF, func(r *fakeRunner) {
+			r.agentSeq["S-build"] = []AgentStatus{{}, blocked}
+			r.agentErr["S-build"] = errors.New("record unreadable")
+		}, Failed},
+		{"until error", agentUntilWF, func(r *fakeRunner) {
+			r.agentSeq["S-build"] = []AgentStatus{{Idle: true}}
+			r.onPoll = func(string, int) { r.failOn["build"] = errors.New("sh missing") }
+		}, Failed},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			e, r, _, _ := setup(t, tt.wf)
+			tt.script(r)
+			st, err := e.Run(runID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if st.Result != tt.result {
+				t.Fatalf("result %q detail %q", st.Result, st.Detail)
+			}
+			if want := []string{"build:S-build"}; !reflect.DeepEqual(r.ended, want) {
+				t.Errorf("AgentEnded calls = %v, want %v", r.ended, want)
+			}
+		})
+	}
+}
+
+// A resumed agent step reports the session it rejoined.
+func TestAgentEndedOnResume(t *testing.T) {
+	e, r, _, _ := setup(t, agentWF)
+	for _, en := range []Entry{
+		{Type: TypeEntered, At: at(1), Step: "build", Visit: 1},
+		{Type: TypeSession, At: at(1), Step: "build", Session: "S-earlier"},
+	} {
+		if err := e.Store.Append(runID, en); err != nil {
+			t.Fatal(err)
+		}
+	}
+	r.outcome["S-earlier"] = "pass"
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	if want := []string{"build:S-earlier"}; !reflect.DeepEqual(r.ended, want) {
+		t.Errorf("AgentEnded calls = %v, want %v", r.ended, want)
+	}
+}
+
+// An agent step whose session never started reports nothing.
+func TestAgentEndedNotWithoutSession(t *testing.T) {
+	e, r, _, _ := setup(t, agentWF)
+	r.failOn["build"] = errors.New("adapter refused")
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Failed || len(r.ended) != 0 {
+		t.Fatalf("result %q AgentEnded calls %v", st.Result, r.ended)
+	}
+}
+
+// A run that stops reports nothing for the stopped step: only the agent
+// step that ended before it is reported, and command steps never are.
+func TestAgentEndedNotForStoppedStep(t *testing.T) {
+	const wf = `
+name = "wf"
+[step.build]
+kind = "agent"
+prompt = "build {change}"
+interval = "2s"
+on.pass = "lint"
+[step.lint]
+kind = "command"
+run = "lint"
+on.pass = "ci"
+[step.ci]
+kind = "wait"
+until = "gh pr checks"
+interval = "1s"
+timeout = "5s"
+on.pass = "done"
+`
+	e, r, _, _ := setup(t, wf)
+	e.NoWait = true
+	r.outcome["S-build"] = "pass"
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Stopped == "" {
+		t.Fatalf("run did not stop: %+v", st)
+	}
+	if want := []string{"build:S-build"}; !reflect.DeepEqual(r.ended, want) {
+		t.Errorf("AgentEnded calls = %v, want %v", r.ended, want)
+	}
+}
+
+// An AgentEnded error is logged and changes nothing: the step's outcome,
+// its detail and the journal are those of a run where it succeeded.
+func TestAgentEndedErrorChangesNothing(t *testing.T) {
+	run := func(endedErr error) (State, []string, []string) {
+		e, r, _, _ := setup(t, agentWF)
+		var logs []string
+		e.Log = func(l string) { logs = append(logs, l) }
+		r.outcome["S-build"] = "pass"
+		r.endedErr = endedErr
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return st, entryTypes(t, e), logs
+	}
+	okSt, okTypes, _ := run(nil)
+	st, types, logs := run(errors.New("record token use: no transcript"))
+	if st.Result != okSt.Result || !reflect.DeepEqual(outcomes(st), outcomes(okSt)) ||
+		st.Steps[0].Detail != okSt.Steps[0].Detail || !reflect.DeepEqual(types, okTypes) {
+		t.Fatalf("with an error: %q %v %v; without: %q %v %v", st.Result, outcomes(st), types, okSt.Result, outcomes(okSt), okTypes)
+	}
+	if !slices.Contains(logs, "step build: record token use: no transcript") {
+		t.Errorf("logs = %q", logs)
 	}
 }

@@ -33,6 +33,11 @@ type Adapter interface {
 	// prints on stdout to deny that call, telling the agent reason. It is
 	// pure: it builds bytes only.
 	AskReply(event string, payload []byte, reason string) (reply []byte, ok bool, err error)
+	// HookMessage reads the message a session sent another out of one hook
+	// event and its stdin payload. The bool is false when the event carries
+	// no message. It errors on a payload it cannot read, or on a message
+	// call with no recipient or no message.
+	HookMessage(event string, payload []byte) (Message, bool, error)
 	// TranscriptGlobs returns file glob patterns, most specific first, where
 	// the agent keeps the session's own transcript (not those of any helper
 	// agents it started). getenv looks up an environment variable. It is
@@ -43,6 +48,12 @@ type Adapter interface {
 	// the owner answered, in transcript order; the questions of one call keep
 	// their order. Unreadable entries are skipped, not fatal.
 	Answers(transcript []byte) ([]Answer, error)
+	// TokenUse returns the session's token use read from transcript. Each
+	// of the agent's messages counts once, however many transcript lines
+	// repeat it; lines its helper agents left in the same transcript count
+	// toward Helpers. Unreadable lines are skipped, not fatal. It reads
+	// nothing itself.
+	TokenUse(transcript []byte) (TokenUse, error)
 }
 
 // Answer is one question the agent asked the owner and the owner's answer,
@@ -95,6 +106,44 @@ type HookReport struct {
 	Kind string
 	// Detail is free text from the agent, if any.
 	Detail string
+}
+
+// Message is one message a session sent another through the agent.
+type Message struct {
+	// SessionID is the agent's own session ID from the payload.
+	SessionID string
+	// To is the recipient, verbatim, as the agent named it.
+	To string
+	// Text is the message, verbatim; its raw JSON when Structured.
+	Text string
+	// Summary is the agent's short summary of the message; "" when none.
+	Summary string
+	// Structured reports whether the message was not a string, so Text
+	// holds its raw JSON.
+	Structured bool
+}
+
+// TokenCounts are the tokens of some of a session's model calls.
+type TokenCounts struct {
+	// Input is the tokens sent that were neither written to nor read from
+	// the cache.
+	Input int64
+	// Output is the tokens the model generated.
+	Output int64
+	// CacheCreation is the input tokens written to the cache.
+	CacheCreation int64
+	// CacheRead is the input tokens read from the cache.
+	CacheRead int64
+}
+
+// TokenUse is a session's token use: its own calls, and those its helper
+// agents logged in its transcript.
+type TokenUse struct {
+	// Session is the tokens of the session's own model calls.
+	Session TokenCounts
+	// Helpers is the tokens of the calls its helper agents logged in the
+	// session's transcript, kept apart from Session.
+	Helpers TokenCounts
 }
 
 // CheckMode returns an error unless mode is a non-empty member of

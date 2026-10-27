@@ -131,23 +131,38 @@ type SessionShowRequest struct {
 
 // SessionInfo is one session with every report and the resolved status.
 type SessionInfo struct {
-	ID             string        `json:"id" desc:"The session ID, also the agent's own session ID"`
-	Agent          string        `json:"agent" desc:"The agent adapter"`
-	Change         string        `json:"change" desc:"The change set it works on"`
-	Title          string        `json:"title" desc:"The change set's title"`
-	Step           string        `json:"step" desc:"The step it works on"`
-	Run            string        `json:"run,omitempty" desc:"The run the launch belongs to, if any"`
-	Actor          string        `json:"actor" desc:"The agent's actor handle in the worktree's model"`
-	For            string        `json:"for" desc:"The actor the agent acts for: the launcher"`
-	PermissionMode string        `json:"permission_mode" desc:"The agent's permission mode"`
-	Prompt         string        `json:"prompt,omitempty" desc:"The agent's first prompt, if any"`
-	Worktree       string        `json:"worktree" desc:"The worktree it runs in"`
-	Branch         string        `json:"branch" desc:"The worktree's branch"`
-	Tab            SessionTab    `json:"tab" desc:"The terminal tab it runs in"`
-	StartedAt      string        `json:"started_at" desc:"When it was launched, RFC 3339 UTC"`
-	Reports        SessionStatus `json:"reports" desc:"The latest report of each source that has spoken"`
-	Status         SessionReport `json:"status" desc:"The resolved status: hooks first, then Rex, then the process exit"`
-	Source         string        `json:"source" enum:"hook,rex,exit,default" desc:"Who reported the resolved status: hook, rex, exit, or default when no one has"`
+	ID             string           `json:"id" desc:"The session ID, also the agent's own session ID"`
+	Agent          string           `json:"agent" desc:"The agent adapter"`
+	Change         string           `json:"change" desc:"The change set it works on"`
+	Title          string           `json:"title" desc:"The change set's title"`
+	Step           string           `json:"step" desc:"The step it works on"`
+	Run            string           `json:"run,omitempty" desc:"The run the launch belongs to, if any"`
+	Actor          string           `json:"actor" desc:"The agent's actor handle in the worktree's model"`
+	For            string           `json:"for" desc:"The actor the agent acts for: the launcher"`
+	PermissionMode string           `json:"permission_mode" desc:"The agent's permission mode"`
+	Prompt         string           `json:"prompt,omitempty" desc:"The agent's first prompt, if any"`
+	Worktree       string           `json:"worktree" desc:"The worktree it runs in"`
+	Branch         string           `json:"branch" desc:"The worktree's branch"`
+	Tab            SessionTab       `json:"tab" desc:"The terminal tab it runs in"`
+	StartedAt      string           `json:"started_at" desc:"When it was launched, RFC 3339 UTC"`
+	Reports        SessionStatus    `json:"reports" desc:"The latest report of each source that has spoken"`
+	Status         SessionReport    `json:"status" desc:"The resolved status: hooks first, then Rex, then the process exit"`
+	Source         string           `json:"source" enum:"hook,rex,exit,default" desc:"Who reported the resolved status: hook, rex, exit, or default when no one has"`
+	Tokens         *SessionTokenUse `json:"tokens,omitempty" desc:"The latest reading of its token use, read from its transcript when it said done, its step ended or it exited; absent until one is recorded"`
+}
+
+// SessionTokens are the tokens a set of model calls used, by kind.
+type SessionTokens struct {
+	Input         int64 `json:"input" desc:"Input tokens neither written to nor read from the cache"`
+	Output        int64 `json:"output" desc:"Output tokens the model generated"`
+	CacheCreation int64 `json:"cache_creation" desc:"Input tokens written to the cache"`
+	CacheRead     int64 `json:"cache_read" desc:"Input tokens read from the cache"`
+}
+
+// SessionTokenUse is a reading of a session's token use.
+type SessionTokenUse struct {
+	Session SessionTokens `json:"session" desc:"The tokens of the session's own model calls"`
+	Helpers SessionTokens `json:"helpers" desc:"The tokens of the calls its helper agents logged in its transcript, kept apart from the session's"`
 }
 
 // SessionTab is the terminal tab of a session.
@@ -750,7 +765,20 @@ func sessionInfo(r session.Record) SessionInfo {
 		},
 		Status: sessionReport(rep),
 		Source: string(src),
+		Tokens: sessionTokens(r.Tokens),
 	}
+}
+
+// sessionTokens is the response form of a record's token use, nil when
+// none is recorded.
+func sessionTokens(u *session.TokenUse) *SessionTokenUse {
+	if u == nil {
+		return nil
+	}
+	c := func(t session.TokenCounts) SessionTokens {
+		return SessionTokens{Input: t.Input, Output: t.Output, CacheCreation: t.CacheCreation, CacheRead: t.CacheRead}
+	}
+	return &SessionTokenUse{Session: c(u.Session), Helpers: c(u.Helpers)}
 }
 
 func sessionTab(t session.Tab) SessionTab {
@@ -827,6 +855,10 @@ func (r SessionInfo) Human(w io.Writer) {
 	fmt.Fprintf(w, "- Tab: %s\n", tabLine(r.Tab))
 	fmt.Fprintf(w, "- Started: %s\n", r.StartedAt)
 	fmt.Fprintf(w, "- Status: %s (from %s)\n", reportLine(r.Status), r.Source)
+	if r.Tokens != nil {
+		fmt.Fprintf(w, "- Tokens: %s\n", tokensLine(r.Tokens.Session))
+		fmt.Fprintf(w, "- Helper tokens: %s\n", tokensLine(r.Tokens.Helpers))
+	}
 	fmt.Fprintf(w, "\n## Reports\n\n")
 	for _, s := range []struct {
 		name string
@@ -838,6 +870,12 @@ func (r SessionInfo) Human(w io.Writer) {
 		}
 		fmt.Fprintf(w, "- %s: %s\n", s.name, reportLine(*s.rep))
 	}
+}
+
+// tokensLine is token counts as "input N, output N, cache creation N,
+// cache read N".
+func tokensLine(t SessionTokens) string {
+	return fmt.Sprintf("input %d, output %d, cache creation %d, cache read %d", t.Input, t.Output, t.CacheCreation, t.CacheRead)
 }
 
 // tabLine is a tab's title and, once open, its window and block.

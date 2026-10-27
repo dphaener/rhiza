@@ -27,6 +27,10 @@ the owner's own words in the milestone-3 conversation
 ### In
 
 - decided-by [milestone-3](../intent/anyone-builds/milestone-3.md)
+- decided-by [session-journal](../capability/rhiza/runtime/session-journal.md)
+- decided-by [message-hook-payload](../capability/rhiza/runtime/session-journal/message-hook-payload.md)
+- decided-by [message-journal](../capability/rhiza/runtime/session-journal/message-journal.md)
+- decided-by [run-status-messages](../capability/rhiza/runtime/session-journal/run-status-messages.md)
 
 ## History
 

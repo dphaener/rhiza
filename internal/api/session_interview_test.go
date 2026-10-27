@@ -34,6 +34,9 @@ func (interviewAdapter) HookStatus(string, []byte) (adapter.HookReport, bool, er
 func (interviewAdapter) AskReply(string, []byte, string) ([]byte, bool, error) {
 	return nil, false, nil
 }
+func (interviewAdapter) HookMessage(string, []byte) (adapter.Message, bool, error) {
+	return adapter.Message{}, false, nil
+}
 func (interviewAdapter) TranscriptGlobs(sid string, getenv func(string) string) []string {
 	if getenv("HOME") == "" {
 		return nil
@@ -44,6 +47,9 @@ func (interviewAdapter) Answers(transcript []byte) ([]adapter.Answer, error) {
 	var out []adapter.Answer
 	err := json.Unmarshal(transcript, &out)
 	return out, err
+}
+func (interviewAdapter) TokenUse([]byte) (adapter.TokenUse, error) {
+	return adapter.TokenUse{}, nil
 }
 
 var (
@@ -399,7 +405,10 @@ func TestSessionRunCaptureFailureIsAWarning(t *testing.T) {
 	if r.Code != 3 || r.ExitCode() != 3 || len(r.Decisions) != 0 {
 		t.Errorf("code %d exit %d decisions %v", r.Code, r.ExitCode(), r.Decisions)
 	}
-	if len(r.Warnings) != 1 || !strings.Contains(r.Warnings[0], "no transcript") {
+	// No transcript: the token use is not recorded either, a warning of
+	// its own.
+	if len(r.Warnings) != 2 || !strings.HasPrefix(r.Warnings[0], "record token use: no transcript") ||
+		!strings.Contains(r.Warnings[1], "no transcript") {
 		t.Errorf("warnings %v", r.Warnings)
 	}
 	if !strings.Contains(human(t, r), "- Warning: propose decisions") {

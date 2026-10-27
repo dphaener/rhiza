@@ -1,0 +1,192 @@
+{
+  "actor": "01M5X7SM81C997JR1QK3WBS4AM",
+  "after": [
+    "01M5X955R061M0GKXPEQ8M20RY"
+  ],
+  "at": "2026-10-27T00:12:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "`go test ./internal/adapter/claudecode -run 'HookMessage|HookStatusUnchangedBySendMessage|SettingsOnePostToolUseGroupWithoutMatcher' -count=1` passed at 1466643",
+          "statement": "rhiza session hook sends a message payload for a tool's send-message call and leaves status unchanged.",
+          "status": "verified",
+          "tests": "TestHookMessage, TestHookMessageNoMessage, TestHookStatusUnchangedBySendMessage, TestSettingsOnePostToolUseGroupWithoutMatcher"
+        },
+        "handle": "message-hook-payload-tests",
+        "id": "01M5XB6YEMHF5PG7Z7EM669KDF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XB6YEMHF5PG7Z7EGT39G7E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XB6YEMHF5PG7Z7EGT39G7E",
+        "id": "01M5XB6YJTTZCSASMDABBFM7M6",
+        "link": "01M5XB6YJTTZCSASMDA9M46Y60",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRWWNXTXNFMZMGZFM46D6F",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "`go test ./internal/adapter/claudecode -run TokenUse -count=1` passed at 1466643",
+          "statement": "The Claude Code adapter sums token use from a session transcript, tolerating empty, broken and very long lines.",
+          "status": "verified",
+          "tests": "TestTokenUse, TestTokenUseEmpty, TestTokenUseBroken, TestTokenUseLongLine"
+        },
+        "handle": "transcript-token-use-tests",
+        "id": "01M5XB6YQ0KDBBSMAAJAPYTFRQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XB6YQ0KDBBSMAAJANPRSGE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XB6YQ0KDBBSMAAJANPRSGE",
+        "id": "01M5XB6YV2C58YS127QC2YDGD3",
+        "link": "01M5XB6YV2C58YS127QBY36W0J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRWXQ0MVD3SNCJ9GFXZ6KK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "`go test ./cmd/rhiza -run 'TestScripts/session-hook-message$' -count=1` and `go test ./internal/api -run TestSessionHook -count=1` passed at 1466643",
+          "statement": "rhiza session hook journals the messages a run's sessions send.",
+          "status": "verified",
+          "tests": "TestScripts/session-hook-message, TestSessionHookJournalsAfterExit, TestSessionHookNoRunJournalsNothing"
+        },
+        "handle": "message-journal-tests",
+        "id": "01M5XB6YZZFS61ME2YRDBTXE59",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XB6YZZFS61ME2YRCZBNV85",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XB6YZZFS61ME2YRCZBNV85",
+        "id": "01M5XB6Z460E24BRWY53WG20WN",
+        "link": "01M5XB6Z460E24BRWY50FFXZXX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRWX0ZGMQPHT667PFCEY26",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "`go test ./cmd/rhiza -run 'TestScripts/session-run-tokens$' -count=1` and `go test ./internal/run -run AgentEnded -count=1` passed at 1466643",
+          "statement": "A session's token use is recorded at done, step end and exit.",
+          "status": "verified",
+          "tests": "TestScripts/session-run-tokens, TestAgentEnded*"
+        },
+        "handle": "session-token-use-tests",
+        "id": "01M5XB6Z8R44FKVBD36141WTE6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XB6Z8R44FKVBD35Z0Z36EP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XB6Z8R44FKVBD35Z0Z36EP",
+        "id": "01M5XB6ZD00PZA2YVMENVZ44FC",
+        "link": "01M5XB6ZD00PZA2YVMEM9ZXRMX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRWXYCPD79ST702XJ65GAF",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "`go test ./cmd/rhiza -run 'TestScripts/run-status-messages$' -count=1` passed at 1466643",
+          "statement": "run status lists the messages a run's sessions sent.",
+          "status": "verified",
+          "tests": "TestScripts/run-status-messages"
+        },
+        "handle": "run-status-messages-tests",
+        "id": "01M5XB6ZH4WJFJ1ZH1KVVQNYS5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XB6ZH4WJFJ1ZH1KSXQZ5XF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XB6ZH4WJFJ1ZH1KSXQZ5XF",
+        "id": "01M5XB6ZN82A95FN828ZC97DDP",
+        "link": "01M5XB6ZN82A95FN828VVTMRY4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRWXC0MEDRAPVSV5P23ZVK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "`go test ./cmd/rhiza -run 'TestScripts/run-status-tokens$' -count=1` passed at 1466643",
+          "statement": "run status shows each session's token use and the run's totals.",
+          "status": "verified",
+          "tests": "TestScripts/run-status-tokens"
+        },
+        "handle": "run-status-tokens-tests",
+        "id": "01M5XB6ZSA4A4XDQVDBMEMZ4KN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XB6ZSA4A4XDQVDBJ5QACJX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XB6ZSA4A4XDQVDBJ5QACJX",
+        "id": "01M5XB6ZXFQVYQAK9XRTDM6THH",
+        "link": "01M5XB6ZXFQVYQAK9XRT452AQ3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRWY9E4NFEB9ZYE7K54AXK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "`go test ./cmd/rhiza -run 'TestScripts/session-journal$' -count=1` passed at 1466643",
+          "statement": "The session journal records what a run's sessions did.",
+          "status": "verified",
+          "tests": "TestScripts/session-journal"
+        },
+        "handle": "session-journal-tests",
+        "id": "01M5XB701M3P4WTVG3ZRBCCA2Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5XB701M3P4WTVG3ZNXFJ6GY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5XB701M3P4WTVG3ZNXFJ6GY",
+        "id": "01M5XB705SYJZD063X9TZXBRHV",
+        "link": "01M5XB705SYJZD063X9SDFTFEQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WRWWARC3CG3GN0Y485B6NJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTWM0MPSBEHRYDMV9Q7PM",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5XB70C9MHY80FYZNF5ZPD05",
+  "type": "ops",
+  "v": 1
+}
