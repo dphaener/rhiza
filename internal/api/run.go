@@ -140,6 +140,34 @@ type RunInfo struct {
 	Rounds     []RunRound      `json:"rounds,omitempty" desc:"The plan review rounds journalled by run findings and run verdict, in order; absent when there were none"`
 	Waiting    []RunWaiting    `json:"waiting,omitempty" desc:"The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does"`
 	Leaves     []RunLeaf       `json:"leaves,omitempty" desc:"The leaves its leaves steps conducted, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none"`
+	Checks     []RunCheck      `json:"checks,omitempty" desc:"The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none"`
+}
+
+// RunCheck is one check a checks step ran.
+type RunCheck struct {
+	Step    string          `json:"step" desc:"The checks step"`
+	Check   string          `json:"check" desc:"The check's name"`
+	Cycles  []RunCheckCycle `json:"cycles" desc:"The cycles it ran in, in order"`
+	Outcome string          `json:"outcome,omitempty" desc:"passed or failed: its latest cycle's outcome; empty while its first cycle is open"`
+}
+
+// RunCheckCycle is one cycle a check ran in.
+type RunCheckCycle struct {
+	Cycle    int               `json:"cycle" desc:"The cycle, from 1"`
+	Sessions []RunCheckSession `json:"sessions" desc:"The check's sessions in the cycle, in the order they started"`
+	Outcome  string            `json:"outcome,omitempty" desc:"passed or failed; empty while the cycle is open for the check"`
+	Detail   string            `json:"detail,omitempty" desc:"Why the check ended the cycle as it did"`
+	At       string            `json:"at,omitempty" desc:"When the check's outcome in the cycle was journalled, RFC 3339 UTC"`
+}
+
+// RunCheckSession is one session a checks step started for a check.
+type RunCheckSession struct {
+	Role    string `json:"role" desc:"check"`
+	Session string `json:"session" desc:"The session's ID"`
+	Model   string `json:"model,omitempty" desc:"The model it runs; empty for the agent's default"`
+	Outcome string `json:"outcome,omitempty" desc:"pass or fail once its work was judged; empty while it runs"`
+	Detail  string `json:"detail,omitempty" desc:"Why it was judged so: the session's exit, or that its agent said done"`
+	At      string `json:"at" desc:"When it started, RFC 3339 UTC"`
 }
 
 // RunLeaf is one leaf a leaves step conducted.
@@ -602,7 +630,8 @@ func loadWorkflow(path, ref string) (*workflow.Definition, []byte, error) {
 // (the file's arbiter step or the built-in one) is checked the same way
 // when the workflow has an agent or leaves step: only an autonomous run
 // launches it, and only on an agent session's question. A leaves step's
-// builder and verifier are checked as agent steps are.
+// builder and verifier, and a checks step's checks, critic, fixer and
+// verifier, are checked as agent steps are.
 func checkAgentSteps(def *workflow.Definition, mode, agent string, autonomous bool, next string) error {
 	agents := false
 	for _, name := range def.Order {
@@ -619,6 +648,21 @@ func checkAgentSteps(def *workflow.Definition, mode, agent string, autonomous bo
 				r := s.Role(role)
 				rs := workflow.Step{Name: s.Name, Agent: r.Agent, PermissionMode: r.PermissionMode}
 				if err := checkAgentStep(rs, "a leaves step whose "+role+" runs", mode, agent, next); err != nil {
+					return err
+				}
+			}
+		case workflow.KindChecks:
+			agents = true
+			for _, c := range s.Checks {
+				rs := workflow.Step{Name: s.Name, Agent: c.Agent, PermissionMode: c.PermissionMode}
+				if err := checkAgentStep(rs, "a checks step whose check "+c.Name+" runs", mode, agent, next); err != nil {
+					return err
+				}
+			}
+			for _, role := range []string{workflow.RoleCritic, workflow.RoleFixer, workflow.RoleVerifier} {
+				r := s.Role(role)
+				rs := workflow.Step{Name: s.Name, Agent: r.Agent, PermissionMode: r.PermissionMode}
+				if err := checkAgentStep(rs, "a checks step whose "+role+" runs", mode, agent, next); err != nil {
 					return err
 				}
 			}
@@ -665,7 +709,7 @@ func canRun(ctx *Ctx, def *workflow.Definition) error {
 		return Errorf("cannot run a workflow: this caller starts no programs")
 	}
 	for _, s := range def.Steps {
-		if s.Kind != workflow.KindAgent && s.Kind != workflow.KindLeaves {
+		if s.Kind != workflow.KindAgent && s.Kind != workflow.KindLeaves && s.Kind != workflow.KindChecks {
 			continue
 		}
 		switch {
@@ -1386,8 +1430,19 @@ func (x *runRex) status(rep run.StatusReport) {
 }
 
 // rexLeafID is a live leaf's record ID: leaf/<n>, n its position in leaf
-// order, since a handle may be longer than an ID segment.
-func rexLeafID(l run.LeafStatus) string { return "leaf/" + strconv.Itoa(l.N) }
+// order, since a handle may be longer than an ID segment; a live check's
+// is check/<n>, n its position in its step.
+func rexLeafID(l run.LeafStatus) string {
+	if rexCheckRole(l.Role) {
+		return "check/" + strconv.Itoa(l.N)
+	}
+	return "leaf/" + strconv.Itoa(l.N)
+}
+
+// rexCheckRole reports whether role is a checks step session's.
+func rexCheckRole(role string) bool {
+	return role == workflow.RoleCheck || role == workflow.RoleCritic
+}
 
 // rexLeafMsg says a live leaf's role and whether it works or waits.
 func rexLeafMsg(l run.LeafStatus) string {
@@ -1400,7 +1455,10 @@ func rexLeafMsg(l run.LeafStatus) string {
 	default:
 		msg += " working"
 	}
-	if l.Attempt > 1 {
+	switch {
+	case l.Attempt > 1 && rexCheckRole(l.Role):
+		msg += fmt.Sprintf(" (cycle %d)", l.Attempt)
+	case l.Attempt > 1:
 		msg += fmt.Sprintf(" (attempt %d)", l.Attempt)
 	}
 	return msg
@@ -1437,7 +1495,10 @@ func rexRoot(rep run.StatusReport) []byte {
 		msg = "run stopped at step " + rep.Step
 	default:
 		msg = "step " + rep.Step
-		if rep.Progress != nil {
+		switch {
+		case rep.Progress != nil && rep.Checks > 0:
+			msg += fmt.Sprintf(" · %d of %d checks passed", rep.Passed, rep.Checks)
+		case rep.Progress != nil:
 			msg += fmt.Sprintf(" · %d of %d leaves passed", rep.Passed, rep.Leaves)
 		}
 	}
@@ -1565,7 +1626,40 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 		}
 		info.Leaves = append(info.Leaves, rl)
 	}
+	for _, c := range st.Checks {
+		info.Checks = append(info.Checks, runCheckInfo(st, c))
+	}
 	return info
+}
+
+// runCheckInfo is the response form of check c: a cycle for each of its
+// step's cycles that ran it, with its sessions and outcome there.
+func runCheckInfo(st run.State, c run.CheckState) RunCheck {
+	rc := RunCheck{Step: c.Step, Check: c.Check, Cycles: []RunCheckCycle{}}
+	if o, ok := c.Latest(); ok {
+		rc.Outcome = o.Outcome
+	}
+	for _, cy := range st.Cycles {
+		if cy.Step != c.Step || !slices.Contains(cy.Checks, c.Check) {
+			continue
+		}
+		rcy := RunCheckCycle{Cycle: cy.Cycle, Sessions: []RunCheckSession{}}
+		for _, s := range c.Sessions {
+			if s.Cycle != cy.Cycle {
+				continue
+			}
+			rs := RunCheckSession{Role: s.Role, Session: s.Session, Model: s.Model, At: rfc3339(s.At)}
+			if j, ok := c.Judgement(s.Role, s.Cycle); ok {
+				rs.Outcome, rs.Detail = j.Outcome, j.Detail
+			}
+			rcy.Sessions = append(rcy.Sessions, rs)
+		}
+		if o, ok := c.Outcome(cy.Cycle); ok {
+			rcy.Outcome, rcy.Detail, rcy.At = o.Outcome, o.Detail, rfc3339(o.At)
+		}
+		rc.Cycles = append(rc.Cycles, rcy)
+	}
+	return rc
 }
 
 // runTokens is the response form of a journaled token use reading.
@@ -1661,6 +1755,37 @@ func (r RunInfo) Human(w io.Writer) {
 			}
 			for _, f := range l.Findings {
 				fmt.Fprintf(w, "  - attempt %d finding %s: %s\n", f.Attempt, f.ID, oneLine(f.Reason))
+			}
+		}
+	}
+	if len(r.Checks) > 0 {
+		fmt.Fprintf(w, "\n## Checks\n\n")
+		for _, c := range r.Checks {
+			outcome := c.Outcome
+			if outcome == "" {
+				outcome = "open"
+			}
+			fmt.Fprintf(w, "- %s (step %s): %s", c.Check, c.Step, outcome)
+			if n := len(c.Cycles); n > 0 {
+				fmt.Fprintf(w, " after %d %s", n, shipPlural(n, "cycle", "cycles"))
+			}
+			fmt.Fprintf(w, "\n")
+			for _, cy := range c.Cycles {
+				outcome := cy.Outcome
+				if outcome == "" {
+					outcome = "open"
+				}
+				fmt.Fprintf(w, "  - cycle %d: %s", cy.Cycle, outcome)
+				for _, s := range cy.Sessions {
+					fmt.Fprintf(w, ", %s session %s", s.Role, s.Session)
+					if s.Outcome != "" {
+						fmt.Fprintf(w, " %s", s.Outcome)
+						if s.Detail != "" {
+							fmt.Fprintf(w, " (%s)", oneLine(s.Detail))
+						}
+					}
+				}
+				fmt.Fprintf(w, "\n")
 			}
 		}
 	}

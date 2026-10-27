@@ -3070,6 +3070,102 @@ cmp stdout describe.golden.json
                 "description": "The change set it runs on",
                 "type": "string"
               },
+              "checks": {
+                "description": "The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "check": {
+                      "description": "The check's name",
+                      "type": "string"
+                    },
+                    "cycles": {
+                      "description": "The cycles it ran in, in order",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "at": {
+                            "description": "When the check's outcome in the cycle was journalled, RFC 3339 UTC",
+                            "type": "string"
+                          },
+                          "cycle": {
+                            "description": "The cycle, from 1",
+                            "type": "integer"
+                          },
+                          "detail": {
+                            "description": "Why the check ended the cycle as it did",
+                            "type": "string"
+                          },
+                          "outcome": {
+                            "description": "passed or failed; empty while the cycle is open for the check",
+                            "type": "string"
+                          },
+                          "sessions": {
+                            "description": "The check's sessions in the cycle, in the order they started",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "at": {
+                                  "description": "When it started, RFC 3339 UTC",
+                                  "type": "string"
+                                },
+                                "detail": {
+                                  "description": "Why it was judged so: the session's exit, or that its agent said done",
+                                  "type": "string"
+                                },
+                                "model": {
+                                  "description": "The model it runs; empty for the agent's default",
+                                  "type": "string"
+                                },
+                                "outcome": {
+                                  "description": "pass or fail once its work was judged; empty while it runs",
+                                  "type": "string"
+                                },
+                                "role": {
+                                  "description": "check",
+                                  "type": "string"
+                                },
+                                "session": {
+                                  "description": "The session's ID",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "at",
+                                "role",
+                                "session"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          }
+                        },
+                        "required": [
+                          "cycle",
+                          "sessions"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "outcome": {
+                      "description": "passed or failed: its latest cycle's outcome; empty while its first cycle is open",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The checks step",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "check",
+                    "cycles",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "current": {
                 "description": "The step being run or to run next; empty once the run is finished",
                 "type": "string"
@@ -4064,6 +4160,102 @@ cmp stdout describe.golden.json
                 "description": "The change set it runs on",
                 "type": "string"
               },
+              "checks": {
+                "description": "The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "check": {
+                      "description": "The check's name",
+                      "type": "string"
+                    },
+                    "cycles": {
+                      "description": "The cycles it ran in, in order",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "at": {
+                            "description": "When the check's outcome in the cycle was journalled, RFC 3339 UTC",
+                            "type": "string"
+                          },
+                          "cycle": {
+                            "description": "The cycle, from 1",
+                            "type": "integer"
+                          },
+                          "detail": {
+                            "description": "Why the check ended the cycle as it did",
+                            "type": "string"
+                          },
+                          "outcome": {
+                            "description": "passed or failed; empty while the cycle is open for the check",
+                            "type": "string"
+                          },
+                          "sessions": {
+                            "description": "The check's sessions in the cycle, in the order they started",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "at": {
+                                  "description": "When it started, RFC 3339 UTC",
+                                  "type": "string"
+                                },
+                                "detail": {
+                                  "description": "Why it was judged so: the session's exit, or that its agent said done",
+                                  "type": "string"
+                                },
+                                "model": {
+                                  "description": "The model it runs; empty for the agent's default",
+                                  "type": "string"
+                                },
+                                "outcome": {
+                                  "description": "pass or fail once its work was judged; empty while it runs",
+                                  "type": "string"
+                                },
+                                "role": {
+                                  "description": "check",
+                                  "type": "string"
+                                },
+                                "session": {
+                                  "description": "The session's ID",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "at",
+                                "role",
+                                "session"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          }
+                        },
+                        "required": [
+                          "cycle",
+                          "sessions"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "outcome": {
+                      "description": "passed or failed: its latest cycle's outcome; empty while its first cycle is open",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The checks step",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "check",
+                    "cycles",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "current": {
                 "description": "The step being run or to run next; empty once the run is finished",
                 "type": "string"
@@ -4908,6 +5100,102 @@ cmp stdout describe.golden.json
           "change": {
             "description": "The change set it runs on",
             "type": "string"
+          },
+          "checks": {
+            "description": "The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "check": {
+                  "description": "The check's name",
+                  "type": "string"
+                },
+                "cycles": {
+                  "description": "The cycles it ran in, in order",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "at": {
+                        "description": "When the check's outcome in the cycle was journalled, RFC 3339 UTC",
+                        "type": "string"
+                      },
+                      "cycle": {
+                        "description": "The cycle, from 1",
+                        "type": "integer"
+                      },
+                      "detail": {
+                        "description": "Why the check ended the cycle as it did",
+                        "type": "string"
+                      },
+                      "outcome": {
+                        "description": "passed or failed; empty while the cycle is open for the check",
+                        "type": "string"
+                      },
+                      "sessions": {
+                        "description": "The check's sessions in the cycle, in the order they started",
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "at": {
+                              "description": "When it started, RFC 3339 UTC",
+                              "type": "string"
+                            },
+                            "detail": {
+                              "description": "Why it was judged so: the session's exit, or that its agent said done",
+                              "type": "string"
+                            },
+                            "model": {
+                              "description": "The model it runs; empty for the agent's default",
+                              "type": "string"
+                            },
+                            "outcome": {
+                              "description": "pass or fail once its work was judged; empty while it runs",
+                              "type": "string"
+                            },
+                            "role": {
+                              "description": "check",
+                              "type": "string"
+                            },
+                            "session": {
+                              "description": "The session's ID",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "at",
+                            "role",
+                            "session"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "required": [
+                      "cycle",
+                      "sessions"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "outcome": {
+                  "description": "passed or failed: its latest cycle's outcome; empty while its first cycle is open",
+                  "type": "string"
+                },
+                "step": {
+                  "description": "The checks step",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "check",
+                "cycles",
+                "step"
+              ],
+              "type": "object"
+            },
+            "type": "array"
           },
           "current": {
             "description": "The step being run or to run next; empty once the run is finished",

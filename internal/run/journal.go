@@ -40,8 +40,23 @@ const (
 	// TypeLeafRound gives a failed leaf a fresh round of attempts, once a
 	// Decision answers the question its failure raised.
 	TypeLeafRound = "leaf-round"
-	// TypePaneClosed records that a leaf session's pane was closed.
+	// TypePaneClosed records that a leaf or check session's pane was
+	// closed.
 	TypePaneClosed = "pane-closed"
+	// TypeCheckCycle, TypeCheckSession, TypeCheckJudged and TypeCheck are
+	// a checks step's entries: a cycle of its checks began, a check's
+	// session started, a session's work judged, and a check's outcome in
+	// a cycle.
+	TypeCheckCycle   = "check-cycle"
+	TypeCheckSession = "check-session"
+	TypeCheckJudged  = "check-judged"
+	TypeCheck        = "check"
+)
+
+// Check outcomes, a check entry's Outcome.
+const (
+	CheckPassed = "passed"
+	CheckFailed = "failed"
 )
 
 // Leaf outcomes, a leaf entry's Outcome.
@@ -162,7 +177,18 @@ type Block struct {
 //	           open again, and the step's skipped leaves with it)
 //	pane-closed: Step, Leaf, Handle, Session (the pane of leaf session Session was
 //	           closed: its session passed, the next builder took its place, or
-//	           its leaves step ended)
+//	           its leaves step ended). With Check set instead of Leaf, the pane
+//	           of check Check's session Session, closed as its checks step ended
+//	check-cycle: Step, Cycle, Checks (checks step Step began cycle Cycle, from
+//	           1, over the checks named: every check in cycle 1, then those that
+//	           failed the cycle before)
+//	check-session: Step, Check, Role (check), Cycle, Session, Model, Detail (a
+//	           checks step started a session of role Role for check Check in
+//	           cycle Cycle)
+//	check-judged: Step, Check, Role, Cycle, Outcome (pass or fail), Detail (the
+//	           role's session of the check's cycle was judged)
+//	check:     Step, Check, Cycle, Outcome (passed or failed), Detail (the check's
+//	           outcome in the cycle)
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -213,6 +239,11 @@ type Entry struct {
 	// QuestionHandle is a failed leaf's or a leaf-round entry's question
 	// node handle (Question is its ID).
 	QuestionHandle string `json:"question_handle,omitempty"`
+	// Check is a checks step entry's check name, and Cycle its cycle,
+	// from 1. Checks are a check-cycle entry's checks, by name.
+	Check  string   `json:"check,omitempty"`
+	Cycle  int      `json:"cycle,omitempty"`
+	Checks []string `json:"checks,omitempty"`
 }
 
 // Finding is one finding: of a plan review round, node Node (its handle
@@ -513,6 +544,98 @@ func (l LeafState) Attempt() int {
 	return n
 }
 
+// CheckCycle is one check-cycle entry: checks step Step's cycle Cycle,
+// from 1, runs the checks named Checks, in the step's order.
+type CheckCycle struct {
+	Step   string
+	Cycle  int
+	Checks []string
+	At     time.Time
+}
+
+// CheckSession is one check-session entry: a session of role Role (check)
+// on the check's cycle Cycle. Seq is the position of its entry in the
+// journal, which orders a step's sessions across checks. PaneClosed is
+// true once a pane-closed entry names the session.
+type CheckSession struct {
+	Role       string
+	Cycle      int
+	Session    string
+	Model      string
+	Detail     string
+	At         time.Time
+	Seq        int
+	PaneClosed bool
+}
+
+// CheckJudged is one check-judged entry: role Role's session of cycle
+// Cycle was judged pass or fail (Outcome), for Detail.
+type CheckJudged struct {
+	Role    string
+	Cycle   int
+	Outcome string
+	Detail  string
+	At      time.Time
+}
+
+// CheckOutcome is one check entry: the check passed or failed (Outcome)
+// cycle Cycle, for Detail.
+type CheckOutcome struct {
+	Cycle   int
+	Outcome string
+	Detail  string
+	At      time.Time
+}
+
+// CheckState is one check of a checks step, folded from its entries: its
+// sessions, judgements and outcomes, one per cycle it ran, in journal
+// order.
+type CheckState struct {
+	Step     string
+	Check    string
+	Sessions []CheckSession
+	Judged   []CheckJudged
+	Outcomes []CheckOutcome
+}
+
+// Session is the check's session of role on cycle, if it has one.
+func (c CheckState) Session(role string, cycle int) (CheckSession, bool) {
+	for i := len(c.Sessions) - 1; i >= 0; i-- {
+		if s := c.Sessions[i]; s.Role == role && s.Cycle == cycle {
+			return s, true
+		}
+	}
+	return CheckSession{}, false
+}
+
+// Judgement is the judgement of role's session on cycle, if it has one.
+func (c CheckState) Judgement(role string, cycle int) (CheckJudged, bool) {
+	for i := len(c.Judged) - 1; i >= 0; i-- {
+		if j := c.Judged[i]; j.Role == role && j.Cycle == cycle {
+			return j, true
+		}
+	}
+	return CheckJudged{}, false
+}
+
+// Outcome is the check's outcome in cycle, if it has one.
+func (c CheckState) Outcome(cycle int) (CheckOutcome, bool) {
+	for i := len(c.Outcomes) - 1; i >= 0; i-- {
+		if o := c.Outcomes[i]; o.Cycle == cycle {
+			return o, true
+		}
+	}
+	return CheckOutcome{}, false
+}
+
+// Latest is the check's latest outcome, if it has one.
+func (c CheckState) Latest() (CheckOutcome, bool) {
+	if n := len(c.Outcomes); n > 0 {
+		return c.Outcomes[n-1], true
+	}
+	return CheckOutcome{}, false
+}
+
 // Journal is a run's entries in order.
 type Journal struct {
 	ID      string
@@ -633,6 +756,44 @@ type State struct {
 	// leaves stay passed. A leaf session is also in Sessions; nothing else
 	// in the fold changes.
 	Leaves []LeafState
+	// Checks are the checks of the checks steps, in the order their first
+	// entry appears, and Cycles the checks steps' cycles in journal order.
+	// Unlike Leaves they survive a new visit of their step: a review
+	// re-entered after the owner asks for changes keeps its history. A
+	// check session is also in Sessions; nothing else in the fold changes.
+	Checks []CheckState
+	Cycles []CheckCycle
+}
+
+// Check is step's check named name, if the journal has one.
+func (st State) Check(step, name string) (CheckState, bool) {
+	for _, c := range st.Checks {
+		if c.Step == step && c.Check == name {
+			return c, true
+		}
+	}
+	return CheckState{}, false
+}
+
+// LatestCycle is checks step step's latest cycle, if it has one.
+func (st State) LatestCycle(step string) (CheckCycle, bool) {
+	for i := len(st.Cycles) - 1; i >= 0; i-- {
+		if c := st.Cycles[i]; c.Step == step {
+			return c, true
+		}
+	}
+	return CheckCycle{}, false
+}
+
+// check is step's check state for e, added in first-seen order when new.
+func (st *State) check(e Entry) *CheckState {
+	for i := range st.Checks {
+		if c := &st.Checks[i]; c.Step == e.Step && c.Check == e.Check {
+			return c
+		}
+	}
+	st.Checks = append(st.Checks, CheckState{Step: e.Step, Check: e.Check})
+	return &st.Checks[len(st.Checks)-1]
 }
 
 // Leaf is step's leaf with node ID leaf, if the journal has one.
@@ -710,7 +871,30 @@ func (j Journal) State() State {
 		case TypeLeaf:
 			l := st.leaf(e)
 			l.Outcome, l.Question, l.QuestionHandle, l.Commit, l.Detail = e.Outcome, e.Question, e.QuestionHandle, e.Commit, e.Detail
+		case TypeCheckCycle:
+			st.Cycles = append(st.Cycles, CheckCycle{Step: e.Step, Cycle: e.Cycle, Checks: e.Checks, At: e.At})
+		case TypeCheckSession:
+			c := st.check(e)
+			c.Sessions = append(c.Sessions, CheckSession{
+				Role: e.Role, Cycle: e.Cycle, Session: e.Session, Model: e.Model, Detail: e.Detail, At: e.At, Seq: seq,
+			})
+			st.addSession(e.Step, e.Session)
+		case TypeCheckJudged:
+			c := st.check(e)
+			c.Judged = append(c.Judged, CheckJudged{Role: e.Role, Cycle: e.Cycle, Outcome: e.Outcome, Detail: e.Detail, At: e.At})
+		case TypeCheck:
+			c := st.check(e)
+			c.Outcomes = append(c.Outcomes, CheckOutcome{Cycle: e.Cycle, Outcome: e.Outcome, Detail: e.Detail, At: e.At})
 		case TypePaneClosed:
+			if e.Check != "" {
+				c := st.check(e)
+				for i := range c.Sessions {
+					if c.Sessions[i].Session == e.Session {
+						c.Sessions[i].PaneClosed = true
+					}
+				}
+				break
+			}
 			l := st.leaf(e)
 			for i := range l.Sessions {
 				if l.Sessions[i].Session == e.Session {

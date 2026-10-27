@@ -99,6 +99,10 @@ type SessionStartRequest struct {
 	attempt int
 	role    string
 	commit  string
+	// check and cycle are the session record's Check and Cycle. Only a
+	// run's StartCheck sets them, with role.
+	check string
+	cycle int
 	// model is the session record's Model. Only a run's StartAgent and
 	// StartLeaf set it, from the step's or role's models.
 	model string
@@ -248,14 +252,17 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 		Actor: handleSlug(a.Name() + "-" + sid[:8]), PermissionMode: r.PermissionMode, Prompt: r.Prompt,
 		Worktree: worktree, Branch: branch, Tab: tab, StartedAt: ctx.Now().UTC().Truncate(time.Second),
 		Writes: r.writes, WritesRecord: r.writesRecord, Leaf: r.leaf, Attempt: r.attempt, Role: r.role, Commit: r.commit, Model: r.model,
-		Dir: r.dir, Root: r.root,
+		Check: r.check, Cycle: r.cycle, Dir: r.dir, Root: r.root,
 	}
 	self := ctx.Self
 	if self == "" {
 		self = "rhiza"
 	}
 	label := ""
-	if r.role != "" {
+	switch {
+	case r.check != "":
+		label = fmt.Sprintf("%s %s #%d", r.role, r.check, r.cycle)
+	case r.role != "":
 		label = fmt.Sprintf("%s %s #%d", r.role, r.leaf, r.attempt)
 	}
 	rexArgs := rexWindowArgs(tab, worktree, self, sid)

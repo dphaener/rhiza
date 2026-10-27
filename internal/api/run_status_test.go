@@ -77,6 +77,9 @@ func (f *statusLeafRunner) LeafAnswer(string) (string, string, bool, error) {
 	return "", "", false, nil
 }
 func (f *statusLeafRunner) ClosePane(string) error { return nil }
+func (f *statusLeafRunner) StartCheck(spec run.CheckSpec) (string, error) {
+	return spec.Check.Name + "-" + spec.Role + "-" + strconv.Itoa(spec.Cycle), nil
+}
 
 // statusRun runs workflow src over f with Rex reporting as run.start
 // wires it, and returns the reports written.
@@ -264,5 +267,51 @@ func TestRexRecord(t *testing.T) {
 		if got := string(rexRecord(c.id, c.state, "", "", "", c.progress)); got != c.want {
 			t.Errorf("rexRecord(%q, %s) = %q, want %q", c.id, c.state, got, c.want)
 		}
+	}
+}
+
+const statusChecksWF = `[step.review]
+kind = "checks"
+[[step.review.check]]
+name = "alpha"
+prompt = "a"
+[[step.review.check]]
+name = "beta"
+prompt = "b"
+[step.review.critic]
+prompt = "c"
+[step.review.fixer]
+prompt = "f"
+[step.review.verifier]
+prompt = "v"
+`
+
+// A run over a checks step keeps Rex's program status current: a child
+// record per live check, its cycle named past cycle 1, and the root
+// counting the checks passed up to 100.
+func TestProgramStatusChecks(t *testing.T) {
+	f := &statusLeafRunner{polls: map[string][]run.AgentStatus{
+		"beta-check-1": {{Done: true, Outcome: "fail", Detail: "exit 1"}},
+	}}
+	reports := statusRun(t, statusChecksWF, f)
+	root := func(r map[string]string) bool { _, ok := r["id"]; return !ok }
+	if i := first(reports, 0, func(r map[string]string) bool {
+		return r["id"] == "check/1" && r["title"] == "alpha" && r["msg"] == "alpha: check working"
+	}); i < 0 {
+		t.Error("no child record for check alpha")
+	}
+	if i := first(reports, 0, func(r map[string]string) bool {
+		return r["id"] == "check/2" && r["msg"] == "beta: check working (cycle 2)"
+	}); i < 0 {
+		t.Error("no child record for check beta's cycle 2")
+	}
+	if i := first(reports, 0, func(r map[string]string) bool {
+		return root(r) && strings.Contains(r["msg"], "1 of 2 checks passed") && r["progress"] == "50"
+	}); i < 0 {
+		t.Error("no root msg counts the checks passed")
+	}
+	last := reports[len(reports)-1]
+	if !root(last) || last["state"] != "done" {
+		t.Errorf("last report %v, want root done", last)
 	}
 }

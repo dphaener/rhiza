@@ -80,6 +80,8 @@ type fakeRunner struct {
 	leafAnswerN map[string]int // LeafAnswer calls per question
 	closed      []string       // the session of each ClosePane call, in order
 	closeErr    error          // ClosePane's error, when set
+	checkSpecs  []CheckSpec    // each StartCheck call's spec, in order
+	checkErr    error          // StartCheck's error, when set
 }
 
 // fakeEvidence is one leaf's scripted Evidence result.

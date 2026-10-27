@@ -21,7 +21,7 @@ const (
 
 // StatusReport is where a run stands, for the caller to show (Engine.Status):
 // the run's state at its current step and, while that step is a leaves
-// step, its progress and live leaves. It is derived from the journal
+// or checks step, its progress and live leaves or checks. It is derived from the journal
 // alone (deriveStatus), so this package writes nothing for it.
 type StatusReport struct {
 	Run    string
@@ -37,10 +37,16 @@ type StatusReport struct {
 	// known, how many leaves it has and how many passed (have Evidence).
 	Leaves int
 	Passed int
-	// Progress is Passed × 100 / Leaves under the same condition, nil
-	// otherwise (and once the run finished or stopped).
+	// Checks is, while Step is a checks step, how many checks it has;
+	// Passed is then how many of them passed their latest cycle.
+	Checks int
+	// Progress is Passed × 100 / Leaves (or / Checks) under the same
+	// condition, nil otherwise (and once the run finished or stopped).
 	Progress *int
-	// Live are the leaves step's open leaves with a session, in leaf order.
+	// Live are the leaves step's open leaves with a session, in leaf
+	// order; on a checks step, its checks with a live session, in the
+	// step's order, each as a LeafStatus whose Handle is the check's name
+	// and Attempt its cycle.
 	Live []LeafStatus
 	// Ended are the leaves live in the last report and not in this one:
 	// the caller clears what it showed for them.
@@ -82,6 +88,9 @@ func deriveStatus(st State, def *workflow.Definition, leaves []Leaf) StatusRepor
 		return rep
 	}
 	step, ok := def.Steps[st.Current]
+	if ok && step.Kind == workflow.KindChecks {
+		return checksStatus(rep, st, step)
+	}
 	if !ok || step.Kind != workflow.KindLeaves || leaves == nil {
 		return rep
 	}
@@ -114,6 +123,45 @@ func deriveStatus(st State, def *workflow.Definition, leaves []Leaf) StatusRepor
 	p := 100
 	if rep.Leaves > 0 {
 		p = rep.Passed * 100 / rep.Leaves
+	}
+	rep.Progress = &p
+	return rep
+}
+
+// checksStatus is rep with checks step step's progress: its checks, how
+// many passed their latest cycle, and each check whose latest session is
+// not yet judged.
+func checksStatus(rep StatusReport, st State, step workflow.Step) StatusReport {
+	rep.Checks = len(step.Checks)
+	for i, c := range step.Checks {
+		cs, ok := st.Check(step.Name, c.Name)
+		if !ok {
+			continue
+		}
+		if o, ok := cs.Latest(); ok && o.Outcome == CheckPassed {
+			rep.Passed++
+		}
+		n := len(cs.Sessions)
+		if n == 0 {
+			continue
+		}
+		s := cs.Sessions[n-1]
+		if _, judged := cs.Judgement(s.Role, s.Cycle); judged {
+			continue
+		}
+		ls := LeafStatus{N: i + 1, Handle: c.Name, Role: s.Role, Attempt: s.Cycle, Session: s.Session}
+		if b, ok := st.BlockOf(s.Session); ok {
+			if st.Autonomous && b.Block.Kind == "question" {
+				ls.Arbiter = true
+			} else {
+				ls.Blocked, ls.Kind = true, b.Block.Kind
+			}
+		}
+		rep.Live = append(rep.Live, ls)
+	}
+	p := 100
+	if rep.Checks > 0 {
+		p = rep.Passed * 100 / rep.Checks
 	}
 	rep.Progress = &p
 	return rep
