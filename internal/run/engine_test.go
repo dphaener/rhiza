@@ -38,6 +38,7 @@ type fakeRunner struct {
 	commands   map[string]int
 	polls      map[string]int
 	starts     map[string]int
+	models     []string // each StartAgent call's model, in order
 	envs       map[string][]string
 	answers    map[string]Answer // Answer per question; missing is not OK
 	answerN    map[string]int    // Answer calls per question
@@ -99,12 +100,13 @@ func (f *fakeRunner) Holds(step workflow.Step, env []string) (bool, error) {
 	return hs[len(hs)-1], nil
 }
 
-func (f *fakeRunner) StartAgent(step workflow.Step, env []string) (string, error) {
+func (f *fakeRunner) StartAgent(step workflow.Step, model string, env []string) (string, error) {
 	f.envs[step.Name] = env
 	if err := f.failOn[step.Name]; err != nil {
 		return "", err
 	}
 	f.starts[step.Name]++
+	f.models = append(f.models, model)
 	return "S-" + step.Name, nil
 }
 
@@ -535,6 +537,47 @@ prompt = "build {change}"
 interval = "2s"
 on.pass = "done"
 `
+
+const ladderWF = `
+name = "wf"
+[step.build]
+kind = "agent"
+prompt = "build {change}"
+models = ["sonnet", "opus"]
+max_visits = 3
+on.pass = "done"
+on.fail = "build"
+`
+
+// An agent step revisited climbs its model ladder by visit, the last
+// model kept past the end of the list.
+func TestAgentModelLadder(t *testing.T) {
+	e, r, _, _ := setup(t, ladderWF)
+	r.outcome["S-build"] = workflow.OutcomeFail
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Failed || st.Visits["build"] != 3 {
+		t.Fatalf("result %q visits %v", st.Result, st.Visits)
+	}
+	if want := []string{"sonnet", "opus", "opus"}; !reflect.DeepEqual(r.models, want) {
+		t.Errorf("models = %q, want %q", r.models, want)
+	}
+	t.Logf("visits 1, 2, 3 started on %q", r.models)
+}
+
+// An agent step with no models starts on the agent's default.
+func TestAgentModelDefault(t *testing.T) {
+	e, r, _, _ := setup(t, agentWF)
+	r.outcome["S-build"] = workflow.OutcomePass
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	if want := []string{""}; !reflect.DeepEqual(r.models, want) {
+		t.Errorf("models = %q, want %q", r.models, want)
+	}
+}
 
 func TestAgentPollsUntilDone(t *testing.T) {
 	e, r, c, _ := setup(t, agentWF)

@@ -787,11 +787,11 @@ func (r *stepRunner) sh(cmd string, env []string, out io.Writer) (int, error) {
 }
 
 // StartAgent starts the step's session as session.start does, on the
-// run's change set, and returns its ID. An autonomous run's session is
-// recorded autonomous.
-func (r *stepRunner) StartAgent(step workflow.Step, _ []string) (string, error) {
+// run's change set, on model, and returns its ID. An autonomous run's
+// session is recorded autonomous.
+func (r *stepRunner) StartAgent(step workflow.Step, model string, _ []string) (string, error) {
 	req := agentStepRequest(step, r.mode, r.agent)
-	req.Change, req.Run, req.autonomous = r.change, r.run, r.autonomous
+	req.Change, req.Run, req.autonomous, req.model = r.change, r.run, r.autonomous, model
 	t, err := resolveChangeWorktree(r.ctx, r.change, "no agent can work on it")
 	if err != nil {
 		return "", err

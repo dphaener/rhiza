@@ -191,6 +191,11 @@ func (r Role) Model(attempt int) string {
 	return r.Models[max(1, min(attempt, len(r.Models)))-1]
 }
 
+// Model is the model for visit (1-based) of an agent step: its Models
+// laid out by visit as a Role's are by attempt, or "" when the step names
+// no model.
+func (s Step) Model(visit int) string { return Role{Models: s.Models}.Model(visit) }
+
 // LeafVars are the values a leaves role's prompt placeholders take: a
 // step's, plus the leaf's handle and the attempt.
 type LeafVars struct {

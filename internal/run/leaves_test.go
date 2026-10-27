@@ -328,3 +328,31 @@ func TestNextLeafActions(t *testing.T) {
 		t.Errorf("done: %+v", got)
 	}
 }
+
+// A leaf session starts on its role's model for the attempt, journaled on
+// its leaf-session entry; a role with no models names none.
+func TestLeavesModel(t *testing.T) {
+	src := strings.Replace(leavesWF, "prompt = \"build {leaf}\"\n", "prompt = \"build {leaf}\"\nmodels = [\"sonnet\", \"opus\"]\n", 1)
+	e, r, _, _ := setup(t, src)
+	r.leaves = twoLeaves[:1]
+	passAll(r, r.leaves)
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	var got []string
+	for _, s := range r.leafSpecs {
+		got = append(got, s.Role+":"+s.Model)
+	}
+	if want := []string{"builder:sonnet", "verifier:"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("specs = %q, want %q", got, want)
+	}
+	j, err := e.Store.Read(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, en := range j.Entries {
+		if en.Type == TypeLeafSession && en.Role == workflow.RoleBuilder && en.Model != "sonnet" {
+			t.Errorf("builder leaf-session model = %q, want sonnet", en.Model)
+		}
+	}
+}

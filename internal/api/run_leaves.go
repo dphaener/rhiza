@@ -62,7 +62,7 @@ func (r *stepRunner) Leaves(ref string) ([]run.Leaf, error) {
 // the role's adapter and mode, else the run's, and its prompt rendered
 // with {leaf} and {attempt} too. The session record carries the leaf's
 // handle and the attempt, which its agent gets as RHIZA_LEAF and
-// RHIZA_ATTEMPT.
+// RHIZA_ATTEMPT, and the model spec names.
 func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	role := spec.Step.Role(spec.Role)
 	if role == nil {
@@ -70,7 +70,7 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	}
 	req := agentStepRequest(workflow.Step{Name: spec.Step.Name, Agent: role.Agent, PermissionMode: role.PermissionMode}, r.mode, r.agent)
 	req.Change, req.Run, req.autonomous = r.change, r.run, r.autonomous
-	req.leaf, req.attempt = spec.Leaf.Handle, spec.Attempt
+	req.leaf, req.attempt, req.model = spec.Leaf.Handle, spec.Attempt, spec.Model
 	t, err := resolveChangeWorktree(r.ctx, r.change, "no agent can work on it")
 	if err != nil {
 		return "", err

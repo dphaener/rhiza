@@ -152,6 +152,7 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 		PermissionMode: rec.PermissionMode,
 		HookCommand:    []string{self, "session", "hook"},
 		Prompt:         rec.Prompt,
+		Model:          rec.Model,
 	})
 	if err != nil {
 		return nil, Errorf("session %s: %v", rec.ID, err).WithNext(sessionStartNext)

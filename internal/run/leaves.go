@@ -190,6 +190,9 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 		Step: step, Role: a.role, Leaf: a.leaf, Attempt: a.attempt,
 		Env: append(append([]string{}, env...), EnvLeaf+"="+a.leaf.Handle, EnvAttempt+"="+strconv.Itoa(a.attempt)),
 	}
+	if role := step.Role(a.role); role != nil {
+		spec.Model = role.Model(a.attempt)
+	}
 	s, err := lr.StartLeaf(spec)
 	if err != nil {
 		return errResult(fmt.Errorf("leaf %s: start its %s: %v", a.leaf.Handle, a.role, err)), true, nil

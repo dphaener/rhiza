@@ -693,6 +693,22 @@ func TestLeavesRoleModel(t *testing.T) {
 	}
 }
 
+// Step.Model takes the visit's model as Role.Model takes the attempt's.
+func TestStepModel(t *testing.T) {
+	s := Step{Models: []string{"sonnet", "opus"}}
+	for visit, want := range map[int]string{1: "sonnet", 2: "opus", 3: "opus"} {
+		if got := s.Model(visit); got != want {
+			t.Errorf("Model(%d) = %q, want %q", visit, got, want)
+		}
+	}
+	if got := (Step{Models: []string{"opus"}}).Model(4); got != "opus" {
+		t.Errorf("one model, visit 4 = %q, want opus", got)
+	}
+	if got := (Step{}).Model(1); got != "" {
+		t.Errorf("Model without models = %q, want empty", got)
+	}
+}
+
 // A leaves step refuses a missing role, an unknown sub-table key, models
 // and split where they do not belong, a bad split, and the session keys
 // that belong in its sub-tables.

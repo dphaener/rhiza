@@ -97,6 +97,9 @@ type SessionStartRequest struct {
 	// run's StartLeaf sets them.
 	leaf    string
 	attempt int
+	// model is the session record's Model. Only a run's StartAgent and
+	// StartLeaf set it, from the step's or role's models.
+	model string
 }
 
 // SessionStartResponse is the session launched, or in a dry run the one
@@ -232,7 +235,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 		ID: sid, Agent: a.Name(), Change: cs.String(), Title: title, Step: step, Run: r.Run, Autonomous: r.autonomous,
 		Actor: handleSlug(a.Name() + "-" + sid[:8]), PermissionMode: r.PermissionMode, Prompt: r.Prompt,
 		Worktree: worktree, Branch: branch, Tab: tab, StartedAt: ctx.Now().UTC().Truncate(time.Second),
-		Writes: r.writes, WritesRecord: r.writesRecord, Leaf: r.leaf, Attempt: r.attempt,
+		Writes: r.writes, WritesRecord: r.writesRecord, Leaf: r.leaf, Attempt: r.attempt, Model: r.model,
 	}
 	self := ctx.Self
 	if self == "" {

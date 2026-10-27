@@ -33,8 +33,11 @@ type Record struct {
 	Autonomous bool `json:"autonomous,omitempty"`
 	// Leaf is the handle of the leaf a leaves step launched the session
 	// on, and Attempt the leaf's attempt; empty for every other session.
-	Leaf           string    `json:"leaf,omitempty"`
-	Attempt        int       `json:"attempt,omitempty"`
+	Leaf    string `json:"leaf,omitempty"`
+	Attempt int    `json:"attempt,omitempty"`
+	// Model is the model the agent starts on; "" means the agent's
+	// default.
+	Model          string    `json:"model,omitempty"`
 	Actor          string    `json:"actor"`
 	For            string    `json:"for"`
 	PermissionMode string    `json:"permission_mode"`

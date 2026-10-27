@@ -68,8 +68,9 @@ type Runner interface {
 	Command(step workflow.Step, env []string) (code int, detail string, err error)
 	// Holds runs a wait or agent step's `until` condition once.
 	Holds(step workflow.Step, env []string) (bool, error)
-	// StartAgent launches an agent step's session and returns its ID.
-	StartAgent(step workflow.Step, env []string) (session string, err error)
+	// StartAgent launches an agent step's session on model ("" for the
+	// agent's default) and returns its ID.
+	StartAgent(step workflow.Step, model string, env []string) (session string, err error)
 	// AgentStatus reports where a session is: ended, and with which
 	// outcome (pass or fail), or still running and perhaps blocked on the
 	// owner.
@@ -589,7 +590,7 @@ func (r *running) wait(step workflow.Step, env []string) result {
 func (r *running) agent(step workflow.Step, env []string) (result, error) {
 	session := r.j.State().Session[step.Name]
 	if session == "" {
-		s, err := r.e.Runner.StartAgent(step, env)
+		s, err := r.e.Runner.StartAgent(step, step.Model(r.j.State().CurrentVisit), env)
 		if err != nil {
 			return errResult(err), nil
 		}
