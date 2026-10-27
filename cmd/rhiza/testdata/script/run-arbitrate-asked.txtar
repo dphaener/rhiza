@@ -1,0 +1,146 @@
+# In an autonomous run, after a command step the engine reads the run's
+# journal again and has the arbiter decide each question the step asked
+# (an asked entry with no session, as rhiza run review-check writes). A
+# passing verdict lets the run go on to its next step; a failing one fails
+# the run naming the question. A normal run runs no arbiter and leaves the
+# question open for the owner.
+#
+# The review step seeds three plan review rounds and runs review-check,
+# which adds one question for the finding the critic confirmed in round 3.
+# The fake claude is the arbiter only: per $WORK/mode it writes the
+# answering Decision (answer) or nothing (none), then says done.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Asked runs' --title 'Asked runs' --json
+stdout '"change_set": "[0-9A-Z]{26}"'
+exec rhiza add capability cap-a --field 'statement=Does A'
+mkdir .rhiza/workflows
+cp $WORK/plan.toml .rhiza/workflows/plan.toml
+exec git add -A
+exec git commit -qm 'Asked runs'
+
+# Autonomous, the arbiter answers: arbiter and arbitrated entries for the
+# question, and the run goes on to its next step.
+exec sh -c 'echo answer > $WORK/mode'
+exec sh -c 'rhiza run start --workflow plan --permission-mode manual --autonomous > $WORK/out 2> $WORK/err; echo exit=$?'
+stdout '^exit=0$'
+exec cat $WORK/out
+stdout '^Run [0-9A-Z]{26} succeeded$'
+exec sh -c 'sed -n "s/^Run \([0-9A-Z]*\) .*/\1/p" $WORK/out > $WORK/runid; grep "\"type\":\"asked\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl | sed -n "s/.*\"question\":\"\([0-9A-Z]*\)\".*/\1/p" > $WORK/qid; cat $WORK/qid'
+stdout '^[0-9A-Z]{26}$'
+exec sh -c 'grep "\"question\":\"$(cat $WORK/qid)\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl | grep -o "\"type\":\"[a-z]*\"" | tr "\n" " "'
+stdout '^"type":"asked" "type":"arbiter" "type":"arbitrated" $'
+exec sh -c 'grep "\"type\":\"arbitrated\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+stdout '"step":"review"'
+stdout '"outcome":"pass"'
+stdout '"decision":"assume-a"'
+exec sh -c 'grep -o "\"type\":\"[a-z]*\",\"at\":\"[^\"]*\",\"step\":\"[a-z]*\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl | sed "s/,\"at\":\"[^\"]*\"//" | tr "\n" " "'
+stdout '"type":"ended","step":"review" "type":"entered","step":"next" "type":"ended","step":"next"'
+! stdout '"type":"answered"'
+exec cat $WORK/err
+stdout 'step review: arbiter pass on question [0-9A-Z]{26}: answered by assume-a'
+exists $WORK/next.ran
+exec cat $WORK/arbiter.log
+stdout -count=1 '^Decide question [0-9A-Z]{26}: follow rhiza guide arbiter\.$'
+
+# Autonomous, the arbiter writes nothing: the run fails naming the
+# question, and the next step does not run.
+rm $WORK/next.ran
+exec sh -c 'echo none > $WORK/mode'
+! exec rhiza run start --workflow plan --permission-mode manual --autonomous
+stdout '^Run [0-9A-Z]{26} failed$'
+stdout 'arbiter failed on question review-[0-9a-z]{8}-r3-f1 \([0-9A-Z]{26}\): no live Decision answers question'
+stderr 'step review: arbiter fail on question [0-9A-Z]{26}'
+! exists $WORK/next.ran
+exec sh -c 'rhiza run status $(ls -t .git/rhiza/runs | head -1 | sed "s/\.jsonl$//")'
+stdout 'failed'
+stdout 'arbiter failed on question review-[0-9a-z]{8}-r3-f1'
+exec cat $WORK/arbiter.log
+stdout -count=2 '^Decide question'
+
+# A normal run: no arbiter, the question stays open, the run goes on.
+exec rhiza run start --workflow plan --permission-mode manual
+stdout '^Run [0-9A-Z]{26} succeeded$'
+exists $WORK/next.ran
+exec cat $WORK/arbiter.log
+stdout -count=2 '^Decide question'
+exec sh -c 'f=.git/rhiza/runs/$(ls -t .git/rhiza/runs | head -1); grep -c "\"type\":\"asked\"" $f; grep -c "\"type\":\"arbit" $f; true'
+stdout '^1\n0$'
+
+fold-ok
+
+-- plan.toml --
+name = "plan"
+
+[step.review]
+kind = "command"
+run = "sh \"$WORK/review.sh\""
+on.pass = "next"
+on.fail = "failed"
+
+[step.next]
+kind = "command"
+run = "touch \"$WORK/next.ran\""
+-- review.sh --
+set -e
+rhiza run findings "$WORK/clean.json"
+rhiza run findings "$WORK/clean.json"
+rhiza run findings "$WORK/findings.json"
+rhiza run verdict "$WORK/verdict.json"
+rhiza run review-check
+-- clean.json --
+{"findings":[]}
+-- findings.json --
+{"findings":[
+  {"node":"cap-a","kind":"missing-acceptance","reason":"No acceptance criteria"}
+]}
+-- verdict.json --
+{"verdicts":[
+  {"finding":"f1","verdict":"confirmed","reason":"It has none"}
+]}
+-- bin/rex --
+#!/bin/sh
+case "$1" in
+send | send-key)
+	echo "$*" >> "$WORK/typed.log"
+	exit 0
+	;;
+esac
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >>"$WORK/tab.out" 2>&1 </dev/null &
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+for a; do last=$a; done
+case "$last" in
+*'rhiza guide arbiter'*)
+	echo "$last" >> "$WORK/arbiter.log"
+	q=$(printf '%s\n' "$last" | sed -n 's/^Decide question \([0-9A-Z]*\):.*/\1/p')
+	if [ "$(cat "$WORK/mode")" = answer ]; then
+		printf '{"writes":[{"op":"add","kind":"decision","handle":"assume-a","fields":["statement=Accept A as is","wording=(assumed, would have escalated)","reasoning=A is small"]},{"op":"link","from":"assume-a","type":"answers","to":"%s"}]}\n' "$q" > "$WORK/decision.json"
+		rhiza apply "$WORK/decision.json" --json >> "$WORK/apply.out" || exit 7
+	fi
+	rhiza session done >> "$WORK/done.out" || exit 6
+	exit 0
+	;;
+esac
+echo 'not the arbiter' >&2
+exit 9

@@ -48,6 +48,7 @@ type fakeRunner struct {
 	deliverErr error             // Deliver's error, when set
 	ended      []string          // "step:session" per AgentEnded call, in order
 	endedErr   error             // what AgentEnded returns
+	onCommand  func(step string) // called as each command step runs
 }
 
 func newFakeRunner() *fakeRunner {
@@ -67,6 +68,9 @@ func (f *fakeRunner) Command(step workflow.Step, env []string) (int, string, err
 	}
 	n := f.commands[step.Name]
 	f.commands[step.Name]++
+	if f.onCommand != nil {
+		f.onCommand(step.Name)
+	}
 	codes := f.codes[step.Name]
 	if n < len(codes) {
 		return codes[n], "", nil
@@ -1793,5 +1797,201 @@ func TestAgentEndedErrorChangesNothing(t *testing.T) {
 	}
 	if !slices.Contains(logs, "step build: record token use: no transcript") {
 		t.Errorf("logs = %q", logs)
+	}
+}
+
+const askedWF = `
+name = "wf"
+[step.check]
+kind = "command"
+run = "rhiza run review-check"
+on.pass = "next"
+on.fail = "next"
+[step.next]
+kind = "command"
+run = "true"
+[step.decide]
+kind = "arbiter"
+interval = "3s"
+`
+
+// journalAsked makes the check command append, lock-free as a child
+// process does, a session-less asked entry for question node q.
+func journalAsked(t *testing.T, e *Engine, r *fakeRunner, q string) {
+	t.Helper()
+	r.onCommand = func(step string) {
+		if step != "check" {
+			return
+		}
+		if err := e.Store.Append(runID, Entry{
+			Type: TypeAsked, At: at(1), Step: "check", Question: q, Handle: "review-x-r3-f1", Detail: "How?",
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+// TestCommandAskedArbitrated: a command step journals a session-less asked
+// entry; in an autonomous run the arbiter decides it right after the step,
+// with no delivery, and the run goes on to its next step.
+func TestCommandAskedArbitrated(t *testing.T) {
+	e, r := autonomousSetup(t, askedWF)
+	journalAsked(t, e, r, "Q9")
+	r.agentSeq["S-decide-Q9"] = []AgentStatus{{SaidDone: true}}
+	r.answers["Q9"] = Answer{OK: true, Decision: "assume-x", Statement: "Do x."}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || !reflect.DeepEqual(outcomes(st), []string{"check:pass", "next:pass"}) {
+		t.Fatalf("result %q steps %v detail %q", st.Result, outcomes(st), st.Detail)
+	}
+	want := []string{
+		"started:check", "entered:check", "asked:check", "arbiter:check", "arbitrated:check",
+		"ended:check", "entered:next", "ended:next", "finished:next",
+	}
+	if got := entryTypes(t, e); !reflect.DeepEqual(got, want) {
+		t.Errorf("journal = %v\nwant      %v", got, want)
+	}
+	if !reflect.DeepEqual(r.arbiters, []string{"decide Q9"}) || len(r.delivered) != 0 {
+		t.Errorf("arbiters %v delivered %v", r.arbiters, r.delivered)
+	}
+	if a, ok := st.Arbitration("Q9"); !ok || a.Outcome != "pass" || a.Decision != "assume-x" {
+		t.Errorf("arbitration %+v", a)
+	}
+}
+
+// TestCommandAskedArbiterFailFailsRun: a failed arbiter fails the run,
+// whatever the step's on. entries say, naming the question.
+func TestCommandAskedArbiterFailFailsRun(t *testing.T) {
+	e, r := autonomousSetup(t, askedWF)
+	journalAsked(t, e, r, "Q9")
+	r.agentSeq["S-decide-Q9"] = []AgentStatus{{SaidDone: true}}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	wantDetail := "arbiter failed on question review-x-r3-f1 (Q9): no live Decision answers question Q9"
+	if st.Result != Failed || st.Detail != wantDetail || !reflect.DeepEqual(outcomes(st), []string{"check:error"}) {
+		t.Fatalf("result %q detail %q steps %v", st.Result, st.Detail, outcomes(st))
+	}
+	if r.commands["next"] != 0 {
+		t.Error("next ran")
+	}
+}
+
+// TestCommandAskedNormalRunLeftOpen: a normal run runs no arbiter; the
+// question stays open for the owner and the run goes on.
+func TestCommandAskedNormalRunLeftOpen(t *testing.T) {
+	e, r, _, _ := setup(t, askedWF)
+	journalAsked(t, e, r, "Q9")
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || len(r.arbiters) != 0 || countType(t, e, TypeArbiter) != 0 || countType(t, e, TypeArbitrated) != 0 {
+		t.Fatalf("result %q arbiters %v", st.Result, r.arbiters)
+	}
+}
+
+// TestCommandAskedNotArbitratedTwice: a question already decided is not
+// decided again by a later command step, nor by a resume; a session's
+// question (it has a Session) is not this path's.
+func TestCommandAskedNotArbitratedTwice(t *testing.T) {
+	src := strings.Replace(askedWF, "[step.next]\nkind = \"command\"\nrun = \"true\"", "[step.next]\nkind = \"command\"\nrun = \"true\"\non.pass = \"again\"\n[step.again]\nkind = \"command\"\nrun = \"true\"", 1)
+	e, r := autonomousSetup(t, src)
+	if err := e.Store.Append(runID, Entry{Type: TypeAsked, At: at(1), Step: "build", Session: "S-build", Question: "Q1", Handle: "question-s-1"}); err != nil {
+		t.Fatal(err)
+	}
+	journalAsked(t, e, r, "Q9")
+	r.agentSeq["S-decide-Q9"] = []AgentStatus{{SaidDone: true}}
+	r.answers["Q9"] = Answer{OK: true, Decision: "assume-x"}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || !reflect.DeepEqual(outcomes(st), []string{"check:pass", "next:pass", "again:pass"}) {
+		t.Fatalf("result %q steps %v detail %q", st.Result, outcomes(st), st.Detail)
+	}
+	if !reflect.DeepEqual(r.arbiters, []string{"decide Q9"}) {
+		t.Errorf("arbiters %v", r.arbiters)
+	}
+}
+
+// TestCommandAskedResume: a run killed after the arbiter launched, before
+// the step ended, reruns the command and rejoins the open arbitration; a
+// run killed after the verdict does not arbitrate again.
+func TestCommandAskedResume(t *testing.T) {
+	e, r := autonomousSetup(t, askedWF)
+	for _, en := range []Entry{
+		{Type: TypeEntered, At: at(1), Step: "check", Visit: 1},
+		{Type: TypeAsked, At: at(1), Step: "check", Question: "Q9", Handle: "review-x-r3-f1"},
+		{Type: TypeArbiter, At: at(1), Step: "check", Session: "S-earlier", Question: "Q9"},
+	} {
+		if err := e.Store.Append(runID, en); err != nil {
+			t.Fatal(err)
+		}
+	}
+	r.agentSeq["S-earlier"] = []AgentStatus{{SaidDone: true}}
+	r.answers["Q9"] = Answer{OK: true, Decision: "assume-x"}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || len(r.arbiters) != 0 || r.polls["S-earlier"] != 1 || countType(t, e, TypeArbitrated) != 1 {
+		t.Fatalf("result %q detail %q arbiters %v polls %v", st.Result, st.Detail, r.arbiters, r.polls)
+	}
+
+	e, r = autonomousSetup(t, askedWF)
+	for _, en := range []Entry{
+		{Type: TypeEntered, At: at(1), Step: "check", Visit: 1},
+		{Type: TypeAsked, At: at(1), Step: "check", Question: "Q9", Handle: "review-x-r3-f1"},
+		{Type: TypeArbiter, At: at(1), Step: "check", Session: "S-earlier", Question: "Q9"},
+		{Type: TypeArbitrated, At: at(1), Step: "check", Question: "Q9", Outcome: "pass", Decision: "assume-x"},
+	} {
+		if err := e.Store.Append(runID, en); err != nil {
+			t.Fatal(err)
+		}
+	}
+	st, err = e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || len(r.arbiters) != 0 || r.polls["S-earlier"] != 0 || countType(t, e, TypeArbitrated) != 1 {
+		t.Fatalf("result %q arbiters %v polls %v", st.Result, r.arbiters, r.polls)
+	}
+}
+
+// TestCommandAskedRetryArbitratesAgain: after a failed arbitration fails
+// the run, a retry of the step has the arbiter decide the question anew.
+func TestCommandAskedRetryArbitratesAgain(t *testing.T) {
+	e, r := autonomousSetup(t, askedWF)
+	journalAsked(t, e, r, "Q9")
+	r.agentSeq["S-decide-Q9"] = []AgentStatus{{SaidDone: true}}
+	if st, err := e.Run(runID); err != nil || st.Result != Failed {
+		t.Fatalf("first run: %v %q", err, st.Result)
+	}
+	r.onCommand = nil // the question is journalled once, as review-check does
+	r.answers["Q9"] = Answer{OK: true, Decision: "assume-x"}
+	st, err := e.Retry(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || len(r.arbiters) != 2 {
+		t.Fatalf("result %q detail %q arbiters %v", st.Result, st.Detail, r.arbiters)
+	}
+}
+
+// TestAskedWithoutSessionIsNotTheBlocks: a session-less asked entry never
+// becomes the asked entry of a block.
+func TestAskedWithoutSessionIsNotTheBlocks(t *testing.T) {
+	j := Journal{ID: runID, Entries: []Entry{
+		startedEntry("build", 0),
+		{Type: TypeEntered, At: at(1), Step: "build", Visit: 1},
+		{Type: TypeBlocked, At: at(1), Step: "build", Block: &Block{Kind: "question"}},
+		{Type: TypeAsked, At: at(1), Step: "check", Question: "Q9", Handle: "review-x-r3-f1"},
+	}}
+	if a, ok := j.State().BlockAsked(); ok {
+		t.Errorf("block asked %+v", a)
 	}
 }

@@ -503,7 +503,9 @@ func (j Journal) State() State {
 			st.Asked = append(st.Asked, Asked{
 				Step: e.Step, Session: e.Session, Question: e.Question, Handle: e.Handle, Text: e.Detail, At: e.At,
 			})
-			if st.Blocked != nil && st.BlockedSession == e.Session {
+			// Only a session's question is its block's: a command step's
+			// asked entry has no session.
+			if e.Session != "" && st.Blocked != nil && st.BlockedSession == e.Session {
 				st.blockAsked = len(st.Asked)
 			}
 		case TypeAnswered:
