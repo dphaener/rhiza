@@ -64,12 +64,12 @@ func TestListOrder(t *testing.T) {
 	for _, tx := range List() {
 		names = append(names, tx.Name)
 	}
-	want := []string{"rhiza", "scrub", "apply", "arbiter", "carving", "change-sets", "reopening", "sources"}
+	want := []string{"rhiza", "scrub", "plan", "apply", "arbiter", "carving", "change-sets", "plan-review", "reopening", "sources"}
 	if !slices.Equal(names, want) {
 		t.Fatalf("List names = %v, want %v", names, want)
 	}
 	for i, tx := range List() {
-		if tx.Skill != (i < 2) {
+		if tx.Skill != (i < 3) {
 			t.Errorf("%s: Skill = %v", tx.Name, tx.Skill)
 		}
 	}

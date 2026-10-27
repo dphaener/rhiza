@@ -1277,7 +1277,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "name": {
-            "description": "The text to print: rhiza (the default), scrub or a topic name; rhiza guide ls lists them",
+            "description": "The text to print: rhiza (the default), scrub, plan or a topic name; rhiza guide ls lists them",
             "type": "string"
           }
         },
@@ -1307,7 +1307,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Print the agent guide: the rhiza skill, the scrub skill or a topic",
+      "summary": "Print the agent guide: the rhiza skill, the scrub skill, the plan skill or a topic",
       "write": false
     },
     {
@@ -1380,7 +1380,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "texts": {
-            "description": "The texts: the rhiza skill, the scrub skill, then the topics by name",
+            "description": "The texts: the rhiza, scrub and plan skills, then the topics by name",
             "items": {
               "additionalProperties": false,
               "properties": {
