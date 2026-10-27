@@ -25,6 +25,7 @@ An owner's gate skipped in autonomous mode is recorded with rule autonomous: rhi
 ### In
 
 - depends-on [autonomous-review](autonomous-review.md)
+- depends-on [plan-gate](../built-in-workflows/plan-workflow/plan-gate.md)
 - verifies [autonomous-gate-rule-verified](../../../../evidence/autonomous-gate-rule-verified.md)
 - verifies [pr-39-autonomous-mode-and-the](../../../../evidence/pr-39-autonomous-mode-and-the.md)
 

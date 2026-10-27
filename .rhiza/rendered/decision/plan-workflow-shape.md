@@ -27,6 +27,18 @@ the orchestrator's proposal in the milestone-3 conversation, accepted by the own
 ### In
 
 - decided-by [milestone-3](../intent/anyone-builds/milestone-3.md)
+- decided-by [plan-workflow](../capability/rhiza/workflows/built-in-workflows/plan-workflow.md)
+- decided-by [plan-guide](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-guide.md)
+- decided-by [plan-guide-install](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-guide-install.md)
+- decided-by [plan-scope](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-scope.md)
+- decided-by [plan-interview](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-interview.md)
+- decided-by [plan-source](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-source.md)
+- decided-by [plan-decisions-from-source](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-decisions-from-source.md)
+- decided-by [plan-review-journal](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-review-journal.md)
+- decided-by [plan-review-guide](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-review-guide.md)
+- decided-by [plan-review-rounds](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-review-rounds.md)
+- decided-by [plan-gate](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-gate.md)
+- decided-by [plan-workflow-file](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-workflow-file.md)
 
 ## History
 

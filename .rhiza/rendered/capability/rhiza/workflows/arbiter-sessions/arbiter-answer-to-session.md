@@ -26,6 +26,7 @@ Once the arbiter has decided, the engine gives the answering Decision to the ses
 
 ### In
 
+- depends-on [plan-autonomous-interview](../built-in-workflows/plan-workflow/plan-autonomous-interview.md)
 - blocks [arbiter-answer-delivery](../../../../question/arbiter-answer-delivery.md)
 - verifies [arbiter-answer-to-session-verified](../../../../evidence/arbiter-answer-to-session-verified.md)
 - verifies [pr-39-autonomous-mode-and-the](../../../../evidence/pr-39-autonomous-mode-and-the.md)
