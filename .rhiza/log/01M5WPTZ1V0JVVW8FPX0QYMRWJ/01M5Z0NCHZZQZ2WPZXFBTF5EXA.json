@@ -1,0 +1,69 @@
+{
+  "actor": "01M5Z0M4R37AZ4PGAZA1ZBXKPC",
+  "after": [
+    "01M5Z0ER1D3GE3P77QRSCBACTC"
+  ],
+  "at": "2026-10-27T15:46:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M5Z0EKX3DVJHR6SVG5QX87J1",
+        "id": "01M5Z0NBQH34H2B45JHA9JGK16",
+        "link": "01M5Z0NBQH34H2B45JH8EBWQN3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EG65NMPZAKN41R95EQYB",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EMM6HBY40F6M5QVK0TX0",
+        "id": "01M5Z0NBWQVNEKZ0GSM1VM4YE8",
+        "link": "01M5Z0NBWQVNEKZ0GSM144AFQ1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EK65NC55WAS23EJDV773",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "statement": "The accepted decision review-feeds-model says review feeds the model overruled findings as decisions, but the plan's topic-4 pick (QA Evidence + proposed rules) keeps only QA Evidence and proposed constraints, with dropped findings staying in the journal. Should the review guide also record overruled findings as Decisions (and if so, which: findings a critic drops, or ones the owner overrules at sign-off), or does the plan drop that part of review-feeds-model?"
+        },
+        "handle": "review-overruled-findings",
+        "id": "01M5Z0NC1ECW8S0JXHMJ3N215G",
+        "key": null,
+        "kind": "question",
+        "node": "01M5Z0NC1ECW8S0JXHMG1SWS92",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0NC1ECW8S0JXHMG1SWS92",
+        "id": "01M5Z0NC63HKN9CXVS3291D5PS",
+        "link": "01M5Z0NC63HKN9CXVS2ZZ3V1AJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0ENY6PDKAQS7QEY0AR5RN",
+        "type": "blocks"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0NC1ECW8S0JXHMG1SWS92",
+        "id": "01M5Z0NCASXN4WTS45MSG0C63G",
+        "link": "01M5Z0NCASXN4WTS45MPZE11H9",
+        "note": "the part of the decision the plan leaves out",
+        "op": "link.create",
+        "to": "01M5SWRNCSXEK47CQTD53AJSBQ",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZ1V0JVVW8FPX0QYMRWJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5Z0NCHZZQZ2WPZXFBTF5EXA",
+  "type": "ops",
+  "v": 1
+}
