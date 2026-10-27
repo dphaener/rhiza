@@ -1,6 +1,6 @@
 # When a verifier passes a leaf, the engine commits the log entry files of
-# that verifier's Evidence, and only them, as its own chore(rhiza) commit
-# naming the leaf, with the run's Change: and the verifier's Actor:
+# that verifier's Evidence and of its actor's record, and only them, as
+# its own chore(rhiza) commit naming the leaf, with the run's Change: and the verifier's Actor:
 # trailers and no Leaf: trailer. The builder's staged, unstaged and
 # untracked edits in the build worktree stay exactly as they were. The
 # commit is journalled on the passed leaf.
@@ -33,17 +33,27 @@ stdout '"state": "succeeded"'
 stdout '^exit=0$'
 
 # HEAD is one new commit on the builder's leaf commit, holding only the
-# verifier's two Evidence entry files.
+# verifier's two Evidence entry files in the run's change set and the
+# entries of its actor's record change set.
 exec sh -c 'cd "$(cat $WORK/build.pwd)" && git rev-parse HEAD^'
 cmp stdout $WORK/want.commit
 exec sh -c 'cd "$(cat $WORK/build.pwd)" && git log -1 --format=%B && git show --name-only --format= HEAD'
 stdout '^chore\(rhiza\): evidence for good$'
-stdout -count=2 '^\.rhiza/log/[0-9A-Z]{26}/[0-9A-Z]{26}\.json$'
 stdout '^Change: [0-9A-Z]{26}$'
 stdout '^Actor: claude-code-[0-9a-z-]+$'
 ! stdout 'Leaf:'
-exec sh -c 'cd "$(cat $WORK/build.pwd)" && for f in $(git show --name-only --format= HEAD); do grep -l good-ok "$f"; grep -l verifies "$f"; done'
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git show --name-only --format= HEAD | cut -d/ -f3 | sort | uniq -c'
+stdout -count=2 '^ +[0-9]+ [0-9A-Z]{26}$'
+stdout '^ +2 '
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && for f in $(git show --name-only --format= HEAD); do grep -l good-ok "$f"; grep -l verifies "$f"; done; true'
 stdout -count=2 '\.json$'
+
+# The actor the Actor: trailer names is created in the commit's tree; the
+# builder's actor record is not committed and stays untracked.
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && a=$(git log -1 --format="%(trailers:key=Actor,valueonly)" | tr -d "[:space:]") && git show --name-only --format= HEAD | xargs grep -l "\"handle\": *\"$a\"" && git show --name-only --format= HEAD | xargs grep -l "\"kind\": *\"actor\""'
+stdout -count=2 '\.json$'
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git status --porcelain --untracked-files=all -- .rhiza | cut -d/ -f3 | sort -u'
+stdout -count=1 '^[0-9A-Z]{26}$'
 
 # The leaf passed with that commit journalled on it.
 exec sh -c 'cd "$(cat $WORK/build.pwd)" && git rev-parse HEAD > $WORK/evidence.commit'

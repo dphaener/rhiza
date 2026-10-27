@@ -240,7 +240,8 @@ func nodeCreator(sets []changeset.ChangeSet, n id.ID) (id.ID, bool) {
 // wrote its create and its verifies link to the leaf), and nothing else,
 // on HEAD of the run's worktree, as its own chore(rhiza) commit naming the
 // leaf, with Change: and Actor: (the verifier's) trailers and no Leaf:
-// trailer. It builds the commit in a temporary index, so the builder's
+// trailer. The entries of the verifier actor's own record go in the same
+// commit (actorEntries), so the actor the Evidence names is in its tree. It builds the commit in a temporary index, so the builder's
 // staged and unstaged edits stay as they were; the real index is only
 // brought up to the new HEAD for the committed paths. When those files
 // are already committed and unchanged (a resume after the commit), it
@@ -270,6 +271,11 @@ func (r *stepRunner) CommitEvidence(leaf run.Leaf, session string) (string, erro
 	entries := evidenceEntries(m, w.changeSets(), lid, actor)
 	if len(entries) == 0 {
 		return "", fmt.Errorf("no Evidence by %s verifies %s", nodeName(m, actor), leaf.Handle)
+	}
+	for _, e := range actorEntries(w.changeSets(), actor, cs) {
+		if !slices.Contains(entries, e) {
+			entries = append(entries, e)
+		}
 	}
 	prefix, err := r.worktreeGit("rev-parse", "--show-prefix")
 	if err != nil {
@@ -341,8 +347,34 @@ func (r *stepRunner) commitOnly(paths []string, msg string) (string, error) {
 	return commit, nil
 }
 
+// actorEntries are the entries that record actor: every entry of the
+// record change set whose ops create it, or, when the run's change set
+// run creates it, only the entries that wrote that create. Committed
+// ones come back too; committing them again changes nothing.
+func actorEntries(sets []changeset.ChangeSet, actor, run id.ID) []evidenceEntry {
+	for _, c := range sets {
+		for _, o := range c.Ops {
+			if o.Type != op.TypeNodeCreate || o.Node != actor {
+				continue
+			}
+			var out []evidenceEntry
+			if c.ID != run {
+				for _, e := range c.Applied {
+					out = append(out, evidenceEntry{c.ID, e})
+				}
+				return out
+			}
+			for _, rv := range c.History[o.ID] {
+				out = append(out, evidenceEntry{c.ID, rv.Entry})
+			}
+			return out
+		}
+	}
+	return nil
+}
+
 // evidenceEntry is one log entry, in change set cs, that wrote an
-// Evidence node's create or its verifies link.
+// Evidence node's create or its verifies link, or recorded its actor.
 type evidenceEntry struct {
 	cs, entry id.ID
 }

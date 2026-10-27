@@ -235,7 +235,8 @@ func TestLeafCommitEngine(t *testing.T) {
 
 // evidenceCommitRunner is a stepRunner on a real git worktree holding a
 // Rhiza repository, committed, whose change set has leaf "leaf-a", and a
-// verifier session "S-v" whose actor is ada, recorded and committed too.
+// verifier session "S-v" whose actor is ada, recorded in its own record
+// change set whose entries are left uncommitted.
 // It returns the runner, a git runner there, the context (to write as
 // ada), the leaf and ada.
 func evidenceCommitRunner(t *testing.T) (*stepRunner, func(...string) string, *Ctx, run.Leaf, id.ID) {
@@ -265,9 +266,11 @@ func evidenceCommitRunner(t *testing.T) (*stepRunner, func(...string) string, *C
 	}
 	cs := newChange(t, ctx, `{"intent":"Build"}`).ChangeSet
 	leaf := mustWrite(t, ctx, "add", `{"kind":"capability","handle":"leaf-a"}`).Nodes[0]
-	ada := recordAda(t, ctx, "ada@example.com")
 	git("add", "-A")
 	git("commit", "-q", "-m", "model")
+	// The verifier's actor is recorded as session start records it, its
+	// record change set left uncommitted in the worktree.
+	ada := recordAda(t, ctx, "ada@example.com")
 	sessions := session.NewStore(filepath.Join(tmp, "sessions"))
 	if err := sessions.Write(session.Record{ID: "S-v", Actor: ada.String(), Change: cs.String()}); err != nil {
 		t.Fatal(err)
@@ -307,10 +310,29 @@ func TestEvidenceCommit(t *testing.T) {
 	v.Actor = ada
 	ev := mustWrite(t, &v, "add", `{"kind":"evidence","handle":"leaf-a-ok","fields":["statement=leaf-a works","result=PASS"]}`)
 	ln := mustWrite(t, &v, "link", `{"from":"leaf-a-ok","type":"verifies","to":"leaf-a"}`)
+	// Another session's write, untracked in the run's change set, which
+	// the Evidence commit must leave alone.
+	other := mustWrite(t, ctx, "add", `{"kind":"capability","handle":"leaf-b"}`)
+	otherPath := fmt.Sprintf(".rhiza/log/%s/%s.json", r.change, other.Entry)
 	want := []string{
 		fmt.Sprintf(".rhiza/log/%s/%s.json", r.change, ev.Entry),
 		fmt.Sprintf(".rhiza/log/%s/%s.json", r.change, ln.Entry),
 	}
+	var record []string
+	for _, f := range strings.Split(git("ls-files", "--others", "--", ".rhiza/log"), "\n") {
+		if f != "" && !slices.Contains(want, f) && f != otherPath {
+			record = append(record, f)
+		}
+	}
+	if len(record) == 0 {
+		t.Fatal("the verifier's actor record left no uncommitted entries")
+	}
+	for _, f := range record {
+		if strings.Contains(f, r.change) {
+			t.Fatalf("actor record entry %s is in the run's change set", f)
+		}
+	}
+	want = append(want, record...)
 	slices.Sort(want)
 
 	cached, diff := git("diff", "--cached"), git("diff")
@@ -330,8 +352,9 @@ func TestEvidenceCommit(t *testing.T) {
 	show := git("show", "--stat", "--format=%s%n%n%b", c)
 	t.Logf("git show --stat:\n%s", show)
 	files := strings.Split(git("show", "--name-only", "--format=", c), "\n")
+	t.Logf("committed files:\n%s", strings.Join(files, "\n"))
 	if !reflect.DeepEqual(files, want) {
-		t.Errorf("committed files = %v, want only the Evidence entries %v", files, want)
+		t.Errorf("committed files = %v, want only the Evidence and actor record entries %v", files, want)
 	}
 	msg := git("log", "-1", "--format=%B", c)
 	if subject := strings.SplitN(msg, "\n", 2)[0]; subject != "chore(rhiza): evidence for leaf-a" {
@@ -350,8 +373,8 @@ func TestEvidenceCommit(t *testing.T) {
 	if s := git("status", "--porcelain", "--untracked-files=all", "--", "notes.txt", "new.txt", "scratch.txt"); s != status {
 		t.Errorf("builder's status = %q, want %q", s, status)
 	}
-	if s := git("status", "--porcelain", "--untracked-files=all", "--", ".rhiza"); s != "" {
-		t.Errorf("the .rhiza folder is not clean after the commit:\n%s", s)
+	if s := git("status", "--porcelain", "--untracked-files=all", "--", ".rhiza"); s != "?? "+otherPath {
+		t.Errorf(".rhiza status after the commit = %q, want only the other write %s untracked", s, otherPath)
 	}
 	t.Logf("git diff --cached (before = after):\n%s\ngit diff (before = after):\n%s\nstatus (before = after):\n%s", cached, diff, status)
 
