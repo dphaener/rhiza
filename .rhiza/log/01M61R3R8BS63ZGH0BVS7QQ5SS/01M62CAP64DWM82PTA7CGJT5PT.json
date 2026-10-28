@@ -1,0 +1,40 @@
+{
+  "actor": "01M62BZ1PWNKGP7HBSGDS8J28Y",
+  "after": [
+    "01M62C4A4HTDSPEEYW9H6CCP9D"
+  ],
+  "at": "2026-10-28T23:08:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 608fcae, go test ./cmd/rhiza -run TestScripts/daemon -count=1 passed, and go test ./..., fmt-check and vet passed. In the kept work dir of daemon-picks.txtar, the fake Rex's rex.log shows rhiza daemon --permission-mode manual --once opened exactly one new tab (rex window new ... -c <repo> -- rhiza run start 01M5PWGQ8GB4618G4RH2TV0ZAH --permission-mode manual). That ID is the milestone change set Built's, and the line has no --autonomous; the leafless and backlog change sets got no tab. Under --once --autonomous the command ends with --permission-mode manual --autonomous. The diff of 161f5f5 (internal/api/daemon.go daemonStart) appends --autonomous only when the daemon has it, and a daemon with no mode or a bypass mode is refused before any tab opens. make self-check fails only on stale .rhiza/rendered actor/index files from the run's own model writes, not on this leaf's code."
+        },
+        "handle": "daemon-run-tabs-verified-3",
+        "id": "01M62CANGA4RXXDCV27Y1ADY1S",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62CANGA4RXXDCV27TCSZSF4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62CANGA4RXXDCV27TCSZSF4",
+        "id": "01M62CANRW7H2ZHFETVVJR43P8",
+        "link": "01M62CANRW7H2ZHFETVR627B53",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7M41QVVEDQ5GWRXE7D7M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61R3R8BS63ZGH0BVS7QQ5SS",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M62CAP64DWM82PTA7CGJT5PT",
+  "type": "ops",
+  "v": 1
+}

@@ -74,6 +74,7 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		RexSession: getenv("REX_SESSION"),
 		RexBlock:   getenv("REX_BLOCK"),
 		Stderr:     os.Stderr,
+		Interrupts: interrupts,
 	}
 	// Inside Rex, standard error is the terminal Rex shows: status
 	// reports written there become Rex's notifications.
@@ -367,4 +368,18 @@ func gitConfig(key string) (string, error) {
 		return "", fmt.Errorf("git config %s is not set", key)
 	}
 	return v, nil
+}
+
+// interrupts listens for SIGINT and SIGTERM: the returned channel is closed
+// by the first one.
+func interrupts() (<-chan struct{}, func()) {
+	sigs := make(chan os.Signal, 1)
+	done := make(chan struct{})
+	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		if _, ok := <-sigs; ok {
+			close(done)
+		}
+	}()
+	return done, func() { signal.Stop(sigs) }
 }

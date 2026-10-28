@@ -71,6 +71,12 @@ const (
 	// review or asked for changes (rule owner), or an autonomous run
 	// passed it in the owner's place (rule autonomous).
 	TypeSignoff = "signoff"
+	// TypeProcess records the process that runs the run, each time it
+	// starts or is resumed.
+	TypeProcess = "process"
+	// TypeDaemonResumed records that the daemon resumed the run, which it
+	// does once.
+	TypeDaemonResumed = "daemon-resumed"
 )
 
 // Sign-off outcomes, a signoff entry's Outcome.
@@ -284,6 +290,10 @@ type Block struct {
 //	code-check: Step, Outcome (pass or fail), Detail (rhiza run code-check
 //	           ran rhiza check and build-check on the run's change set while
 //	           the run was at step Step; Detail names each cause of a fail)
+//	process:   Process (the process that began running the run: when it
+//	           started or was resumed; the latest process entry wins)
+//	daemon-resumed: Detail (the daemon opened a tab running rhiza run
+//	           resume on the run; it does so once)
 //	signoff:   Step, Visit, Actor, Rule (owner or autonomous), Outcome (approved
 //	           or changes), Findings (signoff step Step's visit Visit was
 //	           signed off: approved, or with changes, the owner's findings,
@@ -356,6 +366,8 @@ type Entry struct {
 	Finding string `json:"finding,omitempty"`
 	// Rule is a signoff entry's rule: owner or autonomous.
 	Rule string `json:"rule,omitempty"`
+	// Process is a process entry's process.
+	Process *Process `json:"process,omitempty"`
 }
 
 // Finding is one finding: of a plan review round, node Node (its handle
@@ -1027,6 +1039,11 @@ type State struct {
 	CodeChecks []CodeCheck
 	// Signoffs are the signoff entries, in journal order.
 	Signoffs []Signoff
+	// Process is the latest process entry's process; nil when the journal
+	// has none (a run journalled before processes were recorded).
+	Process *Process
+	// DaemonResumed is true once the daemon resumed the run.
+	DaemonResumed bool
 	// checksSteps are the steps with a check-cycle entry: checks steps,
 	// whose leaves (fixers and verifiers) survive a new visit.
 	checksSteps map[string]bool
@@ -1193,6 +1210,13 @@ func (j Journal) State() State {
 				st.Includes = s.Includes
 				st.Autonomous = s.Autonomous
 			}
+		case TypeProcess:
+			if e.Process != nil {
+				p := *e.Process
+				st.Process = &p
+			}
+		case TypeDaemonResumed:
+			st.DaemonResumed = true
 		case TypeEntered:
 			st.Visits[e.Step]++
 			st.Current = e.Step

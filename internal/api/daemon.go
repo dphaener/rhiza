@@ -1,0 +1,435 @@
+package api
+
+// This file holds the daemon operation: rhiza daemon runs in the
+// foreground, one per repository. It holds a lock under the git common dir,
+// so a second daemon started from any worktree of the repository is
+// refused, naming the first one's process. It binds no socket.
+
+import (
+	"fmt"
+	"io"
+	"os"
+	"reflect"
+	"slices"
+	"strings"
+	"time"
+
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/run"
+)
+
+func init() {
+	register(Operation{
+		Name:     "daemon",
+		Summary:  "Run the daemon in the foreground: one per repository, held by a lock in the git common dir",
+		Request:  reflect.TypeFor[DaemonRequest](),
+		Response: reflect.TypeFor[DaemonResponse](),
+		Run:      runDaemon,
+	})
+}
+
+// daemonPoll is how often the daemon looks at the roadmap and the run
+// journals.
+const daemonPoll = 5 * time.Second
+
+// DaemonRequest starts the daemon.
+type DaemonRequest struct {
+	MaxRuns        int    `json:"max_runs,omitempty" desc:"Start runs until this many are running; default 2. An interrupted run takes no slot"`
+	Once           bool   `json:"once,omitempty" desc:"Poll once, start what is picked and stop"`
+	Autonomous     bool   `json:"autonomous,omitempty" desc:"Start each run with --autonomous: it goes on without the owner"`
+	PermissionMode string `json:"permission_mode,omitempty" desc:"Start each run with this --permission-mode, for its agent steps that set none; checked against ship-change before the daemon starts"`
+}
+
+// DaemonResponse is the daemon after it stopped.
+type DaemonResponse struct {
+	Process string   `json:"process" desc:"The daemon's process, as host:pid"`
+	Started []string `json:"started" desc:"The change sets whose runs the daemon started, in order"`
+	Resumed []string `json:"resumed" desc:"The interrupted runs the daemon resumed, in order"`
+}
+
+// Human writes the response as markdown.
+func (r DaemonResponse) Human(w io.Writer) {
+	for _, cs := range r.Started {
+		fmt.Fprintf(w, "Started a run of %s\n", cs)
+	}
+	for _, id := range r.Resumed {
+		fmt.Fprintf(w, "Resumed run %s\n", id)
+	}
+	fmt.Fprintf(w, "Daemon %s stopped\n", r.Process)
+}
+
+// runDaemon takes the repository's daemon lock and keeps it until the
+// caller interrupts (Ctx.Interrupt). A second daemon exits with a usage
+// error naming the holder.
+func runDaemon(ctx *Ctx, req any) (any, error) {
+	if ctx.DryRun {
+		return nil, Usagef("daemon runs in the foreground and has no dry run")
+	}
+	r := req.(DaemonRequest)
+	if r.MaxRuns < 0 {
+		return nil, Usagef("--max-runs must be at least 1")
+	}
+	if r.MaxRuns == 0 {
+		r.MaxRuns = daemon.DefaultMaxRuns
+	}
+	// Every run the daemon starts is a ship-change run with this mode: one
+	// that run start would refuse is refused here, before any tab opens.
+	_, def, _, err := resolveWorkflow(ctx.Root, "")
+	if err != nil {
+		return nil, err
+	}
+	if err := checkAgentSteps(def, r.PermissionMode, "", r.Autonomous, "rhiza describe daemon"); err != nil {
+		return nil, err
+	}
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return nil, err
+	}
+	lock, err := daemon.TryLock(common, ctx.Now())
+	if err != nil {
+		if h, ok := err.(*daemon.Held); ok {
+			return nil, Usagef("%s", h.Error()).WithNext("rhiza daemon status")
+		}
+		return nil, err
+	}
+	defer lock.Unlock()
+	self := daemon.ReadHolder(common)
+	if ctx.Stderr != nil {
+		fmt.Fprintf(ctx.Stderr, "rhiza: daemon running, process %s\n", self)
+	}
+	rs := run.NewStore(run.Dir(common))
+	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}}
+	pending := map[string]daemonPending{}
+	unjournaled := map[string]daemonPending{}
+	state := daemon.State{Process: self, MaxRuns: r.MaxRuns, Autonomous: r.Autonomous, Runs: []daemon.LiveRun{}}
+	if prev, ok := daemon.ReadState(common); ok {
+		state.LastStarted, state.LastResumed = prev.LastStarted, prev.LastResumed
+	}
+	saveState := func() {
+		state.LastPoll = ctx.Now().UTC()
+		if runs, err := rs.List(); err == nil {
+			host, _ := os.Hostname()
+			state.Runs = daemon.LiveRuns(runs, host, nil)
+		}
+		daemon.WriteState(common, state)
+	}
+	defer func() {
+		state.Stopped = ctx.Now().UTC()
+		daemon.WriteState(common, state)
+	}()
+	poll := func() error {
+		started, resumed, err := daemonPoll1(ctx, rs, pending, unjournaled, r.MaxRuns, r.Autonomous, r.PermissionMode)
+		resp.Started = append(resp.Started, started...)
+		resp.Resumed = append(resp.Resumed, resumed...)
+		if len(started) > 0 {
+			state.LastStarted = &daemon.Event{Change: started[len(started)-1], At: ctx.Now().UTC()}
+		}
+		if len(resumed) > 0 {
+			state.LastResumed = &daemon.Event{Run: resumed[len(resumed)-1], At: ctx.Now().UTC()}
+		}
+		state.Unjournaled = []daemon.Event{}
+		for cs, p := range unjournaled {
+			state.Unjournaled = append(state.Unjournaled, daemon.Event{Change: cs, At: p.at.UTC()})
+		}
+		slices.SortFunc(state.Unjournaled, func(a, b daemon.Event) int { return strings.Compare(a.Change, b.Change) })
+		saveState()
+		return err
+	}
+	if r.Once {
+		return resp, poll()
+	}
+	var interrupted <-chan struct{}
+	if ctx.Interrupts != nil {
+		var stop func()
+		interrupted, stop = ctx.Interrupts()
+		defer stop()
+	}
+	tick := time.NewTicker(daemonPoll)
+	defer tick.Stop()
+	for {
+		if err := poll(); err != nil && ctx.Stderr != nil {
+			fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %v\n", err)
+		}
+		select {
+		case <-interrupted:
+			return resp, nil
+		case <-tick.C:
+		}
+	}
+}
+
+// daemonStartGrace is how long a change set the daemon started is held as
+// running while its run has no journal yet.
+const daemonStartGrace = time.Minute
+
+// daemonPending is a start of the daemon's: when, and how many runs the
+// change set had then, so a new journal shows as one more.
+type daemonPending struct {
+	at   time.Time
+	runs int
+}
+
+// daemonHeld settles pending against runs at now and returns the change
+// sets still pending, which count as running. A start whose change set has
+// a new journal is dropped from pending. One with none once the grace
+// passed failed before it journaled (a refused permission mode, a dirty
+// worktree, a usage error): it moves to unjournaled, which are not picked
+// again for the daemon's life, nor take a slot, until a journal of the
+// change set shows.
+func daemonHeld(pending map[string]daemonPending, unjournaled map[string]daemonPending, runs []run.Journal, now time.Time) []string {
+	var held []string
+	for cs, p := range pending {
+		switch {
+		case daemonRunsOf(runs, cs) > p.runs:
+			delete(pending, cs)
+		case now.Sub(p.at) >= daemonStartGrace:
+			delete(pending, cs)
+			unjournaled[cs] = p
+		default:
+			held = append(held, cs)
+		}
+	}
+	for cs, p := range unjournaled {
+		if daemonRunsOf(runs, cs) > p.runs {
+			// A run of it journaled since (the owner started one): its
+			// runs say what to do with it now.
+			delete(unjournaled, cs)
+		}
+	}
+	slices.Sort(held)
+	return held
+}
+
+// daemonRunsOf counts the runs of change set cs.
+func daemonRunsOf(runs []run.Journal, cs string) int {
+	n := 0
+	for _, j := range runs {
+		if j.State().Change == cs {
+			n++
+		}
+	}
+	return n
+}
+
+// daemonPoll1 picks and starts runs once. pending holds the change sets
+// started; unjournaled those whose start never journaled (see daemonHeld).
+func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, autonomous bool, mode string) ([]string, []string, error) {
+	res, _, _, err := planRead(ctx, "daemon", "")
+	if err != nil {
+		return nil, nil, err
+	}
+	ws, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+	cands := daemonCandidates(res, func(cs id.ID) bool {
+		c, ok := ws.changeSet(cs)
+		return ok && len(changeLeaves(ws.model(cs), c.Ops)) > 0
+	})
+	runs, err := rs.List()
+	if err != nil {
+		return nil, nil, Errorf("read runs: %v", err)
+	}
+	host, _ := os.Hostname()
+	var resumed []string
+	for _, id := range daemon.Resumable(runs, host, nil, rs.Live, ctx.Now()) {
+		// Journal the resume before the tab opens: a resume is tried once.
+		if err := rs.Append(id, run.Entry{Type: run.TypeDaemonResumed, At: ctx.Now(), Detail: "resumed by the daemon"}); err != nil {
+			return nil, resumed, Errorf("journal the resume of run %s: %v", id, err)
+		}
+		if err := daemonResume(ctx, id); err != nil {
+			return nil, resumed, err
+		}
+		resumed = append(resumed, id)
+	}
+	held := daemonHeld(pending, unjournaled, runs, ctx.Now())
+	cands = slices.DeleteFunc(cands, func(cs string) bool { _, ok := unjournaled[cs]; return ok })
+	picked := daemon.Pick(cands, runs, held, host, nil, max)
+	var started []string
+	for _, cs := range picked {
+		if err := daemonStart(ctx, cs, autonomous, mode); err != nil {
+			return started, resumed, err
+		}
+		pending[cs] = daemonPending{at: ctx.Now(), runs: daemonRunsOf(runs, cs)}
+		started = append(started, cs)
+	}
+	return started, resumed, nil
+}
+
+// daemonCandidates are the accepted, ready change sets of the milestone
+// groups that hasLeaves, in roadmap order, each once.
+func daemonCandidates(res planResult, hasLeaves func(id.ID) bool) []string {
+	var out []string
+	seen := map[id.ID]bool{}
+	for _, g := range res.groups {
+		if g.backlog {
+			continue
+		}
+		for _, p := range g.members {
+			if seen[p.info.ID] || !p.ready || p.info.State != changeset.StateAccepted {
+				continue
+			}
+			seen[p.info.ID] = true
+			if hasLeaves(p.info.ID) {
+				out = append(out, p.info.ID.String())
+			}
+		}
+	}
+	return out
+}
+
+// daemonStart starts the run of change set cs in a new Rex tab, with
+// permission mode mode.
+func daemonStart(ctx *Ctx, cs string, autonomous bool, mode string) error {
+	if ctx.Exec == nil || ctx.Self == "" {
+		return Errorf("daemon cannot start a run of %s: no rex or rhiza path", cs)
+	}
+	args := []string{"window", "new"}
+	if ctx.RexSession != "" {
+		args = append(args, "-s", ctx.RexSession)
+	}
+	args = append(args, cs[:min(len(cs), 9)], "-c", ctx.Root, "--json", "--", ctx.Self, "run", "start", cs, "--permission-mode", mode)
+	if autonomous {
+		args = append(args, "--autonomous")
+	}
+	if _, err := ctx.Exec("rex", args, ctx.Root, nil); err != nil {
+		return Errorf("rex window new for %s: %v", cs, err)
+	}
+	return nil
+}
+
+// daemonResume opens a new Rex tab running rhiza run resume on run id.
+func daemonResume(ctx *Ctx, id string) error {
+	if ctx.Exec == nil || ctx.Self == "" {
+		return Errorf("daemon cannot resume run %s: no rex or rhiza path", id)
+	}
+	args := []string{"window", "new"}
+	if ctx.RexSession != "" {
+		args = append(args, "-s", ctx.RexSession)
+	}
+	args = append(args, id[:min(len(id), 9)], "-c", ctx.Root, "--json", "--", ctx.Self, "run", "resume", id)
+	if _, err := ctx.Exec("rex", args, ctx.Root, nil); err != nil {
+		return Errorf("rex window new for run %s: %v", id, err)
+	}
+	return nil
+}
+
+func init() {
+	register(Operation{
+		Name:     "daemon.status",
+		Summary:  "Show the daemon of this repository: whether it runs, its settings, its live runs and what it last started or resumed",
+		Request:  reflect.TypeFor[DaemonStatusRequest](),
+		Response: reflect.TypeFor[DaemonStatusResponse](),
+		Run:      runDaemonStatus,
+	})
+}
+
+// DaemonStatusRequest takes nothing.
+type DaemonStatusRequest struct{}
+
+// DaemonRun is a run the daemon sees as live.
+type DaemonRun struct {
+	ID     string `json:"id" desc:"The run ID"`
+	Change string `json:"change" desc:"The change set it runs on"`
+	State  string `json:"state" desc:"running or interrupted"`
+}
+
+// DaemonEvent is the last run the daemon started or resumed.
+type DaemonEvent struct {
+	Change string `json:"change,omitempty" desc:"The change set whose run was started; absent for a resume"`
+	Run    string `json:"run,omitempty" desc:"The run that was resumed; absent for a start"`
+	At     string `json:"at" desc:"When, RFC 3339 UTC"`
+}
+
+// DaemonStatusResponse is the daemon's state. While no daemon holds the
+// lock, Running is false and the rest, if any, is what the last daemon left.
+type DaemonStatusResponse struct {
+	Running     bool          `json:"running" desc:"True while a live daemon holds the repository's lock"`
+	Process     string        `json:"process,omitempty" desc:"The daemon's process, as host:pid; absent when none ever ran"`
+	Started     string        `json:"started,omitempty" desc:"When the daemon started, RFC 3339 UTC"`
+	LastPoll    string        `json:"last_poll,omitempty" desc:"When it last polled, RFC 3339 UTC"`
+	Stopped     string        `json:"stopped,omitempty" desc:"When the last daemon stopped, RFC 3339 UTC; absent while it runs"`
+	MaxRuns     int           `json:"max_runs,omitempty" desc:"How many runs it keeps running at once"`
+	Autonomous  bool          `json:"autonomous" desc:"True when it starts each run with --autonomous"`
+	Runs        []DaemonRun   `json:"runs" desc:"The live runs (running or interrupted) as of its last poll"`
+	LastStarted *DaemonEvent  `json:"last_started,omitempty" desc:"The run it last started; absent if none"`
+	LastResumed *DaemonEvent  `json:"last_resumed,omitempty" desc:"The run it last resumed; absent if none"`
+	Unjournaled []DaemonEvent `json:"unjournaled" desc:"The runs it started that never wrote a journal, by change set and when; it starts these no more until it restarts or a run of the change set journals"`
+}
+
+// Human writes the status as text.
+func (r DaemonStatusResponse) Human(w io.Writer) {
+	if r.Running {
+		fmt.Fprintf(w, "Daemon running, process %s\n", r.Process)
+	} else {
+		fmt.Fprintln(w, "Daemon not running")
+		if r.Process == "" {
+			return
+		}
+		fmt.Fprintf(w, "Last daemon: process %s, stopped %s\n", r.Process, r.Stopped)
+	}
+	fmt.Fprintf(w, "Started: %s\nLast poll: %s\nMax runs: %d\nAutonomous: %t\n", r.Started, r.LastPoll, r.MaxRuns, r.Autonomous)
+	if len(r.Runs) == 0 {
+		fmt.Fprintln(w, "Live runs: none")
+	} else {
+		fmt.Fprintln(w, "Live runs:")
+		for _, d := range r.Runs {
+			fmt.Fprintf(w, "- %s %s (change set %s)\n", d.ID, d.State, d.Change)
+		}
+	}
+	if e := r.LastStarted; e != nil {
+		fmt.Fprintf(w, "Last started: a run of %s at %s\n", e.Change, e.At)
+	}
+	if e := r.LastResumed; e != nil {
+		fmt.Fprintf(w, "Last resumed: run %s at %s\n", e.Run, e.At)
+	}
+	for _, e := range r.Unjournaled {
+		fmt.Fprintf(w, "Not journaled: the run of %s started at %s wrote no journal; not started again until the daemon restarts or a run of it journals\n", e.Change, e.At)
+	}
+}
+
+// runDaemonStatus reads the lock and the state file. Without a live
+// daemon holding the lock it says not running, and shows the state file's
+// last daemon, if one left it.
+func runDaemonStatus(ctx *Ctx, req any) (any, error) {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return nil, err
+	}
+	resp := DaemonStatusResponse{Runs: []DaemonRun{}, Unjournaled: []DaemonEvent{}}
+	_, resp.Running = daemon.Running(common)
+	st, ok := daemon.ReadState(common)
+	if !ok || (resp.Running && st.Process != daemon.ReadHolder(common)) {
+		// A live daemon that has not written its state yet, or a lock
+		// naming no state: say what the lock says.
+		if resp.Running {
+			resp.Process = daemon.ReadHolder(common).String()
+		}
+		return resp, nil
+	}
+	resp.Process = st.Process.String()
+	resp.Started = st.Process.Started.UTC().Format(time.RFC3339)
+	resp.LastPoll = st.LastPoll.UTC().Format(time.RFC3339)
+	if !st.Stopped.IsZero() && !resp.Running {
+		resp.Stopped = st.Stopped.UTC().Format(time.RFC3339)
+	}
+	resp.MaxRuns, resp.Autonomous = st.MaxRuns, st.Autonomous
+	for _, d := range st.Runs {
+		resp.Runs = append(resp.Runs, DaemonRun{ID: d.ID, Change: d.Change, State: d.State})
+	}
+	resp.LastStarted = daemonEvent(st.LastStarted)
+	resp.LastResumed = daemonEvent(st.LastResumed)
+	for _, e := range st.Unjournaled {
+		resp.Unjournaled = append(resp.Unjournaled, *daemonEvent(&e))
+	}
+	return resp, nil
+}
+
+func daemonEvent(e *daemon.Event) *DaemonEvent {
+	if e == nil {
+		return nil
+	}
+	return &DaemonEvent{Change: e.Change, Run: e.Run, At: e.At.UTC().Format(time.RFC3339)}
+}

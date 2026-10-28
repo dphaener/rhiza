@@ -1,0 +1,40 @@
+{
+  "actor": "01M629DHM1EHRQ54FZC4P0K74Y",
+  "after": [
+    "01M62984ZKR15FXV631SPKGP2E"
+  ],
+  "at": "2026-10-28T22:21:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At af6b1ab, go test ./cmd/rhiza -run 'TestScripts/(daemon-status|describe-golden)$' -count=1 -v passes. daemon-status.txtar runs rhiza daemon status before any daemon (text 'Daemon not running', --json running:false); after rhiza daemon --once --max-runs=3 --autonomous with a fake rex on PATH it shows the state the daemon left: text 'Daemon not running' plus last daemon process/stopped, Max runs: 3, Autonomous: true, Last started: a run of <change>, and --json with running:false, max_runs 3, autonomous true, last_started {change, at}; then with the state file removed and daemon.lock naming pid 999999 it says not running and no Last started. describe-golden.txtar carries the new daemon.status operation and passes. Diff read: daemon.State written under the git common dir (.git/rhiza/daemon.state.json) at each poll and on stop, with process, start, last poll, max runs, autonomous, live runs and last started/resumed; status takes running from daemon.Running on the lock. make fmt-check vet test pass; make self-check fails only on .rhiza/rendered actor/index drift that HEAD~1 shows too, outside this leaf."
+        },
+        "handle": "daemon-status-verified",
+        "id": "01M629NQ39RM039MAGR14P3BKN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M629NQ39RM039MAGQYTCV51F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M629NQ39RM039MAGQYTCV51F",
+        "id": "01M629NQA57AY0NY650ABFJRE6",
+        "link": "01M629NQA57AY0NY6507FGWP2C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7NEEK19RP2QEHFRQ6W8S",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61R3R8BS63ZGH0BVS7QQ5SS",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M629NQMTC7055DZMGQGCRVHE",
+  "type": "ops",
+  "v": 1
+}

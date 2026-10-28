@@ -84,3 +84,12 @@ func (s *Store) LockChange(change string) (unlock func(), err error) {
 		f.Close()
 	}, nil
 }
+
+// PidAlive reports whether a process with the pid exists on this host.
+func PidAlive(pid int) bool {
+	if pid <= 0 {
+		return false
+	}
+	err := syscall.Kill(pid, 0)
+	return err == nil || err == syscall.EPERM
+}

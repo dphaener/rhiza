@@ -60,7 +60,7 @@ stdout -count=1 '^send-key -b block:b1 enter$'
 # The journal: blocked, asked, the arbiter, its verdict, answered, then
 # unblocked; the step ends with the agent's own exit.
 exec sh -c 'grep -o "\"type\":\"[a-z]*\"" .git/rhiza/runs/*.jsonl | sed "s/\"type\"://; s/\"//g" | tr "\n" " "'
-stdout '^started entered session blocked asked arbiter arbitrated answered unblocked ended finished $'
+stdout '^started process entered session blocked asked arbiter arbitrated answered unblocked ended finished $'
 exec sh -c 'grep "\"type\":\"answered\"" .git/rhiza/runs/*.jsonl'
 stdout '"step":"build","session":"[0-9a-f-]{36}","question":"[0-9A-Z]{26}","decision":"assume-blue"'
 exec sh -c 'grep "\"type\":\"ended\"" .git/rhiza/runs/*.jsonl'

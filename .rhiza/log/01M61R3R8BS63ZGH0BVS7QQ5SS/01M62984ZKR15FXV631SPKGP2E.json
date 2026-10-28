@@ -1,0 +1,40 @@
+{
+  "actor": "01M6295FJKC35CKW9QXEX08H3P",
+  "after": [
+    "01M628XT5568F8PSQRDSKEHSYK"
+  ],
+  "at": "2026-10-28T22:14:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f6699ba ran go test ./cmd/rhiza -run 'TestScripts/(daemon|describe-golden)' -count=1 (ok) and go test ./internal/daemon ./internal/run ./internal/api (ok). daemon-resume.txtar fixtures an unfinished journal INTERRUPTED1 whose process entry names a dead pid on this host and a FAILED00001 journal finished failed; with a fake rex logging its args, the first rhiza daemon --once prints 'Resumed run INTERRUPTED1', the rex log has exactly one 'rex window new ... run resume INTERRUPTED1' line and none naming FAILED00001, and INTERRUPTED1's journal gains one daemon-resumed entry; the second rhiza daemon --once --json (run still interrupted) reports resumed [] and the log still holds one run resume. Read the diff: daemon.Resumable picks runs that are LiveInterrupted and not DaemonResumed (unit test covers interrupted/again/failed), the poll journals daemon-resumed before opening the tab. make check passes fmt, vet and tests; self-check fails only on rendered files for actors registered after this commit (incl. this verifier), not on the leaf."
+        },
+        "handle": "daemon-resume-once-verified",
+        "id": "01M62984CE1M7PV5S2GQ50DCW5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62984CE1M7PV5S2GPVWVSE4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62984CE1M7PV5S2GPVWVSE4",
+        "id": "01M62984KV9R255XRMVVRSEFR5",
+        "link": "01M62984KV9R255XRMVRE6K1BH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7MP3HGEB60GJV4M3CWQA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61R3R8BS63ZGH0BVS7QQ5SS",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M62984ZKR15FXV631SPKGP2E",
+  "type": "ops",
+  "v": 1
+}

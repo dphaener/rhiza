@@ -1,0 +1,60 @@
+# rhiza daemon status reads the state file under the git common dir: not
+# running before any daemon; after a poll (--once) the run the daemon
+# started, in text and --json; a start whose run never journaled; not
+# running again when the lock file names a process that is gone. Rex is
+# faked and only logs.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+
+exec rhiza daemon status
+stdout '^Daemon not running$'
+exec rhiza daemon status --json
+stdout '"running": false'
+
+exec rhiza change new Built --title Built
+exec rhiza add capability built-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+exec rhiza daemon --permission-mode manual --once --max-runs=3 --autonomous
+stdout '^Started a run of '
+
+# The daemon is gone, so it is not running, but its state says what it did.
+exec rhiza daemon status
+stdout '^Daemon not running$'
+stdout '^Max runs: 3$'
+stdout '^Autonomous: true$'
+stdout '^Last started: a run of '
+exec rhiza daemon status --json
+stdout '"running": false'
+stdout '"max_runs": 3'
+stdout '"autonomous": true'
+stdout '"last_started": \{'
+
+# A start whose run never journaled is reported, not retried.
+exec sh -c 'sed "s/}\$/,\"unjournaled\":[{\"change\":\"CSX\",\"at\":\"2026-01-01T00:00:00Z\"}]}/" .git/rhiza/daemon.state.json > s.tmp && mv s.tmp .git/rhiza/daemon.state.json'
+exec rhiza daemon status
+stdout '^Not journaled: the run of CSX started at 2026-01-01T00:00:00Z wrote no journal; not started again until the daemon restarts or a run of it journals$'
+exec rhiza daemon status --json
+stdout '"change": "CSX"'
+
+# A lock file naming a dead process holds nothing.
+exec sh -c 'rm .git/rhiza/daemon.state.json; printf "{\"host\":\"h\",\"pid\":999999,\"started\":\"2026-01-01T00:00:00Z\"}\n" > .git/rhiza/daemon.lock'
+exec rhiza daemon status
+stdout '^Daemon not running$'
+! stdout 'Last started'
+exec rhiza daemon status --json
+stdout '"running": false'
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

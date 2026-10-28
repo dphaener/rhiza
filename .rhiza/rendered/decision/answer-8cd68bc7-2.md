@@ -41,6 +41,7 @@ the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a18
 ### In
 
 - decided-by [milestone-4](../intent/milestone-4.md)
+- decided-by [daemon](../capability/rhiza/orchestration/daemon.md)
 
 ## History
 

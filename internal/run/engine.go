@@ -181,6 +181,10 @@ type Engine struct {
 	// set's other runs here and holds its change lock until release never
 	// reopens a run beside another.
 	Admit func(State) (release func(), err error)
+	// Process, when set, is the process running the engine: a process
+	// entry journals it each time a run starts or is resumed, under the
+	// run's lock, before anything else is written.
+	Process *Process
 }
 
 // Start creates a run's journal with its started entry. The run begins at
@@ -350,6 +354,13 @@ func (e *Engine) run(id string, retry bool, before func(State) ([]Entry, error))
 		return st, err
 	}
 	r := &running{e: e, j: j, def: def}
+	if e.Process != nil {
+		en := Entry{Type: TypeProcess, At: r.now(), Process: e.Process}
+		if err := e.Store.Append(j.ID, en); err != nil {
+			return j.State(), err
+		}
+		r.j.Entries = append(r.j.Entries, en)
+	}
 	if st.Ended {
 		step, err := st.FailedStep()
 		if err != nil {

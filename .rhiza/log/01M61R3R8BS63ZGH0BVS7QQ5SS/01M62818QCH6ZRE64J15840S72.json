@@ -1,0 +1,40 @@
+{
+  "actor": "01M627S9P3Y4T31E2TB45WZMH4",
+  "after": [
+    "01M627EVEN5SD2E5MF7KKT021H"
+  ],
+  "at": "2026-10-28T21:53:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 890b190 I ran go test ./internal/api -run TestDaemonPicks -count=1 and it passed. Over a fixture with accepted milestone change sets first and second, a leafless one, a backlog one, a draft one, and one running, one interrupted and one failed run on three more milestone change sets, daemon.Pick picks [first] at max 2, nothing at max 1, and [first second] at max 4. With the failed run abandoned it picks [first] at max 2 and [first second failed] at max 4, and daemonCandidates leaves out the leafless, backlog and draft change sets. go test ./cmd/rhiza -run TestScripts/daemon-picks -count=1 passed: rhiza daemon --once with a fake rex prints exactly one 'Started a run of', the rex log has one 'rex window new ... run start' line, and --max-runs=-1 is refused. From the diff, interrupted runs block the pick but take no slot, failed runs that are not abandoned block it (a retry reopens the same journal), and List sorts runs oldest first so the latest run per change set wins. make fmt-check, go vet and make test all pass. make self-check reports a stale render only for actor claude-code-eaa50737, which is this verifier session's actor from the in-flight change set and not part of the commit."
+        },
+        "handle": "daemon-picks-verified",
+        "id": "01M6281864PKQ2777DGFWAW4QC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6281864PKQ2777DGD7AXQBD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6281864PKQ2777DGD7AXQBD",
+        "id": "01M62818CWBBYCZ9T4C2VFEZTD",
+        "link": "01M62818CWBBYCZ9T4C14ZXTCS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61R3R8BS63ZGH0BVS7QQ5SS",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M62818QCH6ZRE64J15840S72",
+  "type": "ops",
+  "v": 1
+}

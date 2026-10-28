@@ -1,0 +1,65 @@
+# One poll of the daemon (--once) starts the accepted, ready change sets that
+# serve a milestone and have a leaf, each in a new Rex tab running
+# `rhiza run start <change set>`. A leafless change set and a backlog one are
+# left alone. Rex is faked and only logs.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+exec rhiza add intent plain --record
+exec git add -A
+exec git commit -qm init
+
+# Built: a milestone change set with a leaf.
+exec rhiza change new Built --title Built
+exec rhiza add capability built-leaf
+exec rhiza link 01M5PWGQ8GB4618G4RH2TV0ZAH serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# Leafless: serves the milestone, creates no capability.
+exec rhiza change new Leafless --title Leafless
+exec rhiza link 01M5PWGW4RMJ580CPWEPP3158J serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# Backlog: has a leaf, serves no milestone.
+exec rhiza change new Backlog --title Backlog
+exec rhiza add capability backlog-leaf
+exec rhiza link 01M5PWH01R1B9MDYF6J8XB3MQG serves plain
+exec rhiza propose
+exec rhiza accept --reason ok
+
+! exec rhiza daemon --permission-mode manual --once --max-runs=-1
+
+# No permission mode: ship-change's agent steps would have none, so the
+# daemon refuses before it opens any tab. A mode that bypasses the agent's
+# permission checks is refused the same way.
+! exec rhiza daemon --once
+stderr 'no permission mode: give --permission-mode'
+! exec rhiza daemon --once --permission-mode bypassPermissions
+stderr 'bypasses the agent''s permission checks'
+! exists $WORK/rex.log
+
+# The mode reaches each started run's command.
+exec rhiza daemon --permission-mode manual --once
+stdout -count=1 '^Started a run of '
+exec sh -c 'grep -c "^rex window new .* run start [0-9A-Z]* --permission-mode manual$" $WORK/rex.log'
+stdout '^1$'
+exec rhiza daemon --permission-mode manual --once --json
+stdout '"started": \['
+
+# --autonomous reaches the started run's command, and only then.
+exec sh -c 'grep -c -- "--autonomous" $WORK/rex.log || true'
+stdout '^0$'
+exec rhiza daemon --permission-mode manual --once --autonomous
+exec sh -c 'grep "^rex window new .* run start [0-9A-Z]* --permission-mode manual --autonomous$" $WORK/rex.log | wc -l'
+stdout '^ *1$'
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

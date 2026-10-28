@@ -40,6 +40,7 @@ the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a18
 ### In
 
 - decided-by [run-one-live](../capability/rhiza/workflows/workflow-runs/run-one-live.md)
+- decided-by [daemon-picks](../capability/rhiza/orchestration/daemon/daemon-picks.md)
 
 ## History
 

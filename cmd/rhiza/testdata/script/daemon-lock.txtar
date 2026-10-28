@@ -1,0 +1,53 @@
+# The daemon runs in the foreground, one per repository: it holds a lock
+# under the git common dir, so a second daemon started from another
+# worktree exits 2 naming the first one's process. A lock file naming a
+# process that is gone is taken over, and the daemon binds no socket.
+# Rex is faked and never called.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec git worktree add -q ../other
+
+# The first daemon holds the lock.
+exec rhiza daemon --permission-mode manual &first&
+exec sh -c 'for i in $(seq 100); do grep -q pid .git/rhiza/daemon.lock && exit 0; sleep 0.1; done; exit 1'
+exec sh -c 'sed -E "s/.*\"pid\":([0-9]+).*/\1/" .git/rhiza/daemon.lock > $WORK/pid'
+
+# A second one, from the repo and from the other worktree, is refused.
+exec sh -c 'rhiza daemon --permission-mode manual 2>err; echo exit=$?; cat err'
+stdout '^exit=2$'
+stdout 'another daemon holds the lock: process .*:[0-9]+'
+exec sh -c 'rhiza daemon --permission-mode manual 2>&1 | grep -c ":$(cat $WORK/pid)"'
+stdout '^1$'
+cd ../other
+exec sh -c 'rhiza daemon --permission-mode manual 2>err; echo exit=$?; cat err'
+stdout '^exit=2$'
+exec sh -c 'rhiza daemon --permission-mode manual 2>&1 | grep -c ":$(cat $WORK/pid)"'
+stdout '^1$'
+cd ../repo
+
+# An interrupt stops the first daemon and frees the lock.
+kill -INT first
+wait first
+! exists .git/rhiza/daemon.sock
+exec sh -c 'test ! -s .git/rhiza/daemon.lock'
+
+# A lock file naming a process that is gone is taken over.
+exec sh -c 'printf "{\"host\":\"%s\",\"pid\":999999,\"started\":\"2026-01-01T00:00:00Z\"}\n" "$(hostname)" > .git/rhiza/daemon.lock'
+exec rhiza daemon --permission-mode manual &second&
+exec sh -c 'for i in $(seq 100); do grep -q "\"pid\":[0-9]" .git/rhiza/daemon.lock && ! grep -q 999999 .git/rhiza/daemon.lock && exit 0; sleep 0.1; done; exit 1'
+! grep 999999 .git/rhiza/daemon.lock
+kill -INT second
+wait second
+! exists $WORK/rex.log
+
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+exit 0

@@ -39,7 +39,7 @@ stdout '^exit=2$'
 exec sh -c 'rhiza run verdict $WORK/verdict.json 2>/dev/null; echo exit=$?'
 stdout '^exit=2$'
 exec sh -c 'wc -l < .git/rhiza/runs/$(cat $WORK/runid).jsonl | tr -d " "'
-stdout '^3$'
+stdout '^4$'
 
 # A finding of an unknown kind, or naming no node: usage, nothing written.
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/badkind.json --json; echo exit=$?'
@@ -56,7 +56,7 @@ stdout '"code": "usage"'
 stdout 'no review round'
 stdout '^exit=2$'
 exec sh -c 'wc -l < .git/rhiza/runs/$(cat $WORK/runid).jsonl | tr -d " "'
-stdout '^3$'
+stdout '^4$'
 
 # Two findings, from stdin: round 1, f1 and f2.
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings - --json < $WORK/findings.json'
@@ -75,7 +75,7 @@ stdout '"code": "usage"'
 stdout 'verdict 2: round 1 holds no finding \\"f3\\"'
 stdout '^exit=2$'
 exec sh -c 'wc -l < .git/rhiza/runs/$(cat $WORK/runid).jsonl | tr -d " "'
-stdout '^4$'
+stdout '^5$'
 
 # The verdict: f1 confirmed, f2 dropped.
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run verdict $WORK/verdict.json'
