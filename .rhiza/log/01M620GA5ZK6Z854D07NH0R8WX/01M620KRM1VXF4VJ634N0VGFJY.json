@@ -1,0 +1,215 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M620HZT3SPM2CJ59CJ2VZ7Q6"
+  ],
+  "at": "2026-10-28T19:43:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript with a fake Rex opens a question item and sees the asking session's tab focused, opens a sign-off item and sees the run's journalled tab focused, gets the run named with its tab gone once the fake Rex no longer has that tab, and gets exit 2 for an unknown item.",
+          "statement": "rhiza inbox open <item> focuses the Rex tab of the session that asked a question, or, for a sign-off, a failed run or a run the daemon gave up on, the run's tab as its journal records it, so the owner answers in the agent's own menu; a run whose tab is gone is named with its tab gone, and an unknown item exits 2."
+        },
+        "handle": "inbox-open",
+        "id": "01M620H0WYYD55J89Z8QS97GFH",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M61R7QK0MX5D9HZ3V9J9FT24",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "fields": {
+          "acceptance": "With a fake Rex, rhiza daemon --once over a run that blocks on a question, one waiting at sign-off, one that failed and one the daemon gives up on sends exactly four notifications, one per item, and a second rhiza daemon --once with the same items sends none.",
+          "statement": "On each poll, rhiza daemon sends one Rex notification for each inbox item it has not notified yet, naming the change set and what waits (a question, a sign-off, a failed run or a run the daemon gave up on), and none again while the item stays; a run keeps its own blocked-run notice."
+        },
+        "handle": "inbox-notify",
+        "id": "01M620H0WYYD55J89Z97B45K42",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M61R7SANZRP2X52437ENZGTH",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "fields": {
+          "statement": "The inbox gets its own change set, The inbox, whose intent covers questions, sign-offs, failed and given-up runs, recommendations, opening each item and notifications. Every inbox node is carved into it from 01M5SWTKV6, which is withdrawn.",
+          "wording": "the orchestrator's option, picked by the owner: \"New inbox change set (Recommended)\" (open a new change set 'The inbox' whose intent covers questions, sign-offs, failed and given-up runs, and notifications; carve all the inbox nodes into it and withdraw 01M5SWTKV6, so the design stays in one piece)"
+        },
+        "handle": "inbox-own-change-set",
+        "id": "01M620KMYEQDY8TV2W69G370F1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M620KMYEQDY8TV2W674C5CMC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M620KMYEQDY8TV2W674C5CMC",
+        "id": "01M620KN4W15W2B53AF3X4YW9H",
+        "link": "01M620KN4W15W2B53AF1XBBG3W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61RKV40P66NSENPEPYSPRC1",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7PE1A85AANAP21324RS8",
+        "id": "01M620KNB7J3MHS26F4YJ094ZS",
+        "link": "01M620KNB7J3MHS26F4WBJENQM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M620KMYEQDY8TV2W674C5CMC",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "inbox-notify depends on inbox-list, which defines what an inbox item is and when it stays, so its check runs against real items. The check stays as written.",
+          "wording": "the orchestrator's option, picked by the owner: \"Add the needs (Recommended)\" (daemon-status needs daemon-picks and daemon-run-tabs; inbox-notify needs inbox-list; the checks stay as strong as written)"
+        },
+        "handle": "inbox-notify-needs-list",
+        "id": "01M620KNHFWVNGE2J4D1R3CSWS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M620KNHFWVNGE2J4CY4JWJD4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M620KNHFWVNGE2J4CY4JWJD4",
+        "id": "01M620KNQRH5RMMDRNKZMA3KHC",
+        "link": "01M620KNQRH5RMMDRNKZAVHG6P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61S7K22QYKMWENXMP1VY8EX",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7SANZRP2X52437ENZGTH",
+        "id": "01M620KNY0RDT7JPVS12K9GA0R",
+        "link": "01M620KNY0RDT7JPVS0Z8P588C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7Q0JX5BXJP6M3P1SJXTG",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "statement": "The daemon sends inbox notifications: on each poll it finds inbox items it has not notified yet and sends one Rex notification per item, none again while the item stays. A run keeps its own blocked-run notice.",
+          "wording": "the orchestrator's option, picked by the owner: \"The daemon (Recommended)\" (on each poll the daemon notices new inbox items and sends one Rex notification per item, with no repeat while it stays; runs keep their own blocked notice; inbox-notify then needs the daemon)"
+        },
+        "handle": "daemon-sends-inbox-notices",
+        "id": "01M620KP4AZ2MJDFP7584WCATS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M620KP4AZ2MJDFP7565KD9Z9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M620KP4AZ2MJDFP7565KD9Z9",
+        "id": "01M620KPAMJBZG6ADM0S5R85RD",
+        "link": "01M620KPAMJBZG6ADM0PQ09W23",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61S7KEZ0PGK49670XG9GWKD",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7SANZRP2X52437ENZGTH",
+        "id": "01M620KPQ8DRMSC52J6817W2T9",
+        "link": "01M620KPQ8DRMSC52J65E15HH6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7SANZRP2X52437ENZGTH",
+        "id": "01M620KPXK1XRYWAQ5728QQXQF",
+        "link": "01M620KPXK1XRYWAQ5724DTB8J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M620KP4AZ2MJDFP7565KD9Z9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7SANZRP2X52437ENZGTH",
+        "id": "01M620KQ3VKXRK775MZDF9C1FC",
+        "link": "01M620KQ3VKXRK775MZ9RDTTGK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M620KNHFWVNGE2J4CY4JWJD4",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "inbox-open focuses the run's tab from the window and block the run's journal records (Decision journal-run-tab), and says the tab is gone when Rex no longer has it.",
+          "wording": "the orchestrator's option, picked by the owner: \"Journal the run's tab (Recommended)\" (when a run starts in Rex, its journal records its window and block, alongside run-process-record's host and pid, so inbox-open focuses that tab when it's still open, and otherwise says it's gone)"
+        },
+        "handle": "inbox-open-run-tab",
+        "id": "01M620KQA5G1NQWY0JQDBAFB0F",
+        "key": null,
+        "kind": "decision",
+        "node": "01M620KQA5G1NQWY0JQ9FG2YGV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M620KQA5G1NQWY0JQ9FG2YGV",
+        "id": "01M620KQGFHSMKP8P4JCXY7Y9X",
+        "link": "01M620KQGFHSMKP8P4JBVPKTPE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61S7KVVQ9F9Z9CF3RN3S568",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7QK0MX5D9HZ3V9J9FT24",
+        "id": "01M620KQXDWSP2SAAGJHY2VN70",
+        "link": "01M620KQXDWSP2SAAGJEAXP4H8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7JKQRF2SBF071J10XKRM",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7QK0MX5D9HZ3V9J9FT24",
+        "id": "01M620KR3WF55VW74Y6PYYH5WB",
+        "link": "01M620KR3WF55VW74Y6PAFKXRP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M620KQA5G1NQWY0JQ9FG2YGV",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M620KQA5G1NQWY0JQ9FG2YGV",
+        "id": "01M620KRA6C98ZJ4ERW639X3CC",
+        "link": "01M620KRA6C98ZJ4ERW2J295R1",
+        "note": "the run's tab inbox-open focuses is the one this Decision journals",
+        "op": "link.create",
+        "to": "01M620K1S3GGZB4B0H711KJVT9",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M620GA5ZK6Z854D07NH0R8WX",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M620KRM1VXF4VJ634N0VGFJY",
+  "type": "ops",
+  "v": 1
+}

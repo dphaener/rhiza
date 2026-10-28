@@ -1,0 +1,214 @@
+{
+  "actor": "01M61H60W8XWV0CG3XZM0S8PKC",
+  "after": [
+    "01M5SWTMN0PRF4Z4Z1DWSH8CJ4"
+  ],
+  "at": "2026-10-28T17:17:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "rhiza inbox is the owner's one list of what waits on them across a repo's runs: questions with a recommendation, sign-offs and failed runs, with a Rex notification for each."
+        },
+        "handle": "inbox",
+        "id": "01M61R7PE1A85AANAP24D820YQ",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M61R7PE1A85AANAP21324RS8",
+        "op": "node.create",
+        "parent": "01M5SWTC58PN8WNJRRM03630JS"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7PE1A85AANAP21324RS8",
+        "id": "01M61R7PM54H7NADMMC3AFWRZT",
+        "link": "01M61R7PM54H7NADMMC089DSSQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R36WFMNK816P8FB8FZN2E",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7PE1A85AANAP21324RS8",
+        "id": "01M61R7PTED5ND6C5ME55KPPM8",
+        "link": "01M61R7PTED5ND6C5ME2Q0SD2A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R380FJJNV1CK5JBYPXRR2",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with fixture journals of a run blocked on a question, a run waiting at sign-off, a failed run and a done run lists exactly the first three in order in text and --json; once the question is answered, the sign-off approved and the failed run abandoned, rhiza inbox says nothing waits.",
+          "statement": "rhiza inbox lists, oldest first across every run of the repo, each item waiting on the owner with a short item ID: a question (its run, change set, session tab and the question), a run waiting at sign-off, and a failed run (its failed step and detail, until it is resumed or abandoned), in text and --json, and says so when nothing waits."
+        },
+        "handle": "inbox-list",
+        "id": "01M61R7Q0JX5BXJP6M3QFYY3A9",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M61R7Q0JX5BXJP6M3P1SJXTG",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7Q0JX5BXJP6M3P1SJXTG",
+        "id": "01M61R7Q6PX79715NW4KYV0XP2",
+        "link": "01M61R7Q6PX79715NW4JJWEYWY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R36WFMNK816P8FB8FZN2E",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7Q0JX5BXJP6M3P1SJXTG",
+        "id": "01M61R7QCWX2VVHBKM8NCDZBF9",
+        "link": "01M61R7QCWX2VVHBKM8HXABWBS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R3BDD59F3QZCBSJ32KQ8E",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a fake Rex opens a question item and sees the asking session's tab focused, opens a sign-off item and sees the run's tab focused, and gets exit 2 for an unknown item.",
+          "statement": "rhiza inbox open <item> focuses the Rex tab of the session that asked a question, or of the run for a sign-off or a failed run, so the owner answers in the agent's own menu; an unknown item exits 2."
+        },
+        "handle": "inbox-open",
+        "id": "01M61R7QK0MX5D9HZ3VAQ7EH38",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M61R7QK0MX5D9HZ3V9J9FT24",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7QK0MX5D9HZ3V9J9FT24",
+        "id": "01M61R7QS6JNDSKNQPHKB6HNV1",
+        "link": "01M61R7QS6JNDSKNQPHH95YREP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R3BDD59F3QZCBSJ32KQ8E",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7QK0MX5D9HZ3V9J9FT24",
+        "id": "01M61R7QZFK1ERT4QMNE3DYW7Q",
+        "link": "01M61R7QZFK1ERT4QMNE330604",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7Q0JX5BXJP6M3P1SJXTG",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a review run waiting at sign-off approves it through its inbox item and finds the run done with an approved entry, sends another back with one finding and finds a fix cycle started, and gets exit 2 approving a question item; describe-golden is regenerated.",
+          "statement": "rhiza inbox approve <item> and rhiza inbox request-changes <item> <file> act on a sign-off item through rhiza run approve and rhiza run request-changes on that item's run, and exit 2 on any other kind of item."
+        },
+        "handle": "inbox-signoff",
+        "id": "01M61R7R5H6HYW9WR669HYE5W2",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M61R7R5H6HYW9WR669EGA860",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7R5H6HYW9WR669EGA860",
+        "id": "01M61R7RBPGP85W65NDD0TMJSG",
+        "link": "01M61R7RBPGP85W65NDA3CY3RB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R3BDD59F3QZCBSJ32KQ8E",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7R5H6HYW9WR669EGA860",
+        "id": "01M61R7RHTEJF23X94BSESFS2S",
+        "link": "01M61R7RHTEJF23X94BRHBF3WT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7Q0JX5BXJP6M3P1SJXTG",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a fake adapter whose agent blocks on a question finds an advisor launched with that question, its recommendation journalled and shown by rhiza inbox, no message sent to the asking session and the run still blocked; with a failing fake advisor the item shows no recommendation and the run is still blocked.",
+          "statement": "When a normal run blocks on a question, the engine launches a short-lived advisor session (the arbiter's guide in recommend-only mode) that reads slice and why for the question and journals a recommendation with its reasons, never answering it; the run does not wait for the advisor, the inbox shows the recommendation beside the question, and a failed advisor leaves the question without one."
+        },
+        "handle": "inbox-advisor",
+        "id": "01M61R7RR0R434KJZZJB52V45S",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M61R7RR0R434KJZZJ75FE90Z",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7RR0R434KJZZJ75FE90Z",
+        "id": "01M61R7RY5ZEKYVVDP0CRXRTCS",
+        "link": "01M61R7RY5ZEKYVVDP0C7RHDHB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R3BS9VJQ15Z9Q193A0QXA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7RR0R434KJZZJ75FE90Z",
+        "id": "01M61R7S4ACX1AHWPB7DSNG8ZP",
+        "link": "01M61R7S4ACX1AHWPB7DNW5YV4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7Q0JX5BXJP6M3P1SJXTG",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "With a fake Rex, a run that blocks on a question, then waits at sign-off, and another that fails, send exactly three notifications, one per item, and none while each item stays in the inbox.",
+          "statement": "Each new inbox item sends one Rex notification naming the change set and what waits (a question, a sign-off or a failed run), through the blocked-run notice path, and none again while the item stays."
+        },
+        "handle": "inbox-notify",
+        "id": "01M61R7SANZRP2X5243AEA02MT",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M61R7SANZRP2X52437ENZGTH",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7SANZRP2X52437ENZGTH",
+        "id": "01M61R7SHADQNEAYQHAXNM6DRF",
+        "link": "01M61R7SHADQNEAYQHAXG4NZ4B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R3C5483WMJ3HN4W2G4HE1",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWTKV6SCGKDS1QJ9KN026T",
+        "id": "01M61R7SXT61BV680K9D3KZPN6",
+        "link": "01M61R7SXT61BV680K9B4AT3D2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZNV4E4AJR52EX631180DMS",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M5SWTKV6SCGKDS1QJ9KN026T",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M61R7T7A8Q4TWGK2D8EGKV1R",
+  "type": "ops",
+  "v": 1
+}

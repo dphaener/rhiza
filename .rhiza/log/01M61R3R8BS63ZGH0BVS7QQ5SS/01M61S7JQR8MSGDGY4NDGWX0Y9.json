@@ -1,0 +1,39 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M61RWBPBRSSDYB4P2KY6XWQ3"
+  ],
+  "at": "2026-10-28T17:34:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (missing-acceptance on daemon-status): Its acceptance reads daemon status 'after rhiza daemon --once with a fake Rex (the state with the run it started)', but the leaf needs only daemon-lock. Picking and starting a run come from daemon-picks and daemon-run-tabs, so a builder scheduled as soon as daemon-lock lands has no daemon that starts a run, and can't run that part of the check. Either add those needs or drop the started run from the check. The critic confirmed it: daemon-status's acceptance reads the state 'with the run it started' after rhiza daemon --once, but the leaf needs only daemon-lock. Picking a change set and starting its run in a tab come from daemon-picks and daemon-run-tabs. A builder can take daemon-status as soon as daemon-lock lands, and at that point no daemon starts a run, so that part of the check can't run. Either add the needs or drop the started run from the check. How should it be settled?"
+        },
+        "handle": "review-01m61h5z-r3-f1",
+        "id": "01M61S7J7GTD8FC5Q8MW327FDN",
+        "key": null,
+        "kind": "question",
+        "node": "01M61S7J7GTD8FC5Q8MSRPCGJK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61S7J7GTD8FC5Q8MSRPCGJK",
+        "id": "01M61S7JDSWNC94W2R1TBSRPRE",
+        "link": "01M61S7JDSWNC94W2R1PGK6SAG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7NEEK19RP2QEHFRQ6W8S",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M61R3R8BS63ZGH0BVS7QQ5SS",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M61S7JQR8MSGDGY4NDGWX0Y9",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,83 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M61RWC9ZQX7QK06EM96TBXKD"
+  ],
+  "at": "2026-10-28T17:34:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (missing-acceptance on inbox-notify): needs is empty, yet its acceptance covers 'a third [run] the daemon gives up on' and counts notifications per inbox item. A given-up run comes from daemon-resume-once (another change set), and what makes an inbox item, and when it stays or leaves, is defined by inbox-list. Built first, as needs [] allows, the check can't run. It needs inbox-list (which already needs daemon-resume-once). The critic confirmed it: inbox-notify has no needs, yet its statement ('each new inbox item') and its acceptance (four items: a question, a sign-off, a failed run and a run the daemon gave up on, with no repeat while each stays) rely on inbox-list to say what an item is and when it stays, and on daemon-resume-once for the given-up run. Built first, as an empty needs allows, the check has nothing to run against. It needs inbox-list, which already needs daemon-resume-once. How should it be settled?"
+        },
+        "handle": "review-01m61h5z-r3-f2",
+        "id": "01M61S7K22QYKMWENXMPVGX9DC",
+        "key": null,
+        "kind": "question",
+        "node": "01M61S7K22QYKMWENXMP1VY8EX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61S7K22QYKMWENXMP1VY8EX",
+        "id": "01M61S7K8ET31SKBMW8RDBZW1S",
+        "link": "01M61S7K8ET31SKBMW8QDAFY98",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7SANZRP2X52437ENZGTH",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f3 (contradiction on inbox-notify): It sends each notification 'through the blocked-run notice path', but that path is in the run process: Engine.Notify -> runRex.notice in internal/api/run.go:1482, called only from block/unblock in internal/run/engine.go:862,879. A run the daemon gave up on is interrupted, so no run process is left to notify. That item, and any item the daemon or the inbox spots after the fact, needs a sender outside the run, which neither the leaf nor the daemon leaves name. The critic confirmed it: The blocked-run notice path is in the run process. reportToRex sets Engine.Notify to runRex.notice (internal/api/run.go:1461-1500), which writes an OSC 7501 record to the run's own terminal, and the engine calls it only on block and unblock (internal/run/engine.go:885-889). A run the daemon gave up on is interrupted, so its process is gone and nothing can send that item's notice. No leaf gives the daemon or the inbox its own sender, so inbox-notify's acceptance can't be met for that item as written. How should it be settled?"
+        },
+        "handle": "review-01m61h5z-r3-f3",
+        "id": "01M61S7KEZ0PGK4967113H9S5V",
+        "key": null,
+        "kind": "question",
+        "node": "01M61S7KEZ0PGK49670XG9GWKD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61S7KEZ0PGK49670XG9GWKD",
+        "id": "01M61S7KNBWAZM6Z5HHBBDJJWC",
+        "link": "01M61S7KNBWAZM6Z5HH9JCA76J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7SANZRP2X52437ENZGTH",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f4 (contradiction on inbox-open): It focuses 'the Rex tab ... of the run for a sign-off, a failed run or a run the daemon gave up on', but no record holds a run's tab. The journal keeps tabs only for blocked sessions (Block.TabSession/TabWindow/TabBlock in internal/run/journal.go:200), run-process-record journals only host and pid, and daemon-run-tabs doesn't journal the tab it opens. A leaf has to record the run's tab (or inbox-open has to name another target), or this part of the acceptance has nothing to focus. The critic confirmed it: The journal keeps a tab only in Block (TabSession/TabWindow/TabBlock, internal/run/journal.go:198-206), for a session blocked on the owner. Started has no tab (journal.go:175-190), run-process-record journals only host and pid, and daemon-run-tabs doesn't say it journals the tab it opens. inbox-open's acceptance focuses 'the run's tab' for a sign-off, and its statement does the same for failed and given-up runs, but nothing records that tab. A leaf has to journal the run's tab, or inbox-open has to name another target. How should it be settled?"
+        },
+        "handle": "review-01m61h5z-r3-f4",
+        "id": "01M61S7KVVQ9F9Z9CF3SVDN25N",
+        "key": null,
+        "kind": "question",
+        "node": "01M61S7KVVQ9F9Z9CF3RN3S568",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61S7KVVQ9F9Z9CF3RN3S568",
+        "id": "01M61S7M28XC1D9HD9C0J9R3DG",
+        "link": "01M61S7M28XC1D9HD9BY8MXTE3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7QK0MX5D9HZ3V9J9FT24",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M5SWTKV6SCGKDS1QJ9KN026T",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M61S7MCBWW6YVHD5VZGM6DDB",
+  "type": "ops",
+  "v": 1
+}

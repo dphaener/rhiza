@@ -1,0 +1,30 @@
+{
+  "actor": "01M61RSQRHE7BSZ8YJTYN5BV9X",
+  "after": [
+    "01M61R7H5G8ZA7HFQ4C1KWD5KP"
+  ],
+  "at": "2026-10-28T17:28:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript stops a fake run at a wait step with --no-wait, then a second rhiza run start on the change set exits 2 naming that run and rhiza run resume, and after the first run finishes a new start succeeds; a testscript fails a fake run, starts a second one stopped at a wait step, and rhiza run resume --retry on the failed run exits 2 naming the second; a Go test starts two runs on one change set concurrently and exactly one begins.",
+          "statement": "A change set has at most one live run: rhiza run start refuses a change set whose run's journal has not finished (done or failed), an interrupted run included, exiting 2 with the run's ID and a next step of rhiza run resume, and rhiza run resume (with or without --retry) refuses a run whose change set has another live run, exiting 2 naming that run; each checks and opens or reopens the journal under one lock so two concurrent starts or resumes never both begin."
+        },
+        "handle": "run-one-live",
+        "id": "01M61R7G3NZN2827J6Z348EZ1E",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M61R7G3NZN2827J6Z1GD0BQ1",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      }
+    ]
+  },
+  "change_set": "01M5ZNV4E4AJR52EX631180DMS",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M61RWCXMJYMF5K7DRBJZV4Q0",
+  "type": "ops",
+  "v": 1
+}

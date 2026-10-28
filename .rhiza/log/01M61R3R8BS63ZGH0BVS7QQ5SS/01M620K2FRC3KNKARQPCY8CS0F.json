@@ -1,0 +1,106 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M61S7RPN86XXDTRG8KEXDMFX"
+  ],
+  "at": "2026-10-28T19:43:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test finds the process, and with REX_BLOCK set the window and block, in the journal of a started run and of a resumed one, and a reader reports a fixture's unfinished journal as live and interrupted when its pid is not running, as live and running when it is the test's own process, and a finished journal as not live.",
+          "statement": "A run journals its process (host and pid) and, when it runs in Rex, its Rex window and block, when it starts and each time it is resumed, so a reader tells which of the live runs (unfinished journals, as run-one-live counts them) are running and which are interrupted (an unfinished journal whose process is gone), and where each run's tab is."
+        },
+        "handle": "run-process-record",
+        "id": "01M61R7JKQRF2SBF071KSZC7H6",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M61R7JKQRF2SBF071J10XKRM",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "fields": {
+          "statement": "daemon-status depends on daemon-picks and daemon-run-tabs, so its check reads the state of a daemon that has picked and started a run. The check stays as written.",
+          "wording": "the orchestrator's option, picked by the owner: \"Add the needs (Recommended)\" (daemon-status needs daemon-picks and daemon-run-tabs; inbox-notify needs inbox-list; the checks stay as strong as written)"
+        },
+        "handle": "daemon-status-needs-picks",
+        "id": "01M620K0S92BPZKN58JNMDR4T8",
+        "key": null,
+        "kind": "decision",
+        "node": "01M620K0S92BPZKN58JJMVBCYS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M620K0S92BPZKN58JJMVBCYS",
+        "id": "01M620K0ZQ4A8A6EMC85TXSG8W",
+        "link": "01M620K0ZQ4A8A6EMC85JXDHMF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61S7J7GTD8FC5Q8MSRPCGJK",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7NEEK19RP2QEHFRQ6W8S",
+        "id": "01M620K161FJ8B8X359B3YFCC1",
+        "link": "01M620K161FJ8B8X359927HSWG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7NEEK19RP2QEHFRQ6W8S",
+        "id": "01M620K1CGC8SZYPY1Y3MR381E",
+        "link": "01M620K1CGC8SZYPY1Y36SJF1N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7M41QVVEDQ5GWRXE7D7M",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7NEEK19RP2QEHFRQ6W8S",
+        "id": "01M620K1JTRMWZ79CY9AZ1NWRK",
+        "link": "01M620K1JTRMWZ79CY99D22NTN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M620K0S92BPZKN58JJMVBCYS",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "A run started in Rex journals its Rex window and block with its process, when it starts and each time it is resumed, so the inbox can focus a run's tab while it is open and say it is gone once it is closed.",
+          "wording": "the orchestrator's option, picked by the owner: \"Journal the run's tab (Recommended)\" (when a run starts in Rex, its journal records its window and block, alongside run-process-record's host and pid, so inbox-open focuses that tab when it's still open, and otherwise says it's gone)"
+        },
+        "handle": "journal-run-tab",
+        "id": "01M620K1S3GGZB4B0H71CV9JPZ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M620K1S3GGZB4B0H711KJVT9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R7JKQRF2SBF071J10XKRM",
+        "id": "01M620K25S99508K431MS4968Q",
+        "link": "01M620K25S99508K431JJ4SWMY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M620K1S3GGZB4B0H711KJVT9",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M61R3R8BS63ZGH0BVS7QQ5SS",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M620K2FRC3KNKARQPCY8CS0F",
+  "type": "ops",
+  "v": 1
+}

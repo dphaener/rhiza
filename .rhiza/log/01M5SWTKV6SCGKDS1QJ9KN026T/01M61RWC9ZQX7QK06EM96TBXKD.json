@@ -1,0 +1,30 @@
+{
+  "actor": "01M61RSQRHE7BSZ8YJTYN5BV9X",
+  "after": [
+    "01M61RKVVC8DSW5JE88B6MGHKZ"
+  ],
+  "at": "2026-10-28T17:28:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript with fixture journals of a run blocked on a question, a run waiting at sign-off, a failed run, a run interrupted again after a daemon resume and a done run lists exactly the first four in order in text and --json; once the question is answered, the sign-off approved, the given-up run abandoned and a new fake run started and finished on the failed run's change set, rhiza inbox says nothing waits and lists no failed run for the abandoned one.",
+          "statement": "rhiza inbox lists, oldest first across every run of the repo, each item waiting on the owner with a short item ID: a question (its run, change set, session tab and the question), a run waiting at sign-off, a failed run (its failed step and detail, until it is retried with rhiza run resume --retry or a newer run starts on its change set), and a run the daemon gave up on (interrupted again after the daemon's one resume, its step, until it is resumed or abandoned), in text and --json, and says so when nothing waits. A run failed by rhiza run abandon is the owner's own act and is never listed as a failed run."
+        },
+        "handle": "inbox-list",
+        "id": "01M61R7Q0JX5BXJP6M3QFYY3A9",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M61R7Q0JX5BXJP6M3P1SJXTG",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      }
+    ]
+  },
+  "change_set": "01M5SWTKV6SCGKDS1QJ9KN026T",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M61RWC9ZQX7QK06EM96TBXKD",
+  "type": "ops",
+  "v": 1
+}
