@@ -1262,6 +1262,127 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "daemon.status",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "autonomous": {
+            "description": "True when it starts each run with --autonomous",
+            "type": "boolean"
+          },
+          "last_poll": {
+            "description": "When it last polled, RFC 3339 UTC",
+            "type": "string"
+          },
+          "last_resumed": {
+            "additionalProperties": false,
+            "description": "The run it last resumed; absent if none",
+            "properties": {
+              "at": {
+                "description": "When, RFC 3339 UTC",
+                "type": "string"
+              },
+              "change": {
+                "description": "The change set whose run was started; absent for a resume",
+                "type": "string"
+              },
+              "run": {
+                "description": "The run that was resumed; absent for a start",
+                "type": "string"
+              }
+            },
+            "required": [
+              "at"
+            ],
+            "type": "object"
+          },
+          "last_started": {
+            "additionalProperties": false,
+            "description": "The run it last started; absent if none",
+            "properties": {
+              "at": {
+                "description": "When, RFC 3339 UTC",
+                "type": "string"
+              },
+              "change": {
+                "description": "The change set whose run was started; absent for a resume",
+                "type": "string"
+              },
+              "run": {
+                "description": "The run that was resumed; absent for a start",
+                "type": "string"
+              }
+            },
+            "required": [
+              "at"
+            ],
+            "type": "object"
+          },
+          "max_runs": {
+            "description": "How many runs it keeps running at once",
+            "type": "integer"
+          },
+          "process": {
+            "description": "The daemon's process, as host:pid; absent when none ever ran",
+            "type": "string"
+          },
+          "running": {
+            "description": "True while a live daemon holds the repository's lock",
+            "type": "boolean"
+          },
+          "runs": {
+            "description": "The live runs (running or interrupted) as of its last poll",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "change": {
+                  "description": "The change set it runs on",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The run ID",
+                  "type": "string"
+                },
+                "state": {
+                  "description": "running or interrupted",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "change",
+                "id",
+                "state"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "started": {
+            "description": "When the daemon started, RFC 3339 UTC",
+            "type": "string"
+          },
+          "stopped": {
+            "description": "When the last daemon stopped, RFC 3339 UTC; absent while it runs",
+            "type": "string"
+          }
+        },
+        "required": [
+          "autonomous",
+          "running",
+          "runs"
+        ],
+        "type": "object"
+      },
+      "summary": "Show the daemon of this repository: whether it runs, its settings, its live runs and what it last started or resumed",
+      "write": false
+    },
+    {
       "name": "describe",
       "request": {
         "additionalProperties": false,

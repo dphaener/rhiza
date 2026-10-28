@@ -90,10 +90,33 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	rs := run.NewStore(run.Dir(common))
 	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}}
 	pending := map[string]time.Time{}
+	state := daemon.State{Process: self, MaxRuns: r.MaxRuns, Autonomous: r.Autonomous, Runs: []daemon.LiveRun{}}
+	if prev, ok := daemon.ReadState(common); ok {
+		state.LastStarted, state.LastResumed = prev.LastStarted, prev.LastResumed
+	}
+	saveState := func() {
+		state.LastPoll = ctx.Now().UTC()
+		if runs, err := rs.List(); err == nil {
+			host, _ := os.Hostname()
+			state.Runs = daemon.LiveRuns(runs, host, nil)
+		}
+		daemon.WriteState(common, state)
+	}
+	defer func() {
+		state.Stopped = ctx.Now().UTC()
+		daemon.WriteState(common, state)
+	}()
 	poll := func() error {
 		started, resumed, err := daemonPoll1(ctx, rs, pending, r.MaxRuns, r.Autonomous)
 		resp.Started = append(resp.Started, started...)
 		resp.Resumed = append(resp.Resumed, resumed...)
+		if len(started) > 0 {
+			state.LastStarted = &daemon.Event{Change: started[len(started)-1], At: ctx.Now().UTC()}
+		}
+		if len(resumed) > 0 {
+			state.LastResumed = &daemon.Event{Run: resumed[len(resumed)-1], At: ctx.Now().UTC()}
+		}
+		saveState()
 		return err
 	}
 	if r.Once {
@@ -230,4 +253,115 @@ func daemonResume(ctx *Ctx, id string) error {
 		return Errorf("rex window new for run %s: %v", id, err)
 	}
 	return nil
+}
+
+func init() {
+	register(Operation{
+		Name:     "daemon.status",
+		Summary:  "Show the daemon of this repository: whether it runs, its settings, its live runs and what it last started or resumed",
+		Request:  reflect.TypeFor[DaemonStatusRequest](),
+		Response: reflect.TypeFor[DaemonStatusResponse](),
+		Run:      runDaemonStatus,
+	})
+}
+
+// DaemonStatusRequest takes nothing.
+type DaemonStatusRequest struct{}
+
+// DaemonRun is a run the daemon sees as live.
+type DaemonRun struct {
+	ID     string `json:"id" desc:"The run ID"`
+	Change string `json:"change" desc:"The change set it runs on"`
+	State  string `json:"state" desc:"running or interrupted"`
+}
+
+// DaemonEvent is the last run the daemon started or resumed.
+type DaemonEvent struct {
+	Change string `json:"change,omitempty" desc:"The change set whose run was started; absent for a resume"`
+	Run    string `json:"run,omitempty" desc:"The run that was resumed; absent for a start"`
+	At     string `json:"at" desc:"When, RFC 3339 UTC"`
+}
+
+// DaemonStatusResponse is the daemon's state. While no daemon holds the
+// lock, Running is false and the rest, if any, is what the last daemon left.
+type DaemonStatusResponse struct {
+	Running     bool         `json:"running" desc:"True while a live daemon holds the repository's lock"`
+	Process     string       `json:"process,omitempty" desc:"The daemon's process, as host:pid; absent when none ever ran"`
+	Started     string       `json:"started,omitempty" desc:"When the daemon started, RFC 3339 UTC"`
+	LastPoll    string       `json:"last_poll,omitempty" desc:"When it last polled, RFC 3339 UTC"`
+	Stopped     string       `json:"stopped,omitempty" desc:"When the last daemon stopped, RFC 3339 UTC; absent while it runs"`
+	MaxRuns     int          `json:"max_runs,omitempty" desc:"How many runs it keeps running at once"`
+	Autonomous  bool         `json:"autonomous" desc:"True when it starts each run with --autonomous"`
+	Runs        []DaemonRun  `json:"runs" desc:"The live runs (running or interrupted) as of its last poll"`
+	LastStarted *DaemonEvent `json:"last_started,omitempty" desc:"The run it last started; absent if none"`
+	LastResumed *DaemonEvent `json:"last_resumed,omitempty" desc:"The run it last resumed; absent if none"`
+}
+
+// Human writes the status as text.
+func (r DaemonStatusResponse) Human(w io.Writer) {
+	if r.Running {
+		fmt.Fprintf(w, "Daemon running, process %s\n", r.Process)
+	} else {
+		fmt.Fprintln(w, "Daemon not running")
+		if r.Process == "" {
+			return
+		}
+		fmt.Fprintf(w, "Last daemon: process %s, stopped %s\n", r.Process, r.Stopped)
+	}
+	fmt.Fprintf(w, "Started: %s\nLast poll: %s\nMax runs: %d\nAutonomous: %t\n", r.Started, r.LastPoll, r.MaxRuns, r.Autonomous)
+	if len(r.Runs) == 0 {
+		fmt.Fprintln(w, "Live runs: none")
+	} else {
+		fmt.Fprintln(w, "Live runs:")
+		for _, d := range r.Runs {
+			fmt.Fprintf(w, "- %s %s (change set %s)\n", d.ID, d.State, d.Change)
+		}
+	}
+	if e := r.LastStarted; e != nil {
+		fmt.Fprintf(w, "Last started: a run of %s at %s\n", e.Change, e.At)
+	}
+	if e := r.LastResumed; e != nil {
+		fmt.Fprintf(w, "Last resumed: run %s at %s\n", e.Run, e.At)
+	}
+}
+
+// runDaemonStatus reads the lock and the state file. Without a live
+// daemon holding the lock it says not running, and shows the state file's
+// last daemon, if one left it.
+func runDaemonStatus(ctx *Ctx, req any) (any, error) {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return nil, err
+	}
+	resp := DaemonStatusResponse{Runs: []DaemonRun{}}
+	_, resp.Running = daemon.Running(common)
+	st, ok := daemon.ReadState(common)
+	if !ok || (resp.Running && st.Process != daemon.ReadHolder(common)) {
+		// A live daemon that has not written its state yet, or a lock
+		// naming no state: say what the lock says.
+		if resp.Running {
+			resp.Process = daemon.ReadHolder(common).String()
+		}
+		return resp, nil
+	}
+	resp.Process = st.Process.String()
+	resp.Started = st.Process.Started.UTC().Format(time.RFC3339)
+	resp.LastPoll = st.LastPoll.UTC().Format(time.RFC3339)
+	if !st.Stopped.IsZero() && !resp.Running {
+		resp.Stopped = st.Stopped.UTC().Format(time.RFC3339)
+	}
+	resp.MaxRuns, resp.Autonomous = st.MaxRuns, st.Autonomous
+	for _, d := range st.Runs {
+		resp.Runs = append(resp.Runs, DaemonRun{ID: d.ID, Change: d.Change, State: d.State})
+	}
+	resp.LastStarted = daemonEvent(st.LastStarted)
+	resp.LastResumed = daemonEvent(st.LastResumed)
+	return resp, nil
+}
+
+func daemonEvent(e *daemon.Event) *DaemonEvent {
+	if e == nil {
+		return nil
+	}
+	return &DaemonEvent{Change: e.Change, Run: e.Run, At: e.At.UTC().Format(time.RFC3339)}
 }

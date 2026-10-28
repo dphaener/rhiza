@@ -70,3 +70,19 @@ func Resumable(runs []run.Journal, host string, alive func(pid int) bool) []stri
 	}
 	return ids
 }
+
+// LiveRuns are the runs that are running or interrupted, in the order of
+// runs.
+func LiveRuns(runs []run.Journal, host string, alive func(pid int) bool) []LiveRun {
+	out := []LiveRun{}
+	for _, j := range runs {
+		st := j.State()
+		switch st.Liveness(host, alive) {
+		case run.LiveRunning:
+			out = append(out, LiveRun{ID: j.ID, Change: st.Change, State: "running"})
+		case run.LiveInterrupted:
+			out = append(out, LiveRun{ID: j.ID, Change: st.Change, State: "interrupted"})
+		}
+	}
+	return out
+}
