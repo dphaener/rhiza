@@ -1212,7 +1212,16 @@ cmp stdout describe.golden.json
       "name": "daemon",
       "request": {
         "additionalProperties": false,
-        "properties": {},
+        "properties": {
+          "max_runs": {
+            "description": "Start runs until this many are running; default 2. An interrupted run takes no slot",
+            "type": "integer"
+          },
+          "once": {
+            "description": "Poll once, start what is picked and stop",
+            "type": "boolean"
+          }
+        },
         "required": [],
         "type": "object"
       },
@@ -1222,10 +1231,18 @@ cmp stdout describe.golden.json
           "process": {
             "description": "The daemon's process, as host:pid",
             "type": "string"
+          },
+          "started": {
+            "description": "The change sets whose runs the daemon started, in order",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "required": [
-          "process"
+          "process",
+          "started"
         ],
         "type": "object"
       },

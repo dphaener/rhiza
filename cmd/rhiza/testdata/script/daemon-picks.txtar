@@ -1,0 +1,47 @@
+# One poll of the daemon (--once) starts the accepted, ready change sets that
+# serve a milestone and have a leaf, each in a new Rex tab running
+# `rhiza run start <change set>`. A leafless change set and a backlog one are
+# left alone. Rex is faked and only logs.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+exec rhiza add intent plain --record
+exec git add -A
+exec git commit -qm init
+
+# Built: a milestone change set with a leaf.
+exec rhiza change new Built --title Built
+exec rhiza add capability built-leaf
+exec rhiza link 01M5PWGQ8GB4618G4RH2TV0ZAH serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# Leafless: serves the milestone, creates no capability.
+exec rhiza change new Leafless --title Leafless
+exec rhiza link 01M5PWGW4RMJ580CPWEPP3158J serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# Backlog: has a leaf, serves no milestone.
+exec rhiza change new Backlog --title Backlog
+exec rhiza add capability backlog-leaf
+exec rhiza link 01M5PWH01R1B9MDYF6J8XB3MQG serves plain
+exec rhiza propose
+exec rhiza accept --reason ok
+
+! exec rhiza daemon --once --max-runs=-1
+exec rhiza daemon --once
+stdout -count=1 '^Started a run of '
+exec sh -c 'grep -c "^rex window new .* run start " $WORK/rex.log'
+stdout '^1$'
+exec rhiza daemon --once --json
+stdout '"started": \['
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
