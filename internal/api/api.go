@@ -158,6 +158,12 @@ type Ctx struct {
 	Version string
 	// Stdin is read by operations that accept "-" for a file.
 	Stdin io.Reader
+	// Interrupts starts listening for the caller being asked to stop (the
+	// CLI's interrupt and terminate signals): the channel it returns gets
+	// the first one, and stop ends the listening. An operation that runs
+	// until stopped calls it, so the others keep the default handling of
+	// the signals. Nil means the caller cannot be asked to stop.
+	Interrupts func() (interrupted <-chan struct{}, stop func())
 }
 
 // Program is a program for Ctx.Start.

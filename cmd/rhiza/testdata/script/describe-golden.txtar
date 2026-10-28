@@ -1209,6 +1209,30 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "daemon",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "process": {
+            "description": "The daemon's process, as host:pid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "process"
+        ],
+        "type": "object"
+      },
+      "summary": "Run the daemon in the foreground: one per repository, held by a lock in the git common dir",
+      "write": false
+    },
+    {
       "name": "describe",
       "request": {
         "additionalProperties": false,
