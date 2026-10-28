@@ -1,0 +1,39 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M61CDEQ67FG2QK1MP5K4JZ4M"
+  ],
+  "at": "2026-10-28T13:52:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Review check qa still fails after 4 cycles: finding f1 (major at internal/workflow/builtin/ship-change.toml:61) on leaf ship-change-file: The cycle-3 fix holds on the approve path, but rhiza run request-changes still pushes a branch that fails rhiza check. signoff's on.changes goes to review/revi…. Its last cycle: cycle 4: confirmed f1 (major). How should it be fixed, or should leaf ship-change-file change?"
+        },
+        "handle": "leaf-failed-01m60atz-4",
+        "id": "01M61CGZBK1E1FB2ERQRM9XX2J",
+        "key": null,
+        "kind": "question",
+        "node": "01M61CGZBK1E1FB2ERQP0X5VQP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61CGZBK1E1FB2ERQP0X5VQP",
+        "id": "01M61CGZHMK1R1ECWN23VQ2GAS",
+        "link": "01M61CGZHMK1R1ECWN23726VEJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M61CGZN2C9EZNTWR9QH239ZB",
+  "type": "ops",
+  "v": 1
+}

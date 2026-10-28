@@ -4,9 +4,10 @@
 # moves on to the steps after (here, one that notes "landed"). run
 # request-changes with one finding naming leaf thing starts a fixer and
 # that leaf's verifier, re-runs only the check it names as a new cycle of
-# the included review's checks step, calls ship open-pr again (a push and
-# a PR body edit, no second PR), waits for CI and waits at the sign-off
-# again. Both commands exit 2 on a run not waiting at a sign-off step. An
+# the included review's checks step, renders and commits what the fix
+# cycle's sessions wrote, calls ship open-pr again (a push and a PR body
+# edit, no second PR), waits for CI and waits at the sign-off again; a
+# fresh clone of the re-pushed head passes rhiza check. Both commands exit 2 on a run not waiting at a sign-off step. An
 # autonomous run skips the wait, with a sign-off of rule autonomous. A
 # failing CI check ends the run failed naming the check.
 #
@@ -59,9 +60,17 @@ exec sh -c 'grep -c "^pr create" $WORK/gh.log; grep -c "^pr edit" $WORK/gh.log'
 stdout '^1\n1$'
 exec rhiza run status
 stdout '^- signoff \(visit 1\): changes, then review/review: changes asked by test: 1 finding$'
+stdout '^- render-pr \(visit 2\): pass, then open-pr: exit 0$'
 stdout '^- open-pr \(visit 2\): '
 stdout '^- Current step: signoff$'
 ! exec cat $WORK/order.log
+
+# The head pushed after request-changes holds every record its rendered
+# pages are built from, as the PR's CI would need.
+exec git clone -q -b cs/sign-it $WORK/origin.git $WORK/pr-clone
+cd $WORK/pr-clone
+exec rhiza check
+cd $WORK/repo
 
 exec sh -c 'rhiza run approve; echo exit=$?'
 stdout '^exit=0$'
@@ -128,6 +137,17 @@ name = "shiptest"
 kind = "workflow"
 workflow = "review"
 skip = ["signoff"]
+on.pass = "render-pr"
+
+[step.render-pr]
+max_visits = 2
+kind = "command"
+run = """
+rhiza render &&
+git add -A -- .rhiza/rendered .rhiza/log &&
+{ git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
+  git commit -q -m 'Render after the review' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
+"""
 on.pass = "open-pr"
 
 [step.open-pr]

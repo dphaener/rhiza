@@ -41,7 +41,7 @@ stdout '"workflow": "ship-change"'
 stdout '"state": "failed"'
 exec rhiza run status
 stdout '^- build/build \(visit 1\): pass, then build/check: 1 of 1 leaves passed$'
-stdout '^- review/review \(visit 1\): pass, then open-pr'
+stdout '^- review/review \(visit 1\): pass, then render-pr'
 stdout '^- open-pr \(visit 1\): pass, then wait-pr: '
 stdout '^- wait-pr \(visit 1\): pass, then pr-green: held after [0-9]+ checks?$'
 stdout '^- pr-green \(visit 1\): fail, then end: exit 1$'

@@ -5,8 +5,9 @@ name = "ship-change"
 # workflow's code check and checks with its sign-off skipped, the pull
 # request opened with the review's summary, CI, and then the owner's
 # sign-off here. rhiza run request-changes goes back into
-# review's checks step (review/review); ship open-pr then pushes and
-# replaces the PR body, and the run waits for CI and signs off again.
+# review's checks step (review/review); render-pr then renders again,
+# ship open-pr pushes and replaces the PR body, and the run waits for CI
+# and signs off again.
 [step.build]
 kind = "workflow"
 workflow = "build"
@@ -32,6 +33,20 @@ on.pass = "review"
 kind = "workflow"
 workflow = "review"
 skip = ["signoff"]
+on.pass = "render-pr"
+
+# Render again right before every push: review's fixers and verifiers,
+# and its checks, write records too, here and after each
+# request-changes, so the pushed branch still passes rhiza check.
+[step.render-pr]
+kind = "command"
+run = """
+rhiza render &&
+git add -A -- .rhiza/rendered .rhiza/log &&
+{ git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
+  git commit -q -m 'Render after the review' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
+"""
+max_visits = 3
 on.pass = "open-pr"
 
 [step.open-pr]
