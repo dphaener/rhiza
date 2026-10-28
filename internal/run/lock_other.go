@@ -13,3 +13,11 @@ func (s *Store) TryLock(id string) (unlock func(), ok bool, err error) {
 
 // Live reports whether another holder has the run's lock; here, never.
 func (s *Store) Live(string) bool { return false }
+
+// LockChange has no flock to use here: it holds nothing.
+func (s *Store) LockChange(change string) (unlock func(), err error) {
+	if err := validID(change); err != nil {
+		return nil, err
+	}
+	return func() {}, nil
+}

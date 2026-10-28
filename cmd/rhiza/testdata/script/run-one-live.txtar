@@ -1,0 +1,72 @@
+# A change set has at most one live run: a run stopped at a wait step
+# still counts, so a second start exits 2 naming it and rhiza run resume;
+# once it finishes a new start succeeds. A failed run cannot be retried
+# while the change set has another live run, which the retry names.
+# The wait polls for ../go, which is $WORK/go from the run's worktree.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'One live run' --title 'One live run' --json
+stdout '"change_set": "[0-9A-Z]{26}"'
+mkdir .rhiza/workflows
+cp ../hold.toml .rhiza/workflows/hold.toml
+cp ../flaky.toml .rhiza/workflows/flaky.toml
+
+# The first run stops at its wait step.
+exec rhiza run start --workflow hold --no-wait
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG stopped$'
+
+# A second start is refused, naming the run and the way on; a dry run too.
+exec sh -c 'rhiza run start --workflow hold --no-wait 2>err; echo exit=$?; cat err'
+stdout '^exit=2$'
+stdout 'already has a live run, 01M5PWGJC82P7YGZTWYFFZ0VJG'
+stdout 'next: rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG'
+exec sh -c 'rhiza run start --workflow hold --dry-run 2>/dev/null; echo exit=$?'
+stdout '^exit=2$'
+exec sh -c 'ls .git/rhiza/runs/*.jsonl | wc -l'
+stdout '^ *1$'
+
+# Once the first run finishes, a new start succeeds.
+exec sh -c 'echo > $WORK/go'
+exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
+exec rhiza run start --workflow hold
+stdout '^Run [0-9A-Z]{26} succeeded$'
+
+# A failed run, then a second run stopped at a wait step: the retry of the
+# failed run is refused, naming the second.
+! exec rhiza run start --workflow flaky
+stdout '^Run [0-9A-Z]{26} failed$'
+exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl// > $WORK/failed'
+exec rm $WORK/go
+exec rhiza run start --workflow hold --no-wait
+stdout '^Run [0-9A-Z]{26} stopped$'
+exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl// > $WORK/second'
+exec sh -c 'rhiza run resume --retry $(cat $WORK/failed) 2>err; echo exit=$?; cat err'
+stdout '^exit=2$'
+exec sh -c 'rhiza run resume --retry $(cat $WORK/failed) 2>&1 | grep -c "$(cat $WORK/second)"'
+stdout '^ *[1-9]'
+exec sh -c 'rhiza run resume --retry --dry-run $(cat $WORK/failed) 2>/dev/null; echo exit=$?'
+stdout '^exit=2$'
+
+-- hold.toml --
+name = "hold"
+
+[step.hold]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
+-- flaky.toml --
+name = "flaky"
+
+[step.one]
+kind = "command"
+run = "false"
+on.fail = "failed"

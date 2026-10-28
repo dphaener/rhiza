@@ -227,3 +227,22 @@ func (j Journal) started() (t time.Time) {
 	}
 	return
 }
+
+// LiveOf returns the first run of the change set, other than except, whose
+// journal has not finished: a run that is going, stopped at a wait or
+// interrupted all count.
+func (s *Store) LiveOf(change, except string) (Journal, bool, error) {
+	runs, err := s.List()
+	if err != nil {
+		return Journal{}, false, err
+	}
+	for _, j := range runs {
+		if j.ID == except {
+			continue
+		}
+		if st := j.State(); st.Change == change && !st.Ended {
+			return j, true, nil
+		}
+	}
+	return Journal{}, false, nil
+}

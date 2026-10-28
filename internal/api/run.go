@@ -25,6 +25,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 	"unicode/utf8"
 
@@ -60,6 +61,14 @@ func init() {
 		Request:  reflect.TypeFor[RunResumeRequest](),
 		Response: reflect.TypeFor[RunResponse](),
 		Run:      runRunResume,
+	})
+	register(Operation{
+		Name:     "run.abandon",
+		Summary:  "Give up on an unfinished run: journal it failed as abandoned, so a new run can start on its change set",
+		Write:    true,
+		Request:  reflect.TypeFor[RunAbandonRequest](),
+		Response: reflect.TypeFor[RunAbandonResponse](),
+		Run:      runRunAbandon,
 	})
 }
 
@@ -106,6 +115,19 @@ type RunResumeRequest struct {
 	Run    string `json:"run" arg:"0" desc:"The run: a full ID or a unique prefix of 4+ characters"`
 	NoWait bool   `json:"no_wait,omitempty" desc:"Stop at a wait step whose condition does not hold yet, instead of waiting"`
 	Retry  bool   `json:"retry,omitempty" flag:"retry" desc:"Restart a failed run at the step that failed, once its cause is fixed; the retry is journalled. A run that succeeded is refused"`
+}
+
+// RunAbandonRequest names the run to give up on.
+type RunAbandonRequest struct {
+	Run string `json:"run" arg:"0" desc:"The run: a full ID or a unique prefix of 4+ characters"`
+}
+
+// RunAbandonResponse is the run as abandoning left it, or in a dry run
+// would leave it. The command exits 0: the run is failed by the owner's
+// choice.
+type RunAbandonResponse struct {
+	Run    RunInfo `json:"run" desc:"The run as its journal stands, failed with the abandoned detail"`
+	DryRun bool    `json:"dry_run,omitempty" desc:"True if nothing was written"`
 }
 
 // RunResponse is a run after run.start or run.resume ran it, or in a dry
@@ -417,6 +439,9 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		PermissionMode: r.PermissionMode, Agent: r.Agent, Autonomous: r.Autonomous,
 	}
 	if ctx.DryRun {
+		if err := refuseLiveRun(rs, started.Change, ""); err != nil {
+			return nil, err
+		}
 		return RunResponse{Run: RunInfo{
 			ID: rid, Workflow: def.Name, Change: started.Change, Title: t.title, Worktree: t.worktree,
 			Autonomous: r.Autonomous, Current: def.Start, Steps: []RunStep{}, StartedAt: rfc3339(ctx.Now()), Amendments: []RunAmendment{},
@@ -429,10 +454,41 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if _, err := t.open(ctx); err != nil {
 		return nil, err
 	}
-	if err := run.Start(rs, rid, started, ctx.Now(), def); err != nil {
-		return nil, Errorf("start run %s: %v", rid, err)
+	if err := startRun(rs, rid, started, ctx.Now(), def); err != nil {
+		return nil, err
 	}
 	return runEngine(ctx, rs, t.common, rid, started.Change, t.worktree, r.PermissionMode, r.Agent, started.Autonomous, r.NoWait)
+}
+
+// startRun journals a new run under the change set's lock, after checking
+// that the change set has no other live run, so two starts never both begin.
+func startRun(rs *run.Store, rid string, started run.Started, now time.Time, def *workflow.Definition) error {
+	unlock, err := rs.LockChange(started.Change)
+	if err != nil {
+		return Errorf("lock change set %s: %v", started.Change, err)
+	}
+	defer unlock()
+	if err := refuseLiveRun(rs, started.Change, ""); err != nil {
+		return err
+	}
+	if err := run.Start(rs, rid, started, now, def); err != nil {
+		return Errorf("start run %s: %v", rid, err)
+	}
+	return nil
+}
+
+// refuseLiveRun is a usage error (exit 2) naming a run of the change set, other than
+// except, whose journal has not finished, an interrupted one included.
+func refuseLiveRun(rs *run.Store, change, except string) error {
+	j, ok, err := rs.LiveOf(change, except)
+	if err != nil {
+		return Errorf("read runs: %v", err)
+	}
+	if !ok {
+		return nil
+	}
+	return Usagef("change set %s already has a live run, %s: its journal has not finished", change, j.ID).
+		WithNext("rhiza run resume " + j.ID)
 }
 
 // shipChangeWorkflow is the workflow that ships a change set through
@@ -471,6 +527,10 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	st := j.State()
+	if st.Abandoned() {
+		return nil, Usagef("run %s was abandoned: %s", j.ID, st.Detail).
+			WithNext("rhiza run start " + st.Change)
+	}
 	retryStep := ""
 	switch {
 	case st.Ended && !r.Retry:
@@ -503,6 +563,9 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 			return nil, Errorf("run %s: step %q is not in workflow %q", j.ID, retryStep, def.Name).WithNext("rhiza run status " + j.ID)
 		}
 	}
+	if err := refuseLiveRun(rs, st.Change, j.ID); err != nil {
+		return nil, err
+	}
 	if ctx.DryRun {
 		if retryStep != "" {
 			// Fold the retried entry the engine would append, without
@@ -521,6 +584,68 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 	}
 	resp.Retry = retryStep
 	return resp, nil
+}
+
+// runRunAbandon journals an unfinished run as failed with the detail
+// "abandoned by <actor>", under the run's lock so a run going in another
+// process is refused. It leaves the worktree and branch alone; the change
+// set then has no live run, so a new one can start. A finished run is
+// refused.
+func runRunAbandon(ctx *Ctx, req any) (any, error) {
+	r := req.(RunAbandonRequest)
+	ref := strings.TrimSpace(r.Run)
+	if ref == "" {
+		return nil, Usagef("run abandon needs a run ID").WithNext(runStatusNext)
+	}
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return nil, err
+	}
+	rs := run.NewStore(run.Dir(common))
+	j, err := readRun(rs, ref)
+	if err != nil {
+		return nil, err
+	}
+	sessions := session.NewStore(session.Dir(common))
+	refuseEnded := func(st run.State) error {
+		if st.Ended {
+			return Usagef("run %s is finished: it %s", j.ID, st.Result).WithNext("rhiza run status " + j.ID)
+		}
+		return nil
+	}
+	if err := refuseEnded(j.State()); err != nil {
+		return nil, err
+	}
+	from, err := messageSender(ctx)
+	if err != nil {
+		return nil, err
+	}
+	detail := run.AbandonedPrefix + from.Handle
+	if ctx.DryRun {
+		j.Entries = append(j.Entries, run.Entry{Type: run.TypeFinished, At: ctx.Now(), End: run.Failed, Detail: detail})
+		return RunAbandonResponse{Run: runInfo(j.State(), false, sessions), DryRun: true}, nil
+	}
+	unlock, ok, err := rs.TryLock(j.ID)
+	if err != nil {
+		return nil, Errorf("lock run %s: %v", j.ID, err)
+	}
+	if !ok {
+		return nil, Conflictf("run %s is running in another process", j.ID).WithNext("rhiza run status " + j.ID)
+	}
+	defer unlock()
+	// Read again under the lock: the holder may have finished it.
+	if j, err = rs.Read(j.ID); err != nil {
+		return nil, err
+	}
+	if err := refuseEnded(j.State()); err != nil {
+		return nil, err
+	}
+	e := run.Entry{Type: run.TypeFinished, At: ctx.Now(), End: run.Failed, Detail: detail}
+	if err := rs.Append(j.ID, e); err != nil {
+		return nil, Errorf("journal the abandoning of run %s: %v", j.ID, err).WithNext("rhiza run status " + j.ID)
+	}
+	j.Entries = append(j.Entries, e)
+	return RunAbandonResponse{Run: runInfo(j.State(), false, sessions)}, nil
 }
 
 // runRunStatus reports a run from its journal alone.
@@ -871,6 +996,22 @@ func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode
 	}
 	if ctx.Rex != nil {
 		reportToRex(e, ctx.Rex)
+	}
+	// Under the run's lock and the change set's, check that no other run of
+	// it is live before the run is reopened or continued.
+	e.Admit = func(st run.State) (func(), error) {
+		if st.Ended && !retry {
+			return func() {}, nil
+		}
+		unlock, err := rs.LockChange(st.Change)
+		if err != nil {
+			return nil, Errorf("lock change set %s: %v", st.Change, err)
+		}
+		if err := refuseLiveRun(rs, st.Change, rid); err != nil {
+			unlock()
+			return nil, err
+		}
+		return unlock, nil
 	}
 	run1 := e.Run
 	if retry {
@@ -1826,6 +1967,17 @@ func (r RunResponse) Human(w io.Writer) {
 		fmt.Fprintf(w, "Run %s would start\n\n", r.Run.ID)
 		runLines(w, r.Run)
 		fmt.Fprintf(w, "\nThis was a dry run: nothing was written or run.\n")
+		return
+	}
+	r.Run.Human(w)
+}
+
+// Human reports the abandoned run, or the plan of a dry run.
+func (r RunAbandonResponse) Human(w io.Writer) {
+	if r.DryRun {
+		fmt.Fprintf(w, "Run %s would be abandoned\n\n", r.Run.ID)
+		runLines(w, r.Run)
+		fmt.Fprintf(w, "\nThis was a dry run: nothing was written.\n")
 		return
 	}
 	r.Run.Human(w)

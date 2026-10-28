@@ -22,6 +22,7 @@ cp $WORK/hold.toml .rhiza/workflows/hold.toml
 # A plain run and an autonomous run, both stopped at the wait.
 exec rhiza run start --workflow hold --no-wait
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG stopped$'
+exec rhiza change new 'Autonomous gate' --title 'Autonomous gate' --json
 exec rhiza run start --workflow hold --autonomous --no-wait
 stdout '^Run (01[0-9A-Z]{24}) stopped$'
 exec rhiza run status --json
