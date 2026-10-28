@@ -3,6 +3,7 @@ package run
 import (
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/workflow"
@@ -172,6 +173,14 @@ type Engine struct {
 	// leaf sessions start, block, unblock and are judged and its leaves
 	// end, and once as the run finishes (done or error) or stops (idle).
 	Status func(StatusReport)
+	// Admit, when set, is called under the run's lock with the run's state
+	// before anything is written to it. An error from it is returned and
+	// nothing is written. The release it returns is called once the
+	// retried entry and before's entries are journalled (or the run is
+	// refused), before the run goes on: a caller that checks the change
+	// set's other runs here and holds its change lock until release never
+	// reopens a run beside another.
+	Admit func(State) (release func(), err error)
 }
 
 // Start creates a run's journal with its started entry. The run begins at
@@ -310,6 +319,16 @@ func (e *Engine) run(id string, retry bool, before func(State) ([]Entry, error))
 		return State{}, err
 	}
 	st := j.State()
+	released := func() {}
+	if e.Admit != nil {
+		release, err := e.Admit(st)
+		if err != nil {
+			return st, err
+		}
+		var once sync.Once
+		released = func() { once.Do(release) }
+	}
+	defer released()
 	if before != nil {
 		entries, err := before(st)
 		if err != nil {
@@ -344,6 +363,7 @@ func (e *Engine) run(id string, retry bool, before func(State) ([]Entry, error))
 		}
 		r.log("run %s: retrying step %s", j.ID, step)
 	}
+	released()
 	return r.loop()
 }
 

@@ -47,6 +47,10 @@ stdout '^exit=2$'
 exec sh -c 'wc -l < $(ls -t .git/rhiza/runs/*.jsonl | head -1)'
 cmp stdout $WORK/other.lines
 
+# A change set has one live run: finish the stopped one before the review.
+exec sh -c 'echo > $WORK/ci-done'
+exec sh -c 'rhiza run resume $(ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl//)'
+
 # The review stops at its sign-off once its check passes.
 exec sh -c 'rhiza run start --workflow review --permission-mode manual --json > $WORK/start.json; echo exit=$?'
 stdout '^exit=0$'
@@ -126,7 +130,7 @@ fold-ok
 -- other.toml --
 [step.ci]
 kind = "wait"
-until = "false"
+until = "test -f ../ci-done"
 timeout = "1h"
 -- review.toml --
 [step.review]

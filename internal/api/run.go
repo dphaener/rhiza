@@ -25,6 +25,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 	"unicode/utf8"
 
@@ -417,6 +418,9 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		PermissionMode: r.PermissionMode, Agent: r.Agent, Autonomous: r.Autonomous,
 	}
 	if ctx.DryRun {
+		if err := refuseLiveRun(rs, started.Change, ""); err != nil {
+			return nil, err
+		}
 		return RunResponse{Run: RunInfo{
 			ID: rid, Workflow: def.Name, Change: started.Change, Title: t.title, Worktree: t.worktree,
 			Autonomous: r.Autonomous, Current: def.Start, Steps: []RunStep{}, StartedAt: rfc3339(ctx.Now()), Amendments: []RunAmendment{},
@@ -429,10 +433,41 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if _, err := t.open(ctx); err != nil {
 		return nil, err
 	}
-	if err := run.Start(rs, rid, started, ctx.Now(), def); err != nil {
-		return nil, Errorf("start run %s: %v", rid, err)
+	if err := startRun(rs, rid, started, ctx.Now(), def); err != nil {
+		return nil, err
 	}
 	return runEngine(ctx, rs, t.common, rid, started.Change, t.worktree, r.PermissionMode, r.Agent, started.Autonomous, r.NoWait)
+}
+
+// startRun journals a new run under the change set's lock, after checking
+// that the change set has no other live run, so two starts never both begin.
+func startRun(rs *run.Store, rid string, started run.Started, now time.Time, def *workflow.Definition) error {
+	unlock, err := rs.LockChange(started.Change)
+	if err != nil {
+		return Errorf("lock change set %s: %v", started.Change, err)
+	}
+	defer unlock()
+	if err := refuseLiveRun(rs, started.Change, ""); err != nil {
+		return err
+	}
+	if err := run.Start(rs, rid, started, now, def); err != nil {
+		return Errorf("start run %s: %v", rid, err)
+	}
+	return nil
+}
+
+// refuseLiveRun is a usage error (exit 2) naming a run of the change set, other than
+// except, whose journal has not finished, an interrupted one included.
+func refuseLiveRun(rs *run.Store, change, except string) error {
+	j, ok, err := rs.LiveOf(change, except)
+	if err != nil {
+		return Errorf("read runs: %v", err)
+	}
+	if !ok {
+		return nil
+	}
+	return Usagef("change set %s already has a live run, %s: its journal has not finished", change, j.ID).
+		WithNext("rhiza run resume " + j.ID)
 }
 
 // shipChangeWorkflow is the workflow that ships a change set through
@@ -502,6 +537,9 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 		if _, ok := def.Steps[retryStep]; !ok {
 			return nil, Errorf("run %s: step %q is not in workflow %q", j.ID, retryStep, def.Name).WithNext("rhiza run status " + j.ID)
 		}
+	}
+	if err := refuseLiveRun(rs, st.Change, j.ID); err != nil {
+		return nil, err
 	}
 	if ctx.DryRun {
 		if retryStep != "" {
@@ -871,6 +909,22 @@ func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode
 	}
 	if ctx.Rex != nil {
 		reportToRex(e, ctx.Rex)
+	}
+	// Under the run's lock and the change set's, check that no other run of
+	// it is live before the run is reopened or continued.
+	e.Admit = func(st run.State) (func(), error) {
+		if st.Ended && !retry {
+			return func() {}, nil
+		}
+		unlock, err := rs.LockChange(st.Change)
+		if err != nil {
+			return nil, Errorf("lock change set %s: %v", st.Change, err)
+		}
+		if err := refuseLiveRun(rs, st.Change, rid); err != nil {
+			unlock()
+			return nil, err
+		}
+		return unlock, nil
 	}
 	run1 := e.Run
 	if retry {

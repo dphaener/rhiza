@@ -25,6 +25,10 @@ exec rhiza run status --json
 stdout '"state": "stopped"'
 stdout '"current": "hold"'
 
+# A change set has one live run, so the live run is on another change set.
+exec rhiza change new 'Live status' --title 'Live status' --json
+stdout '"change_set": "[0-9A-Z]{26}"'
+
 # A live run: started in the background, it waits for the flag. Status
 # reports running (bounded retries) until the flag appears.
 exec rhiza run start --workflow gate &
