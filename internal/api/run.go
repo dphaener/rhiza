@@ -400,6 +400,11 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	if def.Name == shipChangeWorkflow {
+		if err := checkShipLeaves(t); err != nil {
+			return nil, err
+		}
+	}
 	rs := run.NewStore(run.Dir(t.common))
 	rid, err := newRunID(ctx, rs)
 	if err != nil {
@@ -427,6 +432,21 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		return nil, Errorf("start run %s: %v", rid, err)
 	}
 	return runEngine(ctx, rs, t.common, rid, started.Change, t.worktree, r.PermissionMode, r.Agent, started.Autonomous, r.NoWait)
+}
+
+// shipChangeWorkflow is the workflow that ships a change set through
+// build and review, both of which work on its leaves.
+const shipChangeWorkflow = "ship-change"
+
+// checkShipLeaves refuses a change set with no leaves: ship-change would
+// build nothing, so it is planned first.
+func checkShipLeaves(t changeWorktree) error {
+	c, ok := t.w.changeSet(t.cs)
+	if ok && len(changeLeaves(t.w.model(t.cs), c.Ops)) > 0 {
+		return nil
+	}
+	return Conflictf("change set %s has no leaves: ship-change builds and reviews its leaves, so plan it first", t.cs).
+		WithNext("rhiza run start plan")
 }
 
 // runRunResume continues a run that is neither finished nor running in

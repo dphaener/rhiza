@@ -1,0 +1,44 @@
+# run start ship-change refuses a change set with no leaves before
+# writing anything, naming `rhiza run start plan` as next: no run is
+# journaled and no worktree is made. The same command on a change set
+# with a leaf starts the run. The repo overrides ship-change with one
+# command step, so nothing reaches Claude Code, GitHub or Rex.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+mkdir .rhiza/workflows
+cp ../ship-change.toml .rhiza/workflows/ship-change.toml
+exec git add -A
+exec git commit -qm init
+
+# A change set that adds no capability has no leaves.
+exec rhiza change new 'Nothing to build' --title 'Nothing' --json
+stdout '"change_set": "[0-9A-Z]{26}"'
+! exec rhiza run start --workflow ship-change
+stderr 'has no leaves'
+stderr 'rhiza run start plan'
+! exists .git/rhiza/runs
+exec git worktree list
+! stdout 'nothing'
+
+# The same refusal over the API carries the next command.
+! exec rhiza run start --workflow ship-change --json
+stdout '"next": "rhiza run start plan"'
+! exists .git/rhiza/runs
+
+# A change set with a leaf starts the run.
+exec rhiza change new 'Something to build' --title 'Something' --json
+exec rhiza add capability thing --field 'statement=A thing'
+exec rhiza run start --workflow ship-change
+stdout '^Run [0-9A-Z]{26} succeeded$'
+exists .git/rhiza/runs
+
+-- ship-change.toml --
+name = "ship-change"
+
+[step.only]
+kind = "command"
+run = "true"
+on.pass = "done"
