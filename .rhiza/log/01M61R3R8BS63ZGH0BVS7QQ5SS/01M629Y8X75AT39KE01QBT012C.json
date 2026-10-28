@@ -1,0 +1,155 @@
+{
+  "actor": "01M629P0BF30ZX5CZJ2M8YGHAE",
+  "after": [
+    "01M629NQMTC7055DZMGQGCRVHE"
+  ],
+  "at": "2026-10-28T22:26:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza at f087c0e into $TMPDIR/rhiza-qa and drove it by hand in a scratch repo (RHIZA_* env unset, rex shimmed on PATH): a long-running rhiza daemon held .git/rhiza/daemon.lock; a second rhiza daemon from a git worktree of the repo exited 2 with 'another daemon holds the lock: process Mac.localdomain:89202' (the first's pid) and next rhiza daemon status; lsof showed no unix or inet socket on the daemon; kill -INT stopped it with exit 0; a daemon.lock hand-written with dead pid 999999 read as not running and a new daemon took it over (exit 0)."
+        },
+        "handle": "daemon-lock-qa-1",
+        "id": "01M629Y5S11SRYKQ15PJNEWG1H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M629Y5S11SRYKQ15PGF38FWT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M629Y5S11SRYKQ15PGF38FWT",
+        "id": "01M629Y60YHV434R66GNE5RTF4",
+        "link": "01M629Y60YHV434R66GJDS1EWS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7J7KWQ20F4X22KTJ924R",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza at f087c0e into $TMPDIR/rhiza-qa and drove it by hand in a scratch repo (RHIZA_* env unset, rex shimmed on PATH) over accepted change sets ShipA and ShipB (milestone m, one leaf each), Leafless (milestone, no leaf) and Back (backlog, a leaf): the long-running daemon at default --max-runs started ShipA then ShipB in roadmap order and never Leafless or Back, and its next poll 5s later started nothing more. With journals for ShipB running (a live sleep pid) and ShipA interrupted (dead pid), --max-runs 1 started nothing (B fills the slot, A blocked but takes no slot); with A's run finished failed and B's done, --max-runs 3 started only ShipB, never ShipA."
+        },
+        "handle": "daemon-picks-qa-1",
+        "id": "01M629Y68S4X7TF0BQYGN468WK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M629Y68S4X7TF0BQYDNQZYZK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M629Y68S4X7TF0BQYDNQZYZK",
+        "id": "01M629Y6GNVD59YBZ6CFNAKM5D",
+        "link": "01M629Y6GNVD59YBZ6CCEQSQSK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "Built rhiza at f087c0e into $TMPDIR/rhiza-qa and drove it by hand in a scratch repo (RHIZA_* env unset, rex shimmed on PATH): the daemon's rex call was 'rex window new <cs[:9]> -c <repo> --json -- <rhiza> run start <cs>' with no --autonomous, as the acceptance says. With a rex shim that actually ran the tab's command, every started run exited 2 at once: 'step build/build is a leaves step whose builder runs with no permission mode: give --permission-mode or set permission_mode on the step' (also with --autonomous), writing no journal. A daemon --max-runs 1 left 80s then opened two tabs for ShipA, one per minute, both failing the same way. So the tab command matches the acceptance but no run the daemon starts on the built-in ship-change workflow can run."
+        },
+        "handle": "daemon-run-tabs-qa-1",
+        "id": "01M629Y6RBP93TAAR2QT831NJV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M629Y6RBP93TAAR2QPBFX58S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M629Y6RBP93TAAR2QPBFX58S",
+        "id": "01M629Y6ZRWAHV81DJYTK729KP",
+        "link": "01M629Y6ZRWAHV81DJYSTYCXWR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7M41QVVEDQ5GWRXE7D7M",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza at f087c0e into $TMPDIR/rhiza-qa and drove it by hand in a scratch repo (RHIZA_* env unset, rex shimmed on PATH): a real rhiza run start of ShipB --permission-mode auto (fake claude and rex) was SIGKILLed; rhiza daemon --once then printed 'Resumed run 01M629WTHZX9B3Z7CJ1T7XMNHY' and opened one tab 'run resume <run>'. On a fixture journal with a dead pid, the first --once resumed it and journaled one daemon-resumed entry; the second --once (still interrupted) reported resumed [] and opened no tab; after it finished failed it got no tab."
+        },
+        "handle": "daemon-resume-once-qa-1",
+        "id": "01M629Y77SQFP95G5JJVQSWWDS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M629Y77SQFP95G5JJS6X96RX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M629Y77SQFP95G5JJS6X96RX",
+        "id": "01M629Y7FP67PZ4G52M2P71E32",
+        "link": "01M629Y7FP67PZ4G52KZ5F904B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7MP3HGEB60GJV4M3CWQA",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza at f087c0e into $TMPDIR/rhiza-qa and drove it by hand in a scratch repo (RHIZA_* env unset, rex shimmed on PATH): rhiza daemon status before any daemon printed 'Daemon not running' (--json running false, runs []); while a daemon ran it printed 'Daemon running, process Mac.localdomain:89202' with Started, Last poll, Max runs 2, Autonomous false and Last started (also in --json); after kill -INT it printed not running plus 'Last daemon: process ..., stopped ...'; after the journal polls it listed the live runs as running or interrupted with their change sets and Last resumed; a lock naming dead pid 999999 read as not running."
+        },
+        "handle": "daemon-status-qa-1",
+        "id": "01M629Y7QNZHSQW79FF36KBHCS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M629Y7QNZHSQW79FF21V2CX9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M629Y7QNZHSQW79FF21V2CX9",
+        "id": "01M629Y7ZSMBM0GBFRR731924W",
+        "link": "01M629Y7ZSMBM0GBFRR6DGHSJ5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7NEEK19RP2QEHFRQ6W8S",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza at f087c0e into $TMPDIR/rhiza-qa and drove it by hand in a scratch repo (RHIZA_* env unset, rex shimmed on PATH): rhiza run start of ShipB --permission-mode auto with REX_SESSION/REX_BLOCK=block:fakeb (fake claude and rex) journaled {type:process, host Mac.localdomain, pid 11821 (the run's own pid), rex_block block:fakeb} and called 'rex block inspect -s session:fake --json block:fakeb' (the shim's reply did not match Rex's shape, so no window was recorded). After SIGKILL, rhiza daemon status listed that run as interrupted and a fixture run with a live sleep pid as running."
+        },
+        "handle": "run-process-record-qa-1",
+        "id": "01M629Y87P3FBS3ER8S5N16NE6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M629Y87P3FBS3ER8S4YDFJ6M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M629Y87P3FBS3ER8S4YDFJ6M",
+        "id": "01M629Y8G7ZVR8708J4QH0BZ81",
+        "link": "01M629Y8G7ZVR8708J4NR79YTX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7JKQRF2SBF071J10XKRM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61R3R8BS63ZGH0BVS7QQ5SS",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M629Y8X75AT39KE01QBT012C",
+  "type": "ops",
+  "v": 1
+}
