@@ -386,7 +386,7 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 		fmt.Fprintf(w, "Last resumed: run %s at %s\n", e.Run, e.At)
 	}
 	for _, e := range r.Unjournaled {
-		fmt.Fprintf(w, "Not journaled: the run of %s started at %s wrote no journal; not started again until the daemon restarts\n", e.Change, e.At)
+		fmt.Fprintf(w, "Not journaled: the run of %s started at %s wrote no journal; not started again until the daemon restarts or a run of it journals\n", e.Change, e.At)
 	}
 }
 
