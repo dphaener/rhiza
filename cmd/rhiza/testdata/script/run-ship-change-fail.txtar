@@ -117,8 +117,8 @@ check)
 esac
 exit 0
 -- review.toml --
-# The repo's own review, as the built-in one but with no code step: the
-# sessions here register actors that the repo has not rendered.
+# The repo's own review, as the built-in one but with two fake checks and
+# no code step: run-ship-change.txtar runs the code step after the render.
 [step.review]
 kind = "checks"
 interval = "50ms"

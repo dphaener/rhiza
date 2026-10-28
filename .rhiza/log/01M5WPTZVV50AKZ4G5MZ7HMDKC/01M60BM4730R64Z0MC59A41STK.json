@@ -1,0 +1,40 @@
+{
+  "actor": "01M60BFMXQEPDE2QSAHR47W1QF",
+  "after": [
+    "01M60B4VP4KE5Q9WSRKA3PT1RK"
+  ],
+  "at": "2026-10-28T04:17:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M5WHKC5MYT5KMRZZGG2SN66Q",
+        "id": "01M60BM3HQ81QYCV036SW1GTRN",
+        "link": "01M5WHKC5MYT5KMRZZGFNHWSPQ",
+        "op": "link.retire"
+      },
+      {
+        "base": "01M5TYKPAXPA4NBWNPH9NCJTRD",
+        "id": "01M60BM3QYZR5ZA3EMSRTK3NY2",
+        "node": "01M5TYKPAXPA4NBWNPH5WENFNK",
+        "op": "node.retire",
+        "reason": "ship-change no longer has an agent step running shipit: it runs Rhiza's own build and review workflows (answer-cb8bd934-5, Replace it)"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z96HWRC492KNBZX7EHBX9R",
+        "id": "01M60BM3XTZ7RBAQM14ZMAQN4N",
+        "link": "01M60BM3XTZ7RBAQM14XSC7Z8V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SZHNYMKJGS09HYBGNQCEC2",
+        "type": "supersedes"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M60BM4730R64Z0MC59A41STK",
+  "type": "ops",
+  "v": 1
+}

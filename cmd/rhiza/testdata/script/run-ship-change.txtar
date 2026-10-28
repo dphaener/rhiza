@@ -1,7 +1,8 @@
 # run start with no --workflow runs the built-in ship-change workflow end
 # to end on a change set of two leaves, the second depending on the first:
-# build's builders and verifiers, then the repo's review (the built-in
-# one without its code step, its sign-off skipped), then the pull request
+# build's builders and verifiers, a render committed on the branch, then
+# the repo's review (its code check and two fake checks, its sign-off
+# skipped), then the pull request
 # opened with the review's summary as its body. The run waits for CI, then stops at its sign-off until `rhiza run
 # approve`. After that it finds main has not moved (nothing to rebase),
 # lands the change set on the PR branch with the PR recorded as Evidence,
@@ -62,6 +63,9 @@ exec sh -c 'grep -c "role=check" $WORK/claude.log'
 stdout '^2$'
 exec rhiza run status
 stdout '^- build/build \(visit 1\): pass, then build/check: 2 of 2 leaves passed$'
+stdout '^- build/check \(visit 1\): pass, then render: exit 0$'
+stdout '^- render \(visit 1\): pass, then review/code: exit 0$'
+stdout '^- review/code \(visit 1\): pass, then review/review'
 stdout '^- review/review \(visit 1\): pass, then open-pr'
 stdout '^- open-pr \(visit 1\): pass, then wait-pr: '
 stdout '^- wait-pr \(visit 1\): pass, then pr-green: held after [0-9]+ checks?$'
@@ -163,8 +167,14 @@ stdout '"handle": "pr-7-ship-it"'
 fold-ok
 
 -- review.toml --
-# The repo's own review, as the built-in one but with no code step: the
-# sessions here register actors that the repo has not rendered.
+# The repo's own review, as the built-in one but with two fake checks.
+# Its code step runs rhiza check, which passes only because ship-change
+# rendered and committed what build's sessions wrote.
+[step.code]
+kind = "command"
+run = "rhiza run code-check"
+on.pass = "review"
+
 [step.review]
 kind = "checks"
 interval = "50ms"

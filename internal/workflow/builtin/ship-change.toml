@@ -1,14 +1,29 @@
 name = "ship-change"
 
 # Ship a change set through Rhiza's own build and review: the build
-# workflow's leaves, the review workflow's checks with its sign-off
-# skipped, the pull request opened with the review's summary, CI, and then
-# the owner's sign-off here. rhiza run request-changes goes back into
+# workflow's leaves, a render of what build's sessions wrote, the review
+# workflow's code check and checks with its sign-off skipped, the pull
+# request opened with the review's summary, CI, and then the owner's
+# sign-off here. rhiza run request-changes goes back into
 # review's checks step (review/review); ship open-pr then pushes and
 # replaces the PR body, and the run waits for CI and signs off again.
 [step.build]
 kind = "workflow"
 workflow = "build"
+on.pass = "render"
+
+# Build's sessions register actors and write Evidence, which leaves
+# .rhiza/rendered stale, and review's code step runs rhiza check. Render
+# and commit the rendered folder on the branch first; nothing to render
+# commits nothing.
+[step.render]
+kind = "command"
+run = """
+rhiza render &&
+git add -A -- .rhiza/rendered &&
+{ git diff --cached --quiet -- .rhiza/rendered ||
+  git commit -q -m 'Render after the build' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered; }
+"""
 on.pass = "review"
 
 [step.review]
