@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-28T21:13:16Z",
+  "body": {
+    "intent": "ship-change's last step, ship, runs after close-out has removed the run's worktree, so it fails starting in a folder that is gone: steps after close-out start in the main checkout, and a ship-change run ends succeeded once its ship command passes.",
+    "kind": "intention",
+    "sources": [],
+    "title": "Ship step after close-out"
+  },
+  "change_set": "01M625RC3X2VA17M5V2HVS3HBP",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M625RC3X2VA17M5V2NQ666D7",
+  "type": "open",
+  "v": 2
+}

@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-28T21:15:15Z",
+  "body": {
+    "intent": "A plan run that ends with confirmed review findings or parked questions still open does not report success: it stops for the owner with them listed, so nothing has to be fixed by hand after a succeeded run.",
+    "kind": "intention",
+    "sources": [],
+    "title": "Plan run open findings"
+  },
+  "change_set": "01M625W0AJZ6AMCCWGFXQW19FN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M625W0AJZ6AMCCWGFYBY4BYN",
+  "type": "open",
+  "v": 2
+}

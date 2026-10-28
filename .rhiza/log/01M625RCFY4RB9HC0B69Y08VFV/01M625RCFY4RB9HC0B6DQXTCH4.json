@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-28T21:13:17Z",
+  "body": {
+    "intent": "A plan run ends with its plan on a pushed branch and an open PR, as ship-change does, so no one renders, commits or opens the plan's PR by hand.",
+    "kind": "intention",
+    "sources": [],
+    "title": "Plan run ships its plan"
+  },
+  "change_set": "01M625RCFY4RB9HC0B69Y08VFV",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M625RCFY4RB9HC0B6DQXTCH4",
+  "type": "open",
+  "v": 2
+}
