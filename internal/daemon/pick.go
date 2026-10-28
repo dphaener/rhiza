@@ -1,6 +1,10 @@
 package daemon
 
-import "github.com/dphaener/rhiza/internal/run"
+import (
+	"time"
+
+	"github.com/dphaener/rhiza/internal/run"
+)
 
 // DefaultMaxRuns is how many runs the daemon keeps running at once.
 const DefaultMaxRuns = 2
@@ -56,17 +60,32 @@ func Pick(candidates []string, runs []run.Journal, pending []string, host string
 	return picked
 }
 
+// Unrecorded is how long after its start a run with no process record is
+// taken to be starting rather than interrupted: a new run is journaled
+// before the process running it records itself.
+const Unrecorded = time.Minute
+
 // Resumable returns the IDs of the runs the daemon resumes now: those
 // interrupted (see run.State.Liveness) that it has not resumed before. A
 // run interrupted again after its one resume is left alone, and a finished
-// run, failed or not, is never resumed.
-func Resumable(runs []run.Journal, host string, alive func(pid int) bool) []string {
+// run, failed or not, is never resumed. Nor is a run whose lock another
+// process holds (locked reports it), which is running whatever its journal
+// says, or one with no process record started less than Unrecorded before
+// now, whose process may not have recorded itself yet.
+func Resumable(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, now time.Time) []string {
 	var ids []string
 	for _, j := range runs {
 		st := j.State()
-		if st.Liveness(host, alive) == run.LiveInterrupted && !st.DaemonResumed {
-			ids = append(ids, j.ID)
+		if st.Liveness(host, alive) != run.LiveInterrupted || st.DaemonResumed {
+			continue
 		}
+		if st.Process == nil && now.Sub(st.StartedAt) < Unrecorded {
+			continue
+		}
+		if locked(j.ID) {
+			continue
+		}
+		ids = append(ids, j.ID)
 	}
 	return ids
 }

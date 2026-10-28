@@ -2,6 +2,7 @@ package daemon
 
 import (
 	"testing"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/run"
 )
@@ -12,13 +13,24 @@ func TestResumable(t *testing.T) {
 	journal := func(id string, es ...run.Entry) run.Journal {
 		return run.Journal{ID: id, Entries: append([]run.Entry{{Type: run.TypeStarted, Started: &run.Started{Change: id}}}, es...)}
 	}
-	runs := []run.Journal{
-		journal("interrupted", proc),
-		journal("again", proc, run.Entry{Type: run.TypeDaemonResumed}),
-		journal("failed", proc, run.Entry{Type: run.TypeFinished, End: run.Failed}),
+	now := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+	since := func(j run.Journal, d time.Duration) run.Journal {
+		j.Entries[0].At = now.Add(-d)
+		return j
 	}
-	got := Resumable(runs, "h", dead)
-	if len(got) != 1 || got[0] != "interrupted" {
-		t.Fatalf("Resumable = %v, want [interrupted]", got)
+	runs := []run.Journal{
+		since(journal("interrupted", proc), time.Hour),
+		since(journal("again", proc, run.Entry{Type: run.TypeDaemonResumed}), time.Hour),
+		since(journal("failed", proc, run.Entry{Type: run.TypeFinished, End: run.Failed}), time.Hour),
+		// Journaled, its process not yet recorded: starting.
+		since(journal("starting"), Unrecorded-time.Second),
+		since(journal("unrecorded"), Unrecorded),
+		// Another process holds its lock: running whatever the journal says.
+		since(journal("locked"), time.Hour),
+	}
+	locked := func(id string) bool { return id == "locked" }
+	got := Resumable(runs, "h", dead, locked, now)
+	if len(got) != 2 || got[0] != "interrupted" || got[1] != "unrecorded" {
+		t.Fatalf("Resumable = %v, want [interrupted unrecorded]", got)
 	}
 }
