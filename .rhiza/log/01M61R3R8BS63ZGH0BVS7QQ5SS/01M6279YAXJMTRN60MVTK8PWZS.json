@@ -1,0 +1,40 @@
+{
+  "actor": "01M6270B1HD2WD1140RXP5RXGW",
+  "after": [
+    "01M622V8BPTGB4F33WH94D8VBA"
+  ],
+  "at": "2026-10-28T21:40:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 2ad530b: go test -count=1 ./cmd/rhiza -run 'TestScripts/daemon-lock$' -v passed (and 8 more repeats with -count=8). The script runs rhiza daemon in the background with a fake rex on PATH; a second rhiza daemon from the repo and from a git worktree add'ed other worktree exits 2 with 'another daemon holds the lock: process <host>:<pid>' whose pid matches the first's lock file; after kill -INT the lock file is emptied and no daemon.sock exists; a lock file naming dead pid 999999 is taken over by a new daemon; rex.log is never written. internal/daemon unit tests pass under -race. grep finds no net.Listen/ListenUnix anywhere in the Go code, so no test binds a socket. Diff read: flock (LOCK_EX|LOCK_NB) on <git common dir>/rhiza/daemon.lock, holder JSON written after locking. make check exits 0."
+        },
+        "handle": "daemon-lock-verified",
+        "id": "01M6279XQTZV46ZAYY08YVE52M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6279XQTZV46ZAYY08KFJXXP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6279XQTZV46ZAYY08KFJXXP",
+        "id": "01M6279XZ9QH98JV0F1RVACQJ6",
+        "link": "01M6279XZ9QH98JV0F1RHNK37Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7J7KWQ20F4X22KTJ924R",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61R3R8BS63ZGH0BVS7QQ5SS",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6279YAXJMTRN60MVTK8PWZS",
+  "type": "ops",
+  "v": 1
+}
