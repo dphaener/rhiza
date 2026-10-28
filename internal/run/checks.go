@@ -72,6 +72,9 @@ type FixSpec struct {
 	// Answers are, in an answered cycle, the Decisions answering the
 	// questions the capped cycle raised; nil otherwise.
 	Answers []ReviewAnswer
+	// Owner is true in an owner cycle: the findings are the owner's
+	// request for changes, not ones a review cycle confirmed.
+	Owner bool
 }
 
 // CheckSpec is one check session to launch: role Role (check) of checks
@@ -775,6 +778,7 @@ func (r *running) startReviewFix(cr CheckRunner, step workflow.Step, env []strin
 		return errResult(fmt.Errorf("change set's fixer: %v", err)), true, nil
 	}
 	spec.Answers = answers
+	spec.Owner = r.j.State().OwnerCycle(step.Name, a.cycle)
 	s, err := cr.StartFix(spec)
 	if err != nil {
 		return errResult(fmt.Errorf("start the change set's fixer: %v", err)), true, nil

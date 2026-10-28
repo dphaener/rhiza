@@ -106,14 +106,19 @@ func (r *stepRunner) StartFix(spec run.FixSpec) (string, error) {
 
 // changeSetFixerPrompt is the change set's fixer's prompt: role's fixer
 // prompt rendered with vars, {leaf} empty and the cycle, then the
-// findings naming no leaf, one per line as a leaf fixer's are, and the
+// findings naming no leaf (the cycle's, or in an owner cycle the
+// owner's), one per line as a leaf fixer's are, and the
 // instruction to fix them in one new commit with the trailer
 // `Review: <run>`.
 func changeSetFixerPrompt(role workflow.Role, spec run.FixSpec, vars workflow.PromptVars) string {
 	p := role.RenderFixerPrompt(workflow.FixerVars{PromptVars: vars, Cycle: spec.Cycle})
-	return strings.TrimRight(p, "\n") + "\n\n" + fmt.Sprintf("Review cycle %d confirmed these findings, which name no leaf of the change set:\n\n%s\n\n"+
+	head := fmt.Sprintf("Review cycle %d confirmed these findings", spec.Cycle)
+	if spec.Owner {
+		head = "The owner requested these changes"
+	}
+	return strings.TrimRight(p, "\n") + "\n\n" + fmt.Sprintf("%s, which name no leaf of the change set:\n\n%s\n\n"+
 		"Fix them, nothing else, in one new commit with the trailer `Review: %s`. `rhiza run status --json` has them too.",
-		spec.Cycle, findingLines(spec.Findings), vars.Run) + answerLines(spec.Answers)
+		head, findingLines(spec.Findings), vars.Run) + answerLines(spec.Answers)
 }
 
 // OpenCheckCheckout adds a throwaway detached worktree at commit where

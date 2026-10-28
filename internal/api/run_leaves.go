@@ -137,9 +137,10 @@ func (r *stepRunner) ClosePane(sid string) error {
 // findings from the run and add a fix commit for the leaf.
 //
 // A checks step's fixer gets its fixer prompt, rendered with the leaf and
-// the cycle, then a line naming the leaf, the cycle and each finding it
-// is to fix (its check, ID, severity, place and reason) and telling it to
-// add a fix commit with the leaf's trailer.
+// the cycle, then a line naming the leaf, the cycle (or, in an owner
+// cycle, that the owner requested the changes) and each finding it is to
+// fix (its check, ID, severity, place and reason) and telling it to add a
+// fix commit with the leaf's trailer.
 func leafPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars) string {
 	if spec.Role == workflow.RoleFixer {
 		return fixerPrompt(role, spec, vars)
@@ -177,9 +178,13 @@ func leafPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars)
 // fixerPrompt is a leaf fixer's prompt, as leafPrompt describes.
 func fixerPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars) string {
 	p := role.RenderFixerPrompt(workflow.FixerVars{PromptVars: vars, Leaf: spec.Leaf.Handle, Cycle: spec.Cycle})
-	return strings.TrimRight(p, "\n") + "\n\n" + fmt.Sprintf("Review cycle %d confirmed these findings on leaf %s:\n\n%s\n\n"+
+	head := fmt.Sprintf("Review cycle %d confirmed these findings on leaf %s:", spec.Cycle, spec.Leaf.Handle)
+	if spec.Owner {
+		head = fmt.Sprintf("The owner requested these changes on leaf %s:", spec.Leaf.Handle)
+	}
+	return strings.TrimRight(p, "\n") + "\n\n" + fmt.Sprintf("%s\n\n%s\n\n"+
 		"Fix them, nothing else, in one new commit with the trailer `Leaf: %s`. `rhiza run status --json` has them too.",
-		spec.Cycle, spec.Leaf.Handle, findingLines(spec.Findings), spec.Leaf.Handle) + answerLines(spec.Answers)
+		head, findingLines(spec.Findings), spec.Leaf.Handle) + answerLines(spec.Answers)
 }
 
 // answerLines are, for a fixer of an answered cycle (one fresh cycle past

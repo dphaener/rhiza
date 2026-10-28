@@ -144,7 +144,7 @@ type RunInfo struct {
 	Fixes          []RunFix        `json:"fixes,omitempty" desc:"The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none"`
 	CodeChecks     []RunCodeCheck  `json:"code_checks,omitempty" desc:"The code checks rhiza run code-check journalled, in order; absent when there were none"`
 	Signoffs       []RunSignoff    `json:"signoffs,omitempty" desc:"The sign-offs of its signoff steps, in order: the owner's approvals and requests for changes, and an autonomous run's under rule autonomous; absent when there were none"`
-	SignoffWaiting bool            `json:"signoff_waiting,omitempty" desc:"True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes; absent otherwise"`
+	SignoffWaiting bool            `json:"signoff_waiting,omitempty" desc:"True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise"`
 }
 
 // RunCodeCheck is one code check: rhiza check and build-check on the
@@ -2020,7 +2020,7 @@ func (r RunInfo) Human(w io.Writer) {
 	switch r.State {
 	case runStopped:
 		if r.SignoffWaiting {
-			fmt.Fprintf(w, "\nnext: rhiza run approve %s\nnext: rhiza run request-changes <file> %s\n", r.ID, r.ID)
+			fmt.Fprintf(w, "\nnext: rhiza run summary %s\nnext: rhiza run approve %s\nnext: rhiza run request-changes <file> %s\n", r.ID, r.ID, r.ID)
 			break
 		}
 		fmt.Fprintf(w, "\nnext: rhiza run resume %s\n", r.ID)

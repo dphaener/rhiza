@@ -1059,6 +1059,17 @@ type CodeCheck struct {
 	At      time.Time
 }
 
+// OwnerCycle says whether checks step step's cycle is an owner cycle:
+// one that fixes the owner's request for changes.
+func (st State) OwnerCycle(step string, cycle int) bool {
+	for _, c := range st.Cycles {
+		if c.Step == step && c.Cycle == cycle {
+			return c.Owner()
+		}
+	}
+	return false
+}
+
 // LatestCodeCheck is the journal's latest code check, if it has one.
 func (st State) LatestCodeCheck() (CodeCheck, bool) {
 	if len(st.CodeChecks) == 0 {

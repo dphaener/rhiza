@@ -3655,7 +3655,7 @@ cmp stdout describe.golden.json
                 "type": "array"
               },
               "signoff_waiting": {
-                "description": "True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes; absent otherwise",
+                "description": "True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise",
                 "type": "boolean"
               },
               "signoffs": {
@@ -5675,7 +5675,7 @@ cmp stdout describe.golden.json
                 "type": "array"
               },
               "signoff_waiting": {
-                "description": "True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes; absent otherwise",
+                "description": "True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise",
                 "type": "boolean"
               },
               "signoffs": {
@@ -7125,7 +7125,7 @@ cmp stdout describe.golden.json
                 "type": "array"
               },
               "signoff_waiting": {
-                "description": "True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes; absent otherwise",
+                "description": "True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise",
                 "type": "boolean"
               },
               "signoffs": {
@@ -8621,7 +8621,7 @@ cmp stdout describe.golden.json
                 "type": "array"
               },
               "signoff_waiting": {
-                "description": "True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes; absent otherwise",
+                "description": "True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise",
                 "type": "boolean"
               },
               "signoffs": {
@@ -9948,7 +9948,7 @@ cmp stdout describe.golden.json
             "type": "array"
           },
           "signoff_waiting": {
-            "description": "True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes; absent otherwise",
+            "description": "True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise",
             "type": "boolean"
           },
           "signoffs": {
@@ -10236,6 +10236,45 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "Show a run's state and the steps it has done, from its journal",
+      "write": false
+    },
+    {
+      "name": "run.summary",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "run": {
+            "description": "The run: a full ID or a unique prefix of 4+ characters; default the latest run of the current change set, else the latest run",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change": {
+            "description": "The run's change set",
+            "type": "string"
+          },
+          "markdown": {
+            "description": "The summary as markdown, rendered from the run's journal alone",
+            "type": "string"
+          },
+          "run": {
+            "description": "The run's ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change",
+          "markdown",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Render a review run's verdicts as markdown from its journal: each check's outcome, its confirmed findings, the findings its critic dropped, the minors and nits, the fix cycles, the code checks and the sign-off",
       "write": false
     },
     {

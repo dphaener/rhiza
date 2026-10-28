@@ -1,0 +1,186 @@
+# rhiza run summary renders a review run's verdicts as markdown from its
+# journal. Check alpha passes cycle 1 with a minor and a nit. Check beta
+# fails cycle 1: its critic confirms a major on leaf thing and drops
+# another; it has a minor too. Cycle 2 fixes thing (the fixer commits,
+# the verifier records Evidence) and only beta re-runs, and passes. The
+# run waits at the sign-off, where run status names rhiza run summary.
+# The summary is compared with a golden file; commit dates are fixed so
+# the fixer's commit is the same on every run.
+#
+# The fake rex runs the tab's command synchronously in the window's
+# directory; the fake claude acts by $RHIZA_ROLE, $RHIZA_CHECK and
+# $RHIZA_CYCLE.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+env GIT_AUTHOR_DATE=2026-01-02T03:04:05Z
+env GIT_COMMITTER_DATE=2026-01-02T03:04:05Z
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new 'Sum me up' --title 'Sum me up'
+exec rhiza add capability thing
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
+exec git add -A
+exec git commit -qm review
+
+exec sh -c 'rhiza run start --workflow review --permission-mode manual --json; echo exit=$?'
+stdout '"state": "stopped"'
+stdout '"signoff_waiting": true'
+stdout '^exit=0$'
+exec cat $WORK/claude.log
+stdout '\Arole=check check=alpha cycle=1 leaf=\nrole=check check=beta cycle=1 leaf=\nrole=critic check=beta cycle=1 leaf=\nrole=fixer check= cycle=2 leaf=thing\nrole=verifier check= cycle=2 leaf=thing\nrole=check check=beta cycle=2 leaf=\n\z'
+
+# At the sign-off wait, run status names rhiza run summary.
+exec rhiza run status
+stdout '^- Current step: signoff$'
+stdout '^next: rhiza run summary [0-9A-Z]{26}$'
+stdout '^next: rhiza run approve [0-9A-Z]{26}$'
+
+# The summary, by the latest run and by ref.
+exec rhiza run summary
+cmp stdout $WORK/summary.golden
+exec sh -c 'rhiza run summary $(basename .git/rhiza/runs/*.jsonl .jsonl)'
+cmp stdout $WORK/summary.golden
+exec rhiza run summary --json
+stdout '"run": "[0-9A-Z]{26}"'
+stdout '"change": "[0-9A-Z]{26}"'
+stdout '"markdown": "# Review of run [0-9A-Z]{26}\\n\\nChange set'
+
+# The summary only reads the journal.
+exec sh -c 'wc -l < $(ls .git/rhiza/runs/*.jsonl)'
+cp stdout $WORK/lines
+exec rhiza run summary
+exec sh -c 'wc -l < $(ls .git/rhiza/runs/*.jsonl)'
+cmp stdout $WORK/lines
+
+fold-ok
+
+-- summary.golden --
+# Review of run 01M5PWGKBGYFZMTH8Y8AF1G8GN
+
+Change set 01M5PWGEF85Y185JZ2ZGCNH40N: Sum me up. Workflow review; the run waits at step signoff for the owner's sign-off.
+
+## Code check
+
+None ran.
+
+## Checks of step review
+
+### alpha: passed
+
+- cycle 1: passed
+
+Minors and nits, reported, not fixed:
+
+- cycle 1: f1 minor at README.md:3: the intro is wordy
+- cycle 1: f2 nit at README.md:1: typo
+
+### beta: passed
+
+- cycle 1: failed: confirmed f1 (major)
+- cycle 2: passed
+
+Confirmed:
+
+- cycle 1: f1 major at thing.txt:1 on thing: says too little — confirmed: reproduced
+
+Dropped by the critic:
+
+- cycle 1: f2 major at main.go:7: may panic — dropped: the caller guards it
+
+Minors and nits, reported, not fixed:
+
+- cycle 1: f3 minor at thing.txt:2 on thing: no example
+
+Fix cycles:
+
+- cycle 2: re-runs beta
+  - leaf thing: fixer pass, commit f60150d249cc; verifier pass, commit b8179e88e08c
+
+## Sign-off
+
+- signoff (visit 1): waiting for the owner: rhiza run approve 01M5PWGKBGYFZMTH8Y8AF1G8GN, or rhiza run request-changes <file> 01M5PWGKBGYFZMTH8Y8AF1G8GN
+-- alpha.json --
+{"findings":[{"severity":"minor","place":"README.md:3","reason":"the intro is wordy"},{"severity":"nit","place":"README.md:1","reason":"typo"}]}
+-- beta.json --
+{"findings":[{"severity":"major","leaf":"thing","place":"thing.txt:1","reason":"says too little"},{"severity":"major","place":"main.go:7","reason":"may panic"},{"severity":"minor","leaf":"thing","place":"thing.txt:2","reason":"no example"}]}
+-- verdict.json --
+{"verdicts":[{"finding":"f1","verdict":"confirmed","reason":"reproduced"},{"finding":"f2","verdict":"dropped","reason":"the caller guards it"}]}
+-- empty-round.json --
+{"findings":[]}
+-- review.toml --
+[step.review]
+kind = "checks"
+interval = "50ms"
+on.pass = "signoff"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[[step.review.check]]
+name = "beta"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+
+[step.signoff]
+kind = "signoff"
+on.pass = "done"
+on.changes = "review"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+echo "role=$RHIZA_ROLE check=$RHIZA_CHECK cycle=$RHIZA_CYCLE leaf=$RHIZA_LEAF" >> "$WORK/claude.log"
+case "$RHIZA_ROLE/$RHIZA_CHECK/$RHIZA_CYCLE" in
+check/alpha/1)
+	rhiza run findings --check alpha "$WORK/alpha.json" >&2 || exit 1
+	;;
+check/beta/1)
+	rhiza run findings --check beta "$WORK/beta.json" >&2 || exit 1
+	;;
+check/*)
+	rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty-round.json" >&2 || exit 1
+	;;
+critic/*)
+	rhiza run verdict --check "$RHIZA_CHECK" "$WORK/verdict.json" >&2 || exit 1
+	;;
+fixer/*)
+	echo more > "$RHIZA_LEAF.txt"
+	git add "$RHIZA_LEAF.txt"
+	git commit -q -m "fix $RHIZA_LEAF" -m "Leaf: $RHIZA_LEAF" -- "$RHIZA_LEAF.txt" || exit 1
+	;;
+verifier/*)
+	rhiza add evidence "$RHIZA_LEAF-ok" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link "$RHIZA_LEAF-ok" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+	;;
+esac
+exit 0

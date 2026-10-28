@@ -105,6 +105,9 @@ type LeafSpec struct {
 	// fresh cycle past the cap), the Decisions answering the questions
 	// the capped cycle raised, their statements read anew; nil otherwise.
 	Answers []ReviewAnswer
+	// Owner is true in a checks step's owner cycle: the findings are the
+	// owner's request for changes, not ones a review cycle confirmed.
+	Owner bool
 }
 
 // The environment variables a leaf session gets beyond a step's.
@@ -454,6 +457,7 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 	}
 	if step.Kind == workflow.KindChecks {
 		spec.Cycle, spec.Findings = a.attempt, a.findings
+		spec.Owner = r.j.State().OwnerCycle(step.Name, a.attempt)
 		spec.Env = append(spec.Env, EnvCycle+"="+strconv.Itoa(a.attempt))
 		if a.role == workflow.RoleFixer {
 			answers, err := r.cycleAnswers(lr, step, a.attempt)

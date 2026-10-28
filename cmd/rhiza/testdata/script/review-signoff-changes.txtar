@@ -1,10 +1,11 @@
 # rhiza run request-changes on a review waiting at its sign-off after its
 # checks used the cap: the owner's finding on leaf thing counts as
 # confirmed, so the checks step, re-entered, runs one owner cycle outside
-# the cap: the fixer for thing, told the finding, commits its fix; the
-# leaf's verifier records Evidence as its own actor; then only the named
-# check re-runs, passes, and the run waits at the sign-off again. Once
-# another visit would pass max_visits, request-changes exits 2.
+# the cap: the fixer for thing, told the owner requested the change,
+# commits its fix; the leaf's verifier records Evidence as its own actor;
+# then only the named check re-runs, passes, and the run waits at the
+# sign-off again. Once another visit would pass max_visits,
+# request-changes exits 2.
 #
 # The fake rex runs the tab's command synchronously in the window's
 # directory. The fake claude fails as check alpha in cycles 1 and 2 and
@@ -120,7 +121,7 @@ echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
 #!/bin/sh
 for a; do last=$a; done
 found=
-case "$last" in *"say more"*) found=yes ;; esac
+case "$last" in *"The owner requested these changes on leaf thing:"*"say more"*) found=yes ;; esac
 echo "role=$RHIZA_ROLE check=$RHIZA_CHECK cycle=$RHIZA_CYCLE leaf=$RHIZA_LEAF findings=$found" | sed 's/ findings=$//' >> "$WORK/claude.log"
 case "$RHIZA_ROLE" in
 check)
