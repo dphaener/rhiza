@@ -1,8 +1,8 @@
 # run start with no --workflow runs the built-in ship-change workflow end
 # to end on a change set of two leaves, the second depending on the first:
 # build's builders and verifiers, then the repo's review (the built-in
-# one without its code step, its sign-off skipped), then the pull request opened with the review's summary as its
-# body. The run waits for CI, then stops at its sign-off until `rhiza run
+# one without its code step, its sign-off skipped), then the pull request
+# opened with the review's summary as its body. The run waits for CI, then stops at its sign-off until `rhiza run
 # approve`. After that it finds main has not moved (nothing to rebase),
 # lands the change set on the PR branch with the PR recorded as Evidence,
 # waits for CI on that head, finds main still has not moved, squash merges
@@ -15,8 +15,8 @@
 # directory. The fake claude logs its role and leaf; as a builder it
 # commits with the change set, its actor and its leaf as trailers, as a
 # verifier it writes the leaf's Evidence, and as a check it records an
-# empty round. The fake gh logs its argv to gh.log and answers from the
-# bare origin: the PR (#7), once created, is open with every check passed
+# empty round. The fake gh logs its argv to gh.log, keeps the body a PR is
+# created with in pr-body.md, and answers from the bare origin: the PR (#7), once created, is open with every check passed
 # at the branch's current head on origin; a merge squashes the branch onto
 # main in origin (refusing any head but the branch's); the merged PR names
 # that squash commit; and CI on it has passed, which it notes in order.log
@@ -74,6 +74,11 @@ stdout '^- Current step: signoff$'
 exec sh -c 'grep -c "^pr create" $WORK/gh.log'
 stdout '^1$'
 grep '^pr create .*--title Ship it' $WORK/gh.log
+grep '^# Review of run ' $WORK/pr-body.md
+grep '^Change set 01M5PWGEF85Y185JZ2ZGCNH40N: Ship it\. Workflow ship-change' $WORK/pr-body.md
+grep '^## Checks of step review/review$' $WORK/pr-body.md
+grep '^### alpha' $WORK/pr-body.md
+grep '^### beta' $WORK/pr-body.md
 ! grep '^pr merge' $WORK/gh.log
 exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
 stdout '^- State: accepted'
@@ -255,6 +260,12 @@ case "$1 $2" in
 	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"},{"context":"lint","state":"SUCCESS"}]}\n' "$head"
 	;;
 "pr create")
+	while [ $# -gt 0 ]; do
+		if [ "$1" = --body-file ]; then
+			cp "$2" "$WORK/pr-body.md"
+		fi
+		shift
+	done
 	touch "$WORK/pr.created"
 	;;
 "pr edit")

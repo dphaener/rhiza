@@ -382,7 +382,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 			t.Errorf("step %s waits for ship check --pr-open", name)
 		}
 	}
-	if string(data) != "" && strings.Contains(string(data), "shipit") {
+	if strings.Contains(string(data), "shipit") {
 		t.Error("ship-change.toml mentions shipit")
 	}
 	for _, inner := range []string{"build", "review"} {

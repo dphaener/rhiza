@@ -9,15 +9,17 @@
 # rendering again; the run pushes the rebased head with a lease, waits for
 # CI on it and merges it.
 #
-# Case 2: main moves while the agent builds, with a commit that adds the
-# same file the agent adds. That conflict is not a rendered one: the
+# Case 2: main moves while the builder builds, with a commit that adds the
+# same file the builder adds. That conflict is not a rendered one: the
 # rebase is aborted, the step and the run fail, and a question in the
 # change set names the file.
 #
-# The fakes are run-ship-change.txtar's, except that gh finds origin from
-# the checkout it runs in, and moves main at a set point: case 1's gh
-# pushes a prepared commit to origin's main the first time it sees the
-# land commit as the PR's head; case 2's agent pushes one while it builds.
+# The fakes and the repo's review are run-ship-change.txtar's, except that
+# the builder commits feature.txt, gh finds origin from the checkout it runs
+# in, and main moves at a set point: case 1's gh pushes a prepared commit to
+# origin's main the first time it sees the land commit as the PR's head;
+# case 2's builder pushes one while it builds. Each run stops at its
+# sign-off, and the owner approves it.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -31,6 +33,8 @@ cd repo
 exec git init -q
 exec git remote add origin $WORK/origin.git
 exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
 exec rhiza change new 'Ship it' --title 'Ship it' --json
 stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
 exec rhiza add capability shipping --field 'statement=Ships a change set'
@@ -59,7 +63,10 @@ env RHIZA_TEST_SEED=1
 cd $WORK/repo
 exec touch $WORK/move-main
 
-exec sh -c 'rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual; echo exit=$?'
+exec sh -c 'rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+stdout '"signoff_waiting": true'
+stdout '^exit=0$'
+exec sh -c 'rhiza run approve; echo exit=$?'
 stdout '^exit=0$'
 stdout '^Run \S+ succeeded$'
 # Main had not moved before the land; it had before the merge, and the
@@ -102,13 +109,8 @@ exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
 stdout '^- State: landed'
 fold-ok
 
-# Release case 1's agent once its tab is closed, and reset the markers.
-exec sh -c 'i=0; until [ -f "$WORK/claude.done" ]; do i=$((i+1)); [ $i -gt 400 ] && exit 1; sleep 0.025; done; cat "$WORK/claude.done"'
-stdout '^tab closed$'
-rm $WORK/claude.idle
-rm $WORK/claude.done
-rm $WORK/tab.closed
 rm $WORK/gh.log
+rm $WORK/pr.created
 
 # Case 2: a code conflict.
 cd $WORK
@@ -118,6 +120,8 @@ cd repo2
 exec git init -q
 exec git remote add origin $WORK/origin2.git
 exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
 exec rhiza change new 'Ship two' --title 'Ship two' --json
 stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
 exec rhiza add capability shipping --field 'statement=Ships a change set'
@@ -127,7 +131,7 @@ exec git add -A
 exec git commit -qm 'Start shipping'
 exec git push -q -u origin main
 
-# main gets its own feature.txt; the agent pushes it while it builds.
+# main gets its own feature.txt; the builder pushes it while it builds.
 exec git clone -q $WORK/origin2.git $WORK/other2
 cd $WORK/other2
 exec sh -c 'echo theirs > feature.txt'
@@ -135,7 +139,9 @@ exec git add feature.txt
 exec git commit -qm 'Add a feature on main'
 cd $WORK/repo2
 
-! exec rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
+exec rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json
+stdout '"signoff_waiting": true'
+! exec rhiza run approve
 stdout '^Run \S+ failed$'
 stdout '^- Detail: step "rebase" ended with outcome "fail"$'
 stderr '^Rebasing cs/ship-two onto origin/main at [0-9a-f]{7} conflicts in:$'
@@ -147,7 +153,7 @@ stdout '^- rebase \(visit 1\): fail, then end: exit 1$'
 ! stdout '^- land '
 ! grep '^pr merge' $WORK/gh.log
 
-# The branch is as the agent left it, plus the question's commit, which is
+# The branch is as open-pr pushed it, plus the question's commit, which is
 # not pushed; no rebase is left in progress.
 cd $WORK/repo2.ship-two
 exec git status
@@ -167,18 +173,39 @@ stdout 'feature\.txt'
 stdout 'cs/ship-two onto origin/main'
 fold-ok
 
-# Release case 2's agent.
-exec touch $WORK/tab.closed
-exec sh -c 'i=0; until [ -f "$WORK/claude.done" ]; do i=$((i+1)); [ $i -gt 400 ] && exit 1; sleep 0.025; done; cat "$WORK/claude.done"'
-stdout '^tab closed$'
+-- review.toml --
+# The repo's own review, as the built-in one but with no code step: the
+# sessions here register actors that the repo has not rendered.
+[step.review]
+kind = "checks"
+interval = "50ms"
+max_visits = 3
+on.pass = "signoff"
 
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[[step.review.check]]
+name = "beta"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+
+[step.signoff]
+kind = "signoff"
+max_visits = 3
+on.pass = "done"
+on.changes = "review"
 -- bin/rex --
 #!/bin/sh
-echo "$@" >> "$WORK/rex.log"
-if [ "$1 $2" = "window close" ]; then
-	touch "$WORK/tab.closed"
-	exit 0
-fi
 dir=
 while [ $# -gt 0 ]; do
 	if [ "$1" = -c ]; then
@@ -186,51 +213,35 @@ while [ $# -gt 0 ]; do
 	fi
 	if [ "$1" = -- ]; then
 		shift
-		(cd "$dir" && exec "$@") >"$WORK/tab.out" 2>&1 </dev/null &
+		(cd "$dir" && "$@") >&2 || true
 		break
 	fi
 	shift
 done
-i=0
-until [ -f "$WORK/claude.idle" ]; do
-	i=$((i + 1))
-	if [ $i -gt 800 ]; then
-		echo 'fake rex: the agent never went idle' >&2
-		exit 1
-	fi
-	sleep 0.025
-done
 echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
 -- bin/claude --
 #!/bin/sh
-sid=
-while [ $# -gt 0 ]; do
-	if [ "$1" = --session-id ]; then
-		sid=$2
+case "$RHIZA_ROLE" in
+builder)
+	echo built > feature.txt
+	git add feature.txt
+	git commit -q -m "build $RHIZA_LEAF" -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR
+Leaf: $RHIZA_LEAF" -- feature.txt || exit 1
+	if [ -d "$WORK/other2" ]; then
+		git -C "$WORK/other2" push -q origin HEAD:main || exit 1
 	fi
-	shift
-done
-echo built > feature.txt
-git add feature.txt
-git commit -qm 'Build the feature'
-git push -q -u origin HEAD
-if [ -d "$WORK/other2" ]; then
-	git -C "$WORK/other2" push -q origin HEAD:main || exit 6
-fi
-echo '{"session_id":"'$sid'","hook_event_name":"Stop"}' | rhiza session hook Stop >> "$WORK/hook.out" || exit 8
-rhiza session done >> "$WORK/done.out" || exit 7
-touch "$WORK/claude.idle"
-i=0
-until [ -f "$WORK/tab.closed" ]; do
-	i=$((i + 1))
-	if [ $i -gt 2400 ]; then
-		echo 'timed out' > "$WORK/claude.done"
-		exit 9
-	fi
-	sleep 0.025
-done
-echo 'tab closed' > "$WORK/claude.done"
-exit 129
+	;;
+verifier)
+	rhiza add evidence "$RHIZA_LEAF-verified" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link "$RHIZA_LEAF-verified" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+	;;
+check)
+	echo '{"findings":[]}' > "$WORK/empty-round.json"
+	rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty-round.json" >&2 || exit 1
+	;;
+esac
+exit 0
 -- bin/gh --
 #!/bin/sh
 echo "$@" >> "$WORK/gh.log"
@@ -241,7 +252,7 @@ case "$1 $2" in
 		printf '{"mergeCommit":{"oid":"%s"},"state":"MERGED"}\n' "$(cat "$WORK/merge.sha")"
 		exit 0
 	fi
-	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3"); then
+	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3") || [ ! -f "$WORK/pr.created" ]; then
 		echo "no pull requests found for branch \"$3\"" >&2
 		exit 1
 	fi
@@ -254,6 +265,11 @@ case "$1 $2" in
 	fi
 	echo "$head" > "$WORK/landed.sha"
 	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"},{"context":"lint","state":"SUCCESS"}]}\n' "$head"
+	;;
+"pr create")
+	touch "$WORK/pr.created"
+	;;
+"pr edit")
 	;;
 "pr merge")
 	head=$(git -C "$o" rev-parse refs/heads/cs/ship-it)
