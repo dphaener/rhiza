@@ -1,0 +1,40 @@
+{
+  "actor": "01M608V1KXGCR4QBF7D2RS3GDV",
+  "after": [
+    "01M608S2R7HZT8YZCCVG9SA1RN"
+  ],
+  "at": "2026-10-28T03:33:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At bc5ec2b, ran go test ./internal/api -run TestShipOpenPR -count=1 -v: TestShipOpenPR and TestShipOpenPRRefusals pass. With a bare git origin and a fake gh, the first call pushes cs/ship-it (origin head == HEAD) and makes exactly one pr create titled 'Ship it' (the change set's title) with a body starting '# Review of run R1' holding '### alpha: passed'; after a new commit and journal entry, the second call pushes the new head, edits PR #7's body (now holding 'step code: pass') and makes no second create; the ship state file records PR 7, URL, branch and pushed head; ship.check with pr_open then reads PR 7 and passes. With no review journaled the call exits 2 naming 'no review journaled', and with RHIZA_RUN unset exits 2 naming RHIZA_RUN, with no gh call and no branch on origin. The built CLI's 'rhiza ship open-pr' outside a run also exits 2 naming RHIZA_RUN. make test passes across all packages; fmt-check and vet pass; rhiza check on a clean clone at the commit with a clean env reports ok (the in-session self-check failures name only actors from this verifier session's env, not the commit). Read the diff: ship_openpr.go, its tests, describe-golden and rendered actor files."
+        },
+        "handle": "ship-open-pr-verified",
+        "id": "01M6093X354JKP7XW41AEWXN0R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6093X354JKP7XW41A8ACTG7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6093X354JKP7XW41A8ACTG7",
+        "id": "01M6093X9JZZPPC4PS4P5K3G62",
+        "link": "01M6093X9JZZPPC4PS4JNWWVYB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XR9JBAHCDW9FXRCVJRFW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6093XKPXTF1XGB4T106HJ5B",
+  "type": "ops",
+  "v": 1
+}
