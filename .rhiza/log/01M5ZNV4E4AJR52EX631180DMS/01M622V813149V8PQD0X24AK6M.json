@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M61S7NBD8V7NT5NB5P5WH4YC"
+  ],
+  "at": "2026-10-28T20:22:25Z",
+  "body": {
+    "reason": "The owner: \"accept them and ship\" (answering the orchestrator asking to accept milestone 4's three planned change sets, after the plan in PR #48).",
+    "rule": "owner"
+  },
+  "change_set": "01M5ZNV4E4AJR52EX631180DMS",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M622V813149V8PQD0X24AK6M",
+  "type": "accept",
+  "v": 1
+}
