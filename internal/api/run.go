@@ -406,7 +406,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	started := run.Started{
-		Workflow: def.Name, WorkflowPath: path, Definition: string(data),
+		Workflow: def.Name, WorkflowPath: path, Definition: string(data), Includes: def.Includes,
 		Change: t.cs.String(), Title: t.title, Worktree: t.worktree, Branch: t.branch,
 		PermissionMode: r.PermissionMode, Agent: r.Agent, Autonomous: r.Autonomous,
 	}
@@ -468,7 +468,7 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 	if rs.Live(j.ID) {
 		return nil, Conflictf("run %s is running in another process", j.ID).WithNext("rhiza run status " + j.ID)
 	}
-	def, err := workflow.Parse(st.Workflow, []byte(st.Definition))
+	def, err := st.ParseDefinition()
 	if err != nil {
 		return nil, Errorf("run %s: its workflow no longer parses: %v", j.ID, err)
 	}
@@ -641,23 +641,42 @@ func resolveWorkflow(root, ref string) (string, *workflow.Definition, []byte, er
 				return "", nil, nil, Usagef("no workflow %q: %s does not exist and there is no built-in of that name (built-in: %s)",
 					ref, path, strings.Join(workflow.BuiltinNames(), ", ")).WithNext(runStartNext)
 			}
-			def, err := workflow.Parse(ref, data)
+			def, err := workflow.ParseWith(ref, data, workflowResolver(root))
 			if err != nil {
 				return "", nil, nil, Errorf("built-in workflow %s: %v", ref, err)
 			}
 			return builtinPrefix + ref, def, data, nil
 		}
 	}
-	def, data, err := loadWorkflow(path, ref)
+	def, data, err := loadWorkflow(root, path, ref)
 	if err != nil {
 		return "", nil, nil, err
 	}
 	return path, def, data, nil
 }
 
+// workflowResolver resolves the workflow a workflow step names as run
+// start resolves a bare name: the repo's .rhiza/workflows/<name>.toml
+// when that exists, else the built-in of that name.
+func workflowResolver(root string) workflow.Resolver {
+	return func(name string) ([]byte, error) {
+		data, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(workflowsDir), name+".toml"))
+		if err == nil {
+			return data, nil
+		}
+		if !errors.Is(err, fs.ErrNotExist) {
+			return nil, err
+		}
+		if data, ok := workflow.Builtin(name); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf("there is no such workflow in %s or built in", workflowsDir)
+	}
+}
+
 // loadWorkflow reads and validates the workflow at path. A missing file
 // and an invalid workflow are usage errors carrying the reason.
-func loadWorkflow(path, ref string) (*workflow.Definition, []byte, error) {
+func loadWorkflow(root, path, ref string) (*workflow.Definition, []byte, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
@@ -666,7 +685,7 @@ func loadWorkflow(path, ref string) (*workflow.Definition, []byte, error) {
 		return nil, nil, Usagef("workflow %q: %v", ref, err).WithNext(runStartNext)
 	}
 	name := strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
-	def, err := workflow.Parse(name, data)
+	def, err := workflow.ParseWith(name, data, workflowResolver(root))
 	if err != nil {
 		return nil, nil, Usagef("workflow %s: %v", path, err).WithNext(runStartNext)
 	}

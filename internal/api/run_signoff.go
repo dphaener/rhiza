@@ -126,7 +126,7 @@ func openSignoffRun(ctx *Ctx, cmd, ref string) (signoffRun, error) {
 	if rs.Live(j.ID) {
 		return signoffRun{}, Usagef("%s works on a review run waiting at its sign-off, and run %s is running in another process", cmd, j.ID).WithNext("rhiza run status " + j.ID)
 	}
-	def, err := workflow.Parse(st.Workflow, []byte(st.Definition))
+	def, err := st.ParseDefinition()
 	if err != nil {
 		return signoffRun{}, Errorf("run %s: its workflow no longer parses: %v", j.ID, err)
 	}

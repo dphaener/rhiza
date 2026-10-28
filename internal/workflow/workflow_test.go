@@ -1,6 +1,7 @@
 package workflow
 
 import (
+	"fmt"
 	"path/filepath"
 	"reflect"
 	"slices"
@@ -49,7 +50,7 @@ func TestLoadRefused(t *testing.T) {
 		file string
 		want []string
 	}{
-		{"unknown-kind.toml", []string{`step "repeat": unknown kind "loop": want agent, wait, command, arbiter, leaves, checks or signoff`}},
+		{"unknown-kind.toml", []string{`step "repeat": unknown kind "loop": want agent, wait, command, arbiter, leaves, checks, signoff or workflow`}},
 		{"missing-target.toml", []string{`step "build": on.pass names "nope", which is not a step; want a step or done or failed`}},
 		{"bad-outcome.toml", []string{`step "build": on.sucess: a command step has no outcome "sucess"; want on.pass or on.fail`}},
 	}
@@ -147,11 +148,17 @@ func TestParseErrors(t *testing.T) {
 		want string
 	}{
 		{"unknown kind", "[step.x]\nkind = \"loop\"\n",
-			`step "x": unknown kind "loop": want agent, wait, command, arbiter, leaves, checks or signoff`},
-		{"workflow kind is later", "[step.x]\nkind = \"workflow\"\n",
-			`step "x": unknown kind "workflow"`},
+			`step "x": unknown kind "loop": want agent, wait, command, arbiter, leaves, checks, signoff or workflow`},
+		{"workflow without workflow", "[step.x]\nkind = \"workflow\"\n",
+			`step "x": a workflow step needs workflow =`},
+		{"workflow on command", cmd + "workflow = \"b\"\n",
+			`step "a": workflow is only for workflow steps`},
+		{"skip on command", cmd + "skip = [\"b\"]\n",
+			`step "a": skip is only for workflow steps`},
+		{"workflow without resolver", "[step.x]\nkind = \"workflow\"\nworkflow = \"b\"\n",
+			`step "x": workflow "b" cannot be resolved here`},
 		{"no kind", "[step.x]\nrun = \"true\"\n",
-			`step "x": no kind: want agent, wait, command, arbiter, leaves, checks or signoff`},
+			`step "x": no kind: want agent, wait, command, arbiter, leaves, checks, signoff or workflow`},
 		{"missing target", cmd + "on.pass = \"nope\"\n",
 			`step "a": on.pass names "nope", which is not a step; want a step or done or failed`},
 		{"unknown step key", cmd + "retries = 2\n",
@@ -1185,5 +1192,134 @@ func TestReviewBuiltin(t *testing.T) {
 		if next != tt.next || end != tt.end {
 			t.Errorf("Next(%q, %q) = (%q, %v); want (%q, %v)", tt.step, tt.outcome, next, end, tt.next, tt.end)
 		}
+	}
+}
+
+func mapResolver(files map[string]string) Resolver {
+	return func(name string) ([]byte, error) {
+		src, ok := files[name]
+		if !ok {
+			return nil, fmt.Errorf("no workflow %q", name)
+		}
+		return []byte(src), nil
+	}
+}
+
+const innerThree = `
+[step.one]
+kind = "command"
+run = "true"
+on.pass = "two"
+[step.two]
+kind = "command"
+run = "true"
+on.pass = "three"
+[step.three]
+kind = "command"
+run = "true"
+`
+
+func TestWorkflowStepErrors(t *testing.T) {
+	outer := func(extra string) string {
+		return "[step.w]\nkind = \"workflow\"\nworkflow = \"inner\"\n" + extra
+	}
+	tests := []struct {
+		name, src string
+		files     map[string]string
+		want      string
+	}{
+		{"unknown", outer(""), map[string]string{}, `step "w": workflow "inner": no workflow "inner"`},
+		{"skip lacks", outer("skip = [\"nope\"]\n"), map[string]string{"inner": innerThree}, `skip names "nope", which workflow "inner" does not have`},
+		{"self", outer(""), map[string]string{"inner": "[step.w]\nkind = \"workflow\"\nworkflow = \"test\"\n", "test": ""}, `includes itself: test -> inner -> test`},
+		{"directly", outer(""), map[string]string{"inner": "[step.w]\nkind = \"workflow\"\nworkflow = \"inner\"\n"}, `includes itself: inner -> inner`},
+		{"bad name", "[step.w]\nkind = \"workflow\"\nworkflow = \"a/b\"\n", nil, `want a workflow's name`},
+		{"with run", outer("run = \"x\"\n"), nil, `a workflow step cannot have run`},
+		{"bad outcome", outer("on.timeout = \"done\"\n"), map[string]string{"inner": innerThree}, `has no outcome "timeout"`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := ParseWith("test", []byte(tt.src), mapResolver(tt.files))
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Errorf("error %v, want one containing %q", err, tt.want)
+			}
+		})
+	}
+}
+
+func TestWorkflowStepExpands(t *testing.T) {
+	src := `
+[step.pre]
+kind = "command"
+run = "true"
+on.pass = "w"
+[step.w]
+kind = "workflow"
+workflow = "inner"
+skip = ["two"]
+on.pass = "post"
+on.fail = "cleanup"
+[step.post]
+kind = "command"
+run = "true"
+[step.cleanup]
+kind = "command"
+run = "true"
+`
+	d, err := ParseWith("test", []byte(src), mapResolver(map[string]string{"inner": innerThree}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := strings.Join(d.Order, ","), "pre,inner/one,inner/three,post,cleanup"; got != want {
+		t.Errorf("order %s, want %s", got, want)
+	}
+	for step, want := range map[string]string{"pre": "inner/one", "inner/one": "inner/three", "inner/three": "post"} {
+		if next, _ := d.Next(step, OutcomePass); next != want {
+			t.Errorf("%s on pass goes to %q, want %q", step, next, want)
+		}
+	}
+	if next, _ := d.Next("inner/one", OutcomeFail); next != "cleanup" {
+		t.Errorf("inner/one on fail goes to %q, want cleanup", next)
+	}
+	if _, ok := d.Steps["inner/two"]; ok {
+		t.Error("skipped step inner/two is in the definition")
+	}
+	if _, ok := d.Includes["inner"]; !ok {
+		t.Error("Includes lacks inner")
+	}
+	again, err := ParseWith("test", []byte(src), mapResolver(map[string]string{"inner": d.Includes["inner"]}))
+	if err != nil || strings.Join(again.Order, ",") != strings.Join(d.Order, ",") {
+		t.Errorf("reparse from Includes: %v, %v", again, err)
+	}
+}
+
+func TestWorkflowStepAsLastAndStart(t *testing.T) {
+	src := "[step.w]\nkind = \"workflow\"\nworkflow = \"inner\"\n"
+	d, err := ParseWith("test", []byte(src), mapResolver(map[string]string{"inner": innerThree}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d.Start != "inner/one" {
+		t.Errorf("start %q, want inner/one", d.Start)
+	}
+	if _, end := d.Next("inner/three", OutcomePass); end != EndSucceeded {
+		t.Errorf("last inner step on pass ends %v, want succeeded", end)
+	}
+	if _, end := d.Next("inner/one", OutcomeFail); end != EndFailed {
+		t.Errorf("inner step on fail ends %v, want failed", end)
+	}
+}
+
+func TestWorkflowStepNested(t *testing.T) {
+	files := map[string]string{
+		"mid":   "[step.m]\nkind = \"workflow\"\nworkflow = \"inner\"\non.pass = \"tail\"\n[step.tail]\nkind = \"command\"\nrun = \"true\"\n",
+		"inner": innerThree,
+	}
+	src := "[step.w]\nkind = \"workflow\"\nworkflow = \"mid\"\nskip = [\"m\"]\n"
+	d, err := ParseWith("test", []byte(src), mapResolver(files))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.Join(d.Order, ","); got != "mid/tail" {
+		t.Errorf("skipping the nested workflow step leaves %s, want mid/tail", got)
 	}
 }
