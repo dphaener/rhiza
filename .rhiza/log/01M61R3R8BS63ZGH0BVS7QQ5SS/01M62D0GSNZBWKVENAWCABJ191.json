@@ -1,0 +1,155 @@
+{
+  "actor": "01M62CEXZF9NKPJGKV9J9P9W8V",
+  "after": [
+    "01M62CED59GPVG9QZBY8HH39DJ"
+  ],
+  "at": "2026-10-28T23:20:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3 with the built binary (359e3c1) in a scratch repo, with a fake rex that logs every call and runs only the daemon's own `rhiza run start|resume` tab command (agent tabs only logged): a daemon held the lock; `rhiza daemon --once` from the repo's run worktree (repo.built) exited 2 with 'another daemon holds the lock: process Mac.localdomain:88034'; after kill -9 of a running daemon, status said not running and a new `rhiza daemon --once` took the lock and ran."
+        },
+        "handle": "daemon-lock-qa-3",
+        "id": "01M62D0DYBFS1PH4F35JTJY1AM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62D0DYBFS1PH4F35EX42QKF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62D0DYBFS1PH4F35EX42QKF",
+        "id": "01M62D0E5G34D44V0QPK96J1KY",
+        "link": "01M62D0E5G34D44V0QPH9RYB7H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7J7KWQ20F4X22KTJ924R",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3 with the built binary (359e3c1) in a scratch repo, with a fake rex that logs every call and runs only the daemon's own `rhiza run start|resume` tab command (agent tabs only logged): one accepted milestone change set with a leaf was started once (one 'run start <id>' tab); a change set whose run start failed before journaling (its worktree path blocked: exit 3) got exactly one tab over an 85s daemon, and daemon status listed it under 'Not journaled' in text and --json; with a run of A live and an interrupted one, the next accepted change set was still started (interrupted takes no slot)."
+        },
+        "handle": "daemon-picks-qa-3",
+        "id": "01M62D0ECTGRQGTMDSPE2GYFHQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62D0ECTGRQGTMDSPDJ2MYRE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62D0ECTGRQGTMDSPDJ2MYRE",
+        "id": "01M62D0EKYG0PEY400V4GXEWZB",
+        "link": "01M62D0EKYG0PEY400V2QBDZWQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3 with the built binary (359e3c1) in a scratch repo, with a fake rex that logs every call and runs only the daemon's own `rhiza run start|resume` tab command (agent tabs only logged): `rhiza daemon --once` without --permission-mode exited 2 before any tab; with --permission-mode manual the tab ran '<rhiza> run start <cs id> --permission-mode manual', which passed run start, journaled and reached build/build; with --autonomous the command was 'run start 01M62CZE11ZQDW7E1N866YV325 --permission-mode manual --autonomous'."
+        },
+        "handle": "daemon-run-tabs-qa-3",
+        "id": "01M62D0EV4F0QX6YKWZSJDPCAP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62D0EV4F0QX6YKWZS55ATKP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62D0EV4F0QX6YKWZS55ATKP",
+        "id": "01M62D0F2WJG3VDG03N3434014",
+        "link": "01M62D0F2WJG3VDG03N1QZ5TK4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7M41QVVEDQ5GWRXE7D7M",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3 with the built binary (359e3c1) in a scratch repo, with a fake rex that logs every call and runs only the daemon's own `rhiza run start|resume` tab command (agent tabs only logged): killed a daemon-started run with kill -9; the next `rhiza daemon --once` opened one tab running 'run resume <run>', journaled daemon-resumed and the run continued build/build; a poll while it ran opened no tab; after killing it again a poll opened no tab, daemon-resumed stayed at 1, and `rhiza run start` refused the change set naming the live run."
+        },
+        "handle": "daemon-resume-once-qa-3",
+        "id": "01M62D0FACXQA0ERW6NZDCDN7K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62D0FACXQA0ERW6NWVVAGND",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62D0FACXQA0ERW6NWVVAGND",
+        "id": "01M62D0FHKXYKM5GJSJP5EFG1M",
+        "link": "01M62D0FHKXYKM5GJSJMT6QTX8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7MP3HGEB60GJV4M3CWQA",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3 with the built binary (359e3c1) in a scratch repo, with a fake rex that logs every call and runs only the daemon's own `rhiza run start|resume` tab command (agent tabs only logged): `rhiza daemon status` said 'Daemon not running' before any daemon; while one ran it named its process; after runs it listed Live runs (interrupted / running with change sets), Last started, Last resumed and Not journaled, and --json carried the same fields; after kill -9 of the daemon it said not running."
+        },
+        "handle": "daemon-status-qa-3",
+        "id": "01M62D0FRSDPF1ZR9A7N8AGKV1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62D0FRSDPF1ZR9A7K2WHPHK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62D0FRSDPF1ZR9A7K2WHPHK",
+        "id": "01M62D0FZXMGSAXT7N01RFW49Y",
+        "link": "01M62D0FZXMGSAXT7MZYTZD7FH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7NEEK19RP2QEHFRQ6W8S",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3 with the built binary (359e3c1) in a scratch repo, with a fake rex that logs every call and runs only the daemon's own `rhiza run start|resume` tab command (agent tabs only logged): the run journal of a started run had a process entry with host Mac.localdomain and pid 81153, the resumed run another with pid 86523; with each pid killed the daemon and daemon status reported the run interrupted, and with it alive running."
+        },
+        "handle": "run-process-record-qa-3",
+        "id": "01M62D0G74JZGAWKDH6PTGGHGW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62D0G74JZGAWKDH6NMWQ2FP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62D0G74JZGAWKDH6NMWQ2FP",
+        "id": "01M62D0GEG49BWDPJSHTZAAQ9P",
+        "link": "01M62D0GEG49BWDPJSHRDVFE4F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7JKQRF2SBF071J10XKRM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61R3R8BS63ZGH0BVS7QQ5SS",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M62D0GSNZBWKVENAWCABJ191",
+  "type": "ops",
+  "v": 1
+}
