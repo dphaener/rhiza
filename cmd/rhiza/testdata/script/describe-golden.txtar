@@ -2687,6 +2687,191 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "run.code-check",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "causes": {
+            "description": "Why it failed, one cause per line: each failure rhiza check found, then each leaf lacking Evidence by a verifier; empty when it passed",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "change": {
+            "description": "The run's change set",
+            "type": "string"
+          },
+          "check": {
+            "additionalProperties": false,
+            "description": "rhiza check's report on the run's worktree",
+            "properties": {
+              "base": {
+                "description": "The git revision the append-only rule compared against; empty when it was skipped",
+                "type": "string"
+              },
+              "findings": {
+                "description": "Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, render, append-only), then path and IDs",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "change_set": {
+                      "description": "The change set's ID",
+                      "type": "string"
+                    },
+                    "entry": {
+                      "description": "The entry's ID",
+                      "type": "string"
+                    },
+                    "link": {
+                      "description": "The link's ID",
+                      "type": "string"
+                    },
+                    "message": {
+                      "description": "What is wrong",
+                      "type": "string"
+                    },
+                    "next": {
+                      "description": "A command that would help",
+                      "type": "string"
+                    },
+                    "op": {
+                      "description": "The operation's ID",
+                      "type": "string"
+                    },
+                    "path": {
+                      "description": "The file, relative to the project root",
+                      "type": "string"
+                    },
+                    "rule": {
+                      "description": "The rule that found it",
+                      "enum": [
+                        "log",
+                        "fold",
+                        "model",
+                        "in-flight",
+                        "link",
+                        "depends-on",
+                        "evidence-actor",
+                        "render",
+                        "append-only"
+                      ],
+                      "type": "string"
+                    },
+                    "severity": {
+                      "description": "fail makes the check fail; warn does not",
+                      "enum": [
+                        "fail",
+                        "warn"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "rule",
+                    "severity"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "merge_base_of": {
+                "description": "The ref whose merge-base with HEAD is the default base; absent with --base",
+                "type": "string"
+              },
+              "ok": {
+                "description": "True when no finding fails",
+                "type": "boolean"
+              },
+              "skipped": {
+                "description": "Why the append-only rule was skipped, if it was",
+                "type": "string"
+              }
+            },
+            "required": [
+              "base",
+              "findings",
+              "ok"
+            ],
+            "type": "object"
+          },
+          "dry_run": {
+            "description": "True if nothing was journalled",
+            "type": "boolean"
+          },
+          "leaves": {
+            "description": "build-check's leaves of the change set, in leaf order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "evidence": {
+                  "description": "The live Evidence that verifies it, by handle (ID when it has none), in link order; empty when none does",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "handle": {
+                  "description": "Its handle",
+                  "type": "string"
+                },
+                "leaf": {
+                  "description": "The leaf capability's ID",
+                  "type": "string"
+                },
+                "ok": {
+                  "description": "True if live Evidence verifies it written by an actor that wrote none of its commits",
+                  "type": "boolean"
+                },
+                "why": {
+                  "description": "Why it is not OK; absent when it is",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "evidence",
+                "handle",
+                "leaf",
+                "ok"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "passed": {
+            "description": "True if rhiza check found no failure and every leaf is OK",
+            "type": "boolean"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          },
+          "step": {
+            "description": "The step the run is at, which the code-check entry names",
+            "type": "string"
+          }
+        },
+        "required": [
+          "causes",
+          "change",
+          "check",
+          "leaves",
+          "passed",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Run rhiza check and build-check on the change set of the run RHIZA_RUN names and journal the outcome as its code check: pass when rhiza check finds no failure and every leaf has Evidence by a verifier, else fail naming each cause",
+      "write": true
+    },
+    {
       "input": {
         "additionalProperties": false,
         "properties": {
@@ -3379,6 +3564,40 @@ cmp stdout describe.golden.json
                     "check",
                     "cycles",
                     "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "code_checks": {
+                "description": "The code checks rhiza run code-check journalled, in order; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it ran, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "A fail's causes, separated by semicolons",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "outcome"
                   ],
                   "type": "object"
                 },
@@ -4735,6 +4954,40 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "code_checks": {
+                "description": "The code checks rhiza run code-check journalled, in order; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it ran, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "A fail's causes, separated by semicolons",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "outcome"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "current": {
                 "description": "The step being run or to run next; empty once the run is finished",
                 "type": "string"
@@ -5912,6 +6165,40 @@ cmp stdout describe.golden.json
                 "check",
                 "cycles",
                 "step"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "code_checks": {
+            "description": "The code checks rhiza run code-check journalled, in order; absent when there were none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "at": {
+                  "description": "When it ran, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "detail": {
+                  "description": "A fail's causes, separated by semicolons",
+                  "type": "string"
+                },
+                "outcome": {
+                  "description": "pass or fail",
+                  "enum": [
+                    "pass",
+                    "fail"
+                  ],
+                  "type": "string"
+                },
+                "step": {
+                  "description": "The step the run was at",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "at",
+                "outcome"
               ],
               "type": "object"
             },

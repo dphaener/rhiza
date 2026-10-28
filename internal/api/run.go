@@ -142,6 +142,16 @@ type RunInfo struct {
 	Leaves     []RunLeaf       `json:"leaves,omitempty" desc:"The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none"`
 	Checks     []RunCheck      `json:"checks,omitempty" desc:"The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none"`
 	Fixes      []RunFix        `json:"fixes,omitempty" desc:"The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none"`
+	CodeChecks []RunCodeCheck  `json:"code_checks,omitempty" desc:"The code checks rhiza run code-check journalled, in order; absent when there were none"`
+}
+
+// RunCodeCheck is one code check: rhiza check and build-check on the
+// run's change set.
+type RunCodeCheck struct {
+	Step    string `json:"step,omitempty" desc:"The step the run was at"`
+	Outcome string `json:"outcome" enum:"pass,fail" desc:"pass or fail"`
+	Detail  string `json:"detail,omitempty" desc:"A fail's causes, separated by semicolons"`
+	At      string `json:"at" desc:"When it ran, RFC 3339 UTC"`
 }
 
 // RunFix is one change-set fixer a checks step ran in a cycle.
@@ -1672,6 +1682,9 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 			Outcome: f.Outcome, Commit: f.Commit, Detail: f.Detail, At: rfc3339(f.At),
 		})
 	}
+	for _, c := range st.CodeChecks {
+		info.CodeChecks = append(info.CodeChecks, RunCodeCheck{Step: c.Step, Outcome: c.Outcome, Detail: c.Detail, At: rfc3339(c.At)})
+	}
 	return info
 }
 
@@ -1888,6 +1901,16 @@ func (r RunInfo) Human(w io.Writer) {
 			}
 			if f.Detail != "" {
 				fmt.Fprintf(w, " (%s)", oneLine(f.Detail))
+			}
+			fmt.Fprintf(w, "\n")
+		}
+	}
+	if len(r.CodeChecks) > 0 {
+		fmt.Fprintf(w, "\n## Code checks\n\n")
+		for _, c := range r.CodeChecks {
+			fmt.Fprintf(w, "- step %s: %s", c.Step, c.Outcome)
+			if c.Detail != "" {
+				fmt.Fprintf(w, " (%s)", oneLine(c.Detail))
 			}
 			fmt.Fprintf(w, "\n")
 		}

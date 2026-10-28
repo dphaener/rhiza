@@ -1,0 +1,132 @@
+# run code-check runs rhiza check and build-check on the run's change set,
+# in the run's worktree, and journals the outcome as a code-check entry.
+# It passes when rhiza check finds no failure and every leaf has Evidence
+# by an actor that wrote none of its commits; otherwise it exits 1 naming
+# each cause: a leaf that lacks such Evidence, or a problem rhiza check
+# reports. With no RHIZA_RUN it is usage. Run as a workflow's command step
+# it passes or fails that step; run status shows the outcome.
+#
+# The run stops at a wait step whose until does not hold, so the leaves'
+# commits and Evidence are made by hand in the run's worktree.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add actor builder --record
+exec rhiza add actor verifier --record
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+exec sh -c 'rhiza change new "Code check" --title "Code check" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/cs'
+grep '^[0-9A-Z]{26}$' $WORK/cs
+exec rhiza add capability alpha --field 'statement=Does alpha'
+exec rhiza add capability beta --field 'statement=Does beta'
+mkdir .rhiza/workflows
+cp $WORK/code.toml .rhiza/workflows/code.toml
+exec git add -A
+exec git commit -qm leaves
+exec rhiza run start --workflow code --no-wait
+stdout '^Run (01[0-9A-Z]{24}) stopped$'
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+
+# No RHIZA_RUN: usage, with a next.
+exec sh -c 'rhiza run code-check --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout 'RHIZA_RUN is not set'
+stdout '"next": "rhiza describe run.code-check"'
+stdout '^exit=2$'
+
+# The builder commits both leaves; the verifier writes Evidence for beta
+# only.
+exec sh -c 'cd $WORK/repo.code-check && echo a > alpha.txt && git add alpha.txt && git commit -qm alpha --trailer "Change: $(cat $WORK/cs)" --trailer "Actor: builder" --trailer "Leaf: alpha"'
+exec sh -c 'cd $WORK/repo.code-check && echo b > beta.txt && git add beta.txt && git commit -qm beta --trailer "Change: $(cat $WORK/cs)" --trailer "Actor: builder" --trailer "Leaf: beta"'
+exec sh -c 'cd $WORK/repo.code-check && RHIZA_ACTOR=verifier rhiza add evidence beta-ok --field "statement=beta works" --field result=PASS --change $(cat $WORK/cs) && RHIZA_ACTOR=verifier rhiza link beta-ok verifies beta --change $(cat $WORK/cs)'
+
+# alpha lacks Evidence: it fails, exit 1, naming alpha and nothing of
+# rhiza check, and journals the failure with its cause.
+exec sh -c 'cd $WORK/repo.code-check && RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check; echo exit=$?'
+stdout '^code-check failed: 1 cause$'
+stdout '^- leaf alpha: no Evidence verifies it$'
+! stdout 'beta'
+! stdout 'rhiza check'
+stdout '^exit=1$'
+exec sh -c 'cd $WORK/repo.code-check && RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check --json; echo exit=$?'
+stdout '"passed": false'
+stdout '"causes": \[\n *"leaf alpha: no Evidence verifies it"\n *\]'
+stdout '"ok": true'
+stdout '^exit=1$'
+exec sh -c 'grep "\"type\":\"code-check\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl | tail -1'
+stdout '"step":"gate","outcome":"fail","detail":"leaf alpha: no Evidence verifies it"'
+
+# alpha gets its Evidence, and the rendered index goes stale: rhiza check
+# reports a problem, and code-check fails naming it, and no leaf.
+exec sh -c 'cd $WORK/repo.code-check && RHIZA_ACTOR=verifier rhiza add evidence alpha-ok --field "statement=alpha works" --field result=PASS --change $(cat $WORK/cs) && RHIZA_ACTOR=verifier rhiza link alpha-ok verifies alpha --change $(cat $WORK/cs)'
+exec sh -c 'cd $WORK/repo.code-check && echo stale >> .rhiza/rendered/index.md'
+exec sh -c 'cd $WORK/repo.code-check && RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check; echo exit=$?'
+stdout '^code-check failed: 1 cause$'
+stdout '^- rhiza check: fail render \.rhiza/rendered/index\.md: differs from what render writes$'
+! stdout 'leaf '
+stdout '^exit=1$'
+exec sh -c 'cd $WORK/repo.code-check && RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check --json; echo exit=$?'
+stdout '"passed": false'
+stdout '"ok": false'
+stdout '"rule": "render"'
+stdout '^exit=1$'
+
+# Both at once: both causes are named.
+exec sh -c 'cd $WORK/repo.code-check && RHIZA_ACTOR=verifier rhiza retire alpha-ok --reason redo --change $(cat $WORK/cs)'
+exec sh -c 'cd $WORK/repo.code-check && RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check; echo exit=$?'
+stdout '^code-check failed: 2 causes$'
+stdout '^- rhiza check: fail render'
+stdout '^- leaf alpha: no Evidence verifies it$'
+stdout '^exit=1$'
+
+# The render is fixed and alpha verified again: from the main checkout it
+# reads the run's worktree, passes and exits 0.
+exec sh -c 'cd $WORK/repo.code-check && git checkout -q .rhiza/rendered/index.md'
+exec sh -c 'cd $WORK/repo.code-check && RHIZA_ACTOR=verifier rhiza add evidence alpha-verified --field "statement=alpha works" --field result=PASS --change $(cat $WORK/cs) && RHIZA_ACTOR=verifier rhiza link alpha-verified verifies alpha --change $(cat $WORK/cs)'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check; echo exit=$?'
+stdout '^code-check passed: rhiza check is ok and 2 leaves have Evidence by a verifier$'
+stdout '^exit=0$'
+
+# --dry-run journals nothing.
+exec sh -c 'grep -c . .git/rhiza/runs/$(cat $WORK/runid).jsonl > $WORK/lines1; RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check --dry-run --json; grep -c . .git/rhiza/runs/$(cat $WORK/runid).jsonl > $WORK/lines2'
+stdout '"dry_run": true'
+cmp $WORK/lines1 $WORK/lines2
+
+# As the run's command step it passes, so the run succeeds; the journal
+# has the step's code check, and run status shows it.
+exec sh -c 'touch $WORK/go && rhiza run resume $(cat $WORK/runid) --json'
+stdout '"state": "succeeded"'
+exec sh -c 'grep "\"type\":\"code-check\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl | tail -1'
+stdout '"step":"code","outcome":"pass"'
+exec rhiza run status
+stdout '^- code \(visit 1\): pass, then end: exit 0'
+stdout '\n## Code checks\n\n(- .*\n)*- step code: pass\n'
+stdout '\n- step gate: fail \(leaf alpha: no Evidence verifies it\)\n'
+exec rhiza run status --json
+stdout '"code_checks": \['
+
+# Outside an unfinished run it is usage.
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run code-check --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout '^exit=2$'
+
+fold-ok
+
+-- code.toml --
+name = "code"
+
+[step.gate]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "code"
+on.timeout = "failed"
+
+[step.code]
+kind = "command"
+run = "rhiza run code-check"
+on.pass = "done"

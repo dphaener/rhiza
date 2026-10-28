@@ -63,6 +63,15 @@ const (
 	// finding of the check, or one for the check's failure when it had
 	// none.
 	TypeReviewQuestion = "review-question"
+	// TypeCodeCheck is a review's code check: rhiza run code-check ran
+	// rhiza check and build-check on the run's change set.
+	TypeCodeCheck = "code-check"
+)
+
+// Code check outcomes, a code-check entry's Outcome.
+const (
+	CodeCheckPass = "pass"
+	CodeCheckFail = "fail"
 )
 
 // CycleAnswered is the Kind of a check-cycle entry that gives a capped
@@ -247,6 +256,9 @@ type Block struct {
 //	           (handle Handle) when it names one of the change set's leaves,
 //	           linked blocks to it; Finding is empty for a question on the
 //	           check's failure itself)
+//	code-check: Step, Outcome (pass or fail), Detail (rhiza run code-check
+//	           ran rhiza check and build-check on the run's change set while
+//	           the run was at step Step; Detail names each cause of a fail)
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -952,6 +964,27 @@ type State struct {
 	// ReviewQuestions are the checks steps' review-question entries, in
 	// journal order. Like Checks they survive a new visit of their step.
 	ReviewQuestions []ReviewQuestion
+	// CodeChecks are the code-check entries, in journal order. Like
+	// Checks they survive a new visit of their step.
+	CodeChecks []CodeCheck
+}
+
+// CodeCheck is one code-check entry: rhiza run code-check's outcome
+// (pass or fail) while the run was at step Step, and Detail, the causes
+// of a fail.
+type CodeCheck struct {
+	Step    string
+	Outcome string
+	Detail  string
+	At      time.Time
+}
+
+// LatestCodeCheck is the journal's latest code check, if it has one.
+func (st State) LatestCodeCheck() (CodeCheck, bool) {
+	if len(st.CodeChecks) == 0 {
+		return CodeCheck{}, false
+	}
+	return st.CodeChecks[len(st.CodeChecks)-1], true
 }
 
 // ReviewQuestionsFor are checks step step's questions raised when cycle
@@ -1104,6 +1137,8 @@ func (j Journal) State() State {
 				Step: e.Step, Check: e.Check, Cycle: e.Cycle, Finding: e.Finding, Leaf: e.Leaf, Handle: e.Handle,
 				Question: e.Question, QuestionHandle: e.QuestionHandle, At: e.At,
 			})
+		case TypeCodeCheck:
+			st.CodeChecks = append(st.CodeChecks, CodeCheck{Step: e.Step, Outcome: e.Outcome, Detail: e.Detail, At: e.At})
 		case TypeCheckSession:
 			c := st.check(e)
 			c.Sessions = append(c.Sessions, CheckSession{
