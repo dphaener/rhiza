@@ -976,6 +976,7 @@
 - [claude-code-7fb12497](actor/claude-code-7fb12497.md)
 - [claude-code-82b830c3](actor/claude-code-82b830c3.md)
 - [claude-code-8858c978](actor/claude-code-8858c978.md)
+- [claude-code-8989bf11](actor/claude-code-8989bf11.md)
 - [claude-code-8cd68bc7](actor/claude-code-8cd68bc7.md)
 - [claude-code-8ed323e1](actor/claude-code-8ed323e1.md)
 - [claude-code-8f2a5c63](actor/claude-code-8f2a5c63.md)
