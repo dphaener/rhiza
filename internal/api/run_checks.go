@@ -7,8 +7,12 @@ package api
 import (
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/workflow"
@@ -109,7 +113,7 @@ func changeSetFixerPrompt(role workflow.Role, spec run.FixSpec, vars workflow.Pr
 	p := role.RenderFixerPrompt(workflow.FixerVars{PromptVars: vars, Cycle: spec.Cycle})
 	return strings.TrimRight(p, "\n") + "\n\n" + fmt.Sprintf("Review cycle %d confirmed these findings, which name no leaf of the change set:\n\n%s\n\n"+
 		"Fix them, nothing else, in one new commit with the trailer `Review: %s`. `rhiza run status --json` has them too.",
-		spec.Cycle, findingLines(spec.Findings), vars.Run)
+		spec.Cycle, findingLines(spec.Findings), vars.Run) + answerLines(spec.Answers)
 }
 
 // OpenCheckCheckout adds a throwaway detached worktree at commit where
@@ -119,4 +123,81 @@ func changeSetFixerPrompt(role workflow.Role, spec run.FixSpec, vars workflow.Pr
 // verifier's <run>-<leaf>-<attempt>. The run's worktree is never touched.
 func (r *stepRunner) OpenCheckCheckout(check, role string, cycle int, commit string) (string, error) {
 	return r.openCheckout(filepath.Join(r.run, fmt.Sprintf("%s-%s-%d", check, role, cycle)), commit)
+}
+
+// checkQuestionPrefix starts the handle of every question node a capped
+// review adds on a finding naming no leaf, or on a check's failure:
+// review-failed-<run8>-<n>.
+const checkQuestionPrefix = "review-failed-"
+
+// reviewQuestionIntent is the intent of the record change set a capped
+// review's question goes in once the run's change set has landed.
+const reviewQuestionIntent = "A question review run %s raised"
+
+// AddReviewQuestion writes question node review-failed-<run8>-<n> (n the
+// next number free in the change set's view), with statement text and no
+// link, into the run's change set in the model as the run's worktree
+// holds it, as the run's caller's actor, in one entry, as AddLeafQuestion
+// does. Once the run's change set has landed, the question goes in a
+// record change set of its own, opened and landed with it. It refuses a
+// change set otherwise finished.
+func (r *stepRunner) AddReviewQuestion(text string) (run.Question, error) {
+	cs, err := id.Parse(r.change)
+	if err != nil {
+		return run.Question{}, fmt.Errorf("run %s names change set %q: %v", r.run, r.change, err)
+	}
+	ww, err := r.worktreeWorkspace(true)
+	if err != nil {
+		return run.Question{}, err
+	}
+	c, ok := ww.changeSet(cs)
+	if !ok {
+		return run.Question{}, NotFoundf("change set %s is not in the log", cs)
+	}
+	landed := c.State == changeset.StateLanded
+	if c.State.Terminal() && !landed {
+		return run.Question{}, Conflictf("change set %s is %s; no question can be added to it", cs, c.State).
+			WithNext("rhiza change show " + cs.String())
+	}
+	target, ops := cs, c.Ops
+	if landed {
+		target, ops = id.ID{}, nil
+	}
+	m := ww.model(target)
+	short := strings.ToLower(r.run)
+	if len(short) > 8 {
+		short = short[:8]
+	}
+	prefix := checkQuestionPrefix + short + "-"
+	handle := ""
+	for n := 1; handle == ""; n++ {
+		if h := prefix + strconv.Itoa(n); !answerProposed(m, ops, h) {
+			handle = h
+		}
+	}
+	actor, forID, err := ww.resolveActor(target, r.ctx)
+	if err != nil {
+		return run.Question{}, err
+	}
+	add := AddRequest{Kind: string(op.KindQuestion), Handle: handle, Fields: []string{"statement=" + text}}
+	items := []applyItem{{op: "add", build: func(b writeBase) (edit, error) { return buildAdd(b, add) }}}
+	e, err := buildApply(ww, target, r.ctx.IDs, items)
+	if err == nil {
+		err = e.check("add")
+	}
+	if err != nil {
+		return run.Question{}, err
+	}
+	if len(e.nodes) != 1 {
+		return run.Question{}, Errorf("adding question %s touched %d nodes, not 1", handle, len(e.nodes))
+	}
+	if landed {
+		_, _, err = ww.writeRecord(fmt.Sprintf(reviewQuestionIntent, r.run), e.ops, actor, forID)
+	} else {
+		_, err = ww.appendEntry(cs, changeset.Ops{Ops: e.ops, Drop: e.drop}, actor, forID)
+	}
+	if err != nil {
+		return run.Question{}, err
+	}
+	return run.Question{ID: e.nodes[0].String(), Handle: handle}, nil
 }

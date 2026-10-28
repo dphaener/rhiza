@@ -32,6 +32,24 @@ type CheckRunner interface {
 	// worktree whose Review: trailer names the run. With none, commit is
 	// "" and detail says why.
 	ReviewCommit(since string) (commit, detail string, err error)
+	// AddReviewQuestion adds a question node, statement text, to the
+	// run's change set, linked to no leaf, and returns it: the question a
+	// capped review raises on a finding naming no leaf of the change set,
+	// or on a check's failure with no finding. Once the change set has
+	// landed, it goes in a record change set of its own instead; it
+	// refuses one otherwise finished.
+	AddReviewQuestion(text string) (Question, error)
+}
+
+// ReviewAnswer is one answer an answered cycle's fixers are given: the
+// Decision (handle) answering question node Question (handle
+// QuestionHandle) that the capped cycle raised, and its statement, read
+// anew from the model ("" when it no longer answers the question).
+type ReviewAnswer struct {
+	Question       string
+	QuestionHandle string
+	Decision       string
+	Statement      string
 }
 
 // FixSpec is the change set's fixer to launch: role fixer of checks step
@@ -51,6 +69,9 @@ type FixSpec struct {
 	Env      []string
 	Anchor   string
 	Findings []Finding
+	// Answers are, in an answered cycle, the Decisions answering the
+	// questions the capped cycle raised; nil otherwise.
+	Answers []ReviewAnswer
 }
 
 // CheckSpec is one check session to launch: role Role (check) of checks
@@ -613,7 +634,14 @@ func (r *running) conductChecks(cr CheckRunner, step workflow.Step, env []string
 		for _, a := range nextCheckActions(step, cycles, states, leaves, r.leafStates(step.Name), r.reviewFixes(step.Name)) {
 			switch a.kind {
 			case checksDone:
-				return result{outcome: a.outcome, detail: a.detail}, nil
+				if a.outcome != workflow.OutcomeFail {
+					return result{outcome: a.outcome, detail: a.detail}, nil
+				}
+				res, again, err := r.capped(cr, step, a, &leaves)
+				if err != nil || !again {
+					return res, err
+				}
+				progressed = true
 			case checkCycle:
 				if err := r.append(Entry{Type: TypeCheckCycle, Step: step.Name, Cycle: a.cycle, Checks: a.checks}); err != nil {
 					return result{}, err
@@ -709,6 +737,11 @@ func (r *running) startReviewFix(cr CheckRunner, step workflow.Step, env []strin
 			EnvCycle+"="+strconv.Itoa(a.cycle), EnvRole+"="+workflow.RoleFixer),
 		Anchor: stepPane(r.checkStates(step.Name), r.leafStates(step.Name), r.reviewFixes(step.Name)),
 	}
+	answers, err := r.cycleAnswers(cr, step, a.cycle)
+	if err != nil {
+		return errResult(fmt.Errorf("change set's fixer: %v", err)), true, nil
+	}
+	spec.Answers = answers
 	s, err := cr.StartFix(spec)
 	if err != nil {
 		return errResult(fmt.Errorf("start the change set's fixer: %v", err)), true, nil

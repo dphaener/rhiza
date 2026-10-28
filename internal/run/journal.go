@@ -58,7 +58,17 @@ const (
 	// a leaf or a check.
 	TypeReviewFix       = "review-fix"
 	TypeReviewFixJudged = "review-fix-judged"
+	// TypeReviewQuestion is a question a checks step raised when a check
+	// still failed with no fix cycle left: one per surviving confirmed
+	// finding of the check, or one for the check's failure when it had
+	// none.
+	TypeReviewQuestion = "review-question"
 )
+
+// CycleAnswered is the Kind of a check-cycle entry that gives a capped
+// checks step one fresh cycle, once Decisions answer every question its
+// last cycle raised.
+const CycleAnswered = "answered"
 
 // Check outcomes, a check entry's Outcome.
 const (
@@ -226,6 +236,17 @@ type Block struct {
 //	           role's session of the check's cycle was judged)
 //	check:     Step, Check, Cycle, Outcome (passed or failed), Detail (the check's
 //	           outcome in the cycle)
+//	           A check-cycle with Kind answered also has Questions and
+//	           Decisions: the questions the cycle before raised, by ID, and
+//	           the Decisions answering them, by handle, in the same order;
+//	           it is one fresh cycle past the cap
+//	review-question: Step, Check, Cycle, Finding, Leaf, Handle, Question,
+//	           QuestionHandle (check Check still failed cycle Cycle with no
+//	           fix cycle left; question node Question was raised for its
+//	           surviving confirmed finding Finding, on leaf node Leaf
+//	           (handle Handle) when it names one of the change set's leaves,
+//	           linked blocks to it; Finding is empty for a question on the
+//	           check's failure itself)
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -281,6 +302,14 @@ type Entry struct {
 	Check  string   `json:"check,omitempty"`
 	Cycle  int      `json:"cycle,omitempty"`
 	Checks []string `json:"checks,omitempty"`
+	// Kind is a check-cycle entry's kind: "" for a cycle within the cap,
+	// CycleAnswered for one past it. Questions and Decisions are an
+	// answered cycle's questions (IDs) and answering Decisions (handles).
+	Kind      string   `json:"kind,omitempty"`
+	Questions []string `json:"questions,omitempty"`
+	Decisions []string `json:"decisions,omitempty"`
+	// Finding is a review-question entry's finding ID.
+	Finding string `json:"finding,omitempty"`
 }
 
 // Finding is one finding: of a plan review round, node Node (its handle
@@ -615,12 +644,38 @@ func (l LeafState) Attempt() int {
 }
 
 // CheckCycle is one check-cycle entry: checks step Step's cycle Cycle,
-// from 1, runs the checks named Checks, in the step's order.
+// from 1, runs the checks named Checks, in the step's order. Kind is
+// CycleAnswered for a fresh cycle past the cap, which Decisions (handles)
+// granted by answering Questions (IDs), in the same order.
 type CheckCycle struct {
-	Step   string
-	Cycle  int
-	Checks []string
-	At     time.Time
+	Step      string
+	Cycle     int
+	Checks    []string
+	Kind      string
+	Questions []string
+	Decisions []string
+	At        time.Time
+}
+
+// Answered says whether the cycle is a fresh one past the cap, granted by
+// answers to the questions the cycle before raised.
+func (c CheckCycle) Answered() bool { return c.Kind == CycleAnswered }
+
+// ReviewQuestion is one review-question entry: check Check of checks step
+// Step still failed cycle Cycle with no fix cycle left, and question node
+// Question (handle QuestionHandle) was raised for its surviving confirmed
+// finding Finding, on leaf node Leaf (handle Handle) when it names one;
+// Finding is "" for a question on the check's failure itself.
+type ReviewQuestion struct {
+	Step           string
+	Check          string
+	Cycle          int
+	Finding        string
+	Leaf           string
+	Handle         string
+	Question       string
+	QuestionHandle string
+	At             time.Time
 }
 
 // CheckSession is one check-session entry: a session of role Role (check)
@@ -894,6 +949,21 @@ type State struct {
 	// their step. A fixer session is also in Sessions; nothing else in the
 	// fold changes.
 	Fixes []ReviewFix
+	// ReviewQuestions are the checks steps' review-question entries, in
+	// journal order. Like Checks they survive a new visit of their step.
+	ReviewQuestions []ReviewQuestion
+}
+
+// ReviewQuestionsFor are checks step step's questions raised when cycle
+// ended with no fix cycle left, in journal order.
+func (st State) ReviewQuestionsFor(step string, cycle int) []ReviewQuestion {
+	var out []ReviewQuestion
+	for _, q := range st.ReviewQuestions {
+		if q.Step == step && q.Cycle == cycle {
+			out = append(out, q)
+		}
+	}
+	return out
 }
 
 // ReviewFix is checks step step's change-set fixer in cycle, if the
@@ -1026,7 +1096,14 @@ func (j Journal) State() State {
 			l := st.leaf(e)
 			l.Outcome, l.Question, l.QuestionHandle, l.Commit, l.Detail = e.Outcome, e.Question, e.QuestionHandle, e.Commit, e.Detail
 		case TypeCheckCycle:
-			st.Cycles = append(st.Cycles, CheckCycle{Step: e.Step, Cycle: e.Cycle, Checks: e.Checks, At: e.At})
+			st.Cycles = append(st.Cycles, CheckCycle{
+				Step: e.Step, Cycle: e.Cycle, Checks: e.Checks, Kind: e.Kind, Questions: e.Questions, Decisions: e.Decisions, At: e.At,
+			})
+		case TypeReviewQuestion:
+			st.ReviewQuestions = append(st.ReviewQuestions, ReviewQuestion{
+				Step: e.Step, Check: e.Check, Cycle: e.Cycle, Finding: e.Finding, Leaf: e.Leaf, Handle: e.Handle,
+				Question: e.Question, QuestionHandle: e.QuestionHandle, At: e.At,
+			})
 		case TypeCheckSession:
 			c := st.check(e)
 			c.Sessions = append(c.Sessions, CheckSession{

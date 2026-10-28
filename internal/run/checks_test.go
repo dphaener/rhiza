@@ -208,7 +208,7 @@ func TestChecksStepCycleLimit(t *testing.T) {
 	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:fail"}) {
 		t.Fatalf("outcomes = %v", got)
 	}
-	if want := "2 of 3 checks passed after 3 cycles; failed: beta"; st.Steps[0].Detail != want {
+	if want := "2 of 3 checks passed after 3 cycles; failed: beta; unanswered questions: review-failed-1"; st.Steps[0].Detail != want {
 		t.Errorf("detail = %q, want %q", st.Steps[0].Detail, want)
 	}
 	if len(r.checkSpecs) != 3+MaxFixCycles {

@@ -153,7 +153,7 @@ func TestFixChangeSetNoCommitFailsCycle(t *testing.T) {
 	if fix, _ := st.ReviewFix("review", 2); fix.Outcome != workflow.OutcomeFail || fix.Detail != "no new commit since H0" {
 		t.Errorf("fixer judgement = %+v", fix)
 	}
-	if s := st.Steps[0]; s.Detail != "2 of 3 checks passed after 3 cycles; failed: alpha" {
+	if s := st.Steps[0]; s.Detail != "2 of 3 checks passed after 3 cycles; failed: alpha; unanswered questions: review-failed-1" {
 		t.Errorf("step detail = %q", s.Detail)
 	}
 }

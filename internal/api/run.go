@@ -159,11 +159,22 @@ type RunFix struct {
 
 // RunCheck is one check a checks step ran.
 type RunCheck struct {
-	Step    string          `json:"step" desc:"The checks step"`
-	Check   string          `json:"check" desc:"The check's name"`
-	Cycles  []RunCheckCycle `json:"cycles" desc:"The cycles it ran in, in order"`
-	Rounds  []RunCheckRound `json:"rounds,omitempty" desc:"Its findings rounds, journalled by run findings --check and judged by run verdict --check, in order; absent when there were none"`
-	Outcome string          `json:"outcome,omitempty" desc:"passed or failed: its latest cycle's outcome; empty while its first cycle is open"`
+	Step      string             `json:"step" desc:"The checks step"`
+	Check     string             `json:"check" desc:"The check's name"`
+	Cycles    []RunCheckCycle    `json:"cycles" desc:"The cycles it ran in, in order"`
+	Rounds    []RunCheckRound    `json:"rounds,omitempty" desc:"Its findings rounds, journalled by run findings --check and judged by run verdict --check, in order; absent when there were none"`
+	Outcome   string             `json:"outcome,omitempty" desc:"passed or failed: its latest cycle's outcome; empty while its first cycle is open"`
+	Questions []RunCheckQuestion `json:"questions,omitempty" desc:"The questions it raised when it still failed with no fix cycle left, in order; absent when none"`
+}
+
+// RunCheckQuestion is one question a capped review raised for a check.
+type RunCheckQuestion struct {
+	Cycle          int    `json:"cycle" desc:"The cycle that ended with no fix cycle left"`
+	Finding        string `json:"finding,omitempty" desc:"The surviving confirmed finding it is about; empty for one on the check's failure itself"`
+	Leaf           string `json:"leaf,omitempty" desc:"The leaf node the finding names, which the question blocks; empty for a question in the change set at large"`
+	LeafHandle     string `json:"leaf_handle,omitempty" desc:"That leaf's handle"`
+	Question       string `json:"question" desc:"The question node's ID"`
+	QuestionHandle string `json:"question_handle" desc:"The question node's handle"`
 }
 
 // RunCheckRound is one findings round of a review check.
@@ -178,11 +189,12 @@ type RunCheckRound struct {
 
 // RunCheckCycle is one cycle a check ran in.
 type RunCheckCycle struct {
-	Cycle    int               `json:"cycle" desc:"The cycle, from 1"`
-	Sessions []RunCheckSession `json:"sessions" desc:"The check's sessions in the cycle, in the order they started"`
-	Outcome  string            `json:"outcome,omitempty" desc:"passed or failed; empty while the cycle is open for the check"`
-	Detail   string            `json:"detail,omitempty" desc:"Why the check ended the cycle as it did"`
-	At       string            `json:"at,omitempty" desc:"When the check's outcome in the cycle was journalled, RFC 3339 UTC"`
+	Cycle     int               `json:"cycle" desc:"The cycle, from 1"`
+	Sessions  []RunCheckSession `json:"sessions" desc:"The check's sessions in the cycle, in the order they started"`
+	Outcome   string            `json:"outcome,omitempty" desc:"passed or failed; empty while the cycle is open for the check"`
+	Detail    string            `json:"detail,omitempty" desc:"Why the check ended the cycle as it did"`
+	At        string            `json:"at,omitempty" desc:"When the check's outcome in the cycle was journalled, RFC 3339 UTC"`
+	Decisions []string          `json:"decisions,omitempty" desc:"For a fresh cycle past the cap, the Decisions (handles) answering the questions the cycle before raised; absent otherwise"`
 }
 
 // RunCheckSession is one session a checks step started for a check.
@@ -1675,6 +1687,9 @@ func runCheckInfo(st run.State, c run.CheckState) RunCheck {
 			continue
 		}
 		rcy := RunCheckCycle{Cycle: cy.Cycle, Sessions: []RunCheckSession{}}
+		if cy.Answered() {
+			rcy.Decisions = cy.Decisions
+		}
 		for _, s := range c.Sessions {
 			if s.Cycle != cy.Cycle {
 				continue
@@ -1699,6 +1714,13 @@ func runCheckInfo(st run.State, c run.CheckState) RunCheck {
 			rr.Verdicts = append(rr.Verdicts, RunVerdict{Finding: v.Finding, Verdict: v.Verdict, Reason: v.Reason})
 		}
 		rc.Rounds = append(rc.Rounds, rr)
+	}
+	for _, q := range st.ReviewQuestions {
+		if q.Step == c.Step && q.Check == c.Check {
+			rc.Questions = append(rc.Questions, RunCheckQuestion{
+				Cycle: q.Cycle, Finding: q.Finding, Leaf: q.Leaf, LeafHandle: q.Handle, Question: q.Question, QuestionHandle: q.QuestionHandle,
+			})
+		}
 	}
 	return rc
 }
@@ -1817,6 +1839,9 @@ func (r RunInfo) Human(w io.Writer) {
 					outcome = "open"
 				}
 				fmt.Fprintf(w, "  - cycle %d: %s", cy.Cycle, outcome)
+				if len(cy.Decisions) > 0 {
+					fmt.Fprintf(w, ", answered by %s", strings.Join(cy.Decisions, ", "))
+				}
 				for _, s := range cy.Sessions {
 					fmt.Fprintf(w, ", %s session %s", s.Role, s.Session)
 					if s.Outcome != "" {
@@ -1837,6 +1862,16 @@ func (r RunInfo) Human(w io.Writer) {
 				for _, f := range rd.Findings {
 					fmt.Fprintf(w, "    - %s\n", findingLine(f))
 				}
+			}
+			for _, q := range c.Questions {
+				fmt.Fprintf(w, "  - question %s after cycle %d", q.QuestionHandle, q.Cycle)
+				if q.Finding != "" {
+					fmt.Fprintf(w, " on %s", q.Finding)
+				}
+				if q.LeafHandle != "" {
+					fmt.Fprintf(w, ", blocks leaf %s", q.LeafHandle)
+				}
+				fmt.Fprintf(w, "\n")
 			}
 		}
 	}

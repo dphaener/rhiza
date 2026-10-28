@@ -96,6 +96,9 @@ func (f *statusLeafRunner) StartFix(spec run.FixSpec) (string, error) {
 	return "fixer-" + strconv.Itoa(spec.Cycle), nil
 }
 func (f *statusLeafRunner) ReviewCommit(string) (string, string, error) { return "C-review", "", nil }
+func (f *statusLeafRunner) AddReviewQuestion(string) (run.Question, error) {
+	return run.Question{ID: "Q-review", Handle: "review-failed-1"}, nil
+}
 
 // statusLeafRunner must stay a run.CheckRunner, or checks steps over it
 // end with an error outcome.

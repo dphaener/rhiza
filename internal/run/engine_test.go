@@ -98,6 +98,10 @@ type fakeRunner struct {
 	// order; past the end, "C-review".
 	reviewCommits [][2]string
 	reviewSince   []string // the since of each ReviewCommit call
+	// reviewQuestions are the text of each AddReviewQuestion call; the
+	// nth question is QR<n>, handle review-failed-<n>.
+	reviewQuestions   []string
+	reviewQuestionErr error // AddReviewQuestion's error, when set
 }
 
 // fakeEvidence is one leaf's scripted Evidence result.

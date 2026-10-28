@@ -179,7 +179,30 @@ func fixerPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars
 	p := role.RenderFixerPrompt(workflow.FixerVars{PromptVars: vars, Leaf: spec.Leaf.Handle, Cycle: spec.Cycle})
 	return strings.TrimRight(p, "\n") + "\n\n" + fmt.Sprintf("Review cycle %d confirmed these findings on leaf %s:\n\n%s\n\n"+
 		"Fix them, nothing else, in one new commit with the trailer `Leaf: %s`. `rhiza run status --json` has them too.",
-		spec.Cycle, spec.Leaf.Handle, findingLines(spec.Findings), spec.Leaf.Handle)
+		spec.Cycle, spec.Leaf.Handle, findingLines(spec.Findings), spec.Leaf.Handle) + answerLines(spec.Answers)
+}
+
+// answerLines are, for a fixer of an answered cycle (one fresh cycle past
+// the review's cap), the Decisions answering the questions the capped
+// cycle raised, one "- Decision <handle> answers question <question>:
+// <statement>" line each, after a blank line; "" with none.
+func answerLines(answers []run.ReviewAnswer) string {
+	if len(answers) == 0 {
+		return ""
+	}
+	lines := []string{"\n\nThe review ran out of fix cycles and raised questions; these Decisions answer them, so fix as they say:\n"}
+	for _, a := range answers {
+		q := a.QuestionHandle
+		if q == "" {
+			q = a.Question
+		}
+		line := fmt.Sprintf("- Decision %s answers question %s", a.Decision, q)
+		if st := oneLine(a.Statement); st != "" {
+			line += ": " + st
+		}
+		lines = append(lines, line)
+	}
+	return strings.Join(lines, "\n")
 }
 
 // findingLines are a fixer's findings, one "- <check> <id> (<severity>

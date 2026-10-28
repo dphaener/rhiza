@@ -101,6 +101,10 @@ type LeafSpec struct {
 	// journal, each with its check, for its prompt to name.
 	Cycle    int
 	Findings []Finding
+	// Answers are, for a fixer in a checks step's answered cycle (one
+	// fresh cycle past the cap), the Decisions answering the questions
+	// the capped cycle raised, their statements read anew; nil otherwise.
+	Answers []ReviewAnswer
 }
 
 // The environment variables a leaf session gets beyond a step's.
@@ -451,6 +455,13 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 	if step.Kind == workflow.KindChecks {
 		spec.Cycle, spec.Findings = a.attempt, a.findings
 		spec.Env = append(spec.Env, EnvCycle+"="+strconv.Itoa(a.attempt))
+		if a.role == workflow.RoleFixer {
+			answers, err := r.cycleAnswers(lr, step, a.attempt)
+			if err != nil {
+				return errResult(fmt.Errorf("leaf %s: %v", a.leaf.Handle, err)), true, nil
+			}
+			spec.Answers = answers
+		}
 	}
 	commit := a.commit
 	if a.role == workflow.RoleBuilder || a.role == workflow.RoleFixer {

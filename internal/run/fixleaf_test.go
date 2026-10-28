@@ -204,7 +204,7 @@ func TestFixLeafNoCommitFailsCycle(t *testing.T) {
 	if o, _ := c.Outcome(3); o.Outcome != CheckFailed || !strings.HasPrefix(o.Detail, "cycle 3: fix failed: ") {
 		t.Errorf("alpha's cycle 3 outcome = %+v", o)
 	}
-	if s := st.Steps[0]; s.Detail != "2 of 3 checks passed after 3 cycles; failed: alpha" {
+	if s := st.Steps[0]; s.Detail != "2 of 3 checks passed after 3 cycles; failed: alpha; unanswered questions: leaf-failed-1, leaf-failed-2" {
 		t.Errorf("step detail = %q", s.Detail)
 	}
 }

@@ -3142,6 +3142,13 @@ cmp stdout describe.golden.json
                             "description": "The cycle, from 1",
                             "type": "integer"
                           },
+                          "decisions": {
+                            "description": "For a fresh cycle past the cap, the Decisions (handles) answering the questions the cycle before raised; absent otherwise",
+                            "items": {
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
                           "detail": {
                             "description": "Why the check ended the cycle as it did",
                             "type": "string"
@@ -3201,6 +3208,45 @@ cmp stdout describe.golden.json
                     "outcome": {
                       "description": "passed or failed: its latest cycle's outcome; empty while its first cycle is open",
                       "type": "string"
+                    },
+                    "questions": {
+                      "description": "The questions it raised when it still failed with no fix cycle left, in order; absent when none",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "cycle": {
+                            "description": "The cycle that ended with no fix cycle left",
+                            "type": "integer"
+                          },
+                          "finding": {
+                            "description": "The surviving confirmed finding it is about; empty for one on the check's failure itself",
+                            "type": "string"
+                          },
+                          "leaf": {
+                            "description": "The leaf node the finding names, which the question blocks; empty for a question in the change set at large",
+                            "type": "string"
+                          },
+                          "leaf_handle": {
+                            "description": "That leaf's handle",
+                            "type": "string"
+                          },
+                          "question": {
+                            "description": "The question node's ID",
+                            "type": "string"
+                          },
+                          "question_handle": {
+                            "description": "The question node's handle",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "cycle",
+                          "question",
+                          "question_handle"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
                     },
                     "rounds": {
                       "description": "Its findings rounds, journalled by run findings --check and judged by run verdict --check, in order; absent when there were none",
@@ -4447,6 +4493,13 @@ cmp stdout describe.golden.json
                             "description": "The cycle, from 1",
                             "type": "integer"
                           },
+                          "decisions": {
+                            "description": "For a fresh cycle past the cap, the Decisions (handles) answering the questions the cycle before raised; absent otherwise",
+                            "items": {
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
                           "detail": {
                             "description": "Why the check ended the cycle as it did",
                             "type": "string"
@@ -4506,6 +4559,45 @@ cmp stdout describe.golden.json
                     "outcome": {
                       "description": "passed or failed: its latest cycle's outcome; empty while its first cycle is open",
                       "type": "string"
+                    },
+                    "questions": {
+                      "description": "The questions it raised when it still failed with no fix cycle left, in order; absent when none",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "cycle": {
+                            "description": "The cycle that ended with no fix cycle left",
+                            "type": "integer"
+                          },
+                          "finding": {
+                            "description": "The surviving confirmed finding it is about; empty for one on the check's failure itself",
+                            "type": "string"
+                          },
+                          "leaf": {
+                            "description": "The leaf node the finding names, which the question blocks; empty for a question in the change set at large",
+                            "type": "string"
+                          },
+                          "leaf_handle": {
+                            "description": "That leaf's handle",
+                            "type": "string"
+                          },
+                          "question": {
+                            "description": "The question node's ID",
+                            "type": "string"
+                          },
+                          "question_handle": {
+                            "description": "The question node's handle",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "cycle",
+                          "question",
+                          "question_handle"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
                     },
                     "rounds": {
                       "description": "Its findings rounds, journalled by run findings --check and judged by run verdict --check, in order; absent when there were none",
@@ -5583,6 +5675,13 @@ cmp stdout describe.golden.json
                         "description": "The cycle, from 1",
                         "type": "integer"
                       },
+                      "decisions": {
+                        "description": "For a fresh cycle past the cap, the Decisions (handles) answering the questions the cycle before raised; absent otherwise",
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
                       "detail": {
                         "description": "Why the check ended the cycle as it did",
                         "type": "string"
@@ -5642,6 +5741,45 @@ cmp stdout describe.golden.json
                 "outcome": {
                   "description": "passed or failed: its latest cycle's outcome; empty while its first cycle is open",
                   "type": "string"
+                },
+                "questions": {
+                  "description": "The questions it raised when it still failed with no fix cycle left, in order; absent when none",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "cycle": {
+                        "description": "The cycle that ended with no fix cycle left",
+                        "type": "integer"
+                      },
+                      "finding": {
+                        "description": "The surviving confirmed finding it is about; empty for one on the check's failure itself",
+                        "type": "string"
+                      },
+                      "leaf": {
+                        "description": "The leaf node the finding names, which the question blocks; empty for a question in the change set at large",
+                        "type": "string"
+                      },
+                      "leaf_handle": {
+                        "description": "That leaf's handle",
+                        "type": "string"
+                      },
+                      "question": {
+                        "description": "The question node's ID",
+                        "type": "string"
+                      },
+                      "question_handle": {
+                        "description": "The question node's handle",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cycle",
+                      "question",
+                      "question_handle"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
                 },
                 "rounds": {
                   "description": "Its findings rounds, journalled by run findings --check and judged by run verdict --check, in order; absent when there were none",
