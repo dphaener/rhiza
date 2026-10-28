@@ -12440,6 +12440,60 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "ship.open-pr",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "branch": {
+            "description": "The change set's branch",
+            "type": "string"
+          },
+          "change": {
+            "description": "The change set",
+            "type": "string"
+          },
+          "created": {
+            "description": "True if this call opened the pull request; false if it replaced the body of the one already open",
+            "type": "boolean"
+          },
+          "head": {
+            "description": "The branch's head commit, as pushed",
+            "type": "string"
+          },
+          "pr": {
+            "description": "The pull request's number",
+            "type": "integer"
+          },
+          "pushed": {
+            "description": "True if this call pushed the branch; false if origin already had its head",
+            "type": "boolean"
+          },
+          "url": {
+            "description": "The pull request's URL",
+            "type": "string"
+          }
+        },
+        "required": [
+          "branch",
+          "change",
+          "created",
+          "head",
+          "pr",
+          "pushed",
+          "url"
+        ],
+        "type": "object"
+      },
+      "summary": "Push a change set's branch and open its pull request, titled by the change set with the run's review summary as the body, or push and replace the body of the one already open",
+      "write": false
+    },
+    {
       "name": "ship.rebase",
       "request": {
         "additionalProperties": false,
