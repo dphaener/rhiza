@@ -41,6 +41,13 @@ exec sh -c 'grep -c "^rex window new .* run start " $WORK/rex.log'
 stdout '^1$'
 exec rhiza daemon --once --json
 stdout '"started": \['
+
+# --autonomous reaches the started run's command, and only then.
+exec sh -c 'grep -c -- "--autonomous" $WORK/rex.log || true'
+stdout '^0$'
+exec rhiza daemon --once --autonomous
+exec sh -c 'grep "^rex window new .* run start [0-9A-Z]* --autonomous$" $WORK/rex.log | wc -l'
+stdout '^ *1$'
 -- bin/rex --
 #!/bin/sh
 echo "rex $*" >> "$WORK/rex.log"

@@ -1213,6 +1213,10 @@ cmp stdout describe.golden.json
       "request": {
         "additionalProperties": false,
         "properties": {
+          "autonomous": {
+            "description": "Start each run with --autonomous: it goes on without the owner",
+            "type": "boolean"
+          },
           "max_runs": {
             "description": "Start runs until this many are running; default 2. An interrupted run takes no slot",
             "type": "integer"

@@ -34,8 +34,9 @@ const daemonPoll = 5 * time.Second
 
 // DaemonRequest starts the daemon.
 type DaemonRequest struct {
-	MaxRuns int  `json:"max_runs,omitempty" desc:"Start runs until this many are running; default 2. An interrupted run takes no slot"`
-	Once    bool `json:"once,omitempty" desc:"Poll once, start what is picked and stop"`
+	MaxRuns    int  `json:"max_runs,omitempty" desc:"Start runs until this many are running; default 2. An interrupted run takes no slot"`
+	Once       bool `json:"once,omitempty" desc:"Poll once, start what is picked and stop"`
+	Autonomous bool `json:"autonomous,omitempty" desc:"Start each run with --autonomous: it goes on without the owner"`
 }
 
 // DaemonResponse is the daemon after it stopped.
@@ -86,7 +87,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	resp := DaemonResponse{Process: self.String(), Started: []string{}}
 	pending := map[string]time.Time{}
 	poll := func() error {
-		started, err := daemonPoll1(ctx, rs, pending, r.MaxRuns)
+		started, err := daemonPoll1(ctx, rs, pending, r.MaxRuns, r.Autonomous)
 		resp.Started = append(resp.Started, started...)
 		return err
 	}
@@ -120,7 +121,7 @@ const daemonStartGrace = time.Minute
 // daemonPoll1 picks and starts runs once. pending holds the change sets
 // started and when; entries are dropped once their run has a journal or
 // the grace passed.
-func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]time.Time, max int) ([]string, error) {
+func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]time.Time, max int, autonomous bool) ([]string, error) {
 	res, _, _, err := planRead(ctx, "daemon", "")
 	if err != nil {
 		return nil, err
@@ -149,7 +150,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]time.Time, max int)
 	picked := daemon.Pick(cands, runs, held, host, nil, max)
 	var started []string
 	for _, cs := range picked {
-		if err := daemonStart(ctx, cs); err != nil {
+		if err := daemonStart(ctx, cs, autonomous); err != nil {
 			return started, err
 		}
 		pending[cs] = ctx.Now()
@@ -181,7 +182,7 @@ func daemonCandidates(res planResult, hasLeaves func(id.ID) bool) []string {
 }
 
 // daemonStart starts the run of change set cs in a new Rex tab.
-func daemonStart(ctx *Ctx, cs string) error {
+func daemonStart(ctx *Ctx, cs string, autonomous bool) error {
 	if ctx.Exec == nil || ctx.Self == "" {
 		return Errorf("daemon cannot start a run of %s: no rex or rhiza path", cs)
 	}
@@ -190,6 +191,9 @@ func daemonStart(ctx *Ctx, cs string) error {
 		args = append(args, "-s", ctx.RexSession)
 	}
 	args = append(args, cs[:min(len(cs), 9)], "-c", ctx.Root, "--json", "--", ctx.Self, "run", "start", cs)
+	if autonomous {
+		args = append(args, "--autonomous")
+	}
 	if _, err := ctx.Exec("rex", args, ctx.Root, nil); err != nil {
 		return Errorf("rex window new for %s: %v", cs, err)
 	}
