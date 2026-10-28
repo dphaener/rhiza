@@ -101,6 +101,7 @@ type signoffRun struct {
 	state  run.State
 	def    *workflow.Definition
 	step   workflow.Step
+	cmd    string
 }
 
 // openSignoffRun reads the run ref names, or the latest, and refuses it,
@@ -136,16 +137,31 @@ func openSignoffRun(ctx *Ctx, cmd, ref, next string) (signoffRun, error) {
 	if err != nil {
 		return signoffRun{}, Errorf("run %s: its workflow no longer parses: %v", j.ID, err)
 	}
+	step, err := signoffWaitingStep(cmd, j.ID, st, def)
+	if err != nil {
+		return signoffRun{}, err
+	}
+	return signoffRun{store: rs, common: common, j: j, state: st, def: def, step: step, cmd: cmd}, nil
+}
+
+// signoffWaitingStep is the signoff step run id waits at, in state st, or
+// a usage refusal: the run is finished, not stopped at a signoff step, or
+// that step's visit is already signed off.
+func signoffWaitingStep(cmd, id string, st run.State, def *workflow.Definition) (workflow.Step, error) {
+	status := "rhiza run status " + id
+	if st.Ended {
+		return workflow.Step{}, Usagef("%s works on a review run waiting at its sign-off, and run %s is finished: it %s", cmd, id, st.Result).WithNext(status)
+	}
 	step, ok := def.Steps[st.Current]
 	if !ok || step.Kind != workflow.KindSignoff || st.CurrentVisit == 0 || st.Stopped == "" {
-		return signoffRun{}, Usagef("%s works on a review run waiting at its sign-off, and run %s is not: it is %s",
-			cmd, j.ID, runWhere(st)).WithNext(status)
+		return workflow.Step{}, Usagef("%s works on a review run waiting at its sign-off, and run %s is not: it is %s",
+			cmd, id, runWhere(st)).WithNext(status)
 	}
 	if s, ok := st.SignoffFor(step.Name, st.CurrentVisit); ok {
-		return signoffRun{}, Usagef("%s: visit %d of step %s of run %s is already signed off (%s); rhiza run resume continues it",
-			cmd, st.CurrentVisit, step.Name, j.ID, s.Outcome).WithNext("rhiza run resume " + j.ID)
+		return workflow.Step{}, Usagef("%s: visit %d of step %s of run %s is already signed off (%s); rhiza run resume continues it",
+			cmd, st.CurrentVisit, step.Name, id, s.Outcome).WithNext("rhiza run resume " + id)
 	}
-	return signoffRun{store: rs, common: common, j: j, state: st, def: def, step: step}, nil
+	return step, nil
 }
 
 // runWhere says where an unfinished run is, for a refusal.
@@ -162,7 +178,11 @@ func runWhere(st run.State) string {
 }
 
 // signoff journals e on the run and continues it in-process, as run
-// resume does; a dry run journals and runs nothing.
+// resume does; a dry run journals and runs nothing. e is journalled only
+// under the run's lock, after the checks openSignoffRun made are made
+// again on the journal read under it: a sign-off that lost a race to
+// another process exits 3 (the run is running) or 2 (it was signed off
+// or moved on) and journals nothing.
 func (sr signoffRun) signoff(ctx *Ctx, e run.Entry, changes string) (RunSignoffResponse, error) {
 	resp := RunSignoffResponse{Signoff: runSignoff(run.Signoff{
 		Step: e.Step, Visit: e.Visit, Actor: e.Actor, Rule: e.Rule, Outcome: e.Outcome, Findings: e.Findings, At: e.At,
@@ -179,10 +199,18 @@ func (sr signoffRun) signoff(ctx *Ctx, e run.Entry, changes string) (RunSignoffR
 	if err := canRun(ctx, sr.def); err != nil {
 		return RunSignoffResponse{}, err
 	}
-	if err := sr.store.Append(sr.j.ID, e); err != nil {
-		return RunSignoffResponse{}, Errorf("journal the sign-off in run %s: %v", sr.j.ID, err).WithNext("rhiza run status " + sr.j.ID)
+	before := func(now run.State) ([]run.Entry, error) {
+		step, err := signoffWaitingStep(sr.cmd, sr.j.ID, now, sr.def)
+		if err != nil {
+			return nil, err
+		}
+		if step.Name != e.Step || now.CurrentVisit != e.Visit {
+			return nil, Usagef("%s works on a review run waiting at its sign-off, and run %s moved on: it is %s",
+				sr.cmd, sr.j.ID, runWhere(now)).WithNext("rhiza run status " + sr.j.ID)
+		}
+		return []run.Entry{e}, nil
 	}
-	r, err := runEngineRetry(ctx, sr.store, sr.common, sr.j.ID, st.Change, st.Worktree, st.PermissionMode, st.Agent, st.Autonomous, false, false)
+	r, err := runEngineRetry(ctx, sr.store, sr.common, sr.j.ID, st.Change, st.Worktree, st.PermissionMode, st.Agent, st.Autonomous, false, false, before)
 	if err != nil {
 		return RunSignoffResponse{}, err
 	}

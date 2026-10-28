@@ -494,7 +494,7 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 	if err := canRun(ctx, def); err != nil {
 		return nil, err
 	}
-	resp, err := runEngineRetry(ctx, rs, common, j.ID, st.Change, st.Worktree, st.PermissionMode, st.Agent, st.Autonomous, r.NoWait, r.Retry)
+	resp, err := runEngineRetry(ctx, rs, common, j.ID, st.Change, st.Worktree, st.PermissionMode, st.Agent, st.Autonomous, r.NoWait, r.Retry, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -798,7 +798,7 @@ func newRunID(ctx *Ctx, rs *run.Store) (string, error) {
 // and responds with its state. Autonomous is the journal's: every agent
 // the run launches is marked with it.
 func runEngine(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, agent string, autonomous, noWait bool) (any, error) {
-	resp, err := runEngineRetry(ctx, rs, common, rid, change, worktree, mode, agent, autonomous, noWait, false)
+	resp, err := runEngineRetry(ctx, rs, common, rid, change, worktree, mode, agent, autonomous, noWait, false, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -806,8 +806,10 @@ func runEngine(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, age
 }
 
 // runEngineRetry is runEngine; with retry it runs the engine's Retry, which
-// restarts a failed run at its failed step.
-func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, agent string, autonomous, noWait, retry bool) (RunResponse, error) {
+// restarts a failed run at its failed step. With before it runs the
+// engine's Continue: before checks the run under its lock and gives the
+// entries to journal there, and an *Error from it is returned as it is.
+func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode, agent string, autonomous, noWait, retry bool, before func(run.State) ([]run.Entry, error)) (RunResponse, error) {
 	sessions := session.NewStore(session.Dir(common))
 	e := &run.Engine{
 		Store: rs,
@@ -829,8 +831,14 @@ func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode
 	if retry {
 		run1 = e.Retry
 	}
+	if before != nil {
+		run1 = func(id string) (run.State, error) { return e.Continue(id, before) }
+	}
 	st, err := run1(rid)
+	var apiErr *Error
 	switch {
+	case errors.As(err, &apiErr):
+		return RunResponse{}, apiErr
 	case errors.Is(err, run.ErrLive), errors.Is(err, run.ErrFinished), errors.Is(err, run.ErrNotFailed):
 		return RunResponse{}, Conflictf("%v", err).WithNext("rhiza run status " + rid)
 	case err != nil:
