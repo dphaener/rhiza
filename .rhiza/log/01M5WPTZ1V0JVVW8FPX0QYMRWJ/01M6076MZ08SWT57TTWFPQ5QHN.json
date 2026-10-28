@@ -1,0 +1,89 @@
+{
+  "actor": "01M5ZQEK0WV1C5G4W87RK22B02",
+  "after": [
+    "01M60675P0WZP0AZQCW2E4X6T7"
+  ],
+  "at": "2026-10-28T03:00:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d60c3c3, after fix 790f2f1 (leaf fixer prompt now reads 'Confirmed findings to fix in review cycle N on leaf <leaf>:'), TestFixLeafEngine and TestFixLeafEngineNoCommit pass against a real git repo: the fixer's prompt names leaf-a and the finding, its new commit carries Leaf: leaf-a, leaf-a's verifier starts on that commit and its Evidence commit carries the verifier's actor, only the failed check alpha re-runs; a fixer with no commit naming the leaf fails the cycle and starts nothing further. TestOwnerCycleFixerPrompts, TestCycleCapFixerPrompts and the internal/run TestFixLeaf*/TestFixActions/TestNextCheckActionsFixPhase tests pass; go test ./... passes.",
+          "tests": "env -u RHIZA_CHANGE -u RHIZA_ACTOR -u RHIZA_FOR -u RHIZA_RUN -u RHIZA_SESSION -u RHIZA_ROOT go test ./internal/api -run 'TestFixLeafEngine|TestOwnerCycleFixerPrompts|TestCycleCapFixerPrompts' -v -count=1; env -u RHIZA_CHANGE -u RHIZA_ACTOR -u RHIZA_FOR -u RHIZA_RUN -u RHIZA_SESSION -u RHIZA_ROOT go test ./internal/run -run 'TestFixLeaf|TestFixActions|TestNextCheckActionsFixPhase' -v -count=1; env -u RHIZA_CHANGE -u RHIZA_ACTOR -u RHIZA_FOR -u RHIZA_RUN -u RHIZA_SESSION -u RHIZA_ROOT go test ./... -count=1; commit d60c3c3 (detached worktree); run by claude-code-0e5a9d92-verifier on 2026-10-28"
+        },
+        "handle": "review-fix-leaf-head-verified",
+        "id": "01M6076KSZW0968TMYM6R6ZB1V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6076KSZW0968TMYM56G0XFM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6076KSZW0968TMYM56G0XFM",
+        "id": "01M6076KZMSE8244E9GEQ3PY8K",
+        "link": "01M6076KZMSE8244E9GC3VKK8C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EJ62SZXJR5NSAA9X48ZV",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d60c3c3, after fix 3e6a485 (change-set fixer prompt now reads 'Confirmed findings to fix in review cycle N, which name no leaf of the change set:'), TestFixChangeSetEngine passes: two confirmed findings naming no leaf go to one fixer session whose prompt carries both and the Review: R1 trailer, the new commit's Review: trailer names the run, and the failed checks re-run after the fixer is judged; TestFixChangeSetEngineNoCommit and TestFixChangeSetNoCommitFailsCycle show a fixer without such a commit fails the cycle. TestReviewCommit, TestReviewFixFold, TestOwnerCycleFixerPrompts (including the new non-owner-cycle prompt assertion) pass; go test ./... passes.",
+          "tests": "env -u RHIZA_CHANGE -u RHIZA_ACTOR -u RHIZA_FOR -u RHIZA_RUN -u RHIZA_SESSION -u RHIZA_ROOT go test ./internal/run -run 'TestFixChangeSet|TestReviewFixFold' -v -count=1; env -u RHIZA_CHANGE -u RHIZA_ACTOR -u RHIZA_FOR -u RHIZA_RUN -u RHIZA_SESSION -u RHIZA_ROOT go test ./internal/api -run 'TestReviewCommit|TestFixChangeSet|TestOwnerCycleFixerPrompts' -v -count=1; env -u RHIZA_CHANGE -u RHIZA_ACTOR -u RHIZA_FOR -u RHIZA_RUN -u RHIZA_SESSION -u RHIZA_ROOT go test ./... -count=1; commit d60c3c3 (detached worktree); run by claude-code-0e5a9d92-verifier on 2026-10-28"
+        },
+        "handle": "review-fix-change-set-head-verified",
+        "id": "01M6076M5G9CVYZTF2D1VZ1CN2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6076M5G9CVYZTF2CZNPTZP6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6076M5G9CVYZTF2CZNPTZP6",
+        "id": "01M6076MB9G0JK9V622F7C8DV5",
+        "link": "01M6076MB9G0JK9V622DMNJRXF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EJRDQ0F1VZBYFM5K6DXX",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d60c3c3, after fix 7a28dd0 (builtin review.toml fixer prompt drops the leaf clause; TestReviewBuiltin asserts no double space for leaf and change-set fixers), TestScripts/review-workflow passes: one check's major is confirmed by the critic, a fixer and the leaf's verifier run, only that check re-runs clean, the qa check's Evidence commit carries qa's own actor, build-check exits 0, run approve ends the run succeeded and the change set stays accepted (not landed). TestReviewBuiltin and TestScripts/describe-golden pass (golden current); go test ./... passes.",
+          "tests": "env -u RHIZA_CHANGE -u RHIZA_ACTOR -u RHIZA_FOR -u RHIZA_RUN -u RHIZA_SESSION -u RHIZA_ROOT go test ./cmd/rhiza -run 'TestScripts/review-workflow' -v -count=1; env -u RHIZA_CHANGE -u RHIZA_ACTOR -u RHIZA_FOR -u RHIZA_RUN -u RHIZA_SESSION -u RHIZA_ROOT go test ./internal/workflow -run TestReviewBuiltin -v -count=1; env -u RHIZA_CHANGE -u RHIZA_ACTOR -u RHIZA_FOR -u RHIZA_RUN -u RHIZA_SESSION -u RHIZA_ROOT go test ./cmd/rhiza -run TestScripts/describe-golden -count=1; env -u RHIZA_CHANGE -u RHIZA_ACTOR -u RHIZA_FOR -u RHIZA_RUN -u RHIZA_SESSION -u RHIZA_ROOT go test ./... -count=1; commit d60c3c3 (detached worktree); run by claude-code-0e5a9d92-verifier on 2026-10-28"
+        },
+        "handle": "review-workflow-file-head-verified",
+        "id": "01M6076MGVF994ZCZDANY9QFJ1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6076MGVF994ZCZDAN84TWZV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6076MGVF994ZCZDAN84TWZV",
+        "id": "01M6076MPA032SHWPS2R5NFWXH",
+        "link": "01M6076MPA032SHWPS2QDE6ZWE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EPGNJBA661QHJ901DRYA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZ1V0JVVW8FPX0QYMRWJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6076MZ08SWT57TTWFPQ5QHN",
+  "type": "ops",
+  "v": 1
+}
