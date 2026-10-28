@@ -137,7 +137,7 @@ func raceSignoffs(t *testing.T, rs *run.Store) []run.Entry {
 // nothing: the sign-off is written only under the run's lock.
 func TestSignoffUnderLockHeld(t *testing.T) {
 	f, rs := signoffRaceFixture(t)
-	sr, err := openSignoffRun(f.ctx, "run approve", signoffRaceRun, runApproveNext)
+	sr, err := openSignoffRun(f.ctx, "run approve", signoffRaceRun)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -163,11 +163,11 @@ func TestSignoffUnderLockHeld(t *testing.T) {
 // journals nothing.
 func TestSignoffRecheckedUnderLock(t *testing.T) {
 	f, rs := signoffRaceFixture(t)
-	first, err := openSignoffRun(f.ctx, "run approve", signoffRaceRun, runApproveNext)
+	first, err := openSignoffRun(f.ctx, "run approve", signoffRaceRun)
 	if err != nil {
 		t.Fatal(err)
 	}
-	second, err := openSignoffRun(f.ctx, "run request-changes", signoffRaceRun, runRequestChangesNext)
+	second, err := openSignoffRun(f.ctx, "run request-changes", signoffRaceRun)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -197,7 +197,7 @@ func TestSignoffRecheckedUnderLock(t *testing.T) {
 // running it), exits 2 (already signed off) and journals nothing.
 func TestSignoffAlreadySignedUnderLock(t *testing.T) {
 	f, rs := signoffRaceFixture(t)
-	sr, err := openSignoffRun(f.ctx, "run approve", signoffRaceRun, runApproveNext)
+	sr, err := openSignoffRun(f.ctx, "run approve", signoffRaceRun)
 	if err != nil {
 		t.Fatal(err)
 	}

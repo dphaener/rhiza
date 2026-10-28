@@ -48,10 +48,7 @@ func init() {
 	})
 }
 
-const (
-	runApproveNext        = "rhiza describe run.approve"
-	runRequestChangesNext = "rhiza describe run.request-changes"
-)
+const runRequestChangesNext = "rhiza describe run.request-changes"
 
 // RunApproveRequest names the run to approve.
 type RunApproveRequest struct {
@@ -107,7 +104,7 @@ type signoffRun struct {
 // openSignoffRun reads the run ref names, or the latest, and refuses it,
 // as usage, unless it is unfinished, not running, and stopped at a
 // signoff step whose visit has no sign-off yet.
-func openSignoffRun(ctx *Ctx, cmd, ref, next string) (signoffRun, error) {
+func openSignoffRun(ctx *Ctx, cmd, ref string) (signoffRun, error) {
 	common, err := gitCommonDir(ctx)
 	if err != nil {
 		return signoffRun{}, err
@@ -126,12 +123,8 @@ func openSignoffRun(ctx *Ctx, cmd, ref, next string) (signoffRun, error) {
 		return signoffRun{}, err
 	}
 	st := j.State()
-	status := "rhiza run status " + j.ID
-	if st.Ended {
-		return signoffRun{}, Usagef("%s works on a review run waiting at its sign-off, and run %s is finished: it %s", cmd, j.ID, st.Result).WithNext(status)
-	}
 	if rs.Live(j.ID) {
-		return signoffRun{}, Usagef("%s works on a review run waiting at its sign-off, and run %s is running in another process", cmd, j.ID).WithNext(status)
+		return signoffRun{}, Usagef("%s works on a review run waiting at its sign-off, and run %s is running in another process", cmd, j.ID).WithNext("rhiza run status " + j.ID)
 	}
 	def, err := workflow.Parse(st.Workflow, []byte(st.Definition))
 	if err != nil {
@@ -223,7 +216,7 @@ func (sr signoffRun) signoff(ctx *Ctx, e run.Entry, changes string) (RunSignoffR
 // step passes.
 func runRunApprove(ctx *Ctx, req any) (any, error) {
 	r := req.(RunApproveRequest)
-	sr, err := openSignoffRun(ctx, "run approve", r.Run, runApproveNext)
+	sr, err := openSignoffRun(ctx, "run approve", r.Run)
 	if err != nil {
 		return nil, err
 	}
@@ -262,7 +255,7 @@ func runRunRequestChanges(ctx *Ctx, req any) (any, error) {
 	if strings.TrimSpace(r.File) == "" {
 		return nil, Usagef("%s needs a file of findings, or - for stdin", cmd).WithNext(next)
 	}
-	sr, err := openSignoffRun(ctx, cmd, r.Run, next)
+	sr, err := openSignoffRun(ctx, cmd, r.Run)
 	if err != nil {
 		return nil, err
 	}
