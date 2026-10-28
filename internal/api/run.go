@@ -447,7 +447,7 @@ func checkShipLeaves(t changeWorktree) error {
 		return nil
 	}
 	return Conflictf("change set %s has no leaves: ship-change builds and reviews its leaves, so plan it first", t.cs).
-		WithNext("rhiza run start plan")
+		WithNext("rhiza run start --workflow plan")
 }
 
 // runRunResume continues a run that is neither finished nor running in
