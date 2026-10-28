@@ -1,0 +1,16 @@
+{
+  "actor": "01M5ZPK2CP01WFSKZSV1715668",
+  "after": [],
+  "at": "2026-10-28T01:43:32Z",
+  "body": {
+    "intent": "A review check or critic session that writes no model entries still gets its actor's record entries committed, so no uncommitted record change set is left in the run worktree for a later fixer to sweep up",
+    "kind": "intention",
+    "sources": [],
+    "title": "Commit idle check actors"
+  },
+  "change_set": "01M602TH4C724WZB9MKBN5Z1PP",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M602TH4C724WZB9MKBZ63C1R",
+  "type": "open",
+  "v": 2
+}
