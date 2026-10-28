@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-28T15:08:22Z",
+  "body": {
+    "intent": "No agent session starts a run: rhiza run start refuses inside an agent session (RHIZA_SESSION set), naming the session, and the build and review guides tell verifiers and checks to test runs with fakes only, never real Rex, agents or gh.",
+    "kind": "intention",
+    "sources": [],
+    "title": "Agents never start runs"
+  },
+  "change_set": "01M61GW73H05YHE4DK0CXFD1KH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M61GW73H05YHE4DK0ECJEWE0",
+  "type": "open",
+  "v": 2
+}

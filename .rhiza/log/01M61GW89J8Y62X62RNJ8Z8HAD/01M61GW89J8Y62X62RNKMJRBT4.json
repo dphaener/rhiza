@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-28T15:08:23Z",
+  "body": {
+    "intent": "A plan run captures the interview's picks and answers as Decisions when the interview step says done, not only when its session exits.",
+    "kind": "intention",
+    "sources": [],
+    "title": "Plan captures on done"
+  },
+  "change_set": "01M61GW89J8Y62X62RNJ8Z8HAD",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M61GW89J8Y62X62RNKMJRBT4",
+  "type": "open",
+  "v": 2
+}

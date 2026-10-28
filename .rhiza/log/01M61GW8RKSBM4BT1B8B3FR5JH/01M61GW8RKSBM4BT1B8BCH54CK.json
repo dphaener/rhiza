@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-28T15:08:24Z",
+  "body": {
+    "intent": "A run's final printout and run status show each session's token use, never 'no token use recorded' for sessions that used tokens.",
+    "kind": "intention",
+    "sources": [],
+    "title": "Run token printout"
+  },
+  "change_set": "01M61GW8RKSBM4BT1B8B3FR5JH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M61GW8RKSBM4BT1B8BCH54CK",
+  "type": "open",
+  "v": 2
+}

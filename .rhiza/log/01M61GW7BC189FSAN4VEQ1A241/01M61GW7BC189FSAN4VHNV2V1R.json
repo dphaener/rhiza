@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-28T15:08:22Z",
+  "body": {
+    "intent": "A builder's or fixer's commit counts its Leaf: trailer even when Co-Authored-By sits in a separate final paragraph, and the build and review guides show all trailers in one final paragraph.",
+    "kind": "intention",
+    "sources": [],
+    "title": "Leaf trailer, split paragraphs"
+  },
+  "change_set": "01M61GW7BC189FSAN4VEQ1A241",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M61GW7BC189FSAN4VHNV2V1R",
+  "type": "open",
+  "v": 2
+}
