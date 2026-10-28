@@ -53,6 +53,10 @@ func TestOwnerCycleFixerPrompts(t *testing.T) {
 	if !strings.Contains(plain, "Confirmed findings to fix in review cycle 2 on leaf thing:") {
 		t.Errorf("a fixer outside an owner cycle is not told its review cycle:\n%s", plain)
 	}
+	plainCS := changeSetFixerPrompt(role, run.FixSpec{Cycle: 2, Findings: fs}, vars)
+	if !strings.Contains(plainCS, "Confirmed findings to fix in review cycle 2, which name no leaf of the change set:") {
+		t.Errorf("the change set's fixer outside an owner cycle is not told its review cycle:\n%s", plainCS)
+	}
 }
 
 // signoffRaceWF is a review: a checks step, then a signoff step whose
