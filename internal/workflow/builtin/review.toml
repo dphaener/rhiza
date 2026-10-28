@@ -58,7 +58,7 @@ prompt = "/rhiza-review Criticise the latest round of the {check} check of chang
 # set's ({leaf} empty) with `Review: <run>`.
 [step.review.fixer]
 models = ["opus"]
-prompt = "/rhiza-review Fix the findings below for change set {change} in review cycle {cycle}, as the fixer of leaf {leaf} (no leaf named: the change set's fixer): follow `rhiza guide review`. Your very last action, once your one new commit is made, is to run `rhiza session done`."
+prompt = "/rhiza-review Fix the findings below for change set {change} in review cycle {cycle}: follow `rhiza guide review`. Your very last action, once your one new commit is made, is to run `rhiza session done`."
 
 # A fixed leaf's verifier works in a detached checkout at the fixer's
 # commit ($RHIZA_COMMIT) and passes only with Evidence written as itself.

@@ -1126,7 +1126,7 @@ func TestReviewBuiltin(t *testing.T) {
 		want []string
 	}{
 		"critic":   {review.Critic, []string{"/rhiza-review", "{check}", "{change}", "rhiza guide review", "rhiza run verdict --check", "never add a finding", "rhiza session done"}},
-		"fixer":    {review.Fixer, []string{"/rhiza-review", "{leaf}", "{change}", "{cycle}", "rhiza guide review", "rhiza session done"}},
+		"fixer":    {review.Fixer, []string{"/rhiza-review", "{change}", "{cycle}", "rhiza guide review", "rhiza session done"}},
 		"verifier": {review.Verifier, []string{"/rhiza-build", "{leaf}", "{change}", "$RHIZA_COMMIT", "rhiza guide build", "Never edit code", "rhiza run findings --leaf {leaf}", "rhiza session done"}},
 	}
 	for name, tt := range roles {
@@ -1140,6 +1140,15 @@ func TestReviewBuiltin(t *testing.T) {
 			if !strings.Contains(tt.r.Prompt, w) {
 				t.Errorf("%s prompt lacks %q: %q", name, w, tt.r.Prompt)
 			}
+		}
+	}
+	// The fixer's prompt reads the same for a leaf's fixer and the change
+	// set's ({leaf} empty): the appended findings name the leaf or the
+	// change set.
+	for _, l := range []string{"leaf-a", ""} {
+		got := review.Fixer.RenderFixerPrompt(FixerVars{PromptVars: PromptVars{Change: "C1"}, Leaf: l, Cycle: 2})
+		if strings.Contains(got, "  ") || strings.Contains(got, "()") || !strings.Contains(got, "change set C1 in review cycle 2:") {
+			t.Errorf("fixer prompt with leaf %q = %q", l, got)
 		}
 	}
 	signoff := def.Steps["signoff"]
