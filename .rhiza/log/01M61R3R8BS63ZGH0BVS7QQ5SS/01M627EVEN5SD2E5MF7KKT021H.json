@@ -1,0 +1,40 @@
+{
+  "actor": "01M6276TRYJ2C8RESWF8Z3SDPM",
+  "after": [
+    "01M6279YAXJMTRN60MVTK8PWZS"
+  ],
+  "at": "2026-10-28T21:43:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4963884 (attempt 2), go test -count=1 -run TestRunJournalsProcess ./internal/api passes: run.start with RexSession/RexBlock (the CLI's REX_BLOCK, cmd/rhiza/ctx.go:75) set journals one process entry with this host, os.Getpid(), the block and the window from a stubbed `rex block inspect -s <session> --json <block>`; run.resume from another block appends a second entry, which State() folds as the run's process with Liveness LiveRunning; resumed outside Rex it journals host and pid only and never calls rex. go test -count=1 -run 'TestLiveness|TestStateProcessLatestWins' ./internal/run passes: a fixture's unfinished journal reads LiveInterrupted with a dead pid, LiveRunning with the test's own pid, and a finished journal NotLive. Read the diff: the fix adds only internal/api/run_process_test.go plus actor log/render files, addressing attempt 1's finding f1. make check exits 0."
+        },
+        "handle": "run-process-record-verified",
+        "id": "01M627ETWW2A1HH0H5HBW2B9S5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M627ETWW2A1HH0H5HBRYWW83",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M627ETWW2A1HH0H5HBRYWW83",
+        "id": "01M627EV3R628DRF0E6SAV32J7",
+        "link": "01M627EV3R628DRF0E6QXM50PQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7JKQRF2SBF071J10XKRM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61R3R8BS63ZGH0BVS7QQ5SS",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M627EVEN5SD2E5MF7KKT021H",
+  "type": "ops",
+  "v": 1
+}
