@@ -15,6 +15,7 @@ package api
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -991,6 +992,10 @@ func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode
 		Now:    ctx.Now,
 		NoWait: noWait,
 	}
+	if !ctx.DryRun {
+		p := runProcess(ctx)
+		e.Process = &p
+	}
 	if ctx.Stderr != nil {
 		e.Log = func(line string) { fmt.Fprintf(ctx.Stderr, "rhiza: %s\n", line) }
 	}
@@ -1031,6 +1036,32 @@ func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode
 		return RunResponse{}, Errorf("run %s: %v", rid, err).WithNext("rhiza run status " + rid)
 	}
 	return RunResponse{Run: runInfo(st, false, sessions)}, nil
+}
+
+// runProcess is the calling process as a run's process: its host and pid
+// and, when it runs in Rex, the window and block of its tab. Rex names the
+// window of the block (`rex block inspect`); when it cannot, the record
+// has the block alone.
+func runProcess(ctx *Ctx) run.Process {
+	window := ""
+	if ctx.RexBlock != "" && ctx.Exec != nil {
+		args := []string{"block", "inspect"}
+		if ctx.RexSession != "" {
+			args = append(args, "-s", ctx.RexSession)
+		}
+		args = append(args, "--json", ctx.RexBlock)
+		if out, err := ctx.Exec("rex", args, "", nil); err == nil {
+			var in struct {
+				Block struct {
+					WindowID string `json:"window_id"`
+				} `json:"block"`
+			}
+			if json.Unmarshal(out, &in) == nil {
+				window = in.Block.WindowID
+			}
+		}
+	}
+	return run.ThisProcess(window, ctx.RexBlock)
 }
 
 // stepRunner is the engine's run.Runner: command and wait steps run
