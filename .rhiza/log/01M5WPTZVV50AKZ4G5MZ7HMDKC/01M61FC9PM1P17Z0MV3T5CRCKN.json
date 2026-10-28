@@ -1,0 +1,40 @@
+{
+  "actor": "01M61F4YRY5XN5CDNJ4763XH8M",
+  "after": [
+    "01M61EYRDZE5X5EGMZT8JY578K"
+  ],
+  "at": "2026-10-28T14:42:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 5, at d5cd0e9: make check exits 0 (fmt-check, vet, go test ./..., self-check). go test -count=1 ./cmd/rhiza -run 'TestScripts/(run-ship-change|run-ship-signoff|run-ship-change-fail|describe-golden)$' passes. run-ship-change runs the built-in ship-change via run start with fake rex/claude/gh on two leaves (second depends-on first): both built and verified in order, review's two checks ran, PR #7 created once with the run summary as body, run stopped signoff_waiting with no pr merge until rhiza run approve, then land, squash merge pinned to the landed head, main-green and close-out pass; a clone of the pushed PR branch passes rhiza check. TestShipChangeBuiltin asserts the step order with render and render-pr and that ship-change.toml has no shipit; the toml has no ship check --pr-open. Read the diff: render-pr command step sits between review and open-pr with max_visits 3, matching the signoff loop, so request-changes cycles render before each push. Mutation in a scratch clone (review.on.pass straight to open-pr in run-ship-signoff) makes rhiza check on the re-pushed clone fail, so the new check guards the attempt-4 QA finding."
+        },
+        "handle": "ship-change-file-verified-5",
+        "id": "01M61FC97AX2WQV6BYT4WDNTVQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M61FC97AX2WQV6BYT3AG3359",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61FC97AX2WQV6BYT3AG3359",
+        "id": "01M61FC9D9CXKWXNJZ6PW0BQVJ",
+        "link": "01M61FC9D9CXKWXNJZ6M70NC77",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M61FC9PM1P17Z0MV3T5CRCKN",
+  "type": "ops",
+  "v": 1
+}
