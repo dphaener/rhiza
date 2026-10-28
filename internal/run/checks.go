@@ -179,9 +179,9 @@ type checkAction struct {
 //
 // A cycle past the first opens with its fix phase (fixActions), before
 // any of its checks starts: the confirmed findings of its checks that
-// name a leaf (fixFindings) go to that leaf's fixer, then its verifier,
-// leaves being the change set's in leaf order and fixes the step's
-// folded leaf sessions by leaf ID. A fix phase that fails ends each check
+// name a leaf (phaseFindings, by leaf through leafFindings) go to that
+// leaf's fixer, then its verifier, leaves being the change set's in leaf
+// order and fixes the step's folded leaf sessions by leaf ID. A fix phase that fails ends each check
 // of the cycle failed ("cycle N: fix failed: ...") without a session, so
 // the cycle is spent: the next one, if any is left, tries the fix again.
 // The confirmed findings naming no leaf of leaves (changeSetFindings) go
@@ -288,21 +288,6 @@ func nextCheckActions(step workflow.Step, cycles []CheckCycle, states map[string
 		detail: fmt.Sprintf("%d of %d checks passed after %d cycles; failed: %s", passed, len(step.Checks), cur.Cycle, strings.Join(lost, ", "))}}
 }
 
-// fixFindings are the findings cycle's fix phase fixes, by leaf ID: for
-// each of checks (those the cycle runs, each failed the cycle before), in
-// order, the standing blocker and major findings that name a leaf, of the
-// round of the last earlier cycle the check's session ran in, provided
-// its critic was judged pass there, so they are confirmed (R8). Each
-// carries its check's name. A cycle a failed fix spent ran no session, so
-// the next one fixes the same findings again; a check whose session or
-// critic failed has none to fix and only runs again. Findings that name
-// no leaf are not a leaf fixer's: the change set's fixer takes them
-// (changeSetFindings), as it does those naming a leaf the change set
-// does not have.
-func fixFindings(cycle int, checks []string, states map[string]CheckState) map[string][]Finding {
-	return leafFindings(phaseFindings(CheckCycle{Cycle: cycle, Checks: checks}, states))
-}
-
 // phaseFindings are the findings cur's fix phase fixes, in order: an
 // owner cycle's own (the owner's, confirmed by asking), else the
 // confirmed findings of its checks (confirmedFindings).
@@ -339,14 +324,23 @@ func noLeafFindings(found []Finding, leaves []Leaf) []Finding {
 }
 
 // changeSetFindings are the findings cycle's change-set fixer fixes: of
-// the confirmed findings fixFindings reads, in check order, those that
+// the confirmed findings phaseFindings reads, in check order, those that
 // name no leaf, or name one not among leaves.
 func changeSetFindings(cycle int, checks []string, states map[string]CheckState, leaves []Leaf) []Finding {
 	return noLeafFindings(phaseFindings(CheckCycle{Cycle: cycle, Checks: checks}, states), leaves)
 }
 
 // confirmedFindings calls each with every confirmed finding cycle's fix
-// phase fixes, as fixFindings describes, its check's name set.
+// phase fixes, its check's name set: for each of checks (those the cycle
+// runs, each failed the cycle before), in order, the standing blocker and
+// major findings of the round of the last earlier cycle the check's
+// session ran in, provided its critic was judged pass there, so they are
+// confirmed (R8). A cycle a failed fix spent ran no session, so the next
+// one fixes the same findings again; a check whose session or critic
+// failed has none to fix and only runs again. Those naming a leaf go to
+// its fixer (leafFindings); the rest go to the change set's fixer
+// (changeSetFindings), as do those naming a leaf the change set does not
+// have.
 func confirmedFindings(cycle int, checks []string, states map[string]CheckState, each func(Finding)) {
 	if cycle < 2 {
 		return
