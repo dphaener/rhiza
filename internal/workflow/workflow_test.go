@@ -341,7 +341,7 @@ func TestBuiltinsParse(t *testing.T) {
 		if !ok {
 			t.Fatalf("Builtin(%q) not found", n)
 		}
-		def, err := Parse(n, data)
+		def, err := ParseWith(n, data, builtinResolver)
 		if err != nil {
 			t.Errorf("built-in %q does not parse: %v", n, err)
 			continue
@@ -358,28 +358,42 @@ func TestBuiltinsParse(t *testing.T) {
 	}
 }
 
+func builtinResolver(name string) ([]byte, error) {
+	if data, ok := Builtin(name); ok {
+		return data, nil
+	}
+	return nil, fmt.Errorf("no built-in workflow %q", name)
+}
+
 func TestShipChangeBuiltin(t *testing.T) {
 	data, ok := Builtin("ship-change")
 	if !ok {
 		t.Fatal("no ship-change built-in")
 	}
-	def, err := Parse("ship-change", data)
+	def, err := ParseWith("ship-change", data, builtinResolver)
 	if err != nil {
 		t.Fatal(err)
 	}
-	build := def.Steps["build"]
-	for _, want := range []string{"shipit", "rhiza slice --change {change}"} {
-		if !strings.Contains(build.Prompt, want) {
-			t.Errorf("build prompt lacks %q", want)
+	for name, step := range def.Steps {
+		if strings.Contains(step.Prompt, "shipit") || strings.Contains(step.Run, "shipit") {
+			t.Errorf("step %s mentions shipit", name)
+		}
+		if strings.Contains(step.Until, "--pr-open") {
+			t.Errorf("step %s waits for ship check --pr-open", name)
 		}
 	}
-	if !build.WaitsForDone() {
-		t.Errorf("build until_when = %q; want %q", build.UntilWhen, UntilWhenDone)
+	if string(data) != "" && strings.Contains(string(data), "shipit") {
+		t.Error("ship-change.toml mentions shipit")
 	}
-	if !strings.Contains(build.Prompt, "rhiza session done") {
-		t.Error("build prompt does not tell the agent to run rhiza session done")
+	for _, inner := range []string{"build", "review"} {
+		if _, ok := def.Includes[inner]; !ok {
+			t.Errorf("ship-change includes no %s workflow", inner)
+		}
 	}
-	want := []string{"build", "wait-pr", "pr-green", "rebase", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
+	if _, ok := def.Steps["review/signoff"]; ok {
+		t.Error("review's signoff step is not skipped")
+	}
+	want := []string{"build/build", "build/check", "review/code", "review/review", "open-pr", "wait-pr", "pr-green", "signoff", "rebase", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
 		"rebase-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
