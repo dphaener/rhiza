@@ -1,0 +1,40 @@
+{
+  "actor": "01M62BTPA48ZHF19SC1Y54QSZ6",
+  "after": [
+    "01M62AZFW6CFM10SCSFH4E8X8Y"
+  ],
+  "at": "2026-10-28T23:04:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4880e32, go test -count=1 ./internal/api -run 'TestDaemonPicks|TestDaemonHeld' passes: over a fixture with first/second milestone change sets with leaves, a leafless milestone one, a backlog one with leaves, a draft, and running/interrupted/failed runs on three more, daemon.Pick picks only first under max 2, none under max 1, and with the failed run abandoned picks failed again (max 4: first, second, failed); a pending start counts as running. go test ./internal/daemon passes (TestResumable now also skips a locked run and one with no process record younger than a minute). go test ./cmd/rhiza -run TestScripts/daemon passes daemon-picks, daemon-status, daemon-resume, daemon-lock; daemon-picks runs rhiza daemon --once with a fake Rex and sees exactly one 'rex window new ... run start <id> --permission-mode manual' while the leafless and backlog change sets stay unstarted. Read pick.go: live (running or interrupted) and failed-not-abandoned latest runs are skipped, only running runs and pending starts take slots. make fmt-check vet test pass; make self-check fails only on stale .rhiza/rendered files from earlier Evidence writes, not on code."
+        },
+        "handle": "daemon-picks-verified-3",
+        "id": "01M62C49F1KDPZY16W4FSN93R3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62C49F1KDPZY16W4E5EDRYV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62C49F1KDPZY16W4E5EDRYV",
+        "id": "01M62C49QC0TFYBWZZG63XTFNK",
+        "link": "01M62C49QC0TFYBWZZG60AA1P5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61R3R8BS63ZGH0BVS7QQ5SS",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M62C4A4HTDSPEEYW9H6CCP9D",
+  "type": "ops",
+  "v": 1
+}
