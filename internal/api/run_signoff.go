@@ -27,7 +27,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "run.approve",
-		Summary:  "Sign off a review run waiting at its signoff step as the owner: journal the approval and continue the run, which ends done; it never lands the change set",
+		Summary:  "Sign off a run waiting at a signoff step as the owner: journal the approval and continue the run, which goes on past the step (a review run ends done, a ship-change run rebases, lands and merges)",
 		Write:    true,
 		Request:  reflect.TypeFor[RunApproveRequest](),
 		Response: reflect.TypeFor[RunSignoffResponse](),
@@ -35,7 +35,7 @@ func init() {
 	})
 	register(Operation{
 		Name:     "run.request-changes",
-		Summary:  "Ask for changes to a review run waiting at its signoff step: journal the owner's findings as confirmed and continue the run, which fixes them in one cycle outside the cap, re-runs the checks they name and waits for the sign-off again",
+		Summary:  "Ask for changes to a run waiting at a signoff step: journal the owner's findings as confirmed and continue the run, which fixes them in one cycle outside the cap, re-runs the checks they name and waits for the sign-off again (a ship-change run first pushes and replaces the PR body, and waits for CI)",
 		Write:    true,
 		Request:  reflect.TypeFor[RunRequestChangesRequest](),
 		Response: reflect.TypeFor[RunSignoffResponse](),
@@ -118,13 +118,13 @@ func openSignoffRun(ctx *Ctx, cmd, ref string) (signoffRun, error) {
 	}
 	if err != nil {
 		if e := AsError(err); e.Code == CodeNotFound {
-			return signoffRun{}, Usagef("%s works on a review run waiting at its sign-off: %s", cmd, e.Message).WithNext(e.Next)
+			return signoffRun{}, Usagef("%s works on a run waiting at a sign-off step: %s", cmd, e.Message).WithNext(e.Next)
 		}
 		return signoffRun{}, err
 	}
 	st := j.State()
 	if rs.Live(j.ID) {
-		return signoffRun{}, Usagef("%s works on a review run waiting at its sign-off, and run %s is running in another process", cmd, j.ID).WithNext("rhiza run status " + j.ID)
+		return signoffRun{}, Usagef("%s works on a run waiting at a sign-off step, and run %s is running in another process", cmd, j.ID).WithNext("rhiza run status " + j.ID)
 	}
 	def, err := st.ParseDefinition()
 	if err != nil {
@@ -143,11 +143,11 @@ func openSignoffRun(ctx *Ctx, cmd, ref string) (signoffRun, error) {
 func signoffWaitingStep(cmd, id string, st run.State, def *workflow.Definition) (workflow.Step, error) {
 	status := "rhiza run status " + id
 	if st.Ended {
-		return workflow.Step{}, Usagef("%s works on a review run waiting at its sign-off, and run %s is finished: it %s", cmd, id, st.Result).WithNext(status)
+		return workflow.Step{}, Usagef("%s works on a run waiting at a sign-off step, and run %s is finished: it %s", cmd, id, st.Result).WithNext(status)
 	}
 	step, ok := def.Steps[st.Current]
 	if !ok || step.Kind != workflow.KindSignoff || st.CurrentVisit == 0 || st.Stopped == "" {
-		return workflow.Step{}, Usagef("%s works on a review run waiting at its sign-off, and run %s is not: it is %s",
+		return workflow.Step{}, Usagef("%s works on a run waiting at a sign-off step, and run %s is not: it is %s",
 			cmd, id, runWhere(st)).WithNext(status)
 	}
 	if s, ok := st.SignoffFor(step.Name, st.CurrentVisit); ok {
@@ -198,7 +198,7 @@ func (sr signoffRun) signoff(ctx *Ctx, e run.Entry, changes string) (RunSignoffR
 			return nil, err
 		}
 		if step.Name != e.Step || now.CurrentVisit != e.Visit {
-			return nil, Usagef("%s works on a review run waiting at its sign-off, and run %s moved on: it is %s",
+			return nil, Usagef("%s works on a run waiting at a sign-off step, and run %s moved on: it is %s",
 				sr.cmd, sr.j.ID, runWhere(now)).WithNext("rhiza run status " + sr.j.ID)
 		}
 		return []run.Entry{e}, nil

@@ -144,6 +144,7 @@ type RunInfo struct {
 	Fixes          []RunFix        `json:"fixes,omitempty" desc:"The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none"`
 	CodeChecks     []RunCodeCheck  `json:"code_checks,omitempty" desc:"The code checks rhiza run code-check journalled, in order; absent when there were none"`
 	Signoffs       []RunSignoff    `json:"signoffs,omitempty" desc:"The sign-offs of its signoff steps, in order: the owner's approvals and requests for changes, and an autonomous run's under rule autonomous; absent when there were none"`
+	PR             string          `json:"pr,omitempty" desc:"While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise"`
 	SignoffWaiting bool            `json:"signoff_waiting,omitempty" desc:"True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise"`
 }
 
@@ -540,6 +541,11 @@ func runRunStatus(ctx *Ctx, req any) (any, error) {
 	}
 	st := j.State()
 	info := runInfo(st, rs.Live(j.ID), session.NewStore(session.Dir(common)))
+	if info.SignoffWaiting {
+		if ss, err := readShipState(filepath.Join(common, filepath.FromSlash(shipDir), st.Change+".json")); err == nil {
+			info.PR = ss.URL
+		}
+	}
 	if len(st.Gated) > 0 {
 		if w, err := openCtxWorkspace(ctx); err == nil {
 			info.Waiting = runWaiting(st.Gated, w.changeSets())
@@ -2112,6 +2118,9 @@ func runLines(w io.Writer, r RunInfo) {
 	fmt.Fprintf(w, "- Started: %s\n", r.StartedAt)
 	if r.Current != "" {
 		fmt.Fprintf(w, "- Current step: %s\n", r.Current)
+	}
+	if r.PR != "" {
+		fmt.Fprintf(w, "- Pull request: %s\n", r.PR)
 	}
 	if r.Detail != "" {
 		fmt.Fprintf(w, "- Detail: %s\n", r.Detail)

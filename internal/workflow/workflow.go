@@ -1086,6 +1086,12 @@ func checkTargets(s Step, steps map[string]Step) error {
 		if t == TargetDone || t == TargetFailed {
 			continue
 		}
+		if w, _, ok := strings.Cut(t, "/"); ok {
+			// A step of an included workflow, checked once expanded.
+			if ws, ok := steps[w]; ok && ws.Kind == KindWorkflow {
+				continue
+			}
+		}
 		ts, ok := steps[t]
 		if !ok {
 			return fmt.Errorf("step %q: on.%s names %q, which is not a step; want a step or done or failed", s.Name, o, t)
@@ -1098,6 +1104,9 @@ func checkTargets(s Step, steps map[string]Step) error {
 		t, ok := s.On[OutcomeChanges]
 		if !ok {
 			return fmt.Errorf("step %q: a signoff step needs on.changes = \"<checks step>\": the checks step that fixes what the owner asks for", s.Name)
+		}
+		if w, _, cut := strings.Cut(t, "/"); cut && steps[w].Kind == KindWorkflow {
+			return nil
 		}
 		if ts, ok := steps[t]; !ok || ts.Kind != KindChecks {
 			return fmt.Errorf("step %q: on.changes names %q, which is not a checks step; want the checks step that fixes what the owner asks for", s.Name, t)

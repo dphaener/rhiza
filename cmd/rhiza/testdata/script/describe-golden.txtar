@@ -3398,6 +3398,10 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "pr": {
+                "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
+                "type": "string"
+              },
               "questions": {
                 "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
                 "items": {
@@ -4049,7 +4053,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Sign off a review run waiting at its signoff step as the owner: journal the approval and continue the run, which ends done; it never lands the change set",
+      "summary": "Sign off a run waiting at a signoff step as the owner: journal the approval and continue the run, which goes on past the step (a review run ends done, a ship-change run rebases, lands and merges)",
       "write": true
     },
     {
@@ -5418,6 +5422,10 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "pr": {
+                "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
+                "type": "string"
+              },
               "questions": {
                 "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
                 "items": {
@@ -6069,7 +6077,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Ask for changes to a review run waiting at its signoff step: journal the owner's findings as confirmed and continue the run, which fixes them in one cycle outside the cap, re-runs the checks they name and waits for the sign-off again",
+      "summary": "Ask for changes to a run waiting at a signoff step: journal the owner's findings as confirmed and continue the run, which fixes them in one cycle outside the cap, re-runs the checks they name and waits for the sign-off again (a ship-change run first pushes and replaces the PR body, and waits for CI)",
       "write": true
     },
     {
@@ -6867,6 +6875,10 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "pr": {
+                "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
+                "type": "string"
               },
               "questions": {
                 "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
@@ -8364,6 +8376,10 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "pr": {
+                "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
+                "type": "string"
+              },
               "questions": {
                 "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
                 "items": {
@@ -9690,6 +9706,10 @@ cmp stdout describe.golden.json
               "type": "object"
             },
             "type": "array"
+          },
+          "pr": {
+            "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
+            "type": "string"
           },
           "questions": {
             "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",

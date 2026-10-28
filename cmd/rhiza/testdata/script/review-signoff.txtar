@@ -41,7 +41,7 @@ exec sh -c 'wc -l < $(ls -t .git/rhiza/runs/*.jsonl | head -1)'
 cp stdout $WORK/other.lines
 exec sh -c 'rhiza run approve; echo exit=$?'
 stdout '^exit=2$'
-stderr 'run approve works on a review run waiting at its sign-off, and run [0-9A-Z]{26} is not: it is stopped at step ci'
+stderr 'run approve works on a run waiting at a sign-off step, and run [0-9A-Z]{26} is not: it is stopped at step ci'
 exec sh -c 'rhiza run request-changes $WORK/changes.json; echo exit=$?'
 stdout '^exit=2$'
 exec sh -c 'wc -l < $(ls -t .git/rhiza/runs/*.jsonl | head -1)'

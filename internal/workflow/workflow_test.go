@@ -1323,3 +1323,57 @@ func TestWorkflowStepNested(t *testing.T) {
 		t.Errorf("skipping the nested workflow step leaves %s, want mid/tail", got)
 	}
 }
+
+const innerChecks = `
+[step.rev]
+kind = "checks"
+on.pass = "sign"
+[[step.rev.check]]
+name = "alpha"
+prompt = "check {check}"
+[step.rev.critic]
+prompt = "critic"
+[step.rev.fixer]
+prompt = "fix"
+[step.rev.verifier]
+prompt = "verify"
+[step.sign]
+kind = "signoff"
+on.pass = "done"
+on.changes = "rev"
+`
+
+func TestSignoffChangesIntoIncludedChecks(t *testing.T) {
+	files := map[string]string{"inner": innerChecks}
+	src := func(changes string) string {
+		return `
+[step.w]
+kind = "workflow"
+workflow = "inner"
+skip = ["sign"]
+on.pass = "gate"
+[step.gate]
+kind = "signoff"
+on.pass = "done"
+on.changes = "` + changes + `"
+`
+	}
+	d, err := ParseWith("test", []byte(src("w/rev")), mapResolver(files))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if next, _ := d.Next("gate", OutcomeChanges); next != "inner/rev" {
+		t.Errorf("gate on changes goes to %q, want inner/rev", next)
+	}
+	for _, tt := range []struct{ changes, want string }{
+		{"w/nope", `workflow "inner" has no step "nope" left to run`},
+		{"w/sign", `workflow "inner" has no step "sign" left to run`},
+		{"w", `not a checks step`},
+		{"x/rev", `which is not a step`},
+	} {
+		_, err := ParseWith("test", []byte(src(tt.changes)), mapResolver(files))
+		if err == nil || !strings.Contains(err.Error(), tt.want) {
+			t.Errorf("on.changes %q: error %v, want one containing %q", tt.changes, err, tt.want)
+		}
+	}
+}

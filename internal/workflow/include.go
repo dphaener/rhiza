@@ -90,6 +90,14 @@ func (d *Definition) expand(start string, resolve Resolver, stack []string, incl
 		if t == TargetDone || t == TargetFailed {
 			return t, nil
 		}
+		if w, inner, ok := strings.Cut(t, "/"); ok {
+			if in, ok := ins[w]; ok {
+				if _, ok := in.steps[inner]; !ok {
+					return "", fmt.Errorf("target %q: workflow %q has no step %q left to run", t, in.step.Workflow, inner)
+				}
+				return in.step.Workflow + "/" + inner, nil
+			}
+		}
 		return entryOf(t)
 	}
 	entryOf = func(n string) (string, error) {
@@ -161,6 +169,15 @@ func (d *Definition) expand(start string, resolve Resolver, stack []string, incl
 			}
 		}
 		declared[n] = declStep{entry: e, pass: pass}
+	}
+	for _, n := range order {
+		s := steps[n]
+		if s.Kind != KindSignoff {
+			continue
+		}
+		if ts, ok := steps[s.On[OutcomeChanges]]; !ok || ts.Kind != KindChecks {
+			return fmt.Errorf("step %q: on.changes names %q, which is not a checks step; want the checks step that fixes what the owner asks for", n, s.On[OutcomeChanges])
+		}
 	}
 	st, err := entryOf(start)
 	if err != nil {
