@@ -1,0 +1,70 @@
+# rhiza run abandon gives up on an unfinished run: its journal says failed,
+# abandoned by the actor, its worktree and branch stay, and the change set
+# can start a new run. A resume of the abandoned run, a retry included, and
+# an abandon of a finished run exit 2.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Abandon a run' --title 'Abandon a run' --json
+mkdir .rhiza/workflows
+cp ../hold.toml .rhiza/workflows/hold.toml
+
+# An interrupted run: stopped at its wait.
+exec rhiza run start --workflow hold --no-wait
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG stopped$'
+exec sh -c 'rhiza run start --workflow hold --no-wait 2>&1; echo exit=$?'
+stdout '^exit=2$'
+
+# Dry run changes nothing.
+exec rhiza run abandon --dry-run 01M5PWGJC82P7YGZTWYFFZ0VJG
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG --json
+! stdout '"state": "failed"'
+
+# Abandon it.
+exec rhiza run abandon 01M5PWGJC82P7YGZTWYFFZ0VJG
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG
+stdout 'abandoned by test'
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG --json
+stdout '"state": "failed"'
+stdout '"detail": "abandoned by test"'
+
+# Worktree and branch are left alone.
+exec sh -c 'git worktree list | wc -l'
+stdout '^ *2$'
+exec sh -c 'git branch --list "cs/*" | wc -l'
+stdout '^ *1$'
+
+# Resume, retry and a second abandon are refused with exit 2, naming the run.
+exec sh -c 'rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
+stdout '^exit=2$'
+stdout '01M5PWGJC82P7YGZTWYFFZ0VJG was abandoned'
+exec sh -c 'rhiza run resume --retry 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
+stdout '^exit=2$'
+stdout 'was abandoned'
+exec sh -c 'rhiza run abandon 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
+stdout '^exit=2$'
+stdout 'is finished'
+
+# A new run starts, finishes, and cannot then be abandoned.
+exec sh -c 'echo > $WORK/go'
+exec rhiza run start --workflow hold
+stdout '^Run [0-9A-Z]{26} succeeded$'
+exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl// > $WORK/second'
+exec sh -c 'rhiza run abandon $(cat $WORK/second) 2>&1; echo exit=$?'
+stdout '^exit=2$'
+stdout 'is finished'
+
+-- hold.toml --
+name = "hold"
+
+[step.hold]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"

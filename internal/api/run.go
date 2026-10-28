@@ -62,6 +62,14 @@ func init() {
 		Response: reflect.TypeFor[RunResponse](),
 		Run:      runRunResume,
 	})
+	register(Operation{
+		Name:     "run.abandon",
+		Summary:  "Give up on an unfinished run: journal it failed as abandoned, so a new run can start on its change set",
+		Write:    true,
+		Request:  reflect.TypeFor[RunAbandonRequest](),
+		Response: reflect.TypeFor[RunAbandonResponse](),
+		Run:      runRunAbandon,
+	})
 }
 
 // Next commands of the run operations.
@@ -107,6 +115,19 @@ type RunResumeRequest struct {
 	Run    string `json:"run" arg:"0" desc:"The run: a full ID or a unique prefix of 4+ characters"`
 	NoWait bool   `json:"no_wait,omitempty" desc:"Stop at a wait step whose condition does not hold yet, instead of waiting"`
 	Retry  bool   `json:"retry,omitempty" flag:"retry" desc:"Restart a failed run at the step that failed, once its cause is fixed; the retry is journalled. A run that succeeded is refused"`
+}
+
+// RunAbandonRequest names the run to give up on.
+type RunAbandonRequest struct {
+	Run string `json:"run" arg:"0" desc:"The run: a full ID or a unique prefix of 4+ characters"`
+}
+
+// RunAbandonResponse is the run as abandoning left it, or in a dry run
+// would leave it. The command exits 0: the run is failed by the owner's
+// choice.
+type RunAbandonResponse struct {
+	Run    RunInfo `json:"run" desc:"The run as its journal stands, failed with the abandoned detail"`
+	DryRun bool    `json:"dry_run,omitempty" desc:"True if nothing was written"`
 }
 
 // RunResponse is a run after run.start or run.resume ran it, or in a dry
@@ -506,6 +527,10 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	st := j.State()
+	if st.Abandoned() {
+		return nil, Usagef("run %s was abandoned: %s", j.ID, st.Detail).
+			WithNext("rhiza run start " + st.Change)
+	}
 	retryStep := ""
 	switch {
 	case st.Ended && !r.Retry:
@@ -559,6 +584,68 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 	}
 	resp.Retry = retryStep
 	return resp, nil
+}
+
+// runRunAbandon journals an unfinished run as failed with the detail
+// "abandoned by <actor>", under the run's lock so a run going in another
+// process is refused. It leaves the worktree and branch alone; the change
+// set then has no live run, so a new one can start. A finished run is
+// refused.
+func runRunAbandon(ctx *Ctx, req any) (any, error) {
+	r := req.(RunAbandonRequest)
+	ref := strings.TrimSpace(r.Run)
+	if ref == "" {
+		return nil, Usagef("run abandon needs a run ID").WithNext(runStatusNext)
+	}
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return nil, err
+	}
+	rs := run.NewStore(run.Dir(common))
+	j, err := readRun(rs, ref)
+	if err != nil {
+		return nil, err
+	}
+	sessions := session.NewStore(session.Dir(common))
+	refuseEnded := func(st run.State) error {
+		if st.Ended {
+			return Usagef("run %s is finished: it %s", j.ID, st.Result).WithNext("rhiza run status " + j.ID)
+		}
+		return nil
+	}
+	if err := refuseEnded(j.State()); err != nil {
+		return nil, err
+	}
+	from, err := messageSender(ctx)
+	if err != nil {
+		return nil, err
+	}
+	detail := run.AbandonedPrefix + from.Handle
+	if ctx.DryRun {
+		j.Entries = append(j.Entries, run.Entry{Type: run.TypeFinished, At: ctx.Now(), End: run.Failed, Detail: detail})
+		return RunAbandonResponse{Run: runInfo(j.State(), false, sessions), DryRun: true}, nil
+	}
+	unlock, ok, err := rs.TryLock(j.ID)
+	if err != nil {
+		return nil, Errorf("lock run %s: %v", j.ID, err)
+	}
+	if !ok {
+		return nil, Conflictf("run %s is running in another process", j.ID).WithNext("rhiza run status " + j.ID)
+	}
+	defer unlock()
+	// Read again under the lock: the holder may have finished it.
+	if j, err = rs.Read(j.ID); err != nil {
+		return nil, err
+	}
+	if err := refuseEnded(j.State()); err != nil {
+		return nil, err
+	}
+	e := run.Entry{Type: run.TypeFinished, At: ctx.Now(), End: run.Failed, Detail: detail}
+	if err := rs.Append(j.ID, e); err != nil {
+		return nil, Errorf("journal the abandoning of run %s: %v", j.ID, err).WithNext("rhiza run status " + j.ID)
+	}
+	j.Entries = append(j.Entries, e)
+	return RunAbandonResponse{Run: runInfo(j.State(), false, sessions)}, nil
 }
 
 // runRunStatus reports a run from its journal alone.
@@ -1880,6 +1967,17 @@ func (r RunResponse) Human(w io.Writer) {
 		fmt.Fprintf(w, "Run %s would start\n\n", r.Run.ID)
 		runLines(w, r.Run)
 		fmt.Fprintf(w, "\nThis was a dry run: nothing was written or run.\n")
+		return
+	}
+	r.Run.Human(w)
+}
+
+// Human reports the abandoned run, or the plan of a dry run.
+func (r RunAbandonResponse) Human(w io.Writer) {
+	if r.DryRun {
+		fmt.Fprintf(w, "Run %s would be abandoned\n\n", r.Run.ID)
+		runLines(w, r.Run)
+		fmt.Fprintf(w, "\nThis was a dry run: nothing was written.\n")
 		return
 	}
 	r.Run.Human(w)

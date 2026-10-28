@@ -5,6 +5,7 @@ package run
 
 import (
 	"slices"
+	"strings"
 	"time"
 )
 
@@ -1578,4 +1579,13 @@ func (st *State) addSession(step, session string) {
 		}
 	}
 	st.Sessions = append(st.Sessions, RunSession{Step: step, Session: session})
+}
+
+// AbandonedPrefix starts the Detail of a run that rhiza run abandon failed.
+const AbandonedPrefix = "abandoned by "
+
+// Abandoned reports whether the run finished failed because it was
+// abandoned, which a resume (a retry included) refuses.
+func (st State) Abandoned() bool {
+	return st.Ended && st.Result == Failed && strings.HasPrefix(st.Detail, AbandonedPrefix)
 }
