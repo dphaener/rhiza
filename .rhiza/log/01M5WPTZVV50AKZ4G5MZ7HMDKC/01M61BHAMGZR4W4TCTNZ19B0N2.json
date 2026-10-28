@@ -1,0 +1,30 @@
+{
+  "actor": "01M61BGJJZPR0JP9787PBX60PS",
+  "after": [
+    "01M61BGAMJ69VQDBCCYFX92X9H"
+  ],
+  "at": "2026-10-28T13:35:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript finds `rhiza run start ship-change` on a change set without leaves exiting non-zero with the refusal and `rhiza run start --workflow plan` as next, no run journaled and no worktree made, and the same command on a change set with a leaf starting the run.",
+          "statement": "`rhiza run start ship-change` refuses a change set with no leaves before writing anything, its next command `rhiza run start --workflow plan`."
+        },
+        "handle": "ship-needs-leaves",
+        "id": "01M5Z8XSFSMXX93SBZP7T54PK0",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5Z8XSFSMXX93SBZP3ZZPZTQ",
+        "op": "node.create",
+        "parent": "01M5Z8XQC9YFR1TWS0QNGF2HZC"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M61BHAMGZR4W4TCTNZ19B0N2",
+  "type": "ops",
+  "v": 1
+}

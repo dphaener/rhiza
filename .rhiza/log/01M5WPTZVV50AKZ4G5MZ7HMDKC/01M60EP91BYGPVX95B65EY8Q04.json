@@ -1,0 +1,39 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M60EP8AS7677FXG3TS53M5R1"
+  ],
+  "at": "2026-10-28T05:10:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Review check model still fails after 3 cycles: finding f1 (major at internal/api/run.go:450) on leaf ship-needs-leaves: Commit c2886a0 changed the refusal's next command to `rhiza run start --workflow plan`, because `rhiza run start plan` reads \"plan\" as a change set and fails. …. Its last cycle: cycle 3: confirmed f1 (major), f2 (major). How should it be fixed, or should leaf ship-needs-leaves change?"
+        },
+        "handle": "leaf-failed-01m60atz-2",
+        "id": "01M60EP8QZ10SMHX4GPCSSJHBY",
+        "key": null,
+        "kind": "question",
+        "node": "01M60EP8QZ10SMHX4GP950G2VJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M60EP8QZ10SMHX4GP950G2VJ",
+        "id": "01M60EP8XYV563X2J7A5NKTBN6",
+        "link": "01M60EP8XYV563X2J7A29HSKAR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSFSMXX93SBZP3ZZPZTQ",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M60EP91BYGPVX95B65EY8Q04",
+  "type": "ops",
+  "v": 1
+}

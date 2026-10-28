@@ -1,0 +1,39 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M60EP91BYGPVX95B65EY8Q04"
+  ],
+  "at": "2026-10-28T05:10:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Review check model still fails after 3 cycles: finding f2 (major at internal/workflow/builtin/ship-change.toml:19) on leaf ship-change-file: Commit 179a96f added a `render` command step between build and review. It runs rhiza render and commits .rhiza/rendered on the branch. The leaf's statement lis…. Its last cycle: cycle 3: confirmed f1 (major), f2 (major). How should it be fixed, or should leaf ship-change-file change?"
+        },
+        "handle": "leaf-failed-01m60atz-3",
+        "id": "01M60EP9ESXQF8WC6EJJJQNNR9",
+        "key": null,
+        "kind": "question",
+        "node": "01M60EP9ESXQF8WC6EJJJ1V5ZR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M60EP9ESXQF8WC6EJJJ1V5ZR",
+        "id": "01M60EP9MRQ4MRY26BRR3E9AJ3",
+        "link": "01M60EP9MRQ4MRY26BRNHV3HJ8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M60EP9RD6G11ASS1WKBPC1XP",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,39 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M60EK7NVF8P04SY91V9MFBBT"
+  ],
+  "at": "2026-10-28T05:10:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Review check qa still fails after 3 cycles: finding f1 (major at internal/workflow/builtin/ship-change.toml:19) on leaf ship-change-file: The render step commits only .rhiza/rendered. The engine writes each agent session's actor record into .rhiza/log in the worktree and leaves it uncommitted. A …. Its last cycle: cycle 3: confirmed f1 (major). How should it be fixed, or should leaf ship-change-file change?"
+        },
+        "handle": "leaf-failed-01m60atz-1",
+        "id": "01M60EP81TAWBENX2YZY6G3NVW",
+        "key": null,
+        "kind": "question",
+        "node": "01M60EP81TAWBENX2YZVXBJ2XJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M60EP81TAWBENX2YZVXBJ2XJ",
+        "id": "01M60EP87HQYJ8QD5CJGCK3Y07",
+        "link": "01M60EP87HQYJ8QD5CJE3WC985",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M60EP8AS7677FXG3TS53M5R1",
+  "type": "ops",
+  "v": 1
+}
