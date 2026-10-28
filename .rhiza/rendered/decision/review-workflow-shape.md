@@ -27,6 +27,19 @@ the orchestrator's proposal in the milestone-3 conversation, accepted by the own
 ### In
 
 - decided-by [milestone-3](../intent/anyone-builds/milestone-3.md)
+- decided-by [built-in-review](../capability/rhiza/workflows/built-in-workflows/built-in-review.md)
+- decided-by [review-checks-step](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-checks-step.md)
+- decided-by [review-check-worktree](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-check-worktree.md)
+- decided-by [review-findings](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-findings.md)
+- decided-by [review-critic](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-critic.md)
+- decided-by [review-fix-leaf](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-fix-leaf.md)
+- decided-by [review-fix-change-set](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-fix-change-set.md)
+- decided-by [review-cycle-cap](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-cycle-cap.md)
+- decided-by [review-code-check](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-code-check.md)
+- decided-by [review-signoff](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-signoff.md)
+- decided-by [review-summary](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-summary.md)
+- decided-by [review-guide](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-guide.md)
+- decided-by [review-workflow-file](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-workflow-file.md)
 
 ## History
 

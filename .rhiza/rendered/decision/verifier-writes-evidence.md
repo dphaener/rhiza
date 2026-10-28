@@ -36,6 +36,7 @@ the orchestrator's proposal in the milestone-3 conversation, accepted by the own
 - decided-by [build-verifier-findings](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-verifier-findings.md)
 - decided-by [build-check](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-check.md)
 - decided-by [build-guide](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-guide.md)
+- decided-by [review-fix-leaf](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-fix-leaf.md)
 
 ## History
 
