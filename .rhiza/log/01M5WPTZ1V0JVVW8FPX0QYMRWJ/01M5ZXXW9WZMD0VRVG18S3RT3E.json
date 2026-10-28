@@ -1,0 +1,41 @@
+{
+  "actor": "01M5ZQEK0WV1C5G4W87RK22B02",
+  "after": [
+    "01M5ZX241PJH9PDCYRX8N0EC1H"
+  ],
+  "at": "2026-10-28T00:17:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Re-ran in a detached worktree at 5b498bc with RHIZA_* unset; all passed. Two confirmed no-leaf findings to ONE fixer: internal/run TestFixChangeSetOneFixer (alpha f1 major + gamma f1 blocker -> len(fixSpecs)==1 with both findings) and internal/api TestFixChangeSetEngine (one fixer session, prompt names both findings). New commit with Review: naming the run: TestFixChangeSetEngine (fixer commits Review: R1, judged pass on that commit) and TestReviewCommit (none / other run / no Review trailer / found / only since start). Failed checks re-run after it: TestFixChangeSetOneFixer (review-fix-judged precedes cycle-2 check sessions; only alpha and gamma re-run) and TestFixChangeSetEngine (judged entry before cycle 2 check). Fixer without such a commit fails the cycle: TestFixChangeSetNoCommitFailsCycle (alpha cycle 2 'fix failed: change set: fixer failed: no new commit', step fails) and TestFixChangeSetEngineNoCommit (commit naming another run -> fail, no re-check). internal/check change only adds a Commit.Reviews field, read by api ReviewCommit, not by any check rule; go test ./internal/check and the check/review/build scripts pass, so rhiza check is unchanged. Full go test ./... passed.",
+          "tests": "env -u RHIZA_CHANGE -u RHIZA_ACTOR -u RHIZA_FOR -u RHIZA_RUN -u RHIZA_SESSION -u RHIZA_ROOT go test ./internal/run -run 'TestFixChangeSet|TestReviewFixFold' -v -count=1; same env: go test ./internal/api -run 'TestReviewCommit|TestFixChangeSet' -v -count=1; go test ./internal/check -count=1; go test ./cmd/rhiza -run 'TestScripts/(review-|build-|check)' -count=1; go test ./... -count=1. Commit 5b498bc; run by claude-code-0e5a9d92-verifier on 2026-10-27"
+        },
+        "handle": "review-fix-change-set-verified",
+        "id": "01M5ZXXVWBC99GDC6MQ5ZDCRXT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5ZXXVWBC99GDC6MQ2251Z4K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5ZXXVWBC99GDC6MQ2251Z4K",
+        "id": "01M5ZXXW1MR50JH9G8JFS8DANA",
+        "link": "01M5ZXXW1MR50JH9G8JEZCQ827",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EJRDQ0F1VZBYFM5K6DXX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZ1V0JVVW8FPX0QYMRWJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5ZXXW9WZMD0VRVG18S3RT3E",
+  "type": "ops",
+  "v": 1
+}
