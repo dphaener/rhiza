@@ -10,6 +10,8 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
@@ -89,7 +91,8 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	}
 	rs := run.NewStore(run.Dir(common))
 	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}}
-	pending := map[string]time.Time{}
+	pending := map[string]daemonPending{}
+	unjournaled := map[string]daemonPending{}
 	state := daemon.State{Process: self, MaxRuns: r.MaxRuns, Autonomous: r.Autonomous, Runs: []daemon.LiveRun{}}
 	if prev, ok := daemon.ReadState(common); ok {
 		state.LastStarted, state.LastResumed = prev.LastStarted, prev.LastResumed
@@ -107,7 +110,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		daemon.WriteState(common, state)
 	}()
 	poll := func() error {
-		started, resumed, err := daemonPoll1(ctx, rs, pending, r.MaxRuns, r.Autonomous)
+		started, resumed, err := daemonPoll1(ctx, rs, pending, unjournaled, r.MaxRuns, r.Autonomous)
 		resp.Started = append(resp.Started, started...)
 		resp.Resumed = append(resp.Resumed, resumed...)
 		if len(started) > 0 {
@@ -116,6 +119,11 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		if len(resumed) > 0 {
 			state.LastResumed = &daemon.Event{Run: resumed[len(resumed)-1], At: ctx.Now().UTC()}
 		}
+		state.Unjournaled = []daemon.Event{}
+		for cs, p := range unjournaled {
+			state.Unjournaled = append(state.Unjournaled, daemon.Event{Change: cs, At: p.at.UTC()})
+		}
+		slices.SortFunc(state.Unjournaled, func(a, b daemon.Event) int { return strings.Compare(a.Change, b.Change) })
 		saveState()
 		return err
 	}
@@ -146,10 +154,58 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 // running while its run has no journal yet.
 const daemonStartGrace = time.Minute
 
+// daemonPending is a start of the daemon's: when, and how many runs the
+// change set had then, so a new journal shows as one more.
+type daemonPending struct {
+	at   time.Time
+	runs int
+}
+
+// daemonHeld settles pending against runs at now and returns the change
+// sets still pending, which count as running. A start whose change set has
+// a new journal is dropped from pending. One with none once the grace
+// passed failed before it journaled (a refused permission mode, a dirty
+// worktree, a usage error): it moves to unjournaled, which are not picked
+// again for the daemon's life, nor take a slot, until a journal of the
+// change set shows.
+func daemonHeld(pending map[string]daemonPending, unjournaled map[string]daemonPending, runs []run.Journal, now time.Time) []string {
+	var held []string
+	for cs, p := range pending {
+		switch {
+		case daemonRunsOf(runs, cs) > p.runs:
+			delete(pending, cs)
+		case now.Sub(p.at) >= daemonStartGrace:
+			delete(pending, cs)
+			unjournaled[cs] = p
+		default:
+			held = append(held, cs)
+		}
+	}
+	for cs, p := range unjournaled {
+		if daemonRunsOf(runs, cs) > p.runs {
+			// A run of it journaled since (the owner started one): its
+			// runs say what to do with it now.
+			delete(unjournaled, cs)
+		}
+	}
+	slices.Sort(held)
+	return held
+}
+
+// daemonRunsOf counts the runs of change set cs.
+func daemonRunsOf(runs []run.Journal, cs string) int {
+	n := 0
+	for _, j := range runs {
+		if j.State().Change == cs {
+			n++
+		}
+	}
+	return n
+}
+
 // daemonPoll1 picks and starts runs once. pending holds the change sets
-// started and when; entries are dropped once their run has a journal or
-// the grace passed.
-func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]time.Time, max int, autonomous bool) ([]string, []string, error) {
+// started; unjournaled those whose start never journaled (see daemonHeld).
+func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, autonomous bool) ([]string, []string, error) {
 	res, _, _, err := planRead(ctx, "daemon", "")
 	if err != nil {
 		return nil, nil, err
@@ -178,21 +234,15 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]time.Time, max int,
 		}
 		resumed = append(resumed, id)
 	}
-	var held []string
-	for cs, at := range pending {
-		if ctx.Now().Sub(at) >= daemonStartGrace {
-			delete(pending, cs)
-			continue
-		}
-		held = append(held, cs)
-	}
+	held := daemonHeld(pending, unjournaled, runs, ctx.Now())
+	cands = slices.DeleteFunc(cands, func(cs string) bool { _, ok := unjournaled[cs]; return ok })
 	picked := daemon.Pick(cands, runs, held, host, nil, max)
 	var started []string
 	for _, cs := range picked {
 		if err := daemonStart(ctx, cs, autonomous); err != nil {
 			return started, resumed, err
 		}
-		pending[cs] = ctx.Now()
+		pending[cs] = daemonPending{at: ctx.Now(), runs: daemonRunsOf(runs, cs)}
 		started = append(started, cs)
 	}
 	return started, resumed, nil
@@ -285,16 +335,17 @@ type DaemonEvent struct {
 // DaemonStatusResponse is the daemon's state. While no daemon holds the
 // lock, Running is false and the rest, if any, is what the last daemon left.
 type DaemonStatusResponse struct {
-	Running     bool         `json:"running" desc:"True while a live daemon holds the repository's lock"`
-	Process     string       `json:"process,omitempty" desc:"The daemon's process, as host:pid; absent when none ever ran"`
-	Started     string       `json:"started,omitempty" desc:"When the daemon started, RFC 3339 UTC"`
-	LastPoll    string       `json:"last_poll,omitempty" desc:"When it last polled, RFC 3339 UTC"`
-	Stopped     string       `json:"stopped,omitempty" desc:"When the last daemon stopped, RFC 3339 UTC; absent while it runs"`
-	MaxRuns     int          `json:"max_runs,omitempty" desc:"How many runs it keeps running at once"`
-	Autonomous  bool         `json:"autonomous" desc:"True when it starts each run with --autonomous"`
-	Runs        []DaemonRun  `json:"runs" desc:"The live runs (running or interrupted) as of its last poll"`
-	LastStarted *DaemonEvent `json:"last_started,omitempty" desc:"The run it last started; absent if none"`
-	LastResumed *DaemonEvent `json:"last_resumed,omitempty" desc:"The run it last resumed; absent if none"`
+	Running     bool          `json:"running" desc:"True while a live daemon holds the repository's lock"`
+	Process     string        `json:"process,omitempty" desc:"The daemon's process, as host:pid; absent when none ever ran"`
+	Started     string        `json:"started,omitempty" desc:"When the daemon started, RFC 3339 UTC"`
+	LastPoll    string        `json:"last_poll,omitempty" desc:"When it last polled, RFC 3339 UTC"`
+	Stopped     string        `json:"stopped,omitempty" desc:"When the last daemon stopped, RFC 3339 UTC; absent while it runs"`
+	MaxRuns     int           `json:"max_runs,omitempty" desc:"How many runs it keeps running at once"`
+	Autonomous  bool          `json:"autonomous" desc:"True when it starts each run with --autonomous"`
+	Runs        []DaemonRun   `json:"runs" desc:"The live runs (running or interrupted) as of its last poll"`
+	LastStarted *DaemonEvent  `json:"last_started,omitempty" desc:"The run it last started; absent if none"`
+	LastResumed *DaemonEvent  `json:"last_resumed,omitempty" desc:"The run it last resumed; absent if none"`
+	Unjournaled []DaemonEvent `json:"unjournaled" desc:"The runs it started that never wrote a journal, by change set and when; it starts these no more until it restarts or a run of the change set journals"`
 }
 
 // Human writes the status as text.
@@ -323,6 +374,9 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 	if e := r.LastResumed; e != nil {
 		fmt.Fprintf(w, "Last resumed: run %s at %s\n", e.Run, e.At)
 	}
+	for _, e := range r.Unjournaled {
+		fmt.Fprintf(w, "Not journaled: the run of %s started at %s wrote no journal; not started again until the daemon restarts\n", e.Change, e.At)
+	}
 }
 
 // runDaemonStatus reads the lock and the state file. Without a live
@@ -333,7 +387,7 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp := DaemonStatusResponse{Runs: []DaemonRun{}}
+	resp := DaemonStatusResponse{Runs: []DaemonRun{}, Unjournaled: []DaemonEvent{}}
 	_, resp.Running = daemon.Running(common)
 	st, ok := daemon.ReadState(common)
 	if !ok || (resp.Running && st.Process != daemon.ReadHolder(common)) {
@@ -356,6 +410,9 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 	}
 	resp.LastStarted = daemonEvent(st.LastStarted)
 	resp.LastResumed = daemonEvent(st.LastResumed)
+	for _, e := range st.Unjournaled {
+		resp.Unjournaled = append(resp.Unjournaled, *daemonEvent(&e))
+	}
 	return resp, nil
 }
 

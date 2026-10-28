@@ -1370,12 +1370,38 @@ cmp stdout describe.golden.json
           "stopped": {
             "description": "When the last daemon stopped, RFC 3339 UTC; absent while it runs",
             "type": "string"
+          },
+          "unjournaled": {
+            "description": "The runs it started that never wrote a journal, by change set and when; it starts these no more until it restarts or a run of the change set journals",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "at": {
+                  "description": "When, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "change": {
+                  "description": "The change set whose run was started; absent for a resume",
+                  "type": "string"
+                },
+                "run": {
+                  "description": "The run that was resumed; absent for a start",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "at"
+              ],
+              "type": "object"
+            },
+            "type": "array"
           }
         },
         "required": [
           "autonomous",
           "running",
-          "runs"
+          "runs",
+          "unjournaled"
         ],
         "type": "object"
       },

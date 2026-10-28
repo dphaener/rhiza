@@ -39,6 +39,9 @@ type State struct {
 	Runs        []LiveRun `json:"runs"`
 	LastStarted *Event    `json:"last_started,omitempty"`
 	LastResumed *Event    `json:"last_resumed,omitempty"`
+	// Unjournaled are the starts whose run never wrote a journal, by
+	// change set: the daemon does not start them again while it runs.
+	Unjournaled []Event `json:"unjournaled,omitempty"`
 }
 
 // WriteState replaces the state file, whole.

@@ -83,3 +83,34 @@ func TestDaemonPicks(t *testing.T) {
 		t.Errorf("with %s pending picked %v", first, got)
 	}
 }
+
+// A start whose run journals leaves pending. One that never journals is
+// held past the grace, taking no slot, until a new journal of its change
+// set shows.
+func TestDaemonHeld(t *testing.T) {
+	at := time.Unix(1700000000, 0)
+	old := pickJournal("B")
+	pending := map[string]daemonPending{"A": {at: at}, "B": {at: at, runs: 1}}
+	unjournaled := map[string]daemonPending{}
+
+	if got := daemonHeld(pending, unjournaled, []run.Journal{old}, at.Add(time.Second)); !slices.Equal(got, []string{"A", "B"}) {
+		t.Fatalf("in the grace held %v", got)
+	}
+	if got := daemonHeld(pending, unjournaled, []run.Journal{old, pickJournal("A")}, at.Add(time.Second)); !slices.Equal(got, []string{"B"}) {
+		t.Fatalf("after A journaled held %v", got)
+	}
+	if got := daemonHeld(pending, unjournaled, []run.Journal{old}, at.Add(daemonStartGrace)); len(got) != 0 || len(pending) != 0 {
+		t.Fatalf("past the grace held %v, pending %v", got, pending)
+	}
+	if _, ok := unjournaled["B"]; !ok || len(unjournaled) != 1 {
+		t.Fatalf("unjournaled = %v", unjournaled)
+	}
+	daemonHeld(pending, unjournaled, []run.Journal{old}, at.Add(time.Hour))
+	if _, ok := unjournaled["B"]; !ok {
+		t.Fatalf("B left unjournaled with no new journal")
+	}
+	daemonHeld(pending, unjournaled, []run.Journal{old, pickJournal("B")}, at.Add(time.Hour))
+	if len(unjournaled) != 0 {
+		t.Fatalf("B still unjournaled after a new journal: %v", unjournaled)
+	}
+}
