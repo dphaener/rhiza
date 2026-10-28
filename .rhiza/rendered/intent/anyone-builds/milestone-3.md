@@ -42,6 +42,7 @@ Rhiza's own workflows: milestone 4 is planned, built and reviewed by Rhiza, with
 - serves change set `01M5WPTXDS9R3BJVS8PNJQZ834` (The plan workflow: Rhiza interviews the owner one topic at a time and writes a milestone or change set straight into the model, with a Source, Decisions quoting the owner's typed words, a capped plan review, and acceptance as the gate.)
 - serves change set `01M5WPTY7P14SSHQ1FJ0WA8ZR4` (The build workflow: Rhiza's run engine conducts a change set's leaves, a builder session and then a fresh verifier session per leaf in panes of its tab, with only the verifier writing the leaf's Evidence and retries capped on stronger models.)
 - serves change set `01M5WPTZ1V0JVVW8FPX0QYMRWJ` (The review workflow: fresh sessions check compliance, quality, hands-on QA, scope and the model, a critic that can't add findings settles failed checks, fixes go back per leaf at most twice, and the owner signs off with rhiza run approve.)
+- serves change set `01M5WPTZVV50AKZ4G5MZ7HMDKC` (ship-change on Rhiza's workflows: its agent step runs Rhiza's build and review and waits for the owner's sign-off, in place of shipit.)
 - serves change set `01M5X3GBH4ZQTZVXFEHR966747` (ship-change that holds up: the agent step passes only when the agent says it is done, land renders with the branch's own build in Rhiza's repo, a PR that main has moved past is rebased, and a failed run can be resumed from the step that failed.)
 
 ## History

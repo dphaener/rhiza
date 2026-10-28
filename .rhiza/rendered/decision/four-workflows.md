@@ -26,11 +26,14 @@ the orchestrator's proposal in the milestone-3 conversation, accepted by the own
 
 ### In
 
+- relates-to [answer-cb8bd934-1](answer-cb8bd934-1.md) — refines four-workflows: ship-change runs build and review as two workflow steps, not through an agent step
 - decided-by [milestone-3](../intent/anyone-builds/milestone-3.md)
 - decided-by [plan-workflow](../capability/rhiza/workflows/built-in-workflows/plan-workflow.md)
 - decided-by [plan-workflow-file](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-workflow-file.md)
 - decided-by [build-workflow-file](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-workflow-file.md)
 - decided-by [review-workflow-file](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-workflow-file.md)
+- decided-by [ship-through-rhiza](../capability/ship-through-rhiza.md)
+- decided-by [ship-change-file](../capability/ship-through-rhiza/ship-change-file.md)
 
 ## History
 

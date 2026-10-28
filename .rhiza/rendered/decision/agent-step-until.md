@@ -14,7 +14,7 @@ the orchestrator's ruling, under the owner's authorization to amend plans
 
 ### In
 
-- decided-by [shipit-agent-step](../capability/rhiza/workflows/built-in-workflows/shipit-agent-step.md)
+- decided-by shipit-agent-step (retired)
 
 ## History
 

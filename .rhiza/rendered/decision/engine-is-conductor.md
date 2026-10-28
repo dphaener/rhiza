@@ -28,6 +28,7 @@ the owner's own words in the milestone-3 conversation
 
 - decided-by [milestone-3](../intent/anyone-builds/milestone-3.md)
 - decided-by [build-leaves-step](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-leaves-step.md)
+- decided-by [workflow-step](../capability/ship-through-rhiza/workflow-step.md)
 
 ## History
 

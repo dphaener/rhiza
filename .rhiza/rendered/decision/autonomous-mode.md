@@ -36,6 +36,7 @@ the owner's own words in the milestone-3 conversation ("autonomous mode that ski
 - decided-by [plan-autonomous-interview](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-autonomous-interview.md)
 - decided-by [plan-gate](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-gate.md)
 - decided-by [review-signoff](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-signoff.md)
+- decided-by [ship-signoff](../capability/ship-through-rhiza/ship-signoff.md)
 
 ## History
 

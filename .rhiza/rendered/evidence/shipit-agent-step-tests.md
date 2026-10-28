@@ -18,12 +18,6 @@ verified
 
 TestScripts/run-ship-change; internal/workflow TestBuiltinsParse, TestAgentStepUntil; internal/run TestAgentUntilHoldsWhenIdle, TestAgentUntilFailsKeepsWaiting, TestAgentUntilNotCheckedWhileBlocked, TestAgentUntilErrorFailsRun; internal/api TestShipCheckPROpen
 
-## Links
-
-### Out
-
-- verifies [shipit-agent-step](../capability/rhiza/workflows/built-in-workflows/shipit-agent-step.md)
-
 ## History
 
 - `01M5SZJ03NQS0A389JF8TTMF6M` The ship-change workflow: shipit as the agent step, then wait for a green PR, a merge pinned to the checked head, the close-out (branch, worktree, CI on main, the repo's ship command), and land with the PR and CI recorded as Evidence.

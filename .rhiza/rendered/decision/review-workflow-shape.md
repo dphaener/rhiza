@@ -40,6 +40,7 @@ the orchestrator's proposal in the milestone-3 conversation, accepted by the own
 - decided-by [review-summary](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-summary.md)
 - decided-by [review-guide](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-guide.md)
 - decided-by [review-workflow-file](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-workflow-file.md)
+- decided-by [ship-open-pr](../capability/ship-through-rhiza/ship-open-pr.md)
 
 ## History
 
