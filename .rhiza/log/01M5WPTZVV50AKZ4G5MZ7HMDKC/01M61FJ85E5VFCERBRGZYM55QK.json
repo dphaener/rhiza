@@ -1,0 +1,132 @@
+{
+  "actor": "01M61FCN33BB3VKZZA9B302ACT",
+  "after": [
+    "01M61FC9PM1P17Z0MV3T5CRCKN"
+  ],
+  "at": "2026-10-28T14:45:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built this branch's binary at 731d7f7 (go build ./cmd/rhiza) and drove it in a fresh rhiza init repo with a bare origin, only rex/claude/gh faked, built-in build/review/ship-change unmodified, on a two-leaf change set (second depends-on first). rhiza run start ran build/build, build/check, render, review/code, review/review (5 of 5 checks), render-pr, open-pr, wait-pr, pr-green and stopped at signoff; a fresh clone of the pushed cs/ship-it passed rhiza check. rhiza run request-changes (one qa finding on leaf second) ran the fixer and verifier on second, re-ran only qa as cycle 2, then render-pr (visit 2) committed 'Render after the review', open-pr pushed and edited the PR; a fresh clone of the re-pushed head passed rhiza check, its rendered/actor pages including the cycle-2 fixer, verifier and qa sessions (the cycle-4 failure is gone). rhiza run approve ran rebase through land, merge, main-green, close-out and ship; the run succeeded, the change set landed, main passed rhiza check, worktree and origin branch gone, no shipit in any output."
+        },
+        "handle": "ship-change-file-qa-5",
+        "id": "01M61FJ66ZW6ZRSDNQVQTRRQGA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M61FJ66ZW6ZRSDNQVNX2SN31",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61FJ66ZW6ZRSDNQVNX2SN31",
+        "id": "01M61FJ6CWKKE7MCFVHAWD9G1M",
+        "link": "01M61FJ6CWKKE7MCFVH7XHEK4V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built this branch's binary at 731d7f7 (go build ./cmd/rhiza) and drove it in a fresh rhiza init repo with a bare origin, only rex/claude/gh faked, built-in build/review/ship-change unmodified, on a two-leaf change set (second depends-on first). The run stopped at signoff after green CI, run status naming https://github.test/o/r/pull/7; request-changes with one finding on leaf second started that leaf's fixer (its prompt held the finding) and verifier, re-ran only the qa check as cycle 2 under review/review, called open-pr again (1 pr create, 1 pr edit), waited for CI and stopped at signoff visit 2; rhiza run approve then moved on to rebase and land and the run succeeded; a second rhiza run approve exited 2."
+        },
+        "handle": "ship-signoff-qa-5",
+        "id": "01M61FJ6JSPXGW78XBC9HVBVK6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M61FJ6JSPXGW78XBC7DDDT0K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61FJ6JSPXGW78XBC7DDDT0K",
+        "id": "01M61FJ6RRJ844VF0YTZ1EBHJ9",
+        "link": "01M61FJ6RRJ844VF0YTYY8R5F0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XRQTCA20KGMAN4KKZJ5D",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built this branch's binary at 731d7f7 (go build ./cmd/rhiza) and drove it in a fresh rhiza init repo with a bare origin, only rex/claude/gh faked, built-in build/review/ship-change unmodified, on a two-leaf change set (second depends-on first). In the ship-change run, open-pr pushed cs/ship-it and ran gh pr create once with title 'Ship it' and a body holding the run summary; after request-changes the second open-pr pushed the new head and ran gh pr edit, no second create; pr-green's rhiza ship check read the recorded PR. rhiza ship open-pr outside a run exited 2 naming that RHIZA_RUN is not set."
+        },
+        "handle": "ship-open-pr-qa-5",
+        "id": "01M61FJ6YPNZ261XQJ02TC6PSC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M61FJ6YPNZ261XQHZZV95X4C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61FJ6YPNZ261XQHZZV95X4C",
+        "id": "01M61FJ74N8PDR8JRZMK6H2WCG",
+        "link": "01M61FJ74N8PDR8JRZMF8VQ2DH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XR9JBAHCDW9FXRCVJRFW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built this branch's binary at 731d7f7 (go build ./cmd/rhiza) and drove it in a fresh rhiza init repo with a bare origin, only rex/claude/gh faked, built-in build/review/ship-change unmodified, on a two-leaf change set (second depends-on first). rhiza run start on an accepted change set with no leaves exited 3 with 'has no leaves: ship-change builds and reviews its leaves, so plan it first' and next 'rhiza run start --workflow plan', no new run journal and no worktree made; the same command on the two-leaf change set started the run."
+        },
+        "handle": "ship-needs-leaves-qa-5",
+        "id": "01M61FJ7AG0WNHFAEC5VTTDV07",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M61FJ7AG0WNHFAEC5R8QRGRV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61FJ7AG0WNHFAEC5R8QRGRV",
+        "id": "01M61FJ7GBFANTQ6BZBMCQTS9P",
+        "link": "01M61FJ7GBFANTQ6BZBM6X2KH6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSFSMXX93SBZP3ZZPZTQ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built this branch's binary at 731d7f7 (go build ./cmd/rhiza) and drove it in a fresh rhiza init repo with a bare origin, only rex/claude/gh faked, built-in build/review/ship-change unmodified, on a two-leaf change set (second depends-on first). ship-change's build and review workflow steps ran their inner steps in the same run and journal (build/build, build/check, review/code, review/review), review's signoff skipped, the outer on.pass taken to render and render-pr; request-changes re-entered at review/review."
+        },
+        "handle": "workflow-step-qa-5",
+        "id": "01M61FJ7P7T0H8FY3B6BEJ9BQZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M61FJ7P7T0H8FY3B6858W6BX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61FJ7P7T0H8FY3B6858W6BX",
+        "id": "01M61FJ7W5EPYV880KVJSBB9NS",
+        "link": "01M61FJ7W5EPYV880KVJJKEDGG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XQV4XPRTXNA7KE1AKET4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M61FJ85E5VFCERBRGZYM55QK",
+  "type": "ops",
+  "v": 1
+}
