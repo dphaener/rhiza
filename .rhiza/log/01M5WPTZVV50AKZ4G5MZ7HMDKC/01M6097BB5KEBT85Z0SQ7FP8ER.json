@@ -1,0 +1,40 @@
+{
+  "actor": "01M6090XY5YSQ8NQVAG9ZT4GN7",
+  "after": [
+    "01M6093XKPXTF1XGB4T106HJ5B"
+  ],
+  "at": "2026-10-28T03:35:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 91e157b I ran `go test ./cmd/rhiza -run TestScripts/run-ship-needs-leaves -count=1 -v`: on a change set with no leaves, `rhiza run start --workflow ship-change` exited 3 with 'change set ... has no leaves: ship-change builds and reviews its leaves, so plan it first' and 'next: rhiza run start plan' (the --json form carried \"next\": \"rhiza run start plan\"), .git/rhiza/runs did not exist and `git worktree list` showed only the main checkout; after adding capability `thing` the same command printed 'Run <id> succeeded' and journaled the run. The diff puts checkShipLeaves in runRunStart after the change set resolves and before newRunID, the journal or the worktree are made. `go test ./...`, go vet and gofmt passed; make self-check failed only on rendered files for this verifier session's own actor, which is not in the leaf commit."
+        },
+        "handle": "ship-needs-leaves-verified",
+        "id": "01M6097AWRRRXHTGNSX7BH9E55",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6097AWRRRXHTGNSX4983MTR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6097AWRRRXHTGNSX4983MTR",
+        "id": "01M6097B2FQ1E9EQ7TZ8H69GTB",
+        "link": "01M6097B2FQ1E9EQ7TZ6KAF61F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSFSMXX93SBZP3ZZPZTQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6097BB5KEBT85Z0SQ7FP8ER",
+  "type": "ops",
+  "v": 1
+}

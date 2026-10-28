@@ -175,15 +175,18 @@ const (
 // Started is what a run needs to be resumed: the definition as it was
 // when the run began, and where and how it runs.
 type Started struct {
-	Workflow       string `json:"workflow"`
-	WorkflowPath   string `json:"workflow_path,omitempty"`
-	Definition     string `json:"definition"`
-	Change         string `json:"change"`
-	Title          string `json:"title,omitempty"`
-	Worktree       string `json:"worktree,omitempty"`
-	Branch         string `json:"branch,omitempty"`
-	PermissionMode string `json:"permission_mode,omitempty"`
-	Agent          string `json:"agent,omitempty"`
+	Workflow     string `json:"workflow"`
+	WorkflowPath string `json:"workflow_path,omitempty"`
+	Definition   string `json:"definition"`
+	// Includes holds the source of each workflow the definition's
+	// workflow steps include, by name, as the run started with them.
+	Includes       map[string]string `json:"includes,omitempty"`
+	Change         string            `json:"change"`
+	Title          string            `json:"title,omitempty"`
+	Worktree       string            `json:"worktree,omitempty"`
+	Branch         string            `json:"branch,omitempty"`
+	PermissionMode string            `json:"permission_mode,omitempty"`
+	Agent          string            `json:"agent,omitempty"`
 	// Autonomous is true for a run started without the owner: it skips
 	// the owner's gates and questions, recording each. It never changes
 	// an agent's permissions.
@@ -919,6 +922,7 @@ type State struct {
 	PermissionMode string
 	Agent          string
 	Definition     string
+	Includes       map[string]string
 	StartedAt      time.Time
 	// Autonomous is the started entry's Autonomous: the run goes on
 	// without the owner, and every agent it launches is told so.
@@ -1185,6 +1189,7 @@ func (j Journal) State() State {
 				st.PermissionMode = s.PermissionMode
 				st.Agent = s.Agent
 				st.Definition = s.Definition
+				st.Includes = s.Includes
 				st.Autonomous = s.Autonomous
 			}
 		case TypeEntered:

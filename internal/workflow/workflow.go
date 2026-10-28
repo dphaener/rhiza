@@ -45,6 +45,10 @@ const (
 	// run request-changes ends it with outcome changes, which goes back
 	// to a checks step.
 	KindSignoff = "signoff"
+	// KindWorkflow runs another workflow's steps inside this run. It is
+	// expanded when the file is parsed: the definition holds the inner
+	// workflow's steps, named <workflow>/<step>, and no workflow step.
+	KindWorkflow = "workflow"
 )
 
 // Leaves step roles: the sub-tables of a leaves step. A checks step has a
@@ -139,6 +143,9 @@ var kindOutcomes = map[string][]string{
 	KindLeaves:  {OutcomePass, OutcomeFail},
 	KindChecks:  {OutcomePass, OutcomeFail},
 	KindSignoff: {OutcomePass, OutcomeChanges},
+	// A workflow step passes when the inner workflow ends done and fails
+	// when it ends failed.
+	KindWorkflow: {OutcomePass, OutcomeFail},
 }
 
 // Definition is a loaded, validated workflow.
@@ -151,7 +158,24 @@ type Definition struct {
 	// Order holds the step names in file order; Order[0] is the first step
 	// in the file.
 	Order []string
+	// Includes holds the source of every workflow a workflow step named,
+	// directly or through another, by name: what a run must keep to parse
+	// this definition again as it was.
+	Includes map[string]string
+
+	// declared describes each step the file declares, by its name, in
+	// terms of the flat steps: see declStep.
+	declared map[string]declStep
 }
+
+// declStep is a declared step as seen by a workflow that includes this
+// one: where it is entered and where it goes when it passes ("done" when
+// the workflow ends).
+type declStep struct{ entry, pass string }
+
+// Resolver gives the source of the workflow called name, for a workflow
+// step.
+type Resolver func(name string) ([]byte, error)
 
 // Step is one named step of a workflow.
 type Step struct {
@@ -200,6 +224,11 @@ type Step struct {
 	Split string
 	// MaxVisits caps how often a run may enter the step; 0 means 1.
 	MaxVisits int
+	// Workflow and Skip are a workflow step's included workflow and the
+	// steps of it to take as passed. They are gone from a parsed
+	// definition, whose workflow steps are expanded.
+	Workflow string
+	Skip     []string
 	// On maps an outcome to the next step, or to done or failed.
 	On map[string]string
 }
@@ -435,6 +464,8 @@ type fileStep struct {
 	Prompt         string            `toml:"prompt"`
 	MaxVisits      int               `toml:"max_visits"`
 	Models         []string          `toml:"models"`
+	Workflow       string            `toml:"workflow"`
+	Skip           []string          `toml:"skip"`
 	Split          string            `toml:"split"`
 	Builder        *fileRole         `toml:"builder"`
 	Verifier       *fileRole         `toml:"verifier"`
@@ -480,6 +511,23 @@ func Load(path string) (*Definition, error) {
 // Parse decodes and validates a workflow. name is the workflow's name when
 // the file sets none. Any key the format does not know is an error.
 func Parse(name string, data []byte) (*Definition, error) {
+	return ParseWith(name, data, nil)
+}
+
+// ParseWith parses as Parse does, resolving each workflow step's workflow
+// with resolve; without one a workflow step is an error. The included
+// workflows' steps replace the workflow step, named <workflow>/<step>.
+func ParseWith(name string, data []byte, resolve Resolver) (*Definition, error) {
+	includes := map[string]string{}
+	d, err := parse(name, data, resolve, []string{name}, includes)
+	if err != nil {
+		return nil, err
+	}
+	d.Includes = includes
+	return d, nil
+}
+
+func parse(name string, data []byte, resolve Resolver, stack []string, includes map[string]string) (*Definition, error) {
 	var f fileDef
 	md, err := toml.Decode(string(data), &f)
 	if err != nil {
@@ -520,15 +568,18 @@ func Parse(name string, data []byte) (*Definition, error) {
 		}
 	}
 
-	d.Start = d.Order[0]
+	start := d.Order[0]
 	if f.Start != "" {
 		if _, ok := d.Steps[f.Start]; !ok {
 			return nil, fmt.Errorf("start names %q, which is not a step; want one of %s", f.Start, strings.Join(d.Order, ", "))
 		}
-		d.Start = f.Start
+		start = f.Start
 	}
-	if d.Steps[d.Start].Kind == KindArbiter {
-		return nil, fmt.Errorf("step %q is an arbiter step and cannot be the start step: the engine calls it on a question; start at another step", d.Start)
+	if d.Steps[start].Kind == KindArbiter {
+		return nil, fmt.Errorf("step %q is an arbiter step and cannot be the start step: the engine calls it on a question; start at another step", start)
+	}
+	if err := d.expand(start, resolve, stack, includes); err != nil {
+		return nil, err
 	}
 	return d, nil
 }
@@ -614,11 +665,19 @@ func buildStep(name string, fs fileStep) (Step, error) {
 	}
 
 	switch fs.Kind {
-	case KindAgent, KindWait, KindCommand, KindArbiter, KindLeaves, KindChecks, KindSignoff:
+	case KindAgent, KindWait, KindCommand, KindArbiter, KindLeaves, KindChecks, KindSignoff, KindWorkflow:
 	case "":
-		return fail("no kind: want agent, wait, command, arbiter, leaves, checks or signoff")
+		return fail("no kind: want agent, wait, command, arbiter, leaves, checks, signoff or workflow")
 	default:
-		return fail("unknown kind %q: want agent, wait, command, arbiter, leaves, checks or signoff", fs.Kind)
+		return fail("unknown kind %q: want agent, wait, command, arbiter, leaves, checks, signoff or workflow", fs.Kind)
+	}
+	if fs.Kind != KindWorkflow {
+		if fs.Workflow != "" {
+			return fail("workflow is only for workflow steps; %s step cannot have it", article(fs.Kind))
+		}
+		if fs.Skip != nil {
+			return fail("skip is only for workflow steps; %s step cannot have it", article(fs.Kind))
+		}
 	}
 	if fs.Models != nil && fs.Kind != KindAgent {
 		if fs.Kind == KindChecks {
@@ -667,6 +726,8 @@ func buildStep(name string, fs fileStep) (Step, error) {
 		return buildChecks(s, fs, fail)
 	case KindSignoff:
 		return buildSignoff(s, fs, fail)
+	case KindWorkflow:
+		return buildWorkflow(s, fs, fail)
 	}
 
 	if fs.Run != "" && fs.Kind != KindCommand {
@@ -1025,6 +1086,12 @@ func checkTargets(s Step, steps map[string]Step) error {
 		if t == TargetDone || t == TargetFailed {
 			continue
 		}
+		if w, _, ok := strings.Cut(t, "/"); ok {
+			// A step of an included workflow, checked once expanded.
+			if ws, ok := steps[w]; ok && ws.Kind == KindWorkflow {
+				continue
+			}
+		}
 		ts, ok := steps[t]
 		if !ok {
 			return fmt.Errorf("step %q: on.%s names %q, which is not a step; want a step or done or failed", s.Name, o, t)
@@ -1037,6 +1104,9 @@ func checkTargets(s Step, steps map[string]Step) error {
 		t, ok := s.On[OutcomeChanges]
 		if !ok {
 			return fmt.Errorf("step %q: a signoff step needs on.changes = \"<checks step>\": the checks step that fixes what the owner asks for", s.Name)
+		}
+		if w, _, cut := strings.Cut(t, "/"); cut && steps[w].Kind == KindWorkflow {
+			return nil
 		}
 		if ts, ok := steps[t]; !ok || ts.Kind != KindChecks {
 			return fmt.Errorf("step %q: on.changes names %q, which is not a checks step; want the checks step that fixes what the owner asks for", s.Name, t)

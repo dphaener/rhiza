@@ -1,10 +1,58 @@
 name = "ship-change"
 
+# Ship a change set through Rhiza's own build and review: the build
+# workflow's leaves, a render of what build's sessions wrote, the review
+# workflow's code check and checks with its sign-off skipped, the pull
+# request opened with the review's summary, CI, and then the owner's
+# sign-off here. rhiza run request-changes goes back into
+# review's checks step (review/review); render-pr then renders again,
+# ship open-pr pushes and replaces the PR body, and the run waits for CI
+# and signs off again.
 [step.build]
-kind = "agent"
-prompt = "/shipit:go Carry out Rhiza change set {change} ({title}). Start from `rhiza slice --change {change} --json`, then follow `rhiza guide`. Work on branch cs/{slug} in this worktree, push it and open a pull request. Don't run rhiza land and don't merge: this run waits for CI, lands the change set, merges and closes out. Your very last action, after the owner's sign-off and once nothing is left to do, is to run `rhiza session done`: this run moves on only then, never because you sit idle."
-until = "rhiza ship check --pr-open"
-until_when = "done"
+kind = "workflow"
+workflow = "build"
+on.pass = "render"
+
+# Build's sessions register actors and write Evidence, which leaves
+# .rhiza/rendered stale, and review's code step runs rhiza check. Render
+# and commit the rendered folder on the branch first, with the .rhiza/log
+# entries the sessions left uncommitted (their actor records), so the
+# pushed branch holds every record its pages are built from; nothing to
+# render commits nothing.
+[step.render]
+kind = "command"
+run = """
+rhiza render &&
+git add -A -- .rhiza/rendered .rhiza/log &&
+{ git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
+  git commit -q -m 'Render after the build' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
+"""
+on.pass = "review"
+
+[step.review]
+kind = "workflow"
+workflow = "review"
+skip = ["signoff"]
+on.pass = "render-pr"
+
+# Render again right before every push: review's fixers and verifiers,
+# and its checks, write records too, here and after each
+# request-changes, so the pushed branch still passes rhiza check.
+[step.render-pr]
+kind = "command"
+run = """
+rhiza render &&
+git add -A -- .rhiza/rendered .rhiza/log &&
+{ git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
+  git commit -q -m 'Render after the review' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
+"""
+max_visits = 3
+on.pass = "open-pr"
+
+[step.open-pr]
+kind = "command"
+run = "rhiza ship open-pr"
+max_visits = 3
 on.pass = "wait-pr"
 
 [step.wait-pr]
@@ -12,12 +60,20 @@ kind = "wait"
 until = "rhiza ship check --settled"
 timeout = "2h"
 interval = "30s"
+max_visits = 3
 on.pass = "pr-green"
 
 [step.pr-green]
 kind = "command"
 run = "rhiza ship check"
+max_visits = 3
+on.pass = "signoff"
+
+[step.signoff]
+kind = "signoff"
+max_visits = 3
 on.pass = "rebase"
+on.changes = "review/review"
 
 [step.rebase]
 kind = "command"

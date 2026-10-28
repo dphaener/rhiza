@@ -5,9 +5,9 @@
 # Then a repo's own .rhiza/workflows/ship-change.toml replaces the built-in
 # by name: run start with no --workflow runs it instead.
 #
-# The fakes are run-ship-change.txtar's, except that gh reports the test
-# check failed and answers nothing but pr view, and the agent says done and
-# exits 0: the build step then passes because the PR is open.
+# The fakes and the repo's review are run-ship-change.txtar's, except that
+# the builder commits feature.txt, and gh reports the test check failed and
+# answers nothing but pr view, pr create and pr edit.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -19,6 +19,8 @@ cd repo
 exec git init -q
 exec git remote add origin $WORK/origin.git
 exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
 exec rhiza change new 'Ship it' --title 'Ship it' --json
 stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
 exec rhiza add capability shipping --field 'statement=Ships a change set'
@@ -38,9 +40,12 @@ exec rhiza run status --json
 stdout '"workflow": "ship-change"'
 stdout '"state": "failed"'
 exec rhiza run status
-stdout '^- build \(visit 1\): pass, then wait-pr, session [0-9a-f-]{36}: exit 0 and until held$'
+stdout '^- build/build \(visit 1\): pass, then build/check: 1 of 1 leaves passed$'
+stdout '^- review/review \(visit 1\): pass, then render-pr'
+stdout '^- open-pr \(visit 1\): pass, then wait-pr: '
 stdout '^- wait-pr \(visit 1\): pass, then pr-green: held after [0-9]+ checks?$'
 stdout '^- pr-green \(visit 1\): fail, then end: exit 1$'
+! stdout '^- signoff '
 ! stdout '^- rebase '
 ! stdout '^- land '
 
@@ -56,7 +61,6 @@ exec git -C $WORK/origin.git rev-parse --verify --quiet refs/heads/cs/ship-it
 fold-ok
 
 # The repo replaces the built-in by name.
-mkdir .rhiza/workflows
 cp $WORK/ship-change.toml .rhiza/workflows/ship-change.toml
 exec rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
 stdout '^Run \S+ succeeded$'
@@ -65,7 +69,7 @@ stdout '"workflow": "ship-change"'
 stdout '"state": "succeeded"'
 exec rhiza run status
 stdout '^- replaced \(visit 1\): pass, then end: exit 0$'
-! stdout '^- build '
+! stdout '^- build'
 exec cat $WORK/replaced.txt
 stdout '^replaced 01M5PWGEF85Y185JZ2ZGCNH40N$'
 
@@ -94,22 +98,71 @@ done
 echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
 -- bin/claude --
 #!/bin/sh
-echo built > feature.txt
-git add feature.txt
-git commit -qm 'Build the feature'
-git push -q -u origin HEAD
-rhiza session done
+case "$RHIZA_ROLE" in
+builder)
+	echo built > feature.txt
+	git add feature.txt
+	git commit -q -m "build $RHIZA_LEAF" -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR
+Leaf: $RHIZA_LEAF" -- feature.txt || exit 1
+	;;
+verifier)
+	rhiza add evidence "$RHIZA_LEAF-verified" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link "$RHIZA_LEAF-verified" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+	;;
+check)
+	echo '{"findings":[]}' > "$WORK/empty-round.json"
+	rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty-round.json" >&2 || exit 1
+	;;
+esac
+exit 0
+-- review.toml --
+# The repo's own review, as the built-in one but with two fake checks and
+# no code step: run-ship-change.txtar runs the code step after the render.
+[step.review]
+kind = "checks"
+interval = "50ms"
+max_visits = 3
+on.pass = "signoff"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[[step.review.check]]
+name = "beta"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+
+[step.signoff]
+kind = "signoff"
+max_visits = 3
+on.pass = "done"
+on.changes = "review"
 -- bin/gh --
 #!/bin/sh
 echo "$@" >> "$WORK/gh.log"
 o="$WORK/origin.git"
 case "$1 $2" in
 "pr view")
-	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3"); then
+	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3") || [ ! -f "$WORK/pr.created" ]; then
 		echo "no pull requests found for branch \"$3\"" >&2
 		exit 1
 	fi
 	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"FAILURE"},{"context":"lint","state":"SUCCESS"}]}\n' "$head"
+	;;
+"pr create")
+	touch "$WORK/pr.created"
+	;;
+"pr edit")
 	;;
 *)
 	echo "fake gh: unexpected: $*" >&2

@@ -144,6 +144,7 @@ type RunInfo struct {
 	Fixes          []RunFix        `json:"fixes,omitempty" desc:"The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none"`
 	CodeChecks     []RunCodeCheck  `json:"code_checks,omitempty" desc:"The code checks rhiza run code-check journalled, in order; absent when there were none"`
 	Signoffs       []RunSignoff    `json:"signoffs,omitempty" desc:"The sign-offs of its signoff steps, in order: the owner's approvals and requests for changes, and an autonomous run's under rule autonomous; absent when there were none"`
+	PR             string          `json:"pr,omitempty" desc:"While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise"`
 	SignoffWaiting bool            `json:"signoff_waiting,omitempty" desc:"True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise"`
 }
 
@@ -400,13 +401,18 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	if def.Name == shipChangeWorkflow {
+		if err := checkShipLeaves(t); err != nil {
+			return nil, err
+		}
+	}
 	rs := run.NewStore(run.Dir(t.common))
 	rid, err := newRunID(ctx, rs)
 	if err != nil {
 		return nil, err
 	}
 	started := run.Started{
-		Workflow: def.Name, WorkflowPath: path, Definition: string(data),
+		Workflow: def.Name, WorkflowPath: path, Definition: string(data), Includes: def.Includes,
 		Change: t.cs.String(), Title: t.title, Worktree: t.worktree, Branch: t.branch,
 		PermissionMode: r.PermissionMode, Agent: r.Agent, Autonomous: r.Autonomous,
 	}
@@ -427,6 +433,21 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		return nil, Errorf("start run %s: %v", rid, err)
 	}
 	return runEngine(ctx, rs, t.common, rid, started.Change, t.worktree, r.PermissionMode, r.Agent, started.Autonomous, r.NoWait)
+}
+
+// shipChangeWorkflow is the workflow that ships a change set through
+// build and review, both of which work on its leaves.
+const shipChangeWorkflow = "ship-change"
+
+// checkShipLeaves refuses a change set with no leaves: ship-change would
+// build nothing, so it is planned first.
+func checkShipLeaves(t changeWorktree) error {
+	c, ok := t.w.changeSet(t.cs)
+	if ok && len(changeLeaves(t.w.model(t.cs), c.Ops)) > 0 {
+		return nil
+	}
+	return Conflictf("change set %s has no leaves: ship-change builds and reviews its leaves, so plan it first", t.cs).
+		WithNext("rhiza run start --workflow plan")
 }
 
 // runRunResume continues a run that is neither finished nor running in
@@ -468,7 +489,7 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 	if rs.Live(j.ID) {
 		return nil, Conflictf("run %s is running in another process", j.ID).WithNext("rhiza run status " + j.ID)
 	}
-	def, err := workflow.Parse(st.Workflow, []byte(st.Definition))
+	def, err := st.ParseDefinition()
 	if err != nil {
 		return nil, Errorf("run %s: its workflow no longer parses: %v", j.ID, err)
 	}
@@ -520,6 +541,11 @@ func runRunStatus(ctx *Ctx, req any) (any, error) {
 	}
 	st := j.State()
 	info := runInfo(st, rs.Live(j.ID), session.NewStore(session.Dir(common)))
+	if info.SignoffWaiting {
+		if ss, err := readShipState(filepath.Join(common, filepath.FromSlash(shipDir), st.Change+".json")); err == nil {
+			info.PR = ss.URL
+		}
+	}
 	if len(st.Gated) > 0 {
 		if w, err := openCtxWorkspace(ctx); err == nil {
 			info.Waiting = runWaiting(st.Gated, w.changeSets())
@@ -641,23 +667,42 @@ func resolveWorkflow(root, ref string) (string, *workflow.Definition, []byte, er
 				return "", nil, nil, Usagef("no workflow %q: %s does not exist and there is no built-in of that name (built-in: %s)",
 					ref, path, strings.Join(workflow.BuiltinNames(), ", ")).WithNext(runStartNext)
 			}
-			def, err := workflow.Parse(ref, data)
+			def, err := workflow.ParseWith(ref, data, workflowResolver(root))
 			if err != nil {
 				return "", nil, nil, Errorf("built-in workflow %s: %v", ref, err)
 			}
 			return builtinPrefix + ref, def, data, nil
 		}
 	}
-	def, data, err := loadWorkflow(path, ref)
+	def, data, err := loadWorkflow(root, path, ref)
 	if err != nil {
 		return "", nil, nil, err
 	}
 	return path, def, data, nil
 }
 
+// workflowResolver resolves the workflow a workflow step names as run
+// start resolves a bare name: the repo's .rhiza/workflows/<name>.toml
+// when that exists, else the built-in of that name.
+func workflowResolver(root string) workflow.Resolver {
+	return func(name string) ([]byte, error) {
+		data, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(workflowsDir), name+".toml"))
+		if err == nil {
+			return data, nil
+		}
+		if !errors.Is(err, fs.ErrNotExist) {
+			return nil, err
+		}
+		if data, ok := workflow.Builtin(name); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf("there is no such workflow in %s or built in", workflowsDir)
+	}
+}
+
 // loadWorkflow reads and validates the workflow at path. A missing file
 // and an invalid workflow are usage errors carrying the reason.
-func loadWorkflow(path, ref string) (*workflow.Definition, []byte, error) {
+func loadWorkflow(root, path, ref string) (*workflow.Definition, []byte, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
@@ -666,7 +711,7 @@ func loadWorkflow(path, ref string) (*workflow.Definition, []byte, error) {
 		return nil, nil, Usagef("workflow %q: %v", ref, err).WithNext(runStartNext)
 	}
 	name := strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
-	def, err := workflow.Parse(name, data)
+	def, err := workflow.ParseWith(name, data, workflowResolver(root))
 	if err != nil {
 		return nil, nil, Usagef("workflow %s: %v", path, err).WithNext(runStartNext)
 	}
@@ -2073,6 +2118,9 @@ func runLines(w io.Writer, r RunInfo) {
 	fmt.Fprintf(w, "- Started: %s\n", r.StartedAt)
 	if r.Current != "" {
 		fmt.Fprintf(w, "- Current step: %s\n", r.Current)
+	}
+	if r.PR != "" {
+		fmt.Fprintf(w, "- Pull request: %s\n", r.PR)
 	}
 	if r.Detail != "" {
 		fmt.Fprintf(w, "- Detail: %s\n", r.Detail)

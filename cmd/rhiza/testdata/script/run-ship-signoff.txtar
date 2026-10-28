@@ -1,0 +1,241 @@
+# A run that includes review with its sign-off skipped, opens the PR,
+# waits for CI and then has its own signoff step waits there for the owner,
+# as ship-change does. run status names the PR's URL; rhiza run approve
+# moves on to the steps after (here, one that notes "landed"). run
+# request-changes with one finding naming leaf thing starts a fixer and
+# that leaf's verifier, re-runs only the check it names as a new cycle of
+# the included review's checks step, renders and commits what the fix
+# cycle's sessions wrote, calls ship open-pr again (a push and a PR body
+# edit, no second PR), waits for CI and waits at the sign-off again; a
+# fresh clone of the re-pushed head passes rhiza check. Both commands exit 2 on a run not waiting at a sign-off step. An
+# autonomous run skips the wait, with a sign-off of rule autonomous. A
+# failing CI check ends the run failed naming the check.
+#
+# The fake rex runs the tab's command synchronously in the window's
+# directory. The fake claude, as check alpha, records an empty round and
+# passes; as the fixer it commits with a Leaf: trailer; as the verifier it
+# writes Evidence. The fake gh answers from the bare origin and logs argv.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
+cp $WORK/shiptest.toml .rhiza/workflows/shiptest.toml
+exec rhiza change new 'Sign it' --title 'Sign it'
+exec rhiza add capability thing --field 'statement=A thing'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm init
+exec git push -q -u origin main
+
+# The run reaches the sign-off after green CI and waits there.
+exec sh -c 'rhiza run start --workflow shiptest --permission-mode manual --json; echo exit=$?'
+stdout '"state": "stopped"'
+stdout '"signoff_waiting": true'
+stdout '^exit=0$'
+exec rhiza run status
+stdout '^- Pull request: https://github.test/o/r/pull/7$'
+stdout '^- Current step: signoff$'
+exec rhiza run summary
+stdout 'waits at step signoff for the owner''s sign-off'
+exec sh -c 'grep -c "^pr create" $WORK/gh.log'
+stdout '^1$'
+! exec cat $WORK/order.log
+
+# The owner asks for changes on leaf thing.
+exec sh -c 'rhiza run request-changes $WORK/changes.json; echo exit=$?'
+stdout '^exit=0$'
+exec cat $WORK/claude.log
+stdout '\Arole=check check=alpha cycle=1 leaf=\nrole=fixer check= cycle=2 leaf=thing findings=yes\nrole=verifier check= cycle=2 leaf=thing\nrole=check check=alpha cycle=2 leaf=\n\z'
+exec sh -c 'grep -c "^pr create" $WORK/gh.log; grep -c "^pr edit" $WORK/gh.log'
+stdout '^1\n1$'
+exec rhiza run status
+stdout '^- signoff \(visit 1\): changes, then review/review: changes asked by test: 1 finding$'
+stdout '^- render-pr \(visit 2\): pass, then open-pr: exit 0$'
+stdout '^- open-pr \(visit 2\): '
+stdout '^- Current step: signoff$'
+! exec cat $WORK/order.log
+
+# The head pushed after request-changes holds every record its rendered
+# pages are built from, as the PR's CI would need.
+exec git clone -q -b cs/sign-it $WORK/origin.git $WORK/pr-clone
+cd $WORK/pr-clone
+exec rhiza check
+cd $WORK/repo
+
+exec sh -c 'rhiza run approve; echo exit=$?'
+stdout '^exit=0$'
+stdout '^Run [0-9A-Z]{26} succeeded$'
+exec cat $WORK/order.log
+stdout '\Alanded\n\z'
+exec sh -c 'rhiza run approve; echo exit=$?'
+stdout '^exit=2$'
+exec sh -c 'rhiza run request-changes $WORK/changes.json; echo exit=$?'
+stdout '^exit=2$'
+fold-ok
+
+# A failing CI check ends a run failed naming the check, before any
+# sign-off.
+exec touch $WORK/ci.fail
+! exec rhiza run start --workflow shiptest --permission-mode manual
+stdout '^Run \S+ failed$'
+stdout '^- Detail: step "pr-green" ended with outcome "fail"$'
+stderr 'failed: test'
+exec sh -c 'rhiza run approve; echo exit=$?'
+stdout '^exit=2$'
+rm $WORK/ci.fail
+
+# An autonomous run reaches the end with no wait.
+exec sh -c 'rhiza run start --workflow shiptest --permission-mode manual --autonomous; echo exit=$?'
+stdout '^exit=0$'
+stdout '^Run [0-9A-Z]{26} succeeded$'
+exec sh -c 'grep "\"type\":\"signoff\"" $(ls -t .git/rhiza/runs/*.jsonl | head -1)'
+stdout '"rule":"autonomous"'
+
+-- changes.json --
+{"findings":[{"check":"alpha","severity":"major","leaf":"thing","place":"thing.txt:1","reason":"say more"}]}
+-- empty-round.json --
+{"findings":[]}
+-- review.toml --
+[step.review]
+kind = "checks"
+interval = "50ms"
+max_visits = 2
+on.pass = "signoff"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+
+[step.signoff]
+kind = "signoff"
+max_visits = 2
+on.pass = "done"
+on.changes = "review"
+-- shiptest.toml --
+name = "shiptest"
+
+[step.review]
+kind = "workflow"
+workflow = "review"
+skip = ["signoff"]
+on.pass = "render-pr"
+
+[step.render-pr]
+max_visits = 2
+kind = "command"
+run = """
+rhiza render &&
+git add -A -- .rhiza/rendered .rhiza/log &&
+{ git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
+  git commit -q -m 'Render after the review' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
+"""
+on.pass = "open-pr"
+
+[step.open-pr]
+max_visits = 2
+kind = "command"
+run = "rhiza ship open-pr"
+on.pass = "wait-pr"
+
+[step.wait-pr]
+max_visits = 2
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "1m"
+interval = "50ms"
+on.pass = "pr-green"
+
+[step.pr-green]
+max_visits = 2
+kind = "command"
+run = "rhiza ship check"
+on.pass = "signoff"
+
+[step.signoff]
+kind = "signoff"
+max_visits = 2
+on.pass = "land"
+on.changes = "review/review"
+
+[step.land]
+kind = "command"
+run = "echo landed >> $WORK/order.log"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+for a; do last=$a; done
+found=
+case "$last" in *"The owner requested these changes on leaf thing:"*"say more"*) found=yes ;; esac
+echo "role=$RHIZA_ROLE check=$RHIZA_CHECK cycle=$RHIZA_CYCLE leaf=$RHIZA_LEAF findings=$found" | sed 's/ findings=$//' >> "$WORK/claude.log"
+case "$RHIZA_ROLE" in
+check)
+	rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty-round.json" >&2 || exit 1
+	;;
+fixer)
+	echo more > "$RHIZA_LEAF.txt"
+	git add "$RHIZA_LEAF.txt"
+	git commit -q -m "fix $RHIZA_LEAF" -m "Leaf: $RHIZA_LEAF" -- "$RHIZA_LEAF.txt" || exit 1
+	;;
+verifier)
+	rhiza add evidence "$RHIZA_LEAF-ok" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link "$RHIZA_LEAF-ok" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+	;;
+esac
+exit 0
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3") || [ ! -f "$WORK/pr.created" ]; then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	c=SUCCESS
+	[ -f "$WORK/ci.fail" ] && c=FAILURE
+	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"%s"}]}\n' "$head" "$c"
+	;;
+"pr create")
+	touch "$WORK/pr.created"
+	;;
+"pr edit")
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

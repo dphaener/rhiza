@@ -1,0 +1,40 @@
+{
+  "actor": "01M60AFAHM9QMNBC1A9RPGW0VV",
+  "after": [
+    "01M609TDT52MQAVV932T8BF9MQ"
+  ],
+  "at": "2026-10-28T04:01:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7c7f59d (diff 228dd44..HEAD: ship-change.toml, workflow_test.go, run-ship-change*.txtar) I ran: go test ./cmd/rhiza -count=1 -run 'TestScripts/(run-ship-change|describe-golden)' -v, all PASS. run-ship-change starts the built-in ship-change (no --workflow) with fake rex/claude/gh on an accepted change set of two leaves (second depends-on first); it checks builder then verifier for first, then second, two review check sessions, review/review pass then open-pr, one gh pr create whose body file is the review summary (# Review of run, ## Checks of step review/review), stopped with signoff_waiting and no pr merge and the change still accepted; after rhiza run approve it succeeds through rebase, land, merge (squash pinned to the landed head), main check, close-out (worktree and branches gone) and ship, the change set landed with PR Evidence. ship-change.toml has build and review workflow steps (review skip=[signoff]), open-pr, wait-pr, pr-green, signoff, then the old steps; grep finds no shipit and no --pr-open. go test ./internal/workflow passes, with TestShipChangeBuiltin failing on any shipit or --pr-open and checking the step order. go test ./cmd/rhiza -run TestScripts/describe-golden -update left git status clean, so the golden is current. make fmt-check and go test ./... -count=1 all pass. make self-check failed only on a stale render of this verifier session's own actor (claude-code-4c6e2a4b), which is not in the commit."
+        },
+        "handle": "ship-change-file-verified",
+        "id": "01M60APMY1KVHGHY90AP6GNH2W",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M60APMY1KVHGHY90AM08AFXM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M60APMY1KVHGHY90AM08AFXM",
+        "id": "01M60APN431BA8QFQDPGHPXD25",
+        "link": "01M60APN431BA8QFQDPG60DC5M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M60APND5THEM5ZPQ6D4K6YVN",
+  "type": "ops",
+  "v": 1
+}

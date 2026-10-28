@@ -1,0 +1,40 @@
+{
+  "actor": "01M61BKBMKB6XE12MPZWW0GX0P",
+  "after": [
+    "01M61BNC2V786KQ6P172951DQJ"
+  ],
+  "at": "2026-10-28T13:41:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1929007, go test ./cmd/rhiza -run TestScripts/run-ship-needs-leaves -count=1 passes: on a change set with no leaves `rhiza run start --workflow ship-change` exits non-zero with 'has no leaves' and 'rhiza run start --workflow plan' on stderr (and \"next\": \"rhiza run start --workflow plan\" under --json), no .git/rhiza/runs and no worktree for the change set; after adding a capability the same command prints 'Run <id> succeeded' and journals the run. Read internal/api/run.go: checkShipLeaves runs in runRunStart before newRunID, t.open (worktree) and run.Start, so nothing is written on refusal. The 1929007 fix only renames the leaf's statement/acceptance to `run start --workflow plan`, matching the code. make check exits 0."
+        },
+        "handle": "ship-needs-leaves-verified-4",
+        "id": "01M61BWHAPV2KHNK33AN4S83DH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M61BWHAPV2KHNK33AJ6CJSEN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61BWHAPV2KHNK33AJ6CJSEN",
+        "id": "01M61BWHH0YQH25RYTHN6NVD55",
+        "link": "01M61BWHH0YQH25RYTHJNZR3NT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSFSMXX93SBZP3ZZPZTQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M61BWHTG836F08HJ61PYB5YA",
+  "type": "ops",
+  "v": 1
+}

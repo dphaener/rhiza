@@ -1,0 +1,21 @@
+# ship-signoff-verified
+
+evidence · `01M609TDBW2R1VRK38A3362FK7` · actor [claude-code-6c4dc4e8](../actor/claude-code-6c4dc4e8.md)
+
+## result
+
+PASS
+
+## statement
+
+At 9e66139 (leaf work in e31ad41) I ran go test ./cmd/rhiza -run 'TestScripts/(run-ship-signoff|review-signoff|describe-golden)$' and go test ./internal/workflow -run TestSignoffChangesIntoIncludedChecks: both pass. run-ship-signoff.txtar, with fake rex, claude and gh, runs a workflow that includes review with its sign-off skipped, then open-pr, waits for CI, checks it and signs off. It asserts that the run stops with signoff_waiting after green CI, that run status prints '- Pull request: https://github.test/o/r/pull/7' and that run summary says the run waits at signoff. It asserts that land runs only after rhiza run approve (order.log is empty before and 'landed' after). It asserts that run request-changes with one finding on leaf thing runs the fixer and then that leaf's verifier, and re-runs only check alpha as cycle 2, journaled as 'signoff (visit 1): changes, then review/review'. After that, gh is called with pr edit and no second pr create, open-pr runs as visit 2 and the run waits at signoff again. It asserts that approve and request-changes exit 2 on a finished run and approve exits 2 on a CI-failed run, that a failing CI check ends the run failed naming check 'test', and that an autonomous run succeeds with no wait and a signoff entry of rule autonomous. The diff widens run approve and request-changes to any run at a signoff step, lets on.changes name <workflow step>/<checks step> of an included workflow, adds a pr field to run status and allows workflow/step session steps. make fmt-check, vet and test all pass. make self-check flags only rendered/actor/claude-code-6c4dc4e8.md, this verifier's own actor, which comes from its local session file and not from the commit; a clean worktree of HEAD shows the same.
+
+## Links
+
+### Out
+
+- verifies [ship-signoff](../capability/ship-through-rhiza/ship-signoff.md)
+
+## History
+
+- `01M5WPTZVV50AKZ4G5MZ7HMDKC` ship-change on Rhiza's workflows: its agent step runs Rhiza's build and review and waits for the owner's sign-off, in place of shipit.

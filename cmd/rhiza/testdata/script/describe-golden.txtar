@@ -3398,6 +3398,10 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "pr": {
+                "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
+                "type": "string"
+              },
               "questions": {
                 "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
                 "items": {
@@ -4049,7 +4053,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Sign off a review run waiting at its signoff step as the owner: journal the approval and continue the run, which ends done; it never lands the change set",
+      "summary": "Sign off a run waiting at a signoff step as the owner: journal the approval and continue the run, which goes on past the step (a review run ends done, a ship-change run rebases, lands and merges)",
       "write": true
     },
     {
@@ -5418,6 +5422,10 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "pr": {
+                "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
+                "type": "string"
+              },
               "questions": {
                 "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
                 "items": {
@@ -6069,7 +6077,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Ask for changes to a review run waiting at its signoff step: journal the owner's findings as confirmed and continue the run, which fixes them in one cycle outside the cap, re-runs the checks they name and waits for the sign-off again",
+      "summary": "Ask for changes to a run waiting at a signoff step: journal the owner's findings as confirmed and continue the run, which fixes them in one cycle outside the cap, re-runs the checks they name and waits for the sign-off again (a ship-change run first pushes and replaces the PR body, and waits for CI)",
       "write": true
     },
     {
@@ -6867,6 +6875,10 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "pr": {
+                "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
+                "type": "string"
               },
               "questions": {
                 "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
@@ -8364,6 +8376,10 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "pr": {
+                "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
+                "type": "string"
+              },
               "questions": {
                 "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
                 "items": {
@@ -9690,6 +9706,10 @@ cmp stdout describe.golden.json
               "type": "object"
             },
             "type": "array"
+          },
+          "pr": {
+            "description": "While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise",
+            "type": "string"
           },
           "questions": {
             "description": "The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none",
@@ -12437,6 +12457,60 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "Squash merge a change set's pull request, pinned to the head whose checks passed",
+      "write": false
+    },
+    {
+      "name": "ship.open-pr",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "branch": {
+            "description": "The change set's branch",
+            "type": "string"
+          },
+          "change": {
+            "description": "The change set",
+            "type": "string"
+          },
+          "created": {
+            "description": "True if this call opened the pull request; false if it replaced the body of the one already open",
+            "type": "boolean"
+          },
+          "head": {
+            "description": "The branch's head commit, as pushed",
+            "type": "string"
+          },
+          "pr": {
+            "description": "The pull request's number",
+            "type": "integer"
+          },
+          "pushed": {
+            "description": "True if this call pushed the branch; false if origin already had its head",
+            "type": "boolean"
+          },
+          "url": {
+            "description": "The pull request's URL",
+            "type": "string"
+          }
+        },
+        "required": [
+          "branch",
+          "change",
+          "created",
+          "head",
+          "pr",
+          "pushed",
+          "url"
+        ],
+        "type": "object"
+      },
+      "summary": "Push a change set's branch and open its pull request, titled by the change set with the run's review summary as the body, or push and replace the body of the one already open",
       "write": false
     },
     {

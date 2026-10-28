@@ -349,7 +349,7 @@ func (e *Engine) run(id string, retry bool, before func(State) ([]Entry, error))
 
 // definition parses the definition the run started with.
 func definition(st State) (*workflow.Definition, error) {
-	def, err := workflow.Parse(st.Workflow, []byte(st.Definition))
+	def, err := st.ParseDefinition()
 	if err != nil {
 		return nil, fmt.Errorf("run %s: its workflow no longer parses: %w", st.ID, err)
 	}
@@ -970,4 +970,17 @@ func (r *running) arbitrated(asking workflow.Step, question string, res result, 
 	}
 	r.log("step %s: arbiter %s on question %s: %s", asking.Name, res.outcome, question, res.detail)
 	return res, nil
+}
+
+// ParseDefinition parses the definition the run started with, its workflow
+// steps resolved to the workflows it started with (Includes), never to
+// what is on disk now.
+func (st State) ParseDefinition() (*workflow.Definition, error) {
+	return workflow.ParseWith(st.Workflow, []byte(st.Definition), func(name string) ([]byte, error) {
+		src, ok := st.Includes[name]
+		if !ok {
+			return nil, fmt.Errorf("the run did not start with workflow %q", name)
+		}
+		return []byte(src), nil
+	})
 }

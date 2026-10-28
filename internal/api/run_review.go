@@ -188,7 +188,7 @@ func (r reviewRun) reviewStep() (workflow.Step, bool, error) {
 	if r.state.Current == "" {
 		return workflow.Step{}, false, nil
 	}
-	def, err := workflow.Parse(r.state.Workflow, []byte(r.state.Definition))
+	def, err := r.state.ParseDefinition()
 	if err != nil {
 		return workflow.Step{}, false, Errorf("run %s: its workflow no longer parses: %v", r.id, err)
 	}

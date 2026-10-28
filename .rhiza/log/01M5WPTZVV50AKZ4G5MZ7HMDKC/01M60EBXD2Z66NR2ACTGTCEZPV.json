@@ -1,0 +1,40 @@
+{
+  "actor": "01M60BFM584SKGAP29YDA98H6T",
+  "after": [
+    "01M60C4TN0R3JABH8KHZ14XRV2"
+  ],
+  "at": "2026-10-28T05:05:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-9c5f8a51, on the code at 736c045: `go test ./cmd/rhiza -run 'TestScripts/run-ship' -count=1` passed. In it, run-ship-needs-leaves.txtar runs `rhiza run start --workflow ship-change` on a change set with no leaves; the command exits non-zero, stderr says 'has no leaves' and names `rhiza run start --workflow plan`, and the --json form carries \"next\": \"rhiza run start --workflow plan\". Afterwards .git/rhiza/runs does not exist and no worktree is listed. The same command on a change set with a capability prints 'Run ... succeeded'. In the diff, internal/api/run.go:404-408 calls checkShipLeaves before newRunID, canRun, t.open and run.Start, so the refusal writes nothing. The acceptance quotes `rhiza run start plan` as next. The QA review's confirmed finding f2 ruled that form unrunnable (the positional is the change set) and called for `--workflow plan`, which c2886a0 and 736c045 put in place."
+        },
+        "handle": "ship-needs-leaves-verified-3",
+        "id": "01M60EBWX66QB0AJSGT2E7ZXHB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M60EBWX66QB0AJSGSZWQTPR9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M60EBWX66QB0AJSGSZWQTPR9",
+        "id": "01M60EBX35H8BAQA9DM1PR3W42",
+        "link": "01M60EBX35H8BAQA9DKYM4FCKS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSFSMXX93SBZP3ZZPZTQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M60EBXD2Z66NR2ACTGTCEZPV",
+  "type": "ops",
+  "v": 1
+}

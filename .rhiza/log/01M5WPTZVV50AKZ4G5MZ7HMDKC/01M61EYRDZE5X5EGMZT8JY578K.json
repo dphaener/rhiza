@@ -1,0 +1,30 @@
+{
+  "actor": "01M61EWC4EQAZYZN7XSQNC12RW",
+  "after": [
+    "01M61EWAXSYQ6PK3WHC0B0SR07"
+  ],
+  "at": "2026-10-28T14:34:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript with fake agents and a fake gh runs `rhiza run start ship-change` on a change set of two leaves, one depending on the other, and finds both built and verified, review's checks passed, the PR opened with the summary as body, the run waiting at sign-off until `rhiza run approve`, then the change set landed, the PR merged and the close-out done; workflow tests find no `shipit` in ship-change.toml; `describe-golden` is regenerated.",
+          "statement": "The built-in ship-change.toml runs a workflow step on build; a render command step that runs rhiza render and commits .rhiza/rendered and the uncommitted .rhiza/log entries on the branch; a workflow step on review skipping its sign-off; a second render command step, render-pr, that does the same right before every push, including the push after rhiza run request-changes; ship open-pr; the wait for CI; the sign-off, whose on.changes goes back to review/review; and then today's rebase, land, merge, main check, close-out and ship steps, with no shipit prompt and no `ship check --pr-open` until. Both render steps leave the pushed branch holding every actor record its rendered pages are built from, so rhiza check passes on a clone of it."
+        },
+        "handle": "ship-change-file",
+        "id": "01M5Z8XSYAD7N2R7VF3MT1TK03",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "op": "node.create",
+        "parent": "01M5Z8XQC9YFR1TWS0QNGF2HZC"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M61EYRDZE5X5EGMZT8JY578K",
+  "type": "ops",
+  "v": 1
+}

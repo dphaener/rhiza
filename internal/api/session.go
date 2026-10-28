@@ -67,13 +67,15 @@ const (
 const defaultStep = "build"
 
 var (
-	stepPattern = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
+	// A step is a word-dashed name, or <workflow>/<step> for a step of an
+	// included workflow.
+	stepPattern = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*(/[a-z0-9]+(-[a-z0-9]+)*)?$`)
 	runPattern  = regexp.MustCompile(`^[A-Za-z0-9._:-]+$`)
 )
 
 // Longest step and run the request accepts.
 const (
-	maxStep = 30
+	maxStep = 61
 	maxRun  = 64
 )
 
@@ -442,7 +444,7 @@ func startStep(r SessionStartRequest) (string, error) {
 		step = defaultStep
 	}
 	if len(step) > maxStep || !stepPattern.MatchString(step) {
-		return "", Usagef("step %q: want lower-case words joined by single dashes, at most %d characters", step, maxStep).
+		return "", Usagef("step %q: want lower-case words joined by single dashes, or workflow/step, at most %d characters", step, maxStep).
 			WithNext(sessionStartNext)
 	}
 	if r.Run != "" && (len(r.Run) > maxRun || !runPattern.MatchString(r.Run)) {

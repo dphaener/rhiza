@@ -1,0 +1,132 @@
+{
+  "actor": "01M60EC9ECV0715YRJ5J5787PT",
+  "after": [
+    "01M60EBXD2Z66NR2ACTGTCEZPV"
+  ],
+  "at": "2026-10-28T05:09:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built binary (go build at 1913524), fresh rhiza init repo with a bare origin: rhiza run start <cs> --permission-mode manual on an accepted change set with no leaves exited 3 with 'has no leaves: ship-change builds and reviews its leaves, so plan it first' and next 'rhiza run start --workflow plan'; rhiza run status then said no runs yet and git worktree list showed only the main checkout. After adding two leaves the same command started the run."
+        },
+        "handle": "ship-needs-leaves-qa-3",
+        "id": "01M60EK5S34CH9QS6GMV15QJ7V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M60EK5S34CH9QS6GMTF3CADQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M60EK5S34CH9QS6GMTF3CADQ",
+        "id": "01M60EK5YRJ3MY07X5EC8J77W8",
+        "link": "01M60EK5YRJ3MY07X5E9VNMYTR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSFSMXX93SBZP3ZZPZTQ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built binary, repo overrides run with --dry-run: a workflow step with no workflow, an unknown workflow, one including itself (w3 -> w3) and through another (w5 -> w4 -> w5), skip naming a step build lacks, and workflow on a command step were each refused with a message naming the cause. A real run of an outer workflow whose workflow step names a three-command inner workflow skipping its second ran inner/one and inner/three in order (two never ran, by its log) and the run succeeded. The built-in ship-change journaled build/build, build/check, review/code and review/review under their workflows' names."
+        },
+        "handle": "workflow-step-qa-3",
+        "id": "01M60EK64DWSBZG57X6DT443V8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M60EK64DWSBZG57X6BYRG74C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M60EK64DWSBZG57X6BYRG74C",
+        "id": "01M60EK6A1R4WR4KC7JYS912PX",
+        "link": "01M60EK6A1R4WR4KC7JYAQC9PJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XQV4XPRTXNA7KE1AKET4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built binary in a ship-change run with fake rex/claude/gh and a real bare origin: open-pr pushed cs/ship-it and ran gh pr create --title 'Ship it' with a body starting '# Review of run <id>'; after request-changes added a fix commit, open-pr pushed it (origin's head moved to the fix's evidence commit) and ran gh pr edit 7 --body-file with no second pr create. run status named Pull request https://github.test/o/r/pull/7. ship open-pr outside a run and in a finished run exited 2 naming why."
+        },
+        "handle": "ship-open-pr-qa-3",
+        "id": "01M60EK6FPZ92JFZQB007SW15G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M60EK6FPZ92JFZQAZWEACBR8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M60EK6FPZ92JFZQAZWEACBR8",
+        "id": "01M60EK6NAYWGG7QBAD24H1KJE",
+        "link": "01M60EK6NAYWGG7QBAD0VVVENB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XR9JBAHCDW9FXRCVJRFW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built binary, fake rex/claude/gh: ship-change stopped at signoff after pr-green with run status naming the PR URL and next run summary/approve/request-changes. request-changes with one qa finding on leaf first ran the fixer and verifier of first, then only qa as cycle 2 of review/review, then open-pr (pr edit), wait-pr, pr-green and signoff again. run approve then went on through rebase, land, merge (pr merge 7 --squash --match-head-commit), close-out and ship; the change set landed. approve and request-changes on the finished run both exited 2."
+        },
+        "handle": "ship-signoff-qa-3",
+        "id": "01M60EK6TYVS3HWDQ2HCHTW5PN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M60EK6TYVS3HWDQ2H98GB6Y9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M60EK6TYVS3HWDQ2H98GB6Y9",
+        "id": "01M60EK70N1T9477B93ERENC6F",
+        "link": "01M60EK70N1T9477B93BR2RPGK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XRQTCA20KGMAN4KKZJ5D",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built binary, fresh repo with no workflow overrides other than ship.sh, fake rex/claude/gh and bare origin: rhiza run start on two leaves (second depends on first) ran builder+verifier for first then second, render (commit 'Render after the build'), the built-in review's code check and five checks, open-pr, CI wait and stopped at signoff; approve landed the change set, squash-merged and closed out, and rhiza check on main passed. But a clean clone of the PR head before sign-off fails rhiza check (render committed actor pages whose log records stayed untracked); see this cycle's qa finding."
+        },
+        "handle": "ship-change-file-qa-3",
+        "id": "01M60EK76WGR6T4BXXMVF835Q1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M60EK76WGR6T4BXXMRND02JS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M60EK76WGR6T4BXXMRND02JS",
+        "id": "01M60EK7CYJM1BTZS0R9VTNBW4",
+        "link": "01M60EK7CYJM1BTZS0R66PAYNK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M60EK7NVF8P04SY91V9MFBBT",
+  "type": "ops",
+  "v": 1
+}

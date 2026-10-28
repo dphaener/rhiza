@@ -1,0 +1,132 @@
+{
+  "actor": "01M60AV3CKG66TM4ZMBM6FQ4YS",
+  "after": [
+    "01M60APND5THEM5ZPQ6D4K6YVN"
+  ],
+  "at": "2026-10-28T04:08:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, binary built from branch head 20f3cee, run by hand in scratch repos. With repo override workflows, `rhiza run start --workflow X` exited 2, with no run journaled, for: a workflow step with no workflow; one naming nosuch; self -> self; selfa -> selfb -> selfa; skip naming a step inner lacks (listing one, three, two); and skip or workflow on a command step. An outer workflow with step w over a three-step inner (skip=[two]), inner/three failing on a flag file: the run failed at inner/three, journaled inner/one then inner/three, and two never ran. With the flag removed, `rhiza run resume <run> --retry` re-ran only inner/three, then after, and the run succeeded (order log: one, three, after)."
+        },
+        "handle": "workflow-step-qa-1",
+        "id": "01M60B4SSPGM5J4GV0SJJBDN1Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M60B4SSPGM5J4GV0SFS0RC7G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M60B4SSPGM5J4GV0SFS0RC7G",
+        "id": "01M60B4SZN5EK2VSPY0TGN8GPG",
+        "link": "01M60B4SZN5EK2VSPY0PPC9MX6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XQV4XPRTXNA7KE1AKET4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA cycle 1, binary built from branch head 20f3cee. Fresh `rhiza init` repo with a leafless current change set: `rhiza run start --permission-mode manual` exited 3 with 'has no leaves: ... plan it first' and next 'rhiza run start plan' (--json: code conflict). There was no .git/rhiza/runs and no worktree beyond main. After a capability was added, a run started. The suggested next, `rhiza run start plan`, fails with 'no change set matches \"plan\"' (qa finding f2). Without --permission-mode, a permission-mode error masks the refusal (f3)."
+        },
+        "handle": "ship-needs-leaves-qa-1",
+        "id": "01M60B4T59MJRSX8KVPD451RNH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M60B4T59MJRSX8KVPD02382C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M60B4T59MJRSX8KVPD02382C",
+        "id": "01M60B4TAXERRGGEFTC9QRAKMY",
+        "link": "01M60B4TAXERRGGEFTC7BQB9S5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSFSMXX93SBZP3ZZPZTQ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, binary built from branch head 20f3cee. `rhiza ship open-pr` with RHIZA_RUN unset exits 2 naming RHIZA_RUN. Inside built-in ship-change runs (real bare origin, fake gh), open-pr pushed the cs/ branch and made one `gh pr create --base main --head cs/ship-it --title Ship it --body-file`. The body began '# Review of run' and held '## Checks of step review/review', '### alpha: passed' and '### beta: passed'. After request-changes, open-pr visit 2 made one pr edit and no second pr create. run status named the PR URL https://github.test/o/r/pull/7."
+        },
+        "handle": "ship-open-pr-qa-1",
+        "id": "01M60B4TGH977Z1Y9QZPND0EHE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M60B4TGH977Z1Y9QZKZ8XZSJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M60B4TGH977Z1Y9QZKZ8XZSJ",
+        "id": "01M60B4TP5VPX4HJ7AFJPSCEMW",
+        "link": "01M60B4TP5VPX4HJ7AFFP991VQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XR9JBAHCDW9FXRCVJRFW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, binary built from branch head 20f3cee. Built-in ship-change, with review.toml overridden without its code step and fake rex/claude/gh. The run stopped at signoff after pr-green, with run status showing Current step: signoff and the PR URL, and no pr merge. `rhiza run approve` ran rebase through ship, and the change set landed with one `pr merge 7 --squash --match-head-commit`. `rhiza run request-changes` with one major on leaf fourth ran a fixer, then that leaf's verifier (cycle 2), and re-ran only check alpha (cycle 2), journaled 'signoff (visit 1): changes, then review/review'. review/review, open-pr, wait-pr and pr-green ran as visit 2, with one pr edit and no second create, and the run waited at signoff again, then landed on approve. With --autonomous, signoff passed 'approved by rule autonomous' and the run landed. approve and request-changes exit 2 on a finished run."
+        },
+        "handle": "ship-signoff-qa-1",
+        "id": "01M60B4TVT0DNRXK3H1786WYQQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M60B4TVT0DNRXK3H15EPVDPB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M60B4TVT0DNRXK3H15EPVDPB",
+        "id": "01M60B4V1G7NYC8E7KFH0RCV4B",
+        "link": "01M60B4V1G7NYC8E7KFF75251S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XRQTCA20KGMAN4KKZJ5D",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA cycle 1, binary built from branch head 20f3cee. ship-change.toml has no shipit and no --pr-open. Unmodified built-in ship-change on a fresh `rhiza init` repo, two leaves with second depends-on first, fake rex/claude/gh: build/build passed 2 of 2 leaves in order and build/check passed, then review/code FAILED. rhiza check found the render stale for the actors of build's sessions and for index.md (qa finding f1). With review.toml overridden without the code step, as run-ship-change.txtar does, the run went build, review/review, open-pr, wait-pr, pr-green and signoff, then after approve rebase, land, merge, main check, close-out (worktree and branches gone) and ship, and the change set landed. go test for run-ship*, review-signoff and describe-golden passes."
+        },
+        "handle": "ship-change-file-qa-1",
+        "id": "01M60B4V75A706S7VR91FA8PRB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M60B4V75A706S7VR8YBQP5KE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M60B4V75A706S7VR8YBQP5KE",
+        "id": "01M60B4VD7DCHEF36TZ3NQT0DA",
+        "link": "01M60B4VD7DCHEF36TZ1TVETTW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M60B4VP4KE5Q9WSRKA3PT1RK",
+  "type": "ops",
+  "v": 1
+}

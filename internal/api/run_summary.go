@@ -154,7 +154,7 @@ func summaryOrder(st run.State) ([]string, map[string][]string) {
 	for _, c := range st.Checks {
 		journalled = append(journalled, c.Step)
 	}
-	if def, err := workflow.Parse(st.Workflow, []byte(st.Definition)); err == nil {
+	if def, err := st.ParseDefinition(); err == nil {
 		for _, name := range def.Order {
 			if !slices.Contains(journalled, name) {
 				continue

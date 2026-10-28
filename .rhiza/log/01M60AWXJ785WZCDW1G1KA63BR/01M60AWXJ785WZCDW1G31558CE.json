@@ -1,0 +1,15 @@
+{
+  "actor": "01M60AV5V2FWSS93ZBPJ0FYTFG",
+  "after": [],
+  "at": "2026-10-28T04:04:39Z",
+  "body": {
+    "intent": "Record the workflow step's limits as constraints: a workflow runs another at most once, and a workflow step takes no session, condition or max_visits keys",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M60AWXJ785WZCDW1G1KA63BR",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M60AWXJ785WZCDW1G31558CE",
+  "type": "open",
+  "v": 1
+}

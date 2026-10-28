@@ -30,6 +30,7 @@ the orchestrator's proposal in the milestone-3 conversation, accepted by the own
 - decided-by [plan-workflow](../capability/rhiza/workflows/built-in-workflows/plan-workflow.md)
 - decided-by [plan-guide](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-guide.md)
 - decided-by [plan-workflow-file](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-workflow-file.md)
+- decided-by [ship-needs-leaves](../capability/ship-through-rhiza/ship-needs-leaves.md)
 
 ## History
 

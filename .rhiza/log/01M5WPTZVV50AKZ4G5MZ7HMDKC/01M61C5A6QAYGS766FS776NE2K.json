@@ -1,0 +1,40 @@
+{
+  "actor": "01M61BWXXDJAT01MPBNVWBN9A3",
+  "after": [
+    "01M61BWHTG836F08HJ61PYB5YA"
+  ],
+  "at": "2026-10-28T13:45:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7e954a9, go test ./cmd/rhiza -run 'TestScripts/(run-ship-change.*|describe-golden)$' -count=1 passes (run-ship-change, -fail, -rebase, describe-golden). run-ship-change runs the built-in ship-change on two leaves (second depends on first) with fake rex/claude/gh: both built and verified in order, build/check then render then review/code and review/review, PR #7 opened once with the review summary as body, run stopped at signoff until rhiza run approve, then landed, merged and closed out. New in this fix: at sign-off a fresh git clone of the pushed cs/ship-it branch passes rhiza check. With the old render step (HEAD~1's ship-change.toml) in a throwaway worktree the same script fails at that clone check: 'extra: render does not write .rhiza/rendered/actor/claude-code-590c1440.md'. So the test catches the uncommitted actor records. Read the diff: the render step now stages and commits .rhiza/log with .rhiza/rendered, as Decision render-commits-actor-records rules. The leaf's statement now lists the render step, as Decision ship-change-file-names-render rules. TestShipChange* in internal/workflow finds no shipit in ship-change.toml or its steps. make check exits 0."
+        },
+        "handle": "ship-change-file-verified-4",
+        "id": "01M61C59Q8ZASW48G9JZG6ZNP5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M61C59Q8ZASW48G9JXV27MAC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61C59Q8ZASW48G9JXV27MAC",
+        "id": "01M61C59XFPTFW18M43W7GZ2D5",
+        "link": "01M61C59XFPTFW18M43THPZ875",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M61C5A6QAYGS766FS776NE2K",
+  "type": "ops",
+  "v": 1
+}

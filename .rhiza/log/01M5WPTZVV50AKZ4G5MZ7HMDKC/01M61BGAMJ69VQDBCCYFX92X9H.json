@@ -1,0 +1,89 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M60EP9RD6G11ASS1WKBPC1XP"
+  ],
+  "at": "2026-10-28T13:34:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "QA's cycle-3 finding was confirmed by its critic. ship-change.toml's render step stages only .rhiza/rendered. Builder actor records (recordAgentActor) stay uncommitted until land, so the PR head has rendered actor pages with no records, and this repo's CI make check fails before sign-off. Staging .rhiza/log in the same step is the smallest fix, and it matches what land already does (git add .rhiza). Changing the leaf instead would leave ship-change unable to ship in Rhiza's own repo, which is the change set's intent.",
+          "statement": "Ship-change's render step commits the worktree's uncommitted .rhiza/log entries together with .rhiza/rendered, so the branch it pushes holds every actor record its rendered pages are built from and rhiza check passes on a clone of it. A test proves it: a builder that commits only its own files, then rhiza check on a fresh clone of the pushed branch passes. Leaf ship-change-file keeps its scope and its statement names this.",
+          "wording": "decided by the orchestrator acting as arbiter, on the owner's word that the orchestrator signs off on this change set"
+        },
+        "handle": "render-commits-actor-records",
+        "id": "01M61BG9ECFWH96DYYPF1FNY00",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61BG9ECFWH96DYYPCKWV6KB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61BG9ECFWH96DYYPCKWV6KB",
+        "id": "01M61BG9MK4SCZVCFDACTP83CY",
+        "link": "01M61BG9MK4SCZVCFDABACEHSE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M60EP81TAWBENX2YZVXBJ2XJ",
+        "type": "answers"
+      },
+      {
+        "fields": {
+          "reasoning": "QA confirmed in cycle 1 that `rhiza run start plan` reads plan as a change set prefix and fails, and c2886a0 fixed the code. The leaf's wording was shorthand for the plan workflow, not a literal argv, so revising the leaf to the working command keeps its intent and makes the model match the code and Evidence ship-needs-leaves-verified-3.",
+          "statement": "Leaf ship-needs-leaves' statement and acceptance name `rhiza run start --workflow plan` as the refusal's next command, matching the code at internal/api/run.go:450. The code stays as it is.",
+          "wording": "decided by the orchestrator acting as arbiter, on the owner's word that the orchestrator signs off on this change set"
+        },
+        "handle": "needs-leaves-next-workflow-plan",
+        "id": "01M61BG9TB3SH2PK9WTCAVXZYB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61BG9TB3SH2PK9WTA1GKPJF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61BG9TB3SH2PK9WTA1GKPJF",
+        "id": "01M61BGA014F3Y10X8ENPA4V1A",
+        "link": "01M61BGA014F3Y10X8ENKRQ968",
+        "note": "",
+        "op": "link.create",
+        "to": "01M60EP8QZ10SMHX4GP950G2VJ",
+        "type": "answers"
+      },
+      {
+        "fields": {
+          "reasoning": "The model check confirmed that 179a96f added a render step the leaf's step-by-step statement leaves out. The step is needed (QA's cycle-1 blocker), so the leaf, not the code, changes. It is revised together with the fix for leaf-failed-01m60atz-1 so that the statement describes the final step.",
+          "statement": "Leaf ship-change-file's statement lists the render command step between the build and review workflow steps: it runs rhiza render and commits .rhiza/rendered and the uncommitted .rhiza/log entries on the branch (see render-commits-actor-records).",
+          "wording": "decided by the orchestrator acting as arbiter, on the owner's word that the orchestrator signs off on this change set"
+        },
+        "handle": "ship-change-file-names-render",
+        "id": "01M61BGA5SNFJNDHFHC2JGY0TM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61BGA5SNFJNDHFHC1SX9B4W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61BGA5SNFJNDHFHC1SX9B4W",
+        "id": "01M61BGABKKCKKKKRDE483GRS2",
+        "link": "01M61BGABKKCKKKKRDE33JDJK1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M60EP9ESXQF8WC6EJJJ1V5ZR",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M61BGAMJ69VQDBCCYFX92X9H",
+  "type": "ops",
+  "v": 1
+}
