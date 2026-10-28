@@ -1,6 +1,7 @@
 # run start with no --workflow runs the built-in ship-change workflow end
 # to end on a change set of two leaves, the second depending on the first:
-# build's builders and verifiers, a render committed on the branch, then
+# build's builders and verifiers, a render committed on the branch with
+# the actor records build's sessions left uncommitted, then
 # the repo's review (its code check and two fake checks, its sign-off
 # skipped), then the pull request
 # opened with the review's summary as its body. The run waits for CI, then stops at its sign-off until `rhiza run
@@ -86,6 +87,14 @@ grep '^### beta' $WORK/pr-body.md
 ! grep '^pr merge' $WORK/gh.log
 exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
 stdout '^- State: accepted'
+
+# The builders commit only their own files, yet the pushed branch holds
+# every actor record its rendered pages are built from: a fresh clone of
+# it passes rhiza check, as the PR's CI would.
+exec git clone -q -b cs/ship-it $WORK/origin.git $WORK/pr-clone
+cd $WORK/pr-clone
+exec rhiza check
+cd $WORK/repo
 
 # The owner signs off and the run carries on to the end.
 exec sh -c 'rhiza run approve; echo exit=$?'
