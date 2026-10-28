@@ -34,19 +34,30 @@ exec rhiza link 01M5PWH01R1B9MDYF6J8XB3MQG serves plain
 exec rhiza propose
 exec rhiza accept --reason ok
 
-! exec rhiza daemon --once --max-runs=-1
-exec rhiza daemon --once
+! exec rhiza daemon --permission-mode manual --once --max-runs=-1
+
+# No permission mode: ship-change's agent steps would have none, so the
+# daemon refuses before it opens any tab. A mode that bypasses the agent's
+# permission checks is refused the same way.
+! exec rhiza daemon --once
+stderr 'no permission mode: give --permission-mode'
+! exec rhiza daemon --once --permission-mode bypassPermissions
+stderr 'bypasses the agent''s permission checks'
+! exists $WORK/rex.log
+
+# The mode reaches each started run's command.
+exec rhiza daemon --permission-mode manual --once
 stdout -count=1 '^Started a run of '
-exec sh -c 'grep -c "^rex window new .* run start " $WORK/rex.log'
+exec sh -c 'grep -c "^rex window new .* run start [0-9A-Z]* --permission-mode manual$" $WORK/rex.log'
 stdout '^1$'
-exec rhiza daemon --once --json
+exec rhiza daemon --permission-mode manual --once --json
 stdout '"started": \['
 
 # --autonomous reaches the started run's command, and only then.
 exec sh -c 'grep -c -- "--autonomous" $WORK/rex.log || true'
 stdout '^0$'
-exec rhiza daemon --once --autonomous
-exec sh -c 'grep "^rex window new .* run start [0-9A-Z]* --autonomous$" $WORK/rex.log | wc -l'
+exec rhiza daemon --permission-mode manual --once --autonomous
+exec sh -c 'grep "^rex window new .* run start [0-9A-Z]* --permission-mode manual --autonomous$" $WORK/rex.log | wc -l'
 stdout '^ *1$'
 -- bin/rex --
 #!/bin/sh

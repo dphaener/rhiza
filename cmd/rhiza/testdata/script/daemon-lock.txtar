@@ -15,20 +15,20 @@ exec git commit -qm init
 exec git worktree add -q ../other
 
 # The first daemon holds the lock.
-exec rhiza daemon &first&
+exec rhiza daemon --permission-mode manual &first&
 exec sh -c 'for i in $(seq 100); do grep -q pid .git/rhiza/daemon.lock && exit 0; sleep 0.1; done; exit 1'
 exec sh -c 'sed -E "s/.*\"pid\":([0-9]+).*/\1/" .git/rhiza/daemon.lock > $WORK/pid'
 
 # A second one, from the repo and from the other worktree, is refused.
-exec sh -c 'rhiza daemon 2>err; echo exit=$?; cat err'
+exec sh -c 'rhiza daemon --permission-mode manual 2>err; echo exit=$?; cat err'
 stdout '^exit=2$'
 stdout 'another daemon holds the lock: process .*:[0-9]+'
-exec sh -c 'rhiza daemon 2>&1 | grep -c ":$(cat $WORK/pid)"'
+exec sh -c 'rhiza daemon --permission-mode manual 2>&1 | grep -c ":$(cat $WORK/pid)"'
 stdout '^1$'
 cd ../other
-exec sh -c 'rhiza daemon 2>err; echo exit=$?; cat err'
+exec sh -c 'rhiza daemon --permission-mode manual 2>err; echo exit=$?; cat err'
 stdout '^exit=2$'
-exec sh -c 'rhiza daemon 2>&1 | grep -c ":$(cat $WORK/pid)"'
+exec sh -c 'rhiza daemon --permission-mode manual 2>&1 | grep -c ":$(cat $WORK/pid)"'
 stdout '^1$'
 cd ../repo
 
@@ -40,7 +40,7 @@ exec sh -c 'test ! -s .git/rhiza/daemon.lock'
 
 # A lock file naming a process that is gone is taken over.
 exec sh -c 'printf "{\"host\":\"%s\",\"pid\":999999,\"started\":\"2026-01-01T00:00:00Z\"}\n" "$(hostname)" > .git/rhiza/daemon.lock'
-exec rhiza daemon &second&
+exec rhiza daemon --permission-mode manual &second&
 exec sh -c 'for i in $(seq 100); do grep -q "\"pid\":[0-9]" .git/rhiza/daemon.lock && ! grep -q 999999 .git/rhiza/daemon.lock && exit 0; sleep 0.1; done; exit 1'
 ! grep 999999 .git/rhiza/daemon.lock
 kill -INT second

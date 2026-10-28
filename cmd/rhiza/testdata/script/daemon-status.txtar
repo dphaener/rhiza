@@ -24,7 +24,7 @@ exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
 exec rhiza propose
 exec rhiza accept --reason ok
 
-exec rhiza daemon --once --max-runs=3 --autonomous
+exec rhiza daemon --permission-mode manual --once --max-runs=3 --autonomous
 stdout '^Started a run of '
 
 # The daemon is gone, so it is not running, but its state says what it did.

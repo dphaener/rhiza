@@ -36,9 +36,10 @@ const daemonPoll = 5 * time.Second
 
 // DaemonRequest starts the daemon.
 type DaemonRequest struct {
-	MaxRuns    int  `json:"max_runs,omitempty" desc:"Start runs until this many are running; default 2. An interrupted run takes no slot"`
-	Once       bool `json:"once,omitempty" desc:"Poll once, start what is picked and stop"`
-	Autonomous bool `json:"autonomous,omitempty" desc:"Start each run with --autonomous: it goes on without the owner"`
+	MaxRuns        int    `json:"max_runs,omitempty" desc:"Start runs until this many are running; default 2. An interrupted run takes no slot"`
+	Once           bool   `json:"once,omitempty" desc:"Poll once, start what is picked and stop"`
+	Autonomous     bool   `json:"autonomous,omitempty" desc:"Start each run with --autonomous: it goes on without the owner"`
+	PermissionMode string `json:"permission_mode,omitempty" desc:"Start each run with this --permission-mode, for its agent steps that set none; checked against ship-change before the daemon starts"`
 }
 
 // DaemonResponse is the daemon after it stopped.
@@ -72,6 +73,15 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	}
 	if r.MaxRuns == 0 {
 		r.MaxRuns = daemon.DefaultMaxRuns
+	}
+	// Every run the daemon starts is a ship-change run with this mode: one
+	// that run start would refuse is refused here, before any tab opens.
+	_, def, _, err := resolveWorkflow(ctx.Root, "")
+	if err != nil {
+		return nil, err
+	}
+	if err := checkAgentSteps(def, r.PermissionMode, "", r.Autonomous, "rhiza describe daemon"); err != nil {
+		return nil, err
 	}
 	common, err := gitCommonDir(ctx)
 	if err != nil {
@@ -110,7 +120,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		daemon.WriteState(common, state)
 	}()
 	poll := func() error {
-		started, resumed, err := daemonPoll1(ctx, rs, pending, unjournaled, r.MaxRuns, r.Autonomous)
+		started, resumed, err := daemonPoll1(ctx, rs, pending, unjournaled, r.MaxRuns, r.Autonomous, r.PermissionMode)
 		resp.Started = append(resp.Started, started...)
 		resp.Resumed = append(resp.Resumed, resumed...)
 		if len(started) > 0 {
@@ -205,7 +215,7 @@ func daemonRunsOf(runs []run.Journal, cs string) int {
 
 // daemonPoll1 picks and starts runs once. pending holds the change sets
 // started; unjournaled those whose start never journaled (see daemonHeld).
-func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, autonomous bool) ([]string, []string, error) {
+func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, autonomous bool, mode string) ([]string, []string, error) {
 	res, _, _, err := planRead(ctx, "daemon", "")
 	if err != nil {
 		return nil, nil, err
@@ -239,7 +249,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	picked := daemon.Pick(cands, runs, held, host, nil, max)
 	var started []string
 	for _, cs := range picked {
-		if err := daemonStart(ctx, cs, autonomous); err != nil {
+		if err := daemonStart(ctx, cs, autonomous, mode); err != nil {
 			return started, resumed, err
 		}
 		pending[cs] = daemonPending{at: ctx.Now(), runs: daemonRunsOf(runs, cs)}
@@ -270,8 +280,9 @@ func daemonCandidates(res planResult, hasLeaves func(id.ID) bool) []string {
 	return out
 }
 
-// daemonStart starts the run of change set cs in a new Rex tab.
-func daemonStart(ctx *Ctx, cs string, autonomous bool) error {
+// daemonStart starts the run of change set cs in a new Rex tab, with
+// permission mode mode.
+func daemonStart(ctx *Ctx, cs string, autonomous bool, mode string) error {
 	if ctx.Exec == nil || ctx.Self == "" {
 		return Errorf("daemon cannot start a run of %s: no rex or rhiza path", cs)
 	}
@@ -279,7 +290,7 @@ func daemonStart(ctx *Ctx, cs string, autonomous bool) error {
 	if ctx.RexSession != "" {
 		args = append(args, "-s", ctx.RexSession)
 	}
-	args = append(args, cs[:min(len(cs), 9)], "-c", ctx.Root, "--json", "--", ctx.Self, "run", "start", cs)
+	args = append(args, cs[:min(len(cs), 9)], "-c", ctx.Root, "--json", "--", ctx.Self, "run", "start", cs, "--permission-mode", mode)
 	if autonomous {
 		args = append(args, "--autonomous")
 	}

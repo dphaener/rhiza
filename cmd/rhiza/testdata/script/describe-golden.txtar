@@ -1224,6 +1224,10 @@ cmp stdout describe.golden.json
           "once": {
             "description": "Poll once, start what is picked and stop",
             "type": "boolean"
+          },
+          "permission_mode": {
+            "description": "Start each run with this --permission-mode, for its agent steps that set none; checked against ship-change before the daemon starts",
+            "type": "string"
           }
         },
         "required": [],
