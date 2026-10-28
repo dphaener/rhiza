@@ -84,13 +84,23 @@ exec rhiza guide reopening
 stdout '^# Reopening$'
 stdout 'rhiza reopen --change <id>'
 stdout '^## Never delete or edit log entries$'
+exec rhiza guide review
+stdout '^# Review$'
+stdout 'merge-base with the default branch'
+stdout 'rhiza run findings --check "\$RHIZA_CHECK" <file>'
+stdout '"severity":"major","leaf":"<leaf>","place":"path:line"'
+stdout 'rhiza run verdict --check "\$RHIZA_CHECK" <file>'
+stdout 'Never add a finding'
+stdout '`Review: <run>`'
+stdout 'Evidence written as yourself on each leaf it exercised'
+stdout 'discovered-from draft change set'
 exec rhiza guide sources
 stdout '^# Sources$'
 stdout '^## Stored fields$'
 
-# guide ls lists all eleven texts with their kinds and sizes.
+# guide ls lists all twelve texts with their kinds and sizes.
 exec rhiza guide ls
-stdout -count=11 '^- '
+stdout -count=12 '^- '
 stdout '^- rhiza +skill +[0-9]+ tokens  Work with the product model'
 stdout '^- scrub +skill +[0-9]+ tokens  '
 stdout '^- plan +skill +[0-9]+ tokens  Plan with the owner'
@@ -101,6 +111,7 @@ stdout '^- carving +topic +[0-9]+ tokens  '
 stdout '^- change-sets +topic +[0-9]+ tokens  '
 stdout '^- plan-review +topic +[0-9]+ tokens  Plan review'
 stdout '^- reopening +topic +[0-9]+ tokens  '
+stdout '^- review +topic +[0-9]+ tokens  Reviewing a built change set'
 stdout '^- sources +topic +[0-9]+ tokens  '
 exec rhiza guide ls --json
 stdout '"texts": \['

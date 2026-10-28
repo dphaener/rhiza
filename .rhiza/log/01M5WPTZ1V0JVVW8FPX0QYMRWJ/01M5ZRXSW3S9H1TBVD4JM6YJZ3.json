@@ -1,0 +1,41 @@
+{
+  "actor": "01M5ZQEK0WV1C5G4W87RK22B02",
+  "after": [
+    "01M5ZQFS629RH2FD28G0X19DCJ"
+  ],
+  "at": "2026-10-27T22:50:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Re-ran the leaf's tests in a detached worktree at 87ab105 with RHIZA_* unset; all passed. internal/workflow TestChecksStepLoads loads a checks step; TestChecksStepRefused rejects no checks, a duplicate check name and an unknown [[step.X.check]] key (plus critic/fixer keys, missing roles, misplaced keys) with exact messages. internal/run TestChecksStepParallel asserts the first poll comes only after all 3 check sessions started (so all 3 start before any ends) and the journal order check-session x3 before check-judged; TestChecksStepReRunsFailed fails alpha in cycle 1 and asserts the starts are alpha/beta/gamma cycle 1 then only alpha cycle 2. Testscript review-checks-step asserts rhiza run status lists each check's cycles and outcome (beta: cycle 1 failed, cycle 2 passed) in text and --json. go test ./... passed in every package.",
+          "tests": "env -u RHIZA_CHANGE -u RHIZA_ACTOR -u RHIZA_FOR -u RHIZA_RUN -u RHIZA_SESSION -u RHIZA_ROOT go test ./internal/workflow -run 'TestChecksStep' -v -count=1; same env: go test ./internal/run -run 'TestChecksStep|TestNextCheckActions|TestCheckPane' -v -count=1; go test ./cmd/rhiza -run 'TestScripts/review-checks-step' -v -count=1; go test ./... -count=1; commit 87ab105; run by claude-code-0e5a9d92-verifier on 2026-10-27"
+        },
+        "handle": "review-checks-step-verified",
+        "id": "01M5ZRXSESD1VTJ3499GBDAN6E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M5ZRXSESD1VTJ3499DEJ0TF9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5ZRXSESD1VTJ3499DEJ0TF9",
+        "id": "01M5ZRXSM0CHY71DRSGNQDA6WP",
+        "link": "01M5ZRXSM0CHY71DRSGJ1GC44Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EG65NMPZAKN41R95EQYB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZ1V0JVVW8FPX0QYMRWJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M5ZRXSW3S9H1TBVD4JM6YJZ3",
+  "type": "ops",
+  "v": 1
+}

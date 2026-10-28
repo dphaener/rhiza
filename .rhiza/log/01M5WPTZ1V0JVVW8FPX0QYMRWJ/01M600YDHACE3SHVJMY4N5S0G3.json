@@ -1,0 +1,41 @@
+{
+  "actor": "01M5ZQEK0WV1C5G4W87RK22B02",
+  "after": [
+    "01M5ZZSAWAXNXBKSGNA9FJMF6C"
+  ],
+  "at": "2026-10-28T01:10:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Re-ran at c0b0739 in a detached worktree with RHIZA_* unset; all pass. review-signoff.txtar: rhiza run start stops with current signoff, signoff_waiting true, detail waiting for the owner's sign-off; rhiza run approve prints approved by the actor, run succeeded, run status --json signoffs entry {actor test, outcome approved, rule owner, step signoff, visit 1}, change set stays draft. Outside a waiting review run both run approve and run request-changes exit 2 with no run, a run stopped at wait step ci (journal line count unchanged), and a finished run. review-signoff-changes.txtar: check alpha ran cycles 1, 2 and 3 (cap used); run request-changes with one finding on leaf thing starts role=fixer cycle=4 leaf=thing findings=yes, then its verifier, then only alpha re-runs; the fix commit carries Leaf: thing; the run is stopped with signoff_waiting true and next approve; a third visit is refused exit 2 over max_visits. review-signoff-autonomous.txtar: --autonomous run succeeds, signoff passes approved by rule autonomous, journal signoff entry has rule autonomous and no actor. describe-golden.txtar passes and lists run.approve, run.request-changes, signoffs and signoff_waiting. Unit tests TestSignoff* (internal/run), TestSignoffStep* (internal/workflow), TestSignoffLine (internal/api) pass; go test ./... passes.",
+          "tests": "env -u RHIZA_CHANGE -u RHIZA_ACTOR -u RHIZA_FOR -u RHIZA_RUN -u RHIZA_SESSION -u RHIZA_ROOT go test ./cmd/rhiza -run 'TestScripts/review-signoff' -v -count=1; same env: go test ./internal/run -run TestSignoff -v -count=1; go test ./internal/workflow -run TestSignoffStep -v -count=1; go test ./internal/api -run TestSignoffLine -v -count=1; go test ./cmd/rhiza -run 'TestScripts/describe-golden' -count=1; go test ./... -count=1. Commit c0b0739; run by claude-code-0e5a9d92-verifier on 2026-10-27"
+        },
+        "handle": "review-signoff-verified",
+        "id": "01M600YD3MD5EZNAYZJYD0X5VW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M600YD3MD5EZNAYZJV9C7SGF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M600YD3MD5EZNAYZJV9C7SGF",
+        "id": "01M600YD8ZGT3FE45BGAT5FQNZ",
+        "link": "01M600YD8ZGT3FE45BG7K5FRAR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z0EMM6HBY40F6M5QVK0TX0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZ1V0JVVW8FPX0QYMRWJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M600YDHACE3SHVJMY4N5S0G3",
+  "type": "ops",
+  "v": 1
+}

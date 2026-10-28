@@ -34,6 +34,7 @@ the orchestrator's proposal in the milestone-3 conversation, accepted by the own
 - decided-by [arbiter-answer-to-session](../capability/rhiza/workflows/arbiter-sessions/arbiter-answer-to-session.md)
 - decided-by [plan-autonomous-interview](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-autonomous-interview.md)
 - decided-by [build-leaf-fails](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-leaf-fails.md)
+- decided-by [review-cycle-cap](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-cycle-cap.md)
 
 ## History
 

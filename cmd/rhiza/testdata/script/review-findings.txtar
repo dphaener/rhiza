@@ -1,0 +1,197 @@
+# In a review run (its current step is a checks step) run findings and
+# run verdict take the check they belong to: each review finding has a
+# severity, the leaf it is about when there is one, a place and a reason,
+# and opens the next round of its check; a verdict judges its check's
+# latest round. The journal holds them per check, and run status shows
+# each check's rounds with findings and verdicts, in text and --json.
+#
+# Refused as usage (exit 2) with the journal unchanged: an unknown
+# severity, an unknown check, no --check, a leaf not in the run's change
+# set, an empty place or reason, a plan finding's kind, and a verdict
+# naming a finding its check's latest round does not hold (a critic's
+# verdict adding a finding).
+#
+# The fake rex runs the tab's command synchronously in the window's
+# directory, then prints a window. The fake claude, as check alpha, tries
+# each refusal, then records a major finding; as beta it records two
+# findings, a nit and a minor about a leaf; as gamma an empty round. Only
+# alpha's major calls a critic: as alpha's critic the fake claude tries a
+# verdict adding a finding, then drops f1, so every check passes.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new 'Review me' --title 'Review me'
+exec rhiza add capability first
+exec rhiza add capability second
+exec rhiza add capability outsider --record
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
+exec git add -A
+exec git commit -qm review
+
+exec rhiza run start --workflow review --permission-mode manual
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+
+# Every refusal exited 2 and left the journal as it was; each real call
+# appended one entry.
+exec cat $WORK/check.log
+cmp stdout $WORK/want-check.log
+exec cat $WORK/refuse.log
+grep 'finding 1: severity "critical" is not one of blocker, major, minor, nit' $WORK/refuse.log
+grep 'check "delta" is not a check of step review' $WORK/refuse.log
+grep 'run findings works in a review run with --check' $WORK/refuse.log
+grep 'finding 1: leaf "outsider": outsider is not one of change set [0-9A-Z]{26}''s leaves' $WORK/refuse.log
+grep 'finding 1: no place' $WORK/refuse.log
+grep 'finding 1: no reason' $WORK/refuse.log
+grep 'unknown field "kind"' $WORK/refuse.log
+grep 'verdict 1: check alpha''s round 1 holds no finding "f9"' $WORK/refuse.log
+grep 'verdict 1: check beta''s round 1 holds no finding "f3"' $WORK/refuse.log
+
+# The journal holds the findings and the verdict per check, each tagged
+# with the check's cycle; no plan review round opened.
+exec sh -c 'grep -c "\"type\":\"findings\",.*\"step\":\"review\",.*\"findings\":\[{\"id\":\"f1\",\"check\":\"alpha\",\"severity\":\"major\",\"place\":\"main.go:12\",\"reason\":\"panics on empty input\"}\],\"check\":\"alpha\",\"cycle\":1}" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+stdout '^1$'
+exec sh -c 'grep -c "\"type\":\"verdict\",.*\"step\":\"review\",.*\"verdicts\":\[{\"finding\":\"f1\",\"verdict\":\"dropped\",\"reason\":\"not reproduced\"}\],\"check\":\"alpha\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+stdout '^1$'
+exec sh -c 'grep -c "\"check\":\"beta\",\"severity\":\"minor\",\"leaf\":\"[0-9A-Z]\{26\}\",\"leaf_handle\":\"second\",\"place\":\"second\",\"reason\":\"acceptance is vague\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+stdout '^1$'
+
+exec rhiza run status
+stdout '\n- alpha \(step review\): passed after 1 cycle\n  - cycle 1: passed, check session [0-9a-f-]{36} pass \(exit 0\), critic session [0-9a-f-]{36} pass \(exit 0\)\n  - round 1 \(cycle 1\): 1 finding, 0 confirmed\n    - f1 major at main.go:12: panics on empty input — dropped: not reproduced\n'
+stdout '\n- beta \(step review\): passed after 1 cycle\n  - cycle 1: passed, check session [0-9a-f-]{36} pass \(exit 0\)\n  - round 1 \(cycle 1\): 2 findings, 0 confirmed\n    - f1 nit at README.md:1: typo\n    - f2 minor at second on second: acceptance is vague\n'
+stdout '\n- gamma \(step review\): passed after 1 cycle\n  - cycle 1: passed, check session [0-9a-f-]{36} pass \(exit 0\)\n  - round 1 \(cycle 1\): no findings\n'
+! stdout '^## Review rounds'
+
+exec rhiza run status --json
+! stdout '^  "rounds"'
+stdout -count=3 '"rounds": \['
+stdout '"check": "alpha",\n\s+"id": "f1",\n\s+"place": "main.go:12",\n\s+"reason": "panics on empty input",\n\s+"severity": "major",\n\s+"verdict": "dropped",\n\s+"verdict_reason": "not reproduced"'
+stdout '"check": "beta",\n\s+"id": "f2",\n\s+"leaf": "[0-9A-Z]{26}",\n\s+"leaf_handle": "second",\n\s+"place": "second",\n\s+"reason": "acceptance is vague",\n\s+"severity": "minor"'
+stdout '"verdicts": \[\n\s+\{\n\s+"finding": "f1",\n\s+"reason": "not reproduced",\n\s+"verdict": "dropped"'
+
+fold-ok
+
+-- want-check.log --
+alpha severity exit=2 lines=same
+alpha unknown-check exit=2 lines=same
+alpha no-check exit=2 lines=same
+alpha outsider exit=2 lines=same
+alpha no-place exit=2 lines=same
+alpha no-reason exit=2 lines=same
+alpha kind exit=2 lines=same
+alpha findings exit=0 lines=+1
+beta findings exit=0 lines=+1
+beta verdict-unknown exit=2 lines=same
+gamma findings exit=0 lines=+1
+alpha critic-verdict-unknown exit=2 lines=same
+alpha critic-verdict exit=0 lines=+1
+-- severity.json --
+{"findings":[{"severity":"critical","place":"main.go:1","reason":"bad"}]}
+-- outsider.json --
+{"findings":[{"severity":"major","leaf":"outsider","place":"x.go:1","reason":"bad"}]}
+-- noplace.json --
+{"findings":[{"severity":"major","place":" ","reason":"bad"}]}
+-- noreason.json --
+{"findings":[{"severity":"major","place":"x.go:1","reason":""}]}
+-- kind.json --
+{"findings":[{"severity":"major","place":"x.go:1","reason":"bad","kind":"contradiction"}]}
+-- alpha.json --
+{"findings":[{"severity":"major","place":"main.go:12","reason":"panics on empty input"}]}
+-- beta.json --
+{"findings":[{"severity":"nit","place":"README.md:1","reason":"typo"},{"severity":"minor","leaf":"second","place":"second","reason":"acceptance is vague"}]}
+-- empty.json --
+{"findings":[]}
+-- verdict-f9.json --
+{"verdicts":[{"finding":"f9","verdict":"dropped","reason":"no"}]}
+-- verdict-f3.json --
+{"verdicts":[{"finding":"f3","verdict":"dropped","reason":"no"}]}
+-- verdict.json --
+{"verdicts":[{"finding":"f1","verdict":"dropped","reason":"not reproduced"}]}
+-- review.toml --
+[step.review]
+kind = "checks"
+interval = "50ms"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[[step.review.check]]
+name = "beta"
+prompt = "Review change set {change} as check {check}"
+
+[[step.review.check]]
+name = "gamma"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+journal="$(git rev-parse --git-common-dir)/rhiza/runs/$RHIZA_RUN.jsonl"
+# try <label> <args...> runs rhiza run <args> and logs its exit and
+# whether the journal grew.
+try() {
+	label=$1
+	shift
+	before=$(wc -l < "$journal")
+	rhiza run "$@" 2>> "$WORK/refuse.log" >/dev/null
+	code=$?
+	after=$(wc -l < "$journal")
+	lines=same
+	[ "$after" -gt "$before" ] && lines=+$((after - before))
+	echo "$RHIZA_CHECK $label exit=$code lines=$lines" >> "$WORK/check.log"
+}
+case $RHIZA_ROLE/$RHIZA_CHECK in
+critic/alpha)
+	try critic-verdict-unknown verdict --check alpha "$WORK/verdict-f9.json"
+	try critic-verdict verdict --check alpha "$WORK/verdict.json"
+	;;
+check/alpha)
+	try severity findings --check alpha "$WORK/severity.json"
+	try unknown-check findings --check delta "$WORK/alpha.json"
+	try no-check findings "$WORK/alpha.json"
+	try outsider findings --check alpha "$WORK/outsider.json"
+	try no-place findings --check alpha "$WORK/noplace.json"
+	try no-reason findings --check alpha "$WORK/noreason.json"
+	try kind findings --check alpha "$WORK/kind.json"
+	try findings findings --check alpha "$WORK/alpha.json"
+	;;
+check/beta)
+	try findings findings --check beta - < "$WORK/beta.json"
+	try verdict-unknown verdict --check beta "$WORK/verdict-f3.json"
+	;;
+check/gamma)
+	try findings findings --check gamma "$WORK/empty.json"
+	;;
+esac
+exit 0

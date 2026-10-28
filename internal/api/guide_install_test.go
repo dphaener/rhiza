@@ -11,7 +11,7 @@ import (
 	"github.com/dphaener/rhiza/internal/guide"
 )
 
-var pluginPaths = []string{pluginManifestPath, pluginSkillPath, pluginHooksPath, pluginBuildPath, pluginPlanPath, pluginScrubPath}
+var pluginPaths = []string{pluginManifestPath, pluginSkillPath, pluginHooksPath, pluginBuildPath, pluginPlanPath, pluginReviewPath, pluginScrubPath}
 
 func guideInstall(t *testing.T, ctx *Ctx, req string) GuideInstallResponse {
 	t.Helper()
@@ -48,7 +48,7 @@ func TestYAMLQuote(t *testing.T) {
 }
 
 func TestSkillFileFrontmatter(t *testing.T) {
-	for _, tc := range []struct{ name, text string }{{"rhiza", "rhiza"}, {"rhiza-scrub", "scrub"}, {"rhiza-plan", "plan"}, {"rhiza-build", "build"}} {
+	for _, tc := range []struct{ name, text string }{{"rhiza", "rhiza"}, {"rhiza-scrub", "scrub"}, {"rhiza-plan", "plan"}, {"rhiza-build", "build"}, {"rhiza-review", "review"}} {
 		b, err := skillFile(tc.name, tc.text)
 		if err != nil {
 			t.Fatal(err)
@@ -110,6 +110,30 @@ func TestGuideInstallBuild(t *testing.T) {
 	for _, p := range []string{"Leaf: ", "discovered-from", "rhiza run findings --leaf"} {
 		if !strings.Contains(string(b), p) {
 			t.Errorf("rhiza-build SKILL.md: no %q", p)
+		}
+	}
+}
+
+// TestGuideInstallReview finds the review topic in the installed plugin, as
+// the rhiza-review skill: frontmatter, then rhiza guide review's text.
+func TestGuideInstallReview(t *testing.T) {
+	ctx := testCtx(t.TempDir())
+	ctx.Home = t.TempDir()
+	r := guideInstall(t, ctx, `{"agent":"claude"}`)
+	if !slices.Contains(r.Written, "skills/rhiza-review/SKILL.md") {
+		t.Fatalf("install wrote %v, want skills/rhiza-review/SKILL.md", r.Written)
+	}
+	b, err := os.ReadFile(filepath.Join(r.Dir, "skills", "rhiza-review", "SKILL.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	g, _ := guide.Lookup("review")
+	if !strings.HasPrefix(string(b), "---\nname: rhiza-review\ndescription: ") || !strings.HasSuffix(string(b), "\n---\n\n"+g.Body) {
+		t.Errorf("rhiza-review SKILL.md is not the frontmatter plus the review topic:\n%s", b)
+	}
+	for _, p := range []string{"rhiza run findings --check", "rhiza run verdict --check", "Review: <run>", "discovered-from"} {
+		if !strings.Contains(string(b), p) {
+			t.Errorf("rhiza-review SKILL.md: no %q", p)
 		}
 	}
 }

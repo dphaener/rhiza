@@ -1,0 +1,110 @@
+# A checks step starts a fresh session per check, each through
+# session.start's path in a pane of the change set's tab, with its check,
+# cycle and role in its environment and a prompt naming only the change
+# set and the check. A check whose session fails re-runs alone in the
+# next cycle. run status shows each check's cycles and outcome, in text
+# and --json.
+#
+# The fake rex runs the tab's command synchronously in the window's
+# directory, then prints a window; the fake claude logs its role, check,
+# cycle and prompt, and fails as check beta in cycle 1; otherwise it
+# records an empty findings round, as a passing check must.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new 'Review me' --title 'Review me'
+exec rhiza add capability thing
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
+exec git add -A
+exec git commit -qm review
+
+# A check with no permission mode is refused before anything runs.
+! exec rhiza run start --workflow review
+stderr 'step "review" is a checks step whose check alpha runs with no permission mode'
+! exists $WORK/rex.log
+
+exec sh -c 'rhiza run start --workflow review --permission-mode manual --json; echo exit=$?'
+stdout '"state": "succeeded"'
+stdout '^exit=0$'
+
+# Cycle 1 ran every check, cycle 2 only beta; each prompt names the
+# change set and the check, and nothing of a leaf.
+exec cat $WORK/claude.log
+stdout '\Arole=check check=alpha cycle=1 leaf= prompt=Review change set [0-9A-Z]{26} as check alpha\nrole=check check=beta cycle=1 leaf= prompt=Review change set [0-9A-Z]{26} as check beta\nrole=check check=gamma cycle=1 leaf= prompt=Review change set [0-9A-Z]{26} as check gamma\nrole=check check=beta cycle=2 leaf= prompt=Review change set [0-9A-Z]{26} as check beta\n\z'
+
+# Each check session opened in a pane: the first opened the tab, each
+# later one split a pane.
+exec grep -c 'split' $WORK/rex.log
+stdout '^3$'
+
+exec rhiza run status
+stdout '^- review \(visit 1\): pass, then end: 3 of 3 checks passed$'
+stdout '\n## Checks\n\n- alpha \(step review\): passed after 1 cycle\n  - cycle 1: passed, check session [0-9a-f-]{36} pass \(exit 0\)\n  - round 1 \(cycle 1\): no findings\n- beta \(step review\): passed after 2 cycles\n  - cycle 1: failed, check session [0-9a-f-]{36} fail \(exit 1\)\n  - cycle 2: passed, check session [0-9a-f-]{36} pass \(exit 0\)\n  - round 1 \(cycle 2\): no findings\n- gamma \(step review\): passed after 1 cycle\n  - cycle 1: passed, check session [0-9a-f-]{36} pass \(exit 0\)\n  - round 1 \(cycle 1\): no findings\n'
+
+exec rhiza run status --json
+stdout -count=3 '"check": "(alpha|beta|gamma)",'
+stdout -count=1 '"outcome": "failed"'
+stdout '"cycle": 2,'
+stdout '"role": "check",'
+
+fold-ok
+
+-- empty.json --
+{"findings":[]}
+-- review.toml --
+[step.review]
+kind = "checks"
+interval = "50ms"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[[step.review.check]]
+name = "beta"
+prompt = "Review change set {change} as check {check}"
+
+[[step.review.check]]
+name = "gamma"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+for a; do last=$a; done
+echo "role=$RHIZA_ROLE check=$RHIZA_CHECK cycle=$RHIZA_CYCLE leaf=$RHIZA_LEAF prompt=$last" >> "$WORK/claude.log"
+[ "$RHIZA_CHECK" = beta ] && [ "$RHIZA_CYCLE" = 1 ] && exit 1
+rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty.json" >&2 || exit 1
+exit 0

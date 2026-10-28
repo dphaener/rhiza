@@ -30,6 +30,7 @@ the orchestrator's proposal in the milestone-3 conversation, accepted by the own
 - decided-by [autonomous-runs](../capability/rhiza/workflows/autonomous-runs.md)
 - decided-by [autonomous-gate-rule](../capability/rhiza/workflows/autonomous-runs/autonomous-gate-rule.md)
 - decided-by [plan-gate](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-gate.md)
+- decided-by [review-signoff](../capability/rhiza/workflows/built-in-workflows/built-in-review/review-signoff.md)
 
 ## History
 

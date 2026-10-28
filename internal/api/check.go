@@ -177,9 +177,9 @@ func inWorkTree(git func(...string) (string, error)) bool {
 }
 
 // trailerLogFormat has git log write, per commit, its hash and then each
-// Change:, Actor: and Leaf: trailer as "Key: value", unfolded, all
-// separated by US (0x1f) and the commit ended by RS (0x1e).
-const trailerLogFormat = "%H%x1f%(trailers:key=Change,key=Actor,key=Leaf,unfold,separator=%x1f)%x1e"
+// Change:, Actor:, Leaf: and Review: trailer as "Key: value", unfolded,
+// all separated by US (0x1f) and the commit ended by RS (0x1e).
+const trailerLogFormat = "%H%x1f%(trailers:key=Change,key=Actor,key=Leaf,key=Review,unfold,separator=%x1f)%x1e"
 
 // gitCommits is HEAD's history with its trailers, newest first, for the
 // evidence-actor rule: the commits that change a file outside the store
@@ -224,6 +224,8 @@ func parseTrailerLog(out string) []check.Commit {
 				c.Actors = append(c.Actors, v)
 			case "leaf":
 				c.Leaves = append(c.Leaves, v)
+			case "review":
+				c.Reviews = append(c.Reviews, v)
 			}
 		}
 		cs = append(cs, c)

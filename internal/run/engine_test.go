@@ -65,11 +65,13 @@ type fakeRunner struct {
 	// evidenceCommitErr is CommitEvidence's error per leaf handle; a
 	// missing handle commits "E-<handle>".
 	evidenceCommitErr map[string]error
-	commitCalls       []string // "<handle> <session>" per CommitEvidence call
-	checkouts         []string // "open <dir> <commit>" and "remove <dir>" per call, in order
-	checkoutErr       error    // OpenCheckout's error, when set
-	removeErr         error    // RemoveCheckout's error, when set
-	heads             []string // Head's result per call, in order; past the end, fakeHead
+	commitCalls       []string         // "<handle> <session>" per CommitEvidence call
+	checkouts         []string         // "open <dir> <commit>" and "remove <dir>" per call, in order
+	checkWrites       []string         // session per CommitCheckWrites call, in order
+	checkWritesErr    map[string]error // CommitCheckWrites' error per session
+	checkoutErr       error            // OpenCheckout's error, when set
+	removeErr         error            // RemoveCheckout's error, when set
+	heads             []string         // Head's result per call, in order; past the end, fakeHead
 	// leafQuestions are "<handle> <text>" per AddLeafQuestion call; the
 	// nth question is QL<n>, handle leaf-failed-<n>.
 	leafQuestions   []string
@@ -78,8 +80,30 @@ type fakeRunner struct {
 	// a missing question has no answer.
 	leafAnswers map[string][2]string
 	leafAnswerN map[string]int // LeafAnswer calls per question
-	closed      []string       // the session of each ClosePane call, in order
-	closeErr    error          // ClosePane's error, when set
+	// store is the engine's journal store, where a check session's fake
+	// agent records its findings round as StartCheck launches it.
+	store *Store
+	// noRound names the check sessions whose agent records no findings
+	// round; every other check session records an empty one.
+	noRound map[string]bool
+	// findings are the findings a check session's agent records in its
+	// round, by session; verdicts the verdicts a critic session's agent
+	// records on its check's latest round, by session.
+	findings   map[string][]Finding
+	verdicts   map[string][]Verdict
+	closed     []string    // the session of each ClosePane call, in order
+	closeErr   error       // ClosePane's error, when set
+	checkSpecs []CheckSpec // each StartCheck call's spec, in order
+	checkErr   error       // StartCheck's error, when set
+	fixSpecs   []FixSpec   // each StartFix call's spec, in order
+	// reviewCommits are ReviewCommit's commit and detail per call, in
+	// order; past the end, "C-review".
+	reviewCommits [][2]string
+	reviewSince   []string // the since of each ReviewCommit call
+	// reviewQuestions are the text of each AddReviewQuestion call; the
+	// nth question is QR<n>, handle review-failed-<n>.
+	reviewQuestions   []string
+	reviewQuestionErr error // AddReviewQuestion's error, when set
 }
 
 // fakeEvidence is one leaf's scripted Evidence result.
@@ -97,6 +121,7 @@ func newFakeRunner() *fakeRunner {
 		commands: map[string]int{}, polls: map[string]int{}, starts: map[string]int{},
 		envs: map[string][]string{}, answers: map[string]Answer{}, answerN: map[string]int{},
 		leafAnswers: map[string][2]string{}, leafAnswerN: map[string]int{},
+		noRound: map[string]bool{}, findings: map[string][]Finding{}, verdicts: map[string][]Verdict{},
 	}
 }
 
@@ -212,6 +237,7 @@ func setup(t *testing.T, src string) (*Engine, *fakeRunner, *fakeClock, *workflo
 		t.Fatal(err)
 	}
 	r := newFakeRunner()
+	r.store = store
 	c := &fakeClock{now: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)}
 	e := &Engine{Store: store, Runner: r, Clock: c, Now: func() time.Time { return at(1) }}
 	return e, r, c, def

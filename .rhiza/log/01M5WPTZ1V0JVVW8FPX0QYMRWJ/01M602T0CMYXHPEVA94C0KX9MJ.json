@@ -1,0 +1,433 @@
+{
+  "actor": "01M5ZPK2CP01WFSKZSV1715668",
+  "after": [
+    "01M602MAFTH7D60DQ90TM8M4SD"
+  ],
+  "at": "2026-10-28T01:43:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "A review run journals check-session, check-judged, check, check-cycle, review-question, code-check and signoff entries, and the change-set fixer's review-fix and review-fix-judged; a check's outcome is its own check entry, apart from the session's judgement, and a findings round carries its cycle. The checks state survives entered, so a re-entered checks step keeps its cycles and a check counts by its latest outcome.",
+          "wording": "the agent's choice in its plan, approved by the orchestrator acting as arbiter at plan approval"
+        },
+        "handle": "review-ruling-12",
+        "id": "01M602ST9MKA2C4YPJ4T1G96D2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M602ST9MKA2C4YPJ4PY8RK7F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EG65NMPZAKN41R95EQYB",
+        "id": "01M602STEW1H84CKJKRZ80VXAV",
+        "link": "01M602STEW1H84CKJKRWS4A3D7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602ST9MKA2C4YPJ4PY8RK7F",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EH5ZG74DZQY63G9B78WR",
+        "id": "01M602STM5DW2V7N5EVNKFN1QN",
+        "link": "01M602STM5DW2V7N5EVN9564Q9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602ST9MKA2C4YPJ4PY8RK7F",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "Check and critic sessions run in parallel, each in a throwaway detached checkout at the run worktree's HEAD, with RHIZA_ROOT pointing their rhiza writes at the run worktree. The checkout comes from its own OpenCheckCheckout path rather than the leaves' OpenCheckout, so a check's checkout can never collide with a leaf verifier's.",
+          "wording": "the agent's choice in its plan, approved by the orchestrator acting as arbiter at plan approval"
+        },
+        "handle": "review-ruling-13",
+        "id": "01M602STSDCAD6066F08VGN9F7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M602STSDCAD6066F08ECKPPD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EGRD1KYTEXXSWDEZNJCE",
+        "id": "01M602STYPB6YGDVJKXKG9Y8V3",
+        "link": "01M602STYPB6YGDVJKXK8YF38F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602STSDCAD6066F08ECKPPD",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "Once a check or critic session is judged, the model entries its actor wrote (plus that actor's record entries) are committed in the run worktree, one commit per session; a failure to commit is logged and the judgement stands.",
+          "wording": "the implementing agent's choice, accepted by the orchestrator acting as arbiter"
+        },
+        "handle": "review-ruling-14",
+        "id": "01M602SV41VP8SAYTZPYX187EW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M602SV41VP8SAYTZPWNBK1B0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EPGNJBA661QHJ901DRYA",
+        "id": "01M602SV9BNC80CC04M94SVX68",
+        "link": "01M602SV9BNC80CC04M93ERPEF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SV41VP8SAYTZPWNBK1B0",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EGRD1KYTEXXSWDEZNJCE",
+        "id": "01M602SVENQZ11T6JNBXRPZA58",
+        "link": "01M602SVENQZ11T6JNBVR19K2A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SV41VP8SAYTZPWNBK1B0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "Critics start only after every check session of the cycle is judged, and then all of them start before any is polled. A critic session that fails fails its check, which re-runs next cycle like any failed check.",
+          "wording": "the implementing agent's choice, accepted by the orchestrator acting as arbiter"
+        },
+        "handle": "review-ruling-15",
+        "id": "01M602SVKZBDK0N24TN2NBS2PE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M602SVKZBDK0N24TMZVJ3E70",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EHF5WMV1Y0X96EJ0NCPZ",
+        "id": "01M602SVS87C2YGA0X31AHV25X",
+        "link": "01M602SVS87C2YGA0X2ZT6HQPX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SVKZBDK0N24TMZVJ3E70",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "A blocker or major finding that a critic gave no verdict on counts as confirmed, and the summary lists it under Confirmed as standing for want of a verdict.",
+          "wording": "the agent's choice in its plan, approved by the orchestrator acting as arbiter at plan approval"
+        },
+        "handle": "review-ruling-16",
+        "id": "01M602SVYK8NZAY2B7ZW4YJY0A",
+        "key": null,
+        "kind": "decision",
+        "node": "01M602SVYK8NZAY2B7ZTD56A4E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EHF5WMV1Y0X96EJ0NCPZ",
+        "id": "01M602SW3WFRZDXMR6HMW8NYH7",
+        "link": "01M602SW3WFRZDXMR6HK94XP0H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SVYK8NZAY2B7ZTD56A4E",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0ENBN0TY0Z6FXG03NQB0P",
+        "id": "01M602SW96SDGY8STABM1F93EF",
+        "link": "01M602SW96SDGY8STABGA1B3WV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SVYK8NZAY2B7ZTD56A4E",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "Leaf fixers and the verifiers that re-run after them are journalled as leaf-session and leaf-attempt entries on the checks step, with Attempt equal to the cycle, so the leaves step's start, poll, judge and run findings --leaf paths are reused. No leaf outcome entry is written on a checks step.",
+          "wording": "the agent's choice in its plan, approved by the orchestrator acting as arbiter at plan approval"
+        },
+        "handle": "review-ruling-17",
+        "id": "01M602SWEGN0888T76036K2AS8",
+        "key": null,
+        "kind": "decision",
+        "node": "01M602SWEGN0888T75ZZ6XD4P7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EJ62SZXJR5NSAA9X48ZV",
+        "id": "01M602SWKS4QVMJTDY06EFKK10",
+        "link": "01M602SWKS4QVMJTDY02PX1P5G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SWEGN0888T75ZZ6XD4P7",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "Fixers run one at a time because they share the run worktree: leaf fixers in leaf order, then the one change-set fixer, with a fixed leaf's verifier running beside the next fixer. Only the checks that failed re-run, once every fixer and verifier is judged.",
+          "wording": "the agent's choice in its plan, approved by the orchestrator acting as arbiter at plan approval"
+        },
+        "handle": "review-ruling-18",
+        "id": "01M602SWS47TH0HH7YY2Z1PJH1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M602SWS47TH0HH7YY2WJA3H8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EJ62SZXJR5NSAA9X48ZV",
+        "id": "01M602SWYFYDP0M5Q6XWYN6SCD",
+        "link": "01M602SWYFYDP0M5Q6XWHY07MZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SWS47TH0HH7YY2WJA3H8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EJRDQ0F1VZBYFM5K6DXX",
+        "id": "01M602SX3S7NC6WJ5KMN4C0VN4",
+        "link": "01M602SX3S7NC6WJ5KMJ1D3ZF8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SWS47TH0HH7YY2WJA3H8",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "The change-set fixer is journalled with its own review-fix and review-fix-judged entries, one per cycle, not as a leaf or check session. It gets the confirmed findings that name no leaf or a leaf outside the change set, and its commit carries a Review: trailer.",
+          "wording": "the implementing agent's choice, accepted by the orchestrator acting as arbiter"
+        },
+        "handle": "review-ruling-19",
+        "id": "01M602SX94NGTNA2H4A5NC63CB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M602SX94NGTNA2H4A577NEVH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EJRDQ0F1VZBYFM5K6DXX",
+        "id": "01M602SXEJT6TND8ZRTRQY35DS",
+        "link": "01M602SXEJT6TND8ZRTQWCAVGP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SX94NGTNA2H4A577NEVH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "The fix phase belongs to cycle N+1: it runs after that cycle's check-cycle entry and before its check sessions, and a fixer's RHIZA_CYCLE is N+1. A failed fixer or verifier fails every check of that cycle with a fix-failed detail, so a failed fix uses up the cycle.",
+          "wording": "the implementing agent's choice, accepted by the orchestrator acting as arbiter"
+        },
+        "handle": "review-ruling-20",
+        "id": "01M602SXKWD2MFKKKEZ6JZ9QFN",
+        "key": null,
+        "kind": "decision",
+        "node": "01M602SXKWD2MFKKKEZ2W5HMJB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EJ62SZXJR5NSAA9X48ZV",
+        "id": "01M602SXS86E4P323AV05SMCZQ",
+        "link": "01M602SXS86E4P323ATX91AY5Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SXKWD2MFKKKEZ2W5HMJB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EK65NC55WAS23EJDV773",
+        "id": "01M602SXYMMZ33Q2Z3CGEB9JWK",
+        "link": "01M602SXYMMZ33Q2Z3CG3NFZ8A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SXKWD2MFKKKEZ2W5HMJB",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "MaxFixCycles is 2, so a checks step runs at most three cycles, the first plus two fix cycles, before its standing findings become questions.",
+          "wording": "the agent's choice in its plan, approved by the orchestrator acting as arbiter at plan approval"
+        },
+        "handle": "review-ruling-21",
+        "id": "01M602SY3ZK5SJPM3G3K2SJQMS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M602SY3ZK5SJPM3G3H78ZTT9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EK65NC55WAS23EJDV773",
+        "id": "01M602SY9AEQASAE3AV1FMY87C",
+        "link": "01M602SY9AEQASAE3ATXMN8X1B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SY3ZK5SJPM3G3H78ZTT9",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "An owner's request for changes and an answered set of questions each buy exactly one cycle outside the cap, and a failure in that cycle goes straight to questions. Owner findings are all fixed whatever their severity.",
+          "wording": "the implementing agent's choice, accepted by the orchestrator acting as arbiter"
+        },
+        "handle": "review-ruling-22",
+        "id": "01M602SYEQVSS5A7WV25GNFCRV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M602SYEQVSS5A7WV21NBPGH3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EK65NC55WAS23EJDV773",
+        "id": "01M602SYM27P5Q2SDJCDNBAN9B",
+        "link": "01M602SYM27P5Q2SDJCBM3H0VX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SYEQVSS5A7WV21NBPGH3",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EMM6HBY40F6M5QVK0TX0",
+        "id": "01M602SYSDG4A7PYPAN6JJ7NWR",
+        "link": "01M602SYSDG4A7PYPAN408TJBE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SYEQVSS5A7WV21NBPGH3",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "rhiza run approve [run] and rhiza run request-changes <file> [run] take the run by ref or the latest, exit 2 unless it is stopped at a signoff step, and resume the engine in-process; each requested change names a check, which re-runs. The built-in review.toml sets max_visits = 3 on its checks and signoff steps, and request-changes exits 2 when another visit would pass that cap.",
+          "wording": "the agent's choice in its plan, approved by the orchestrator acting as arbiter at plan approval"
+        },
+        "handle": "review-ruling-23",
+        "id": "01M602SYYRSMM1S9CAT7HG61EJ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M602SYYRSMM1S9CAT3J4J7DV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EMM6HBY40F6M5QVK0TX0",
+        "id": "01M602SZ432MGEVB57YYHGYW9R",
+        "link": "01M602SZ432MGEVB57YYGSFN5G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SYYRSMM1S9CAT3J4J7DV",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EPGNJBA661QHJ901DRYA",
+        "id": "01M602SZ9EC3ED9VYEW97V16X4",
+        "link": "01M602SZ9EC3ED9VYEW5YZ4CXR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SYYRSMM1S9CAT3J4J7DV",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "Review sessions get RHIZA_CHECK, RHIZA_CYCLE and RHIZA_ROLE (check, critic, fixer or verifier); check and critic prompts take {check} and {cycle}, and the fixer prompt takes {leaf} and {cycle}, with {leaf} empty for the change-set fixer.",
+          "wording": "the agent's choice in its plan, approved by the orchestrator acting as arbiter at plan approval"
+        },
+        "handle": "review-ruling-24",
+        "id": "01M602SZESEBES1TT6BWQP3S47",
+        "key": null,
+        "kind": "decision",
+        "node": "01M602SZESEBES1TT6BT4NX88B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EG65NMPZAKN41R95EQYB",
+        "id": "01M602SZM4XQ04VYFPN5JK47EF",
+        "link": "01M602SZM4XQ04VYFPN4YZDKA5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SZESEBES1TT6BT4NX88B",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EPGNJBA661QHJ901DRYA",
+        "id": "01M602SZSF7DRHN80ZE35A2BCG",
+        "link": "01M602SZSF7DRHN80ZE19BRBE3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SZESEBES1TT6BT4NX88B",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "The review guide names a QA check's Evidence <leaf>-qa-<cycle>, the cycle being RHIZA_CYCLE, so a QA check that re-runs in a later cycle does not collide with its earlier Evidence.",
+          "wording": "the implementing agent's choice, accepted by the orchestrator acting as arbiter"
+        },
+        "handle": "review-ruling-25",
+        "id": "01M602SZYT9KFW5A57JH5TX7WA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M602SZYT9KFW5A57JGC154VV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0ENY6PDKAQS7QEY0AR5RN",
+        "id": "01M602T046VEBA6BBZM1TW193K",
+        "link": "01M602T046VEBA6BBZM12B9943",
+        "note": "",
+        "op": "link.create",
+        "to": "01M602SZYT9KFW5A57JGC154VV",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZ1V0JVVW8FPX0QYMRWJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M602T0CMYXHPEVA94C0KX9MJ",
+  "type": "ops",
+  "v": 1
+}

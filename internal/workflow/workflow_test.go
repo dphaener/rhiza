@@ -49,7 +49,7 @@ func TestLoadRefused(t *testing.T) {
 		file string
 		want []string
 	}{
-		{"unknown-kind.toml", []string{`step "repeat": unknown kind "loop": want agent, wait, command, arbiter or leaves`}},
+		{"unknown-kind.toml", []string{`step "repeat": unknown kind "loop": want agent, wait, command, arbiter, leaves, checks or signoff`}},
 		{"missing-target.toml", []string{`step "build": on.pass names "nope", which is not a step; want a step or done or failed`}},
 		{"bad-outcome.toml", []string{`step "build": on.sucess: a command step has no outcome "sucess"; want on.pass or on.fail`}},
 	}
@@ -147,11 +147,11 @@ func TestParseErrors(t *testing.T) {
 		want string
 	}{
 		{"unknown kind", "[step.x]\nkind = \"loop\"\n",
-			`step "x": unknown kind "loop": want agent, wait, command, arbiter or leaves`},
+			`step "x": unknown kind "loop": want agent, wait, command, arbiter, leaves, checks or signoff`},
 		{"workflow kind is later", "[step.x]\nkind = \"workflow\"\n",
 			`step "x": unknown kind "workflow"`},
 		{"no kind", "[step.x]\nrun = \"true\"\n",
-			`step "x": no kind: want agent, wait, command, arbiter or leaves`},
+			`step "x": no kind: want agent, wait, command, arbiter, leaves, checks or signoff`},
 		{"missing target", cmd + "on.pass = \"nope\"\n",
 			`step "a": on.pass names "nope", which is not a step; want a step or done or failed`},
 		{"unknown step key", cmd + "retries = 2\n",
@@ -817,7 +817,7 @@ func TestLeavesStepRefused(t *testing.T) {
 		{"blank model", leavesBase + builder + verifier + "models = [\"opus\", \"\"]\n",
 			`step "build": verifier: models entry 2 is blank`},
 		{"split on an agent step", agent + "split = \"right\"\n",
-			`step "a": split is only for leaves steps; an agent step cannot have it`},
+			`step "a": split is only for leaves and checks steps; an agent step cannot have it`},
 		{"bad split", leavesBase + "split = \"diagonal\"\n" + builder + verifier,
 			`step "build": split "diagonal": want "auto" (by the tab's shape), "right" or "below"`},
 		{"builder on an agent step", agent + "[step.a.builder]\nprompt = \"x\"\n",
@@ -845,5 +845,345 @@ func TestLeavesStepRefused(t *testing.T) {
 				t.Errorf("error %v; want %q", err, tt.want)
 			}
 		})
+	}
+}
+
+// checksBase is a checks step with two checks; checksRoles its critic,
+// fixer and verifier.
+const checksBase = "[step.review]\nkind = \"checks\"\n" + checksList
+
+// checksList are checksBase's two checks.
+const checksList = "[[step.review.check]]\nname = \"plan-compliance\"\nprompt = \"check {check} of {change}, cycle {cycle}\"\n" +
+	"[[step.review.check]]\nname = \"code-quality\"\nprompt = \"check {check}\"\nagent = \"claude-code\"\npermission_mode = \"acceptEdits\"\nmodels = [\"sonnet\", \"opus\"]\n"
+
+const checksRoles = "[step.review.critic]\nprompt = \"criticise {check} in cycle {cycle}\"\n" +
+	"[step.review.fixer]\nprompt = \"fix {leaf} in cycle {cycle}\"\nmodels = [\"opus\"]\n" +
+	"[step.review.verifier]\nprompt = \"verify {leaf}, attempt {attempt}\"\n"
+
+// A checks step loads its checks in file order, each a role of its own,
+// and its critic, fixer and verifier; it takes split, interval and
+// max_visits, and renders the check, critic and fixer placeholders.
+func TestChecksStepLoads(t *testing.T) {
+	d, err := Parse("w", []byte("[step.review]\nkind = \"checks\"\nsplit = \"right\"\ninterval = \"5s\"\nmax_visits = 3\non.fail = \"failed\"\n"+checksList+checksRoles))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := Step{
+		Name: "review", Kind: KindChecks, Split: SplitRight, Interval: 5 * time.Second, MaxVisits: 3,
+		On: map[string]string{"fail": "failed"},
+		Checks: []Check{
+			{Name: "plan-compliance", Role: Role{Prompt: "check {check} of {change}, cycle {cycle}"}},
+			{Name: "code-quality", Role: Role{Prompt: "check {check}", Agent: "claude-code", PermissionMode: "acceptEdits", Models: []string{"sonnet", "opus"}}},
+		},
+		Critic:   &Role{Prompt: "criticise {check} in cycle {cycle}"},
+		Fixer:    &Role{Prompt: "fix {leaf} in cycle {cycle}", Models: []string{"opus"}},
+		Verifier: &Role{Prompt: "verify {leaf}, attempt {attempt}"},
+	}
+	s := d.Steps["review"]
+	if !reflect.DeepEqual(s, want) {
+		t.Errorf("step = %+v\nwant %+v", s, want)
+	}
+	if c, ok := s.Check("code-quality"); !ok || c.Agent != "claude-code" {
+		t.Errorf("Check(code-quality) = %+v, %v", c, ok)
+	}
+	if _, ok := s.Check("nope"); ok {
+		t.Errorf("Check(nope) found")
+	}
+	vars := PromptVars{Change: "01ABC"}
+	if got := s.Checks[0].RenderCheckPrompt(CheckVars{PromptVars: vars, Check: "plan-compliance", Cycle: 2}); got != "check plan-compliance of 01ABC, cycle 2" {
+		t.Errorf("check prompt = %q", got)
+	}
+	if got := s.Critic.RenderCheckPrompt(CheckVars{PromptVars: vars, Check: "code-quality", Cycle: 1}); got != "criticise code-quality in cycle 1" {
+		t.Errorf("critic prompt = %q", got)
+	}
+	if got := s.Fixer.RenderFixerPrompt(FixerVars{PromptVars: vars, Leaf: "leaf-a", Cycle: 2}); got != "fix leaf-a in cycle 2" {
+		t.Errorf("fixer prompt = %q", got)
+	}
+	if s.Role(RoleCritic) != s.Critic || s.Role(RoleFixer) != s.Fixer || s.Role(RoleVerifier) != s.Verifier {
+		t.Errorf("Role does not give the critic, fixer and verifier")
+	}
+
+	d, err = Parse("w", []byte(checksBase+checksRoles))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s := d.Steps["review"]; s.Split != SplitAuto || s.Interval != DefaultInterval {
+		t.Errorf("defaults: split %q, interval %v; want %q, %v", s.Split, s.Interval, SplitAuto, DefaultInterval)
+	}
+}
+
+// A checks step refuses no checks, a duplicate or invalid check name, a
+// missing or blank role, an unknown key in a check or a role, unknown
+// placeholders, and the keys that belong elsewhere; other kinds refuse
+// its sub-tables.
+func TestChecksStepRefused(t *testing.T) {
+	head := "[step.review]\nkind = \"checks\"\n"
+	check := func(name string) string {
+		return "[[step.review.check]]\nname = \"" + name + "\"\nprompt = \"check {check}\"\n"
+	}
+	critic := "[step.review.critic]\nprompt = \"criticise {check}\"\n"
+	fixer := "[step.review.fixer]\nprompt = \"fix {leaf}\"\n"
+	verifier := "[step.review.verifier]\nprompt = \"verify {leaf}\"\n"
+	roles := critic + fixer + verifier
+	agent := "[step.a]\nkind = \"agent\"\nprompt = \"go\"\n"
+	for _, tt := range []struct {
+		name, src, want string
+	}{
+		{"no checks", head + roles,
+			`step "review": a checks step needs at least one [[step.review.check]] table with name = "..." and prompt = "..."`},
+		{"duplicate check name", head + check("lint") + check("lint") + roles,
+			`step "review": check "lint" is declared twice; give each check its own name`},
+		{"invalid check name", head + check("Lint Me") + roles,
+			`step "review": check "Lint Me": want lowercase letters and digits in words joined by single hyphens`},
+		{"check with no name", head + "[[step.review.check]]\nprompt = \"x\"\n" + roles,
+			`step "review": check 1 has no name: set name = "..."`},
+		{"blank check prompt", head + "[[step.review.check]]\nname = \"lint\"\nprompt = \" \"\n" + roles,
+			`step "review": check "lint" needs prompt = "<what the check should do>"; it may use {change}, {slug}, {title}, {run}, {step}, {check}, {cycle}`},
+		{"unknown check key", head + check("lint") + "retries = 3\n" + roles,
+			`step "review": check: unknown key "retries"; want name, prompt, agent, permission_mode or models`},
+		{"unknown critic key", head + check("lint") + critic + "retries = 3\n" + fixer + verifier,
+			`step "review": critic: unknown key "retries"; want prompt, agent, permission_mode or models`},
+		{"unknown fixer key", head + check("lint") + critic + fixer + "retries = 3\n" + verifier,
+			`step "review": fixer: unknown key "retries"; want prompt, agent, permission_mode or models`},
+		{"missing critic", head + check("lint") + fixer + verifier,
+			`step "review": a checks step needs a [step.review.critic] table with prompt = `},
+		{"missing fixer", head + check("lint") + critic + verifier,
+			`step "review": a checks step needs a [step.review.fixer] table with prompt = `},
+		{"missing verifier", head + check("lint") + critic + fixer,
+			`step "review": a checks step needs a [step.review.verifier] table with prompt = `},
+		{"blank critic prompt", head + check("lint") + "[step.review.critic]\nprompt = \"\"\n" + fixer + verifier,
+			`step "review": critic needs prompt = "<what the critic should do>"`},
+		{"unknown check placeholder", head + "[[step.review.check]]\nname = \"lint\"\nprompt = \"do {leaf}\"\n" + roles,
+			`step "review": check "lint": prompt uses unknown placeholder {leaf}; want one of {change}, {slug}, {title}, {run}, {step}, {check}, {cycle}`},
+		{"check placeholder on the fixer", head + check("lint") + critic + "[step.review.fixer]\nprompt = \"fix {check}\"\n" + verifier,
+			`step "review": fixer: prompt uses unknown placeholder {check}; want one of {change}, {slug}, {title}, {run}, {step}, {leaf}, {cycle}`},
+		{"cycle placeholder on the verifier", head + check("lint") + critic + fixer + "[step.review.verifier]\nprompt = \"verify {cycle}\"\n",
+			`step "review": verifier: prompt uses unknown placeholder {cycle}`},
+		{"blank check model", head + check("lint") + "models = [\"\"]\n" + roles,
+			`step "review": check "lint": models entry 1 is blank`},
+		{"builder on a checks step", head + check("lint") + roles + "[step.review.builder]\nprompt = \"x\"\n",
+			`step "review": a checks step cannot have builder: a fixer fixes what its checks find; remove it`},
+		{"models on a checks step", head + "models = [\"opus\"]\n" + check("lint") + roles,
+			`step "review": a checks step cannot have models: each check and role has its own`},
+		{"prompt on a checks step", head + "prompt = \"x\"\n" + check("lint") + roles,
+			`step "review": a checks step cannot have prompt: each check and role has its own`},
+		{"agent on a checks step", head + "agent = \"x\"\n" + check("lint") + roles,
+			`step "review": a checks step cannot have agent`},
+		{"permission_mode on a checks step", head + "permission_mode = \"x\"\n" + check("lint") + roles,
+			`step "review": a checks step cannot have permission_mode`},
+		{"run on a checks step", head + "run = \"x\"\n" + check("lint") + roles,
+			`step "review": a checks step cannot have run`},
+		{"until on a checks step", head + "until = \"x\"\n" + check("lint") + roles,
+			`step "review": a checks step cannot have until`},
+		{"until_when on a checks step", head + "until_when = \"done\"\n" + check("lint") + roles,
+			`step "review": a checks step cannot have until_when`},
+		{"timeout on a checks step", head + "timeout = \"1m\"\n" + check("lint") + roles,
+			`step "review": a checks step cannot have timeout`},
+		{"bad split", head + "split = \"diagonal\"\n" + check("lint") + roles,
+			`step "review": split "diagonal": want "auto" (by the tab's shape), "right" or "below"`},
+		{"bad outcome", head + "on.timeout = \"done\"\n" + check("lint") + roles,
+			`step "review": on.timeout: a checks step has no outcome "timeout"; want on.pass or on.fail`},
+		{"check on an agent step", agent + "[[step.a.check]]\nname = \"lint\"\nprompt = \"x\"\n",
+			`step "a": check is only for checks steps; an agent step cannot have it`},
+		{"critic on an agent step", agent + "[step.a.critic]\nprompt = \"x\"\n",
+			`step "a": critic is only for checks steps; an agent step cannot have it`},
+		{"fixer on a leaves step", leavesBase + leavesRoles + "[step.build.fixer]\nprompt = \"x\"\n",
+			`step "build": fixer is only for checks steps; a leaves step cannot have it`},
+		{"verifier on an agent step", agent + "[step.a.verifier]\nprompt = \"x\"\n",
+			`step "a": verifier is only for leaves and checks steps; an agent step cannot have it`},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Parse("w", []byte(tt.src))
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Errorf("error %v; want %q", err, tt.want)
+			}
+		})
+	}
+}
+
+// signoffBase is a checks step and a signoff step going back to it.
+const signoffBase = "[step.review]\nkind = \"checks\"\non.pass = \"signoff\"\n" + checksList + checksRoles +
+	"[step.signoff]\nkind = \"signoff\"\nmax_visits = 3\non.pass = \"done\"\non.changes = \"review\"\n"
+
+// A signoff step has outcomes pass and changes, takes max_visits and
+// on., and its on.changes names a checks step.
+func TestSignoffStepLoads(t *testing.T) {
+	d, err := Parse("w", []byte(signoffBase))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := Step{Name: "signoff", Kind: KindSignoff, MaxVisits: 3, On: map[string]string{"pass": "done", "changes": "review"}}
+	if s := d.Steps["signoff"]; !reflect.DeepEqual(s, want) {
+		t.Errorf("step = %+v\nwant %+v", s, want)
+	}
+	if next, end := d.Next("signoff", OutcomeChanges); next != "review" || end != EndNone {
+		t.Errorf("Next(signoff, changes) = %q, %v", next, end)
+	}
+}
+
+// A signoff step refuses every session and condition key, sub-tables, an
+// outcome other than pass or changes, and a missing on.changes or one not
+// naming a checks step.
+func TestSignoffStepRefused(t *testing.T) {
+	review := checksBase + checksRoles
+	head := review + "[step.signoff]\nkind = \"signoff\"\n"
+	changes := "on.changes = \"review\"\n"
+	for _, tt := range []struct {
+		name, src, want string
+	}{
+		{"no on.changes", head + "on.pass = \"done\"\n",
+			`step "signoff": a signoff step needs on.changes = "<checks step>"`},
+		{"on.changes to an agent step", review + "[step.a]\nkind = \"agent\"\nprompt = \"go\"\n[step.signoff]\nkind = \"signoff\"\non.changes = \"a\"\n",
+			`step "signoff": on.changes names "a", which is not a checks step`},
+		{"on.changes to done", head + "on.changes = \"done\"\n",
+			`step "signoff": on.changes names "done", which is not a checks step`},
+		{"on.fail", head + changes + "on.fail = \"failed\"\n",
+			`step "signoff": on.fail: a signoff step has no outcome "fail"; want on.pass or on.changes`},
+		{"prompt", head + changes + "prompt = \"x\"\n", `step "signoff": a signoff step cannot have prompt: it runs nothing`},
+		{"run", head + changes + "run = \"x\"\n", `step "signoff": a signoff step cannot have run`},
+		{"until", head + changes + "until = \"x\"\n", `step "signoff": a signoff step cannot have until`},
+		{"until_when", head + changes + "until_when = \"done\"\n", `step "signoff": a signoff step cannot have until_when`},
+		{"timeout", head + changes + "timeout = \"1m\"\n", `step "signoff": a signoff step cannot have timeout`},
+		{"interval", head + changes + "interval = \"1m\"\n", `step "signoff": a signoff step cannot have interval`},
+		{"agent", head + changes + "agent = \"x\"\n", `step "signoff": a signoff step cannot have agent`},
+		{"permission_mode", head + changes + "permission_mode = \"x\"\n", `step "signoff": a signoff step cannot have permission_mode`},
+		{"models", head + changes + "models = [\"opus\"]\n", `step "signoff": a signoff step cannot have models`},
+		{"split", head + changes + "split = \"right\"\n", `step "signoff": split is only for leaves and checks steps; a signoff step cannot have it`},
+		{"critic", head + changes + "[step.signoff.critic]\nprompt = \"x\"\n", `step "signoff": critic is only for checks steps; a signoff step cannot have it`},
+		{"check", head + changes + "[[step.signoff.check]]\nname = \"x\"\nprompt = \"x\"\n", `step "signoff": check is only for checks steps; a signoff step cannot have it`},
+		{"verifier", head + changes + "[step.signoff.verifier]\nprompt = \"x\"\n", `step "signoff": verifier is only for leaves and checks steps; a signoff step cannot have it`},
+		{"max_visits", head + changes + "max_visits = -1\n", `step "signoff": max_visits is -1`},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Parse("w", []byte(tt.src))
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Errorf("error %v; want %q", err, tt.want)
+			}
+		})
+	}
+}
+
+// The built-in review workflow: code-check (no on.fail), then a checks
+// step with compliance, quality, qa, scope and model checks, its critic,
+// fixer and verifier, all on opus, each prompt following a guide and
+// ending in rhiza session done, then the sign-off, which goes back to the
+// checks on changes and ends done without landing.
+func TestReviewBuiltin(t *testing.T) {
+	if !slices.Contains(BuiltinNames(), "review") {
+		t.Fatalf("BuiltinNames = %v; want it to list review", BuiltinNames())
+	}
+	data, ok := Builtin("review")
+	if !ok {
+		t.Fatal("no review built-in")
+	}
+	def, err := Parse("review", data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if def.Name != "review" || def.Start != "code" {
+		t.Errorf("name %q, start %q; want review, code", def.Name, def.Start)
+	}
+	if want := []string{"code", "review", "signoff"}; !slices.Equal(def.Order, want) {
+		t.Fatalf("steps = %v; want %v", def.Order, want)
+	}
+	code := def.Steps["code"]
+	if code.Kind != KindCommand || code.Run != "rhiza run code-check" {
+		t.Errorf("code = %+v; want command rhiza run code-check", code)
+	}
+	if _, ok := code.On[OutcomeFail]; ok {
+		t.Errorf("code has on.fail %q; a failed code check ends the run", code.On[OutcomeFail])
+	}
+	review := def.Steps["review"]
+	if review.Kind != KindChecks || review.Split != SplitAuto || review.MaxVisits < 2 {
+		t.Fatalf("review = %+v; want a checks step, split auto, max_visits for request-changes", review)
+	}
+	var names []string
+	for _, c := range review.Checks {
+		names = append(names, c.Name)
+		if !slices.Equal(c.Models, []string{"opus"}) {
+			t.Errorf("check %s models = %v; want [opus]", c.Name, c.Models)
+		}
+		var ph []string
+		for _, m := range placeholderPattern.FindAllStringSubmatch(c.Prompt, -1) {
+			ph = append(ph, m[1])
+		}
+		for _, p := range ph {
+			if !slices.Contains([]string{"check", "change", "cycle"}, p) {
+				t.Errorf("check %s prompt uses {%s}; want only {check}, {change}, {cycle}", c.Name, p)
+			}
+		}
+		for _, w := range []string{"/rhiza-review", "{check}", "{change}", "rhiza guide review", "rhiza run findings --check", "rhiza session done"} {
+			if !strings.Contains(c.Prompt, w) {
+				t.Errorf("check %s prompt lacks %q: %q", c.Name, w, c.Prompt)
+			}
+		}
+	}
+	if want := []string{"compliance", "quality", "qa", "scope", "model"}; !slices.Equal(names, want) {
+		t.Errorf("checks = %v; want %v", names, want)
+	}
+	roles := map[string]struct {
+		r    *Role
+		want []string
+	}{
+		"critic":   {review.Critic, []string{"/rhiza-review", "{check}", "{change}", "rhiza guide review", "rhiza run verdict --check", "never add a finding", "rhiza session done"}},
+		"fixer":    {review.Fixer, []string{"/rhiza-review", "{change}", "{cycle}", "rhiza guide review", "rhiza session done"}},
+		"verifier": {review.Verifier, []string{"/rhiza-build", "{leaf}", "{change}", "$RHIZA_COMMIT", "rhiza guide build", "Never edit code", "rhiza run findings --leaf {leaf}", "rhiza session done"}},
+	}
+	for name, tt := range roles {
+		if tt.r == nil {
+			t.Fatalf("review has no %s", name)
+		}
+		if !slices.Equal(tt.r.Models, []string{"opus"}) {
+			t.Errorf("%s models = %v; want [opus]", name, tt.r.Models)
+		}
+		for _, w := range tt.want {
+			if !strings.Contains(tt.r.Prompt, w) {
+				t.Errorf("%s prompt lacks %q: %q", name, w, tt.r.Prompt)
+			}
+		}
+	}
+	// The fixer's prompt reads the same for a leaf's fixer and the change
+	// set's ({leaf} empty): the appended findings name the leaf or the
+	// change set.
+	for _, l := range []string{"leaf-a", ""} {
+		got := review.Fixer.RenderFixerPrompt(FixerVars{PromptVars: PromptVars{Change: "C1"}, Leaf: l, Cycle: 2})
+		if strings.Contains(got, "  ") || strings.Contains(got, "()") || !strings.Contains(got, "change set C1 in review cycle 2:") {
+			t.Errorf("fixer prompt with leaf %q = %q", l, got)
+		}
+	}
+	signoff := def.Steps["signoff"]
+	if signoff.Kind != KindSignoff || signoff.MaxVisits < 2 {
+		t.Errorf("signoff = %+v; want a signoff step with max_visits for request-changes", signoff)
+	}
+	for _, s := range def.Steps {
+		if strings.Contains(s.Run, "land") {
+			t.Errorf("step %s lands: %q", s.Name, s.Run)
+		}
+	}
+	prompts := []string{review.Critic.Prompt, review.Fixer.Prompt, review.Verifier.Prompt}
+	for _, c := range review.Checks {
+		prompts = append(prompts, c.Prompt)
+	}
+	for _, p := range prompts {
+		if strings.Contains(strings.ToLower(p), "claude") {
+			t.Errorf("a prompt names an agent product: %q", p)
+		}
+	}
+	trans := []struct {
+		step, outcome, next string
+		end                 End
+	}{
+		{"code", OutcomePass, "review", EndNone},
+		{"code", OutcomeFail, "", EndFailed},
+		{"review", OutcomePass, "signoff", EndNone},
+		{"review", OutcomeFail, "", EndFailed},
+		{"signoff", OutcomePass, "", EndSucceeded},
+		{"signoff", OutcomeChanges, "review", EndNone},
+	}
+	for _, tt := range trans {
+		next, end := def.Next(tt.step, tt.outcome)
+		if next != tt.next || end != tt.end {
+			t.Errorf("Next(%q, %q) = (%q, %v); want (%q, %v)", tt.step, tt.outcome, next, end, tt.next, tt.end)
+		}
 	}
 }

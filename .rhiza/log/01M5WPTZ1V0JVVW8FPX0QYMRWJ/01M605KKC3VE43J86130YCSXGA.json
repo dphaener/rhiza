@@ -1,0 +1,41 @@
+{
+  "actor": "01M5ZPK2CP01WFSKZSV1715668",
+  "after": [
+    "01M602T0CMYXHPEVA94C0KX9MJ"
+  ],
+  "at": "2026-10-28T02:32:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "0e5a9d92-bc68-4281-9e5b-01a17f6988d0",
+          "statement": "At the ship gate the orchestrator, acting as arbiter, held the sign-off: fix the fixer prompts' cycle number and spacing, the unused parameter and the duplicated refusal; have the verifier re-run review-signoff's acceptance against the lock fix and record new Evidence; leave f495227's trailer as it is and note it in the PR body; keep the two drafts as follow-ups.",
+          "wording": "stated by the orchestrator acting as arbiter"
+        },
+        "handle": "review-ruling-26",
+        "id": "01M605KJY2064QRGCZ6M7JRAJX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M605KJY2064QRGCZ6J3YG2S5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M5Z0EMM6HBY40F6M5QVK0TX0",
+        "id": "01M605KK3HMREV5RJ7H26DNA7Y",
+        "link": "01M605KK3HMREV5RJ7H0N82JW0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M605KJY2064QRGCZ6J3YG2S5",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZ1V0JVVW8FPX0QYMRWJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M605KKC3VE43J86130YCSXGA",
+  "type": "ops",
+  "v": 1
+}

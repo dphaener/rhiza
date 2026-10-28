@@ -1,0 +1,141 @@
+# rhiza run request-changes on a review waiting at its sign-off after its
+# checks used the cap: the owner's finding on leaf thing counts as
+# confirmed, so the checks step, re-entered, runs one owner cycle outside
+# the cap: the fixer for thing, told the owner requested the change,
+# commits its fix; the leaf's verifier records Evidence as its own actor;
+# then only the named check re-runs, passes, and the run waits at the
+# sign-off again. Once another visit would pass max_visits,
+# request-changes exits 2.
+#
+# The fake rex runs the tab's command synchronously in the window's
+# directory. The fake claude fails as check alpha in cycles 1 and 2 and
+# passes after, recording an empty round; as the fixer it commits with a
+# Leaf: trailer; as the verifier it writes Evidence.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new 'Change me' --title 'Change me'
+exec rhiza add capability thing
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
+exec git add -A
+exec git commit -qm review
+
+exec sh -c 'rhiza run start --workflow review --permission-mode manual --json; echo exit=$?'
+stdout '"state": "stopped"'
+stdout '"signoff_waiting": true'
+stdout '^exit=0$'
+exec cat $WORK/claude.log
+stdout '\Arole=check check=alpha cycle=1 leaf=\nrole=check check=alpha cycle=2 leaf=\nrole=check check=alpha cycle=3 leaf=\n\z'
+
+# The owner asks for changes on leaf thing: a fixer for it starts though
+# the cap was used, its verifier checks the fix, only alpha re-runs, and
+# the run waits at the sign-off again.
+exec sh -c 'rhiza run request-changes $WORK/changes.json > $WORK/changes.out; echo exit=$?'
+stdout '^exit=0$'
+exec cat $WORK/changes.out
+stdout '^Sign-off: signoff \(visit 1\): changes asked by test$'
+stdout '^- alpha f1 major at thing.txt:1 on thing: say more$'
+stdout '^Step review fixes them, then the run waits for the sign-off again\.$'
+stdout '^Run [0-9A-Z]{26} stopped$'
+stdout '^next: rhiza run approve [0-9A-Z]{26}$'
+exec cat $WORK/claude.log
+stdout '\nrole=check check=alpha cycle=3 leaf=\nrole=fixer check= cycle=4 leaf=thing findings=yes\nrole=verifier check= cycle=4 leaf=thing\nrole=check check=alpha cycle=4 leaf=\n\z'
+exec sh -c 'cd ../repo.change-me && git log -1 --format=%B HEAD^ | grep "^Leaf: thing$"'
+exec rhiza run status
+stdout '^- review \(visit 1\): pass, then signoff: 1 of 1 checks passed$'
+stdout '^- signoff \(visit 1\): changes, then review: changes asked by test: 1 finding$'
+stdout '^- review \(visit 2\): pass, then signoff: 1 of 1 checks passed$'
+stdout '^- Current step: signoff$'
+stdout '^  - cycle 4: passed, the owner''s changes, check session [0-9a-f-]{36} pass \(exit 0\)$'
+stdout '\n## Sign-offs\n\n- signoff \(visit 1\): changes asked by test\n  - alpha f1 major at thing.txt:1 on thing: say more\n'
+exec rhiza run status --json
+stdout '"kind": "owner"'
+stdout '"signoff_waiting": true'
+stdout '"outcome": "changes"'
+
+# Another request would visit review a third time, over its max_visits.
+exec sh -c 'wc -l < $(ls .git/rhiza/runs/*.jsonl)'
+cp stdout $WORK/lines
+exec sh -c 'rhiza run request-changes $WORK/changes.json; echo exit=$?'
+stdout '^exit=2$'
+stderr 'another visit of step review of run [0-9A-Z]{26} would go over its max_visits 2'
+exec sh -c 'wc -l < $(ls .git/rhiza/runs/*.jsonl)'
+cmp stdout $WORK/lines
+
+fold-ok
+
+-- empty-round.json --
+{"findings":[]}
+-- changes.json --
+{"findings":[{"check":"alpha","severity":"major","leaf":"thing","place":"thing.txt:1","reason":"say more"}]}
+-- review.toml --
+[step.review]
+kind = "checks"
+interval = "50ms"
+max_visits = 2
+on.pass = "signoff"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+
+[step.signoff]
+kind = "signoff"
+max_visits = 2
+on.pass = "done"
+on.changes = "review"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+for a; do last=$a; done
+found=
+case "$last" in *"The owner requested these changes on leaf thing:"*"say more"*) found=yes ;; esac
+echo "role=$RHIZA_ROLE check=$RHIZA_CHECK cycle=$RHIZA_CYCLE leaf=$RHIZA_LEAF findings=$found" | sed 's/ findings=$//' >> "$WORK/claude.log"
+case "$RHIZA_ROLE" in
+check)
+	[ "$RHIZA_CYCLE" -le 2 ] && exit 1
+	rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty-round.json" >&2 || exit 1
+	;;
+fixer)
+	echo more > "$RHIZA_LEAF.txt"
+	git add "$RHIZA_LEAF.txt"
+	git commit -q -m "fix $RHIZA_LEAF" -m "Leaf: $RHIZA_LEAF" -- "$RHIZA_LEAF.txt" || exit 1
+	;;
+verifier)
+	rhiza add evidence "$RHIZA_LEAF-ok" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link "$RHIZA_LEAF-ok" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+	;;
+esac
+exit 0

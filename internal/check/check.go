@@ -136,10 +136,12 @@ type Input struct {
 // Commit is one git commit and the values of its trailers: Changes of its
 // Change: trailers (change set IDs), Actors of its Actor: trailers (actor
 // handles or IDs) and Leaves of its Leaf: trailers (capability handles or
-// IDs). Hash is the full commit hash.
+// IDs), and Reviews of its Review: trailers (the run IDs of the reviews
+// whose change-set fixer made it). Hash is the full commit hash.
 type Commit struct {
 	Hash                    string
 	Changes, Actors, Leaves []string
+	Reviews                 []string
 }
 
 // Entry is one log entry file: its entry ID (the file name minus .json),

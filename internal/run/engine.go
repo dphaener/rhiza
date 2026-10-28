@@ -268,7 +268,7 @@ func endOf(def *workflow.Definition, step, outcome, detail string) (workflow.End
 // stops at a wait under NoWait. It returns the folded state either way. A
 // run another process holds returns ErrLive; a finished one ErrFinished.
 func (e *Engine) Run(id string) (State, error) {
-	return e.run(id, false)
+	return e.run(id, false, nil)
 }
 
 // Retry reopens a failed run at the step it failed at (State.FailedStep)
@@ -278,10 +278,21 @@ func (e *Engine) Run(id string) (State, error) {
 // finished is run as Run would; one that succeeded returns ErrNotFailed
 // and writes nothing.
 func (e *Engine) Retry(id string) (State, error) {
-	return e.run(id, true)
+	return e.run(id, true, nil)
 }
 
-func (e *Engine) run(id string, retry bool) (State, error) {
+// Continue runs the run as Run does, but first, under the run's lock and
+// after reading the journal again, calls before with the run's state. An
+// error from before is returned as it is, and nothing is written; else
+// the entries before returns are journalled as given, then the run goes
+// on. A caller that checks a run and then writes to it does both here, so
+// no other process writes to it or runs it in between. before runs before
+// the finished check, so it may refuse a finished run in its own words.
+func (e *Engine) Continue(id string, before func(State) ([]Entry, error)) (State, error) {
+	return e.run(id, false, before)
+}
+
+func (e *Engine) run(id string, retry bool, before func(State) ([]Entry, error)) (State, error) {
 	j, err := e.Store.Read(id)
 	if err != nil {
 		return State{}, err
@@ -299,6 +310,19 @@ func (e *Engine) run(id string, retry bool) (State, error) {
 		return State{}, err
 	}
 	st := j.State()
+	if before != nil {
+		entries, err := before(st)
+		if err != nil {
+			return st, err
+		}
+		for _, en := range entries {
+			if err := e.Store.Append(j.ID, en); err != nil {
+				return j.State(), err
+			}
+			j.Entries = append(j.Entries, en)
+		}
+		st = j.State()
+	}
 	if st.Ended && !retry {
 		return st, &runError{id: j.ID, kind: ErrFinished}
 	}
@@ -464,6 +488,10 @@ func (r *running) runStep(step workflow.Step, change string) (result, error) {
 		return r.agent(step, env)
 	case workflow.KindLeaves:
 		return r.leaves(step, env)
+	case workflow.KindChecks:
+		return r.checks(step, env)
+	case workflow.KindSignoff:
+		return r.signoff(step)
 	}
 	return errResult(fmt.Errorf("step %q: unknown kind %q", step.Name, step.Kind)), nil
 }

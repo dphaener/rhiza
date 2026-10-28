@@ -74,7 +74,9 @@ func (r *stepRunner) Leaves(ref string) ([]run.Leaf, error) {
 // with {leaf} and {attempt} too. The session record carries the leaf's
 // handle, the attempt, the role and a verifier's commit, which its agent
 // gets as RHIZA_LEAF, RHIZA_ATTEMPT, RHIZA_ROLE and RHIZA_COMMIT, and the
-// model spec names. A spec with a Dir (a verifier's checkout) runs its
+// model spec names. On a checks step (a leaf's fixer or verifier) it
+// carries the cycle too, its agent's RHIZA_CYCLE; a fixer works in the
+// run's worktree, with the prompt fixerPrompt gives. A spec with a Dir (a verifier's checkout) runs its
 // agent there, with RHIZA_ROOT set to the worktree's Rhiza root so its
 // rhiza writes reach the build worktree's log. Its tab still opens in the
 // worktree: `rhiza session run` writes there too, and the checkout is
@@ -89,7 +91,7 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	}
 	req := agentStepRequest(workflow.Step{Name: spec.Step.Name, Agent: role.Agent, PermissionMode: role.PermissionMode}, r.mode, r.agent)
 	req.Change, req.Run, req.autonomous = r.change, r.run, r.autonomous
-	req.leaf, req.attempt, req.model = spec.Leaf.Handle, spec.Attempt, spec.Model
+	req.leaf, req.attempt, req.model, req.cycle = spec.Leaf.Handle, spec.Attempt, spec.Model, spec.Cycle
 	req.role, req.commit = spec.Role, spec.Commit
 	t, err := resolveChangeWorktree(r.ctx, r.change, "no agent can work on it")
 	if err != nil {
@@ -133,7 +135,16 @@ func (r *stepRunner) ClosePane(sid string) error {
 // builder's (attempt past 1 within its round) ends with a line naming the
 // leaf and the attempt and telling it to read the earlier attempts'
 // findings from the run and add a fix commit for the leaf.
+//
+// A checks step's fixer gets its fixer prompt, rendered with the leaf and
+// the cycle, then a line naming the leaf, the cycle (or, in an owner
+// cycle, that the owner requested the changes) and each finding it is to
+// fix (its check, ID, severity, place and reason) and telling it to add a
+// fix commit with the leaf's trailer.
 func leafPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars) string {
+	if spec.Role == workflow.RoleFixer {
+		return fixerPrompt(role, spec, vars)
+	}
 	p := role.RenderPrompt(workflow.LeafVars{PromptVars: vars, Leaf: spec.Leaf.Handle, Attempt: spec.Attempt})
 	if spec.Role != workflow.RoleBuilder {
 		return p
@@ -162,6 +173,55 @@ func leafPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars)
 		return p
 	}
 	return strings.TrimRight(p, "\n") + "\n\n" + strings.Join(lines, "\n\n")
+}
+
+// fixerPrompt is a leaf fixer's prompt, as leafPrompt describes.
+func fixerPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars) string {
+	p := role.RenderFixerPrompt(workflow.FixerVars{PromptVars: vars, Leaf: spec.Leaf.Handle, Cycle: spec.Cycle})
+	head := fmt.Sprintf("Confirmed findings to fix in review cycle %d on leaf %s:", spec.Cycle, spec.Leaf.Handle)
+	if spec.Owner {
+		head = fmt.Sprintf("The owner requested these changes on leaf %s:", spec.Leaf.Handle)
+	}
+	return strings.TrimRight(p, "\n") + "\n\n" + fmt.Sprintf("%s\n\n%s\n\n"+
+		"Fix them, nothing else, in one new commit with the trailer `Leaf: %s`. `rhiza run status --json` has them too.",
+		head, findingLines(spec.Findings), spec.Leaf.Handle) + answerLines(spec.Answers)
+}
+
+// answerLines are, for a fixer of an answered cycle (one fresh cycle past
+// the review's cap), the Decisions answering the questions the capped
+// cycle raised, one "- Decision <handle> answers question <question>:
+// <statement>" line each, after a blank line; "" with none.
+func answerLines(answers []run.ReviewAnswer) string {
+	if len(answers) == 0 {
+		return ""
+	}
+	lines := []string{"\n\nThe review ran out of fix cycles and raised questions; these Decisions answer them, so fix as they say:\n"}
+	for _, a := range answers {
+		q := a.QuestionHandle
+		if q == "" {
+			q = a.Question
+		}
+		line := fmt.Sprintf("- Decision %s answers question %s", a.Decision, q)
+		if st := oneLine(a.Statement); st != "" {
+			line += ": " + st
+		}
+		lines = append(lines, line)
+	}
+	return strings.Join(lines, "\n")
+}
+
+// findingLines are a fixer's findings, one "- <check> <id> (<severity>
+// at <place>): <reason>" line each.
+func findingLines(fs []run.Finding) string {
+	var lines []string
+	for _, f := range fs {
+		line := fmt.Sprintf("- %s %s (%s", f.Check, f.ID, f.Severity)
+		if f.Place != "" {
+			line += " at " + f.Place
+		}
+		lines = append(lines, line+"): "+oneLine(f.Reason))
+	}
+	return strings.Join(lines, "\n")
 }
 
 // leafQuestionPrefix starts the handle of every question node a run adds
@@ -306,6 +366,42 @@ func leafCommit(commits []check.Commit, handle, since string) (string, string, e
 		return "", fmt.Sprintf("%d new commit(s) since %s, none with a Leaf: trailer", len(commits), shortRev(since)), nil
 	}
 	return "", "new commits name another leaf: " + strings.Join(others, ", "), nil
+}
+
+// ReviewCommit is the newest commit in since..HEAD of the run's worktree
+// whose Review: trailer names the run, its trailers read as LeafCommit
+// reads them (parseTrailerLog). With none, commit is "" and detail says
+// why: no new commit since since, or the new commits' Review: trailers
+// name other runs, or none has one.
+func (r *stepRunner) ReviewCommit(since string) (commit, detail string, err error) {
+	out, err := r.worktreeGit("log", "--format="+trailerLogFormat, since+"..HEAD")
+	if err != nil {
+		return "", "", err
+	}
+	return reviewCommit(parseTrailerLog(out), r.run, since)
+}
+
+// reviewCommit picks the newest of commits (newest first) whose Review:
+// trailers name run, else says why none does.
+func reviewCommit(commits []check.Commit, run, since string) (string, string, error) {
+	if len(commits) == 0 {
+		return "", "no new commit since " + shortRev(since), nil
+	}
+	var others []string
+	for _, c := range commits {
+		if slices.Contains(c.Reviews, run) {
+			return c.Hash, "", nil
+		}
+		for _, v := range c.Reviews {
+			if !slices.Contains(others, v) {
+				others = append(others, v)
+			}
+		}
+	}
+	if len(others) == 0 {
+		return "", fmt.Sprintf("%d new commit(s) since %s, none with a Review: trailer", len(commits), shortRev(since)), nil
+	}
+	return "", "new commits' Review: trailers name another run: " + strings.Join(others, ", "), nil
 }
 
 // Evidence reports whether leaf has live Evidence verifying it that the
@@ -573,12 +669,19 @@ func evidenceEntries(m Model, sets []changeset.ChangeSet, leaf, actor id.ID) []e
 // journalled) is removed first. The build worktree's index and files are
 // never touched: a new worktree has its own.
 func (r *stepRunner) OpenCheckout(leaf run.Leaf, attempt int, commit string) (string, error) {
+	return r.openCheckout(fmt.Sprintf("%s-%s-%d", r.run, leaf.Handle, attempt), commit)
+}
+
+// openCheckout adds a throwaway detached worktree at commit at name under
+// the git common dir's rhiza/checkouts, as OpenCheckout describes, and
+// returns its path.
+func (r *stepRunner) openCheckout(name, commit string) (string, error) {
 	out, err := r.worktreeGit("rev-parse", "--path-format=absolute", "--git-common-dir")
 	if err != nil {
 		return "", err
 	}
 	common := strings.TrimSpace(out)
-	dir := filepath.Join(common, "rhiza", "checkouts", fmt.Sprintf("%s-%s-%d", r.run, leaf.Handle, attempt))
+	dir := filepath.Join(common, "rhiza", "checkouts", name)
 	if err := os.MkdirAll(filepath.Dir(dir), 0o755); err != nil {
 		return "", fmt.Errorf("checkout folder: %v", err)
 	}

@@ -1,0 +1,16 @@
+{
+  "actor": "01M5ZPK2CP01WFSKZSV1715668",
+  "after": [],
+  "at": "2026-10-28T01:43:32Z",
+  "body": {
+    "intent": "Rex program status shows a review run's live fixer, verifier and change-set fixer sessions, its open questions and its code check, as rhiza run status already does",
+    "kind": "intention",
+    "sources": [],
+    "title": "Review status in Rex"
+  },
+  "change_set": "01M602TGXM184GVWJG4NE98P6Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M602TGXM184GVWJG4QAYBWGR",
+  "type": "open",
+  "v": 2
+}

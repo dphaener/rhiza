@@ -37,12 +37,29 @@ const (
 	// KindLeaves conducts the run change set's leaves: a builder session
 	// and then a verifier session for each leaf.
 	KindLeaves = "leaves"
+	// KindChecks runs a review's checks: a fresh session per check, all
+	// in parallel, then a further cycle of the checks that failed.
+	KindChecks = "checks"
+	// KindSignoff is a review's last step: it waits for the owner's
+	// sign-off by stopping the run; rhiza run approve passes it and rhiza
+	// run request-changes ends it with outcome changes, which goes back
+	// to a checks step.
+	KindSignoff = "signoff"
 )
 
-// Leaves step roles: the sub-tables of a leaves step.
+// Leaves step roles: the sub-tables of a leaves step. A checks step has a
+// verifier too.
 const (
 	RoleBuilder  = "builder"
 	RoleVerifier = "verifier"
+)
+
+// Checks step roles: a check's session, and the sub-tables of a checks
+// step beside its verifier.
+const (
+	RoleCheck  = "check"
+	RoleCritic = "critic"
+	RoleFixer  = "fixer"
 )
 
 // Split values: how a leaves step lays out its panes.
@@ -67,6 +84,9 @@ const (
 	OutcomePass    = "pass"
 	OutcomeFail    = "fail"
 	OutcomeTimeout = "timeout"
+	// OutcomeChanges is a signoff step's outcome when the owner asked
+	// for changes: its on.changes names the checks step that fixes them.
+	OutcomeChanges = "changes"
 )
 
 // When an agent step checks its `until` (the step's until_when).
@@ -99,8 +119,16 @@ var (
 // Placeholders an agent step's prompt may use.
 var placeholders = []string{"change", "slug", "title", "run", "step"}
 
-// Placeholders a leaves step's builder or verifier prompt may use.
+// Placeholders a leaves step's builder or verifier prompt may use, and a
+// checks step's verifier.
 var leafPlaceholders = append(slices.Clone(placeholders), "leaf", "attempt")
+
+// Placeholders a checks step's check or critic prompt may use.
+var checkPlaceholders = append(slices.Clone(placeholders), "check", "cycle")
+
+// Placeholders a checks step's fixer prompt may use; {leaf} is empty for
+// the fixer of findings that name no leaf.
+var fixerPlaceholders = append(slices.Clone(placeholders), "leaf", "cycle")
 
 // kindOutcomes lists the outcomes each step kind can produce.
 var kindOutcomes = map[string][]string{
@@ -109,6 +137,8 @@ var kindOutcomes = map[string][]string{
 	KindCommand: {OutcomePass, OutcomeFail},
 	KindArbiter: {OutcomePass, OutcomeFail},
 	KindLeaves:  {OutcomePass, OutcomeFail},
+	KindChecks:  {OutcomePass, OutcomeFail},
+	KindSignoff: {OutcomePass, OutcomeChanges},
 }
 
 // Definition is a loaded, validated workflow.
@@ -158,9 +188,15 @@ type Step struct {
 	// default.
 	Models []string
 	// Builder and Verifier are a leaves step's roles; nil on other steps.
+	// A checks step has a Verifier too, for a leaf a fixer fixed.
 	Builder, Verifier *Role
-	// Split is how a leaves step lays out its panes: SplitAuto (the
-	// default), SplitRight or SplitBelow. Empty on other steps.
+	// Checks are a checks step's checks, in file order; nil on other
+	// steps.
+	Checks []Check
+	// Critic and Fixer are a checks step's roles; nil on other steps.
+	Critic, Fixer *Role
+	// Split is how a leaves or checks step lays out its panes: SplitAuto
+	// (the default), SplitRight or SplitBelow. Empty on other steps.
 	Split string
 	// MaxVisits caps how often a run may enter the step; 0 means 1.
 	MaxVisits int
@@ -180,6 +216,14 @@ type Role struct {
 	// Models is the role's model by attempt: attempt n takes the nth, and
 	// the last stays for every later attempt.
 	Models []string
+}
+
+// Check is one check of a checks step: its name, unique in the step, and
+// its session's role. A check's Models are by cycle, as a leaves role's
+// are by attempt.
+type Check struct {
+	Name string
+	Role
 }
 
 // Model is the model for attempt (1-based): Models[min(attempt, len)-1],
@@ -213,16 +257,66 @@ func (r Role) RenderPrompt(v LeafVars) string {
 	})
 }
 
-// Role is a leaves step's builder or verifier by name (RoleBuilder or
-// RoleVerifier); nil for any other name or step.
+// CheckVars are the values a checks step's check or critic prompt
+// placeholders take: a step's, plus the check's name and the cycle.
+type CheckVars struct {
+	PromptVars
+	Check string
+	Cycle int
+}
+
+// RenderCheckPrompt fills a check's or critic's prompt placeholders from
+// v. Validation has already refused an unknown placeholder.
+func (r Role) RenderCheckPrompt(v CheckVars) string {
+	return renderPlaceholders(r.Prompt, map[string]string{
+		"change": v.Change, "slug": v.Slug, "title": v.Title, "run": v.Run, "step": v.Step,
+		"check": v.Check, "cycle": fmt.Sprint(v.Cycle),
+	})
+}
+
+// FixerVars are the values a checks step's fixer prompt placeholders
+// take: a step's, plus the leaf's handle ("" for findings naming no leaf)
+// and the cycle.
+type FixerVars struct {
+	PromptVars
+	Leaf  string
+	Cycle int
+}
+
+// RenderFixerPrompt fills a fixer's prompt placeholders from v.
+// Validation has already refused an unknown placeholder.
+func (r Role) RenderFixerPrompt(v FixerVars) string {
+	return renderPlaceholders(r.Prompt, map[string]string{
+		"change": v.Change, "slug": v.Slug, "title": v.Title, "run": v.Run, "step": v.Step,
+		"leaf": v.Leaf, "cycle": fmt.Sprint(v.Cycle),
+	})
+}
+
+// Role is a leaves step's builder or verifier, or a checks step's critic,
+// fixer or verifier, by name; nil for any other name or step. A check's
+// role is its Check's.
 func (s Step) Role(name string) *Role {
 	switch name {
 	case RoleBuilder:
 		return s.Builder
 	case RoleVerifier:
 		return s.Verifier
+	case RoleCritic:
+		return s.Critic
+	case RoleFixer:
+		return s.Fixer
 	}
 	return nil
+}
+
+// Check is the checks step's check named name, if it has one.
+func (s Step) Check(name string) (Check, bool) {
+	for _, c := range s.Checks {
+		if c.Name == name {
+			return c, true
+		}
+	}
+	return Check{}, false
 }
 
 // Cap is how many times a run may enter the step.
@@ -344,7 +438,20 @@ type fileStep struct {
 	Split          string            `toml:"split"`
 	Builder        *fileRole         `toml:"builder"`
 	Verifier       *fileRole         `toml:"verifier"`
+	Check          []fileCheck       `toml:"check"`
+	Critic         *fileRole         `toml:"critic"`
+	Fixer          *fileRole         `toml:"fixer"`
 	On             map[string]string `toml:"on"`
+}
+
+// fileCheck is the TOML shape of one [[step.<name>.check]] of a checks
+// step.
+type fileCheck struct {
+	Name           string   `toml:"name"`
+	Prompt         string   `toml:"prompt"`
+	Agent          string   `toml:"agent"`
+	PermissionMode string   `toml:"permission_mode"`
+	Models         []string `toml:"models"`
 }
 
 // fileRole is the TOML shape of a leaves step's builder or verifier.
@@ -428,8 +535,11 @@ func Parse(name string, data []byte) (*Definition, error) {
 
 // unknownKey names a key the format does not know, by step when it is in one.
 func unknownKey(k toml.Key) error {
-	if len(k) >= 4 && k[0] == "step" && (k[2] == RoleBuilder || k[2] == RoleVerifier) {
+	if len(k) >= 4 && k[0] == "step" && (k[2] == RoleBuilder || k[2] == RoleVerifier || k[2] == RoleCritic || k[2] == RoleFixer) {
 		return fmt.Errorf("step %q: %s: unknown key %q; want prompt, agent, permission_mode or models", k[1], k[2], toml.Key(k[3:]).String())
+	}
+	if len(k) >= 4 && k[0] == "step" && k[2] == RoleCheck {
+		return fmt.Errorf("step %q: check: unknown key %q; want name, prompt, agent, permission_mode or models", k[1], toml.Key(k[3:]).String())
 	}
 	if len(k) >= 3 && k[0] == "step" {
 		return fmt.Errorf("step %q: unknown key %q", k[1], toml.Key(k[2:]).String())
@@ -504,28 +614,44 @@ func buildStep(name string, fs fileStep) (Step, error) {
 	}
 
 	switch fs.Kind {
-	case KindAgent, KindWait, KindCommand, KindArbiter, KindLeaves:
+	case KindAgent, KindWait, KindCommand, KindArbiter, KindLeaves, KindChecks, KindSignoff:
 	case "":
-		return fail("no kind: want agent, wait, command, arbiter or leaves")
+		return fail("no kind: want agent, wait, command, arbiter, leaves, checks or signoff")
 	default:
-		return fail("unknown kind %q: want agent, wait, command, arbiter or leaves", fs.Kind)
+		return fail("unknown kind %q: want agent, wait, command, arbiter, leaves, checks or signoff", fs.Kind)
 	}
 	if fs.Models != nil && fs.Kind != KindAgent {
+		if fs.Kind == KindChecks {
+			return fail("a checks step cannot have models: each check and role has its own; set it under [[step.%s.check]] or the role's table", name)
+		}
+		if fs.Kind == KindSignoff {
+			return fail("a signoff step cannot have models: it runs no agent, it waits for the owner; remove it")
+		}
 		if fs.Kind == KindLeaves {
 			return fail("models is only for agent steps and a leaves step's builder and verifier; set it under [step.%s.builder] or [step.%s.verifier]", name, name)
 		}
 		return fail("models is only for agent steps and a leaves step's builder and verifier; %s step cannot have it", article(fs.Kind))
 	}
-	if fs.Split != "" && fs.Kind != KindLeaves {
-		return fail("split is only for leaves steps; %s step cannot have it", article(fs.Kind))
+	if fs.Split != "" && fs.Kind != KindLeaves && fs.Kind != KindChecks {
+		return fail("split is only for leaves and checks steps; %s step cannot have it", article(fs.Kind))
 	}
-	if fs.Kind != KindLeaves {
+	if fs.Kind != KindLeaves && fs.Kind != KindChecks {
+		for _, r := range []struct {
+			role, kinds string
+			set         bool
+		}{{RoleBuilder, "leaves steps", fs.Builder != nil}, {RoleVerifier, "leaves and checks steps", fs.Verifier != nil}} {
+			if r.set {
+				return fail("%s is only for %s; %s step cannot have it", r.role, r.kinds, article(fs.Kind))
+			}
+		}
+	}
+	if fs.Kind != KindChecks {
 		for _, r := range []struct {
 			role string
 			set  bool
-		}{{RoleBuilder, fs.Builder != nil}, {RoleVerifier, fs.Verifier != nil}} {
+		}{{RoleCheck, fs.Check != nil}, {RoleCritic, fs.Critic != nil}, {RoleFixer, fs.Fixer != nil}} {
 			if r.set {
-				return fail("%s is only for leaves steps; %s step cannot have it", r.role, article(fs.Kind))
+				return fail("%s is only for checks steps; %s step cannot have it", r.role, article(fs.Kind))
 			}
 		}
 	}
@@ -537,6 +663,10 @@ func buildStep(name string, fs fileStep) (Step, error) {
 		return buildArbiter(s, fs, fail)
 	case KindLeaves:
 		return buildLeaves(s, fs, fail)
+	case KindChecks:
+		return buildChecks(s, fs, fail)
+	case KindSignoff:
+		return buildSignoff(s, fs, fail)
 	}
 
 	if fs.Run != "" && fs.Kind != KindCommand {
@@ -680,6 +810,139 @@ func buildLeaves(s Step, fs fileStep, fail func(string, ...any) (Step, error)) (
 	return s, nil
 }
 
+// buildChecks finishes a checks step: it needs at least one check, each
+// with a valid name of its own and a prompt, and a critic, a fixer and a
+// verifier, each with a prompt; it takes split (SplitAuto when unset),
+// interval (DefaultInterval when unset) and max_visits, and refuses the
+// session keys that belong in its checks and roles, and a builder.
+func buildChecks(s Step, fs fileStep, fail func(string, ...any) (Step, error)) (Step, error) {
+	own := "each check and role has its own"
+	ends := "it ends when its checks have passed or run out of cycles"
+	refused := []struct {
+		key string
+		set bool
+		why string
+	}{
+		{"prompt", fs.Prompt != "", own},
+		{"agent", fs.Agent != "", own},
+		{"permission_mode", fs.PermissionMode != "", own},
+		{"run", fs.Run != "", "it runs agents, not a command"},
+		{"until", fs.Until != "", ends},
+		{"until_when", fs.UntilWhen != "", ends},
+		{"timeout", fs.Timeout != "", ends},
+		{"builder", fs.Builder != nil, "a fixer fixes what its checks find"},
+	}
+	for _, r := range refused {
+		if r.set {
+			return fail("a checks step cannot have %s: %s; remove it", r.key, r.why)
+		}
+	}
+	if fs.MaxVisits < 0 {
+		return fail("max_visits is %d; want 0 or more (0 means 1)", fs.MaxVisits)
+	}
+	s.Split = SplitAuto
+	if fs.Split != "" {
+		if fs.Split != SplitAuto && fs.Split != SplitRight && fs.Split != SplitBelow {
+			return fail("split %q: want %q (by the tab's shape), %q or %q", fs.Split, SplitAuto, SplitRight, SplitBelow)
+		}
+		s.Split = fs.Split
+	}
+	if len(fs.Check) == 0 {
+		return fail("a checks step needs at least one [[step.%s.check]] table with name = \"...\" and prompt = \"...\"", s.Name)
+	}
+	for i, fc := range fs.Check {
+		if fc.Name == "" {
+			return fail("check %d has no name: set name = \"...\"", i+1)
+		}
+		if err := checkName("check", fc.Name); err != nil {
+			return fail("%v", err)
+		}
+		if _, dup := s.Check(fc.Name); dup {
+			return fail("check %q is declared twice; give each check its own name", fc.Name)
+		}
+		r, err := buildRole(fmt.Sprintf("check %q", fc.Name), "check", fileRole{Prompt: fc.Prompt, Agent: fc.Agent, PermissionMode: fc.PermissionMode, Models: fc.Models}, checkPlaceholders)
+		if err != nil {
+			return fail("%v", err)
+		}
+		s.Checks = append(s.Checks, Check{Name: fc.Name, Role: r})
+	}
+	for _, r := range []struct {
+		name  string
+		fr    *fileRole
+		dst   **Role
+		names []string
+	}{
+		{RoleCritic, fs.Critic, &s.Critic, checkPlaceholders},
+		{RoleFixer, fs.Fixer, &s.Fixer, fixerPlaceholders},
+		{RoleVerifier, fs.Verifier, &s.Verifier, leafPlaceholders},
+	} {
+		if r.fr == nil {
+			return fail("a checks step needs a [step.%s.%s] table with prompt = \"<what the %s should do>\"", s.Name, r.name, r.name)
+		}
+		role, err := buildRole(r.name, r.name, *r.fr, r.names)
+		if err != nil {
+			return fail("%v", err)
+		}
+		*r.dst = &role
+	}
+	s.Interval = DefaultInterval
+	if fs.Interval != "" {
+		d, err := positiveDuration(fs.Interval)
+		if err != nil {
+			return fail("interval %v", err)
+		}
+		s.Interval = d
+	}
+	return s, nil
+}
+
+// buildSignoff finishes a signoff step: it takes max_visits and on., and
+// refuses every key of a session or a condition, as it runs nothing: it
+// waits for the owner. checkTargets checks its on.changes.
+func buildSignoff(s Step, fs fileStep, fail func(string, ...any) (Step, error)) (Step, error) {
+	waits := "it runs nothing: it waits for the owner's rhiza run approve or rhiza run request-changes"
+	refused := []struct {
+		key string
+		set bool
+	}{
+		{"prompt", fs.Prompt != ""},
+		{"agent", fs.Agent != ""},
+		{"permission_mode", fs.PermissionMode != ""},
+		{"run", fs.Run != ""},
+		{"until", fs.Until != ""},
+		{"until_when", fs.UntilWhen != ""},
+		{"timeout", fs.Timeout != ""},
+		{"interval", fs.Interval != ""},
+	}
+	for _, r := range refused {
+		if r.set {
+			return fail("a signoff step cannot have %s: %s; remove it", r.key, waits)
+		}
+	}
+	if fs.MaxVisits < 0 {
+		return fail("max_visits is %d; want 0 or more (0 means 1)", fs.MaxVisits)
+	}
+	return s, nil
+}
+
+// buildRole checks one session role of a checks step, named what in its
+// errors: a prompt using only names among its placeholders, and models.
+// does is what the prompt is asked to say the role should do.
+func buildRole(what, does string, fr fileRole, names []string) (Role, error) {
+	if strings.TrimSpace(fr.Prompt) == "" {
+		return Role{}, fmt.Errorf("%s needs prompt = \"<what the %s should do>\"; it may use {%s}", what, does, strings.Join(names, "}, {"))
+	}
+	for _, m := range placeholderPattern.FindAllStringSubmatch(fr.Prompt, -1) {
+		if !slices.Contains(names, m[1]) {
+			return Role{}, fmt.Errorf("%s: prompt uses unknown placeholder {%s}; want one of {%s}", what, m[1], strings.Join(names, "}, {"))
+		}
+	}
+	if err := checkModels(fr.Models); err != nil {
+		return Role{}, fmt.Errorf("%s: models %v", what, err)
+	}
+	return Role{Prompt: fr.Prompt, Agent: fr.Agent, PermissionMode: fr.PermissionMode, Models: fr.Models}, nil
+}
+
 // checkModels refuses a blank model name.
 func checkModels(models []string) error {
 	for i, m := range models {
@@ -768,6 +1031,15 @@ func checkTargets(s Step, steps map[string]Step) error {
 		}
 		if ts.Kind == KindArbiter {
 			return fmt.Errorf("step %q: on.%s names %q, an arbiter step; no step goes to it (the engine calls it on a question): want another step or done or failed", s.Name, o, t)
+		}
+	}
+	if s.Kind == KindSignoff {
+		t, ok := s.On[OutcomeChanges]
+		if !ok {
+			return fmt.Errorf("step %q: a signoff step needs on.changes = \"<checks step>\": the checks step that fixes what the owner asks for", s.Name)
+		}
+		if ts, ok := steps[t]; !ok || ts.Kind != KindChecks {
+			return fmt.Errorf("step %q: on.changes names %q, which is not a checks step; want the checks step that fixes what the owner asks for", s.Name, t)
 		}
 	}
 	return nil

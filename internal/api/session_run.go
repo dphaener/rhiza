@@ -56,6 +56,10 @@ const (
 	envAttempt = run.EnvAttempt
 	envRole    = run.EnvRole
 	envCommit  = run.EnvCommit
+	// envCheck and envCycle are a check session's check name and cycle;
+	// it gets envRole too.
+	envCheck = run.EnvCheck
+	envCycle = run.EnvCycle
 	// envRoot is the Rhiza root a verifier's rhiza writes go to: the build
 	// worktree's, while it works in a checkout of its own.
 	envRoot = "RHIZA_ROOT"
@@ -316,9 +320,25 @@ func launchEnv(rec session.Record) (set, unset []string) {
 		unset = append(unset, envAutonomous)
 	}
 	if rec.Leaf != "" {
-		set = append(set, envLeaf+"="+rec.Leaf, envAttempt+"="+strconv.Itoa(rec.Attempt), envRole+"="+rec.Role)
+		set = append(set, envLeaf+"="+rec.Leaf, envAttempt+"="+strconv.Itoa(rec.Attempt))
 	} else {
-		unset = append(unset, envLeaf, envAttempt, envRole)
+		unset = append(unset, envLeaf, envAttempt)
+	}
+	switch {
+	case rec.Check != "":
+		set = append(set, envCheck+"="+rec.Check, envCycle+"="+strconv.Itoa(rec.Cycle))
+	case rec.Cycle > 0:
+		// A review's leaf fixer or verifier, or its change set's fixer: a
+		// cycle, no check.
+		set = append(set, envCycle+"="+strconv.Itoa(rec.Cycle))
+		unset = append(unset, envCheck)
+	default:
+		unset = append(unset, envCheck, envCycle)
+	}
+	if rec.Leaf != "" || rec.Check != "" || rec.Cycle > 0 {
+		set = append(set, envRole+"="+rec.Role)
+	} else {
+		unset = append(unset, envRole)
 	}
 	if rec.Commit != "" {
 		set = append(set, envCommit+"="+rec.Commit)

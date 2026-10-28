@@ -1,0 +1,56 @@
+package guide
+
+import (
+	"strings"
+	"testing"
+)
+
+func TestReviewText(t *testing.T) {
+	review, ok := Lookup("review")
+	if !ok || review.Skill {
+		t.Fatalf("review: found %v, skill %v; want a topic", ok, review.Skill)
+	}
+	if !strings.Contains(review.Description, "check, critic or fixer of a review run") {
+		t.Errorf("review description %q does not say when to load it", review.Description)
+	}
+	checkPhrases(t, "review", map[string][]string{
+		"start": {
+			`rhiza slice --change "$RHIZA_CHANGE" --json`, "RHIZA_CHECK", "RHIZA_CYCLE", "RHIZA_ROLE",
+			"throwaway checkout",
+		},
+		"merge-base": {"merge-base", "default branch"},
+		"five-checks": {
+			"`compliance`", "each leaf's `acceptance`", "`quality`", "`qa`", "built binary",
+			"fakes alone do not count", "`scope`", "inside the intent and the leaves", "`model`",
+		},
+		"severities": {"`blocker`", "`major`", "`minor`", "`nit`"},
+		"findings": {
+			`rhiza run findings --check "$RHIZA_CHECK" <file>`,
+			`{"findings":[{"severity":"major","leaf":"<leaf>","place":"path:line","reason":`,
+			`{"findings":[]}`, "rhiza describe run.findings",
+		},
+		"verdict": {
+			`rhiza run verdict --check "$RHIZA_CHECK" <file>`,
+			`{"verdicts":[{"finding":"f1","verdict":"confirmed","reason":`,
+			"`confirmed` or `dropped`",
+		},
+		"critic":   {"Never add a finding"},
+		"dropped":  {"stay in the run journal", "no Decision"},
+		"trailers": {"`Leaf: <leaf>`", "`Review: <run>`", "$RHIZA_RUN", "Never rewrite"},
+		"outside-work": {
+			"outside the intent", "question", "discovered-from draft change set",
+			"rhiza change new", "discovered-from <this>", "rhiza change use <this>",
+		},
+		"evidence": {
+			"Evidence written as yourself on each leaf it exercised",
+			`"handle":"<leaf>-qa-<cycle>"`, "`<cycle>` being $RHIZA_CYCLE",
+			`"type":"verifies","to":"<leaf>"`,
+			"missing constraints",
+		},
+		"done": {"rhiza session done"},
+	})
+	// Constraint agents-named-only-in-adapters: no agent product by name.
+	if strings.Contains(review.Body+review.Description, "Claude") {
+		t.Errorf("review names an agent product")
+	}
+}

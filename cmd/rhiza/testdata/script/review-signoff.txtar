@@ -1,0 +1,174 @@
+# A review's signoff step stops the run, waiting for the owner, once its
+# checks pass; rhiza run approve journals the owner's sign-off, naming
+# the actor, and continues the run, which ends done. Outside a review
+# run waiting at its sign-off (no run, a run stopped at another step, a
+# finished run) run approve and run request-changes exit 2 and journal
+# nothing. A request for changes naming no check of the checks step is
+# refused too.
+#
+# The fake rex runs the tab's command synchronously in the window's
+# directory; the fake claude, as check alpha, records an empty findings
+# round and passes.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new 'Sign me off' --title 'Sign me off'
+exec rhiza add capability thing
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
+cp $WORK/other.toml .rhiza/workflows/other.toml
+exec git add -A
+exec git commit -qm review
+
+# No run yet: both commands exit 2.
+exec sh -c 'rhiza run approve; echo exit=$?'
+stdout '^exit=2$'
+exec sh -c 'rhiza run request-changes $WORK/changes.json; echo exit=$?'
+stdout '^exit=2$'
+
+# A run stopped at a wait step is not waiting for a sign-off.
+exec rhiza run start --workflow other --no-wait --json
+stdout '"state": "stopped"'
+exec sh -c 'wc -l < $(ls -t .git/rhiza/runs/*.jsonl | head -1)'
+cp stdout $WORK/other.lines
+exec sh -c 'rhiza run approve; echo exit=$?'
+stdout '^exit=2$'
+stderr 'run approve works on a review run waiting at its sign-off, and run [0-9A-Z]{26} is not: it is stopped at step ci'
+exec sh -c 'rhiza run request-changes $WORK/changes.json; echo exit=$?'
+stdout '^exit=2$'
+exec sh -c 'wc -l < $(ls -t .git/rhiza/runs/*.jsonl | head -1)'
+cmp stdout $WORK/other.lines
+
+# The review stops at its sign-off once its check passes.
+exec sh -c 'rhiza run start --workflow review --permission-mode manual --json > $WORK/start.json; echo exit=$?'
+stdout '^exit=0$'
+exec cat $WORK/start.json
+stdout '"state": "stopped"'
+stdout '"current": "signoff"'
+stdout '"detail": "waiting for the owner''s sign-off: rhiza run approve \| rhiza run request-changes <file>; rhiza run summary"'
+stdout '"signoff_waiting": true'
+! stdout '"signoffs"'
+exec rhiza run status
+stdout '^Run [0-9A-Z]{26} stopped$'
+stdout '^- review \(visit 1\): pass, then signoff: 1 of 1 checks passed$'
+stdout '^next: rhiza run approve [0-9A-Z]{26}$'
+stdout '^next: rhiza run request-changes <file> [0-9A-Z]{26}$'
+exec sh -c 'wc -l < $(ls -t .git/rhiza/runs/*.jsonl | head -1)'
+cp stdout $WORK/review.lines
+
+# A request for changes naming no check of the checks step, or no
+# finding at all, is refused, and nothing is journalled.
+exec sh -c 'rhiza run request-changes $WORK/nocheck.json; echo exit=$?'
+stdout '^exit=2$'
+stderr 'finding 1: check "nope" is not a check of step review: its checks are alpha'
+exec sh -c 'rhiza run request-changes $WORK/empty.json; echo exit=$?'
+stdout '^exit=2$'
+exec sh -c 'rhiza run request-changes $WORK/badleaf.json; echo exit=$?'
+stdout '^exit=2$'
+stderr 'finding 1: leaf "nope"'
+exec sh -c 'rhiza run request-changes $WORK/nosev.json; echo exit=$?'
+stdout '^exit=2$'
+stderr 'finding 1: severity "huge"'
+exec sh -c 'wc -l < $(ls -t .git/rhiza/runs/*.jsonl | head -1)'
+cmp stdout $WORK/review.lines
+
+# A dry run journals nothing.
+exec rhiza run approve --dry-run --json
+stdout '"outcome": "approved"'
+stdout '"dry_run": true'
+exec sh -c 'wc -l < $(ls -t .git/rhiza/runs/*.jsonl | head -1)'
+cmp stdout $WORK/review.lines
+
+# The owner approves: the run ends done, with a sign-off naming the
+# actor, and the change set is not landed.
+exec rhiza run approve
+stdout '^Sign-off: signoff \(visit 1\): approved by [a-z0-9-]+$'
+stdout '^Run [0-9A-Z]{26} succeeded$'
+exec rhiza run status --json
+stdout '"state": "succeeded"'
+stdout '"signoffs": \[\n\s+\{\n\s+"actor": "test",\n\s+"at": "[^"]+",\n\s+"outcome": "approved",\n\s+"rule": "owner",\n\s+"step": "signoff",\n\s+"visit": 1\n\s+\}\n\s+\]'
+! stdout '"signoff_waiting"'
+exec rhiza run status
+stdout '^- signoff \(visit 1\): pass, then end: approved by test$'
+stdout '\n## Sign-offs\n\n- signoff \(visit 1\): approved by test\n'
+exec rhiza change show --json
+stdout '"state": "draft"'
+
+# A finished run is not waiting either.
+exec sh -c 'rhiza run approve; echo exit=$?'
+stdout '^exit=2$'
+stderr 'is finished: it succeeded'
+exec sh -c 'rhiza run request-changes $WORK/changes.json; echo exit=$?'
+stdout '^exit=2$'
+
+fold-ok
+
+-- empty-round.json --
+{"findings":[]}
+-- changes.json --
+{"findings":[{"check":"alpha","severity":"major","leaf":"thing","place":"thing.txt:1","reason":"say more"}]}
+-- nocheck.json --
+{"findings":[{"check":"nope","severity":"major","place":"thing.txt:1","reason":"say more"}]}
+-- empty.json --
+{"findings":[]}
+-- badleaf.json --
+{"findings":[{"check":"alpha","severity":"major","leaf":"nope","place":"thing.txt:1","reason":"say more"}]}
+-- nosev.json --
+{"findings":[{"check":"alpha","severity":"huge","place":"thing.txt:1","reason":"say more"}]}
+-- other.toml --
+[step.ci]
+kind = "wait"
+until = "false"
+timeout = "1h"
+-- review.toml --
+[step.review]
+kind = "checks"
+interval = "50ms"
+max_visits = 2
+on.pass = "signoff"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+
+[step.signoff]
+kind = "signoff"
+max_visits = 2
+on.pass = "done"
+on.changes = "review"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty-round.json" >&2 || exit 1
+exit 0

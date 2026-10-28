@@ -40,8 +40,70 @@ const (
 	// TypeLeafRound gives a failed leaf a fresh round of attempts, once a
 	// Decision answers the question its failure raised.
 	TypeLeafRound = "leaf-round"
-	// TypePaneClosed records that a leaf session's pane was closed.
+	// TypePaneClosed records that a leaf or check session's pane was
+	// closed.
 	TypePaneClosed = "pane-closed"
+	// TypeCheckCycle, TypeCheckSession, TypeCheckJudged and TypeCheck are
+	// a checks step's entries: a cycle of its checks began, a check's
+	// session started, a session's work judged, and a check's outcome in
+	// a cycle.
+	TypeCheckCycle   = "check-cycle"
+	TypeCheckSession = "check-session"
+	TypeCheckJudged  = "check-judged"
+	TypeCheck        = "check"
+	// TypeReviewFix and TypeReviewFixJudged are a checks step's change-set
+	// fixer's entries: its session started in a cycle (Commit the
+	// worktree's HEAD then), and its work judged (Commit, when it passed,
+	// the new commit whose Review: trailer names the run). Neither names
+	// a leaf or a check.
+	TypeReviewFix       = "review-fix"
+	TypeReviewFixJudged = "review-fix-judged"
+	// TypeReviewQuestion is a question a checks step raised when a check
+	// still failed with no fix cycle left: one per surviving confirmed
+	// finding of the check, or one for the check's failure when it had
+	// none.
+	TypeReviewQuestion = "review-question"
+	// TypeCodeCheck is a review's code check: rhiza run code-check ran
+	// rhiza check and build-check on the run's change set.
+	TypeCodeCheck = "code-check"
+	// TypeSignoff is a signoff step's sign-off: the owner approved the
+	// review or asked for changes (rule owner), or an autonomous run
+	// passed it in the owner's place (rule autonomous).
+	TypeSignoff = "signoff"
+)
+
+// Sign-off outcomes, a signoff entry's Outcome.
+const (
+	SignoffApproved = "approved"
+	SignoffChanges  = "changes"
+)
+
+// Sign-off rules, a signoff entry's Rule: who signed off.
+const (
+	RuleOwner      = "owner"
+	RuleAutonomous = "autonomous"
+)
+
+// CycleOwner is the Kind of a check-cycle entry that runs the checks the
+// owner's request for changes names, after a fix phase for the owner's
+// findings: one cycle outside the cap, granted by the sign-off.
+const CycleOwner = "owner"
+
+// Code check outcomes, a code-check entry's Outcome.
+const (
+	CodeCheckPass = "pass"
+	CodeCheckFail = "fail"
+)
+
+// CycleAnswered is the Kind of a check-cycle entry that gives a capped
+// checks step one fresh cycle, once Decisions answer every question its
+// last cycle raised.
+const CycleAnswered = "answered"
+
+// Check outcomes, a check entry's Outcome.
+const (
+	CheckPassed = "passed"
+	CheckFailed = "failed"
 )
 
 // Leaf outcomes, a leaf entry's Outcome.
@@ -72,6 +134,31 @@ func ValidKind(kind string) bool {
 	}
 	return false
 }
+
+// Severities of a review finding, from the most to the least serious.
+const (
+	SeverityBlocker = "blocker"
+	SeverityMajor   = "major"
+	SeverityMinor   = "minor"
+	SeverityNit     = "nit"
+)
+
+// Severities are a review finding's severities, most serious first.
+var Severities = []string{SeverityBlocker, SeverityMajor, SeverityMinor, SeverityNit}
+
+// ValidSeverity reports whether sev is one of Severities.
+func ValidSeverity(sev string) bool {
+	for _, s := range Severities {
+		if s == sev {
+			return true
+		}
+	}
+	return false
+}
+
+// Serious reports whether a finding of severity sev is serious: blocker or
+// major, the findings a critic judges.
+func Serious(sev string) bool { return sev == SeverityBlocker || sev == SeverityMajor }
 
 // Verdicts a critic gives a finding.
 const (
@@ -144,6 +231,11 @@ type Block struct {
 //	           verifier's findings on leaf Leaf (handle Handle) of leaves step
 //	           Step, for its attempt Attempt; plan review rounds skip it
 //	verdict:   Verdicts (a critic's verdicts on findings of the latest round)
+//	           With Check set, findings and verdict entries are instead a
+//	           review check's: findings opens the next round of check Check
+//	           of checks step Step, in cycle Cycle (when 0, the cycle of the
+//	           check's latest session), and verdict judges that check's
+//	           latest round; plan review rounds skip both
 //	gated:     Changes (run gate ended the plan: its change sets, by ID; the
 //	           latest gated entry wins)
 //	leaf-session: Step, Leaf, Handle, Role (builder or verifier), Attempt, Session,
@@ -162,7 +254,39 @@ type Block struct {
 //	           open again, and the step's skipped leaves with it)
 //	pane-closed: Step, Leaf, Handle, Session (the pane of leaf session Session was
 //	           closed: its session passed, the next builder took its place, or
-//	           its leaves step ended)
+//	           its leaves step ended). With Check set instead of Leaf, the pane
+//	           of check Check's session Session, closed as its checks step ended
+//	check-cycle: Step, Cycle, Checks (checks step Step began cycle Cycle, from
+//	           1, over the checks named: every check in cycle 1, then those that
+//	           failed the cycle before)
+//	check-session: Step, Check, Role (check), Cycle, Session, Model, Detail (a
+//	           checks step started a session of role Role for check Check in
+//	           cycle Cycle)
+//	check-judged: Step, Check, Role, Cycle, Outcome (pass or fail), Detail (the
+//	           role's session of the check's cycle was judged)
+//	check:     Step, Check, Cycle, Outcome (passed or failed), Detail (the check's
+//	           outcome in the cycle)
+//	           A check-cycle with Kind answered also has Questions and
+//	           Decisions: the questions the cycle before raised, by ID, and
+//	           the Decisions answering them, by handle, in the same order;
+//	           it is one fresh cycle past the cap
+//	review-question: Step, Check, Cycle, Finding, Leaf, Handle, Question,
+//	           QuestionHandle (check Check still failed cycle Cycle with no
+//	           fix cycle left; question node Question was raised for its
+//	           surviving confirmed finding Finding, on leaf node Leaf
+//	           (handle Handle) when it names one of the change set's leaves,
+//	           linked blocks to it; Finding is empty for a question on the
+//	           check's failure itself)
+//	code-check: Step, Outcome (pass or fail), Detail (rhiza run code-check
+//	           ran rhiza check and build-check on the run's change set while
+//	           the run was at step Step; Detail names each cause of a fail)
+//	signoff:   Step, Visit, Actor, Rule (owner or autonomous), Outcome (approved
+//	           or changes), Findings (signoff step Step's visit Visit was
+//	           signed off: approved, or with changes, the owner's findings,
+//	           each naming a check, which count as confirmed)
+//	           A check-cycle with Kind owner also has Findings: the owner's,
+//	           from the signoff entry it consumes; it runs the checks they
+//	           name, one cycle outside the cap
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -213,23 +337,43 @@ type Entry struct {
 	// QuestionHandle is a failed leaf's or a leaf-round entry's question
 	// node handle (Question is its ID).
 	QuestionHandle string `json:"question_handle,omitempty"`
+	// Check is a checks step entry's check name, and Cycle its cycle,
+	// from 1. Checks are a check-cycle entry's checks, by name.
+	Check  string   `json:"check,omitempty"`
+	Cycle  int      `json:"cycle,omitempty"`
+	Checks []string `json:"checks,omitempty"`
+	// Kind is a check-cycle entry's kind: "" for a cycle within the cap,
+	// CycleAnswered for one past it. Questions and Decisions are an
+	// answered cycle's questions (IDs) and answering Decisions (handles).
+	Kind      string   `json:"kind,omitempty"`
+	Questions []string `json:"questions,omitempty"`
+	Decisions []string `json:"decisions,omitempty"`
+	// Finding is a review-question entry's finding ID.
+	Finding string `json:"finding,omitempty"`
+	// Rule is a signoff entry's rule: owner or autonomous.
+	Rule string `json:"rule,omitempty"`
 }
 
 // Finding is one finding: of a plan review round, node Node (its handle
 // Handle when it was recorded) has a problem of kind Kind, for Reason; of
-// a leaf's verifier, only ID and Reason are set. ID is f1, f2, ... in the
-// round, or in the leaf's attempt.
+// a leaf's verifier, only ID and Reason are set; of a review check, check
+// Check found a problem of severity Severity at Place (file:line or a
+// node), about leaf node Leaf (handle LeafHandle) when it names one. ID
+// is f1, f2, ... in the round, or in the leaf's attempt.
 //
-// Every field but ID and Reason is optional, so the review workflow's
-// findings (change set 01M5WPTZ) can add check, severity, leaf and place
-// as further omitempty fields without reshaping a finding already
-// journalled.
+// Every field but ID and Reason is optional, so a finding already
+// journalled keeps its shape.
 type Finding struct {
-	ID     string `json:"id"`
-	Node   string `json:"node,omitempty"`
-	Handle string `json:"handle,omitempty"`
-	Kind   string `json:"kind,omitempty"`
-	Reason string `json:"reason"`
+	ID         string `json:"id"`
+	Node       string `json:"node,omitempty"`
+	Handle     string `json:"handle,omitempty"`
+	Kind       string `json:"kind,omitempty"`
+	Check      string `json:"check,omitempty"`
+	Severity   string `json:"severity,omitempty"`
+	Leaf       string `json:"leaf,omitempty"`
+	LeafHandle string `json:"leaf_handle,omitempty"`
+	Place      string `json:"place,omitempty"`
+	Reason     string `json:"reason"`
 }
 
 // Verdict is a critic's verdict on the finding with ID Finding: confirmed
@@ -242,8 +386,11 @@ type Verdict struct {
 
 // Round is one plan review round: a findings entry, numbered from 1 in
 // journal order, and the verdicts journalled after it and before the next.
+// A review check's rounds are the same, numbered per check, with Cycle the
+// check's cycle the round was recorded in; a plan review round's is 0.
 type Round struct {
 	Number   int
+	Cycle    int
 	At       time.Time
 	Findings []Finding
 	Verdicts []Verdict
@@ -275,6 +422,31 @@ func (r Round) Confirmed() []Finding {
 	var out []Finding
 	for _, f := range r.Findings {
 		if v, ok := r.Verdict(f.ID); ok && v.Verdict == Confirmed {
+			out = append(out, f)
+		}
+	}
+	return out
+}
+
+// Serious are the round's blocker and major findings, in order: those a
+// review check's critic weighs.
+func (r Round) Serious() []Finding {
+	var out []Finding
+	for _, f := range r.Findings {
+		if Serious(f.Severity) {
+			out = append(out, f)
+		}
+	}
+	return out
+}
+
+// Standing are the round's serious findings no verdict dropped, in order:
+// one with no verdict stands, as confirmed (R8). A review check fails
+// while any stands.
+func (r Round) Standing() []Finding {
+	var out []Finding
+	for _, f := range r.Serious() {
+		if v, ok := r.Verdict(f.ID); !ok || v.Verdict != Dropped {
 			out = append(out, f)
 		}
 	}
@@ -513,6 +685,202 @@ func (l LeafState) Attempt() int {
 	return n
 }
 
+// CheckCycle is one check-cycle entry: checks step Step's cycle Cycle,
+// from 1, runs the checks named Checks, in the step's order. Kind is
+// CycleAnswered for a fresh cycle past the cap, which Decisions (handles)
+// granted by answering Questions (IDs), in the same order; CycleOwner
+// for one outside the cap, for the owner's Findings.
+type CheckCycle struct {
+	Step      string
+	Cycle     int
+	Checks    []string
+	Kind      string
+	Questions []string
+	Decisions []string
+	Findings  []Finding
+	At        time.Time
+}
+
+// Answered says whether the cycle is a fresh one past the cap, granted by
+// answers to the questions the cycle before raised.
+func (c CheckCycle) Answered() bool { return c.Kind == CycleAnswered }
+
+// Owner says whether the cycle is the owner's: it fixes the findings of
+// the owner's request for changes, then runs the checks they name.
+func (c CheckCycle) Owner() bool { return c.Kind == CycleOwner }
+
+// Signoff is one signoff entry: signoff step Step's visit Visit was
+// signed off by Actor under Rule (owner or autonomous), approved or with
+// changes (Outcome), the owner's Findings for changes. A request for
+// changes is Consumed once a checks step's owner cycle has taken its
+// findings.
+type Signoff struct {
+	Step     string
+	Visit    int
+	Actor    string
+	Rule     string
+	Outcome  string
+	Findings []Finding
+	Consumed bool
+	At       time.Time
+}
+
+// ReviewQuestion is one review-question entry: check Check of checks step
+// Step still failed cycle Cycle with no fix cycle left, and question node
+// Question (handle QuestionHandle) was raised for its surviving confirmed
+// finding Finding, on leaf node Leaf (handle Handle) when it names one;
+// Finding is "" for a question on the check's failure itself.
+type ReviewQuestion struct {
+	Step           string
+	Check          string
+	Cycle          int
+	Finding        string
+	Leaf           string
+	Handle         string
+	Question       string
+	QuestionHandle string
+	At             time.Time
+}
+
+// CheckSession is one check-session entry: a session of role Role (check)
+// on the check's cycle Cycle. Seq is the position of its entry in the
+// journal, which orders a step's sessions across checks. PaneClosed is
+// true once a pane-closed entry names the session.
+type CheckSession struct {
+	Role       string
+	Cycle      int
+	Session    string
+	Model      string
+	Detail     string
+	At         time.Time
+	Seq        int
+	PaneClosed bool
+}
+
+// CheckJudged is one check-judged entry: role Role's session of cycle
+// Cycle was judged pass or fail (Outcome), for Detail.
+type CheckJudged struct {
+	Role    string
+	Cycle   int
+	Outcome string
+	Detail  string
+	At      time.Time
+}
+
+// CheckOutcome is one check entry: the check passed or failed (Outcome)
+// cycle Cycle, for Detail.
+type CheckOutcome struct {
+	Cycle   int
+	Outcome string
+	Detail  string
+	At      time.Time
+}
+
+// ReviewFix is a checks step's change-set fixer in cycle Cycle, folded
+// from its review-fix entry and, once judged, its review-fix-judged
+// entry: the fixer for the confirmed findings that name no leaf of the
+// change set. Since is the worktree's HEAD when it started, which its
+// commit must follow. Judged is true once its work was judged pass or
+// fail (Outcome), for Detail; a passed fixer's Commit is the new commit
+// whose Review: trailer names the run. Seq is the position of its
+// review-fix entry in the journal, and PaneClosed true once a
+// pane-closed entry names its session.
+type ReviewFix struct {
+	Step       string
+	Cycle      int
+	Session    string
+	Model      string
+	Since      string
+	At         time.Time
+	Seq        int
+	PaneClosed bool
+	Judged     bool
+	Outcome    string
+	Commit     string
+	Detail     string
+	JudgedAt   time.Time
+}
+
+// CheckState is one check of a checks step, folded from its entries: its
+// sessions, judgements and outcomes, one per cycle it ran, in journal
+// order.
+type CheckState struct {
+	Step     string
+	Check    string
+	Sessions []CheckSession
+	Judged   []CheckJudged
+	Outcomes []CheckOutcome
+	// Rounds are the check's findings rounds, from findings entries naming
+	// it, each with the verdicts journalled on it.
+	Rounds []Round
+}
+
+// LatestRound is the check's latest findings round, if it has one.
+func (c CheckState) LatestRound() (Round, bool) {
+	if n := len(c.Rounds); n > 0 {
+		return c.Rounds[n-1], true
+	}
+	return Round{}, false
+}
+
+// RoundFor is the check's latest findings round recorded in cycle, if it
+// has one: none means the check's session of the cycle recorded none.
+func (c CheckState) RoundFor(cycle int) (Round, bool) {
+	for i := len(c.Rounds) - 1; i >= 0; i-- {
+		if c.Rounds[i].Cycle == cycle {
+			return c.Rounds[i], true
+		}
+	}
+	return Round{}, false
+}
+
+// latestSessionCycle is the cycle of the check's latest session, 0 with
+// none.
+func (c CheckState) latestSessionCycle() int {
+	if n := len(c.Sessions); n > 0 {
+		return c.Sessions[n-1].Cycle
+	}
+	return 0
+}
+
+// Session is the check's session of role on cycle, if it has one.
+func (c CheckState) Session(role string, cycle int) (CheckSession, bool) {
+	for i := len(c.Sessions) - 1; i >= 0; i-- {
+		if s := c.Sessions[i]; s.Role == role && s.Cycle == cycle {
+			return s, true
+		}
+	}
+	return CheckSession{}, false
+}
+
+// Judgement is the judgement of role's session on cycle, if it has one.
+func (c CheckState) Judgement(role string, cycle int) (CheckJudged, bool) {
+	for i := len(c.Judged) - 1; i >= 0; i-- {
+		if j := c.Judged[i]; j.Role == role && j.Cycle == cycle {
+			return j, true
+		}
+	}
+	return CheckJudged{}, false
+}
+
+// Outcome is the check's outcome in cycle, if it has one.
+func (c CheckState) Outcome(cycle int) (CheckOutcome, bool) {
+	for i := len(c.Outcomes) - 1; i >= 0; i-- {
+		if o := c.Outcomes[i]; o.Cycle == cycle {
+			return o, true
+		}
+	}
+	return CheckOutcome{}, false
+}
+
+// Latest is the check's latest outcome, if it has one.
+func (c CheckState) Latest() (CheckOutcome, bool) {
+	if n := len(c.Outcomes); n > 0 {
+		return c.Outcomes[n-1], true
+	}
+	return CheckOutcome{}, false
+}
+
 // Journal is a run's entries in order.
 type Journal struct {
 	ID      string
@@ -630,9 +998,150 @@ type State struct {
 	// entry appears. A new visit of a leaves step starts its leaves anew:
 	// its entered entry drops the step's earlier leaves, except the visit
 	// a retried entry reopened the run at, which keeps them, so passed
-	// leaves stay passed. A leaf session is also in Sessions; nothing else
-	// in the fold changes.
+	// leaves stay passed. A checks step's leaves (its fixers and their
+	// verifiers) survive a new visit, as its Checks do. A leaf session is
+	// also in Sessions; nothing else in the fold changes.
 	Leaves []LeafState
+	// Checks are the checks of the checks steps, in the order their first
+	// entry appears, and Cycles the checks steps' cycles in journal order.
+	// Unlike Leaves they survive a new visit of their step: a review
+	// re-entered after the owner asks for changes keeps its history. A
+	// check session is also in Sessions; nothing else in the fold changes.
+	Checks []CheckState
+	Cycles []CheckCycle
+	// Fixes are the checks steps' change-set fixers, one per cycle that
+	// ran one, in journal order. Like Checks they survive a new visit of
+	// their step. A fixer session is also in Sessions; nothing else in the
+	// fold changes.
+	Fixes []ReviewFix
+	// ReviewQuestions are the checks steps' review-question entries, in
+	// journal order. Like Checks they survive a new visit of their step.
+	ReviewQuestions []ReviewQuestion
+	// CodeChecks are the code-check entries, in journal order. Like
+	// Checks they survive a new visit of their step.
+	CodeChecks []CodeCheck
+	// Signoffs are the signoff entries, in journal order.
+	Signoffs []Signoff
+	// checksSteps are the steps with a check-cycle entry: checks steps,
+	// whose leaves (fixers and verifiers) survive a new visit.
+	checksSteps map[string]bool
+}
+
+// SignoffFor is the latest sign-off of signoff step step's visit, if it
+// has one.
+func (st State) SignoffFor(step string, visit int) (Signoff, bool) {
+	for i := len(st.Signoffs) - 1; i >= 0; i-- {
+		if s := st.Signoffs[i]; s.Step == step && s.Visit == visit {
+			return s, true
+		}
+	}
+	return Signoff{}, false
+}
+
+// PendingChanges is the latest request for changes no owner cycle has
+// consumed yet, if there is one.
+func (st State) PendingChanges() (Signoff, bool) {
+	for i := len(st.Signoffs) - 1; i >= 0; i-- {
+		if s := st.Signoffs[i]; s.Outcome == SignoffChanges && !s.Consumed {
+			return s, true
+		}
+	}
+	return Signoff{}, false
+}
+
+// CodeCheck is one code-check entry: rhiza run code-check's outcome
+// (pass or fail) while the run was at step Step, and Detail, the causes
+// of a fail.
+type CodeCheck struct {
+	Step    string
+	Outcome string
+	Detail  string
+	At      time.Time
+}
+
+// OwnerCycle says whether checks step step's cycle is an owner cycle:
+// one that fixes the owner's request for changes.
+func (st State) OwnerCycle(step string, cycle int) bool {
+	for _, c := range st.Cycles {
+		if c.Step == step && c.Cycle == cycle {
+			return c.Owner()
+		}
+	}
+	return false
+}
+
+// LatestCodeCheck is the journal's latest code check, if it has one.
+func (st State) LatestCodeCheck() (CodeCheck, bool) {
+	if len(st.CodeChecks) == 0 {
+		return CodeCheck{}, false
+	}
+	return st.CodeChecks[len(st.CodeChecks)-1], true
+}
+
+// ReviewQuestionsFor are checks step step's questions raised when cycle
+// ended with no fix cycle left, in journal order.
+func (st State) ReviewQuestionsFor(step string, cycle int) []ReviewQuestion {
+	var out []ReviewQuestion
+	for _, q := range st.ReviewQuestions {
+		if q.Step == step && q.Cycle == cycle {
+			out = append(out, q)
+		}
+	}
+	return out
+}
+
+// ReviewFix is checks step step's change-set fixer in cycle, if the
+// journal has one.
+func (st State) ReviewFix(step string, cycle int) (ReviewFix, bool) {
+	for _, f := range st.Fixes {
+		if f.Step == step && f.Cycle == cycle {
+			return f, true
+		}
+	}
+	return ReviewFix{}, false
+}
+
+// Check is step's check named name, if the journal has one.
+func (st State) Check(step, name string) (CheckState, bool) {
+	for _, c := range st.Checks {
+		if c.Step == step && c.Check == name {
+			return c, true
+		}
+	}
+	return CheckState{}, false
+}
+
+// LatestCycle is checks step step's latest cycle, if it has one.
+func (st State) LatestCycle(step string) (CheckCycle, bool) {
+	for i := len(st.Cycles) - 1; i >= 0; i-- {
+		if c := st.Cycles[i]; c.Step == step {
+			return c, true
+		}
+	}
+	return CheckCycle{}, false
+}
+
+// check is step's check state for e, added in first-seen order when new.
+func (st *State) check(e Entry) *CheckState {
+	for i := range st.Checks {
+		if c := &st.Checks[i]; c.Step == e.Step && c.Check == e.Check {
+			return c
+		}
+	}
+	st.Checks = append(st.Checks, CheckState{Step: e.Step, Check: e.Check})
+	return &st.Checks[len(st.Checks)-1]
+}
+
+// closeFixPane marks the pane of the change-set fixer session pane-closed
+// entry e names closed, and says whether e named one.
+func (st *State) closeFixPane(e Entry) bool {
+	for i := range st.Fixes {
+		if f := &st.Fixes[i]; f.Step == e.Step && f.Session == e.Session {
+			f.PaneClosed = true
+			return true
+		}
+	}
+	return false
 }
 
 // Leaf is step's leaf with node ID leaf, if the journal has one.
@@ -694,7 +1203,7 @@ func (j Journal) State() State {
 			}
 			retried := st.retryNext == e.Step
 			st.retryNext = ""
-			if !retried {
+			if !retried && !st.checksSteps[e.Step] {
 				st.Leaves = slices.DeleteFunc(st.Leaves, func(l LeafState) bool { return l.Step == e.Step })
 			}
 		case TypeLeafSession:
@@ -710,7 +1219,69 @@ func (j Journal) State() State {
 		case TypeLeaf:
 			l := st.leaf(e)
 			l.Outcome, l.Question, l.QuestionHandle, l.Commit, l.Detail = e.Outcome, e.Question, e.QuestionHandle, e.Commit, e.Detail
+		case TypeCheckCycle:
+			st.Cycles = append(st.Cycles, CheckCycle{
+				Step: e.Step, Cycle: e.Cycle, Checks: e.Checks, Kind: e.Kind, Questions: e.Questions, Decisions: e.Decisions,
+				Findings: e.Findings, At: e.At,
+			})
+			if st.checksSteps == nil {
+				st.checksSteps = map[string]bool{}
+			}
+			st.checksSteps[e.Step] = true
+			if e.Kind == CycleOwner {
+				for i := range st.Signoffs {
+					if st.Signoffs[i].Outcome == SignoffChanges {
+						st.Signoffs[i].Consumed = true
+					}
+				}
+			}
+		case TypeSignoff:
+			st.Signoffs = append(st.Signoffs, Signoff{
+				Step: e.Step, Visit: e.Visit, Actor: e.Actor, Rule: e.Rule, Outcome: e.Outcome, Findings: e.Findings, At: e.At,
+			})
+		case TypeReviewQuestion:
+			st.ReviewQuestions = append(st.ReviewQuestions, ReviewQuestion{
+				Step: e.Step, Check: e.Check, Cycle: e.Cycle, Finding: e.Finding, Leaf: e.Leaf, Handle: e.Handle,
+				Question: e.Question, QuestionHandle: e.QuestionHandle, At: e.At,
+			})
+		case TypeCodeCheck:
+			st.CodeChecks = append(st.CodeChecks, CodeCheck{Step: e.Step, Outcome: e.Outcome, Detail: e.Detail, At: e.At})
+		case TypeCheckSession:
+			c := st.check(e)
+			c.Sessions = append(c.Sessions, CheckSession{
+				Role: e.Role, Cycle: e.Cycle, Session: e.Session, Model: e.Model, Detail: e.Detail, At: e.At, Seq: seq,
+			})
+			st.addSession(e.Step, e.Session)
+		case TypeCheckJudged:
+			c := st.check(e)
+			c.Judged = append(c.Judged, CheckJudged{Role: e.Role, Cycle: e.Cycle, Outcome: e.Outcome, Detail: e.Detail, At: e.At})
+		case TypeCheck:
+			c := st.check(e)
+			c.Outcomes = append(c.Outcomes, CheckOutcome{Cycle: e.Cycle, Outcome: e.Outcome, Detail: e.Detail, At: e.At})
+		case TypeReviewFix:
+			st.Fixes = append(st.Fixes, ReviewFix{
+				Step: e.Step, Cycle: e.Cycle, Session: e.Session, Model: e.Model, Since: e.Commit, At: e.At, Seq: seq,
+			})
+			st.addSession(e.Step, e.Session)
+		case TypeReviewFixJudged:
+			for i := range st.Fixes {
+				if f := &st.Fixes[i]; f.Step == e.Step && f.Cycle == e.Cycle {
+					f.Judged, f.Outcome, f.Commit, f.Detail, f.JudgedAt = true, e.Outcome, e.Commit, e.Detail, e.At
+				}
+			}
 		case TypePaneClosed:
+			if e.Leaf == "" && e.Check == "" && st.closeFixPane(e) {
+				break
+			}
+			if e.Check != "" {
+				c := st.check(e)
+				for i := range c.Sessions {
+					if c.Sessions[i].Session == e.Session {
+						c.Sessions[i].PaneClosed = true
+					}
+				}
+				break
+			}
 			l := st.leaf(e)
 			for i := range l.Sessions {
 				if l.Sessions[i].Session == e.Session {
@@ -803,6 +1374,15 @@ func (j Journal) State() State {
 		case TypeGated:
 			st.Gated = e.Changes
 		case TypeFindings:
+			if e.Check != "" {
+				c := st.check(e)
+				cycle := e.Cycle
+				if cycle == 0 {
+					cycle = c.latestSessionCycle()
+				}
+				c.Rounds = append(c.Rounds, Round{Number: len(c.Rounds) + 1, Cycle: cycle, At: e.At, Findings: e.Findings})
+				break
+			}
 			if e.Leaf != "" {
 				l := st.leaf(e)
 				for _, f := range e.Findings {
@@ -812,6 +1392,13 @@ func (j Journal) State() State {
 			}
 			st.Rounds = append(st.Rounds, Round{Number: len(st.Rounds) + 1, At: e.At, Findings: e.Findings})
 		case TypeVerdict:
+			if e.Check != "" {
+				c := st.check(e)
+				if n := len(c.Rounds); n > 0 {
+					c.Rounds[n-1].Verdicts = append(c.Rounds[n-1].Verdicts, e.Verdicts...)
+				}
+				break
+			}
 			if n := len(st.Rounds); n > 0 {
 				st.Rounds[n-1].Verdicts = append(st.Rounds[n-1].Verdicts, e.Verdicts...)
 			}

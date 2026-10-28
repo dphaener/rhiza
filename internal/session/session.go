@@ -39,6 +39,11 @@ type Record struct {
 	Attempt int    `json:"attempt,omitempty"`
 	Role    string `json:"role,omitempty"`
 	Commit  string `json:"commit,omitempty"`
+	// Check is the name of the check a checks step launched the session
+	// for, and Cycle the check's cycle; Role is then check. Empty for
+	// every other session.
+	Check string `json:"check,omitempty"`
+	Cycle int    `json:"cycle,omitempty"`
 	// Model is the model the agent starts on; "" means the agent's
 	// default.
 	Model string `json:"model,omitempty"`

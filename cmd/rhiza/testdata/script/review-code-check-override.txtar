@@ -1,0 +1,119 @@
+# A review runs its code check as a command step before any agent check,
+# and a repo's workflow override can extend it with its own test command:
+# here a command step after code-check, which runs after the code check and
+# before the checks step. The journal enters code, then tests, then
+# review; the code check passed before tests began; and the check session
+# finds the test command's output in the run's worktree.
+#
+# The leaf's commit and its verifier's Evidence are made before the run
+# starts, so the code check passes. The fake rex runs the tab's command in
+# the window's directory; the fake claude logs whether tests.log exists in
+# the run's worktree (RHIZA_ROOT) and records an empty findings round.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add actor builder --record
+exec rhiza add actor verifier --record
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+exec sh -c 'rhiza change new "Override review" --title "Override review" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/cs'
+exec rhiza add capability alpha --field 'statement=Does alpha'
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
+exec git add -A
+exec git commit -qm leaves
+exec sh -c 'echo a > alpha.txt && git add alpha.txt && git commit -qm alpha --trailer "Change: $(cat $WORK/cs)" --trailer "Actor: builder" --trailer "Leaf: alpha"'
+env RHIZA_ACTOR=verifier
+exec rhiza add evidence alpha-ok --field 'statement=alpha works' --field result=PASS
+exec rhiza link alpha-ok verifies alpha
+env RHIZA_ACTOR=
+exec git add -A
+exec git commit -qm evidence
+
+exec sh -c 'rhiza run start --workflow review --permission-mode manual --json; echo exit=$?'
+stdout '"state": "succeeded"'
+stdout '^exit=0$'
+
+# Journal order: code, its passing code check, tests, then review.
+exec sh $WORK/order.sh
+cmp stdout $WORK/order.txt
+exec sh -c 'grep "\"type\":\"code-check\"" .git/rhiza/runs/*.jsonl'
+stdout '"step":"code","outcome":"pass"'
+
+# The check session ran after the test command had written its output.
+exec cat $WORK/claude.log
+stdout '\Arole=check check=alpha tests=ran-tests\n\z'
+
+exec rhiza run status
+stdout '^- code \(visit 1\): pass, then tests: exit 0$'
+stdout '^- tests \(visit 1\): pass, then review: exit 0$'
+stdout '^- review \(visit 1\): pass, then end: 1 of 1 checks passed$'
+stdout '\n## Code checks\n\n- step code: pass\n'
+
+fold-ok
+
+-- order.txt --
+entered code
+code-check code
+entered tests
+entered review
+-- order.sh --
+sed -nE 's/^\{"type":"(entered|code-check)".*"step":"([a-z]*)".*/\1 \2/p' .git/rhiza/runs/*.jsonl
+-- empty.json --
+{"findings":[]}
+-- review.toml --
+name = "review"
+
+[step.code]
+kind = "command"
+run = "rhiza run code-check"
+on.pass = "tests"
+
+[step.tests]
+kind = "command"
+run = "echo ran-tests > tests.log"
+on.pass = "review"
+
+[step.review]
+kind = "checks"
+interval = "50ms"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+echo "role=$RHIZA_ROLE check=$RHIZA_CHECK tests=$(cat "$RHIZA_ROOT/tests.log" 2>/dev/null)" >> "$WORK/claude.log"
+rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty.json" >&2 || exit 1
+exit 0
