@@ -37,6 +37,11 @@ the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a18
 
 - derived-from [milestone-4-conversation](../source/milestone-4-conversation.md)
 
+### In
+
+- decided-by [run-process-record](../capability/rhiza/workflows/workflow-runs/run-process-record.md)
+- decided-by [daemon-resume-once](../capability/rhiza/orchestration/daemon/daemon-resume-once.md)
+
 ## History
 
 - `01M61H5VY8MD7E7SVS0HQQHQJ0` Plan milestone 4 with the owner: its intent, its done points and the change sets that serve it, planned by Rhiza's plan workflow.
