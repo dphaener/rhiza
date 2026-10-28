@@ -49,7 +49,7 @@ func TestLoadRefused(t *testing.T) {
 		file string
 		want []string
 	}{
-		{"unknown-kind.toml", []string{`step "repeat": unknown kind "loop": want agent, wait, command, arbiter, leaves or checks`}},
+		{"unknown-kind.toml", []string{`step "repeat": unknown kind "loop": want agent, wait, command, arbiter, leaves, checks or signoff`}},
 		{"missing-target.toml", []string{`step "build": on.pass names "nope", which is not a step; want a step or done or failed`}},
 		{"bad-outcome.toml", []string{`step "build": on.sucess: a command step has no outcome "sucess"; want on.pass or on.fail`}},
 	}
@@ -147,11 +147,11 @@ func TestParseErrors(t *testing.T) {
 		want string
 	}{
 		{"unknown kind", "[step.x]\nkind = \"loop\"\n",
-			`step "x": unknown kind "loop": want agent, wait, command, arbiter, leaves or checks`},
+			`step "x": unknown kind "loop": want agent, wait, command, arbiter, leaves, checks or signoff`},
 		{"workflow kind is later", "[step.x]\nkind = \"workflow\"\n",
 			`step "x": unknown kind "workflow"`},
 		{"no kind", "[step.x]\nrun = \"true\"\n",
-			`step "x": no kind: want agent, wait, command, arbiter, leaves or checks`},
+			`step "x": no kind: want agent, wait, command, arbiter, leaves, checks or signoff`},
 		{"missing target", cmd + "on.pass = \"nope\"\n",
 			`step "a": on.pass names "nope", which is not a step; want a step or done or failed`},
 		{"unknown step key", cmd + "retries = 2\n",
@@ -991,6 +991,68 @@ func TestChecksStepRefused(t *testing.T) {
 			`step "build": fixer is only for checks steps; a leaves step cannot have it`},
 		{"verifier on an agent step", agent + "[step.a.verifier]\nprompt = \"x\"\n",
 			`step "a": verifier is only for leaves and checks steps; an agent step cannot have it`},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Parse("w", []byte(tt.src))
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Errorf("error %v; want %q", err, tt.want)
+			}
+		})
+	}
+}
+
+// signoffBase is a checks step and a signoff step going back to it.
+const signoffBase = "[step.review]\nkind = \"checks\"\non.pass = \"signoff\"\n" + checksList + checksRoles +
+	"[step.signoff]\nkind = \"signoff\"\nmax_visits = 3\non.pass = \"done\"\non.changes = \"review\"\n"
+
+// A signoff step has outcomes pass and changes, takes max_visits and
+// on., and its on.changes names a checks step.
+func TestSignoffStepLoads(t *testing.T) {
+	d, err := Parse("w", []byte(signoffBase))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := Step{Name: "signoff", Kind: KindSignoff, MaxVisits: 3, On: map[string]string{"pass": "done", "changes": "review"}}
+	if s := d.Steps["signoff"]; !reflect.DeepEqual(s, want) {
+		t.Errorf("step = %+v\nwant %+v", s, want)
+	}
+	if next, end := d.Next("signoff", OutcomeChanges); next != "review" || end != EndNone {
+		t.Errorf("Next(signoff, changes) = %q, %v", next, end)
+	}
+}
+
+// A signoff step refuses every session and condition key, sub-tables, an
+// outcome other than pass or changes, and a missing on.changes or one not
+// naming a checks step.
+func TestSignoffStepRefused(t *testing.T) {
+	review := checksBase + checksRoles
+	head := review + "[step.signoff]\nkind = \"signoff\"\n"
+	changes := "on.changes = \"review\"\n"
+	for _, tt := range []struct {
+		name, src, want string
+	}{
+		{"no on.changes", head + "on.pass = \"done\"\n",
+			`step "signoff": a signoff step needs on.changes = "<checks step>"`},
+		{"on.changes to an agent step", review + "[step.a]\nkind = \"agent\"\nprompt = \"go\"\n[step.signoff]\nkind = \"signoff\"\non.changes = \"a\"\n",
+			`step "signoff": on.changes names "a", which is not a checks step`},
+		{"on.changes to done", head + "on.changes = \"done\"\n",
+			`step "signoff": on.changes names "done", which is not a checks step`},
+		{"on.fail", head + changes + "on.fail = \"failed\"\n",
+			`step "signoff": on.fail: a signoff step has no outcome "fail"; want on.pass or on.changes`},
+		{"prompt", head + changes + "prompt = \"x\"\n", `step "signoff": a signoff step cannot have prompt: it runs nothing`},
+		{"run", head + changes + "run = \"x\"\n", `step "signoff": a signoff step cannot have run`},
+		{"until", head + changes + "until = \"x\"\n", `step "signoff": a signoff step cannot have until`},
+		{"until_when", head + changes + "until_when = \"done\"\n", `step "signoff": a signoff step cannot have until_when`},
+		{"timeout", head + changes + "timeout = \"1m\"\n", `step "signoff": a signoff step cannot have timeout`},
+		{"interval", head + changes + "interval = \"1m\"\n", `step "signoff": a signoff step cannot have interval`},
+		{"agent", head + changes + "agent = \"x\"\n", `step "signoff": a signoff step cannot have agent`},
+		{"permission_mode", head + changes + "permission_mode = \"x\"\n", `step "signoff": a signoff step cannot have permission_mode`},
+		{"models", head + changes + "models = [\"opus\"]\n", `step "signoff": a signoff step cannot have models`},
+		{"split", head + changes + "split = \"right\"\n", `step "signoff": split is only for leaves and checks steps; a signoff step cannot have it`},
+		{"critic", head + changes + "[step.signoff.critic]\nprompt = \"x\"\n", `step "signoff": critic is only for checks steps; a signoff step cannot have it`},
+		{"check", head + changes + "[[step.signoff.check]]\nname = \"x\"\nprompt = \"x\"\n", `step "signoff": check is only for checks steps; a signoff step cannot have it`},
+		{"verifier", head + changes + "[step.signoff.verifier]\nprompt = \"x\"\n", `step "signoff": verifier is only for leaves and checks steps; a signoff step cannot have it`},
+		{"max_visits", head + changes + "max_visits = -1\n", `step "signoff": max_visits is -1`},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := Parse("w", []byte(tt.src))

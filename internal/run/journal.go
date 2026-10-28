@@ -66,7 +66,28 @@ const (
 	// TypeCodeCheck is a review's code check: rhiza run code-check ran
 	// rhiza check and build-check on the run's change set.
 	TypeCodeCheck = "code-check"
+	// TypeSignoff is a signoff step's sign-off: the owner approved the
+	// review or asked for changes (rule owner), or an autonomous run
+	// passed it in the owner's place (rule autonomous).
+	TypeSignoff = "signoff"
 )
+
+// Sign-off outcomes, a signoff entry's Outcome.
+const (
+	SignoffApproved = "approved"
+	SignoffChanges  = "changes"
+)
+
+// Sign-off rules, a signoff entry's Rule: who signed off.
+const (
+	RuleOwner      = "owner"
+	RuleAutonomous = "autonomous"
+)
+
+// CycleOwner is the Kind of a check-cycle entry that runs the checks the
+// owner's request for changes names, after a fix phase for the owner's
+// findings: one cycle outside the cap, granted by the sign-off.
+const CycleOwner = "owner"
 
 // Code check outcomes, a code-check entry's Outcome.
 const (
@@ -259,6 +280,13 @@ type Block struct {
 //	code-check: Step, Outcome (pass or fail), Detail (rhiza run code-check
 //	           ran rhiza check and build-check on the run's change set while
 //	           the run was at step Step; Detail names each cause of a fail)
+//	signoff:   Step, Visit, Actor, Rule (owner or autonomous), Outcome (approved
+//	           or changes), Findings (signoff step Step's visit Visit was
+//	           signed off: approved, or with changes, the owner's findings,
+//	           each naming a check, which count as confirmed)
+//	           A check-cycle with Kind owner also has Findings: the owner's,
+//	           from the signoff entry it consumes; it runs the checks they
+//	           name, one cycle outside the cap
 type Entry struct {
 	Type    string    `json:"type"`
 	At      time.Time `json:"at"`
@@ -322,6 +350,8 @@ type Entry struct {
 	Decisions []string `json:"decisions,omitempty"`
 	// Finding is a review-question entry's finding ID.
 	Finding string `json:"finding,omitempty"`
+	// Rule is a signoff entry's rule: owner or autonomous.
+	Rule string `json:"rule,omitempty"`
 }
 
 // Finding is one finding: of a plan review round, node Node (its handle
@@ -658,7 +688,8 @@ func (l LeafState) Attempt() int {
 // CheckCycle is one check-cycle entry: checks step Step's cycle Cycle,
 // from 1, runs the checks named Checks, in the step's order. Kind is
 // CycleAnswered for a fresh cycle past the cap, which Decisions (handles)
-// granted by answering Questions (IDs), in the same order.
+// granted by answering Questions (IDs), in the same order; CycleOwner
+// for one outside the cap, for the owner's Findings.
 type CheckCycle struct {
 	Step      string
 	Cycle     int
@@ -666,12 +697,33 @@ type CheckCycle struct {
 	Kind      string
 	Questions []string
 	Decisions []string
+	Findings  []Finding
 	At        time.Time
 }
 
 // Answered says whether the cycle is a fresh one past the cap, granted by
 // answers to the questions the cycle before raised.
 func (c CheckCycle) Answered() bool { return c.Kind == CycleAnswered }
+
+// Owner says whether the cycle is the owner's: it fixes the findings of
+// the owner's request for changes, then runs the checks they name.
+func (c CheckCycle) Owner() bool { return c.Kind == CycleOwner }
+
+// Signoff is one signoff entry: signoff step Step's visit Visit was
+// signed off by Actor under Rule (owner or autonomous), approved or with
+// changes (Outcome), the owner's Findings for changes. A request for
+// changes is Consumed once a checks step's owner cycle has taken its
+// findings.
+type Signoff struct {
+	Step     string
+	Visit    int
+	Actor    string
+	Rule     string
+	Outcome  string
+	Findings []Finding
+	Consumed bool
+	At       time.Time
+}
 
 // ReviewQuestion is one review-question entry: check Check of checks step
 // Step still failed cycle Cycle with no fix cycle left, and question node
@@ -946,8 +998,9 @@ type State struct {
 	// entry appears. A new visit of a leaves step starts its leaves anew:
 	// its entered entry drops the step's earlier leaves, except the visit
 	// a retried entry reopened the run at, which keeps them, so passed
-	// leaves stay passed. A leaf session is also in Sessions; nothing else
-	// in the fold changes.
+	// leaves stay passed. A checks step's leaves (its fixers and their
+	// verifiers) survive a new visit, as its Checks do. A leaf session is
+	// also in Sessions; nothing else in the fold changes.
 	Leaves []LeafState
 	// Checks are the checks of the checks steps, in the order their first
 	// entry appears, and Cycles the checks steps' cycles in journal order.
@@ -967,6 +1020,33 @@ type State struct {
 	// CodeChecks are the code-check entries, in journal order. Like
 	// Checks they survive a new visit of their step.
 	CodeChecks []CodeCheck
+	// Signoffs are the signoff entries, in journal order.
+	Signoffs []Signoff
+	// checksSteps are the steps with a check-cycle entry: checks steps,
+	// whose leaves (fixers and verifiers) survive a new visit.
+	checksSteps map[string]bool
+}
+
+// SignoffFor is the latest sign-off of signoff step step's visit, if it
+// has one.
+func (st State) SignoffFor(step string, visit int) (Signoff, bool) {
+	for i := len(st.Signoffs) - 1; i >= 0; i-- {
+		if s := st.Signoffs[i]; s.Step == step && s.Visit == visit {
+			return s, true
+		}
+	}
+	return Signoff{}, false
+}
+
+// PendingChanges is the latest request for changes no owner cycle has
+// consumed yet, if there is one.
+func (st State) PendingChanges() (Signoff, bool) {
+	for i := len(st.Signoffs) - 1; i >= 0; i-- {
+		if s := st.Signoffs[i]; s.Outcome == SignoffChanges && !s.Consumed {
+			return s, true
+		}
+	}
+	return Signoff{}, false
 }
 
 // CodeCheck is one code-check entry: rhiza run code-check's outcome
@@ -1112,7 +1192,7 @@ func (j Journal) State() State {
 			}
 			retried := st.retryNext == e.Step
 			st.retryNext = ""
-			if !retried {
+			if !retried && !st.checksSteps[e.Step] {
 				st.Leaves = slices.DeleteFunc(st.Leaves, func(l LeafState) bool { return l.Step == e.Step })
 			}
 		case TypeLeafSession:
@@ -1130,7 +1210,23 @@ func (j Journal) State() State {
 			l.Outcome, l.Question, l.QuestionHandle, l.Commit, l.Detail = e.Outcome, e.Question, e.QuestionHandle, e.Commit, e.Detail
 		case TypeCheckCycle:
 			st.Cycles = append(st.Cycles, CheckCycle{
-				Step: e.Step, Cycle: e.Cycle, Checks: e.Checks, Kind: e.Kind, Questions: e.Questions, Decisions: e.Decisions, At: e.At,
+				Step: e.Step, Cycle: e.Cycle, Checks: e.Checks, Kind: e.Kind, Questions: e.Questions, Decisions: e.Decisions,
+				Findings: e.Findings, At: e.At,
+			})
+			if st.checksSteps == nil {
+				st.checksSteps = map[string]bool{}
+			}
+			st.checksSteps[e.Step] = true
+			if e.Kind == CycleOwner {
+				for i := range st.Signoffs {
+					if st.Signoffs[i].Outcome == SignoffChanges {
+						st.Signoffs[i].Consumed = true
+					}
+				}
+			}
+		case TypeSignoff:
+			st.Signoffs = append(st.Signoffs, Signoff{
+				Step: e.Step, Visit: e.Visit, Actor: e.Actor, Rule: e.Rule, Outcome: e.Outcome, Findings: e.Findings, At: e.At,
 			})
 		case TypeReviewQuestion:
 			st.ReviewQuestions = append(st.ReviewQuestions, ReviewQuestion{

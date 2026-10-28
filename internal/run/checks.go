@@ -177,6 +177,12 @@ type checkAction struct {
 // The confirmed findings naming no leaf of leaves (changeSetFindings) go
 // to one fixer for the change set, after every leaf's fixer
 // (changeSetFix); fixed holds the step's change-set fixers.
+//
+// An owner cycle (CheckCycle.Owner) fixes the owner's findings instead
+// (phaseFindings), then runs the checks they name. Like an answered
+// cycle it is a single cycle, outside the cap: a check failing it, or a
+// failure of any cycle that is not within the cap, ends the step fail,
+// which the conductor turns into questions (capped).
 func nextCheckActions(step workflow.Step, cycles []CheckCycle, states map[string]CheckState, leaves []Leaf, fixes map[string]LeafState, fixed []ReviewFix) []checkAction {
 	if len(cycles) == 0 {
 		var all []string
@@ -187,8 +193,9 @@ func nextCheckActions(step workflow.Step, cycles []CheckCycle, states map[string
 	}
 	cur := cycles[len(cycles)-1]
 	if cur.Cycle > 1 {
-		acts, failure := fixActions(cur.Cycle, leaves, fixFindings(cur.Cycle, cur.Checks, states), fixes)
-		acts, failure = changeSetFix(cur.Cycle, changeSetFindings(cur.Cycle, cur.Checks, states, leaves), fixed, acts, failure)
+		found := phaseFindings(cur, states)
+		acts, failure := fixActions(cur.Cycle, leaves, leafFindings(found), fixes)
+		acts, failure = changeSetFix(cur.Cycle, noLeafFindings(found, leaves), fixed, acts, failure)
 		if len(acts) > 0 {
 			return acts
 		}
@@ -251,7 +258,7 @@ func nextCheckActions(step workflow.Step, cycles []CheckCycle, states map[string
 	if acts := append(starts, rest...); len(acts) > 0 {
 		return acts
 	}
-	if len(failed) > 0 && cur.Cycle <= MaxFixCycles {
+	if len(failed) > 0 && cur.Cycle <= MaxFixCycles && cur.Kind == "" {
 		return []checkAction{{kind: checkCycle, cycle: cur.Cycle + 1, checks: failed}}
 	}
 	passed := 0
@@ -283,12 +290,41 @@ func nextCheckActions(step workflow.Step, cycles []CheckCycle, states map[string
 // (changeSetFindings), as it does those naming a leaf the change set
 // does not have.
 func fixFindings(cycle int, checks []string, states map[string]CheckState) map[string][]Finding {
+	return leafFindings(phaseFindings(CheckCycle{Cycle: cycle, Checks: checks}, states))
+}
+
+// phaseFindings are the findings cur's fix phase fixes, in order: an
+// owner cycle's own (the owner's, confirmed by asking), else the
+// confirmed findings of its checks (confirmedFindings).
+func phaseFindings(cur CheckCycle, states map[string]CheckState) []Finding {
+	if cur.Owner() {
+		return cur.Findings
+	}
+	var out []Finding
+	confirmedFindings(cur.Cycle, cur.Checks, states, func(f Finding) { out = append(out, f) })
+	return out
+}
+
+// leafFindings are those of found that name a leaf, by leaf ID.
+func leafFindings(found []Finding) map[string][]Finding {
 	out := map[string][]Finding{}
-	confirmedFindings(cycle, checks, states, func(f Finding) {
+	for _, f := range found {
 		if f.Leaf != "" {
 			out[f.Leaf] = append(out[f.Leaf], f)
 		}
-	})
+	}
+	return out
+}
+
+// noLeafFindings are those of found, in order, that name no leaf, or one
+// not among leaves: the change set's fixer's.
+func noLeafFindings(found []Finding, leaves []Leaf) []Finding {
+	var out []Finding
+	for _, f := range found {
+		if f.Leaf == "" || !slices.ContainsFunc(leaves, func(l Leaf) bool { return l.ID == f.Leaf }) {
+			out = append(out, f)
+		}
+	}
 	return out
 }
 
@@ -296,13 +332,7 @@ func fixFindings(cycle int, checks []string, states map[string]CheckState) map[s
 // the confirmed findings fixFindings reads, in check order, those that
 // name no leaf, or name one not among leaves.
 func changeSetFindings(cycle int, checks []string, states map[string]CheckState, leaves []Leaf) []Finding {
-	var out []Finding
-	confirmedFindings(cycle, checks, states, func(f Finding) {
-		if f.Leaf == "" || !slices.ContainsFunc(leaves, func(l Leaf) bool { return l.ID == f.Leaf }) {
-			out = append(out, f)
-		}
-	})
-	return out
+	return noLeafFindings(phaseFindings(CheckCycle{Cycle: cycle, Checks: checks}, states), leaves)
 }
 
 // confirmedFindings calls each with every confirmed finding cycle's fix
@@ -620,6 +650,9 @@ func (r *running) conductChecks(cr CheckRunner, step workflow.Step, env []string
 	if interval <= 0 {
 		interval = workflow.DefaultInterval
 	}
+	if err := r.ownerCycle(step); err != nil {
+		return result{}, err
+	}
 	var leaves []Leaf
 	for {
 		cycles, states := r.stepCycles(step.Name), r.checkStates(step.Name)
@@ -703,7 +736,7 @@ func needsLeaves(cycles []CheckCycle, states map[string]CheckState) bool {
 		return false
 	}
 	cur := cycles[len(cycles)-1]
-	return cur.Cycle > 1 && len(fixFindings(cur.Cycle, cur.Checks, states)) > 0
+	return cur.Cycle > 1 && len(leafFindings(phaseFindings(cur, states))) > 0
 }
 
 // reviewFixes are step's change-set fixers, in order.

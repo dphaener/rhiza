@@ -399,8 +399,7 @@ func runCheckFindings(ctx *Ctx, rr reviewRun, step workflow.Step, check, file st
 	if f.Findings == nil {
 		return nil, Usagef(`%s file: want {"findings":[...]}; a clean check is {"findings":[]}`, cmd).WithNext(runFindingsNext)
 	}
-	var m Model
-	var leaves []ChangeLeaf
+	leafOf := changeLeafResolver(ctx, rr)
 	found := make([]run.Finding, 0, len(*f.Findings))
 	for i, in := range *f.Findings {
 		n := i + 1
@@ -415,23 +414,11 @@ func runCheckFindings(ctx *Ctx, rr reviewRun, step workflow.Step, check, file st
 		}
 		fd := run.Finding{ID: "f" + strconv.Itoa(n), Check: check, Severity: in.Severity, Place: in.Place, Reason: in.Reason}
 		if ref := strings.TrimSpace(in.Leaf); ref != "" {
-			if leaves == nil {
-				w, err := openCtxWorkspace(ctx)
-				if err != nil {
+			node, err := leafOf(ref)
+			if err != nil {
+				if e := AsError(err); e.Code != CodeUsage {
 					return nil, err
 				}
-				c, ok := w.changeSet(rr.change)
-				if !ok {
-					return nil, Errorf("run %s's change set %s is not in the log", rr.id, rr.change)
-				}
-				m = w.model(rr.change)
-				leaves = changeLeaves(m, c.Ops)
-			}
-			node, err := m.Resolve(ref)
-			if err == nil && !slices.ContainsFunc(leaves, func(l ChangeLeaf) bool { return l.ID == node.ID }) {
-				err = Usagef("%s is not one of change set %s's leaves", ref, rr.change)
-			}
-			if err != nil {
 				return nil, Usagef("finding %d: leaf %q: %s", n, ref, AsError(err).Message).WithNext("rhiza change show " + rr.change.String())
 			}
 			fd.Leaf, fd.LeafHandle = node.ID.String(), node.Handle
@@ -459,6 +446,36 @@ func runCheckFindings(ctx *Ctx, rr reviewRun, step workflow.Step, check, file st
 		return nil, err
 	}
 	return resp, nil
+}
+
+// changeLeafResolver resolves a finding's leaf ref among the leaves of
+// rr's change set, reading the model only on its first call. A ref that
+// names nothing, or a node that is not one of the leaves, is usage.
+func changeLeafResolver(ctx *Ctx, rr reviewRun) func(ref string) (Node, error) {
+	var m Model
+	var leaves []ChangeLeaf
+	return func(ref string) (Node, error) {
+		if leaves == nil {
+			w, err := openCtxWorkspace(ctx)
+			if err != nil {
+				return Node{}, err
+			}
+			c, ok := w.changeSet(rr.change)
+			if !ok {
+				return Node{}, Errorf("run %s's change set %s is not in the log", rr.id, rr.change)
+			}
+			m = w.model(rr.change)
+			leaves = changeLeaves(m, c.Ops)
+		}
+		node, err := m.Resolve(ref)
+		if err != nil {
+			return Node{}, Usagef("%s", AsError(err).Message)
+		}
+		if !slices.ContainsFunc(leaves, func(l ChangeLeaf) bool { return l.ID == node.ID }) {
+			return Node{}, Usagef("%s is not one of change set %s's leaves", ref, rr.change)
+		}
+		return node, nil
+	}
 }
 
 // envCheckCycle is the cycle the caller's RHIZA_CYCLE names, which the

@@ -118,31 +118,33 @@ type RunResponse struct {
 
 // RunInfo is a run folded from its journal.
 type RunInfo struct {
-	ID         string          `json:"id" desc:"The run ID"`
-	Workflow   string          `json:"workflow" desc:"The workflow's name"`
-	Change     string          `json:"change" desc:"The change set it runs on"`
-	Title      string          `json:"title" desc:"The change set's title"`
-	Worktree   string          `json:"worktree" desc:"The worktree every step runs in"`
-	Autonomous bool            `json:"autonomous,omitempty" desc:"True for a run started with --autonomous: it goes on without the owner; absent otherwise"`
-	State      string          `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
-	Current    string          `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
-	Detail     string          `json:"detail,omitempty" desc:"Why it stopped or failed"`
-	Steps      []RunStep       `json:"steps" desc:"The steps done, in order"`
-	StartedAt  string          `json:"started_at" desc:"When it started, RFC 3339 UTC"`
-	Blocked    *RunBlocked     `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
-	Amendments []RunAmendment  `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
-	Messages   []RunMessage    `json:"messages" desc:"The messages its sessions sent each other, in order"`
-	Sessions   []RunSession    `json:"sessions" desc:"The sessions it launched or read token use for, in order of first appearance, each with its latest reading"`
-	Totals     SessionTokenUse `json:"totals" desc:"The sums of the sessions with recorded token use, the session's own and helpers' kept apart"`
-	Retries    []RunRetry      `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
-	Accepts    []RunAccept     `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
-	Questions  []RunQuestion   `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
-	Rounds     []RunRound      `json:"rounds,omitempty" desc:"The plan review rounds journalled by run findings and run verdict, in order; absent when there were none"`
-	Waiting    []RunWaiting    `json:"waiting,omitempty" desc:"The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does"`
-	Leaves     []RunLeaf       `json:"leaves,omitempty" desc:"The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none"`
-	Checks     []RunCheck      `json:"checks,omitempty" desc:"The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none"`
-	Fixes      []RunFix        `json:"fixes,omitempty" desc:"The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none"`
-	CodeChecks []RunCodeCheck  `json:"code_checks,omitempty" desc:"The code checks rhiza run code-check journalled, in order; absent when there were none"`
+	ID             string          `json:"id" desc:"The run ID"`
+	Workflow       string          `json:"workflow" desc:"The workflow's name"`
+	Change         string          `json:"change" desc:"The change set it runs on"`
+	Title          string          `json:"title" desc:"The change set's title"`
+	Worktree       string          `json:"worktree" desc:"The worktree every step runs in"`
+	Autonomous     bool            `json:"autonomous,omitempty" desc:"True for a run started with --autonomous: it goes on without the owner; absent otherwise"`
+	State          string          `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
+	Current        string          `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
+	Detail         string          `json:"detail,omitempty" desc:"Why it stopped or failed"`
+	Steps          []RunStep       `json:"steps" desc:"The steps done, in order"`
+	StartedAt      string          `json:"started_at" desc:"When it started, RFC 3339 UTC"`
+	Blocked        *RunBlocked     `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
+	Amendments     []RunAmendment  `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
+	Messages       []RunMessage    `json:"messages" desc:"The messages its sessions sent each other, in order"`
+	Sessions       []RunSession    `json:"sessions" desc:"The sessions it launched or read token use for, in order of first appearance, each with its latest reading"`
+	Totals         SessionTokenUse `json:"totals" desc:"The sums of the sessions with recorded token use, the session's own and helpers' kept apart"`
+	Retries        []RunRetry      `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
+	Accepts        []RunAccept     `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
+	Questions      []RunQuestion   `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
+	Rounds         []RunRound      `json:"rounds,omitempty" desc:"The plan review rounds journalled by run findings and run verdict, in order; absent when there were none"`
+	Waiting        []RunWaiting    `json:"waiting,omitempty" desc:"The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does"`
+	Leaves         []RunLeaf       `json:"leaves,omitempty" desc:"The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none"`
+	Checks         []RunCheck      `json:"checks,omitempty" desc:"The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none"`
+	Fixes          []RunFix        `json:"fixes,omitempty" desc:"The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none"`
+	CodeChecks     []RunCodeCheck  `json:"code_checks,omitempty" desc:"The code checks rhiza run code-check journalled, in order; absent when there were none"`
+	Signoffs       []RunSignoff    `json:"signoffs,omitempty" desc:"The sign-offs of its signoff steps, in order: the owner's approvals and requests for changes, and an autonomous run's under rule autonomous; absent when there were none"`
+	SignoffWaiting bool            `json:"signoff_waiting,omitempty" desc:"True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes; absent otherwise"`
 }
 
 // RunCodeCheck is one code check: rhiza check and build-check on the
@@ -205,6 +207,7 @@ type RunCheckCycle struct {
 	Detail    string            `json:"detail,omitempty" desc:"Why the check ended the cycle as it did"`
 	At        string            `json:"at,omitempty" desc:"When the check's outcome in the cycle was journalled, RFC 3339 UTC"`
 	Decisions []string          `json:"decisions,omitempty" desc:"For a fresh cycle past the cap, the Decisions (handles) answering the questions the cycle before raised; absent otherwise"`
+	Kind      string            `json:"kind,omitempty" desc:"answered for a fresh cycle past the cap, owner for the cycle fixing the owner's request for changes; absent for a cycle within the cap"`
 }
 
 // RunCheckSession is one session a checks step started for a check.
@@ -1685,6 +1688,10 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 	for _, c := range st.CodeChecks {
 		info.CodeChecks = append(info.CodeChecks, RunCodeCheck{Step: c.Step, Outcome: c.Outcome, Detail: c.Detail, At: rfc3339(c.At)})
 	}
+	for _, s := range st.Signoffs {
+		info.Signoffs = append(info.Signoffs, runSignoff(s))
+	}
+	info.SignoffWaiting = signoffWaiting(st) && info.State == runStopped
 	return info
 }
 
@@ -1699,7 +1706,7 @@ func runCheckInfo(st run.State, c run.CheckState) RunCheck {
 		if cy.Step != c.Step || !slices.Contains(cy.Checks, c.Check) {
 			continue
 		}
-		rcy := RunCheckCycle{Cycle: cy.Cycle, Sessions: []RunCheckSession{}}
+		rcy := RunCheckCycle{Cycle: cy.Cycle, Sessions: []RunCheckSession{}, Kind: cy.Kind}
 		if cy.Answered() {
 			rcy.Decisions = cy.Decisions
 		}
@@ -1852,6 +1859,9 @@ func (r RunInfo) Human(w io.Writer) {
 					outcome = "open"
 				}
 				fmt.Fprintf(w, "  - cycle %d: %s", cy.Cycle, outcome)
+				if cy.Kind == run.CycleOwner {
+					fmt.Fprintf(w, ", the owner's changes")
+				}
 				if len(cy.Decisions) > 0 {
 					fmt.Fprintf(w, ", answered by %s", strings.Join(cy.Decisions, ", "))
 				}
@@ -1913,6 +1923,15 @@ func (r RunInfo) Human(w io.Writer) {
 				fmt.Fprintf(w, " (%s)", oneLine(c.Detail))
 			}
 			fmt.Fprintf(w, "\n")
+		}
+	}
+	if len(r.Signoffs) > 0 {
+		fmt.Fprintf(w, "\n## Sign-offs\n\n")
+		for _, s := range r.Signoffs {
+			fmt.Fprintf(w, "- %s\n", s.line())
+			for _, f := range s.Findings {
+				fmt.Fprintf(w, "  - %s %s\n", f.Check, findingLine(f))
+			}
 		}
 	}
 	if len(r.Accepts) > 0 {
@@ -2000,6 +2019,10 @@ func (r RunInfo) Human(w io.Writer) {
 	}
 	switch r.State {
 	case runStopped:
+		if r.SignoffWaiting {
+			fmt.Fprintf(w, "\nnext: rhiza run approve %s\nnext: rhiza run request-changes <file> %s\n", r.ID, r.ID)
+			break
+		}
 		fmt.Fprintf(w, "\nnext: rhiza run resume %s\n", r.ID)
 	case runRunning:
 		fmt.Fprintf(w, "\nnext: rhiza run status %s\n", r.ID)

@@ -40,6 +40,11 @@ const (
 	// KindChecks runs a review's checks: a fresh session per check, all
 	// in parallel, then a further cycle of the checks that failed.
 	KindChecks = "checks"
+	// KindSignoff is a review's last step: it waits for the owner's
+	// sign-off by stopping the run; rhiza run approve passes it and rhiza
+	// run request-changes ends it with outcome changes, which goes back
+	// to a checks step.
+	KindSignoff = "signoff"
 )
 
 // Leaves step roles: the sub-tables of a leaves step. A checks step has a
@@ -79,6 +84,9 @@ const (
 	OutcomePass    = "pass"
 	OutcomeFail    = "fail"
 	OutcomeTimeout = "timeout"
+	// OutcomeChanges is a signoff step's outcome when the owner asked
+	// for changes: its on.changes names the checks step that fixes them.
+	OutcomeChanges = "changes"
 )
 
 // When an agent step checks its `until` (the step's until_when).
@@ -130,6 +138,7 @@ var kindOutcomes = map[string][]string{
 	KindArbiter: {OutcomePass, OutcomeFail},
 	KindLeaves:  {OutcomePass, OutcomeFail},
 	KindChecks:  {OutcomePass, OutcomeFail},
+	KindSignoff: {OutcomePass, OutcomeChanges},
 }
 
 // Definition is a loaded, validated workflow.
@@ -605,15 +614,18 @@ func buildStep(name string, fs fileStep) (Step, error) {
 	}
 
 	switch fs.Kind {
-	case KindAgent, KindWait, KindCommand, KindArbiter, KindLeaves, KindChecks:
+	case KindAgent, KindWait, KindCommand, KindArbiter, KindLeaves, KindChecks, KindSignoff:
 	case "":
-		return fail("no kind: want agent, wait, command, arbiter, leaves or checks")
+		return fail("no kind: want agent, wait, command, arbiter, leaves, checks or signoff")
 	default:
-		return fail("unknown kind %q: want agent, wait, command, arbiter, leaves or checks", fs.Kind)
+		return fail("unknown kind %q: want agent, wait, command, arbiter, leaves, checks or signoff", fs.Kind)
 	}
 	if fs.Models != nil && fs.Kind != KindAgent {
 		if fs.Kind == KindChecks {
 			return fail("a checks step cannot have models: each check and role has its own; set it under [[step.%s.check]] or the role's table", name)
+		}
+		if fs.Kind == KindSignoff {
+			return fail("a signoff step cannot have models: it runs no agent, it waits for the owner; remove it")
 		}
 		if fs.Kind == KindLeaves {
 			return fail("models is only for agent steps and a leaves step's builder and verifier; set it under [step.%s.builder] or [step.%s.verifier]", name, name)
@@ -653,6 +665,8 @@ func buildStep(name string, fs fileStep) (Step, error) {
 		return buildLeaves(s, fs, fail)
 	case KindChecks:
 		return buildChecks(s, fs, fail)
+	case KindSignoff:
+		return buildSignoff(s, fs, fail)
 	}
 
 	if fs.Run != "" && fs.Kind != KindCommand {
@@ -882,6 +896,35 @@ func buildChecks(s Step, fs fileStep, fail func(string, ...any) (Step, error)) (
 	return s, nil
 }
 
+// buildSignoff finishes a signoff step: it takes max_visits and on., and
+// refuses every key of a session or a condition, as it runs nothing: it
+// waits for the owner. checkTargets checks its on.changes.
+func buildSignoff(s Step, fs fileStep, fail func(string, ...any) (Step, error)) (Step, error) {
+	waits := "it runs nothing: it waits for the owner's rhiza run approve or rhiza run request-changes"
+	refused := []struct {
+		key string
+		set bool
+	}{
+		{"prompt", fs.Prompt != ""},
+		{"agent", fs.Agent != ""},
+		{"permission_mode", fs.PermissionMode != ""},
+		{"run", fs.Run != ""},
+		{"until", fs.Until != ""},
+		{"until_when", fs.UntilWhen != ""},
+		{"timeout", fs.Timeout != ""},
+		{"interval", fs.Interval != ""},
+	}
+	for _, r := range refused {
+		if r.set {
+			return fail("a signoff step cannot have %s: %s; remove it", r.key, waits)
+		}
+	}
+	if fs.MaxVisits < 0 {
+		return fail("max_visits is %d; want 0 or more (0 means 1)", fs.MaxVisits)
+	}
+	return s, nil
+}
+
 // buildRole checks one session role of a checks step, named what in its
 // errors: a prompt using only names among its placeholders, and models.
 // does is what the prompt is asked to say the role should do.
@@ -988,6 +1031,15 @@ func checkTargets(s Step, steps map[string]Step) error {
 		}
 		if ts.Kind == KindArbiter {
 			return fmt.Errorf("step %q: on.%s names %q, an arbiter step; no step goes to it (the engine calls it on a question): want another step or done or failed", s.Name, o, t)
+		}
+	}
+	if s.Kind == KindSignoff {
+		t, ok := s.On[OutcomeChanges]
+		if !ok {
+			return fmt.Errorf("step %q: a signoff step needs on.changes = \"<checks step>\": the checks step that fixes what the owner asks for", s.Name)
+		}
+		if ts, ok := steps[t]; !ok || ts.Kind != KindChecks {
+			return fmt.Errorf("step %q: on.changes names %q, which is not a checks step; want the checks step that fixes what the owner asks for", s.Name, t)
 		}
 	}
 	return nil
