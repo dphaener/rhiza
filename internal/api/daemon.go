@@ -43,12 +43,16 @@ type DaemonRequest struct {
 type DaemonResponse struct {
 	Process string   `json:"process" desc:"The daemon's process, as host:pid"`
 	Started []string `json:"started" desc:"The change sets whose runs the daemon started, in order"`
+	Resumed []string `json:"resumed" desc:"The interrupted runs the daemon resumed, in order"`
 }
 
 // Human writes the response as markdown.
 func (r DaemonResponse) Human(w io.Writer) {
 	for _, cs := range r.Started {
 		fmt.Fprintf(w, "Started a run of %s\n", cs)
+	}
+	for _, id := range r.Resumed {
+		fmt.Fprintf(w, "Resumed run %s\n", id)
 	}
 	fmt.Fprintf(w, "Daemon %s stopped\n", r.Process)
 }
@@ -84,11 +88,12 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		fmt.Fprintf(ctx.Stderr, "rhiza: daemon running, process %s\n", self)
 	}
 	rs := run.NewStore(run.Dir(common))
-	resp := DaemonResponse{Process: self.String(), Started: []string{}}
+	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}}
 	pending := map[string]time.Time{}
 	poll := func() error {
-		started, err := daemonPoll1(ctx, rs, pending, r.MaxRuns, r.Autonomous)
+		started, resumed, err := daemonPoll1(ctx, rs, pending, r.MaxRuns, r.Autonomous)
 		resp.Started = append(resp.Started, started...)
+		resp.Resumed = append(resp.Resumed, resumed...)
 		return err
 	}
 	if r.Once {
@@ -121,14 +126,14 @@ const daemonStartGrace = time.Minute
 // daemonPoll1 picks and starts runs once. pending holds the change sets
 // started and when; entries are dropped once their run has a journal or
 // the grace passed.
-func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]time.Time, max int, autonomous bool) ([]string, error) {
+func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]time.Time, max int, autonomous bool) ([]string, []string, error) {
 	res, _, _, err := planRead(ctx, "daemon", "")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	ws, err := openCtxWorkspace(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	cands := daemonCandidates(res, func(cs id.ID) bool {
 		c, ok := ws.changeSet(cs)
@@ -136,7 +141,19 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]time.Time, max int,
 	})
 	runs, err := rs.List()
 	if err != nil {
-		return nil, Errorf("read runs: %v", err)
+		return nil, nil, Errorf("read runs: %v", err)
+	}
+	host, _ := os.Hostname()
+	var resumed []string
+	for _, id := range daemon.Resumable(runs, host, nil) {
+		// Journal the resume before the tab opens: a resume is tried once.
+		if err := rs.Append(id, run.Entry{Type: run.TypeDaemonResumed, At: ctx.Now(), Detail: "resumed by the daemon"}); err != nil {
+			return nil, resumed, Errorf("journal the resume of run %s: %v", id, err)
+		}
+		if err := daemonResume(ctx, id); err != nil {
+			return nil, resumed, err
+		}
+		resumed = append(resumed, id)
 	}
 	var held []string
 	for cs, at := range pending {
@@ -146,17 +163,16 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]time.Time, max int,
 		}
 		held = append(held, cs)
 	}
-	host, _ := os.Hostname()
 	picked := daemon.Pick(cands, runs, held, host, nil, max)
 	var started []string
 	for _, cs := range picked {
 		if err := daemonStart(ctx, cs, autonomous); err != nil {
-			return started, err
+			return started, resumed, err
 		}
 		pending[cs] = ctx.Now()
 		started = append(started, cs)
 	}
-	return started, nil
+	return started, resumed, nil
 }
 
 // daemonCandidates are the accepted, ready change sets of the milestone
@@ -196,6 +212,22 @@ func daemonStart(ctx *Ctx, cs string, autonomous bool) error {
 	}
 	if _, err := ctx.Exec("rex", args, ctx.Root, nil); err != nil {
 		return Errorf("rex window new for %s: %v", cs, err)
+	}
+	return nil
+}
+
+// daemonResume opens a new Rex tab running rhiza run resume on run id.
+func daemonResume(ctx *Ctx, id string) error {
+	if ctx.Exec == nil || ctx.Self == "" {
+		return Errorf("daemon cannot resume run %s: no rex or rhiza path", id)
+	}
+	args := []string{"window", "new"}
+	if ctx.RexSession != "" {
+		args = append(args, "-s", ctx.RexSession)
+	}
+	args = append(args, id[:min(len(id), 9)], "-c", ctx.Root, "--json", "--", ctx.Self, "run", "resume", id)
+	if _, err := ctx.Exec("rex", args, ctx.Root, nil); err != nil {
+		return Errorf("rex window new for run %s: %v", id, err)
 	}
 	return nil
 }

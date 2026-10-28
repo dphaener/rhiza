@@ -1,0 +1,37 @@
+# The daemon resumes an interrupted run once: one poll (--once) opens a Rex
+# tab running `rhiza run resume <run>` and journals it; a later poll, with
+# the run interrupted again, opens none. A failed run gets no tab. Rex is
+# faked and only logs. The journals are fixtures: the first run names a dead
+# process, the second finished failed.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+mkdir .git/rhiza/runs
+exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"CHANGEONE\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}" > .git/rhiza/runs/INTERRUPTED1.jsonl'
+exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"CHANGETWO\"}}" "{\"type\":\"finished\",\"at\":\"2026-01-01T00:00:02Z\",\"end\":\"failed\",\"detail\":\"boom\"}" > .git/rhiza/runs/FAILED00001.jsonl'
+
+exec rhiza daemon --once
+stdout '^Resumed run INTERRUPTED1$'
+exec sh -c 'grep -c "^rex window new .* run resume INTERRUPTED1$" $WORK/rex.log'
+stdout '^1$'
+exec sh -c 'grep -c "FAILED00001" $WORK/rex.log || true'
+stdout '^0$'
+exec sh -c 'grep -c "\"type\":\"daemon-resumed\"" .git/rhiza/runs/INTERRUPTED1.jsonl'
+stdout '^1$'
+
+# Interrupted again (its process is still dead): left alone.
+exec rhiza daemon --once --json
+stdout '"resumed": \[\]'
+exec sh -c 'grep -c "run resume" $WORK/rex.log'
+stdout '^1$'
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

@@ -55,3 +55,18 @@ func Pick(candidates []string, runs []run.Journal, pending []string, host string
 	}
 	return picked
 }
+
+// Resumable returns the IDs of the runs the daemon resumes now: those
+// interrupted (see run.State.Liveness) that it has not resumed before. A
+// run interrupted again after its one resume is left alone, and a finished
+// run, failed or not, is never resumed.
+func Resumable(runs []run.Journal, host string, alive func(pid int) bool) []string {
+	var ids []string
+	for _, j := range runs {
+		st := j.State()
+		if st.Liveness(host, alive) == run.LiveInterrupted && !st.DaemonResumed {
+			ids = append(ids, j.ID)
+		}
+	}
+	return ids
+}

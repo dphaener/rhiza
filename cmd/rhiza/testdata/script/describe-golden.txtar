@@ -1236,6 +1236,13 @@ cmp stdout describe.golden.json
             "description": "The daemon's process, as host:pid",
             "type": "string"
           },
+          "resumed": {
+            "description": "The interrupted runs the daemon resumed, in order",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "started": {
             "description": "The change sets whose runs the daemon started, in order",
             "items": {
@@ -1246,6 +1253,7 @@ cmp stdout describe.golden.json
         },
         "required": [
           "process",
+          "resumed",
           "started"
         ],
         "type": "object"
