@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-28T15:13:38Z",
+  "body": {
+    "intent": "Plan milestone 4 with the owner: its intent, its done points and the change sets that serve it, planned by Rhiza's plan workflow.",
+    "kind": "record",
+    "sources": [],
+    "title": "Plan milestone 4"
+  },
+  "change_set": "01M61H5VY8MD7E7SVS0HQQHQJ0",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M61H5VY8MD7E7SVS0MQFPWG6",
+  "type": "open",
+  "v": 2
+}

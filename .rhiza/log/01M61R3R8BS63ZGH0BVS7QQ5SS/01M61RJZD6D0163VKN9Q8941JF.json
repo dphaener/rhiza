@@ -1,0 +1,76 @@
+{
+  "actor": "01M61RDR8N5HWKHZF4WBMYW9BX",
+  "after": [
+    "01M61R7P3YNCQACQSA6ZKTCCD4"
+  ],
+  "at": "2026-10-28T17:23:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test finds the process in the journal of a started run and of a resumed one, and a reader reports a fixture's unfinished journal as live and interrupted when its pid is not running, as live and running when it is the test's own process, and a finished journal as not live.",
+          "statement": "A run journals its process (host and pid) when it starts and each time it is resumed, so a reader tells which of the live runs (unfinished journals, as run-one-live counts them) are running and which are interrupted: an unfinished journal whose process is gone."
+        },
+        "handle": "run-process-record",
+        "id": "01M61R7JKQRF2SBF071KSZC7H6",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M61R7JKQRF2SBF071J10XKRM",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test over a fixture model with two accepted milestone change sets with leaves, an accepted leafless milestone change set, an accepted backlog change set with leaves, one running run on a third accepted milestone change set and one interrupted run on a fourth picks only the first milestone change set under max 2, and none under max 1; a testscript runs rhiza daemon --once with a fake Rex and sees that one start.",
+          "statement": "Each poll, the daemon picks the accepted change sets that rhiza ready says can start, that serve a milestone intent, have at least one leaf and have no live run (running or interrupted, as run-one-live counts it), in roadmap order, and starts them until its running runs (live runs whose process is running) reach --max-runs (default 2), so an interrupted run keeps its change set from being picked but takes no slot; it never starts a backlog, draft, proposed or leafless change set."
+        },
+        "handle": "daemon-picks",
+        "id": "01M61R7K5W91SXWWX8AJ8PQHAK",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a fixture journal that is unfinished and names a dead process runs rhiza daemon --once twice with a fake Rex: the first opens one tab running rhiza run resume on that run and journals it, the second (with the run interrupted again) opens none; a failed run's journal gets no tab.",
+          "statement": "The daemon resumes an interrupted run once, as rhiza run resume <run> in a new Rex tab, and journals that resume in the run's journal; it leaves alone a run interrupted again after that resume, which the inbox lists as a run the daemon gave up on, and every failed run, which the inbox lists as failed."
+        },
+        "handle": "daemon-resume-once",
+        "id": "01M61R7MP3HGEB60GJV889HTMT",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M61R7MP3HGEB60GJV4M3CWQA",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "id": "01M61RJYP1JWZB71K3WC7ECPF6",
+        "link": "01M61RJYP1JWZB71K3WA0G80CW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R39G9VFPAXQRE8NE75M93",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "id": "01M61RJYWDXCYWT4PA3RYRM040",
+        "link": "01M61RJYWDXCYWT4PA3PNCZCKE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7JKQRF2SBF071J10XKRM",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M61R3R8BS63ZGH0BVS7QQ5SS",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M61RJZD6D0163VKN9Q8941JF",
+  "type": "ops",
+  "v": 1
+}

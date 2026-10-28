@@ -1,0 +1,16 @@
+{
+  "actor": "01M61H60W8XWV0CG3XZM0S8PKC",
+  "after": [],
+  "at": "2026-10-28T17:14:49Z",
+  "body": {
+    "intent": "Usage-limit pause: a run whose agent session hits the Claude usage limit waits for the limit to reset and then continues the session, instead of failing.",
+    "kind": "intention",
+    "sources": [],
+    "title": "Usage-limit pause"
+  },
+  "change_set": "01M61R3RG70WZD5EDH293ZGVWN",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M61R3RG70WZD5EDH2CJ18KV6",
+  "type": "open",
+  "v": 2
+}

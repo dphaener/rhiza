@@ -1,0 +1,277 @@
+{
+  "actor": "01M61H60W8XWV0CG3XZM0S8PKC",
+  "after": [
+    "01M61R3R8BS63ZGH0BVTTWB26D"
+  ],
+  "at": "2026-10-28T17:16:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "rhiza daemon orchestrates a repo's milestone work: it starts ship-change runs on accepted, ready change sets under a cap, resumes interrupted runs once and reports its state, with no socket and no LLM conductor."
+        },
+        "handle": "daemon",
+        "id": "01M61R7HFGRYD2Q1FG4NTJ38W9",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M61R7HFGRYD2Q1FG4K5N65ME",
+        "op": "node.create",
+        "parent": "01M5SWTC58PN8WNJRRM03630JS"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7HFGRYD2Q1FG4K5N65ME",
+        "id": "01M61R7HNGGJHCQV9Y7QGMJ7E6",
+        "link": "01M61R7HNGGJHCQV9Y7MN2280X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R363YKCSCX0B9NV9CXJQQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7HFGRYD2Q1FG4K5N65ME",
+        "id": "01M61R7HVGC7K8MNHPE6P82T73",
+        "link": "01M61R7HVGC7K8MNHPE51TZXMK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R36G8B6FCES046TB96J9J",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7HFGRYD2Q1FG4K5N65ME",
+        "id": "01M61R7J1MXWDF7QHG9A84TN8X",
+        "link": "01M61R7J1MXWDF7QHG98HBVK5H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R3AM3GF3XCNZ5PT584EZ7",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs a daemon in the background with a fake Rex and starts a second from another worktree, which exits 2 naming the first; a lock file naming a dead process is taken over by a new daemon; no test in the default run binds a socket.",
+          "statement": "rhiza daemon runs in the foreground, one per repo: it holds a lock under the git common dir, so a second daemon started from any worktree of the repo exits 2 naming the first one's process, a lock left by a process that is gone is taken over, and the daemon binds no socket."
+        },
+        "handle": "daemon-lock",
+        "id": "01M61R7J7KWQ20F4X22KXX097T",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M61R7J7KWQ20F4X22KTJ924R",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7J7KWQ20F4X22KTJ924R",
+        "id": "01M61R7JDKB75EM02GVSB0VA3C",
+        "link": "01M61R7JDKB75EM02GVR6PQSK3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R3AM3GF3XCNZ5PT584EZ7",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test finds the process in the journal of a started run and of a resumed one, and a reader reports a fixture's unfinished journal as interrupted when its pid is not running and as live when it is the test's own process.",
+          "statement": "A run journals its process (host and pid) when it starts and each time it is resumed, so a reader tells a live run from an interrupted one: an unfinished journal whose process is gone."
+        },
+        "handle": "run-process-record",
+        "id": "01M61R7JKQRF2SBF071KSZC7H6",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M61R7JKQRF2SBF071J10XKRM",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7JKQRF2SBF071J10XKRM",
+        "id": "01M61R7JSQCGHWDY96ZBHMD91K",
+        "link": "01M61R7JSQCGHWDY96ZA0C29TT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R3AM3GF3XCNZ5PT584EZ7",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7JKQRF2SBF071J10XKRM",
+        "id": "01M61R7JZS57YMKZ36WRJV8WRT",
+        "link": "01M61R7JZS57YMKZ36WPMEWJ28",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R3AZXMD7A4NQV4G84D0PD",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test over a fixture model with two accepted milestone change sets with leaves, an accepted leafless milestone change set, an accepted backlog change set with leaves and one live run picks only the first milestone change set under max 2, and none under max 1; a testscript runs rhiza daemon --once with a fake Rex and sees that one start.",
+          "statement": "Each poll, the daemon picks the accepted change sets that rhiza ready says can start, that serve a milestone intent, have at least one leaf and have no live run, in roadmap order, and starts them until the live runs reach --max-runs (default 2); it never starts a backlog, draft, proposed or leafless change set."
+        },
+        "handle": "daemon-picks",
+        "id": "01M61R7K5W91SXWWX8AJ8PQHAK",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "id": "01M61R7KBX37ZTMXEZZCSGE7JC",
+        "link": "01M61R7KBX37ZTMXEZZCHY40AM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R36G8B6FCES046TB96J9J",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "id": "01M61R7KHXESRTP5JATAWHAXG8",
+        "link": "01M61R7KHXESRTP5JAT9P3JEJB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R378WH09KRZA5H1JXQM23",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "id": "01M61R7KQX54SJKMP1FNRHG73M",
+        "link": "01M61R7KQX54SJKMP1FJQB2SN3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R3A84R13JVSJJBQJR3A90",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "id": "01M61R7KXZQ32XHVQXYP0MAN84",
+        "link": "01M61R7KXZQ32XHVQXYNQ67ACT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7J7KWQ20F4X22KTJ924R",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs rhiza daemon --once with a fake Rex, which records one new tab whose command is rhiza run start with the change set's ID and no --autonomous; under rhiza daemon --once --autonomous the command has --autonomous.",
+          "statement": "The daemon starts each run as rhiza run start <change set> in a new Rex tab in the repo, adding --autonomous only when the daemon was started with --autonomous, so a run outlives the daemon."
+        },
+        "handle": "daemon-run-tabs",
+        "id": "01M61R7M41QVVEDQ5GWT1TMMSK",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M61R7M41QVVEDQ5GWRXE7D7M",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7M41QVVEDQ5GWRXE7D7M",
+        "id": "01M61R7MA4C2CQREH3XA9MQWF7",
+        "link": "01M61R7MA4C2CQREH3X7ENKSM6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R3AM3GF3XCNZ5PT584EZ7",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7M41QVVEDQ5GWRXE7D7M",
+        "id": "01M61R7MG59GBGS112CB0MD89Z",
+        "link": "01M61R7MG59GBGS112C97FV14X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a fixture journal that is unfinished and names a dead process runs rhiza daemon --once twice with a fake Rex: the first opens one tab running rhiza run resume on that run and journals it, the second (with the run interrupted again) opens none; a failed run's journal gets no tab.",
+          "statement": "The daemon resumes an interrupted run once, as rhiza run resume <run> in a new Rex tab, and journals that it did; a run interrupted again after that resume, and every failed run, is left alone for the inbox."
+        },
+        "handle": "daemon-resume-once",
+        "id": "01M61R7MP3HGEB60GJV889HTMT",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M61R7MP3HGEB60GJV4M3CWQA",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7MP3HGEB60GJV4M3CWQA",
+        "id": "01M61R7MW4HS49KTZRFVA4G457",
+        "link": "01M61R7MW4HS49KTZRFQQ9HKG9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R3AZXMD7A4NQV4G84D0PD",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7MP3HGEB60GJV4M3CWQA",
+        "id": "01M61R7N29CWYPSSJN8FK4PC85",
+        "link": "01M61R7N29CWYPSSJN8E1NF18H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7JKQRF2SBF071J10XKRM",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7MP3HGEB60GJV4M3CWQA",
+        "id": "01M61R7N8C7CWQQQ5SQPQWHH74",
+        "link": "01M61R7N8C7CWQQQ5SQM9KFJX1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7M41QVVEDQ5GWRXE7D7M",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript reads rhiza daemon status before any daemon (not running), after rhiza daemon --once with a fake Rex (the state with the run it started, text and --json), and with a lock naming a dead process (not running); describe-golden is regenerated.",
+          "statement": "The daemon keeps a state file under the git common dir (its process, start time, last poll, max runs, autonomous or not, the live runs and what it last started or resumed), and rhiza daemon status reads it, in text and --json, saying not running when no live daemon holds the lock."
+        },
+        "handle": "daemon-status",
+        "id": "01M61R7NEEK19RP2QEHH49SN4R",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M61R7NEEK19RP2QEHFRQ6W8S",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7NEEK19RP2QEHFRQ6W8S",
+        "id": "01M61R7NMF5MMK0QPAJ70JES9Q",
+        "link": "01M61R7NMF5MMK0QPAJ6F752QZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R3AM3GF3XCNZ5PT584EZ7",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7NEEK19RP2QEHFRQ6W8S",
+        "id": "01M61R7NTHESJKNDXJS2X0JC0S",
+        "link": "01M61R7NTHESJKNDXJS1WN127B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7J7KWQ20F4X22KTJ924R",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M61R3R8BS63ZGH0BVS7QQ5SS",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M61R7P3YNCQACQSA6ZKTCCD4",
+  "type": "ops",
+  "v": 1
+}

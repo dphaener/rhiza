@@ -1,0 +1,16 @@
+{
+  "actor": "01M61H60W8XWV0CG3XZM0S8PKC",
+  "after": [],
+  "at": "2026-10-28T17:14:49Z",
+  "body": {
+    "intent": "The daemon: rhiza daemon starts ship-change runs on accepted, ready change sets that serve a milestone and have leaves, in roadmap order under a concurrency cap, each in its own Rex tab, resumes an interrupted run once, and reports through rhiza daemon status.",
+    "kind": "intention",
+    "sources": [],
+    "title": "The daemon"
+  },
+  "change_set": "01M61R3R8BS63ZGH0BVS7QQ5SS",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M61R3R8BS63ZGH0BVTTWB26D",
+  "type": "open",
+  "v": 2
+}

@@ -1,0 +1,564 @@
+{
+  "actor": "01M61H60W8XWV0CG3XZM0S8PKC",
+  "after": [
+    "01M61R31D1HSTKKXWXZY47RBRC"
+  ],
+  "at": "2026-10-28T17:14:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "Orchestration (Recommended)",
+            "Hardening only",
+            "Truth to code",
+            "Surfaces"
+          ],
+          "picked": "Orchestration (Recommended)",
+          "question": "Topic 1, what milestone 4 is for. Which goal should milestone 4 have? I recommend Orchestration. It is the next layer in the founding plan, and it replaces the orchestrator session that still does this by hand. Milestone 3's gaps would be its first change sets, because Rhiza can't orchestrate runs that still break.",
+          "session": "8cd68bc7-9786-4df4-8723-01a1831302a8",
+          "statement": "Topic 1, what milestone 4 is for. Which goal should milestone 4 have? I recommend Orchestration. It is the next layer in the founding plan, and it replaces the orchestrator session that still does this by hand. Milestone 3's gaps would be its first change sets, because Rhiza can't orchestrate runs that still break. — Orchestration (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a1831302a8"
+        },
+        "handle": "answer-8cd68bc7-1",
+        "id": "01M61R35R3A1DW4B6YJ4R2K42X",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61R35R3A1DW4B6YJ28CK60R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R35R3A1DW4B6YJ28CK60R",
+        "id": "01M61R35Y00V376PY61CBKTV57",
+        "link": "01M61R35Y00V376PY6190TP6T1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Daemon (Recommended)",
+            "Orchestrate workflow",
+            "LLM orchestrator"
+          ],
+          "picked": "Daemon (Recommended)",
+          "question": "Topic 2a, what form does Rhiza's orchestrator take? I recommend a deterministic daemon in the same binary: the founding plan already says the one binary is also the daemon, and in milestone 3 you saw no benefit in an LLM conductor outside autonomous mode.",
+          "session": "8cd68bc7-9786-4df4-8723-01a1831302a8",
+          "statement": "Topic 2a, what form does Rhiza's orchestrator take? I recommend a deterministic daemon in the same binary: the founding plan already says the one binary is also the daemon, and in milestone 3 you saw no benefit in an LLM conductor outside autonomous mode. — Daemon (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a1831302a8"
+        },
+        "handle": "answer-8cd68bc7-2",
+        "id": "01M61R363YKCSCX0B9NZ5P73DF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61R363YKCSCX0B9NV9CXJQQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R363YKCSCX0B9NV9CXJQQ",
+        "id": "01M61R36A288QVSF9Z4D0XNAWJ",
+        "link": "01M61R36A288QVSF9Z4BW4PP75",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Ship accepted (Recommended)",
+            "Also plan drafts",
+            "Only on command"
+          ],
+          "picked": "Ship accepted (Recommended)",
+          "question": "Topic 2b, what does the orchestrator start on its own? I recommend ship-change runs on accepted, ready change sets in roadmap order, up to a cap of concurrent runs, so the plan acceptance gate stays yours.",
+          "session": "8cd68bc7-9786-4df4-8723-01a1831302a8",
+          "statement": "Topic 2b, what does the orchestrator start on its own? I recommend ship-change runs on accepted, ready change sets in roadmap order, up to a cap of concurrent runs, so the plan acceptance gate stays yours. — Ship accepted (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a1831302a8"
+        },
+        "handle": "answer-8cd68bc7-3",
+        "id": "01M61R36G8B6FCES046WV9CYPG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61R36G8B6FCES046TB96J9J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R36G8B6FCES046TB96J9J",
+        "id": "01M61R36P6TAX236NK7QE08B4B",
+        "link": "01M61R36P6TAX236NK7M2CDK0Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Inbox + notify (Recommended)",
+            "Notify only",
+            "Orchestrator session"
+          ],
+          "picked": "Inbox + notify (Recommended)",
+          "question": "Topic 2c, how do you deal with the orchestrator? I recommend an inbox: every question, sign-off and failure from every run in one list, each question with a recommendation drawn from slice and why (the proposed backlog intent), with a Rex notification when something arrives.",
+          "session": "8cd68bc7-9786-4df4-8723-01a1831302a8",
+          "statement": "Topic 2c, how do you deal with the orchestrator? I recommend an inbox: every question, sign-off and failure from every run in one list, each question with a recommendation drawn from slice and why (the proposed backlog intent), with a Rex notification when something arrives. — Inbox + notify (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a1831302a8"
+        },
+        "handle": "answer-8cd68bc7-4",
+        "id": "01M61R36WFMNK816P8FCXFK6VC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61R36WFMNK816P8FB8FZN2E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R36WFMNK816P8FB8FZN2E",
+        "id": "01M61R372TJAYMZCWFT4FJZ4JT",
+        "link": "01M61R372TJAYMZCWFT327FY61",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Cap + limit pause (Recommended)",
+            "Cap only",
+            "Token budgets too"
+          ],
+          "picked": "Cap + limit pause (Recommended)",
+          "question": "Topic 2d, how far does the usage governor go in milestone 4? I recommend a concurrency cap plus pausing on the Claude usage limit. Token use is already journalled per session, so a budget can come later.",
+          "session": "8cd68bc7-9786-4df4-8723-01a1831302a8",
+          "statement": "Topic 2d, how far does the usage governor go in milestone 4? I recommend a concurrency cap plus pausing on the Claude usage limit. Token use is already journalled per session, so a budget can come later. — Cap + limit pause (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a1831302a8"
+        },
+        "handle": "answer-8cd68bc7-5",
+        "id": "01M61R378WH09KRZA5H3P1RCCD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61R378WH09KRZA5H1JXQM23",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R378WH09KRZA5H1JXQM23",
+        "id": "01M61R37ER672Z1HSCFY9NH9P2",
+        "link": "01M61R37ER672Z1HSCFVMHK10S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "These three (Recommended)",
+            "Drop 'runs hold up'"
+          ],
+          "picked": "These three (Recommended)",
+          "question": "Topic 3a, milestone 4's done points, following milestone 3's pattern. Proposed: (1) Milestone 5's first change sets are shipped with `rhiza daemon` orchestrating and no orchestrator session: you accept plans, answer the inbox and sign off, nothing else. (2) Runs hold up: a build, review or ship-change run finishes without hand repair (no hand-made render commit, no second run on one change set, no swept-up actor records). (3) make check stays green, rhiza check included, reads within budget, and the default test run binds no socket. Do these three done points fit?",
+          "session": "8cd68bc7-9786-4df4-8723-01a1831302a8",
+          "statement": "Topic 3a, milestone 4's done points, following milestone 3's pattern. Proposed: (1) Milestone 5's first change sets are shipped with `rhiza daemon` orchestrating and no orchestrator session: you accept plans, answer the inbox and sign off, nothing else. (2) Runs hold up: a build, review or ship-change run finishes without hand repair (no hand-made render commit, no second run on one change set, no swept-up actor records). (3) make check stays green, rhiza check included, reads within budget, and the default test run binds no socket. Do these three done points fit? — These three (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a1831302a8"
+        },
+        "handle": "answer-8cd68bc7-6",
+        "id": "01M61R37MNTTKW714SAVRFHER1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61R37MNTTKW714SATBR0X25",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R37MNTTKW714SATBR0X25",
+        "id": "01M61R37TM4GJ8F3T7241A5937",
+        "link": "01M61R37TM4GJ8F3T72388SZDP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "All 15 + inbox item (Recommended)",
+            "Only run-critical"
+          ],
+          "picked": "All 15 + inbox item (Recommended)",
+          "question": "Topic 3b, which existing drafts serve milestone 4? There are 15 draft gap change sets: milestone 3's 8 (agents never start runs, split Leaf trailers, build/review render, failed fixer's cycle, message a busy session, plan capture on done, questions not permissions, token printout) plus 7 older ones (builder actor records, findings numbering lock, one live run per change set, the guide-install flake, review status in Rex, idle check actors, workflow-step limits as constraints). I recommend all 15, because the daemon can only ship work unattended if these runs hold up. I also recommend the proposed backlog item 'watches runs and passes their questions to the owner with a recommendation' as the inbox's change set.",
+          "session": "8cd68bc7-9786-4df4-8723-01a1831302a8",
+          "statement": "Topic 3b, which existing drafts serve milestone 4? There are 15 draft gap change sets: milestone 3's 8 (agents never start runs, split Leaf trailers, build/review render, failed fixer's cycle, message a busy session, plan capture on done, questions not permissions, token printout) plus 7 older ones (builder actor records, findings numbering lock, one live run per change set, the guide-install flake, review status in Rex, idle check actors, workflow-step limits as constraints). I recommend all 15, because the daemon can only ship work unattended if these runs hold up. I also recommend the proposed backlog item 'watches runs and passes their questions to the owner with a recommendation' as the inbox's change set. — All 15 + inbox item (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a1831302a8"
+        },
+        "handle": "answer-8cd68bc7-7",
+        "id": "01M61R380FJJNV1CK5JFCN0BAF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61R380FJJNV1CK5JBYPXRR2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R380FJJNV1CK5JBYPXRR2",
+        "id": "01M61R386BPMHXH7YAFAPAB544",
+        "link": "01M61R386BPMHXH7YAF9ZZFHYB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "All out (Recommended)",
+            "Keep conflict detection"
+          ],
+          "picked": "All out (Recommended)",
+          "question": "Topic 3c, what stays out of milestone 4? I recommend leaving out: a TUI or web UI, unattended machines (the Linux hub or VM spike), token budgets, the daemon starting plan runs, conflict detection across change sets in flight, and plan review against the other runs in flight. Agree?",
+          "session": "8cd68bc7-9786-4df4-8723-01a1831302a8",
+          "statement": "Topic 3c, what stays out of milestone 4? I recommend leaving out: a TUI or web UI, unattended machines (the Linux hub or VM spike), token budgets, the daemon starting plan runs, conflict detection across change sets in flight, and plan review against the other runs in flight. Agree? — All out (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a1831302a8"
+        },
+        "handle": "answer-8cd68bc7-8",
+        "id": "01M61R38CGXPSJFF36FQHFX2FB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61R38CGXPSJFF36FMVAA8JX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R38CGXPSJFF36FMVAA8JX",
+        "id": "01M61R38JEWJCHVF6HQ3SA4XWR",
+        "link": "01M61R38JEWJCHVF6HQ39MB592",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Daemon + limit pause (Recommended)",
+            "Fold pause into daemon"
+          ],
+          "picked": "Daemon + limit pause (Recommended)",
+          "question": "Topic 4a, the new change sets. Besides the 15 gap drafts and the inbox change set (the existing proposed one, 01M5SWTKV6), I propose two new ones: (A) The daemon: `rhiza daemon` starts ship-change runs on accepted, ready change sets in milestone order under a cap, each run in its own Rex tab, picks up after a restart from the run journals, and shows `rhiza daemon status`. It depends on the draft 'one live run per change set'. (B) Usage-limit pause: a run whose agent session hits the Claude usage limit waits for the reset and then continues the session, instead of failing. Are these the right new change sets?",
+          "session": "8cd68bc7-9786-4df4-8723-01a1831302a8",
+          "statement": "Topic 4a, the new change sets. Besides the 15 gap drafts and the inbox change set (the existing proposed one, 01M5SWTKV6), I propose two new ones: (A) The daemon: `rhiza daemon` starts ship-change runs on accepted, ready change sets in milestone order under a cap, each run in its own Rex tab, picks up after a restart from the run journals, and shows `rhiza daemon status`. It depends on the draft 'one live run per change set'. (B) Usage-limit pause: a run whose agent session hits the Claude usage limit waits for the reset and then continues the session, instead of failing. Are these the right new change sets? — Daemon + limit pause (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a1831302a8"
+        },
+        "handle": "answer-8cd68bc7-9",
+        "id": "01M61R38RA0DRQXSTSPK5BQQT2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61R38RA0DRQXSTSPH5PED5M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R38RA0DRQXSTSPH5PED5M",
+        "id": "01M61R38Y5E4GPAB5R611NG9SQ",
+        "link": "01M61R38Y5E4GPAB5R5XX4ZGVT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Core three (Recommended)",
+            "Daemon + its dependency",
+            "Core + m3's 8 gaps"
+          ],
+          "picked": "Core three (Recommended)",
+          "question": "Topic 4b, which change sets get leaves now? The rest keep their intent only and are planned later, each by its own plan run. I recommend the milestone's core now: one live run per change set, the daemon, and the inbox. The gap drafts are small and get planned one at a time later.",
+          "session": "8cd68bc7-9786-4df4-8723-01a1831302a8",
+          "statement": "Topic 4b, which change sets get leaves now? The rest keep their intent only and are planned later, each by its own plan run. I recommend the milestone's core now: one live run per change set, the daemon, and the inbox. The gap drafts are small and get planned one at a time later. — Core three (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a1831302a8"
+        },
+        "handle": "answer-8cd68bc7-10",
+        "id": "01M61R3943Q3PKDCJV5ZP54MVN",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61R3943Q3PKDCJV5VZTKVA7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R3943Q3PKDCJV5VZTKVA7",
+        "id": "01M61R39A5R97C1M0VQTDTVY8Y",
+        "link": "01M61R39A5R97C1M0VQQ5FFRPN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Until finished (Recommended)",
+            "Only while its process runs"
+          ],
+          "picked": "Until finished (Recommended)",
+          "question": "Topic 5a, when does a run stop counting as live for 'one live run per change set'? I recommend: until its journal says it finished (done or failed). An interrupted run whose process died still counts, so `rhiza run start` refuses, names that run and points you to `rhiza run resume`. That way nobody starts a second run over a half-done one.",
+          "session": "8cd68bc7-9786-4df4-8723-01a1831302a8",
+          "statement": "Topic 5a, when does a run stop counting as live for 'one live run per change set'? I recommend: until its journal says it finished (done or failed). An interrupted run whose process died still counts, so `rhiza run start` refuses, names that run and points you to `rhiza run resume`. That way nobody starts a second run over a half-done one. — Until finished (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a1831302a8"
+        },
+        "handle": "answer-8cd68bc7-11",
+        "id": "01M61R39G9VFPAXQRE8PB44YXZ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61R39G9VFPAXQRE8NE75M93",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R39G9VFPAXQRE8NE75M93",
+        "id": "01M61R39P75CH6Y1DQKTM4Z9EP",
+        "link": "01M61R39P75CH6Y1DQKQ41KYJ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Add run abandon (Recommended)",
+            "No abandon"
+          ],
+          "picked": "Add run abandon (Recommended)",
+          "question": "Topic 5b, with interrupted runs counting as live, a run you want to give up on would block its change set for good. I recommend adding `rhiza run abandon <run>`, which journals the run as failed with an 'abandoned by <actor>' detail, so a new run can start. It refuses a run that has finished, and leaves the worktree and branch alone.",
+          "session": "8cd68bc7-9786-4df4-8723-01a1831302a8",
+          "statement": "Topic 5b, with interrupted runs counting as live, a run you want to give up on would block its change set for good. I recommend adding `rhiza run abandon <run>`, which journals the run as failed with an 'abandoned by <actor>' detail, so a new run can start. It refuses a run that has finished, and leaves the worktree and branch alone. — Add run abandon (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a1831302a8"
+        },
+        "handle": "answer-8cd68bc7-12",
+        "id": "01M61R39W7CNTMG478HE773GZ7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61R39W7CNTMG478HCPCNN5D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R39W7CNTMG478HCPCNN5D",
+        "id": "01M61R3A24PBA0QFBY4N4K8C5A",
+        "link": "01M61R3A24PBA0QFBY4M571FJW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Milestone + leaves (Recommended)",
+            "Any with leaves"
+          ],
+          "picked": "Milestone + leaves (Recommended)",
+          "question": "Topic 6a, which change sets does the daemon start by itself? I recommend only accepted change sets that serve a milestone intent and have leaves, in roadmap order. The accepted area bundles in the backlog have no leaves, and backlog work waits for you.",
+          "session": "8cd68bc7-9786-4df4-8723-01a1831302a8",
+          "statement": "Topic 6a, which change sets does the daemon start by itself? I recommend only accepted change sets that serve a milestone intent and have leaves, in roadmap order. The accepted area bundles in the backlog have no leaves, and backlog work waits for you. — Milestone + leaves (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a1831302a8"
+        },
+        "handle": "answer-8cd68bc7-13",
+        "id": "01M61R3A84R13JVSJJBSTPCHEF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61R3A84R13JVSJJBQJR3A90",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R3A84R13JVSJJBQJR3A90",
+        "id": "01M61R3AE31X5H2QBXVCQF0SEV",
+        "link": "01M61R3AE31X5H2QBXV9NG8BRB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "As described (Recommended)",
+            "Runs as child processes"
+          ],
+          "picked": "As described (Recommended)",
+          "question": "Topic 6b, how does the daemon run and launch work? I recommend: `rhiza daemon` runs in the foreground of whatever Rex tab you start it in, one per repo (a lock under the git common dir), polling the roadmap and run journals every few seconds with no socket. It starts each run as `rhiza run start <cs>` in a new Rex tab, so a run outlives a daemon restart. `--max-runs` defaults to 2, `--autonomous` passes through to every run it starts, and `rhiza daemon status` reads a state file.",
+          "session": "8cd68bc7-9786-4df4-8723-01a1831302a8",
+          "statement": "Topic 6b, how does the daemon run and launch work? I recommend: `rhiza daemon` runs in the foreground of whatever Rex tab you start it in, one per repo (a lock under the git common dir), polling the roadmap and run journals every few seconds with no socket. It starts each run as `rhiza run start <cs>` in a new Rex tab, so a run outlives a daemon restart. `--max-runs` defaults to 2, `--autonomous` passes through to every run it starts, and `rhiza daemon status` reads a state file. — As described (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a1831302a8"
+        },
+        "handle": "answer-8cd68bc7-14",
+        "id": "01M61R3AM3GF3XCNZ5PVQK4RW4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61R3AM3GF3XCNZ5PT584EZ7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R3AM3GF3XCNZ5PT584EZ7",
+        "id": "01M61R3AT09B3ECE7WK8A1FPX5",
+        "link": "01M61R3AT09B3ECE7WK6KPZHS8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Resume once, failed to inbox (Recommended)",
+            "Never resume"
+          ],
+          "picked": "Resume once, failed to inbox (Recommended)",
+          "question": "Topic 6c, what does the daemon do with runs that didn't finish cleanly? I recommend: it resumes an interrupted run (journal live, process gone) once, in a new Rex tab. A failed run goes to the inbox and is never retried by the daemon.",
+          "session": "8cd68bc7-9786-4df4-8723-01a1831302a8",
+          "statement": "Topic 6c, what does the daemon do with runs that didn't finish cleanly? I recommend: it resumes an interrupted run (journal live, process gone) once, in a new Rex tab. A failed run goes to the inbox and is never retried by the daemon. — Resume once, failed to inbox (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a1831302a8"
+        },
+        "handle": "answer-8cd68bc7-15",
+        "id": "01M61R3AZXMD7A4NQV4G8QQRFM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61R3AZXMD7A4NQV4G84D0PD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R3AZXMD7A4NQV4G84D0PD",
+        "id": "01M61R3B5V0J26FFY03BXD512F",
+        "link": "01M61R3B5V0J26FFY03B0E0R89",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Open the tab (Recommended)",
+            "Answer in the inbox"
+          ],
+          "picked": "Open the tab (Recommended)",
+          "question": "Topic 7a, where are inbox questions answered? I recommend: `rhiza inbox` lists every item (question, sign-off, failed run) across runs, oldest first, and `rhiza inbox open <item>` focuses the asking session's Rex tab, so you answer in the agent's own menu with its context in view. Sign-offs are approved or sent back from the inbox through the existing approve and request-changes commands.",
+          "session": "8cd68bc7-9786-4df4-8723-01a1831302a8",
+          "statement": "Topic 7a, where are inbox questions answered? I recommend: `rhiza inbox` lists every item (question, sign-off, failed run) across runs, oldest first, and `rhiza inbox open <item>` focuses the asking session's Rex tab, so you answer in the agent's own menu with its context in view. Sign-offs are approved or sent back from the inbox through the existing approve and request-changes commands. — Open the tab (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a1831302a8"
+        },
+        "handle": "answer-8cd68bc7-16",
+        "id": "01M61R3BDD59F3QZCBSKRAKS8V",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61R3BDD59F3QZCBSJ32KQ8E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R3BDD59F3QZCBSJ32KQ8E",
+        "id": "01M61R3BKBP26JM0EYD24C7S0X",
+        "link": "01M61R3BKBP26JM0EYCZ95QS0Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Advisor session (Recommended)",
+            "Asker's own pick"
+          ],
+          "picked": "Advisor session (Recommended)",
+          "question": "Topic 7b, where does each question's recommendation come from? I recommend a short-lived advisor session (the arbiter's guide in recommend-only mode) that reads slice and why for the question and journals a recommendation with its reasons, but never answers. The inbox shows it beside the question, and the run never waits for it.",
+          "session": "8cd68bc7-9786-4df4-8723-01a1831302a8",
+          "statement": "Topic 7b, where does each question's recommendation come from? I recommend a short-lived advisor session (the arbiter's guide in recommend-only mode) that reads slice and why for the question and journals a recommendation with its reasons, but never answers. The inbox shows it beside the question, and the run never waits for it. — Advisor session (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a1831302a8"
+        },
+        "handle": "answer-8cd68bc7-17",
+        "id": "01M61R3BS9VJQ15Z9Q1CQYTHNE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61R3BS9VJQ15Z9Q193A0QXA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R3BS9VJQ15Z9Q193A0QXA",
+        "id": "01M61R3BZ61C5QVMCB4DEX6J29",
+        "link": "01M61R3BZ61C5QVMCB4D2S8QSG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "All three (Recommended)",
+            "Questions and sign-offs"
+          ],
+          "picked": "All three (Recommended)",
+          "question": "Topic 7c, which inbox events send a Rex notification? I recommend: a new question, a run waiting at sign-off, and a failed run, one notification per item, through the existing blocked-run notice path.",
+          "session": "8cd68bc7-9786-4df4-8723-01a1831302a8",
+          "statement": "Topic 7c, which inbox events send a Rex notification? I recommend: a new question, a run waiting at sign-off, and a failed run, one notification per item, through the existing blocked-run notice path. — All three (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a1831302a8"
+        },
+        "handle": "answer-8cd68bc7-18",
+        "id": "01M61R3C5483WMJ3HN4YVFS7XP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M61R3C5483WMJ3HN4W2G4HE1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R3C5483WMJ3HN4W2G4HE1",
+        "id": "01M61R3CB8C9D4PQEZC61A4V4D",
+        "link": "01M61R3CB8C9D4PQEZC2WNTY9Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M61H5VY8MD7E7SVS0HQQHQJ0",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M61R3CEJZ8JA5SNMSBMH7EES",
+  "type": "ops",
+  "v": 1
+}

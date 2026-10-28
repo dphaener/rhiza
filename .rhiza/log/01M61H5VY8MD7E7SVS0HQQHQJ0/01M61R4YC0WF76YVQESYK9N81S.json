@@ -1,0 +1,336 @@
+{
+  "actor": "01M61H60W8XWV0CG3XZM0S8PKC",
+  "after": [
+    "01M61R3CEJZ8JA5SNMSBMH7EES"
+  ],
+  "at": "2026-10-28T17:15:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "4",
+          "statement": "Rhiza orchestrates: milestone 5 is driven by rhiza daemon, with no orchestrator session, the owner only accepting plans, answering the inbox and signing off."
+        },
+        "handle": "milestone-4",
+        "id": "01M61R4Q8SA2SWHFE9D9K79JW0",
+        "key": "z",
+        "kind": "intent",
+        "node": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "id": "01M61R4QF2EW6BG4N2N34YQ9DG",
+        "link": "01M61R4QF2EW6BG4N2MZ5C2SD7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R316Z5KYNPHDHFSB369SD",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "id": "01M61R4QN2W3GV8WGWCJQGRMNR",
+        "link": "01M61R4QN2W3GV8WGWCFYM8R5W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R35R3A1DW4B6YJ28CK60R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "id": "01M61R4QV1T8ZG4TZ4R1KYRWYS",
+        "link": "01M61R4QV1T8ZG4TZ4R1BY80QN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R363YKCSCX0B9NV9CXJQQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "id": "01M61R4R0ZE4Z5DNWC7N1ETKKF",
+        "link": "01M61R4R0ZE4Z5DNWC7KNR1D38",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R37MNTTKW714SATBR0X25",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "id": "01M61R4R6X8M2RC6498A189C7Y",
+        "link": "01M61R4R6X8M2RC64989FBWXA4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R38CGXPSJFF36FMVAA8JX",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Milestone 5's first change sets are shipped with rhiza daemon orchestrating and no orchestrator session: the owner accepts plans, answers the inbox and signs off, nothing else."
+        },
+        "handle": "m4-orchestrated-by-rhiza",
+        "id": "01M61R4RCY7AE9N46F31GTEETH",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M61R4RCY7AE9N46F2YDNX0WD",
+        "op": "node.create",
+        "parent": "01M61R4Q8SA2SWHFE9D5TS6ZJD"
+      },
+      {
+        "decision": null,
+        "from": "01M61R4RCY7AE9N46F2YDNX0WD",
+        "id": "01M61R4RJYE1338X1GWSH5FN05",
+        "link": "01M61R4RJYE1338X1GWRH77D85",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R37MNTTKW714SATBR0X25",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "A build, review or ship-change run finishes without hand repair: no hand-made render commit, no second run on one change set, no swept-up actor records."
+        },
+        "handle": "m4-runs-hold-up",
+        "id": "01M61R4RRY5ZEVDSZ0E3WRN4N6",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M61R4RRY5ZEVDSZ0E2M11DRB",
+        "op": "node.create",
+        "parent": "01M61R4Q8SA2SWHFE9D5TS6ZJD"
+      },
+      {
+        "decision": null,
+        "from": "01M61R4RRY5ZEVDSZ0E2M11DRB",
+        "id": "01M61R4RZ6W46E1FVK7R89WF36",
+        "link": "01M61R4RZ6W46E1FVK7NPD61WB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R37MNTTKW714SATBR0X25",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "make check is green, rhiza check included, read commands stay within their budget, and the default test run binds no socket."
+        },
+        "handle": "m4-still-healthy",
+        "id": "01M61R4S5AKXNJF9Q6GZFBTKVK",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M61R4S5AKXNJF9Q6GZBRB21B",
+        "op": "node.create",
+        "parent": "01M61R4Q8SA2SWHFE9D5TS6ZJD"
+      },
+      {
+        "decision": null,
+        "from": "01M61R4S5AKXNJF9Q6GZBRB21B",
+        "id": "01M61R4SBACJRFBHS3MF3N6Q0B",
+        "link": "01M61R4SBACJRFBHS3MF1FTH6V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R37MNTTKW714SATBR0X25",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5ZNV3K796MKWEZM3TBQXGZ8",
+        "id": "01M61R4SK4GAB72G25SPRTT0T6",
+        "link": "01M61R4SK4GAB72G25SM23B51Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M5ZNV40RB8VYBB0A3CPXCNXZ",
+        "id": "01M61R4SV2EXST9TPHMHXN9YBN",
+        "link": "01M61R4SV2EXST9TPHMFQT8389",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M5ZNV4E4AJR52EX631180DMS",
+        "id": "01M61R4T3B711BA28CYJTWHSK6",
+        "link": "01M61R4T3B711BA28CYEZ1HX05",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M5ZNVHN2YNK6DDVYY8GK5CEQ",
+        "id": "01M61R4TB1MTXCXT2HFSRGAADC",
+        "link": "01M61R4TB1MTXCXT2HFPD3P522",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M602TGXM184GVWJG4NE98P6Y",
+        "id": "01M61R4TJSVVY7N55DXSCQWC2E",
+        "link": "01M61R4TJSVVY7N55DXPYWKRGC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M602TH4C724WZB9MKBN5Z1PP",
+        "id": "01M61R4TTD1HMTQYYVD4KQJZTJ",
+        "link": "01M61R4TTD1HMTQYYVD0VVNVK3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M60AWXJ785WZCDW1G1KA63BR",
+        "id": "01M61R4V23K7P4BWXD9XSFW04X",
+        "link": "01M61R4V23K7P4BWXD9TM38RF1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M61GW73H05YHE4DK0CXFD1KH",
+        "id": "01M61R4V9R4YVJV4Z6XG3Q4BV5",
+        "link": "01M61R4V9QZ1NBTFR26VXZG151",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M61GW7BC189FSAN4VEQ1A241",
+        "id": "01M61R4VHCXYFVFT980YNFCTSH",
+        "link": "01M61R4VHCXYFVFT980VQQ1GDE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M61GW7K1PDG7HMFXMN3YNA7B",
+        "id": "01M61R4VS1V6NP8DS64MT0AWHN",
+        "link": "01M61R4VS1V6NP8DS64MD614SQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M61GW7TJ6BH6YX1T7SQDWK1J",
+        "id": "01M61R4W0RW5ABBVDGN29QV02Y",
+        "link": "01M61R4W0RW5ABBVDGMZMQ6WGR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M61GW821FWSX05A9FC231N65",
+        "id": "01M61R4W8EPPBYS0VX4HQJDBFP",
+        "link": "01M61R4W8EPPBYS0VX4EM1F3ZK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M61GW89J8Y62X62RNJ8Z8HAD",
+        "id": "01M61R4WG3Z1S9FQ2MV5MCRESN",
+        "link": "01M61R4WG3Z1S9FQ2MV3Z1ZVDX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M61GW8H09EPJ1YCR7P2X3E8J",
+        "id": "01M61R4WQSERA2EGPD3ZW3RSAH",
+        "link": "01M61R4WQSERA2EGPD3Y10S07X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M61GW8RKSBM4BT1B8B3FR5JH",
+        "id": "01M61R4WZG8MX3KS4WGZ9NWFCD",
+        "link": "01M61R4WZG8MX3KS4WGX3RQKQF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWTKV6SCGKDS1QJ9KN026T",
+        "id": "01M61R4X78H6C0G4E9463X703M",
+        "link": "01M61R4X78H6C0G4E942BF3JQG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M61R3R8BS63ZGH0BVS7QQ5SS",
+        "id": "01M61R4XEYB400E7C57EP1SQRB",
+        "link": "01M61R4XEYB400E7C57DVPYW0M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M61R3RG70WZD5EDH293ZGVWN",
+        "id": "01M61R4XPM7TZXJH70N8AKJKHM",
+        "link": "01M61R4XPM7TZXJH70N4F689Y2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4Q8SA2SWHFE9D5TS6ZJD",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M61R3R8BS63ZGH0BVS7QQ5SS",
+        "id": "01M61R4Y2J00WVSNPQS2PK166J",
+        "link": "01M61R4Y2J00WVSNPQRZVPJJTD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZNV4E4AJR52EX631180DMS",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M61H5VY8MD7E7SVS0HQQHQJ0",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M61R4YC0WF76YVQESYK9N81S",
+  "type": "ops",
+  "v": 1
+}

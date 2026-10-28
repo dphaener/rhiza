@@ -1,0 +1,57 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M620H0WYYD55J89ZA2FQ67MS"
+  ],
+  "at": "2026-10-28T19:42:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M620GA5ZK6Z854D07NH0R8WX",
+        "id": "01M620HYHYB2PFHV5M550K7WF8",
+        "link": "01M620HYHYB2PFHV5M53EA9X0Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRH3H0B4390HPAR4X2TJ5",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M620GA5ZK6Z854D07NH0R8WX",
+        "id": "01M620HYSZCWE8XBGZ16ZBKGFA",
+        "link": "01M620HYSZCWE8XBGZ143Y204Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRH5N4AAVEDQ9ZN8Z1JJ5",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M620GA5ZK6Z854D07NH0R8WX",
+        "id": "01M620HZ3NV6HA0WN0DN79AYAY",
+        "link": "01M620HZ3NV6HA0WN0DN5TWB3Q",
+        "note": "under area orchestration",
+        "op": "link.create",
+        "to": "01M5SWTC1923N3AB7MWA9D9Z2A",
+        "type": "relates-to"
+      },
+      {
+        "decision": null,
+        "from": "01M620GA5ZK6Z854D07NH0R8WX",
+        "id": "01M620HZFYBQ9JCT9TNGY9B9QN",
+        "link": "01M620HZFYBQ9JCT9TNDFMWAWT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZNV4E4AJR52EX631180DMS",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M620GA5ZK6Z854D07NH0R8WX",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M620HZT3SPM2CJ59CJ2VZ7Q6",
+  "type": "ops",
+  "v": 1
+}
