@@ -1,0 +1,132 @@
+{
+  "actor": "01M61C5HH1HM7ADKC01KNR93S5",
+  "after": [
+    "01M61C5A6QAYGS766FS776NE2K"
+  ],
+  "at": "2026-10-28T13:50:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "Built this branch's binary (go build ./cmd/rhiza), fresh rhiza init repo with a bare origin, only rex/claude/gh faked, built-in build/review/ship-change unmodified. Two-leaf change set (second depends on first): rhiza run start --permission-mode manual ran build/build, build/check, render, review/code, review/review (5 of 5 checks), open-pr, wait-pr, pr-green and stopped at signoff; a fresh clone of the pushed cs/ship-it passed rhiza check; rhiza run approve ran rebase through land, merge, main-green, close-out and ship, change set landed, main passed rhiza check, no shipit anywhere. But after rhiza run request-changes (one finding on a leaf) the run goes back to review/review without rendering again, and a fresh clone of the re-pushed branch fails rhiza check: missing rendered/actor page for the cycle-2 verifier, index.md differs."
+        },
+        "handle": "ship-change-file-qa-4",
+        "id": "01M61CDCQTE51GSFPVKYXDDXSP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M61CDCQTE51GSFPVKVHST9YG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61CDCQTE51GSFPVKVHST9YG",
+        "id": "01M61CDCYDDTKAJZ921BQ53BMP",
+        "link": "01M61CDCYDDTKAJZ9218Q749VW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built this branch's binary (go build ./cmd/rhiza), fresh rhiza init repo with a bare origin, only rex/claude/gh faked, built-in build/review/ship-change unmodified. rhiza run start <leafless accepted change set> --permission-mode manual exited 3 with 'has no leaves: ship-change builds and reviews its leaves, so plan it first' and next 'rhiza run start --workflow plan'; no run directory was added and no worktree was made."
+        },
+        "handle": "ship-needs-leaves-qa-4",
+        "id": "01M61CDD4CAPZEC086VDD6V5QC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M61CDD4CAPZEC086VA7P4HZY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61CDD4CAPZEC086VA7P4HZY",
+        "id": "01M61CDDA912SSD8ASP187JAPV",
+        "link": "01M61CDDA912SSD8ASP11CAQ35",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XSFSMXX93SBZP3ZZPZTQ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built this branch's binary (go build ./cmd/rhiza), fresh rhiza init repo with a bare origin, only rex/claude/gh faked, built-in build/review/ship-change unmodified. Inside the ship-change run, open-pr pushed cs/ship-it and ran gh pr create --title 'Ship it' with the run summary as body ('# Review of run ...'); after request-changes the second open-pr pushed the fixer's commits and ran gh pr edit, with exactly one pr create; run status named the PR URL. Outside a run, rhiza ship open-pr exited 2 saying RHIZA_RUN is not set."
+        },
+        "handle": "ship-open-pr-qa-4",
+        "id": "01M61CDDG78V91RJ2NGGEMKK77",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M61CDDG78V91RJ2NGE2T0ZAR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61CDDG78V91RJ2NGE2T0ZAR",
+        "id": "01M61CDDP2WHVJ60MVDSN6H9AK",
+        "link": "01M61CDDP2WHVJ60MVDPKGJ6RG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XR9JBAHCDW9FXRCVJRFW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built this branch's binary (go build ./cmd/rhiza), fresh rhiza init repo with a bare origin, only rex/claude/gh faked, built-in build/review/ship-change unmodified. ship-change stopped at signoff after green CI with run status naming the PR URL; rhiza run approve carried on to rebase, land and merge. rhiza run request-changes with one finding (check qa, leaf thing2) ran a fixer then the leaf's verifier, re-ran only check qa as cycle 2 under review/review, then open-pr (pr edit), wait-pr, pr-green and stopped at signoff again."
+        },
+        "handle": "ship-signoff-qa-4",
+        "id": "01M61CDDW1SARHN0V254AN3ZH0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M61CDDW1SARHN0V250H79GWN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61CDDW1SARHN0V250H79GWN",
+        "id": "01M61CDE1XARC1BZ2QG7S51KW5",
+        "link": "01M61CDE1XARC1BZ2QG69FXXJX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XRQTCA20KGMAN4KKZJ5D",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built this branch's binary (go build ./cmd/rhiza), fresh rhiza init repo with a bare origin, only rex/claude/gh faked, built-in build/review/ship-change unmodified. ship-change's workflow steps ran the built-in build and review inside one run and journal: steps journaled as build/build, build/check, review/code, review/review in order; review's signoff was skipped (the run went from review/review to open-pr); both workflow steps passed and the outer on.pass steps followed."
+        },
+        "handle": "workflow-step-qa-4",
+        "id": "01M61CDE7W547CNBFQ0KE75VG0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M61CDE7W547CNBFQ0GAPF4AT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M61CDE7W547CNBFQ0GAPF4AT",
+        "id": "01M61CDEDW641QT5CW1FSV622J",
+        "link": "01M61CDEDW641QT5CW1D9F906N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XQV4XPRTXNA7KE1AKET4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5WPTZVV50AKZ4G5MZ7HMDKC",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M61CDEQ67FG2QK1MP5K4JZ4M",
+  "type": "ops",
+  "v": 1
+}
