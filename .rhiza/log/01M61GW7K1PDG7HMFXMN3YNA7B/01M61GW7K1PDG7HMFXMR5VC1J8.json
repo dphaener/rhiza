@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-28T15:08:23Z",
+  "body": {
+    "intent": "Plain build and review runs leave their branch rendered: each renders and commits .rhiza/rendered and the uncommitted .rhiza/log entries before it ends, so rhiza check passes on the branch without a hand-made render commit.",
+    "kind": "intention",
+    "sources": [],
+    "title": "Build and review render"
+  },
+  "change_set": "01M61GW7K1PDG7HMFXMN3YNA7B",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M61GW7K1PDG7HMFXMR5VC1J8",
+  "type": "open",
+  "v": 2
+}

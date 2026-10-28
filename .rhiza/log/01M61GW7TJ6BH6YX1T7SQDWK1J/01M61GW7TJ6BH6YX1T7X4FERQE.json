@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-28T15:08:23Z",
+  "body": {
+    "intent": "A failed fixer does not use up a review fix cycle: the fixer is retried within its cycle, and the cycle's checks re-run only once its fixers pass.",
+    "kind": "intention",
+    "sources": [],
+    "title": "Failed fixer keeps its cycle"
+  },
+  "change_set": "01M61GW7TJ6BH6YX1T7SQDWK1J",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M61GW7TJ6BH6YX1T7X4FERQE",
+  "type": "open",
+  "v": 2
+}

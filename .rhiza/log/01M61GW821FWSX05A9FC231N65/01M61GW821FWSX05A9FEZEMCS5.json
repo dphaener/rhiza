@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-28T15:08:23Z",
+  "body": {
+    "intent": "rhiza session message reaches a busy session without waiting for its prompt, so the owner or arbiter can steer a session mid-task.",
+    "kind": "intention",
+    "sources": [],
+    "title": "Message a busy session"
+  },
+  "change_set": "01M61GW821FWSX05A9FC231N65",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M61GW821FWSX05A9FEZEMCS5",
+  "type": "open",
+  "v": 2
+}
