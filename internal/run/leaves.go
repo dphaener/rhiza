@@ -469,7 +469,7 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 	}
 	anchor, replaces := leafPane(r.leafStates(step.Name), a)
 	if step.Kind == workflow.KindChecks {
-		anchor, replaces = stepPane(r.checkStates(step.Name), r.leafStates(step.Name)), ""
+		anchor, replaces = stepPane(r.checkStates(step.Name), r.leafStates(step.Name), r.reviewFixes(step.Name)), ""
 	}
 	spec.Anchor = anchor
 	s, err := lr.StartLeaf(spec)

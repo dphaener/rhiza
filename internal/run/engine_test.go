@@ -93,6 +93,11 @@ type fakeRunner struct {
 	closeErr   error       // ClosePane's error, when set
 	checkSpecs []CheckSpec // each StartCheck call's spec, in order
 	checkErr   error       // StartCheck's error, when set
+	fixSpecs   []FixSpec   // each StartFix call's spec, in order
+	// reviewCommits are ReviewCommit's commit and detail per call, in
+	// order; past the end, "C-review".
+	reviewCommits [][2]string
+	reviewSince   []string // the since of each ReviewCommit call
 }
 
 // fakeEvidence is one leaf's scripted Evidence result.

@@ -92,6 +92,14 @@ func (f *statusLeafRunner) StartCheck(spec run.CheckSpec) (string, error) {
 func (f *statusLeafRunner) OpenCheckCheckout(check, role string, cycle int, _ string) (string, error) {
 	return "/checkouts/" + check + "-" + role + "-" + strconv.Itoa(cycle), nil
 }
+func (f *statusLeafRunner) StartFix(spec run.FixSpec) (string, error) {
+	return "fixer-" + strconv.Itoa(spec.Cycle), nil
+}
+func (f *statusLeafRunner) ReviewCommit(string) (string, string, error) { return "C-review", "", nil }
+
+// statusLeafRunner must stay a run.CheckRunner, or checks steps over it
+// end with an error outcome.
+var _ run.CheckRunner = (*statusLeafRunner)(nil)
 
 // statusRun runs workflow src over f with Rex reporting as run.start
 // wires it, and returns the reports written.

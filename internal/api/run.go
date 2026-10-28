@@ -141,6 +141,20 @@ type RunInfo struct {
 	Waiting    []RunWaiting    `json:"waiting,omitempty" desc:"The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does"`
 	Leaves     []RunLeaf       `json:"leaves,omitempty" desc:"The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none"`
 	Checks     []RunCheck      `json:"checks,omitempty" desc:"The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none"`
+	Fixes      []RunFix        `json:"fixes,omitempty" desc:"The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none"`
+}
+
+// RunFix is one change-set fixer a checks step ran in a cycle.
+type RunFix struct {
+	Step    string `json:"step" desc:"The checks step"`
+	Cycle   int    `json:"cycle" desc:"The cycle whose fix phase ran it, from 2"`
+	Session string `json:"session" desc:"The fixer session's ID"`
+	Model   string `json:"model,omitempty" desc:"The model it runs; empty for the agent's default"`
+	Since   string `json:"since" desc:"The worktree's HEAD when it started, which its commit must follow"`
+	Outcome string `json:"outcome,omitempty" desc:"pass or fail once its work was judged; empty while it runs"`
+	Commit  string `json:"commit,omitempty" desc:"A passed fixer's new commit whose Review: trailer names the run"`
+	Detail  string `json:"detail,omitempty" desc:"Why it was judged so"`
+	At      string `json:"at" desc:"When it started, RFC 3339 UTC"`
 }
 
 // RunCheck is one check a checks step ran.
@@ -1640,6 +1654,12 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 	for _, c := range st.Checks {
 		info.Checks = append(info.Checks, runCheckInfo(st, c))
 	}
+	for _, f := range st.Fixes {
+		info.Fixes = append(info.Fixes, RunFix{
+			Step: f.Step, Cycle: f.Cycle, Session: f.Session, Model: f.Model, Since: f.Since,
+			Outcome: f.Outcome, Commit: f.Commit, Detail: f.Detail, At: rfc3339(f.At),
+		})
+	}
 	return info
 }
 
@@ -1818,6 +1838,23 @@ func (r RunInfo) Human(w io.Writer) {
 					fmt.Fprintf(w, "    - %s\n", findingLine(f))
 				}
 			}
+		}
+	}
+	if len(r.Fixes) > 0 {
+		fmt.Fprintf(w, "\n## Change-set fixes\n\n")
+		for _, f := range r.Fixes {
+			outcome := f.Outcome
+			if outcome == "" {
+				outcome = "open"
+			}
+			fmt.Fprintf(w, "- cycle %d (step %s): fixer session %s: %s", f.Cycle, f.Step, f.Session, outcome)
+			if f.Commit != "" {
+				fmt.Fprintf(w, ", commit %s", shortRev(f.Commit))
+			}
+			if f.Detail != "" {
+				fmt.Fprintf(w, " (%s)", oneLine(f.Detail))
+			}
+			fmt.Fprintf(w, "\n")
 		}
 	}
 	if len(r.Accepts) > 0 {

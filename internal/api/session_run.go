@@ -328,13 +328,14 @@ func launchEnv(rec session.Record) (set, unset []string) {
 	case rec.Check != "":
 		set = append(set, envCheck+"="+rec.Check, envCycle+"="+strconv.Itoa(rec.Cycle))
 	case rec.Cycle > 0:
-		// A review's leaf fixer or verifier: a cycle, no check.
+		// A review's leaf fixer or verifier, or its change set's fixer: a
+		// cycle, no check.
 		set = append(set, envCycle+"="+strconv.Itoa(rec.Cycle))
 		unset = append(unset, envCheck)
 	default:
 		unset = append(unset, envCheck, envCycle)
 	}
-	if rec.Leaf != "" || rec.Check != "" {
+	if rec.Leaf != "" || rec.Check != "" || rec.Cycle > 0 {
 		set = append(set, envRole+"="+rec.Role)
 	} else {
 		unset = append(unset, envRole)

@@ -3346,6 +3346,59 @@ cmp stdout describe.golden.json
                 "description": "Why it stopped or failed",
                 "type": "string"
               },
+              "fixes": {
+                "description": "The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it started, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "commit": {
+                      "description": "A passed fixer's new commit whose Review: trailer names the run",
+                      "type": "string"
+                    },
+                    "cycle": {
+                      "description": "The cycle whose fix phase ran it, from 2",
+                      "type": "integer"
+                    },
+                    "detail": {
+                      "description": "Why it was judged so",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once its work was judged; empty while it runs",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The fixer session's ID",
+                      "type": "string"
+                    },
+                    "since": {
+                      "description": "The worktree's HEAD when it started, which its commit must follow",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The checks step",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "cycle",
+                    "session",
+                    "since",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "id": {
                 "description": "The run ID",
                 "type": "string"
@@ -4598,6 +4651,59 @@ cmp stdout describe.golden.json
                 "description": "Why it stopped or failed",
                 "type": "string"
               },
+              "fixes": {
+                "description": "The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it started, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "commit": {
+                      "description": "A passed fixer's new commit whose Review: trailer names the run",
+                      "type": "string"
+                    },
+                    "cycle": {
+                      "description": "The cycle whose fix phase ran it, from 2",
+                      "type": "integer"
+                    },
+                    "detail": {
+                      "description": "Why it was judged so",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once its work was judged; empty while it runs",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The fixer session's ID",
+                      "type": "string"
+                    },
+                    "since": {
+                      "description": "The worktree's HEAD when it started, which its commit must follow",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The checks step",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "cycle",
+                    "session",
+                    "since",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "id": {
                 "description": "The run ID",
                 "type": "string"
@@ -5680,6 +5786,59 @@ cmp stdout describe.golden.json
           "detail": {
             "description": "Why it stopped or failed",
             "type": "string"
+          },
+          "fixes": {
+            "description": "The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "at": {
+                  "description": "When it started, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "commit": {
+                  "description": "A passed fixer's new commit whose Review: trailer names the run",
+                  "type": "string"
+                },
+                "cycle": {
+                  "description": "The cycle whose fix phase ran it, from 2",
+                  "type": "integer"
+                },
+                "detail": {
+                  "description": "Why it was judged so",
+                  "type": "string"
+                },
+                "model": {
+                  "description": "The model it runs; empty for the agent's default",
+                  "type": "string"
+                },
+                "outcome": {
+                  "description": "pass or fail once its work was judged; empty while it runs",
+                  "type": "string"
+                },
+                "session": {
+                  "description": "The fixer session's ID",
+                  "type": "string"
+                },
+                "since": {
+                  "description": "The worktree's HEAD when it started, which its commit must follow",
+                  "type": "string"
+                },
+                "step": {
+                  "description": "The checks step",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "at",
+                "cycle",
+                "session",
+                "since",
+                "step"
+              ],
+              "type": "object"
+            },
+            "type": "array"
           },
           "id": {
             "description": "The run ID",

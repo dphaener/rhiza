@@ -52,6 +52,8 @@ func fixEntries(t *testing.T, e *Engine) []string {
 			out = append(out, strings.Join(append([]string{en.Type, attemptStr(en.Cycle)}, en.Checks...), " "))
 		case TypeCheckSession, TypeCheckJudged, TypeCheck:
 			out = append(out, strings.Join(strings.Fields(strings.Join([]string{en.Type, en.Check, en.Role, attemptStr(en.Cycle), en.Outcome}, " ")), " "))
+		case TypeReviewFix, TypeReviewFixJudged:
+			out = append(out, strings.Join(strings.Fields(strings.Join([]string{en.Type, en.Role, attemptStr(en.Cycle), en.Outcome}, " ")), " "))
 		case TypeLeafSession, TypeLeafAttempt, TypeLeaf:
 			out = append(out, strings.Join(strings.Fields(strings.Join([]string{en.Type, en.Handle, en.Role, attemptStr(en.Attempt), en.Outcome}, " ")), " "))
 		}
@@ -238,8 +240,8 @@ func TestFixLeafVerifierFailsCycle(t *testing.T) {
 }
 
 // Findings that name no leaf, and those the critic dropped or that are
-// only minor, start no fixer: the failed check simply runs again (the
-// change set's fixer is another leaf's).
+// only minor, start no leaf fixer: one naming no leaf goes to the change
+// set's fixer instead, and the failed check runs again.
 func TestFixLeafNoneWithoutLeafFindings(t *testing.T) {
 	e, r, _, _ := setup(t, checksWF)
 	r.leaves = fixLeaves
@@ -249,6 +251,7 @@ func TestFixLeafNoneWithoutLeafFindings(t *testing.T) {
 	r.findings[checkSID("alpha", "check", 1)] = []Finding{sev("f1", SeverityMajor), onLeaf(sev("f2", SeverityMajor), a), onLeaf(sev("f3", SeverityNit), a)}
 	crit := checkSID("alpha", "critic", 1)
 	r.outcome[crit] = workflow.OutcomePass
+	r.outcome[fixSID(2)] = workflow.OutcomePass
 	r.verdicts[crit] = []Verdict{{Finding: "f1", Verdict: Confirmed, Reason: "real"}, {Finding: "f2", Verdict: Dropped, Reason: "no"}}
 	st, err := e.Run(runID)
 	if err != nil {
@@ -259,6 +262,9 @@ func TestFixLeafNoneWithoutLeafFindings(t *testing.T) {
 	}
 	if len(r.leafSpecs) != 0 {
 		t.Errorf("leaf sessions started: %v", leafSpecRoles(r))
+	}
+	if len(r.fixSpecs) != 1 || !reflect.DeepEqual(fixFindingIDs(r.fixSpecs[0].Findings), []string{"alpha f1 major"}) {
+		t.Errorf("change-set fixers = %+v", r.fixSpecs)
 	}
 }
 
@@ -359,14 +365,14 @@ func TestNextCheckActionsFixPhase(t *testing.T) {
 		{"failed fix ends the cycle's checks", fixed("fail", ""), []string{"4:x:failedcycle 2: fix failed: leaf leaf-a: fixer failed: "}},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := show(nextCheckActions(step, cycles, states, fixLeaves, tt.fixes)); !reflect.DeepEqual(got, tt.want) {
+			if got := show(nextCheckActions(step, cycles, states, fixLeaves, tt.fixes, nil)); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("actions = %v, want %v", got, tt.want)
 			}
 		})
 	}
 	ended := x
 	ended.Outcomes = append(ended.Outcomes, CheckOutcome{Cycle: 2, Outcome: CheckFailed})
-	got := show(nextCheckActions(step, cycles, map[string]CheckState{"x": ended, "y": y}, fixLeaves, fixed("fail", "")))
+	got := show(nextCheckActions(step, cycles, map[string]CheckState{"x": ended, "y": y}, fixLeaves, fixed("fail", ""), nil))
 	if want := []string{"1::"}; !reflect.DeepEqual(got, want) {
 		t.Errorf("after the failed fix = %v, want the next cycle %v", got, want)
 	}

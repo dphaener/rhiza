@@ -25,6 +25,32 @@ type CheckRunner interface {
 	// leaf verifier's checkout. It never touches the run's worktree; the
 	// LeafRunner's RemoveCheckout removes it.
 	OpenCheckCheckout(check, role string, cycle int, commit string) (dir string, err error)
+	// StartFix launches the change set's fixer spec names, in the run's
+	// worktree, and returns its session's ID.
+	StartFix(spec FixSpec) (session string, err error)
+	// ReviewCommit is the newest commit in since..HEAD of the run's
+	// worktree whose Review: trailer names the run. With none, commit is
+	// "" and detail says why.
+	ReviewCommit(since string) (commit, detail string, err error)
+}
+
+// FixSpec is the change set's fixer to launch: role fixer of checks step
+// Step in cycle Cycle (from 2), for Findings, the confirmed blocker and
+// major findings of the cycle's checks that name no leaf of the change
+// set, each with its check. Model is the fixer's model at Cycle, "" for
+// the agent's default. Env holds the session's RHIZA_* variables, the
+// step's plus RHIZA_CYCLE and RHIZA_ROLE (no RHIZA_LEAF, no RHIZA_CHECK).
+// It works in the run's worktree, where its fix commit must carry the
+// trailer `Review: <run>`. Anchor is the session whose pane its pane
+// splits; "" opens the change set's tab anew. The Runner renders the
+// fixer's prompt with {leaf} empty and names the findings.
+type FixSpec struct {
+	Step     workflow.Step
+	Cycle    int
+	Model    string
+	Env      []string
+	Anchor   string
+	Findings []Finding
 }
 
 // CheckSpec is one check session to launch: role Role (check) of checks
@@ -79,6 +105,11 @@ const (
 	fixStart
 	// fixPoll polls the fix phase's live session fix names.
 	fixPoll
+	// reviewFixStart launches the change set's fixer on the cycle, for
+	// findings.
+	reviewFixStart
+	// reviewFixPoll polls the change set's live fixer session.
+	reviewFixPoll
 )
 
 // checkAction is one move of the checks conductor, decided from the
@@ -95,6 +126,8 @@ type checkAction struct {
 	// fix is a fixStart's or fixPoll's leaf session: role fixer or
 	// verifier, its attempt the cycle.
 	fix leafAction
+	// findings are a reviewFixStart's findings: those naming no leaf.
+	findings []Finding
 }
 
 // nextCheckActions is the pure decision of a checks step: from its
@@ -120,7 +153,10 @@ type checkAction struct {
 // folded leaf sessions by leaf ID. A fix phase that fails ends each check
 // of the cycle failed ("cycle N: fix failed: ...") without a session, so
 // the cycle is spent: the next one, if any is left, tries the fix again.
-func nextCheckActions(step workflow.Step, cycles []CheckCycle, states map[string]CheckState, leaves []Leaf, fixes map[string]LeafState) []checkAction {
+// The confirmed findings naming no leaf of leaves (changeSetFindings) go
+// to one fixer for the change set, after every leaf's fixer
+// (changeSetFix); fixed holds the step's change-set fixers.
+func nextCheckActions(step workflow.Step, cycles []CheckCycle, states map[string]CheckState, leaves []Leaf, fixes map[string]LeafState, fixed []ReviewFix) []checkAction {
 	if len(cycles) == 0 {
 		var all []string
 		for _, c := range step.Checks {
@@ -131,6 +167,7 @@ func nextCheckActions(step workflow.Step, cycles []CheckCycle, states map[string
 	cur := cycles[len(cycles)-1]
 	if cur.Cycle > 1 {
 		acts, failure := fixActions(cur.Cycle, leaves, fixFindings(cur.Cycle, cur.Checks, states), fixes)
+		acts, failure = changeSetFix(cur.Cycle, changeSetFindings(cur.Cycle, cur.Checks, states, leaves), fixed, acts, failure)
 		if len(acts) > 0 {
 			return acts
 		}
@@ -221,9 +258,38 @@ func nextCheckActions(step workflow.Step, cycles []CheckCycle, states map[string
 // carries its check's name. A cycle a failed fix spent ran no session, so
 // the next one fixes the same findings again; a check whose session or
 // critic failed has none to fix and only runs again. Findings that name
-// no leaf are not a leaf fixer's: the change set's fixer takes them.
+// no leaf are not a leaf fixer's: the change set's fixer takes them
+// (changeSetFindings), as it does those naming a leaf the change set
+// does not have.
 func fixFindings(cycle int, checks []string, states map[string]CheckState) map[string][]Finding {
 	out := map[string][]Finding{}
+	confirmedFindings(cycle, checks, states, func(f Finding) {
+		if f.Leaf != "" {
+			out[f.Leaf] = append(out[f.Leaf], f)
+		}
+	})
+	return out
+}
+
+// changeSetFindings are the findings cycle's change-set fixer fixes: of
+// the confirmed findings fixFindings reads, in check order, those that
+// name no leaf, or name one not among leaves.
+func changeSetFindings(cycle int, checks []string, states map[string]CheckState, leaves []Leaf) []Finding {
+	var out []Finding
+	confirmedFindings(cycle, checks, states, func(f Finding) {
+		if f.Leaf == "" || !slices.ContainsFunc(leaves, func(l Leaf) bool { return l.ID == f.Leaf }) {
+			out = append(out, f)
+		}
+	})
+	return out
+}
+
+// confirmedFindings calls each with every confirmed finding cycle's fix
+// phase fixes, as fixFindings describes, its check's name set.
+func confirmedFindings(cycle int, checks []string, states map[string]CheckState, each func(Finding)) {
+	if cycle < 2 {
+		return
+	}
 	for _, name := range checks {
 		c := states[name]
 		last := 0
@@ -240,14 +306,53 @@ func fixFindings(cycle int, checks []string, states map[string]CheckState) map[s
 			continue
 		}
 		for _, f := range r.Standing() {
-			if f.Leaf == "" {
-				continue
-			}
 			f.Check = name
-			out[f.Leaf] = append(out[f.Leaf], f)
+			each(f)
 		}
 	}
-	return out
+}
+
+// changeSetFix adds the change set's fixer of cycle to the leaves' fix
+// phase, acts and failure as fixActions gave them, and returns the
+// phase's moves and failure. With findings to fix it starts once every
+// leaf's fixer was judged pass (no fixer move in acts, no failure), as
+// fixers share the run's worktree, beside a fixed leaf's verifier if one
+// runs; while live it is polled, even after a failure; judged fail it
+// fails the phase ("change set: fixer failed: ..."), unless a leaf's
+// failure came first. fixed are the step's change-set fixers.
+func changeSetFix(cycle int, findings []Finding, fixed []ReviewFix, acts []checkAction, failure string) ([]checkAction, string) {
+	if len(findings) == 0 {
+		return acts, failure
+	}
+	var fix ReviewFix
+	started := false
+	for _, f := range fixed {
+		if f.Cycle == cycle {
+			fix, started = f, true
+		}
+	}
+	var mine checkAction
+	switch {
+	case !started:
+		busy := slices.ContainsFunc(acts, func(a checkAction) bool { return a.fix.role == workflow.RoleFixer })
+		if busy || failure != "" {
+			return acts, failure
+		}
+		mine = checkAction{kind: reviewFixStart, cycle: cycle, role: workflow.RoleFixer, findings: findings}
+	case !fix.Judged:
+		mine = checkAction{kind: reviewFixPoll, cycle: cycle, role: workflow.RoleFixer, session: fix.Session}
+	default:
+		if fix.Outcome != workflow.OutcomePass && failure == "" {
+			failure = "change set: fixer failed: " + fix.Detail
+		}
+		return acts, failure
+	}
+	// Starts before polls: the leaves' starts lead acts.
+	i := slices.IndexFunc(acts, func(a checkAction) bool { return a.kind != fixStart })
+	if i < 0 || mine.kind == reviewFixPoll {
+		i = len(acts)
+	}
+	return slices.Insert(acts, i, mine), failure
 }
 
 // fixActions is the pure decision of cycle's fix phase, from the change
@@ -429,6 +534,9 @@ func (r *running) checks(step workflow.Step, env []string) (result, error) {
 	if err := r.closeEndedPanes(cr, step); err != nil {
 		return result{}, err
 	}
+	if err := r.closeEndedFixPanes(cr, step); err != nil {
+		return result{}, err
+	}
 	r.removeCheckCheckouts(cr, step, true)
 	r.removeExitedCheckouts(cr, step)
 	return res, nil
@@ -502,7 +610,7 @@ func (r *running) conductChecks(cr CheckRunner, step workflow.Step, env []string
 			leaves = l
 		}
 		progressed := false
-		for _, a := range nextCheckActions(step, cycles, states, leaves, r.leafStates(step.Name)) {
+		for _, a := range nextCheckActions(step, cycles, states, leaves, r.leafStates(step.Name), r.reviewFixes(step.Name)) {
 			switch a.kind {
 			case checksDone:
 				return result{outcome: a.outcome, detail: a.detail}, nil
@@ -540,6 +648,17 @@ func (r *running) conductChecks(cr CheckRunner, step workflow.Step, env []string
 					return res, err
 				}
 				progressed = progressed || judged
+			case reviewFixStart:
+				if res, failed, err := r.startReviewFix(cr, step, env, a); err != nil || failed {
+					return res, err
+				}
+				progressed = true
+			case reviewFixPoll:
+				judged, res, ended, err := r.pollReviewFix(cr, step, a)
+				if err != nil || ended {
+					return res, err
+				}
+				progressed = progressed || judged
 			}
 		}
 		if !progressed {
@@ -557,6 +676,143 @@ func needsLeaves(cycles []CheckCycle, states map[string]CheckState) bool {
 	}
 	cur := cycles[len(cycles)-1]
 	return cur.Cycle > 1 && len(fixFindings(cur.Cycle, cur.Checks, states)) > 0
+}
+
+// reviewFixes are step's change-set fixers, in order.
+func (r *running) reviewFixes(step string) []ReviewFix {
+	var out []ReviewFix
+	for _, f := range r.j.State().Fixes {
+		if f.Step == step {
+			out = append(out, f)
+		}
+	}
+	return out
+}
+
+// startReviewFix launches the change set's fixer a names, on the fixer's
+// model for the cycle, in the run's worktree, its pane where stepPane
+// says, and journals its review-fix entry with the worktree's HEAD before
+// it started, which its Review: commit must follow. A launch that fails
+// ends the step (failed true) with an error outcome.
+func (r *running) startReviewFix(cr CheckRunner, step workflow.Step, env []string, a checkAction) (result, bool, error) {
+	role := step.Role(workflow.RoleFixer)
+	if role == nil {
+		return errResult(fmt.Errorf("step %q has no fixer", step.Name)), true, nil
+	}
+	head, err := cr.Head()
+	if err != nil {
+		return errResult(fmt.Errorf("change set's fixer: read the worktree's HEAD: %v", err)), true, nil
+	}
+	spec := FixSpec{
+		Step: step, Cycle: a.cycle, Model: role.Model(a.cycle), Findings: a.findings,
+		Env: append(append([]string{}, env...),
+			EnvCycle+"="+strconv.Itoa(a.cycle), EnvRole+"="+workflow.RoleFixer),
+		Anchor: stepPane(r.checkStates(step.Name), r.leafStates(step.Name), r.reviewFixes(step.Name)),
+	}
+	s, err := cr.StartFix(spec)
+	if err != nil {
+		return errResult(fmt.Errorf("start the change set's fixer: %v", err)), true, nil
+	}
+	if err := r.append(Entry{
+		Type: TypeReviewFix, Step: step.Name, Role: workflow.RoleFixer, Cycle: a.cycle, Session: s, Model: spec.Model, Commit: head,
+	}); err != nil {
+		return result{}, false, err
+	}
+	r.log("step %s: cycle %d: change set's fixer session %s", step.Name, a.cycle, s)
+	return result{}, false, nil
+}
+
+// pollReviewFix polls the change set's fixer a names once. When it has
+// exited or its agent said done, it journals its judgement (judged true)
+// and reports its end to the Runner: judged pass, it passes only with a
+// new commit since its start whose Review: trailer names the run
+// (ReviewCommit), journalled on the judgement; without one it fails with
+// ReviewCommit's detail. A live session's block is journalled and
+// notified as an agent step's, and in an autonomous run its question goes
+// to the arbiter; a failed verdict ends the step (ended true) with res.
+func (r *running) pollReviewFix(cr CheckRunner, step workflow.Step, a checkAction) (judged bool, res result, ended bool, err error) {
+	status, err := r.e.Runner.AgentStatus(a.session)
+	if err != nil {
+		if err := r.unblock(step.Name, a.session); err != nil {
+			return false, result{}, false, err
+		}
+		return false, errResult(fmt.Errorf("change set's fixer session %s: %v", a.session, err)), true, nil
+	}
+	if status.Done || status.SaidDone {
+		if err := r.unblock(step.Name, a.session); err != nil {
+			return false, result{}, false, err
+		}
+		outcome, detail := workflow.OutcomePass, "said done"
+		if status.Done {
+			outcome, detail = status.Outcome, status.Detail
+			if outcome == "" {
+				outcome = workflow.OutcomeFail
+			}
+		}
+		commit := ""
+		if outcome == workflow.OutcomePass {
+			var since string
+			for _, f := range r.reviewFixes(step.Name) {
+				if f.Cycle == a.cycle {
+					since = f.Since
+				}
+			}
+			c, why, err := cr.ReviewCommit(since)
+			switch {
+			case err != nil:
+				outcome, detail = workflow.OutcomeFail, fmt.Sprintf("find its Review: commit: %v", err)
+			case c == "":
+				outcome, detail = workflow.OutcomeFail, why
+			default:
+				commit = c
+			}
+		}
+		if err := r.append(Entry{
+			Type: TypeReviewFixJudged, Step: step.Name, Role: workflow.RoleFixer, Cycle: a.cycle, Outcome: outcome, Commit: commit, Detail: detail,
+		}); err != nil {
+			return false, result{}, false, err
+		}
+		r.log("step %s: cycle %d: change set's fixer %s", step.Name, a.cycle, outcome)
+		if err := r.e.Runner.AgentEnded(step, a.session); err != nil {
+			r.log("step %s: %v", step.Name, err)
+		}
+		return true, result{}, false, nil
+	}
+	if status.Blocked != nil {
+		err = r.block(step.Name, a.session, status.Blocked)
+	} else {
+		err = r.unblock(step.Name, a.session)
+	}
+	if err != nil {
+		return false, result{}, false, err
+	}
+	if r.arbitrates(status.Blocked) {
+		res, ended, err := r.ask(step, a.session, status.Blocked)
+		if err != nil || ended {
+			return false, res, ended, err
+		}
+	}
+	return false, result{}, false, nil
+}
+
+// closeEndedFixPanes closes the pane of every judged change-set fixer of
+// step still open, as closeEndedCheckPanes does a check session's: a
+// failure is logged and leaves the pane open in the journal. The error
+// return is for journal failures.
+func (r *running) closeEndedFixPanes(cr CheckRunner, step workflow.Step) error {
+	for _, f := range r.reviewFixes(step.Name) {
+		if !f.Judged || f.PaneClosed {
+			continue
+		}
+		if err := cr.ClosePane(f.Session); err != nil {
+			r.log("step %s: close the pane of session %s: %v", step.Name, f.Session, err)
+			continue
+		}
+		if err := r.append(Entry{Type: TypePaneClosed, Step: step.Name, Role: workflow.RoleFixer, Cycle: f.Cycle, Session: f.Session}); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // startCheck launches a's session, on the check's model for the cycle, in
@@ -584,7 +840,7 @@ func (r *running) startCheck(cr CheckRunner, step workflow.Step, env []string, a
 		Step: step, Role: a.role, Check: check, Cycle: a.cycle, Model: model, Dir: dir,
 		Env: append(append([]string{}, env...),
 			EnvCheck+"="+a.check, EnvCycle+"="+strconv.Itoa(a.cycle), EnvRole+"="+a.role),
-		Anchor: stepPane(r.checkStates(step.Name), r.leafStates(step.Name)),
+		Anchor: stepPane(r.checkStates(step.Name), r.leafStates(step.Name), r.reviewFixes(step.Name)),
 	}
 	s, err := cr.StartCheck(spec)
 	if err != nil {
@@ -709,9 +965,9 @@ func checkPane(states map[string]CheckState) string {
 
 // stepPane is the pure choice of where a checks step's new session's
 // pane opens, a check's or a fixer's or verifier's alike: the most recent
-// open pane of the step's check sessions (checkPane) and its leaf
-// sessions, or "" for a new tab when none is open.
-func stepPane(states map[string]CheckState, fixes map[string]LeafState) string {
+// open pane of the step's check sessions (checkPane), its leaf sessions
+// and its change-set fixers, or "" for a new tab when none is open.
+func stepPane(states map[string]CheckState, fixes map[string]LeafState, fixed []ReviewFix) string {
 	anchor, seq := "", -1
 	if open := openCheckPanes(states); len(open) > 0 {
 		p := open[len(open)-1]
@@ -719,7 +975,12 @@ func stepPane(states map[string]CheckState, fixes map[string]LeafState) string {
 	}
 	if open := openPanes(fixes); len(open) > 0 {
 		if p := open[len(open)-1]; p.s.Seq > seq {
-			anchor = p.s.Session
+			anchor, seq = p.s.Session, p.s.Seq
+		}
+	}
+	for _, f := range fixed {
+		if !f.PaneClosed && f.Seq > seq {
+			anchor, seq = f.Session, f.Seq
 		}
 	}
 	return anchor

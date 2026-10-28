@@ -177,17 +177,23 @@ func leafPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars)
 // fixerPrompt is a leaf fixer's prompt, as leafPrompt describes.
 func fixerPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars) string {
 	p := role.RenderFixerPrompt(workflow.FixerVars{PromptVars: vars, Leaf: spec.Leaf.Handle, Cycle: spec.Cycle})
+	return strings.TrimRight(p, "\n") + "\n\n" + fmt.Sprintf("Review cycle %d confirmed these findings on leaf %s:\n\n%s\n\n"+
+		"Fix them, nothing else, in one new commit with the trailer `Leaf: %s`. `rhiza run status --json` has them too.",
+		spec.Cycle, spec.Leaf.Handle, findingLines(spec.Findings), spec.Leaf.Handle)
+}
+
+// findingLines are a fixer's findings, one "- <check> <id> (<severity>
+// at <place>): <reason>" line each.
+func findingLines(fs []run.Finding) string {
 	var lines []string
-	for _, f := range spec.Findings {
+	for _, f := range fs {
 		line := fmt.Sprintf("- %s %s (%s", f.Check, f.ID, f.Severity)
 		if f.Place != "" {
 			line += " at " + f.Place
 		}
 		lines = append(lines, line+"): "+oneLine(f.Reason))
 	}
-	return strings.TrimRight(p, "\n") + "\n\n" + fmt.Sprintf("Review cycle %d confirmed these findings on leaf %s:\n\n%s\n\n"+
-		"Fix them, nothing else, in one new commit with the trailer `Leaf: %s`. `rhiza run status --json` has them too.",
-		spec.Cycle, spec.Leaf.Handle, strings.Join(lines, "\n"), spec.Leaf.Handle)
+	return strings.Join(lines, "\n")
 }
 
 // leafQuestionPrefix starts the handle of every question node a run adds
@@ -332,6 +338,42 @@ func leafCommit(commits []check.Commit, handle, since string) (string, string, e
 		return "", fmt.Sprintf("%d new commit(s) since %s, none with a Leaf: trailer", len(commits), shortRev(since)), nil
 	}
 	return "", "new commits name another leaf: " + strings.Join(others, ", "), nil
+}
+
+// ReviewCommit is the newest commit in since..HEAD of the run's worktree
+// whose Review: trailer names the run, its trailers read as LeafCommit
+// reads them (parseTrailerLog). With none, commit is "" and detail says
+// why: no new commit since since, or the new commits' Review: trailers
+// name other runs, or none has one.
+func (r *stepRunner) ReviewCommit(since string) (commit, detail string, err error) {
+	out, err := r.worktreeGit("log", "--format="+trailerLogFormat, since+"..HEAD")
+	if err != nil {
+		return "", "", err
+	}
+	return reviewCommit(parseTrailerLog(out), r.run, since)
+}
+
+// reviewCommit picks the newest of commits (newest first) whose Review:
+// trailers name run, else says why none does.
+func reviewCommit(commits []check.Commit, run, since string) (string, string, error) {
+	if len(commits) == 0 {
+		return "", "no new commit since " + shortRev(since), nil
+	}
+	var others []string
+	for _, c := range commits {
+		if slices.Contains(c.Reviews, run) {
+			return c.Hash, "", nil
+		}
+		for _, v := range c.Reviews {
+			if !slices.Contains(others, v) {
+				others = append(others, v)
+			}
+		}
+	}
+	if len(others) == 0 {
+		return "", fmt.Sprintf("%d new commit(s) since %s, none with a Review: trailer", len(commits), shortRev(since)), nil
+	}
+	return "", "new commits' Review: trailers name another run: " + strings.Join(others, ", "), nil
 }
 
 // Evidence reports whether leaf has live Evidence verifying it that the

@@ -388,7 +388,7 @@ func TestNextCheckActions(t *testing.T) {
 			[]string{"5::0:fail"}},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			got := kinds(nextCheckActions(step, tt.cycles, tt.states, nil, nil))
+			got := kinds(nextCheckActions(step, tt.cycles, tt.states, nil, nil, nil))
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("actions = %v, want %v", got, tt.want)
 			}
@@ -738,6 +738,7 @@ func TestCriticConfirmsBlocker(t *testing.T) {
 	crit := checkSID("beta", "critic", 1)
 	r.outcome[crit] = workflow.OutcomePass
 	r.verdicts[crit] = []Verdict{{Finding: "f1", Verdict: Confirmed, Reason: "real"}, {Finding: "f2", Verdict: Dropped, Reason: "no"}}
+	r.outcome[fixSID(2)] = workflow.OutcomePass // the change set's fixer, for f1
 	st, err := e.Run(runID)
 	if err != nil {
 		t.Fatal(err)

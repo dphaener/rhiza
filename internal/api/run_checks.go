@@ -7,6 +7,7 @@ package api
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
@@ -63,6 +64,52 @@ func (r *stepRunner) StartCheck(spec run.CheckSpec) (string, error) {
 		return "", err
 	}
 	return resp.(SessionStartResponse).Session.ID, nil
+}
+
+// StartFix starts the change set's fixer spec names as StartLeaf starts a
+// leaf's: a session on the run's change set in the run's worktree, with
+// the fixer's adapter and mode, else the run's, its prompt
+// changeSetFixerPrompt's. Its record carries the cycle and role fixer,
+// which its agent gets as RHIZA_CYCLE and RHIZA_ROLE, and no leaf or
+// check. A spec with an Anchor splits that session's pane.
+func (r *stepRunner) StartFix(spec run.FixSpec) (string, error) {
+	role := spec.Step.Role(workflow.RoleFixer)
+	if role == nil {
+		return "", fmt.Errorf("step %q has no fixer", spec.Step.Name)
+	}
+	req := agentStepRequest(workflow.Step{Name: spec.Step.Name, Agent: role.Agent, PermissionMode: role.PermissionMode}, r.mode, r.agent)
+	req.Change, req.Run, req.autonomous = r.change, r.run, r.autonomous
+	req.cycle, req.role, req.model = spec.Cycle, workflow.RoleFixer, spec.Model
+	t, err := resolveChangeWorktree(r.ctx, r.change, "no agent can work on it")
+	if err != nil {
+		return "", err
+	}
+	req.split = spec.Step.Split
+	if spec.Anchor != "" {
+		if a, err := r.sessions.Read(spec.Anchor); err == nil {
+			req.anchor = a.Tab
+		}
+	}
+	req.Prompt = changeSetFixerPrompt(*role, spec, workflow.PromptVars{
+		Change: t.cs.String(), Slug: session.Slug(t.title), Title: t.title, Run: r.run, Step: spec.Step.Name,
+	})
+	resp, err := runSessionStart(r.ctx, req)
+	if err != nil {
+		return "", err
+	}
+	return resp.(SessionStartResponse).Session.ID, nil
+}
+
+// changeSetFixerPrompt is the change set's fixer's prompt: role's fixer
+// prompt rendered with vars, {leaf} empty and the cycle, then the
+// findings naming no leaf, one per line as a leaf fixer's are, and the
+// instruction to fix them in one new commit with the trailer
+// `Review: <run>`.
+func changeSetFixerPrompt(role workflow.Role, spec run.FixSpec, vars workflow.PromptVars) string {
+	p := role.RenderFixerPrompt(workflow.FixerVars{PromptVars: vars, Cycle: spec.Cycle})
+	return strings.TrimRight(p, "\n") + "\n\n" + fmt.Sprintf("Review cycle %d confirmed these findings, which name no leaf of the change set:\n\n%s\n\n"+
+		"Fix them, nothing else, in one new commit with the trailer `Review: %s`. `rhiza run status --json` has them too.",
+		spec.Cycle, findingLines(spec.Findings), vars.Run)
 }
 
 // OpenCheckCheckout adds a throwaway detached worktree at commit where

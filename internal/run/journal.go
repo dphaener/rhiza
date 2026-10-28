@@ -51,6 +51,13 @@ const (
 	TypeCheckSession = "check-session"
 	TypeCheckJudged  = "check-judged"
 	TypeCheck        = "check"
+	// TypeReviewFix and TypeReviewFixJudged are a checks step's change-set
+	// fixer's entries: its session started in a cycle (Commit the
+	// worktree's HEAD then), and its work judged (Commit, when it passed,
+	// the new commit whose Review: trailer names the run). Neither names
+	// a leaf or a check.
+	TypeReviewFix       = "review-fix"
+	TypeReviewFixJudged = "review-fix-judged"
 )
 
 // Check outcomes, a check entry's Outcome.
@@ -650,6 +657,31 @@ type CheckOutcome struct {
 	At      time.Time
 }
 
+// ReviewFix is a checks step's change-set fixer in cycle Cycle, folded
+// from its review-fix entry and, once judged, its review-fix-judged
+// entry: the fixer for the confirmed findings that name no leaf of the
+// change set. Since is the worktree's HEAD when it started, which its
+// commit must follow. Judged is true once its work was judged pass or
+// fail (Outcome), for Detail; a passed fixer's Commit is the new commit
+// whose Review: trailer names the run. Seq is the position of its
+// review-fix entry in the journal, and PaneClosed true once a
+// pane-closed entry names its session.
+type ReviewFix struct {
+	Step       string
+	Cycle      int
+	Session    string
+	Model      string
+	Since      string
+	At         time.Time
+	Seq        int
+	PaneClosed bool
+	Judged     bool
+	Outcome    string
+	Commit     string
+	Detail     string
+	JudgedAt   time.Time
+}
+
 // CheckState is one check of a checks step, folded from its entries: its
 // sessions, judgements and outcomes, one per cycle it ran, in journal
 // order.
@@ -857,6 +889,22 @@ type State struct {
 	// check session is also in Sessions; nothing else in the fold changes.
 	Checks []CheckState
 	Cycles []CheckCycle
+	// Fixes are the checks steps' change-set fixers, one per cycle that
+	// ran one, in journal order. Like Checks they survive a new visit of
+	// their step. A fixer session is also in Sessions; nothing else in the
+	// fold changes.
+	Fixes []ReviewFix
+}
+
+// ReviewFix is checks step step's change-set fixer in cycle, if the
+// journal has one.
+func (st State) ReviewFix(step string, cycle int) (ReviewFix, bool) {
+	for _, f := range st.Fixes {
+		if f.Step == step && f.Cycle == cycle {
+			return f, true
+		}
+	}
+	return ReviewFix{}, false
 }
 
 // Check is step's check named name, if the journal has one.
@@ -888,6 +936,18 @@ func (st *State) check(e Entry) *CheckState {
 	}
 	st.Checks = append(st.Checks, CheckState{Step: e.Step, Check: e.Check})
 	return &st.Checks[len(st.Checks)-1]
+}
+
+// closeFixPane marks the pane of the change-set fixer session pane-closed
+// entry e names closed, and says whether e named one.
+func (st *State) closeFixPane(e Entry) bool {
+	for i := range st.Fixes {
+		if f := &st.Fixes[i]; f.Step == e.Step && f.Session == e.Session {
+			f.PaneClosed = true
+			return true
+		}
+	}
+	return false
 }
 
 // Leaf is step's leaf with node ID leaf, if the journal has one.
@@ -979,7 +1039,21 @@ func (j Journal) State() State {
 		case TypeCheck:
 			c := st.check(e)
 			c.Outcomes = append(c.Outcomes, CheckOutcome{Cycle: e.Cycle, Outcome: e.Outcome, Detail: e.Detail, At: e.At})
+		case TypeReviewFix:
+			st.Fixes = append(st.Fixes, ReviewFix{
+				Step: e.Step, Cycle: e.Cycle, Session: e.Session, Model: e.Model, Since: e.Commit, At: e.At, Seq: seq,
+			})
+			st.addSession(e.Step, e.Session)
+		case TypeReviewFixJudged:
+			for i := range st.Fixes {
+				if f := &st.Fixes[i]; f.Step == e.Step && f.Cycle == e.Cycle {
+					f.Judged, f.Outcome, f.Commit, f.Detail, f.JudgedAt = true, e.Outcome, e.Commit, e.Detail, e.At
+				}
+			}
 		case TypePaneClosed:
+			if e.Leaf == "" && e.Check == "" && st.closeFixPane(e) {
+				break
+			}
 			if e.Check != "" {
 				c := st.check(e)
 				for i := range c.Sessions {
