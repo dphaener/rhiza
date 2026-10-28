@@ -1,0 +1,40 @@
+{
+  "actor": "01M623SHSWRDZN8C5RW674T4GV",
+  "after": [
+    "01M622V813149V8PQD0X24AK6M"
+  ],
+  "at": "2026-10-28T20:43:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a5204c9 I ran go test ./cmd/rhiza -run TestScripts/(run-one-live|run-status|review-signoff|autonomous-gate-rule) and go test -race -count=5 ./internal/api -run TestConcurrentStartsOneBegins: both pass. run-one-live.txtar stops a hold run with --no-wait, a second start (and its --dry-run) exits 2 with 'already has a live run, <id>' and 'next: rhiza run resume <id>', leaving one journal; after the first finishes a new start succeeds; with a failed flaky run and a second run stopped at its wait, run resume --retry (and --dry-run) on the failed run exits 2 naming the second. TestConcurrentStartsOneBegins races 8 starts on one change set: exactly one begins, the rest exit 2. Removing the refuseLiveRun check from startRun in a scratch worktree made both the Go test and the testscript fail. Read the diff: start and resume check LiveOf (unfinished journal, interrupted included) under a per-change-set flock, and the engine's Admit hook holds it while the run is reopened. make check exits 0."
+        },
+        "handle": "run-one-live-verified",
+        "id": "01M62413SHBF6A0XR9BMTC8PM1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62413SHBF6A0XR9BKNKHAT2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62413SHBF6A0XR9BKNKHAT2",
+        "id": "01M62414020TKKA5TVD0BMCD6N",
+        "link": "01M62414020TKKA5TVCZ0BPHR8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7G3NZN2827J6Z1GD0BQ1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5ZNV4E4AJR52EX631180DMS",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M62414A2D9V0R6YYWWCETH4P",
+  "type": "ops",
+  "v": 1
+}
