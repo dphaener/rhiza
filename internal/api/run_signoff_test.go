@@ -45,12 +45,12 @@ func TestOwnerCycleFixerPrompts(t *testing.T) {
 		{leaf, "The owner requested these changes on leaf thing:\n\n- alpha f1 (major at a.go:1): say more\n"},
 		{cs, "The owner requested these changes, which name no leaf of the change set:\n\n- alpha f1 (major at a.go:1): say more\n"},
 	} {
-		if !strings.Contains(tt.p, tt.want) || strings.Contains(tt.p, "Review cycle") {
+		if !strings.Contains(tt.p, tt.want) || strings.Contains(tt.p, "review cycle") {
 			t.Errorf("prompt lacks %q or names a review cycle:\n%s", tt.want, tt.p)
 		}
 	}
 	plain := fixerPrompt(role, run.LeafSpec{Role: workflow.RoleFixer, Leaf: run.Leaf{Handle: "thing"}, Cycle: 2, Findings: fs}, vars)
-	if !strings.Contains(plain, "Review cycle 2 confirmed these findings on leaf thing:") {
+	if !strings.Contains(plain, "Confirmed findings to fix in review cycle 2 on leaf thing:") {
 		t.Errorf("a fixer outside an owner cycle is not told its review cycle:\n%s", plain)
 	}
 }

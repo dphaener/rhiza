@@ -178,7 +178,7 @@ func leafPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars)
 // fixerPrompt is a leaf fixer's prompt, as leafPrompt describes.
 func fixerPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars) string {
 	p := role.RenderFixerPrompt(workflow.FixerVars{PromptVars: vars, Leaf: spec.Leaf.Handle, Cycle: spec.Cycle})
-	head := fmt.Sprintf("Review cycle %d confirmed these findings on leaf %s:", spec.Cycle, spec.Leaf.Handle)
+	head := fmt.Sprintf("Confirmed findings to fix in review cycle %d on leaf %s:", spec.Cycle, spec.Leaf.Handle)
 	if spec.Owner {
 		head = fmt.Sprintf("The owner requested these changes on leaf %s:", spec.Leaf.Handle)
 	}
