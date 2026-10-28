@@ -65,11 +65,13 @@ type fakeRunner struct {
 	// evidenceCommitErr is CommitEvidence's error per leaf handle; a
 	// missing handle commits "E-<handle>".
 	evidenceCommitErr map[string]error
-	commitCalls       []string // "<handle> <session>" per CommitEvidence call
-	checkouts         []string // "open <dir> <commit>" and "remove <dir>" per call, in order
-	checkoutErr       error    // OpenCheckout's error, when set
-	removeErr         error    // RemoveCheckout's error, when set
-	heads             []string // Head's result per call, in order; past the end, fakeHead
+	commitCalls       []string         // "<handle> <session>" per CommitEvidence call
+	checkouts         []string         // "open <dir> <commit>" and "remove <dir>" per call, in order
+	checkWrites       []string         // session per CommitCheckWrites call, in order
+	checkWritesErr    map[string]error // CommitCheckWrites' error per session
+	checkoutErr       error            // OpenCheckout's error, when set
+	removeErr         error            // RemoveCheckout's error, when set
+	heads             []string         // Head's result per call, in order; past the end, fakeHead
 	// leafQuestions are "<handle> <text>" per AddLeafQuestion call; the
 	// nth question is QL<n>, handle leaf-failed-<n>.
 	leafQuestions   []string

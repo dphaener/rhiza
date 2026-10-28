@@ -728,6 +728,34 @@ func TestCriticDropsMajor(t *testing.T) {
 	}
 }
 
+// Each check and critic session's writes are committed once it is
+// judged, in the order they are judged; a commit that fails is only
+// logged, and the check's outcome stands.
+func TestChecksStepCommitsWrites(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	passChecks(r, 1, threeChecks...)
+	r.findings[checkSID("alpha", "check", 1)] = []Finding{sev("f1", SeverityMajor)}
+	crit := checkSID("alpha", "critic", 1)
+	r.outcome[crit] = workflow.OutcomePass
+	r.verdicts[crit] = []Verdict{{Finding: "f1", Verdict: Dropped, Reason: "not a bug"}}
+	r.checkWritesErr = map[string]error{checkSID("beta", "check", 1): errors.New("disk full")}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	want := []string{checkSID("alpha", "check", 1), checkSID("beta", "check", 1), checkSID("gamma", "check", 1), crit}
+	if !reflect.DeepEqual(r.checkWrites, want) {
+		t.Errorf("CommitCheckWrites calls = %v, want %v", r.checkWrites, want)
+	}
+	c, _ := st.Check("review", "beta")
+	if o, _ := c.Latest(); o.Outcome != CheckPassed {
+		t.Errorf("beta = %+v, want passed though its writes' commit failed", o)
+	}
+}
+
 // A critic confirming a blocker fails its check, which re-runs next
 // cycle.
 func TestCriticConfirmsBlocker(t *testing.T) {

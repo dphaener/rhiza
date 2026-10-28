@@ -25,6 +25,14 @@ func (f *fakeRunner) ReviewCommit(since string) (string, string, error) {
 	return "C-review", "", nil
 }
 
+func (f *fakeRunner) CommitCheckWrites(session string) (string, error) {
+	f.checkWrites = append(f.checkWrites, session)
+	if err := f.checkWritesErr[session]; err != nil {
+		return "", err
+	}
+	return "W-" + session, nil
+}
+
 // fixSID is the fake runner's session ID for the change set's fixer in
 // cycle.
 func fixSID(cycle int) string { return "S-fixer-" + strconv.Itoa(cycle) }

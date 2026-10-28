@@ -14,13 +14,13 @@ Review the diff from the merge-base with the default branch
 - `quality`: correctness, tests, the repo's conventions.
 - `qa`: hands-on, with the built binary; fakes alone do not count. Then
   Evidence written as yourself on each leaf it exercised, via
-  `rhiza apply <file> --change "$RHIZA_CHANGE" --json`:
+  `rhiza apply <file> --change "$RHIZA_CHANGE" --json`, `<cycle>` being $RHIZA_CYCLE:
 
   ```json
   {"writes":[
-    {"op":"add","kind":"evidence","handle":"<leaf>-qa",
+    {"op":"add","kind":"evidence","handle":"<leaf>-qa-<cycle>",
      "fields":["statement=<what you ran and saw>","result=PASS"]},
-    {"op":"link","from":"<leaf>-qa","type":"verifies","to":"<leaf>"}
+    {"op":"link","from":"<leaf>-qa-<cycle>","type":"verifies","to":"<leaf>"}
   ]}
   ```
 

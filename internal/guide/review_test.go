@@ -43,6 +43,7 @@ func TestReviewText(t *testing.T) {
 		},
 		"evidence": {
 			"Evidence written as yourself on each leaf it exercised",
+			`"handle":"<leaf>-qa-<cycle>"`, "`<cycle>` being $RHIZA_CYCLE",
 			`"type":"verifies","to":"<leaf>"`,
 			"missing constraints",
 		},

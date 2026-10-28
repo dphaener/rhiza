@@ -1062,3 +1062,119 @@ func TestSignoffStepRefused(t *testing.T) {
 		})
 	}
 }
+
+// The built-in review workflow: code-check (no on.fail), then a checks
+// step with compliance, quality, qa, scope and model checks, its critic,
+// fixer and verifier, all on opus, each prompt following a guide and
+// ending in rhiza session done, then the sign-off, which goes back to the
+// checks on changes and ends done without landing.
+func TestReviewBuiltin(t *testing.T) {
+	if !slices.Contains(BuiltinNames(), "review") {
+		t.Fatalf("BuiltinNames = %v; want it to list review", BuiltinNames())
+	}
+	data, ok := Builtin("review")
+	if !ok {
+		t.Fatal("no review built-in")
+	}
+	def, err := Parse("review", data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if def.Name != "review" || def.Start != "code" {
+		t.Errorf("name %q, start %q; want review, code", def.Name, def.Start)
+	}
+	if want := []string{"code", "review", "signoff"}; !slices.Equal(def.Order, want) {
+		t.Fatalf("steps = %v; want %v", def.Order, want)
+	}
+	code := def.Steps["code"]
+	if code.Kind != KindCommand || code.Run != "rhiza run code-check" {
+		t.Errorf("code = %+v; want command rhiza run code-check", code)
+	}
+	if _, ok := code.On[OutcomeFail]; ok {
+		t.Errorf("code has on.fail %q; a failed code check ends the run", code.On[OutcomeFail])
+	}
+	review := def.Steps["review"]
+	if review.Kind != KindChecks || review.Split != SplitAuto || review.MaxVisits < 2 {
+		t.Fatalf("review = %+v; want a checks step, split auto, max_visits for request-changes", review)
+	}
+	var names []string
+	for _, c := range review.Checks {
+		names = append(names, c.Name)
+		if !slices.Equal(c.Models, []string{"opus"}) {
+			t.Errorf("check %s models = %v; want [opus]", c.Name, c.Models)
+		}
+		var ph []string
+		for _, m := range placeholderPattern.FindAllStringSubmatch(c.Prompt, -1) {
+			ph = append(ph, m[1])
+		}
+		for _, p := range ph {
+			if !slices.Contains([]string{"check", "change", "cycle"}, p) {
+				t.Errorf("check %s prompt uses {%s}; want only {check}, {change}, {cycle}", c.Name, p)
+			}
+		}
+		for _, w := range []string{"/rhiza-review", "{check}", "{change}", "rhiza guide review", "rhiza run findings --check", "rhiza session done"} {
+			if !strings.Contains(c.Prompt, w) {
+				t.Errorf("check %s prompt lacks %q: %q", c.Name, w, c.Prompt)
+			}
+		}
+	}
+	if want := []string{"compliance", "quality", "qa", "scope", "model"}; !slices.Equal(names, want) {
+		t.Errorf("checks = %v; want %v", names, want)
+	}
+	roles := map[string]struct {
+		r    *Role
+		want []string
+	}{
+		"critic":   {review.Critic, []string{"/rhiza-review", "{check}", "{change}", "rhiza guide review", "rhiza run verdict --check", "never add a finding", "rhiza session done"}},
+		"fixer":    {review.Fixer, []string{"/rhiza-review", "{leaf}", "{change}", "{cycle}", "rhiza guide review", "rhiza session done"}},
+		"verifier": {review.Verifier, []string{"/rhiza-build", "{leaf}", "{change}", "$RHIZA_COMMIT", "rhiza guide build", "Never edit code", "rhiza run findings --leaf {leaf}", "rhiza session done"}},
+	}
+	for name, tt := range roles {
+		if tt.r == nil {
+			t.Fatalf("review has no %s", name)
+		}
+		if !slices.Equal(tt.r.Models, []string{"opus"}) {
+			t.Errorf("%s models = %v; want [opus]", name, tt.r.Models)
+		}
+		for _, w := range tt.want {
+			if !strings.Contains(tt.r.Prompt, w) {
+				t.Errorf("%s prompt lacks %q: %q", name, w, tt.r.Prompt)
+			}
+		}
+	}
+	signoff := def.Steps["signoff"]
+	if signoff.Kind != KindSignoff || signoff.MaxVisits < 2 {
+		t.Errorf("signoff = %+v; want a signoff step with max_visits for request-changes", signoff)
+	}
+	for _, s := range def.Steps {
+		if strings.Contains(s.Run, "land") {
+			t.Errorf("step %s lands: %q", s.Name, s.Run)
+		}
+	}
+	prompts := []string{review.Critic.Prompt, review.Fixer.Prompt, review.Verifier.Prompt}
+	for _, c := range review.Checks {
+		prompts = append(prompts, c.Prompt)
+	}
+	for _, p := range prompts {
+		if strings.Contains(strings.ToLower(p), "claude") {
+			t.Errorf("a prompt names an agent product: %q", p)
+		}
+	}
+	trans := []struct {
+		step, outcome, next string
+		end                 End
+	}{
+		{"code", OutcomePass, "review", EndNone},
+		{"code", OutcomeFail, "", EndFailed},
+		{"review", OutcomePass, "signoff", EndNone},
+		{"review", OutcomeFail, "", EndFailed},
+		{"signoff", OutcomePass, "", EndSucceeded},
+		{"signoff", OutcomeChanges, "review", EndNone},
+	}
+	for _, tt := range trans {
+		next, end := def.Next(tt.step, tt.outcome)
+		if next != tt.next || end != tt.end {
+			t.Errorf("Next(%q, %q) = (%q, %v); want (%q, %v)", tt.step, tt.outcome, next, end, tt.next, tt.end)
+		}
+	}
+}

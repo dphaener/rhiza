@@ -6,7 +6,10 @@ package api
 
 import (
 	"fmt"
+	"os"
+	"path"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -15,6 +18,7 @@ import (
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
+	"github.com/dphaener/rhiza/internal/store"
 	"github.com/dphaener/rhiza/internal/workflow"
 )
 
@@ -128,6 +132,74 @@ func changeSetFixerPrompt(role workflow.Role, spec run.FixSpec, vars workflow.Pr
 // verifier's <run>-<leaf>-<attempt>. The run's worktree is never touched.
 func (r *stepRunner) OpenCheckCheckout(check, role string, cycle int, commit string) (string, error) {
 	return r.openCheckout(filepath.Join(r.run, fmt.Sprintf("%s-%s-%d", check, role, cycle)), commit)
+}
+
+// CommitCheckWrites commits, on HEAD of the run's worktree, the log entry
+// files there that check or critic session session's actor wrote and no
+// commit holds yet (a QA check's Evidence, a model check's discovered-from
+// draft change set), with the entries recording that actor (actorEntries),
+// and nothing else, as one chore(rhiza) commit "record <check> check
+// writes" ("critic writes" for a critic) with Change: and Actor: (the
+// session's) trailers and no Leaf: trailer. It builds the commit as
+// CommitEvidence does (commitOnly), so other uncommitted edits stay as
+// they were and no later fixer sweeps the check's writes into its own
+// commit. With no such entry it makes no commit and returns "".
+func (r *stepRunner) CommitCheckWrites(session string) (string, error) {
+	cs, err := id.Parse(r.change)
+	if err != nil {
+		return "", fmt.Errorf("run %s names change set %q: %v", r.run, r.change, err)
+	}
+	rec, err := r.sessions.Read(session)
+	if err != nil {
+		return "", fmt.Errorf("read session %s: %v", session, err)
+	}
+	w, err := r.worktreeWorkspace(false)
+	if err != nil {
+		return "", err
+	}
+	m := w.model(cs)
+	actor, err := liveActor(m, rec.Actor)
+	if err != nil {
+		return "", fmt.Errorf("session %s's actor %s: %s", session, rec.Actor, AsError(err).Message)
+	}
+	prefix, err := r.ctx.Git("rev-parse", "--show-prefix")
+	if err != nil {
+		return "", err
+	}
+	dir := path.Join(filepath.ToSlash(strings.TrimSpace(prefix)), store.Dir)
+	out, err := r.worktreeGit("ls-files", "--others", "--modified", "--exclude-standard", "--full-name", "-z", "--", path.Join(dir, store.LogDir))
+	if err != nil {
+		return "", err
+	}
+	var rels []string
+	for _, p := range strings.Split(out, "\x00") {
+		if rel, ok := strings.CutPrefix(p, dir+"/"); ok {
+			rels = append(rels, rel)
+		}
+	}
+	var paths []string
+	add := func(rel string) {
+		if p := path.Join(dir, rel); !slices.Contains(paths, p) {
+			paths = append(paths, p)
+		}
+	}
+	for _, e := range store.ReadEntries(os.DirFS(filepath.Join(r.worktree, filepath.FromSlash(dir))), rels).Entries {
+		if e.Actor == actor {
+			add(path.Join(store.LogDir, e.ChangeSet.String(), e.ID.String()+".json"))
+		}
+	}
+	if len(paths) == 0 {
+		return "", nil
+	}
+	for _, e := range actorEntries(w.changeSets(), actor, cs) {
+		add(path.Join(store.LogDir, e.cs.String(), e.entry.String()+".json"))
+	}
+	role := rec.Role
+	if role == "" {
+		role = workflow.RoleCheck
+	}
+	msg := fmt.Sprintf("chore(rhiza): record %s %s writes\n\nChange: %s\nActor: %s\n", rec.Check, role, cs, nodeName(m, actor))
+	return r.commitOnly(paths, msg)
 }
 
 // checkQuestionPrefix starts the handle of every question node a capped

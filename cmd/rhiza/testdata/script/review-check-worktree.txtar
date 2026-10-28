@@ -1,7 +1,8 @@
 # Each check session works in a throwaway detached worktree at the run
 # branch's head commit, under the git common dir, removed once its session
 # ends whatever its outcome, while its rhiza writes (findings, Evidence)
-# go into the run worktree's journal and log through RHIZA_ROOT. The
+# go into the run worktree's journal and log through RHIZA_ROOT; the
+# engine commits a session's log writes once it is judged. The
 # uncommitted edits in the run worktree stay as they were.
 #
 # A command step first leaves staged, unstaged and untracked edits in the
@@ -35,7 +36,9 @@ stdout '^exit=0$'
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
 
 # Each check session ran in a detached checkout of the branch head, not
-# in the run worktree, with RHIZA_ROOT naming the run worktree.
+# in the run worktree, with RHIZA_ROOT naming the run worktree. (Once
+# alpha's check was judged, its Evidence was committed, so later
+# sessions' branch head is that commit.)
 exec cat $WORK/check.log
 cmp stdout $WORK/want.log
 grep '/repo/\.git/rhiza/checkouts/[0-9A-Z]+/alpha-check-1$' $WORK/alpha-check-1.pwd
@@ -60,6 +63,8 @@ stdout '^1$'
 exec sh -c 'grep -rl "alpha-ok" "$(cat $WORK/run.pwd)/.rhiza/log"'
 stdout '\.json$'
 grep '^alpha clean$' $WORK/checkout-status.log
+exec sh -c 'cd "$(cat $WORK/run.pwd)" && git log --format=%s $(cat $WORK/head)..HEAD'
+stdout '\Achore\(rhiza\): record alpha check writes\n\z'
 
 exec rhiza run status
 stdout '^- review \(visit 1\): pass, then end: 2 of 2 checks passed$'
@@ -146,7 +151,7 @@ pwd -P > "$WORK/$RHIZA_CHECK-$RHIZA_ROLE-$RHIZA_CYCLE.pwd"
 dir=run
 [ "$(pwd -P)" != "$(cd "$run" && pwd -P)" ] && dir=checkout
 head=other
-[ "$(git rev-parse HEAD)" = "$(cat "$WORK/head")" ] && [ "$(git -C "$run" rev-parse HEAD)" = "$(cat "$WORK/head")" ] && head=branch-head
+[ "$(git rev-parse HEAD)" = "$(git -C "$run" rev-parse HEAD)" ] && head=branch-head
 detached=no
 git symbolic-ref -q HEAD > /dev/null || detached=yes
 root=other

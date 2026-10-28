@@ -39,6 +39,13 @@ type CheckRunner interface {
 	// landed, it goes in a record change set of its own instead; it
 	// refuses one otherwise finished.
 	AddReviewQuestion(text string) (Question, error)
+	// CommitCheckWrites commits, on HEAD of the run's worktree, only the
+	// log entry files that check or critic session session's actor wrote
+	// there and no commit holds yet (a QA check's Evidence, a model
+	// check's draft change set), as its own commit with no Leaf: trailer,
+	// and returns it; "" when the actor wrote none. Other uncommitted
+	// edits stay as they were.
+	CommitCheckWrites(session string) (commit string, err error)
 }
 
 // ReviewAnswer is one answer an answered cycle's fixers are given: the
@@ -973,6 +980,15 @@ func (r *running) pollCheck(cr CheckRunner, step workflow.Step, a checkAction) (
 			return false, result{}, false, err
 		}
 		r.log("step %s: check %s cycle %d: %s %s", step.Name, a.check, a.cycle, a.role, outcome)
+		// The session's model writes (QA Evidence, a draft change set)
+		// are committed now, so no later fixer sweeps them into its
+		// commit. A failure is only logged: the judgement stands, and the
+		// writes stay uncommitted in the run's worktree.
+		if c, err := cr.CommitCheckWrites(a.session); err != nil {
+			r.log("step %s: check %s cycle %d: commit the %s's writes: %v", step.Name, a.check, a.cycle, a.role, err)
+		} else if c != "" {
+			r.log("step %s: check %s cycle %d: committed the %s's writes as %s", step.Name, a.check, a.cycle, a.role, c)
+		}
 		r.removeCheckCheckout(cr, step, a.check, a.role, a.cycle)
 		if err := r.e.Runner.AgentEnded(step, a.session); err != nil {
 			r.log("step %s: %v", step.Name, err)

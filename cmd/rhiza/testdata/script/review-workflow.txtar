@@ -1,0 +1,198 @@
+# The built-in review workflow, run by name on a built change set of two
+# leaves (each with a builder's commit and a verifier's Evidence): the
+# code check passes; cycle 1 runs the five checks on opus, quality reports
+# a major on leaf alpha and its critic confirms it, the others are clean,
+# and qa writes Evidence as its own actor, which the engine commits on its
+# own; cycle 2 runs alpha's fixer, then alpha's verifier, then only quality
+# re-runs, clean; the run waits at the sign-off, build-check still passes,
+# and rhiza run approve ends the run done with the change set accepted.
+#
+# The fake rex runs the tab's command synchronously in the window's
+# directory. The fake claude logs its role, check, cycle, leaf and model,
+# and acts its role.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add actor builder --record
+exec rhiza add actor verifier --record
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+
+exec sh -c 'rhiza change new "Review me" --title "Review me" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/cs'
+grep '^[0-9A-Z]{26}$' $WORK/cs
+exec rhiza add capability alpha --field 'statement=Does alpha'
+exec rhiza add capability beta --field 'statement=Does beta'
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# The change set is built: a builder's commit per leaf, and a verifier's
+# Evidence on each.
+exec sh -c 'echo a > alpha.txt && git add alpha.txt && git commit -qm "build alpha" --trailer "Change: $(cat $WORK/cs)" --trailer "Actor: builder" --trailer "Leaf: alpha"'
+exec sh -c 'echo b > beta.txt && git add beta.txt && git commit -qm "build beta" --trailer "Change: $(cat $WORK/cs)" --trailer "Actor: builder" --trailer "Leaf: beta"'
+exec sh -c 'for l in alpha beta; do RHIZA_ACTOR=verifier rhiza add evidence $l-verified --field "statement=$l works" --field result=PASS && RHIZA_ACTOR=verifier rhiza link $l-verified verifies $l || exit 1; done'
+exec rhiza render
+exec git add -A
+exec git commit -qm evidence
+! exists .rhiza/workflows
+
+exec sh -c 'rhiza run start --workflow review --permission-mode manual --json; echo exit=$?'
+stdout '"state": "stopped"'
+stdout '"workflow": "review"'
+stdout '"signoff_waiting": true'
+stdout '^exit=0$'
+
+# Cycle 1 ran the five checks in order and quality's critic; cycle 2 ran
+# alpha's fixer, its verifier, then quality alone. Every session ran on
+# opus.
+exec cat $WORK/claude.log
+cmp stdout $WORK/want.log
+
+exec rhiza run status
+stdout '^- code \(visit 1\): pass, then review'
+stdout '^- review \(visit 1\): pass, then signoff: 5 of 5 checks passed'
+stdout '^- Current step: signoff$'
+stdout '\n## Code checks\n\n- step code: pass\n'
+exec rhiza run status --json
+stdout '"signoff_waiting": true'
+exec sh -c 'rhiza run status --json > $WORK/status.json'
+exec awk -f $WORK/checks.awk $WORK/status.json
+cmp stdout $WORK/want.checks
+
+# In the run's worktree: qa's Evidence in a commit of its own, as its own
+# actor, with no Leaf: trailer; then alpha's fix and its Evidence. The
+# fixer's commit holds none of qa's writes.
+exec sh -c 'cd ../repo.review-me && git log --format=%s $(git rev-parse main)..HEAD'
+stdout '\Achore\(rhiza\): evidence for alpha\nfix alpha\nchore\(rhiza\): record qa check writes\n\z'
+exec sh -c 'cd ../repo.review-me && git log -1 --format=%B --grep="record qa check writes"'
+stdout '^Change: [0-9A-Z]{26}$'
+! stdout '^Leaf:'
+exec sh -c 'cd ../repo.review-me && git log -1 --format=%B --grep="record qa check writes" | sed -n "s/^Actor: //p"'
+cmp stdout $WORK/qa.actor
+exec sh -c 'cd ../repo.review-me && git show --name-only --format= HEAD^'
+stdout '\Aalpha.txt\n\z'
+exec sh -c 'cd ../repo.review-me && git show --name-only --format= HEAD~2 | grep -c "\.rhiza/log/$(cat $WORK/cs)/"'
+stdout '^2$'
+exec sh -c 'cd ../repo.review-me && git status --porcelain --untracked-files=all -- .rhiza/log/$(cat $WORK/cs)'
+! stdout .
+exec sh -c 'cd ../repo.review-me && rhiza show alpha-qa-1 --json'
+stdout '"kind": "evidence"'
+
+# build-check still passes: qa's Evidence by its own actor breaks nothing.
+exec sh -c 'RHIZA_RUN=$(ls .git/rhiza/runs | sed "s/\.jsonl$//") rhiza run build-check; echo exit=$?'
+stdout '^exit=0$'
+
+# The owner approves: the run ends done, and the change set is still
+# accepted, not landed.
+exec sh -c 'rhiza run approve --json; echo exit=$?'
+stdout '^exit=0$'
+exec rhiza run status --json
+stdout '"state": "succeeded"'
+exec sh -c 'cat .git/rhiza/runs/*.jsonl'
+stdout '"builtin:review"'
+stdout '"type":"finished",.*"step":"signoff","end":"succeeded"'
+exec rhiza change show --json
+stdout '"state": "accepted"'
+! stdout '"state": "landed"'
+
+fold-ok
+
+-- want.log --
+role=check check=compliance cycle=1 leaf= model=opus
+role=check check=quality cycle=1 leaf= model=opus
+role=check check=qa cycle=1 leaf= model=opus
+role=check check=scope cycle=1 leaf= model=opus
+role=check check=model cycle=1 leaf= model=opus
+role=critic check=quality cycle=1 leaf= model=opus
+role=fixer check= cycle=2 leaf=alpha model=opus
+role=verifier check= cycle=2 leaf=alpha model=opus
+role=check check=quality cycle=2 leaf= model=opus
+-- want.checks --
+compliance: cycle 1 passed: check
+quality: cycle 1 failed: check critic
+quality: cycle 2 passed: check
+qa: cycle 1 passed: check
+scope: cycle 1 passed: check
+model: cycle 1 passed: check
+-- checks.awk --
+# Prints, from run status --json, each check's cycles: its outcome and
+# the roles of its sessions, in order.
+/^  "checks": \[/ { in_checks = 1; next }
+in_checks && /^  \],?$/ { in_checks = 0 }
+!in_checks { next }
+/^      "check": / { gsub(/[",]/, "", $2); check = $2 }
+/^      "cycles": \[/ { in_cycles = 1; next }
+in_cycles && /^      \],?$/ { flush(); in_cycles = 0 }
+!in_cycles { next }
+/^          "cycle": / { flush(); gsub(/,/, "", $2); cycle = $2; roles = "" }
+/^          "outcome": / { gsub(/[",]/, "", $2); outcome = $2 }
+/^              "role": / { gsub(/[",]/, "", $2); roles = roles " " $2 }
+function flush() {
+	if (cycle != "") print check ": cycle " cycle " " outcome ":" roles
+	cycle = ""
+}
+-- quality-major.json --
+{"findings":[{"severity":"major","leaf":"alpha","place":"alpha.txt:1","reason":"too short"}]}
+-- empty-round.json --
+{"findings":[]}
+-- confirm.json --
+{"verdicts":[{"finding":"f1","verdict":"confirmed","reason":"it is"}]}
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+model=none
+while [ $# -gt 0 ]; do
+	if [ "$1" = --model ]; then
+		model=$2
+	fi
+	shift
+done
+echo "role=$RHIZA_ROLE check=$RHIZA_CHECK cycle=$RHIZA_CYCLE leaf=$RHIZA_LEAF model=$model" >> "$WORK/claude.log"
+case "$RHIZA_ROLE" in
+check)
+	round="$WORK/empty-round.json"
+	if [ "$RHIZA_CHECK" = quality ] && [ "$RHIZA_CYCLE" = 1 ]; then
+		round="$WORK/quality-major.json"
+	fi
+	if [ "$RHIZA_CHECK" = qa ]; then
+		echo "$RHIZA_ACTOR" > "$WORK/qa.actor"
+		rhiza add evidence "alpha-qa-$RHIZA_CYCLE" --field "statement=ran alpha by hand" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+		rhiza link "alpha-qa-$RHIZA_CYCLE" verifies alpha --change "$RHIZA_CHANGE" >&2 || exit 1
+	fi
+	rhiza run findings --check "$RHIZA_CHECK" "$round" >&2 || exit 1
+	;;
+critic)
+	rhiza run verdict --check "$RHIZA_CHECK" "$WORK/confirm.json" >&2 || exit 1
+	;;
+fixer)
+	echo more >> "$RHIZA_LEAF.txt"
+	git add "$RHIZA_LEAF.txt"
+	git commit -q -m "fix $RHIZA_LEAF" -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR
+Leaf: $RHIZA_LEAF" -- "$RHIZA_LEAF.txt" || exit 1
+	;;
+verifier)
+	rhiza add evidence "$RHIZA_LEAF-fixed-$RHIZA_CYCLE" --field "statement=$RHIZA_LEAF fixed" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link "$RHIZA_LEAF-fixed-$RHIZA_CYCLE" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+	;;
+esac
+exit 0
