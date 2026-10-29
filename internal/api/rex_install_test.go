@@ -161,7 +161,8 @@ func TestRexInstallScriptOpensTheLauncher(t *testing.T) {
 		`launch_key = "ctrl+a a"`,
 		`local BIN = "/opt/my tools/rhiza"`,
 		`name = "rhiza_launch"`,
-		`options = { command = { BIN, "tui", "launch" } }`,
+		`options = { command = { BIN, "tui", "launch" }, cwd = block_cwd(ctx.block_id) }`,
+		`rex.block.call(TERM, "process", { block_id = block_id })`,
 		`rex.bind((settings.launch_key:gsub("%s+", ">")), "rhiza_launch")`,
 	} {
 		if !strings.Contains(script, want) {

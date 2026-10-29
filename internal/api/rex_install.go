@@ -43,9 +43,19 @@ const (
 // key to it. The key is written as Rex's own sequence syntax ("ctrl+a>a")
 // or, as the setting shows it, with spaces ("ctrl+a a"). The layer runs
 // `rhiza tui launch`, which lists the apps and opens the chosen one in a
-// modal.
+// modal. The layer starts in the invoking block's directory, since the
+// launcher hands its own to each app; without one Rex starts it in $HOME.
 const rexLaunchLua = `local TERM = "com.superlogical.terminal"
 local LAYER_BOUNDS = { 0.3, 0.25, 0.4, 0.5 }
+
+-- block_cwd returns the working directory of the terminal block's
+-- foreground program, else of its shell, else nil.
+local function block_cwd(block_id)
+  if block_id == nil then return nil end
+  local p = rex.block.call(TERM, "process", { block_id = block_id })
+  if p == nil then return nil end
+  return (p.foreground and p.foreground.cwd) or (p.child and p.child.cwd)
+end
 
 rex.action{
   name = "rhiza_launch",
@@ -59,7 +69,7 @@ rex.action{
       layout = rex.layout.block{
         flavor = TERM .. ".shell",
         label = "Rhiza apps",
-        options = { command = { BIN, "tui", "launch" } },
+        options = { command = { BIN, "tui", "launch" }, cwd = block_cwd(ctx.block_id) },
       },
       focus = true,
     }
