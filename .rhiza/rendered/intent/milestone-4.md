@@ -40,6 +40,11 @@ Rhiza orchestrates: milestone 5 is driven by rhiza daemon, with no orchestrator 
 - serves change set `01M61R3R8BS63ZGH0BVS7QQ5SS` (The daemon: rhiza daemon starts ship-change runs on accepted, ready change sets that serve a milestone and have leaves, in roadmap order under a concurrency cap, each in its own Rex tab, resumes an interrupted run once, and reports through rhiza daemon status.)
 - serves change set `01M61R3RG70WZD5EDH293ZGVWN` (Usage-limit pause: a run whose agent session hits the Claude usage limit waits for the limit to reset and then continues the session, instead of failing.)
 - serves change set `01M620GA5ZK6Z854D07NH0R8WX` (The inbox: rhiza inbox lists every run's questions, sign-offs, failed runs and runs the daemon gave up on, with a recommendation for each question, opens each in its tab, takes sign-offs, and the daemon sends one Rex notification per new item.)
+- serves change set `01M625RC3X2VA17M5V2HVS3HBP` (ship-change's last step, ship, runs after close-out has removed the run's worktree, so it fails starting in a folder that is gone: steps after close-out start in the main checkout, and a ship-change run ends succeeded once its ship command passes.)
+- serves change set `01M625W0AJZ6AMCCWGFXQW19FN` (A plan run that ends with confirmed review findings or parked questions still open does not report success: it stops for the owner with them listed, so nothing has to be fixed by hand after a succeeded run.)
+- serves change set `01M625RCFY4RB9HC0B69Y08VFV` (A plan run ends with its plan on a pushed branch and an open PR, as ship-change does, so no one renders, commits or opens the plan's PR by hand.)
+- serves change set `01M62MKZ6SA46DYC1K2R0W254S` (The daemon resumes only interrupted runs whose change set is still accepted: a run left interrupted on a change set that has since landed, been withdrawn or rejected is never resumed.)
+- serves change set `01M62MKZFRPZ2C7QTYAF815XAG` (The inbox leaves out failed runs whose change set has since landed, been withdrawn or rejected, and rhiza run abandon also takes a failed run, so every failed item can be cleared; no item's next command is one that can only fail again.)
 
 ## History
 
