@@ -380,13 +380,22 @@ func TestCheckErrors(t *testing.T) {
 func TestParseTrailerLog(t *testing.T) {
 	out := "aaa\x1fSubject\n\nChange: CS1\nActor: builder\nLeaf: leaf\nLeaf: other\x1e\n" +
 		"bbb\x1fSubject only\x1e\n" +
-		"ccc\x1fSubject\n\nchange: CS2\nCHANGE:  CS3 \nactor: 01M5ACTOR\nnot a trailer\x1e\n" +
+		"ccc\x1fSubject\n\nprose\n\nchange: CS2\nCHANGE:  CS3 \nactor: 01M5ACTOR\x1e\n" +
 		// Trailers in a paragraph before Co-Authored-By's.
 		"ddd\x1fSubject\n\nChange: CS4\nActor: a\nLeaf: split\nReview: R1\n\nCo-Authored-By: Claude <noreply@anthropic.com>\x1e\n" +
 		// Trailers sharing the final paragraph.
 		"eee\x1fSubject\n\nChange: CS5\nLeaf: one\nCo-Authored-By: Claude <noreply@anthropic.com>\x1e\n" +
 		// The subject is not a trailer.
-		"fff\x1fLeaf: subject\n\nbody\x1e\n"
+		"fff\x1fLeaf: subject\n\nbody\x1e\n" +
+		// A paragraph with prose in it is not trailers, even its last.
+		"ggg\x1fSubject\n\nChange: CS6\nnot a trailer\x1e\n" +
+		// Prose wrapped onto a "Leaf: ..." line, then real trailers.
+		"hhh\x1fSubject\n\nThe builder's\nLeaf: trailer names it, and the check reads it.\n\nChange: CS7\nLeaf: real\x1e\n" +
+		// A squash merge: only the trailing run, the last commit's, counts.
+		"iii\x1fSquash (#53)\n\n* First\n\nWhy.\n\nChange: CS8\nActor: first\nLeaf: one\n\n" +
+		"* Second\n\nChange: CS8\nActor: second\nLeaf: two\n\n---------\n\nCo-authored-by: Claude <noreply@anthropic.com>\x1e\n" +
+		// A folded trailer is unfolded; blank lines may hold spaces.
+		"jjj\x1fSubject\n\nprose\n \t\nChange: CS9\nLeaf: long\n  name\x1e\n"
 	got := parseTrailerLog(out)
 	want := []check.Commit{
 		{Hash: "aaa", Changes: []string{"CS1"}, Actors: []string{"builder"}, Leaves: []string{"leaf", "other"}},
@@ -395,6 +404,10 @@ func TestParseTrailerLog(t *testing.T) {
 		{Hash: "ddd", Changes: []string{"CS4"}, Actors: []string{"a"}, Leaves: []string{"split"}, Reviews: []string{"R1"}},
 		{Hash: "eee", Changes: []string{"CS5"}, Leaves: []string{"one"}},
 		{Hash: "fff"},
+		{Hash: "ggg"},
+		{Hash: "hhh", Changes: []string{"CS7"}, Leaves: []string{"real"}},
+		{Hash: "iii"},
+		{Hash: "jjj", Changes: []string{"CS9"}, Leaves: []string{"long name"}},
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("parseTrailerLog = %+v, want %+v", got, want)
