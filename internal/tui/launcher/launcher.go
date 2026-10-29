@@ -58,6 +58,19 @@ const (
 	defaultRows = 30
 )
 
+// Size returns the app modal's size in cells, the defaults where the app
+// sets none.
+func (a App) Size() (cols, rows int) {
+	cols, rows = a.Cols, a.Rows
+	if cols == 0 {
+		cols = defaultCols
+	}
+	if rows == 0 {
+		rows = defaultRows
+	}
+	return cols, rows
+}
+
 // Launcher opens the apps' modals in one Rex session.
 type Launcher struct {
 	Rex     surface.Rex
@@ -71,13 +84,7 @@ type Launcher struct {
 
 // OpenApp opens a's modal: a layer whose block runs `rhiza tui app <name>`.
 func (l Launcher) OpenApp(ctx context.Context, a App) (*surface.Handle, error) {
-	cols, rows := a.Cols, a.Rows
-	if cols == 0 {
-		cols = defaultCols
-	}
-	if rows == 0 {
-		rows = defaultRows
-	}
+	cols, rows := a.Size()
 	return surface.New(l.Rex, l.Session).Open(ctx, surface.Spec{
 		Kind:     surface.Modal,
 		Argv:     []string{l.Bin, "tui", "app", a.Name},

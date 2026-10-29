@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/dphaener/rexuikit/surface"
 	"github.com/dphaener/rhiza/internal/tui/launcher"
 )
 
@@ -85,11 +86,48 @@ if type(settings.launch_key) == "string" and settings.launch_key ~= "" then
 end
 `
 
-// rexAppActionsLua is the Lua of one app's action: its own entry in Rex's
+// rexCellBoundsLua is the Lua that sizes a layer to a number of cells: the
+// chrome model of rexuikit's surface.BoundsForCells, centred, with its
+// constants (frame, border and margin in pixels, cols then rows) filled in
+// by rexCellBounds. The window is taken to be the invoking block's
+// terminal; without a size to work from it gives LAYER_BOUNDS.
+const rexCellBoundsLua = `
+-- cell_bounds returns bounds that give a program cols x rows cells.
+local function cell_bounds(block_id, cols, rows)
+  if block_id == nil then return LAYER_BOUNDS end
+  local ok, sz = pcall(rex.block.call, TERM, "size", { block_id = block_id })
+  if not ok or type(sz) ~= "table" or (sz.cell_width_px or 0) <= 0 or (sz.cell_height_px or 0) <= 0 then
+    return LAYER_BOUNDS
+  end
+  local function edge(v) return math.floor(v + 0.5) end
+  local function fit_axis(win, frame, cell, border, margin, want)
+    local px = win * cell + frame
+    local span = math.min(1, (want * cell + border + margin) / px)
+    while true do
+      local pos = math.max(0, (1 - span) / 2)
+      local got = math.floor((edge(px * (pos + span)) - edge(px * pos) - border - margin) / cell)
+      if got >= want or span >= 1 then return pos, span end
+      span = math.min(1, span + 1 / px)
+    end
+  end
+  local x, w = fit_axis(sz.columns, %[1]d, sz.cell_width_px, %[2]d, %[3]d, cols)
+  local y, h = fit_axis(sz.rows, %[4]d, sz.cell_height_px, %[5]d, %[6]d, rows)
+  return { x, y, w, h }
+end
+`
+
+func rexCellBounds() string {
+	return fmt.Sprintf(rexCellBoundsLua,
+		surface.FramePxCols, surface.BorderPxCols, surface.InverseMarginPxCols,
+		surface.FramePxRows, surface.BorderPxRows, surface.InverseMarginPxRows)
+}
+
+// rexAppActionLua is the Lua of one app's action: its own entry in Rex's
 // command palette, titled with the app's name, that opens the app straight
-// away in a layer running `rhiza tui app <name>`. The arguments are Lua
+// away, in a layer sized to the app's own cells, running
+// `rhiza tui app <name>`; no list step comes first. The arguments are Lua
 // string literals (action name, title, description, keywords, app name),
-// quoted by rexAppActions.
+// quoted by rexAppActions, then the app's columns and rows.
 const rexAppActionLua = `
 rex.action{
   name = %[1]s,
@@ -99,7 +137,7 @@ rex.action{
   keywords = %[4]s,
   run = function(ctx)
     local res, err = rex.session.new_layer{
-      bounds = LAYER_BOUNDS,
+      bounds = cell_bounds(ctx.block_id, %[6]d, %[7]d),
       layout = rex.layout.block{
         flavor = TERM .. ".shell",
         label = %[2]s,
@@ -123,9 +161,10 @@ func rexAppActions() string {
 		if desc == "" {
 			desc = "Open the " + a.Name + " app"
 		}
+		cols, rows := a.Size()
 		fmt.Fprintf(&b, rexAppActionLua,
 			strconv.Quote("rhiza_app_"+a.Name), strconv.Quote(a.Name), strconv.Quote(desc),
-			strconv.Quote("rhiza app "+a.Name), strconv.Quote(a.Name))
+			strconv.Quote("rhiza app "+a.Name), strconv.Quote(a.Name), cols, rows)
 	}
 	return b.String()
 }
@@ -233,7 +272,7 @@ func rexScript(have []byte, bin string) []byte {
 		"-- Edit the settings block; a reinstall keeps it. Everything else is rewritten.\n" +
 		settings +
 		"\nlocal BIN = " + strconv.Quote(bin) + "\n" +
-		rexLaunchLua + rexAppActions() + rexScriptTail)
+		rexLaunchLua + rexCellBounds() + rexAppActions() + rexScriptTail)
 }
 
 // rexHasRequire reports whether init.lua already loads rhiza: any line that

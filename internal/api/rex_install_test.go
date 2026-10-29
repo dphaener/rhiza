@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -212,5 +213,37 @@ func TestRexInstallRegistersAnActionPerApp(t *testing.T) {
 	}
 	if script = readFile(t, filepath.Join(dir, "rhiza.lua")); !strings.Contains(script, `command = { BIN, "tui", "app", "zz-later" }`) {
 		t.Errorf("reinstall lacks the new app's action:\n%s", script)
+	}
+}
+
+func TestRexInstallSizesEachAppLayerToItsCells(t *testing.T) {
+	launcher.Register(launcher.App{Name: "zz-sized", Summary: "Sized", Cols: 77, Rows: 21})
+	launcher.Register(launcher.App{Name: "zz-default", Summary: "Default size"})
+	ctx, dir, _ := rexTestCtx(t)
+	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	script := readFile(t, filepath.Join(dir, "rhiza.lua"))
+	action := func(name string) string {
+		i := strings.Index(script, `name = "rhiza_app_`+name+`"`)
+		if i < 0 {
+			t.Fatalf("no action for %s:\n%s", name, script)
+		}
+		end := strings.Index(script[i:], "\n}\n")
+		return script[i : i+end]
+	}
+	sized := action("zz-sized")
+	if !strings.Contains(sized, "bounds = cell_bounds(ctx.block_id, 77, 21)") {
+		t.Errorf("zz-sized is not sized from its own cells:\n%s", sized)
+	}
+	if !strings.Contains(sized, `command = { BIN, "tui", "app", "zz-sized" }`) || strings.Contains(sized, `"launch"`) {
+		t.Errorf("zz-sized does not run its app directly:\n%s", sized)
+	}
+	dc, dr := launcher.App{}.Size()
+	if want := fmt.Sprintf("cell_bounds(ctx.block_id, %d, %d)", dc, dr); !strings.Contains(action("zz-default"), want) {
+		t.Errorf("zz-default lacks %s", want)
+	}
+	if strings.Contains(strings.Replace(script, `{ BIN, "tui", "launch" }`, "", 1), `"launch"`) {
+		t.Errorf("an app action goes through tui launch:\n%s", script)
 	}
 }

@@ -25,6 +25,7 @@ grep 'title = "session-ls"' conf/rhiza.lua
 grep '"tui", "app", "model"' conf/rhiza.lua
 grep 'title = "model"' conf/rhiza.lua
 grep 'title = "accept"' conf/rhiza.lua
+grep 'bounds = cell_bounds\(ctx.block_id, 100, 30\)' conf/rhiza.lua
 
 # A second install changes neither file, and keeps an edited setting.
 cp conf/init.lua first-init.lua
