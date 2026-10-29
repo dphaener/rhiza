@@ -52,6 +52,7 @@ func usage() string {
 	rows = append(rows,
 		row{"api call", "Call an operation with a JSON request; prints JSON"},
 		row{"tui launch", "Run the Rex quick-launch layer (started by the Rex key)"},
+		row{"tui app", "Run a read app: roadmap, ready, show, why or slice (--once prints its JSON)"},
 		row{"version", "Print the rhiza version"})
 	width := 0
 	for _, r := range rows {
@@ -93,7 +94,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer, getenv func(s
 			fmt.Fprint(stdout, usage())
 			return 0
 		}
-		return tuiCommand(words, stdout, stderr, getenv)
+		return tuiCommand(rest, stdout, stderr, getenv)
 	case "api":
 		if g.help {
 			fmt.Fprint(stdout, usage())
