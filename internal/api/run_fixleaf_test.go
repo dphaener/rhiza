@@ -36,24 +36,24 @@ prompt = "verify {leaf}"
 // repository, with leaf "leaf-a", its sessions faked: in cycle 1 check
 // alpha finds a major on leaf-a, which alpha's critic confirms, and beta
 // finds nothing; in cycle 2 alpha finds nothing. The fixer, as it starts,
-// commits a fix naming leaf-a unless noCommit; the verifier writes
+// commits a fix with its trailers written as fixCommit says; the verifier writes
 // Evidence on leaf-a as ada, whose session S-v is its own. Every session
 // exits 0 at its first poll. The real git machinery judges the fixer's
 // commit and the verifier's Evidence, and opens their checkouts.
 type fixLeafRunner struct {
 	*stepRunner
-	t        *testing.T
-	git      func(...string) string
-	ctx      *Ctx
-	store    *run.Store
-	leaf     run.Leaf
-	ada      id.ID
-	noCommit bool
-	checks   []string // "check role cycle" per StartCheck call
-	specs    []run.LeafSpec
-	prompts  []string // each leaf session's rendered prompt
-	heads    []string // each verifier checkout's HEAD as it started
-	fix      string   // the fixer's commit
+	t         *testing.T
+	git       func(...string) string
+	ctx       *Ctx
+	store     *run.Store
+	leaf      run.Leaf
+	ada       id.ID
+	fixCommit fixCommit
+	checks    []string // "check role cycle" per StartCheck call
+	specs     []run.LeafSpec
+	prompts   []string // each leaf session's rendered prompt
+	heads     []string // each verifier checkout's HEAD as it started
+	fix       string   // the fixer's commit
 }
 
 func (g *fixLeafRunner) Leaves(string) ([]run.Leaf, error) { return []run.Leaf{g.leaf}, nil }
@@ -84,14 +84,23 @@ func (g *fixLeafRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	g.prompts = append(g.prompts, leafPrompt(*spec.Step.Role(spec.Role), spec, workflow.PromptVars{Change: g.change}))
 	switch spec.Role {
 	case workflow.RoleFixer:
-		if g.noCommit {
+		if g.fixCommit == fixNone {
 			return "S-fixer", nil
 		}
-		if err := os.WriteFile(filepath.Join(g.worktree, "fix.go"), []byte("package fix\n"), 0o644); err != nil {
+		if err := os.WriteFile(filepath.Join(g.worktree, "fix.go"), []byte("package fix // "+strconv.Itoa(len(g.specs))+"\n"), 0o644); err != nil {
 			t.Fatal(err)
 		}
 		g.git("add", "fix.go")
-		g.git("commit", "-q", "-m", "fix: make the map first", "-m", "Change: "+g.change+"\nLeaf: "+g.leaf.Handle)
+		msg := []string{"commit", "-q", "-m", "fix: make the map first"}
+		switch g.fixCommit {
+		case fixOneParagraph:
+			msg = append(msg, "-m", "Change: "+g.change+"\nLeaf: "+g.leaf.Handle)
+		case fixSplit:
+			msg = append(msg, "-m", "Change: "+g.change+"\nLeaf: "+g.leaf.Handle, "-m", "Co-Authored-By: Claude <noreply@anthropic.com>")
+		case fixSplitOther:
+			msg = append(msg, "-m", "Change: "+g.change+"\nLeaf: leaf-x", "-m", "Co-Authored-By: Claude <noreply@anthropic.com>")
+		}
+		g.git(msg...)
 		g.fix = g.git("rev-parse", "HEAD")
 		return "S-fixer", nil
 	case workflow.RoleVerifier:
@@ -115,9 +124,24 @@ func (g *fixLeafRunner) AgentEnded(workflow.Step, string) error { return nil }
 // ClosePane closes nothing: its sessions are fakes with no pane.
 func (g *fixLeafRunner) ClosePane(string) error { return nil }
 
+// fixCommit is how a fixLeafRunner's fixer writes its commit.
+type fixCommit int
+
+const (
+	// fixOneParagraph commits with Change: and Leaf: in one paragraph.
+	fixOneParagraph fixCommit = iota
+	// fixNone makes no commit.
+	fixNone
+	// fixSplit puts Leaf: in the first trailer paragraph and
+	// Co-Authored-By in a later one.
+	fixSplit
+	// fixSplitOther is fixSplit with Leaf: naming leaf-x instead.
+	fixSplitOther
+)
+
 // fixLeafRun runs the review of fixLeafWF with g's sessions and returns
 // the folded journal and its entries.
-func fixLeafRun(t *testing.T, noCommit bool) (*fixLeafRunner, run.State, []run.Entry) {
+func fixLeafRun(t *testing.T, fix fixCommit) (*fixLeafRunner, run.State, []run.Entry) {
 	t.Helper()
 	sr, git, ctx, leaf, ada := evidenceCommitRunner(t)
 	def, err := workflow.Parse("review", []byte(fixLeafWF))
@@ -129,7 +153,7 @@ func fixLeafRun(t *testing.T, noCommit bool) (*fixLeafRunner, run.State, []run.E
 	if err := run.Start(store, "R1", run.Started{Workflow: "review", Definition: fixLeafWF, Change: sr.change}, now, def); err != nil {
 		t.Fatal(err)
 	}
-	g := &fixLeafRunner{stepRunner: sr, t: t, git: git, ctx: ctx, store: store, leaf: leaf, ada: ada, noCommit: noCommit}
+	g := &fixLeafRunner{stepRunner: sr, t: t, git: git, ctx: ctx, store: store, leaf: leaf, ada: ada, fixCommit: fix}
 	e := &run.Engine{Store: store, Runner: g, Clock: noSleep{}, Now: func() time.Time { return now }}
 	st, err := e.Run("R1")
 	if err != nil {
@@ -149,7 +173,7 @@ func fixLeafRun(t *testing.T, noCommit bool) (*fixLeafRunner, run.State, []run.E
 // verifier's actor, is committed alone; then only the failed check runs
 // again, and the step passes.
 func TestFixLeafEngine(t *testing.T) {
-	g, st, entries := fixLeafRun(t, false)
+	g, st, entries := fixLeafRun(t, fixOneParagraph)
 	if len(st.Steps) != 1 || st.Steps[0].Outcome != workflow.OutcomePass {
 		t.Fatalf("steps = %+v", st.Steps)
 	}
@@ -226,7 +250,7 @@ func TestFixLeafEngine(t *testing.T) {
 // A fixer that ends with no new commit naming its leaf fails the cycle:
 // no verifier starts and the failed check runs no session in it.
 func TestFixLeafEngineNoCommit(t *testing.T) {
-	g, st, _ := fixLeafRun(t, true)
+	g, st, _ := fixLeafRun(t, fixNone)
 	if len(st.Steps) != 1 || st.Steps[0].Outcome != workflow.OutcomeFail {
 		t.Fatalf("steps = %+v", st.Steps)
 	}
@@ -246,5 +270,46 @@ func TestFixLeafEngineNoCommit(t *testing.T) {
 	c, _ := st.Check("review", "alpha")
 	if o, _ := c.Outcome(2); o.Outcome != run.CheckFailed || o.Detail != "cycle 2: fix failed: leaf leaf-a: fixer failed: "+j.Detail {
 		t.Errorf("alpha's cycle 2 outcome = %+v", o)
+	}
+}
+
+// A fixer's commit with Leaf: in its first trailer paragraph and
+// Co-Authored-By in a later one counts as the leaf's attempt: the fixer
+// passes on it, the verifier starts on it and the step passes.
+func TestFixLeafEngineSplitTrailers(t *testing.T) {
+	g, st, _ := fixLeafRun(t, fixSplit)
+	if len(st.Steps) != 1 || st.Steps[0].Outcome != workflow.OutcomePass {
+		t.Fatalf("steps = %+v", st.Steps)
+	}
+	if g.fix == "" {
+		t.Fatal("the fixer made no commit")
+	}
+	if body := g.git("log", "-1", "--format=%B", g.fix); !strings.Contains(body, "Leaf: leaf-a\n\nCo-Authored-By: ") {
+		t.Fatalf("fix commit's trailers are not split:\n%s", body)
+	}
+	l, _ := st.Leaf("review", g.leaf.ID)
+	if j, _ := l.Judged(workflow.RoleFixer, 2); j.Outcome != workflow.OutcomePass || j.Commit != g.fix {
+		t.Errorf("fixer judgement = %+v, want pass on %s", j, g.fix)
+	}
+	if len(g.specs) != 2 || g.specs[1].Role != workflow.RoleVerifier || g.specs[1].Commit != g.fix {
+		t.Errorf("leaf sessions = %+v, want a verifier on the fix commit %s", g.specs, g.fix)
+	}
+}
+
+// A fixer's split-paragraph commit whose Leaf: names another leaf still
+// fails the cycle: no verifier starts.
+func TestFixLeafEngineSplitOtherLeaf(t *testing.T) {
+	g, st, _ := fixLeafRun(t, fixSplitOther)
+	if len(st.Steps) != 1 || st.Steps[0].Outcome != workflow.OutcomeFail {
+		t.Fatalf("steps = %+v", st.Steps)
+	}
+	for _, s := range g.specs {
+		if s.Role != workflow.RoleFixer {
+			t.Errorf("a %s started after the fixer's commit named another leaf", s.Role)
+		}
+	}
+	l, _ := st.Leaf("review", g.leaf.ID)
+	if j, _ := l.Judged(workflow.RoleFixer, 2); j.Outcome != workflow.OutcomeFail || !strings.Contains(j.Detail, "another leaf: leaf-x") {
+		t.Errorf("fixer judgement = %+v", j)
 	}
 }
