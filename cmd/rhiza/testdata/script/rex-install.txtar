@@ -34,6 +34,21 @@ cp theirs.lua conf/rhiza.lua
 ! exec rhiza rex install
 stderr 'was not written by rhiza rex install'
 
+# An init.lua symlinked from dotfiles is edited through the link, and
+# rhiza.lua goes in the folder Rex reads, where require("rhiza") finds it,
+# not beside the link's target.
+env REX_CONFIG=$WORK/linked/init.lua
+mkdir dotfiles linked
+cp owner.lua dotfiles/init.lua
+symlink linked/init.lua -> ../dotfiles/init.lua
+exec rhiza rex install
+grep -count=1 'require\("rhiza"\)' dotfiles/init.lua
+grep '^-- Written by rhiza rex install\.$' linked/rhiza.lua
+! exists dotfiles/rhiza.lua
+exec rhiza rex uninstall
+cmp dotfiles/init.lua owner.lua
+! exists linked/rhiza.lua
+
 -- theirs.lua --
 -- theirs
 -- owner.lua --

@@ -126,7 +126,8 @@ func init() {
 // rexConfigPaths returns the paths of Rex's init.lua and of rhiza.lua
 // beside it. Rex reads REX_CONFIG when set, else rex/init.lua in
 // $XDG_CONFIG_HOME or ~/.config. init.lua may be a symlink (dotfiles); it is
-// resolved so a write goes through it.
+// resolved so a write goes through it, but rhiza.lua stays in the folder
+// Rex reads, where require("rhiza") looks for it.
 func rexConfigPaths(ctx *Ctx, cmd string) (initPath, scriptPath string, err error) {
 	get := ctx.Getenv
 	if get == nil {
@@ -142,10 +143,11 @@ func rexConfigPaths(ctx *Ctx, cmd string) (initPath, scriptPath string, err erro
 	default:
 		return "", "", Usagef("%s: no Rex config folder: set REX_CONFIG", cmd)
 	}
+	scriptPath = filepath.Join(filepath.Dir(initPath), rexScriptName)
 	if r, rerr := filepath.EvalSymlinks(initPath); rerr == nil {
 		initPath = r
 	}
-	return initPath, filepath.Join(filepath.Dir(initPath), rexScriptName), nil
+	return initPath, scriptPath, nil
 }
 
 // rexReload makes Rex read its config again.
