@@ -1,0 +1,29 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M634X7M40YQ8VCHXA2TNFB24"
+  ],
+  "at": "2026-10-29T06:19:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rebasing branch cs/inbox-clears-stale-failures onto origin/main conflicts outside the rendered files, so ship-change stopped. How should these conflicts be resolved: internal/api/daemon.go, internal/api/inbox.go?"
+        },
+        "handle": "rebase-conflict-inbox-clears-stale-failures",
+        "id": "01M6350ZQZZQP18DGDGETXK52E",
+        "key": null,
+        "kind": "question",
+        "node": "01M6350ZQZZQP18DGDGDWQGP0G",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M62MKZFRPZ2C7QTYAF815XAG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6351073GDAKYYJFQPS85WQD",
+  "type": "ops",
+  "v": 1
+}

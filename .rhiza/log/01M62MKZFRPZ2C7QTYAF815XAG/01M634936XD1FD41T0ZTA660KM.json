@@ -1,0 +1,40 @@
+{
+  "actor": "01M633YZ7DMKFWY5F7GA3N8HPA",
+  "after": [
+    "01M63419XFDKZQRM3DAZQKPBC1"
+  ],
+  "at": "2026-10-29T06:06:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c3aa860: go test ./cmd/rhiza -run TestScripts/inbox-stale passes. The script builds fixture change sets and journals: a failed run and a gave-up run each on landed, withdrawn, rejected and superseded change sets (a dumped rhiza change ls --json showed all eight in those states, superseded included), one of each on an accepted change set, a failed run on unknown change set CSUNKNOWN, and a question and a sign-off on a landed change set. rhiza inbox and inbox --json list exactly F-ACCEPTED, G-ACCEPTED, F-UNKNOWN, Q-LANDED and S-LANDED (5 kinds in --json), with none of the eight stale runs. Mutation probe in a scratch worktree: removing the gone() check on ended failed runs makes the script fail (F-WITHDRAWN listed), and removing it on the gave-up branch alone also makes it fail. The diff applies goneChanges (State.Terminal: landed, rejected, withdrawn, superseded; an unknown change or unreadable log counts as not gone) to inbox, inbox open and daemon notify. make fmt-check, vet and go test ./... pass; make self-check fails only on stale rendered actor files for this run's sessions, not on this leaf's code."
+        },
+        "handle": "inbox-clears-stale-verified",
+        "id": "01M63492JC1VQ8YDJHXPTVV09C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M63492JC1VQ8YDJHXMC5YMJF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M63492JC1VQ8YDJHXMC5YMJF",
+        "id": "01M63492TC4M3FEHT1M4BFVJ84",
+        "link": "01M63492TC4M3FEHT1M1AGXJCH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62S5BN8M65JXT1672T8GVEF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62MKZFRPZ2C7QTYAF815XAG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M634936XD1FD41T0ZTA660KM",
+  "type": "ops",
+  "v": 1
+}
