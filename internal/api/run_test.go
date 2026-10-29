@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/base64"
+	"errors"
 	"os"
 	"path/filepath"
 	"slices"
@@ -721,14 +722,16 @@ func TestResolveWorkflow(t *testing.T) {
 
 func TestStepRunnerDirFallsBackToMainCheckout(t *testing.T) {
 	main, gone := t.TempDir(), filepath.Join(t.TempDir(), "gone")
-	ctx := &Ctx{Root: "/elsewhere", Git: func(args ...string) (string, error) {
-		return "worktree " + main + "\nHEAD abc\nbranch refs/heads/main\n\nworktree " + gone + "\n", nil
+	// Git cannot run from a removed folder; the main checkout comes from
+	// the common dir, with the project's folder within it.
+	ctx := &Ctx{Root: filepath.Join(gone, "app"), Git: func(args ...string) (string, error) {
+		return "", errors.New("chdir: no such file or directory")
 	}}
-	if got := (&stepRunner{ctx: ctx, worktree: main}).dir(); got != main {
+	if got := (&stepRunner{ctx: ctx, worktree: main, main: main}).dir(); got != main {
 		t.Errorf("dir with a worktree = %q; want %q", got, main)
 	}
-	if got := (&stepRunner{ctx: ctx, worktree: gone}).dir(); got != main {
-		t.Errorf("dir without a worktree = %q; want the main checkout %q", got, main)
+	if got, want := (&stepRunner{ctx: ctx, worktree: gone, main: main}).dir(), filepath.Join(main, "app"); got != want {
+		t.Errorf("dir without a worktree = %q; want the main checkout's project folder %q", got, want)
 	}
 }
 

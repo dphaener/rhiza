@@ -99,8 +99,12 @@ cd $WORK/pr-clone
 exec rhiza check
 cd $WORK/repo
 
-# The owner signs off and the run carries on to the end.
+# The owner signs off from the change set's worktree, and the run carries on
+# to the end. Close-out removes that folder under the running process, and
+# the ship command still runs, in the main checkout.
+cd $WORK/repo.ship-it
 exec sh -c 'rhiza run approve; echo exit=$?'
+cd $WORK/repo
 stdout '^exit=0$'
 stdout '^Run \S+ succeeded$'
 
