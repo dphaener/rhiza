@@ -1,0 +1,63 @@
+{
+  "actor": "01M6502BVEDAXMYHP5B4M090JY",
+  "after": [
+    "01M6506D3WY9QGJ1MHT0K6E1NT"
+  ],
+  "at": "2026-10-29T23:33:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A checks step whose change-set fixer fails its first attempt and passes its second starts no new cycle: the retry runs inside the same cycle, and that cycle's checks start only after the fixer passes",
+          "statement": "A failed review fixer is retried within its cycle, and the cycle's checks start again only once its fixers pass"
+        },
+        "handle": "fixer-retry-in-cycle",
+        "id": "01M6506EMDJWA6YX6VSN6DFYD5",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6506EMCPMJKKCE8B3JX16RP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6506EMCPMJKKCE8B3JX16RP",
+        "id": "01M6506FAYGWJCDQM0K5KBVGD3",
+        "link": "01M6506FAYGWJCDQM0K4SC3VFY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65054XFRT6Z9CWSFS9MYH2R",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A checks step whose change-set fixer fails all 1 + MaxFixCycles attempts of a cycle ends that cycle's checks failed with the detail 'cycle N: fix failed', counts the cycle against MaxFixCycles, and starts no further check session in it",
+          "statement": "A review fixer that fails every retry spends its cycle, and the cycle's checks fail with the fix-failed detail"
+        },
+        "handle": "fixer-exhaustion-spends-cycle",
+        "id": "01M6506FZTPP6JZJBYMPCBD7QR",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6506FZTPP6JZJBYMMPZMQFC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6506FZTPP6JZJBYMMPZMQFC",
+        "id": "01M6506H2HZAHS7DBZHP2A0WH7",
+        "link": "01M6506H2G8CE5TYXMK6Z8HH31",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65054XFRT6Z9CWSFS9MYH2R",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M61GW7TJ6BH6YX1T7SQDWK1J",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6506J49Y8WAD0M0EJSWZVQX",
+  "type": "ops",
+  "v": 1
+}
