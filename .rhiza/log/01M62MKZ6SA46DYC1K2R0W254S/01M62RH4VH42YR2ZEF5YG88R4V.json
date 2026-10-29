@@ -1,0 +1,132 @@
+{
+  "actor": "01M62RAV4EQPTRR8ZVCC4516FM",
+  "after": [
+    "01M62RGWPRMNFWAXFJTQXZDP54"
+  ],
+  "at": "2026-10-29T02:41:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "An interrupted run whose change set is no longer accepted is not resumed and waits in the inbox with the change set's state and the next step, rhiza run abandon",
+          "wording": "Show in inbox, the agent's option, picked by the owner"
+        },
+        "handle": "skipped-run-in-inbox",
+        "id": "01M62RH250PMR7VXXN05ZA85CH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M62RH250PMR7VXXN022JN5N0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62RH250PMR7VXXN022JN5N0",
+        "id": "01M62RH2CWDZZAXRX4A0RZCCCF",
+        "link": "01M62RH2CWDZZAXRX4A0DJ53XH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RGWE4EKV11H26KTW63G8Y",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "rhiza run resume refuses a run whose change set is no longer accepted, as the daemon does",
+          "wording": "Refuse too, the agent's option, picked by the owner"
+        },
+        "handle": "manual-resume-refuses",
+        "id": "01M62RH2N6XDVSJV0K32X9BM6G",
+        "key": null,
+        "kind": "decision",
+        "node": "01M62RH2N6XDVSJV0K31Z999SJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62RH2N6XDVSJV0K31Z999SJ",
+        "id": "01M62RH2YBGTZKESZJ5BF9RWWM",
+        "link": "01M62RH2YBGTZKESZJ5A1VKRSE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RGWE4EKV11H26KTW63G8Y",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A test resumes an interrupted run on an accepted change set, and leaves interrupted runs on landed, rejected, withdrawn, proposed and draft change sets unresumed",
+          "statement": "The daemon resumes an interrupted run only while its change set is accepted"
+        },
+        "handle": "daemon-resumes-accepted-only",
+        "id": "01M62RH3705M0GA17WVX9JX38R",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M62RH3705M0GA17WVVXKBGM8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62RH3705M0GA17WVVXKBGM8",
+        "id": "01M62RH3EG34R2FMYDJ86YR628",
+        "link": "01M62RH3EG34R2FMYDJ4HY3TWD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RH250PMR7VXXN022JN5N0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test with an interrupted run on a landed change set lists it in rhiza inbox with the state and the abandon command, and the daemon does not resume it",
+          "statement": "An interrupted run on a change set no longer accepted waits in the inbox, naming the change set's state and rhiza run abandon as the next step"
+        },
+        "handle": "unaccepted-run-in-inbox",
+        "id": "01M62RH3PBJ12H0CYSMFJ8FBKB",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M62RH3PBJ12H0CYSMCMV7KAS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62RH3PBJ12H0CYSMCMV7KAS",
+        "id": "01M62RH3YB64J9RQRNMJTX6Y66",
+        "link": "01M62RH3YB64J9RQRNMGXVEQSS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RH250PMR7VXXN022JN5N0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test runs rhiza run resume on an interrupted run whose change set is withdrawn, and it exits non-zero naming the state and rhiza run abandon, leaving the journal unchanged",
+          "statement": "rhiza run resume refuses an interrupted run whose change set is no longer accepted, naming the state and rhiza run abandon"
+        },
+        "handle": "manual-resume-refuses-unaccepted",
+        "id": "01M62RH4605WT6153H4B34GBNB",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M62RH4605WT6153H4AZSRG87",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62RH4605WT6153H4AZSRG87",
+        "id": "01M62RH4EM1Y7GYXWETH7WFGPT",
+        "link": "01M62RH4EM1Y7GYXWETE8YY6C8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RH2N6XDVSJV0K31Z999SJ",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M62MKZ6SA46DYC1K2R0W254S",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M62RH4VH42YR2ZEF5YG88R4V",
+  "type": "ops",
+  "v": 1
+}
