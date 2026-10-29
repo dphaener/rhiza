@@ -1,8 +1,11 @@
 # The daemon resumes an interrupted run once: one poll (--once) opens a Rex
 # tab running `rhiza run resume <run>` and journals it; a later poll, with
-# the run interrupted again, opens none. A failed run gets no tab. Rex is
-# faked and only logs. The journals are fixtures: the first run names a dead
-# process, the second finished failed.
+# the run interrupted again, opens none. A failed run gets no tab, nor does
+# an interrupted run whose change set has landed or is still a draft. The
+# landed ones, autonomous or not, wait in the inbox; the draft one does not,
+# being the owner's to resume by hand. Rex is faked and only logs. The
+# journals are fixtures: the interrupted runs name a dead process, the
+# failed one finished failed.
 
 chmod 755 bin/rex
 env PATH=$WORK/bin:$PATH
@@ -13,8 +16,23 @@ exec rhiza init
 exec git add -A
 exec git commit -qm init
 
+# One is accepted, Landed has landed, Draft is a draft.
+exec rhiza change new One --title One
+exec rhiza add intent one-thing
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza change new Landed --title Landed
+exec rhiza add intent landed-thing
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+exec rhiza change new Draft --title Draft
+
 mkdir .git/rhiza/runs
-exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"CHANGEONE\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}" > .git/rhiza/runs/INTERRUPTED1.jsonl'
+exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWGEF85Y185JZ2ZGCNH40N\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}" > .git/rhiza/runs/INTERRUPTED1.jsonl'
+exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWGNA0MVZ1H5AXG5VQ0BY9\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}" > .git/rhiza/runs/LANDED00001.jsonl'
+exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWGNA0MVZ1H5AXG5VQ0BY9\",\"autonomous\":true}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}" > .git/rhiza/runs/LANDEDAUTO1.jsonl'
+exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWGT68X5XKB54XFQMHKA0A\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}" > .git/rhiza/runs/DRAFT000001.jsonl'
 exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"CHANGETWO\"}}" "{\"type\":\"finished\",\"at\":\"2026-01-01T00:00:02Z\",\"end\":\"failed\",\"detail\":\"boom\"}" > .git/rhiza/runs/FAILED00001.jsonl'
 
 exec rhiza daemon --permission-mode manual --once
@@ -23,8 +41,29 @@ exec sh -c 'grep -c "^rex window new .* run resume INTERRUPTED1$" $WORK/rex.log'
 stdout '^1$'
 exec sh -c 'grep -c "FAILED00001" $WORK/rex.log || true'
 stdout '^0$'
+exec sh -c 'grep -c "LANDED00001\|LANDEDAUTO1\|DRAFT000001" $WORK/rex.log || true'
+stdout '^0$'
+exec sh -c 'grep -c "daemon-resumed" .git/rhiza/runs/LANDED00001.jsonl .git/rhiza/runs/DRAFT000001.jsonl || true'
+stdout 'LANDED00001.jsonl:0'
+stdout 'DRAFT000001.jsonl:0'
 exec sh -c 'grep -c "\"type\":\"daemon-resumed\"" .git/rhiza/runs/INTERRUPTED1.jsonl'
 stdout '^1$'
+
+# The landed ones wait in the inbox, autonomous or not, naming the state
+# and the abandon command; abandoning one clears it. The draft one is not
+# listed: a manual resume continues it.
+exec rhiza inbox
+stdout 'skipped run LANDED00001, change set 01M5PWGNA0MVZ1H5AXG5VQ0BY9'
+stdout 'interrupted, and not resumed: its change set is landed'
+stdout 'next: rhiza run abandon LANDED00001'
+stdout 'skipped run LANDEDAUTO1'
+stdout 'next: rhiza run abandon LANDEDAUTO1'
+! stdout 'DRAFT000001'
+! stdout 'skipped run INTERRUPTED1'
+exec rhiza run abandon LANDED00001
+exec rhiza inbox
+! stdout 'LANDED00001'
+stdout 'LANDEDAUTO1'
 
 # Interrupted again (its process is still dead): left alone.
 exec rhiza daemon --permission-mode manual --once --json

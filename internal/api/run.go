@@ -550,6 +550,16 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 	if rs.Live(j.ID) {
 		return nil, Conflictf("run %s is running in another process", j.ID).WithNext("rhiza run status " + j.ID)
 	}
+	// An accepted change set's run is resumed by the daemon; one whose
+	// change set has since left the in-flight states is refused here too.
+	// A draft or proposed change set (a plan run's) and one the log does
+	// not have are let through.
+	if !st.Ended {
+		if state, ok := changeStateOf(ctx)(st.Change); ok && changeset.State(state).Terminal() {
+			return nil, Conflictf("run %s is not resumed: its change set %s is %s, no longer accepted", j.ID, st.Change, state).
+				WithNext("rhiza run abandon " + j.ID)
+		}
+	}
 	def, err := st.ParseDefinition()
 	if err != nil {
 		return nil, Errorf("run %s: its workflow no longer parses: %v", j.ID, err)

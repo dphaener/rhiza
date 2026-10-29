@@ -8,7 +8,7 @@ A testscript with fixture journals of a run blocked on a question, a run waiting
 
 ## statement
 
-rhiza inbox lists, oldest first across every run of the repo, each item waiting on the owner with a short item ID: a question (its run, change set, session tab and the question), a run waiting at sign-off, a failed run (its failed step and detail, until it is retried with rhiza run resume --retry or a newer run starts on its change set), and a run the daemon gave up on (interrupted again after the daemon's one resume, its step, until it is resumed or abandoned), in text and --json, and says so when nothing waits. A run failed by rhiza run abandon is the owner's own act and is never listed as a failed run.
+rhiza inbox lists, oldest first across every run of the repo, each item waiting on the owner with a short item ID: a question (its run, change set, session tab and the question), a run waiting at sign-off, a failed run (its failed step and detail, until it is retried with rhiza run resume --retry or a newer run starts on its change set), a run the daemon gave up on (interrupted again after the daemon's one resume, its step, until it is resumed or abandoned), and an interrupted run not resumed because its change set has landed, been rejected, withdrawn or superseded (its step, the change set's state and rhiza run abandon, until it is abandoned), in text and --json, and says so when nothing waits. A run failed by rhiza run abandon is the owner's own act and is never listed as a failed run.
 
 ## Links
 
@@ -25,10 +25,13 @@ rhiza inbox lists, oldest first across every run of the repo, each item waiting 
 - depends-on [inbox-signoff](inbox-signoff.md)
 - depends-on [inbox-advisor](inbox-advisor.md)
 - depends-on [inbox-notify](inbox-notify.md)
+- depends-on [unaccepted-run-in-inbox](unaccepted-run-in-inbox.md)
 - verifies [inbox-list-verified](../../../../evidence/inbox-list-verified.md)
 - verifies [inbox-list-qa-1](../../../../evidence/inbox-list-qa-1.md)
 - verifies [pr-53-the-inbox](../../../../evidence/pr-53-the-inbox.md)
+- verifies [pr-64-resume-only-in-flight-runs](../../../../evidence/pr-64-resume-only-in-flight-runs.md)
 
 ## History
 
 - `01M620GA5ZK6Z854D07NH0R8WX` The inbox: rhiza inbox lists every run's questions, sign-offs, failed runs and runs the daemon gave up on, with a recommendation for each question, opens each in its tab, takes sign-offs, and the daemon sends one Rex notification per new item.
+- `01M62MKZ6SA46DYC1K2R0W254S` The daemon resumes only interrupted runs whose change set is still accepted: a run left interrupted on a change set that has since landed, been withdrawn or rejected is never resumed.

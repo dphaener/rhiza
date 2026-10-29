@@ -1661,7 +1661,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, signoff, failed or gave-up",
+                  "description": "question, signoff, failed, gave-up or skipped",
                   "type": "string"
                 },
                 "next": {
@@ -1722,7 +1722,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "List what waits on the owner across every run: questions, sign-offs, failed runs and runs the daemon gave up on, oldest first",
+      "summary": "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on and interrupted runs it skipped because their change set is no longer accepted, oldest first",
       "write": false
     },
     {
@@ -3194,7 +3194,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "kind": {
-            "description": "question, signoff, failed or gave-up",
+            "description": "question, signoff, failed, gave-up or skipped",
             "type": "string"
           },
           "opened": {

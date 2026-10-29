@@ -1,0 +1,29 @@
+# run resume refuses an interrupted run whose change set is no longer
+# accepted, as the daemon does: a conflict (exit 3) naming the state and
+# rhiza run abandon, leaving the journal unchanged. The journal is a
+# fixture naming a dead process.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new Gone --title Gone --json
+stdout '"change_set": "[0-9A-Z]{26}"'
+exec rhiza add intent gone-thing
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza withdraw
+
+mkdir .git/rhiza/runs
+exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWGEF85Y185JZ2ZGCNH40N\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}" > .git/rhiza/runs/WITHDRAWN01.jsonl'
+exec cp .git/rhiza/runs/WITHDRAWN01.jsonl $WORK/before.jsonl
+
+! exec rhiza run resume WITHDRAWN01
+stderr 'is withdrawn, no longer accepted'
+stderr 'next: rhiza run abandon WITHDRAWN01'
+exec sh -c 'rhiza run resume WITHDRAWN01 2>/dev/null; echo exit=$?'
+stdout '^exit=3$'
+exec cmp .git/rhiza/runs/WITHDRAWN01.jsonl $WORK/before.jsonl

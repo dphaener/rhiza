@@ -1,0 +1,130 @@
+{
+  "actor": "01M6306YSWH0GGWTSVSKG9NBT5",
+  "after": [
+    "01M62ZXWCSRFCJYQH6VR0W47WW"
+  ],
+  "at": "2026-10-29T04:56:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A test resumes an interrupted run on an accepted change set, and leaves interrupted runs on landed, rejected, withdrawn, proposed and draft change sets unresumed",
+          "statement": "The daemon resumes an interrupted run only while its change set is accepted"
+        },
+        "handle": "daemon-resumes-accepted-only",
+        "id": "01M62RH3705M0GA17WVX9JX38R",
+        "key": "yi",
+        "kind": "capability",
+        "node": "01M62RH3705M0GA17WVVXKBGM8",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "fields": {
+          "acceptance": "A test with an interrupted run on a landed change set lists it in rhiza inbox with the state and the abandon command, and the daemon does not resume it",
+          "statement": "An interrupted run on a change set no longer accepted waits in the inbox, naming the change set's state and rhiza run abandon as the next step"
+        },
+        "handle": "unaccepted-run-in-inbox",
+        "id": "01M62RH3PBJ12H0CYSMFJ8FBKB",
+        "key": "n",
+        "kind": "capability",
+        "node": "01M62RH3PBJ12H0CYSMCMV7KAS",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "fields": {
+          "acceptance": "A test runs rhiza run resume on an interrupted run whose change set is withdrawn, and it exits non-zero naming the state and rhiza run abandon, leaving the journal unchanged",
+          "statement": "rhiza run resume refuses an interrupted run whose change set is no longer accepted, naming the state and rhiza run abandon"
+        },
+        "handle": "manual-resume-refuses-unaccepted",
+        "id": "01M62RH4605WT6153H4B34GBNB",
+        "key": "yi",
+        "kind": "capability",
+        "node": "01M62RH4605WT6153H4AZSRG87",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M62RH3705M0GA17WVVXKBGM8",
+        "id": "01M63081E40N8Q042J4FDKSYNZ",
+        "link": "01M63081E40N8Q042J4D18R73T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7MP3HGEB60GJV4M3CWQA",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M62RH3PBJ12H0CYSMCMV7KAS",
+        "id": "01M63082D5BV8MW3VHNB9WDHJR",
+        "link": "01M63082D5BV8MW3VHN7AN6QKM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7Q0JX5BXJP6M3P1SJXTG",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M62RH4605WT6153H4AZSRG87",
+        "id": "01M63083KCJ45ES1JW96EBJAEF",
+        "link": "01M63083KCJ45ES1JW92Q4Z2RB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYGK7EFHKPB9JG3A2MH2G2",
+        "type": "depends-on"
+      },
+      {
+        "base": "01M61R7MP3HGEB60GJV889HTMT",
+        "handle": null,
+        "id": "01M63085369SFCDV994SE3ZJR4",
+        "node": "01M61R7MP3HGEB60GJV4M3CWQA",
+        "op": "node.update",
+        "set": {
+          "statement": "The daemon resumes an interrupted run whose change set is accepted once, as rhiza run resume <run> in a new Rex tab, and journals that resume in the run's journal; it leaves alone an interrupted run whose change set is not accepted, a run interrupted again after that resume, which the inbox lists as a run the daemon gave up on, and every failed run, which the inbox lists as failed."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M620H0WYYD55J89Z8J38T05Z",
+        "handle": null,
+        "id": "01M630867Z007QFNTVGY8RF024",
+        "node": "01M61R7Q0JX5BXJP6M3P1SJXTG",
+        "op": "node.update",
+        "set": {
+          "statement": "rhiza inbox lists, oldest first across every run of the repo, each item waiting on the owner with a short item ID: a question (its run, change set, session tab and the question), a run waiting at sign-off, a failed run (its failed step and detail, until it is retried with rhiza run resume --retry or a newer run starts on its change set), a run the daemon gave up on (interrupted again after the daemon's one resume, its step, until it is resumed or abandoned), and an interrupted run not resumed because its change set has landed, been rejected, withdrawn or superseded (its step, the change set's state and rhiza run abandon, until it is abandoned), in text and --json, and says so when nothing waits. A run failed by rhiza run abandon is the owner's own act and is never listed as a failed run."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M620H0WYYD55J89Z97B45K42",
+        "handle": null,
+        "id": "01M630879RVJ75W15XDBMQRZN6",
+        "node": "01M61R7SANZRP2X52437ENZGTH",
+        "op": "node.update",
+        "set": {
+          "statement": "On each poll, rhiza daemon sends one Rex notification for each inbox item it has not notified yet, naming the change set and what waits (a question, a sign-off, a failed run, a run the daemon gave up on or an interrupted run that was not resumed), and none again while the item stays; a run keeps its own blocked-run notice."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M5TYGK7EFHKPB9JG3AAYENTF",
+        "handle": null,
+        "id": "01M630888B1MSV76XYN9M47J4Y",
+        "node": "01M5TYGK7EFHKPB9JG3A2MH2G2",
+        "op": "node.update",
+        "set": {
+          "statement": "`genesis run resume <run>` continues a stopped run from its journal without a daemon, never redoing a finished step; it refuses an interrupted run whose change set has landed, been rejected, withdrawn or superseded."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M62MKZ6SA46DYC1K2R0W254S",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6308AFP3TZ1XQVJAP2P28RS",
+  "type": "ops",
+  "v": 1
+}
