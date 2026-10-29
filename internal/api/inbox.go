@@ -162,6 +162,20 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 				Step: st.Current, Detail: st.Stopped, Next: "rhiza run approve " + j.ID,
 			})
 		default:
+			// The daemon resumes only a run whose change set is accepted: an
+			// interrupted run on one no longer in flight waits for the owner
+			// to abandon it, autonomous or not. A draft or proposed change
+			// set's run (a plan run's) is the owner's to resume by hand.
+			if !live && !st.DaemonResumed && st.Process != nil && st.Liveness(host, alive) == run.LiveInterrupted && len(st.Blocks) == 0 {
+				if state, ok := changeState(st.Change); ok && changeset.State(state).Terminal() {
+					add(InboxSkipped, state, st.ProcessAt, InboxItem{
+						Step:   st.Current,
+						Detail: "interrupted, and not resumed: its change set is " + state,
+						Next:   "rhiza run abandon " + j.ID,
+					})
+				}
+			}
+			// Only questions are the orchestrator's in an autonomous run.
 			if st.Autonomous {
 				continue
 			}
@@ -183,17 +197,6 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 					Step: st.Current, Detail: "interrupted again after the daemon's one resume",
 					Next: "rhiza run resume " + j.ID,
 				})
-			}
-			// The daemon resumes only a run whose change set is accepted: an
-			// interrupted run on any other waits for the owner to abandon it.
-			if !live && !st.DaemonResumed && st.Process != nil && st.Liveness(host, alive) == run.LiveInterrupted && len(st.Blocks) == 0 {
-				if state, ok := changeState(st.Change); ok && state != string(changeset.StateAccepted) {
-					add(InboxSkipped, state, st.ProcessAt, InboxItem{
-						Step:   st.Current,
-						Detail: "interrupted, and not resumed: its change set is " + state,
-						Next:   "rhiza run abandon " + j.ID,
-					})
-				}
 			}
 		}
 	}
