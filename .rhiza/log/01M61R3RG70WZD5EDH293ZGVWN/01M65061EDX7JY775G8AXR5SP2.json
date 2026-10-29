@@ -1,0 +1,41 @@
+{
+  "actor": "01M65059C7XMMKBRAQNX6PVQ3D",
+  "after": [
+    "01M6505755DVKZT4234S3B0JK1"
+  ],
+  "at": "2026-10-29T23:33:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question says the transcript persists on disk, and the Claude adapter already starts each session with a stored --session-id (claudecode.go:57). Resuming that session keeps the agent's context and the work it already committed, so the run does not redo finished steps. A fresh session would lose that context and need a re-briefing. The fresh-session fallback covers the case where the transcript is gone. Nothing in the adapter needs a new ID scheme for this.",
+          "statement": "Resume a usage-limited run by continuing the same agent session with the Claude CLI's resume flag, keyed on the session ID the run already stores; start a fresh session only when the transcript is missing",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "usage-limit-resume-same-session",
+        "id": "01M650608BEF1XS31K5F39AB7E",
+        "key": null,
+        "kind": "decision",
+        "node": "01M650608BEF1XS31K5BFKJHPM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M650608BEF1XS31K5BFKJHPM",
+        "id": "01M65060NWY7VH1B45YJQGTSGY",
+        "link": "01M65060NWY7VH1B45YFM4P2HW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65056RPDP987EBWMFHJHC74",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M61R3RG70WZD5EDH293ZGVWN",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M65061EDX7JY775G8AXR5SP2",
+  "type": "ops",
+  "v": 1
+}
