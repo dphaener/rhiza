@@ -1,0 +1,40 @@
+{
+  "actor": "01M6352854ZWXW7CZ4Y26XZBNP",
+  "after": [
+    "01M6351XB9VV5E7R31VSVA573V"
+  ],
+  "at": "2026-10-29T06:23:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at bcec030 with a scratch build of this branch: wrote gen.Default() (50,000-node model) to a scratch git repo. `rhiza tui app model --once` equals `rhiza tree --view as-is` + blank line + `rhiza roadmap` byte for byte (cmp; 15,938 tree lines, 37 roadmap lines); with the deep-subtree ref (grandparent of the deep sample) `rhiza tui app model <ref> --once` equals `rhiza tree <ref> --view as-is` + roadmap likewise (329 tree lines). Whole-process wall time for the ref read: 0.03 s on all 5 runs (whole tree, no ref: 0.17 s, the same as rhiza tree, which D14 benchmarks but does not budget). Same byte match on this repo's own .rhiza. Bad ref exits 4 with next: rhiza ls; extra args exit 2 with the usage line. No socket and no daemon lock in the scratch repo. Interactive in a detached 80x24 Rex pane: j/k scroll, tab switches to the roadmap, G/g jump to end and top, q exits 0. The [tree]/[roadmap] header line is clipped off the top (the view is 25 lines in 24 rows), reported as a finding."
+        },
+        "handle": "model-tree-app-qa-1",
+        "id": "01M63581S7J20KZMHTN46G66MM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M63581S7J20KZMHTN2ZG2FZR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M63581S7J20KZMHTN2ZG2FZR",
+        "id": "01M6358230E97WBYSNX0N8EA4W",
+        "link": "01M6358230E97WBYSNWZX5Q6T8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JPK2HTYRZW2PD8ZFV1JVK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62JMT63RY271EAF14R8P4VG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M63582HNEXWBW0NG18HVECJE",
+  "type": "ops",
+  "v": 1
+}
