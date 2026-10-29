@@ -1,0 +1,40 @@
+{
+  "actor": "01M634M19F05ZJC8S4C0WNR9NT",
+  "after": [
+    "01M634EWPT3EPN832XGXK115CK"
+  ],
+  "at": "2026-10-29T06:17:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Attempt 2 verifier at a6c4d3a. Read the leaf diff (adb7bec: refuseEnded now lets an ended run through only when it failed and is not already abandoned) and the fix a6c4d3a (run-abandon revised to refuse only a succeeded or already abandoned run; abandon-failed-run depends-on run-abandon). Ran go test ./cmd/rhiza -run 'TestScripts/(run-abandon|describe-golden|inbox)' -count=1: run-abandon-failed passes, failing a fake run, abandoning it with exit 0, run status and --json showing failed with 'abandoned by test', rhiza inbox and inbox --json no longer listing it, resume and resume --retry exiting 2 with '<run> was abandoned', a second abandon and abandoning a succeeded run exiting 2 with 'is finished'; run-abandon, describe-golden and inbox-* pass too. go test ./... , fmt-check and vet pass. make self-check fails only on a stale .rhiza/rendered from the QA check's actor record (b87ce24), not on this leaf."
+        },
+        "handle": "abandon-failed-run-verified-2",
+        "id": "01M634X6YCGHN1KV1954Z30NMG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M634X6YCGHN1KV19524EWNN9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M634X6YCGHN1KV19524EWNN9",
+        "id": "01M634X76V6YRSF0CDZTS7DG9R",
+        "link": "01M634X76V6YRSF0CDZS93YA5D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62S5CM2T21E6M0JQ28RY5Z7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62MKZFRPZ2C7QTYAF815XAG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M634X7M40YQ8VCHXA2TNFB24",
+  "type": "ops",
+  "v": 1
+}
