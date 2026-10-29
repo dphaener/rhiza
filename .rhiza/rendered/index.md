@@ -226,6 +226,7 @@
   - [ship-signoff](capability/ship-through-rhiza/ship-signoff.md)
   - [ship-needs-leaves](capability/ship-through-rhiza/ship-needs-leaves.md)
   - [ship-change-file](capability/ship-through-rhiza/ship-change-file.md)
+- [unique-finding-ids](capability/unique-finding-ids.md)
 
 ## Intents
 
@@ -411,6 +412,7 @@
 - [feature-is-capability](decision/feature-is-capability.md)
 - [field-level-diffs](decision/field-level-diffs.md)
 - [file-per-entry](decision/file-per-entry.md)
+- [findings-under-run-lock](decision/findings-under-run-lock.md)
 - [five-done-points](decision/five-done-points.md)
 - [five-step-kinds](decision/five-step-kinds.md)
 - [fixed-core-kinds](decision/fixed-core-kinds.md)
@@ -967,6 +969,7 @@
 - [pr-72-tui-runs-and-sessions](evidence/pr-72-tui-runs-and-sessions.md)
 - [pr-73-ship-step-after-close-out](evidence/pr-73-ship-step-after-close-out.md)
 - [pr-77-native-rex-actions-for-apps](evidence/pr-77-native-rex-actions-for-apps.md)
+- [pr-82-rhiza-run-findings-numbers](evidence/pr-82-rhiza-run-findings-numbers.md)
 - [pr-83-testguideinstallconcurrent](evidence/pr-83-testguideinstallconcurrent.md)
 - [quick-launch-layer-qa-1](evidence/quick-launch-layer-qa-1.md)
 - [quick-launch-layer-qa-2](evidence/quick-launch-layer-qa-2.md)
@@ -1085,6 +1088,8 @@
 - [unaccepted-run-in-inbox-qa-1](evidence/unaccepted-run-in-inbox-qa-1.md)
 - [unaccepted-run-in-inbox-verified](evidence/unaccepted-run-in-inbox-verified.md)
 - [unaccepted-run-in-inbox-verified-2](evidence/unaccepted-run-in-inbox-verified-2.md)
+- [unique-finding-ids-qa-1](evidence/unique-finding-ids-qa-1.md)
+- [unique-finding-ids-verified](evidence/unique-finding-ids-verified.md)
 - [wait-green-pr-tests](evidence/wait-green-pr-tests.md)
 - [wait-step-tested](evidence/wait-step-tested.md)
 - [workflow-file-tested](evidence/workflow-file-tested.md)
@@ -1099,6 +1104,7 @@
 ## Sources
 
 - [build-workflow-plan](source/build-workflow-plan.md)
+- [findings-numbering-plan](source/findings-numbering-plan.md)
 - [founding-conversation](source/founding-conversation.md)
 - [inbox-stale-interview](source/inbox-stale-interview.md)
 - [leaf-trailer-split-paragraphs-plan](source/leaf-trailer-split-paragraphs-plan.md)
