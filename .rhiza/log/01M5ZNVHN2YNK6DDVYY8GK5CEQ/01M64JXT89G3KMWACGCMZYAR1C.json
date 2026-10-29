@@ -1,0 +1,50 @@
+{
+  "actor": "01M64JRVJ9BYQZ3W9CJMHPTG6B",
+  "after": [
+    "01M64JXKY77FAX1SHMVRY3HB89"
+  ],
+  "at": "2026-10-29T19:41:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M64JWR9ZY731P0ND1HK0AB3N",
+        "id": "01M64JXS4C3VDN72QZB62RBXW4",
+        "link": "01M64JXS4C3VDN72QZB33AXQRF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M64JXKM4VK65VCSYB5D6PDS4",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test ./internal/api -run 'TestGuideInstallConcurrent$' -count=300 -race -cpu 1,2,4,8 passes, with TestGuideInstallConcurrent unchanged, and make check passes",
+          "statement": "Concurrent first installs of the agent guide all succeed: a folder another install is still writing is not called foreign"
+        },
+        "handle": "guide-install-concurrent-first",
+        "id": "01M64JXSEJKRWW6GVN2ABJJPQE",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M64JXSEJKRWW6GVN295ZX1XY",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "decision": null,
+        "from": "01M64JXSEJKRWW6GVN295ZX1XY",
+        "id": "01M64JXSRKPMPKNQJY9C0MYK4K",
+        "link": "01M64JXSRKPMPKNQJY99J94AZ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M64JWR9ZY731P0ND1HK0AB3N",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5ZNVHN2YNK6DDVYY8GK5CEQ",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M64JXT89G3KMWACGCMZYAR1C",
+  "type": "ops",
+  "v": 1
+}
