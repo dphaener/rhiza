@@ -378,14 +378,23 @@ func TestCheckErrors(t *testing.T) {
 }
 
 func TestParseTrailerLog(t *testing.T) {
-	out := "aaa\x1fChange: CS1\x1fActor: builder\x1fLeaf: leaf\x1fLeaf: other\x1e\n" +
-		"bbb\x1e\n" +
-		"ccc\x1fchange: CS2\x1fCHANGE:  CS3 \x1factor: 01M5ACTOR\x1fnot a trailer\x1e\n"
+	out := "aaa\x1fSubject\n\nChange: CS1\nActor: builder\nLeaf: leaf\nLeaf: other\x1e\n" +
+		"bbb\x1fSubject only\x1e\n" +
+		"ccc\x1fSubject\n\nchange: CS2\nCHANGE:  CS3 \nactor: 01M5ACTOR\nnot a trailer\x1e\n" +
+		// Trailers in a paragraph before Co-Authored-By's.
+		"ddd\x1fSubject\n\nChange: CS4\nActor: a\nLeaf: split\nReview: R1\n\nCo-Authored-By: Claude <noreply@anthropic.com>\x1e\n" +
+		// Trailers sharing the final paragraph.
+		"eee\x1fSubject\n\nChange: CS5\nLeaf: one\nCo-Authored-By: Claude <noreply@anthropic.com>\x1e\n" +
+		// The subject is not a trailer.
+		"fff\x1fLeaf: subject\n\nbody\x1e\n"
 	got := parseTrailerLog(out)
 	want := []check.Commit{
 		{Hash: "aaa", Changes: []string{"CS1"}, Actors: []string{"builder"}, Leaves: []string{"leaf", "other"}},
 		{Hash: "bbb"},
 		{Hash: "ccc", Changes: []string{"CS2", "CS3"}, Actors: []string{"01M5ACTOR"}},
+		{Hash: "ddd", Changes: []string{"CS4"}, Actors: []string{"a"}, Leaves: []string{"split"}, Reviews: []string{"R1"}},
+		{Hash: "eee", Changes: []string{"CS5"}, Leaves: []string{"one"}},
+		{Hash: "fff"},
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("parseTrailerLog = %+v, want %+v", got, want)
@@ -409,7 +418,7 @@ func TestGitCommits(t *testing.T) {
 	if got := gitCommits((&fakeGit{out: map[string]string{gitWorkTree: "true\n"}}).run); got == nil || len(got) != 0 {
 		t.Errorf("no commits: %#v", got)
 	}
-	g := &fakeGit{out: map[string]string{gitWorkTree: "true\n", logArgs: "abc\x1fActor: x\x1e\n"}}
+	g := &fakeGit{out: map[string]string{gitWorkTree: "true\n", logArgs: "abc\x1fSubject\n\nActor: x\x1e\n"}}
 	want := []check.Commit{{Hash: "abc", Actors: []string{"x"}}}
 	if got := gitCommits(g.run); !reflect.DeepEqual(got, want) {
 		t.Errorf("gitCommits = %+v, want %+v (calls %q)", got, want, g.calls)

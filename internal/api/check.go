@@ -176,10 +176,10 @@ func inWorkTree(git func(...string) (string, error)) bool {
 	return err == nil && strings.TrimSpace(out) == "true"
 }
 
-// trailerLogFormat has git log write, per commit, its hash and then each
-// Change:, Actor:, Leaf: and Review: trailer as "Key: value", unfolded,
-// all separated by US (0x1f) and the commit ended by RS (0x1e).
-const trailerLogFormat = "%H%x1f%(trailers:key=Change,key=Actor,key=Leaf,key=Review,unfold,separator=%x1f)%x1e"
+// trailerLogFormat has git log write, per commit, its hash, US (0x1f) and
+// the raw message, the commit ended by RS (0x1e). git's own %(trailers)
+// reads only the last paragraph, so the message is parsed by parseTrailerLog.
+const trailerLogFormat = "%H%x1f%B%x1e"
 
 // gitCommits is HEAD's history with its trailers, newest first, for the
 // evidence-actor rule: the commits that change a file outside the store
@@ -201,23 +201,26 @@ func gitCommits(git func(...string) (string, error)) []check.Commit {
 	return parseTrailerLog(out)
 }
 
-// parseTrailerLog parses git log output in trailerLogFormat. Trailer keys
-// match case-insensitively, as git's do; values are trimmed and empty ones
-// dropped. The result is never nil.
+// parseTrailerLog parses git log output in trailerLogFormat. The Change:,
+// Actor:, Leaf: and Review: trailers are read from every paragraph of the
+// message after its subject, so a Co-Authored-By in a later paragraph does
+// not hide them. Trailer keys match case-insensitively, as git's do; values
+// are trimmed and empty ones dropped. The result is never nil.
 func parseTrailerLog(out string) []check.Commit {
 	cs := []check.Commit{}
 	for _, rec := range strings.Split(out, "\x1e") {
-		fields := strings.Split(strings.TrimSpace(rec), "\x1f")
-		if fields[0] == "" {
+		hash, msg, _ := strings.Cut(strings.TrimSpace(rec), "\x1f")
+		if hash == "" {
 			continue
 		}
-		c := check.Commit{Hash: fields[0]}
-		for _, f := range fields[1:] {
-			k, v, ok := strings.Cut(f, ":")
+		c := check.Commit{Hash: hash}
+		_, body, _ := strings.Cut(msg, "\n")
+		for _, line := range strings.Split(body, "\n") {
+			k, v, ok := strings.Cut(line, ":")
 			if v = strings.TrimSpace(v); !ok || v == "" {
 				continue
 			}
-			switch strings.ToLower(strings.TrimSpace(k)) {
+			switch strings.ToLower(k) {
 			case "change":
 				c.Changes = append(c.Changes, v)
 			case "actor":
