@@ -1,0 +1,40 @@
+{
+  "actor": "01M64T1TP0C3BH2DN1DJ2XSN83",
+  "after": [
+    "01M64K0P22HF4E4NJX9ACKZ23T"
+  ],
+  "at": "2026-10-29T21:50:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8a3af6f (detached checkout): go test ./internal/api -run 'TestGuideInstallConcurrent$' -count=300 -race -cpu 1,2,4,8 passed (ok, 12.3s, uncached). TestGuideInstallConcurrent is unchanged: the leaf's two commits (d892a75, 8a3af6f) touch only internal/api/guide_install.go and cmd/rhiza/testdata/script/guide-install.txtar. make check passed (exit 0: fmt-check, vet, go test ./..., self-check) with the run's RHIZA_* env unset; with them set, self-check reports only stale renders of this run's own session actors in the shared store, not of the commit. Diff read: pluginForeign now compares the other plugin files' bytes to want, so a racing install's partial write is not foreign, and the guide-install script's --project conflict case now uses a SKILL.md with different bytes, fixing attempt 1's finding f1."
+        },
+        "handle": "guide-install-concurrent-first-verified",
+        "id": "01M64T9NP0WAHW57YB0ZENPB4Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M64T9NP0WAHW57YB0W8V4K4E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M64T9NP0WAHW57YB0W8V4K4E",
+        "id": "01M64T9P24XEK2J2QPC6D6VJ67",
+        "link": "01M64T9P24XEK2J2QPC5TQ7KP0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M64JXSEJKRWW6GVN295ZX1XY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5ZNVHN2YNK6DDVYY8GK5CEQ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M64T9PN0G73BZA8GWT2AGF1B",
+  "type": "ops",
+  "v": 1
+}
