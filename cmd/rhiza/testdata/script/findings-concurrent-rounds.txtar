@@ -1,0 +1,65 @@
+# Concurrent plan review findings calls in one run never journal two
+# findings with the same ID within a round: each call opens the next round
+# under the run's journal lock, so four calls at once open rounds 1..4
+# between them, each round's findings numbered f1, f2 within it.
+#
+# The run stops at a wait step whose until does not hold, so it stays
+# unfinished and launches no agent; the script plays the reviewers.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Concurrent rounds' --title 'Concurrent rounds'
+exec rhiza add capability cap-a --field 'statement=Does A'
+exec rhiza add capability cap-b --field 'statement=Does B'
+mkdir .rhiza/workflows
+cp $WORK/hold.toml .rhiza/workflows/hold.toml
+exec rhiza run start --workflow hold --no-wait
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+
+# Four plain findings calls at once, each logging its exit and its round.
+exec sh -c 'export RHIZA_RUN=$(cat $WORK/runid); for i in 1 2 3 4; do (rhiza run findings $WORK/findings.json --json > $WORK/out$i.json 2>> $WORK/err.log; echo "exit=$?" >> $WORK/calls.log) & done; wait'
+exec cat $WORK/calls.log
+cmp stdout $WORK/want-calls.log
+
+# The four responses name rounds 1..4, each once.
+exec sh -c 'cat $WORK/out1.json $WORK/out2.json $WORK/out3.json $WORK/out4.json | grep -o "\"round\": [0-9]*" | sort | tr "\n" " "'
+stdout '^"round": 1 "round": 2 "round": 3 "round": 4 $'
+
+# The journal holds four rounds, each with f1 and f2 once.
+exec sh -c 'grep -c "\"type\":\"findings\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
+stdout '^4$'
+exec sh -c 'grep "\"type\":\"findings\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl | grep -o "\"id\":\"f[0-9]*\"" | tr "\n" " "'
+stdout '^"id":"f1" "id":"f2" "id":"f1" "id":"f2" "id":"f1" "id":"f2" "id":"f1" "id":"f2" $'
+exec rhiza run status
+stdout '^- Round 1: 2 findings, 0 confirmed$'
+stdout '^- Round 2: 2 findings, 0 confirmed$'
+stdout '^- Round 3: 2 findings, 0 confirmed$'
+stdout '^- Round 4: 2 findings, 0 confirmed$'
+! stdout 'Round 5'
+
+fold-ok
+
+-- want-calls.log --
+exit=0
+exit=0
+exit=0
+exit=0
+-- hold.toml --
+name = "hold"
+
+[step.gate]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
+-- findings.json --
+{"findings":[
+  {"node":"cap-a","kind":"missing-acceptance","reason":"No acceptance criteria"},
+  {"node":"cap-b","kind":"contradiction","reason":"Says both"}
+]}
