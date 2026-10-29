@@ -2,9 +2,9 @@
 # tab running `rhiza run resume <run>` and journals it; a later poll, with
 # the run interrupted again, opens none. A failed run gets no tab, nor does
 # an interrupted run whose change set has landed or is still a draft; those
-# two wait in the inbox. Rex is
-# faked and only logs. The journals are fixtures: the interrupted runs name a
-# dead process, the failed one finished failed.
+# two wait in the inbox. Rex is faked and only logs. The journals are
+# fixtures: the interrupted runs name a dead process, the failed one
+# finished failed.
 
 chmod 755 bin/rex
 env PATH=$WORK/bin:$PATH
