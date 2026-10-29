@@ -1,0 +1,63 @@
+{
+  "actor": "01M64JRVKBXMK33DTNP3ZJ55V6",
+  "after": [
+    "01M64JT7PMYY66CQBJSTA0JZ90"
+  ],
+  "at": "2026-10-29T19:40:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Number a run's findings under the run's journal lock, reading the count and journalling in one locked section",
+          "wording": "Number findings under the run's lock, the agent's option (assumed, would have escalated)"
+        },
+        "handle": "findings-under-run-lock",
+        "id": "01M64JTD0AG6CRS3VBDFHMN925",
+        "key": null,
+        "kind": "decision",
+        "node": "01M64JTD0AG6CRS3VBDC1J01R6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M64JTD0AG6CRS3VBDC1J01R6",
+        "id": "01M64JTDC9JSWZ5RBKFBVKVKEX",
+        "link": "01M64JTDC9JSWZ5RBKF9B0J1Y4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M64JT7B39FATHKB4T1Z60KA0",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs run findings (round, --check and leaf) and sign-off findings concurrently in one run, then asserts every journalled finding ID in the run is unique",
+          "statement": "Concurrent findings calls in one run never journal two findings with the same ID"
+        },
+        "handle": "unique-finding-ids",
+        "id": "01M64JTDQ1PN9MMS77PBVJW29Z",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M64JTDQ1PN9MMS77P95QM4EG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M64JTDQ1PN9MMS77P95QM4EG",
+        "id": "01M64JTE8HRPJWRMXZ5HNAC03V",
+        "link": "01M64JTE8HRPJWRMXZ5ENSEZVZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M64JTD0AG6CRS3VBDC1J01R6",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5ZNV40RB8VYBB0A3CPXCNXZ",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M64JTFJ12JSXPFFR53E51BHY",
+  "type": "ops",
+  "v": 1
+}

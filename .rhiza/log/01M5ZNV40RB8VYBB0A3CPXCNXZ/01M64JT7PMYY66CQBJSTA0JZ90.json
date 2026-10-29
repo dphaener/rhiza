@@ -1,0 +1,33 @@
+{
+  "actor": "01M64JRVKBXMK33DTNP3ZJ55V6",
+  "after": [
+    "01M61S7N37X21HKBX1GRZWG5JM"
+  ],
+  "at": "2026-10-29T19:39:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "8b2398a9d3bd72abef87d0d93214b1270bc927a7b4cc53e36c16eeacdd2fc0b6",
+          "session": "7cf182b9-2039-4d75-99d2-01a1892c6c98",
+          "summary": "Autonomous plan run, no owner present, so no owner words are quoted. The change set's intent: rhiza run findings numbers each finding f1, f2, ... from a count read in the run, so two concurrent calls in one session can journal the same ID. Planned outcome: findings are numbered under the run's lock, for the round, --check and leaf findings and the sign-off findings alike. Decisions below are the planner's assumptions, not owner decisions; the owner has not confirmed them.",
+          "title": "Findings numbering under the run's lock"
+        },
+        "handle": "findings-numbering-plan",
+        "id": "01M64JT7B39FATHKB4T41NSXSE",
+        "key": null,
+        "kind": "source",
+        "node": "01M64JT7B39FATHKB4T1Z60KA0",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5ZNV40RB8VYBB0A3CPXCNXZ",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M64JT7PMYY66CQBJSTA0JZ90",
+  "type": "ops",
+  "v": 1
+}

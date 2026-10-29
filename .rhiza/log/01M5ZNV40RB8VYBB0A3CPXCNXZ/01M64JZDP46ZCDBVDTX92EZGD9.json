@@ -1,0 +1,30 @@
+{
+  "actor": "01M64JYFC0R0PH9QQ2G3CKZDRA",
+  "after": [
+    "01M64JTFJ12JSXPFFR53E51BHY"
+  ],
+  "at": "2026-10-29T19:42:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript runs concurrent findings calls for one round, one --check and one leaf, plus the sign-off findings, then asserts that the findings journalled within each of those scopes have unique IDs",
+          "statement": "Concurrent findings calls within one round, check or leaf never journal two findings with the same ID"
+        },
+        "handle": "unique-finding-ids",
+        "id": "01M64JTDQ1PN9MMS77PBVJW29Z",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M64JTDQ1PN9MMS77P95QM4EG",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5ZNV40RB8VYBB0A3CPXCNXZ",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M64JZDP46ZCDBVDTX92EZGD9",
+  "type": "ops",
+  "v": 1
+}
