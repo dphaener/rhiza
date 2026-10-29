@@ -1,0 +1,365 @@
+package api
+
+// This file holds the rex.install and rex.uninstall operations: they put
+// the quick-launch script into the owner's Rex config as its own file,
+// rhiza.lua, beside Rex's init.lua (as forge keeps forge.lua), and a single
+// require("rhiza") line in init.lua that loads it.
+
+import (
+	"bytes"
+	"errors"
+	"fmt"
+	"io"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"reflect"
+	"strconv"
+	"strings"
+)
+
+const (
+	rexScriptName = "rhiza.lua"
+	rexInitName   = "init.lua"
+	// rexRequireLine is the line install adds to init.lua. The comment
+	// marks it as ours: uninstall removes only a line that matches it, so
+	// a require("rhiza") the owner wrote is theirs and stays.
+	rexRequireLine = `require("rhiza") -- added by rhiza rex install`
+	// rexScriptMarker is the first line of rhiza.lua; a file without it
+	// was not written by install.
+	rexScriptMarker = "-- Written by rhiza rex install."
+	// The settings block is the part of rhiza.lua a reinstall keeps.
+	rexSettingsBegin = "-- settings begin\n"
+	rexSettingsEnd   = "-- settings end\n"
+	// rexDefaultSettings is the settings block of a first install. The
+	// launch key is ctrl+a a (see decision tui-launch-key).
+	rexDefaultSettings = rexSettingsBegin +
+		"local settings = {\n  launch_key = \"ctrl+a a\",\n}\n" +
+		rexSettingsEnd
+)
+
+// rexLaunchLua is the part of rhiza.lua after the settings and BIN: the
+// action that opens the quick-launch layer, and the binding of the launch
+// key to it. The key is written as Rex's own sequence syntax ("ctrl+a>a")
+// or, as the setting shows it, with spaces ("ctrl+a a"). The layer runs
+// `rhiza tui launch`, which lists the apps and opens the chosen one in a
+// modal. The layer starts in the invoking block's directory, since the
+// launcher hands its own to each app; without one Rex starts it in $HOME.
+const rexLaunchLua = `local TERM = "com.superlogical.terminal"
+local LAYER_BOUNDS = { 0.3, 0.25, 0.4, 0.5 }
+
+-- block_cwd returns the working directory of the terminal block's
+-- foreground program, else of its shell, else nil.
+local function block_cwd(block_id)
+  if block_id == nil then return nil end
+  local p = rex.block.call(TERM, "process", { block_id = block_id })
+  if p == nil then return nil end
+  return (p.foreground and p.foreground.cwd) or (p.child and p.child.cwd)
+end
+
+rex.action{
+  name = "rhiza_launch",
+  title = "Rhiza apps",
+  description = "Open the Rhiza quick-launch layer",
+  category = "rhiza",
+  keywords = "rhiza apps launch",
+  run = function(ctx)
+    local res, err = rex.session.new_layer{
+      bounds = LAYER_BOUNDS,
+      layout = rex.layout.block{
+        flavor = TERM .. ".shell",
+        label = "Rhiza apps",
+        options = { command = { BIN, "tui", "launch" }, cwd = block_cwd(ctx.block_id) },
+      },
+      focus = true,
+    }
+    if err ~= nil then error(err, 0) end
+    return res
+  end,
+}
+
+if type(settings.launch_key) == "string" and settings.launch_key ~= "" then
+  rex.bind((settings.launch_key:gsub("%s+", ">")), "rhiza_launch")
+end
+
+return settings
+`
+
+// RexInstallRequest asks for the quick-launch script installed in Rex.
+type RexInstallRequest struct {
+	Force bool `json:"force,omitempty" desc:"Overwrite a rhiza.lua rhiza rex install did not write"`
+}
+
+// RexInstallResponse says where the files are and what changed.
+type RexInstallResponse struct {
+	Script    string   `json:"script" desc:"The rhiza.lua file, absolute"`
+	Init      string   `json:"init" desc:"Rex's init.lua, absolute"`
+	Written   []string `json:"written" desc:"The files written: rhiza.lua and init.lua, those that changed"`
+	Unchanged []string `json:"unchanged" desc:"The files that were already current"`
+}
+
+// RexUninstallRequest asks for the quick-launch script removed from Rex.
+type RexUninstallRequest struct{}
+
+// RexUninstallResponse says what uninstall removed.
+type RexUninstallResponse struct {
+	Removed []string `json:"removed" desc:"The files changed or removed: rhiza.lua and init.lua, those that held our part"`
+}
+
+func init() {
+	register(Operation{
+		Name:     "rex.install",
+		Summary:  "Install the quick-launch script into the Rex config and reload Rex",
+		Request:  reflect.TypeFor[RexInstallRequest](),
+		Response: reflect.TypeFor[RexInstallResponse](),
+		Run:      runRexInstall,
+	})
+	register(Operation{
+		Name:     "rex.uninstall",
+		Summary:  "Remove the quick-launch script from the Rex config and reload Rex",
+		Request:  reflect.TypeFor[RexUninstallRequest](),
+		Response: reflect.TypeFor[RexUninstallResponse](),
+		Run:      runRexUninstall,
+	})
+}
+
+// rexConfigPaths returns the paths of Rex's init.lua and of rhiza.lua
+// beside it. Rex reads REX_CONFIG when set, else rex/init.lua in
+// $XDG_CONFIG_HOME or ~/.config. init.lua may be a symlink (dotfiles); it is
+// resolved so a write goes through it.
+func rexConfigPaths(ctx *Ctx, cmd string) (initPath, scriptPath string, err error) {
+	get := ctx.Getenv
+	if get == nil {
+		get = func(string) string { return "" }
+	}
+	switch {
+	case get("REX_CONFIG") != "":
+		initPath = get("REX_CONFIG")
+	case get("XDG_CONFIG_HOME") != "":
+		initPath = filepath.Join(get("XDG_CONFIG_HOME"), "rex", rexInitName)
+	case ctx.Home != "":
+		initPath = filepath.Join(ctx.Home, ".config", "rex", rexInitName)
+	default:
+		return "", "", Usagef("%s: no Rex config folder: set REX_CONFIG", cmd)
+	}
+	if r, rerr := filepath.EvalSymlinks(initPath); rerr == nil {
+		initPath = r
+	}
+	return initPath, filepath.Join(filepath.Dir(initPath), rexScriptName), nil
+}
+
+// rexReload makes Rex read its config again.
+func rexReload(ctx *Ctx, cmd string) error {
+	if ctx.Exec == nil {
+		return Errorf("%s: cannot run rex to reload it", cmd)
+	}
+	if _, err := ctx.Exec("rex", []string{"config", "reload"}, "", nil); err != nil {
+		return Errorf("%s: files are in place, but rex config reload failed: %v", cmd, err).WithNext("rex config reload")
+	}
+	return nil
+}
+
+func readIfExists(p string) ([]byte, bool, error) {
+	b, err := os.ReadFile(p)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, false, nil
+	}
+	return b, err == nil, err
+}
+
+// rexScript returns rhiza.lua's bytes, keeping the settings block of have
+// (the file now on disk, nil if none). bin is the absolute path of rhiza,
+// run by the layer the launch key opens.
+func rexScript(have []byte, bin string) []byte {
+	settings := rexDefaultSettings
+	s := string(have)
+	if i := strings.Index(s, rexSettingsBegin); i >= 0 {
+		if j := strings.Index(s[i:], rexSettingsEnd); j >= 0 {
+			settings = s[i : i+j+len(rexSettingsEnd)]
+		}
+	}
+	return []byte(rexScriptMarker + "\n" +
+		"-- Edit the settings block; a reinstall keeps it. Everything else is rewritten.\n" +
+		settings +
+		"\nlocal BIN = " + strconv.Quote(bin) + "\n" +
+		rexLaunchLua)
+}
+
+// rexHasRequire reports whether init.lua already loads rhiza: any line that
+// is a require of "rhiza", ours or the owner's.
+func rexHasRequire(init []byte) bool {
+	for _, l := range strings.Split(string(init), "\n") {
+		l = strings.TrimSpace(l)
+		for _, q := range []string{`"`, `'`} {
+			if strings.HasPrefix(l, "require("+q+"rhiza"+q+")") || strings.HasPrefix(l, "require "+q+"rhiza"+q) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// rexAddRequire appends our require line, touching no existing byte. A file
+// without a final newline gets one before the line, and none after, so
+// rexRemoveRequire can tell the two shapes apart and undo either exactly.
+func rexAddRequire(init []byte) []byte {
+	switch {
+	case len(init) == 0 || init[len(init)-1] == '\n':
+		return append(init[:len(init):len(init)], rexRequireLine+"\n"...)
+	default:
+		return append(init[:len(init):len(init)], "\n"+rexRequireLine...)
+	}
+}
+
+// rexRemoveRequire undoes rexAddRequire; changed is false if our line is
+// not there.
+func rexRemoveRequire(init []byte) (out []byte, changed bool) {
+	if bytes.HasSuffix(init, []byte("\n"+rexRequireLine)) {
+		return init[:len(init)-len(rexRequireLine)-1], true
+	}
+	line := []byte(rexRequireLine + "\n")
+	if bytes.HasPrefix(init, line) {
+		return init[len(line):], true
+	}
+	if i := bytes.LastIndex(init, append([]byte("\n"), line...)); i >= 0 {
+		return append(init[:i+1:i+1], init[i+1+len(line):]...), true
+	}
+	return init, false
+}
+
+// runRexInstall writes rhiza.lua (keeping its settings), adds the require
+// line to init.lua if no line loads rhiza yet, and reloads Rex. A run that
+// finds both current writes nothing but still reloads. A rhiza.lua install
+// did not write is a conflict unless Force. Like guide.install it writes no
+// log entry, so --dry-run is a usage error.
+func runRexInstall(ctx *Ctx, req any) (any, error) {
+	r := req.(RexInstallRequest)
+	const cmd = "rhiza rex install"
+	if ctx.DryRun {
+		return nil, Usagef("rex install does not take --dry-run: it writes no log entry").WithNext(cmd)
+	}
+	initPath, scriptPath, err := rexConfigPaths(ctx, cmd)
+	if err != nil {
+		return nil, err
+	}
+	haveScript, scriptExists, err := readIfExists(scriptPath)
+	if err != nil {
+		return nil, Errorf("rex install: %v", err)
+	}
+	if scriptExists && !bytes.HasPrefix(haveScript, []byte(rexScriptMarker)) && !r.Force {
+		return nil, Conflictf("%s exists and was not written by rhiza rex install", scriptPath).WithNext(cmd + " --force")
+	}
+	initBytes, _, err := readIfExists(initPath)
+	if err != nil {
+		return nil, Errorf("rex install: %v", err)
+	}
+
+	resp := RexInstallResponse{Script: scriptPath, Init: initPath, Written: []string{}, Unchanged: []string{}}
+	bin := ctx.Self
+	if bin == "" {
+		bin = "rhiza"
+	}
+	wantScript := rexScript(haveScript, bin)
+	if scriptExists && bytes.Equal(haveScript, wantScript) {
+		resp.Unchanged = append(resp.Unchanged, rexScriptName)
+	} else {
+		if err := writeAtomic(scriptPath, wantScript); err != nil {
+			return nil, Errorf("rex install: %v", err)
+		}
+		resp.Written = append(resp.Written, rexScriptName)
+	}
+	if rexHasRequire(initBytes) {
+		resp.Unchanged = append(resp.Unchanged, rexInitName)
+	} else {
+		if err := writeKeepingMode(initPath, rexAddRequire(initBytes)); err != nil {
+			return nil, Errorf("rex install: %v", err)
+		}
+		resp.Written = append(resp.Written, rexInitName)
+	}
+	if err := rexReload(ctx, cmd); err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+// runRexUninstall removes rhiza.lua (if install wrote it) and the require
+// line install added, leaving every other byte of init.lua as it was, and
+// reloads Rex. An init.lua install created and that is now empty is removed.
+func runRexUninstall(ctx *Ctx, req any) (any, error) {
+	const cmd = "rhiza rex uninstall"
+	if ctx.DryRun {
+		return nil, Usagef("rex uninstall does not take --dry-run: it writes no log entry").WithNext(cmd)
+	}
+	initPath, scriptPath, err := rexConfigPaths(ctx, cmd)
+	if err != nil {
+		return nil, err
+	}
+	resp := RexUninstallResponse{Removed: []string{}}
+	haveScript, scriptExists, err := readIfExists(scriptPath)
+	if err != nil {
+		return nil, Errorf("rex uninstall: %v", err)
+	}
+	if scriptExists {
+		if !bytes.HasPrefix(haveScript, []byte(rexScriptMarker)) {
+			return nil, Conflictf("%s was not written by rhiza rex install: remove it yourself", scriptPath)
+		}
+		if err := os.Remove(scriptPath); err != nil {
+			return nil, Errorf("rex uninstall: %v", err)
+		}
+		resp.Removed = append(resp.Removed, rexScriptName)
+	}
+	initBytes, initExists, err := readIfExists(initPath)
+	if err != nil {
+		return nil, Errorf("rex uninstall: %v", err)
+	}
+	if initExists {
+		if out, changed := rexRemoveRequire(initBytes); changed {
+			if len(out) == 0 {
+				err = os.Remove(initPath)
+			} else {
+				err = writeKeepingMode(initPath, out)
+			}
+			if err != nil {
+				return nil, Errorf("rex uninstall: %v", err)
+			}
+			resp.Removed = append(resp.Removed, rexInitName)
+		}
+	}
+	if err := rexReload(ctx, cmd); err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+// writeKeepingMode writes data to p atomically, keeping p's permissions if
+// it exists.
+func writeKeepingMode(p string, data []byte) error {
+	info, statErr := os.Stat(p)
+	if err := writeAtomic(p, data); err != nil {
+		return err
+	}
+	if statErr == nil {
+		return os.Chmod(p, info.Mode().Perm())
+	}
+	return nil
+}
+
+// Human reports the files, then each path written.
+func (r RexInstallResponse) Human(w io.Writer) {
+	fmt.Fprintf(w, "Installed the Rhiza quick-launch script in %s (%d written, %d unchanged); Rex reloaded.\n", r.Script, len(r.Written), len(r.Unchanged))
+	for _, p := range r.Written {
+		fmt.Fprintf(w, "- wrote %s\n", p)
+	}
+}
+
+// Human reports what was removed.
+func (r RexUninstallResponse) Human(w io.Writer) {
+	if len(r.Removed) == 0 {
+		fmt.Fprintln(w, "Nothing to remove; Rex reloaded.")
+		return
+	}
+	fmt.Fprintf(w, "Removed the Rhiza quick-launch script from Rex; Rex reloaded.\n")
+	for _, p := range r.Removed {
+		fmt.Fprintf(w, "- changed %s\n", p)
+	}
+}

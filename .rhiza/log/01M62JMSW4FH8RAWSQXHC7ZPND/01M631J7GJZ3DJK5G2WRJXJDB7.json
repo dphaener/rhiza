@@ -1,0 +1,86 @@
+{
+  "actor": "01M63178SS0WGR4WKN8DGZ6303",
+  "after": [
+    "01M6316SR08STVJPFKH5Q7JWPY"
+  ],
+  "at": "2026-10-29T05:19:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at d02d9ce (cycle 3) in real Rex. Built rhiza to a scratch dir, ran rhiza rex install into a scratch REX_CONFIG, then ran a throwaway rex server run on a scratch socket with --config at that init.lua (REX_SERVER pointed at itself, RHIZA_* unset). rex keymap on it lists 'ctrl+a a rhiza_launch rhiza.lua:44' beside the owner's 'ctrl+a r client.config.reload', and rex actions lists rhiza_launch. Made a session with -c at the scratch dir, then cd'd its shell into this checkout, and ran rex do rhiza_launch -s/-b on that shell block: a 'Rhiza apps' layer opened whose process cwd was the checkout (not $HOME nor the session's start dir), listing ready, roadmap, show, slice, why with summaries. send-key enter on ready closed it and opened a 'ready' block with this repo's change_sets JSON and the 'ready · j/k scroll · q quit' footer; the cycle-2 'no Rhiza repository' failure is fixed. Gap: the ctrl+a a keypress itself was not pressed in a real Rex.app client; when the action is called with no block in its context (rex.invoke from a script) the layer starts in the session's start dir."
+        },
+        "handle": "quick-launch-layer-qa-3",
+        "id": "01M631J5TPJ1T3EC3X7BSSFY3F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M631J5TPJ1T3EC3X7BCSTN4Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M631J5TPJ1T3EC3X7BCSTN4Z",
+        "id": "01M631J6378GB9TH8MG3DEB2WH",
+        "link": "01M631J6378GB9TH8MFZFRYPH3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JP7BKA4N9W2HCFTP0CMQ4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at d02d9ce (cycle 3) with a built rhiza, REX_CONFIG at a scratch init.lua (owner lines incl. trailing spaces) and a fake rex first on PATH. rex install wrote rhiza.lua (settings launch_key ctrl+a a, BIN, block_cwd helper, rhiza_launch action passing cwd, bind) and appended one require(\"rhiza\") -- added by rhiza rex install line; the fake rex logged config reload. A second install reported both unchanged and cmp found both files byte-identical. uninstall removed both and cmp shows init.lua equal to the owner's original. A real scratch Rex server loading the installed config bound ctrl+a a to rhiza_launch."
+        },
+        "handle": "rex-install-command-qa-3",
+        "id": "01M631J6B9ABWKNZG1V8MEYN91",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M631J6B9ABWKNZG1V5EEWDY7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M631J6B9ABWKNZG1V5EEWDY7",
+        "id": "01M631J6K718DR3C207J3T1EPJ",
+        "link": "01M631J6K718DR3C207GCVAZC3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JP4KDNBZKH1YT5NZRB347",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at d02d9ce (cycle 3) with a built rhiza on this repo's real model (RHIZA_ROOT/RUN/CHANGE/FOR unset). cmp shows rhiza <op> --json and rhiza tui app <op> --once byte-identical, both exit 0, for ready (14007 bytes), roadmap (19626) and, with --change 01M62JMSW4FH8RAWSQXHC7ZPND, slice (36321), show tui-launch-key (1332) and why quick-launch-layer (37320). In a real scratch Rex server the ready app opened from the launcher and showed the same change_sets JSON."
+        },
+        "handle": "read-apps-match-cli-qa-3",
+        "id": "01M631J6V5NPBEE6WZ2JNY00NJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M631J6V5NPBEE6WZ2HKK88DC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M631J6V5NPBEE6WZ2HKK88DC",
+        "id": "01M631J734E81RHVVXGTRSJTSK",
+        "link": "01M631J734E81RHVVXGQDEX0PB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JP9RTA2QHK5B6A53852M8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62JMSW4FH8RAWSQXHC7ZPND",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M631J7GJZ3DJK5G2WRJXJDB7",
+  "type": "ops",
+  "v": 1
+}

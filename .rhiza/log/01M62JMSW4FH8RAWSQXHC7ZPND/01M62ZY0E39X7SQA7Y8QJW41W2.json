@@ -1,0 +1,40 @@
+{
+  "actor": "01M62ZMR6RDW1HATE0VCTEE45F",
+  "after": [
+    "01M62YY1X2CZGX22EBTGBWP37S"
+  ],
+  "at": "2026-10-29T04:50:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At dd3d5b0 (attempt 2, the session.attach fix in cmd/rhiza/tui.go): built the binary and ran `rhiza rex install` into a scratch REX_CONFIG, then loaded the installed init.lua/rhiza.lua in luajit against a fake rex table: it binds ctrl+a>a to rhiza_launch, and running that action calls rex.session.new_layer with a focused block running `<bin> tui launch`. go test -count=1 ./internal/tui/... ./internal/api ./cmd/rhiza pass; with the fake Rex client, TestLayerListsEachAppByName lists each app by name and TestSelectingAnAppOpensItsModal opens one focused layer running `<bin> tui app roadmap` in the cwd and disowns the block. Read apps register through launcher.Register in readapps. The fix's diff attaches the connection with rexuikit client.Attach before surface use and passes the checked session. make fmt-check and vet pass; make self-check fails only on stale .rhiza/rendered files, not on code."
+        },
+        "handle": "quick-launch-layer-verified-2",
+        "id": "01M62ZXXMTN0CGD3C1G2GERNZP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62ZXXMTN0CGD3C1FZW20PZP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62ZXXMTN0CGD3C1FZW20PZP",
+        "id": "01M62ZXYRE0BTKXS2Z8NNVYGMS",
+        "link": "01M62ZXYRE0BTKXS2Z8NFCZ10S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JP7BKA4N9W2HCFTP0CMQ4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62JMSW4FH8RAWSQXHC7ZPND",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62ZY0E39X7SQA7Y8QJW41W2",
+  "type": "ops",
+  "v": 1
+}

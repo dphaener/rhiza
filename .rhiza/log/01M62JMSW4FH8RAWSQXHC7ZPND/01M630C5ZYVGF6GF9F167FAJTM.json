@@ -1,0 +1,86 @@
+{
+  "actor": "01M6306EGF3M2K79JPQ09M6GR0",
+  "after": [
+    "01M6305X4CJT1KD3R0GNN04WS3"
+  ],
+  "at": "2026-10-29T04:58:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at c7a97c9 (cycle 2) in real Rex. Built rhiza to a scratch dir; rex new a throwaway session with --cwd at the repo running `rhiza tui launch`: the layer listed ready, roadmap, show, slice, why with summaries; down+enter opened a floating 'roadmap' block showing the roadmap JSON with the 'roadmap · j/k scroll · q quit' footer, so the cycle-1 'stream is not attached (409)' failure is fixed. Then ran the installed rhiza.lua's rhiza_launch action in real Rex with `rex do -s <session> rhiza.lua --action rhiza_launch` (rex.bind line stripped so the owner's keymap was untouched): it opened a focused floating 'Rhiza apps' layer at bounds 0.3,0.25,0.4,0.5, and enter on ready closed it and opened a 'ready' modal. But that modal showed 'rhiza: no Rhiza repository in /Users/darinhaener': a pwd probe through the same rex.session.new_layer call shows a block with no cwd starts in $HOME, and rhiza.lua passes no cwd, so the launcher (and the apps, which take its os.Getwd) run outside the repo. The ctrl+a a keypress itself was not pressed in a real client."
+        },
+        "handle": "quick-launch-layer-qa-2",
+        "id": "01M630C3ZCV8W1AA33TJ8TE009",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M630C3ZCV8W1AA33THRJ328X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M630C3ZCV8W1AA33THRJ328X",
+        "id": "01M630C4941M122JZKEQTB3CQA",
+        "link": "01M630C4941M122JZKEQ4JVJEK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JP7BKA4N9W2HCFTP0CMQ4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c7a97c9 (cycle 2) with a built rhiza on this repo's real model (RHIZA_ROOT/RUN/CHANGE/FOR unset). cmp shows `rhiza <op> --json` and `rhiza tui app <op> --once` byte-identical for roadmap (19626 bytes), ready (14007), and, with --change 01M62JMSW4FH8RAWSQXHC7ZPND, slice (28179), show tui-launch-key (1332) and why quick-launch-layer (37320); both exit 0. The cycle-1 gap (tui app dropped --change, exit 2) is fixed. show on an unknown handle exits 4 in both. In real Rex the roadmap and ready apps open as floating modals with the j/k scroll footer."
+        },
+        "handle": "read-apps-match-cli-qa-2",
+        "id": "01M630C4JW2MAQA002D3YAX85P",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M630C4JW2MAQA002D39ZJW4Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M630C4JW2MAQA002D39ZJW4Q",
+        "id": "01M630C4WJPH9AKHPD480F48QP",
+        "link": "01M630C4WJPH9AKHPD47YCEE95",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JP9RTA2QHK5B6A53852M8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c7a97c9 (cycle 2) with a built rhiza, REX_CONFIG at a scratch init.lua (owner lines incl. trailing spaces) and a fake rex first on PATH. rex install wrote rhiza.lua (settings launch_key ctrl+a a, BIN = the built binary, rhiza_launch action, bind) and appended one require(\"rhiza\") -- added by rhiza rex install line; the fake rex logged `config reload`. A second install reported both files unchanged and cmp found them byte-identical. rex uninstall removed both, and cmp shows init.lua equal to the original. Real Rex loaded the written rhiza.lua via rex do and its action opened the layer."
+        },
+        "handle": "rex-install-command-qa-2",
+        "id": "01M630C562VF8PBTRY6K31GV6H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M630C562VF8PBTRY6FBSN0VZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M630C562VF8PBTRY6FBSN0VZ",
+        "id": "01M630C5FQ0C539BCTZZQ9B95B",
+        "link": "01M630C5FQ0C539BCTZVXPRP9E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JP4KDNBZKH1YT5NZRB347",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62JMSW4FH8RAWSQXHC7ZPND",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M630C5ZYVGF6GF9F167FAJTM",
+  "type": "ops",
+  "v": 1
+}

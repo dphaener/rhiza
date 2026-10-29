@@ -1,0 +1,86 @@
+{
+  "actor": "01M62YQ6FC9B521ADAPYRVAMT9",
+  "after": [
+    "01M62YPHGHXCTR0J36D1VEWSV7"
+  ],
+  "at": "2026-10-29T04:33:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 4a03cf7 with a built rhiza (go build to a scratch dir), REX_CONFIG pointed at a scratch init.lua and a fake rex first on PATH. First rex install wrote rhiza.lua (marker, launch_key ctrl+a a, BIN = the binary) and appended one require(\"rhiza\") -- added by rhiza rex install line, keeping the owner's lines incl. trailing spaces; fake rex logged config reload. A second install reported written [] and cmp showed both files byte-identical. An edited launch_key survived a reinstall. uninstall removed rhiza.lua and cmp showed init.lua equal to the owner's original. With no init.lua, install created it and uninstall removed it again; a second uninstall says nothing to remove. A foreign rhiza.lua is refused (exit 3, next: --force). The written init.lua plus rhiza.lua loaded in luajit against a fake rex: bind ctrl+a>a rhiza_launch, whose run calls new_layer with flavor com.superlogical.terminal.shell running <BIN> tui launch, focus true. Real Rex config untouched."
+        },
+        "handle": "rex-install-command-qa-1",
+        "id": "01M62YXZKKXCD34HTF87DVMCNM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62YXZKKXCD34HTF84ST7NZW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62YXZKKXCD34HTF84ST7NZW",
+        "id": "01M62YY015YPMAKKBG09QNYXQE",
+        "link": "01M62YY015YPMAKKBG07XZ9PR4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JP4KDNBZKH1YT5NZRB347",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 4a03cf7 with a built rhiza on this repo's real model (RHIZA_ROOT/RUN unset). rhiza <op> --json and rhiza tui app <op> --once are byte-identical (cmp) for roadmap (19626 bytes), ready (14007 bytes) and slice with RHIZA_CHANGE=01M62JMSW4FH8RAWSQXHC7ZPND (18187 bytes); show/why/slice on handles not in the as-is view fail the same way (not_found, exit 4) in both. In a real Rex session (patched only to attach, see the qa finding) the roadmap modal showed the same JSON with the j/k scroll footer. Gap: tui app drops the global --change flag, so rhiza tui app slice --change <cs> --once fails (exit 2) where rhiza slice --change <cs> --json succeeds; reported as a minor finding."
+        },
+        "handle": "read-apps-match-cli-qa-1",
+        "id": "01M62YY0CFTSHXNT9G1WZ09XTZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62YY0CFTSHXNT9G1SVGZ88Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62YY0CFTSHXNT9G1SVGZ88Z",
+        "id": "01M62YY0PVBR17D0Z0A8DYEZA0",
+        "link": "01M62YY0PVBR17D0Z0A7X9TB4W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JP9RTA2QHK5B6A53852M8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at 4a03cf7 in real Rex: rex new a throwaway session running the built rhiza tui launch. The layer lists ready, roadmap, show, slice, why with summaries. Pressing down+enter on roadmap failed: 'rhiza: tui launch: rex session.view: stream is not attached to session ... (conflict, 409)' and no modal opened. cmd/rhiza/tui.go dials Rex but never calls session.attach, which rexuikit surface.New documents as required. A scratch build adding rex.Attach(ctx, session) after Dial opened a 'roadmap' block showing the roadmap app, so the fix is that one call. The fake-Rex unit tests pass because the fake does not enforce attachment."
+        },
+        "handle": "quick-launch-layer-qa-1",
+        "id": "01M62YY120BBSCE04K8GE80AXX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62YY120BBSCE04K8DX0S7SD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62YY120BBSCE04K8DX0S7SD",
+        "id": "01M62YY1CNR47YF5VFXB56F4TZ",
+        "link": "01M62YY1CNR47YF5VFXAWGNRJS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JP7BKA4N9W2HCFTP0CMQ4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62JMSW4FH8RAWSQXHC7ZPND",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62YY1X2CZGX22EBTGBWP37S",
+  "type": "ops",
+  "v": 1
+}
