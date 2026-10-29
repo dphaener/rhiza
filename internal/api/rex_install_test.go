@@ -105,7 +105,7 @@ func TestRexInstallKeepsSettingsAndOwnersRequire(t *testing.T) {
 		t.Errorf("owner's own require was changed: %q", got)
 	}
 	script := filepath.Join(dir, "rhiza.lua")
-	edited := strings.Replace(readFile(t, script), `"ctrl+a a"`, `"ctrl+a l"`, 1)
+	edited := strings.Replace(readFile(t, script), `"ctrl+a>a"`, `"ctrl+a l"`, 1)
 	writePath(t, script, edited)
 	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
 		t.Fatal(err)
@@ -162,7 +162,7 @@ func TestRexInstallScriptOpensTheLauncher(t *testing.T) {
 	}
 	script := readFile(t, filepath.Join(dir, "rhiza.lua"))
 	for _, want := range []string{
-		`launch_key = "ctrl+a a"`,
+		`launch_key = "ctrl+a>a"`,
 		`local BIN = "/opt/my tools/rhiza"`,
 		`name = "rhiza_launch"`,
 		`options = { command = { BIN, "tui", "launch" }, cwd = block_cwd(ctx.block_id) }`,
@@ -176,7 +176,7 @@ func TestRexInstallScriptOpensTheLauncher(t *testing.T) {
 
 	// A changed launch key survives a reinstall, and the binary path is
 	// refreshed.
-	writePath(t, filepath.Join(dir, "rhiza.lua"), strings.Replace(script, `"ctrl+a a"`, `"ctrl+a g"`, 1))
+	writePath(t, filepath.Join(dir, "rhiza.lua"), strings.Replace(script, `"ctrl+a>a"`, `"ctrl+a g"`, 1))
 	ctx.Self = "/elsewhere/rhiza"
 	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
 		t.Fatal(err)

@@ -35,10 +35,10 @@ const (
 	rexSettingsBegin = "-- settings begin\n"
 	rexSettingsEnd   = "-- settings end\n"
 	// rexDefaultSettings is the settings block of a first install. The
-	// launch key is ctrl+a a (see decision tui-launch-key); it enters the
+	// launch key is ctrl+a>a (see decision tui-launch-key); it enters the
 	// rhiza key mode. keys remaps an app's key in that mode.
 	rexDefaultSettings = rexSettingsBegin +
-		"local settings = {\n  launch_key = \"ctrl+a a\",\n" +
+		"local settings = {\n  launch_key = \"ctrl+a>a\",\n" +
 		"  -- Remap an app's key in the rhiza key mode, e.g. keys = { roadmap = \"m\" }.\n" +
 		"  keys = {},\n}\n" +
 		rexSettingsEnd
@@ -46,8 +46,7 @@ const (
 
 // rexLaunchLua is the part of rhiza.lua after the settings and BIN: the
 // action that opens the quick-launch layer (in the palette only; the launch
-// key enters the key mode, see rexKeyModeLua). The key is written as Rex's own sequence syntax ("ctrl+a>a")
-// or, as the setting shows it, with spaces ("ctrl+a a"). The layer runs
+// key enters the key mode, see rexKeyModeLua). The layer runs
 // `rhiza tui launch`, which lists the apps and opens the chosen one in a
 // modal. The layer starts in the invoking block's directory, since the
 // launcher hands its own to each app; without one Rex starts it in $HOME.
