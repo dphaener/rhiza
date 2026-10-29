@@ -45,6 +45,10 @@ Rhiza orchestrates: milestone 5 is driven by rhiza daemon, with no orchestrator 
 - serves change set `01M625RCFY4RB9HC0B69Y08VFV` (A plan run ends with its plan on a pushed branch and an open PR, as ship-change does, so no one renders, commits or opens the plan's PR by hand.)
 - serves change set `01M62MKZ6SA46DYC1K2R0W254S` (The daemon resumes only interrupted runs whose change set is still accepted: a run left interrupted on a change set that has since landed, been withdrawn or rejected is never resumed.)
 - serves change set `01M62MKZFRPZ2C7QTYAF815XAG` (The inbox leaves out failed runs whose change set has since landed, been withdrawn or rejected, and rhiza run abandon also takes a failed run, so every failed item can be cleared; no item's next command is one that can only fail again.)
+- serves change set `01M62JMSW4FH8RAWSQXHC7ZPND` (Rex quick-launch layer and install command, with roadmap, ready, show, why and slice as apps)
+- serves change set `01M62JMT63RY271EAF14R8P4VG` (A Rex app showing the as-is capability tree and the roadmap)
+- serves change set `01M62JMTG32M03T1FHC0T1EPE2` (Change-set and record writes from apps, each shown as a what-if preview and confirmed once)
+- serves change set `01M62JMTT1Z8FP0SC619V3QS68` (Read-only Rex apps for run status and session ls)
 
 ## History
 
