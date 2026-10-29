@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
@@ -19,6 +20,7 @@ import (
 	"github.com/dphaener/rhiza/internal/api"
 	"github.com/dphaener/rhiza/internal/canon"
 	"github.com/dphaener/rhiza/internal/tui/launcher"
+	"github.com/dphaener/rhiza/internal/tui/modelapp"
 	"github.com/dphaener/rhiza/internal/tui/readapps"
 	"github.com/dphaener/rhiza/internal/tui/writeapps"
 )
@@ -70,6 +72,9 @@ func tuiCommand(g globals, args []string, stdout, stderr io.Writer, getenv func(
 // written; --once --confirm confirms it: the operation runs for real and
 // prints what the command prints with --json, byte for byte.
 func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, getenv func(string) string) int {
+	if name == modelapp.Name {
+		return tuiModel(g, args, stdout, stderr, getenv)
+	}
 	read, isRead := readapps.Lookup(name)
 	write, isWrite := writeapps.Lookup(name)
 	if !isRead && !isWrite {
@@ -135,6 +140,59 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 			return writeError(stdout, stderr, err, false)
 		}
 		stdout.Write(out)
+		return 0
+	}
+	if _, err := tea.NewProgram(m).Run(); err != nil {
+		return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
+	}
+	return 0
+}
+
+// tuiModel runs the model app: the as-is tree and the roadmap, each the
+// text its command prints; a ref limits the tree to that node's subtree.
+// With --once it prints the tree, then the roadmap
+// after a blank line, and exits.
+func tuiModel(g globals, args []string, stdout, stderr io.Writer, getenv func(string) string) int {
+	once, ref := false, ""
+	for _, a := range args {
+		switch {
+		case a == "--once":
+			once = true
+		case ref == "" && !strings.HasPrefix(a, "-"):
+			ref = a
+		default:
+			return writeError(stdout, stderr, api.Usagef("tui app model takes [<ref>] [--once]"), false)
+		}
+	}
+	read := func(op string, args []string) (string, error) {
+		o, ok := api.Lookup(op)
+		if !ok {
+			return "", api.NotFoundf("unknown operation %q", op)
+		}
+		req, err := requestFromArgs(o, args)
+		if err != nil {
+			return "", err
+		}
+		ctx, err := newCtx(g, os.Stdin, getenv)
+		if err != nil {
+			return "", err
+		}
+		resp, err := o.Run(ctx, req)
+		if err != nil {
+			return "", err
+		}
+		var b strings.Builder
+		if err := writeResponse(&b, resp, false); err != nil {
+			return "", err
+		}
+		return b.String(), nil
+	}
+	m := modelapp.NewModel(read, ref)
+	if err := m.Err(); err != nil {
+		return writeError(stdout, stderr, err, false)
+	}
+	if once {
+		io.WriteString(stdout, m.Text("tree")+"\n"+m.Text("roadmap"))
 		return 0
 	}
 	if _, err := tea.NewProgram(m).Run(); err != nil {
