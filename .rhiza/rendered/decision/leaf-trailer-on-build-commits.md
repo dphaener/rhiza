@@ -19,6 +19,7 @@ the orchestrator's ruling as arbiter, under the owner's instruction to be the ar
 ### In
 
 - relates-to [evidence-actor-leaf-scope](evidence-actor-leaf-scope.md) — implements its warning scope in rhiza check
+- decided-by [build-leaf-split-trailers](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-leaf-split-trailers.md)
 
 ## History
 
