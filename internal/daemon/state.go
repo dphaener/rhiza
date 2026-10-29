@@ -42,6 +42,10 @@ type State struct {
 	// Unjournaled are the starts whose run never wrote a journal, by
 	// change set: the daemon does not start them again while it runs.
 	Unjournaled []Event `json:"unjournaled,omitempty"`
+	// Notified are the IDs of the inbox items the daemon sent a Rex
+	// notification for and that still wait, so a later poll, or a later
+	// daemon, sends none again while they stay.
+	Notified []string `json:"notified,omitempty"`
 }
 
 // WriteState replaces the state file, whole.
