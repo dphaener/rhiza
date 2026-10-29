@@ -1,0 +1,26 @@
+{
+  "actor": "01M64AAC2PBNEYQW1NWXWE96HP",
+  "after": [
+    "01M64A7WG88142VEWRBHT402ZM"
+  ],
+  "at": "2026-10-29T17:12:54Z",
+  "body": {
+    "drop": [
+      "01M649FV35HE72DAWSC0A1BFP6"
+    ],
+    "ops": [
+      {
+        "base": "01M649A9ZF3SNFY812DY33WQC0",
+        "id": "01M64ACYT109DFVB1VXJ8FSR88",
+        "node": "01M62JP7BKA4N9W2HCFTP0CMQ4",
+        "op": "node.retire",
+        "reason": "Decision rex-picker-removed: the all-apps picker (rhiza tui launch and the rhiza_launch action) is removed; each app opens from its own action or its key in the rhiza key mode."
+      }
+    ]
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M64ACYT109DFVB1VXMJSXAV4",
+  "type": "ops",
+  "v": 1
+}

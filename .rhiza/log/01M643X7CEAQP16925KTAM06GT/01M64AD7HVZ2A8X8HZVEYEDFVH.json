@@ -1,0 +1,28 @@
+{
+  "actor": "01M64AAC2PBNEYQW1NWXWE96HP",
+  "after": [
+    "01M64ACYT109DFVB1VXMJSXAV4"
+  ],
+  "at": "2026-10-29T17:13:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M62JMHNS9HS0AR6DT6NBE4XH",
+        "handle": null,
+        "id": "01M64AD75ZGX39WMEKR30NSABM",
+        "node": "01M62JMHNS9HS0AR6DT5SZYKGQ",
+        "op": "node.update",
+        "set": {
+          "statement": "Rhiza's commands run as small Rex apps: each app is its own Rex action in the command palette and a key in the rhiza key mode, and opens straight away in a layer sized to it with no picker in between; each app reads and writes the model in-process through internal/api"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M64AD7HVZ2A8X8HZVEYEDFVH",
+  "type": "ops",
+  "v": 1
+}
