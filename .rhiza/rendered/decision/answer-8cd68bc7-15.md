@@ -41,6 +41,7 @@ the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a18
 
 - decided-by [run-process-record](../capability/rhiza/workflows/workflow-runs/run-process-record.md)
 - decided-by [daemon-resume-once](../capability/rhiza/orchestration/daemon/daemon-resume-once.md)
+- decided-by [inbox-list](../capability/rhiza/orchestration/inbox/inbox-list.md)
 
 ## History
 
