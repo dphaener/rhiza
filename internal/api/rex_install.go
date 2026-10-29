@@ -1,7 +1,7 @@
 package api
 
 // This file holds the rex.install and rex.uninstall operations: they put
-// the quick-launch script into the owner's Rex config as its own file,
+// the app actions script into the owner's Rex config as its own file,
 // rhiza.lua, beside Rex's init.lua (as forge keeps forge.lua), and a single
 // require("rhiza") line in init.lua that loads it.
 
@@ -16,6 +16,9 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/dphaener/rexuikit/surface"
+	"github.com/dphaener/rhiza/internal/tui/launcher"
 )
 
 const (
@@ -32,20 +35,19 @@ const (
 	rexSettingsBegin = "-- settings begin\n"
 	rexSettingsEnd   = "-- settings end\n"
 	// rexDefaultSettings is the settings block of a first install. The
-	// launch key is ctrl+a a (see decision tui-launch-key).
+	// launch key is ctrl+a>a (see decision tui-launch-key); it enters the
+	// rhiza key mode. keys remaps an app's key in that mode.
 	rexDefaultSettings = rexSettingsBegin +
-		"local settings = {\n  launch_key = \"ctrl+a a\",\n}\n" +
+		"local settings = {\n  launch_key = \"ctrl+a>a\",\n" +
+		"  -- Remap an app's key in the rhiza key mode, e.g. keys = { roadmap = \"m\" }.\n" +
+		"  keys = {},\n}\n" +
 		rexSettingsEnd
 )
 
-// rexLaunchLua is the part of rhiza.lua after the settings and BIN: the
-// action that opens the quick-launch layer, and the binding of the launch
-// key to it. The key is written as Rex's own sequence syntax ("ctrl+a>a")
-// or, as the setting shows it, with spaces ("ctrl+a a"). The layer runs
-// `rhiza tui launch`, which lists the apps and opens the chosen one in a
-// modal. The layer starts in the invoking block's directory, since the
-// launcher hands its own to each app; without one Rex starts it in $HOME.
-const rexLaunchLua = `local TERM = "com.superlogical.terminal"
+// rexPreludeLua is the part of rhiza.lua after the settings and BIN: what
+// every app action shares. Each app's layer starts in the invoking block's
+// directory; without one Rex starts it in $HOME.
+const rexPreludeLua = `local TERM = "com.superlogical.terminal"
 local LAYER_BOUNDS = { 0.3, 0.25, 0.4, 0.5 }
 
 -- block_cwd returns the working directory of the terminal block's
@@ -57,19 +59,182 @@ local function block_cwd(block_id)
   return (p.foreground and p.foreground.cwd) or (p.child and p.child.cwd)
 end
 
+`
+
+// rexKeyModeLua is the rhiza key mode: the launch key enters it, and each
+// app's key in it runs that app's action, named in APP_ACTIONS by
+// rexActionName as rexAppActions names it. DEFAULT_KEYS (written by
+// rexKeyMode) gives each app a default key; settings.keys overrides
+// any of them, and a reinstall keeps settings.keys. An exclusive mode drops
+// every key it does not bind, so a mistyped key never reaches the terminal.
+const rexKeyModeLua = `
+local MODE = "rhiza"
+rex.mode(MODE, { exclusive = true })
+rex.bind(MODE .. "/escape", "client.mode.exit")
+local overrides = type(settings.keys) == "table" and settings.keys or {}
+for app, key in pairs(DEFAULT_KEYS) do
+  local k = overrides[app]
+  if type(k) ~= "string" or k == "" then k = key end
+  rex.bind(MODE .. "/" .. k, APP_ACTIONS[app])
+end
+if type(settings.launch_key) == "string" and settings.launch_key ~= "" then
+  rex.bind((settings.launch_key:gsub("%s+", ">")), "client.mode.enter", { name = MODE, once = true })
+end
+`
+
+// rexDefaultKeys gives each app a default key of the rhiza key mode, in
+// the order of apps: the first letter of its name that no earlier app took
+// (word initials first), else the first free letter or digit. The same apps always give the same keys.
+func rexDefaultKeys(apps []launcher.App) map[string]string {
+	used := map[string]bool{}
+	keys := map[string]string{}
+	for _, a := range apps {
+		pick := ""
+		name := strings.ToLower(a.Name)
+		for _, r := range rexInitials(name) + name + "abcdefghijklmnopqrstuvwxyz0123456789" {
+			k := string(r)
+			if (r >= 'a' && r <= 'z' || r >= '0' && r <= '9') && !used[k] {
+				pick = k
+				break
+			}
+		}
+		if pick == "" {
+			continue
+		}
+		used[pick] = true
+		keys[a.Name] = pick
+	}
+	return keys
+}
+
+// rexInitials returns the first letter of each hyphen-separated word of name.
+func rexInitials(name string) string {
+	var b strings.Builder
+	for _, w := range strings.Split(name, "-") {
+		if w != "" {
+			b.WriteByte(w[0])
+		}
+	}
+	return b.String()
+}
+
+// rexKeyMode returns the Lua of the key mode: the tables of default keys
+// and of the apps' action names, then rexKeyModeLua. Apps without a free
+// key get no default, only the action in the palette.
+func rexKeyMode() string {
+	apps := launcher.Apps()
+	keys := rexDefaultKeys(apps)
+	var b strings.Builder
+	b.WriteString("\nlocal DEFAULT_KEYS = {\n")
+	for _, a := range apps {
+		if k, ok := keys[a.Name]; ok {
+			fmt.Fprintf(&b, "  [%s] = %s,\n", strconv.Quote(a.Name), strconv.Quote(k))
+		}
+	}
+	b.WriteString("}\nlocal APP_ACTIONS = {\n")
+	for _, a := range apps {
+		fmt.Fprintf(&b, "  [%s] = %s,\n", strconv.Quote(a.Name), strconv.Quote(rexActionName(a.Name)))
+	}
+	b.WriteString("}\n")
+	return b.String() + rexKeyModeLua
+}
+
+// rexCellBoundsLua is the Lua that sizes a layer to a number of cells: the
+// chrome model of rexuikit's surface.BoundsForCells, centred, with its
+// constants (frame, border and margin in pixels, cols then rows) filled in
+// by rexCellBounds. The window's size is the invoking block's terminal
+// size scaled up by the block's rect in the tiled layout, as rexuikit's
+// Surface.Window does (windowCellsFrom); without a size to work from, or
+// for a block in a floating layer, it gives LAYER_BOUNDS.
+const rexCellBoundsLua = `
+-- find_leaf returns the rect of block id in a layout node, or nil.
+local function find_leaf(node, id)
+  if node == nil then return nil end
+  if node.block_id == id then return node.rect end
+  if node.split ~= nil then
+    return find_leaf(node.split.before, id) or find_leaf(node.split.after, id)
+  end
+  return nil
+end
+
+-- window_cells returns the window holding block id in cells, and the pixel
+-- size of a cell: the block's size divided by its share of the window. In
+-- a split it comes out a few cells short, which makes the layer larger
+-- than the app, never smaller. nil when the block is not tiled or has no
+-- size in pixels.
+local function window_cells(block_id)
+  local ok, view = pcall(rex.session.view, {})
+  if not ok or type(view) ~= "table" then return nil end
+  for _, w in ipairs(view.windows or {}) do
+    for _, l in ipairs(w.layers or {}) do
+      local rect = find_leaf(l.layout, block_id)
+      if rect ~= nil then
+        if l.kind ~= "tiled" or (rect[3] or 0) <= 0 or (rect[4] or 0) <= 0 then return nil end
+        local sok, sz = pcall(rex.block.call, TERM, "size", { block_id = block_id })
+        if not sok or type(sz) ~= "table" or (sz.cell_width_px or 0) <= 0 or (sz.cell_height_px or 0) <= 0
+          or (sz.columns or 0) <= 0 or (sz.rows or 0) <= 0 then
+          return nil
+        end
+        return {
+          cols = math.floor(sz.columns / rect[3] + 0.5),
+          rows = math.floor(sz.rows / rect[4] + 0.5),
+          cell_w = sz.cell_width_px,
+          cell_h = sz.cell_height_px,
+        }
+      end
+    end
+  end
+  return nil
+end
+
+-- cell_bounds returns bounds that give a program cols x rows cells.
+local function cell_bounds(block_id, cols, rows)
+  if block_id == nil then return LAYER_BOUNDS end
+  local wc = window_cells(block_id)
+  if wc == nil then return LAYER_BOUNDS end
+  local function edge(v) return math.floor(v + 0.5) end
+  local function fit_axis(win, frame, cell, border, margin, want)
+    local px = win * cell + frame
+    local span = math.min(1, (want * cell + border + margin) / px)
+    while true do
+      local pos = math.max(0, (1 - span) / 2)
+      local got = math.floor((edge(px * (pos + span)) - edge(px * pos) - border - margin) / cell)
+      if got >= want or span >= 1 then return pos, span end
+      span = math.min(1, span + 1 / px)
+    end
+  end
+  local x, w = fit_axis(wc.cols, %[1]d, wc.cell_w, %[2]d, %[3]d, cols)
+  local y, h = fit_axis(wc.rows, %[4]d, wc.cell_h, %[5]d, %[6]d, rows)
+  return { x, y, w, h }
+end
+`
+
+func rexCellBounds() string {
+	return fmt.Sprintf(rexCellBoundsLua,
+		surface.FramePxCols, surface.BorderPxCols, surface.InverseMarginPxCols,
+		surface.FramePxRows, surface.BorderPxRows, surface.InverseMarginPxRows)
+}
+
+// rexAppActionLua is the Lua of one app's action: its own entry in Rex's
+// command palette, titled with the app's name, that opens the app straight
+// away, in a layer sized to the app's own cells, running
+// `rhiza tui app <name>`; no list step comes first. The arguments are Lua
+// string literals (action name, title, description, keywords, app name),
+// quoted by rexAppActions, then the app's columns and rows.
+const rexAppActionLua = `
 rex.action{
-  name = "rhiza_launch",
-  title = "Rhiza apps",
-  description = "Open the Rhiza quick-launch layer",
+  name = %[1]s,
+  title = %[2]s,
+  description = %[3]s,
   category = "rhiza",
-  keywords = "rhiza apps launch",
+  keywords = %[4]s,
   run = function(ctx)
     local res, err = rex.session.new_layer{
-      bounds = LAYER_BOUNDS,
+      bounds = cell_bounds(ctx.block_id, %[6]d, %[7]d),
       layout = rex.layout.block{
         flavor = TERM .. ".shell",
-        label = "Rhiza apps",
-        options = { command = { BIN, "tui", "launch" }, cwd = block_cwd(ctx.block_id) },
+        label = %[2]s,
+        options = { command = { BIN, "tui", "app", %[5]s }, cwd = block_cwd(ctx.block_id) },
       },
       focus = true,
     }
@@ -77,11 +242,39 @@ rex.action{
     return res
   end,
 }
+`
 
-if type(settings.launch_key) == "string" and settings.launch_key ~= "" then
-  rex.bind((settings.launch_key:gsub("%s+", ">")), "rhiza_launch")
-end
+// rexAppActions returns the Lua registering one rex.action per registered
+// app, in the order launcher.Apps gives (by name), so the same apps always
+// give the same bytes.
+func rexAppActions() string {
+	var b strings.Builder
+	for _, a := range launcher.Apps() {
+		desc := a.Summary
+		if desc == "" {
+			desc = "Open the " + a.Name + " app"
+		}
+		cols, rows := a.Size()
+		fmt.Fprintf(&b, rexAppActionLua,
+			strconv.Quote(rexActionName(a.Name)), strconv.Quote(a.Name), strconv.Quote(desc),
+			strconv.Quote("rhiza app "+a.Name), strconv.Quote(a.Name), cols, rows)
+	}
+	return b.String()
+}
 
+// rexActionName is the Rex action that opens the named app. Rex action
+// names must match [a-z0-9_]+, so every other rune becomes '_'. The key
+// mode binds to the same name through APP_ACTIONS.
+func rexActionName(app string) string {
+	return "rhiza_app_" + strings.Map(func(r rune) rune {
+		if r >= 'a' && r <= 'z' || r >= '0' && r <= '9' || r == '_' {
+			return r
+		}
+		return '_'
+	}, app)
+}
+
+const rexScriptTail = `
 return settings
 `
 
@@ -184,7 +377,7 @@ func rexScript(have []byte, bin string) []byte {
 		"-- Edit the settings block; a reinstall keeps it. Everything else is rewritten.\n" +
 		settings +
 		"\nlocal BIN = " + strconv.Quote(bin) + "\n" +
-		rexLaunchLua)
+		rexPreludeLua + rexCellBounds() + rexAppActions() + rexKeyMode() + rexScriptTail)
 }
 
 // rexHasRequire reports whether init.lua already loads rhiza: any line that

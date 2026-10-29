@@ -14,7 +14,7 @@ QA at c7a97c9 (cycle 2) in real Rex. Built rhiza to a scratch dir; rex new a thr
 
 ### Out
 
-- verifies [quick-launch-layer](../capability/rhiza/quick-launch-layer.md)
+- verifies quick-launch-layer (retired)
 
 ## History
 

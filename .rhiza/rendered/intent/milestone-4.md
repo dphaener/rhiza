@@ -49,6 +49,7 @@ Rhiza orchestrates: milestone 5 is driven by rhiza daemon, with no orchestrator 
 - serves change set `01M62JMT63RY271EAF14R8P4VG` (A Rex app showing the as-is capability tree and the roadmap)
 - serves change set `01M62JMTG32M03T1FHC0T1EPE2` (Change-set and record writes from apps, each shown as a what-if preview and confirmed once)
 - serves change set `01M62JMTT1Z8FP0SC619V3QS68` (Read-only Rex apps for run status and session ls)
+- serves change set `01M643X7CEAQP16925KTAM06GT` (Rhiza's apps open natively in Rex, as forge's quick actions do: rhiza rex install writes a Lua script that registers each app as its own Rex action (in the command palette) and a rhiza key mode with one key per app, and each action opens its app straight away in a layer sized to it, with no picker in between.)
 
 ## History
 

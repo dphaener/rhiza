@@ -14,7 +14,7 @@ QA at 4a03cf7 in real Rex: rex new a throwaway session running the built rhiza t
 
 ### Out
 
-- verifies [quick-launch-layer](../capability/rhiza/quick-launch-layer.md)
+- verifies quick-launch-layer (retired)
 
 ## History
 

@@ -1,0 +1,109 @@
+{
+  "actor": "01M6487BS8Z684K8T98CEA38CX",
+  "after": [
+    "01M6486Y3AHAEZFH5DGMW6NS1Z"
+  ],
+  "at": "2026-10-29T16:36:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "Built rhiza at 8182d27, ran rhiza rex install into a scratch REX_CONFIG (fake rex for the reload), then loaded it with the real rex config check: rhiza.lua has 16 rhiza_app_* actions, one per app, titled by name and running rhiza tui app <name>, but real Rex rejects 7 of them (change-show, record-add, record-link, record-retire, record-set, run-status, session-ls): 'action name \"rhiza_app_session-ls\" must match [a-z0-9_]+', and config check exits 1 with 'the configuration has errors'. Only 9 apps (plus rhiza_launch) become actions."
+        },
+        "handle": "rex-app-actions-qa-1",
+        "id": "01M648A0A6SZAZWBEE27H091A0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M648A0A6SZAZWBEE26MWVQMZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M648A0A6SZAZWBEE26MWVQMZ",
+        "id": "01M648A0M08EKZ5BFEN9EB11MW",
+        "link": "01M648A0M08EKZ5BFEN8WZJ6PX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M644QW8GJBD8KTJ8Q00MMNYY",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "Same install, real rex config check: the launch key binds client.mode.enter {name=rhiza, once=true}, mode rhiza is exclusive with escape to exit, and DEFAULT_KEYS gives each of the 16 apps a distinct key (accept=a ... why=w), 18 bindings, 1 mode. But 7 of those keys bind to rhiza_app_<hyphenated-name> actions that Rex refused to define, so their keys open nothing. With hyphens mapped to underscores in both the names and the bind, config check reports 17 actions, 18 bindings, no diagnostics."
+        },
+        "handle": "rex-key-mode-qa-1",
+        "id": "01M648A0XW09CX6C0YNEX0Z7R2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M648A0XW09CX6C0YNCSF35SV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M648A0XW09CX6C0YNCSF35SV",
+        "id": "01M648A17XK5JCHBWT25EBJB5V",
+        "link": "01M648A17XK5JCHBWT2383YBD1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M644QXDASM0DPKA3VKKFGJD7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Same install: each app action opens rex.session.new_layer with bounds = cell_bounds(ctx.block_id, cols, rows) from App.Size (every app today is the 100x30 default) and runs { BIN, \"tui\", \"app\", <name> } directly, with no tui launch step; cell_bounds loads clean under the real rex config check."
+        },
+        "handle": "rex-app-layer-sized-qa-1",
+        "id": "01M648A1HNTJSWDCJF1H0ET39W",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M648A1HNTJSWDCJF1GPVGDWC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M648A1HNTJSWDCJF1GPVGDWC",
+        "id": "01M648A1VDMTDYZ46P8SHEEX00",
+        "link": "01M648A1VDMTDYZ46P8PGR7TDM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M644QWTP8H6S0B5RS70QCBM2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Same scratch install: the first install writes launch_key = \"ctrl+a>a\" and keys = {} in the settings block; I edited launch_key to ctrl+b>x and keys to { roadmap = \"z\" }, reran rhiza rex install --json: written [], unchanged [rhiza.lua, init.lua], file byte-identical (cmp), settings block kept."
+        },
+        "handle": "rex-launch-key-setting-qa-1",
+        "id": "01M648A25M01S6ECSZC7PXPK5T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M648A25M01S6ECSZC7A35WE5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M648A25M01S6ECSZC7A35WE5",
+        "id": "01M648A2GF1RTE9XV17NT6D2V4",
+        "link": "01M648A2GF1RTE9XV17MKGWDD4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M644QXZW01JJZ0SJRZA71GWV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M648A328QFAR1C7DYBF8BXKX",
+  "type": "ops",
+  "v": 1
+}

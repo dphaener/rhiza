@@ -14,7 +14,7 @@ Verified at 2dc1ec4. go test -count=1 ./internal/tui/launcher ./internal/api: Te
 
 ### Out
 
-- verifies [quick-launch-layer](../capability/rhiza/quick-launch-layer.md)
+- verifies quick-launch-layer (retired)
 
 ## History
 

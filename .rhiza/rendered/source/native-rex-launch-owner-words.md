@@ -27,6 +27,12 @@ After rhiza rex install, the owner tried the ctrl+a a launcher (one Rex action o
 
 Owner on the installed TUI launcher, 2026-10-29
 
+## Links
+
+### In
+
+- derived-from [rex-app-own-action](../decision/rex-app-own-action.md)
+
 ## History
 
 - `01M643X6S96FPHFAENFHG7FX51` add source native-rex-launch-owner-words

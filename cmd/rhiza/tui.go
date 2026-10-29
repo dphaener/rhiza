@@ -1,25 +1,19 @@
 package main
 
-// `rhiza tui launch` is the program the quick-launch layer runs. It is the
-// one command here that is a terminal program rather than an operation, so
-// it is not in the api registry; the other rhiza apps are reached through
-// it.
+// `rhiza tui app <name>` is the program each app's Rex action runs. It is
+// the one command here that is a terminal program rather than an operation,
+// so it is not in the api registry.
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"os"
 	"strings"
-	"time"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/charmbracelet/colorprofile"
 
-	"github.com/dphaener/rexuikit/client"
 	"github.com/dphaener/rhiza/internal/api"
 	"github.com/dphaener/rhiza/internal/canon"
-	"github.com/dphaener/rhiza/internal/tui/launcher"
 	"github.com/dphaener/rhiza/internal/tui/modelapp"
 	"github.com/dphaener/rhiza/internal/tui/readapps"
 	"github.com/dphaener/rhiza/internal/tui/writeapps"
@@ -29,36 +23,8 @@ func tuiCommand(g globals, args []string, stdout, stderr io.Writer, getenv func(
 	if len(args) >= 3 && args[1] == "app" {
 		return tuiApp(g, args[2], args[3:], stdout, stderr, getenv)
 	}
-	if len(args) != 2 || args[1] != "launch" {
-		fmt.Fprintln(stderr, "usage: rhiza tui launch | rhiza tui app <name> [args] [--once]")
-		return 2
-	}
-	session := getenv("REX_SESSION")
-	if session == "" {
-		return writeError(stdout, stderr, api.Usagef("tui launch runs inside Rex: REX_SESSION is not set"), false)
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	rex, err := client.Dial(ctx, client.Options{Getenv: getenv})
-	if err != nil {
-		return writeError(stdout, stderr, fmt.Errorf("tui launch: %w", err), false)
-	}
-	defer rex.Close()
-	// surface.New needs the connection attached to the session.
-	if _, err := rex.Attach(ctx, session); err != nil {
-		return writeError(stdout, stderr, fmt.Errorf("tui launch: %w", err), false)
-	}
-	cancel()
-	cwd, _ := os.Getwd()
-	l := launcher.Launcher{Rex: rex, Session: session, Bin: selfPath(), Cwd: cwd}
-	m := launcher.NewModel(context.Background(), l, launcher.Apps(), colorprofile.Detect(os.Stdout, os.Environ()))
-	if _, err := tea.NewProgram(m).Run(); err != nil {
-		return writeError(stdout, stderr, fmt.Errorf("tui launch: %w", err), false)
-	}
-	if m.Err != nil {
-		return writeError(stdout, stderr, fmt.Errorf("tui launch: %w", m.Err), false)
-	}
-	return 0
+	fmt.Fprintln(stderr, "usage: rhiza tui app <name> [args] [--once]")
+	return 2
 }
 
 // tuiApp runs an app: `rhiza tui app <name> [args]`. It calls the api
@@ -78,7 +44,7 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 	read, isRead := readapps.Lookup(name)
 	write, isWrite := writeapps.Lookup(name)
 	if !isRead && !isWrite {
-		return writeError(stdout, stderr, api.NotFoundf("unknown app %q", name).WithNext("rhiza tui launch"), false)
+		return writeError(stdout, stderr, api.NotFoundf("unknown app %q", name), false)
 	}
 	once, confirm := false, false
 	var rest []string

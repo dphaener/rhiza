@@ -1,0 +1,109 @@
+{
+  "actor": "01M649NVCBDWGKB2KMRATFJEXM",
+  "after": [
+    "01M649KA53JPVB8RSAXGDZBYAC"
+  ],
+  "at": "2026-10-29T17:10:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7b2fd58, built go build -o $TMPDIR/rhiza-qa2 ./cmd/rhiza and ran rhiza rex install --json with REX_CONFIG pointing at a scratch init.lua: rhiza.lua holds one rex.action per registered app (16, rhiza_app_<name>, titled with the app's name, command { BIN, \"tui\", \"app\", <name> }) and no rhiza_launch. Real Rex's rex config check on it reports actions: 16, modes: 1, bindings: 18, no diagnostics. Against the live Rex server, rex do --action rhiza_app_ready / rhiza_app_model / rhiza_app_roadmap <rhiza.lua> each opened a layer whose block ran rhiza-qa2 tui app <name> in the invoking block's cwd; rex capture showed the ready, model (tree) and roadmap screens; q quit and closed the layer. rhiza tui launch now exits 2 with the tui app usage; go test ./internal/api -run Rex (incl. TestRexInstallRegistersAnActionPerApp) and the rex-install script pass."
+        },
+        "handle": "rex-app-actions-qa-2",
+        "id": "01M64A7SN9GB63YFN68WHJPHK9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M64A7SN9GB63YFN68SCHNXJS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M64A7SN9GB63YFN68SCHNXJS",
+        "id": "01M64A7SZJPHR509KCN87BSMK5",
+        "link": "01M64A7SZJPHR509KCN4Y1WWCK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M644QW8GJBD8KTJ8Q00MMNYY",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7b2fd58, each app action in the installed rhiza.lua calls cell_bounds(ctx.block_id, 100, 30) (the App.Size defaults) and runs tui app <name> directly, with no launch step. Live via rex do --action: from a single tiled block (80x24, rect 1x1) the model/roadmap layers got bounds {0,0,1,1}, the app clamped to the whole window as the model says when the window is smaller than the app; from my own block, nested 18 splits deep (rect width 1.5e-05, size 80x24 as no client renders the session), the ready layer got bounds {0.49999, 0.171, 2.0e-05, 0.657}: height matches the formula for 48 window rows, width is a sliver because window_cells scales 80 cols by 1/1.5e-05. TestRexCellBoundsScalesTheBlockToItsWindow and TestRexInstallSizesEachAppLayerToItsCells pass. Sizing works for ordinary layouts; the degenerate case is reported as a minor finding."
+        },
+        "handle": "rex-app-layer-sized-qa-2",
+        "id": "01M64A7T9R4VY5MQW2NEA79JJP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M64A7T9R4VY5MQW2NDMG67XR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M64A7T9R4VY5MQW2NDMG67XR",
+        "id": "01M64A7TKPCF37FH92Y1YCAGVX",
+        "link": "01M64A7TKPCF37FH92XZAAMXGC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M644QWTP8H6S0B5RS70QCBM2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7b2fd58, loaded the installed rhiza.lua in real Rex's Lua (rex do with a probe script recording rex.bind and rex.mode): mode rhiza exclusive=true; rhiza/escape -> client.mode.exit; one key per app, all distinct (a accept, b roadmap, c change-show, d record-retire, e record-add, f slice, h show, i session-ls, l land, m model, o record-link, p propose, r ready, s record-set, u run-status, w why), each bound to that app's rhiza_app_* action; ctrl+a>a -> client.mode.enter {name=rhiza, once=true}. With settings keys = { roadmap = \"x\", why = \"\" }, roadmap moved to rhiza/x and why kept its default w; a reinstall kept the override. Key presses themselves were not sent, since a headless session has no client."
+        },
+        "handle": "rex-key-mode-qa-2",
+        "id": "01M64A7TYMN7XCGMTFVNXM4C32",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M64A7TYMN7XCGMTFVJE5RZHT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M64A7TYMN7XCGMTFVJE5RZHT",
+        "id": "01M64A7V90F7P04WXNMW70D6AW",
+        "link": "01M64A7V90F7P04WXNMVRQGC4B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M644QXDASM0DPKA3VKKFGJD7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7b2fd58, a first install into a scratch REX_CONFIG wrote launch_key = \"ctrl+a>a\" and keys = {} in the settings block. Edited it to launch_key = \"ctrl+b  r\" and a keys map, reinstalled: --json reported written [] and unchanged [rhiza.lua, init.lua], the settings block was byte-identical (cmp), and the probe showed ctrl+b>r -> client.mode.enter. Reinstalling over a copy of the owner's current ~/.config/rex/rhiza.lua (launch_key = \"ctrl+a a\", bound to rhiza_launch) rewrote only rhiza.lua, kept that settings block, removed rhiza_launch, and bound ctrl+a>a to enter the mode; rex config check on it reports no diagnostics."
+        },
+        "handle": "rex-launch-key-setting-qa-2",
+        "id": "01M64A7VKJY4AQ58E4RC1XXV9C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M64A7VKJY4AQ58E4RB07PETJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M64A7VKJY4AQ58E4RB07PETJ",
+        "id": "01M64A7VYZ7CV1050BZQ585NK6",
+        "link": "01M64A7VYZ7CV1050BZKMBRZBX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M644QXZW01JJZ0SJRZA71GWV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M64A7WG88142VEWRBHT402ZM",
+  "type": "ops",
+  "v": 1
+}

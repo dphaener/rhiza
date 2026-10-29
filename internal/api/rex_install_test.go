@@ -2,10 +2,14 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/dphaener/rhiza/internal/tui/launcher"
 )
 
 // rexTestCtx is a ctx with a fake Rex config folder and a fake rex that
@@ -101,7 +105,7 @@ func TestRexInstallKeepsSettingsAndOwnersRequire(t *testing.T) {
 		t.Errorf("owner's own require was changed: %q", got)
 	}
 	script := filepath.Join(dir, "rhiza.lua")
-	edited := strings.Replace(readFile(t, script), `"ctrl+a a"`, `"ctrl+a l"`, 1)
+	edited := strings.Replace(readFile(t, script), `"ctrl+a>a"`, `"ctrl+a l"`, 1)
 	writePath(t, script, edited)
 	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
 		t.Fatal(err)
@@ -150,7 +154,7 @@ func TestRexInstallThroughSymlink(t *testing.T) {
 	}
 }
 
-func TestRexInstallScriptOpensTheLauncher(t *testing.T) {
+func TestRexInstallScriptEntersTheKeyMode(t *testing.T) {
 	ctx, dir, _ := rexTestCtx(t)
 	ctx.Self = "/opt/my tools/rhiza"
 	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
@@ -158,21 +162,23 @@ func TestRexInstallScriptOpensTheLauncher(t *testing.T) {
 	}
 	script := readFile(t, filepath.Join(dir, "rhiza.lua"))
 	for _, want := range []string{
-		`launch_key = "ctrl+a a"`,
+		`launch_key = "ctrl+a>a"`,
 		`local BIN = "/opt/my tools/rhiza"`,
-		`name = "rhiza_launch"`,
-		`options = { command = { BIN, "tui", "launch" }, cwd = block_cwd(ctx.block_id) }`,
 		`rex.block.call(TERM, "process", { block_id = block_id })`,
-		`rex.bind((settings.launch_key:gsub("%s+", ">")), "rhiza_launch")`,
+		`rex.bind((settings.launch_key:gsub("%s+", ">")), "client.mode.enter", { name = MODE, once = true })`,
 	} {
 		if !strings.Contains(script, want) {
 			t.Errorf("rhiza.lua lacks %s:\n%s", want, script)
 		}
 	}
+	// The all-apps picker is gone (decision rex-picker-removed).
+	if strings.Contains(script, "rhiza_launch") || strings.Contains(script, `"launch"`) {
+		t.Errorf("rhiza.lua still opens the picker:\n%s", script)
+	}
 
 	// A changed launch key survives a reinstall, and the binary path is
 	// refreshed.
-	writePath(t, filepath.Join(dir, "rhiza.lua"), strings.Replace(script, `"ctrl+a a"`, `"ctrl+a g"`, 1))
+	writePath(t, filepath.Join(dir, "rhiza.lua"), strings.Replace(script, `"ctrl+a>a"`, `"ctrl+a g"`, 1))
 	ctx.Self = "/elsewhere/rhiza"
 	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
 		t.Fatal(err)
@@ -180,5 +186,128 @@ func TestRexInstallScriptOpensTheLauncher(t *testing.T) {
 	script = readFile(t, filepath.Join(dir, "rhiza.lua"))
 	if !strings.Contains(script, `launch_key = "ctrl+a g"`) || !strings.Contains(script, `local BIN = "/elsewhere/rhiza"`) {
 		t.Errorf("reinstall lost the key or kept the old binary:\n%s", script)
+	}
+}
+
+func TestRexInstallRegistersAnActionPerApp(t *testing.T) {
+	launcher.Register(launcher.App{Name: "zz-extra", Summary: "One more app"})
+	ctx, dir, _ := rexTestCtx(t)
+	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	script := readFile(t, filepath.Join(dir, "rhiza.lua"))
+	for _, want := range []string{
+		`name = "rhiza_app_zz_extra"`,
+		`title = "zz-extra"`,
+		`command = { BIN, "tui", "app", "zz-extra" }`,
+	} {
+		if !strings.Contains(script, want) {
+			t.Errorf("rhiza.lua lacks %s:\n%s", want, script)
+		}
+	}
+	if got, want := strings.Count(script, "rex.action{"), len(launcher.Apps()); got != want {
+		t.Errorf("%d rex.action calls, want %d", got, want)
+	}
+
+	// An app registered later gets its action on a reinstall.
+	launcher.Register(launcher.App{Name: "zz-later", Summary: "Added after the first install"})
+	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	if script = readFile(t, filepath.Join(dir, "rhiza.lua")); !strings.Contains(script, `command = { BIN, "tui", "app", "zz-later" }`) {
+		t.Errorf("reinstall lacks the new app's action:\n%s", script)
+	}
+}
+
+func TestRexInstallSizesEachAppLayerToItsCells(t *testing.T) {
+	launcher.Register(launcher.App{Name: "zz-sized", Summary: "Sized", Cols: 77, Rows: 21})
+	launcher.Register(launcher.App{Name: "zz-default", Summary: "Default size"})
+	ctx, dir, _ := rexTestCtx(t)
+	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	script := readFile(t, filepath.Join(dir, "rhiza.lua"))
+	action := func(name string) string {
+		i := strings.Index(script, `name = "`+rexActionName(name)+`"`)
+		if i < 0 {
+			t.Fatalf("no action for %s:\n%s", name, script)
+		}
+		end := strings.Index(script[i:], "\n}\n")
+		return script[i : i+end]
+	}
+	sized := action("zz-sized")
+	if !strings.Contains(sized, "bounds = cell_bounds(ctx.block_id, 77, 21)") {
+		t.Errorf("zz-sized is not sized from its own cells:\n%s", sized)
+	}
+	if !strings.Contains(sized, `command = { BIN, "tui", "app", "zz-sized" }`) || strings.Contains(sized, `"launch"`) {
+		t.Errorf("zz-sized does not run its app directly:\n%s", sized)
+	}
+	dc, dr := launcher.App{}.Size()
+	if want := fmt.Sprintf("cell_bounds(ctx.block_id, %d, %d)", dc, dr); !strings.Contains(action("zz-default"), want) {
+		t.Errorf("zz-default lacks %s", want)
+	}
+	if strings.Contains(script, `"launch"`) {
+		t.Errorf("an app action goes through tui launch:\n%s", script)
+	}
+}
+
+func TestRexInstallBindsAKeyPerAppInTheKeyMode(t *testing.T) {
+	ctx, dir, _ := rexTestCtx(t)
+	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	script := readFile(t, filepath.Join(dir, "rhiza.lua"))
+	keys := rexDefaultKeys(launcher.Apps())
+	if len(keys) != len(launcher.Apps()) {
+		t.Fatalf("%d keys for %d apps", len(keys), len(launcher.Apps()))
+	}
+	seen := map[string]string{}
+	for app, key := range keys {
+		if other, dup := seen[key]; dup {
+			t.Errorf("apps %s and %s share key %s", app, other, key)
+		}
+		seen[key] = app
+		if want := fmt.Sprintf("[%q] = %q,", app, key); !strings.Contains(script, want) {
+			t.Errorf("rhiza.lua lacks the default %s:\n%s", want, script)
+		}
+		action := rexActionName(app)
+		if want := fmt.Sprintf("[%q] = %q,", app, action); !strings.Contains(script, want) {
+			t.Errorf("rhiza.lua lacks the action %s:\n%s", want, script)
+		}
+		if !strings.Contains(script, fmt.Sprintf("name = %q", action)) {
+			t.Errorf("key of %s binds %s, which no rex.action defines", app, action)
+		}
+	}
+	for _, want := range []string{
+		`rex.mode(MODE, { exclusive = true })`,
+		`rex.bind(MODE .. "/" .. k, APP_ACTIONS[app])`,
+		`keys = {},`,
+	} {
+		if !strings.Contains(script, want) {
+			t.Errorf("rhiza.lua lacks %s", want)
+		}
+	}
+}
+
+func TestRexDefaultKeysAreMnemonicAndUnique(t *testing.T) {
+	got := rexDefaultKeys([]launcher.App{{Name: "model"}, {Name: "mine"}, {Name: "roadmap"}, {Name: "x"}, {Name: "x2"}})
+	want := map[string]string{"model": "m", "mine": "i", "roadmap": "r", "x": "x", "x2": "2"}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("keys = %v, want %v", got, want)
+	}
+}
+
+func TestRexInstallKeepsKeyOverridesOnReinstall(t *testing.T) {
+	ctx, dir, _ := rexTestCtx(t)
+	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	p := filepath.Join(dir, "rhiza.lua")
+	writePath(t, p, strings.Replace(readFile(t, p), "keys = {},", `keys = { roadmap = "z" },`, 1))
+	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(readFile(t, p), `keys = { roadmap = "z" },`) {
+		t.Error("reinstall lost the key override")
 	}
 }

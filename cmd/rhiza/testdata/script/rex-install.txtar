@@ -11,18 +11,47 @@ cp owner.lua conf/init.lua
 exec rhiza rex install
 stdout 'Installed the Rhiza quick-launch script'
 grep '^-- Written by rhiza rex install\.$' conf/rhiza.lua
-grep 'launch_key = "ctrl\+a a"' conf/rhiza.lua
+grep 'launch_key = "ctrl\+a>a"' conf/rhiza.lua
 grep -count=1 'require\("rhiza"\)' conf/init.lua
 grep '^-- mine$' conf/init.lua
 grep -count=1 '^config reload$' rex.log
 
-# A second install changes neither file, and keeps an edited setting.
+# Every registered app is a Rex action of its own, titled with its name and
+# running `rhiza tui app <name>`: read, write and model apps alike.
+grep 'name = "rhiza_app_roadmap"' conf/rhiza.lua
+grep 'title = "roadmap"' conf/rhiza.lua
+grep '"tui", "app", "roadmap"' conf/rhiza.lua
+grep 'title = "session-ls"' conf/rhiza.lua
+grep 'name = "rhiza_app_session_ls"' conf/rhiza.lua
+! grep 'name = "rhiza_app_[a-z0-9_]*[^a-z0-9_"]' conf/rhiza.lua
+grep '"tui", "app", "model"' conf/rhiza.lua
+grep 'title = "model"' conf/rhiza.lua
+grep 'title = "accept"' conf/rhiza.lua
+grep 'bounds = cell_bounds\(ctx.block_id, 100, 30\)' conf/rhiza.lua
+
+# The launch key enters the rhiza key mode, which binds one key per app to
+# that app's action.
+grep 'client.mode.enter", \{ name = MODE' conf/rhiza.lua
+grep '^  \["roadmap"\] = "[a-z0-9]",$' conf/rhiza.lua
+grep '^  \["model"\] = "[a-z0-9]",$' conf/rhiza.lua
+grep 'keys = \{\},' conf/rhiza.lua
+grep '^  \["session-ls"\] = "rhiza_app_session_ls",$' conf/rhiza.lua
+grep 'rex.bind\(MODE .. "/" .. k, APP_ACTIONS\[app\]\)' conf/rhiza.lua
+
+# A second install changes neither file, and keeps an edited setting: the
+# owner edits launch_key, and a reinstall leaves that line byte for byte.
+exec sed -e 's/launch_key = "ctrl+a>a"/launch_key = "ctrl+b>x"/' conf/rhiza.lua
+cp stdout conf/rhiza.lua
+grep -count=1 '^  launch_key = "ctrl\+b>x",$' conf/rhiza.lua
 cp conf/init.lua first-init.lua
 cp conf/rhiza.lua first-rhiza.lua
 exec rhiza rex install --json
 stdout '"written": \[\]'
 cmp conf/init.lua first-init.lua
 cmp conf/rhiza.lua first-rhiza.lua
+grep -count=1 '^  launch_key = "ctrl\+b>x",$' conf/rhiza.lua
+grep '^-- settings begin$' conf/rhiza.lua
+grep '^-- settings end$' conf/rhiza.lua
 
 # Uninstall gives the owner's file back byte for byte.
 exec rhiza rex uninstall

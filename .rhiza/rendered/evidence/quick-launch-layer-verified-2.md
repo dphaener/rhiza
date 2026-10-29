@@ -14,7 +14,7 @@ At dd3d5b0 (attempt 2, the session.attach fix in cmd/rhiza/tui.go): built the bi
 
 ### Out
 
-- verifies [quick-launch-layer](../capability/rhiza/quick-launch-layer.md)
+- verifies quick-launch-layer (retired)
 
 ## History
 

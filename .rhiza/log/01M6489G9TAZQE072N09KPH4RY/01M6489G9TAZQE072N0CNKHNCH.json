@@ -1,0 +1,15 @@
+{
+  "actor": "01M6487FN7DRV2DTQZ6C0HRTQ3",
+  "after": [],
+  "at": "2026-10-29T16:36:04Z",
+  "body": {
+    "intent": "Remove the all-apps picker, as decision rex-picker-removed says: drop the rhiza_launch Rex action and rhiza tui launch, and retire or revise quick-launch-layer and tui-launcher to match",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6489G9TAZQE072N09KPH4RY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6489G9TAZQE072N0CNKHNCH",
+  "type": "open",
+  "v": 1
+}
