@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-29T02:30:37Z",
+  "body": {
+    "intent": "apply /private/tmp/claude-501/-Users-darinhaener-code/abcf3e11-4eac-4a51-9353-9bdab5493e7a/scratchpad/m4-serves.json",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M62QXF25133DRGKPTNMS1GHT",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62QXF25133DRGKPTQ9C0X03",
+  "type": "open",
+  "v": 1
+}
