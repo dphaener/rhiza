@@ -1,0 +1,46 @@
+{
+  "actor": "01M64K434WKYABHB8CXJG92XRG",
+  "after": [
+    "01M64JZDP46ZCDBVDTX92EZGD9"
+  ],
+  "at": "2026-10-29T19:45:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "8b2398a9d3bd72abef87d0d93214b1270bc927a7b4cc53e36c16eeacdd2fc0b6",
+          "session": "7cf182b9-2039-4d75-99d2-01a1892c6c98",
+          "summary": "Autonomous plan run, no owner present, so no owner words are quoted. The change set's intent: rhiza run findings numbers each finding f1, f2, ... from a count read in the run, so two concurrent calls in one session can journal the same ID. Planned outcome: findings are numbered under the run's lock, for the round, --check and leaf findings alike. Decisions below are the planner's assumptions, not owner decisions; the owner has not confirmed them.",
+          "title": "Findings numbering under the run's lock"
+        },
+        "handle": "findings-numbering-plan",
+        "id": "01M64JT7B39FATHKB4T41NSXSE",
+        "key": null,
+        "kind": "source",
+        "node": "01M64JT7B39FATHKB4T1Z60KA0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs concurrent findings calls for one round, one --check and one leaf, then asserts that the findings journalled within each of those scopes have unique IDs",
+          "statement": "Concurrent findings calls within one round, check or leaf never journal two findings with the same ID"
+        },
+        "handle": "unique-finding-ids",
+        "id": "01M64JTDQ1PN9MMS77PBVJW29Z",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M64JTDQ1PN9MMS77P95QM4EG",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5ZNV40RB8VYBB0A3CPXCNXZ",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M64K500W7CRG3C19S7B5RMBR",
+  "type": "ops",
+  "v": 1
+}
