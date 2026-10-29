@@ -1,0 +1,33 @@
+{
+  "actor": "01M6502BQCD2NYPFFGHG0VCMYQ",
+  "after": [
+    "01M61S7PCEVDGCFYEGRSKNTY5D"
+  ],
+  "at": "2026-10-29T23:32:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "59f4c8c1083d2883235d83a31457d256688e594fb106b48b5517e8b5e74db6b7",
+          "session": "d17e5b88-5c8f-4163-b32f-01a18a012af1",
+          "summary": "Autonomous plan run (no owner present) for change set 01M60AW, intent: record the workflow step's limits as constraints. Two limits are recorded, each as it stands in the code: a workflow runs another workflow at most once (internal/workflow/include.go), and a workflow step takes no prompt, agent, permission_mode, run, until, until_when, timeout, interval or max_visits keys, and needs workflow = a workflow's name (buildWorkflow in internal/workflow/workflow.go). No owner words exist for this plan, so no quotes are recorded. Open: none recorded here.",
+          "title": "Workflow step limits, planned without an owner"
+        },
+        "handle": "workflow-step-limits-plan",
+        "id": "01M6504MNQD634VWNBCK36BS93",
+        "key": null,
+        "kind": "source",
+        "node": "01M6504MNQD634VWNBCG720D55",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M60AWXJ785WZCDW1G1KA63BR",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6504N3TH88C3F9MWF148MAH",
+  "type": "ops",
+  "v": 1
+}
