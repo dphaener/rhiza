@@ -65,7 +65,7 @@ func init() {
 	})
 	register(Operation{
 		Name:     "run.abandon",
-		Summary:  "Give up on an unfinished run: journal it failed as abandoned, so a new run can start on its change set",
+		Summary:  "Give up on an unfinished or failed run: journal it failed as abandoned, so the inbox stops listing it and a new run can start on its change set",
 		Write:    true,
 		Request:  reflect.TypeFor[RunAbandonRequest](),
 		Response: reflect.TypeFor[RunAbandonResponse](),
@@ -600,8 +600,9 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 // runRunAbandon journals an unfinished run as failed with the detail
 // "abandoned by <actor>", under the run's lock so a run going in another
 // process is refused. It leaves the worktree and branch alone; the change
-// set then has no live run, so a new one can start. A finished run is
-// refused.
+// set then has no live run, so a new one can start. A failed run can be
+// abandoned too, which clears it from the inbox; a succeeded or already
+// abandoned run is refused.
 func runRunAbandon(ctx *Ctx, req any) (any, error) {
 	r := req.(RunAbandonRequest)
 	ref := strings.TrimSpace(r.Run)
@@ -619,7 +620,7 @@ func runRunAbandon(ctx *Ctx, req any) (any, error) {
 	}
 	sessions := session.NewStore(session.Dir(common))
 	refuseEnded := func(st run.State) error {
-		if st.Ended {
+		if st.Ended && (st.Result != run.Failed || st.Abandoned()) {
 			return Usagef("run %s is finished: it %s", j.ID, st.Result).WithNext("rhiza run status " + j.ID)
 		}
 		return nil

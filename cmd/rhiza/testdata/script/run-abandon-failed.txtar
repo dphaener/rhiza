@@ -1,0 +1,69 @@
+# rhiza run abandon also takes a failed run: its journal says failed,
+# abandoned by the actor, the inbox stops listing it, and resume, a retry
+# included, and a second abandon exit 2. A succeeded run is still refused
+# as finished.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Abandon a failed run' --title 'Abandon failed' --json
+mkdir .rhiza/workflows
+cp ../flaky.toml .rhiza/workflows/flaky.toml
+
+# A failed run is in the inbox.
+! exec rhiza run start --workflow flaky
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG failed$'
+exec rhiza inbox
+stdout '01M5PWGJC82P7YGZTWYFFZ0VJG'
+
+# Abandon it.
+exec rhiza run abandon 01M5PWGJC82P7YGZTWYFFZ0VJG
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG failed$'
+stdout 'abandoned by test'
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG --json
+stdout '"state": "failed"'
+stdout '"detail": "abandoned by test"'
+
+# The inbox no longer lists it.
+exec rhiza inbox
+! stdout '01M5PWGJC82P7YGZTWYFFZ0VJG'
+exec rhiza inbox --json
+! stdout '01M5PWGJC82P7YGZTWYFFZ0VJG'
+
+# Resume, retry and a second abandon exit 2, naming the run.
+exec sh -c 'rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
+stdout '^exit=2$'
+stdout '01M5PWGJC82P7YGZTWYFFZ0VJG was abandoned'
+exec sh -c 'rhiza run resume --retry 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
+stdout '^exit=2$'
+stdout '01M5PWGJC82P7YGZTWYFFZ0VJG was abandoned'
+exec sh -c 'rhiza run abandon 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
+stdout '^exit=2$'
+stdout 'is finished'
+
+# A succeeded run cannot be abandoned.
+exec sh -c 'echo > $WORK/input'
+exec rhiza run start --workflow flaky
+stdout '^Run [0-9A-Z]{26} succeeded$'
+exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl// > $WORK/second'
+exec sh -c 'rhiza run abandon $(cat $WORK/second) 2>&1; echo exit=$?'
+stdout '^exit=2$'
+stdout 'is finished'
+
+-- flaky.toml --
+name = "flaky"
+
+[step.one]
+kind = "command"
+run = "echo one >> ../count"
+on.pass = "two"
+
+[step.two]
+kind = "command"
+run = "test -f ../input"
+on.pass = "done"
+on.fail = "failed"

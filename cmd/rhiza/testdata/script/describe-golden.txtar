@@ -7245,7 +7245,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Give up on an unfinished run: journal it failed as abandoned, so a new run can start on its change set",
+      "summary": "Give up on an unfinished or failed run: journal it failed as abandoned, so the inbox stops listing it and a new run can start on its change set",
       "write": true
     },
     {
