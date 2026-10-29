@@ -35,14 +35,19 @@ func tuiCommand(args []string, stdout, stderr io.Writer, getenv func(string) str
 		return writeError(stdout, stderr, api.Usagef("tui launch runs inside Rex: REX_SESSION is not set"), false)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	rex, err := client.Dial(ctx, client.Options{Getenv: getenv})
-	cancel()
 	if err != nil {
 		return writeError(stdout, stderr, fmt.Errorf("tui launch: %w", err), false)
 	}
 	defer rex.Close()
+	// surface.New needs the connection attached to the session.
+	if _, err := rex.Attach(ctx, session); err != nil {
+		return writeError(stdout, stderr, fmt.Errorf("tui launch: %w", err), false)
+	}
+	cancel()
 	cwd, _ := os.Getwd()
-	l := launcher.Launcher{Rex: rex, Session: getenv("REX_SESSION"), Bin: selfPath(), Cwd: cwd}
+	l := launcher.Launcher{Rex: rex, Session: session, Bin: selfPath(), Cwd: cwd}
 	m := launcher.NewModel(context.Background(), l, launcher.Apps(), colorprofile.Detect(os.Stdout, os.Environ()))
 	if _, err := tea.NewProgram(m).Run(); err != nil {
 		return writeError(stdout, stderr, fmt.Errorf("tui launch: %w", err), false)
