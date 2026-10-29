@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M61S7N37X21HKBX1GRZWG5JM"
+  ],
+  "at": "2026-10-29T21:23:29Z",
+  "body": {
+    "reason": "Owner's standing instruction: run autonomously, accept the recommended answers; plan PR #80 merged on green.",
+    "rule": "owner"
+  },
+  "change_set": "01M5ZNV40RB8VYBB0A3CPXCNXZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M64RQSBFFQEZ6Z447YWE29YC",
+  "type": "accept",
+  "v": 1
+}
