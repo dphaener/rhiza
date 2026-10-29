@@ -1,0 +1,83 @@
+{
+  "actor": "01M62RB31D57TGW39EBNT2TXBD",
+  "after": [
+    "01M62S4XMFQQBNW98ESMQDVQ80"
+  ],
+  "at": "2026-10-29T02:52:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript with fixture journals and change sets: a failed run and a gave-up run each on a landed, a withdrawn, a rejected and a superseded change set, and one of each on an accepted change set, lists exactly the accepted-change-set items in text and --json; a run on a change set the log does not know stays listed; a question and a sign-off on a landed change set stay listed",
+          "statement": "rhiza inbox leaves out a failed run or a run the daemon gave up on whose change set has landed, been withdrawn, rejected or superseded, so every item it lists names a next command that can succeed on its change set; questions and sign-offs stay listed"
+        },
+        "handle": "inbox-clears-stale",
+        "id": "01M62S5BN8M65JXT16755FDJC3",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M62S5BN8M65JXT1672T8GVEF",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "decision": null,
+        "from": "01M62S5BN8M65JXT1672T8GVEF",
+        "id": "01M62S5BX3JWRQ35SFHSP05FXA",
+        "link": "01M62S5BX3JWRQ35SFHQP4VQ5P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62S4WQPRZYZFYRW27JXDD2N",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M62S5BN8M65JXT1672T8GVEF",
+        "id": "01M62S5C4PHSZZQT0AHPEQKEAJ",
+        "link": "01M62S5C4PHSZZQT0AHMK1Q46A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62S4X7A6ZP1YT7V399VCNTF",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M62S5BN8M65JXT1672T8GVEF",
+        "id": "01M62S5CC943RFWMAE6M9WVQ2Q",
+        "link": "01M62S5CC943RFWMAE6K06M9PA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62S4SD2FSQ9FHXDB7SY9YMQ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript fails a fake run, abandons it with exit 0, and shows failed with the abandoned-by detail in run status and --json; rhiza inbox no longer lists the run; resume and resume --retry exit 2 naming it; a second abandon exits 2; abandoning a succeeded run exits 2 as finished",
+          "statement": "rhiza run abandon also takes a failed run: it journals the run as abandoned by the actor, so the inbox stops listing it and rhiza run resume refuses it, naming the run; a succeeded run is still refused as finished"
+        },
+        "handle": "abandon-failed-run",
+        "id": "01M62S5CM2T21E6M0JQ5B2M6CR",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M62S5CM2T21E6M0JQ28RY5Z7",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M62S5CM2T21E6M0JQ28RY5Z7",
+        "id": "01M62S5CW3ZGJ0NV1KG7QPK27J",
+        "link": "01M62S5CW3ZGJ0NV1KG3TA5CBX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62S4SD2FSQ9FHXDB7SY9YMQ",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M62MKZFRPZ2C7QTYAF815XAG",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M62S5D8BKDWAAZNBDP80SF04",
+  "type": "ops",
+  "v": 1
+}
