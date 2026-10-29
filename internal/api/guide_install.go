@@ -111,7 +111,7 @@ func runGuideInstall(ctx *Ctx, req any) (any, error) {
 		if !info.IsDir() {
 			return nil, Conflictf("%s is a file, not a folder: move or remove it, then install again", dir)
 		}
-		if !r.Force && pluginForeign(dir) {
+		if !r.Force && pluginForeign(dir, want) {
 			return nil, Conflictf("%s exists and was not written by rhiza guide install", dir).
 				WithNext(cmd + " --force" + projectFlag(r.Project))
 		}
@@ -276,16 +276,21 @@ func pluginOwned(m pluginManifest) bool {
 
 // pluginForeign reports whether dir holds a plugin guide.install did not
 // write: a plugin.json that is not ours, or, with no plugin.json, any of the
-// other files guide.install writes. A folder holding none of them, such as
-// one another install has just created and not yet written plugin.json to,
-// is not foreign.
-func pluginForeign(dir string) bool {
+// other files guide.install writes holding bytes want does not. A folder
+// whose files all match want, such as one a racing install has written
+// part of, is not foreign: the install writes plugin.json first, but this
+// check may have looked for it before that install wrote it.
+func pluginForeign(dir string, want map[string][]byte) bool {
 	if _, err := os.Lstat(filepath.Join(dir, filepath.FromSlash(pluginManifestPath))); err == nil {
 		m, ok := readPluginManifest(dir)
 		return !ok || !pluginOwned(m)
 	}
 	for _, p := range []string{pluginSkillPath, pluginHooksPath, pluginBuildPath, pluginPlanPath, pluginReviewPath, pluginScrubPath} {
-		if _, err := os.Lstat(filepath.Join(dir, filepath.FromSlash(p))); err == nil {
+		have, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(p)))
+		if errors.Is(err, fs.ErrNotExist) {
+			continue
+		}
+		if err != nil || !bytes.Equal(have, want[p]) {
 			return true
 		}
 	}

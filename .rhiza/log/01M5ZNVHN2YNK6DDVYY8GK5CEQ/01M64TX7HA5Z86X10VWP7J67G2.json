@@ -1,0 +1,40 @@
+{
+  "actor": "01M64TA3033WGJY77N975B8GFE",
+  "after": [
+    "01M64T9PN0G73BZA8GWT2AGF1B"
+  ],
+  "at": "2026-10-29T22:01:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a6b1a5d, built rhiza with go build to a scratch path. Real processes: 200 rounds of 8 concurrent `rhiza guide install --agent claude` into a fresh HOME each: 0/1600 failures. With the binary: removing plugin.json from an installed guide and reinstalling writes it back (1 written, 6 unchanged, exit 0); no plugin.json plus a SKILL.md holding other bytes gives the 'exists and was not written by rhiza guide install' conflict (exit 3) with next --force, and --force installs; a foreign plugin.json is still a conflict; an empty folder installs all 7 files. go test ./internal/api -run 'TestGuideInstallConcurrent$' -count=300 -race -cpu 1,2,4,8 passes at HEAD (ok, 30.5s) and fails 4 times at the merge-base with the foreign-folder error, so the fix removes the flake at its cause. internal/api/guide_install_test.go is unchanged from the merge-base. make check exits 0 with the run's RHIZA_* env unset."
+        },
+        "handle": "guide-install-concurrent-first-qa-1",
+        "id": "01M64TX6GRMZKBXBT68E90AM00",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M64TX6GRMZKBXBT68BQR87VY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M64TX6GRMZKBXBT68BQR87VY",
+        "id": "01M64TX6WXHX6G10YCWJ2JJTGY",
+        "link": "01M64TX6WXHX6G10YCWGGS2RRM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M64JXSEJKRWW6GVN295ZX1XY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5ZNVHN2YNK6DDVYY8GK5CEQ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M64TX7HA5Z86X10VWP7J67G2",
+  "type": "ops",
+  "v": 1
+}

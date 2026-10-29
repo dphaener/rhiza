@@ -1,0 +1,43 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M64TX7HA5Z86X10VWP7J67G2"
+  ],
+  "at": "2026-10-29T22:12:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "38c9befbd895d5077d464ec63a9f83e0faf07ba9",
+          "pr": "https://github.com/dphaener/rhiza/pull/83",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #83 (https://github.com/dphaener/rhiza/pull/83) passed CI at 38c9bef",
+          "status": "verified"
+        },
+        "handle": "pr-83-testguideinstallconcurrent",
+        "id": "01M64VHRM50EPT7RWS5CK60S1D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M64VHRM50EPT7RWS59Y90ZJ5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M64VHRM50EPT7RWS59Y90ZJ5",
+        "id": "01M64VHRY9QMK92THREANS7A5H",
+        "link": "01M64VHRY9QMK92THREACBEHAJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M64JXSEJKRWW6GVN295ZX1XY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5ZNVHN2YNK6DDVYY8GK5CEQ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M64VHSECZH97DQX8R0RMZWJ7",
+  "type": "ops",
+  "v": 1
+}
