@@ -24,7 +24,11 @@ Stream CSV exports
 Change: 01M5PWGEF85Y185JZ2ZGCNH40N
 Actor: claude-code-1a2b3c4d
 Leaf: export-csv
+Co-Authored-By: Agent Name <agent@example.com>
 ```
+
+Keep every trailer, `Co-Authored-By:` included, in the one final paragraph, with no
+blank line between them.
 
 On a retry (`RHIZA_ATTEMPT` above 1), read the earlier attempts' findings in
 `rhiza run status --json` first, then add one fix commit with the same `Leaf:` trailer.

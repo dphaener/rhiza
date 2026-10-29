@@ -54,3 +54,12 @@ func TestReviewText(t *testing.T) {
 		t.Errorf("review names an agent product")
 	}
 }
+
+func TestReviewFixerTrailersInOneFinalParagraph(t *testing.T) {
+	review, _ := Lookup("review")
+	for _, p := range []string{"Co-Authored-By:", "one final paragraph", "no blank line"} {
+		if !strings.Contains(strings.ReplaceAll(review.Body, "\n", " "), p) {
+			t.Errorf("review fixer: no %q", p)
+		}
+	}
+}
