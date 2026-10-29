@@ -1,0 +1,136 @@
+# Concurrent run findings calls in one session never journal two findings
+# with the same ID: a leaf's findings are numbered on from the attempt's
+# count under the run's journal lock, so four calls at once journal f1..f4
+# between them, and a check's concurrent calls open rounds 1..4, each
+# round's findings numbered f1, f2 within it.
+#
+# The fake rex runs the tab's command synchronously in the window's
+# directory. The fake claude, as first's verifier and as check alpha, starts
+# four findings calls at once and waits for them.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new 'Concurrent' --title 'Concurrent'
+exec rhiza add capability first
+mkdir .rhiza/workflows
+cp $WORK/both.toml .rhiza/workflows/both.toml
+exec git add -A
+exec git commit -qm leaves
+
+exec rhiza run start --workflow both --permission-mode manual
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+
+# Every call succeeded.
+exec cat $WORK/calls.log
+cmp stdout $WORK/want-calls.log
+
+# The leaf's four findings are f1..f4, each once.
+exec sh -c 'grep "\"handle\":\"first\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl | grep -o "\"id\":\"f[0-9]*\"" | sort | tr "\n" " "'
+stdout '^"id":"f1" "id":"f2" "id":"f3" "id":"f4" $'
+
+# The check's four calls opened four rounds, each with f1 and f2.
+exec rhiza run status
+stdout '  - round 1 \(cycle 1\): 2 findings'
+stdout '  - round 2 \(cycle 1\): 2 findings'
+stdout '  - round 3 \(cycle 1\): 2 findings'
+stdout '  - round 4 \(cycle 1\): 2 findings'
+! stdout 'round 5'
+exec sh -c 'grep "\"check\":\"alpha\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl | grep -c "\"id\":\"f1\".*\"id\":\"f2\""'
+stdout '^4$'
+
+fold-ok
+
+-- want-calls.log --
+leaf exit=0
+leaf exit=0
+leaf exit=0
+leaf exit=0
+check exit=0
+check exit=0
+check exit=0
+check exit=0
+-- leaf.json --
+{"findings":[{"reason":"one"}]}
+-- check.json --
+{"findings":[{"severity":"nit","place":"a.go:1","reason":"one"},{"severity":"nit","place":"a.go:2","reason":"two"}]}
+-- both.toml --
+name = "both"
+
+[step.build]
+kind = "leaves"
+on.pass = "review"
+on.fail = "review"
+
+[step.build.builder]
+prompt = "Build {leaf}"
+
+[step.build.verifier]
+prompt = "Verify {leaf}"
+
+[step.review]
+kind = "checks"
+interval = "50ms"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+[ "$RHIZA_ROLE" = builder ] && [ "$RHIZA_ATTEMPT" != 1 ] && exit 1
+# burst <label> <args...> runs rhiza run findings four times at once and
+# logs each exit.
+burst() {
+	label=$1
+	shift
+	for i in 1 2 3 4; do
+		(
+			rhiza run findings "$@" >/dev/null 2>> "$WORK/err.log"
+			echo "$label exit=$?" >> "$WORK/calls.log"
+		) &
+	done
+	wait
+}
+case $RHIZA_ROLE in
+builder)
+	git commit -q --allow-empty -m "build $RHIZA_LEAF" -m "Leaf: $RHIZA_LEAF"
+	;;
+verifier)
+	burst leaf --leaf "$RHIZA_LEAF" "$WORK/leaf.json"
+	;;
+check)
+	burst check --check alpha "$WORK/check.json"
+	;;
+esac
+exit 0

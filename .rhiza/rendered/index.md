@@ -1183,6 +1183,7 @@
 - [claude-code-246b394a](actor/claude-code-246b394a.md)
 - [claude-code-24d8eb87](actor/claude-code-24d8eb87.md)
 - [claude-code-26503b9b](actor/claude-code-26503b9b.md)
+- [claude-code-266483f9](actor/claude-code-266483f9.md)
 - [claude-code-26cc4a6a](actor/claude-code-26cc4a6a.md)
 - [claude-code-26f145f7](actor/claude-code-26f145f7.md)
 - [claude-code-27536f53](actor/claude-code-27536f53.md)

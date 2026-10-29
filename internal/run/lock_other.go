@@ -22,5 +22,13 @@ func (s *Store) LockChange(change string) (unlock func(), err error) {
 	return func() {}, nil
 }
 
+// LockJournal has no flock to use here: it holds nothing.
+func (s *Store) LockJournal(id string) (unlock func(), err error) {
+	if err := validID(id); err != nil {
+		return nil, err
+	}
+	return func() {}, nil
+}
+
 // PidAlive cannot look a process up here: it reports every pid as alive.
 func PidAlive(pid int) bool { return pid > 0 }

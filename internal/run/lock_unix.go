@@ -85,6 +85,39 @@ func (s *Store) LockChange(change string) (unlock func(), err error) {
 	}, nil
 }
 
+// LockJournal takes a blocking exclusive flock on the run's journal lock file,
+// .<id>.journal.lock, and returns its unlock. A caller that numbers entries
+// from the journal's state holds it from reading that state to appending, so
+// two concurrent callers never number from the same state. It is not the
+// run's liveness lock, which the engine holds for the run's life. The lock
+// file is never removed.
+func (s *Store) LockJournal(id string) (unlock func(), err error) {
+	if err := validID(id); err != nil {
+		return nil, err
+	}
+	if err := os.MkdirAll(s.dir, 0o755); err != nil {
+		return nil, err
+	}
+	f, err := os.OpenFile(filepath.Join(s.dir, "."+id+".journal.lock"), os.O_RDWR|os.O_CREATE, 0o644)
+	if err != nil {
+		return nil, err
+	}
+	for {
+		err = syscall.Flock(int(f.Fd()), syscall.LOCK_EX)
+		if err != syscall.EINTR {
+			break
+		}
+	}
+	if err != nil {
+		f.Close()
+		return nil, err
+	}
+	return func() {
+		syscall.Flock(int(f.Fd()), syscall.LOCK_UN)
+		f.Close()
+	}, nil
+}
+
 // PidAlive reports whether a process with the pid exists on this host.
 func PidAlive(pid int) bool {
 	if pid <= 0 {

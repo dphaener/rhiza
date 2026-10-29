@@ -253,6 +253,26 @@ func (r reviewRun) journal(ctx *Ctx, what string, e run.Entry) error {
 	return nil
 }
 
+// lockJournal takes the run's journal lock and re-reads its state, so a
+// caller numbers findings from the journal as it is when it appends. A dry
+// run takes no lock and keeps the state it has. unlock is always callable.
+func (r reviewRun) lockJournal(ctx *Ctx) (reviewRun, func(), error) {
+	if ctx.DryRun {
+		return r, func() {}, nil
+	}
+	unlock, err := r.store.LockJournal(r.id)
+	if err != nil {
+		return r, func() {}, Errorf("lock run %s's journal: %v", r.id, err).WithNext("rhiza run status " + r.id)
+	}
+	j, err := r.store.Read(r.id)
+	if err != nil {
+		unlock()
+		return r, func() {}, Errorf("read run %s: %v", r.id, err)
+	}
+	r.state = j.State()
+	return r, unlock, nil
+}
+
 // readReviewFile reads file, or stdin for "-", and decodes it strictly
 // into v: one JSON object with no unknown fields.
 func readReviewFile(ctx *Ctx, cmd, next, file string, v any) error {
@@ -361,6 +381,11 @@ func runRunFindings(ctx *Ctx, req any) (any, error) {
 			ID: "f" + strconv.Itoa(n), Node: node.ID.String(), Handle: node.Handle, Kind: in.Kind, Reason: in.Reason,
 		})
 	}
+	rr, unlock, err := rr.lockJournal(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer unlock()
 	resp := RunFindingsResponse{Run: rr.id, Round: len(rr.state.Rounds) + 1, Findings: make([]RunFinding, 0, len(found)), DryRun: ctx.DryRun}
 	for _, fd := range found {
 		resp.Findings = append(resp.Findings, runFinding(fd, run.Round{}))
@@ -425,6 +450,11 @@ func runCheckFindings(ctx *Ctx, rr reviewRun, step workflow.Step, check, file st
 		}
 		found = append(found, fd)
 	}
+	rr, unlock, err := rr.lockJournal(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer unlock()
 	cs, _ := rr.state.Check(step.Name, check)
 	cycle := envCheckCycle(ctx, rr.state, step.Name, check)
 	cy, latest := rr.state.LatestCycle(step.Name)
@@ -543,13 +573,23 @@ func runLeafFindings(ctx *Ctx, rr reviewRun, r RunFindingsRequest) (any, error) 
 	if len(f.Findings) == 0 {
 		return nil, Usagef(`%s file: want {"findings":[{"reason":...},...]}, at least one`, cmd).WithNext(runFindingsNext)
 	}
-	attempt := l.Attempt()
-	have := len(l.AttemptFindings(attempt))
-	found := make([]run.Finding, 0, len(f.Findings))
 	for i, in := range f.Findings {
 		if strings.TrimSpace(in.Reason) == "" {
 			return nil, Usagef("finding %d: no reason", i+1).WithNext(runFindingsNext)
 		}
+	}
+	rr, unlock, err := rr.lockJournal(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer unlock()
+	if l, _ = rr.state.Leaf(step, node.ID.String()); l.Attempt() == 0 || l.Outcome != "" {
+		return nil, Usagef("%s: leaf %s no longer has an attempt running in run %s", cmd, node.Handle, rr.id).WithNext(statusNext)
+	}
+	attempt := l.Attempt()
+	have := len(l.AttemptFindings(attempt))
+	found := make([]run.Finding, 0, len(f.Findings))
+	for i, in := range f.Findings {
 		found = append(found, run.Finding{ID: "f" + strconv.Itoa(have+i+1), Reason: in.Reason})
 	}
 	resp := RunFindingsResponse{Run: rr.id, Leaf: node.Handle, Attempt: attempt, Findings: make([]RunFinding, 0, len(found)), DryRun: ctx.DryRun}
