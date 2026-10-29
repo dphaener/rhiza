@@ -1,0 +1,27 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M63Y7VGQCTJ4E9JS2GRAPVFK"
+  ],
+  "at": "2026-10-29T13:40:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M635BW4PX2TGH5J2GM4S089T",
+        "id": "01M63Y7VZA9AC04ESN6GBCTK99",
+        "link": "01M63Y7VZA9AC04ESN6EVDQT4H",
+        "note": "applies t7-d14-read-budget's 50 ms tree-read budget to the model app's subtree read",
+        "op": "link.create",
+        "to": "01M5SWSCG2YEVDXH7MTN70MBWJ",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M62JMT63RY271EAF14R8P4VG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M63Y7W80B49510EN3JGZH2JR",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,31 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M63ZSV79ZYZXNG4DV13KHB1W"
+  ],
+  "at": "2026-10-29T14:07:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The two change sets each changed tuiApp's first lines: main split the lookup into read and write apps, this branch added a branch for the model app. The model app is neither a read nor a write app, so its check goes first and main's lookups stay as they are.",
+          "statement": "The rebase onto main is resolved in cmd/rhiza/tui.go by keeping main's read and write app lookups (from TUI write apps, previewed) and putting the model app's check before them: tuiApp hands the model app to tuiModel, then looks the name up among the read and write apps. Both changes keep their behaviour; rendered conflicts were settled by re-rendering, and make check passes on the rebased branch.",
+          "wording": "decided by the orchestrator acting as arbiter, under the owner's standing word to run autonomously"
+        },
+        "handle": "tui-model-view-rebase-resolution",
+        "id": "01M63ZSVPQTN9X35WSZCB2AV2T",
+        "key": null,
+        "kind": "decision",
+        "node": "01M63ZSVPQTN9X35WSZAH84WM2",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M62JMT63RY271EAF14R8P4VG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M63ZSVZNKFTMDN4KH4VG1AW7",
+  "type": "ops",
+  "v": 1
+}

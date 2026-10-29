@@ -1,0 +1,40 @@
+{
+  "actor": "01M635NYJZN8MY984HR1QCCPSX",
+  "after": [
+    "01M635BX4WJERA5ZG207DXCHT9"
+  ],
+  "at": "2026-10-29T06:39:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier of attempt 2 at 755b161: wrote gen.Default() (the 50,000-node model) to a scratch repo and ran rhiza built from this commit. `rhiza tui app model --once` equals `rhiza tree --view as-is` + blank line + `rhiza roadmap` byte for byte (cmp; 15,938 tree lines, 37 roadmap lines), and `rhiza tui app model <deep-subtree-ref> --once` equals `rhiza tree <ref> --view as-is` + roadmap likewise. The subtree+roadmap read, the budget model-app-read-budget defines, takes 0.03 s whole-process over 5 runs, and TestGeneratedModel's in-process median is 8.9-12 ms (< 50 ms); with no ref the whole tree takes 0.16 s, outside that budget as recorded. The fix for qa f1 holds: rows = Height-4, TestViewFitsTheWindow passes, and in a live 24-row Rex pane the capture is 24 lines with the [tree]/[roadmap] tab bar on line 1 after tab and j scrolling. fmt-check, vet and go test ./... pass (one full-suite run first failed TestGeneratedModel at a 78 ms median under parallel load; it passed on rerun and alone). make self-check fails only on stale .rhiza/rendered files, which were already stale at 080586f before this leaf's fix commit and are left for the orchestrator's render. Diff read: a one-line row-count fix, a test, and the model-app-read-budget Decision."
+        },
+        "handle": "model-tree-app-verified-2",
+        "id": "01M63647HG1GD3A5GJ8ZWRFE2J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M63647HG1GD3A5GJ8WYSC12A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M63647HG1GD3A5GJ8WYSC12A",
+        "id": "01M63647VMYEVMQVAYXWJTNAFN",
+        "link": "01M63647VMYEVMQVAYXVBBF6DA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JPK2HTYRZW2PD8ZFV1JVK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62JMT63RY271EAF14R8P4VG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M63648DC94JHNHXD4ZRHC03Q",
+  "type": "ops",
+  "v": 1
+}

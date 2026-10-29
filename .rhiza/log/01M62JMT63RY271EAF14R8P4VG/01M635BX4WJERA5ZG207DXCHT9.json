@@ -1,0 +1,50 @@
+{
+  "actor": "01M6359Z9786MPN3DRFR4K54PK",
+  "after": [
+    "01M63582HNEXWBW0NG18HVECJE"
+  ],
+  "at": "2026-10-29T06:25:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The model app takes an optional [<ref>] (`rhiza tui app model [<ref>]`) that limits the tree to the subtree under that node, as `rhiza tree <ref>` does. model-tree-app's 50 ms budget covers the app's read of a deep subtree plus the roadmap, the tree read that t7-d14-read-budget budgets; with no ref the app reads the whole as-is tree, which is outside the budget, as a whole-tree `rhiza tree` is.",
+          "wording": "fixer of review cycle 2 on leaf model-tree-app, recording the reading of the budget the build and its evidence used (model f1)"
+        },
+        "handle": "model-app-read-budget",
+        "id": "01M635BW4PX2TGH5J2GM7Z0NGX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M635BW4PX2TGH5J2GM4S089T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M635BW4PX2TGH5J2GM4S089T",
+        "id": "01M635BWDG5QEJ0GREJ6BA63PH",
+        "link": "01M635BWDG5QEJ0GREJ67Q3E2P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSCG2YEVDXH7MTN70MBWJ",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M62JPK2HTYRZW2PD8ZFV1JVK",
+        "id": "01M635BWPEG74B6K6PHCAEQZ29",
+        "link": "01M635BWPEG74B6K6PHBG9VN0M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M635BW4PX2TGH5J2GM4S089T",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M62JMT63RY271EAF14R8P4VG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M635BX4WJERA5ZG207DXCHT9",
+  "type": "ops",
+  "v": 1
+}
