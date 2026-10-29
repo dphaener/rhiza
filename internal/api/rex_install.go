@@ -35,15 +35,18 @@ const (
 	rexSettingsBegin = "-- settings begin\n"
 	rexSettingsEnd   = "-- settings end\n"
 	// rexDefaultSettings is the settings block of a first install. The
-	// launch key is ctrl+a a (see decision tui-launch-key).
+	// launch key is ctrl+a a (see decision tui-launch-key); it enters the
+	// rhiza key mode. keys remaps an app's key in that mode.
 	rexDefaultSettings = rexSettingsBegin +
-		"local settings = {\n  launch_key = \"ctrl+a a\",\n}\n" +
+		"local settings = {\n  launch_key = \"ctrl+a a\",\n" +
+		"  -- Remap an app's key in the rhiza key mode, e.g. keys = { roadmap = \"m\" }.\n" +
+		"  keys = {},\n}\n" +
 		rexSettingsEnd
 )
 
 // rexLaunchLua is the part of rhiza.lua after the settings and BIN: the
-// action that opens the quick-launch layer, and the binding of the launch
-// key to it. The key is written as Rex's own sequence syntax ("ctrl+a>a")
+// action that opens the quick-launch layer (in the palette only; the launch
+// key enters the key mode, see rexKeyModeLua). The key is written as Rex's own sequence syntax ("ctrl+a>a")
 // or, as the setting shows it, with spaces ("ctrl+a a"). The layer runs
 // `rhiza tui launch`, which lists the apps and opens the chosen one in a
 // modal. The layer starts in the invoking block's directory, since the
@@ -81,10 +84,80 @@ rex.action{
   end,
 }
 
+`
+
+// rexKeyModeLua is the rhiza key mode: the launch key enters it, and each
+// app's key in it runs that app's action. DEFAULT_KEYS (written by
+// rexKeyModeTable) gives each app a default key; settings.keys overrides
+// any of them, and a reinstall keeps settings.keys. An exclusive mode drops
+// every key it does not bind, so a mistyped key never reaches the terminal.
+const rexKeyModeLua = `
+local MODE = "rhiza"
+rex.mode(MODE, { exclusive = true })
+rex.bind(MODE .. "/escape", "client.mode.exit")
+local overrides = type(settings.keys) == "table" and settings.keys or {}
+for app, key in pairs(DEFAULT_KEYS) do
+  local k = overrides[app]
+  if type(k) ~= "string" or k == "" then k = key end
+  rex.bind(MODE .. "/" .. k, "rhiza_app_" .. app)
+end
 if type(settings.launch_key) == "string" and settings.launch_key ~= "" then
-  rex.bind((settings.launch_key:gsub("%s+", ">")), "rhiza_launch")
+  rex.bind((settings.launch_key:gsub("%s+", ">")), "client.mode.enter", { name = MODE, once = true })
 end
 `
+
+// rexDefaultKeys gives each app a default key of the rhiza key mode, in
+// the order of apps: the first letter of its name that no earlier app took
+// (word initials first), else the first free letter or digit. The same apps always give the same keys.
+func rexDefaultKeys(apps []launcher.App) map[string]string {
+	used := map[string]bool{}
+	keys := map[string]string{}
+	for _, a := range apps {
+		pick := ""
+		name := strings.ToLower(a.Name)
+		for _, r := range rexInitials(name) + name + "abcdefghijklmnopqrstuvwxyz0123456789" {
+			k := string(r)
+			if (r >= 'a' && r <= 'z' || r >= '0' && r <= '9') && !used[k] {
+				pick = k
+				break
+			}
+		}
+		if pick == "" {
+			continue
+		}
+		used[pick] = true
+		keys[a.Name] = pick
+	}
+	return keys
+}
+
+// rexInitials returns the first letter of each hyphen-separated word of name.
+func rexInitials(name string) string {
+	var b strings.Builder
+	for _, w := range strings.Split(name, "-") {
+		if w != "" {
+			b.WriteByte(w[0])
+		}
+	}
+	return b.String()
+}
+
+// rexKeyMode returns the Lua of the key mode: the table of default keys,
+// then rexKeyModeLua. Apps without a free key get no default, only the
+// action in the palette.
+func rexKeyMode() string {
+	apps := launcher.Apps()
+	keys := rexDefaultKeys(apps)
+	var b strings.Builder
+	b.WriteString("\nlocal DEFAULT_KEYS = {\n")
+	for _, a := range apps {
+		if k, ok := keys[a.Name]; ok {
+			fmt.Fprintf(&b, "  [%s] = %s,\n", strconv.Quote(a.Name), strconv.Quote(k))
+		}
+	}
+	b.WriteString("}\n")
+	return b.String() + rexKeyModeLua
+}
 
 // rexCellBoundsLua is the Lua that sizes a layer to a number of cells: the
 // chrome model of rexuikit's surface.BoundsForCells, centred, with its
@@ -272,7 +345,7 @@ func rexScript(have []byte, bin string) []byte {
 		"-- Edit the settings block; a reinstall keeps it. Everything else is rewritten.\n" +
 		settings +
 		"\nlocal BIN = " + strconv.Quote(bin) + "\n" +
-		rexLaunchLua + rexCellBounds() + rexAppActions() + rexScriptTail)
+		rexLaunchLua + rexCellBounds() + rexAppActions() + rexKeyMode() + rexScriptTail)
 }
 
 // rexHasRequire reports whether init.lua already loads rhiza: any line that

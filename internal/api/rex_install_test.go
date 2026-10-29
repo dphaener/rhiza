@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -166,7 +167,7 @@ func TestRexInstallScriptOpensTheLauncher(t *testing.T) {
 		`name = "rhiza_launch"`,
 		`options = { command = { BIN, "tui", "launch" }, cwd = block_cwd(ctx.block_id) }`,
 		`rex.block.call(TERM, "process", { block_id = block_id })`,
-		`rex.bind((settings.launch_key:gsub("%s+", ">")), "rhiza_launch")`,
+		`rex.bind((settings.launch_key:gsub("%s+", ">")), "client.mode.enter", { name = MODE, once = true })`,
 	} {
 		if !strings.Contains(script, want) {
 			t.Errorf("rhiza.lua lacks %s:\n%s", want, script)
@@ -245,5 +246,59 @@ func TestRexInstallSizesEachAppLayerToItsCells(t *testing.T) {
 	}
 	if strings.Contains(strings.Replace(script, `{ BIN, "tui", "launch" }`, "", 1), `"launch"`) {
 		t.Errorf("an app action goes through tui launch:\n%s", script)
+	}
+}
+
+func TestRexInstallBindsAKeyPerAppInTheKeyMode(t *testing.T) {
+	ctx, dir, _ := rexTestCtx(t)
+	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	script := readFile(t, filepath.Join(dir, "rhiza.lua"))
+	keys := rexDefaultKeys(launcher.Apps())
+	if len(keys) != len(launcher.Apps()) {
+		t.Fatalf("%d keys for %d apps", len(keys), len(launcher.Apps()))
+	}
+	seen := map[string]string{}
+	for app, key := range keys {
+		if other, dup := seen[key]; dup {
+			t.Errorf("apps %s and %s share key %s", app, other, key)
+		}
+		seen[key] = app
+		if want := fmt.Sprintf("[%q] = %q,", app, key); !strings.Contains(script, want) {
+			t.Errorf("rhiza.lua lacks the default %s:\n%s", want, script)
+		}
+	}
+	for _, want := range []string{
+		`rex.mode(MODE, { exclusive = true })`,
+		`rex.bind(MODE .. "/" .. k, "rhiza_app_" .. app)`,
+		`keys = {},`,
+	} {
+		if !strings.Contains(script, want) {
+			t.Errorf("rhiza.lua lacks %s", want)
+		}
+	}
+}
+
+func TestRexDefaultKeysAreMnemonicAndUnique(t *testing.T) {
+	got := rexDefaultKeys([]launcher.App{{Name: "model"}, {Name: "mine"}, {Name: "roadmap"}, {Name: "x"}, {Name: "x2"}})
+	want := map[string]string{"model": "m", "mine": "i", "roadmap": "r", "x": "x", "x2": "2"}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("keys = %v, want %v", got, want)
+	}
+}
+
+func TestRexInstallKeepsKeyOverridesOnReinstall(t *testing.T) {
+	ctx, dir, _ := rexTestCtx(t)
+	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	p := filepath.Join(dir, "rhiza.lua")
+	writePath(t, p, strings.Replace(readFile(t, p), "keys = {},", `keys = { roadmap = "z" },`, 1))
+	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(readFile(t, p), `keys = { roadmap = "z" },`) {
+		t.Error("reinstall lost the key override")
 	}
 }
