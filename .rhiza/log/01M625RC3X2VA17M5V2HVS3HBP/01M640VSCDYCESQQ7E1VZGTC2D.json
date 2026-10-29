@@ -1,0 +1,31 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M62VJ7CTTSB8XW4B3FRZDAPA"
+  ],
+  "at": "2026-10-29T14:26:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "git cannot run from a folder that is gone, so the answer has to be known before close-out. The run already depends on the main checkout (its journal and ship state live in its .git/rhiza), and the change set's intent already says steps after close-out start in the main checkout. Retries started from the main checkout today (#66, #67, #68) passed the ship step, which is this behaviour done by hand.",
+          "statement": "The run finds the main checkout while its worktree still exists: the runner records the main checkout (the folder holding the git common dir, where the run's journal lives under .git/rhiza) when the run starts, and starts every step after close-out there. The ship command then runs in a folder where git works and finds the common dir as it does from any checkout; it never has to start git from the removed folder.",
+          "wording": "decided by the orchestrator acting as arbiter, under the owner's standing word to run autonomously: \"I'm stopping for the night, let's just run autonomously from here on out, I'm just accepting the recommended answers anyway\""
+        },
+        "handle": "ship-command-starts-in-main-checkout",
+        "id": "01M640VS2H4XZ8Z0SAC0WFVJCA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M640VS2H4XZ8Z0SABYJT53ZN",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M625RC3X2VA17M5V2HVS3HBP",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M640VSCDYCESQQ7E1VZGTC2D",
+  "type": "ops",
+  "v": 1
+}
