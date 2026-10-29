@@ -1,0 +1,138 @@
+{
+  "actor": "01M62J15DN2EF18T29BGVQRRJY",
+  "after": [
+    "01M62JMSW4FH8RAWSQXJMZZX29"
+  ],
+  "at": "2026-10-29T00:59:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "With a fake Rex config directory, install writes the script, a second install leaves the script's bytes identical, and any line the owner wrote outside the script is kept byte for byte",
+          "statement": "rhiza rex install writes the quick-launch Lua script into the Rex config and reloads Rex, and a second run changes nothing the owner wrote"
+        },
+        "handle": "rex-install-command",
+        "id": "01M62JP4KDNBZKH1YT5SK7N91K",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M62JP4KDNBZKH1YT5NZRB347",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M62JP4KDNBZKH1YT5NZRB347",
+        "id": "01M62JP511PV2GY98SNP54R2Q7",
+        "link": "01M62JP511PV2GY98SNJ5HYJC9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JMM4GYAAGBWRJGMP7X19P",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M62JP4KDNBZKH1YT5NZRB347",
+        "id": "01M62JP5D815FC3975YWVTAMD7",
+        "link": "01M62JP5D815FC3975YVF08SN2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JMHXNM6W4XBGP85W06YY8",
+        "type": "implements"
+      },
+      {
+        "fields": {
+          "statement": "Should the quick-launch Lua script be its own file in the Rex config, as forge keeps forge.lua, or be added to the owner's init.lua?"
+        },
+        "handle": "rex-config-file-choice",
+        "id": "01M62JP5WGX4KAFHFF63CMBWW1",
+        "key": null,
+        "kind": "question",
+        "node": "01M62JP5WGX4KAFHFF61W6M1GY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62JP5WGX4KAFHFF61W6M1GY",
+        "id": "01M62JP6MMXE7Z4S05M0PESWBH",
+        "link": "01M62JP6MMXE7Z4S05KWSAQHF5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JP4KDNBZKH1YT5NZRB347",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "acceptance": "With a fake Rex client, the installed script opens the layer on ctrl-a>r, lists each registered app by name, and selecting one opens that app's modal",
+          "statement": "ctrl-a>r opens a Rex quick-launch layer, built on rexuikit's client, that lists every rhiza app, and choosing one opens it in a modal"
+        },
+        "handle": "quick-launch-layer",
+        "id": "01M62JP7BKA4N9W2HCFY5AQG4M",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M62JP7BKA4N9W2HCFTP0CMQ4",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M62JP7BKA4N9W2HCFTP0CMQ4",
+        "id": "01M62JP877EJ05CP02YVEWN725",
+        "link": "01M62JP877EJ05CP02YT53KM6T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JMM4GYAAGBWRJGMP7X19P",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M62JP7BKA4N9W2HCFTP0CMQ4",
+        "id": "01M62JP911K6YK378PMYP454Z8",
+        "link": "01M62JP911K6YK378PMWSNZ6NH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JMJ6AYPDDEEFNPG9WG3E0",
+        "type": "implements"
+      },
+      {
+        "fields": {
+          "acceptance": "For each of the five commands, a testscript on a fixture model checks the app's result equals the command's --json output, and the test starts no daemon and binds no socket",
+          "statement": "roadmap, ready, show, why and slice run as apps that call the internal/api registry in-process and show the same result as the matching rhiza command --json"
+        },
+        "handle": "read-apps-match-cli",
+        "id": "01M62JP9RTA2QHK5B6A76AD9ZF",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M62JP9RTA2QHK5B6A53852M8",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M62JP9RTA2QHK5B6A53852M8",
+        "id": "01M62JPAMRG7AMP6SPR58BHH7G",
+        "link": "01M62JPAMRG7AMP6SPR1BNY6G7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JMM4GYAAGBWRJGMP7X19P",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M62JP9RTA2QHK5B6A53852M8",
+        "id": "01M62JPBDYRMBGYM43G2ZR0G77",
+        "link": "01M62JPBDYRMBGYM43G24G0ZWN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JMJESD5MBJG9EEEMQ6207",
+        "type": "implements"
+      }
+    ]
+  },
+  "change_set": "01M62JMSW4FH8RAWSQXHC7ZPND",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62JPCPCTYMVTJJ43SB7DWRA",
+  "type": "ops",
+  "v": 1
+}

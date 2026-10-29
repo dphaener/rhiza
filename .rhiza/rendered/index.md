@@ -226,6 +226,14 @@
   - [m4-orchestrated-by-rhiza](intent/milestone-4/m4-orchestrated-by-rhiza.md)
   - [m4-runs-hold-up](intent/milestone-4/m4-runs-hold-up.md)
   - [m4-still-healthy](intent/milestone-4/m4-still-healthy.md)
+- [rhiza-tui](intent/rhiza-tui.md)
+  - [tui-install-script](intent/rhiza-tui/tui-install-script.md)
+  - [tui-launcher](intent/rhiza-tui/tui-launcher.md)
+  - [tui-read-apps](intent/rhiza-tui/tui-read-apps.md)
+  - [tui-model-view](intent/rhiza-tui/tui-model-view.md)
+  - [tui-writes-previewed](intent/rhiza-tui/tui-writes-previewed.md)
+  - [tui-runs-sessions](intent/rhiza-tui/tui-runs-sessions.md)
+  - [tui-still-healthy](intent/rhiza-tui/tui-still-healthy.md)
 
 ## Constraints
 
@@ -721,6 +729,7 @@
 - [transport-independent-ops](decision/transport-independent-ops.md)
 - [tree-conventions](decision/tree-conventions.md)
 - [trust-per-machine](decision/trust-per-machine.md)
+- [tui-many-mini-apps](decision/tui-many-mini-apps.md)
 - [twelve-areas](decision/twelve-areas.md)
 - [two-change-set-kinds](decision/two-change-set-kinds.md)
 - [two-owner-gates](decision/two-owner-gates.md)
@@ -987,6 +996,7 @@
 - [review-workflow-plan](source/review-workflow-plan.md)
 - [ship-change-plan](source/ship-change-plan.md)
 - [task-interviews](source/task-interviews.md)
+- [tui-planning-conversation](source/tui-planning-conversation.md)
 
 ## Actors
 
@@ -995,6 +1005,7 @@
 - [claude-code-0843113a](actor/claude-code-0843113a.md)
 - [claude-code-09b92e32](actor/claude-code-09b92e32.md)
 - [claude-code-0ac71161](actor/claude-code-0ac71161.md)
+- [claude-code-0b2dbf27](actor/claude-code-0b2dbf27.md)
 - [claude-code-0e5a9d92](actor/claude-code-0e5a9d92.md)
 - [claude-code-0e5a9d92-verifier](actor/claude-code-0e5a9d92-verifier.md)
 - [claude-code-0f55b0ee](actor/claude-code-0f55b0ee.md)
@@ -1060,6 +1071,7 @@
 - [claude-code-645b9d96](actor/claude-code-645b9d96.md)
 - [claude-code-6ad9fc50](actor/claude-code-6ad9fc50.md)
 - [claude-code-6bb0a873](actor/claude-code-6bb0a873.md)
+- [claude-code-6bddbe2d](actor/claude-code-6bddbe2d.md)
 - [claude-code-6c4dc4e8](actor/claude-code-6c4dc4e8.md)
 - [claude-code-6cec01c3](actor/claude-code-6cec01c3.md)
 - [claude-code-6d32ca0b](actor/claude-code-6d32ca0b.md)
@@ -1100,6 +1112,7 @@
 - [claude-code-9c8c767e](actor/claude-code-9c8c767e.md)
 - [claude-code-9fbd58dc](actor/claude-code-9fbd58dc.md)
 - [claude-code-a0fdc85a](actor/claude-code-a0fdc85a.md)
+- [claude-code-a15c1cda](actor/claude-code-a15c1cda.md)
 - [claude-code-a2c42b0f](actor/claude-code-a2c42b0f.md)
 - [claude-code-a3d863f7](actor/claude-code-a3d863f7.md)
 - [claude-code-a5ffc966](actor/claude-code-a5ffc966.md)

@@ -1,0 +1,11 @@
+# tui-model-view
+
+intent · `01M62JMJPNZ1WEAE45YVT29SMG` · parent [rhiza-tui](../rhiza-tui.md)
+
+## statement
+
+A model app shows the as-is capability tree and the roadmap, read from the index
+
+## History
+
+- `01M62J0ED188JTTR7R9709Y989` Rhiza has a terminal UI built on Rex, with rexuikit, in which common rhiza commands run as tiny apps in modals or pop-ups, alongside a view of the model.

@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [],
+  "at": "2026-10-29T00:47:24Z",
+  "body": {
+    "intent": "Rhiza has a terminal UI built on Rex, with rexuikit, in which common rhiza commands run as tiny apps in modals or pop-ups, alongside a view of the model.",
+    "kind": "record",
+    "sources": [],
+    "title": "Rhiza TUI"
+  },
+  "change_set": "01M62J0ED188JTTR7R9709Y989",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62J0ED188JTTR7R98D5448Z",
+  "type": "open",
+  "v": 2
+}

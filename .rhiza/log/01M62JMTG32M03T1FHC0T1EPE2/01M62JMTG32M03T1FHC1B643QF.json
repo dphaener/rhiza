@@ -1,0 +1,16 @@
+{
+  "actor": "01M62J15DN2EF18T29BGVQRRJY",
+  "after": [],
+  "at": "2026-10-29T00:58:31Z",
+  "body": {
+    "intent": "Change-set and record writes from apps, each shown as a what-if preview and confirmed once",
+    "kind": "intention",
+    "sources": [],
+    "title": "TUI write apps, previewed"
+  },
+  "change_set": "01M62JMTG32M03T1FHC0T1EPE2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62JMTG32M03T1FHC1B643QF",
+  "type": "open",
+  "v": 2
+}

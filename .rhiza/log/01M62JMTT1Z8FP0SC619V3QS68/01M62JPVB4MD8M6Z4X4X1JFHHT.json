@@ -1,0 +1,50 @@
+{
+  "actor": "01M62J15DN2EF18T29BGVQRRJY",
+  "after": [
+    "01M62JMTT1Z8FP0SC61DTMAWDR"
+  ],
+  "at": "2026-10-29T00:59:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "On a fixture journal and session set, each app's text matches rhiza run status and rhiza session ls --json, and the app writes nothing to the log",
+          "statement": "run status and session ls run as read-only apps"
+        },
+        "handle": "runs-sessions-apps",
+        "id": "01M62JPRMZ7XZ5RGATPBH6T1HK",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M62JPRMZ7XZ5RGATP7N7P0A5",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M62JPRMZ7XZ5RGATP7N7P0A5",
+        "id": "01M62JPS8XYE2ETN58ZGK0X5ZC",
+        "link": "01M62JPS8XYE2ETN58ZD7D9D5Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JMM4GYAAGBWRJGMP7X19P",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M62JPRMZ7XZ5RGATP7N7P0A5",
+        "id": "01M62JPT8JW60W45WQEYBQCCAV",
+        "link": "01M62JPT8JW60W45WQEX3S74CB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JMK8FZ1V9PKCB587AWBPS",
+        "type": "implements"
+      }
+    ]
+  },
+  "change_set": "01M62JMTT1Z8FP0SC619V3QS68",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62JPVB4MD8M6Z4X4X1JFHHT",
+  "type": "ops",
+  "v": 1
+}

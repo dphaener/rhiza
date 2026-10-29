@@ -1,0 +1,16 @@
+{
+  "actor": "01M62J15DN2EF18T29BGVQRRJY",
+  "after": [],
+  "at": "2026-10-29T00:58:31Z",
+  "body": {
+    "intent": "Rex quick-launch layer and install command, with roadmap, ready, show, why and slice as apps",
+    "kind": "intention",
+    "sources": [],
+    "title": "TUI shell and read apps"
+  },
+  "change_set": "01M62JMSW4FH8RAWSQXHC7ZPND",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62JMSW4FH8RAWSQXJMZZX29",
+  "type": "open",
+  "v": 2
+}
