@@ -154,7 +154,7 @@ func TestRexInstallThroughSymlink(t *testing.T) {
 	}
 }
 
-func TestRexInstallScriptOpensTheLauncher(t *testing.T) {
+func TestRexInstallScriptEntersTheKeyMode(t *testing.T) {
 	ctx, dir, _ := rexTestCtx(t)
 	ctx.Self = "/opt/my tools/rhiza"
 	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
@@ -164,14 +164,16 @@ func TestRexInstallScriptOpensTheLauncher(t *testing.T) {
 	for _, want := range []string{
 		`launch_key = "ctrl+a>a"`,
 		`local BIN = "/opt/my tools/rhiza"`,
-		`name = "rhiza_launch"`,
-		`options = { command = { BIN, "tui", "launch" }, cwd = block_cwd(ctx.block_id) }`,
 		`rex.block.call(TERM, "process", { block_id = block_id })`,
 		`rex.bind((settings.launch_key:gsub("%s+", ">")), "client.mode.enter", { name = MODE, once = true })`,
 	} {
 		if !strings.Contains(script, want) {
 			t.Errorf("rhiza.lua lacks %s:\n%s", want, script)
 		}
+	}
+	// The all-apps picker is gone (decision rex-picker-removed).
+	if strings.Contains(script, "rhiza_launch") || strings.Contains(script, `"launch"`) {
+		t.Errorf("rhiza.lua still opens the picker:\n%s", script)
 	}
 
 	// A changed launch key survives a reinstall, and the binary path is
@@ -203,7 +205,7 @@ func TestRexInstallRegistersAnActionPerApp(t *testing.T) {
 			t.Errorf("rhiza.lua lacks %s:\n%s", want, script)
 		}
 	}
-	if got, want := strings.Count(script, "rex.action{"), 1+len(launcher.Apps()); got != want {
+	if got, want := strings.Count(script, "rex.action{"), len(launcher.Apps()); got != want {
 		t.Errorf("%d rex.action calls, want %d", got, want)
 	}
 
@@ -244,7 +246,7 @@ func TestRexInstallSizesEachAppLayerToItsCells(t *testing.T) {
 	if want := fmt.Sprintf("cell_bounds(ctx.block_id, %d, %d)", dc, dr); !strings.Contains(action("zz-default"), want) {
 		t.Errorf("zz-default lacks %s", want)
 	}
-	if strings.Contains(strings.Replace(script, `{ BIN, "tui", "launch" }`, "", 1), `"launch"`) {
+	if strings.Contains(script, `"launch"`) {
 		t.Errorf("an app action goes through tui launch:\n%s", script)
 	}
 }

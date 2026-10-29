@@ -51,7 +51,6 @@ func usage() string {
 	}
 	rows = append(rows,
 		row{"api call", "Call an operation with a JSON request; prints JSON"},
-		row{"tui launch", "Run the Rex quick-launch layer (started by the Rex key)"},
 		row{"tui app", "Run an app: a read app, or a write app that previews before it writes (--once prints its JSON)"},
 		row{"version", "Print the rhiza version"})
 	width := 0

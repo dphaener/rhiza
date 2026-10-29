@@ -1,7 +1,7 @@
 package api
 
 // This file holds the rex.install and rex.uninstall operations: they put
-// the quick-launch script into the owner's Rex config as its own file,
+// the app actions script into the owner's Rex config as its own file,
 // rhiza.lua, beside Rex's init.lua (as forge keeps forge.lua), and a single
 // require("rhiza") line in init.lua that loads it.
 
@@ -44,13 +44,10 @@ const (
 		rexSettingsEnd
 )
 
-// rexLaunchLua is the part of rhiza.lua after the settings and BIN: the
-// action that opens the quick-launch layer (in the palette only; the launch
-// key enters the key mode, see rexKeyModeLua). The layer runs
-// `rhiza tui launch`, which lists the apps and opens the chosen one in a
-// modal. The layer starts in the invoking block's directory, since the
-// launcher hands its own to each app; without one Rex starts it in $HOME.
-const rexLaunchLua = `local TERM = "com.superlogical.terminal"
+// rexPreludeLua is the part of rhiza.lua after the settings and BIN: what
+// every app action shares. Each app's layer starts in the invoking block's
+// directory; without one Rex starts it in $HOME.
+const rexPreludeLua = `local TERM = "com.superlogical.terminal"
 local LAYER_BOUNDS = { 0.3, 0.25, 0.4, 0.5 }
 
 -- block_cwd returns the working directory of the terminal block's
@@ -61,27 +58,6 @@ local function block_cwd(block_id)
   if p == nil then return nil end
   return (p.foreground and p.foreground.cwd) or (p.child and p.child.cwd)
 end
-
-rex.action{
-  name = "rhiza_launch",
-  title = "Rhiza apps",
-  description = "Open the Rhiza quick-launch layer",
-  category = "rhiza",
-  keywords = "rhiza apps launch",
-  run = function(ctx)
-    local res, err = rex.session.new_layer{
-      bounds = LAYER_BOUNDS,
-      layout = rex.layout.block{
-        flavor = TERM .. ".shell",
-        label = "Rhiza apps",
-        options = { command = { BIN, "tui", "launch" }, cwd = block_cwd(ctx.block_id) },
-      },
-      focus = true,
-    }
-    if err ~= nil then error(err, 0) end
-    return res
-  end,
-}
 
 `
 
@@ -401,7 +377,7 @@ func rexScript(have []byte, bin string) []byte {
 		"-- Edit the settings block; a reinstall keeps it. Everything else is rewritten.\n" +
 		settings +
 		"\nlocal BIN = " + strconv.Quote(bin) + "\n" +
-		rexLaunchLua + rexCellBounds() + rexAppActions() + rexKeyMode() + rexScriptTail)
+		rexPreludeLua + rexCellBounds() + rexAppActions() + rexKeyMode() + rexScriptTail)
 }
 
 // rexHasRequire reports whether init.lua already loads rhiza: any line that
