@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-29T01:33:01Z",
+  "body": {
+    "intent": "The daemon resumes only interrupted runs whose change set is still accepted: a run left interrupted on a change set that has since landed, been withdrawn or rejected is never resumed.",
+    "kind": "intention",
+    "sources": [],
+    "title": "Resume only in-flight runs"
+  },
+  "change_set": "01M62MKZ6SA46DYC1K2R0W254S",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62MKZ6SA46DYC1K2TGVHW7Y",
+  "type": "open",
+  "v": 2
+}
