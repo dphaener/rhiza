@@ -1,0 +1,40 @@
+{
+  "actor": "01M647YG3DJ46XNN8ZXM7DSB9M",
+  "after": [
+    "01M6482SD4WY6F67VT450BBMY0"
+  ],
+  "at": "2026-10-29T16:34:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 2b1b299 ran go test ./cmd/rhiza -run TestScripts/rex-install -count=1 and go test ./internal/api -run TestRexInstall -count=1: both PASS. The rex-install script checks a first install writes launch_key = \"ctrl+a>a\" in conf/rhiza.lua (rexDefaultSettings in internal/api/rex_install.go now writes ctrl+a>a, changed with the test), then seds launch_key to \"ctrl+b>x\", reinstalls with --json (written: []), cmps rhiza.lua byte for byte with the edited copy, greps the edited line once, and greps the -- settings begin / -- settings end markers. The generated Lua binds settings.launch_key (spaces turned to >) to client.mode.enter. make fmt-check vet test exit 0; make self-check fails only on stale .rhiza/rendered actor files and index from later sessions, unrelated to this leaf."
+        },
+        "handle": "rex-launch-key-setting-verified",
+        "id": "01M6486XAJ5RTVW7YPNXDRERJM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6486XAJ5RTVW7YPNWF7VC92",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6486XAJ5RTVW7YPNWF7VC92",
+        "id": "01M6486XM7H467PP04S0R9SNDF",
+        "link": "01M6486XM7H467PP04RXN32TSC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M644QXZW01JJZ0SJRZA71GWV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6486Y3AHAEZFH5DGMW6NS1Z",
+  "type": "ops",
+  "v": 1
+}
