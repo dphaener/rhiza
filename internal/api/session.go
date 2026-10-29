@@ -95,6 +95,9 @@ type SessionStartRequest struct {
 	// WritesRecord. Only a run's StartArbiter sets them.
 	writes       string
 	writesRecord bool
+	// advises is the session record's Advises. Only a run's StartAdvisor
+	// sets it.
+	advises string
 	// leaf, attempt, role and commit are the session record's Leaf,
 	// Attempt, Role and Commit. Only a run's StartLeaf sets them.
 	leaf    string
@@ -253,7 +256,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 		ID: sid, Agent: a.Name(), Change: cs.String(), Title: title, Step: step, Run: r.Run, Autonomous: r.autonomous,
 		Actor: handleSlug(a.Name() + "-" + sid[:8]), PermissionMode: r.PermissionMode, Prompt: r.Prompt,
 		Worktree: worktree, Branch: branch, Tab: tab, StartedAt: ctx.Now().UTC().Truncate(time.Second),
-		Writes: r.writes, WritesRecord: r.writesRecord, Leaf: r.leaf, Attempt: r.attempt, Role: r.role, Commit: r.commit, Model: r.model,
+		Advises: r.advises, Writes: r.writes, WritesRecord: r.writesRecord, Leaf: r.leaf, Attempt: r.attempt, Role: r.role, Commit: r.commit, Model: r.model,
 		Check: r.check, Cycle: r.cycle, Dir: r.dir, Root: r.root,
 	}
 	self := ctx.Self

@@ -201,6 +201,10 @@ func (f *fakeRunner) StartArbiter(step workflow.Step, question string, env []str
 	return "S-" + step.Name + "-" + question, nil
 }
 
+func (f *fakeRunner) StartAdvisor(step workflow.Step, asker, text string, env []string) (string, error) {
+	return "", fmt.Errorf("no advisor here")
+}
+
 func (f *fakeRunner) AddQuestion(session, text string) (Question, error) {
 	if f.askErr != nil {
 		return Question{}, f.askErr

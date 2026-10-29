@@ -1672,6 +1672,14 @@ cmp stdout describe.golden.json
                   "description": "A question: what the agent asked",
                   "type": "string"
                 },
+                "reasons": {
+                  "description": "A question: why the advisor recommends it",
+                  "type": "string"
+                },
+                "recommendation": {
+                  "description": "A question: what the advisor recommends answering; absent while it has not, or when it failed",
+                  "type": "string"
+                },
                 "run": {
                   "description": "The run it belongs to",
                   "type": "string"
@@ -9213,6 +9221,60 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "End the plan of the run RHIZA_RUN names: propose each draft among its change sets; an autonomous run whose review passed accepts each under rule autonomous",
+      "write": true
+    },
+    {
+      "name": "run.recommend",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "reasons": {
+            "description": "Why: what was read and weighed",
+            "type": "string"
+          },
+          "recommendation": {
+            "description": "What to answer, in one or two sentences",
+            "type": "string"
+          },
+          "session": {
+            "description": "The advisor session; default RHIZA_SESSION, which a launched advisor has",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reasons",
+          "recommendation"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "asker": {
+            "description": "The session that asked the question",
+            "type": "string"
+          },
+          "dry_run": {
+            "description": "True if nothing was journalled",
+            "type": "boolean"
+          },
+          "run": {
+            "description": "The run the question was asked in",
+            "type": "string"
+          },
+          "session": {
+            "description": "The advisor session",
+            "type": "string"
+          }
+        },
+        "required": [
+          "asker",
+          "run",
+          "session"
+        ],
+        "type": "object"
+      },
+      "summary": "Journal an advisor session's recommendation and reasons for the question it was launched on; it answers nothing",
       "write": true
     },
     {

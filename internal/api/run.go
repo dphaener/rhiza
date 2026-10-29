@@ -1188,6 +1188,29 @@ func (r *stepRunner) StartArbiter(step workflow.Step, question string, _ []strin
 	return resp.(SessionStartResponse).Session.ID, nil
 }
 
+// advisorPrompt is the advisor's whole prompt: the question the session
+// asked the owner (a normal run adds no question node) and the guide topic.
+const advisorPrompt = "Recommend an answer to this question the owner was asked: %s -- follow rhiza guide advisor."
+
+// advisorStep is the step name of an advisor's session.
+const advisorStep = "advisor"
+
+// StartAdvisor starts the arbiter step's adapter and mode as a session
+// that recommends an answer to the question session asker asked, text, on
+// the run's change set, and returns at once. The session answers nothing:
+// it reports its recommendation with run recommend, recorded against the
+// session it advises.
+func (r *stepRunner) StartAdvisor(step workflow.Step, asker, text string, _ []string) (string, error) {
+	req := agentStepRequest(step, r.mode, r.agent)
+	req.Step, req.Change, req.Run, req.advises = advisorStep, r.change, r.run, asker
+	req.Prompt = fmt.Sprintf(advisorPrompt, text)
+	resp, err := runSessionStart(r.ctx, req)
+	if err != nil {
+		return "", err
+	}
+	return resp.(SessionStartResponse).Session.ID, nil
+}
+
 // worktreeWorkspace opens the model as the run's worktree holds it, where
 // its sessions write; read only unless write.
 func (r *stepRunner) worktreeWorkspace(write bool) (*workspace, error) {

@@ -68,19 +68,21 @@ type InboxRequest struct{}
 
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
-	ID         string `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind       string `json:"kind" desc:"question, signoff, failed or gave-up"`
-	At         string `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
-	Run        string `json:"run" desc:"The run it belongs to"`
-	Change     string `json:"change" desc:"The change set of the run"`
-	Step       string `json:"step,omitempty" desc:"The step: the asking session's, the sign-off's, the failed step, or where the run was interrupted"`
-	Question   string `json:"question,omitempty" desc:"A question: what the agent asked"`
-	Tab        string `json:"tab,omitempty" desc:"A question: the title of the session's tab"`
-	TabBlock   string `json:"tab_block,omitempty" desc:"A question: the Rex block of the session's tab"`
-	TabSession string `json:"tab_session,omitempty" desc:"A question: the Rex session of the session's tab"`
-	Session    string `json:"session,omitempty" desc:"A question: the asking session"`
-	Detail     string `json:"detail,omitempty" desc:"A failed run: why it failed; a sign-off: what it waits for"`
-	Next       string `json:"next,omitempty" desc:"The command that clears it, when one does"`
+	ID             string `json:"id" desc:"The item's short ID: stable while the item waits"`
+	Kind           string `json:"kind" desc:"question, signoff, failed or gave-up"`
+	At             string `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
+	Run            string `json:"run" desc:"The run it belongs to"`
+	Change         string `json:"change" desc:"The change set of the run"`
+	Step           string `json:"step,omitempty" desc:"The step: the asking session's, the sign-off's, the failed step, or where the run was interrupted"`
+	Question       string `json:"question,omitempty" desc:"A question: what the agent asked"`
+	Tab            string `json:"tab,omitempty" desc:"A question: the title of the session's tab"`
+	TabBlock       string `json:"tab_block,omitempty" desc:"A question: the Rex block of the session's tab"`
+	TabSession     string `json:"tab_session,omitempty" desc:"A question: the Rex session of the session's tab"`
+	Session        string `json:"session,omitempty" desc:"A question: the asking session"`
+	Recommendation string `json:"recommendation,omitempty" desc:"A question: what the advisor recommends answering; absent while it has not, or when it failed"`
+	Reasons        string `json:"reasons,omitempty" desc:"A question: why the advisor recommends it"`
+	Detail         string `json:"detail,omitempty" desc:"A failed run: why it failed; a sign-off: what it waits for"`
+	Next           string `json:"next,omitempty" desc:"The command that clears it, when one does"`
 }
 
 // InboxResponse is the inbox.
@@ -106,6 +108,10 @@ func (r InboxResponse) Human(w io.Writer) {
 				fmt.Fprintf(w, "  tab: %s\n", it.Tab)
 			}
 			fmt.Fprintf(w, "  question: %s\n", it.Question)
+			if it.Recommendation != "" {
+				fmt.Fprintf(w, "  recommendation: %s\n", it.Recommendation)
+				fmt.Fprintf(w, "  reasons: %s\n", it.Reasons)
+			}
 		default:
 			if it.Detail != "" {
 				fmt.Fprintf(w, "  %s\n", it.Detail)
@@ -135,6 +141,9 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 			it.ID = hex.EncodeToString(sum[:])[:7]
 			items = append(items, it)
 		}
+		// A run another process holds is still going: its questions wait on
+		// the owner, but it is neither at sign-off nor interrupted.
+		live := locked(j.ID)
 		switch {
 		case st.Ended:
 			if st.Result != run.Failed || st.Abandoned() || retried {
@@ -144,9 +153,7 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 			add(InboxFailed, "", st.EndedAt, InboxItem{
 				Step: step, Detail: st.Detail, Next: "rhiza run resume --retry " + j.ID,
 			})
-		case locked(j.ID):
-			continue
-		case st.Stopped == run.SignoffWait && st.CurrentVisit > 0 && !hasSignoff(st):
+		case !live && st.Stopped == run.SignoffWait && st.CurrentVisit > 0 && !hasSignoff(st):
 			add(InboxSignoff, st.Current, st.StoppedAt, InboxItem{
 				Step: st.Current, Detail: st.Stopped, Next: "rhiza run approve " + j.ID,
 			})
@@ -158,12 +165,16 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 				if b.Block.Kind != "question" {
 					continue
 				}
-				add(InboxQuestion, b.Session, b.At, InboxItem{
+				it := InboxItem{
 					Step: b.Step, Question: b.Block.Question, Tab: b.Block.TabTitle,
 					TabBlock: b.Block.TabBlock, TabSession: b.Block.TabSession, Session: b.Session,
-				})
+				}
+				if a, ok := st.AdviceFor(b); ok {
+					it.Recommendation, it.Reasons = a.Recommendation, a.Reasons
+				}
+				add(InboxQuestion, b.Session, b.At, it)
 			}
-			if st.DaemonResumed && st.ProcessAt.After(st.DaemonResumedAt) && st.Liveness(host, alive) == run.LiveInterrupted && len(st.Blocks) == 0 {
+			if !live && st.DaemonResumed && st.ProcessAt.After(st.DaemonResumedAt) && st.Liveness(host, alive) == run.LiveInterrupted && len(st.Blocks) == 0 {
 				add(InboxGaveUp, "", st.DaemonResumedAt, InboxItem{
 					Step: st.Current, Detail: "interrupted again after the daemon's one resume",
 					Next: "rhiza run resume " + j.ID,

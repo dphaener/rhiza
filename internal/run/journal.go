@@ -26,12 +26,17 @@ const (
 	TypeArbiter    = "arbiter"
 	TypeArbitrated = "arbitrated"
 	TypeAsked      = "asked"
-	TypeAnswered   = "answered"
-	TypeMessage    = "message"
-	TypeTokens     = "tokens"
-	TypeFindings   = "findings"
-	TypeVerdict    = "verdict"
-	TypeGated      = "gated"
+	// TypeAdvisor and TypeRecommended are a normal run's advice on a
+	// question: an advisor session was launched, and it recommended an
+	// answer.
+	TypeAdvisor     = "advisor"
+	TypeRecommended = "recommended"
+	TypeAnswered    = "answered"
+	TypeMessage     = "message"
+	TypeTokens      = "tokens"
+	TypeFindings    = "findings"
+	TypeVerdict     = "verdict"
+	TypeGated       = "gated"
 	// TypeLeafSession, TypeLeafAttempt and TypeLeaf are a leaves step's
 	// entries: a leaf's session started, a session's work judged, and a
 	// leaf's outcome.
@@ -234,6 +239,11 @@ type Block struct {
 //	asked:     Step, Session, Question, Handle, Detail (an autonomous run's agent step's
 //	           session asked the owner Detail; the engine added question node Question,
 //	           handle Handle, for the arbiter)
+//	advisor:   Step, Session, Asker (the advisor's session launched on the question
+//	           Asker, a session of agent step Step, blocked on the owner)
+//	recommended: Step, Session, Asker, Text, Detail (advisor session Session
+//	           recommended Text to the question Asker asked, for the reasons
+//	           in Detail; it answers nothing)
 //	message:   Step, Session, Actor (the sender), To, Text, Summary, Structured (a session sent another a message)
 //	tokens:    Step, Session, Tokens (a reading of the session's token use; the latest counts)
 //	findings:  Findings (a plan reviewer's findings, maybe none; each findings entry
@@ -325,7 +335,9 @@ type Entry struct {
 	// the arbiter passed, and a leaf-round entry's.
 	Decision string `json:"decision,omitempty"`
 	// Handle is an asked entry's question node handle.
-	Handle     string    `json:"handle,omitempty"`
+	Handle string `json:"handle,omitempty"`
+	// Asker is an advisor or recommended entry's asking session.
+	Asker      string    `json:"asker,omitempty"`
 	To         string    `json:"to,omitempty"`
 	Text       string    `json:"text,omitempty"`
 	Summary    string    `json:"summary,omitempty"`
@@ -985,6 +997,9 @@ type State struct {
 	// Asked are the asked entries in journal order. They change nothing
 	// else in the fold.
 	Asked []Asked
+	// Advice are the advisor entries in journal order, each completed by
+	// its recommended entry. They change nothing else in the fold.
+	Advice []Advice
 	// RetryBase holds each step's Visits as they stood at the run's last
 	// retried entry. Only visits past it count against max_visits, so a
 	// retry gives every step its full cap again; visit numbers still
@@ -1380,6 +1395,10 @@ func (j Journal) State() State {
 			})
 		case TypeArbitrated:
 			st.arbitrated(e)
+		case TypeAdvisor:
+			st.Advice = append(st.Advice, Advice{Step: e.Step, Advisor: e.Session, Asker: e.Asker, At: e.At})
+		case TypeRecommended:
+			st.recommended(e)
 		case TypeAsked:
 			st.Asked = append(st.Asked, Asked{
 				Step: e.Step, Session: e.Session, Question: e.Question, Handle: e.Handle, Text: e.Detail, At: e.At,
@@ -1519,6 +1538,44 @@ func (st State) Arbitration(question string) (Arbitration, bool) {
 		}
 	}
 	return Arbitration{}, false
+}
+
+// Advice is one advisor entry, completed by its recommended entry: the
+// advisor's session Advisor was launched on the question session Asker, of
+// agent step Step, is blocked on. Recommendation is empty while the
+// advisor has recommended nothing (or never will: it failed); then it is
+// what it recommends, with Reasons. At is when the advisor was launched.
+type Advice struct {
+	Step           string
+	Advisor        string
+	Asker          string
+	Recommendation string
+	Reasons        string
+	At             time.Time
+}
+
+// recommended completes the latest advisor entry of e's advisor session
+// with its recommendation. A recommended entry with no advisor entry
+// (the journal does not show the launch) is ignored.
+func (st *State) recommended(e Entry) {
+	for i := len(st.Advice) - 1; i >= 0; i-- {
+		if a := &st.Advice[i]; a.Advisor == e.Session && a.Asker == e.Asker {
+			a.Recommendation, a.Reasons = e.Text, e.Detail
+			return
+		}
+	}
+}
+
+// AdviceFor is the advice on the question block sb is: the latest
+// recommendation, among the advisors launched on its session since the
+// block began, that has one.
+func (st State) AdviceFor(sb SessionBlock) (Advice, bool) {
+	for i := len(st.Advice) - 1; i >= 0; i-- {
+		if a := st.Advice[i]; a.Asker == sb.Session && !a.At.Before(sb.At) && a.Recommendation != "" {
+			return a, true
+		}
+	}
+	return Advice{}, false
 }
 
 // SessionBlock is one session's open block: what session, of step Step,

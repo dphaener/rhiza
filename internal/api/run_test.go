@@ -429,6 +429,10 @@ func TestRunBlockedStatusAndRexReports(t *testing.T) {
 	}
 	f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
 		f.rex.run(name, args, dir, env)
+		if sid != "" {
+			// The advisor the block launched: it asks nothing.
+			return []byte(rexWindowJSON), nil
+		}
 		sid = args[len(args)-1]
 		hook(session.StateBlocked, session.KindQuestion, "Ship it?")
 		return []byte(rexWindowJSON), nil
@@ -549,6 +553,10 @@ func TestRunBlockedWithoutRexWritesNothing(t *testing.T) {
 	var sid string
 	f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
 		f.rex.run(name, args, dir, env)
+		if sid != "" {
+			// The advisor the block launched: it asks nothing.
+			return []byte(rexWindowJSON), nil
+		}
 		sid = args[len(args)-1]
 		if _, err := sessions.Update(sid, func(r *session.Record) {
 			r.Status.Hook = &session.Report{State: session.StateBlocked, Kind: session.KindQuestion}
