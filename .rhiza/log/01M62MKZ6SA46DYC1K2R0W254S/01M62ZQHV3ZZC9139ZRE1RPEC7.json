@@ -1,0 +1,40 @@
+{
+  "actor": "01M62ZD4BFJDEYPXX8PQWVN75F",
+  "after": [
+    "01M62Z7C8WCWZD3TB77RHZAKT1"
+  ],
+  "at": "2026-10-29T04:47:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b1480a3, ran go test ./cmd/rhiza -run TestScripts/run-resume-unaccepted -count=1 -v: it PASSes. The script creates a change set, proposes, accepts and withdraws it, writes an interrupted-run journal (dead pid) for that change set, then rhiza run resume exits 3 with stderr 'is not resumed: its change set ... is withdrawn, no longer accepted' and 'next: rhiza run abandon WITHDRAWN01', and cmp shows the journal byte-identical afterwards. Diff read: internal/api/run.go runRunResume refuses with Conflictf when the run is not ended and the change set state is Terminal (landed/rejected/withdrawn/superseded), before any journal write; draft/proposed/accepted and unknown change sets pass through. go test ./... passes (one earlier run failed on a timing-budget test, a rerun passed); fmt-check and vet clean; self-check fails only on stale rendered actor files from this live run."
+        },
+        "handle": "manual-resume-refuses-unaccepted-verified",
+        "id": "01M62ZQGY4FMY2VH4TGHXC7G5A",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62ZQGY4FMY2VH4TGH5R0E7D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62ZQGY4FMY2VH4TGH5R0E7D",
+        "id": "01M62ZQH7QVE2AKG4W2RNYKYZ4",
+        "link": "01M62ZQH7QVE2AKG4W2N57KSY1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RH4605WT6153H4AZSRG87",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62MKZ6SA46DYC1K2R0W254S",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62ZQHV3ZZC9139ZRE1RPEC7",
+  "type": "ops",
+  "v": 1
+}
