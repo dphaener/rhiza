@@ -14,8 +14,8 @@ Change show, propose, accept and land, and record add, set, link and retire, run
 
 ### Out
 
+- serves [tui-writes-previewed](../../intent/rhiza-tui/tui-writes-previewed.md)
 - decided-by [tui-many-mini-apps](../../decision/tui-many-mini-apps.md)
-- implements [tui-writes-previewed](../../intent/rhiza-tui/tui-writes-previewed.md)
 
 ### In
 

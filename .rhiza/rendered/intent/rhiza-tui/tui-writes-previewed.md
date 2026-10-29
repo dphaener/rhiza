@@ -10,7 +10,7 @@ Change-set and record writes from an app show a what-if preview, and nothing is 
 
 ### In
 
-- implements [write-apps-previewed](../../capability/rhiza/write-apps-previewed.md)
+- serves [write-apps-previewed](../../capability/rhiza/write-apps-previewed.md)
 
 ## History
 
