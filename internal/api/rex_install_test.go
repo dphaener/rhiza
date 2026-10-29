@@ -195,7 +195,7 @@ func TestRexInstallRegistersAnActionPerApp(t *testing.T) {
 	}
 	script := readFile(t, filepath.Join(dir, "rhiza.lua"))
 	for _, want := range []string{
-		`name = "rhiza_app_zz-extra"`,
+		`name = "rhiza_app_zz_extra"`,
 		`title = "zz-extra"`,
 		`command = { BIN, "tui", "app", "zz-extra" }`,
 	} {
@@ -226,7 +226,7 @@ func TestRexInstallSizesEachAppLayerToItsCells(t *testing.T) {
 	}
 	script := readFile(t, filepath.Join(dir, "rhiza.lua"))
 	action := func(name string) string {
-		i := strings.Index(script, `name = "rhiza_app_`+name+`"`)
+		i := strings.Index(script, `name = "`+rexActionName(name)+`"`)
 		if i < 0 {
 			t.Fatalf("no action for %s:\n%s", name, script)
 		}
@@ -271,7 +271,7 @@ func TestRexInstallBindsAKeyPerAppInTheKeyMode(t *testing.T) {
 	}
 	for _, want := range []string{
 		`rex.mode(MODE, { exclusive = true })`,
-		`rex.bind(MODE .. "/" .. k, "rhiza_app_" .. app)`,
+		`rex.bind(MODE .. "/" .. k, "rhiza_app_" .. (app:gsub("[^a-z0-9_]", "_")))`,
 		`keys = {},`,
 	} {
 		if !strings.Contains(script, want) {

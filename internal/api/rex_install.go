@@ -98,7 +98,7 @@ local overrides = type(settings.keys) == "table" and settings.keys or {}
 for app, key in pairs(DEFAULT_KEYS) do
   local k = overrides[app]
   if type(k) ~= "string" or k == "" then k = key end
-  rex.bind(MODE .. "/" .. k, "rhiza_app_" .. app)
+  rex.bind(MODE .. "/" .. k, "rhiza_app_" .. (app:gsub("[^a-z0-9_]", "_")))
 end
 if type(settings.launch_key) == "string" and settings.launch_key ~= "" then
   rex.bind((settings.launch_key:gsub("%s+", ">")), "client.mode.enter", { name = MODE, once = true })
@@ -235,10 +235,22 @@ func rexAppActions() string {
 		}
 		cols, rows := a.Size()
 		fmt.Fprintf(&b, rexAppActionLua,
-			strconv.Quote("rhiza_app_"+a.Name), strconv.Quote(a.Name), strconv.Quote(desc),
+			strconv.Quote(rexActionName(a.Name)), strconv.Quote(a.Name), strconv.Quote(desc),
 			strconv.Quote("rhiza app "+a.Name), strconv.Quote(a.Name), cols, rows)
 	}
 	return b.String()
+}
+
+// rexActionName is the Rex action that opens the named app. Rex action
+// names must match [a-z0-9_]+, so every other byte becomes '_', as the key
+// mode's rex.bind maps it in Lua.
+func rexActionName(app string) string {
+	return "rhiza_app_" + strings.Map(func(r rune) rune {
+		if r >= 'a' && r <= 'z' || r >= '0' && r <= '9' || r == '_' {
+			return r
+		}
+		return '_'
+	}, app)
 }
 
 const rexScriptTail = `
