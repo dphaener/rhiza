@@ -1,0 +1,40 @@
+{
+  "actor": "01M62HD359TV3S9P02ZSZJ1F8T",
+  "after": [
+    "01M62GT9NZJDWK5STMTF6846AT"
+  ],
+  "at": "2026-10-29T00:41:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At commit 441f9fb I ran go test ./cmd/rhiza -run 'TestScripts/(inbox-signoff|describe-golden)$' -count=1 -v and both passed. inbox-signoff.txtar starts a review run that waits at sign-off and approves it through its inbox item: the run ends succeeded with outcome approved, and the inbox shows Nothing waits on you. A second run is sent back with one finding from a file: the outcome is changes, the fixer is spawned with the finding, and the run waits at sign-off again. On a question item, approve and request-changes each exit 2 and leave the run journal unchanged. An unknown item also exits 2, and a --dry-run approve journals nothing. Regenerating describe-golden with -update left git status clean, so the committed golden matches, and it lists inbox.approve and inbox.request-changes. make check exited 0. In the diff in internal/api/inbox.go, signoffItemRun rejects any item that is not a sign-off with a usage error (exit 2), and otherwise hands the item's run to runRunApprove or runRunRequestChanges. findInboxItem is factored out of inbox open with no change in behavior."
+        },
+        "handle": "inbox-signoff-verified",
+        "id": "01M62HNA1CZR4TYK2BT9Y6W9EW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62HNA1CZR4TYK2BT92BM09P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62HNA1CZR4TYK2BT92BM09P",
+        "id": "01M62HNA9R1G3P5QGNV1FJJF33",
+        "link": "01M62HNA9R1G3P5QGNTXYP9E1J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7R5H6HYW9WR669EGA860",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M620GA5ZK6Z854D07NH0R8WX",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62HNAPPD3Z74MMRZW77SWJZ",
+  "type": "ops",
+  "v": 1
+}
