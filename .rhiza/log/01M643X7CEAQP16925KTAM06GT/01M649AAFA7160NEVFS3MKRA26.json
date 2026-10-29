@@ -1,0 +1,29 @@
+{
+  "actor": "01M6498K6M6S4NMK29CDP1N6RC",
+  "after": [
+    "01M6496XYGGZWJKKBZAXSV720N"
+  ],
+  "at": "2026-10-29T16:53:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M62JP7BKA4N9W2HCFY5AQG4M",
+        "handle": null,
+        "id": "01M649A9ZF3SNFY812DY33WQC0",
+        "node": "01M62JP7BKA4N9W2HCFTP0CMQ4",
+        "op": "node.update",
+        "set": {
+          "acceptance": "With a fake Rex client, the installed script registers the rhiza_launch action, bound to no key, whose layer lists each registered app by name, and selecting one opens that app's modal; the launch key is bound to client.mode.enter for the rhiza key mode, not to rhiza_launch.",
+          "statement": "The rhiza_launch action, in Rex's command palette only, opens a Rex quick-launch layer, built on rexuikit's client, that lists every rhiza app; choosing one opens it in a modal. The launch key (ctrl+a a) no longer opens it: it enters the rhiza key mode."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M649AAFA7160NEVFS3MKRA26",
+  "type": "ops",
+  "v": 1
+}
