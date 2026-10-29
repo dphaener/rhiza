@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [],
+  "at": "2026-10-29T00:24:13Z",
+  "body": {
+    "intent": "Rhiza has a terminal UI built around Rex, with rexuikit, that shows the model and its change sets while holding no state of its own.",
+    "kind": "intention",
+    "sources": [],
+    "title": "Rhiza TUI on Rex"
+  },
+  "change_set": "01M62GP04A5M1HZQ13NANNEFQ4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62GP04A5M1HZQ13NANX569K",
+  "type": "open",
+  "v": 2
+}

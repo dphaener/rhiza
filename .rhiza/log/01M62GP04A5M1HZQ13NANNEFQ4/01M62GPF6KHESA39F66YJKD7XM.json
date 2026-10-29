@@ -1,0 +1,39 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M62GP04A5M1HZQ13NANX569K"
+  ],
+  "at": "2026-10-29T00:24:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Owners watch the model, its change sets and their progress in a terminal UI built on Rex with rexuikit"
+        },
+        "handle": "tui",
+        "id": "01M62GPEH6QNZFYGS8R97SKB8Z",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M62GPEH6QNZFYGS8R8CBM6DC",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJ90AVMW12YTHEXE0QZ0",
+        "id": "01M62GPESSG5NCA1F9C2X8QJSK",
+        "link": "01M62GPESSG5NCA1F9BZSRBNHH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62GPEH6QNZFYGS8R8CBM6DC",
+        "type": "constrains"
+      }
+    ]
+  },
+  "change_set": "01M62GP04A5M1HZQ13NANNEFQ4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62GPF6KHESA39F66YJKD7XM",
+  "type": "ops",
+  "v": 1
+}
