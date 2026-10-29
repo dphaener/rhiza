@@ -1,7 +1,8 @@
 # The daemon resumes an interrupted run once: one poll (--once) opens a Rex
 # tab running `rhiza run resume <run>` and journals it; a later poll, with
 # the run interrupted again, opens none. A failed run gets no tab, nor does
-# an interrupted run whose change set has landed or is still a draft. Rex is
+# an interrupted run whose change set has landed or is still a draft; those
+# two wait in the inbox. Rex is
 # faked and only logs. The journals are fixtures: the interrupted runs name a
 # dead process, the failed one finished failed.
 
@@ -45,6 +46,20 @@ stdout 'LANDED00001.jsonl:0'
 stdout 'DRAFT000001.jsonl:0'
 exec sh -c 'grep -c "\"type\":\"daemon-resumed\"" .git/rhiza/runs/INTERRUPTED1.jsonl'
 stdout '^1$'
+
+# The two it skipped wait in the inbox, naming the state and the abandon
+# command; abandoning one clears it.
+exec rhiza inbox
+stdout 'skipped run LANDED00001, change set 01M5PWGNA0MVZ1H5AXG5VQ0BY9'
+stdout 'interrupted, and not resumed: its change set is landed'
+stdout 'next: rhiza run abandon LANDED00001'
+stdout 'skipped run DRAFT000001'
+stdout 'its change set is draft'
+! stdout 'skipped run INTERRUPTED1'
+exec rhiza run abandon LANDED00001
+exec rhiza inbox
+! stdout 'LANDED00001'
+stdout 'DRAFT000001'
 
 # Interrupted again (its process is still dead): left alone.
 exec rhiza daemon --permission-mode manual --once --json

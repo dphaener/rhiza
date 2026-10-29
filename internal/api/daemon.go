@@ -176,7 +176,7 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State) error {
 		return Errorf("read runs: %v", err)
 	}
 	host, _ := os.Hostname()
-	items := inboxItems(runs, host, nil, rs.Live)
+	items := inboxItems(runs, host, nil, rs.Live, changeStateOf(ctx))
 	titles := map[string]string{}
 	for _, j := range runs {
 		if st := j.State(); st.Title != "" {
@@ -217,6 +217,8 @@ func inboxNotice(what string, it InboxItem) string {
 		return what + ": a sign-off waits on you"
 	case InboxFailed:
 		return what + ": a run failed"
+	case InboxSkipped:
+		return what + ": an interrupted run was not resumed"
 	default:
 		return what + ": the daemon gave up on a run"
 	}

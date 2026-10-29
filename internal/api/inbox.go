@@ -15,13 +15,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
 )
 
 func init() {
 	register(Operation{
 		Name:     "inbox",
-		Summary:  "List what waits on the owner across every run: questions, sign-offs, failed runs and runs the daemon gave up on, oldest first",
+		Summary:  "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on and interrupted runs it skipped because their change set is no longer accepted, oldest first",
 		Request:  reflect.TypeFor[InboxRequest](),
 		Response: reflect.TypeFor[InboxResponse](),
 		Run:      runInbox,
@@ -61,6 +63,7 @@ const (
 	InboxSignoff  = "signoff"
 	InboxFailed   = "failed"
 	InboxGaveUp   = "gave-up"
+	InboxSkipped  = "skipped"
 )
 
 // InboxRequest takes nothing.
@@ -69,7 +72,7 @@ type InboxRequest struct{}
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
 	ID             string `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string `json:"kind" desc:"question, signoff, failed or gave-up"`
+	Kind           string `json:"kind" desc:"question, signoff, failed, gave-up or skipped"`
 	At             string `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
 	Run            string `json:"run" desc:"The run it belongs to"`
 	Change         string `json:"change" desc:"The change set of the run"`
@@ -125,8 +128,9 @@ func (r InboxResponse) Human(w io.Writer) {
 
 // inboxItems are the items of the runs, oldest first. runs are the
 // repository's runs, oldest first; host and alive say which processes run
-// and locked reports a run another process holds.
-func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool) []InboxItem {
+// locked reports a run another process holds. changeState gives the state
+// of a change set and whether the log has it at all.
+func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, changeState func(change string) (string, bool)) []InboxItem {
 	items := []InboxItem{}
 	newer := map[string]bool{}
 	for i := len(runs) - 1; i >= 0; i-- {
@@ -180,6 +184,17 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 					Next: "rhiza run resume " + j.ID,
 				})
 			}
+			// The daemon resumes only a run whose change set is accepted: an
+			// interrupted run on any other waits for the owner to abandon it.
+			if !live && !st.DaemonResumed && st.Process != nil && st.Liveness(host, alive) == run.LiveInterrupted && len(st.Blocks) == 0 {
+				if state, ok := changeState(st.Change); ok && state != string(changeset.StateAccepted) {
+					add(InboxSkipped, state, st.ProcessAt, InboxItem{
+						Step:   st.Current,
+						Detail: "interrupted, and not resumed: its change set is " + state,
+						Next:   "rhiza run abandon " + j.ID,
+					})
+				}
+			}
 		}
 	}
 	slices.SortStableFunc(items, func(a, b InboxItem) int {
@@ -189,6 +204,24 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 		return strings.Compare(a.ID, b.ID)
 	})
 	return items
+}
+
+// changeStateOf gives the state of a change set by ID, and whether the log
+// has it: a made-up or unparseable ID, or a workspace that does not open,
+// reports none.
+func changeStateOf(ctx *Ctx) func(change string) (string, bool) {
+	ws, err := openCtxWorkspace(ctx)
+	return func(change string) (string, bool) {
+		if err != nil {
+			return "", false
+		}
+		cs, perr := id.Parse(change)
+		if perr != nil {
+			return "", false
+		}
+		c, ok := ws.changeSet(cs)
+		return string(c.State), ok
+	}
 }
 
 // hasSignoff reports whether the current visit of the current step is
@@ -210,7 +243,7 @@ func runInbox(ctx *Ctx, req any) (any, error) {
 		return nil, Errorf("read runs: %v", err)
 	}
 	host, _ := os.Hostname()
-	return InboxResponse{Items: inboxItems(runs, host, nil, rs.Live)}, nil
+	return InboxResponse{Items: inboxItems(runs, host, nil, rs.Live, changeStateOf(ctx))}, nil
 }
 
 // InboxOpenRequest names the item to open.
@@ -221,7 +254,7 @@ type InboxOpenRequest struct {
 // InboxOpenResponse says which tab was focused, or that it is gone.
 type InboxOpenResponse struct {
 	Item    string `json:"item" desc:"The item's short ID"`
-	Kind    string `json:"kind" desc:"question, signoff, failed or gave-up"`
+	Kind    string `json:"kind" desc:"question, signoff, failed, gave-up or skipped"`
 	Run     string `json:"run" desc:"The run it belongs to"`
 	Opened  bool   `json:"opened" desc:"True when the tab was focused"`
 	Tab     string `json:"tab,omitempty" desc:"The Rex block of the tab, when one is recorded"`
@@ -269,7 +302,7 @@ func findInboxItem(ctx *Ctx, ref string) (InboxItem, run.State, error) {
 	}
 	host, _ := os.Hostname()
 	var found []InboxItem
-	for _, it := range inboxItems(runs, host, nil, rs.Live) {
+	for _, it := range inboxItems(runs, host, nil, rs.Live, changeStateOf(ctx)) {
 		if strings.HasPrefix(it.ID, ref) {
 			found = append(found, it)
 		}
