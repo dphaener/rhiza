@@ -116,6 +116,17 @@ func TestLeafCommit(t *testing.T) {
 			t.Errorf("LeafCommit = %q, %q, %v; want %s", c, detail, err, want)
 		}
 	})
+	t.Run("Co-Authored-By in a later paragraph", func(t *testing.T) {
+		r, git := leafCommitRunner(t)
+		head, _ := r.Head()
+		git("commit", "-q", "--allow-empty", "-m", "work", "-m", "Change: CS1\nLeaf: leaf-a",
+			"-m", "Co-Authored-By: Claude <noreply@anthropic.com>")
+		want := git("rev-parse", "HEAD")
+		c, detail, err := r.LeafCommit(leaf, head)
+		if err != nil || c != want || detail != "" {
+			t.Errorf("LeafCommit = %q, %q, %v; want %s", c, detail, err, want)
+		}
+	})
 	t.Run("before start does not count", func(t *testing.T) {
 		r, git := leafCommitRunner(t)
 		git("commit", "-q", "--allow-empty", "-m", "earlier", "-m", "Leaf: leaf-a")
