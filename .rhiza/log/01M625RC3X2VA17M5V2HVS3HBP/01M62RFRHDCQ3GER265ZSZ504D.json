@@ -1,0 +1,33 @@
+{
+  "actor": "01M62RAKBQ1DJCSZB849HC2RN0",
+  "after": [
+    "01M625RC3X2VA17M5V2NQ666D7"
+  ],
+  "at": "2026-10-29T02:40:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "f2a3cb66ebd9cc7fc3bc617862e0ccb1e6e4215095d649df49611809ef6cffd1",
+          "session": "0843113a-2a52-485f-8da5-01a185854c07",
+          "summary": "The ship-change run's last step, ship, fails after close-out because `rhiza ship command` starts from the run's worktree, which close-out has removed. shipCommandDir runs git from that folder, so it falls back to the gone path. Owner decision: the ship command finds the main checkout from the git common dir, as ship's own target already does, and keeps the project-root subfolder. The owner chose this option from the agent's offered options (accepted by the owner); no owner words were typed. Still open: nothing.",
+          "title": "Ship step after close-out, with the owner"
+        },
+        "handle": "ship-step-interview",
+        "id": "01M62RFR9HBFWXACG8PXADYA88",
+        "key": null,
+        "kind": "source",
+        "node": "01M62RFR9HBFWXACG8PSYBNYNX",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M625RC3X2VA17M5V2HVS3HBP",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M62RFRHDCQ3GER265ZSZ504D",
+  "type": "ops",
+  "v": 1
+}
