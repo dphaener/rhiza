@@ -1629,6 +1629,91 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "inbox",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "description": "The items waiting on the owner, oldest first; empty when none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "at": {
+                  "description": "When it began to wait, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "change": {
+                  "description": "The change set of the run",
+                  "type": "string"
+                },
+                "detail": {
+                  "description": "A failed run: why it failed; a sign-off: what it waits for",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The item's short ID: stable while the item waits",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "question, signoff, failed or gave-up",
+                  "type": "string"
+                },
+                "next": {
+                  "description": "The command that clears it, when one does",
+                  "type": "string"
+                },
+                "question": {
+                  "description": "A question: what the agent asked",
+                  "type": "string"
+                },
+                "run": {
+                  "description": "The run it belongs to",
+                  "type": "string"
+                },
+                "session": {
+                  "description": "A question: the asking session",
+                  "type": "string"
+                },
+                "step": {
+                  "description": "The step: the asking session's, the sign-off's, the failed step, or where the run was interrupted",
+                  "type": "string"
+                },
+                "tab": {
+                  "description": "A question: the title of the session's tab",
+                  "type": "string"
+                },
+                "tab_block": {
+                  "description": "A question: the Rex block of the session's tab",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "at",
+                "change",
+                "id",
+                "kind",
+                "run"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "summary": "List what waits on the owner across every run: questions, sign-offs, failed runs and runs the daemon gave up on, oldest first",
+      "write": false
+    },
+    {
       "name": "init",
       "request": {
         "additionalProperties": false,

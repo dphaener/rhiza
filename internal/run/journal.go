@@ -1042,8 +1042,16 @@ type State struct {
 	// Process is the latest process entry's process; nil when the journal
 	// has none (a run journalled before processes were recorded).
 	Process *Process
-	// DaemonResumed is true once the daemon resumed the run.
-	DaemonResumed bool
+	// ProcessAt is when that process entry was journalled.
+	ProcessAt time.Time
+	// DaemonResumed is true once the daemon resumed the run, and
+	// DaemonResumedAt is when.
+	DaemonResumed   bool
+	DaemonResumedAt time.Time
+	// StoppedAt is when the last stopped entry was journalled, and EndedAt
+	// when the finished entry was; zero while there is none.
+	StoppedAt time.Time
+	EndedAt   time.Time
 	// checksSteps are the steps with a check-cycle entry: checks steps,
 	// whose leaves (fixers and verifiers) survive a new visit.
 	checksSteps map[string]bool
@@ -1214,9 +1222,10 @@ func (j Journal) State() State {
 			if e.Process != nil {
 				p := *e.Process
 				st.Process = &p
+				st.ProcessAt = e.At
 			}
 		case TypeDaemonResumed:
-			st.DaemonResumed = true
+			st.DaemonResumed, st.DaemonResumedAt = true, e.At
 		case TypeEntered:
 			st.Visits[e.Step]++
 			st.Current = e.Step
@@ -1340,7 +1349,7 @@ func (j Journal) State() State {
 				b = *e.Block
 			}
 			st.setBlocks(append(st.blocksBut(func(o SessionBlock) bool { return o.Session == e.Session }),
-				SessionBlock{Step: e.Step, Session: e.Session, Block: b}))
+				SessionBlock{Step: e.Step, Session: e.Session, Block: b, At: e.At}))
 		case TypeUnblocked:
 			// An unblocked entry with no session ends every block.
 			st.setBlocks(st.blocksBut(func(o SessionBlock) bool { return e.Session == "" || o.Session == e.Session }))
@@ -1433,10 +1442,10 @@ func (j Journal) State() State {
 				st.Rounds[n-1].Verdicts = append(st.Rounds[n-1].Verdicts, e.Verdicts...)
 			}
 		case TypeStopped:
-			st.Stopped = e.Detail
+			st.Stopped, st.StoppedAt = e.Detail, e.At
 		case TypeFinished:
 			st.clearBlock()
-			st.Ended = true
+			st.Ended, st.EndedAt = true, e.At
 			st.Result = e.End
 			st.Detail = e.Detail
 			st.Current = ""
@@ -1518,6 +1527,8 @@ type SessionBlock struct {
 	Step    string
 	Session string
 	Block   Block
+	// At is when its blocked entry was journalled.
+	At time.Time
 	// asked is 1 + the index in Asked of the asked entry for this block,
 	// 0 when the block has none.
 	asked int
