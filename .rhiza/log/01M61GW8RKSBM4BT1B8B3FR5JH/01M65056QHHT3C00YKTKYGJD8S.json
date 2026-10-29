@@ -1,0 +1,30 @@
+{
+  "actor": "01M6502C8YXFC5SSEYR5DQ91EF",
+  "after": [
+    "01M61S7RED8QPTXTR4Z5H2JBDN"
+  ],
+  "at": "2026-10-29T23:33:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "4ba1eee9-94f7-4b51-8950-01a18a012c9c",
+          "statement": "When a run's session has no journaled token reading yet (still running, or its transcript was unreadable), should the final printout and run status read its transcript at that moment?"
+        },
+        "handle": "question-4ba1eee9-1",
+        "id": "01M6505699D94VTB3RQMAD37H8",
+        "key": null,
+        "kind": "question",
+        "node": "01M6505699D94VTB3RQJ8ZBSTA",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61GW8RKSBM4BT1B8B3FR5JH",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M65056QHHT3C00YKTKYGJD8S",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,86 @@
+{
+  "actor": "01M6502C8YXFC5SSEYR5DQ91EF",
+  "after": [
+    "01M65056QCP7AVXK3X65ZQFV1N",
+    "01M65056QHHT3C00YKTKYGJD8S"
+  ],
+  "at": "2026-10-29T23:33:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "When a run's session has no journaled token reading yet (still running, or its transcript unreadable), should the final printout and run status read its transcript at print time? Recommended: yes, falling back to the transcript, and name the reason for any residual gap. Alternative: journal only, and name the reason instead of 'no token use recorded'."
+        },
+        "handle": "token-gap-read-at-print",
+        "id": "01M6505MMR01DJT7JVDBF3Q7JM",
+        "key": null,
+        "kind": "question",
+        "node": "01M6505MMR01DJT7JVD7XBZA79",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6505MMR01DJT7JVD7XBZA79",
+        "id": "01M6505N4XPCN7869SF780TTEB",
+        "link": "01M6505N4XPCN7869SF38DWRHP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65055ZY7G2C54ETJZGACA4G",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs a workflow whose fake agent's transcript shows known usage but whose journal has no tokens entry for it; the final printout and run status --json list that session with its counts, the totals include them, and no 'no token use recorded' line appears",
+          "statement": "A run's final printout and run status list every session's token use, including a session whose transcript shows tokens but whose journal has no reading yet, and never print 'no token use recorded' for such a session"
+        },
+        "handle": "printout-counts-used-tokens",
+        "id": "01M6505NQCFYY8Q7F22RD04V65",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6505NQCFYY8Q7F22NEN8DCE",
+        "op": "node.create",
+        "parent": "01M5WRWY9E4NFEB9ZYE7K54AXK"
+      },
+      {
+        "decision": null,
+        "from": "01M6505MMR01DJT7JVD7XBZA79",
+        "id": "01M6505PC0K3HVG91BFS510CQ5",
+        "link": "01M6505PC0K3HVG91BFNMEPVPD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505NQCFYY8Q7F22NEN8DCE",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs a session whose transcript file is missing and another still running; the printout and run status --json name each reason, the totals leave both out, and describe-golden is regenerated only if a response field changed",
+          "statement": "Where a session has no readable token use, the final printout and run status name the reason (still running, or transcript unreadable with its warning) instead of 'no token use recorded', and leave the session out of the totals"
+        },
+        "handle": "printout-gap-names-reason",
+        "id": "01M6505PVYH9A049T3Q4AEPJ2M",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6505PVYH9A049T3Q3H2T28K",
+        "op": "node.create",
+        "parent": "01M5WRWY9E4NFEB9ZYE7K54AXK"
+      },
+      {
+        "decision": null,
+        "from": "01M6505MMR01DJT7JVD7XBZA79",
+        "id": "01M6505QAF5RK1XDQAB55NHPA3",
+        "link": "01M6505QAF5RK1XDQAB4VYRNF2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505PVYH9A049T3Q3H2T28K",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M61GW8RKSBM4BT1B8B3FR5JH",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6505QZVHSB6TZ7PEQM39RZE",
+  "type": "ops",
+  "v": 1
+}
