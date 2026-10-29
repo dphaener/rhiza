@@ -1,0 +1,31 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M643X7CEAQP16925KWYC111K"
+  ],
+  "at": "2026-10-29T15:26:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The owner wants users to map the key to whatever they like, with ctrl+a>a as the default. A setting in rhiza.lua is how the current launch_key already works and how forge's prefix works.",
+          "statement": "The key that enters the rhiza key mode is a setting the user can map to any key, kept in the settings block of rhiza.lua so a reinstall keeps it; its default is ctrl+a>a.",
+          "wording": "The owner: \"I think that key should be configurable, so users can map it to whatever key that want, but ctrl-a>a is great as a default.\""
+        },
+        "handle": "native-rex-prefix-configurable",
+        "id": "01M644AP63VKTRFH6ZMYM03NTR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M644AP63VKTRFH6ZMW53XYGM",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M644APEZGB5711R08Z9TEXHH",
+  "type": "ops",
+  "v": 1
+}
