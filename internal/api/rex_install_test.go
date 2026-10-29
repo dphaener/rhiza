@@ -149,3 +149,35 @@ func TestRexInstallThroughSymlink(t *testing.T) {
 		t.Error("require not written through the link")
 	}
 }
+
+func TestRexInstallScriptOpensTheLauncher(t *testing.T) {
+	ctx, dir, _ := rexTestCtx(t)
+	ctx.Self = "/opt/my tools/rhiza"
+	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	script := readFile(t, filepath.Join(dir, "rhiza.lua"))
+	for _, want := range []string{
+		`launch_key = "ctrl+a a"`,
+		`local BIN = "/opt/my tools/rhiza"`,
+		`name = "rhiza_launch"`,
+		`options = { command = { BIN, "tui", "launch" } }`,
+		`rex.bind((settings.launch_key:gsub("%s+", ">")), "rhiza_launch")`,
+	} {
+		if !strings.Contains(script, want) {
+			t.Errorf("rhiza.lua lacks %s:\n%s", want, script)
+		}
+	}
+
+	// A changed launch key survives a reinstall, and the binary path is
+	// refreshed.
+	writePath(t, filepath.Join(dir, "rhiza.lua"), strings.Replace(script, `"ctrl+a a"`, `"ctrl+a g"`, 1))
+	ctx.Self = "/elsewhere/rhiza"
+	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	script = readFile(t, filepath.Join(dir, "rhiza.lua"))
+	if !strings.Contains(script, `launch_key = "ctrl+a g"`) || !strings.Contains(script, `local BIN = "/elsewhere/rhiza"`) {
+		t.Errorf("reinstall lost the key or kept the old binary:\n%s", script)
+	}
+}

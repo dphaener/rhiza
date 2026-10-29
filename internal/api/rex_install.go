@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -36,6 +37,43 @@ const (
 		"local settings = {\n  launch_key = \"ctrl+a a\",\n}\n" +
 		rexSettingsEnd
 )
+
+// rexLaunchLua is the part of rhiza.lua after the settings and BIN: the
+// action that opens the quick-launch layer, and the binding of the launch
+// key to it. The key is written as Rex's own sequence syntax ("ctrl+a>a")
+// or, as the setting shows it, with spaces ("ctrl+a a"). The layer runs
+// `rhiza tui launch`, which lists the apps and opens the chosen one in a
+// modal.
+const rexLaunchLua = `local TERM = "com.superlogical.terminal"
+local LAYER_BOUNDS = { 0.3, 0.25, 0.4, 0.5 }
+
+rex.action{
+  name = "rhiza_launch",
+  title = "Rhiza apps",
+  description = "Open the Rhiza quick-launch layer",
+  category = "rhiza",
+  keywords = "rhiza apps launch",
+  run = function(ctx)
+    local res, err = rex.session.new_layer{
+      bounds = LAYER_BOUNDS,
+      layout = rex.layout.block{
+        flavor = TERM .. ".shell",
+        label = "Rhiza apps",
+        options = { command = { BIN, "tui", "launch" } },
+      },
+      focus = true,
+    }
+    if err ~= nil then error(err, 0) end
+    return res
+  end,
+}
+
+if type(settings.launch_key) == "string" and settings.launch_key ~= "" then
+  rex.bind((settings.launch_key:gsub("%s+", ">")), "rhiza_launch")
+end
+
+return settings
+`
 
 // RexInstallRequest asks for the quick-launch script installed in Rex.
 type RexInstallRequest struct {
@@ -120,8 +158,9 @@ func readIfExists(p string) ([]byte, bool, error) {
 }
 
 // rexScript returns rhiza.lua's bytes, keeping the settings block of have
-// (the file now on disk, nil if none).
-func rexScript(have []byte) []byte {
+// (the file now on disk, nil if none). bin is the absolute path of rhiza,
+// run by the layer the launch key opens.
+func rexScript(have []byte, bin string) []byte {
 	settings := rexDefaultSettings
 	s := string(have)
 	if i := strings.Index(s, rexSettingsBegin); i >= 0 {
@@ -132,7 +171,8 @@ func rexScript(have []byte) []byte {
 	return []byte(rexScriptMarker + "\n" +
 		"-- Edit the settings block; a reinstall keeps it. Everything else is rewritten.\n" +
 		settings +
-		"\nreturn settings\n")
+		"\nlocal BIN = " + strconv.Quote(bin) + "\n" +
+		rexLaunchLua)
 }
 
 // rexHasRequire reports whether init.lua already loads rhiza: any line that
@@ -205,7 +245,11 @@ func runRexInstall(ctx *Ctx, req any) (any, error) {
 	}
 
 	resp := RexInstallResponse{Script: scriptPath, Init: initPath, Written: []string{}, Unchanged: []string{}}
-	wantScript := rexScript(haveScript)
+	bin := ctx.Self
+	if bin == "" {
+		bin = "rhiza"
+	}
+	wantScript := rexScript(haveScript, bin)
 	if scriptExists && bytes.Equal(haveScript, wantScript) {
 		resp.Unchanged = append(resp.Unchanged, rexScriptName)
 	} else {

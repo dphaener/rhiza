@@ -2,7 +2,7 @@
 // It is a generic frame over the operations in internal/api: it maps argv
 // to a request through the request type's struct tags, runs the operation,
 // renders the response as markdown or JSON and maps errors to exit codes.
-// It has no per-command code; only version, api call and help are its own.
+// It has no per-command code; only version, api call, tui and help are its own.
 package main
 
 import (
@@ -51,6 +51,7 @@ func usage() string {
 	}
 	rows = append(rows,
 		row{"api call", "Call an operation with a JSON request; prints JSON"},
+		row{"tui launch", "Run the Rex quick-launch layer (started by the Rex key)"},
 		row{"version", "Print the rhiza version"})
 	width := 0
 	for _, r := range rows {
@@ -87,6 +88,12 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer, getenv func(s
 		}
 		fmt.Fprintf(stdout, "rhiza %s\n", versionString())
 		return 0
+	case "tui":
+		if g.help {
+			fmt.Fprint(stdout, usage())
+			return 0
+		}
+		return tuiCommand(words, stdout, stderr, getenv)
 	case "api":
 		if g.help {
 			fmt.Fprint(stdout, usage())
