@@ -55,7 +55,9 @@ is written for them.
 
 Your prompt names the confirmed findings to fix. Fix them, nothing else, in one new
 commit with the `Change:` and `Actor:` trailers plus `Leaf: <leaf>` for a leaf fixer, or
-`Review: <run>` ($RHIZA_RUN) for the change set's fixer. Never rewrite earlier commits.
+`Review: <run>` ($RHIZA_RUN) for the change set's fixer. Keep every trailer, `Co-Authored-By:`
+included, in the commit's one final paragraph, with no blank line between them.
+Never rewrite earlier commits.
 A verifier re-run follows `rhiza guide build`.
 
 ## Outside work

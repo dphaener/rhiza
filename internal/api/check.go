@@ -43,6 +43,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -176,10 +177,10 @@ func inWorkTree(git func(...string) (string, error)) bool {
 	return err == nil && strings.TrimSpace(out) == "true"
 }
 
-// trailerLogFormat has git log write, per commit, its hash and then each
-// Change:, Actor:, Leaf: and Review: trailer as "Key: value", unfolded,
-// all separated by US (0x1f) and the commit ended by RS (0x1e).
-const trailerLogFormat = "%H%x1f%(trailers:key=Change,key=Actor,key=Leaf,key=Review,unfold,separator=%x1f)%x1e"
+// trailerLogFormat has git log write, per commit, its hash, US (0x1f) and
+// the raw message, the commit ended by RS (0x1e). git's own %(trailers)
+// reads only the last paragraph, so the message is parsed by parseTrailerLog.
+const trailerLogFormat = "%H%x1f%B%x1e"
 
 // gitCommits is HEAD's history with its trailers, newest first, for the
 // evidence-actor rule: the commits that change a file outside the store
@@ -201,23 +202,27 @@ func gitCommits(git func(...string) (string, error)) []check.Commit {
 	return parseTrailerLog(out)
 }
 
-// parseTrailerLog parses git log output in trailerLogFormat. Trailer keys
-// match case-insensitively, as git's do; values are trimmed and empty ones
+// parseTrailerLog parses git log output in trailerLogFormat. The Change:,
+// Actor:, Leaf: and Review: trailers are read from the message's trailing
+// run of trailer paragraphs (see trailerRun), so a Co-Authored-By in a later
+// paragraph does not hide them, while prose and the earlier commits' trailers
+// in a squash merge's body are not read. Trailer keys match
+// case-insensitively, as git's do; values are trimmed and empty ones
 // dropped. The result is never nil.
 func parseTrailerLog(out string) []check.Commit {
 	cs := []check.Commit{}
 	for _, rec := range strings.Split(out, "\x1e") {
-		fields := strings.Split(strings.TrimSpace(rec), "\x1f")
-		if fields[0] == "" {
+		hash, msg, _ := strings.Cut(strings.TrimSpace(rec), "\x1f")
+		if hash == "" {
 			continue
 		}
-		c := check.Commit{Hash: fields[0]}
-		for _, f := range fields[1:] {
-			k, v, ok := strings.Cut(f, ":")
-			if v = strings.TrimSpace(v); !ok || v == "" {
+		c := check.Commit{Hash: hash}
+		for _, t := range trailerRun(msg) {
+			k, v, _ := strings.Cut(t, ":")
+			if v = strings.TrimSpace(v); v == "" {
 				continue
 			}
-			switch strings.ToLower(strings.TrimSpace(k)) {
+			switch strings.ToLower(k) {
 			case "change":
 				c.Changes = append(c.Changes, v)
 			case "actor":
@@ -231,6 +236,47 @@ func parseTrailerLog(out string) []check.Commit {
 		cs = append(cs, c)
 	}
 	return cs
+}
+
+var (
+	// trailerKey is a trailer line's key and colon, as git spells one.
+	trailerKey = regexp.MustCompile(`^[A-Za-z0-9-]+:`)
+	// blankLines separates a message's paragraphs.
+	blankLines = regexp.MustCompile(`\r?\n\s*\n`)
+)
+
+// trailerRun is the trailers, unfolded, of msg's trailing run of trailer
+// paragraphs: the paragraphs after the subject's, from the last one back to
+// the first that is not wholly trailers. A trailer paragraph is git's: every
+// line a "Key: value" trailer or, indented, the previous one's continuation.
+func trailerRun(msg string) []string {
+	paras := blankLines.Split(strings.TrimSpace(msg), -1)
+	var run []string
+	for i := len(paras) - 1; i > 0; i-- {
+		ts, ok := trailerParagraph(paras[i])
+		if !ok {
+			break
+		}
+		run = append(ts, run...)
+	}
+	return run
+}
+
+// trailerParagraph is paragraph p's trailers, unfolded, and whether p is
+// wholly trailers.
+func trailerParagraph(p string) ([]string, bool) {
+	var ts []string
+	for _, line := range strings.Split(strings.TrimRight(p, "\r\n"), "\n") {
+		switch {
+		case trailerKey.MatchString(line):
+			ts = append(ts, line)
+		case len(ts) > 0 && strings.TrimLeft(line, " \t") != line:
+			ts[len(ts)-1] += " " + strings.TrimSpace(line)
+		default:
+			return nil, false
+		}
+	}
+	return ts, true
 }
 
 // logAt lists the log entries at git revision rev: one ls-tree of the

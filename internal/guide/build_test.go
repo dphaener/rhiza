@@ -37,3 +37,28 @@ func TestBuildText(t *testing.T) {
 		t.Errorf("build names an agent product")
 	}
 }
+
+// finalParagraph is the last blank-line-separated paragraph of s.
+func finalParagraph(s string) string {
+	s = strings.TrimSpace(s)
+	if i := strings.LastIndex(s, "\n\n"); i >= 0 {
+		return s[i+2:]
+	}
+	return s
+}
+
+func TestBuildTrailersInOneFinalParagraph(t *testing.T) {
+	build, _ := Lookup("build")
+	i := strings.Index(build.Body, "\nStream CSV exports\n")
+	if i < 0 {
+		t.Fatal("build: no builder commit example")
+	}
+	example := build.Body[i:]
+	example = example[:strings.Index(example, "\n```")]
+	last := finalParagraph(example)
+	for _, tr := range []string{"Change: ", "Actor: ", "Leaf: export-csv", "Co-Authored-By: "} {
+		if !strings.Contains(last, tr) {
+			t.Errorf("build example: final paragraph %q lacks %q", last, tr)
+		}
+	}
+}

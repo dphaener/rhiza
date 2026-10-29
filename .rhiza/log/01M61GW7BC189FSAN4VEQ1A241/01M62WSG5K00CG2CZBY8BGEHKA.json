@@ -1,0 +1,40 @@
+{
+  "actor": "01M62WE9FYMJEKF742RPZMBRVX",
+  "after": [
+    "01M62WEKCFCYA2W06S9700K29Z"
+  ],
+  "at": "2026-10-29T03:55:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8fbb4af, go test ./internal/guide passes and make check exits 0. Diff read: build.md's commit example now ends with Co-Authored-By in the same paragraph as Change:/Actor:/Leaf:, and review.md's fixer instruction says to keep every trailer, Co-Authored-By included, in one final paragraph with no blank line. Mutations in a scratch copy: a blank line before Co-Authored-By in the build example makes TestBuildTrailersInOneFinalParagraph fail (final paragraph lacks Change:, Actor:, Leaf: export-csv). Rewriting the fixer instruction to put Co-Authored-By in its own paragraph after a blank line makes TestReviewFixerTrailersInOneFinalParagraph fail (no 'one final paragraph', no 'no blank line')."
+        },
+        "handle": "guides-one-final-paragraph-verified",
+        "id": "01M62WSFDSKBMSCD3Y64M1Y5RH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62WSFDSKBMSCD3Y610TPBGM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62WSFDSKBMSCD3Y610TPBGM",
+        "id": "01M62WSFQ3GA34Y8QTHER30WH1",
+        "link": "01M62WSFQ3GA34Y8QTHDQGNX7K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RE2VD8QDWJ0BQN4Y56F9K",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW7BC189FSAN4VEQ1A241",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62WSG5K00CG2CZBY8BGEHKA",
+  "type": "ops",
+  "v": 1
+}

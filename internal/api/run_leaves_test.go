@@ -116,6 +116,39 @@ func TestLeafCommit(t *testing.T) {
 			t.Errorf("LeafCommit = %q, %q, %v; want %s", c, detail, err, want)
 		}
 	})
+	t.Run("Co-Authored-By in a later paragraph", func(t *testing.T) {
+		r, git := leafCommitRunner(t)
+		head, _ := r.Head()
+		git("commit", "-q", "--allow-empty", "-m", "work", "-m", "Change: CS1\nLeaf: leaf-a",
+			"-m", "Co-Authored-By: Claude <noreply@anthropic.com>")
+		want := git("rev-parse", "HEAD")
+		c, detail, err := r.LeafCommit(leaf, head)
+		if err != nil || c != want || detail != "" {
+			t.Errorf("LeafCommit = %q, %q, %v; want %s", c, detail, err, want)
+		}
+	})
+	t.Run("a fixer's commit after the builder's, Co-Authored-By in a later paragraph", func(t *testing.T) {
+		r, git := leafCommitRunner(t)
+		git("commit", "-q", "--allow-empty", "-m", "work", "-m", "Change: CS1\nLeaf: leaf-a\n\nCo-Authored-By: Claude <noreply@anthropic.com>")
+		head, _ := r.Head()
+		git("commit", "-q", "--allow-empty", "-m", "fix", "-m", "Change: CS1\nLeaf: leaf-a",
+			"-m", "Co-Authored-By: Claude <noreply@anthropic.com>")
+		want := git("rev-parse", "HEAD")
+		c, detail, err := r.LeafCommit(leaf, head)
+		if err != nil || c != want || detail != "" {
+			t.Errorf("LeafCommit = %q, %q, %v; want %s", c, detail, err, want)
+		}
+	})
+	t.Run("another leaf with Co-Authored-By in a later paragraph", func(t *testing.T) {
+		r, git := leafCommitRunner(t)
+		head, _ := r.Head()
+		git("commit", "-q", "--allow-empty", "-m", "work", "-m", "Leaf: leaf-b",
+			"-m", "Co-Authored-By: Claude <noreply@anthropic.com>")
+		c, detail, err := r.LeafCommit(leaf, head)
+		if err != nil || c != "" || detail != "new commits name another leaf: leaf-b" {
+			t.Errorf("LeafCommit = %q, %q, %v", c, detail, err)
+		}
+	})
 	t.Run("before start does not count", func(t *testing.T) {
 		r, git := leafCommitRunner(t)
 		git("commit", "-q", "--allow-empty", "-m", "earlier", "-m", "Leaf: leaf-a")
@@ -180,10 +213,14 @@ func (noSleep) Sleep(time.Duration) {}
 func TestLeafCommitEngine(t *testing.T) {
 	sr, git := leafCommitRunner(t)
 	g := &gitLeafRunner{stepRunner: sr, git: git,
-		leaves: []run.Leaf{{ID: "L1", Handle: "leaf-none"}, {ID: "L2", Handle: "leaf-other"}, {ID: "L3", Handle: "leaf-own"}},
+		leaves: []run.Leaf{{ID: "L1", Handle: "leaf-none"}, {ID: "L2", Handle: "leaf-other"}, {ID: "L3", Handle: "leaf-own"},
+			{ID: "L4", Handle: "leaf-split-other"}, {ID: "L5", Handle: "leaf-split"}},
 		commits: map[string][]string{
 			"leaf-other": {"work\n\nLeaf: leaf-x"},
 			"leaf-own":   {"work\n\nLeaf: leaf-own"},
+			// Co-Authored-By in a paragraph of its own after the trailers.
+			"leaf-split-other": {"work\n\nChange: CS1\nLeaf: leaf-x\n\nCo-Authored-By: Claude <noreply@anthropic.com>"},
+			"leaf-split":       {"work\n\nChange: CS1\nLeaf: leaf-split\n\nCo-Authored-By: Claude <noreply@anthropic.com>"},
 		},
 	}
 	src := "[step.build]\nkind = \"leaves\"\n[step.build.builder]\nprompt = \"b\"\n[step.build.verifier]\nprompt = \"v\"\n"
@@ -219,7 +256,8 @@ func TestLeafCommitEngine(t *testing.T) {
 			t.Errorf("%s started a verifier", h)
 		}
 	}
-	own := git("rev-parse", "HEAD")
+	split := git("log", "-1", "--format=%H", "--grep=^Leaf: leaf-split$")
+	own := git("log", "-1", "--format=%H", "--grep=^Leaf: leaf-own$")
 	l := byHandle["leaf-own"]
 	if j, _ := l.Judged("builder", 1); j.Outcome != "pass" || j.Commit != own {
 		t.Errorf("leaf-own builder = %+v, want pass with %s", j, own)
@@ -230,8 +268,16 @@ func TestLeafCommitEngine(t *testing.T) {
 	if l.Outcome != run.LeafPassed {
 		t.Errorf("leaf-own = %+v", l)
 	}
+	if j, _ := byHandle["leaf-split-other"].Judged("builder", 1); j.Outcome != "fail" || j.Detail != "new commits name another leaf: leaf-x" {
+		t.Errorf("leaf-split-other builder = %+v", j)
+	}
+	if l := byHandle["leaf-split"]; l.Outcome != run.LeafPassed {
+		t.Errorf("leaf-split = %+v, want passed", l)
+	} else if j, _ := l.Judged("builder", 1); j.Outcome != "pass" || j.Commit != split {
+		t.Errorf("leaf-split builder = %+v, want pass with %s", j, split)
+	}
 	spec := g.specs[len(g.specs)-1]
-	if spec.Role != "verifier" || spec.Commit != own || !slices.Contains(spec.Env, run.EnvCommit+"="+own) {
+	if spec.Role != "verifier" || spec.Commit != split || !slices.Contains(spec.Env, run.EnvCommit+"="+split) {
 		t.Errorf("verifier spec = %+v", spec)
 	}
 }

@@ -1,0 +1,40 @@
+{
+  "actor": "01M62X0M97QKJAAFPY6KM1R3T6",
+  "after": [
+    "01M62WSG5K00CG2CZBY8BGEHKA"
+  ],
+  "at": "2026-10-29T04:00:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d773501, ran go test ./internal/api -run 'TestLeafCommit|TestFixLeaf' -count=1 -v: all PASS. Builder half (01c1573): TestLeafCommitEngine runs run.Engine over a real git repo; leaf-split's builder commit (Leaf: in the first trailer paragraph, Co-Authored-By in its own final paragraph) passes with that commit and the verifier starts on it; leaf-split-other (same shape, Leaf: leaf-x) fails with 'new commits name another leaf: leaf-x'. Fixer half (d773501, fixing attempt 1's finding): TestFixLeafEngineSplitTrailers drives the review engine's fixer to commit Change:/Leaf: leaf-a then a separate Co-Authored-By paragraph (asserted in the commit body); the fixer judgement passes on that commit, the verifier starts on it and the step passes. TestFixLeafEngineSplitOtherLeaf: the same split commit naming leaf-x fails the fixer with 'another leaf: leaf-x' and no verifier starts. Read both diffs: test-only changes. make check: fmt, vet and test pass; self-check fails only on stale .rhiza/rendered actor files from this run, unrelated to the leaf."
+        },
+        "handle": "build-leaf-split-trailers-verified",
+        "id": "01M62X1TP1FKYBVRD9YPJK3SFA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62X1TP1FKYBVRD9YNJH4TG5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62X1TP1FKYBVRD9YNJH4TG5",
+        "id": "01M62X1TZPCTMAE2DFT9DPHQPF",
+        "link": "01M62X1TZPCTMAE2DFT8PGG1X1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RE25K7P1CD4GD7SP27CNM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW7BC189FSAN4VEQ1A241",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62X1VE8123Q9MW34BK5SD1D",
+  "type": "ops",
+  "v": 1
+}

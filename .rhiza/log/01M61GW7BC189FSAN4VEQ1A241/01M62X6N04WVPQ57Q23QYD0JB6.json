@@ -1,0 +1,63 @@
+{
+  "actor": "01M62X2FJCD18JE8K2QENT0YQX",
+  "after": [
+    "01M62X1VE8123Q9MW34BK5SD1D"
+  ],
+  "at": "2026-10-29T04:03:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4c2751d, built ./cmd/rhiza and the merge-base's binary, and in a scratch git repo (clean env, own HOME) added capability leaf, committed leaf.go with 'Change: <cs> / Actor: builder / Leaf: leaf', a blank line, then 'Co-Authored-By: Agent <a@x>', and wrote Evidence verifying leaf as builder. rhiza check: the base binary printed only 'ok' (trailers missed); the head binary warned 'evidence-actor ... its actor builder wrote that capability in commit 45ebb6f70c7f', so Change:/Actor:/Leaf: were read from the split paragraph. With all trailers in one final paragraph the head binary warned the same way; with the split shape naming Leaf: other it did not warn."
+        },
+        "handle": "commit-trailers-every-paragraph-qa-1",
+        "id": "01M62X6KT0Q1SA948N0KY92DT9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62X6KT0Q1SA948N0HR27EBY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62X6KT0Q1SA948N0HR27EBY",
+        "id": "01M62X6M2755P579T0P7FTQYR0",
+        "link": "01M62X6M2755P579T0P5A72PXM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RE1Q8DH5JWM6YHEGZ0G15",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4c2751d, ran the built binary's rhiza guide build: its builder example ends Change:/Actor:/Leaf:/Co-Authored-By: in one paragraph, followed by 'Keep every trailer, Co-Authored-By: included, in the one final paragraph, with no blank line between them.' rhiza guide review's Fixer section says the same for the fixer's trailers. go test ./internal/guide -count=1: ok."
+        },
+        "handle": "guides-one-final-paragraph-qa-1",
+        "id": "01M62X6MAEDFKH7753P2TNEZHC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62X6MAEDFKH7753P2BKTPSS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62X6MAEDFKH7753P2BKTPSS",
+        "id": "01M62X6MJN4GT4NAJSKJC9BGDT",
+        "link": "01M62X6MJN4GT4NAJSKHH8S62F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RE2VD8QDWJ0BQN4Y56F9K",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW7BC189FSAN4VEQ1A241",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62X6N04WVPQ57Q23QYD0JB6",
+  "type": "ops",
+  "v": 1
+}
