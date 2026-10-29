@@ -1,0 +1,29 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M650MRPH9F6XPWDDH1ZEVXEZ"
+  ],
+  "at": "2026-10-29T23:43:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on fakes-only-in-build-and-review): The change set intent says the build and review guides tell verifiers and checks to test runs with fakes only, never real Rex, agents or gh. The decision fakes-only-in-build-and-review and the leaf review-guide-fakes-only now carve out the review qa check, which runs the built binary hands-on, and internal/guide/text/review.md:15 says the same. A qa check is a check, so the intent and the decision disagree on what the review guide must say. Either the intent or the decision needs the qa exemption written in the same words. The critic confirmed it: Intent 01M61GW73 says the build and review guides tell verifiers and checks to test runs with fakes only, never real Rex, agents or gh, with no qa exception. Decision fakes-only-in-build-and-review (01M6505FZ) and leaf review-guide-fakes-only (01M6505MN) carve out the review qa check, which runs the built binary hands-on. The code already carries that exception: internal/guide/text/review.md:15 says qa is hands-on with the built binary and fakes alone do not count, and internal/guide/review_test.go:24 pins it. The intent is the broadest statement and disagrees with its own decision on what the review guide must say, so the finding is real. The fix belongs in the intent, or the intent and decision need the qa exemption in the same words. How should it be settled?"
+        },
+        "handle": "review-01m65027-r3-f1",
+        "id": "01M650QT3B8H0HHWXEZPGHRRRJ",
+        "key": null,
+        "kind": "question",
+        "node": "01M650QT3B8H0HHWXEZKP24WPY",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61GW73H05YHE4DK0CXFD1KH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M650QTMKZ3WHTAAD06ME0EGC",
+  "type": "ops",
+  "v": 1
+}
