@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [],
+  "at": "2026-10-29T23:51:20Z",
+  "body": {
+    "intent": "A run's sessions open as tiled panes in one Rex window per run, not a new window each, so no Rex session reaches its 64-window limit",
+    "kind": "intention",
+    "sources": [],
+    "title": "Tiled run sessions"
+  },
+  "change_set": "01M6516H25WW66JF8N10Q83RJ4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6516H25WW66JF8N11MHBDGV",
+  "type": "open",
+  "v": 2
+}
