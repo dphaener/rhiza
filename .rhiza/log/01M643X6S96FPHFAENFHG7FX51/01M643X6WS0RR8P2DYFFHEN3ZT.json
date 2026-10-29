@@ -1,0 +1,42 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M643X6S96FPHFAENFJ0YBY7B"
+  ],
+  "at": "2026-10-29T15:19:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "That works, but that isn't what I was looking for. That's ok though it will work for now. We can fix it in a future changeset.",
+              "where": "orchestrator session, after the TUI install"
+            },
+            {
+              "by": "owner",
+              "text": "the forge-cli opens the forge quick actions entirely differently, with a lua script, natively in Rex.",
+              "where": "orchestrator session, after the TUI install"
+            }
+          ],
+          "summary": "After rhiza rex install, the owner tried the ctrl+a a launcher (one Rex action opening a terminal picker) and said it was not what they were looking for: forge-cli opens its quick actions natively in Rex, from a Lua script.",
+          "title": "Owner on the installed TUI launcher, 2026-10-29"
+        },
+        "handle": "native-rex-launch-owner-words",
+        "id": "01M643X6FYHZDDRBEPMTMG5MWS",
+        "key": null,
+        "kind": "source",
+        "node": "01M643X6FYHZDDRBEPMQTZ3FDG",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M643X6S96FPHFAENFHG7FX51",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M643X6WS0RR8P2DYFFHEN3ZT",
+  "type": "ops",
+  "v": 1
+}

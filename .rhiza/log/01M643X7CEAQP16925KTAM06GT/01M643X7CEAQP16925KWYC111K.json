@@ -1,0 +1,18 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-29T15:19:27Z",
+  "body": {
+    "intent": "Rhiza's apps open natively in Rex, as forge's quick actions do: rhiza rex install writes a Lua script that registers each app as its own Rex action (in the command palette) and a rhiza key mode with one key per app, and each action opens its app straight away in a layer sized to it, with no picker in between.",
+    "kind": "intention",
+    "sources": [
+      "01M643X6FYHZDDRBEPMQTZ3FDG"
+    ],
+    "title": "Native Rex actions for apps"
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M643X7CEAQP16925KWYC111K",
+  "type": "open",
+  "v": 2
+}
