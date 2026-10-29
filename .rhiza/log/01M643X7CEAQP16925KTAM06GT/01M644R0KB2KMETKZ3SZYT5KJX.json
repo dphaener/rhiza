@@ -1,0 +1,198 @@
+{
+  "actor": "01M644M2GNY4RY70YCVVD0SPA7",
+  "after": [
+    "01M644QHZ626QM65PJD5AYZVJ5"
+  ],
+  "at": "2026-10-29T15:34:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quote": "the forge-cli opens the forge quick actions entirely differently, with a lua script, natively in Rex.",
+          "statement": "Each rhiza app is its own Rex action, opened from the command palette and by the key mode, with no picker in between"
+        },
+        "handle": "rex-app-own-action",
+        "id": "01M644QVPPBD4ZKTT1YSRJQYDS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M644QVPPBD4ZKTT1YP9SMGAS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M644QVPPBD4ZKTT1YP9SMGAS",
+        "id": "01M644QVZM1RQ2SQS8GERFWHTP",
+        "link": "01M644QVZM1RQ2SQS8GEP93XTD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M644QHPB5W2EYTATMCZFJ82T",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A rex-install script test: after rhiza rex install, rhiza.lua has one rex.action per registered app (readapps, writeapps and modelapp), each titled with the app's name and running rhiza tui app <name>; a test that registers one more app and reinstalls finds its action in rhiza.lua",
+          "statement": "Each rhiza app is a Rex action of its own in the command palette, titled with the app's name, and running it runs that app"
+        },
+        "handle": "rex-app-actions",
+        "id": "01M644QW8GJBD8KTJ8Q3KVMJRE",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M644QW8GJBD8KTJ8Q00MMNYY",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M644QW8GJBD8KTJ8Q00MMNYY",
+        "id": "01M644QWHH7MAFC8YP5RBVDQPN",
+        "link": "01M644QWHH7MAFC8YP5MDJMNGV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M644QVPPBD4ZKTT1YP9SMGAS",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A rex-install script test: for an app registered with Cols and Rows, its action's layer bounds come from those cells, and its action runs rhiza tui app <name> with no tui launch step",
+          "statement": "Each app's action opens it straight away in a Rex layer sized to that app's own columns and rows, with no list step first"
+        },
+        "handle": "rex-app-layer-sized",
+        "id": "01M644QWTP8H6S0B5RS94BH6PQ",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M644QWTP8H6S0B5RS70QCBM2",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M644QWTP8H6S0B5RS70QCBM2",
+        "id": "01M644QX42449QJ7RP10FZ4VA8",
+        "link": "01M644QX42449QJ7RP0Y852663",
+        "note": "",
+        "op": "link.create",
+        "to": "01M644QVPPBD4ZKTT1YP9SMGAS",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A rex-install script test: rhiza.lua binds one key in the key mode for each registered app, each bound to that app's action, and the keys are the ones the owner chose (see the key question)",
+          "statement": "Pressing the launch key enters a rhiza key mode with one key per app, and each key opens that app's action"
+        },
+        "handle": "rex-key-mode",
+        "id": "01M644QXDASM0DPKA3VQFG51WH",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M644QXDASM0DPKA3VKKFGJD7",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M644QXDASM0DPKA3VKKFGJD7",
+        "id": "01M644QXP42Z6C0ZYPVR2DBYCS",
+        "link": "01M644QXP42Z6C0ZYPVQ7H5H77",
+        "note": "",
+        "op": "link.create",
+        "to": "01M644AP63VKTRFH6ZMW53XYGM",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A rex-install script test: a first install writes launch_key = \"ctrl+a>a\" (today the code writes ctrl+a a, the same key in the setting's spacing, so the test and the default change together); the owner then edits launch_key, a reinstall leaves that edited line byte for byte, and the settings block is kept",
+          "statement": "The key that enters the rhiza key mode is launch_key in rhiza.lua's settings block, default ctrl+a>a, and a reinstall keeps the value the owner set"
+        },
+        "handle": "rex-launch-key-setting",
+        "id": "01M644QXZW01JJZ0SJS14NY026",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M644QXZW01JJZ0SJRZA71GWV",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M644QXZW01JJZ0SJRZA71GWV",
+        "id": "01M644QY9KVKR19SVZYTCKHTPH",
+        "link": "01M644QY9KVKR19SVZYR6CNDVF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M644AP63VKTRFH6ZMW53XYGM",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Which key does each app get in the rhiza key mode: its first letter (several apps share one) or a key the owner sets per app in the settings block?"
+        },
+        "handle": "key-per-app",
+        "id": "01M644QYKDPX7RCMG3MYDTT617",
+        "key": null,
+        "kind": "question",
+        "node": "01M644QYKDPX7RCMG3MVFFD461",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M644QYKDPX7RCMG3MVFFD461",
+        "id": "01M644QYWCMZ5JTX15H9Q2TS7H",
+        "link": "01M644QYWCMZ5JTX15H66ESAVS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M644QXDASM0DPKA3VKKFGJD7",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Does the all-apps picker (rhiza tui launch, the rhiza_launch action) stay beside the per-app actions, or is it removed?"
+        },
+        "handle": "picker-kept",
+        "id": "01M644QZ5JJ3ZMSF567K6G9M2Y",
+        "key": null,
+        "kind": "question",
+        "node": "01M644QZ5JJ3ZMSF567GHZXCXP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M644QZ5JJ3ZMSF567GHZXCXP",
+        "id": "01M644QZH1D574SKPZMV8S31SJ",
+        "link": "01M644QZH1D574SKPZMQXGAPVQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M643X7CEAQP16925KTAM06GT",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "This change set's intent has no intent node yet: does it supersede tui-launcher (the picker intent), or add beside it, and which intent do these leaves serve?"
+        },
+        "handle": "native-intent-served",
+        "id": "01M644QZSWE52YYK67FZ2M203S",
+        "key": null,
+        "kind": "question",
+        "node": "01M644QZSWE52YYK67FX8B54SK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M644QZSWE52YYK67FX8B54SK",
+        "id": "01M644R05CE72EG8NSTYQ6GASE",
+        "link": "01M644R05CE72EG8NSTX2GTMC2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M643X7CEAQP16925KTAM06GT",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M644R0KB2KMETKZ3SZYT5KJX",
+  "type": "ops",
+  "v": 1
+}

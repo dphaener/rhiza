@@ -1,0 +1,31 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M646RTKYWNMZRT9Z7JM0BAK1"
+  ],
+  "at": "2026-10-29T16:09:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The owner chose to remove the picker, so the picker intent no longer holds; one new intent states what replaces it, and every leaf serves it.",
+          "statement": "The change set adds intent tui-native-actions under rhiza-tui, which supersedes tui-launcher (the picker); its four leaves serve tui-native-actions.",
+          "wording": "decided by the orchestrator acting as arbiter, following the owner's pick \"Remove it\" for the picker"
+        },
+        "handle": "native-actions-supersede-launcher",
+        "id": "01M646RV3WM2456NBG305QZEVH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M646RV3WM2456NBG2ZX59ZM2",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M646RVDR81N198F3VPZ6BTG7",
+  "type": "ops",
+  "v": 1
+}

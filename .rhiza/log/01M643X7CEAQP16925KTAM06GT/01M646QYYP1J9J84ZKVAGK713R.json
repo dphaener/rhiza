@@ -1,0 +1,31 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M646QY5NEVDRDXB9M72GCFFB"
+  ],
+  "at": "2026-10-29T16:09:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The owner tried the picker and said it was not what they were looking for; with each app its own action and key, the picker adds a step and nothing else.",
+          "statement": "The all-apps picker (rhiza tui launch and the rhiza_launch action) is removed, as forge has none: each app opens only from its own key in the rhiza mode or from its own action in Rex's command palette. The capabilities that describe the picker are retired or revised to match.",
+          "wording": "the orchestrator's option, picked by the owner: \"Remove it\""
+        },
+        "handle": "rex-picker-removed",
+        "id": "01M646QYNA203KTTF2VN0BP36G",
+        "key": null,
+        "kind": "decision",
+        "node": "01M646QYNA203KTTF2VMRW575K",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M646QYYP1J9J84ZKVAGK713R",
+  "type": "ops",
+  "v": 1
+}

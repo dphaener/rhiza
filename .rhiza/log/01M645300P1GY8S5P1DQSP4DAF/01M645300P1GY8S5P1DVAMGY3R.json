@@ -1,0 +1,15 @@
+{
+  "actor": "01M64520R04PG69592Y223ZYR3",
+  "after": [],
+  "at": "2026-10-29T15:40:05Z",
+  "body": {
+    "intent": "apply /private/tmp/claude-501/-Users-darinhaener-code-rhiza-native-rex-actions-for-apps/7f40841e-0b46-48e3-9f80-01a188510162/scratchpad/fix-tui-launcher.json",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M645300P1GY8S5P1DQSP4DAF",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M645300P1GY8S5P1DVAMGY3R",
+  "type": "open",
+  "v": 1
+}

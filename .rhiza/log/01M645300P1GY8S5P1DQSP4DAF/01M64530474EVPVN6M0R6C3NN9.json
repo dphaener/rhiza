@@ -1,0 +1,28 @@
+{
+  "actor": "01M64520R04PG69592Y223ZYR3",
+  "after": [
+    "01M645300P1GY8S5P1DVAMGY3R"
+  ],
+  "at": "2026-10-29T15:40:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M62JMJ6AYPDDEEFNPH9NGJQB",
+        "handle": null,
+        "id": "01M6452ZHYMHASF07DW2JAXSP2",
+        "node": "01M62JMJ6AYPDDEEFNPG9WG3E0",
+        "op": "node.update",
+        "set": {
+          "statement": "ctrl-a>a opens a Rex quick-launch layer that lists every rhiza app, and choosing one opens it in a modal"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M645300P1GY8S5P1DQSP4DAF",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M64530474EVPVN6M0R6C3NN9",
+  "type": "ops",
+  "v": 1
+}
