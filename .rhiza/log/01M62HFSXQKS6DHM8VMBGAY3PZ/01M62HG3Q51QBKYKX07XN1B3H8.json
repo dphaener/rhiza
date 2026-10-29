@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M62HFSXQKS6DHM8VMCBHTZK1"
+  ],
+  "at": "2026-10-29T00:38:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Owners work with the model and its commands through a terminal UI built on Rex with rexuikit"
+        },
+        "handle": "tui",
+        "id": "01M62HG20CEFKEAY860JWCRSS8",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M62HG20CEFKEAY860HKMD53Z",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      },
+      {
+        "fields": {
+          "statement": "The model, its change sets and their progress are shown in the terminal UI"
+        },
+        "handle": "tui-model-view",
+        "id": "01M62HG28KBXAKRYH78X7NG4E2",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M62HG28KBXAKRYH78TJH6ZF8",
+        "op": "node.create",
+        "parent": "01M62HG20CEFKEAY860HKMD53Z"
+      },
+      {
+        "fields": {
+          "statement": "Each common rhiza command runs as a tiny terminal app that takes its arguments, runs it and shows the result visualized, as a modal or pop-up inside Rex"
+        },
+        "handle": "tui-command-apps",
+        "id": "01M62HG2GXY1P8D6V837WDSB1C",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M62HG2GXY1P8D6V8372XB7V6",
+        "op": "node.create",
+        "parent": "01M62HG20CEFKEAY860HKMD53Z"
+      },
+      {
+        "fields": {
+          "quote": "\"Think of them as tiny TUI apps that just run as modals or pop ups inside of Rex.\" (owner, 2026-10-28)",
+          "statement": "Common commands are tiny TUI apps that run as modals or pop-ups inside Rex"
+        },
+        "handle": "tui-apps-in-rex",
+        "id": "01M62HG2S85T0BX08XYHCJENK9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M62HG2S85T0BX08XYDRY8FW6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62HG2GXY1P8D6V8372XB7V6",
+        "id": "01M62HG31N0KT1DBTT2TR102V5",
+        "link": "01M62HG31N0KT1DBTT2R0CAVCP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62HG2S85T0BX08XYDRY8FW6",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWRJ90AVMW12YTHEXE0QZ0",
+        "id": "01M62HG3A0EEVTZG1TN99JKC99",
+        "link": "01M62HG3A0EEVTZG1TN8ZAPFEG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62HG20CEFKEAY860HKMD53Z",
+        "type": "constrains"
+      }
+    ]
+  },
+  "change_set": "01M62HFSXQKS6DHM8VMBGAY3PZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62HG3Q51QBKYKX07XN1B3H8",
+  "type": "ops",
+  "v": 1
+}

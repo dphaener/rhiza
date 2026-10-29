@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [],
+  "at": "2026-10-29T00:38:18Z",
+  "body": {
+    "intent": "Rhiza's common commands run as tiny terminal apps inside Rex, shown as modals or pop-ups, alongside a view of the model.",
+    "kind": "intention",
+    "sources": [],
+    "title": "Rhiza TUI apps in Rex"
+  },
+  "change_set": "01M62HFSXQKS6DHM8VMBGAY3PZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62HFSXQKS6DHM8VMCBHTZK1",
+  "type": "open",
+  "v": 2
+}
