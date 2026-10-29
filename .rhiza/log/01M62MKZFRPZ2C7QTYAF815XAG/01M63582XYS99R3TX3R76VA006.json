@@ -1,0 +1,41 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6351073GDAKYYJFQPS85WQD"
+  ],
+  "at": "2026-10-29T06:23:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The two change sets each added a change-set lookup to inboxItems: main a state lookup, this branch a gone predicate. gone is the state lookup plus Terminal(), so one parameter serves both and no call site changes on main.",
+          "statement": "The rebase onto main is resolved by keeping main's changeState (from resume-only-in-flight runs) as inboxItems' parameter and deriving gone from it inside inboxItems (a known change set in a terminal state). goneChanges is dropped. Both changes keep their behaviour, and make check passes on the rebased branch.",
+          "wording": "decided by the orchestrator acting as arbiter, under the owner's standing word to run autonomously"
+        },
+        "handle": "inbox-stale-rebase-resolution",
+        "id": "01M6358252CFGR7B85YCPBRWHS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6358252CFGR7B85YBE8WRQE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6358252CFGR7B85YBE8WRQE",
+        "id": "01M63582ET4RCHDJTVZKZGD6HC",
+        "link": "01M63582ET4RCHDJTVZG7CD8VP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6350ZQZZQP18DGDGDWQGP0G",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M62MKZFRPZ2C7QTYAF815XAG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M63582XYS99R3TX3R76VA006",
+  "type": "ops",
+  "v": 1
+}
