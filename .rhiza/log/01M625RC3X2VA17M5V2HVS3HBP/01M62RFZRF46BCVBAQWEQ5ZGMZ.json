@@ -1,0 +1,63 @@
+{
+  "actor": "01M62RAKBQ1DJCSZB849HC2RN0",
+  "after": [
+    "01M62RFRHDCQ3GER265ZSZ504D"
+  ],
+  "at": "2026-10-29T02:40:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The ship command finds the main checkout from the git common dir, not from the run's worktree folder",
+          "wording": "Derive it from the git common dir, the agent's option, picked by the owner"
+        },
+        "handle": "ship-command-main-from-common-dir",
+        "id": "01M62RFYPDVVVRHSREVJ9Z34G9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M62RFYPDVVVRHSREVFJA6HDY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62RFYPDVVVRHSREVFJA6HDY",
+        "id": "01M62RFYY5895KYCPCRBDE434J",
+        "link": "01M62RFYY5895KYCPCRA2M0PE4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RFR9HBFWXACG8PSYBNYNX",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript removes the worktree, runs rhiza ship command from the vanished folder and sees the script run in the main checkout with exit 0; a ship-change run whose ship step follows close-out ends succeeded",
+          "statement": "After close-out has removed a change set's worktree, rhiza ship command still runs the repo's ship script, in the main checkout at the same project folder"
+        },
+        "handle": "ship-command-after-close-out",
+        "id": "01M62RFZ5YEP4PWEC079PYE255",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M62RFZ5YEP4PWEC0799MK0WZ",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M62RFZ5YEP4PWEC0799MK0WZ",
+        "id": "01M62RFZD7Y9CNCPQ5Q65K4AEF",
+        "link": "01M62RFZD7Y9CNCPQ5Q4MMHED4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RFYPDVVVRHSREVFJA6HDY",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M625RC3X2VA17M5V2HVS3HBP",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M62RFZRF46BCVBAQWEQ5ZGMZ",
+  "type": "ops",
+  "v": 1
+}
