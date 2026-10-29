@@ -212,6 +212,7 @@
   - [rex-install-command](capability/rhiza/rex-install-command.md)
   - [quick-launch-layer](capability/rhiza/quick-launch-layer.md)
   - [read-apps-match-cli](capability/rhiza/read-apps-match-cli.md)
+  - [write-apps-previewed](capability/rhiza/write-apps-previewed.md)
 - [ship-through-rhiza](capability/ship-through-rhiza.md)
   - [workflow-step](capability/ship-through-rhiza/workflow-step.md)
   - [ship-open-pr](capability/ship-through-rhiza/ship-open-pr.md)
@@ -927,6 +928,7 @@
 - [pr-64-resume-only-in-flight-runs](evidence/pr-64-resume-only-in-flight-runs.md)
 - [pr-65-tui-shell-and-read-apps](evidence/pr-65-tui-shell-and-read-apps.md)
 - [pr-66-inbox-clears-stale-failures](evidence/pr-66-inbox-clears-stale-failures.md)
+- [pr-67-tui-write-apps-previewed](evidence/pr-67-tui-write-apps-previewed.md)
 - [quick-launch-layer-qa-1](evidence/quick-launch-layer-qa-1.md)
 - [quick-launch-layer-qa-2](evidence/quick-launch-layer-qa-2.md)
 - [quick-launch-layer-qa-3](evidence/quick-launch-layer-qa-3.md)
@@ -1031,6 +1033,8 @@
 - [workflow-step-qa-4](evidence/workflow-step-qa-4.md)
 - [workflow-step-qa-5](evidence/workflow-step-qa-5.md)
 - [workflow-step-verified](evidence/workflow-step-verified.md)
+- [write-apps-previewed-qa-1](evidence/write-apps-previewed-qa-1.md)
+- [write-apps-previewed-verified](evidence/write-apps-previewed-verified.md)
 
 ## Sources
 
