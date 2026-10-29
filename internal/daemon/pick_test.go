@@ -29,8 +29,25 @@ func TestResumable(t *testing.T) {
 		since(journal("locked"), time.Hour),
 	}
 	locked := func(id string) bool { return id == "locked" }
-	got := Resumable(runs, "h", dead, locked, now)
+	accepted := func(string) bool { return true }
+	got := Resumable(runs, "h", dead, locked, accepted, now)
 	if len(got) != 2 || got[0] != "interrupted" || got[1] != "unrecorded" {
 		t.Fatalf("Resumable = %v, want [interrupted unrecorded]", got)
+	}
+}
+
+func TestResumableOnlyAcceptedChangeSets(t *testing.T) {
+	dead := func(int) bool { return false }
+	proc := run.Entry{Type: run.TypeProcess, Process: &run.Process{Host: "h", Pid: 1}}
+	now := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+	states := map[string]bool{"accepted": true}
+	var runs []run.Journal
+	for _, cs := range []string{"accepted", "landed", "rejected", "withdrawn", "proposed", "draft"} {
+		runs = append(runs, run.Journal{ID: "run-" + cs, Entries: []run.Entry{
+			{Type: run.TypeStarted, At: now.Add(-time.Hour), Started: &run.Started{Change: cs}}, proc}})
+	}
+	got := Resumable(runs, "h", dead, func(string) bool { return false }, func(cs string) bool { return states[cs] }, now)
+	if len(got) != 1 || got[0] != "run-accepted" {
+		t.Fatalf("Resumable = %v, want [run-accepted]", got)
 	}
 }

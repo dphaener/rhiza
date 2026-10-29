@@ -296,7 +296,14 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	}
 	host, _ := os.Hostname()
 	var resumed []string
-	for _, id := range daemon.Resumable(runs, host, nil, rs.Live, ctx.Now()) {
+	for _, id := range daemon.Resumable(runs, host, nil, rs.Live, func(change string) bool {
+		cs, err := id.Parse(change)
+		if err != nil {
+			return false
+		}
+		c, ok := ws.changeSet(cs)
+		return ok && c.State == changeset.StateAccepted
+	}, ctx.Now()) {
 		// Journal the resume before the tab opens: a resume is tried once.
 		if err := rs.Append(id, run.Entry{Type: run.TypeDaemonResumed, At: ctx.Now(), Detail: "resumed by the daemon"}); err != nil {
 			return nil, resumed, Errorf("journal the resume of run %s: %v", id, err)
