@@ -52,6 +52,23 @@ func TestTabSwitchesAndScrolls(t *testing.T) {
 	}
 }
 
+func TestViewFitsTheWindow(t *testing.T) {
+	read := func(op string, args []string) (string, error) {
+		return strings.Repeat(op+" line\n", 100), nil
+	}
+	m := NewModel(read, "")
+	for _, h := range []int{5, 13, 24} {
+		m.Update(tea.WindowSizeMsg{Width: 80, Height: h})
+		v := m.View().Content
+		if n := len(strings.Split(v, "\n")); n > h {
+			t.Fatalf("height %d: view has %d lines", h, n)
+		}
+		if !strings.HasPrefix(v, "[tree]") {
+			t.Fatalf("height %d: header is not the first line: %q", h, v)
+		}
+	}
+}
+
 func TestReadErrorIsShown(t *testing.T) {
 	read := func(op string, args []string) (string, error) {
 		if op == "roadmap" {
