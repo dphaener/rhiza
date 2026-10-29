@@ -10,7 +10,7 @@ roadmap, ready, show, why and slice run as apps and show the same result as the 
 
 ### In
 
-- implements [read-apps-match-cli](../../capability/rhiza/read-apps-match-cli.md)
+- serves [read-apps-match-cli](../../capability/rhiza/read-apps-match-cli.md)
 
 ## History
 

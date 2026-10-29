@@ -14,8 +14,8 @@ roadmap, ready, show, why and slice run as apps that call the internal/api regis
 
 ### Out
 
+- serves [tui-read-apps](../../intent/rhiza-tui/tui-read-apps.md)
 - decided-by [tui-many-mini-apps](../../decision/tui-many-mini-apps.md)
-- implements [tui-read-apps](../../intent/rhiza-tui/tui-read-apps.md)
 
 ### In
 

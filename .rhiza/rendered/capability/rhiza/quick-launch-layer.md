@@ -14,9 +14,9 @@ ctrl+a a (the launch key, a setting in rhiza.lua) opens a Rex quick-launch layer
 
 ### Out
 
+- serves [tui-launcher](../../intent/rhiza-tui/tui-launcher.md)
 - decided-by [tui-many-mini-apps](../../decision/tui-many-mini-apps.md)
 - decided-by [tui-launch-key](../../decision/tui-launch-key.md)
-- implements [tui-launcher](../../intent/rhiza-tui/tui-launcher.md)
 
 ### In
 

@@ -14,9 +14,9 @@ rhiza rex install writes rhiza.lua beside Rex's init.lua, adds require("rhiza") 
 
 ### Out
 
+- serves [tui-install-script](../../intent/rhiza-tui/tui-install-script.md)
 - decided-by [tui-many-mini-apps](../../decision/tui-many-mini-apps.md)
 - decided-by [tui-own-lua-file](../../decision/tui-own-lua-file.md)
-- implements [tui-install-script](../../intent/rhiza-tui/tui-install-script.md)
 
 ### In
 

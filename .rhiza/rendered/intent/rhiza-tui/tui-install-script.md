@@ -10,7 +10,7 @@ rhiza rex install writes the quick-launch Lua script into the Rex config and rel
 
 ### In
 
-- implements [rex-install-command](../../capability/rhiza/rex-install-command.md)
+- serves [rex-install-command](../../capability/rhiza/rex-install-command.md)
 
 ## History
 

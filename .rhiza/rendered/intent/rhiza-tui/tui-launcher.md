@@ -10,7 +10,7 @@ ctrl-a>r opens a Rex quick-launch layer that lists every rhiza app, and choosing
 
 ### In
 
-- implements [quick-launch-layer](../../capability/rhiza/quick-launch-layer.md)
+- serves [quick-launch-layer](../../capability/rhiza/quick-launch-layer.md)
 
 ## History
 
