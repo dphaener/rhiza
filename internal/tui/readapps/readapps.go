@@ -1,5 +1,5 @@
-// Package readapps is the read-only rhiza apps: roadmap, ready, show, why
-// and slice. Each wraps the api operation of the same name, run in-process
+// Package readapps is the read-only rhiza apps: roadmap, ready, show, why,
+// slice, run-status and session-ls. Each wraps the api operation of the same name, run in-process
 // through the registry, so an app shows what `rhiza <op> --json` prints. An
 // app starts no daemon and binds no socket.
 package readapps
@@ -13,10 +13,11 @@ import (
 	"github.com/dphaener/rhiza/internal/tui/launcher"
 )
 
-// App is one read app. Name is both the app's name and the api operation it
-// runs.
+// App is one read app. Name is the app's name; it is also the api operation
+// it runs unless Op names another.
 type App struct {
 	Name    string
+	Op      string
 	Summary string
 	// Prompt, when set, is what the app asks for when started without
 	// arguments: its operation needs a ref.
@@ -30,6 +31,8 @@ var Apps = []App{
 	{Name: "show", Summary: "One node or link", Prompt: "show (ID or handle)"},
 	{Name: "why", Summary: "Why a node exists", Prompt: "why (ID or handle)"},
 	{Name: "slice", Summary: "A budgeted slice of the model"},
+	{Name: "run-status", Op: "run.status", Summary: "A run's state and the steps it has done"},
+	{Name: "session-ls", Op: "session.ls", Summary: "The agent sessions with their change set, tab and status"},
 }
 
 func init() {
@@ -46,6 +49,14 @@ func Lookup(name string) (App, bool) {
 		}
 	}
 	return App{}, false
+}
+
+// Operation is the api operation the app runs.
+func (a App) Operation() string {
+	if a.Op != "" {
+		return a.Op
+	}
+	return a.Name
 }
 
 // Runner runs an app's operation on args and returns its result as
@@ -80,7 +91,7 @@ func NewModel(a App, run Runner, args []string) *Model {
 
 func (m *Model) load(args []string) {
 	m.asking = false
-	out, err := m.run(m.app.Name, args)
+	out, err := m.run(m.app.Operation(), args)
 	m.out, m.err = out, err
 	m.top = 0
 	m.lines = strings.Split(strings.TrimRight(string(out), "\n"), "\n")
