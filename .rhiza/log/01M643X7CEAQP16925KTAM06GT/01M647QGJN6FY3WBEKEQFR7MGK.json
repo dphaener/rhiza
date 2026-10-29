@@ -1,0 +1,40 @@
+{
+  "actor": "01M647DCVS5A052NQEQQFXEJEM",
+  "after": [
+    "01M6478QVHRZWXQT8YQ3XYDDC0"
+  ],
+  "at": "2026-10-29T16:26:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a597ae4 I ran go test -count=1 ./internal/api -run TestRexInstall (all pass). TestRexInstallSizesEachAppLayerToItsCells registers an app with Cols 77, Rows 21 and one without a size, runs rex.install and reads the rhiza.lua it writes. The sized app's action has bounds = cell_bounds(ctx.block_id, 77, 21) and command { BIN, \"tui\", \"app\", \"zz-sized\" }, with no \"launch\" in it. The unsized app gets the 100x30 defaults, and no app action goes through tui launch. The rex-install.txtar script also passes (go test ./cmd/rhiza -run TestScripts/rex-install$) and greps bounds = cell_bounds(ctx.block_id, 100, 30). I read the diff: the Lua cell_bounds is a faithful port of rexuikit v0.2.0 surface.fitAxis/BoundsForCells, centred, with the Frame, Border and InverseMargin constants filled in from the Go package. It reads columns, rows, cell_width_px and cell_height_px, the field names of the terminal size result, and falls back to LAYER_BOUNDS. make fmt-check vet test passes. make self-check fails only on a stale .rhiza/rendered (actor claude-code-3b240678 and index.md), which comes from the parent run commit 6733c86. This leaf's commit touches no .rhiza file."
+        },
+        "handle": "rex-app-layer-sized-verified",
+        "id": "01M647QFNT03BWBF8DJVT2B7Z0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M647QFNT03BWBF8DJRPNJBY8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M647QFNT03BWBF8DJRPNJBY8",
+        "id": "01M647QG0XFCQHZF5ESJTQMNJ3",
+        "link": "01M647QG0XFCQHZF5ESHBYK91S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M644QWTP8H6S0B5RS70QCBM2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M647QGJN6FY3WBEKEQFR7MGK",
+  "type": "ops",
+  "v": 1
+}
