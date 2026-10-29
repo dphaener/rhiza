@@ -157,6 +157,22 @@ local function find_leaf(node, id)
   return nil
 end
 
+-- block_window returns the ID of the window holding block id, in any of
+-- its layers, or nil. A layer opened without a window goes to the
+-- session's active window, which need not be the one the user is looking
+-- at, so each app's layer opens in the window of the focused block.
+local function block_window(block_id)
+  if block_id == nil then return nil end
+  local ok, view = pcall(rex.session.view, {})
+  if not ok or type(view) ~= "table" then return nil end
+  for _, w in ipairs(view.windows or {}) do
+    for _, l in ipairs(w.layers or {}) do
+      if find_leaf(l.layout, block_id) ~= nil then return w.window_id end
+    end
+  end
+  return nil
+end
+
 -- window_cells returns the window holding block id in cells, and the pixel
 -- size of a cell: the block's size divided by its share of the window. In
 -- a split it comes out a few cells short, which makes the layer larger
@@ -217,10 +233,11 @@ func rexCellBounds() string {
 
 // rexAppActionLua is the Lua of one app's action: its own entry in Rex's
 // command palette, titled with the app's name, that opens the app straight
-// away, in a layer sized to the app's own cells, running
-// `rhiza tui app <name>`; no list step comes first. The arguments are Lua
-// string literals (action name, title, description, keywords, app name),
-// quoted by rexAppActions, then the app's columns and rows.
+// away, in a layer sized to the app's own cells in the focused block's
+// window, running `rhiza tui app <name>`; no list step comes first. The
+// arguments are Lua string literals (action name, title, description,
+// keywords, app name), quoted by rexAppActions, then the app's columns and
+// rows.
 const rexAppActionLua = `
 rex.action{
   name = %[1]s,
@@ -230,6 +247,7 @@ rex.action{
   keywords = %[4]s,
   run = function(ctx)
     local res, err = rex.session.new_layer{
+      window_id = block_window(ctx.block_id),
       bounds = cell_bounds(ctx.block_id, %[6]d, %[7]d),
       layout = rex.layout.block{
         flavor = TERM .. ".shell",

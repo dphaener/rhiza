@@ -82,3 +82,43 @@ print(string.format("%%.17g %%.17g %%.17g %%.17g", b[1], b[2], b[3], b[4]))
 		})
 	}
 }
+
+// TestRexBlockWindowFindsTheFocusedBlocksWindow runs the installed
+// block_window under luajit, with a stub rex holding two windows, and checks
+// that an app's layer goes to the window of the focused block, in a tiled or
+// floating layer, and to none (the active one) without a block. It needs
+// luajit on $PATH and is skipped without it.
+func TestRexBlockWindowFindsTheFocusedBlocksWindow(t *testing.T) {
+	luajit, err := exec.LookPath("luajit")
+	if err != nil {
+		t.Skip("luajit not on $PATH")
+	}
+	lua := `local TERM = "term"
+local LAYER_BOUNDS = { -1, -1, -1, -1 }
+rex = {
+  session = { view = function() return { windows = {
+    { window_id = "w1", layers = {
+      { kind = "tiled", layout = { block_id = "a", rect = { 0, 0, 1, 1 } } },
+    } },
+    { window_id = "w2", layers = {
+      { kind = "tiled", layout = { rect = { 0, 0, 1, 1 }, split = {
+        before = { block_id = "b", rect = { 0, 0, 0.5, 1 } },
+        after = { block_id = "c", rect = { 0.5, 0, 0.5, 1 } },
+      } } },
+      { kind = "floating", layout = { block_id = "d", rect = { 0, 0, 1, 1 } } },
+    } },
+  } } end },
+}
+` + rexCellBounds() + `
+print(block_window("a"), block_window("c"), block_window("d"), block_window("gone"), block_window(nil))
+`
+	cmd := exec.Command(luajit, "-")
+	cmd.Stdin = strings.NewReader(lua)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("luajit: %v\n%s", err, out)
+	}
+	if got, want := strings.Fields(string(out)), []string{"w1", "w2", "w2", "nil", "nil"}; strings.Join(got, " ") != strings.Join(want, " ") {
+		t.Errorf("block_window gave %v, want %v", got, want)
+	}
+}
