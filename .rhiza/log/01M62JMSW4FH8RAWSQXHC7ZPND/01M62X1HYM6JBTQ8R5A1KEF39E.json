@@ -1,0 +1,40 @@
+{
+  "actor": "01M62WTWP5VSGAM188QHK86V05",
+  "after": [
+    "01M62WRGSNB183YD5V3JHDE5BX"
+  ],
+  "at": "2026-10-29T04:00:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 2dc1ec4. go test -count=1 ./internal/tui/launcher ./internal/api: TestLayerListsEachAppByName (each app name in the ui.List view), TestSelectingAnAppOpensItsModal (with a fake surface.Rex, down+enter opens one focused layer whose layout runs /opt/rhiza/bin/rhiza tui app roadmap in /work, plus disown_block), TestEscapeClosesWithoutOpening, TestAppsAreSortedAndReplaced (registry) and TestRexInstallScriptOpensTheLauncher (launch_key ctrl+a a, BIN, rhiza_launch action and bind; key kept, BIN refreshed on reinstall) all PASS. Also built rhiza, ran rex install with REX_CONFIG in a scratch dir, and loaded the written rhiza.lua in luajit against a fake rex: it binds ctrl+a>a to rhiza_launch, whose run opens a focused new_layer with block flavor com.superlogical.terminal.shell running <BIN> tui launch. The Lua calls match rexuikit v0.2.0's Rex API docs. make check (RHIZA_ROOT unset) exits 0. Note: rhiza tui app <name> and the registered apps come from the read-apps leaf; this leaf accepts only tui launch."
+        },
+        "handle": "quick-launch-layer-verified",
+        "id": "01M62X1H7QFTYJHE0AB4XWETC6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62X1H7QFTYJHE0AB1VNKV3D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62X1H7QFTYJHE0AB1VNKV3D",
+        "id": "01M62X1HH3S4EJP6BHM2YR4K08",
+        "link": "01M62X1HH3S4EJP6BHKZEWP708",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JP7BKA4N9W2HCFTP0CMQ4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62JMSW4FH8RAWSQXHC7ZPND",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62X1HYM6JBTQ8R5A1KEF39E",
+  "type": "ops",
+  "v": 1
+}
