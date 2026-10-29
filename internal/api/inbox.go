@@ -27,6 +27,26 @@ func init() {
 		Run:      runInbox,
 	})
 	register(Operation{
+		Name:     "inbox.approve",
+		Summary:  "Approve the sign-off an inbox item waits at, as run approve does on that item's run; exit 2 on any other kind of item",
+		Write:    true,
+		Request:  reflect.TypeFor[InboxApproveRequest](),
+		Response: reflect.TypeFor[RunSignoffResponse](),
+		Run:      runInboxApprove,
+	})
+	register(Operation{
+		Name:     "inbox.request-changes",
+		Summary:  "Ask for changes to the sign-off an inbox item waits at, as run request-changes does on that item's run; exit 2 on any other kind of item",
+		Write:    true,
+		Request:  reflect.TypeFor[InboxRequestChangesRequest](),
+		Response: reflect.TypeFor[RunSignoffResponse](),
+		Input: &Input{
+			Summary: `{"findings":[{"check":...,"severity":...,"leaf":...,"place":...,"reason":...},...]}, at least one; see rhiza describe run.request-changes`,
+			Schema:  changesFileSchema,
+		},
+		Run: runInboxRequestChanges,
+	})
+	register(Operation{
 		Name:     "inbox.open",
 		Summary:  "Focus the Rex tab an inbox item waits in: the asking session's for a question, the run's journalled tab for the rest",
 		Request:  reflect.TypeFor[InboxOpenRequest](),
@@ -221,41 +241,50 @@ func itemTab(item InboxItem, st run.State) (rexSession, block string) {
 	return "", ""
 }
 
+// findInboxItem is the inbox item ref names, with the state of its run: a
+// short ID or a unique prefix of one. No item, or more than one, is usage.
+func findInboxItem(ctx *Ctx, ref string) (InboxItem, run.State, error) {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return InboxItem{}, run.State{}, err
+	}
+	rs := run.NewStore(run.Dir(common))
+	runs, err := rs.List()
+	if err != nil {
+		return InboxItem{}, run.State{}, Errorf("read runs: %v", err)
+	}
+	host, _ := os.Hostname()
+	var found []InboxItem
+	for _, it := range inboxItems(runs, host, nil, rs.Live) {
+		if strings.HasPrefix(it.ID, ref) {
+			found = append(found, it)
+		}
+	}
+	switch len(found) {
+	case 0:
+		return InboxItem{}, run.State{}, Usagef("no inbox item %q", ref).WithNext("rhiza inbox")
+	case 1:
+	default:
+		return InboxItem{}, run.State{}, Usagef("%q matches %d inbox items: give more of the ID", ref, len(found)).WithNext("rhiza inbox")
+	}
+	var st run.State
+	for _, j := range runs {
+		if j.ID == found[0].Run {
+			st = j.State()
+		}
+	}
+	return found[0], st, nil
+}
+
 // runInboxOpen focuses the tab of one inbox item.
 func runInboxOpen(ctx *Ctx, req any) (any, error) {
 	r := req.(InboxOpenRequest)
 	if r.Item == "" {
 		return nil, Usagef("inbox open needs an item: see rhiza inbox").WithNext("rhiza inbox")
 	}
-	common, err := gitCommonDir(ctx)
+	item, st, err := findInboxItem(ctx, r.Item)
 	if err != nil {
 		return nil, err
-	}
-	rs := run.NewStore(run.Dir(common))
-	runs, err := rs.List()
-	if err != nil {
-		return nil, Errorf("read runs: %v", err)
-	}
-	host, _ := os.Hostname()
-	var found []InboxItem
-	for _, it := range inboxItems(runs, host, nil, rs.Live) {
-		if strings.HasPrefix(it.ID, r.Item) {
-			found = append(found, it)
-		}
-	}
-	switch len(found) {
-	case 0:
-		return nil, Usagef("no inbox item %q", r.Item).WithNext("rhiza inbox")
-	case 1:
-	default:
-		return nil, Usagef("%q matches %d inbox items: give more of the ID", r.Item, len(found)).WithNext("rhiza inbox")
-	}
-	item := found[0]
-	var st run.State
-	for _, j := range runs {
-		if j.ID == item.Run {
-			st = j.State()
-		}
 	}
 	rexSession, block := itemTab(item, st)
 	resp := InboxOpenResponse{Item: item.ID, Kind: item.Kind, Run: item.Run, Tab: block}
@@ -277,4 +306,59 @@ func runInboxOpen(ctx *Ctx, req any) (any, error) {
 	}
 	resp.Opened = true
 	return resp, nil
+}
+
+// InboxApproveRequest names the sign-off item to approve.
+type InboxApproveRequest struct {
+	Item string `json:"item" arg:"0" desc:"The inbox item: its short ID from rhiza inbox, or a unique prefix of it; it must be a sign-off"`
+}
+
+// InboxRequestChangesRequest names the sign-off item and the file of the
+// owner's findings.
+type InboxRequestChangesRequest struct {
+	Item string `json:"item" arg:"0" desc:"The inbox item: its short ID from rhiza inbox, or a unique prefix of it; it must be a sign-off"`
+	File string `json:"file" arg:"1" desc:"A JSON file of the owner's findings, or - for stdin (see the input schema)"`
+}
+
+// signoffItemRun is the run of the sign-off item ref names. Any other
+// kind of item is usage, naming what clears it.
+func signoffItemRun(ctx *Ctx, cmd, ref string) (string, error) {
+	if strings.TrimSpace(ref) == "" {
+		return "", Usagef("%s needs an item: see rhiza inbox", cmd).WithNext("rhiza inbox")
+	}
+	item, _, err := findInboxItem(ctx, ref)
+	if err != nil {
+		return "", err
+	}
+	if item.Kind != InboxSignoff {
+		e := Usagef("%s works on a sign-off item, and item %s is a %s", cmd, item.ID, item.Kind)
+		if item.Next != "" {
+			e = e.WithNext(item.Next)
+		} else {
+			e = e.WithNext("rhiza inbox open " + item.ID)
+		}
+		return "", e
+	}
+	return item.Run, nil
+}
+
+// runInboxApprove approves the run an inbox sign-off item belongs to.
+func runInboxApprove(ctx *Ctx, req any) (any, error) {
+	r := req.(InboxApproveRequest)
+	id, err := signoffItemRun(ctx, "inbox approve", r.Item)
+	if err != nil {
+		return nil, err
+	}
+	return runRunApprove(ctx, RunApproveRequest{Run: id})
+}
+
+// runInboxRequestChanges asks for changes on the run an inbox sign-off
+// item belongs to.
+func runInboxRequestChanges(ctx *Ctx, req any) (any, error) {
+	r := req.(InboxRequestChangesRequest)
+	id, err := signoffItemRun(ctx, "inbox request-changes", r.Item)
+	if err != nil {
+		return nil, err
+	}
+	return runRunRequestChanges(ctx, RunRequestChangesRequest{File: r.File, Run: id})
 }
