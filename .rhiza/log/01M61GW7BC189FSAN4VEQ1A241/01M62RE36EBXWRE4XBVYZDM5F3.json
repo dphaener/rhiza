@@ -1,0 +1,86 @@
+{
+  "actor": "01M62RABH5CRQZBRE68NF7AEKF",
+  "after": [
+    "01M62RDREMJD5VC8Y5JY2Q3X7R"
+  ],
+  "at": "2026-10-29T02:39:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A unit test of the trailer reader finds Change:, Actor:, Leaf: and Review: in a commit body whose Co-Authored-By sits in a separate final paragraph, and still reads them when all trailers share the final paragraph.",
+          "statement": "rhiza check and the workflows read Change:, Actor:, Leaf: and Review: trailers from every paragraph of a commit body, so a Leaf: trailer counts when Co-Authored-By sits in a later paragraph."
+        },
+        "handle": "commit-trailers-every-paragraph",
+        "id": "01M62RE1Q9T4BXX5R7W8S6SFHA",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M62RE1Q8DH5JWM6YHEGZ0G15",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "decision": null,
+        "from": "01M62RE1Q8DH5JWM6YHEGZ0G15",
+        "id": "01M62RE1YJD2C94EHJM37F8EGX",
+        "link": "01M62RE1YJD2C94EHJKZXNG25Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRHVMNH35QRF5F89GN3K6",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "An engine test against a real git repo counts a builder commit with Leaf: in its first paragraph and Co-Authored-By after it as the leaf's attempt, and a leaf fixer's commit the same way; a commit naming another leaf still fails.",
+          "statement": "A builder's or a leaf fixer's new commit counts for its leaf when its Leaf: trailer names the leaf, even with Co-Authored-By in a separate final paragraph."
+        },
+        "handle": "build-leaf-split-trailers",
+        "id": "01M62RE25K7P1CD4GD7V6MZ29Y",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M62RE25K7P1CD4GD7SP27CNM",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M62RE25K7P1CD4GD7SP27CNM",
+        "id": "01M62RE2CKX2PDGX4X96847A6G",
+        "link": "01M62RE2CKX2PDGX4X93J5TDB8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WT5QZENJ8RMZ9W4YQ9M19D",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M62RE25K7P1CD4GD7SP27CNM",
+        "id": "01M62RE2M9MGJ447CS15A8M2FM",
+        "link": "01M62RE2M9MGJ447CS13MY1NA1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RE1Q8DH5JWM6YHEGZ0G15",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "The guide tests fail when the builder example or the fixer instruction puts Co-Authored-By in a paragraph apart from Change:, Actor:, Leaf: or Review:.",
+          "statement": "The build and review guides show every trailer, Co-Authored-By included, in one final paragraph: the builder example and the fixer instruction."
+        },
+        "handle": "guides-one-final-paragraph",
+        "id": "01M62RE2VD8QDWJ0BQN7YJEQW2",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M62RE2VD8QDWJ0BQN4Y56F9K",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      }
+    ]
+  },
+  "change_set": "01M61GW7BC189FSAN4VEQ1A241",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M62RE36EBXWRE4XBVYZDM5F3",
+  "type": "ops",
+  "v": 1
+}

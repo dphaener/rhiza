@@ -1,0 +1,39 @@
+{
+  "actor": "01M62RABH5CRQZBRE68NF7AEKF",
+  "after": [
+    "01M61S7PWST7XNCXQ1XTWC4P67"
+  ],
+  "at": "2026-10-29T02:39:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Every paragraph (Recommended)",
+              "where": "AskUserQuestion, trailer scope"
+            }
+          ],
+          "raw_sha256": "e17964637c34ac76ce337e0c8ca296fe1a2c7036ec490cf6cb85edaf560bc0fd",
+          "session": "a3d863f7-3535-4a41-819b-01a185852d11",
+          "summary": "A builder's or fixer's commit whose Leaf: trailer sits before a Co-Authored-By paragraph was not counted, because git's trailer reader reads only the final paragraph. The owner picked the option where the trailer reader reads Change:, Actor:, Leaf: and Review: from every paragraph of a commit body. The build and review guides keep all trailers in one final paragraph, Co-Authored-By included.",
+          "title": "Leaf trailer, split paragraphs: trailer scope"
+        },
+        "handle": "leaf-trailer-split-paragraphs-plan",
+        "id": "01M62RDR6HAY9E8DPSGVET33AX",
+        "key": null,
+        "kind": "source",
+        "node": "01M62RDR6HAY9E8DPSGV95NPEH",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61GW7BC189FSAN4VEQ1A241",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M62RDREMJD5VC8Y5JY2Q3X7R",
+  "type": "ops",
+  "v": 1
+}
