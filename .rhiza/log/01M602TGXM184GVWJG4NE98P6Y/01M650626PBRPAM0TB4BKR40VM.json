@@ -1,0 +1,108 @@
+{
+  "actor": "01M6502XM5M0TMV5T5MT002Y1K",
+  "after": [
+    "01M6505XE9WWNK5NA41TG1YQN2"
+  ],
+  "at": "2026-10-29T23:33:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A test runs a review with one confirmed finding through a fake Rex and finds, in order, a child record for the leaf fixer, then the leaf's verifier, then a child record for the change-set fixer, each cleared once its session ends, with the root record naming the review step",
+          "statement": "While a review run goes, Rex shows each live fixer and verifier session of the review as a child record: a leaf fixer or its verifier names its leaf, and the change-set fixer names the review"
+        },
+        "handle": "review-fixers-in-rex",
+        "id": "01M6505Y4EB35E286KJS5FJ3RY",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6505Y4EB35E286KJRDR8JBV",
+        "op": "node.create",
+        "parent": "01M5WT1XEJY38RKEE9K473K3V1"
+      },
+      {
+        "decision": null,
+        "from": "01M6505Y4EB35E286KJRDR8JBV",
+        "id": "01M6505YMB8SYER9QWWNNXAF9W",
+        "link": "01M6505YMB8SYER9QWWK9JY8DD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WT1X52NSSH59BY5KP418D0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test runs a review whose code check fails through a fake Rex and finds the root record working with the code-check step, then error naming the failed run",
+          "statement": "While a review's code check runs, Rex's root record names the code-check step, and a failed code check ends the root record in error"
+        },
+        "handle": "review-code-check-in-rex",
+        "id": "01M6505Z15CNR0WFDTKEHW1F7M",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6505Z15CNR0WFDTKBVMHK70",
+        "op": "node.create",
+        "parent": "01M5WT1XEJY38RKEE9K473K3V1"
+      },
+      {
+        "decision": null,
+        "from": "01M6505Z15CNR0WFDTKBVMHK70",
+        "id": "01M6505ZDPST7E9Z2325R8WBDK",
+        "link": "01M6505ZDPST7E9Z23222CNY4S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WT1X52NSSH59BY5KP418D0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test exhausts a review's two fix cycles through a fake Rex and finds the root record blocked, its message naming the change set, the review step and the question's text",
+          "statement": "When a review ends with open questions after its two fix cycles, Rex's root record is blocked and names the first open question with its change set and step"
+        },
+        "handle": "review-questions-in-rex",
+        "id": "01M6505ZVVRWAHQW8S8GXWT4RX",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6505ZVVRWAHQW8S8FGJ25MC",
+        "op": "node.create",
+        "parent": "01M5WT1XEJY38RKEE9K473K3V1"
+      },
+      {
+        "decision": null,
+        "from": "01M6505ZVVRWAHQW8S8FGJ25MC",
+        "id": "01M650609D8MN4CVBZK6X6B31K",
+        "link": "01M650609D8MN4CVBZK3Z4H8NV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WT1X52NSSH59BY5KP418D0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Should a review's open questions also get child records in Rex, the way live sessions do, or is the root record's blocked notice enough?"
+        },
+        "handle": "review-questions-child-record",
+        "id": "01M65060QN9KJ9XKFSPEN04Q1X",
+        "key": null,
+        "kind": "question",
+        "node": "01M65060QN9KJ9XKFSPB8EZ2MR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65060QN9KJ9XKFSPB8EZ2MR",
+        "id": "01M650615RZYMZR3HNZZY607NB",
+        "link": "01M650615RZYMZR3HNZZ345GKK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505ZVVRWAHQW8S8FGJ25MC",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M602TGXM184GVWJG4NE98P6Y",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M650626PBRPAM0TB4BKR40VM",
+  "type": "ops",
+  "v": 1
+}
