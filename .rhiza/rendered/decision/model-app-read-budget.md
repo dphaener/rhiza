@@ -14,7 +14,7 @@ fixer of review cycle 2 on leaf model-tree-app, recording the reading of the bud
 
 ### Out
 
-- derived-from [t7-d14-read-budget](t7-d14-read-budget.md)
+- relates-to [t7-d14-read-budget](t7-d14-read-budget.md) — applies t7-d14-read-budget's 50 ms tree-read budget to the model app's subtree read
 
 ### In
 

@@ -14,9 +14,9 @@ A model app shows the as-is capability tree and the roadmap's groups, read from 
 
 ### Out
 
+- serves [tui-model-view](../../intent/rhiza-tui/tui-model-view.md)
 - decided-by [tui-many-mini-apps](../../decision/tui-many-mini-apps.md)
 - decided-by [model-app-read-budget](../../decision/model-app-read-budget.md)
-- implements [tui-model-view](../../intent/rhiza-tui/tui-model-view.md)
 
 ### In
 

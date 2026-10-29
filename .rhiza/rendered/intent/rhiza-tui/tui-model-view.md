@@ -10,7 +10,7 @@ A model app shows the as-is capability tree and the roadmap, read from the index
 
 ### In
 
-- implements [model-tree-app](../../capability/rhiza/model-tree-app.md)
+- serves [model-tree-app](../../capability/rhiza/model-tree-app.md)
 
 ## History
 

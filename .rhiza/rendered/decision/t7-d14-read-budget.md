@@ -32,8 +32,8 @@ agent of milestone-1 task 7 (shipit plan), accepted by the owner
 
 ### In
 
+- relates-to [model-app-read-budget](model-app-read-budget.md) — applies t7-d14-read-budget's 50 ms tree-read budget to the model app's subtree read
 - decided-by [fast-reads](../capability/rhiza/views/fast-reads.md)
-- derived-from [model-app-read-budget](model-app-read-budget.md)
 
 ## History
 
