@@ -18,7 +18,9 @@
 # commits with the change set, its actor and its leaf as trailers, as a
 # verifier it writes the leaf's Evidence, and as a check it records an
 # empty round. The fake gh logs its argv to gh.log, keeps the body a PR is
-# created with in pr-body.md, and answers from the bare origin: the PR (#7), once created, is open with every check passed
+# created with in pr-body.md, and answers from the bare origin: before a PR is created the
+# branch's only PR is #3, merged earlier (as a plan's PR on the change set's
+# branch is), so open-pr opens a new one; the PR (#7), once created, is open with every check passed
 # at the branch's current head on origin; a merge squashes the branch onto
 # main in origin (refusing any head but the branch's); the merged PR names
 # that squash commit; and CI on it has passed, which it notes in order.log
@@ -272,9 +274,13 @@ case "$1 $2" in
 		printf '{"mergeCommit":{"oid":"%s"},"state":"MERGED"}\n' "$(cat "$WORK/merge.sha")"
 		exit 0
 	fi
-	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3") || [ ! -f "$WORK/pr.created" ]; then
+	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3"); then
 		echo "no pull requests found for branch \"$3\"" >&2
 		exit 1
+	fi
+	if [ ! -f "$WORK/pr.created" ]; then
+		printf '{"number":3,"url":"https://github.test/o/r/pull/3","state":"MERGED","headRefOid":"%s","statusCheckRollup":[]}\n' "$head"
+		exit 0
 	fi
 	echo "$head" > "$WORK/landed.sha"
 	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"},{"context":"lint","state":"SUCCESS"}]}\n' "$head"

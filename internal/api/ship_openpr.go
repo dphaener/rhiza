@@ -127,6 +127,21 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 	if err != nil {
 		return nil, Errorf("%v", err)
 	}
+	// A branch whose only pull request was merged or closed before this run
+	// (a plan's PR on the change set's branch, say) gets a new one: gh then
+	// names the open one for the branch.
+	if !strings.EqualFold(v.State, "OPEN") && !resp.Created {
+		if _, err := gh(ctx, dir, "pr", "create", "--base", shipMain, "--head", t.branch, "--title", t.title, "--body-file", body.Name()); err != nil {
+			return nil, Errorf("%v", err)
+		}
+		resp.Created = true
+		if out, err = gh(ctx, dir, "pr", "view", t.branch, "--json", "number,url,state,headRefOid,statusCheckRollup"); err != nil {
+			return nil, Errorf("%v", err)
+		}
+		if v, err = parsePRView(out); err != nil {
+			return nil, Errorf("%v", err)
+		}
+	}
 	if !strings.EqualFold(v.State, "OPEN") {
 		return nil, Conflictf("pull request #%d for branch %s is %s, not open", v.Number, t.branch, v.State)
 	}
