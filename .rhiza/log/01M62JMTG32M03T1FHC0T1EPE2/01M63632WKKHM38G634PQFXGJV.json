@@ -1,0 +1,40 @@
+{
+  "actor": "01M635QBWHVN6K3H54074G04KR",
+  "after": [
+    "01M62VJ90EP7S1Z12YQYH7J38X"
+  ],
+  "at": "2026-10-29T06:38:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 74a4128 I ran go test ./cmd/rhiza -run TestScripts/tui-write-apps -count=1: PASS. The script cats every .rhiza/log file before and after --once previews of propose, record-add, record-set, record-link and record-retire (each prints dry_run true), and after failed previews of accept and record-retire, and cmp shows the log byte-identical. It then confirms propose, accept, land, record-add, record-set, record-link and record-retire with --once --confirm in repo a and runs the matching rhiza command with --json (and --record for record writes) in an identical repo b: each output cmps equal, the two full logs cmp equal and both fold-ok. change-show --once matches rhiza change show --json. go test ./internal/tui/writeapps passed (cancel with n makes only the dry-run call; y runs it for real once). go test ./..., fmt-check and vet passed; make self-check passed with the run env unset (with it set it failed only on this verifier session's own unrendered actor). I read the diff: write apps register with the launcher, run the api op in-process as a dry run first, and write only on one confirmation."
+        },
+        "handle": "write-apps-previewed-verified",
+        "id": "01M6363269SMV955V147CW80KH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6363269SMV955V143P6JW3V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6363269SMV955V143P6JW3V",
+        "id": "01M63632EYKYEZ7X4AXEFPZSAT",
+        "link": "01M63632EYKYEZ7X4AXBFY753B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JPNH7XH3E5F28FER1MW8E",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62JMTG32M03T1FHC0T1EPE2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M63632WKKHM38G634PQFXGJV",
+  "type": "ops",
+  "v": 1
+}
