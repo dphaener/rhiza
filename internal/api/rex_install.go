@@ -16,6 +16,8 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/dphaener/rhiza/internal/tui/launcher"
 )
 
 const (
@@ -81,7 +83,54 @@ rex.action{
 if type(settings.launch_key) == "string" and settings.launch_key ~= "" then
   rex.bind((settings.launch_key:gsub("%s+", ">")), "rhiza_launch")
 end
+`
 
+// rexAppActionsLua is the Lua of one app's action: its own entry in Rex's
+// command palette, titled with the app's name, that opens the app straight
+// away in a layer running `rhiza tui app <name>`. The arguments are Lua
+// string literals (action name, title, description, keywords, app name),
+// quoted by rexAppActions.
+const rexAppActionLua = `
+rex.action{
+  name = %[1]s,
+  title = %[2]s,
+  description = %[3]s,
+  category = "rhiza",
+  keywords = %[4]s,
+  run = function(ctx)
+    local res, err = rex.session.new_layer{
+      bounds = LAYER_BOUNDS,
+      layout = rex.layout.block{
+        flavor = TERM .. ".shell",
+        label = %[2]s,
+        options = { command = { BIN, "tui", "app", %[5]s }, cwd = block_cwd(ctx.block_id) },
+      },
+      focus = true,
+    }
+    if err ~= nil then error(err, 0) end
+    return res
+  end,
+}
+`
+
+// rexAppActions returns the Lua registering one rex.action per registered
+// app, in the order launcher.Apps gives (by name), so the same apps always
+// give the same bytes.
+func rexAppActions() string {
+	var b strings.Builder
+	for _, a := range launcher.Apps() {
+		desc := a.Summary
+		if desc == "" {
+			desc = "Open the " + a.Name + " app"
+		}
+		fmt.Fprintf(&b, rexAppActionLua,
+			strconv.Quote("rhiza_app_"+a.Name), strconv.Quote(a.Name), strconv.Quote(desc),
+			strconv.Quote("rhiza app "+a.Name), strconv.Quote(a.Name))
+	}
+	return b.String()
+}
+
+const rexScriptTail = `
 return settings
 `
 
@@ -184,7 +233,7 @@ func rexScript(have []byte, bin string) []byte {
 		"-- Edit the settings block; a reinstall keeps it. Everything else is rewritten.\n" +
 		settings +
 		"\nlocal BIN = " + strconv.Quote(bin) + "\n" +
-		rexLaunchLua)
+		rexLaunchLua + rexAppActions() + rexScriptTail)
 }
 
 // rexHasRequire reports whether init.lua already loads rhiza: any line that

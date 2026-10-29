@@ -16,6 +16,16 @@ grep -count=1 'require\("rhiza"\)' conf/init.lua
 grep '^-- mine$' conf/init.lua
 grep -count=1 '^config reload$' rex.log
 
+# Every registered app is a Rex action of its own, titled with its name and
+# running `rhiza tui app <name>`: read, write and model apps alike.
+grep 'name = "rhiza_app_roadmap"' conf/rhiza.lua
+grep 'title = "roadmap"' conf/rhiza.lua
+grep '"tui", "app", "roadmap"' conf/rhiza.lua
+grep 'title = "session-ls"' conf/rhiza.lua
+grep '"tui", "app", "model"' conf/rhiza.lua
+grep 'title = "model"' conf/rhiza.lua
+grep 'title = "accept"' conf/rhiza.lua
+
 # A second install changes neither file, and keeps an edited setting.
 cp conf/init.lua first-init.lua
 cp conf/rhiza.lua first-rhiza.lua

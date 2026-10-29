@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/dphaener/rhiza/internal/tui/launcher"
 )
 
 // rexTestCtx is a ctx with a fake Rex config folder and a fake rex that
@@ -180,5 +182,35 @@ func TestRexInstallScriptOpensTheLauncher(t *testing.T) {
 	script = readFile(t, filepath.Join(dir, "rhiza.lua"))
 	if !strings.Contains(script, `launch_key = "ctrl+a g"`) || !strings.Contains(script, `local BIN = "/elsewhere/rhiza"`) {
 		t.Errorf("reinstall lost the key or kept the old binary:\n%s", script)
+	}
+}
+
+func TestRexInstallRegistersAnActionPerApp(t *testing.T) {
+	launcher.Register(launcher.App{Name: "zz-extra", Summary: "One more app"})
+	ctx, dir, _ := rexTestCtx(t)
+	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	script := readFile(t, filepath.Join(dir, "rhiza.lua"))
+	for _, want := range []string{
+		`name = "rhiza_app_zz-extra"`,
+		`title = "zz-extra"`,
+		`command = { BIN, "tui", "app", "zz-extra" }`,
+	} {
+		if !strings.Contains(script, want) {
+			t.Errorf("rhiza.lua lacks %s:\n%s", want, script)
+		}
+	}
+	if got, want := strings.Count(script, "rex.action{"), 1+len(launcher.Apps()); got != want {
+		t.Errorf("%d rex.action calls, want %d", got, want)
+	}
+
+	// An app registered later gets its action on a reinstall.
+	launcher.Register(launcher.App{Name: "zz-later", Summary: "Added after the first install"})
+	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	if script = readFile(t, filepath.Join(dir, "rhiza.lua")); !strings.Contains(script, `command = { BIN, "tui", "app", "zz-later" }`) {
+		t.Errorf("reinstall lacks the new app's action:\n%s", script)
 	}
 }
