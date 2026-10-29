@@ -5699,6 +5699,83 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "rex.install",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "force": {
+            "description": "Overwrite a rhiza.lua rhiza rex install did not write",
+            "type": "boolean"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "init": {
+            "description": "Rex's init.lua, absolute",
+            "type": "string"
+          },
+          "script": {
+            "description": "The rhiza.lua file, absolute",
+            "type": "string"
+          },
+          "unchanged": {
+            "description": "The files that were already current",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "written": {
+            "description": "The files written: rhiza.lua and init.lua, those that changed",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "init",
+          "script",
+          "unchanged",
+          "written"
+        ],
+        "type": "object"
+      },
+      "summary": "Install the quick-launch script into the Rex config and reload Rex",
+      "write": false
+    },
+    {
+      "name": "rex.uninstall",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "removed": {
+            "description": "The files changed or removed: rhiza.lua and init.lua, those that held our part",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "removed"
+        ],
+        "type": "object"
+      },
+      "summary": "Remove the quick-launch script from the Rex config and reload Rex",
+      "write": false
+    },
+    {
       "name": "roadmap",
       "request": {
         "additionalProperties": false,
