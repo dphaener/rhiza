@@ -1,0 +1,40 @@
+{
+  "actor": "01M62YDCV979JWHG2RXC2QCV8D",
+  "after": [
+    "01M62X1HYM6JBTQ8R5A1KEF39E"
+  ],
+  "at": "2026-10-29T04:29:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 608a5c3 ran go test ./cmd/rhiza -run TestScripts/tui-read-apps -count=1 -v: PASS. On a fixture model (init, intent, capability, accepted change set) the script runs rhiza <op> --json and rhiza tui app <op> --once for roadmap, ready, show store, why store and slice store and cmp's the two stdouts; all five match and each --json output is non-empty. --once prints readapps.Model.Result(), the result the app built by running the op through api.Lookup in-process and canon.Marshal. The script asserts no .git/rhiza/daemon.lock or daemon.state.json (daemon.Dir is <git common>/rhiza) and find $WORK -type s prints nothing, with REX_SESSION/REX_SERVER empty. Read the diff of bb5a6c5 and 608a5c3: no daemon or listener is started in the app path. go test ./internal/tui/... and make check pass."
+        },
+        "handle": "read-apps-match-cli-verified",
+        "id": "01M62YPGVYQBJTNTSYVX09DBSX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62YPGVYQBJTNTSYVT8JX2FM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62YPGVYQBJTNTSYVT8JX2FM",
+        "id": "01M62YPH40KGP28N64RBZXS5AR",
+        "link": "01M62YPH40KGP28N64R9WM58YP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JP9RTA2QHK5B6A53852M8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62JMSW4FH8RAWSQXHC7ZPND",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62YPHGHXCTR0J36D1VEWSV7",
+  "type": "ops",
+  "v": 1
+}
