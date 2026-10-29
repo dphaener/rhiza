@@ -1,0 +1,33 @@
+{
+  "actor": "01M6502C1JP6H8XN06Y5VMN13J",
+  "after": [
+    "01M61S7QXYV1X5BYE35T8Q95CR"
+  ],
+  "at": "2026-10-29T23:33:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "96655f23f3d9e7e07263f4fadbc9403875f08d299e4921db3a0bfaf6f890a295",
+          "session": "966f91a7-f1fb-4e11-a81b-01a18a012bca",
+          "summary": "Autonomous plan run, no owner to ask. The change set's intent: a plan run captures the interview's picks and answers as Decisions when the interview step says done, not only when its session exits. Code read: session done (internal/api/session_done.go) writes only the done mark; answers are captured only on exit (captureAfterRun in internal/api/session_run.go) and by session interview; captureInterview skips handles already proposed, so a second capture adds nothing. Token use already reads the transcript at done (recordTokenUse), the precedent for capturing there. Choices settled here, each marked as assumed in its Decision's wording: capture at done before the done mark is written, so a step waiting on done sees the Decisions; a capture failure is a warning and the mark stands; session done reports the Decisions it proposed.",
+          "title": "Plan captures on done: autonomous plan plan of the change set"
+        },
+        "handle": "plan-captures-on-done-interview",
+        "id": "01M6505J7HQMJSDSZT78TH7XXQ",
+        "key": null,
+        "kind": "source",
+        "node": "01M6505J7GJEFAA0DMFD4994D2",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61GW89J8Y62X62RNJ8Z8HAD",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6505KF9CH8S9VKTX1TN7SQZ",
+  "type": "ops",
+  "v": 1
+}
