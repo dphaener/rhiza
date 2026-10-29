@@ -26,6 +26,13 @@ func init() {
 		Response: reflect.TypeFor[InboxResponse](),
 		Run:      runInbox,
 	})
+	register(Operation{
+		Name:     "inbox.open",
+		Summary:  "Focus the Rex tab an inbox item waits in: the asking session's for a question, the run's journalled tab for the rest",
+		Request:  reflect.TypeFor[InboxOpenRequest](),
+		Response: reflect.TypeFor[InboxOpenResponse](),
+		Run:      runInboxOpen,
+	})
 }
 
 // The kinds of an InboxItem.
@@ -41,18 +48,19 @@ type InboxRequest struct{}
 
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
-	ID       string `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind     string `json:"kind" desc:"question, signoff, failed or gave-up"`
-	At       string `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
-	Run      string `json:"run" desc:"The run it belongs to"`
-	Change   string `json:"change" desc:"The change set of the run"`
-	Step     string `json:"step,omitempty" desc:"The step: the asking session's, the sign-off's, the failed step, or where the run was interrupted"`
-	Question string `json:"question,omitempty" desc:"A question: what the agent asked"`
-	Tab      string `json:"tab,omitempty" desc:"A question: the title of the session's tab"`
-	TabBlock string `json:"tab_block,omitempty" desc:"A question: the Rex block of the session's tab"`
-	Session  string `json:"session,omitempty" desc:"A question: the asking session"`
-	Detail   string `json:"detail,omitempty" desc:"A failed run: why it failed; a sign-off: what it waits for"`
-	Next     string `json:"next,omitempty" desc:"The command that clears it, when one does"`
+	ID         string `json:"id" desc:"The item's short ID: stable while the item waits"`
+	Kind       string `json:"kind" desc:"question, signoff, failed or gave-up"`
+	At         string `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
+	Run        string `json:"run" desc:"The run it belongs to"`
+	Change     string `json:"change" desc:"The change set of the run"`
+	Step       string `json:"step,omitempty" desc:"The step: the asking session's, the sign-off's, the failed step, or where the run was interrupted"`
+	Question   string `json:"question,omitempty" desc:"A question: what the agent asked"`
+	Tab        string `json:"tab,omitempty" desc:"A question: the title of the session's tab"`
+	TabBlock   string `json:"tab_block,omitempty" desc:"A question: the Rex block of the session's tab"`
+	TabSession string `json:"tab_session,omitempty" desc:"A question: the Rex session of the session's tab"`
+	Session    string `json:"session,omitempty" desc:"A question: the asking session"`
+	Detail     string `json:"detail,omitempty" desc:"A failed run: why it failed; a sign-off: what it waits for"`
+	Next       string `json:"next,omitempty" desc:"The command that clears it, when one does"`
 }
 
 // InboxResponse is the inbox.
@@ -132,7 +140,7 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 				}
 				add(InboxQuestion, b.Session, b.At, InboxItem{
 					Step: b.Step, Question: b.Block.Question, Tab: b.Block.TabTitle,
-					TabBlock: b.Block.TabBlock, Session: b.Session,
+					TabBlock: b.Block.TabBlock, TabSession: b.Block.TabSession, Session: b.Session,
 				})
 			}
 			if st.DaemonResumed && st.ProcessAt.After(st.DaemonResumedAt) && st.Liveness(host, alive) == run.LiveInterrupted && len(st.Blocks) == 0 {
@@ -172,4 +180,101 @@ func runInbox(ctx *Ctx, req any) (any, error) {
 	}
 	host, _ := os.Hostname()
 	return InboxResponse{Items: inboxItems(runs, host, nil, rs.Live)}, nil
+}
+
+// InboxOpenRequest names the item to open.
+type InboxOpenRequest struct {
+	Item string `json:"item" arg:"0" desc:"The inbox item: its short ID from rhiza inbox, or a unique prefix of it"`
+}
+
+// InboxOpenResponse says which tab was focused, or that it is gone.
+type InboxOpenResponse struct {
+	Item    string `json:"item" desc:"The item's short ID"`
+	Kind    string `json:"kind" desc:"question, signoff, failed or gave-up"`
+	Run     string `json:"run" desc:"The run it belongs to"`
+	Opened  bool   `json:"opened" desc:"True when the tab was focused"`
+	Tab     string `json:"tab,omitempty" desc:"The Rex block of the tab, when one is recorded"`
+	TabGone bool   `json:"tab_gone,omitempty" desc:"True when the tab is no longer in Rex, or none was recorded"`
+}
+
+// Human writes the response as text.
+func (r InboxOpenResponse) Human(w io.Writer) {
+	switch {
+	case r.Opened:
+		fmt.Fprintf(w, "Focused %s, the tab of %s run %s\n", r.Tab, r.Kind, r.Run)
+	case r.Tab == "":
+		fmt.Fprintf(w, "%s run %s: tab gone (no tab is recorded for it)\n", r.Kind, r.Run)
+	default:
+		fmt.Fprintf(w, "%s run %s: tab gone (Rex no longer has %s)\n", r.Kind, r.Run, r.Tab)
+	}
+}
+
+// itemTab is where item's tab is: a question's session tab, else the run's
+// journalled tab. The Rex session is empty when the journal has none.
+func itemTab(item InboxItem, st run.State) (rexSession, block string) {
+	if item.Kind == InboxQuestion {
+		return item.TabSession, item.TabBlock
+	}
+	if st.Process != nil {
+		return "", st.Process.RexBlock
+	}
+	return "", ""
+}
+
+// runInboxOpen focuses the tab of one inbox item.
+func runInboxOpen(ctx *Ctx, req any) (any, error) {
+	r := req.(InboxOpenRequest)
+	if r.Item == "" {
+		return nil, Usagef("inbox open needs an item: see rhiza inbox").WithNext("rhiza inbox")
+	}
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return nil, err
+	}
+	rs := run.NewStore(run.Dir(common))
+	runs, err := rs.List()
+	if err != nil {
+		return nil, Errorf("read runs: %v", err)
+	}
+	host, _ := os.Hostname()
+	var found []InboxItem
+	for _, it := range inboxItems(runs, host, nil, rs.Live) {
+		if strings.HasPrefix(it.ID, r.Item) {
+			found = append(found, it)
+		}
+	}
+	switch len(found) {
+	case 0:
+		return nil, Usagef("no inbox item %q", r.Item).WithNext("rhiza inbox")
+	case 1:
+	default:
+		return nil, Usagef("%q matches %d inbox items: give more of the ID", r.Item, len(found)).WithNext("rhiza inbox")
+	}
+	item := found[0]
+	var st run.State
+	for _, j := range runs {
+		if j.ID == item.Run {
+			st = j.State()
+		}
+	}
+	rexSession, block := itemTab(item, st)
+	resp := InboxOpenResponse{Item: item.ID, Kind: item.Kind, Run: item.Run, Tab: block}
+	if block == "" || ctx.Exec == nil {
+		resp.TabGone = true
+		return resp, nil
+	}
+	scope := []string{}
+	if rexSession != "" {
+		scope = []string{"-s", rexSession}
+	}
+	inspect := append(append([]string{"block", "inspect"}, scope...), "--json", block)
+	if _, err := ctx.Exec("rex", inspect, "", nil); err != nil {
+		resp.TabGone = true
+		return resp, nil
+	}
+	if _, err := ctx.Exec("rex", append(append([]string{"focus"}, scope...), block), "", nil); err != nil {
+		return nil, Errorf("rex could not focus %s: %v", block, err)
+	}
+	resp.Opened = true
+	return resp, nil
 }

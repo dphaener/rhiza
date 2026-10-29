@@ -1691,6 +1691,10 @@ cmp stdout describe.golden.json
                 "tab_block": {
                   "description": "A question: the Rex block of the session's tab",
                   "type": "string"
+                },
+                "tab_session": {
+                  "description": "A question: the Rex session of the session's tab",
+                  "type": "string"
                 }
               },
               "required": [
@@ -1711,6 +1715,60 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "List what waits on the owner across every run: questions, sign-offs, failed runs and runs the daemon gave up on, oldest first",
+      "write": false
+    },
+    {
+      "name": "inbox.open",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "item": {
+            "description": "The inbox item: its short ID from rhiza inbox, or a unique prefix of it",
+            "type": "string"
+          }
+        },
+        "required": [
+          "item"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "item": {
+            "description": "The item's short ID",
+            "type": "string"
+          },
+          "kind": {
+            "description": "question, signoff, failed or gave-up",
+            "type": "string"
+          },
+          "opened": {
+            "description": "True when the tab was focused",
+            "type": "boolean"
+          },
+          "run": {
+            "description": "The run it belongs to",
+            "type": "string"
+          },
+          "tab": {
+            "description": "The Rex block of the tab, when one is recorded",
+            "type": "string"
+          },
+          "tab_gone": {
+            "description": "True when the tab is no longer in Rex, or none was recorded",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "item",
+          "kind",
+          "opened",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Focus the Rex tab an inbox item waits in: the asking session's for a question, the run's journalled tab for the rest",
       "write": false
     },
     {
