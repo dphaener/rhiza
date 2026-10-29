@@ -18,7 +18,7 @@ the orchestrator's recommended option, taken under the owner's standing word: "i
 
 ### In
 
-- decided-by [quick-launch-layer](../capability/rhiza/quick-launch-layer.md)
+- decided-by quick-launch-layer (retired)
 
 ## History
 

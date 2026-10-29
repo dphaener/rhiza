@@ -20,7 +20,7 @@ The TUI is many small apps launched from a Rex quick-launch layer, installed by 
 
 - decided-by [rhiza-tui](../intent/rhiza-tui.md)
 - decided-by [rex-install-command](../capability/rhiza/rex-install-command.md)
-- decided-by [quick-launch-layer](../capability/rhiza/quick-launch-layer.md)
+- decided-by quick-launch-layer (retired)
 - decided-by [read-apps-match-cli](../capability/rhiza/read-apps-match-cli.md)
 - decided-by [model-tree-app](../capability/rhiza/model-tree-app.md)
 - decided-by [write-apps-previewed](../capability/rhiza/write-apps-previewed.md)

@@ -4,7 +4,7 @@ intent · `01M62JMHNS9HS0AR6DT5SZYKGQ`
 
 ## statement
 
-Rhiza's commands run as small Rex apps: a quick-launch layer opens each one in a modal, and each app reads and writes the model in-process through internal/api
+Rhiza's commands run as small Rex apps: each app is its own Rex action in the command palette and a key in the rhiza key mode, and opens straight away in a layer sized to it with no picker in between; each app reads and writes the model in-process through internal/api
 
 ## Links
 
@@ -22,3 +22,4 @@ Rhiza's commands run as small Rex apps: a quick-launch layer opens each one in a
 ## History
 
 - `01M62J0ED188JTTR7R9709Y989` Rhiza has a terminal UI built on Rex, with rexuikit, in which common rhiza commands run as tiny apps in modals or pop-ups, alongside a view of the model.
+- `01M643X7CEAQP16925KTAM06GT` Rhiza's apps open natively in Rex, as forge's quick actions do: rhiza rex install writes a Lua script that registers each app as its own Rex action (in the command palette) and a rhiza key mode with one key per app, and each action opens its app straight away in a layer sized to it, with no picker in between.

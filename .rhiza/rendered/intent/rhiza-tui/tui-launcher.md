@@ -10,7 +10,8 @@ ctrl-a>a opens a Rex quick-launch layer that lists every rhiza app, and choosing
 
 ### In
 
-- serves [quick-launch-layer](../../capability/rhiza/quick-launch-layer.md)
+- serves quick-launch-layer (retired)
+- supersedes [tui-native-actions](tui-native-actions.md)
 
 ## History
 

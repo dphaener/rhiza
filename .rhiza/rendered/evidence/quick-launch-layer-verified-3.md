@@ -14,7 +14,7 @@ Verified commit 3f3f1f8 (attempt 3, the fix for QA cycle 2's major finding that 
 
 ### Out
 
-- verifies [quick-launch-layer](../capability/rhiza/quick-launch-layer.md)
+- verifies quick-launch-layer (retired)
 
 ## History
 
