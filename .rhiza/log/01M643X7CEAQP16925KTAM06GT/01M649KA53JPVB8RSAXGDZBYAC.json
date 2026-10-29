@@ -1,0 +1,40 @@
+{
+  "actor": "01M649BPYKKQ6RSV86FKQ2ZBA5",
+  "after": [
+    "01M649FWC718F4Q07FE43NYGJ8"
+  ],
+  "at": "2026-10-29T16:58:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 9281614 (attempt 2, after the fix that revised quick-launch-layer to the palette-only rhiza_launch action), go test ./cmd/rhiza -run TestScripts/rex-install -count=1 passes. The script asserts a first install writes launch_key = \"ctrl+a>a\" (internal/api/rex_install.go:41, the default in the setting's > spacing), sed-edits it to ctrl+b>x, reinstalls with --json reporting written [] and cmp showing rhiza.lua unchanged, the edited line still present exactly once, and the -- settings begin / -- settings end block kept. go test ./internal/api -run Rex and go test ./... pass. Read the diff: the fix commit only updates quick-launch-layer's statement and acceptance in .rhiza and records its actor; the launch_key code is unchanged from the verified attempt 1. make check's self-check fails only on rendered actor pages for sessions recorded after this commit (claude-code-34dde8a0, claude-code-4dee40ee) and index.md, the same at the parent commit, not on anything this leaf wrote."
+        },
+        "handle": "rex-launch-key-setting-verified-2",
+        "id": "01M649K95RQ8ZJYQPC6VHRV1ZX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M649K95RQ8ZJYQPC6R0K00EG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M649K95RQ8ZJYQPC6R0K00EG",
+        "id": "01M649K9J7JKMP82FCYQWSBBC0",
+        "link": "01M649K9J7JKMP82FCYKXC0G7Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M644QXZW01JJZ0SJRZA71GWV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M649KA53JPVB8RSAXGDZBYAC",
+  "type": "ops",
+  "v": 1
+}
