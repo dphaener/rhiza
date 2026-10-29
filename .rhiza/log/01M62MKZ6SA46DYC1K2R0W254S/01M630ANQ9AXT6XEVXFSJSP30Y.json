@@ -1,0 +1,40 @@
+{
+  "actor": "01M6306XMWY60DG7YWGRNJY1PA",
+  "after": [
+    "01M6308AFP3TZ1XQVJAP2P28RS"
+  ],
+  "at": "2026-10-29T04:57:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6929af3 ran go test ./cmd/rhiza -run 'TestScripts/daemon-resume$' -count=1 (ok), plus go test ./internal/daemon ./internal/api (ok), fmt-check and vet (clean). In daemon-resume.txtar, interrupted runs LANDED00001 and LANDEDAUTO1 (autonomous) on a landed change set get no Rex tab and no daemon-resumed entry. rhiza inbox lists both as 'skipped run ..., interrupted, and not resumed: its change set is landed' with 'next: rhiza run abandon <run>', and abandoning one clears it. Read the diff: internal/api/inbox.go now runs the skipped check before the autonomous skip, using changeset.State.Terminal() (the same test as run resume), which fixes the review's autonomous-run finding. make check's only failure is self-check's stale render of another session's actor record, which is unrelated to this commit."
+        },
+        "handle": "unaccepted-run-in-inbox-verified-2",
+        "id": "01M630AMWZPZYFVDFYTMTC4XSJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M630AMWZPZYFVDFYTKR3JBHZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M630AMWZPZYFVDFYTKR3JBHZ",
+        "id": "01M630AN78BQQJVSP50SZ08K84",
+        "link": "01M630AN78BQQJVSP50QGHZ3FQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RH3PBJ12H0CYSMCMV7KAS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62MKZ6SA46DYC1K2R0W254S",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M630ANQ9AXT6XEVXFSJSP30Y",
+  "type": "ops",
+  "v": 1
+}
