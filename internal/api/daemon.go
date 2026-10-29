@@ -106,6 +106,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	state := daemon.State{Process: self, MaxRuns: r.MaxRuns, Autonomous: r.Autonomous, Runs: []daemon.LiveRun{}}
 	if prev, ok := daemon.ReadState(common); ok {
 		state.LastStarted, state.LastResumed = prev.LastStarted, prev.LastResumed
+		state.Notified = prev.Notified
 	}
 	saveState := func() {
 		state.LastPoll = ctx.Now().UTC()
@@ -134,6 +135,9 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			state.Unjournaled = append(state.Unjournaled, daemon.Event{Change: cs, At: p.at.UTC()})
 		}
 		slices.SortFunc(state.Unjournaled, func(a, b daemon.Event) int { return strings.Compare(a.Change, b.Change) })
+		if nerr := daemonNotify(ctx, rs, &state); err == nil {
+			err = nerr
+		}
 		saveState()
 		return err
 	}
@@ -157,6 +161,64 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			return resp, nil
 		case <-tick.C:
 		}
+	}
+}
+
+// daemonNotify sends one Rex notification for each inbox item that waits
+// and that state does not list as notified, and records it there. An item
+// that no longer waits drops out of state.Notified. A run keeps its own
+// blocked-run notice; this is the daemon's, written as a blocked report to
+// the terminal Rex shows the daemon in (ctx.Rex). A working report goes
+// before each one so that Rex sees each as a new blocked state.
+func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State) error {
+	runs, err := rs.List()
+	if err != nil {
+		return Errorf("read runs: %v", err)
+	}
+	host, _ := os.Hostname()
+	items := inboxItems(runs, host, nil, rs.Live)
+	titles := map[string]string{}
+	for _, j := range runs {
+		if st := j.State(); st.Title != "" {
+			titles[st.Change] = st.Title
+		}
+	}
+	var kept []string
+	for _, it := range items {
+		if slices.Contains(state.Notified, it.ID) {
+			kept = append(kept, it.ID)
+			continue
+		}
+		if ctx.Rex != nil {
+			kept = append(kept, it.ID)
+			what := titles[it.Change]
+			if what == "" {
+				what = it.Change
+			}
+			ctx.Rex.Write(rexReport("working", "", "", ""))
+			ctx.Rex.Write(rexReport("blocked", "", "", inboxNotice(what, it)))
+		}
+	}
+	state.Notified = kept
+	return nil
+}
+
+// inboxNotice is the notification text for item it of the change set called
+// what.
+func inboxNotice(what string, it InboxItem) string {
+	switch it.Kind {
+	case InboxQuestion:
+		msg := what + ": a question waits on you"
+		if q := strings.TrimSpace(it.Question); q != "" {
+			msg += ": " + q
+		}
+		return msg
+	case InboxSignoff:
+		return what + ": a sign-off waits on you"
+	case InboxFailed:
+		return what + ": a run failed"
+	default:
+		return what + ": the daemon gave up on a run"
 	}
 }
 

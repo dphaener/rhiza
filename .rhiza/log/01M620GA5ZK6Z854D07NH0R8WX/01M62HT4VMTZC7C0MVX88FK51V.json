@@ -1,0 +1,40 @@
+{
+  "actor": "01M62HPCDAEC6WAV1QF18RKBN9",
+  "after": [
+    "01M62HNAPPD3Z74MMRZW77SWJZ"
+  ],
+  "at": "2026-10-29T00:43:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at fc55a56 (attempt 2). `go test ./cmd/rhiza -run TestScripts/inbox` passes: inbox-open.txtar, with a fake rex, opens a question item and sees `rex focus -s session:s1 block:q1`; opens a sign-off item from REX_SESSION=session:owner and sees `rex block inspect -s session:run --json block:r1` and `rex focus -s session:run block:r1` (the fake rex finds r1 only with -s, as the real one does); gets failed run FAILEDRUN001 named with `tab gone (Rex no longer has block:gone)`, tab_gone true, nothing focused; and `rhiza inbox open zzzzzzz` exits 2 with `no inbox item`. `go test ./internal/api ./internal/run` passes, including run_process_test checking the journalled process now records rex_session. Attempt 1's finding f1 is fixed: run.Process journals RexSession (set from ctx.RexSession when a block is set) and itemTab/runInboxOpen scope inspect and focus with -s. Checked against the real rex with a scratch build: a sign-off journal recording session Rhiza and this pane's block, opened from REX_SESSION=Clipboard, returned opened=true and focused the tab (an unscoped `rex block inspect` from Clipboard exits 3, the old failure); a non-existent block in that session printed `tab gone`; an unknown item exited 2. Diff read: change limited to process.go, run.go runProcess, inbox.go itemTab, the script and the unit test. make check: fmt-check, vet and all tests pass; self-check fails only on stale renders of actors claude-code-27536f53 and claude-code-c9fefacd, created after this commit by the verify sessions, not by the commit."
+        },
+        "handle": "inbox-open-verified",
+        "id": "01M62HT4981244CKB52GVEKVDB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62HT4981244CKB52DS5CNQR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62HT4981244CKB52DS5CNQR",
+        "id": "01M62HT4GFXZR8HHYHPWP1SCV2",
+        "link": "01M62HT4GFXZR8HHYHPVDTZGWR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7QK0MX5D9HZ3V9J9FT24",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M620GA5ZK6Z854D07NH0R8WX",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62HT4VMTZC7C0MVX88FK51V",
+  "type": "ops",
+  "v": 1
+}

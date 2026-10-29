@@ -1,0 +1,132 @@
+{
+  "actor": "01M62K2KMA0881P5ENZKT1DXQA",
+  "after": [
+    "01M62K24CC9TCGHJVBAY8H1227"
+  ],
+  "at": "2026-10-29T01:12:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a build of the branch head in a scratch repo: with fixture journals of a question, sign-off, failed, daemon-gave-up and done run, rhiza inbox listed exactly the first four oldest first with short IDs, in text and --json (empty repo: 'Nothing waits on you', items []). Unblocking the question, rhiza run abandon on the gave-up run, a signoff approved entry and a newer finished run on the failed run's change set emptied the inbox; the abandoned run was not listed as failed."
+        },
+        "handle": "inbox-list-qa-1",
+        "id": "01M62KEBYMR53PG4F5XDVWCMG5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62KEBYMR53PG4F5XBSYA2SP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62KEBYMR53PG4F5XBSYA2SP",
+        "id": "01M62KEC5R6XEKB688FXYMYXS8",
+        "link": "01M62KEC5R6XEKB688FXYGNKR6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7Q0JX5BXJP6M3P1SJXTG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a build of the branch head: a real review run (fake agent, fake rex) waited at sign-off; rhiza inbox approve --dry-run journalled nothing, rhiza inbox approve <item> ended the run succeeded with 'approved by darin-haener' and an empty inbox. A second run sent back with rhiza inbox request-changes <item> <file> started fix cycle 2 (fixer saw the finding, verifier wrote Evidence) and, once resumed, waited at sign-off again under a new item. On a question item both commands exited 2 naming it a question, and the journal was unchanged; an unknown item exited 2."
+        },
+        "handle": "inbox-signoff-qa-1",
+        "id": "01M62KECD05TRNT0PMN2Z66KNK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62KECD05TRNT0PMMZD6KC6S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62KECD05TRNT0PMMZD6KC6S",
+        "id": "01M62KECM7DP12TDPKJWXKPWHN",
+        "link": "01M62KECM7DP12TDPKJT3GWWE3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7R5H6HYW9WR669EGA860",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a build of the branch head against the real Rex: a throwaway tab was opened in a Rex session and fixture journals pointed a question (tab_session/tab_block) and a sign-off run (process rex_session/rex_block) at it. rhiza inbox open on each, run with no REX_SESSION, printed 'Focused <block>' / opened:true and rex session inspect showed that tab's window become active. With the tab closed, both printed '<kind> run <id>: tab gone (Rex no longer has <block>)' with exit 0; an unknown item exited 2."
+        },
+        "handle": "inbox-open-qa-1",
+        "id": "01M62KECVE7CJXA1XHHQJTNGDM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62KECVE7CJXA1XHHQHKQSQT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62KECVE7CJXA1XHHQHKQSQT",
+        "id": "01M62KED2QRWEVQMP5QESYRPHT",
+        "link": "01M62KED2QRWEVQMP5QDQS5C0Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7QK0MX5D9HZ3V9J9FT24",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a build of the branch head in a real Rex tab: with fixture journals of a question, sign-off, failed and daemon-gave-up run, rhiza daemon --permission-mode manual --once wrote four blocked OSC 7501 reports, and rex events --json for that block showed four program_status_changed blocked records: 'CSQUESTION: a question waits on you: Which store?', 'CSSIGNOFF: a sign-off waits on you', 'CSFAILED: a run failed', 'CSGAVEUP: the daemon gave up on a run'. A second --once in the same repo wrote no blocked report."
+        },
+        "handle": "inbox-notify-qa-1",
+        "id": "01M62KED9XKDRRQNZ09VHG5N72",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62KED9XKDRRQNZ09V4MGVGN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62KED9XKDRRQNZ09V4MGVGN",
+        "id": "01M62KEDH6EKARZW8FFV95MJ63",
+        "link": "01M62KEDH6EKARZW8FFTASR0D0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7SANZRP2X52437ENZGTH",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a build of the branch head (fake claude via the real hook path, fake rex): a normal run's agent blocked on 'Which colour?'; an advisor was launched with the question and 'follow rhiza guide advisor' in its prompt, journalled an advisor and a recommended entry, and rhiza inbox showed 'recommendation: Use blue' and 'reasons: Blue is the brand colour' beside the question while the run stayed blocked; nothing was typed at the asker and no Decision was written. With the advisor exiting 5 the question showed no recommendation (text or --json) and the run stayed blocked. rhiza guide advisor prints the recommend-only guide."
+        },
+        "handle": "inbox-advisor-qa-1",
+        "id": "01M62KEDRDYN6RJE05MNNSGW3D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62KEDRDYN6RJE05MK12BC1N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62KEDRDYN6RJE05MK12BC1N",
+        "id": "01M62KEDZHRJ0PMQAZF9PMGYDX",
+        "link": "01M62KEDZHRJ0PMQAZF9F70TZZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7RR0R434KJZZJ75FE90Z",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M620GA5ZK6Z854D07NH0R8WX",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62KEEAV9FGJ51QHW11YK43X",
+  "type": "ops",
+  "v": 1
+}

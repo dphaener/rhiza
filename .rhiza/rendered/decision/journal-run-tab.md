@@ -14,6 +14,7 @@ the orchestrator's option, picked by the owner: "Journal the run's tab (Recommen
 
 ### In
 
+- relates-to [inbox-open-run-tab](inbox-open-run-tab.md) — the run's tab inbox-open focuses is the one this Decision journals
 - decided-by [run-process-record](../capability/rhiza/workflows/workflow-runs/run-process-record.md)
 
 ## History

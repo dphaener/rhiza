@@ -25,9 +25,13 @@ type Record struct {
 	// change set opened for the agent, landed once its work passes.
 	Writes       string `json:"writes,omitempty"`
 	WritesRecord bool   `json:"writes_record,omitempty"`
-	Title        string `json:"title"`
-	Step         string `json:"step"`
-	Run          string `json:"run,omitempty"`
+	// Advises is the session an advisor recommends an answer for: the
+	// session of a normal run that is blocked on a question. Empty for
+	// every other session.
+	Advises string `json:"advises,omitempty"`
+	Title   string `json:"title"`
+	Step    string `json:"step"`
+	Run     string `json:"run,omitempty"`
 	// Autonomous is true when an autonomous run launched the session: the
 	// owner is not there to answer it.
 	Autonomous bool `json:"autonomous,omitempty"`

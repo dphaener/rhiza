@@ -22,6 +22,7 @@ A run journals its process (host and pid) and, when it runs in Rex, its Rex wind
 
 - depends-on [daemon-resume-once](../../orchestration/daemon/daemon-resume-once.md)
 - depends-on [daemon-picks](../../orchestration/daemon/daemon-picks.md)
+- depends-on [inbox-open](../../orchestration/inbox/inbox-open.md)
 - verifies [run-process-record-verified](../../../../evidence/run-process-record-verified.md)
 - verifies [run-process-record-qa-1](../../../../evidence/run-process-record-qa-1.md)
 - verifies [run-process-record-qa-3](../../../../evidence/run-process-record-qa-3.md)

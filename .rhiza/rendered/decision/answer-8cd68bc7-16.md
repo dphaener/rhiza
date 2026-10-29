@@ -37,6 +37,12 @@ the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a18
 
 - derived-from [milestone-4-conversation](../source/milestone-4-conversation.md)
 
+### In
+
+- decided-by [inbox-list](../capability/rhiza/orchestration/inbox/inbox-list.md)
+- decided-by [inbox-open](../capability/rhiza/orchestration/inbox/inbox-open.md)
+- decided-by [inbox-signoff](../capability/rhiza/orchestration/inbox/inbox-signoff.md)
+
 ## History
 
 - `01M61H5VY8MD7E7SVS0HQQHQJ0` Plan milestone 4 with the owner: its intent, its done points and the change sets that serve it, planned by Rhiza's plan workflow.

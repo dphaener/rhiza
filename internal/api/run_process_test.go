@@ -53,7 +53,7 @@ timeout = "1m"
 		t.Fatal(err)
 	}
 	id := resp.(RunResponse).Run.ID
-	started := run.Process{Host: host, Pid: os.Getpid(), RexWindow: "window:ws", RexBlock: "block:start"}
+	started := run.Process{Host: host, Pid: os.Getpid(), RexSession: "session:s", RexWindow: "window:ws", RexBlock: "block:start"}
 	if ps := processes(id); !slices.Equal(ps, []run.Process{started}) {
 		t.Fatalf("started run's processes = %+v, want %+v", ps, started)
 	}
@@ -65,7 +65,7 @@ timeout = "1m"
 	if _, err := callOp(t, f.ctx, "run.resume", `{"run":"`+id+`","no_wait":true}`); err != nil {
 		t.Fatal(err)
 	}
-	resumed := run.Process{Host: host, Pid: os.Getpid(), RexWindow: "window:wr", RexBlock: "block:resume"}
+	resumed := run.Process{Host: host, Pid: os.Getpid(), RexSession: "session:s", RexWindow: "window:wr", RexBlock: "block:resume"}
 	if ps := processes(id); !slices.Equal(ps, []run.Process{started, resumed}) {
 		t.Fatalf("resumed run's processes = %+v, want %+v then %+v", ps, started, resumed)
 	}

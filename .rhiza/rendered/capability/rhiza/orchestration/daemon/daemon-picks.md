@@ -25,6 +25,7 @@ Each poll, the daemon picks the accepted change sets that rhiza ready says can s
 
 - depends-on [daemon-run-tabs](daemon-run-tabs.md)
 - depends-on [daemon-status](daemon-status.md)
+- depends-on [inbox-notify](../inbox/inbox-notify.md)
 - verifies [daemon-picks-verified](../../../../evidence/daemon-picks-verified.md)
 - verifies [daemon-picks-qa-1](../../../../evidence/daemon-picks-qa-1.md)
 - verifies [daemon-picks-verified-3](../../../../evidence/daemon-picks-verified-3.md)

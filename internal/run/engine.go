@@ -80,6 +80,11 @@ type Runner interface {
 	// node question, on the run's change set, and returns its ID. Its
 	// prompt names only the question and how to decide it.
 	StartArbiter(step workflow.Step, question string, env []string) (session string, err error)
+	// StartAdvisor launches the advisor's session for the question
+	// session asker, of the run's agent step, asked the owner: text. It
+	// returns at once with the session's ID and does not wait for it: the
+	// advisor reports its recommendation itself and answers nothing.
+	StartAdvisor(step workflow.Step, asker, text string, env []string) (session string, err error)
 	// Answer reports whether the model, as the change set arbiter session
 	// session writes into sees it (the run's, or the one the question lives
 	// in), holds a valid answer to question node question, and if not, why.
@@ -891,7 +896,32 @@ func (r *running) block(step, session string, b *Block) error {
 	r.log("step %s: blocked on %s", step, on)
 	if !r.arbitrates(&cp) {
 		r.notify(st, step, session, true, &cp)
+		if cp.Kind == "question" {
+			if err := r.advise(step, session, &cp); err != nil {
+				return err
+			}
+		}
 	}
+	return nil
+}
+
+// advise launches the advisor on the question session, blocked on b, asks
+// the owner, and journals an advisor entry. It does not wait: the run goes
+// on being blocked on the owner, and a recommendation arrives in the
+// journal whenever the advisor makes it. An advisor that cannot be
+// launched is only logged: the question stays without a recommendation.
+// The error return is for journal failures.
+func (r *running) advise(step, session string, b *Block) error {
+	st := r.j.State()
+	s, err := r.e.Runner.StartAdvisor(r.def.Arbiter(), session, b.Question, r.stepEnv(workflow.ArbiterName, st.Change))
+	if err != nil {
+		r.log("step %s: no advisor on the question session %s asked: %v", step, session, err)
+		return nil
+	}
+	if err := r.append(Entry{Type: TypeAdvisor, Step: step, Session: s, Asker: session}); err != nil {
+		return err
+	}
+	r.log("step %s: advisor session %s on the question session %s asked", step, s, session)
 	return nil
 }
 

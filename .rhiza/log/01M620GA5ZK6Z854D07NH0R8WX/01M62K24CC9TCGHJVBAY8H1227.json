@@ -1,0 +1,40 @@
+{
+  "actor": "01M62JTQ9H0NB1HRFTRZ51GM0C",
+  "after": [
+    "01M62JSJQPECB443793P6CEPY1"
+  ],
+  "at": "2026-10-29T01:05:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c0a0879 (builder commit 78720ab), ran go test ./cmd/rhiza -run 'TestScripts/daemon-notify$' -count=1 -v. With a fake rex on PATH and REX_BLOCK set, the first rhiza daemon --once over four fixture runs (one blocked on a question, one waiting at sign-off, one finished failed, one the daemon gave up on after a dead resumed process) wrote exactly four OSC 7501 state=blocked reports to stderr. Each was preceded by a working report, and their decoded msgs were 'CSQUESTION: a question waits on you: Which store?', 'CSSIGNOFF: a sign-off waits on you', 'CSFAILED: a run failed' and 'CSGAVEUP: the daemon gave up on a run'. A second --once with the same items wrote none. After the sign-off was approved and a new failed run was added, a third --once wrote exactly one ('CSFAILEDTWO: a run failed'). Read the diff: daemonNotify in internal/api/daemon.go runs on every poll, and the notified IDs persist in daemon.State.Notified, pruned to the items that still wait. Run notices are untouched. make fmt-check vet test passed with every package ok. In a clean clone at c0a0879, rhiza check printed ok. make self-check in the run checkout failed only on stale renders of actor records that the run added to the shared .git/rhiza log after the commit, including this verifier's own actor record."
+        },
+        "handle": "inbox-notify-verified",
+        "id": "01M62K23SVESZWXBR39Z0TCQ8V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62K23SVESZWXBR39W4ZDMH1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62K23SVESZWXBR39W4ZDMH1",
+        "id": "01M62K241247DG2EX1A3058EA7",
+        "link": "01M62K241247DG2EX1A0RNW0XD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7SANZRP2X52437ENZGTH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M620GA5ZK6Z854D07NH0R8WX",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62K24CC9TCGHJVBAY8H1227",
+  "type": "ops",
+  "v": 1
+}

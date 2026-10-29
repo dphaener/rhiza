@@ -53,6 +53,9 @@ func (f *statusLeafRunner) AgentStatus(sid string) (run.AgentStatus, error) {
 func (f *statusLeafRunner) StartArbiter(workflow.Step, string, []string) (string, error) {
 	return "", fmt.Errorf("no arbiter here")
 }
+func (f *statusLeafRunner) StartAdvisor(workflow.Step, string, string, []string) (string, error) {
+	return "", fmt.Errorf("no advisor here")
+}
 func (f *statusLeafRunner) Answer(string, string) (run.Answer, error) { return run.Answer{}, nil }
 func (f *statusLeafRunner) AddQuestion(string, string) (run.Question, error) {
 	return run.Question{}, fmt.Errorf("no questions here")

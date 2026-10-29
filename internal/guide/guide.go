@@ -93,6 +93,7 @@ var skills = []entry{
 
 // topics lists the topics, sorted by name.
 var topics = []entry{
+	{name: "advisor", file: "advisor.md", description: "The advisor: recommending an answer to a question a normal run's session asked the owner, with reasons, never answering it, then done."},
 	{name: "apply", file: "apply.md", description: "The rhiza apply file format: many writes in one JSON file."},
 	{name: "arbiter", file: "arbiter.md", description: "The arbiter: deciding one question in an autonomous run, the one answering Decision and its wording and reasoning, then done."},
 	{name: "build", file: "build.md", description: "Building a change set's leaves: a builder's one commit with a Leaf: trailer, outside work as a question or a discovered-from draft change set, a verifier's Evidence or findings. Load it when you run as a builder or verifier of a build run."},

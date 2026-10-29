@@ -20,6 +20,7 @@ The daemon resumes an interrupted run once, as rhiza run resume <run> in a new R
 
 ### In
 
+- depends-on [inbox-list](../inbox/inbox-list.md)
 - verifies [daemon-resume-once-verified](../../../../evidence/daemon-resume-once-verified.md)
 - verifies [daemon-resume-once-qa-1](../../../../evidence/daemon-resume-once-qa-1.md)
 - verifies [daemon-resume-once-verified-r1](../../../../evidence/daemon-resume-once-verified-r1.md)

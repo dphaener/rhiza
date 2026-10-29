@@ -1039,7 +1039,7 @@ func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode
 }
 
 // runProcess is the calling process as a run's process: its host and pid
-// and, when it runs in Rex, the window and block of its tab. Rex names the
+// and, when it runs in Rex, the session, window and block of its tab. Rex names the
 // window of the block (`rex block inspect`); when it cannot, the record
 // has the block alone.
 func runProcess(ctx *Ctx) run.Process {
@@ -1061,7 +1061,11 @@ func runProcess(ctx *Ctx) run.Process {
 			}
 		}
 	}
-	return run.ThisProcess(window, ctx.RexBlock)
+	session := ""
+	if ctx.RexBlock != "" {
+		session = ctx.RexSession
+	}
+	return run.ThisProcess(session, window, ctx.RexBlock)
 }
 
 // stepRunner is the engine's run.Runner: command and wait steps run
@@ -1179,6 +1183,29 @@ func (r *stepRunner) StartArbiter(step workflow.Step, question string, _ []strin
 				err = withNote(err, why)
 			}
 		}
+		return "", err
+	}
+	return resp.(SessionStartResponse).Session.ID, nil
+}
+
+// advisorPrompt is the advisor's whole prompt: the question the session
+// asked the owner (a normal run adds no question node) and the guide topic.
+const advisorPrompt = "Recommend an answer to this question the owner was asked: %s -- follow rhiza guide advisor."
+
+// advisorStep is the step name of an advisor's session.
+const advisorStep = "advisor"
+
+// StartAdvisor starts the arbiter step's adapter and mode as a session
+// that recommends an answer to the question session asker asked, text, on
+// the run's change set, and returns at once. The session answers nothing:
+// it reports its recommendation with run recommend, recorded against the
+// session it advises.
+func (r *stepRunner) StartAdvisor(step workflow.Step, asker, text string, _ []string) (string, error) {
+	req := agentStepRequest(step, r.mode, r.agent)
+	req.Step, req.Change, req.Run, req.advises = advisorStep, r.change, r.run, asker
+	req.Prompt = fmt.Sprintf(advisorPrompt, text)
+	resp, err := runSessionStart(r.ctx, req)
+	if err != nil {
 		return "", err
 	}
 	return resp.(SessionStartResponse).Session.ID, nil

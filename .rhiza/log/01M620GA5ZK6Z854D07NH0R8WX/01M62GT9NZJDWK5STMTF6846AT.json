@@ -1,0 +1,40 @@
+{
+  "actor": "01M62GJ9RKRY0DMBAKMWQ3KHM3",
+  "after": [
+    "01M622V8N5X4XJ4ES4R29EY6DS"
+  ],
+  "at": "2026-10-29T00:26:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1275837 I ran go test ./cmd/rhiza -run 'TestScripts/(inbox-list|describe-golden)$' -count=1 (ok) and make check (exit 0). inbox-list.txtar puts fixture journals of a run blocked on a question, a run stopped at sign-off, a failed run, a run interrupted again after a daemon-resumed entry and a done run under .git/rhiza/runs; rhiza inbox lists exactly question, signoff, failed, gave-up in that order (the ordered kinds are matched anchored, in text and --json) with the question, its tab and the failure detail, and never the done run. After an unblocked entry, an approved signoff entry, a real rhiza run abandon of the gave-up run and a new succeeded run on the failed run's change set, rhiza inbox prints 'Nothing waits on you' and --json gives empty items. I read the diff: internal/api/inbox.go skips abandoned failed runs (State.Abandoned) and failed runs with a newer run on their change set (run.Store.List sorts by start time), and journal.go adds only timestamps (ProcessAt, DaemonResumedAt, StoppedAt, EndedAt, SessionBlock.At)."
+        },
+        "handle": "inbox-list-verified",
+        "id": "01M62GT93EFHR56WX2FE4R35H6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62GT93EFHR56WX2FD2GGA2N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62GT93EFHR56WX2FD2GGA2N",
+        "id": "01M62GT9AV6B96JMRQ739Y24H1",
+        "link": "01M62GT9AV6B96JMRQ6ZYWY7MM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7Q0JX5BXJP6M3P1SJXTG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M620GA5ZK6Z854D07NH0R8WX",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62GT9NZJDWK5STMTF6846AT",
+  "type": "ops",
+  "v": 1
+}
