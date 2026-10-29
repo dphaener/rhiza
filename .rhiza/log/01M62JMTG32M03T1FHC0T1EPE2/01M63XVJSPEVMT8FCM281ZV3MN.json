@@ -1,0 +1,43 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M636ASJ8348RTPZX6NE2ZN3R"
+  ],
+  "at": "2026-10-29T13:33:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "00f0722d4287a88b83d89b7ef14dd50615d2f025",
+          "pr": "https://github.com/dphaener/rhiza/pull/67",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #67 (https://github.com/dphaener/rhiza/pull/67) passed CI at 00f0722",
+          "status": "verified"
+        },
+        "handle": "pr-67-tui-write-apps-previewed",
+        "id": "01M63XVJ4401M9G3DZJB4P2W7T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M63XVJ4401M9G3DZJ91QNW0K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M63XVJ4401M9G3DZJ91QNW0K",
+        "id": "01M63XVJCGDGW92D3EKTPJB7YC",
+        "link": "01M63XVJCGDGW92D3EKSTX2D96",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JPNH7XH3E5F28FER1MW8E",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62JMTG32M03T1FHC0T1EPE2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M63XVJSPEVMT8FCM281ZV3MN",
+  "type": "ops",
+  "v": 1
+}

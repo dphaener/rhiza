@@ -1,0 +1,40 @@
+{
+  "actor": "01M6363GZEKJGAN7E81PWFY0GP",
+  "after": [
+    "01M63632WKKHM38G634PQFXGJV"
+  ],
+  "at": "2026-10-29T06:42:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e74bb78 with a binary built from the branch (go build -o $TMPDIR/rhiza-qa ./cmd/rhiza), run env unset, in scratch repos. Previews: tui app propose, record-add, record-set, record-link and record-retire --once each printed dry_run true, and failing previews (land on a draft, exit 3) wrote nothing; a hash of every .rhiza file was identical before and after. change-show --once output cmp-equal to change show --json. Confirm: in two identical repos (same RHIZA_TEST_NOW/SEED) I ran propose, accept --reason ok, land, record-add, record-set, record-link and record-retire with --once --confirm in one and the matching rhiza command with --json (--record for records) in the other: every output was cmp-equal and diff -r of the two .rhiza dirs showed no difference. Interactive in a real Rex pane: tui app record-add asked for arguments, showed the What if preview with dry_run true; pressing n exited 0 and the log hash was unchanged; a second run confirmed with y showed Written and the entry, and rhiza show cache then found the node."
+        },
+        "handle": "write-apps-previewed-qa-1",
+        "id": "01M636ARAZA0GEHPDN7WMTCFMH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M636ARAZA0GEHPDN7RPCPJEF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M636ARAZA0GEHPDN7RPCPJEF",
+        "id": "01M636ARV24QE8G10V7BBDZ77V",
+        "link": "01M636ARV24QE8G10V78F89VR5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JPNH7XH3E5F28FER1MW8E",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62JMTG32M03T1FHC0T1EPE2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M636ASJ8348RTPZX6NE2ZN3R",
+  "type": "ops",
+  "v": 1
+}

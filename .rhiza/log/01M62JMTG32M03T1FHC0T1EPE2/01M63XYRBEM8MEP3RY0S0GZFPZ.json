@@ -1,0 +1,18 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M63XYQK7JNWSJD885SSTTCQB"
+  ],
+  "at": "2026-10-29T13:35:26Z",
+  "body": {
+    "drop": [
+      "01M62JPPFHJY4ABHBW5JQH04WT"
+    ],
+    "ops": []
+  },
+  "change_set": "01M62JMTG32M03T1FHC0T1EPE2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M63XYRBEM8MEP3RY0S0GZFPZ",
+  "type": "ops",
+  "v": 1
+}
