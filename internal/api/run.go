@@ -996,7 +996,7 @@ func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode
 	e := &run.Engine{
 		Store: rs,
 		Runner: &stepRunner{
-			ctx: ctx, change: change, run: rid, worktree: worktree, mode: mode, agent: agent,
+			ctx: ctx, change: change, run: rid, worktree: worktree, main: filepath.Dir(common), mode: mode, agent: agent,
 			autonomous: autonomous, sessions: sessions,
 		},
 		Clock:  runClock,
@@ -1087,8 +1087,10 @@ type stepRunner struct {
 	change   string
 	run      string
 	worktree string
-	mode     string
-	agent    string
+	// main is the main checkout: the folder holding the git common dir.
+	main  string
+	mode  string
+	agent string
 	// autonomous marks every session the run launches, so the agent's
 	// environment tells it the owner is not there.
 	autonomous bool
@@ -1109,19 +1111,28 @@ func (r *stepRunner) Holds(step workflow.Step, env []string) (bool, error) {
 
 // dir is where command and wait steps run: the worktree, or the main
 // checkout once the worktree is gone. The close-out step removes the
-// worktree, so the steps after it run in the main checkout.
+// worktree, so the steps after it run in the main checkout, at the same
+// project folder. The main checkout comes from the git common dir the run
+// was started with, not from git run in the vanished folder.
 func (r *stepRunner) dir() string {
 	if _, err := os.Stat(r.worktree); err == nil {
 		return r.worktree
 	}
-	if out, err := r.ctx.Git("worktree", "list", "--porcelain"); err == nil {
-		for _, line := range strings.Split(out, "\n") {
-			if p, ok := strings.CutPrefix(line, "worktree "); ok {
-				return p
-			}
+	if r.main == "" {
+		return r.ctx.Root
+	}
+	return filepath.Join(r.main, r.prefix())
+}
+
+// prefix is the project folder's path within its checkout: ctx.Root's
+// position under the run's worktree or the main checkout, "" at the top.
+func (r *stepRunner) prefix() string {
+	for _, base := range []string{r.worktree, r.main} {
+		if rel, err := filepath.Rel(base, r.ctx.Root); err == nil && rel != "." && !strings.HasPrefix(rel, "..") {
+			return rel
 		}
 	}
-	return r.ctx.Root
+	return ""
 }
 
 // sh runs cmd with `sh -c` in the worktree, env laid over the caller's,

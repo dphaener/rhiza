@@ -1,0 +1,40 @@
+{
+  "actor": "01M641S55Z36P1CRYWPWPETPQN",
+  "after": [
+    "01M640VT72ZPFJRYQYTA7HAAYF"
+  ],
+  "at": "2026-10-29T14:48:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified by claude-code-648c68f4 at 349b880. go test ./cmd/rhiza -run TestScripts/run-ship-change passes: the script approves from the change set's worktree $WORK/repo.ship-it, close-out removes that folder under the running process, the ship step (rhiza ship command) runs .rhiza/workflows/ship.sh in the main checkout with exit 0 (ship.log holds 'shipped' once, after main-green), and the run ends 'succeeded' with 'close-out: pass, then ship: exit 0' and 'ship: pass, then end: exit 0'. With internal/api/run.go reverted to its parent in a scratch worktree the same script fails: ship errors with 'chdir $WORK/repo.ship-it: no such file or directory', so the test catches the bug. TestStepRunnerDirFallsBackToMainCheckout passes (main checkout from the git common dir, project subfolder kept, git failing). make fmt-check vet test pass. make self-check fails at this detached commit only because the builder's actor record (claude-code-9c9d7fe0) is still uncommitted in the run worktree, which ship-change's render step commits later; it does not affect the leaf."
+        },
+        "handle": "ship-command-after-close-out-verified",
+        "id": "01M6424K6NKST80TB32606NWGJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6424K6NKST80TB325D0HM89",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6424K6NKST80TB325D0HM89",
+        "id": "01M6424KFZ7ASX9T9JWYRZMV26",
+        "link": "01M6424KFZ7ASX9T9JWY5Q78R2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RFZ5YEP4PWEC0799MK0WZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M625RC3X2VA17M5V2HVS3HBP",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6424KZ2JCFJZS1JFTC7DVWR",
+  "type": "ops",
+  "v": 1
+}

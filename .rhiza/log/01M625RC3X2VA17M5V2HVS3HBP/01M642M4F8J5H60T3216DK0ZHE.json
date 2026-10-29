@@ -1,0 +1,40 @@
+{
+  "actor": "01M642AVD01NWSVHFD2Q34C8HA",
+  "after": [
+    "01M642A8A7YD4MMF52TQXGGPAX"
+  ],
+  "at": "2026-10-29T14:57:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2, at b3f29d4: `go test ./cmd/rhiza -run 'TestScripts/run-ship-change$' -count=1` passes. The script runs `rhiza run approve` from the change set's worktree $WORK/repo.ship-it. Close-out removes that folder, the ship step then runs the repo's .rhiza/workflows/ship.sh in the main checkout, ship.log holds 'shipped' once, approve prints exit=0, and the ship-change run ends succeeded with close-out -> ship -> end all passing. With 1a60493's internal/api/run.go and run_test.go restored in a scratch worktree, the same script fails at `rhiza run approve`. TestStepRunnerDirFallsBackToMainCheckout passes: with the worktree gone and git failing, dir() gives the main checkout joined with the project subfolder. go test ./... passes and vet and gofmt are clean. make self-check fails only on stale .rhiza/rendered pages for this run's uncommitted session actor records, which the run's render step writes. The fix commit b3f29d4 adds the model links: ship-command-starts-in-main-checkout supersedes ship-command-main-from-common-dir and decides this capability, matching the code (the runner records the main checkout from the common dir at run start). The review's remaining minor points still stand: the script does not record pwd, and a hand-run `rhiza ship command` from a removed folder still does nothing. Both fall outside the acceptance as decided."
+        },
+        "handle": "ship-command-after-close-out-verified-2",
+        "id": "01M642M3Q6R66MCA7A8SR88DDX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M642M3Q6R66MCA7A8RD8Z3B0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M642M3Q6R66MCA7A8RD8Z3B0",
+        "id": "01M642M40HE322A31XNHC71BX6",
+        "link": "01M642M40HE322A31XNGAJEX1R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RFZ5YEP4PWEC0799MK0WZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M625RC3X2VA17M5V2HVS3HBP",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M642M4F8J5H60T3216DK0ZHE",
+  "type": "ops",
+  "v": 1
+}

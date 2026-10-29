@@ -1,0 +1,40 @@
+{
+  "actor": "01M64250SBMN4MJ48ANSNQFMS3",
+  "after": [
+    "01M6424KZ2JCFJZS1JFTC7DVWR"
+  ],
+  "at": "2026-10-29T14:50:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA by hand at e47d48c with a built binary (go build ./cmd/rhiza), outside testscript: in a scratch sandbox (bare origin, fake rex/claude/gh from run-ship-change.txtar, RHIZA_* unset) ran rhiza run start on a two-leaf accepted change set, then rhiza run approve from inside the change set's worktree repo.ship-it. Close-out removed repo.ship-it, then the ship step ran .rhiza/workflows/ship.sh in the main checkout: ship.log holds 'shipped' once, order.log 'main-green, main-green, shipped', run status shows 'close-out: pass, then ship: exit 0' and 'ship: pass, then end: exit 0', and the run state is succeeded. The same steps with a binary built from the parent commit 1a60493 fail: 'ship: error ... chdir .../repo.ship-it: no such file or directory', run state failed, no ship.log."
+        },
+        "handle": "ship-command-after-close-out-qa-1",
+        "id": "01M6427NVDNXAX1HH2J39AXKSF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6427NVDNXAX1HH2J0NSRS2W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6427NVDNXAX1HH2J0NSRS2W",
+        "id": "01M6427P5N8WZ9PJ0E84GTMEE2",
+        "link": "01M6427P5N8WZ9PJ0E80JT9YCA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RFZ5YEP4PWEC0799MK0WZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M625RC3X2VA17M5V2HVS3HBP",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6427PNK9PDG5MEM433DMP61",
+  "type": "ops",
+  "v": 1
+}
