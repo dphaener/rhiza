@@ -1,0 +1,40 @@
+{
+  "actor": "01M62W8Z18TJH4NREG6QCDPS0P",
+  "after": [
+    "01M62VJ8BMV8B3924VWJGYP7B5"
+  ],
+  "at": "2026-10-29T03:55:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At fe0f742 I ran go test -count=1 ./internal/api -run TestRexInstall (4 tests PASS) and the testscript TestScripts/rex-install plus describe-golden (PASS), then make check with RHIZA_ROOT/CHANGE/RUN unset (exit 0). The rex-install script sets REX_CONFIG to $WORK/conf/init.lua and puts a fake rex first on PATH; the unit tests inject Getenv and Exec, so no test touches real Rex. First install writes rhiza.lua (marker line, launch_key ctrl+a a) and exactly one require(\"rhiza\") line, and keeps the owner's lines; rex.log records one 'config reload'. A second install reports written [] and cmp shows both files byte-identical. An edited setting survives a reinstall. Uninstall restores init.lua byte for byte (cmp against owner.lua; the unit test also covers no trailing newline, an empty file and odd spacing) and removes rhiza.lua. In the diff, rexAddRequire only appends and rexRemoveRequire removes only the tagged line; an owner's own require is left alone, and a rhiza.lua install did not write is a conflict unless --force."
+        },
+        "handle": "rex-install-command-verified",
+        "id": "01M62WRG0CVY6M0H6ZME94CJCR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62WRG0CVY6M0H6ZMCE97ZED",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62WRG0CVY6M0H6ZMCE97ZED",
+        "id": "01M62WRGA29G8B82T08PX7A2CM",
+        "link": "01M62WRGA29G8B82T08PDY55H2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JP4KDNBZKH1YT5NZRB347",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62JMSW4FH8RAWSQXHC7ZPND",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62WRGSNB183YD5V3JHDE5BX",
+  "type": "ops",
+  "v": 1
+}
