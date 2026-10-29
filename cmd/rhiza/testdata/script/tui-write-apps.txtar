@@ -1,0 +1,116 @@
+# The write apps show a what-if preview before anything is written.
+# Cancelling leaves the log byte for byte as it was; confirming writes the
+# entry the matching command writes for the same input. --once prints the
+# preview and stops, --once --confirm confirms it. No Rex, daemon or socket.
+
+env REX_SESSION=
+env REX_SERVER=
+
+# Two identical repos: a runs the apps, b runs the commands.
+mkdir a
+mkdir b
+cd a
+exec rhiza init
+exec rhiza add intent grow --record
+exec rhiza add capability store --record
+exec rhiza change new A
+exec rhiza add capability draft
+cd ../b
+exec rhiza init
+exec rhiza add intent grow --record
+exec rhiza add capability store --record
+exec rhiza change new A
+exec rhiza add capability draft
+cd ../a
+
+# A change set show reads, and shows the same as the command.
+exec rhiza change show --json
+cp stdout want-change-show.json
+exec rhiza tui app change-show --once
+cmp stdout want-change-show.json
+
+# Cancelling a preview: the log is untouched, whatever the app.
+exec sh -c 'cat $(find .rhiza/log -type f | sort)'
+cp stdout before.log
+
+exec rhiza tui app propose --once
+stdout '"dry_run": true'
+exec rhiza tui app record-add capability cache --field statement=Kept --once
+stdout '"dry_run": true'
+exec rhiza tui app record-set grow --field statement=Grown --once
+stdout '"dry_run": true'
+exec rhiza tui app record-link store serves grow --once
+stdout '"dry_run": true'
+exec rhiza tui app record-retire grow --reason gone --once
+stdout '"dry_run": true'
+exec sh -c 'cat $(find .rhiza/log -type f | sort)'
+cmp stdout before.log
+
+# A preview that fails writes nothing and says why.
+! exec rhiza tui app accept --once
+stderr .
+! exec rhiza tui app record-retire --once
+stderr .
+exec sh -c 'cat $(find .rhiza/log -type f | sort)'
+cmp stdout before.log
+
+# Confirming a change set move writes what the command writes.
+exec rhiza tui app propose --once --confirm
+cp stdout got-propose.json
+cd ../b
+exec rhiza propose --json
+cmp stdout ../a/got-propose.json
+cd ../a
+exec rhiza tui app accept --reason ok --once --confirm
+cp stdout got-accept.json
+cd ../b
+exec rhiza accept --reason ok --json
+cmp stdout ../a/got-accept.json
+cd ../a
+exec rhiza tui app land --once --confirm
+cp stdout got-land.json
+cd ../b
+exec rhiza land --json
+cmp stdout ../a/got-land.json
+
+# Confirming a record write writes what the command writes.
+cd ../a
+exec rhiza tui app record-add capability cache --field statement=Kept --once --confirm
+cp stdout got-add.json
+cd ../b
+exec rhiza add capability cache --field statement=Kept --record --json
+cmp stdout ../a/got-add.json
+cd ../a
+exec rhiza tui app record-set store --field statement=Held --once --confirm
+cp stdout got-set.json
+cd ../b
+exec rhiza set store --field statement=Held --record --json
+cmp stdout ../a/got-set.json
+cd ../a
+exec rhiza tui app record-link store serves grow --once --confirm
+cp stdout got-link.json
+cd ../b
+exec rhiza link store serves grow --record --json
+cmp stdout ../a/got-link.json
+cd ../a
+exec rhiza tui app record-retire store --reason gone --once --confirm
+cp stdout got-retire.json
+cd ../b
+exec rhiza retire store --reason gone --record --json
+cmp stdout ../a/got-retire.json
+
+# The two logs agree, and both fold.
+cd ../a
+fold-ok
+exec sh -c 'cat $(find .rhiza/log -type f | sort)'
+cp stdout a.log
+cd ../b
+fold-ok
+exec sh -c 'cat $(find .rhiza/log -type f | sort)'
+cmp stdout ../a/a.log
+
+# No daemon took the lock and no socket exists.
+cd ..
+exec find $WORK -type s
+! stdout .
+! exists a/.git/rhiza/daemon.lock

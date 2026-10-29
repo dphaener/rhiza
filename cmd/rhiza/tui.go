@@ -20,6 +20,7 @@ import (
 	"github.com/dphaener/rhiza/internal/canon"
 	"github.com/dphaener/rhiza/internal/tui/launcher"
 	"github.com/dphaener/rhiza/internal/tui/readapps"
+	"github.com/dphaener/rhiza/internal/tui/writeapps"
 )
 
 func tuiCommand(g globals, args []string, stdout, stderr io.Writer, getenv func(string) string) int {
@@ -58,26 +59,35 @@ func tuiCommand(g globals, args []string, stdout, stderr io.Writer, getenv func(
 	return 0
 }
 
-// tuiApp runs a read app: `rhiza tui app <name> [args]`. It calls the
-// api operation of the same name in-process, as `rhiza <name> --json`
-// does. With --once it prints the app's result and exits; otherwise it
-// shows that result in a terminal pane. The global flags in g reach the
-// operation as they do the command's.
+// tuiApp runs an app: `rhiza tui app <name> [args]`. It calls the api
+// operation of the app in-process, as the matching command does. With --once
+// it prints the app's result and exits; otherwise it shows that result in a
+// terminal pane. The global flags in g reach the operation as they do the
+// command's.
+//
+// A write app shows a what-if preview first, the operation run with
+// --dry-run. With --once it prints that preview and stops, so nothing is
+// written; --once --confirm confirms it: the operation runs for real and
+// prints what the command prints with --json, byte for byte.
 func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, getenv func(string) string) int {
-	app, ok := readapps.Lookup(name)
-	if !ok {
+	read, isRead := readapps.Lookup(name)
+	write, isWrite := writeapps.Lookup(name)
+	if !isRead && !isWrite {
 		return writeError(stdout, stderr, api.NotFoundf("unknown app %q", name).WithNext("rhiza tui launch"), false)
 	}
-	once := false
+	once, confirm := false, false
 	var rest []string
 	for _, a := range args {
-		if a == "--once" {
+		switch a {
+		case "--once":
 			once = true
-		} else {
+		case "--confirm":
+			confirm = true
+		default:
 			rest = append(rest, a)
 		}
 	}
-	run := func(op string, args []string) ([]byte, error) {
+	call := func(op string, record, dry bool, args []string) ([]byte, error) {
 		o, ok := api.Lookup(op)
 		if !ok {
 			return nil, api.NotFoundf("unknown operation %q", op)
@@ -86,7 +96,10 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		if err != nil {
 			return nil, err
 		}
-		ctx, err := newCtx(g, os.Stdin, getenv)
+		gg := g
+		gg.record = record
+		gg.dryRun = g.dryRun || dry
+		ctx, err := newCtx(gg, os.Stdin, getenv)
 		if err != nil {
 			return nil, err
 		}
@@ -96,9 +109,28 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		}
 		return canon.Marshal(resp)
 	}
-	m := readapps.NewModel(app, run, rest)
+	var m tea.Model
+	var result func() ([]byte, error)
+	if isWrite {
+		wm := writeapps.NewModel(write, func(a writeapps.App, args []string, dry bool) ([]byte, error) {
+			return call(a.Op, a.Record, dry, args)
+		}, rest)
+		m = wm
+		result = func() ([]byte, error) {
+			out, err := wm.Preview()
+			if err == nil && confirm && !write.ReadOnly {
+				out, err = wm.Confirm()
+			}
+			return out, err
+		}
+	} else {
+		rm := readapps.NewModel(read, func(op string, args []string) ([]byte, error) {
+			return call(op, false, false, args)
+		}, rest)
+		m, result = rm, rm.Result
+	}
 	if once {
-		out, err := m.Result()
+		out, err := result()
 		if err != nil {
 			return writeError(stdout, stderr, err, false)
 		}
