@@ -1,0 +1,41 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M644YJM62N1K9KP7NHNTHTY9"
+  ],
+  "at": "2026-10-29T15:42:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (missing-provenance on rex-app-own-action): The decision's quote (\"the forge-cli opens the forge quick actions entirely differently, with a lua script, natively in Rex.\") is in native-rex-launch-owner-words (01M643X6FYHZDDRBEPMQTZ3FDG), but its only derived-from Source is native-rex-plan-interview (01M644QHPB5W2EYTATMCZFJ82T), which holds quotes: [] and says no owner words were captured this run. The quote is not traced to the Source that holds it, so a reader following derived-from reaches a Source with no owner words. The critic confirmed it: Decision rex-app-own-action (01M644QVPPBD4ZKTT1YP9SMGAS) carries a quote that is verbatim in native-rex-launch-owner-words (01M643X6FYHZDDRBEPMQTZ3FDG), so the words are the owner's and are not invented. But its only derived-from link goes to native-rex-plan-interview (01M644QHPB5W2EYTATMCZFJ82T), whose quotes are [] and whose summary says no owner words were captured this run. A reader following derived-from reaches no owner words, so the recorded provenance is wrong. The kind is a stretch (a derived-from Source exists); the defect is the derived-from pointing at the wrong Source. Fix: re-point derived-from to native-rex-launch-owner-words. How should it be settled?"
+        },
+        "handle": "review-01m644m1-r3-f1",
+        "id": "01M6457M3EA8MGH73R0EC6RJME",
+        "key": null,
+        "kind": "question",
+        "node": "01M6457M3EA8MGH73R0AW7VNTJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (contradiction on tui-launcher): The tui-launcher intent (01M62JMJ6AYPDDEEFNPG9WG3E0) says ctrl-a>a opens a Rex quick-launch layer that lists every rhiza app and opens the chosen one in a modal. The plan's native-rex-prefix-configurable decision and rex-launch-key-setting capability make the same ctrl+a>a enter a rhiza key mode with one key per app, with no picker in between. The two nodes disagree on what ctrl+a>a does. native-intent-served (01M644QZSWE52YYK67FX8B54SK) asks whether this supersedes tui-launcher, but no node records the answer yet, so the conflict stays in the model. The critic confirmed it: tui-launcher intent (01M62JMJ6AYPDDEEFNPG9WG3E0) says ctrl-a>a opens a quick-launch layer listing every rhiza app, with a picker and a modal. The plan's native-rex-prefix-configurable decision and rex-key-mode capability make the same ctrl+a>a enter a key mode with one key per app and no picker. The code agrees with the intent, not the plan: internal/api/rex_install.go:37 writes launch_key = \"ctrl+a a\" bound to rhiza_launch, the all-apps picker. The question native-intent-served (01M644QZSWE52YYK67FX8B54SK) names the conflict but no node records how it is resolved, so the contradiction stands in the model. How should it be settled?"
+        },
+        "handle": "review-01m644m1-r3-f2",
+        "id": "01M6457MCVYTZCTTDE6F9EX1KX",
+        "key": null,
+        "kind": "question",
+        "node": "01M6457MCVYTZCTTDE6E1HSPM4",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6457MVVFE606KXAFA55VZAQ",
+  "type": "ops",
+  "v": 1
+}

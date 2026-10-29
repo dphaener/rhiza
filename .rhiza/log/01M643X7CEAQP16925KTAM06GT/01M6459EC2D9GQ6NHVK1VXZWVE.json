@@ -1,0 +1,41 @@
+{
+  "actor": "01M6458M4XSTM2TZGHE9BBG6F5",
+  "after": [
+    "01M6458842M2SJRABDD6912DMR"
+  ],
+  "at": "2026-10-29T15:43:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "This change set's intent says each app opens straight away 'with no picker in between', and its leaves (rex-key-mode, rex-launch-key-setting) put the key mode on the launch key. The owner's own words in native-rex-prefix-configurable ask for ctrl-a>a as the default for the key that enters that mode, so the key and the no-picker behaviour belong together. Keeping tui-launcher's picker on the same key would make two nodes claim one key with different behaviour, which the model should not hold. The code today (internal/api/rex_install.go:37, launch_key = \"ctrl+a a\" bound to rhiza_launch) is the pre-change state this change set replaces, so it is not evidence against the answer. Not decided: whether the tui-launcher intent is retired or kept for another path; that is left for the owner.",
+          "statement": "On ctrl+a>a the native change set supersedes the tui-launcher picker: the key enters the rhiza key mode with one key per app, and no quick-launch layer lists the apps in a modal. tui-launcher's picker is not kept on that key; the key stays configurable in rhiza.lua, with ctrl+a>a as the default.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "native-supersedes-tui-launcher",
+        "id": "01M6459DKBTY66HJ8PXRRYF281",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6459DKBTY66HJ8PXPWVMHQH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6459DKBTY66HJ8PXPWVMHQH",
+        "id": "01M6459DWG374695967Q6DE548",
+        "link": "01M6459DWG374695967PMSGS4Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6457MCVYTZCTTDE6E1HSPM4",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6459EC2D9GQ6NHVK1VXZWVE",
+  "type": "ops",
+  "v": 1
+}

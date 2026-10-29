@@ -1,0 +1,29 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M646QZRHY19XGRM5HCSX2STV"
+  ],
+  "at": "2026-10-29T16:09:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Each rhiza app opens straight away from its own key in the rhiza key mode (ctrl+a>a then the app's key, both remappable in rhiza.lua) or from its own action in Rex's command palette, in a layer sized to it, with no picker in between"
+        },
+        "handle": "tui-native-actions",
+        "id": "01M646RP92V3GJ99FNASTVTV0J",
+        "key": "u",
+        "kind": "intent",
+        "node": "01M646RP92V3GJ99FNAPJCEKZN",
+        "op": "node.create",
+        "parent": "01M62JMHNS9HS0AR6DT5SZYKGQ"
+      }
+    ]
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M646RPJJJRH0D0YAPPAZ450M",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,31 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6459JYDGAV0TDPHXZA6G8ET"
+  ],
+  "at": "2026-10-29T16:08:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Defaults make the mode usable straight after install; a map in the settings block lets the user change any key, as the owner asked for the key that enters the mode.",
+          "statement": "rhiza ships a default mnemonic key for each app in the rhiza key mode, and the user can remap any app's key in rhiza.lua's settings block; a reinstall keeps the map.",
+          "wording": "the orchestrator's option, picked by the owner: \"Defaults, overridable (Recommended)\""
+        },
+        "handle": "rex-app-keys-default-overridable",
+        "id": "01M646QX1CVSV5JVY2A24J7597",
+        "key": null,
+        "kind": "decision",
+        "node": "01M646QX1CVSV5JVY2A06362PW",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M646QXBAJ4RZM6MM6WJ21T38",
+  "type": "ops",
+  "v": 1
+}

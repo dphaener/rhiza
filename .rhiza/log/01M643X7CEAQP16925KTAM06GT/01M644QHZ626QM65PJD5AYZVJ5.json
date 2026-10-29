@@ -1,0 +1,33 @@
+{
+  "actor": "01M644M2GNY4RY70YCVVD0SPA7",
+  "after": [
+    "01M644AQAA3044XCN3ACFFBK6W"
+  ],
+  "at": "2026-10-29T15:33:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "8eb6f2a112d3567e72307807cbd2fbbc1230f7e4fcfd9e69f5061ac3c50b7d45",
+          "session": "571ba63d-2569-4e66-9083-01a1884a08d4",
+          "summary": "Autonomous plan run on change set 01M643X7 (Native Rex actions for apps). No owner was present to answer, so nothing was asked and no owner words were captured this run. The leaves are drawn from the earlier owner words (native-rex-launch-owner-words) and the configurable launch key Decision (native-rex-prefix-configurable). Open choices are parked as questions: the key per app in the key mode, whether the all-apps picker stays beside the per-app actions, and which intent the leaves serve.",
+          "title": "Plan run for native Rex actions, autonomous (no owner present)"
+        },
+        "handle": "native-rex-plan-interview",
+        "id": "01M644QHPB5W2EYTATMEWN0X23",
+        "key": null,
+        "kind": "source",
+        "node": "01M644QHPB5W2EYTATMCZFJ82T",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M644QHZ626QM65PJD5AYZVJ5",
+  "type": "ops",
+  "v": 1
+}

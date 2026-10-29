@@ -1,0 +1,47 @@
+{
+  "actor": "01M644XASFR0QTAMT3031SWAJC",
+  "after": [
+    "01M644R0KB2KMETKZ3SZYT5KJX"
+  ],
+  "at": "2026-10-29T15:37:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "I think that key should be configurable, so users can map it to whatever key that want, but ctrl-a>a is great as a default.",
+              "where": "orchestrator session, 2026-10-29T15:26:30Z"
+            }
+          ],
+          "summary": "The owner started the plan run and said the key that enters the rhiza key mode should be configurable, with ctrl-a>a as the default. Their message is the source of the native-rex-prefix-configurable decision.",
+          "title": "Owner on the configurable launch key, 2026-10-29"
+        },
+        "handle": "native-rex-key-owner-words",
+        "id": "01M644YHWT6P3YXC2XNXPXZZ2K",
+        "key": null,
+        "kind": "source",
+        "node": "01M644YHWT6P3YXC2XNX25GB10",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M644AP63VKTRFH6ZMW53XYGM",
+        "id": "01M644YJ60P5Z43TEN0HY1JRNZ",
+        "link": "01M644YJ60P5Z43TEN0H5J61SW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M644YHWT6P3YXC2XNX25GB10",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M643X7CEAQP16925KTAM06GT",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M644YJM62N1K9KP7NHNTHTY9",
+  "type": "ops",
+  "v": 1
+}
