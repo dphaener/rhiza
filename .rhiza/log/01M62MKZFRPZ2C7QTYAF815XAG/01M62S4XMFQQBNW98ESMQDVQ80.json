@@ -1,0 +1,78 @@
+{
+  "actor": "01M62RB31D57TGW39EBNT2TXBD",
+  "after": [
+    "01M62S4SN0FXXWDNVVWP34504B"
+  ],
+  "at": "2026-10-29T02:52:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "Failed and gave-up runs (Recommended)",
+            "Failed runs only",
+            "Every kind of item"
+          ],
+          "picked": "Failed and gave-up runs (Recommended)",
+          "question": "Which inbox items leave the list once their change set has landed, been withdrawn or rejected? The intent names failed runs only. A gave-up run's next command, rhiza run resume, is a dead end on such a change set too.",
+          "session": "29b4ed69-1d8a-481f-a616-01a185858ae8",
+          "statement": "Which inbox items leave the list once their change set has landed, been withdrawn or rejected? The intent names failed runs only. A gave-up run's next command, rhiza run resume, is a dead end on such a change set too. — Failed and gave-up runs (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 29b4ed69-1d8a-481f-a616-01a185858ae8"
+        },
+        "handle": "answer-29b4ed69-1",
+        "id": "01M62S4WQPRZYZFYRW2837RVS1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M62S4WQPRZYZFYRW27JXDD2N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62S4WQPRZYZFYRW27JXDD2N",
+        "id": "01M62S4WYXZE1ZFSAPT9Q0EM83",
+        "link": "01M62S4WYXZE1ZFSAPT5TEZFN1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62S4SD2FSQ9FHXDB7SY9YMQ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Yes, stale (Recommended)",
+            "No, stays listed"
+          ],
+          "picked": "Yes, stale (Recommended)",
+          "question": "Does a superseded change set also count as stale, alongside landed, withdrawn and rejected? Superseded is a terminal state the intent does not name, and a run on it can only be retried into a change set that has moved on.",
+          "session": "29b4ed69-1d8a-481f-a616-01a185858ae8",
+          "statement": "Does a superseded change set also count as stale, alongside landed, withdrawn and rejected? Superseded is a terminal state the intent does not name, and a run on it can only be retried into a change set that has moved on. — Yes, stale (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 29b4ed69-1d8a-481f-a616-01a185858ae8"
+        },
+        "handle": "answer-29b4ed69-2",
+        "id": "01M62S4X7A6ZP1YT7V3CN6BGFV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M62S4X7A6ZP1YT7V399VCNTF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62S4X7A6ZP1YT7V399VCNTF",
+        "id": "01M62S4XGCKCSFS072Q6CYFXS3",
+        "link": "01M62S4XGCKCSFS072Q2QNGPWJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62S4SD2FSQ9FHXDB7SY9YMQ",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M62MKZFRPZ2C7QTYAF815XAG",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M62S4XMFQQBNW98ESMQDVQ80",
+  "type": "ops",
+  "v": 1
+}
