@@ -1,0 +1,40 @@
+{
+  "actor": "01M633NDE0XF8H776VZGZ9M95E",
+  "after": [
+    "01M62VJ81CB5QEJ8024F2CQSQC"
+  ],
+  "at": "2026-10-29T06:02:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At adb7bec I read the diff (refuseEnded in internal/api/run.go now lets a failed, not-yet-abandoned run through; inbox, resume and daemon pick already skip State.Abandoned) and ran go test ./cmd/rhiza -run 'TestScripts/(run-abandon-failed|run-abandon.*|inbox.*|describe-golden)$' -count=1 plus go test ./... -count=1, fmt-check and vet: all pass. run-abandon-failed.txtar fails a fake flaky run, abandons it with exit 0, shows 'failed' with 'abandoned by test' in run status and --json, drops it from rhiza inbox and inbox --json, gets exit 2 naming the run 'was abandoned' from resume and resume --retry, exit 2 'is finished' from a second abandon and from abandoning a succeeded run. make self-check fails only on stale .rhiza/rendered actor files and index from this run's sessions, not on the leaf's diff."
+        },
+        "handle": "abandon-failed-run-verified",
+        "id": "01M634192ASNXD0HAKPSJA7H78",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M634192ASNXD0HAKPRZZNW1V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M634192ASNXD0HAKPRZZNW1V",
+        "id": "01M63419D3XA1FYR85Q5S2HK76",
+        "link": "01M63419D3XA1FYR85Q3NDPA8K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62S5CM2T21E6M0JQ28RY5Z7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62MKZFRPZ2C7QTYAF815XAG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M63419XFDKZQRM3DAZQKPBC1",
+  "type": "ops",
+  "v": 1
+}
