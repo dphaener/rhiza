@@ -1,0 +1,40 @@
+{
+  "actor": "01M64TM4FFYD56D21YYRYKZXZF",
+  "after": [
+    "01M64TJS3PQW3Z21TQC8JNSEG5"
+  ],
+  "at": "2026-10-29T21:58:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at db28257 with a binary built from the branch (go build -o $TMPDIR/rhiza-qa ./cmd/rhiza), in scratch git repos with RHIZA_* unset. Plan review round path: a run held at a wait step, 16 concurrent plain `rhiza run findings f.json --json` calls (3 findings each) all exited 0, responses named rounds 1..16 once each, the journal held 16 findings entries each numbered f1,f2,f3, and run status listed Round 1..16 with 3 findings each. Leaf and check paths: a real `rhiza run start` of a builder/verifier + checks workflow (stub rex/claude only launch the session; the findings calls are the real binary), the verifier and check alpha each firing 10 concurrent findings calls: all 20 exited 0, the leaf's findings were f1..f10 once each, and check alpha had rounds 1..10 (cycle 1) each with f1,f2. go test ./cmd/rhiza -run TestScripts/findings-concurrent -count=3 passed."
+        },
+        "handle": "unique-finding-ids-qa-1",
+        "id": "01M64TR90B32HHH28R50B0FRVG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M64TR90B32HHH28R4YK7NW7G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M64TR90B32HHH28R4YK7NW7G",
+        "id": "01M64TRAH5R0AS8JK6A2HNW0V5",
+        "link": "01M64TRAH5R0AS8JK6A0053P4C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M64JTDQ1PN9MMS77P95QM4EG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5ZNV40RB8VYBB0A3CPXCNXZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M64TRDH0ZQX2AKFJ111V2G3S",
+  "type": "ops",
+  "v": 1
+}

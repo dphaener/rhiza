@@ -1,0 +1,40 @@
+{
+  "actor": "01M64T185Z82SGQZV3CF7NQ8YH",
+  "after": [
+    "01M64KAM04JT22HG4V61S05KVH"
+  ],
+  "at": "2026-10-29T21:55:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At dca2fdd, cmd/rhiza/testdata/script/findings-concurrent.txtar runs four concurrent --leaf findings calls (verifier burst) and four concurrent --check alpha calls, and findings-concurrent-rounds.txtar (added for attempt 1's finding) runs four concurrent plain `rhiza run findings` calls on one run (the plan review round path). They assert the journalled IDs are unique within each scope: leaf f1..f4, check rounds 1..4 each with f1,f2, plain rounds 1..4 each with f1,f2 exactly once, and run status shows 4 rounds of 2. Ran: go test ./cmd/rhiza -run TestScripts/findings-concurrent -count=5 passed. In a scratch worktree with internal/ reverted to the pre-fix 974f0ca, both scripts fail: duplicate leaf f1/f2, and all four plain calls report round 1. go test ./... passed. make check's fmt-check, vet and tests passed, except TestReadBudget, a timing test that fails only under machine load and is outside this diff; self-check reported only the stale render of the builder's actor record. Read the diff: lockJournal in internal/run/lock_unix.go wraps round/ID numbering in runRunFindings (internal/api/run_review.go)."
+        },
+        "handle": "unique-finding-ids-verified",
+        "id": "01M64TJJPEP2CH57GJ2XXV1AMG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M64TJJPEP2CH57GJ2VQJY99R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M64TJJPEP2CH57GJ2VQJY99R",
+        "id": "01M64TJNJEJPTJP3P1JP5BSAJ7",
+        "link": "01M64TJNJEJPTJP3P1JJR85RF7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M64JTDQ1PN9MMS77P95QM4EG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5ZNV40RB8VYBB0A3CPXCNXZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M64TJS3PQW3Z21TQC8JNSEG5",
+  "type": "ops",
+  "v": 1
+}
