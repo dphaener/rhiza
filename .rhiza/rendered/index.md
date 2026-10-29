@@ -1039,6 +1039,7 @@
 - [claude-code-8989bf11](actor/claude-code-8989bf11.md)
 - [claude-code-89e205f8](actor/claude-code-89e205f8.md)
 - [claude-code-8cd68bc7](actor/claude-code-8cd68bc7.md)
+- [claude-code-8dd5e11a](actor/claude-code-8dd5e11a.md)
 - [claude-code-8ed323e1](actor/claude-code-8ed323e1.md)
 - [claude-code-8edbf172](actor/claude-code-8edbf172.md)
 - [claude-code-8f2a5c63](actor/claude-code-8f2a5c63.md)
