@@ -1,0 +1,44 @@
+{
+  "actor": "01M62RB31D57TGW39EBNT2TXBD",
+  "after": [
+    "01M62MKZFRPZ2C7QTYAJRP6A2S"
+  ],
+  "at": "2026-10-29T02:52:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Failed and gave-up runs (Recommended): both leave the inbox once their change set is landed, withdrawn or rejected. Questions and sign-offs stay listed.",
+              "where": "interview: stale items"
+            },
+            {
+              "by": "agent (accepted by the owner)",
+              "text": "Yes, stale (Recommended): a failed or gave-up run on a superseded change set leaves the inbox, like one on a landed, withdrawn or rejected change set.",
+              "where": "interview: superseded"
+            }
+          ],
+          "raw_sha256": "0ca6b95fb5f86969fdf79a6a0c37d1eb40fbf3c1734ce56aad482327d88aebb8",
+          "session": "29b4ed69-1d8a-481f-a616-01a185858ae8",
+          "summary": "Planned with the owner on change set 01M62MKZFRPZ2C7QTYAF815XAG. A change set is stale when it has landed, been withdrawn, rejected or superseded. The owner picked: failed runs and runs the daemon gave up on leave the inbox once their change set is stale, questions and sign-offs stay listed, and superseded counts as stale. Still to build: rhiza run abandon takes a failed run, and the inbox names no next command that can only fail again. Nothing is open.",
+          "title": "Inbox clears stale failures, with the owner"
+        },
+        "handle": "inbox-stale-interview",
+        "id": "01M62S4SD2FSQ9FHXDBAMFRJT8",
+        "key": null,
+        "kind": "source",
+        "node": "01M62S4SD2FSQ9FHXDB7SY9YMQ",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M62MKZFRPZ2C7QTYAF815XAG",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M62S4SN0FXXWDNVVWP34504B",
+  "type": "ops",
+  "v": 1
+}
