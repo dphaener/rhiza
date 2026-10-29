@@ -1,0 +1,71 @@
+# The run-status and session-ls apps show what rhiza run status --json and
+# rhiza session ls --json print, and write nothing: the log is the same
+# before and after. --once runs the operation in-process; it never dials
+# Rex, starts a daemon or binds a socket.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Agent steps' --title 'Agent steps'
+mkdir .rhiza/workflows
+cp $WORK/passes.toml .rhiza/workflows/passes.toml
+exec rhiza run start --workflow passes --permission-mode manual
+fold-ok
+
+env REX_SESSION=
+env REX_SERVER=
+exec find .rhiza/log -type f
+cp stdout log-before.txt
+
+exec rhiza run status --json
+cp stdout want-run.json
+exec rhiza tui app run-status --once
+cmp stdout want-run.json
+stdout '"state": "succeeded"'
+
+exec rhiza session ls --json
+cp stdout want-ls.json
+exec rhiza tui app session-ls --once
+cmp stdout want-ls.json
+stdout '"step": "build"'
+
+# Nothing was written, and no daemon or socket exists.
+exec find .rhiza/log -type f
+cmp stdout log-before.txt
+! exists .git/rhiza/daemon.lock
+exec find $WORK -type s
+! stdout .
+
+-- claude.exit --
+0
+-- passes.toml --
+name = "passes"
+
+[step.build]
+kind = "agent"
+prompt = "Build {change} in step {step} of run {run}"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+exit $(cat "$WORK/claude.exit")
