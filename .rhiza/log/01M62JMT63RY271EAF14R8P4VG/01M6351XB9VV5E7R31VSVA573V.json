@@ -1,0 +1,40 @@
+{
+  "actor": "01M634R7P97GTQETMN8QP8KMHS",
+  "after": [
+    "01M62VJ8P5EDRKNA28R51BHA6Q"
+  ],
+  "at": "2026-10-29T06:20:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at a3a2efd: wrote gen.Default() (the 50,000-node model) to a scratch repo and built rhiza from this commit. `rhiza tui app model --once` equals `rhiza tree --view as-is` + blank line + `rhiza roadmap` byte for byte (cmp: 15,938 tree lines, 37 roadmap lines); with the deep-subtree ref (the tree read the api budget D14 times) `rhiza tui app model <ref> --once` equals `rhiza tree <ref> --view as-is` + roadmap likewise. Whole-process wall time for the subtree+roadmap app read is 0.03-0.04 s over 5 runs; TestGeneratedModel's in-process median is 10 ms (< 50 ms). Note: with no ref the whole 50k tree takes about 0.2 s, the same as `rhiza tree` itself, and is outside the budgeted read as D14 defines it. Unit tests (tab switch, scroll, quit, error shown), tui-model-app.txtar (no socket, no daemon lock) and make check all pass (exit 0). Diff read: in-process api operations, no daemon or socket."
+        },
+        "handle": "model-tree-app-verified",
+        "id": "01M6351WN1JEQZ9966DJ5CPX9V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6351WN1JEQZ9966DEQ6RVC1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6351WN1JEQZ9966DEQ6RVC1",
+        "id": "01M6351WXQXBWPY3MCPBXDAQFG",
+        "link": "01M6351WXQXBWPY3MCP8C1SYJQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JPK2HTYRZW2PD8ZFV1JVK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62JMT63RY271EAF14R8P4VG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6351XB9VV5E7R31VSVA573V",
+  "type": "ops",
+  "v": 1
+}
