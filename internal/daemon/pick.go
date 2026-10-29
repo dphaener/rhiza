@@ -72,9 +72,9 @@ const Unrecorded = time.Minute
 // process holds (locked reports it), which is running whatever its journal
 // says, or one with no process record started less than Unrecorded before
 // now, whose process may not have recorded itself yet. Nor is a run whose
-// change set accepted does not report as accepted: one that has landed,
-// been rejected or withdrawn, or is still proposed or draft waits in the
-// inbox for the owner.
+// change set accepted does not report as accepted: a run on a change set
+// that has landed, been rejected or withdrawn, or is still proposed or
+// draft waits in the inbox for the owner.
 func Resumable(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, accepted func(change string) bool, now time.Time) []string {
 	var ids []string
 	for _, j := range runs {
