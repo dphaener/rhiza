@@ -41,6 +41,14 @@ cp stdout want-slice.json
 exec rhiza tui app slice store --once
 cmp stdout want-slice.json
 
+# A global flag reaches the app's operation as it does the command's:
+# with B the current change set, --change still slices A.
+exec rhiza change new B
+exec rhiza slice --change 01M5PWGQ8GB4618G4RH2TV0ZAH --json
+cp stdout want-slice-change.json
+exec rhiza tui app slice --change 01M5PWGQ8GB4618G4RH2TV0ZAH --once
+cmp stdout want-slice-change.json
+
 # show and why started bare have no result to print.
 ! exec rhiza tui app show --once
 stderr 'show needs an ID or handle'

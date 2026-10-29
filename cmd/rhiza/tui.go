@@ -22,9 +22,9 @@ import (
 	"github.com/dphaener/rhiza/internal/tui/readapps"
 )
 
-func tuiCommand(args []string, stdout, stderr io.Writer, getenv func(string) string) int {
+func tuiCommand(g globals, args []string, stdout, stderr io.Writer, getenv func(string) string) int {
 	if len(args) >= 3 && args[1] == "app" {
-		return tuiApp(args[2], args[3:], stdout, stderr, getenv)
+		return tuiApp(g, args[2], args[3:], stdout, stderr, getenv)
 	}
 	if len(args) != 2 || args[1] != "launch" {
 		fmt.Fprintln(stderr, "usage: rhiza tui launch | rhiza tui app <name> [args] [--once]")
@@ -61,8 +61,9 @@ func tuiCommand(args []string, stdout, stderr io.Writer, getenv func(string) str
 // tuiApp runs a read app: `rhiza tui app <name> [args]`. It calls the
 // api operation of the same name in-process, as `rhiza <name> --json`
 // does. With --once it prints the app's result and exits; otherwise it
-// shows that result in a terminal pane.
-func tuiApp(name string, args []string, stdout, stderr io.Writer, getenv func(string) string) int {
+// shows that result in a terminal pane. The global flags in g reach the
+// operation as they do the command's.
+func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, getenv func(string) string) int {
 	app, ok := readapps.Lookup(name)
 	if !ok {
 		return writeError(stdout, stderr, api.NotFoundf("unknown app %q", name).WithNext("rhiza tui launch"), false)
@@ -85,7 +86,7 @@ func tuiApp(name string, args []string, stdout, stderr io.Writer, getenv func(st
 		if err != nil {
 			return nil, err
 		}
-		ctx, err := newCtx(globals{}, os.Stdin, getenv)
+		ctx, err := newCtx(g, os.Stdin, getenv)
 		if err != nil {
 			return nil, err
 		}

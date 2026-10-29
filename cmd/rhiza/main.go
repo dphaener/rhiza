@@ -94,7 +94,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer, getenv func(s
 			fmt.Fprint(stdout, usage())
 			return 0
 		}
-		return tuiCommand(rest, stdout, stderr, getenv)
+		return tuiCommand(g, rest, stdout, stderr, getenv)
 	case "api":
 		if g.help {
 			fmt.Fprint(stdout, usage())
