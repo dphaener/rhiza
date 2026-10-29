@@ -1,0 +1,63 @@
+{
+  "actor": "01M6349KXJB9MFB7BB476QEJ97",
+  "after": [
+    "01M634936XD1FD41T0ZTA660KM"
+  ],
+  "at": "2026-10-29T06:08:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At fd3f4b3 I built rhiza to a scratch path and, in a scratch repo, ran a one-step workflow that fails: run start exited 1 and rhiza inbox listed the failed run with next 'rhiza run resume --retry'. rhiza run abandon <run> exited 0; run status showed 'Run ... failed' with 'Detail: abandoned by darin-haener', and --json gave state failed, detail 'abandoned by darin-haener'. rhiza inbox then said 'Nothing waits on you' and inbox --json gave items []. run resume and run resume --retry each exited 2 with 'run <id> was abandoned'; a second abandon exited 2 with 'is finished: it failed'. After making the step pass, a succeeded run's abandon exited 2 with 'is finished: it succeeded'."
+        },
+        "handle": "abandon-failed-run-qa-1",
+        "id": "01M634BMB9T4MQF5V5CENQBQDS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M634BMB9T4MQF5V5CDQJHBW9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M634BMB9T4MQF5V5CDQJHBW9",
+        "id": "01M634BMKJMZ275PJC1VM0NJ9G",
+        "link": "01M634BMKJMZ275PJC1SXV4P64",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62S5CM2T21E6M0JQ28RY5Z7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At fd3f4b3, with the built binary in a scratch repo, I failed a real run on each of four change sets, so rhiza inbox listed four failed runs. I then landed one change set, withdrew one and rejected one, and left the fourth as a draft. rhiza inbox and inbox --json then listed only the failed run on the draft change set. rhiza inbox open on the withdrawn change set's item exited 2 with 'no inbox item'. I did not reproduce the gave-up and superseded cases by hand. They and the question/sign-off cases pass in inbox-stale.txtar, which I ran with run-abandon-failed and the other inbox and run-abandon scripts (go test -count=1, ok)."
+        },
+        "handle": "inbox-clears-stale-qa-1",
+        "id": "01M634BMVYC4X3DFQN7XXE9C6A",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M634BMVYC4X3DFQN7W4XF5AZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M634BMVYC4X3DFQN7W4XF5AZ",
+        "id": "01M634BN4DMVSNBF91H2T2T4NV",
+        "link": "01M634BN4DMVSNBF91H10R721N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62S5BN8M65JXT1672T8GVEF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62MKZFRPZ2C7QTYAF815XAG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M634BNHFYBT5FVB3V42X0WJQ",
+  "type": "ops",
+  "v": 1
+}
