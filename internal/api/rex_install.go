@@ -161,16 +161,56 @@ func rexKeyMode() string {
 // rexCellBoundsLua is the Lua that sizes a layer to a number of cells: the
 // chrome model of rexuikit's surface.BoundsForCells, centred, with its
 // constants (frame, border and margin in pixels, cols then rows) filled in
-// by rexCellBounds. The window is taken to be the invoking block's
-// terminal; without a size to work from it gives LAYER_BOUNDS.
+// by rexCellBounds. The window's size is the invoking block's terminal
+// size scaled up by the block's rect in the tiled layout, as rexuikit's
+// Surface.Window does (windowCellsFrom); without a size to work from, or
+// for a block in a floating layer, it gives LAYER_BOUNDS.
 const rexCellBoundsLua = `
+-- find_leaf returns the rect of block id in a layout node, or nil.
+local function find_leaf(node, id)
+  if node == nil then return nil end
+  if node.block_id == id then return node.rect end
+  if node.split ~= nil then
+    return find_leaf(node.split.before, id) or find_leaf(node.split.after, id)
+  end
+  return nil
+end
+
+-- window_cells returns the window holding block id in cells, and the pixel
+-- size of a cell: the block's size divided by its share of the window. In
+-- a split it comes out a few cells short, which makes the layer larger
+-- than the app, never smaller. nil when the block is not tiled or has no
+-- size in pixels.
+local function window_cells(block_id)
+  local ok, view = pcall(rex.session.view, {})
+  if not ok or type(view) ~= "table" then return nil end
+  for _, w in ipairs(view.windows or {}) do
+    for _, l in ipairs(w.layers or {}) do
+      local rect = find_leaf(l.layout, block_id)
+      if rect ~= nil then
+        if l.kind ~= "tiled" or (rect[3] or 0) <= 0 or (rect[4] or 0) <= 0 then return nil end
+        local sok, sz = pcall(rex.block.call, TERM, "size", { block_id = block_id })
+        if not sok or type(sz) ~= "table" or (sz.cell_width_px or 0) <= 0 or (sz.cell_height_px or 0) <= 0
+          or (sz.columns or 0) <= 0 or (sz.rows or 0) <= 0 then
+          return nil
+        end
+        return {
+          cols = math.floor(sz.columns / rect[3] + 0.5),
+          rows = math.floor(sz.rows / rect[4] + 0.5),
+          cell_w = sz.cell_width_px,
+          cell_h = sz.cell_height_px,
+        }
+      end
+    end
+  end
+  return nil
+end
+
 -- cell_bounds returns bounds that give a program cols x rows cells.
 local function cell_bounds(block_id, cols, rows)
   if block_id == nil then return LAYER_BOUNDS end
-  local ok, sz = pcall(rex.block.call, TERM, "size", { block_id = block_id })
-  if not ok or type(sz) ~= "table" or (sz.cell_width_px or 0) <= 0 or (sz.cell_height_px or 0) <= 0 then
-    return LAYER_BOUNDS
-  end
+  local wc = window_cells(block_id)
+  if wc == nil then return LAYER_BOUNDS end
   local function edge(v) return math.floor(v + 0.5) end
   local function fit_axis(win, frame, cell, border, margin, want)
     local px = win * cell + frame
@@ -182,8 +222,8 @@ local function cell_bounds(block_id, cols, rows)
       span = math.min(1, span + 1 / px)
     end
   end
-  local x, w = fit_axis(sz.columns, %[1]d, sz.cell_width_px, %[2]d, %[3]d, cols)
-  local y, h = fit_axis(sz.rows, %[4]d, sz.cell_height_px, %[5]d, %[6]d, rows)
+  local x, w = fit_axis(wc.cols, %[1]d, wc.cell_w, %[2]d, %[3]d, cols)
+  local y, h = fit_axis(wc.rows, %[4]d, wc.cell_h, %[5]d, %[6]d, rows)
   return { x, y, w, h }
 end
 `
