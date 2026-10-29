@@ -1,6 +1,7 @@
 # The read apps show what the matching command prints with --json. --once
-# runs the app's operation in-process and prints the result; it never dials
-# Rex, starts a daemon or binds a socket.
+# builds the app, which runs its operation in-process, and prints the
+# result the app holds; it never dials Rex, starts a daemon or binds a
+# socket.
 
 exec rhiza init
 exec rhiza add intent grow --record
@@ -40,7 +41,14 @@ cp stdout want-slice.json
 exec rhiza tui app slice store --once
 cmp stdout want-slice.json
 
-# No daemon lock or socket was created.
-! exists .rhiza/daemon.lock
+# show and why started bare have no result to print.
+! exec rhiza tui app show --once
+stderr 'show needs an ID or handle'
+
+# No daemon took the lock under the git common dir, and no socket exists.
+! exists .git/rhiza/daemon.lock
+! exists .git/rhiza/daemon.state.json
+exec find $WORK -type s
+! stdout .
 ! exec rhiza tui app nope --once
 stderr 'unknown app "nope"'

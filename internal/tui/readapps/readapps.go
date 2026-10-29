@@ -59,6 +59,7 @@ type Model struct {
 	run    Runner
 	input  string
 	asking bool
+	out    []byte
 	lines  []string
 	err    error
 	top    int
@@ -80,9 +81,18 @@ func NewModel(a App, run Runner, args []string) *Model {
 func (m *Model) load(args []string) {
 	m.asking = false
 	out, err := m.run(m.app.Name, args)
-	m.err = err
+	m.out, m.err = out, err
 	m.top = 0
 	m.lines = strings.Split(strings.TrimRight(string(out), "\n"), "\n")
+}
+
+// Result is what the app shows: its operation's output, byte for byte, or
+// the error it ran into. An app still asking for its ref has no result.
+func (m *Model) Result() ([]byte, error) {
+	if m.asking {
+		return nil, fmt.Errorf("%s needs an ID or handle", m.app.Name)
+	}
+	return m.out, m.err
 }
 
 func (m *Model) Init() tea.Cmd { return nil }

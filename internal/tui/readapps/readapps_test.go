@@ -37,3 +37,17 @@ func TestModelAsksForRefThenShowsResult(t *testing.T) {
 		t.Fatalf("result not shown: %q", m.View().Content)
 	}
 }
+
+func TestResultIsWhatRunReturned(t *testing.T) {
+	want := []byte("{\n  \"ok\": true\n}\n")
+	run := func(op string, args []string) ([]byte, error) { return want, nil }
+	app, _ := Lookup("roadmap")
+	got, err := NewModel(app, run, nil).Result()
+	if err != nil || string(got) != string(want) {
+		t.Fatalf("Result() = %q, %v", got, err)
+	}
+	show, _ := Lookup("show")
+	if _, err := NewModel(show, run, nil).Result(); err == nil {
+		t.Fatal("show without a ref has a result")
+	}
+}

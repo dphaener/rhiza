@@ -55,8 +55,8 @@ func tuiCommand(args []string, stdout, stderr io.Writer, getenv func(string) str
 
 // tuiApp runs a read app: `rhiza tui app <name> [args]`. It calls the
 // api operation of the same name in-process, as `rhiza <name> --json`
-// does. With --once it prints that JSON and exits; otherwise it shows the
-// result in a terminal pane.
+// does. With --once it prints the app's result and exits; otherwise it
+// shows that result in a terminal pane.
 func tuiApp(name string, args []string, stdout, stderr io.Writer, getenv func(string) string) int {
 	app, ok := readapps.Lookup(name)
 	if !ok {
@@ -90,15 +90,16 @@ func tuiApp(name string, args []string, stdout, stderr io.Writer, getenv func(st
 		}
 		return canon.Marshal(resp)
 	}
+	m := readapps.NewModel(app, run, rest)
 	if once {
-		out, err := run(app.Name, rest)
+		out, err := m.Result()
 		if err != nil {
 			return writeError(stdout, stderr, err, false)
 		}
 		stdout.Write(out)
 		return 0
 	}
-	if _, err := tea.NewProgram(readapps.NewModel(app, run, rest)).Run(); err != nil {
+	if _, err := tea.NewProgram(m).Run(); err != nil {
 		return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
 	}
 	return 0
