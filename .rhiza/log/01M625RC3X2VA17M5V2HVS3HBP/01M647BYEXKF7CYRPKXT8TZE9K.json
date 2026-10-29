@@ -1,0 +1,43 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M642M4F8J5H60T3216DK0ZHE"
+  ],
+  "at": "2026-10-29T16:19:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "cb383d210a226bd705faf6b0ac6d1f97108bc175",
+          "pr": "https://github.com/dphaener/rhiza/pull/73",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #73 (https://github.com/dphaener/rhiza/pull/73) passed CI at cb383d2",
+          "status": "verified"
+        },
+        "handle": "pr-73-ship-step-after-close-out",
+        "id": "01M647BXK8065T7G5SSE39JDP4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M647BXK8065T7G5SSB897DH6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M647BXK8065T7G5SSB897DH6",
+        "id": "01M647BXXRPSVN8F0EVRD4T2ZB",
+        "link": "01M647BXXRPSVN8F0EVQ2GXD82",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RFZ5YEP4PWEC0799MK0WZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M625RC3X2VA17M5V2HVS3HBP",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M647BYEXKF7CYRPKXT8TZE9K",
+  "type": "ops",
+  "v": 1
+}
