@@ -1,0 +1,30 @@
+{
+  "actor": "01M64JRVJ9BYQZ3W9CJMHPTG6B",
+  "after": [
+    "01M61S7NKSW1TW2MR1J67MMZ0B"
+  ],
+  "at": "2026-10-29T19:40:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "67e702c2-a3f2-4cad-84dd-01a1892c6c98",
+          "statement": "The flake reproduces: under `go test ./internal/api -run TestGuideInstallConcurrent -count=300 -race -cpu 1,2,4,8` one run in 300 fails with \"exists and was not written by rhiza guide install\". From the code, pluginForeign checks plugin.json first and the other plugin files second, while another install writes plugin.json first and then the rest. So a racing install can see no manifest, then find SKILL.md written by the other install, and call the folder foreign. How should the fix go, without loosening the test?"
+        },
+        "handle": "question-67e702c2-1",
+        "id": "01M64JVMH1VSE24CBHWPPB2P5X",
+        "key": null,
+        "kind": "question",
+        "node": "01M64JVMH1VSE24CBHWNGD9N8Q",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5ZNVHN2YNK6DDVYY8GK5CEQ",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M64JVMPV18ZWW79G4S87NVTS",
+  "type": "ops",
+  "v": 1
+}
