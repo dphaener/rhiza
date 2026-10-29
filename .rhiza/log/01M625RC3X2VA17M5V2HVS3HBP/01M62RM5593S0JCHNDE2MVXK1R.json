@@ -1,0 +1,52 @@
+{
+  "actor": "01M62RJXSQGHWFWEDRK0AXKEC0",
+  "after": [
+    "01M62RFZRF46BCVBAQWEQ5ZGMZ"
+  ],
+  "at": "2026-10-29T02:43:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The ship command finds the main checkout from the git common dir, not from the run's worktree folder",
+          "wording": "Derive it from the git common dir, the agent's option, picked by the owner. Ship's own target takes the main checkout from the first entry of git worktree list, not from the common dir."
+        },
+        "handle": "ship-command-main-from-common-dir",
+        "id": "01M62RFYPDVVVRHSREVJ9Z34G9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M62RFYPDVVVRHSREVFJA6HDY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "From a worktree folder that close-out has removed, git cannot run, so how does the ship command find the main checkout's git common dir?"
+        },
+        "handle": "ship-command-gitless-path",
+        "id": "01M62RM4HA219N0SDXDBD03BB1",
+        "key": null,
+        "kind": "question",
+        "node": "01M62RM4HA219N0SDXD961BBPG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62RM4HA219N0SDXD961BBPG",
+        "id": "01M62RM4RYKMBJ1G6TB3HYJ84V",
+        "link": "01M62RM4RYKMBJ1G6TB3G41TGM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RFZ5YEP4PWEC0799MK0WZ",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M625RC3X2VA17M5V2HVS3HBP",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M62RM5593S0JCHNDE2MVXK1R",
+  "type": "ops",
+  "v": 1
+}
