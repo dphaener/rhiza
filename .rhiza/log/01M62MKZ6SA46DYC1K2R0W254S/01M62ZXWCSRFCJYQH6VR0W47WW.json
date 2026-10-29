@@ -1,0 +1,86 @@
+{
+  "actor": "01M62ZREEY13XPXYNR69J21V38",
+  "after": [
+    "01M62ZQHV3ZZC9139ZRE1RPEC7"
+  ],
+  "at": "2026-10-29T04:50:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 2da4c0b, built rhiza to $TMPDIR and in a scratch repo made six real change sets (accepted, landed, rejected, withdrawn, proposed, draft) via change new/propose/accept/land/reject/withdraw, wrote an interrupted-run journal (dead pid) for each, and ran rhiza daemon --permission-mode manual --once --json with Rex faked as a logger. It reported resumed: [RUNACC] only; the fake rex log has one window new ... run resume RUNACC; only RUNACC.jsonl gained a daemon-resumed entry. Same result with autonomous runs."
+        },
+        "handle": "daemon-resumes-accepted-only-qa-1",
+        "id": "01M62ZXQ654TV6H233XFYMA1ZA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62ZXQ654TV6H233XC2VB1ND",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62ZXQ654TV6H233XC2VB1ND",
+        "id": "01M62ZXQQWNTSPRV9SKYJYYXW8",
+        "link": "01M62ZXQQWNTSPRV9SKXMX5A8C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RH3705M0GA17WVVXKBGM8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 2da4c0b with the built binary in a scratch repo, rhiza run resume on interrupted runs whose change sets are landed, rejected and withdrawn each exits 3 with 'run X is not resumed: its change set <id> is <state>, no longer accepted' and 'next: rhiza run abandon X'; --json gives code conflict with the same next; cmp shows each journal unchanged."
+        },
+        "handle": "manual-resume-refuses-unaccepted-qa-1",
+        "id": "01M62ZXR6G66Q0F720GY6GKEKE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62ZXR6G66Q0F720GXAYPDSV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62ZXR6G66Q0F720GXAYPDSV",
+        "id": "01M62ZXRNGEGSSBC4TGE6WRBRP",
+        "link": "01M62ZXRNGEGSSBC4TGD0BR1F2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RH4605WT6153H4AZSRG87",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 2da4c0b with the built binary, after daemon --once skipped them, rhiza inbox lists one skipped item for each of the landed, rejected, withdrawn, proposed and draft runs ('interrupted, and not resumed: its change set is landed', 'next: rhiza run abandon RUNLND', ...), none for the resumed accepted run; the daemon emitted a blocked OSC 7501 notice per skipped run; rhiza run abandon RUNREJ removes its item. Autonomous runs get no inbox item (pre-existing autonomous exclusion)."
+        },
+        "handle": "unaccepted-run-in-inbox-qa-1",
+        "id": "01M62ZXSPP8S749RD0M9XFX3M3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M62ZXSPP8S749RD0M93MJ47E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62ZXSPP8S749RD0M93MJ47E",
+        "id": "01M62ZXTP0054Z9684K6ZPAYH4",
+        "link": "01M62ZXTP0054Z9684K35679ZC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RH3PBJ12H0CYSMCMV7KAS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62MKZ6SA46DYC1K2R0W254S",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62ZXWCSRFCJYQH6VR0W47WW",
+  "type": "ops",
+  "v": 1
+}
