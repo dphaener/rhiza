@@ -86,8 +86,9 @@ rex.action{
 `
 
 // rexKeyModeLua is the rhiza key mode: the launch key enters it, and each
-// app's key in it runs that app's action. DEFAULT_KEYS (written by
-// rexKeyModeTable) gives each app a default key; settings.keys overrides
+// app's key in it runs that app's action, named in APP_ACTIONS by
+// rexActionName as rexAppActions names it. DEFAULT_KEYS (written by
+// rexKeyMode) gives each app a default key; settings.keys overrides
 // any of them, and a reinstall keeps settings.keys. An exclusive mode drops
 // every key it does not bind, so a mistyped key never reaches the terminal.
 const rexKeyModeLua = `
@@ -98,7 +99,7 @@ local overrides = type(settings.keys) == "table" and settings.keys or {}
 for app, key in pairs(DEFAULT_KEYS) do
   local k = overrides[app]
   if type(k) ~= "string" or k == "" then k = key end
-  rex.bind(MODE .. "/" .. k, "rhiza_app_" .. (app:gsub("[^a-z0-9_]", "_")))
+  rex.bind(MODE .. "/" .. k, APP_ACTIONS[app])
 end
 if type(settings.launch_key) == "string" and settings.launch_key ~= "" then
   rex.bind((settings.launch_key:gsub("%s+", ">")), "client.mode.enter", { name = MODE, once = true })
@@ -141,9 +142,9 @@ func rexInitials(name string) string {
 	return b.String()
 }
 
-// rexKeyMode returns the Lua of the key mode: the table of default keys,
-// then rexKeyModeLua. Apps without a free key get no default, only the
-// action in the palette.
+// rexKeyMode returns the Lua of the key mode: the tables of default keys
+// and of the apps' action names, then rexKeyModeLua. Apps without a free
+// key get no default, only the action in the palette.
 func rexKeyMode() string {
 	apps := launcher.Apps()
 	keys := rexDefaultKeys(apps)
@@ -153,6 +154,10 @@ func rexKeyMode() string {
 		if k, ok := keys[a.Name]; ok {
 			fmt.Fprintf(&b, "  [%s] = %s,\n", strconv.Quote(a.Name), strconv.Quote(k))
 		}
+	}
+	b.WriteString("}\nlocal APP_ACTIONS = {\n")
+	for _, a := range apps {
+		fmt.Fprintf(&b, "  [%s] = %s,\n", strconv.Quote(a.Name), strconv.Quote(rexActionName(a.Name)))
 	}
 	b.WriteString("}\n")
 	return b.String() + rexKeyModeLua
@@ -282,8 +287,8 @@ func rexAppActions() string {
 }
 
 // rexActionName is the Rex action that opens the named app. Rex action
-// names must match [a-z0-9_]+, so every other byte becomes '_', as the key
-// mode's rex.bind maps it in Lua.
+// names must match [a-z0-9_]+, so every other rune becomes '_'. The key
+// mode binds to the same name through APP_ACTIONS.
 func rexActionName(app string) string {
 	return "rhiza_app_" + strings.Map(func(r rune) rune {
 		if r >= 'a' && r <= 'z' || r >= '0' && r <= '9' || r == '_' {

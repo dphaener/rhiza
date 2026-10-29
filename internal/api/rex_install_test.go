@@ -268,10 +268,17 @@ func TestRexInstallBindsAKeyPerAppInTheKeyMode(t *testing.T) {
 		if want := fmt.Sprintf("[%q] = %q,", app, key); !strings.Contains(script, want) {
 			t.Errorf("rhiza.lua lacks the default %s:\n%s", want, script)
 		}
+		action := rexActionName(app)
+		if want := fmt.Sprintf("[%q] = %q,", app, action); !strings.Contains(script, want) {
+			t.Errorf("rhiza.lua lacks the action %s:\n%s", want, script)
+		}
+		if !strings.Contains(script, fmt.Sprintf("name = %q", action)) {
+			t.Errorf("key of %s binds %s, which no rex.action defines", app, action)
+		}
 	}
 	for _, want := range []string{
 		`rex.mode(MODE, { exclusive = true })`,
-		`rex.bind(MODE .. "/" .. k, "rhiza_app_" .. (app:gsub("[^a-z0-9_]", "_")))`,
+		`rex.bind(MODE .. "/" .. k, APP_ACTIONS[app])`,
 		`keys = {},`,
 	} {
 		if !strings.Contains(script, want) {

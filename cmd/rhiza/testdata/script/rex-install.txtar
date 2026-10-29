@@ -35,7 +35,8 @@ grep 'client.mode.enter", \{ name = MODE' conf/rhiza.lua
 grep '^  \["roadmap"\] = "[a-z0-9]",$' conf/rhiza.lua
 grep '^  \["model"\] = "[a-z0-9]",$' conf/rhiza.lua
 grep 'keys = \{\},' conf/rhiza.lua
-grep 'rex.bind\(MODE .. "/" .. k, "rhiza_app_" .. \(app:gsub\("\[\^a-z0-9_\]", "_"\)\)\)' conf/rhiza.lua
+grep '^  \["session-ls"\] = "rhiza_app_session_ls",$' conf/rhiza.lua
+grep 'rex.bind\(MODE .. "/" .. k, APP_ACTIONS\[app\]\)' conf/rhiza.lua
 
 # A second install changes neither file, and keeps an edited setting: the
 # owner edits launch_key, and a reinstall leaves that line byte for byte.
