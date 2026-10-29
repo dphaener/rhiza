@@ -2,11 +2,14 @@
 # session's for a question, the run's journalled tab for a sign-off, a
 # failed run or a run the daemon gave up on. A run whose tab Rex no longer
 # has is named with its tab gone, and an unknown item exits 2. The fake rex
-# fails for the block "gone" and logs every call. The journals are
-# fixtures.
+# fails for the block "gone", finds the run block r1 only within its
+# session (as the real Rex scopes blocks to a session), and logs every
+# call. The journals are fixtures. The owner's shell is in a session of
+# its own, not the run's.
 
 chmod 755 bin/rex
 env PATH=$WORK/bin:$PATH
+env REX_SESSION=session:owner
 
 mkdir repo
 cd repo
@@ -29,14 +32,16 @@ exec cat ../rex.log
 stdout 'rex focus -s session:s1 block:q1'
 exec sh -c 'rm ../rex.log'
 
-# A sign-off: the run's journalled tab.
+# A sign-off: the run's journalled tab, reached through the run's session
+# from the owner's.
 exec sh -c 'rhiza inbox | grep -E "^[0-9a-f]+ signoff " | cut -d" " -f1'
 cp stdout ../sid
 exec sh -c 'rhiza inbox open "$(cat ../sid)" --json'
 stdout '"opened": true'
 stdout '"tab": "block:r1"'
 exec cat ../rex.log
-stdout 'rex focus block:r1'
+stdout 'rex block inspect -s session:run --json block:r1'
+stdout 'rex focus -s session:run block:r1'
 
 # A failed run whose tab Rex no longer has: named, tab gone, nothing focused.
 exec sh -c 'rm ../rex.log'
@@ -65,7 +70,7 @@ stderr 'no inbox item'
 -- signoff.jsonl --
 {"type":"started","at":"2026-01-01T00:00:00Z","step":"signoff","started":{"workflow":"ship-change","definition":"","change":"CSSIGNOFF"}}
 {"type":"entered","at":"2026-01-01T00:00:01Z","step":"signoff","visit":1}
-{"type":"process","at":"2026-01-01T00:00:02Z","process":{"host":"h","pid":1,"rex_window":"window:w1","rex_block":"block:r1"}}
+{"type":"process","at":"2026-01-01T00:00:02Z","process":{"host":"h","pid":1,"rex_session":"session:run","rex_window":"window:w1","rex_block":"block:r1"}}
 {"type":"stopped","at":"2026-01-01T02:00:00Z","step":"signoff","detail":"waiting for the owner's sign-off: rhiza run approve | rhiza run request-changes <file>; rhiza run summary"}
 -- failed.jsonl --
 {"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"CSFAILED"}}
@@ -81,6 +86,8 @@ stderr 'no inbox item'
 echo "rex $*" >> "$WORK/rex.log"
 case "$*" in
 *block:gone*) exit 1 ;;
+*"-s session:run "*block:r1*) ;;
+*block:r1*) echo 'block target not found' >&2; exit 3 ;;
 esac
 case "$1" in
 block) echo '{"block":{"window_id":"window:w1"}}' ;;

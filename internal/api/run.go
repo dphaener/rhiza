@@ -1039,7 +1039,7 @@ func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode
 }
 
 // runProcess is the calling process as a run's process: its host and pid
-// and, when it runs in Rex, the window and block of its tab. Rex names the
+// and, when it runs in Rex, the session, window and block of its tab. Rex names the
 // window of the block (`rex block inspect`); when it cannot, the record
 // has the block alone.
 func runProcess(ctx *Ctx) run.Process {
@@ -1061,7 +1061,11 @@ func runProcess(ctx *Ctx) run.Process {
 			}
 		}
 	}
-	return run.ThisProcess(window, ctx.RexBlock)
+	session := ""
+	if ctx.RexBlock != "" {
+		session = ctx.RexSession
+	}
+	return run.ThisProcess(session, window, ctx.RexBlock)
 }
 
 // stepRunner is the engine's run.Runner: command and wait steps run

@@ -6,14 +6,17 @@ import (
 )
 
 // Process is the process that runs a run: where it is and, when it runs in
-// Rex, the window and block of its tab. Host and Pid are always set;
-// RexWindow and RexBlock only for a run in Rex, and RexWindow may be empty
-// when Rex could not name the block's window.
+// Rex, the session, window and block of its tab. Host and Pid are always
+// set; the Rex fields only for a run in Rex. RexWindow may be empty when
+// Rex could not name the block's window, and RexSession when the process
+// had no REX_SESSION. Rex finds a block only within its session, so a
+// caller in another session needs RexSession to reach the tab.
 type Process struct {
-	Host      string `json:"host"`
-	Pid       int    `json:"pid"`
-	RexWindow string `json:"rex_window,omitempty"`
-	RexBlock  string `json:"rex_block,omitempty"`
+	Host       string `json:"host"`
+	Pid        int    `json:"pid"`
+	RexSession string `json:"rex_session,omitempty"`
+	RexWindow  string `json:"rex_window,omitempty"`
+	RexBlock   string `json:"rex_block,omitempty"`
 }
 
 // Liveness is where a run stands as a process.
@@ -61,10 +64,10 @@ func (st State) Liveness(host string, alive func(pid int) bool) Liveness {
 }
 
 // ThisProcess is the calling process: its host name and pid, with the Rex
-// window and block it runs in as given.
-func ThisProcess(window, block string) Process {
+// session, window and block it runs in as given.
+func ThisProcess(session, window, block string) Process {
 	host, _ := os.Hostname()
-	return Process{Host: host, Pid: os.Getpid(), RexWindow: window, RexBlock: block}
+	return Process{Host: host, Pid: os.Getpid(), RexSession: session, RexWindow: window, RexBlock: block}
 }
 
 // String is the process as "host:pid".

@@ -230,13 +230,16 @@ func (r InboxOpenResponse) Human(w io.Writer) {
 }
 
 // itemTab is where item's tab is: a question's session tab, else the run's
-// journalled tab. The Rex session is empty when the journal has none.
+// journalled tab, scoped by the Rex session it records: Rex finds a block
+// only within its session, so the owner's shell may be in another. The
+// Rex session is empty when the journal has none (one written before it
+// was recorded, or by a process with no REX_SESSION).
 func itemTab(item InboxItem, st run.State) (rexSession, block string) {
 	if item.Kind == InboxQuestion {
 		return item.TabSession, item.TabBlock
 	}
 	if st.Process != nil {
-		return "", st.Process.RexBlock
+		return st.Process.RexSession, st.Process.RexBlock
 	}
 	return "", ""
 }
