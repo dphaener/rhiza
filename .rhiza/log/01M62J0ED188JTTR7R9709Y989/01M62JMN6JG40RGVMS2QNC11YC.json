@@ -1,0 +1,146 @@
+{
+  "actor": "01M62J15DN2EF18T29BGVQRRJY",
+  "after": [
+    "01M62JM7K27390DZCQPCDNAN22"
+  ],
+  "at": "2026-10-29T00:58:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rhiza's commands run as small Rex apps: a quick-launch layer opens each one in a modal, and each app reads and writes the model in-process through internal/api"
+        },
+        "handle": "rhiza-tui",
+        "id": "01M62JMHNS9HS0AR6DT6NBE4XH",
+        "key": "zi",
+        "kind": "intent",
+        "node": "01M62JMHNS9HS0AR6DT5SZYKGQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "rhiza rex install writes the quick-launch Lua script into the Rex config and reloads Rex, and a second run leaves the owner's own config untouched"
+        },
+        "handle": "tui-install-script",
+        "id": "01M62JMHXNM6W4XBGP890GA3F2",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M62JMHXNM6W4XBGP85W06YY8",
+        "op": "node.create",
+        "parent": "01M62JMHNS9HS0AR6DT5SZYKGQ"
+      },
+      {
+        "fields": {
+          "statement": "ctrl-a>r opens a Rex quick-launch layer that lists every rhiza app, and choosing one opens it in a modal"
+        },
+        "handle": "tui-launcher",
+        "id": "01M62JMJ6AYPDDEEFNPH9NGJQB",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M62JMJ6AYPDDEEFNPG9WG3E0",
+        "op": "node.create",
+        "parent": "01M62JMHNS9HS0AR6DT5SZYKGQ"
+      },
+      {
+        "fields": {
+          "statement": "roadmap, ready, show, why and slice run as apps and show the same result as the matching rhiza command --json"
+        },
+        "handle": "tui-read-apps",
+        "id": "01M62JMJESD5MBJG9EEHXNZTB9",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M62JMJESD5MBJG9EEEMQ6207",
+        "op": "node.create",
+        "parent": "01M62JMHNS9HS0AR6DT5SZYKGQ"
+      },
+      {
+        "fields": {
+          "statement": "A model app shows the as-is capability tree and the roadmap, read from the index"
+        },
+        "handle": "tui-model-view",
+        "id": "01M62JMJPNZ1WEAE45YWH0T28X",
+        "key": "y",
+        "kind": "intent",
+        "node": "01M62JMJPNZ1WEAE45YVT29SMG",
+        "op": "node.create",
+        "parent": "01M62JMHNS9HS0AR6DT5SZYKGQ"
+      },
+      {
+        "fields": {
+          "statement": "Change-set and record writes from an app show a what-if preview, and nothing is written until the owner confirms once"
+        },
+        "handle": "tui-writes-previewed",
+        "id": "01M62JMJZ4J5RJ0WYHV8SH1JZX",
+        "key": "z",
+        "kind": "intent",
+        "node": "01M62JMJZ4J5RJ0WYHV7YFXVF1",
+        "op": "node.create",
+        "parent": "01M62JMHNS9HS0AR6DT5SZYKGQ"
+      },
+      {
+        "fields": {
+          "statement": "run status and session ls run as read-only apps"
+        },
+        "handle": "tui-runs-sessions",
+        "id": "01M62JMK8FZ1V9PKCB5BMSSVJ9",
+        "key": "zi",
+        "kind": "intent",
+        "node": "01M62JMK8FZ1V9PKCB587AWBPS",
+        "op": "node.create",
+        "parent": "01M62JMHNS9HS0AR6DT5SZYKGQ"
+      },
+      {
+        "fields": {
+          "statement": "make check is green, and no test touches Rex, a socket, the network or an agent"
+        },
+        "handle": "tui-still-healthy",
+        "id": "01M62JMKP4ZDY2F569T3DZ68M9",
+        "key": "zr",
+        "kind": "intent",
+        "node": "01M62JMKP4ZDY2F569SZS40YBE",
+        "op": "node.create",
+        "parent": "01M62JMHNS9HS0AR6DT5SZYKGQ"
+      },
+      {
+        "fields": {
+          "quote": "It should launch from a rex quick actions layer. This will require us to have an install command that installs a lua script in the rex config. We should be able to do something like ctrl-a>r to open a rex specific quick launch rex layer and then select from there which rex \"mini\" app we want to open. This isn't just a single one size fits all tui, it's many mini apps that sort of wrap around Rex and give you small bits of functionality rather than one large TUI that is always open.",
+          "statement": "The TUI is many small apps launched from a Rex quick-launch layer, installed by a command that writes a Lua script into the Rex config, not one large TUI that is always open"
+        },
+        "handle": "tui-many-mini-apps",
+        "id": "01M62JMM4GYAAGBWRJGQGZQTA8",
+        "key": null,
+        "kind": "decision",
+        "node": "01M62JMM4GYAAGBWRJGMP7X19P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62JMM4GYAAGBWRJGMP7X19P",
+        "id": "01M62JMMEKDS9C99DWYB2YQ53J",
+        "link": "01M62JMMEKDS9C99DWY7CNW9NP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JM7AH8GAVS9M2EYQD0TP6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M62JMHNS9HS0AR6DT5SZYKGQ",
+        "id": "01M62JMMQW0F4HA1VGYTCVZCEK",
+        "link": "01M62JMMQW0F4HA1VGYT2B1CAH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JMM4GYAAGBWRJGMP7X19P",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M62J0ED188JTTR7R9709Y989",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62JMN6JG40RGVMS2QNC11YC",
+  "type": "ops",
+  "v": 1
+}

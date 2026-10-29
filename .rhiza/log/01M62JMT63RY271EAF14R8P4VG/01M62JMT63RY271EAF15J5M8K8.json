@@ -1,0 +1,16 @@
+{
+  "actor": "01M62J15DN2EF18T29BGVQRRJY",
+  "after": [],
+  "at": "2026-10-29T00:58:31Z",
+  "body": {
+    "intent": "A Rex app showing the as-is capability tree and the roadmap",
+    "kind": "intention",
+    "sources": [],
+    "title": "TUI model view"
+  },
+  "change_set": "01M62JMT63RY271EAF14R8P4VG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62JMT63RY271EAF15J5M8K8",
+  "type": "open",
+  "v": 2
+}

@@ -1,0 +1,50 @@
+{
+  "actor": "01M62J15DN2EF18T29BGVQRRJY",
+  "after": [
+    "01M62JMT63RY271EAF15J5M8K8"
+  ],
+  "at": "2026-10-29T00:59:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "On the 50,000-node generated model, the app's tree and roadmap text match rhiza tree and rhiza roadmap, and the read takes under 50 ms",
+          "statement": "A model app shows the as-is capability tree and the roadmap's groups, read from the index"
+        },
+        "handle": "model-tree-app",
+        "id": "01M62JPK2HTYRZW2PD8ZNRBDE1",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M62JPK2HTYRZW2PD8ZFV1JVK",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M62JPK2HTYRZW2PD8ZFV1JVK",
+        "id": "01M62JPKDFFV4T3CCV5VSD7KN4",
+        "link": "01M62JPKDFFV4T3CCV5S0RGP2K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JMM4GYAAGBWRJGMP7X19P",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M62JPK2HTYRZW2PD8ZFV1JVK",
+        "id": "01M62JPKR432PAZ57XS3MDBP5H",
+        "link": "01M62JPKR432PAZ57XS3K21Y64",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JMJPNZ1WEAE45YVT29SMG",
+        "type": "implements"
+      }
+    ]
+  },
+  "change_set": "01M62JMT63RY271EAF14R8P4VG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62JPMK03F54PBNXYTE1R113",
+  "type": "ops",
+  "v": 1
+}

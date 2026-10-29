@@ -1,0 +1,101 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M62JVTCXJM1P7S1ER1K19BNW"
+  ],
+  "at": "2026-10-29T03:30:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "With a fake Rex config directory and a fake rex, install writes rhiza.lua and the require line. A second install leaves both files byte-identical. Every line the owner wrote in init.lua is kept byte for byte. uninstall restores init.lua as it was, and no test touches real Rex.",
+          "statement": "rhiza rex install writes rhiza.lua beside Rex's init.lua, adds require(\"rhiza\") to init.lua if it is missing, and reloads Rex. A second run changes nothing the owner wrote, keeps the settings in rhiza.lua, and rhiza rex uninstall removes both."
+        },
+        "handle": "rex-install-command",
+        "id": "01M62JP4KDNBZKH1YT5SK7N91K",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M62JP4KDNBZKH1YT5NZRB347",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "fields": {
+          "acceptance": "With a fake Rex client, the installed script binds the launch key to open the layer, the layer lists each registered app by name, and selecting one opens that app's modal.",
+          "statement": "ctrl+a a (the launch key, a setting in rhiza.lua) opens a Rex quick-launch layer, built on rexuikit's client, that lists every rhiza app; choosing one opens it in a modal."
+        },
+        "handle": "quick-launch-layer",
+        "id": "01M62JP7BKA4N9W2HCFY5AQG4M",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M62JP7BKA4N9W2HCFTP0CMQ4",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "fields": {
+          "reasoning": "Done point tui-install-script requires that a second install leave the owner's own config untouched, and a separate file meets that without parsing init.lua. forge-cli already installs this way (forge.lua plus require(\"forge\")), so the two tools share one pattern in the owner's Rex config.",
+          "statement": "The quick-launch script is its own file, rhiza.lua, beside Rex's init.lua, as forge keeps forge.lua. rhiza rex install writes it and adds one require(\"rhiza\") line to init.lua if that line is missing. It changes no other line the owner wrote, and rhiza rex uninstall removes both.",
+          "wording": "the orchestrator's recommended option, taken under the owner's standing word: \"i feel that I've made enough high level decisions\" and \"I'm just accepting the recommended answers anyway\""
+        },
+        "handle": "tui-own-lua-file",
+        "id": "01M62VBWAKNS7FRMRZRREGTZ43",
+        "key": null,
+        "kind": "decision",
+        "node": "01M62VBWAKNS7FRMRZRNZRAYAM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62VBWAKNS7FRMRZRNZRAYAM",
+        "id": "01M62VBWJ1PVE39AMMB17HQHFA",
+        "link": "01M62VBWJ1PVE39AMMAZ944QQX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JP5WGX4KAFHFF61W6M1GY",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M62JP4KDNBZKH1YT5NZRB347",
+        "id": "01M62VBWSFY9VFSN0Q459C37TT",
+        "link": "01M62VBWSFY9VFSN0Q44S914GE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62VBWAKNS7FRMRZRNZRAYAM",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "reasoning": "The owner asked for 'something like ctrl-a>r'. ~/.config/rex/init.lua binds ctrl+a r to client.config.reload, and taking it would break that binding. ctrl+a a ('apps') is unbound, sits under the same prefix, and the setting lets the owner pick another key.",
+          "statement": "The quick-launch layer opens on ctrl+a a by default, not ctrl+a r, because the owner's init.lua binds ctrl+a r to client.config.reload. The key is a setting in rhiza.lua that a reinstall keeps.",
+          "wording": "the orchestrator's recommended option, taken under the owner's standing word: \"i feel that I've made enough high level decisions\" and \"I'm just accepting the recommended answers anyway\""
+        },
+        "handle": "tui-launch-key",
+        "id": "01M62VBX0YHEBNPTRZK33SHPVJ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M62VBX0YHEBNPTRZK2C8CJ7R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M62JP7BKA4N9W2HCFTP0CMQ4",
+        "id": "01M62VBX8CVKXQAEM3VMRWD8Y3",
+        "link": "01M62VBX8CVKXQAEM3VJ211TRX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62VBX0YHEBNPTRZK2C8CJ7R",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M62JMSW4FH8RAWSQXHC7ZPND",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62VBY2YFBK9W7E65DGAE4CT",
+  "type": "ops",
+  "v": 1
+}

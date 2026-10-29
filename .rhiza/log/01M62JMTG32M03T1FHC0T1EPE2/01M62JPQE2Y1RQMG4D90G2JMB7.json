@@ -1,0 +1,50 @@
+{
+  "actor": "01M62J15DN2EF18T29BGVQRRJY",
+  "after": [
+    "01M62JMTG32M03T1FHC1B643QF"
+  ],
+  "at": "2026-10-29T00:59:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript cancels a preview and checks the log is byte-identical; confirming writes the same entry the matching rhiza command writes for the same input",
+          "statement": "Change show, propose, accept and land, and record add, set, link and retire, run as apps, and each shows a what-if preview before anything is written"
+        },
+        "handle": "write-apps-previewed",
+        "id": "01M62JPNH7XH3E5F28FHX1V2EY",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M62JPNH7XH3E5F28FER1MW8E",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M62JPNH7XH3E5F28FER1MW8E",
+        "id": "01M62JPNZED1JD98VPMFWFVD5N",
+        "link": "01M62JPNZED1JD98VPMEBPC8M7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JMM4GYAAGBWRJGMP7X19P",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M62JPNH7XH3E5F28FER1MW8E",
+        "id": "01M62JPPFHJY4ABHBW5JQH04WT",
+        "link": "01M62JPPFHJY4ABHBW5G71VDTH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JMJZ4J5RJ0WYHV7YFXVF1",
+        "type": "implements"
+      }
+    ]
+  },
+  "change_set": "01M62JMTG32M03T1FHC0T1EPE2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62JPQE2Y1RQMG4D90G2JMB7",
+  "type": "ops",
+  "v": 1
+}

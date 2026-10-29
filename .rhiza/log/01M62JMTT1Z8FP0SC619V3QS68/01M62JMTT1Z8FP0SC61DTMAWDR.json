@@ -1,0 +1,16 @@
+{
+  "actor": "01M62J15DN2EF18T29BGVQRRJY",
+  "after": [],
+  "at": "2026-10-29T00:58:32Z",
+  "body": {
+    "intent": "Read-only Rex apps for run status and session ls",
+    "kind": "intention",
+    "sources": [],
+    "title": "TUI runs and sessions"
+  },
+  "change_set": "01M62JMTT1Z8FP0SC619V3QS68",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M62JMTT1Z8FP0SC61DTMAWDR",
+  "type": "open",
+  "v": 2
+}
