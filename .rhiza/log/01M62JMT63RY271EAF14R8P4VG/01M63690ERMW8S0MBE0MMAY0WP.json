@@ -1,0 +1,40 @@
+{
+  "actor": "01M6364QKNNQ1SD0VQF4HQ1F27",
+  "after": [
+    "01M63648DC94JHNHXD4ZRHC03Q"
+  ],
+  "at": "2026-10-29T06:41:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at 0184e67 with a scratch build of this branch, on gen.Default() (50,000-node model) written to a scratch git repo. `rhiza tui app model --once` equals `rhiza tree --view as-is` + blank line + `rhiza roadmap` byte for byte (cmp, 15,976 lines); with a deep-subtree ref (intent-57, an ancestor of the depth-6 sample) `rhiza tui app model intent-57 --once` equals `rhiza tree intent-57 --view as-is` + roadmap (118 lines). Whole-process wall time for the ref read: 0.03 s on 5 of 5 runs (no ref: 0.18 s, outside the budget per model-app-read-budget). Bad ref exits 4 with next: rhiza ls; extra args exit 2 with the usage line. No socket in the scratch repo. Interactive in a detached 80x24 Rex pane (`rhiza tui app model intent-30`): the screen is 24 lines with the [tree] roadmap header on line 1 and the key footer on the last line, the cycle-1 clipping fixed; j/j scroll with the header kept, tab switches to [roadmap], G jumps to the roadmap's last line, g back to # Roadmap, the header stays on screen throughout, q exits 0. go test ./internal/tui/modelapp and the tui-model-app script pass."
+        },
+        "handle": "model-tree-app-qa-2",
+        "id": "01M6368ZM1HH1GP2MTKVGGFY49",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6368ZM1HH1GP2MTKVFJXB5T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6368ZM1HH1GP2MTKVFJXB5T",
+        "id": "01M6368ZYCFTVNGKFJY4CAYSAT",
+        "link": "01M6368ZYCFTVNGKFJY2CCN836",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62JPK2HTYRZW2PD8ZFV1JVK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M62JMT63RY271EAF14R8P4VG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M63690ERMW8S0MBE0MMAY0WP",
+  "type": "ops",
+  "v": 1
+}
