@@ -1,0 +1,103 @@
+# A failed run, and a run the daemon gave up on, whose change set has landed,
+# been withdrawn, rejected or superseded is not listed: its next command could
+# only fail. The same runs on an accepted change set stay listed, as does a
+# failed run on a change set the log does not know. A question and a sign-off
+# on a landed change set stay listed. Same in text and --json. The journals
+# are fixtures.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+# One change set per state; ids go in id.<name>.
+exec sh ../mkchanges.sh
+fold-ok
+
+mkdir .git/rhiza/runs
+exec sh ../mkruns.sh
+
+exec rhiza inbox
+stdout 'failed run F-ACCEPTED, change set '
+stdout 'gave-up run G-ACCEPTED, change set '
+stdout 'failed run F-UNKNOWN, change set CSUNKNOWN'
+stdout 'question run Q-LANDED, change set '
+stdout 'signoff run S-LANDED, change set '
+! stdout 'F-LANDED|G-LANDED|F-WITHDRAWN|G-WITHDRAWN|F-REJECTED|G-REJECTED|F-SUPERSEDED|G-SUPERSEDED'
+exec rhiza inbox --json
+stdout '"run": "F-ACCEPTED"'
+stdout '"run": "G-ACCEPTED"'
+stdout '"run": "F-UNKNOWN"'
+stdout '"run": "Q-LANDED"'
+stdout '"run": "S-LANDED"'
+! stdout 'F-LANDED|G-LANDED|F-WITHDRAWN|G-WITHDRAWN|F-REJECTED|G-REJECTED|F-SUPERSEDED|G-SUPERSEDED'
+exec sh -c 'rhiza inbox --json | grep -c "\"kind\""'
+stdout '^5$'
+-- mkchanges.sh --
+set -e
+new() {
+  rhiza change new "$1" --json | sed -n 's/.*"change_set": "\([0-9A-Z]*\)".*/\1/p' | head -1 > "id.$1"
+  rhiza add capability "cap-$1" >/dev/null
+}
+new accepted
+rhiza propose >/dev/null
+rhiza accept --reason ok >/dev/null
+# A failed run and a gave-up run each get a change set of their own, or the
+# newer would count as the failed run's retry.
+for k in f g; do
+  new ${k}accepted
+  rhiza propose >/dev/null
+  rhiza accept --reason ok >/dev/null
+  new ${k}landed
+  rhiza propose >/dev/null
+  rhiza accept --reason ok >/dev/null
+  rhiza land >/dev/null
+  new ${k}withdrawn
+  rhiza withdraw >/dev/null
+  new ${k}rejected
+  rhiza propose >/dev/null
+  rhiza reject --reason no >/dev/null
+  new ${k}superseded
+  rhiza withdraw >/dev/null
+  f=$(grep -rl '"type": "withdraw"' ".rhiza/log/$(cat id.${k}superseded)")
+  sed -e 's/"type": "withdraw"/"type": "supersede"/' -e "s/\"body\": {}/\"body\": {\n    \"by\": \"$(cat id.accepted)\"\n  }/" "$f" > "$f.new"
+  mv "$f.new" "$f"
+done
+-- mkruns.sh --
+set -e
+host=$(hostname)
+for s in accepted landed withdrawn rejected superseded; do
+  S=$(echo $s | tr a-z A-Z)
+  c=$(cat id.f$s)
+  cat > .git/rhiza/runs/F-$S.jsonl <<J
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"$c"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
+{"type":"finished","at":"2026-01-01T03:00:00Z","step":"build","end":"failed","detail":"boom"}
+J
+  c=$(cat id.g$s)
+  cat > .git/rhiza/runs/G-$S.jsonl <<J
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"$c"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
+{"type":"process","at":"2026-01-01T00:00:02Z","process":{"host":"$host","pid":999999}}
+{"type":"daemon-resumed","at":"2026-01-01T04:00:00Z","detail":"resumed by the daemon"}
+{"type":"process","at":"2026-01-01T04:00:30Z","process":{"host":"$host","pid":999999}}
+J
+done
+cat > .git/rhiza/runs/F-UNKNOWN.jsonl <<J
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"CSUNKNOWN"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
+{"type":"finished","at":"2026-01-01T03:00:00Z","step":"build","end":"failed","detail":"boom"}
+J
+c=$(cat id.flanded)
+cat > .git/rhiza/runs/Q-LANDED.jsonl <<J
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"$c"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
+{"type":"blocked","at":"2026-01-01T01:00:00Z","step":"build","session":"S1","block":{"kind":"question","question":"Which store?","tab_title":"leaf one","tab_block":"block:b1"}}
+J
+cat > .git/rhiza/runs/S-LANDED.jsonl <<J
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"signoff","started":{"workflow":"ship-change","definition":"","change":"$c"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"signoff","visit":1}
+{"type":"stopped","at":"2026-01-01T02:00:00Z","step":"signoff","detail":"waiting for the owner's sign-off: rhiza run approve | rhiza run request-changes <file>; rhiza run summary"}
+J

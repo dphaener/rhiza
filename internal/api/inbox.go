@@ -131,6 +131,13 @@ func (r InboxResponse) Human(w io.Writer) {
 // locked reports a run another process holds. changeState gives the state
 // of a change set and whether the log has it at all.
 func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, changeState func(change string) (string, bool)) []InboxItem {
+	// gone reports a change set that is landed, withdrawn, rejected or
+	// superseded: a failed or given-up run on one is left out, as its next
+	// command could only fail.
+	gone := func(change string) bool {
+		state, ok := changeState(change)
+		return ok && changeset.State(state).Terminal()
+	}
 	items := []InboxItem{}
 	newer := map[string]bool{}
 	for i := len(runs) - 1; i >= 0; i-- {
@@ -150,7 +157,7 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 		live := locked(j.ID)
 		switch {
 		case st.Ended:
-			if st.Result != run.Failed || st.Abandoned() || retried {
+			if st.Result != run.Failed || st.Abandoned() || retried || gone(st.Change) {
 				continue
 			}
 			step, _ := st.FailedStep()
@@ -192,7 +199,7 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 				}
 				add(InboxQuestion, b.Session, b.At, it)
 			}
-			if !live && st.DaemonResumed && st.ProcessAt.After(st.DaemonResumedAt) && st.Liveness(host, alive) == run.LiveInterrupted && len(st.Blocks) == 0 {
+			if !live && !gone(st.Change) && st.DaemonResumed && st.ProcessAt.After(st.DaemonResumedAt) && st.Liveness(host, alive) == run.LiveInterrupted && len(st.Blocks) == 0 {
 				add(InboxGaveUp, "", st.DaemonResumedAt, InboxItem{
 					Step: st.Current, Detail: "interrupted again after the daemon's one resume",
 					Next: "rhiza run resume " + j.ID,
