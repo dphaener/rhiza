@@ -1,0 +1,40 @@
+{
+  "actor": "01M65H5SCVB1ZGEGNMZKW57EBF",
+  "after": [
+    "01M65H6CQX7V8M8VWJPAVQYHWS"
+  ],
+  "at": "2026-10-30T04:35:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At commit 323a663 (fix attempt 2, which records the Decision hook-context-posttooluse-shape answering hook-context-injected; no code change since f858406 for this leaf's path), I ran go test ./cmd/rhiza -run 'TestScripts/(session-message-busy|session-hook-message|session-message-idle-fallback)$' -count=1: all PASS. session-message-busy.txtar drives a session to status working via a PostToolUse hook, then rhiza session message returns at once (Waited: 0s), writes .rhiza/local/messages/<sid>/0001.md with the text, logs no rex send; the next PostToolUse hook prints hookSpecificOutput with hookEventName PostToolUse and additionalContext naming that file; a second hook prints nothing and still no send. Read the diff of internal/api/session_message.go (queuePointer before typePointer) and session_run.go (deliverPending clears Pending once). make check exits 0. The Decision is linked decided-by from the leaf and answers the question."
+        },
+        "handle": "busy-session-hook-delivery-verified-2",
+        "id": "01M65HEAQXPJR137ATJ0Q55MQK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65HEAQXPJR137ATJ0BDQTCF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65HEAQXPJR137ATJ0BDQTCF",
+        "id": "01M65HEB38G82QHAG4HXGBA6RX",
+        "link": "01M65HEB38G82QHAG4HV343T15",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65072NYFJ9RDZPJMXRKSWZ3",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW821FWSX05A9FC231N65",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65HEBN4N33FP2WJN6R2K26Y",
+  "type": "ops",
+  "v": 1
+}
