@@ -1,0 +1,98 @@
+{
+  "actor": "01M6502BWRFRWW1ZP9Q97B0488",
+  "after": [
+    "01M6506PVG7ZED3Y1Y4N3B4MK7"
+  ],
+  "at": "2026-10-29T23:34:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript sends a message to a session whose status is working: the command returns at once, writes the message file, types nothing into the Rex tab, and the session's next PostToolUse hook output carries the pointer line naming that file; a second PostToolUse for the same session does not repeat it",
+          "statement": "A message to a session that is busy working is delivered mid-task: its pointer is returned to the agent as PostToolUse hook context at the next tool call, and the send command does not wait"
+        },
+        "handle": "busy-session-hook-delivery",
+        "id": "01M65072NYFJ9RDZPJN1PCB5Z2",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M65072NYFJ9RDZPJMXRKSWZ3",
+        "op": "node.create",
+        "parent": "01M5TYN2ZKGF19DS99BZ7RRRCD"
+      },
+      {
+        "decision": null,
+        "from": "01M65072NYFJ9RDZPJMXRKSWZ3",
+        "id": "01M65073CX3MFZV7GVEP0302BM",
+        "link": "01M65073CX3MFZV7GVEJG10CEJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65059WCV14J8PHDR2HBA4DJ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "The existing session-message testscript still passes unchanged: an idle session gets the pointer typed once and then Enter, and a message delivered by hook context is not typed again",
+          "statement": "A message to a session that goes idle with no further tool call still has its pointer typed at the prompt, once, then Enter, as it does today"
+        },
+        "handle": "idle-typed-pointer-kept",
+        "id": "01M65074BASR8PYQHQSC8X3N29",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M65074BASR8PYQHQSC7B7WJ7",
+        "op": "node.create",
+        "parent": "01M5TYN2ZKGF19DS99BZ7RRRCD"
+      },
+      {
+        "decision": null,
+        "from": "01M65074BASR8PYQHQSC7B7WJ7",
+        "id": "01M65075ECPZFFWCW2BT82AERV",
+        "link": "01M65075ECPZFFWCW2BS7Q4FW2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65059WCV14J8PHDR2HBA4DJ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "The existing session-message testscript still passes: with a question open no keys are sent, and the command waits for the prompt",
+          "statement": "A session blocked on an open question or menu is never typed into, and a message to it waits as it does today"
+        },
+        "handle": "blocked-session-still-waits",
+        "id": "01M65077HHPKVP9FVAEETHM91T",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M65077HHPKVP9FVAECGBE1GJ",
+        "op": "node.create",
+        "parent": "01M5TYN2ZKGF19DS99BZ7RRRCD"
+      },
+      {
+        "fields": {
+          "statement": "Does Claude Code add a PostToolUse hook's hookSpecificOutput additionalContext to the model's context at the next tool call, and in what JSON shape must the hook print it? The arbiter's decision says this needs a check before build."
+        },
+        "handle": "hook-context-injected",
+        "id": "01M6507942NGF1T6YTC9NHHPCH",
+        "key": null,
+        "kind": "question",
+        "node": "01M6507942NGF1T6YTC756YPQA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6507942NGF1T6YTC756YPQA",
+        "id": "01M6507ABA3K5XXY0X0GVDQ0QM",
+        "link": "01M6507ABA3K5XXY0X0EFT15F7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65072NYFJ9RDZPJMXRKSWZ3",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M61GW821FWSX05A9FC231N65",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6507B38FXGYXBTCSANP4TRB",
+  "type": "ops",
+  "v": 1
+}
