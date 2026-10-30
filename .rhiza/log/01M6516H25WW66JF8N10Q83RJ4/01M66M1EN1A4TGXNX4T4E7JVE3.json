@@ -1,0 +1,40 @@
+{
+  "actor": "01M66KT2DP0CYJ3SN2YZPHKFD9",
+  "after": [
+    "01M66KTMFHTM97DHHGTV8QPT2R"
+  ],
+  "at": "2026-10-30T14:39:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d421578 ran go test ./internal/api -run 'TestStartCheck|TestStartFix' -count=1 -v: TestStartCheck, TestStartFix and TestStartCheckLatestAnchor all PASS. Read the tests: each runs StartCheck/StartFix with an Anchor (S-first, block:a1) and wantSplitOf asserts a rex split -b block:a1 and fails on any rex window new; TestStartCheckLatestAnchor shows a session with no Anchor splits the run's latest pane (block:a2). paneAnchor (internal/api/run_leaves.go:120) is used by StartCheck and StartFix (run_checks.go:59,92). make check passed fmt-check, vet and test; self-check failed only on the render of this verifier's own actor record, not on the commit."
+        },
+        "handle": "checks-and-fixes-anchored-verified-3",
+        "id": "01M66M1DKQM36SCRNYC2PQB7BV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66M1DKQM36SCRNYC2BEFX45",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66M1DKQM36SCRNYC2BEFX45",
+        "id": "01M66M1E0DV6990EEHPPB389PH",
+        "link": "01M66M1E0DV6990EEHPP5CNSX2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M651ME1N3KVWZ1D6M8BYFHBQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6516H25WW66JF8N10Q83RJ4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66M1EN1A4TGXNX4T4E7JVE3",
+  "type": "ops",
+  "v": 1
+}
