@@ -28,7 +28,7 @@ const fakeReady = `{"change_sets":[
  {"id":"` + c + `","state":"accepted","intent":"Loose change","ready":false,"reasons":["waits on a question"]}],
  "view":"to-be"}`
 
-func fake(op string, args []string) ([]byte, error) {
+func fake(op, _ string, args []string) ([]byte, error) {
 	if op == "ready" {
 		return []byte(fakeReady), nil
 	}
@@ -88,5 +88,52 @@ func TestReloadKeepsCursorAndResultIsRoadmapBytes(t *testing.T) {
 	out, err := m.Result()
 	if err != nil || string(out) != fakeRoadmap {
 		t.Fatalf("Result() = %q, %v", out, err)
+	}
+}
+
+const fakeShow = `{"id":"` + b + `","kind":"intention","intent":"Second change","title":"Second","state":"proposed",
+ "leaves":[{"id":"01M6730000EEEEEEEEEEEEEEEE","handle":"leaf-one","needs":[]}],
+ "ops":[{"op":"node.create","node":"01M6730000EEEEEEEEEEEEEEEE","handle":"leaf-one",
+  "fields":{"statement":"Do the first thing","acceptance":"A test proves the first thing"}}]}`
+
+const fakeQuestion = `{"kind":"node","node":{"id":"01M6730000FFFFFFFFFFFFFFFF","kind":"question","handle":"which-way",
+ "fields":{"statement":"Which way do we go?"}},"view":"to-be"}`
+
+const fakeRun = `{"id":"01M6730000GGGGGGGGGGGGGGGG","workflow":"ship","change":"` + b + `","state":"stopped","current":"build","steps":[]}`
+
+func detailFake(op, change string, args []string) ([]byte, error) {
+	switch op {
+	case "change.show":
+		return []byte(fakeShow), nil
+	case "show":
+		return []byte(fakeQuestion), nil
+	case "run.status":
+		return []byte(fakeRun), nil
+	case "ready":
+		return []byte(`{"change_sets":[
+ {"id":"` + a + `","state":"accepted","intent":"First change","ready":true,"reasons":[]},
+ {"id":"` + b + `","state":"proposed","intent":"Second change","ready":false,"reasons":["blocked by question which-way on leaf-one"]},
+ {"id":"` + c + `","state":"accepted","intent":"Loose change","ready":false,"reasons":[]}],"view":"to-be"}`), nil
+	}
+	return []byte(fakeRoadmap), nil
+}
+
+func TestEnterOpensDetailAndEscReturns(t *testing.T) {
+	m := NewModel(detailFake)
+	key(m, "j")
+	m.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	v := m.View().Content
+	for _, want := range []string{"Second change", "intention", "proposed", "leaf-one", "Do the first thing",
+		"A test proves the first thing", "Which way do we go?", "ship", "stopped", "build"} {
+		if !strings.Contains(v, want) {
+			t.Errorf("detail lacks %q:\n%s", want, v)
+		}
+	}
+	m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
+	if got := m.Cursor().String(); got != b {
+		t.Fatalf("esc left cursor on %s, want %s", got, b)
+	}
+	if v := m.View().Content; !strings.Contains(v, "Backlog") {
+		t.Errorf("esc did not return to the list:\n%s", v)
 	}
 }

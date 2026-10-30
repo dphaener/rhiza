@@ -62,7 +62,7 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 			rest = append(rest, a)
 		}
 	}
-	call := func(op string, record, dry bool, args []string) ([]byte, error) {
+	callWith := func(g globals, op string, record, dry bool, args []string) ([]byte, error) {
 		o, ok := api.Lookup(op)
 		if !ok {
 			return nil, api.NotFoundf("unknown operation %q", op)
@@ -84,6 +84,9 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		}
 		return canon.Marshal(resp)
 	}
+	call := func(op string, record, dry bool, args []string) ([]byte, error) {
+		return callWith(g, op, record, dry, args)
+	}
 	var m tea.Model
 	var result func() ([]byte, error)
 	switch {
@@ -96,8 +99,12 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		}
 		m, result = im, im.Result
 	case isRoadmap:
-		am := roadmapapp.NewModel(func(op string, args []string) ([]byte, error) {
-			return call(op, false, false, args)
+		am := roadmapapp.NewModel(func(op, change string, args []string) ([]byte, error) {
+			gg := g
+			if change != "" {
+				gg.change, gg.changeSet = change, true
+			}
+			return callWith(gg, op, false, false, args)
 		})
 		m, result = am, am.Result
 	case isWrite:

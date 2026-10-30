@@ -27,8 +27,9 @@ func init() {
 }
 
 // Runner runs an api operation on args and returns its result as
-// `rhiza <op> --json` prints it.
-type Runner func(op string, args []string) ([]byte, error)
+// `rhiza <op> --json` prints it. A non-empty change is the change set the
+// operation runs against, as --change does.
+type Runner func(op, change string, args []string) ([]byte, error)
 
 const shortIDLen = 14
 
@@ -51,6 +52,7 @@ type Model struct {
 	cursor int
 	top    int
 	height int
+	detail *detail
 }
 
 // NewModel returns the model over run, loaded.
@@ -67,7 +69,7 @@ func (m *Model) load() {
 	if m.cursor < len(m.rows) {
 		keep = m.rows[m.cursor].id
 	}
-	out, err := m.run("roadmap", nil)
+	out, err := m.run("roadmap", "", nil)
 	m.out, m.err = out, err
 	if err != nil {
 		return
@@ -78,7 +80,7 @@ func (m *Model) load() {
 		return
 	}
 	reasons := map[id.ID][]string{}
-	rout, err := m.run("ready", nil)
+	rout, err := m.run("ready", "", nil)
 	if err != nil {
 		m.err = err
 		return
@@ -146,9 +148,20 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = max(msg.Height-2, 1)
 		m.follow()
 	case tea.KeyPressMsg:
+		if m.detail != nil {
+			switch msg.String() {
+			case "q", "ctrl+c":
+				return m, tea.Quit
+			case "esc":
+				m.detail = nil
+			}
+			return m, nil
+		}
 		switch msg.String() {
 		case "q", "esc", "ctrl+c":
 			return m, tea.Quit
+		case "enter":
+			m.open()
 		case "down", "j":
 			m.move(1)
 		case "up", "k":
@@ -188,6 +201,11 @@ func (m *Model) follow() {
 
 func (m *Model) View() tea.View {
 	var b strings.Builder
+	if m.detail != nil {
+		m.detail.write(&b)
+		b.WriteString("\nesc back · q quit")
+		return tea.NewView(b.String())
+	}
 	if m.err != nil {
 		fmt.Fprintf(&b, "rhiza: %v\n", m.err)
 	}
@@ -211,6 +229,6 @@ func (m *Model) View() tea.View {
 		}
 		b.WriteString("\n")
 	}
-	b.WriteString("\nroadmap · j/k move · r reload · q quit")
+	b.WriteString("\nroadmap · j/k move · enter open · r reload · q quit")
 	return tea.NewView(b.String())
 }
