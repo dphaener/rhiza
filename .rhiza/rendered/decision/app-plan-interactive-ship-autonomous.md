@@ -16,6 +16,10 @@ A plan run started from the roadmap app is interactive, since the owner is at th
 
 - derived-from [m5-usable-from-rex-interview](../source/m5-usable-from-rex-interview.md)
 
+### In
+
+- decided-by [roadmap-app-start-runs](../capability/rhiza/roadmap-app-start-runs.md)
+
 ## History
 
 - `01M67315J0N3C4HZEE7T2NNR55` Plan milestone 5: Rhiza usable from Rex, with an actionable roadmap app and an inbox app

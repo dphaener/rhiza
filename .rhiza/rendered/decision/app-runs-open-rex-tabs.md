@@ -18,6 +18,7 @@ A run started from an app opens in a new Rex tab, as the daemon starts runs (rex
 
 ### In
 
+- decided-by [roadmap-app-start-runs](../capability/rhiza/roadmap-app-start-runs.md)
 - decided-by [inbox-app-actions](../capability/rhiza/inbox-app-actions.md)
 
 ## History
