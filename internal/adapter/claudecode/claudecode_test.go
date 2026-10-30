@@ -743,13 +743,13 @@ func TestCommandResume(t *testing.T) {
 
 func TestUsageLimit(t *testing.T) {
 	limited := `{"type":"user","message":{"content":"work"}}
-{"type":"assistant","message":{"content":[{"type":"text","text":"Claude AI usage limit reached|1700000000"}]}}
+{"type":"assistant","isApiErrorMessage":true,"message":{"model":"<synthetic>","content":[{"type":"text","text":"Claude AI usage limit reached|1700000000"}]}}
 `
 	l, ok := Adapter{}.UsageLimit([]byte(limited))
 	if !ok || l.ResetAt.Unix() != 1700000000 {
 		t.Errorf("UsageLimit = %v, %v; want reset 1700000000", l, ok)
 	}
-	l, ok = Adapter{}.UsageLimit([]byte(`{"type":"assistant","message":{"content":"You've hit your limit"}}`))
+	l, ok = Adapter{}.UsageLimit([]byte(`{"type":"assistant","message":{"model":"<synthetic>","content":"You've hit your limit"}}`))
 	if !ok || !l.ResetAt.IsZero() {
 		t.Errorf("no reset given: got %v, %v", l, ok)
 	}
@@ -759,5 +759,19 @@ func TestUsageLimit(t *testing.T) {
 	}
 	if _, ok := (Adapter{}).UsageLimit(nil); ok {
 		t.Error("an empty transcript is not limited")
+	}
+}
+
+// The phrases in the model's own turn, a tool call's input or its prose,
+// are not the limit: only the synthetic API-error message is.
+func TestUsageLimitIgnoresModelTurns(t *testing.T) {
+	for name, line := range map[string]string{
+		"tool_use input": `{"type":"assistant","message":{"model":"claude-opus-4","content":[{"type":"tool_use","id":"t1","name":"Bash","input":{"command":"grep -rn \"hit your limit\" internal/"}}]}}`,
+		"model prose":    `{"type":"assistant","message":{"model":"claude-opus-4","content":[{"type":"text","text":"UsageLimit matches \"usage limit reached|1700000000\"."}]}}`,
+		"error tool_use": `{"type":"assistant","isApiErrorMessage":true,"message":{"model":"<synthetic>","content":[{"type":"tool_use","id":"t1","name":"Bash","input":{"command":"echo usage limit reached"}}]}}`,
+	} {
+		if l, ok := (Adapter{}).UsageLimit([]byte(line + "\n")); ok {
+			t.Errorf("%s: UsageLimit = %v, true; want not limited", name, l)
+		}
 	}
 }

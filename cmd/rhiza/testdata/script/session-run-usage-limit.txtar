@@ -39,7 +39,7 @@ while [ $# -gt 0 ]; do
 done
 echo "$mode $flag $sid" >> "$WORK/claude.log"
 if [ $mode = start ]; then
-	echo '{"type":"assistant","message":{"content":[{"type":"text","text":"Claude AI usage limit reached|1700000000"}]}}' > "$HOME/.claude/projects/p/$sid.jsonl"
+	echo '{"type":"assistant","isApiErrorMessage":true,"message":{"model":"<synthetic>","content":[{"type":"text","text":"Claude AI usage limit reached|1700000000"}]}}' > "$HOME/.claude/projects/p/$sid.jsonl"
 else
 	echo '{"type":"assistant","message":{"content":[{"type":"text","text":"done"}]}}' >> "$HOME/.claude/projects/p/$sid.jsonl"
 fi
