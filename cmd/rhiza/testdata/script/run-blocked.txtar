@@ -6,8 +6,10 @@
 #
 # The fake rex runs the tab's command in the background, so `window new`
 # returns at once, and prints a window with a block. The fake claude reports
-# an AskUserQuestion through the real hook path, waits (bounded) for
-# $WORK/answer, reports the answer's PostToolUse and exits 0.
+# an AskUserQuestion through the real hook path, then Claude Code's
+# permission prompt for it, waits (bounded) for $WORK/answer, reports the
+# answer's PostToolUse and exits 0. The pending question outlasts the
+# permission prompt.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -113,6 +115,7 @@ while [ $# -gt 0 ]; do
 	shift
 done
 echo '{"session_id":"'$sid'","hook_event_name":"PreToolUse","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which colour?"}]}}' | rhiza session hook PreToolUse >> "$WORK/hook.out" || exit 8
+echo '{"session_id":"'$sid'","hook_event_name":"Notification","notification_type":"permission_prompt","message":"Claude needs your permission to use AskUserQuestion"}' | rhiza session hook Notification >> "$WORK/hook.out" || exit 8
 i=0
 until [ -f "$WORK/answer" ]; do
 	i=$((i + 1))

@@ -571,7 +571,8 @@ func sessionHook(ctx *Ctx, event string) (SessionHookResponse, error) {
 // says so in resp. A report that changes nothing, or arrives after the
 // session exited, is not recorded. In an autonomous session a question to
 // the owner is denied (resp's reply) and kept as the asked mark: the
-// arbiter answers it by message.
+// arbiter answers it by message. A permission block does not replace a
+// pending question: the agent asks for permission to put that question.
 func recordHook(ctx *Ctx, st *session.Store, rec session.Record, a adapter.Adapter, event string, payload []byte, rep adapter.HookReport, changed bool, resp *SessionHookResponse) error {
 	name := a.Name()
 	if !changed {
@@ -594,7 +595,7 @@ func recordHook(ctx *Ctx, st *session.Store, rec session.Record, a adapter.Adapt
 	recorded := false
 	if _, err := st.Update(rec.ID, func(r *session.Record) {
 		// A hook that arrives after the exit does not revive the session.
-		if !r.Status.Exited() {
+		if !r.Status.Exited() && !questionPending(r.Status.Hook, report) {
 			r.Status.Hook, recorded = &report, true
 			if reply != nil {
 				r.Status.Asked = &session.Report{State: session.StateBlocked, Kind: session.KindQuestion, Detail: rep.Detail, At: report.At}
@@ -608,6 +609,13 @@ func recordHook(ctx *Ctx, st *session.Store, rec session.Record, a adapter.Adapt
 	}
 	resp.Recorded, resp.State, resp.Kind, resp.reply = true, report.State, report.Kind, reply
 	return nil
+}
+
+// questionPending reports whether next is a permission block that would
+// replace the pending question cur.
+func questionPending(cur *session.Report, next session.Report) bool {
+	return cur != nil && cur.State == session.StateBlocked && cur.Kind == session.KindQuestion &&
+		next.State == session.StateBlocked && next.Kind == session.KindPermission
 }
 
 // journalHookMessage appends the message the payload says the session sent
