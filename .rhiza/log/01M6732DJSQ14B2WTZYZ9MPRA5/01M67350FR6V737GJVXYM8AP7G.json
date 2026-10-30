@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6734ZTJGGQH28M3RGXNMMZR"
+  ],
+  "at": "2026-10-30T19:03:57Z",
+  "body": {
+    "reason": "The owner chose Roadmap + Inbox built by daemon ship runs, and asked for the fastest route; accepted on their behalf under their standing instruction",
+    "rule": "owner"
+  },
+  "change_set": "01M6732DJSQ14B2WTZYZ9MPRA5",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M67350FR6V737GJVXYM8AP7G",
+  "type": "accept",
+  "v": 1
+}

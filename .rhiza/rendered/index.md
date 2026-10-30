@@ -281,6 +281,9 @@
   - [tui-writes-previewed](intent/rhiza-tui/tui-writes-previewed.md)
   - [tui-runs-sessions](intent/rhiza-tui/tui-runs-sessions.md)
   - [tui-still-healthy](intent/rhiza-tui/tui-still-healthy.md)
+- [milestone-5](intent/milestone-5.md)
+  - [m5-roadmap-actionable](intent/milestone-5/m5-roadmap-actionable.md)
+  - [m5-inbox-app](intent/milestone-5/m5-inbox-app.md)
 
 ## Constraints
 
@@ -360,6 +363,8 @@
 - [answer-message-contents](decision/answer-message-contents.md)
 - [answer-reread-from-model](decision/answer-reread-from-model.md)
 - [answer-sent-as-caller](decision/answer-sent-as-caller.md)
+- [app-plan-interactive-ship-autonomous](decision/app-plan-interactive-ship-autonomous.md)
+- [app-runs-open-rex-tabs](decision/app-runs-open-rex-tabs.md)
 - [append-only-log](decision/append-only-log.md)
 - [apply-is-main-write](decision/apply-is-main-write.md)
 - [arbiter](decision/arbiter.md)
@@ -505,6 +510,9 @@
 - [m3-change-sets](decision/m3-change-sets.md)
 - [m3-rhizas-own-workflows](decision/m3-rhizas-own-workflows.md)
 - [m3-scope](decision/m3-scope.md)
+- [m5-built-by-daemon](decision/m5-built-by-daemon.md)
+- [m5-other-apps-stay](decision/m5-other-apps-stay.md)
+- [m5-roadmap-inbox-first](decision/m5-roadmap-inbox-first.md)
 - [manual-rebase-for-now](decision/manual-rebase-for-now.md)
 - [manual-resume-refuses](decision/manual-resume-refuses.md)
 - [message-summary-journaled](decision/message-summary-journaled.md)
@@ -1272,6 +1280,7 @@
 - [founding-conversation](source/founding-conversation.md)
 - [inbox-stale-interview](source/inbox-stale-interview.md)
 - [leaf-trailer-split-paragraphs-plan](source/leaf-trailer-split-paragraphs-plan.md)
+- [m5-usable-from-rex-interview](source/m5-usable-from-rex-interview.md)
 - [milestone-1](source/milestone-1.md)
 - [milestone-2-conversation](source/milestone-2-conversation.md)
 - [milestone-3-conversation](source/milestone-3-conversation.md)

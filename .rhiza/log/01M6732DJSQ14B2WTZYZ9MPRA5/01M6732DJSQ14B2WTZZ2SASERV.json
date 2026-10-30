@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-30T19:02:32Z",
+  "body": {
+    "intent": "An inbox app lists what waits on the owner, questions, sign-offs and failed runs, and acts on each in place: answer, approve, request changes, retry, abandon or open its tab",
+    "kind": "intention",
+    "sources": [],
+    "title": "Inbox app"
+  },
+  "change_set": "01M6732DJSQ14B2WTZYZ9MPRA5",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6732DJSQ14B2WTZZ2SASERV",
+  "type": "open",
+  "v": 2
+}

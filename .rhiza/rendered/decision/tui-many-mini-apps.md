@@ -18,6 +18,7 @@ The TUI is many small apps launched from a Rex quick-launch layer, installed by 
 
 ### In
 
+- relates-to [m5-other-apps-stay](m5-other-apps-stay.md) — keeps it: two of the mini apps become actionable, none are merged
 - decided-by [rhiza-tui](../intent/rhiza-tui.md)
 - decided-by [rex-install-command](../capability/rhiza/rex-install-command.md)
 - decided-by quick-launch-layer (retired)

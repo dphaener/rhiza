@@ -1,0 +1,83 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6732DJSQ14B2WTZZ2SASERV"
+  ],
+  "at": "2026-10-30T19:03:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A test in internal/tui builds the inbox app over a fake inbox result with one item of each kind and asserts the view groups them under kind headings with each row's change set, step and question or detail, shows a recommendation where present, and shows Nothing waits on you for an empty inbox; a tick message reloads it; the app appears in the launcher's registry and the Rex install script; a testscript checks --once against rhiza inbox --json",
+          "statement": "An inbox app, registered as a Rex app like the others, lists the items of rhiza inbox as a cursor list grouped by kind (questions, sign-offs, failed runs, gave-up and skipped), each row with its change set's title, step and what it asks or why it failed, and a question's advisor recommendation when it has one; it reloads every few seconds and on r, says Nothing waits on you when empty, and rhiza tui app inbox --once prints what rhiza inbox --json prints"
+        },
+        "handle": "inbox-app-list",
+        "id": "01M6734GPG3SZCY93EBS9XQFEV",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M6734GPG3SZCY93EBRDS1CA8",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6734GPG3SZCY93EBRDS1CA8",
+        "id": "01M6734H50B32FS5BK96S14GXK",
+        "link": "01M6734H50B32FS5BK94Q5R3DE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6732ZRNFB73BCTTRYV73ZHP",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6734GPG3SZCY93EBRDS1CA8",
+        "id": "01M6734HMPRNGC0Z663Y8B6RFS",
+        "link": "01M6734HMPRNGC0Z663WDMW2AG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6733070FQEJF1ZH8A7N1DHB",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test with fake operations and a fake exec drives each action and asserts the call it makes: o calls inbox.open with the item ID; an answer typed on a question calls session.message to its session with the typed text, and t sends the recommendation; y on a sign-off calls inbox.approve, c with text calls inbox.request-changes with it; R on a failed run calls rex window new running rhiza run resume <run>; x then y calls run.abandon, x then n calls nothing; no test runs real Rex or an agent",
+          "statement": "On the selected inbox item: enter or o focuses its Rex tab (inbox open); on a question, typing an answer and enter sends it to the asking session as a message (session message), or t takes the advisor's recommendation; on a sign-off, y approves it and c asks for changes with typed findings; on a failed, gave-up or skipped run, R retries it in a new Rex tab (rhiza run resume) and x abandons it after a y/n; each action reloads the list"
+        },
+        "handle": "inbox-app-actions",
+        "id": "01M6734J6ESHFYKFJ09Z2Z5VFT",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M6734J6ESHFYKFJ09YK6TEWT",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6734J6ESHFYKFJ09YK6TEWT",
+        "id": "01M6734JPK2EZQ2RYSEYKR8PJZ",
+        "link": "01M6734JPK2EZQ2RYSEY0HRGS7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6732ZRNFB73BCTTRYV73ZHP",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6734J6ESHFYKFJ09YK6TEWT",
+        "id": "01M6734K5PJJY808BBFTBDT6FE",
+        "link": "01M6734K5PJJY808BBFSPBVQEK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M67335C1XS6F5K5Z3ZYMWF7D",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6732DJSQ14B2WTZYZ9MPRA5",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6734KWF6W0FY7S2RSB8JZTF",
+  "type": "ops",
+  "v": 1
+}
