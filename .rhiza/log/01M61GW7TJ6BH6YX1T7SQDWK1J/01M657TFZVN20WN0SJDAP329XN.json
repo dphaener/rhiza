@@ -1,0 +1,40 @@
+{
+  "actor": "01M657747BHYQN53EHHJ75BG9N",
+  "after": [
+    "01M650BBTW03GCV79QMP1TWTZW"
+  ],
+  "at": "2026-10-30T01:47:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e59642b I read the diff: changeSetFix (internal/run/checks.go) restarts a change-set fixer judged fail within the same cycle at attempt+1, up to 1+MaxFixCycles attempts, before the cycle counts as spent. Attempt is journalled on review-fix and review-fix-judged entries. go test ./internal/run -run TestFixChangeSet -count=1 passed, including the new TestFixChangeSetRetriedInCycle: a fixer fails attempt 1 and passes attempt 2 in cycle 2, the run ends review:pass with 2 cycles (no new cycle), and the review-fix-judged pass entry comes before cycle 2's check-session. With the retry condition disabled in a scratch copy (git archive), that test failed (outcomes = [review:fail]). go test ./... and make fmt-check vet test passed; one earlier make test run failed only in the timing-sensitive read benchmarks. make self-check failed only on stale .rhiza/rendered actor and index files from this run's sessions, not on this leaf's code."
+        },
+        "handle": "fixer-retry-in-cycle-verified",
+        "id": "01M657TEVE3QAHKRN9MK08TAH3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M657TEVE3QAHKRN9MH8RWKXG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M657TEVE3QAHKRN9MH8RWKXG",
+        "id": "01M657TF9FBFMY1CJRE1SW3HRP",
+        "link": "01M657TF9FBFMY1CJRDZK6T3GJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506EMCPMJKKCE8B3JX16RP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW7TJ6BH6YX1T7SQDWK1J",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M657TFZVN20WN0SJDAP329XN",
+  "type": "ops",
+  "v": 1
+}

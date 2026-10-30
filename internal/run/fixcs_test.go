@@ -12,7 +12,7 @@ import (
 
 func (f *fakeRunner) StartFix(spec FixSpec) (string, error) {
 	f.fixSpecs = append(f.fixSpecs, spec)
-	return fixSID(spec.Cycle), nil
+	return fixAttemptSID(spec.Cycle, spec.Attempt), nil
 }
 
 func (f *fakeRunner) ReviewCommit(since string) (string, string, error) {
@@ -34,8 +34,18 @@ func (f *fakeRunner) CommitCheckWrites(session string) (string, error) {
 }
 
 // fixSID is the fake runner's session ID for the change set's fixer in
-// cycle.
-func fixSID(cycle int) string { return "S-fixer-" + strconv.Itoa(cycle) }
+// cycle's first attempt.
+func fixSID(cycle int) string { return fixAttemptSID(cycle, 1) }
+
+// fixAttemptSID is the session ID for the change set's fixer in cycle on
+// attempt: a retry (attempt above 1) gets its own.
+func fixAttemptSID(cycle, attempt int) string {
+	id := "S-fixer-" + strconv.Itoa(cycle)
+	if attempt > 1 {
+		id += "-r" + strconv.Itoa(attempt)
+	}
+	return id
+}
 
 // fixFindingIDs are each finding's "check id severity".
 func fixFindingIDs(fs []Finding) []string {
@@ -129,17 +139,21 @@ func TestFixChangeSetOneFixer(t *testing.T) {
 }
 
 // A change-set fixer that ends without a new commit whose Review: trailer
-// names the run fails the cycle as a failed leaf fixer does: each check
-// of the cycle fails with no session. The next cycle tries the fix again;
-// with no cycle left the step fails.
+// names the run is retried within its cycle; one that fails every attempt
+// (1 + MaxFixCycles) fails the cycle as a failed leaf fixer does: each
+// check of the cycle fails with no session. The next cycle tries the fix
+// again; with no cycle left the step fails.
 func TestFixChangeSetNoCommitFailsCycle(t *testing.T) {
 	e, r, _, _ := setup(t, checksWF)
 	passChecks(r, 1, threeChecks...)
 	r.findings[checkSID("alpha", "check", 1)] = []Finding{sev("f1", SeverityMajor)}
 	r.outcome[checkSID("alpha", "critic", 1)] = workflow.OutcomePass
-	r.outcome[fixSID(2)] = workflow.OutcomePass
-	r.outcome[fixSID(3)] = workflow.OutcomePass
-	r.reviewCommits = [][2]string{{"", "no new commit since H0"}, {"", "no new commit since H0"}}
+	for n := 1; n <= 1+MaxFixCycles; n++ {
+		r.outcome[fixAttemptSID(2, n)] = workflow.OutcomePass
+		r.outcome[fixAttemptSID(3, n)] = workflow.OutcomePass
+		r.reviewCommits = append(r.reviewCommits, [2]string{"", "no new commit since H0"}, [2]string{"", "no new commit since H0"})
+	}
+	r.reviewCommits = r.reviewCommits[:2*(1+MaxFixCycles)]
 	st, err := e.Run(runID)
 	if err != nil {
 		t.Fatal(err)
@@ -147,8 +161,12 @@ func TestFixChangeSetNoCommitFailsCycle(t *testing.T) {
 	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:fail"}) {
 		t.Fatalf("outcomes = %v", got)
 	}
-	if len(r.fixSpecs) != 2 || r.fixSpecs[0].Cycle != 2 || r.fixSpecs[1].Cycle != 3 {
-		t.Errorf("fixer sessions = %+v", r.fixSpecs)
+	var got [][2]int
+	for _, s := range r.fixSpecs {
+		got = append(got, [2]int{s.Cycle, s.Attempt})
+	}
+	if want := [][2]int{{2, 1}, {2, 2}, {2, 3}, {3, 1}, {3, 2}, {3, 3}}; !reflect.DeepEqual(got, want) {
+		t.Errorf("fixer sessions (cycle, attempt) = %v, want %v", got, want)
 	}
 	if want := []string{"alpha check 1", "beta check 1", "gamma check 1", "alpha critic 1"}; !reflect.DeepEqual(roles(r), want) {
 		t.Errorf("check sessions %v, want %v", roles(r), want)
@@ -158,11 +176,87 @@ func TestFixChangeSetNoCommitFailsCycle(t *testing.T) {
 	if want := "cycle 2: fix failed: change set: fixer failed: no new commit since H0"; o.Outcome != CheckFailed || o.Detail != want {
 		t.Errorf("alpha's cycle 2 outcome = %+v, want detail %q", o, want)
 	}
-	if fix, _ := st.ReviewFix("review", 2); fix.Outcome != workflow.OutcomeFail || fix.Detail != "no new commit since H0" {
+	if fix, _ := st.ReviewFix("review", 2); fix.Attempt != 1+MaxFixCycles || fix.Outcome != workflow.OutcomeFail || fix.Detail != "no new commit since H0" {
 		t.Errorf("fixer judgement = %+v", fix)
 	}
 	if s := st.Steps[0]; s.Detail != "2 of 3 checks passed after 3 cycles; failed: alpha; unanswered questions: review-failed-1" {
 		t.Errorf("step detail = %q", s.Detail)
+	}
+}
+
+// A change-set fixer that fails its first attempt and passes its second
+// is retried inside the same cycle: no new cycle begins, and the cycle's
+// checks start only after the retry passes.
+func TestFixChangeSetRetriedInCycle(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	passChecks(r, 1, threeChecks...)
+	passChecks(r, 2, "alpha")
+	r.findings[checkSID("alpha", "check", 1)] = []Finding{sev("f1", SeverityMajor)}
+	r.outcome[checkSID("alpha", "critic", 1)] = workflow.OutcomePass
+	r.outcome[fixAttemptSID(2, 1)] = workflow.OutcomeFail
+	r.outcome[fixAttemptSID(2, 2)] = workflow.OutcomePass
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	if len(st.Cycles) != 2 {
+		t.Errorf("%d cycles, want 2: the retry runs in cycle 2", len(st.Cycles))
+	}
+	if len(r.fixSpecs) != 2 || r.fixSpecs[0].Attempt != 1 || r.fixSpecs[1].Attempt != 2 || r.fixSpecs[1].Cycle != 2 {
+		t.Errorf("fixer sessions = %+v", r.fixSpecs)
+	}
+	entries := fixEntries(t, e)
+	if entryAt(t, entries, "review-fix-judged fixer 2 pass") > entryAt(t, entries, "check-session alpha check 2") {
+		t.Errorf("a check of cycle 2 started before the retry passed: %v", entries)
+	}
+	if fix, _ := st.ReviewFix("review", 2); fix.Attempt != 2 || fix.Outcome != workflow.OutcomePass {
+		t.Errorf("latest fixer = %+v", fix)
+	}
+}
+
+// A change-set fixer failing all 1 + MaxFixCycles attempts of a cycle
+// spends that cycle: its checks end failed with "cycle N: fix failed", no
+// check session starts in it, and the next cycle begins with a fresh
+// fixer, which here passes.
+func TestFixChangeSetExhaustionSpendsCycle(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	passChecks(r, 1, threeChecks...)
+	passChecks(r, 3, "alpha")
+	r.findings[checkSID("alpha", "check", 1)] = []Finding{sev("f1", SeverityMajor)}
+	r.outcome[checkSID("alpha", "critic", 1)] = workflow.OutcomePass
+	for n := 1; n <= 1+MaxFixCycles; n++ {
+		r.outcome[fixAttemptSID(2, n)] = workflow.OutcomeFail
+	}
+	r.outcome[fixSID(3)] = workflow.OutcomePass
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	if len(st.Cycles) != 3 {
+		t.Errorf("%d cycles, want 3: the failed fixer spent cycle 2", len(st.Cycles))
+	}
+	c, _ := st.Check("review", "alpha")
+	if o, _ := c.Outcome(2); o.Outcome != CheckFailed || !strings.HasPrefix(o.Detail, "cycle 2: fix failed: ") {
+		t.Errorf("alpha's cycle 2 outcome = %+v", o)
+	}
+	for _, name := range []string{"alpha", "beta", "gamma"} {
+		cs, _ := st.Check("review", name)
+		if _, started := cs.Session(workflow.RoleCheck, 2); started {
+			t.Errorf("%s started a check session in the spent cycle 2", name)
+		}
+	}
+	var got [][2]int
+	for _, s := range r.fixSpecs {
+		got = append(got, [2]int{s.Cycle, s.Attempt})
+	}
+	if want := [][2]int{{2, 1}, {2, 2}, {2, 3}, {3, 1}}; !reflect.DeepEqual(got, want) {
+		t.Errorf("fixer sessions (cycle, attempt) = %v, want %v", got, want)
 	}
 }
 
@@ -296,12 +390,14 @@ func TestFixChangeSetActions(t *testing.T) {
 		return map[string]LeafState{a.ID: l}
 	}
 	fix := func(outcome string) []ReviewFix {
-		f := ReviewFix{Step: "review", Cycle: 2, Session: "CF"}
+		f := ReviewFix{Step: "review", Cycle: 2, Attempt: 1, Session: "CF"}
 		if outcome != "" {
 			f.Judged, f.Outcome, f.Detail = true, outcome, "why"
 		}
 		return []ReviewFix{f}
 	}
+	exhausted := fix("fail")
+	exhausted[0].Attempt = 1 + MaxFixCycles
 	show := func(acts []checkAction) []string {
 		var out []string
 		for _, x := range acts {
@@ -325,7 +421,8 @@ func TestFixChangeSetActions(t *testing.T) {
 		{"polled", leaf("pass", "pass"), fix(""), []string{"9::"}},
 		{"polled after a leaf's failure", leaf("pass", "fail"), fix(""), []string{"9::"}},
 		{"not started after a leaf's failure", leaf("fail", "-"), nil, []string{"4:x:failedcycle 2: fix failed: leaf leaf-a: fixer failed: "}},
-		{"its failure ends the cycle", leaf("pass", "pass"), fix("fail"), []string{"4:x:failedcycle 2: fix failed: change set: fixer failed: why"}},
+		{"its failure is retried in the cycle", leaf("pass", "pass"), fix("fail"), []string{"8::x f2 major"}},
+		{"its last failure ends the cycle", leaf("pass", "pass"), exhausted, []string{"4:x:failedcycle 2: fix failed: change set: fixer failed: why"}},
 		{"checks after it passed", leaf("pass", "pass"), fix("pass"), []string{"2:x:"}},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
