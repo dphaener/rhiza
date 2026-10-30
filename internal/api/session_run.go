@@ -560,6 +560,7 @@ func sessionHook(ctx *Ctx, event string) (SessionHookResponse, error) {
 		}
 		resp.Session = rec.ID
 		serr := recordHook(ctx, st, rec, a, event, payload, rep, changed, &resp)
+		serr = errors.Join(serr, deliverPending(st, rec, a, event, &resp))
 		journaled, jerr := journalHookMessage(ctx, a, rec, event, payload)
 		resp.Journaled = journaled
 		return resp, errors.Join(serr, jerr)
@@ -607,6 +608,34 @@ func recordHook(ctx *Ctx, st *session.Store, rec session.Record, a adapter.Adapt
 		return nil
 	}
 	resp.Recorded, resp.State, resp.Kind, resp.reply = true, report.State, report.Kind, reply
+	return nil
+}
+
+// deliverPending hands the agent the message pointers sent to the session
+// while it worked, as context its hook prints, and clears them. Only an
+// event the adapter can carry context on takes them; they wait for the
+// next one otherwise, and a session that exited keeps them.
+func deliverPending(st *session.Store, rec session.Record, a adapter.Adapter, event string, resp *SessionHookResponse) error {
+	if _, ok, err := a.ContextReply(event, ""); err != nil || !ok {
+		return err
+	}
+	var lines []string
+	if _, err := st.Update(rec.ID, func(r *session.Record) {
+		if r.Status.Exited() {
+			return
+		}
+		lines, r.Pending = r.Pending, nil
+	}); err != nil {
+		return fmt.Errorf("read session %s's pending messages: %v", rec.ID, err)
+	}
+	if len(lines) == 0 {
+		return nil
+	}
+	reply, _, err := a.ContextReply(event, strings.Join(lines, "\n"))
+	if err != nil {
+		return fmt.Errorf("%s: %v", a.Name(), err)
+	}
+	resp.reply = reply
 	return nil
 }
 
