@@ -8,7 +8,7 @@ A testscript with fake agents and a fake gh runs `rhiza run start ship-change` o
 
 ## statement
 
-The built-in ship-change.toml runs a workflow step on build; a render command step that runs rhiza render and commits .rhiza/rendered and the uncommitted .rhiza/log entries on the branch; a workflow step on review skipping its sign-off; a second render command step, render-pr, that does the same right before every push, including the push after rhiza run request-changes; ship open-pr; the wait for CI; the sign-off, whose on.changes goes back to review/review; and then today's rebase, land, merge, main check, close-out and ship steps, with no shipit prompt and no `ship check --pr-open` until. Both render steps leave the pushed branch holding every actor record its rendered pages are built from, so rhiza check passes on a clone of it.
+The built-in ship-change.toml runs a workflow step on build, which inherits build's own render step (it runs rhiza render and commits .rhiza/rendered and the uncommitted .rhiza/log entries on the branch) and its check; a workflow step on review skipping its sign-off, which inherits review's own render step after its checks; a render command step of its own, render-pr, that does the same right before every push, including the push after rhiza run request-changes; ship open-pr; the wait for CI; the sign-off, whose on.changes goes back to review/review; and then today's rebase, land, merge, main check, close-out and ship steps, with no shipit prompt and no `ship check --pr-open` until. Every one of these render steps leaves the pushed branch holding every actor record its rendered pages are built from, so rhiza check passes on a clone of it.
 
 ## Links
 
@@ -40,3 +40,4 @@ The built-in ship-change.toml runs a workflow step on build; a render command st
 ## History
 
 - `01M5WPTZVV50AKZ4G5MZ7HMDKC` ship-change on Rhiza's workflows: its agent step runs Rhiza's build and review and waits for the owner's sign-off, in place of shipit.
+- `01M61GW7K1PDG7HMFXMN3YNA7B` Plain build and review runs leave their branch rendered: each renders and commits .rhiza/rendered and the uncommitted .rhiza/log entries before it ends, so rhiza check passes on the branch without a hand-made render commit.

@@ -20,6 +20,10 @@ decided by the orchestrator acting as arbiter, on the owner's word that the orch
 
 - answers [leaf-failed-01m60atz-3](../question/leaf-failed-01m60atz-3.md)
 
+### In
+
+- supersedes [ship-change-file-inherits-render](ship-change-file-inherits-render.md)
+
 ## History
 
 - `01M5WPTZVV50AKZ4G5MZ7HMDKC` ship-change on Rhiza's workflows: its agent step runs Rhiza's build and review and waits for the owner's sign-off, in place of shipit.
