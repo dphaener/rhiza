@@ -1,0 +1,40 @@
+{
+  "actor": "01M66D3S0XAV8ASA7PF78TNKZF",
+  "after": [
+    "01M66CXQ6VDW67HFNVESE36C7C"
+  ],
+  "at": "2026-10-30T12:45:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e7f894a, review.toml adds a render step (review -> render -> signoff; request-changes returns through review and render) that runs rhiza render and commits .rhiza/rendered and .rhiza/log as 'Render after the review' with a Change: trailer, or commits nothing when there is nothing to render. Ran go test ./cmd/rhiza -run 'TestScripts/(review-workflow|build-workflow|run-ship-change)' -count=1 and go test ./internal/workflow -count=1: both ok. review-workflow.txtar runs a review whose qa check and alpha fixer/verifier write records. It asserts that the branch log ends with 'Render after the review' after 'chore(rhiza): evidence for alpha', that git status --porcelain -- .rhiza is empty, and that rhiza check passes on the branch. make check (fmt-check, vet, all tests, self-check) exit 0."
+        },
+        "handle": "review-renders-branch-verified",
+        "id": "01M66DG22ATH1JX4NHZCAAF913",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66DG22ATH1JX4NHZ8X79JW0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66DG22ATH1JX4NHZ8X79JW0",
+        "id": "01M66DG2EAFRJFF8JYFK042ZRA",
+        "link": "01M66DG2EAFRJFF8JYFHS011H1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506T856R5QRMHAYGP8QGJ6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW7K1PDG7HMFXMN3YNA7B",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66DG32JJVR1YZRW7AD6S8A1",
+  "type": "ops",
+  "v": 1
+}
