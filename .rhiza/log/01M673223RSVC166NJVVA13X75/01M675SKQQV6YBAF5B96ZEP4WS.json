@@ -1,0 +1,40 @@
+{
+  "actor": "01M675GK9842T4RGXTK8QDC5EX",
+  "after": [
+    "01M675K9PAWAQXGKFTDAS40QBA"
+  ],
+  "at": "2026-10-30T19:50:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 270574d: go test ./cmd/rhiza -run TestRoadmapApp -count=1 -v passes both tests. TestRoadmapAppAcceptsAProposedChangeSet builds a temp repo with a proposed change set, presses a, asserts the view shows the What-if (proposed -> accepted) and y/n with the state still proposed, presses y, asserts change show reports accepted and the list reloads. TestRoadmapAppAnswersABlockingQuestion opens the detail of a change set blocked by a question, checks rhiza ready shows it blocked, presses enter, types 'Use CSV', enter, then asserts decision answer-which-format quotes the text and links answers, rhiza ready reports the change set ready, and rhiza render + rhiza check succeed. Diff read: internal/tui/roadmapapp/answer.go writes kind=decision with quote=the typed words (owner) and an answers link in that change set. Attempt 1's finding (stale rendered actor file) is fixed: in a clean detached worktree of 270574d, make fmt-check, go test ./... -count=1 and make self-check all pass. In this run checkout, self-check flags only this verifier session's own uncommitted actor record (claude-code-b5fd5234), which isn't part of the commit."
+        },
+        "handle": "roadmap-app-accept-answer-verified",
+        "id": "01M675SJEZKVA6JJNH68JKMAFF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M675SJEZKVA6JJNH68GNDSZW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M675SJEZKVA6JJNH68GNDSZW",
+        "id": "01M675SJYN90C24ETN4CM21S4K",
+        "link": "01M675SJYN90C24ETN4A9XQYF7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6734EA3V7228YH8DGYVYDQA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M673223RSVC166NJVVA13X75",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M675SKQQV6YBAF5B96ZEP4WS",
+  "type": "ops",
+  "v": 1
+}
