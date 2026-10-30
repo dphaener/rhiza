@@ -1,0 +1,86 @@
+{
+  "actor": "01M66HVC1BF7FYHVBBW50ATM1S",
+  "after": [
+    "01M66HTQ2YA45H36EJKFAS8PWJ"
+  ],
+  "at": "2026-10-30T14:06:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built the branch head (go build -o $TMPDIR/rhiza-x ./cmd/rhiza) and ran rhiza run start --workflow review (checks alpha, beta, gamma, with critic, fixer and verifier) in a scratch repo against the real Rex server, with only claude faked (records its round, says rhiza session done, stays open like a real agent). The run succeeded. The logged rex calls were exactly one window new, then six splits (check beta, check gamma, critic alpha #1, fixer thing #2, verifier thing #2, check alpha #2), each against a live block of that window, then block close of every pane at step end."
+        },
+        "handle": "run-sessions-one-window-qa-1",
+        "id": "01M66J3DXNGG1BDP1MQC4TWCV1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66J3DXNGG1BDP1MQACKJ4J9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66J3DXNGG1BDP1MQACKJ4J9",
+        "id": "01M66J3EBFYE6JQ9Z10W2K1KBR",
+        "link": "01M66J3EBFYE6JQ9Z10VYRRV26",
+        "note": "",
+        "op": "link.create",
+        "to": "01M651M8TNJKY76E8G6KMV3V3Y",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "In the same real-Rex run (built binary, fake claude only), the critic, the change-set leaf fixer and verifier, and the cycle-2 check each ran rex split -b <block of a live pane of the run's window> and none ran rex window new; each fake agent logged a REX_BLOCK inside that window."
+        },
+        "handle": "checks-and-fixes-anchored-qa-1",
+        "id": "01M66J3ESBFRHZE8A6S1XAMQYM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66J3ESBFRHZE8A6S0ZRZWCP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66J3ESBFRHZE8A6S0ZRZWCP",
+        "id": "01M66J3F7MKVFWYE29QVKQPBWX",
+        "link": "01M66J3F7MKVFWYE29QRXP0GA5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M651ME1N3KVWZ1D6M8BYFHBQ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "With real Rex: rex split -b <closed block> fails with 'block target ... not found' and rex block ls -s S -w W --json lists the remaining live block under blocks[].block_id, the shapes openSessionPane and livePane rely on. But a two-step workflow run with the built binary and fake claude failed at step two: step one's panes were closed at step end, Rex dropped the window, paneAnchor fell back to the closed first session's tab, and livePane failed with 'window target ... not found', so the run failed where it used to open a window. A review run whose agents exited on their own failed the same way at the critic."
+        },
+        "handle": "anchor-gone-splits-run-window-qa-1",
+        "id": "01M66J3FP98BK9RDKS979A0GV3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66J3FP98BK9RDKS939RFQ1N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66J3FP98BK9RDKS939RFQ1N",
+        "id": "01M66J3G66HM6G7YZ2MYRJGXWF",
+        "link": "01M66J3G66HM6G7YZ2MWA1C2C0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M651MBGX79H2AV7N9YA0EC9X",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6516H25WW66JF8N10Q83RJ4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66J3GY9954J7QCHKKS5YK8V",
+  "type": "ops",
+  "v": 1
+}
