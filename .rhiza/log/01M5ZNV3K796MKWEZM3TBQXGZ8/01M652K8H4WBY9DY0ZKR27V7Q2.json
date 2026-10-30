@@ -1,0 +1,40 @@
+{
+  "actor": "01M6527X4Z4P24BK5P3F4J5Z77",
+  "after": [
+    "01M650C4PA929J5CYM35NV2J5E"
+  ],
+  "at": "2026-10-30T00:15:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8f19664, cmd/rhiza/testdata/script/build-evidence-commit.txtar runs a build run whose fake builder stages its actor record with the `rhiza guide build` recipe (added to internal/guide/text/build.md in 3d9beb0) and commits it with its leaf file under Leaf:/Actor: trailers. The script checks that the leaf commit's tree holds an actor record whose handle is the Actor: trailer and RHIZA_ACTOR, that `git status --porcelain --untracked-files=all -- .rhiza` is empty after the run, and that fold-ok passes on a clean clone checked out at the leaf commit, where `rhiza show <actor>` reads kind actor. `go test ./cmd/rhiza -run 'TestScripts/build-' -count=1` and `go test ./internal/guide` pass. Mutation check: in a scratch copy with the eval of the staging recipe removed, build-evidence-commit fails at line 64 (no .rhiza/log entry in the leaf commit), so the script catches a builder that leaves its actor untracked. `make check` exits 0 on a clean clone of 8f19664. The builder's own actor claude-code-27db46d5 is committed in 8f19664."
+        },
+        "handle": "builder-actor-in-leaf-commit-verified",
+        "id": "01M652K7HH9XEZGRJWRK4SE872",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M652K7HH9XEZGRJWRFJWSC77",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M652K7HH9XEZGRJWRFJWSC77",
+        "id": "01M652K7XJ0JCQW15QKT9SDCRE",
+        "link": "01M652K7XJ0JCQW15QKQPNT0VY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6508E9HB879QTYQ1JJFJ8WF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5ZNV3K796MKWEZM3TBQXGZ8",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M652K8H4WBY9DY0ZKR27V7Q2",
+  "type": "ops",
+  "v": 1
+}

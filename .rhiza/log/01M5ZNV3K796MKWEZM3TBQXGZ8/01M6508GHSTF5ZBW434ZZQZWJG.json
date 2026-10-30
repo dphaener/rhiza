@@ -1,0 +1,50 @@
+{
+  "actor": "01M6502BAZESZZT7C915Z6V1QF",
+  "after": [
+    "01M65087FRHZX1Y5V8HC86WBWM"
+  ],
+  "at": "2026-10-29T23:34:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A build run script leaves git status clean of builder actor entries under .rhiza/log, and the builder's leaf commit carries that actor's record so fold-ok reads the actor as committed",
+          "statement": "Each builder session's actor record is committed in its own leaf commit, so after a build run every builder's Actor: trailer names an actor whose record is tracked"
+        },
+        "handle": "builder-actor-in-leaf-commit",
+        "id": "01M6508E9HB879QTYQ1P666BNG",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M6508E9HB879QTYQ1JJFJ8WF",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6508E9HB879QTYQ1JJFJ8WF",
+        "id": "01M6508F19QGQHFDQTJ6BVS2Q2",
+        "link": "01M6508F19QGQHFDQTJ4VAW0CR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6507263M8AWCJA5KRQEZYTM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6508E9HB879QTYQ1JJFJ8WF",
+        "id": "01M6508FKCN764TK8HCNSMMB02",
+        "link": "01M6508FKCN764TK8HCNANXN12",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65085GNHRY9JC623VBJEVAF",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M5ZNV3K796MKWEZM3TBQXGZ8",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6508GHSTF5ZBW434ZZQZWJG",
+  "type": "ops",
+  "v": 1
+}

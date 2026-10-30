@@ -1,0 +1,40 @@
+{
+  "actor": "01M65358N8HVAYSZ1HEBQTRZJ5",
+  "after": [
+    "01M65085613HD7PGSBMZTW4TPW"
+  ],
+  "at": "2026-10-30T00:31:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 24bb152 (leaf commits 55a7b97 + 24bb152): read the diff. CommitCheckWrites in internal/api/run_checks.go now adds the session actor's uncommitted record entries even when the actor wrote no model entries, and still returns no commit when nothing is uncommitted. TestCommitCheckWritesNone was changed to assert: a critic session whose actor wrote no model entries makes one commit 'chore(rhiza): record quality critic writes' on HEAD with trailers exactly 'Change: <cs>' and 'Actor: <actor>' (no Leaf:), touching only .rhiza/log/, leaving only the other actor's entry untracked in .rhiza; a second call makes no commit and leaves HEAD. go test ./internal/api -run TestCommitCheckWrites -v -count=1: both PASS. Attempt-1 finding (review-summary golden) fixed: go test ./cmd/rhiza ./internal/api -count=1 ok; fmt-check, vet, self-check ok. make check's only failure was TestGeneratedModel's 50ms read-time budget (52.5ms median) in internal/tui/modelapp, untouched by this leaf; it passed when rerun alone."
+        },
+        "handle": "check-actor-records-committed-verified",
+        "id": "01M653G3710890ZM3VJS4EAVK5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M653G3710890ZM3VJQHRKTXR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M653G3710890ZM3VJQHRKTXR",
+        "id": "01M653G3J0ZSDFZ9X2YMW1FCQ6",
+        "link": "01M653G3J0ZSDFZ9X2YM2E6D97",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6504QPJR31GMTNTV530MEHJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M602TH4C724WZB9MKBN5Z1PP",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M653G42RVQ1WFDD24NPCHCD9",
+  "type": "ops",
+  "v": 1
+}

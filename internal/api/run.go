@@ -30,6 +30,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
@@ -372,9 +373,10 @@ type RunMessage struct {
 // RunSession is one session of a run, under the step it first appeared
 // in, with the latest reading of its token use.
 type RunSession struct {
-	Step    string           `json:"step" desc:"The step the session first appeared under"`
-	Session string           `json:"session" desc:"The session ID"`
-	Tokens  *SessionTokenUse `json:"tokens,omitempty" desc:"The latest reading of its token use; absent when none was recorded, and then left out of the totals"`
+	Step     string           `json:"step" desc:"The step the session first appeared under"`
+	Session  string           `json:"session" desc:"The session ID"`
+	Tokens   *SessionTokenUse `json:"tokens,omitempty" desc:"The latest reading of its token use; absent when none could be read, and then left out of the totals"`
+	NoTokens string           `json:"no_tokens,omitempty" desc:"Why no token use is shown, when tokens is absent: still running, or the transcript is unreadable with its warning"`
 }
 
 // RunBlocked is what a blocked run waits on, read from its agent step's
@@ -448,6 +450,12 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 			Autonomous: r.Autonomous, Current: def.Start, Steps: []RunStep{}, StartedAt: rfc3339(ctx.Now()), Amendments: []RunAmendment{},
 			Messages: []RunMessage{}, Sessions: []RunSession{},
 		}, DryRun: true}, nil
+	}
+	if ctx.Getenv != nil {
+		if sid := strings.TrimSpace(ctx.Getenv(envSession)); sid != "" {
+			return nil, Usagef("run start refused: this is agent session %s, and no agent session starts a run", sid).
+				WithNext("ask the owner to run it outside an agent session")
+		}
 	}
 	if err := canRun(ctx, def); err != nil {
 		return nil, err
@@ -584,7 +592,7 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 			j.Entries = append(j.Entries, run.Entry{Type: run.TypeRetried, At: ctx.Now(), Step: retryStep, Detail: st.Detail})
 			st = j.State()
 		}
-		return RunResponse{Run: runInfo(st, false, session.NewStore(session.Dir(common))), DryRun: true, Retry: retryStep}, nil
+		return RunResponse{Run: runInfo(ctx, st, false, session.NewStore(session.Dir(common))), DryRun: true, Retry: retryStep}, nil
 	}
 	if err := canRun(ctx, def); err != nil {
 		return nil, err
@@ -635,7 +643,7 @@ func runRunAbandon(ctx *Ctx, req any) (any, error) {
 	detail := run.AbandonedPrefix + from.Handle
 	if ctx.DryRun {
 		j.Entries = append(j.Entries, run.Entry{Type: run.TypeFinished, At: ctx.Now(), End: run.Failed, Detail: detail})
-		return RunAbandonResponse{Run: runInfo(j.State(), false, sessions), DryRun: true}, nil
+		return RunAbandonResponse{Run: runInfo(ctx, j.State(), false, sessions), DryRun: true}, nil
 	}
 	unlock, ok, err := rs.TryLock(j.ID)
 	if err != nil {
@@ -657,7 +665,7 @@ func runRunAbandon(ctx *Ctx, req any) (any, error) {
 		return nil, Errorf("journal the abandoning of run %s: %v", j.ID, err).WithNext("rhiza run status " + j.ID)
 	}
 	j.Entries = append(j.Entries, e)
-	return RunAbandonResponse{Run: runInfo(j.State(), false, sessions)}, nil
+	return RunAbandonResponse{Run: runInfo(ctx, j.State(), false, sessions)}, nil
 }
 
 // runRunStatus reports a run from its journal alone.
@@ -677,7 +685,7 @@ func runRunStatus(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	st := j.State()
-	info := runInfo(st, rs.Live(j.ID), session.NewStore(session.Dir(common)))
+	info := runInfo(ctx, st, rs.Live(j.ID), session.NewStore(session.Dir(common)))
 	if info.SignoffWaiting {
 		if ss, err := readShipState(filepath.Join(common, filepath.FromSlash(shipDir), st.Change+".json")); err == nil {
 			info.PR = ss.URL
@@ -1046,7 +1054,7 @@ func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode
 	case err != nil:
 		return RunResponse{}, Errorf("run %s: %v", rid, err).WithNext("rhiza run status " + rid)
 	}
-	return RunResponse{Run: runInfo(st, false, sessions)}, nil
+	return RunResponse{Run: runInfo(ctx, st, false, sessions)}, nil
 }
 
 // runProcess is the calling process as a run's process: its host and pid
@@ -1862,7 +1870,7 @@ func rexField(s string, limit int) string {
 // runInfo is the response form of a folded journal; live says another
 // process holds the run. An unfinished run whose current step's session
 // is blocked reads blocked, with what it waits on from sessions.
-func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
+func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo {
 	info := RunInfo{
 		ID: st.ID, Workflow: st.Workflow, Change: st.Change, Title: st.Title, Worktree: st.Worktree,
 		Autonomous: st.Autonomous, Current: st.Current, Steps: []RunStep{}, StartedAt: rfc3339(st.StartedAt),
@@ -1903,6 +1911,10 @@ func runInfo(st run.State, live bool, sessions *session.Store) RunInfo {
 		rs := RunSession{Step: s.Step, Session: s.Session}
 		if u, ok := st.Tokens[s.Session]; ok {
 			rs.Tokens = runTokens(u)
+		} else {
+			rs.Tokens, rs.NoTokens = transcriptTokens(ctx, sessions, s.Session)
+		}
+		if rs.Tokens != nil {
 			addTokens(&info.Totals.Session, rs.Tokens.Session)
 			addTokens(&info.Totals.Helpers, rs.Tokens.Helpers)
 		}
@@ -2023,6 +2035,39 @@ func runCheckInfo(st run.State, c run.CheckState) RunCheck {
 		}
 	}
 	return rc
+}
+
+// transcriptTokens reads the token use of a session with no journaled
+// reading from its transcript, at print time. Nothing is journaled. When
+// the transcript cannot be read it returns nil and the reason: the session
+// is still running, or its transcript is unreadable, with the warning.
+func transcriptTokens(ctx *Ctx, sessions *session.Store, sid string) (*SessionTokenUse, string) {
+	unreadable := func(why string) (*SessionTokenUse, string) {
+		return nil, "transcript unreadable: " + why
+	}
+	if ctx == nil || sessions == nil || (ctx.Home == "" && ctx.Getenv == nil) {
+		return unreadable("the home folder and environment are unknown")
+	}
+	rec, err := sessions.Read(sid)
+	if err != nil {
+		return unreadable(AsError(err).Message)
+	}
+	a, ok := adapter.Lookup(rec.Agent)
+	if !ok {
+		return unreadable(fmt.Sprintf("session %s names agent %q, which this rhiza does not know", sid, rec.Agent))
+	}
+	data, err := readTranscript(ctx, a, sid)
+	if err == nil {
+		var use adapter.TokenUse
+		if use, err = a.TokenUse(data); err == nil {
+			return runTokens(runTokenUse(sessionTokenUse(use))), ""
+		}
+		err = Errorf("read the token use of session %s: %v", sid, err)
+	}
+	if !rec.Status.Exited() {
+		return nil, "still running"
+	}
+	return unreadable(AsError(err).Message)
 }
 
 // runTokens is the response form of a journaled token use reading.
@@ -2301,7 +2346,7 @@ func (r RunInfo) Human(w io.Writer) {
 		fmt.Fprintf(w, "\n## Sessions\n\n")
 		for _, s := range r.Sessions {
 			if s.Tokens == nil {
-				fmt.Fprintf(w, "- %s, session %s: no token use recorded\n", s.Step, s.Session)
+				fmt.Fprintf(w, "- %s, session %s: no token use shown, %s\n", s.Step, s.Session, s.NoTokens)
 				continue
 			}
 			fmt.Fprintf(w, "- %s, session %s: %s\n", s.Step, s.Session, tokenUseLine(*s.Tokens))

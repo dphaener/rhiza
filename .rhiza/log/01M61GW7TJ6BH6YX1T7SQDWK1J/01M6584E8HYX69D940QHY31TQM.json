@@ -1,0 +1,44 @@
+{
+  "actor": "01M65834HN0EGQ9B9ZXW4ZBMVV",
+  "after": [
+    "01M6581Q33AJ367QR3CC6S92F5"
+  ],
+  "at": "2026-10-30T01:52:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set intent says a failed fixer must not use up a review fix cycle, so the retry happens inside the cycle and the cycle's checks re-run only after its fixers pass. The intent sets no retry count, and the code today (internal/run/checks.go nextCheckActions, fixActions failure path) spends the cycle on the first failed fix. Retries must be bounded or a broken fixer loops forever, so I reused MaxFixCycles (2) as the in-cycle retry budget rather than adding a new constant: one knob, same meaning as the existing cap, and the existing tests that count cycles against MaxFixCycles stay valid. Unbounded retries and a zero-retry answer were rejected: the first never terminates, the second is today's behaviour the intent asks to change.",
+          "statement": "A failed change-set review fixer is retried within its cycle up to MaxFixCycles more times (the same cap as the checks' further cycles). Only when those retries are exhausted does the cycle count as spent, and the checks of that cycle fail with the fix-failed detail. A leaf's fixer or verifier is not retried: its failure still fails the phase and spends the cycle (tracked in discovered-from draft change set 01M6580HB).",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "fixer-retries-within-cycle",
+        "id": "01M65054XFRT6Z9CWSFWA2XRNT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M65054XFRT6Z9CWSFS9MYH2R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "A checks step whose change-set fixer fails its first attempt and passes its second starts no new cycle: the retry runs inside the same cycle, and that cycle's checks start only after the fixer passes",
+          "statement": "A failed change-set review fixer is retried within its cycle, and the cycle's checks start again only once its fixers pass"
+        },
+        "handle": "fixer-retry-in-cycle",
+        "id": "01M6506EMDJWA6YX6VSN6DFYD5",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6506EMCPMJKKCE8B3JX16RP",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61GW7TJ6BH6YX1T7SQDWK1J",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6584E8HYX69D940QHY31TQM",
+  "type": "ops",
+  "v": 1
+}

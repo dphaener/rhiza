@@ -1,0 +1,30 @@
+{
+  "actor": "01M650M14AF59SW50EN1SWN4AV",
+  "after": [
+    "01M650B1CB85003D4JQHP0ZKQC"
+  ],
+  "at": "2026-10-29T23:41:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The build guide and the review guide's non-qa checks tell verifiers and checks to test runs with fakes only, never real Rex, agents or gh; the review guide's qa check runs the built binary hands-on, since fakes alone do not count for it",
+          "wording": "Build and review guides say to test runs with fakes only, never real Rex, agents or gh, except the review qa check, which runs the built binary hands-on: the change set's intent, the agent's wording (assumed, would have escalated)"
+        },
+        "handle": "fakes-only-in-build-and-review",
+        "id": "01M6505FZ5YGMF00V2897K167J",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6505FZ5YGMF00V28718TPB3",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61GW73H05YHE4DK0CXFD1KH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M650MRPH9F6XPWDDH1ZEVXEZ",
+  "type": "ops",
+  "v": 1
+}

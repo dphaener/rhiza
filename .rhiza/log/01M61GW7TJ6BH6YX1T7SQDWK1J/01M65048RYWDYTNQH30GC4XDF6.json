@@ -1,0 +1,30 @@
+{
+  "actor": "01M6502BVEDAXMYHP5B4M090JY",
+  "after": [
+    "01M61S7QDA8K168KRT5BGSC9ER"
+  ],
+  "at": "2026-10-29T23:32:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "33462c8e-2065-4b43-a930-01a18a012b7a",
+          "statement": "When a review fixer fails, how many times may it be retried inside its cycle before the cycle is spent? The code today (internal/run/checks.go nextCheckActions) spends the cycle on the first failed fix, and MaxFixCycles = 2 caps the cycles."
+        },
+        "handle": "question-33462c8e-1",
+        "id": "01M65048H5GPAKKSKRQC46XEAD",
+        "key": null,
+        "kind": "question",
+        "node": "01M65048H5GPAKKSKRQ9CQ7CZF",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61GW7TJ6BH6YX1T7SQDWK1J",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M65048RYWDYTNQH30GC4XDF6",
+  "type": "ops",
+  "v": 1
+}

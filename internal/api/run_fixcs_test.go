@@ -139,13 +139,13 @@ func (g *fixCSRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 func (g *fixCSRunner) StartFix(spec run.FixSpec) (string, error) {
 	g.specs = append(g.specs, spec)
 	g.prompts = append(g.prompts, changeSetFixerPrompt(*spec.Step.Role(workflow.RoleFixer), spec, workflow.PromptVars{Change: g.change, Run: g.run}))
-	if err := os.WriteFile(filepath.Join(g.worktree, "README.md"), []byte("fixed in cycle "+strconv.Itoa(spec.Cycle)+"\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(g.worktree, "README.md"), []byte("fixed in cycle "+strconv.Itoa(spec.Cycle)+" attempt "+strconv.Itoa(spec.Attempt)+"\n"), 0o644); err != nil {
 		g.t.Fatal(err)
 	}
 	g.git("add", "README.md")
 	g.git("commit", "-q", "-m", "fix: the review's findings", "-m", "Change: "+g.change+"\nReview: "+g.review)
 	g.fix = g.git("rev-parse", "HEAD")
-	return "S-fixer-" + strconv.Itoa(spec.Cycle), nil
+	return "S-fixer-" + strconv.Itoa(spec.Cycle) + map[bool]string{true: "", false: "-r" + strconv.Itoa(spec.Attempt)}[spec.Attempt == 1], nil
 }
 
 func (g *fixCSRunner) AgentStatus(string) (run.AgentStatus, error) {
@@ -228,11 +228,11 @@ func TestFixChangeSetEngine(t *testing.T) {
 	}
 
 	var b strings.Builder
-	runInfo(st, false, nil).Human(&b)
+	runInfo(nil, st, false, nil).Human(&b)
 	if !strings.Contains(b.String(), "## Change-set fixes") || !strings.Contains(b.String(), "cycle 2 (step review): fixer session S-fixer-2: pass, commit "+g.fix[:12]) {
 		t.Errorf("run status lacks the change-set fixer:\n%s", b.String())
 	}
-	if info := runInfo(st, false, nil); len(info.Fixes) != 1 || info.Fixes[0].Commit != g.fix {
+	if info := runInfo(nil, st, false, nil); len(info.Fixes) != 1 || info.Fixes[0].Commit != g.fix {
 		t.Errorf("RunInfo.Fixes = %+v", info.Fixes)
 	}
 }

@@ -1,0 +1,40 @@
+{
+  "actor": "01M658EF0PFNR78J8ATNVV75AG",
+  "after": [
+    "01M658PM5J90WHM4AP2NVR8SQQ"
+  ],
+  "at": "2026-10-30T02:03:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5e03712: go test ./cmd/rhiza -run 'TestScripts/(session-done-captures|describe-golden|session-run-tokens)$' -count=1 passes; session-done-captures.txtar checks that session done --json prints \"decisions\": [ with the answer-158fe87f-N handles, and that the field is absent on a repeat done. Running describe-golden with -update leaves no diff, and the golden holds SessionDoneResponse.decisions (\"Handles of the Decisions proposed from the questions the owner answered\"). TestSessionDoneReportsProposed (internal/api) passes and checks both handles in the response and the human output. session-run-tokens (c) now expects the capture warning before the token warning, with no decisions field, which fixes attempt 1's finding. make check exits 0 and leaves the tree clean."
+        },
+        "handle": "done-reports-proposed-verified",
+        "id": "01M658SAG12HS4PJW1WRG6QV7N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M658SAG12HS4PJW1WNHK85Y9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M658SAG12HS4PJW1WNHK85Y9",
+        "id": "01M658SATRNM8054S9M5KP7PBM",
+        "link": "01M658SATRNM8054S9M1T2A24E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65071DAX3X3K3AEBNHAV49N",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW89J8Y62X62RNJ8Z8HAD",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M658SBBMZ81HBTSH3E5S190Y",
+  "type": "ops",
+  "v": 1
+}

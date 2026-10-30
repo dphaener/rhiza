@@ -35,6 +35,10 @@ type Record struct {
 	// Autonomous is true when an autonomous run launched the session: the
 	// owner is not there to answer it.
 	Autonomous bool `json:"autonomous,omitempty"`
+	// Pending holds the message pointers sent to the session while it
+	// worked, in order: the next tool-call hook hands them to the agent and
+	// clears them.
+	Pending []string `json:"pending,omitempty"`
 	// Leaf is the handle of the leaf a leaves step launched the session
 	// on, Attempt the leaf's attempt and Role the session's role (builder
 	// or verifier); empty for every other session. Commit is the commit a
@@ -68,6 +72,10 @@ type Record struct {
 	// Tokens is the latest reading of the session's token use, nil until
 	// one is recorded.
 	Tokens *TokenUse `json:"tokens,omitempty"`
+	// Fresh are the times the session started over as a fresh session
+	// after a usage-limit pause, its transcript gone; nil when it never
+	// did.
+	Fresh []time.Time `json:"fresh,omitempty"`
 }
 
 // TokenCounts are the tokens a set of model calls used, by kind.

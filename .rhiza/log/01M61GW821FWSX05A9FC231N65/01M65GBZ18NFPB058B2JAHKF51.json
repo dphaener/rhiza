@@ -1,0 +1,40 @@
+{
+  "actor": "01M65GASPKSCP5ND5JKTKKR52J",
+  "after": [
+    "01M65G4ES679RJQ5YWJS7ZPP71"
+  ],
+  "at": "2026-10-30T04:16:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5957cc2, ran go test ./cmd/rhiza -run 'TestScripts/session-message$' -count=1: PASS. The script (unchanged by this change set) opens an AskUserQuestion menu, sends a message, checks the file is written but no send appears in the fake rex log while blocked, then after the Stop hook sees the command finish with exactly one pointer send and one Enter. Also ran go test ./internal/api -run 'TestQueuePointer|TestTypePointer' -count=1: PASS, incl. new TestQueuePointerLeavesNonWorkingSessions (blocked/question, blocked/permission, idle keep no pending pointer). Read the diff: queuePointer in internal/api/session_message.go only queues when the resolved state is working, so a blocked session falls through to typePointer's wait for the prompt."
+        },
+        "handle": "blocked-session-still-waits-verified",
+        "id": "01M65GBXWAPS1MS6Y1KZK0GZYQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65GBXWAPS1MS6Y1KYF3N545",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65GBXWAPS1MS6Y1KYF3N545",
+        "id": "01M65GBYAYVQ2ZTGM89502V23Q",
+        "link": "01M65GBYAYVQ2ZTGM893C63WWW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65077HHPKVP9FVAECGBE1GJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW821FWSX05A9FC231N65",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65GBZ18NFPB058B2JAHKF51",
+  "type": "ops",
+  "v": 1
+}

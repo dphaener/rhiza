@@ -1,0 +1,41 @@
+{
+  "actor": "01M65058PZ41EGAPFT7S935HXS",
+  "after": [
+    "01M6505QZVHSB6TZ7PEQM39RZE"
+  ],
+  "at": "2026-10-29T23:33:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set intent is that the printout and run status never say 'no token use recorded' for a session that used tokens. Readings are journaled only at done, step end or exit, so a live session, or one whose transcript could not be read at that time, currently gets that line (internal/api/run.go:2297-2298). Reading the transcript at print time closes the live-session gap. Writing the reading back to the log from a print or status call would turn a read path into a write, and the log is append-only and written through change sets, so the read result stays unjournaled. An unreadable transcript still cannot yield counts, so that case gets an honest 'unreadable' line rather than a claim of no use.",
+          "statement": "Yes. When a session has no journaled token reading, the final printout and run status read its transcript at print time and show the counts they find, without journaling the result. Only when the transcript still cannot be read do they say so, instead of 'no token use recorded'.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "printout-reads-transcript-when-unjournaled",
+        "id": "01M650632VFV6TVF96ACDRQ79V",
+        "key": null,
+        "kind": "decision",
+        "node": "01M650632VFV6TVF96ACAVR0D9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M650632VFV6TVF96ACAVR0D9",
+        "id": "01M65063HZH14S1J7N59RS8MAP",
+        "link": "01M65063HZH14S1J7N570B7XB1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505699D94VTB3RQJ8ZBSTA",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M61GW8RKSBM4BT1B8B3FR5JH",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M65064TY8FSR0TP8XVY65YYW",
+  "type": "ops",
+  "v": 1
+}

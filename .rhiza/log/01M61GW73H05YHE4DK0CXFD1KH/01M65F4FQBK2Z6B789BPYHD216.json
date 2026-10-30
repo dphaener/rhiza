@@ -1,0 +1,30 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M650RG9PGWRQV8KSJ5GN8GTT"
+  ],
+  "at": "2026-10-30T03:54:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "rhiza run start --dry-run stays allowed inside an agent session; only a real start refuses, since a dry run writes and starts nothing",
+          "wording": "Arbiter answer under the standing autonomous instruction: a dry run starts nothing, so it is not refused"
+        },
+        "handle": "run-start-dry-run-allowed",
+        "id": "01M65F4F8716WGMAEHPHEQEKAN",
+        "key": null,
+        "kind": "decision",
+        "node": "01M65F4F8716WGMAEHPGPVKT3Z",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61GW73H05YHE4DK0CXFD1KH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65F4FQBK2Z6B789BPYHD216",
+  "type": "ops",
+  "v": 1
+}

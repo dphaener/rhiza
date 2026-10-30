@@ -1,0 +1,41 @@
+{
+  "actor": "01M650B6KC0JDDJN8YQSX7TXD0",
+  "after": [
+    "01M6507PA752Q9GK5CGZV32ZDB"
+  ],
+  "at": "2026-10-29T23:37:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question says the transcript persists on disk, and the Claude adapter already starts each session with a stored --session-id (claudecode.go:57). Resuming that session keeps the agent's context and the work it already committed, so the run does not redo finished steps. A fresh session would lose that context and need a re-briefing. The fresh-session fallback covers the case where the transcript is gone. Nothing in the adapter needs a new ID scheme for this. It departs from engine-orchestrates (agent steps are short, fresh sessions) only for a session that hit the usage limit, so the rule stays for every other step.",
+          "statement": "Resume a usage-limited run by continuing the same agent session with the Claude CLI's resume flag, keyed on the session ID the run already stores; start a fresh session only when the transcript is missing. This is the one exception to engine-orchestrates: a step's agent session stays open across a usage-limit pause",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "usage-limit-resume-same-session",
+        "id": "01M650608BEF1XS31K5F39AB7E",
+        "key": null,
+        "kind": "decision",
+        "node": "01M650608BEF1XS31K5BFKJHPM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M650608BEF1XS31K5BFKJHPM",
+        "id": "01M650CA0WBA99EWZQ854BDY0B",
+        "link": "01M650CA0WBA99EWZQ842C65R5",
+        "note": "Exception to engine-orchestrates: a usage-limited step resumes its agent session after the pause instead of starting a fresh one",
+        "op": "link.create",
+        "to": "01M5SWRKHJ7SB5CGRE47AJQ4AH",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M61R3RG70WZD5EDH293ZGVWN",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M650CASMV2ZPT2X6SGD1EMAN",
+  "type": "ops",
+  "v": 1
+}

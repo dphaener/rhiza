@@ -1,0 +1,63 @@
+{
+  "actor": "01M6502BSKEWJ4CYBGJA7ESBR2",
+  "after": [
+    "01M6504FKR96WJB5JD881EX1BZ"
+  ],
+  "at": "2026-10-29T23:32:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A check or critic session that wrote no model entries still has its actor's record entries committed, as the record change set's entries, so the run worktree is left clean",
+          "wording": "The intent as written, the agent's reading, not an owner quote (no owner present in this autonomous run)"
+        },
+        "handle": "commit-actor-record-entries",
+        "id": "01M6504Q0VYR5ZERBEMSN81353",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6504Q0VYR5ZERBEMPQZB1Z7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6504Q0VYR5ZERBEMPQZB1Z7",
+        "id": "01M6504QBKYRH9WAH43JGD569W",
+        "link": "01M6504QBKYRH9WAH43FBH4Y3W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6504F778H1BW4H972RGT4ZS",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "TestCommitCheckWritesNone is changed: a check or critic session whose actor wrote no model entries, but whose actor's record entries are uncommitted, makes a commit named record <check> <role> writes with Change: and Actor: trailers and no Leaf: trailer, and afterwards the run worktree has no uncommitted record entries for that actor; a session whose actor has nothing uncommitted still makes no commit",
+          "statement": "A review check or critic session that writes no model entries still gets its actor's record entries committed, so no uncommitted record change set is left in the run worktree for a later fixer to sweep up"
+        },
+        "handle": "check-actor-records-committed",
+        "id": "01M6504QPJR31GMTNTV86F54KR",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6504QPJR31GMTNTV530MEHJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6504QPJR31GMTNTV530MEHJ",
+        "id": "01M6504R287C9XF8DDPDSMN8ET",
+        "link": "01M6504R287C9XF8DDPBP33GE3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6504Q0VYR5ZERBEMPQZB1Z7",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M602TH4C724WZB9MKBN5Z1PP",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6504RPW61F8A49F6JESVM1C",
+  "type": "ops",
+  "v": 1
+}

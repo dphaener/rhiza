@@ -10,6 +10,8 @@ Review the diff from the merge-base with the default branch
 
 ## Checks
 
+Every check except `qa` tests runs with fakes only, never real Rex, agents or `gh`.
+
 - `compliance`: each leaf's `acceptance`, met as written.
 - `quality`: correctness, tests, the repo's conventions.
 - `qa`: hands-on, with the built binary; fakes alone do not count. Then

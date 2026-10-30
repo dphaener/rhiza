@@ -1,0 +1,28 @@
+{
+  "actor": "01M65H5W52G7D3902Y7C9F4MCJ",
+  "after": [
+    "01M65GY6W8M01TSCAT8CV5FFMR"
+  ],
+  "at": "2026-10-30T04:30:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M5TYN3RQJHQJKFATJBMB5QQT",
+        "handle": null,
+        "id": "01M65H6CAQ84083FSKPEPSNF88",
+        "node": "01M5TYN3RQJHQJKFATJ8K4ZMQW",
+        "op": "node.update",
+        "set": {
+          "statement": "A pointer that is typed goes in only while the session waits at its prompt, never over an open menu or question: a blocked session is waited on until it reaches its prompt, while a working session's pointer goes to its next tool call as hook context instead (busy-session-hook-delivery)."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M61GW821FWSX05A9FC231N65",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65H6CQX7V8M8VWJPAVQYHWS",
+  "type": "ops",
+  "v": 1
+}

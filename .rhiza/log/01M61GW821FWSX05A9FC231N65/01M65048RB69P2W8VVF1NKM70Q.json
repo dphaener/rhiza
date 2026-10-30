@@ -1,0 +1,30 @@
+{
+  "actor": "01M6502BWRFRWW1ZP9Q97B0488",
+  "after": [
+    "01M61S7QNS8YEQG55ETPWB2EX8"
+  ],
+  "at": "2026-10-29T23:32:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "c315a867-1d73-4456-b5c5-01a18a012b41",
+          "statement": "How should a message reach a session that is busy working (not at its prompt, not blocked on a question)?"
+        },
+        "handle": "question-c315a867-1",
+        "id": "01M65048GQ2ZX2HSDJ0FKAAAJ8",
+        "key": null,
+        "kind": "question",
+        "node": "01M65048GQ2ZX2HSDJ0DK3GKCS",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61GW821FWSX05A9FC231N65",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M65048RB69P2W8VVF1NKM70Q",
+  "type": "ops",
+  "v": 1
+}

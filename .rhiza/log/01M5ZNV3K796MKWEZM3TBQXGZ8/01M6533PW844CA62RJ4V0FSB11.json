@@ -1,0 +1,40 @@
+{
+  "actor": "01M652KXB98V4X01E0VRYN0QGA",
+  "after": [
+    "01M652K8H4WBY9DY0ZKR27V7Q2"
+  ],
+  "at": "2026-10-30T00:24:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1 with a binary built from 7cd456e. Real run: the build run's leaf commits 3d9beb0 and 8f19664 each carry the record of the actor their Actor: trailer names (claude-code-32a2e794, claude-code-27db46d5). The build worktree's only untracked .rhiza/log entries are review sessions' actor records, which the Decision leaves out of scope. Hands-on: on a scratch clone at 6127282 holding five real untracked actor-record change sets copied from the build worktree, with RHIZA_ACTOR=claude-code-d2a10324, I ran the `git add` line taken from `rhiza guide build` of the built binary through eval. It staged only that actor's three-entry record change set. After the commit with Leaf:/Actor: trailers the other four stayed untracked. On a clean clone of that commit, `rhiza show claude-code-d2a10324 --json` reads kind actor, and `rhiza check` folds with no problems; it fails only on the expected stale render. build-evidence-commit and internal/guide tests pass. `make check` exits 0 (an earlier run failed once on a read-budget timing flake, and a rerun of go test ./... and make check passed)."
+        },
+        "handle": "builder-actor-in-leaf-commit-qa-1",
+        "id": "01M6533NTRNRHRYCF9SGDHP0P8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6533NTRNRHRYCF9SCEY7T0P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6533NTRNRHRYCF9SCEY7T0P",
+        "id": "01M6533P7NM5MDCHT34HZJQRZD",
+        "link": "01M6533P7NM5MDCHT34GHYG3XR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6508E9HB879QTYQ1JJFJ8WF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5ZNV3K796MKWEZM3TBQXGZ8",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6533PW844CA62RJ4V0FSB11",
+  "type": "ops",
+  "v": 1
+}

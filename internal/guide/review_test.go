@@ -23,6 +23,9 @@ func TestReviewText(t *testing.T) {
 			"`compliance`", "each leaf's `acceptance`", "`quality`", "`qa`", "built binary",
 			"fakes alone do not count", "`scope`", "inside the intent and the leaves", "`model`",
 		},
+		"fakes-only": {
+			"Every check except `qa` tests runs with fakes only, never real Rex, agents or `gh`",
+		},
 		"severities": {"`blocker`", "`major`", "`minor`", "`nit`"},
 		"findings": {
 			`rhiza run findings --check "$RHIZA_CHECK" <file>`,

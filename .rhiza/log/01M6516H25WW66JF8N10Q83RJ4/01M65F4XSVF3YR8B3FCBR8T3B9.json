@@ -1,0 +1,30 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M651WPPN0FJV1F1XA9J55V8H"
+  ],
+  "at": "2026-10-30T03:55:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "When a session's anchor pane is gone, the session splits another live pane of the run's window",
+          "wording": "Arbiter answer: the recommended option"
+        },
+        "handle": "split-another-live-pane",
+        "id": "01M65F4X6FNPW3B55GGK8KFEQ6",
+        "key": null,
+        "kind": "decision",
+        "node": "01M65F4X6FNPW3B55GGHPJ8B18",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6516H25WW66JF8N10Q83RJ4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65F4XSVF3YR8B3FCBR8T3B9",
+  "type": "ops",
+  "v": 1
+}

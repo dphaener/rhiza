@@ -19,6 +19,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/run"
@@ -158,13 +159,14 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 		}
 		self = "rhiza"
 	}
-	argv, err := a.Command(adapter.Launch{
+	launch := adapter.Launch{
 		SessionID:      rec.ID,
 		PermissionMode: rec.PermissionMode,
 		HookCommand:    []string{self, "session", "hook"},
 		Prompt:         rec.Prompt,
 		Model:          rec.Model,
-	})
+	}
+	argv, err := a.Command(launch)
 	if err != nil {
 		return nil, Errorf("session %s: %v", rec.ID, err).WithNext(sessionStartNext)
 	}
@@ -179,16 +181,58 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 	}
 
 	follow := followRex(ctx, st, rec.ID)
-	p, err := ctx.Start(Program{Name: argv[0], Args: argv[1:], Dir: agentDir(rec), Env: env, Unset: unset, Terminal: true})
-	if err != nil {
-		follow.stop()
-		return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("start %s: %v", a.Name(), err))
+	var code int
+	var paused []string
+	for pause := 0; ; pause++ {
+		base := transcriptLen(ctx, a, rec.ID)
+		p, err := ctx.Start(Program{Name: argv[0], Args: argv[1:], Dir: agentDir(rec), Env: env, Unset: unset, Terminal: true})
+		if err != nil {
+			follow.stop()
+			return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("start %s: %v", a.Name(), err))
+		}
+		stopWatch := watchLimit(ctx, a, rec.ID, base, p)
+		code, err = p.Wait()
+		stopWatch()
+		if err != nil {
+			resp.Warnings = follow.stop()
+			return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("wait for %s: %v", a.Name(), err))
+		}
+		wait, limited := limitWait(ctx, a, rec.ID)
+		if !limited {
+			break
+		}
+		if pause >= maxUsageLimitPauses {
+			resp.Warnings = follow.stop()
+			return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("%s is still stopped at its usage limit after %d pauses: gave up instead of pausing again", a.Name(), maxUsageLimitPauses))
+		}
+		// The record says the session is paused, not idle at its prompt,
+		// until the resumed agent's hooks speak again.
+		detail := fmt.Sprintf("%s until %s", limitPausedDetail, ctx.Now().Add(wait).UTC().Format(time.RFC3339))
+		if warn := recordLimitPause(ctx, st, rec.ID, detail); warn != "" {
+			paused = append(paused, warn)
+		}
+		// The same session goes on once the limit resets: its context and
+		// the work it committed stay.
+		runClock.Sleep(wait)
+		if _, err := readTranscript(ctx, a, rec.ID); err == nil {
+			launch.Resume, launch.Prompt = true, resumePrompt
+		} else {
+			// Nothing to resume: the step starts over as a fresh session,
+			// told what it was first told.
+			launch.Resume, launch.Prompt = false, rec.Prompt
+			msg := fmt.Sprintf("the transcript of session %s is gone after the usage-limit pause: started a fresh session for the step instead of resuming", rec.ID)
+			paused = append(paused, msg)
+			if warn := recordFreshSession(ctx, st, rec, msg); warn != "" {
+				paused = append(paused, warn)
+			}
+		}
+		if argv, err = a.Command(launch); err != nil {
+			follow.stop()
+			return nil, Errorf("session %s: %v", rec.ID, err).WithNext(sessionStartNext)
+		}
+		resp.Argv = argv
 	}
-	code, werr := p.Wait()
-	resp.Warnings = follow.stop()
-	if werr != nil {
-		return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("wait for %s: %v", a.Name(), werr))
-	}
+	resp.Warnings = append(follow.stop(), paused...)
 	resp.Code = code
 	updated, err := st.Update(rec.ID, func(r *session.Record) {
 		r.Status.Exit = &session.Report{State: session.StateExited, Code: &code, At: ctx.Now().UTC()}
@@ -206,6 +250,107 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 	resp.Session = sessionInfo(rec)
 	resp.Decisions, resp.Warnings = captureAfterRun(ctx, rec, resp.Warnings)
 	return resp, nil
+}
+
+// The pause a usage-limited session waits when the agent gives no reset
+// time, the most times one session pauses, and what a resumed session is told.
+const (
+	usageLimitWait      = 15 * time.Minute
+	maxUsageLimitPauses = 24
+	resumePrompt        = "The usage limit has reset. Continue where you left off."
+	// limitPausedDetail is the detail of the working report a session
+	// stopped at its usage limit gets in place of idle.
+	limitPausedDetail = "paused at its usage limit"
+)
+
+// limitPoll is how often a running agent's transcript is read for its usage
+// limit; tests shorten it.
+var limitPoll = 30 * time.Second
+
+// transcriptLen is the length of the session's transcript; 0 when there is
+// none to read.
+func transcriptLen(ctx *Ctx, a adapter.Adapter, sid string) int {
+	if ctx.Home == "" && ctx.Getenv == nil {
+		return 0
+	}
+	t, err := readTranscript(ctx, a, sid)
+	if err != nil {
+		return 0
+	}
+	return len(t)
+}
+
+// watchLimit kills p once what the agent wrote to the session's transcript
+// past base shows it stopped at its usage limit: an interactive agent stays
+// open at its prompt there instead of exiting, so the pause would never
+// come. The returned stop ends the watching and waits until it has.
+func watchLimit(ctx *Ctx, a adapter.Adapter, sid string, base int, p Process) (stop func()) {
+	if ctx.Home == "" && ctx.Getenv == nil {
+		return func() {}
+	}
+	quit, ended := make(chan struct{}), make(chan struct{})
+	go func() {
+		defer close(ended)
+		tick := time.NewTicker(limitPoll)
+		defer tick.Stop()
+		for {
+			select {
+			case <-quit:
+				return
+			case <-tick.C:
+			}
+			t, err := readTranscript(ctx, a, sid)
+			if err != nil || len(t) <= base {
+				continue
+			}
+			if _, limited := a.UsageLimit(t[base:]); limited {
+				p.Kill()
+				return
+			}
+		}
+	}()
+	return func() {
+		close(quit)
+		<-ended
+	}
+}
+
+// limitWait reports whether the session's agent stopped at its usage
+// limit and how long to wait before resuming it: until the reset time the
+// agent gave, else usageLimitWait. A transcript that cannot be read is no
+// limit.
+func limitWait(ctx *Ctx, a adapter.Adapter, sid string) (time.Duration, bool) {
+	if ctx.Home == "" && ctx.Getenv == nil {
+		return 0, false
+	}
+	transcript, err := readTranscript(ctx, a, sid)
+	if err != nil {
+		return 0, false
+	}
+	l, ok := a.UsageLimit(transcript)
+	if !ok {
+		return 0, false
+	}
+	if l.ResetAt.IsZero() {
+		return usageLimitWait, true
+	}
+	return max(0, l.ResetAt.Sub(ctx.Now())), true
+}
+
+// recordLimitPause records a working report with detail as the session's
+// hook source, unless it has exited: a session stopped at its usage limit
+// sits at its prompt, but it is not ready, and a run must not take it for
+// idle. It returns a warning, never an error.
+func recordLimitPause(ctx *Ctx, st *session.Store, sid, detail string) string {
+	rep := session.Report{State: session.StateWorking, Detail: detail, At: ctx.Now().UTC()}
+	if _, err := st.Update(sid, func(r *session.Record) {
+		if !r.Status.Exited() {
+			r.Status.Hook = &rep
+		}
+	}); err != nil {
+		return fmt.Sprintf("record session %s paused at its usage limit: %v", sid, err)
+	}
+	return ""
 }
 
 // recordTokenUse reads the session's token use from its transcript,
@@ -247,6 +392,30 @@ func recordTokenUse(ctx *Ctx, st *session.Store, rec session.Record) string {
 	e := run.Entry{Type: run.TypeTokens, At: ctx.Now(), Step: rec.Step, Session: rec.ID, Tokens: &ru}
 	if err := run.NewStore(run.Dir(common)).Append(rec.Run, e); err != nil {
 		return warn(fmt.Sprintf("journal session %s's token use in run %s: %v", rec.ID, rec.Run, err))
+	}
+	return ""
+}
+
+// recordFreshSession stamps the session's record with the time it started
+// over as a fresh session and, for a session in a run, journals a
+// fresh-session entry with detail, so the restart outlives the session's
+// terminal. It returns a warning, never an error.
+func recordFreshSession(ctx *Ctx, st *session.Store, rec session.Record, detail string) string {
+	warn := func(msg string) string { return "record the fresh session: " + msg }
+	now := ctx.Now()
+	if _, err := st.Update(rec.ID, func(r *session.Record) { r.Fresh = append(r.Fresh, now.UTC()) }); err != nil {
+		return warn(fmt.Sprintf("record session %s: %v", rec.ID, err))
+	}
+	if rec.Run == "" {
+		return ""
+	}
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return warn(AsError(err).Message)
+	}
+	e := run.Entry{Type: run.TypeFreshSession, At: now, Step: rec.Step, Session: rec.ID, Detail: detail}
+	if err := run.NewStore(run.Dir(common)).Append(rec.Run, e); err != nil {
+		return warn(fmt.Sprintf("journal session %s's fresh session in run %s: %v", rec.ID, rec.Run, err))
 	}
 	return ""
 }
@@ -560,6 +729,8 @@ func sessionHook(ctx *Ctx, event string) (SessionHookResponse, error) {
 		}
 		resp.Session = rec.ID
 		serr := recordHook(ctx, st, rec, a, event, payload, rep, changed, &resp)
+		serr = errors.Join(serr, deliverPending(st, rec, a, event, &resp))
+		serr = errors.Join(serr, typeIdlePending(ctx, st, rec.ID))
 		journaled, jerr := journalHookMessage(ctx, a, rec, event, payload)
 		resp.Journaled = journaled
 		return resp, errors.Join(serr, jerr)
@@ -571,7 +742,8 @@ func sessionHook(ctx *Ctx, event string) (SessionHookResponse, error) {
 // says so in resp. A report that changes nothing, or arrives after the
 // session exited, is not recorded. In an autonomous session a question to
 // the owner is denied (resp's reply) and kept as the asked mark: the
-// arbiter answers it by message.
+// arbiter answers it by message. An idle report from an agent stopped at
+// its usage limit is recorded as working, paused (see recordLimitPause).
 func recordHook(ctx *Ctx, st *session.Store, rec session.Record, a adapter.Adapter, event string, payload []byte, rep adapter.HookReport, changed bool, resp *SessionHookResponse) error {
 	name := a.Name()
 	if !changed {
@@ -581,6 +753,13 @@ func recordHook(ctx *Ctx, st *session.Store, rec session.Record, a adapter.Adapt
 		return fmt.Errorf("%s reported unknown state %q", name, rep.State)
 	}
 	report := session.Report{State: rep.State, Kind: rep.Kind, Detail: rep.Detail, At: ctx.Now().UTC()}
+	// An agent stopped at its usage limit goes idle at its prompt and stays
+	// there; it is paused, not ready, until session.run stops and resumes it.
+	if report.State == session.StateIdle {
+		if _, limited := limitWait(ctx, a, rec.ID); limited {
+			report.State, report.Detail = session.StateWorking, limitPausedDetail
+		}
+	}
 	var reply []byte
 	if rec.Autonomous {
 		b, ask, err := a.AskReply(event, payload, autonomousAskReason)
@@ -608,6 +787,66 @@ func recordHook(ctx *Ctx, st *session.Store, rec session.Record, a adapter.Adapt
 	}
 	resp.Recorded, resp.State, resp.Kind, resp.reply = true, report.State, report.Kind, reply
 	return nil
+}
+
+// deliverPending hands the agent the message pointers sent to the session
+// while it worked, as context its hook prints, and clears them. Only an
+// event the adapter can carry context on takes them; they wait for the
+// next one otherwise, and a session that exited keeps them.
+func deliverPending(st *session.Store, rec session.Record, a adapter.Adapter, event string, resp *SessionHookResponse) error {
+	if _, ok, err := a.ContextReply(event, ""); err != nil || !ok {
+		return err
+	}
+	var lines []string
+	if _, err := st.Update(rec.ID, func(r *session.Record) {
+		if r.Status.Exited() {
+			return
+		}
+		lines, r.Pending = r.Pending, nil
+	}); err != nil {
+		return fmt.Errorf("read session %s's pending messages: %v", rec.ID, err)
+	}
+	if len(lines) == 0 {
+		return nil
+	}
+	reply, _, err := a.ContextReply(event, strings.Join(lines, "\n"))
+	if err != nil {
+		return fmt.Errorf("%s: %v", a.Name(), err)
+	}
+	resp.reply = reply
+	return nil
+}
+
+// typeIdlePending types the pointers still pending for session sid, each
+// then Enter, once the session waits at its prompt: the fallback for a
+// message that no tool-call hook carried before the session went idle.
+// Pointers a hook already handed over are cleared, so none is typed twice.
+// A session at any other status keeps them for its next hook.
+func typeIdlePending(ctx *Ctx, st *session.Store, sid string) error {
+	if ctx.Exec == nil {
+		return nil
+	}
+	var lines []string
+	var rec session.Record
+	if _, err := st.Update(sid, func(r *session.Record) {
+		if r.Status.Exited() || len(r.Pending) == 0 {
+			return
+		}
+		if rep, _ := session.Resolve(*r); rep.State != session.StateIdle {
+			return
+		}
+		lines, r.Pending = r.Pending, nil
+		rec = *r
+	}); err != nil {
+		return fmt.Errorf("read session %s's pending messages: %v", sid, err)
+	}
+	var errs []error
+	for _, line := range lines {
+		if err := sendPointer(ctx, rec, line); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return errors.Join(errs...)
 }
 
 // journalHookMessage appends the message the payload says the session sent

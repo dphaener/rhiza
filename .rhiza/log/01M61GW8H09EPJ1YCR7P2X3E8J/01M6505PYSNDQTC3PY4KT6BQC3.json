@@ -1,0 +1,33 @@
+{
+  "actor": "01M6502C77GKMNYTWPXVMY8F32",
+  "after": [
+    "01M61S7R64FXWKJK3X4Q58EHR8"
+  ],
+  "at": "2026-10-29T23:33:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "e93a5bca7a00e86171178ef2e2352c4108a2e6920f38d8c3f1b585e1aec2ce3c",
+          "session": "b0ce8a13-0f72-4b9b-934d-01a18a012c19",
+          "summary": "Plan run on change set 01M61GW8H (Questions not permissions), autonomous, so no owner interview. The intent: Rex status shows a session's AskUserQuestion as a question for the owner, not as 'Claude needs your permission'. Code read: the Claude Code adapter maps AskUserQuestion to blocked with kind question (internal/adapter/claudecode/claudecode.go:162); run status and the run's OSC 7501 report carry kind question (internal/api/run.go:1641, internal/api/session_run.go:502); the run-blocked script asserts state=blocked:kind=question (cmd/rhiza/testdata/script/run-blocked.txtar:61). The Rex program status spec lists question as a valid kind (superlogical docs, build/program-status). The 'needs your permission' wording is not produced in this repo, so it is parked as a question for the owner.",
+          "title": "Questions not permissions: plan run, no owner present"
+        },
+        "handle": "questions-not-permissions-plan-run",
+        "id": "01M6505PF0CR3E1B9V6HK42EYP",
+        "key": null,
+        "kind": "source",
+        "node": "01M6505PF0CR3E1B9V6DPBPQSE",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61GW8H09EPJ1YCR7P2X3E8J",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6505PYSNDQTC3PY4KT6BQC3",
+  "type": "ops",
+  "v": 1
+}

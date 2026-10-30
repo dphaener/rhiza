@@ -1,0 +1,30 @@
+{
+  "actor": "01M6502CC7ZQKQNRHC96X9CYNC",
+  "after": [
+    "01M61S7RYVHBSXXV2TXP3SVNGY"
+  ],
+  "at": "2026-10-29T23:33:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "6e2b93b5-775c-4878-9beb-01a18a012c6d",
+          "statement": "When a run's agent session hits the Claude usage limit, how should the pause resume the work? (Claude's adapter starts sessions with --session-id and has no resume today; the transcript persists on disk.)"
+        },
+        "handle": "question-6e2b93b5-1",
+        "id": "01M65056RPDP987EBWMFKN5XYG",
+        "key": null,
+        "kind": "question",
+        "node": "01M65056RPDP987EBWMFHJHC74",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61R3RG70WZD5EDH293ZGVWN",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6505755DVKZT4234S3B0JK1",
+  "type": "ops",
+  "v": 1
+}

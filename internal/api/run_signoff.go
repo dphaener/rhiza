@@ -182,7 +182,7 @@ func (sr signoffRun) signoff(ctx *Ctx, e run.Entry, changes string) (RunSignoffR
 	}), Changes: changes, DryRun: ctx.DryRun}
 	sessions := session.NewStore(session.Dir(sr.common))
 	if ctx.DryRun {
-		resp.Run = runInfo(sr.state, false, sessions)
+		resp.Run = runInfo(ctx, sr.state, false, sessions)
 		return resp, nil
 	}
 	st := sr.state

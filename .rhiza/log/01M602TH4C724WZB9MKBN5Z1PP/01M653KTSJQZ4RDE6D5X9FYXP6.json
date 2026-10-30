@@ -1,0 +1,40 @@
+{
+  "actor": "01M653GJRGT5V0RY1DQNX0ZG0A",
+  "after": [
+    "01M653G42RVQ1WFDD24NPCHCD9"
+  ],
+  "at": "2026-10-30T00:33:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built the branch head (go build ./cmd/rhiza into the scratchpad) and ran a real `rhiza run start --workflow review` in a fresh scratch repo (RHIZA_* unset, own HOME), with only rex and claude faked: check alpha recorded an empty findings round and wrote no model entry; check beta recorded an empty round and added Evidence. The run succeeded. Alpha's idle session got commit 'chore(rhiza): record alpha check writes' with trailers 'Change: <cs>' and 'Actor: claude-code-84fb297e', no Leaf:, touching only its actor's 3 record entries under .rhiza/log/; beta's commit held its Evidence plus its record entries. Afterwards `git status --porcelain --untracked-files=all -- .rhiza` in the run worktree was empty. The no-uncommitted-means-no-commit path was checked via go test ./internal/api -run TestCommitCheckWrites (both PASS); go test ./cmd/rhiza -run TestScripts/review- ok."
+        },
+        "handle": "check-actor-records-committed-qa-1",
+        "id": "01M653KST9SDXW4DF6M6AJXFJM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M653KST9SDXW4DF6M48J2M87",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M653KST9SDXW4DF6M48J2M87",
+        "id": "01M653KT65E89TDWAKMQKQVDQ9",
+        "link": "01M653KT65E89TDWAKMMVXHQ6M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6504QPJR31GMTNTV530MEHJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M602TH4C724WZB9MKBN5Z1PP",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M653KTSJQZ4RDE6D5X9FYXP6",
+  "type": "ops",
+  "v": 1
+}

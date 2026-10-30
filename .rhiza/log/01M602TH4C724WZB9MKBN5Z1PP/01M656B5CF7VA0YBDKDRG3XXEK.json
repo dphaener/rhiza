@@ -1,0 +1,43 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M653KTSJQZ4RDE6D5X9FYXP6"
+  ],
+  "at": "2026-10-30T01:21:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "e15c8e28881398092a44274d5ad5a7f5c6db4e3a",
+          "pr": "https://github.com/dphaener/rhiza/pull/99",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #99 (https://github.com/dphaener/rhiza/pull/99) passed CI at e15c8e2",
+          "status": "verified"
+        },
+        "handle": "pr-99-commit-idle-check-actors",
+        "id": "01M656B49H8V8792K0EQSP7BCQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M656B49H8V8792K0EPEG57AW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M656B49H8V8792K0EPEG57AW",
+        "id": "01M656B4Q8SFS88Q9A7Q1YSFPX",
+        "link": "01M656B4Q8SFS88Q9A7KABQ8NV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6504QPJR31GMTNTV530MEHJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M602TH4C724WZB9MKBN5Z1PP",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M656B5CF7VA0YBDKDRG3XXEK",
+  "type": "ops",
+  "v": 1
+}

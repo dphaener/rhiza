@@ -1,0 +1,63 @@
+{
+  "actor": "01M65MC6S9X3RH1K1JJ7B8A5TG",
+  "after": [
+    "01M65M7A0PW01X489AW630HM73"
+  ],
+  "at": "2026-10-30T05:39:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, built rhiza binary in a scratch repo with a fake claude on PATH: (1) agent reports 'usage limit reached|<past time>' on its first launch: session run relaunched it as `claude --resume <same id>` with the resume prompt, the second launch finished, exactly one start and one resume, exit code 0. (2) agent limited on every launch: 24 resumes, then the session is recorded as error 'claude-code is still stopped at its usage limit after 24 pauses' instead of exited 0. (3) agent left open at its prompt after the limit line: killed at the 30-second transcript poll and resumed. (4) `rhiza session hook Stop` with a transcript ending in 'hit your limit' records working 'paused at its usage limit'; without it, idle. Separately, a working agent whose last line is a tool_use grepping 'hit your limit' was also killed and paused (reported as a finding)."
+        },
+        "handle": "usage-limit-resume-qa-2",
+        "id": "01M65N3GDF1RAJGNXXQ3F5WRFS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65N3GDF1RAJGNXXQ20H8E35",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65N3GDF1RAJGNXXQ20H8E35",
+        "id": "01M65N3GS5JZSYZXMHCH09T5DM",
+        "link": "01M65N3GS5JZSYZXMHCFCC365D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6507G6PPPPEVQYKYJNQRSD6",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, built rhiza binary with a fake claude: the agent reports the limit with a reset 5s ahead, and its transcript is removed during the pause. session run started a fresh `claude --session-id <same id>` (not --resume), the step ended with code 0, the output warned 'the transcript ... is gone after the usage-limit pause: started a fresh session for the step instead of resuming', and the session record in .git/rhiza/sessions kept a 'fresh' timestamp. `rhiza session show` (human and --json) does not display that timestamp."
+        },
+        "handle": "usage-limit-fresh-session-qa-2",
+        "id": "01M65N3H4BX491FK1HY4FBAX7N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65N3H4BX491FK1HY46V93PA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65N3H4BX491FK1HY46V93PA",
+        "id": "01M65N3HFXCXA3BEA9FMKEGHMK",
+        "link": "01M65N3HFXCXA3BEA9FKWSJY69",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6507H8DN68SWSSCRT613VZM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61R3RG70WZD5EDH293ZGVWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65N3J1K4YA8AN3QPWXM202J",
+  "type": "ops",
+  "v": 1
+}

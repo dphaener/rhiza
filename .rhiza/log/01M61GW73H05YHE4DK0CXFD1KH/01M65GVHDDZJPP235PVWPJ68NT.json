@@ -1,0 +1,31 @@
+{
+  "actor": "01M65GT59C7NDXDEABTQK70P33",
+  "after": [
+    "01M65G17ZE6A2V2A3GTYDEFXTC"
+  ],
+  "at": "2026-10-30T04:24:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question asks whether the intent or the decision should change. The decision fakes-only-in-build-and-review and leaf review-guide-fakes-only already carve out the qa check, internal/guide/text/review.md says every check except qa tests runs with fakes, and internal/guide/review_test.go pins that. Only the intent states the broader no-exception rule. Aligning the intent to the decision and code is the smaller change and leaves the agreed behaviour unchanged. A change set's intent lives in its open log entry, which no rhiza command rewrites and the append-only log forbids editing by hand, so this decision, not a new intent text, carries the exemption: wherever the intent and this decision differ, this decision governs.",
+          "statement": "The change set intent, whose text is fixed once the change set opens and cannot be amended, is read with the same qa exemption as the decision fakes-only-in-build-and-review: the build and review guides tell verifiers and checks to test runs with fakes only, never real Rex, agents or gh, except the review qa check, which runs the built binary hands-on, and fakes alone do not count for it.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "qa-exemption-in-intent",
+        "id": "01M650RAVJZ1JHTPMKY78EMXBZ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M650RAVJZ1JHTPMKY658WE7B",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61GW73H05YHE4DK0CXFD1KH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65GVHDDZJPP235PVWPJ68NT",
+  "type": "ops",
+  "v": 1
+}

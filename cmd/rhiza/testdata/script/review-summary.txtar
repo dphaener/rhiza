@@ -102,7 +102,7 @@ Minors and nits, reported, not fixed:
 Fix cycles:
 
 - cycle 2: re-runs beta
-  - leaf thing: fixer pass, commit f60150d249cc; verifier pass, commit b8179e88e08c
+  - leaf thing: fixer pass, commit 90088810e159; verifier pass, commit 4c3775d5c3ef
 
 ## Sign-off
 

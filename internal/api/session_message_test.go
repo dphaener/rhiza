@@ -263,3 +263,30 @@ func TestTypePointerOneLine(t *testing.T) {
 		t.Errorf("pointer %q", got)
 	}
 }
+
+// A session that is not working keeps nothing for its next tool-call hook:
+// one blocked on a question or menu, idle at its prompt or still starting
+// is left to typePointer, which waits for the prompt.
+func TestQueuePointerLeavesNonWorkingSessions(t *testing.T) {
+	for _, tc := range []struct{ state, kind string }{
+		{session.StateBlocked, session.KindQuestion},
+		{session.StateBlocked, session.KindPermission},
+		{session.StateIdle, ""},
+	} {
+		t.Run(tc.state+"/"+tc.kind, func(t *testing.T) {
+			f := newMessageFixture(t)
+			f.setHook(t, tc.state, tc.kind)
+			queued, err := queuePointer(f.st, f.sid, "rhiza: message from test: read x and act on it.")
+			if err != nil || queued {
+				t.Fatalf("queued %v, err %v: want neither", queued, err)
+			}
+			rec, err := f.st.Read(f.sid)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(rec.Pending) != 0 {
+				t.Errorf("pending %v, want none", rec.Pending)
+			}
+		})
+	}
+}

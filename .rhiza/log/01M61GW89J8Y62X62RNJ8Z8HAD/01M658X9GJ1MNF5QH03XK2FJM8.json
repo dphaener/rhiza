@@ -1,0 +1,63 @@
+{
+  "actor": "01M658SWEADZZRWFMWFY8G8XNJ",
+  "after": [
+    "01M658SBBMZ81HBTSH3E5S190Y"
+  ],
+  "at": "2026-10-30T02:06:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 990e846 with a scratch build (go build ./cmd/rhiza), a scratch git repo, hermetic HOME and a fake rex: two sessions started with --permission-mode manual. A session with no transcript said done: exit 0, a 'propose decisions from the owner's answers: no transcript' warning ahead of the token-use warning, and session show reports it done. With the scenario's transcript (picked and typed answers) placed under HOME/.claude/projects, session done --dry-run proposed nothing and left no done mark; session done then printed 'Proposed decision answer-<id>-1..4', the change set held 4 node.create ops and answer-2 carried the owner's quote 'Something like DuckDB, but local'; a second done returned already:true with no decisions; session interview (the exit-capture path) proposed nothing and skipped all four, and the change set still held 4 node.create ops. The session-done-captures, session-run-tokens and describe-golden scripts and the TestSessionDone* Go tests (including TestSessionDoneCapturesBeforeMark) pass."
+        },
+        "handle": "done-captures-answers-qa-1",
+        "id": "01M658X7S3YR7MYBAXSQDJPCQM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M658X7S3YR7MYBAXSNSMV5C5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M658X7S3YR7MYBAXSNSMV5C5",
+        "id": "01M658X85F3AREXNTB9QN8E9E8",
+        "link": "01M658X85F3AREXNTB9NHP1K0G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506ZFX7SJEH3W2TYSQWWJR",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 990e846 with a scratch build: a fresh manual session with the picked/typed transcript ran session done --json and printed \"decisions\": [\"answer-<id>-1\" .. \"answer-<id>-4\"]; the human output listed '- Proposed decision answer-<id>-N' for each; a repeat done --json returned already:true with no decisions field, and a no-transcript done had no decisions field. The describe-golden script passes, so the golden holds the new SessionDoneResponse.decisions field."
+        },
+        "handle": "done-reports-proposed-qa-1",
+        "id": "01M658X8HRQANQK6Q43YZQ997D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M658X8HRQANQK6Q43V19986C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M658X8HRQANQK6Q43V19986C",
+        "id": "01M658X8XW1EWPP9V2V248DVFM",
+        "link": "01M658X8XW1EWPP9V2TZ0VFMJK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65071DAX3X3K3AEBNHAV49N",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW89J8Y62X62RNJ8Z8HAD",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M658X9GJ1MNF5QH03XK2FJM8",
+  "type": "ops",
+  "v": 1
+}
