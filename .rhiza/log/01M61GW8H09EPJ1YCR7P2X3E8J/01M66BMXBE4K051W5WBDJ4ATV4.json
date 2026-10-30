@@ -1,0 +1,29 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M65093V5HRXWSHCA41M1T8N7"
+  ],
+  "at": "2026-10-30T12:13:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The builder finds where the 'Claude needs your permission' wording comes from as the first part of the leaf. If Rhiza sets it, Rhiza sends kind question for AskUserQuestion. If Rex or Claude Code sets it, the leaf sends kind question anyway and records the Rex gap as a question on the leaf."
+        },
+        "handle": "ask-wording-found-in-build",
+        "id": "01M66BMWX0TS272VWZQ4761GX1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M66BMWX0TS272VWZQ378XJG5",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61GW8H09EPJ1YCR7P2X3E8J",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66BMXBE4K051W5WBDJ4ATV4",
+  "type": "ops",
+  "v": 1
+}

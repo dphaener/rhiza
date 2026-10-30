@@ -1,0 +1,29 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6509NJDZB5MFPYQY5WHT9P1"
+  ],
+  "at": "2026-10-30T12:13:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A review's open questions show only as the root record's blocked notice in Rex; they get no child records. Live sessions keep their child records."
+        },
+        "handle": "review-questions-root-notice-only",
+        "id": "01M66BMRB593ZF2Z1JSXVYTC1B",
+        "key": null,
+        "kind": "decision",
+        "node": "01M66BMRB593ZF2Z1JSVFX41RH",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M602TGXM184GVWJG4NE98P6Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66BMRSQCB1RM73P22Y4FZ0B",
+  "type": "ops",
+  "v": 1
+}
