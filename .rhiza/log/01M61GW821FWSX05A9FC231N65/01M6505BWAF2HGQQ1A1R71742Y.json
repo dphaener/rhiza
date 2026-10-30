@@ -1,0 +1,41 @@
+{
+  "actor": "01M65049VZD261S4B0AKKBE26X",
+  "after": [
+    "01M65048RB69P2W8VVF1NKM70Q"
+  ],
+  "at": "2026-10-29T23:33:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read internal/api/session_message.go: today the pointer is typed only while the session is idle at its prompt, and the command waits otherwise, so a busy session never receives it mid-task. Typing into a busy terminal would mix the pointer into whatever the agent is doing or into the operator's input, and the file-plus-pointer design already keeps the terminal free of stored content. Read internal/adapter/claudecode/claudecode.go: the adapter already installs PostToolUse and PreToolUse command hooks and writes hook JSON output (hookSpecificOutput with a permission decision), so returning context from a hook fits the existing hook path with no new channel. Chosen over a longer wait because the change intent is delivery without waiting for the prompt, and over typing mid-task because it corrupts terminal input. Not verified: that Claude Code injects hook additionalContext from PostToolUse as described; that needs a check before build.",
+          "statement": "A message to a busy session is written to its message file as today, and the pointer to that file is returned to the agent as hook context at its next tool-call boundary (PostToolUse), so it arrives mid-task without typing into the terminal. The typed pointer at the prompt stays as the fallback when the session goes idle with no further tool call.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "busy-session-message-via-tool-hook",
+        "id": "01M65059WCV14J8PHDR4BXHGAN",
+        "key": null,
+        "kind": "decision",
+        "node": "01M65059WCV14J8PHDR2HBA4DJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65059WCV14J8PHDR2HBA4DJ",
+        "id": "01M6505ACGT1JDG3Y6349BJ9K9",
+        "link": "01M6505ACGT1JDG3Y6314WD3CR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65048GQ2ZX2HSDJ0DK3GKCS",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M61GW821FWSX05A9FC231N65",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6505BWAF2HGQQ1A1R71742Y",
+  "type": "ops",
+  "v": 1
+}

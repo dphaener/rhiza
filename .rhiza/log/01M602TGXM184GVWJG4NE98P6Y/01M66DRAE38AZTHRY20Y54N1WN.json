@@ -1,0 +1,81 @@
+{
+  "actor": "01M66DPV9H6G236EJ0TJA51XQG",
+  "after": [
+    "01M66DH59RTXK4E2PRCADGX4ZN"
+  ],
+  "at": "2026-10-30T12:50:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A run reports its progress to Rex through OSC 7501 program status: the run is the root record, with its current step and progress as leaves done out of all; each live leaf is a child record with a hierarchical ID, the builder or verifier working or blocked; and the run ends done when it succeeds, or error when it fails, except that a failed run whose ending step leaves a review question open ends blocked, naming that question.",
+          "wording": "run-reports-progress's statement, amended by the review-questions-in-rex fixer for the blocked ending the autonomous plan run for change set 01M602TG planned; no owner words"
+        },
+        "handle": "run-ends-blocked-on-review-question",
+        "id": "01M66DR7ZX5M1M4HMZ0138EG9S",
+        "key": null,
+        "kind": "decision",
+        "node": "01M66DR7ZX5M1M4HMYZXVVV7VV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66DR7ZX5M1M4HMYZXVVV7VV",
+        "id": "01M66DR8D1JVN9K0Y8M9XN340G",
+        "link": "01M66DR8D1JVN9K0Y8M7BSNWFZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WT1X52NSSH59BY5KP418D0",
+        "type": "supersedes"
+      },
+      {
+        "decision": null,
+        "from": "01M66DR7ZX5M1M4HMYZXVVV7VV",
+        "id": "01M66DR8S9Q1J93GVPC8J56AQJ",
+        "link": "01M66DR8S9Q1J93GVPC5KWHG9Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505WZ65Y4WMQF3XM9316GE",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5WT1XEJY38RKEE9K473K3V1",
+        "id": "01M66DR95BRJ8X5NCTYAFQ4CPM",
+        "link": "01M66DR95BRJ8X5NCTYA39YV38",
+        "note": "",
+        "op": "link.create",
+        "to": "01M66DR7ZX5M1M4HMYZXVVV7VV",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6505ZVVRWAHQW8S8FGJ25MC",
+        "id": "01M66DR9GHAWWQBN67K3YVR2MM",
+        "link": "01M66DR9GHAWWQBN67K3GFX4K2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M66DR7ZX5M1M4HMYZXVVV7VV",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M5WT1XEJY38RKEE9K75KCC4M",
+        "handle": null,
+        "id": "01M66DR9W3FJ8JE8P4DBSXEAMA",
+        "node": "01M5WT1XEJY38RKEE9K473K3V1",
+        "op": "node.update",
+        "set": {
+          "statement": "While a run goes, its process keeps Rex's program status current through OSC 7501: a root record with the current step in its message and, in the build workflow, progress as the share of leaves with Evidence; a child record per live leaf (hierarchical ID per the spec) saying which leaf, builder or verifier, and working or blocked; and a final root state of done when the run succeeds, error when it fails, or blocked, naming the question, when a failed run's ending step leaves a review question open."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M602TGXM184GVWJG4NE98P6Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66DRAE38AZTHRY20Y54N1WN",
+  "type": "ops",
+  "v": 1
+}

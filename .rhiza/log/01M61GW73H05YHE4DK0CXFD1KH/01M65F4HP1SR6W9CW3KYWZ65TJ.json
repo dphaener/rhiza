@@ -1,0 +1,30 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M65F4GR5PT51D0D28TRHW8YQ"
+  ],
+  "at": "2026-10-30T03:54:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "rhiza run resume also refuses inside an agent session, as run start does, since resuming starts the next step",
+          "wording": "Arbiter answer: resuming starts a step, so it is refused like a start"
+        },
+        "handle": "run-resume-refuses-in-agent",
+        "id": "01M65F4H9G5W8KRFF0WC5M5G7A",
+        "key": null,
+        "kind": "decision",
+        "node": "01M65F4H9G5W8KRFF0WBCFZ2DN",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61GW73H05YHE4DK0CXFD1KH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65F4HP1SR6W9CW3KYWZ65TJ",
+  "type": "ops",
+  "v": 1
+}

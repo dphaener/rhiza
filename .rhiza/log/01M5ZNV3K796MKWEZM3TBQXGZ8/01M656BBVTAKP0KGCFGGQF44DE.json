@@ -1,0 +1,43 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6533PW844CA62RJ4V0FSB11"
+  ],
+  "at": "2026-10-30T01:21:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "1b5e212ef33483d9191c347b81428f93d6440be7",
+          "pr": "https://github.com/dphaener/rhiza/pull/98",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #98 (https://github.com/dphaener/rhiza/pull/98) passed CI at 1b5e212",
+          "status": "verified"
+        },
+        "handle": "pr-98-builder-sessions-actor",
+        "id": "01M656BAVQRXHSD1NKVG9XE5AT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M656BAVQRXHSD1NKVG3G4ZT6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M656BAVQRXHSD1NKVG3G4ZT6",
+        "id": "01M656BB8DR6WWFNK9713XY7SM",
+        "link": "01M656BB8DR6WWFNK96ZTJ0820",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6508E9HB879QTYQ1JJFJ8WF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5ZNV3K796MKWEZM3TBQXGZ8",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M656BBVTAKP0KGCFGGQF44DE",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,33 @@
+{
+  "actor": "01M6502BVEDAXMYHP5B4M090JY",
+  "after": [
+    "01M65056BY4DK4DY6TMCPG3V43"
+  ],
+  "at": "2026-10-29T23:33:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "865c60929a82fbdc7535cf08b3debff84cf3883fa75608d6baf9b482a12334c5",
+          "session": "33462c8e-2065-4b43-a930-01a18a012b7a",
+          "summary": "Autonomous plan run with no owner present, so no owner words were captured. The question raised by the plan run, how many times a failed review fixer may be retried inside its cycle, was answered by the arbiter: a failed review fixer is retried within its cycle up to MaxFixCycles more times, and only when those retries are exhausted is the cycle spent. The checks of a spent cycle then fail with the fix-failed detail. Open: none for this change set.",
+          "title": "Failed fixer keeps its cycle: arbiter ruling"
+        },
+        "handle": "failed-fixer-arbiter-ruling",
+        "id": "01M6506B3NZPEJG7ZB763Q8WY2",
+        "key": null,
+        "kind": "source",
+        "node": "01M6506B3NZPEJG7ZB72C713FA",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61GW7TJ6BH6YX1T7SQDWK1J",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6506D3WY9QGJ1MHT0K6E1NT",
+  "type": "ops",
+  "v": 1
+}

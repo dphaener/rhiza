@@ -121,7 +121,7 @@ func (r *running) capped(cr CheckRunner, step workflow.Step, a checkAction, leav
 		}
 		o, _ := states[it.check].Outcome(cur.Cycle)
 		text := reviewQuestionText(it, cycles, o.Detail)
-		en := Entry{Type: TypeReviewQuestion, Step: step.Name, Check: it.check, Cycle: cur.Cycle, Finding: it.finding.ID}
+		en := Entry{Type: TypeReviewQuestion, Step: step.Name, Check: it.check, Cycle: cur.Cycle, Finding: it.finding.ID, Detail: text}
 		var q Question
 		var err error
 		if i := slices.IndexFunc(*leaves, func(l Leaf) bool { return it.finding.Leaf != "" && l.ID == it.finding.Leaf }); i >= 0 {

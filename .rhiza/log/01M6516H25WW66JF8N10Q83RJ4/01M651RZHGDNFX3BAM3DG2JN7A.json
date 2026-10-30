@@ -1,0 +1,42 @@
+{
+  "actor": "01M651QZRJ0RJWNV7PWP0S9GD7",
+  "after": [
+    "01M651MQ39KBM42WTGWN105GS0"
+  ],
+  "at": "2026-10-30T00:01:25Z",
+  "body": {
+    "drop": [
+      "01M6516NBEQYJP129T1F4EBZ10"
+    ],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "With a fake rex that reports the anchor block not found, the session runs rex split on another pane of the run's window and no rex window new; TestOpenSessionPane, its 'anchor gone opens a new tab' case changed to assert that split, passes",
+          "statement": "A session whose anchor pane is gone splits a live pane of its run's window and never opens a window"
+        },
+        "handle": "anchor-gone-splits-run-window",
+        "id": "01M651MBGX79H2AV7NA1Z1REB7",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M651MBGX79H2AV7N9YA0EC9X",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "decision": null,
+        "from": "01M6516H25WW66JF8N10Q83RJ4",
+        "id": "01M651RYGH474FSVKQKJ4C65K8",
+        "link": "01M651RYGH474FSVKQKG9V0S1F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWT6QN894SDW5V7GJNYK3H",
+        "type": "serves"
+      }
+    ]
+  },
+  "change_set": "01M6516H25WW66JF8N10Q83RJ4",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M651RZHGDNFX3BAM3DG2JN7A",
+  "type": "ops",
+  "v": 1
+}

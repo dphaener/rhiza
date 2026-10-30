@@ -1,0 +1,141 @@
+{
+  "actor": "01M6502BSK96N06YD867PHG2CX",
+  "after": [
+    "01M65062NRFW639ECDXFTZ97WC"
+  ],
+  "at": "2026-10-29T23:34:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plain build and review render their branch as the last step of their own workflow, as ship-change does, not in the run engine",
+          "wording": "the agent's option, assumed in an autonomous plan (would have escalated)"
+        },
+        "handle": "render-at-workflow-end",
+        "id": "01M6506Q1V4DQEXQY42ADJTGCX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6506Q1V4DQEXQY42A3XNK0W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6506Q1V4DQEXQY42A3XNK0W",
+        "id": "01M6506QNT4BZJXVVY6SQ1WR7V",
+        "link": "01M6506QNT4BZJXVVY6SA3J252",
+        "note": "",
+        "op": "link.create",
+        "to": "01M650620KYZAB9S44N5MJVFCK",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A build run whose sessions leave .rhiza/rendered stale ends with a commit 'Render after the build' naming the change set, rhiza check passes on its branch, and no .rhiza/log entry is left uncommitted",
+          "statement": "A plain build run ends with its branch rendered and committed, so rhiza check passes on it without a hand-made render commit"
+        },
+        "handle": "build-renders-branch",
+        "id": "01M6506RT8ZF7BTAQNKACS7VF9",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6506RT8ZF7BTAQNKA5X7XV4",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "decision": null,
+        "from": "01M6506RT8ZF7BTAQNKA5X7XV4",
+        "id": "01M6506SKC1GANZHVZXQZ7SBSB",
+        "link": "01M6506SKC1GANZHVZXPN5XD37",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506Q1V4DQEXQY42A3XNK0W",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A review run whose fixers or checks leave .rhiza/rendered stale ends with a commit 'Render after the review' after their last record, rhiza check passes on its branch, and no .rhiza/log entry is left uncommitted",
+          "statement": "A plain review run ends with its branch rendered and committed after its last fixer, verifier or check has written a record"
+        },
+        "handle": "review-renders-branch",
+        "id": "01M6506T856R5QRMHAYGW6T697",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6506T856R5QRMHAYGP8QGJ6",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "decision": null,
+        "from": "01M6506T856R5QRMHAYGP8QGJ6",
+        "id": "01M6506TQNQVRT1HYJS7RY3CCW",
+        "link": "01M6506TQNQVRT1HYJS6204RVZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506Q1V4DQEXQY42A3XNK0W",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A build or review run on an already rendered branch ends with the same HEAD it started with",
+          "statement": "A plain build or review run whose branch is already rendered, with no uncommitted .rhiza/log entries, adds no commit"
+        },
+        "handle": "clean-render-adds-no-commit",
+        "id": "01M6506VDTVZ6SYN4WFTRD0JAP",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6506VDTVZ6SYN4WFQE44VFS",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "decision": null,
+        "from": "01M6506VDTVZ6SYN4WFQE44VFS",
+        "id": "01M6506VWTSZH4CS6ADM8G489R",
+        "link": "01M6506VWTSZH4CS6ADGB4SRA3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506Q1V4DQEXQY42A3XNK0W",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "When a build fails, should the run still render and commit its branch, so the failed branch also passes rhiza check?"
+        },
+        "handle": "build-render-after-failed-build",
+        "id": "01M6506WEYXT6D39X1J7TKBQYX",
+        "key": null,
+        "kind": "question",
+        "node": "01M6506WEYXT6D39X1J6ZPGZ55",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6506WEYXT6D39X1J6ZPGZ55",
+        "id": "01M6506X4CR7EHYC0RCH6DG2T8",
+        "link": "01M6506X4CR7EHYC0RCEZYTE09",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506RT8ZF7BTAQNKA5X7XV4",
+        "type": "blocks"
+      },
+      {
+        "decision": null,
+        "from": "01M61GW7K1PDG7HMFXMN3YNA7B",
+        "id": "01M6506XWAYEA617MGFKKY7T3V",
+        "link": "01M6506XWAYEA617MGFG3B0TZM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4RRY5ZEVDSZ0E2M11DRB",
+        "type": "serves"
+      }
+    ]
+  },
+  "change_set": "01M61GW7K1PDG7HMFXMN3YNA7B",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6506YGZQ7VSSGG0PJ8PGJ38",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,101 @@
+# A session whose transcript shows tokens but whose journal has no tokens
+# entry still gets its counts in run status and the final printout, read
+# from the transcript at print time and not journaled. Never "no token use
+# recorded" for it.
+#
+# The fake claude writes a transcript for every call. The journal's tokens
+# entries are then dropped, as if the readings were never journaled.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Token use' --title 'Token use' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+mkdir .rhiza/workflows
+cp $WORK/three.toml .rhiza/workflows/three.toml
+
+exec rhiza run start --workflow three --permission-mode manual
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
+exec sh -c 'f=$(git rev-parse --git-common-dir)/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl; grep -v "\"tokens\"" $f > $f.new; mv $f.new $f'
+! grep '"type":"tokens"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG --json
+stdout -count=3 '"tokens": \{'
+stdout '"cache_read": 40,\n\s+"input": 10,\n\s+"output": 20'
+stdout '"totals": \{\n\s+"helpers": \{\n\s+"cache_creation": 9,\n\s+"cache_read": 12,\n\s+"input": 3,\n\s+"output": 6\n\s+\},\n\s+"session": \{\n\s+"cache_creation": 90,\n\s+"cache_read": 120,\n\s+"input": 30,\n\s+"output": 60'
+
+exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG
+stdout '- build, session 158fe87f-5cf4-47e4-a3e9-01a16dc84988: tokens input 10, output 20, cache creation 30, cache read 40; helper tokens input 1, output 2, cache creation 3, cache read 4'
+! stdout 'no token use recorded'
+stdout 'Totals: tokens input 30, output 60, cache creation 90, cache read 120; helper tokens input 3, output 6, cache creation 9, cache read 12'
+
+# Nothing was journaled by the read.
+! grep '"type":"tokens"' .git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
+
+fold-ok
+
+-- three.toml --
+name = "three"
+
+[step.build]
+kind = "agent"
+prompt = "Build {change}"
+interval = "50ms"
+on.pass = "review"
+on.fail = "review"
+
+[step.review]
+kind = "agent"
+prompt = "Review {change}"
+interval = "50ms"
+on.pass = "check"
+on.fail = "check"
+
+[step.check]
+kind = "agent"
+prompt = "Check {change}"
+interval = "50ms"
+on.pass = "done"
+on.fail = "done"
+-- cmd.toml --
+name = "cmd"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@"; echo "exit=$?") >"$WORK/tab.out" 2>&1
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+sid=
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
+t="$HOME/.claude/projects/p/$sid.jsonl"
+mkdir -p "$HOME/.claude/projects/p"
+echo '{"type":"assistant","isSidechain":false,"message":{"id":"msg_A","usage":{"input_tokens":10,"output_tokens":20,"cache_creation_input_tokens":30,"cache_read_input_tokens":40}}}' > "$t"
+echo '{"type":"assistant","isSidechain":true,"message":{"id":"msg_H","usage":{"input_tokens":1,"output_tokens":2,"cache_creation_input_tokens":3,"cache_read_input_tokens":4}}}' >> "$t"
+exit 0

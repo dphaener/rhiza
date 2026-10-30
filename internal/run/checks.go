@@ -70,8 +70,11 @@ type ReviewAnswer struct {
 // splits; "" opens the change set's tab anew. The Runner renders the
 // fixer's prompt with {leaf} empty and names the findings.
 type FixSpec struct {
-	Step     workflow.Step
-	Cycle    int
+	Step  workflow.Step
+	Cycle int
+	// Attempt is the change set's fixer's attempt in the cycle, from 1:
+	// a failed fixer is retried within its cycle.
+	Attempt  int
 	Model    string
 	Env      []string
 	Anchor   string
@@ -137,7 +140,7 @@ const (
 	// fixPoll polls the fix phase's live session fix names.
 	fixPoll
 	// reviewFixStart launches the change set's fixer on the cycle, for
-	// findings.
+	// findings, on its attempt.
 	reviewFixStart
 	// reviewFixPoll polls the change set's live fixer session.
 	reviewFixPoll
@@ -146,10 +149,13 @@ const (
 // checkAction is one move of the checks conductor, decided from the
 // folded journal alone.
 type checkAction struct {
-	kind    checkActionKind
-	check   string
-	role    string
-	cycle   int
+	kind  checkActionKind
+	check string
+	role  string
+	cycle int
+	// attempt is a reviewFixStart's or reviewFixPoll's attempt of the
+	// change set's fixer in the cycle, from 1.
+	attempt int
 	checks  []string
 	session string
 	outcome string
@@ -184,6 +190,9 @@ type checkAction struct {
 // order and fixes the step's folded leaf sessions by leaf ID. A fix phase that fails ends each check
 // of the cycle failed ("cycle N: fix failed: ...") without a session, so
 // the cycle is spent: the next one, if any is left, tries the fix again.
+// A change-set fixer judged fail is first retried within its cycle, up to
+// MaxFixCycles more attempts (changeSetFix), so only a fixer failing all
+// 1 + MaxFixCycles of them fails the phase.
 // The confirmed findings naming no leaf of leaves (changeSetFindings) go
 // to one fixer for the change set, after every leaf's fixer
 // (changeSetFix); fixed holds the step's change-set fixers.
@@ -386,6 +395,12 @@ func changeSetFix(cycle int, findings []Finding, fixed []ReviewFix, acts []check
 			fix, started = f, true
 		}
 	}
+	attempt := 1
+	if started && fix.Judged && fix.Outcome != workflow.OutcomePass && failure == "" && fix.Attempt <= MaxFixCycles {
+		// A failed fixer is retried within its cycle, once any leaf
+		// fixer's failure is out of the way.
+		started, attempt = false, fix.Attempt+1
+	}
 	var mine checkAction
 	switch {
 	case !started:
@@ -393,9 +408,9 @@ func changeSetFix(cycle int, findings []Finding, fixed []ReviewFix, acts []check
 		if busy || failure != "" {
 			return acts, failure
 		}
-		mine = checkAction{kind: reviewFixStart, cycle: cycle, role: workflow.RoleFixer, findings: findings}
+		mine = checkAction{kind: reviewFixStart, cycle: cycle, attempt: attempt, role: workflow.RoleFixer, findings: findings}
 	case !fix.Judged:
-		mine = checkAction{kind: reviewFixPoll, cycle: cycle, role: workflow.RoleFixer, session: fix.Session}
+		mine = checkAction{kind: reviewFixPoll, cycle: cycle, attempt: fix.Attempt, role: workflow.RoleFixer, session: fix.Session}
 	default:
 		if fix.Outcome != workflow.OutcomePass && failure == "" {
 			failure = "change set: fixer failed: " + fix.Detail
@@ -666,6 +681,10 @@ func (r *running) conductChecks(cr CheckRunner, step workflow.Step, env []string
 				return errResult(fmt.Errorf("read the change set's leaves for its fixers: %v", err)), nil
 			}
 			leaves = l
+			if r.leafList == nil {
+				r.leafList = map[string][]Leaf{}
+			}
+			r.leafList[step.Name] = l
 		}
 		progressed := false
 		for _, a := range nextCheckActions(step, cycles, states, leaves, r.leafStates(step.Name), r.reviewFixes(step.Name)) {
@@ -769,7 +788,7 @@ func (r *running) startReviewFix(cr CheckRunner, step workflow.Step, env []strin
 		return errResult(fmt.Errorf("change set's fixer: read the worktree's HEAD: %v", err)), true, nil
 	}
 	spec := FixSpec{
-		Step: step, Cycle: a.cycle, Model: role.Model(a.cycle), Findings: a.findings,
+		Step: step, Cycle: a.cycle, Attempt: a.attempt, Model: role.Model(a.cycle), Findings: a.findings,
 		Env: append(append([]string{}, env...),
 			EnvCycle+"="+strconv.Itoa(a.cycle), EnvRole+"="+workflow.RoleFixer),
 		Anchor: stepPane(r.checkStates(step.Name), r.leafStates(step.Name), r.reviewFixes(step.Name)),
@@ -785,7 +804,7 @@ func (r *running) startReviewFix(cr CheckRunner, step workflow.Step, env []strin
 		return errResult(fmt.Errorf("start the change set's fixer: %v", err)), true, nil
 	}
 	if err := r.append(Entry{
-		Type: TypeReviewFix, Step: step.Name, Role: workflow.RoleFixer, Cycle: a.cycle, Session: s, Model: spec.Model, Commit: head,
+		Type: TypeReviewFix, Step: step.Name, Role: workflow.RoleFixer, Cycle: a.cycle, Attempt: a.attempt, Session: s, Model: spec.Model, Commit: head,
 	}); err != nil {
 		return result{}, false, err
 	}
@@ -824,7 +843,7 @@ func (r *running) pollReviewFix(cr CheckRunner, step workflow.Step, a checkActio
 		if outcome == workflow.OutcomePass {
 			var since string
 			for _, f := range r.reviewFixes(step.Name) {
-				if f.Cycle == a.cycle {
+				if f.Cycle == a.cycle && f.Attempt == a.attempt {
 					since = f.Since
 				}
 			}
@@ -839,7 +858,7 @@ func (r *running) pollReviewFix(cr CheckRunner, step workflow.Step, a checkActio
 			}
 		}
 		if err := r.append(Entry{
-			Type: TypeReviewFixJudged, Step: step.Name, Role: workflow.RoleFixer, Cycle: a.cycle, Outcome: outcome, Commit: commit, Detail: detail,
+			Type: TypeReviewFixJudged, Step: step.Name, Role: workflow.RoleFixer, Cycle: a.cycle, Attempt: a.attempt, Outcome: outcome, Commit: commit, Detail: detail,
 		}); err != nil {
 			return false, result{}, false, err
 		}
@@ -879,7 +898,7 @@ func (r *running) closeEndedFixPanes(cr CheckRunner, step workflow.Step) error {
 			r.log("step %s: close the pane of session %s: %v", step.Name, f.Session, err)
 			continue
 		}
-		if err := r.append(Entry{Type: TypePaneClosed, Step: step.Name, Role: workflow.RoleFixer, Cycle: f.Cycle, Session: f.Session}); err != nil {
+		if err := r.append(Entry{Type: TypePaneClosed, Step: step.Name, Role: workflow.RoleFixer, Cycle: f.Cycle, Attempt: f.Attempt, Session: f.Session}); err != nil {
 			return err
 		}
 	}

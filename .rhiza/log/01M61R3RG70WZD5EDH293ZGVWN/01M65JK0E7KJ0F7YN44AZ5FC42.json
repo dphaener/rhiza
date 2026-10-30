@@ -1,0 +1,40 @@
+{
+  "actor": "01M65J5SCE41EMP62R968B1QGD",
+  "after": [
+    "01M65104B4MHWBMZMMV62J446J"
+  ],
+  "at": "2026-10-30T04:55:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At commit 6c0cd2b ran go test ./cmd/rhiza -run TestScripts/session-run-usage-limit: a fake claude writes 'Claude AI usage limit reached|1700000000' as the last assistant line on its first launch and 'done' on the second. rhiza session run ended with the agent exited with code 0, and claude.log held exactly one 'start --session-id 158fe87f-…' and one 'resume --resume 158fe87f-…' line: the same stored session ID resumed with the Claude CLI's --resume flag, and no second session ID was started. TestCommandResume (argv uses --resume, never --session-id) and TestUsageLimit pass. Read the diff: session_run.go loops on the same rec.ID, with a.Command(launch) given Resume=true, at most 24 pauses. make check passed (exit 0) on a rerun; the first run failed in the test step, which a plain go test ./... did not reproduce."
+        },
+        "handle": "usage-limit-resume-verified",
+        "id": "01M65JJZCV1VSMH1SV2TFP7491",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65JJZCV1VSMH1SV2QYJKFWK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65JJZCV1VSMH1SV2QYJKFWK",
+        "id": "01M65JJZSRFZ37W7YB2PT3YYWY",
+        "link": "01M65JJZSRFZ37W7YB2KKQWSYC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6507G6PPPPEVQYKYJNQRSD6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61R3RG70WZD5EDH293ZGVWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65JK0E7KJ0F7YN44AZ5FC42",
+  "type": "ops",
+  "v": 1
+}

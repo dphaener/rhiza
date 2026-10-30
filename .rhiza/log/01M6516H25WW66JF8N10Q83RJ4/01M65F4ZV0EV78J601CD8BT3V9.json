@@ -1,0 +1,30 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M65F4YTM3JHPVFYSMWA8B0R8"
+  ],
+  "at": "2026-10-30T03:55:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A run's panes live in the window rhiza run start opens for the run, not one per change set",
+          "wording": "Arbiter answer: one window per run, as the owner asked for tiled panes"
+        },
+        "handle": "run-panes-in-run-window",
+        "id": "01M65F4ZDD02QK43JSD447MHHS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M65F4ZDD02QK43JSD3CQK5P9",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6516H25WW66JF8N10Q83RJ4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65F4ZV0EV78J601CD8BT3V9",
+  "type": "ops",
+  "v": 1
+}

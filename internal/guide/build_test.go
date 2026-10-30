@@ -30,7 +30,8 @@ func TestBuildText(t *testing.T) {
 			`{"findings":[{"reason":`, "neither Evidence nor findings fails",
 			"Evidence\nwritten by anyone else does not count",
 		},
-		"done": {"rhiza session done"},
+		"fakes-only": {"with fakes only, never real Rex,\nagents or `gh`"},
+		"done":       {"rhiza session done"},
 	})
 	// Constraint agents-named-only-in-adapters: no agent product by name.
 	if strings.Contains(build.Body+build.Description, "Claude") {
@@ -45,6 +46,15 @@ func finalParagraph(s string) string {
 		return s[i+2:]
 	}
 	return s
+}
+
+func TestBuildCommitsOwnActorRecord(t *testing.T) {
+	build, _ := Lookup("build")
+	for _, want := range []string{"Record agent actor $RHIZA_ACTOR ", "git add $(", "never another actor's"} {
+		if !strings.Contains(build.Body, want) {
+			t.Errorf("build: lacks %q", want)
+		}
+	}
 }
 
 func TestBuildTrailersInOneFinalParagraph(t *testing.T) {

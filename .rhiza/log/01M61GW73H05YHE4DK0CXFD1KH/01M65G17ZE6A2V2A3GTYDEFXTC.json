@@ -1,0 +1,86 @@
+{
+  "actor": "01M65FYKF6RVP610T98CMDW13Z",
+  "after": [
+    "01M65FXSVRMTAD3RKQTG1WFGHD"
+  ],
+  "at": "2026-10-30T04:10:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 87e2c0a I built rhiza with go build outside PATH and, in a scratch git repo with a change set and a one-step command workflow (RHIZA_ROOT/CHANGE/RUN unset), ran run start --workflow one inside this agent session: exit 2, 'run start refused: this is agent session 46d3a9a6-9056-4c25-beb7-01a18aff4b33, and no agent session starts a run' with next 'ask the owner to run it outside an agent session'; the same with --json and with api call run.start (a usage error naming the session), and with --dry-run. No .git/rhiza was created and git worktree list showed no run worktree. With RHIZA_SESSION unset the same start ran step a, succeeded, wrote .git/rhiza/runs/<id>.jsonl and the cs/run-starts worktree; a later start inside the session was still refused with no new journal. A whitespace-only RHIZA_SESSION counts as no session. go test ./cmd/rhiza -run TestScripts/run-start-agent-session passed."
+        },
+        "handle": "run-start-refuses-agent-session-qa-1",
+        "id": "01M65G0S0VAN50RBVWPVN81BSH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65G0S0VAN50RBVWPRVN7PY2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65G0S0VAN50RBVWPRVN7PY2",
+        "id": "01M65G0VTSJYREEQM43CBRCTF0",
+        "link": "01M65G0VTSJYREEQM43AF20GBB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505GVBMV8B71YA23043CEE",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 87e2c0a the built binary's rhiza guide build shows, in the Verifier section, 'Test runs with fakes only, never real Rex, agents or `gh`.' go test ./internal/guide -run 'TestBuildText|TestReviewText|Cap' -count=1 -v passed, TestBuildText included, with build at 586 tokens under the cap of 800."
+        },
+        "handle": "build-guide-fakes-only-qa-1",
+        "id": "01M65G0Y2DT7PD01MV62G5H8SD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65G0Y2DT7PD01MV5ZX71RT7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65G0Y2DT7PD01MV5ZX71RT7",
+        "id": "01M65G10SRW62768GBAMZR13WC",
+        "link": "01M65G10SRW62768GBAKJXW8NJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505JJY04DWHQZ3EQRFCHAM",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 87e2c0a the built binary's rhiza guide review shows 'Every check except `qa` tests runs with fakes only, never real Rex, agents or `gh`.' at the head of the Checks list, and the qa line still says hands-on with the built binary, fakes alone do not count. go test ./internal/guide -run 'TestBuildText|TestReviewText|Cap' -count=1 -v passed, TestReviewText included, with review at 728 tokens under the cap of 800."
+        },
+        "handle": "review-guide-fakes-only-qa-1",
+        "id": "01M65G130JTAM3K2K0J8YM16ME",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65G130JTAM3K2K0J6EDKS52",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65G130JTAM3K2K0J6EDKS52",
+        "id": "01M65G153M5ZZKV1ZXCQPN5SQG",
+        "link": "01M65G153M5ZZKV1ZXCPY040CM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505MN5E02V3Y30RMC16FN5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW73H05YHE4DK0CXFD1KH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65G17ZE6A2V2A3GTYDEFXTC",
+  "type": "ops",
+  "v": 1
+}

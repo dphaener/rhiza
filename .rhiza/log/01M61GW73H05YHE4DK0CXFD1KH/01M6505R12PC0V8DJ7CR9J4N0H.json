@@ -1,0 +1,176 @@
+{
+  "actor": "01M6502BNSVPP61NCCNEQZJCFX",
+  "after": [
+    "01M65057K9YKFNXXS9AJWBJYVD"
+  ],
+  "at": "2026-10-29T23:33:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "rhiza run start refuses inside an agent session, when RHIZA_SESSION is set, naming that session",
+          "wording": "Refuse run start inside an agent session (RHIZA_SESSION set), naming the session: the change set's intent, the agent's wording (assumed, would have escalated)"
+        },
+        "handle": "refuse-run-start-in-agent-session",
+        "id": "01M6505EZA0RTXD77K329MJGAB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6505EZA0RTXD77K309NDRT6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6505EZA0RTXD77K309NDRT6",
+        "id": "01M6505FK7DZ42AG28FW3W0EYH",
+        "link": "01M6505FK7DZ42AG28FTX100EG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65056W4Z6BXNB22RBBYAMQN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The build and review guides tell verifiers and checks to test runs with fakes only, never real Rex, agents or gh",
+          "wording": "Build and review guides say to test runs with fakes only, never real Rex, agents or gh: the change set's intent, the agent's wording (assumed, would have escalated)"
+        },
+        "handle": "fakes-only-in-build-and-review",
+        "id": "01M6505FZ5YGMF00V2897K167J",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6505FZ5YGMF00V28718TPB3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6505FZ5YGMF00V28718TPB3",
+        "id": "01M6505GE0W8D79FBDG0N7VZS1",
+        "link": "01M6505GE0W8D79FBDFWQS26QD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65056W4Z6BXNB22RBBYAMQN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript sets RHIZA_SESSION and runs rhiza run start on a change set: it exits non-zero, the error names the session ID, and no run journal or worktree is written; without RHIZA_SESSION the start is unchanged",
+          "statement": "rhiza run start refuses inside an agent session, when RHIZA_SESSION is set, and the error names that session"
+        },
+        "handle": "run-start-refuses-agent-session",
+        "id": "01M6505GVBMV8B71YA24MYDN4T",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6505GVBMV8B71YA23043CEE",
+        "op": "node.create",
+        "parent": "01M5TYGJASX1Q1J7DV6DVHB0DZ"
+      },
+      {
+        "decision": null,
+        "from": "01M6505GVBMV8B71YA23043CEE",
+        "id": "01M6505HG9H3CFZVA6F87QVGVZ",
+        "link": "01M6505HG8AMJAYWZKZFAQXAWD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505EZA0RTXD77K309NDRT6",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go guide test finds the fakes-only rule in the build topic, naming Rex, agents and gh, and the topic stays within TopicCap",
+          "statement": "rhiza guide build tells verifiers to test runs with fakes only, never real Rex, agents or gh"
+        },
+        "handle": "build-guide-fakes-only",
+        "id": "01M6505JJY04DWHQZ3ETT2ZYS2",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6505JJY04DWHQZ3EQRFCHAM",
+        "op": "node.create",
+        "parent": "01M5YX3HRZCS9HFYWGDSC5TGS8"
+      },
+      {
+        "decision": null,
+        "from": "01M6505JJY04DWHQZ3EQRFCHAM",
+        "id": "01M6505KSX3RRHNCZ8CVG4YCA4",
+        "link": "01M6505KSX3RRHNCZ8CQHVBGS1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505FZ5YGMF00V28718TPB3",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go guide test finds the fakes-only rule in the review topic, naming Rex, agents and gh, and the topic stays within TopicCap",
+          "statement": "rhiza guide review tells each check to test runs with fakes only, never real Rex, agents or gh"
+        },
+        "handle": "review-guide-fakes-only",
+        "id": "01M6505MN5E02V3Y30RQQVN0BT",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6505MN5E02V3Y30RMC16FN5",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      },
+      {
+        "decision": null,
+        "from": "01M6505MN5E02V3Y30RMC16FN5",
+        "id": "01M6505N5AW6H66V4AG5EREMC2",
+        "link": "01M6505N5AW6H66V4AG4ES2WXG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505FZ5YGMF00V28718TPB3",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Should rhiza run start --dry-run also refuse inside an agent session, or only a real start, since a dry run writes and starts nothing?"
+        },
+        "handle": "dry-run-in-agent-session",
+        "id": "01M6505NR5JYRG281YJDG6T8Y3",
+        "key": null,
+        "kind": "question",
+        "node": "01M6505NR5JYRG281YJB4AX2JE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6505NR5JYRG281YJB4AX2JE",
+        "id": "01M6505PDGNC0C7GSDSFN5AD3S",
+        "link": "01M6505PDGNC0C7GSDSD4FMXNP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505GVBMV8B71YA23043CEE",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Should rhiza run resume also refuse inside an agent session, as run start does, since resuming starts a run's next step?"
+        },
+        "handle": "resume-in-agent-session",
+        "id": "01M6505PXJA79ABGX1DT82GZ7W",
+        "key": null,
+        "kind": "question",
+        "node": "01M6505PXJA79ABGX1DR950R8N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6505PXJA79ABGX1DR950R8N",
+        "id": "01M6505QBQSJHW4ST9R0AP9N8R",
+        "link": "01M6505QBQSJHW4ST9QZHJT5S3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505GVBMV8B71YA23043CEE",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M61GW73H05YHE4DK0CXFD1KH",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6505R12PC0V8DJ7CR9J4N0H",
+  "type": "ops",
+  "v": 1
+}

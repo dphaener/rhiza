@@ -1,0 +1,29 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M650ATVKX2VF14VB344F2M5W"
+  ],
+  "at": "2026-10-30T12:13:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A failed build still renders and commits its branch before it ends, so a failed branch also passes rhiza check and a retry starts from a clean branch."
+        },
+        "handle": "render-after-failed-build",
+        "id": "01M66BMTMSV59BC3THAH5K7MQV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M66BMTMSV59BC3THADY6KDDF",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61GW7K1PDG7HMFXMN3YNA7B",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66BMV25H3BW575G0Z8Z7JN0",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M66E0D73GG090RBK07MNNPSG",
+  "after": [
+    "01M66DRAE38AZTHRY20Y54N1WN"
+  ],
+  "at": "2026-10-30T13:02:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier of the review fix at 1c97f14: go test ./internal/api -run TestProgramStatusReviewQuestions -count=1 -v passes; the fake Rex's last report is the root (no id) with state=blocked and msg 'Status runs: step review waits on you: Review check alpha still fails after 3 cycles: finding f1 (major): bad f1 ...', naming the change set, the review step and the question's text after the initial cycle plus two fix cycles. The fix commit 1c97f14 changes the model only: decision run-ends-blocked-on-review-question supersedes run-reports-progress and is decided-by for this leaf and run-program-status, whose statement now says a failed run ends blocked, naming the question, when its ending step leaves a review question open. That matches internal/run/status.go:94-97 and resolves model finding f1. make check failed once on the first run (test target, unidentified, likely a load flake), then passed twice, and go test -count=1 ./... passed."
+        },
+        "handle": "review-questions-in-rex-verified-2",
+        "id": "01M66EFNFT6VBBP0PR1VNH1Y5J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66EFNFT6VBBP0PR1T3N6EG4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66EFNFT6VBBP0PR1T3N6EG4",
+        "id": "01M66EFNVXSVESCBSWZT2N01PH",
+        "link": "01M66EFNVXSVESCBSWZQ53S2SX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505ZVVRWAHQW8S8FGJ25MC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M602TGXM184GVWJG4NE98P6Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66EFPF9WWWPAAF4A3KQN9WG",
+  "type": "ops",
+  "v": 1
+}

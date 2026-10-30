@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-29T23:34:10Z",
+  "body": {
+    "intent": "Record agent actor claude-code-229250da for session 229250da-c73e-4c6f-a090-01a18a03888b",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M65073292DJMA1NB6X31SWF3",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65073292DJMA1NB6YG0E3HF",
+  "type": "open",
+  "v": 1
+}

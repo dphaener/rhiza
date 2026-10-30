@@ -27,6 +27,10 @@ the orchestrator's proposal in the milestone-3 conversation, accepted by the own
 ### In
 
 - decided-by [run-program-status](../capability/rhiza/workflows/workflow-runs/run-program-status.md)
+- decided-by [review-fixers-in-rex](../capability/rhiza/workflows/workflow-runs/run-program-status/review-fixers-in-rex.md)
+- decided-by [review-code-check-in-rex](../capability/rhiza/workflows/workflow-runs/run-program-status/review-code-check-in-rex.md)
+- decided-by [review-questions-in-rex](../capability/rhiza/workflows/workflow-runs/run-program-status/review-questions-in-rex.md)
+- supersedes [run-ends-blocked-on-review-question](run-ends-blocked-on-review-question.md)
 
 ## History
 

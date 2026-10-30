@@ -14,6 +14,7 @@ the building agent's choice in change set 7, no owner input
 
 ### In
 
+- relates-to [done-captures-answers](../capability/rhiza/lineage/interview-capture/done-captures-answers.md) — adds a capture at done; the capture on exit stays
 - decided-by [interview-capture](../capability/rhiza/lineage/interview-capture.md)
 
 ## History

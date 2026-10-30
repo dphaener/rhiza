@@ -1,0 +1,86 @@
+{
+  "actor": "01M65GEVB54JXQCBDG65X23RWQ",
+  "after": [
+    "01M65GDY39NJMF46GG0AA7NQ53"
+  ],
+  "at": "2026-10-30T04:24:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 898cba6, built rhiza to a scratch path and, in a scratch repo, ran `rhiza session start --permission-mode manual` with real Rex and real Claude Code (session bdcf6c60), hooks calling the built binary. While the agent ran a `sleep 4` loop (status working), `rhiza session message` returned in 0.05s with Waited: 0s and wrote 0002.md; the record held the pointer as pending. The agent's transcript shows it arrived once as hook_additional_context on PostToolUse:Bash, never as a typed prompt; the agent read the file, ran `echo GOT-BUSY-MESSAGE` and stopped the loop. Later PostToolUse hooks did not repeat it, and the pending list was empty."
+        },
+        "handle": "busy-session-hook-delivery-qa-1",
+        "id": "01M65GTA6PGPJG6XF35VWW3CG7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65GTA6PGPJG6XF35S1J2VEF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65GTA6PGPJG6XF35S1J2VEF",
+        "id": "01M65GTAMG4WF4Y6VYK3D2XDQH",
+        "link": "01M65GTAMG4WF4Y6VYK1QE97XK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65072NYFJ9RDZPJMXRKSWZ3",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 898cba6, built rhiza to a scratch path and, in a scratch repo, ran `rhiza session start --permission-mode manual` with real Rex and real Claude Code (session bdcf6c60), hooks calling the built binary. A message to the idle session (0003) was typed at the prompt at once (Waited: 0s; a typed user prompt in the transcript). A message sent while the agent was writing its final reply after its last tool call (0004) was queued as pending, then typed at the prompt once when the Stop hook fired (one typed prompt, no hook context for it). The agent then ran `echo GOT-IDLE-FALLBACK`. `go test ./cmd/rhiza -run TestScripts/session-message -count=1`: ok."
+        },
+        "handle": "idle-typed-pointer-kept-qa-1",
+        "id": "01M65GTB19MEY77B26DJ3EJ10Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65GTB19MEY77B26DH563S9R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65GTB19MEY77B26DH563S9R",
+        "id": "01M65GTBEV9YD7GW770WT5Z9GY",
+        "link": "01M65GTBEV9YD7GW770VH3MRMT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65074BASR8PYQHQSC7B7WJ7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 898cba6, built rhiza to a scratch path and, in a scratch repo, ran `rhiza session start --permission-mode manual` with real Rex and real Claude Code (session bdcf6c60), hooks calling the built binary. With the agent showing an AskUserQuestion menu (status blocked question), `rhiza session message ... --timeout 6s` waited, then failed with exit 3 ('did not reach its prompt within 6s', message in 0006.md). Nothing was queued as pending, and the text never appeared in the terminal: the menu stayed untouched."
+        },
+        "handle": "blocked-session-still-waits-qa-1",
+        "id": "01M65GTBVZHSDKS5F9V0XWZNFP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65GTBVZHSDKS5F9TZJ96JWW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65GTBVZHSDKS5F9TZJ96JWW",
+        "id": "01M65GTC9TQPD6S5Q4FCS8WQNW",
+        "link": "01M65GTC9TQPD6S5Q4FA9A3R4V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65077HHPKVP9FVAECGBE1GJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW821FWSX05A9FC231N65",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65GTCYAR0CKW6WYNJZG5SG4",
+  "type": "ops",
+  "v": 1
+}
