@@ -943,3 +943,26 @@ func TestSessionDoneCapturesBeforeMark(t *testing.T) {
 		t.Error("the done mark was not kept")
 	}
 }
+
+// Done lists the handles of the Decisions it proposed, in the response and
+// in its human output, so the planner and the run see what was captured.
+func TestSessionDoneReportsProposed(t *testing.T) {
+	f, s, _ := interviewFixture(t)
+	f.ctx.Getenv = func(string) string { return "" }
+	writeTranscript(t, f.ctx.Home, s.ID, pickedAnswer, typedAnswer)
+	resp, err := callOp(t, f.ctx, "session.done", `{"id":"`+s.ID+`"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := resp.(SessionDoneResponse)
+	want := []string{"answer-" + s.ID[:8] + "-1", "answer-" + s.ID[:8] + "-2"}
+	if !slices.Equal(r.Decisions, want) || len(r.Warnings) != 0 {
+		t.Errorf("decisions %v warnings %v", r.Decisions, r.Warnings)
+	}
+	out := human(t, r)
+	for _, h := range want {
+		if !strings.Contains(out, "- Proposed decision "+h+"\n") {
+			t.Errorf("human %q lacks %s", out, h)
+		}
+	}
+}
