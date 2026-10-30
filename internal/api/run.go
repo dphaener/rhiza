@@ -1755,10 +1755,14 @@ func (x *runRex) status(rep run.StatusReport) {
 
 // rexLeafID is a live leaf's record ID: leaf/<n>, n its position in leaf
 // order, since a handle may be longer than an ID segment; a live check's
-// is check/<n>, n its position in its step.
+// is check/<n>, n its position in its step; a review's change-set fixer
+// is fix.
 func rexLeafID(l run.LeafStatus) string {
 	if rexCheckRole(l.Role) {
 		return "check/" + strconv.Itoa(l.N)
+	}
+	if l.Leaf == "" && l.Role == workflow.RoleFixer {
+		return "fix"
 	}
 	return "leaf/" + strconv.Itoa(l.N)
 }

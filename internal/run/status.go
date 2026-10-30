@@ -2,6 +2,7 @@ package run
 
 import (
 	"reflect"
+	"slices"
 
 	"github.com/dphaener/rhiza/internal/workflow"
 )
@@ -89,7 +90,7 @@ func deriveStatus(st State, def *workflow.Definition, leaves []Leaf) StatusRepor
 	}
 	step, ok := def.Steps[st.Current]
 	if ok && step.Kind == workflow.KindChecks {
-		return checksStatus(rep, st, step)
+		return checksStatus(rep, st, step, leaves)
 	}
 	if !ok || step.Kind != workflow.KindLeaves || leaves == nil {
 		return rep
@@ -130,8 +131,9 @@ func deriveStatus(st State, def *workflow.Definition, leaves []Leaf) StatusRepor
 
 // checksStatus is rep with checks step step's progress: its checks, how
 // many passed their latest cycle, and each check whose latest session is
-// not yet judged.
-func checksStatus(rep StatusReport, st State, step workflow.Step) StatusReport {
+// not yet judged; then its live fixers and verifiers (fixStatus). leaves
+// are the change set's leaves in order, nil when not read yet.
+func checksStatus(rep StatusReport, st State, step workflow.Step, leaves []Leaf) StatusReport {
 	rep.Checks = len(step.Checks)
 	for i, c := range step.Checks {
 		cs, ok := st.Check(step.Name, c.Name)
@@ -159,12 +161,74 @@ func checksStatus(rep StatusReport, st State, step workflow.Step) StatusReport {
 		}
 		rep.Live = append(rep.Live, ls)
 	}
+	rep.Live = append(rep.Live, fixStatus(st, step, leaves)...)
 	p := 100
 	if rep.Checks > 0 {
 		p = rep.Passed * 100 / rep.Checks
 	}
 	rep.Progress = &p
 	return rep
+}
+
+// fixStatus are checks step step's live fix sessions: each leaf's fixer
+// or verifier whose latest session is not yet judged, in leaf order (as
+// leaves gives it, else the journal's), as a LeafStatus naming its leaf
+// and its cycle as Attempt; then the change-set fixer of the latest cycle
+// that ran one, until judged, with no Leaf, N 0 and the step's name as
+// Handle.
+func fixStatus(st State, step workflow.Step, leaves []Leaf) []LeafStatus {
+	var out []LeafStatus
+	add := func(l LeafState, n int) {
+		s, ok := latestSession(l)
+		if !ok {
+			return
+		}
+		if _, judged := l.Judged(s.Role, s.Attempt); judged {
+			return
+		}
+		ls := LeafStatus{N: n, Leaf: l.Leaf, Handle: l.Handle, Role: s.Role, Attempt: s.Attempt, Session: s.Session}
+		sessionBlock(&ls, st)
+		out = append(out, ls)
+	}
+	n := 0
+	for _, lf := range leaves {
+		n++
+		if l, ok := st.Leaf(step.Name, lf.ID); ok {
+			add(l, n)
+		}
+	}
+	for _, l := range st.Leaves {
+		if l.Step != step.Name || slices.ContainsFunc(leaves, func(lf Leaf) bool { return lf.ID == l.Leaf }) {
+			continue
+		}
+		n++
+		add(l, n)
+	}
+	for i := len(st.Fixes) - 1; i >= 0; i-- {
+		f := st.Fixes[i]
+		if f.Step != step.Name {
+			continue
+		}
+		if !f.Judged {
+			ls := LeafStatus{Handle: step.Name, Role: workflow.RoleFixer, Attempt: f.Cycle, Session: f.Session}
+			sessionBlock(&ls, st)
+			out = append(out, ls)
+		}
+		break
+	}
+	return out
+}
+
+// sessionBlock marks ls blocked on the owner, or waiting on the arbiter,
+// when its session has an open block.
+func sessionBlock(ls *LeafStatus, st State) {
+	if b, ok := st.BlockOf(ls.Session); ok {
+		if st.Autonomous && b.Block.Kind == "question" {
+			ls.Arbiter = true
+		} else {
+			ls.Blocked, ls.Kind = true, b.Block.Kind
+		}
+	}
 }
 
 // latestSession is the last started session of l's current attempt.
@@ -180,13 +244,21 @@ func latestSession(l LeafState) (LeafSession, bool) {
 	return out, found
 }
 
+// sameLive says whether a and b are one record: a leaf, a check or the
+// change-set fixer (no leaf, N 0) at the same position.
+func sameLive(a, b LeafStatus) bool {
+	return a.N == b.N && a.Leaf == b.Leaf && checkRole(a.Role) == checkRole(b.Role)
+}
+
+func checkRole(role string) bool { return role == workflow.RoleCheck || role == workflow.RoleCritic }
+
 // endedLeaves are the leaves of prev's Live not in next's.
 func endedLeaves(prev, next []LeafStatus) []LeafStatus {
 	var out []LeafStatus
 	for _, p := range prev {
 		live := false
 		for _, n := range next {
-			live = live || n.N == p.N
+			live = live || sameLive(n, p)
 		}
 		if !live {
 			out = append(out, p)

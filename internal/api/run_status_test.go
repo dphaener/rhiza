@@ -25,6 +25,8 @@ type statusLeafRunner struct {
 	// store is the run's journal, where each check session records an
 	// empty findings round as it starts, so a check that passes has one.
 	store *run.Store
+	// findings are what a check's first-cycle session records, by check.
+	findings map[string][]run.Finding
 }
 
 func statusSID(spec run.LeafSpec) string {
@@ -86,6 +88,9 @@ func (f *statusLeafRunner) ClosePane(string) error { return nil }
 func (f *statusLeafRunner) StartCheck(spec run.CheckSpec) (string, error) {
 	if f.store != nil {
 		e := run.Entry{Type: run.TypeFindings, Step: spec.Step.Name, Check: spec.Check.Name, Cycle: spec.Cycle}
+		if spec.Cycle == 1 {
+			e.Findings = f.findings[spec.Check.Name]
+		}
 		if err := f.store.Append("R1", e); err != nil {
 			return "", err
 		}
@@ -341,5 +346,48 @@ func TestProgramStatusChecks(t *testing.T) {
 	last := reports[len(reports)-1]
 	if !root(last) || last["state"] != "done" {
 		t.Errorf("last report %v, want root done", last)
+	}
+}
+
+// A review whose confirmed findings go to a leaf fixer and the change
+// set's fixer keeps a child record per live fix session: the leaf's
+// fixer, then its verifier, both leaf/<n> and naming the leaf, then
+// fix, naming the review, each cleared once its session ends, with the
+// root naming the review step throughout.
+func TestProgramStatusReviewFixers(t *testing.T) {
+	f := &statusLeafRunner{
+		leaves: []run.Leaf{{ID: "L1", Handle: "leaf-a"}},
+		findings: map[string][]run.Finding{"alpha": {
+			{ID: "f1", Severity: "major", Leaf: "L1", LeafHandle: "leaf-a", Reason: "bad f1"},
+			{ID: "f2", Severity: "major", Reason: "bad f2"},
+		}},
+	}
+	reports := statusRun(t, statusChecksWF, f)
+	msg := func(id, msg string) func(map[string]string) bool {
+		return func(r map[string]string) bool { return r["id"] == id && r["msg"] == msg }
+	}
+	cleared := func(id string) func(map[string]string) bool {
+		return func(r map[string]string) bool { return r["id"] == id && r["state"] == "clear" }
+	}
+	fixer := first(reports, 0, msg("leaf/1", "leaf-a: fixer working (attempt 2)"))
+	verifier := first(reports, fixer, msg("leaf/1", "leaf-a: verifier working (attempt 2)"))
+	csFixer := first(reports, verifier, msg("fix", "review: fixer working (attempt 2)"))
+	if fixer < 0 || verifier < 0 || csFixer < 0 {
+		t.Fatalf("fixer %d, verifier %d, change-set fixer %d: want records for each, in that order", fixer, verifier, csFixer)
+	}
+	if first(reports, verifier, cleared("leaf/1")) < 0 {
+		t.Error("the leaf's record is never cleared")
+	}
+	if first(reports, csFixer, cleared("fix")) < 0 {
+		t.Error("the change-set fixer's record is never cleared")
+	}
+	root := func(r map[string]string) bool {
+		_, ok := r["id"]
+		return !ok && strings.HasPrefix(r["msg"], "step review")
+	}
+	for _, i := range []int{fixer, verifier, csFixer} {
+		if first(reports[:i], 0, root) < 0 {
+			t.Errorf("no root record naming the review step before report %d", i)
+		}
 	}
 }

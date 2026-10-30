@@ -666,6 +666,10 @@ func (r *running) conductChecks(cr CheckRunner, step workflow.Step, env []string
 				return errResult(fmt.Errorf("read the change set's leaves for its fixers: %v", err)), nil
 			}
 			leaves = l
+			if r.leafList == nil {
+				r.leafList = map[string][]Leaf{}
+			}
+			r.leafList[step.Name] = l
 		}
 		progressed := false
 		for _, a := range nextCheckActions(step, cycles, states, leaves, r.leafStates(step.Name), r.reviewFixes(step.Name)) {
