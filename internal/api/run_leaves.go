@@ -101,11 +101,7 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 		req.dir, req.root = spec.Dir, filepath.Join(t.worktree, t.prefix)
 	}
 	req.split = spec.Step.Split
-	if spec.Anchor != "" {
-		if a, err := r.sessions.Read(spec.Anchor); err == nil {
-			req.anchor = a.Tab
-		}
-	}
+	req.anchor = r.paneAnchor(spec.Anchor)
 	req.Prompt = leafPrompt(*role, spec, workflow.PromptVars{
 		Change: t.cs.String(), Slug: session.Slug(t.title), Title: t.title, Run: r.run, Step: spec.Step.Name,
 	})
@@ -114,6 +110,28 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 		return "", err
 	}
 	return resp.(SessionStartResponse).Session.ID, nil
+}
+
+// paneAnchor is the tab a new session of the run splits: the tab of
+// session anchor when that has a record, else the tab of the run's first
+// session with a pane, so every session of a run sits in the run's one
+// window. The zero tab, for the run's first session, opens a window.
+func (r *stepRunner) paneAnchor(anchor string) session.Tab {
+	if anchor != "" {
+		if a, err := r.sessions.Read(anchor); err == nil {
+			return a.Tab
+		}
+	}
+	recs, err := r.sessions.List()
+	if err != nil {
+		return session.Tab{}
+	}
+	for _, rec := range recs {
+		if rec.Run == r.run && rec.Tab.Block != "" {
+			return rec.Tab
+		}
+	}
+	return session.Tab{}
 }
 
 // ClosePane closes leaf session sid's pane: the block its record names,

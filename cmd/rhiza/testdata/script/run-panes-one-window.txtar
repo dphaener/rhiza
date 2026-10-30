@@ -1,0 +1,93 @@
+# A run's sessions open as tiled panes of one window: the run's first
+# session runs rex window new, and every later one, a retried check in
+# cycle 2 included, splits a pane already in that window.
+#
+# The fake rex logs window new and split calls, numbering blocks b1, b2,
+# ... and runs the pane's command synchronously.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new 'Panes' --title 'Panes'
+exec rhiza add capability thing
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
+exec git add -A
+exec git commit -qm review
+
+exec sh -c 'rhiza run start --workflow review --permission-mode manual --json; echo exit=$?'
+stdout '^exit=0$'
+
+exec cat $WORK/rex.log
+stdout '\Awindow new\nsplit block:b1\nsplit block:b[0-9]\nsplit block:b[0-9]\n\z'
+fold-ok
+
+-- empty.json --
+{"findings":[]}
+-- review.toml --
+[step.review]
+kind = "checks"
+interval = "50ms"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[[step.review.check]]
+name = "beta"
+prompt = "Review change set {change} as check {check}"
+
+[[step.review.check]]
+name = "gamma"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+-- bin/rex --
+#!/bin/sh
+verb=$1
+dir=
+anchor=
+while [ $# -gt 0 ]; do
+	case "$1" in
+	-c) dir=$2 ;;
+	-b) anchor=$2 ;;
+	--) shift; break ;;
+	esac
+	shift
+done
+case "$verb" in
+block) exit 0 ;;
+esac
+n=$(cat "$WORK/rex.n" 2>/dev/null || echo 0)
+n=$((n + 1))
+echo $n > "$WORK/rex.n"
+if [ "$verb" = split ]; then
+	echo "split $anchor" >> "$WORK/rex.log"
+	out="{\"block_id\":\"block:b$n\",\"window_id\":\"window:w1\"}"
+else
+	echo "window new" >> "$WORK/rex.log"
+	out="{\"window_id\":\"window:w1\",\"block_ids\":[\"block:b$n\"]}"
+fi
+(cd "$dir" && "$@") >&2 || true
+echo "$out"
+-- bin/claude --
+#!/bin/sh
+for a; do last=$a; done
+echo "role=$RHIZA_ROLE check=$RHIZA_CHECK cycle=$RHIZA_CYCLE leaf=$RHIZA_LEAF prompt=$last" >> "$WORK/claude.log"
+[ "$RHIZA_CHECK" = beta ] && [ "$RHIZA_CYCLE" = 1 ] && exit 1
+rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty.json" >&2 || exit 1
+exit 0
