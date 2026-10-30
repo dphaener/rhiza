@@ -1652,6 +1652,10 @@ cmp stdout describe.golden.json
                   "description": "The change set of the run",
                   "type": "string"
                 },
+                "change_title": {
+                  "description": "The change set's title; absent when the log has no such change set",
+                  "type": "string"
+                },
                 "detail": {
                   "description": "A failed run: why it failed; a sign-off: what it waits for",
                   "type": "string"

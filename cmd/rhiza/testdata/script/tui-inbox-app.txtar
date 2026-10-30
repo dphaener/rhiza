@@ -1,0 +1,35 @@
+# The inbox app shows what `rhiza inbox --json` prints: --once prints the
+# result the app holds, byte for byte, for an empty inbox and for one with
+# a failed run. It never dials Rex or binds a socket.
+
+env REX_SESSION=
+env REX_SERVER=
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza inbox --json
+cp stdout ../want-empty.json
+exec rhiza tui app inbox --once
+cmp stdout ../want-empty.json
+
+exec rhiza change new Titled --title Titled
+exec rhiza add intent one-thing
+exec rhiza propose
+exec rhiza accept --reason ok
+mkdir .git/rhiza/runs
+exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWGEF85Y185JZ2ZGCNH40N\"}}" "{\"type\":\"finished\",\"at\":\"2026-01-01T00:00:02Z\",\"end\":\"failed\",\"detail\":\"boom\"}" > .git/rhiza/runs/FAILED00001.jsonl'
+
+exec rhiza inbox --json
+stdout '"kind": "failed"'
+stdout '"detail": "boom"'
+cp stdout ../want-failed.json
+exec rhiza tui app inbox --once
+cmp stdout ../want-failed.json
+
+! exists .git/rhiza/daemon.lock
+exec find $WORK -type s
+! stdout .

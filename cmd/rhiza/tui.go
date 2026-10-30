@@ -14,6 +14,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/api"
 	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/tui/inboxapp"
 	"github.com/dphaener/rhiza/internal/tui/modelapp"
 	"github.com/dphaener/rhiza/internal/tui/readapps"
 	"github.com/dphaener/rhiza/internal/tui/writeapps"
@@ -42,8 +43,9 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		return tuiModel(g, args, stdout, stderr, getenv)
 	}
 	read, isRead := readapps.Lookup(name)
+	isInbox := name == inboxapp.Name
 	write, isWrite := writeapps.Lookup(name)
-	if !isRead && !isWrite {
+	if !isRead && !isWrite && !isInbox {
 		return writeError(stdout, stderr, api.NotFoundf("unknown app %q", name), false)
 	}
 	once, confirm := false, false
@@ -82,7 +84,13 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 	}
 	var m tea.Model
 	var result func() ([]byte, error)
-	if isWrite {
+	switch {
+	case isInbox:
+		im := inboxapp.NewModel(func(op string, args []string) ([]byte, error) {
+			return call(op, false, false, args)
+		})
+		m, result = im, im.Result
+	case isWrite:
 		wm := writeapps.NewModel(write, func(a writeapps.App, args []string, dry bool) ([]byte, error) {
 			return call(a.Op, a.Record, dry, args)
 		}, rest)
@@ -94,7 +102,7 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 			}
 			return out, err
 		}
-	} else {
+	default:
 		rm := readapps.NewModel(read, func(op string, args []string) ([]byte, error) {
 			return call(op, false, false, args)
 		}, rest)
