@@ -1,0 +1,40 @@
+{
+  "actor": "01M6579N32FACBCGJ2AESMJTA0",
+  "after": [
+    "01M657TFZVN20WN0SJDAP329XN"
+  ],
+  "at": "2026-10-30T01:47:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ca9f891, go test ./internal/run -run TestFixChangeSet -count=1 -v passes, including the new TestFixChangeSetExhaustionSpendsCycle; go test ./internal/run -count=3, make fmt-check and make vet also pass. The test has the change-set fixer of cycle 2 fail all 1 + MaxFixCycles (3) attempts. It asserts that alpha's cycle 2 outcome is CheckFailed with a detail starting 'cycle 2: fix failed: ', that no check session starts in cycle 2 for alpha, beta or gamma, that the run then reaches cycle 3, the last one under MaxFixCycles=2, with fixer sessions (2,1),(2,2),(2,3),(3,1), and that the step passes there. So the spent cycle counts against the cap. I read nextCheckActions in internal/run/checks.go (lines 214-228): when the fix phase fails it ends each unjudged check of the cycle with 'cycle N: fix failed: <reason>' before any checkStart, and changeSetFix retries before giving up. make self-check fails only on stale .rhiza/rendered files (the new actor's page and index.md), which is model render state and not this leaf's code."
+        },
+        "handle": "fixer-exhaustion-spends-cycle-verified",
+        "id": "01M657VXEMTFRSTBPEZPNHSHK5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M657VXEMTFRSTBPEZPHMJSPK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M657VXEMTFRSTBPEZPHMJSPK",
+        "id": "01M657VXWJ6RWJ7RY4X6DXBDW4",
+        "link": "01M657VXWJ6RWJ7RY4X5BBSBRV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506FZTPP6JZJBYMMPZMQFC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW7TJ6BH6YX1T7SQDWK1J",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M657VYMRBRGZJA30DDNNTC9K",
+  "type": "ops",
+  "v": 1
+}
