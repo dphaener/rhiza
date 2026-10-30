@@ -16,6 +16,10 @@ A run started from an app opens in a new Rex tab, as the daemon starts runs (rex
 
 - derived-from [m5-usable-from-rex-interview](../source/m5-usable-from-rex-interview.md)
 
+### In
+
+- decided-by [inbox-app-actions](../capability/rhiza/inbox-app-actions.md)
+
 ## History
 
 - `01M67315J0N3C4HZEE7T2NNR55` Plan milestone 5: Rhiza usable from Rex, with an actionable roadmap app and an inbox app
