@@ -64,7 +64,7 @@ exec sh -c 'grep -rl "alpha-ok" "$(cat $WORK/run.pwd)/.rhiza/log"'
 stdout '\.json$'
 grep '^alpha clean$' $WORK/checkout-status.log
 exec sh -c 'cd "$(cat $WORK/run.pwd)" && git log --format=%s $(cat $WORK/head)..HEAD'
-stdout '\Achore\(rhiza\): record alpha check writes\n\z'
+stdout '\Achore\(rhiza\): record beta check writes\nchore\(rhiza\): record alpha critic writes\nchore\(rhiza\): record beta check writes\nchore\(rhiza\): record alpha check writes\n\z'
 
 exec rhiza run status
 stdout '^- review \(visit 1\): pass, then end: 2 of 2 checks passed$'
