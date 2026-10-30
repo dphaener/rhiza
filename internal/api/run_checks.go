@@ -143,7 +143,9 @@ func (r *stepRunner) OpenCheckCheckout(check, role string, cycle int, commit str
 // session's) trailers and no Leaf: trailer. It builds the commit as
 // CommitEvidence does (commitOnly), so other uncommitted edits stay as
 // they were and no later fixer sweeps the check's writes into its own
-// commit. With no such entry it makes no commit and returns "".
+// commit. A session whose actor wrote no entry still has the uncommitted
+// entries recording that actor committed, the same way. With nothing
+// uncommitted it makes no commit and returns "".
 func (r *stepRunner) CommitCheckWrites(session string) (string, error) {
 	cs, err := id.Parse(r.change)
 	if err != nil {
@@ -188,11 +190,15 @@ func (r *stepRunner) CommitCheckWrites(session string) (string, error) {
 			add(path.Join(store.LogDir, e.ChangeSet.String(), e.ID.String()+".json"))
 		}
 	}
+	wrote := len(paths) > 0
+	for _, e := range actorEntries(w.changeSets(), actor, cs) {
+		rel := path.Join(store.LogDir, e.cs.String(), e.entry.String()+".json")
+		if wrote || slices.Contains(rels, rel) {
+			add(rel)
+		}
+	}
 	if len(paths) == 0 {
 		return "", nil
-	}
-	for _, e := range actorEntries(w.changeSets(), actor, cs) {
-		add(path.Join(store.LogDir, e.cs.String(), e.entry.String()+".json"))
 	}
 	role := rec.Role
 	if role == "" {
