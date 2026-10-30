@@ -163,6 +163,13 @@ func TestRoadmapAppAnswersABlockingQuestion(t *testing.T) {
 	if out := r.rhiza("show", "answer-which-format", "--change", blocked, "--json"); !strings.Contains(out, `Use CSV`) || !strings.Contains(out, "answers") {
 		t.Errorf("decision does not quote the answer and answer the question: %s", out)
 	}
+	var sh api.ShowResponse
+	if err := json.Unmarshal([]byte(r.rhiza("show", "answer-which-format", "--change", blocked, "--json")), &sh); err != nil {
+		t.Fatal(err)
+	}
+	if got := string(sh.Node.Fields["quote"]); got != `"Use CSV"` {
+		t.Errorf("quote is %s, want the typed words exactly", got)
+	}
 	var rd api.ReadyResponse
 	if err := json.Unmarshal([]byte(r.rhiza("ready", "--json")), &rd); err != nil {
 		t.Fatal(err)

@@ -110,7 +110,7 @@ func (m *Model) record(a *answer) {
 		map[string]any{"op": "add", "kind": "decision", "handle": "answer-" + a.q.handle,
 			"fields": []string{
 				"statement=" + text,
-				fmt.Sprintf("quote=%q (owner)", text),
+				"quote=" + text,
 			}},
 		map[string]any{"op": "link", "from": "answer-" + a.q.handle, "type": "answers", "to": a.q.handle},
 	}}
