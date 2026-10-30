@@ -137,3 +137,103 @@ func TestEnterOpensDetailAndEscReturns(t *testing.T) {
 		t.Errorf("esc did not return to the list:\n%s", v)
 	}
 }
+
+type call struct {
+	name string
+	args []string
+}
+
+// startModel is a model with a fake exec recording every call and a runner
+// answering run.open with runOpen.
+func startModel(runOpen string, calls *[]call) *Model {
+	m := NewModel(func(op, ch string, args []string) ([]byte, error) {
+		if op == "run.open" {
+			return []byte(runOpen), nil
+		}
+		return fake(op, ch, args)
+	})
+	m.SetStarter(Starter{
+		Exec: func(name string, args []string, _ string) ([]byte, error) {
+			*calls = append(*calls, call{name, args})
+			return []byte("{}"), nil
+		},
+		Self: "/bin/rhiza", Root: "/repo", RexSession: "session:1",
+	})
+	return m
+}
+
+func TestPlanRunStartsInteractiveInNewTab(t *testing.T) {
+	var calls []call
+	m := startModel("{}", &calls)
+	key(m, "p")
+	if len(calls) != 0 {
+		t.Fatalf("p called rex before y: %v", calls)
+	}
+	if v := m.View().Content; !strings.Contains(v, "plan run") || !strings.Contains(v, "y/n") {
+		t.Errorf("no y/n question:\n%s", v)
+	}
+	key(m, "y")
+	if len(calls) != 1 || calls[0].name != "rex" {
+		t.Fatalf("calls = %v, want one rex call", calls)
+	}
+	got := strings.Join(calls[0].args, " ")
+	want := "window new -s session:1 " + a[:9] + " -c /repo --json -- /bin/rhiza run start " + a + " --workflow plan"
+	if got != want {
+		t.Errorf("args = %q, want %q", got, want)
+	}
+	if strings.Contains(got, "--autonomous") {
+		t.Errorf("plan run is autonomous: %s", got)
+	}
+	if v := m.View().Content; !strings.Contains(v, "Opened Rex tab "+a[:9]) {
+		t.Errorf("view does not say which tab opened:\n%s", v)
+	}
+	if m.Cursor().String() != a {
+		t.Errorf("app did not stay on the list")
+	}
+}
+
+func TestShipRunIsAutonomousWithAutoMode(t *testing.T) {
+	var calls []call
+	m := startModel("{}", &calls)
+	key(m, "s")
+	key(m, "y")
+	if len(calls) != 1 {
+		t.Fatalf("calls = %v", calls)
+	}
+	got := strings.Join(calls[0].args, " ")
+	if want := "run start " + a + " --autonomous --permission-mode auto"; !strings.HasSuffix(got, want) {
+		t.Errorf("args = %q, want suffix %q", got, want)
+	}
+}
+
+func TestNDeclinesAndCallsNothing(t *testing.T) {
+	var calls []call
+	m := startModel("{}", &calls)
+	key(m, "s")
+	key(m, "n")
+	key(m, "p")
+	key(m, "n")
+	if len(calls) != 0 {
+		t.Errorf("declined runs called rex: %v", calls)
+	}
+	if strings.Contains(m.View().Content, "y/n") {
+		t.Errorf("question still showing")
+	}
+}
+
+func TestOFocusesLiveRunOrSaysNone(t *testing.T) {
+	var calls []call
+	m := startModel(`{"change":"`+a+`","live":true,"run":"R1","opened":true,"tab":"block:7"}`, &calls)
+	key(m, "o")
+	if v := m.View().Content; !strings.Contains(v, "Focused Rex tab block:7 of run R1") {
+		t.Errorf("view:\n%s", v)
+	}
+	m = startModel(`{"change":"`+a+`","live":false,"opened":false}`, &calls)
+	key(m, "o")
+	if v := m.View().Content; !strings.Contains(v, "No live run") {
+		t.Errorf("view:\n%s", v)
+	}
+	if len(calls) != 0 {
+		t.Errorf("o started a run: %v", calls)
+	}
+}

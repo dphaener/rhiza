@@ -53,6 +53,10 @@ type Model struct {
 	top    int
 	height int
 	detail *detail
+
+	starter Starter
+	pending *pending
+	notice  string
 }
 
 // NewModel returns the model over run, loaded.
@@ -148,6 +152,28 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = max(msg.Height-2, 1)
 		m.follow()
 	case tea.KeyPressMsg:
+		if m.pending != nil {
+			switch msg.String() {
+			case "y":
+				m.confirm()
+			case "ctrl+c":
+				return m, tea.Quit
+			default: // n, esc or any other key declines
+				m.pending = nil
+			}
+			return m, nil
+		}
+		switch msg.String() {
+		case "p":
+			m.ask("plan")
+			return m, nil
+		case "s":
+			m.ask("ship")
+			return m, nil
+		case "o":
+			m.openRun()
+			return m, nil
+		}
 		if m.detail != nil {
 			switch msg.String() {
 			case "q", "ctrl+c":
@@ -203,7 +229,7 @@ func (m *Model) View() tea.View {
 	var b strings.Builder
 	if m.detail != nil {
 		m.detail.write(&b)
-		b.WriteString("\nesc back · q quit")
+		b.WriteString(m.footer("\nesc back · p plan · s ship · o open run · q quit"))
 		return tea.NewView(b.String())
 	}
 	if m.err != nil {
@@ -229,6 +255,17 @@ func (m *Model) View() tea.View {
 		}
 		b.WriteString("\n")
 	}
-	b.WriteString("\nroadmap · j/k move · enter open · r reload · q quit")
+	b.WriteString(m.footer("\nroadmap · j/k move · enter open · p plan · s ship · o open run · r reload · q quit"))
 	return tea.NewView(b.String())
+}
+
+// footer is the key help, or the y/n question, preceded by the last notice.
+func (m *Model) footer(help string) string {
+	if m.pending != nil {
+		return "\n" + m.pending.prompt()
+	}
+	if m.notice != "" {
+		return "\n" + m.notice + "\n" + help
+	}
+	return help
 }

@@ -9321,6 +9321,59 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "run.open",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "change": {
+            "description": "The change set: its ID or a unique prefix of it",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change": {
+            "description": "The change set's ID",
+            "type": "string"
+          },
+          "live": {
+            "description": "True when the change set has a live run",
+            "type": "boolean"
+          },
+          "opened": {
+            "description": "True when the tab was focused",
+            "type": "boolean"
+          },
+          "run": {
+            "description": "The live run, when there is one",
+            "type": "string"
+          },
+          "tab": {
+            "description": "The Rex block of the tab, when one is recorded",
+            "type": "string"
+          },
+          "tab_gone": {
+            "description": "True when the live run's tab is no longer in Rex, or none was recorded",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "change",
+          "live",
+          "opened"
+        ],
+        "type": "object"
+      },
+      "summary": "Focus the Rex tab of a change set's live run; says so when it has no live run or its tab is gone",
+      "write": false
+    },
+    {
       "name": "run.recommend",
       "request": {
         "additionalProperties": false,
