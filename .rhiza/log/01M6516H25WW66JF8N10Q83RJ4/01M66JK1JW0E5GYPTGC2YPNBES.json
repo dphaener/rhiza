@@ -1,0 +1,40 @@
+{
+  "actor": "01M66JG2WE9S8YNQ8ZEFWXFN9V",
+  "after": [
+    "01M66JBNMFK70YA9FFC6ZKRG0H"
+  ],
+  "at": "2026-10-30T14:14:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5b41015, go test ./cmd/rhiza -run 'TestScripts/run-panes-one-window$' -count=1 -v passed. With a fake rex and fake claude, a review run started check sessions alpha, beta and gamma, a critic for alpha, then in cycle 2 the fixer and verifier of leaf thing and alpha again (claude.log matched want.log). rex.log held exactly one 'window new' followed by six 'split block:bN' calls, each against a block the fake rex returned in window:w1. Read the diff: StartLeaf, StartCheck and StartFix now take req.anchor from paneAnchor, which falls back to the tab of the run's first session with a pane. go test ./internal/api -count=1 passed. The open review findings (qa f1/f2: a gone run window fails the next session) are about anchor-gone handling, not this leaf's acceptance."
+        },
+        "handle": "run-sessions-one-window-verified-2",
+        "id": "01M66JK0JZ9TMJJWE9YNSHEGB9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66JK0JZ9TMJJWE9YJK385SZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66JK0JZ9TMJJWE9YJK385SZ",
+        "id": "01M66JK0Z52CV445C15SJ94BJ0",
+        "link": "01M66JK0Z52CV445C15RN3PXF8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M651M8TNJKY76E8G6KMV3V3Y",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6516H25WW66JF8N10Q83RJ4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66JK1JW0E5GYPTGC2YPNBES",
+  "type": "ops",
+  "v": 1
+}
