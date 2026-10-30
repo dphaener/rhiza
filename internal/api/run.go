@@ -373,9 +373,10 @@ type RunMessage struct {
 // RunSession is one session of a run, under the step it first appeared
 // in, with the latest reading of its token use.
 type RunSession struct {
-	Step    string           `json:"step" desc:"The step the session first appeared under"`
-	Session string           `json:"session" desc:"The session ID"`
-	Tokens  *SessionTokenUse `json:"tokens,omitempty" desc:"The latest reading of its token use; absent when none was recorded, and then left out of the totals"`
+	Step     string           `json:"step" desc:"The step the session first appeared under"`
+	Session  string           `json:"session" desc:"The session ID"`
+	Tokens   *SessionTokenUse `json:"tokens,omitempty" desc:"The latest reading of its token use; absent when none could be read, and then left out of the totals"`
+	NoTokens string           `json:"no_tokens,omitempty" desc:"Why no token use is shown, when tokens is absent: still running, or the transcript is unreadable with its warning"`
 }
 
 // RunBlocked is what a blocked run waits on, read from its agent step's
@@ -1899,7 +1900,7 @@ func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo
 		if u, ok := st.Tokens[s.Session]; ok {
 			rs.Tokens = runTokens(u)
 		} else {
-			rs.Tokens = transcriptTokens(ctx, sessions, s.Session)
+			rs.Tokens, rs.NoTokens = transcriptTokens(ctx, sessions, s.Session)
 		}
 		if rs.Tokens != nil {
 			addTokens(&info.Totals.Session, rs.Tokens.Session)
@@ -2025,29 +2026,36 @@ func runCheckInfo(st run.State, c run.CheckState) RunCheck {
 }
 
 // transcriptTokens reads the token use of a session with no journaled
-// reading from its transcript, at print time. Nothing is journaled; nil
-// when the transcript cannot be found or read.
-func transcriptTokens(ctx *Ctx, sessions *session.Store, sid string) *SessionTokenUse {
+// reading from its transcript, at print time. Nothing is journaled. When
+// the transcript cannot be read it returns nil and the reason: the session
+// is still running, or its transcript is unreadable, with the warning.
+func transcriptTokens(ctx *Ctx, sessions *session.Store, sid string) (*SessionTokenUse, string) {
+	unreadable := func(why string) (*SessionTokenUse, string) {
+		return nil, "transcript unreadable: " + why
+	}
 	if ctx == nil || sessions == nil || (ctx.Home == "" && ctx.Getenv == nil) {
-		return nil
+		return unreadable("the home folder and environment are unknown")
 	}
 	rec, err := sessions.Read(sid)
 	if err != nil {
-		return nil
+		return unreadable(AsError(err).Message)
 	}
 	a, ok := adapter.Lookup(rec.Agent)
 	if !ok {
-		return nil
+		return unreadable(fmt.Sprintf("session %s names agent %q, which this rhiza does not know", sid, rec.Agent))
 	}
 	data, err := readTranscript(ctx, a, sid)
-	if err != nil {
-		return nil
+	if err == nil {
+		var use adapter.TokenUse
+		if use, err = a.TokenUse(data); err == nil {
+			return runTokens(runTokenUse(sessionTokenUse(use))), ""
+		}
+		err = Errorf("read the token use of session %s: %v", sid, err)
 	}
-	use, err := a.TokenUse(data)
-	if err != nil {
-		return nil
+	if !rec.Status.Exited() {
+		return nil, "still running"
 	}
-	return runTokens(runTokenUse(sessionTokenUse(use)))
+	return unreadable(AsError(err).Message)
 }
 
 // runTokens is the response form of a journaled token use reading.
@@ -2326,7 +2334,7 @@ func (r RunInfo) Human(w io.Writer) {
 		fmt.Fprintf(w, "\n## Sessions\n\n")
 		for _, s := range r.Sessions {
 			if s.Tokens == nil {
-				fmt.Fprintf(w, "- %s, session %s: no token use recorded\n", s.Step, s.Session)
+				fmt.Fprintf(w, "- %s, session %s: no token use shown, %s\n", s.Step, s.Session, s.NoTokens)
 				continue
 			}
 			fmt.Fprintf(w, "- %s, session %s: %s\n", s.Step, s.Session, tokenUseLine(*s.Tokens))
