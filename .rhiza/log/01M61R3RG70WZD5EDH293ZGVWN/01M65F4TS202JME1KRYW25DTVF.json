@@ -1,0 +1,30 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M65104B4MHWBMZMMV62J446J"
+  ],
+  "at": "2026-10-30T03:55:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A run recognises the usage limit from the limit message and waits until the reset time it gives; with no reset time in the message, it waits a fixed interval",
+          "wording": "Arbiter answer: the reset time in the message is the recommended wait"
+        },
+        "handle": "usage-limit-wait-from-message",
+        "id": "01M65F4TAMG78HCQ0FFF2DXFAV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M65F4TAMG78HCQ0FFBTPBZ52",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61R3RG70WZD5EDH293ZGVWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65F4TS202JME1KRYW25DTVF",
+  "type": "ops",
+  "v": 1
+}
