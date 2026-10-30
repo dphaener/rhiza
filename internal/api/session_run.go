@@ -182,6 +182,7 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 
 	follow := followRex(ctx, st, rec.ID)
 	var code int
+	var fresh []string
 	for pause := 0; ; pause++ {
 		p, err := ctx.Start(Program{Name: argv[0], Args: argv[1:], Dir: agentDir(rec), Env: env, Unset: unset, Terminal: true})
 		if err != nil {
@@ -200,14 +201,21 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 		// The same session goes on once the limit resets: its context and
 		// the work it committed stay.
 		runClock.Sleep(wait)
-		launch.Resume, launch.Prompt = true, resumePrompt
+		if _, err := readTranscript(ctx, a, rec.ID); err == nil {
+			launch.Resume, launch.Prompt = true, resumePrompt
+		} else {
+			// Nothing to resume: the step starts over as a fresh session,
+			// told what it was first told.
+			launch.Resume, launch.Prompt = false, rec.Prompt
+			fresh = append(fresh, fmt.Sprintf("the transcript of session %s is gone after the usage-limit pause: started a fresh session for the step instead of resuming", rec.ID))
+		}
 		if argv, err = a.Command(launch); err != nil {
 			follow.stop()
 			return nil, Errorf("session %s: %v", rec.ID, err).WithNext(sessionStartNext)
 		}
 		resp.Argv = argv
 	}
-	resp.Warnings = follow.stop()
+	resp.Warnings = append(follow.stop(), fresh...)
 	resp.Code = code
 	updated, err := st.Update(rec.ID, func(r *session.Record) {
 		r.Status.Exit = &session.Report{State: session.StateExited, Code: &code, At: ctx.Now().UTC()}
