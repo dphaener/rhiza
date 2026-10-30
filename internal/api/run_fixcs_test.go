@@ -139,13 +139,13 @@ func (g *fixCSRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 func (g *fixCSRunner) StartFix(spec run.FixSpec) (string, error) {
 	g.specs = append(g.specs, spec)
 	g.prompts = append(g.prompts, changeSetFixerPrompt(*spec.Step.Role(workflow.RoleFixer), spec, workflow.PromptVars{Change: g.change, Run: g.run}))
-	if err := os.WriteFile(filepath.Join(g.worktree, "README.md"), []byte("fixed in cycle "+strconv.Itoa(spec.Cycle)+"\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(g.worktree, "README.md"), []byte("fixed in cycle "+strconv.Itoa(spec.Cycle)+" attempt "+strconv.Itoa(spec.Attempt)+"\n"), 0o644); err != nil {
 		g.t.Fatal(err)
 	}
 	g.git("add", "README.md")
 	g.git("commit", "-q", "-m", "fix: the review's findings", "-m", "Change: "+g.change+"\nReview: "+g.review)
 	g.fix = g.git("rev-parse", "HEAD")
-	return "S-fixer-" + strconv.Itoa(spec.Cycle), nil
+	return "S-fixer-" + strconv.Itoa(spec.Cycle) + map[bool]string{true: "", false: "-r" + strconv.Itoa(spec.Attempt)}[spec.Attempt == 1], nil
 }
 
 func (g *fixCSRunner) AgentStatus(string) (run.AgentStatus, error) {
