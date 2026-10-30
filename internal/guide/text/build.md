@@ -30,6 +30,15 @@ Co-Authored-By: Agent Name <agent@example.com>
 Keep every trailer, `Co-Authored-By:` included, in the one final paragraph, with no
 blank line between them.
 
+Your own actor record sits untracked in `.rhiza/log` until you commit it. Stage it with
+your work, so the `Actor:` trailer names an actor whose record is tracked:
+
+```
+git add $(grep -l "Record agent actor $RHIZA_ACTOR " .rhiza/log/*/*.json | xargs -n1 dirname | sort -u)
+```
+
+Stage only that record, never another actor's.
+
 On a retry (`RHIZA_ATTEMPT` above 1), read the earlier attempts' findings in
 `rhiza run status --json` first, then add one fix commit with the same `Leaf:` trailer.
 Never rewrite the earlier commits.

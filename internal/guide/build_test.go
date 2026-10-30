@@ -47,6 +47,15 @@ func finalParagraph(s string) string {
 	return s
 }
 
+func TestBuildCommitsOwnActorRecord(t *testing.T) {
+	build, _ := Lookup("build")
+	for _, want := range []string{"Record agent actor $RHIZA_ACTOR ", "git add $(", "never another actor's"} {
+		if !strings.Contains(build.Body, want) {
+			t.Errorf("build: lacks %q", want)
+		}
+	}
+}
+
 func TestBuildTrailersInOneFinalParagraph(t *testing.T) {
 	build, _ := Lookup("build")
 	i := strings.Index(build.Body, "\nStream CSV exports\n")
