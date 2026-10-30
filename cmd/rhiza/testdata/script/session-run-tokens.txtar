@@ -64,8 +64,8 @@ stdout '"tokens":\{"session":\{"input":110,"output":220,"cache_creation":330,"ca
 
 # (c) No transcript: session done warns twice (no answers to capture, no
 # token use) and still succeeds, session run warns and exits with the
-# agent's code, the step's end warns, and neither the record nor the
-# journal gains token use.
+# agent's code, the step's end warns, neither the record nor the journal
+# gains token use, and the done response lists no decisions.
 cp $WORK/mode.none $WORK/claude.mode
 exec sh -c 'rhiza run start --workflow tokens --permission-mode manual; echo exit=$?'
 stdout '^- build \(visit 1\): fail, then end, session [0-9a-f-]{36}: exit 3$'
@@ -73,6 +73,7 @@ stdout '^exit=0$'
 stderr '^rhiza: step build: record token use: no transcript of session '
 exec cat $WORK/done.out
 stdout '"warnings": \[\n\s+"propose decisions from the owner''s answers: no transcript of session .*",\n\s+"record token use: no transcript of session '
+! stdout '"decisions"'
 stdout '^done-exit=0$'
 exec cat $WORK/tab.out
 stdout '^- Warning: record token use: no transcript of session '
