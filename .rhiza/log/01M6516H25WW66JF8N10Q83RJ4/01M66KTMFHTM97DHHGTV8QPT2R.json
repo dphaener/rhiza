@@ -1,0 +1,40 @@
+{
+  "actor": "01M66KH22F02Q2Q6ANQF02564T",
+  "after": [
+    "01M66KHRBCMCV83ZR97K9YGRH5"
+  ],
+  "at": "2026-10-30T14:36:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ac1817d ran go test ./internal/api -run TestOpenSessionPane -v -count=1: PASS. The table rows 'anchor gone splits another pane' (fake rex: split of block:b1 fails 'not found', block ls lists b1 and b9) asserts the exact calls size, split b1, block ls -w window:w1, size b9, split b9 with no window new; 'anchor gone, no other pane opens a new tab' (ls lists only b1) and 'window gone opens a new tab' (ls fails 'window target window:w1 not found') each assert size, split, block ls, then window new. Read openSessionPane/livePane in internal/api/session.go: window new runs only when there is no anchor, or livePane reports the window not found or no other block. make check exited 0."
+        },
+        "handle": "anchor-gone-splits-run-window-verified-3",
+        "id": "01M66KTKB10PR7HKBQJYAZSYET",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66KTKB10PR7HKBQJXW4PM4B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66KTKB10PR7HKBQJXW4PM4B",
+        "id": "01M66KTKRKFXGW8AQT3RGDHGRR",
+        "link": "01M66KTKRKFXGW8AQT3NEAX24C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M651MBGX79H2AV7N9YA0EC9X",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6516H25WW66JF8N10Q83RJ4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66KTMFHTM97DHHGTV8QPT2R",
+  "type": "ops",
+  "v": 1
+}
