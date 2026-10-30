@@ -1,0 +1,63 @@
+{
+  "actor": "01M65C075FY47DCQ3JQCQVHNV5",
+  "after": [
+    "01M65BZM5S1W6RN7VJCD5EA9JK"
+  ],
+  "at": "2026-10-30T03:01:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 6b63cac with a binary built from this checkout (go build -o $TMPDIR/rhiza-qa ./cmd/rhiza). On the live review run 01M65B5R7VG5QDFMFFVT012N3R, the installed rhiza 2b1628d printed 'no token use recorded' for all five running review sessions; the new binary listed each with real counts read from its Claude transcript, and Totals rose from input 156 to 196 (156+8+8+10+6+8). run status --json listed 9 of 9 sessions with a tokens object. In a scratch repo, a two-step run with a fake claude transcript (7/11/13/17) printed both sessions and Totals 14/22/26/34 in its final printout. After every tokens entry was stripped from the journal, run status still showed both sessions' counts and the same Totals, and the journal's checksum was unchanged after the reads (nothing journaled)."
+        },
+        "handle": "printout-counts-used-tokens-qa-1",
+        "id": "01M65C37J0P2YP6EZK9BXFG9K5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65C37J0P2YP6EZK9BQ8XX8S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65C37J0P2YP6EZK9BQ8XX8S",
+        "id": "01M65C37Y4Y6ZBGMVA1RKPEBDM",
+        "link": "01M65C37Y4Y6ZBGMVA1PF5FJTB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505NQCFYY8Q7F22NEN8DCE",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 6b63cac with the built binary in a scratch repo whose journal had no tokens entries. Deleting the review session's transcript made run status print '- review, session …: no token use shown, transcript unreadable: no transcript of session …: looked in <home>/.claude/projects/*/<sid>.jsonl', and Totals dropped to the build session's 7/11/13/17 alone. Removing the build session record's exit and its transcript then printed 'no token use shown, still running'. Totals went to all zeros. run status --json gave no_tokens 'still running' and 'transcript unreadable: …' with no tokens objects, and 'no token use recorded' appeared nowhere."
+        },
+        "handle": "printout-gap-names-reason-qa-1",
+        "id": "01M65C38B5MBEHPPDQRRR5A2MT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65C38B5MBEHPPDQRRJ550JV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65C38B5MBEHPPDQRRJ550JV",
+        "id": "01M65C38QGHP8G0QESRKYYQR61",
+        "link": "01M65C38QGHP8G0QESRH39X8TY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505PVYH9A049T3Q3H2T28K",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW8RKSBM4BT1B8B3FR5JH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65C39DD8HM0697SSEPC48WX",
+  "type": "ops",
+  "v": 1
+}

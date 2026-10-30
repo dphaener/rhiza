@@ -618,7 +618,7 @@ func TestRunInfoAcceptsAndQuestions(t *testing.T) {
 			{Step: "build", Session: "S4", Question: "Q4", Outcome: "pass", Decision: "use-y", At: at},
 		},
 	}
-	info := runInfo(st, false, nil)
+	info := runInfo(nil, st, false, nil)
 	want := []RunAccept{{Change: "C1", Entry: "E1", Verb: "accepted", At: "2026-01-02T03:04:05Z"}}
 	if !slices.Equal(info.Accepts, want) {
 		t.Errorf("accepts = %+v", info.Accepts)
@@ -649,7 +649,7 @@ func TestRunInfoAcceptsAndQuestions(t *testing.T) {
 			t.Errorf("markdown lacks %q:\n%s", s, out)
 		}
 	}
-	plain := human(t, runInfo(run.State{ID: "R2"}, false, nil))
+	plain := human(t, runInfo(nil, run.State{ID: "R2"}, false, nil))
 	if strings.Contains(plain, "owner's place") || strings.Contains(plain, "put to the arbiter") {
 		t.Errorf("a normal run's markdown:\n%s", plain)
 	}

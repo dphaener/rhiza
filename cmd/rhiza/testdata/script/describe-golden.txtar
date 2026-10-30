@@ -2687,6 +2687,10 @@ cmp stdout describe.golden.json
                 "items": {
                   "additionalProperties": false,
                   "properties": {
+                    "no_tokens": {
+                      "description": "Why no token use is shown, when tokens is absent: still running, or the transcript is unreadable with its warning",
+                      "type": "string"
+                    },
                     "session": {
                       "description": "The session ID",
                       "type": "string"
@@ -2697,7 +2701,7 @@ cmp stdout describe.golden.json
                     },
                     "tokens": {
                       "additionalProperties": false,
-                      "description": "The latest reading of its token use; absent when none was recorded, and then left out of the totals",
+                      "description": "The latest reading of its token use; absent when none could be read, and then left out of the totals",
                       "properties": {
                         "helpers": {
                           "additionalProperties": false,
@@ -4245,6 +4249,10 @@ cmp stdout describe.golden.json
                 "items": {
                   "additionalProperties": false,
                   "properties": {
+                    "no_tokens": {
+                      "description": "Why no token use is shown, when tokens is absent: still running, or the transcript is unreadable with its warning",
+                      "type": "string"
+                    },
                     "session": {
                       "description": "The session ID",
                       "type": "string"
@@ -4255,7 +4263,7 @@ cmp stdout describe.golden.json
                     },
                     "tokens": {
                       "additionalProperties": false,
-                      "description": "The latest reading of its token use; absent when none was recorded, and then left out of the totals",
+                      "description": "The latest reading of its token use; absent when none could be read, and then left out of the totals",
                       "properties": {
                         "helpers": {
                           "additionalProperties": false,
@@ -6865,6 +6873,10 @@ cmp stdout describe.golden.json
                 "items": {
                   "additionalProperties": false,
                   "properties": {
+                    "no_tokens": {
+                      "description": "Why no token use is shown, when tokens is absent: still running, or the transcript is unreadable with its warning",
+                      "type": "string"
+                    },
                     "session": {
                       "description": "The session ID",
                       "type": "string"
@@ -6875,7 +6887,7 @@ cmp stdout describe.golden.json
                     },
                     "tokens": {
                       "additionalProperties": false,
-                      "description": "The latest reading of its token use; absent when none was recorded, and then left out of the totals",
+                      "description": "The latest reading of its token use; absent when none could be read, and then left out of the totals",
                       "properties": {
                         "helpers": {
                           "additionalProperties": false,
@@ -8295,6 +8307,10 @@ cmp stdout describe.golden.json
                 "items": {
                   "additionalProperties": false,
                   "properties": {
+                    "no_tokens": {
+                      "description": "Why no token use is shown, when tokens is absent: still running, or the transcript is unreadable with its warning",
+                      "type": "string"
+                    },
                     "session": {
                       "description": "The session ID",
                       "type": "string"
@@ -8305,7 +8321,7 @@ cmp stdout describe.golden.json
                     },
                     "tokens": {
                       "additionalProperties": false,
-                      "description": "The latest reading of its token use; absent when none was recorded, and then left out of the totals",
+                      "description": "The latest reading of its token use; absent when none could be read, and then left out of the totals",
                       "properties": {
                         "helpers": {
                           "additionalProperties": false,
@@ -10373,6 +10389,10 @@ cmp stdout describe.golden.json
                 "items": {
                   "additionalProperties": false,
                   "properties": {
+                    "no_tokens": {
+                      "description": "Why no token use is shown, when tokens is absent: still running, or the transcript is unreadable with its warning",
+                      "type": "string"
+                    },
                     "session": {
                       "description": "The session ID",
                       "type": "string"
@@ -10383,7 +10403,7 @@ cmp stdout describe.golden.json
                     },
                     "tokens": {
                       "additionalProperties": false,
-                      "description": "The latest reading of its token use; absent when none was recorded, and then left out of the totals",
+                      "description": "The latest reading of its token use; absent when none could be read, and then left out of the totals",
                       "properties": {
                         "helpers": {
                           "additionalProperties": false,
@@ -11827,6 +11847,10 @@ cmp stdout describe.golden.json
                 "items": {
                   "additionalProperties": false,
                   "properties": {
+                    "no_tokens": {
+                      "description": "Why no token use is shown, when tokens is absent: still running, or the transcript is unreadable with its warning",
+                      "type": "string"
+                    },
                     "session": {
                       "description": "The session ID",
                       "type": "string"
@@ -11837,7 +11861,7 @@ cmp stdout describe.golden.json
                     },
                     "tokens": {
                       "additionalProperties": false,
-                      "description": "The latest reading of its token use; absent when none was recorded, and then left out of the totals",
+                      "description": "The latest reading of its token use; absent when none could be read, and then left out of the totals",
                       "properties": {
                         "helpers": {
                           "additionalProperties": false,
@@ -13327,6 +13351,10 @@ cmp stdout describe.golden.json
                 "items": {
                   "additionalProperties": false,
                   "properties": {
+                    "no_tokens": {
+                      "description": "Why no token use is shown, when tokens is absent: still running, or the transcript is unreadable with its warning",
+                      "type": "string"
+                    },
                     "session": {
                       "description": "The session ID",
                       "type": "string"
@@ -13337,7 +13365,7 @@ cmp stdout describe.golden.json
                     },
                     "tokens": {
                       "additionalProperties": false,
-                      "description": "The latest reading of its token use; absent when none was recorded, and then left out of the totals",
+                      "description": "The latest reading of its token use; absent when none could be read, and then left out of the totals",
                       "properties": {
                         "helpers": {
                           "additionalProperties": false,
@@ -14658,6 +14686,10 @@ cmp stdout describe.golden.json
             "items": {
               "additionalProperties": false,
               "properties": {
+                "no_tokens": {
+                  "description": "Why no token use is shown, when tokens is absent: still running, or the transcript is unreadable with its warning",
+                  "type": "string"
+                },
                 "session": {
                   "description": "The session ID",
                   "type": "string"
@@ -14668,7 +14700,7 @@ cmp stdout describe.golden.json
                 },
                 "tokens": {
                   "additionalProperties": false,
-                  "description": "The latest reading of its token use; absent when none was recorded, and then left out of the totals",
+                  "description": "The latest reading of its token use; absent when none could be read, and then left out of the totals",
                   "properties": {
                     "helpers": {
                       "additionalProperties": false,

@@ -228,11 +228,11 @@ func TestFixChangeSetEngine(t *testing.T) {
 	}
 
 	var b strings.Builder
-	runInfo(st, false, nil).Human(&b)
+	runInfo(nil, st, false, nil).Human(&b)
 	if !strings.Contains(b.String(), "## Change-set fixes") || !strings.Contains(b.String(), "cycle 2 (step review): fixer session S-fixer-2: pass, commit "+g.fix[:12]) {
 		t.Errorf("run status lacks the change-set fixer:\n%s", b.String())
 	}
-	if info := runInfo(st, false, nil); len(info.Fixes) != 1 || info.Fixes[0].Commit != g.fix {
+	if info := runInfo(nil, st, false, nil); len(info.Fixes) != 1 || info.Fixes[0].Commit != g.fix {
 		t.Errorf("RunInfo.Fixes = %+v", info.Fixes)
 	}
 }
