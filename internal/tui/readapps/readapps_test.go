@@ -8,7 +8,7 @@ import (
 )
 
 func TestAppsRegisterWithLauncher(t *testing.T) {
-	for _, name := range []string{"roadmap", "ready", "show", "why", "slice", "run-status", "session-ls"} {
+	for _, name := range []string{"ready", "show", "why", "slice", "run-status", "session-ls"} {
 		if _, ok := Lookup(name); !ok {
 			t.Errorf("no app %q", name)
 		}
@@ -41,7 +41,7 @@ func TestModelAsksForRefThenShowsResult(t *testing.T) {
 func TestResultIsWhatRunReturned(t *testing.T) {
 	want := []byte("{\n  \"ok\": true\n}\n")
 	run := func(op string, args []string) ([]byte, error) { return want, nil }
-	app, _ := Lookup("roadmap")
+	app, _ := Lookup("ready")
 	got, err := NewModel(app, run, nil).Result()
 	if err != nil || string(got) != string(want) {
 		t.Fatalf("Result() = %q, %v", got, err)

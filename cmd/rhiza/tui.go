@@ -17,6 +17,7 @@ import (
 	"github.com/dphaener/rhiza/internal/tui/inboxapp"
 	"github.com/dphaener/rhiza/internal/tui/modelapp"
 	"github.com/dphaener/rhiza/internal/tui/readapps"
+	"github.com/dphaener/rhiza/internal/tui/roadmapapp"
 	"github.com/dphaener/rhiza/internal/tui/writeapps"
 )
 
@@ -44,8 +45,9 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 	}
 	read, isRead := readapps.Lookup(name)
 	isInbox := name == inboxapp.Name
+	isRoadmap := name == roadmapapp.Name
 	write, isWrite := writeapps.Lookup(name)
-	if !isRead && !isWrite && !isInbox {
+	if !isRead && !isWrite && !isInbox && !isRoadmap {
 		return writeError(stdout, stderr, api.NotFoundf("unknown app %q", name), false)
 	}
 	once, confirm := false, false
@@ -93,6 +95,11 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 			im.Exec, im.Self, im.Root, im.RexSession = ctx.Exec, ctx.Self, ctx.Root, ctx.RexSession
 		}
 		m, result = im, im.Result
+	case isRoadmap:
+		am := roadmapapp.NewModel(func(op string, args []string) ([]byte, error) {
+			return call(op, false, false, args)
+		})
+		m, result = am, am.Result
 	case isWrite:
 		wm := writeapps.NewModel(write, func(a writeapps.App, args []string, dry bool) ([]byte, error) {
 			return call(a.Op, a.Record, dry, args)
