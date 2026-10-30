@@ -1,0 +1,40 @@
+{
+  "actor": "01M659C8678V62GP9F8Y8ZGDYH",
+  "after": [
+    "01M658X9GJ1MNF5QH03XK2FJM8"
+  ],
+  "at": "2026-10-30T02:17:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4a4bf55 (attempt 2, fixing review finding f1), I ran go test ./cmd/rhiza -run 'TestScripts/(session-done-captures|session-run-tokens)$' -count=1 and go test ./internal/api -run Done -count=1, and both passed. Then make fmt-check vet test had no FAIL. In session-done-captures.txtar a fake claude now runs under rhiza session run. It writes a transcript with picked and typed answers, and a dry-run done captures nothing (show exits 4, 'no node or link matches'). session done --json lists 4 answer Decisions, which show reads back while the agent still runs (picked Blue; typed quote 'Something like DuckDB, but local'). A second done returns already:true with no decisions. The exit capture in session run (captureAfterRun; the CLI sets Home, so it runs) emits no Warning, and the change set still has exactly 4 node.create. A no-transcript session says done with a warning and keeps its mark. TestSessionDoneCapturesBeforeMark uses the beforeDoneMark hook to show the mark is not set at capture. make self-check fails only on stale .rhiza/rendered from the run's chore(rhiza) record commits. This leaf commit does not touch .rhiza."
+        },
+        "handle": "done-captures-answers-verified-2",
+        "id": "01M659J54S2XGMDR9VT64N101S",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M659J54S2XGMDR9VT4D69M6Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M659J54S2XGMDR9VT4D69M6Z",
+        "id": "01M659J5H6XMH6FWV0BY77P3NG",
+        "link": "01M659J5H6XMH6FWV0BTMKWE11",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506ZFX7SJEH3W2TYSQWWJR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW89J8Y62X62RNJ8Z8HAD",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M659J63JD6HH2HAXE46ZDCZP",
+  "type": "ops",
+  "v": 1
+}

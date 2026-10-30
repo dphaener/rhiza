@@ -15215,6 +15215,13 @@ cmp stdout describe.golden.json
             "description": "When the session first said done, RFC 3339 UTC",
             "type": "string"
           },
+          "decisions": {
+            "description": "Handles of the Decisions proposed from the questions the owner answered (see session.interview)",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "dry_run": {
             "description": "True if nothing was written",
             "type": "boolean"
@@ -15224,7 +15231,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "warnings": {
-            "description": "Token use that could not be read or recorded when the session said done; the done mark stands",
+            "description": "Answers that could not be captured, or token use that could not be read or recorded, when the session said done; the done mark stands",
             "items": {
               "type": "string"
             },
