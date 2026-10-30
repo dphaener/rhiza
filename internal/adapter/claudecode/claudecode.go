@@ -10,9 +10,12 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/dphaener/rhiza/internal/adapter"
@@ -54,7 +57,11 @@ func (a Adapter) Command(l adapter.Launch) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	argv := []string{"claude", "--session-id", l.SessionID, "--permission-mode", l.PermissionMode, "--settings", settings}
+	idFlag := "--session-id"
+	if l.Resume {
+		idFlag = "--resume"
+	}
+	argv := []string{"claude", idFlag, l.SessionID, "--permission-mode", l.PermissionMode, "--settings", settings}
 	if l.Model != "" {
 		argv = append(argv, "--model", l.Model)
 	}
@@ -435,6 +442,85 @@ func toolUseID(content json.RawMessage) string {
 		}
 	}
 	return ""
+}
+
+// limitLine is the part of one transcript line that UsageLimit reads.
+// Claude Code writes the usage-limit message as a synthetic API-error line:
+// isApiErrorMessage set, model "<synthetic>", the message in a text block.
+type limitLine struct {
+	Type       string `json:"type"`
+	IsAPIError bool   `json:"isApiErrorMessage"`
+	Message    struct {
+		Model   string          `json:"model"`
+		Content json.RawMessage `json:"content"`
+	} `json:"message"`
+}
+
+// apiError reports whether the line is Claude Code's synthetic API-error
+// message rather than the model's own turn.
+func (l limitLine) apiError() bool {
+	return l.IsAPIError || l.Message.Model == "<synthetic>"
+}
+
+// text returns the line's text blocks joined, or its content when that is a
+// plain string. Tool calls and their inputs are left out.
+func (l limitLine) text() string {
+	var s string
+	if json.Unmarshal(l.Message.Content, &s) == nil {
+		return s
+	}
+	var blocks []struct {
+		Type string `json:"type"`
+		Text string `json:"text"`
+	}
+	if json.Unmarshal(l.Message.Content, &blocks) != nil {
+		return ""
+	}
+	var parts []string
+	for _, b := range blocks {
+		if b.Type == "text" {
+			parts = append(parts, b.Text)
+		}
+	}
+	return strings.Join(parts, "\n")
+}
+
+var limitReset = regexp.MustCompile(`(?i)usage limit reached\|(\d{9,})`)
+
+// UsageLimit implements adapter.Adapter. The session is limited when the
+// last assistant line of its transcript is the synthetic API-error message
+// saying so in its text: "usage limit reached", with the reset as a Unix
+// time after a bar, or "hit your limit". The phrases anywhere else, in the
+// model's prose or a tool call's input, do not count. Any later assistant
+// line means the session went on.
+func (Adapter) UsageLimit(transcript []byte) (adapter.UsageLimit, bool) {
+	var last limitLine
+	for _, line := range bytes.Split(transcript, []byte("\n")) {
+		line = bytes.TrimSpace(line)
+		if len(line) == 0 || line[0] != '{' {
+			continue
+		}
+		var l limitLine
+		if json.Unmarshal(line, &l) != nil || l.Type != "assistant" {
+			continue
+		}
+		last = l
+	}
+	if !last.apiError() {
+		return adapter.UsageLimit{}, false
+	}
+	text := last.text()
+	lower := strings.ToLower(text)
+	if !strings.Contains(lower, "usage limit reached") && !strings.Contains(lower, "hit your limit") {
+		return adapter.UsageLimit{}, false
+	}
+	var out adapter.UsageLimit
+	if m := limitReset.FindStringSubmatch(text); m != nil {
+		if sec, err := strconv.ParseInt(m[1], 10, 64); err == nil {
+			out.ResetAt = time.Unix(sec, 0).UTC()
+		}
+	}
+	return out, true
 }
 
 // usageLine is the part of one transcript line that TokenUse reads. Usage

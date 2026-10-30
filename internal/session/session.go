@@ -72,6 +72,10 @@ type Record struct {
 	// Tokens is the latest reading of the session's token use, nil until
 	// one is recorded.
 	Tokens *TokenUse `json:"tokens,omitempty"`
+	// Fresh are the times the session started over as a fresh session
+	// after a usage-limit pause, its transcript gone; nil when it never
+	// did.
+	Fresh []time.Time `json:"fresh,omitempty"`
 }
 
 // TokenCounts are the tokens a set of model calls used, by kind.

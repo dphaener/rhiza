@@ -1,0 +1,63 @@
+{
+  "actor": "01M65JX605B0K76WFPX4G8QECS",
+  "after": [
+    "01M65JWM2PGXNMZ13Y9RJ9EJQD"
+  ],
+  "at": "2026-10-30T05:04:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 88b6eae with the built binary (go build ./cmd/rhiza), in a scratch repo with a scripted fake claude on PATH and a fake rex: rhiza session start --prompt 'do the step', then rhiza session run <id>. (1) Fake writes 'Claude AI usage limit reached|1700000000' (reset in the past) on its first launch: session run relaunched at once as 'claude --resume <same id>' with prompt 'The usage limit has reset. Continue where you left off.', exactly one start and one resume, ended 'exited with code 0'. (2) Reset 6 s ahead: the resume came 6 s after the start, i.e. it waited for the given reset. (3) 'You've hit your limit' with no reset time: session run was still waiting after 8 s (15-minute default). (4) Limit reported on every launch: 1 start + 24 resumes, then ended 'exited with code 0', status exited code 0."
+        },
+        "handle": "usage-limit-resume-qa-1",
+        "id": "01M65K3JZBZFS1YBRMN9CWRSFQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65K3JZBZFS1YBRMN63DJFVE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65K3JZBZFS1YBRMN63DJFVE",
+        "id": "01M65K3KASZ44JGR7YPH80CG7Y",
+        "link": "01M65K3KASZ44JGR7YPG2JJGSA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6507G6PPPPEVQYKYJNQRSD6",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 88b6eae with the built binary in a scratch repo, scripted fake claude: first launch writes 'Claude AI usage limit reached|<now+4s>' and deletes its own transcript 2 s later, during the pause. rhiza session run waited ~4 s, then relaunched 'claude --session-id <same id>' (not --resume) with the first prompt 'do the step', and printed '- Warning: the transcript of session <id> is gone after the usage-limit pause: started a fresh session for the step instead of resuming'. The fresh start shows only in that printed warning: rhiza session show <id> and the session record hold nothing about it."
+        },
+        "handle": "usage-limit-fresh-session-qa-1",
+        "id": "01M65K3KP7DM4Q2K027XQMY9T8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65K3KP7DM4Q2K027V1FCX1T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65K3KP7DM4Q2K027V1FCX1T",
+        "id": "01M65K3M1YFG9GSYW5796VGP37",
+        "link": "01M65K3M1YFG9GSYW577WT126X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6507H8DN68SWSSCRT613VZM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61R3RG70WZD5EDH293ZGVWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65K3MNQWBENMJ2BT9P2JMBY",
+  "type": "ops",
+  "v": 1
+}

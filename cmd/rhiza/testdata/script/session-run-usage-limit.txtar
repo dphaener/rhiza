@@ -1,0 +1,49 @@
+# A session whose agent stops at the Claude usage limit is resumed once the
+# limit resets: same session ID, the CLI's resume flag, no second session.
+# The fake agent reports the limit on its first launch (a reset time already
+# past, so there is nothing to wait for) and finishes on the second.
+
+mkdir $HOME/.claude/projects/p
+cp rex.bak bin/rex
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Run the agent' --title 'Agent runs' --json
+exec rhiza session start --permission-mode manual --json
+stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+
+exec rhiza session run 158fe87f-5cf3-4ff0-ae50-01a16dc84988
+stdout '^Session 158fe87f-5cf3-4ff0-ae50-01a16dc84988 ended: the agent exited with code 0\.$'
+
+# Two launches: the first starts the session, the second resumes it.
+exec cat $WORK/claude.log
+stdout -count=1 '^start --session-id 158fe87f-5cf3-4ff0-ae50-01a16dc84988$'
+stdout -count=1 '^resume --resume 158fe87f-5cf3-4ff0-ae50-01a16dc84988$'
+
+-- bin/claude --
+#!/bin/sh
+sid=
+mode=start
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--session-id) sid=$2; flag=--session-id ;;
+	--resume) sid=$2; mode=resume; flag=--resume ;;
+	esac
+	shift
+done
+echo "$mode $flag $sid" >> "$WORK/claude.log"
+if [ $mode = start ]; then
+	echo '{"type":"assistant","isApiErrorMessage":true,"message":{"model":"<synthetic>","content":[{"type":"text","text":"Claude AI usage limit reached|1700000000"}]}}' > "$HOME/.claude/projects/p/$sid.jsonl"
+else
+	echo '{"type":"assistant","message":{"content":[{"type":"text","text":"done"}]}}' >> "$HOME/.claude/projects/p/$sid.jsonl"
+fi
+exit 0
+-- rex.bak --
+#!/bin/sh
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

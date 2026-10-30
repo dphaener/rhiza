@@ -1,0 +1,40 @@
+{
+  "actor": "01M65KTK42S0NGBZYAH6YR41Z5",
+  "after": [
+    "01M65M01N1C8CSPRRB5GV8K7M6"
+  ],
+  "at": "2026-10-30T05:23:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4a8f5f3, ran go test ./internal/api -run TestSessionRunFreshSessionWhenTranscriptGone -count=1 -v: PASS. The test deletes the stored session's transcript during the usage-limit pause. session.run then launches without resume, using the session's first prompt, warns 'started a fresh session'. It also records the restart: the session record's new Fresh field holds one timestamp, and the session's run journal holds one fresh-session entry with the session ID, the step (build) and that detail. Read the diff of 2af1b61 and 4a8f5f3: recordFreshSession in internal/api/session_run.go stamps Record.Fresh and appends run.TypeFreshSession, which is documented in internal/run/journal.go. Both commits carry Leaf: usage-limit-fresh-session. make fmt-check, vet and test pass (the first test run hit one failure that did not come back on a rerun). make self-check fails only on stale .rhiza/rendered/actor files for actors recorded during this run, not on the leaf's code."
+        },
+        "handle": "usage-limit-fresh-session-verified-2",
+        "id": "01M65M74HXENCPYV7X15JS4J93",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65M74HXENCPYV7X14FP4DJ9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65M74HXENCPYV7X14FP4DJ9",
+        "id": "01M65M76VEBJYQTQ7Q8R47FRPG",
+        "link": "01M65M76VEBJYQTQ7Q8P5P57W8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6507H8DN68SWSSCRT613VZM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61R3RG70WZD5EDH293ZGVWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65M7A0PW01X489AW630HM73",
+  "type": "ops",
+  "v": 1
+}
