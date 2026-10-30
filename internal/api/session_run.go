@@ -19,6 +19,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/run"
@@ -158,13 +159,14 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 		}
 		self = "rhiza"
 	}
-	argv, err := a.Command(adapter.Launch{
+	launch := adapter.Launch{
 		SessionID:      rec.ID,
 		PermissionMode: rec.PermissionMode,
 		HookCommand:    []string{self, "session", "hook"},
 		Prompt:         rec.Prompt,
 		Model:          rec.Model,
-	})
+	}
+	argv, err := a.Command(launch)
 	if err != nil {
 		return nil, Errorf("session %s: %v", rec.ID, err).WithNext(sessionStartNext)
 	}
@@ -179,16 +181,33 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 	}
 
 	follow := followRex(ctx, st, rec.ID)
-	p, err := ctx.Start(Program{Name: argv[0], Args: argv[1:], Dir: agentDir(rec), Env: env, Unset: unset, Terminal: true})
-	if err != nil {
-		follow.stop()
-		return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("start %s: %v", a.Name(), err))
+	var code int
+	for pause := 0; ; pause++ {
+		p, err := ctx.Start(Program{Name: argv[0], Args: argv[1:], Dir: agentDir(rec), Env: env, Unset: unset, Terminal: true})
+		if err != nil {
+			follow.stop()
+			return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("start %s: %v", a.Name(), err))
+		}
+		code, err = p.Wait()
+		if err != nil {
+			resp.Warnings = follow.stop()
+			return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("wait for %s: %v", a.Name(), err))
+		}
+		wait, limited := limitWait(ctx, a, rec.ID)
+		if !limited || pause >= maxUsageLimitPauses {
+			break
+		}
+		// The same session goes on once the limit resets: its context and
+		// the work it committed stay.
+		runClock.Sleep(wait)
+		launch.Resume, launch.Prompt = true, resumePrompt
+		if argv, err = a.Command(launch); err != nil {
+			follow.stop()
+			return nil, Errorf("session %s: %v", rec.ID, err).WithNext(sessionStartNext)
+		}
+		resp.Argv = argv
 	}
-	code, werr := p.Wait()
 	resp.Warnings = follow.stop()
-	if werr != nil {
-		return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("wait for %s: %v", a.Name(), werr))
-	}
 	resp.Code = code
 	updated, err := st.Update(rec.ID, func(r *session.Record) {
 		r.Status.Exit = &session.Report{State: session.StateExited, Code: &code, At: ctx.Now().UTC()}
@@ -206,6 +225,36 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 	resp.Session = sessionInfo(rec)
 	resp.Decisions, resp.Warnings = captureAfterRun(ctx, rec, resp.Warnings)
 	return resp, nil
+}
+
+// The pause a usage-limited session waits when the agent gives no reset
+// time, the most times one session pauses, and what a resumed session is told.
+const (
+	usageLimitWait      = 15 * time.Minute
+	maxUsageLimitPauses = 24
+	resumePrompt        = "The usage limit has reset. Continue where you left off."
+)
+
+// limitWait reports whether the session's agent stopped at its usage
+// limit and how long to wait before resuming it: until the reset time the
+// agent gave, else usageLimitWait. A transcript that cannot be read is no
+// limit.
+func limitWait(ctx *Ctx, a adapter.Adapter, sid string) (time.Duration, bool) {
+	if ctx.Home == "" && ctx.Getenv == nil {
+		return 0, false
+	}
+	transcript, err := readTranscript(ctx, a, sid)
+	if err != nil {
+		return 0, false
+	}
+	l, ok := a.UsageLimit(transcript)
+	if !ok {
+		return 0, false
+	}
+	if l.ResetAt.IsZero() {
+		return usageLimitWait, true
+	}
+	return max(0, l.ResetAt.Sub(ctx.Now())), true
 }
 
 // recordTokenUse reads the session's token use from its transcript,

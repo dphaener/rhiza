@@ -76,3 +76,5 @@ func TestCheckMode(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func (fake) UsageLimit([]byte) (UsageLimit, bool) { return UsageLimit{}, false }

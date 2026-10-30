@@ -12,6 +12,7 @@ import (
 	"slices"
 	"sort"
 	"sync"
+	"time"
 )
 
 // Adapter describes how to launch one kind of agent and how to read its hooks.
@@ -59,6 +60,16 @@ type Adapter interface {
 	// toward Helpers. Unreadable lines are skipped, not fatal. It reads
 	// nothing itself.
 	TokenUse(transcript []byte) (TokenUse, error)
+	// UsageLimit reports whether transcript ends with the agent stopped by
+	// its usage limit, and when the limit resets if the agent said. It
+	// reads nothing itself.
+	UsageLimit(transcript []byte) (UsageLimit, bool)
+}
+
+// UsageLimit is a session stopped by the agent's usage limit.
+type UsageLimit struct {
+	// ResetAt is when the limit resets; zero when the agent did not say.
+	ResetAt time.Time
 }
 
 // Answer is one question the agent asked the owner and the owner's answer,
@@ -98,6 +109,9 @@ type Launch struct {
 	HookCommand []string
 	// Prompt is the agent's first prompt; empty starts it with none.
 	Prompt string
+	// Resume continues the session SessionID instead of starting it; Prompt
+	// is then what the resumed session is told.
+	Resume bool
 	// Model is the model the agent starts on; "" means the agent's
 	// default.
 	Model string

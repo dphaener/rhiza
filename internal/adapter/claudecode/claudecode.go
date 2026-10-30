@@ -10,9 +10,12 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/dphaener/rhiza/internal/adapter"
@@ -54,7 +57,11 @@ func (a Adapter) Command(l adapter.Launch) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	argv := []string{"claude", "--session-id", l.SessionID, "--permission-mode", l.PermissionMode, "--settings", settings}
+	idFlag := "--session-id"
+	if l.Resume {
+		idFlag = "--resume"
+	}
+	argv := []string{"claude", idFlag, l.SessionID, "--permission-mode", l.PermissionMode, "--settings", settings}
 	if l.Model != "" {
 		argv = append(argv, "--model", l.Model)
 	}
@@ -435,6 +442,46 @@ func toolUseID(content json.RawMessage) string {
 		}
 	}
 	return ""
+}
+
+// limitLine is the part of one transcript line that UsageLimit reads.
+type limitLine struct {
+	Type    string `json:"type"`
+	Message struct {
+		Content json.RawMessage `json:"content"`
+	} `json:"message"`
+}
+
+var limitReset = regexp.MustCompile(`(?i)usage limit reached\|(\d{9,})`)
+
+// UsageLimit implements adapter.Adapter. The session is limited when the
+// last assistant line of its transcript says so: "usage limit reached", with
+// the reset as a Unix time after a bar, or "hit your limit". Any later
+// assistant line means the session went on.
+func (Adapter) UsageLimit(transcript []byte) (adapter.UsageLimit, bool) {
+	var last string
+	for _, line := range bytes.Split(transcript, []byte("\n")) {
+		line = bytes.TrimSpace(line)
+		if len(line) == 0 || line[0] != '{' {
+			continue
+		}
+		var l limitLine
+		if json.Unmarshal(line, &l) != nil || l.Type != "assistant" {
+			continue
+		}
+		last = string(l.Message.Content)
+	}
+	lower := strings.ToLower(last)
+	if !strings.Contains(lower, "usage limit reached") && !strings.Contains(lower, "hit your limit") {
+		return adapter.UsageLimit{}, false
+	}
+	var out adapter.UsageLimit
+	if m := limitReset.FindStringSubmatch(last); m != nil {
+		if sec, err := strconv.ParseInt(m[1], 10, 64); err == nil {
+			out.ResetAt = time.Unix(sec, 0).UTC()
+		}
+	}
+	return out, true
 }
 
 // usageLine is the part of one transcript line that TokenUse reads. Usage
