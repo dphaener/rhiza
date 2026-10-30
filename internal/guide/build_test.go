@@ -30,7 +30,8 @@ func TestBuildText(t *testing.T) {
 			`{"findings":[{"reason":`, "neither Evidence nor findings fails",
 			"Evidence\nwritten by anyone else does not count",
 		},
-		"done": {"rhiza session done"},
+		"fakes-only": {"with fakes only, never real Rex,\nagents or `gh`"},
+		"done":       {"rhiza session done"},
 	})
 	// Constraint agents-named-only-in-adapters: no agent product by name.
 	if strings.Contains(build.Body+build.Description, "Claude") {

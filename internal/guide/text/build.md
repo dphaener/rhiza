@@ -55,7 +55,8 @@ Never rewrite the earlier commits.
 ## Verifier
 
 You work in a detached checkout at the leaf's commit. Re-run the leaf's acceptance as
-written, and read the diff. Never edit code. End with exactly one of:
+written, and read the diff. Never edit code. Test runs with fakes only, never real Rex,
+agents or `gh`. End with exactly one of:
 
 - Evidence written as yourself, verifying the leaf, then
   `rhiza apply <file> --change "$RHIZA_CHANGE" --json`:
