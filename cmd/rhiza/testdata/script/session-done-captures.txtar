@@ -2,9 +2,11 @@
 # it writes the done mark, so a step that waits on done finds them. A dry run
 # captures nothing; a second done proposes nothing; the capture at exit adds
 # nothing already proposed; a session with no transcript says done with a
-# warning and keeps its mark.
+# warning and keeps its mark. The fake agent runs inside session run, so the
+# exit capture follows its done.
 
 chmod 755 bin/rex
+chmod 755 bin/claude
 env PATH=$WORK/bin:$PATH
 mkdir repo
 cd repo
@@ -14,6 +16,10 @@ exec git add -A
 exec git commit -qm init
 exec rhiza change new 'Capture answers' --title 'Answers' --json
 stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+# Commit the change set and its launcher actor, so the worktree's model,
+# where the agent says done, has them.
+exec git add -A
+exec git commit -qm change
 exec rhiza session start --permission-mode manual --json
 stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
 exec rhiza session start --permission-mode manual --json
@@ -26,44 +32,35 @@ stdout '^- Warning: propose decisions from the owner''s answers: no transcript o
 exec rhiza session show f3ff4d45-1e42-4e18-a215-01a16dc84d70
 stdout 'done'
 
-# A transcript with a picked and a typed answer.
-mkdir $HOME/.claude/projects/p
-cp $WORK/transcript.jsonl $HOME/.claude/projects/p/158fe87f-5cf3-4ff0-ae50-01a16dc84988.jsonl
+# A session run whose fake agent leaves a transcript with a picked and a
+# typed answer, tries a dry-run done, says done twice and exits 0.
+exec rhiza session run 158fe87f-5cf3-4ff0-ae50-01a16dc84988
+stdout '^Session 158fe87f-5cf3-4ff0-ae50-01a16dc84988 ended: the agent exited with code 0\.$'
+! stdout 'Proposed decision'
+! stdout 'Warning'
 
-# A dry run captures nothing and marks nothing.
-exec rhiza session done 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --dry-run
-cd $WORK/repo.answers
-! exec rhiza show answer-158fe87f-1 --change 01M5PWGEF85Y185JZ2ZGCNH40N
-stderr 'no node or link matches'
-cd $WORK/repo
+# The dry run captured nothing.
+exec cat $WORK/dry.out
+stdout 'no node or link matches'
+stdout '^show-exit=4$'
 
-# Done proposes the answers, and lists them.
-exec rhiza session done 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json
+# Done proposed the answers, listed them, and they were in the change set
+# when it returned.
+exec cat $WORK/done.out
 stdout '"decisions": \['
 stdout -count=4 '"answer-158fe87f-[1-4]"'
-cd $WORK/repo.answers
-exec rhiza show answer-158fe87f-1 --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
+exec cat $WORK/after-done.out
 stdout '"picked": "Blue"'
-! stdout '"quote"'
-exec rhiza show answer-158fe87f-2 --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
+exec cat $WORK/typed.out
 stdout '"quote": "Something like DuckDB, but local"'
-exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N --json
-stdout -count=4 '"op": "node.create"'
 
-# A second done proposes nothing.
-cd $WORK/repo
-exec rhiza session done 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json
+# A second done proposed nothing.
+exec cat $WORK/again.out
 stdout '"already": true'
 ! stdout '"decisions"'
-cd $WORK/repo.answers
-exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N --json
-stdout -count=4 '"op": "node.create"'
 
-# The capture a session run makes at exit finds all four already proposed.
-cd $WORK/repo
-exec rhiza session interview 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json
-stdout '"proposed": \[\]'
-stdout -count=4 '"answer-158fe87f-[1-4]"'
+# The capture session run made at the agent's exit added nothing already
+# proposed: still four Decisions.
 cd $WORK/repo.answers
 exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N --json
 stdout -count=4 '"op": "node.create"'
@@ -75,6 +72,27 @@ fold-ok
 -- bin/rex --
 #!/bin/sh
 echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+# A fake agent: leaves the transcript, tries a dry-run done, says done,
+# reads the change set back, says done again and exits 0.
+sid=
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
+mkdir -p "$HOME/.claude/projects/p"
+cp "$WORK/transcript.jsonl" "$HOME/.claude/projects/p/$sid.jsonl"
+rhiza session done --dry-run > /dev/null || exit 7
+rhiza show answer-158fe87f-1 --change "$RHIZA_CHANGE" > "$WORK/dry.out" 2>&1
+echo "show-exit=$?" >> "$WORK/dry.out"
+rhiza session done --json > "$WORK/done.out" || exit 7
+rhiza show answer-158fe87f-1 --change "$RHIZA_CHANGE" --json > "$WORK/after-done.out" || exit 7
+rhiza show answer-158fe87f-2 --change "$RHIZA_CHANGE" --json > "$WORK/typed.out" || exit 7
+rhiza session done --json > "$WORK/again.out" || exit 7
+exit 0
 -- transcript.jsonl --
 {"type": "user", "message": {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "toolu_1", "content": "answered"}]}, "toolUseResult": {"questions": [{"question": "Which colour?", "header": "Colour", "multiSelect": false, "options": [{"label": "Red", "description": "d"}, {"label": "Blue", "description": "d"}]}, {"question": "Which store?", "header": "Store", "multiSelect": false, "options": [{"label": "SQLite", "description": "d"}, {"label": "Postgres", "description": "d"}]}, {"question": "Which tools?", "header": "Tools", "multiSelect": true, "options": [{"label": "Go", "description": "d"}, {"label": "Make", "description": "d"}]}, {"question": "Which port?", "header": "Port", "multiSelect": false, "options": [{"label": "80", "description": "d"}, {"label": "8080", "description": "d"}]}], "answers": {"Which colour?": "Blue", "Which store?": "Something like DuckDB, but local", "Which tools?": "Go, and a linter, Make", "Which port?": "8080"}, "annotations": {"Which port?": {"notes": "Not 80, it needs root."}}}}
 {"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_rej","content":"The user doesn't want to proceed","is_error":true}]},"toolUseResult":"Error: The user doesn't want to proceed with this tool use."}
