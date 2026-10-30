@@ -1,0 +1,80 @@
+# session done proposes the session's answered questions as Decisions before
+# it writes the done mark, so a step that waits on done finds them. A dry run
+# captures nothing; a second done proposes nothing; the capture at exit adds
+# nothing already proposed; a session with no transcript says done with a
+# warning and keeps its mark.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Capture answers' --title 'Answers' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza session start --permission-mode manual --json
+stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+exec rhiza session start --permission-mode manual --json
+stdout '"id": "f3ff4d45-1e42-4e18-a215-01a16dc84d70"'
+
+# No transcript: done warns, and the mark stands.
+exec rhiza session done f3ff4d45-1e42-4e18-a215-01a16dc84d70
+stdout '^Session f3ff4d45-1e42-4e18-a215-01a16dc84d70 is done\.$'
+stdout '^- Warning: propose decisions from the owner''s answers: no transcript of session f3ff4d45-'
+exec rhiza session show f3ff4d45-1e42-4e18-a215-01a16dc84d70
+stdout 'done'
+
+# A transcript with a picked and a typed answer.
+mkdir $HOME/.claude/projects/p
+cp $WORK/transcript.jsonl $HOME/.claude/projects/p/158fe87f-5cf3-4ff0-ae50-01a16dc84988.jsonl
+
+# A dry run captures nothing and marks nothing.
+exec rhiza session done 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --dry-run
+cd $WORK/repo.answers
+! exec rhiza show answer-158fe87f-1 --change 01M5PWGEF85Y185JZ2ZGCNH40N
+stderr 'no node or link matches'
+cd $WORK/repo
+
+# Done proposes the answers, and lists them.
+exec rhiza session done 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json
+stdout '"decisions": \['
+stdout -count=4 '"answer-158fe87f-[1-4]"'
+cd $WORK/repo.answers
+exec rhiza show answer-158fe87f-1 --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout '"picked": "Blue"'
+! stdout '"quote"'
+exec rhiza show answer-158fe87f-2 --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout '"quote": "Something like DuckDB, but local"'
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout -count=4 '"op": "node.create"'
+
+# A second done proposes nothing.
+cd $WORK/repo
+exec rhiza session done 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json
+stdout '"already": true'
+! stdout '"decisions"'
+cd $WORK/repo.answers
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout -count=4 '"op": "node.create"'
+
+# The capture a session run makes at exit finds all four already proposed.
+cd $WORK/repo
+exec rhiza session interview 158fe87f-5cf3-4ff0-ae50-01a16dc84988 --json
+stdout '"proposed": \[\]'
+stdout -count=4 '"answer-158fe87f-[1-4]"'
+cd $WORK/repo.answers
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout -count=4 '"op": "node.create"'
+
+fold-ok
+cd $WORK/repo
+fold-ok
+
+-- bin/rex --
+#!/bin/sh
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- transcript.jsonl --
+{"type": "user", "message": {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "toolu_1", "content": "answered"}]}, "toolUseResult": {"questions": [{"question": "Which colour?", "header": "Colour", "multiSelect": false, "options": [{"label": "Red", "description": "d"}, {"label": "Blue", "description": "d"}]}, {"question": "Which store?", "header": "Store", "multiSelect": false, "options": [{"label": "SQLite", "description": "d"}, {"label": "Postgres", "description": "d"}]}, {"question": "Which tools?", "header": "Tools", "multiSelect": true, "options": [{"label": "Go", "description": "d"}, {"label": "Make", "description": "d"}]}, {"question": "Which port?", "header": "Port", "multiSelect": false, "options": [{"label": "80", "description": "d"}, {"label": "8080", "description": "d"}]}], "answers": {"Which colour?": "Blue", "Which store?": "Something like DuckDB, but local", "Which tools?": "Go, and a linter, Make", "Which port?": "8080"}, "annotations": {"Which port?": {"notes": "Not 80, it needs root."}}}}
+{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_rej","content":"The user doesn't want to proceed","is_error":true}]},"toolUseResult":"Error: The user doesn't want to proceed with this tool use."}
