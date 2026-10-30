@@ -1,0 +1,29 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M65P910WJQAR9C9AP45WE47A"
+  ],
+  "at": "2026-10-30T06:00:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rebasing branch cs/usage-limit-pause onto origin/main conflicts outside the rendered files, so ship-change stopped. How should these conflicts be resolved: internal/api/session_ask_test.go, internal/api/session_interview_test.go?"
+        },
+        "handle": "rebase-conflict-usage-limit-pause",
+        "id": "01M65PAVNBHXC3KDH2WZ02HC3J",
+        "key": null,
+        "kind": "question",
+        "node": "01M65PAVNBHXC3KDH2WW77B6P1",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61R3RG70WZD5EDH293ZGVWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65PAW80H5RARSD468H2FCVE",
+  "type": "ops",
+  "v": 1
+}
