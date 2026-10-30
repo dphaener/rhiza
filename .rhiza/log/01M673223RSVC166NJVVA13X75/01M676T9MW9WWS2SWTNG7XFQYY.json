@@ -1,0 +1,40 @@
+{
+  "actor": "01M676EC60SNKBQ747CFZR0GX0",
+  "after": [
+    "01M676JY8H5Y9HTWNZFCR26YB6"
+  ],
+  "at": "2026-10-30T20:08:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8fce720 (attempt 2, fix for review finding f1) ran go test ./internal/tui/roadmapapp -count=1: TestPlanRunStartsInteractiveInNewTab (p,y gives one rex window new call running rhiza run start <cs> --workflow plan with no --autonomous, view says which tab opened, app stays on the list), TestShipRunIsAutonomousWithAutoMode (s,y gives run start <cs> --autonomous --permission-mode auto), TestNDeclinesAndCallsNothing (n calls nothing) and TestOFocusesLiveRunOrSaysNone (o focuses the live run's tab or says No live run) all PASS with a fake exec, no real Rex. go test ./internal/api -run RunOpen PASS: run.open now resolves the change ref through resolveChangeSet, so a lowercase unique prefix finds the live run, the response carries the full ID, and the rex calls are block inspect then focus. Read the diff: only run_open.go and its test changed. go test ./..., fmt-check and vet pass; make self-check fails only on stale .rhiza/rendered actor/index files from later review record commits, not this leaf's code."
+        },
+        "handle": "roadmap-app-start-runs-verified-2",
+        "id": "01M676T8ETCNEXG7ER1GTVJPBA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M676T8ETCNEXG7ER1E7XFAHA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M676T8ETCNEXG7ER1E7XFAHA",
+        "id": "01M676T8XEGGFNMK5CRW142JGB",
+        "link": "01M676T8XEGGFNMK5CRT7DCB87",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6734CBEZPDTAJBANZVV5GXC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M673223RSVC166NJVVA13X75",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M676T9MW9WWS2SWTNG7XFQYY",
+  "type": "ops",
+  "v": 1
+}

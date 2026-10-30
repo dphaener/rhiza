@@ -1,0 +1,239 @@
+package roadmapapp
+
+import (
+	"strings"
+	"testing"
+
+	tea "charm.land/bubbletea/v2"
+)
+
+const (
+	a = "01M6730000AAAAAAAAAAAAAAAA"
+	b = "01M6730000BBBBBBBBBBBBBBBB"
+	c = "01M6730000CCCCCCCCCCCCCCCC"
+)
+
+const fakeRoadmap = `{"groups":[
+ {"kind":"milestone","intent":{"id":"01M67300000000000000000000","handle":"milestone-5","path":["rhiza"]},
+  "change_sets":[
+   {"id":"` + a + `","state":"accepted","kind":"intention","intent":"First change","ready":true,"depends_on":[],"serves":[]},
+   {"id":"` + b + `","state":"proposed","kind":"intention","intent":"Second change","ready":false,"depends_on":[],"serves":[]}]},
+ {"kind":"backlog","change_sets":[
+   {"id":"` + c + `","state":"accepted","kind":"intention","intent":"Loose change","ready":false,"depends_on":[],"serves":[]}]}],
+ "view":"to-be"}`
+
+const fakeReady = `{"change_sets":[
+ {"id":"` + a + `","state":"accepted","intent":"First change","ready":true,"reasons":[]},
+ {"id":"` + b + `","state":"proposed","intent":"Second change","ready":false,"reasons":["not accepted"]},
+ {"id":"` + c + `","state":"accepted","intent":"Loose change","ready":false,"reasons":["waits on a question"]}],
+ "view":"to-be"}`
+
+func fake(op, _ string, args []string) ([]byte, error) {
+	if op == "ready" {
+		return []byte(fakeReady), nil
+	}
+	return []byte(fakeRoadmap), nil
+}
+
+func key(m *Model, s string) {
+	m.Update(tea.KeyPressMsg{Code: rune(s[0]), Text: s})
+}
+
+func TestViewIsAListNotJSON(t *testing.T) {
+	v := NewModel(fake).View().Content
+	for _, want := range []string{"rhiza / milestone-5", "Backlog", a[:14] + " [accepted] First change",
+		b[:14] + " [proposed] Second change", "not ready: not accepted", "waits on a question"} {
+		if !strings.Contains(v, want) {
+			t.Errorf("view lacks %q:\n%s", want, v)
+		}
+	}
+	if strings.ContainsAny(v, "{}") {
+		t.Errorf("view has JSON braces:\n%s", v)
+	}
+	if strings.Contains(v, "First change (not ready") {
+		t.Errorf("a ready change set shows reasons:\n%s", v)
+	}
+}
+
+func TestCursorSkipsHeadings(t *testing.T) {
+	m := NewModel(fake)
+	if got := m.Cursor().String(); got != a {
+		t.Fatalf("cursor starts on %s", got)
+	}
+	key(m, "j")
+	if got := m.Cursor().String(); got != b {
+		t.Fatalf("j moved to %s, want %s", got, b)
+	}
+	key(m, "j") // crosses the Backlog heading
+	if got := m.Cursor().String(); got != c {
+		t.Fatalf("j moved to %s, want %s", got, c)
+	}
+	key(m, "j")
+	if got := m.Cursor().String(); got != c {
+		t.Fatalf("j past the end moved to %s", got)
+	}
+	key(m, "k")
+	if got := m.Cursor().String(); got != b {
+		t.Fatalf("k moved to %s, want %s", got, b)
+	}
+}
+
+func TestReloadKeepsCursorAndResultIsRoadmapBytes(t *testing.T) {
+	m := NewModel(fake)
+	key(m, "j")
+	key(m, "r")
+	if got := m.Cursor().String(); got != b {
+		t.Fatalf("reload moved cursor to %s", got)
+	}
+	out, err := m.Result()
+	if err != nil || string(out) != fakeRoadmap {
+		t.Fatalf("Result() = %q, %v", out, err)
+	}
+}
+
+const fakeShow = `{"id":"` + b + `","kind":"intention","intent":"Second change","title":"Second","state":"proposed",
+ "leaves":[{"id":"01M6730000EEEEEEEEEEEEEEEE","handle":"leaf-one","needs":[]}],
+ "ops":[{"op":"node.create","node":"01M6730000EEEEEEEEEEEEEEEE","handle":"leaf-one",
+  "fields":{"statement":"Do the first thing","acceptance":"A test proves the first thing"}}]}`
+
+const fakeQuestion = `{"kind":"node","node":{"id":"01M6730000FFFFFFFFFFFFFFFF","kind":"question","handle":"which-way",
+ "fields":{"statement":"Which way do we go?"}},"view":"to-be"}`
+
+const fakeRun = `{"id":"01M6730000GGGGGGGGGGGGGGGG","workflow":"ship","change":"` + b + `","state":"stopped","current":"build","steps":[]}`
+
+func detailFake(op, change string, args []string) ([]byte, error) {
+	switch op {
+	case "change.show":
+		return []byte(fakeShow), nil
+	case "show":
+		return []byte(fakeQuestion), nil
+	case "run.status":
+		return []byte(fakeRun), nil
+	case "ready":
+		return []byte(`{"change_sets":[
+ {"id":"` + a + `","state":"accepted","intent":"First change","ready":true,"reasons":[]},
+ {"id":"` + b + `","state":"proposed","intent":"Second change","ready":false,"reasons":["blocked by question which-way on leaf-one"]},
+ {"id":"` + c + `","state":"accepted","intent":"Loose change","ready":false,"reasons":[]}],"view":"to-be"}`), nil
+	}
+	return []byte(fakeRoadmap), nil
+}
+
+func TestEnterOpensDetailAndEscReturns(t *testing.T) {
+	m := NewModel(detailFake)
+	key(m, "j")
+	m.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	v := m.View().Content
+	for _, want := range []string{"Second change", "intention", "proposed", "leaf-one", "Do the first thing",
+		"A test proves the first thing", "Which way do we go?", "ship", "stopped", "build"} {
+		if !strings.Contains(v, want) {
+			t.Errorf("detail lacks %q:\n%s", want, v)
+		}
+	}
+	m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
+	if got := m.Cursor().String(); got != b {
+		t.Fatalf("esc left cursor on %s, want %s", got, b)
+	}
+	if v := m.View().Content; !strings.Contains(v, "Backlog") {
+		t.Errorf("esc did not return to the list:\n%s", v)
+	}
+}
+
+type call struct {
+	name string
+	args []string
+}
+
+// startModel is a model with a fake exec recording every call and a runner
+// answering run.open with runOpen.
+func startModel(runOpen string, calls *[]call) *Model {
+	m := NewModel(func(op, ch string, args []string) ([]byte, error) {
+		if op == "run.open" {
+			return []byte(runOpen), nil
+		}
+		return fake(op, ch, args)
+	})
+	m.SetStarter(Starter{
+		Exec: func(name string, args []string, _ string) ([]byte, error) {
+			*calls = append(*calls, call{name, args})
+			return []byte("{}"), nil
+		},
+		Self: "/bin/rhiza", Root: "/repo", RexSession: "session:1",
+	})
+	return m
+}
+
+func TestPlanRunStartsInteractiveInNewTab(t *testing.T) {
+	var calls []call
+	m := startModel("{}", &calls)
+	key(m, "p")
+	if len(calls) != 0 {
+		t.Fatalf("p called rex before y: %v", calls)
+	}
+	if v := m.View().Content; !strings.Contains(v, "plan run") || !strings.Contains(v, "y/n") {
+		t.Errorf("no y/n question:\n%s", v)
+	}
+	key(m, "y")
+	if len(calls) != 1 || calls[0].name != "rex" {
+		t.Fatalf("calls = %v, want one rex call", calls)
+	}
+	got := strings.Join(calls[0].args, " ")
+	want := "window new -s session:1 " + a[:9] + " -c /repo --json -- /bin/rhiza run start " + a + " --workflow plan"
+	if got != want {
+		t.Errorf("args = %q, want %q", got, want)
+	}
+	if strings.Contains(got, "--autonomous") {
+		t.Errorf("plan run is autonomous: %s", got)
+	}
+	if v := m.View().Content; !strings.Contains(v, "Opened Rex tab "+a[:9]) {
+		t.Errorf("view does not say which tab opened:\n%s", v)
+	}
+	if m.Cursor().String() != a {
+		t.Errorf("app did not stay on the list")
+	}
+}
+
+func TestShipRunIsAutonomousWithAutoMode(t *testing.T) {
+	var calls []call
+	m := startModel("{}", &calls)
+	key(m, "s")
+	key(m, "y")
+	if len(calls) != 1 {
+		t.Fatalf("calls = %v", calls)
+	}
+	got := strings.Join(calls[0].args, " ")
+	if want := "run start " + a + " --autonomous --permission-mode auto"; !strings.HasSuffix(got, want) {
+		t.Errorf("args = %q, want suffix %q", got, want)
+	}
+}
+
+func TestNDeclinesAndCallsNothing(t *testing.T) {
+	var calls []call
+	m := startModel("{}", &calls)
+	key(m, "s")
+	key(m, "n")
+	key(m, "p")
+	key(m, "n")
+	if len(calls) != 0 {
+		t.Errorf("declined runs called rex: %v", calls)
+	}
+	if strings.Contains(m.View().Content, "y/n") {
+		t.Errorf("question still showing")
+	}
+}
+
+func TestOFocusesLiveRunOrSaysNone(t *testing.T) {
+	var calls []call
+	m := startModel(`{"change":"`+a+`","live":true,"run":"R1","opened":true,"tab":"block:7"}`, &calls)
+	key(m, "o")
+	if v := m.View().Content; !strings.Contains(v, "Focused Rex tab block:7 of run R1") {
+		t.Errorf("view:\n%s", v)
+	}
+	m = startModel(`{"change":"`+a+`","live":false,"opened":false}`, &calls)
+	key(m, "o")
+	if v := m.View().Content; !strings.Contains(v, "No live run") {
+		t.Errorf("view:\n%s", v)
+	}
+	if len(calls) != 0 {
+		t.Errorf("o started a run: %v", calls)
+	}
+}

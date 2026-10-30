@@ -1,0 +1,40 @@
+{
+  "actor": "01M676G7PX6ZT1HSCK945H3HD3",
+  "after": [
+    "01M6765TKFFYX7YZA1DFW8K82J"
+  ],
+  "at": "2026-10-30T20:03:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5909fc2 (attempt 2, fix for review finding f2) ran go test ./cmd/rhiza -run TestRoadmapApp -count=1 -v: TestRoadmapAppAcceptsAProposedChangeSet passes (a shows the What-if with proposed -> accepted and y/n, state stays proposed until y, then accepted, list reloads to [accepted]); TestRoadmapAppAnswersABlockingQuestion passes (detail shows the question, ready reports blocked by question, enter + typed 'Use CSV' + enter records Decision answer-which-format whose quote field is exactly \"Use CSV\" with an answers link, ready reports the change set ready, render and check pass in the temp repo, view drops the block). go test ./internal/tui/... passes. Read the diff: answer.go now stores quote=<trimmed text as typed> instead of %q with an (owner) suffix, and the test asserts the stored quote exactly. make check's self-check reports stale renders only for actor records of other run sessions that are not in this checkout's log, unrelated to the leaf's Go-only diff."
+        },
+        "handle": "roadmap-app-accept-answer-verified-2",
+        "id": "01M676JX0ZJCCHNE865EJ0Q882",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M676JX0ZJCCHNE865CGRVHF6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M676JX0ZJCCHNE865CGRVHF6",
+        "id": "01M676JXGXYXD7SAEPPK1ZGPMB",
+        "link": "01M676JXGXYXD7SAEPPFMZR9N3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6734EA3V7228YH8DGYVYDQA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M673223RSVC166NJVVA13X75",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M676JY8H5Y9HTWNZFCR26YB6",
+  "type": "ops",
+  "v": 1
+}

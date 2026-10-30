@@ -1,0 +1,109 @@
+{
+  "actor": "01M675T79TX7Y0YWQ62A2QEKYF",
+  "after": [
+    "01M675SKQQV6YBAF5B96ZEP4WS"
+  ],
+  "at": "2026-10-30T19:56:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built this branch's rhiza (go build -o $TMPDIR/rhiza-qa ./cmd/rhiza) and, in a scratch git repo with a proposed and an accepted-but-question-blocked change set, ran rhiza tui app roadmap in a real Rex tab driven with rex send-key. Saw the Backlog heading and one row per change set with short ID, [state], title and '(not ready: ...)' reasons, no JSON; j/k and down/up moved the cursor between change set rows; r reloaded keeping the cursor (a new change set appeared); q quit with exit 0. rhiza tui app roadmap --once output was byte-equal (cmp) to rhiza roadmap --json."
+        },
+        "handle": "roadmap-app-list-qa-1",
+        "id": "01M6765P9XT45579T5D2GDSPD6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6765P9XT45579T5D2410BY2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6765P9XT45579T5D2410BY2",
+        "id": "01M6765PRY4G4THHWD6VANQBTS",
+        "link": "01M6765PRY4G4THHWD6QDK7F7W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M67349MAEY43NAK3P9PG0H74",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "With the built binary in a real Rex tab, enter on a change set row opened its detail: short ID and state, kind 'intention', intent, leaves with statement and acceptance ('export: Export reports / acceptance: A test exports a report'), the blocking questions' statements, and Latest run 'none' or, with a live run journal for the change set, 'ship-change · state running · step build/build'. esc returned to the list with the same row selected."
+        },
+        "handle": "roadmap-app-detail-qa-1",
+        "id": "01M6765Q9C2SGV9YF4TGRQGT91",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6765Q9C2SGV9YF4TE14V71J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6765Q9C2SGV9YF4TE14V71J",
+        "id": "01M6765QSPSTRBMP43ZA7KH3J1",
+        "link": "01M6765QSPSTRBMP43Z6GWVPRC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6734AZGT872HRJ9ZRBWAABE",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built binary in a real Rex tab, with a logging rex shim on PATH that records 'window new' instead of starting a real run and forwards other calls to real Rex. p showed 'Start an interactive plan run ... y/n'; n called nothing; p then y called 'rex window new -s <session> 01M675WMC -c <repo> --json -- <rhiza> run start <cs> --workflow plan' (no --autonomous) and said 'Opened Rex tab 01M675WMC running the plan run'; s then y called the same with 'run start <cs> --autonomous --permission-mode auto'; the app stayed open on the list. o with no run said 'No live run for <cs>'; o with a live (flock-held) run journal whose process names a real Rex block ran real 'rex block inspect' and 'rex focus', and Rex's active window became that tab ('Focused Rex tab block:... of run ...'); after closing that block, o said 'The tab of run ... is gone'."
+        },
+        "handle": "roadmap-app-start-runs-qa-1",
+        "id": "01M6765RAEKRHYBQ0XJGXDKHBZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6765RAEKRHYBQ0XJDX16HYH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6765RAEKRHYBQ0XJDX16HYH",
+        "id": "01M6765RT2FW1QV9CXCYW26W0V",
+        "link": "01M6765RT2FW1QV9CXCXEMCVJN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6734CBEZPDTAJBANZVV5GXC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built binary in a real Rex tab over a scratch repo. On the proposed change set, a showed 'What-if: accept 01M675WMCPN2QE, proposed -> accepted. Accept it? y/n'; y accepted it (rhiza change show: accepted) and the list reloaded with '[accepted]' and no reasons. In the blocked change set's detail, enter then typing 'Use CSV, quoted \"always\"' with backspace and enter recorded Decision answer-which-format (statement and quote of the typed text, '(owner)', answers -> which-format); rhiza ready reported the change set ready; rhiza render and rhiza check passed. With two blocking questions, j picked the second and its answer recorded answer-q-two, leaving only q-one blocking."
+        },
+        "handle": "roadmap-app-accept-answer-qa-1",
+        "id": "01M6765SAATHVWNKB49M1N836K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6765SAATHVWNKB49JX31C2S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6765SAATHVWNKB49JX31C2S",
+        "id": "01M6765SVR0BPFQD8ACDSSG851",
+        "link": "01M6765SVR0BPFQD8ACB00ZCYV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6734EA3V7228YH8DGYVYDQA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M673223RSVC166NJVVA13X75",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6765TKFFYX7YZA1DFW8K82J",
+  "type": "ops",
+  "v": 1
+}

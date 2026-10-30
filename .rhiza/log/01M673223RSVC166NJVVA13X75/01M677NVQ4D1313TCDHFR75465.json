@@ -1,0 +1,73 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6775ZFM5M2HWW6G7Z5SESEX"
+  ],
+  "at": "2026-10-30T20:23:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "2fc9b37bbebc52d1a490782a4838cbf2bdd213e2",
+          "pr": "https://github.com/dphaener/rhiza/pull/120",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #120 (https://github.com/dphaener/rhiza/pull/120) passed CI at 2fc9b37",
+          "status": "verified"
+        },
+        "handle": "pr-120-actionable-roadmap-app",
+        "id": "01M677NRV9KM3YXT5KCB1NF6VF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M677NRV9KM3YXT5KC7VRAHN9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M677NRV9KM3YXT5KC7VRAHN9",
+        "id": "01M677NSAX3TQM5G987PNKN78S",
+        "link": "01M677NSAX3TQM5G987N508GWW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M67349MAEY43NAK3P9PG0H74",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M677NRV9KM3YXT5KC7VRAHN9",
+        "id": "01M677NSVJSZG1W8AXBGA468G0",
+        "link": "01M677NSVJSZG1W8AXBCT9TE4S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6734AZGT872HRJ9ZRBWAABE",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M677NRV9KM3YXT5KC7VRAHN9",
+        "id": "01M677NTBKEQFGVCAY2SAN8D6E",
+        "link": "01M677NTBKEQFGVCAY2QFDAWVH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6734CBEZPDTAJBANZVV5GXC",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M677NRV9KM3YXT5KC7VRAHN9",
+        "id": "01M677NTVF5PR0DFT9W9NA71K9",
+        "link": "01M677NTVF5PR0DFT9W7WVJCW7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6734EA3V7228YH8DGYVYDQA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M673223RSVC166NJVVA13X75",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M677NVQ4D1313TCDHFR75465",
+  "type": "ops",
+  "v": 1
+}

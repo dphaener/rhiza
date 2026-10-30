@@ -1,0 +1,30 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M67746P4GBP1D63DGDFYF7M9"
+  ],
+  "at": "2026-10-30T20:14:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The rebase conflict in cmd/rhiza/tui.go is settled by keeping both apps: tuiApp recognises the inbox app and the roadmap app, each in its own case; rendered files are settled by rendering again",
+          "wording": "(the orchestrator's ruling as arbiter, under the owner's standing instruction)"
+        },
+        "handle": "actionable-roadmap-rebase-resolution",
+        "id": "01M6775XM8WXCR0FPR2AKVXG7M",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6775XM8WXCR0FPR28G0GTJ5",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M673223RSVC166NJVVA13X75",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6775Y46ANRNWAAMCN7N18FH",
+  "type": "ops",
+  "v": 1
+}

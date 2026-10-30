@@ -1,0 +1,40 @@
+{
+  "actor": "01M673VZ71ASEDFSKAPADQV6DN",
+  "after": [
+    "01M6734Z6SABQZR41TCEVGJ2ZR"
+  ],
+  "at": "2026-10-30T19:22:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4444bfc, go test ./internal/tui/roadmapapp -count=1 -v passed: TestViewIsAListNotJSON builds the app over fake roadmap and ready results and asserts the milestone heading (rhiza / milestone-5), the Backlog heading, rows with short ID, [state] and title, the not-ready reasons, and no { or } in the view; TestCursorSkipsHeadings asserts j moves from the first row to the second and across the Backlog heading to the third, stops at the end, and k moves back; TestReloadKeepsCursorAndResultIsRoadmapBytes covers r. go test ./cmd/rhiza -run TestScripts/tui passed, including tui-read-apps.txtar, where rhiza tui app roadmap --once compares equal (cmp) to rhiza roadmap --json. A scratch build on this repo's model also gave byte-identical output for tui app roadmap --once and roadmap --json. Reading the diff: roadmap moved from readapps into internal/tui/roadmapapp, wired in cmd/rhiza/tui.go, and q/esc quit. fmt-check, vet and go test ./... pass, with the slice and modelapp timing tests passing when rerun alone. make self-check fails only on rendered files for actor records this run wrote after the commit, not on the leaf."
+        },
+        "handle": "roadmap-app-list-verified",
+        "id": "01M6747M3NR3XG276B94A9KPZT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6747M3NR3XG276B90Z5AN4B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6747M3NR3XG276B90Z5AN4B",
+        "id": "01M6747MNQBYDJJ0D6T3RQ1J26",
+        "link": "01M6747MNQBYDJJ0D6T3HCFHQ8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M67349MAEY43NAK3P9PG0H74",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M673223RSVC166NJVVA13X75",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6747NH6XB0K6MVQ59C4SP92",
+  "type": "ops",
+  "v": 1
+}

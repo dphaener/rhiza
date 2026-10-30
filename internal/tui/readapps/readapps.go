@@ -1,4 +1,4 @@
-// Package readapps is the read-only rhiza apps: roadmap, ready, show, why,
+// Package readapps is the read-only rhiza apps: ready, show, why,
 // slice, run-status and session-ls. Each wraps the api operation of the same name, run in-process
 // through the registry, so an app shows what `rhiza <op> --json` prints. An
 // app starts no daemon and binds no socket.
@@ -26,7 +26,6 @@ type App struct {
 
 // Apps are the read apps, in the order they are registered.
 var Apps = []App{
-	{Name: "roadmap", Summary: "Milestones and the change sets that serve them"},
 	{Name: "ready", Summary: "Which change sets can be worked on now"},
 	{Name: "show", Summary: "One node or link", Prompt: "show (ID or handle)"},
 	{Name: "why", Summary: "Why a node exists", Prompt: "why (ID or handle)"},
