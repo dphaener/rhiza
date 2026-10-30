@@ -1,0 +1,52 @@
+{
+  "actor": "01M66E5TRV5B9QE36HM9JYECYN",
+  "after": [
+    "01M66DV4RB994B0EVZA7D4C71D"
+  ],
+  "at": "2026-10-30T12:58:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M5Z8XSYAD7N2R7VF3MT1TK03",
+        "handle": null,
+        "id": "01M66E7QBDW44SZTZ0DQPAE8YJ",
+        "node": "01M5Z8XSYAD7N2R7VF3J62AXNK",
+        "op": "node.update",
+        "set": {
+          "statement": "The built-in ship-change.toml runs a workflow step on build, which inherits build's own render step (it runs rhiza render and commits .rhiza/rendered and the uncommitted .rhiza/log entries on the branch) and its check; a workflow step on review skipping its sign-off, which inherits review's own render step after its checks; a render command step of its own, render-pr, that does the same right before every push, including the push after rhiza run request-changes; ship open-pr; the wait for CI; the sign-off, whose on.changes goes back to review/review; and then today's rebase, land, merge, main check, close-out and ship steps, with no shipit prompt and no `ship check --pr-open` until. Every one of these render steps leaves the pushed branch holding every actor record its rendered pages are built from, so rhiza check passes on a clone of it."
+        },
+        "unset": []
+      },
+      {
+        "fields": {
+          "reasoning": "The model check (review cycle 2, finding f1) confirmed that 83c71b7 moved ship-change's render step into the build workflow and that the review workflow now renders too, so the statement decided by ship-change-file-names-render no longer matched the code. The code is what this change set intends, so the statement changes.",
+          "statement": "Leaf ship-change-file's statement no longer lists a render command step of ship-change's own between the build and review workflow steps: ship-change runs build/build, build/render, build/check, review/code, review/review, review/render and then render-pr, so its render before review is inherited from build (see build-renders-branch) and review/render runs before render-pr.",
+          "wording": "decided by the orchestrator acting as arbiter, on the owner's word that the orchestrator signs off on this change set"
+        },
+        "handle": "ship-change-file-inherits-render",
+        "id": "01M66E7QQXGY17RMND0M0C48SB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M66E7QQXGY17RMND0HHR6NYV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66E7QQXGY17RMND0HHR6NYV",
+        "id": "01M66E7R6ACTSVD0YTCSJS5V2H",
+        "link": "01M66E7R6ACTSVD0YTCR9236E1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61BGA5SNFJNDHFHC1SX9B4W",
+        "type": "supersedes"
+      }
+    ]
+  },
+  "change_set": "01M61GW7K1PDG7HMFXMN3YNA7B",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66E7RVM211V9B4HCR8TFCE2",
+  "type": "ops",
+  "v": 1
+}
