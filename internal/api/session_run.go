@@ -182,7 +182,7 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 
 	follow := followRex(ctx, st, rec.ID)
 	var code int
-	var fresh []string
+	var paused []string
 	for pause := 0; ; pause++ {
 		base := transcriptLen(ctx, a, rec.ID)
 		p, err := ctx.Start(Program{Name: argv[0], Args: argv[1:], Dir: agentDir(rec), Env: env, Unset: unset, Terminal: true})
@@ -205,6 +205,12 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 			resp.Warnings = follow.stop()
 			return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("%s is still stopped at its usage limit after %d pauses: gave up instead of pausing again", a.Name(), maxUsageLimitPauses))
 		}
+		// The record says the session is paused, not idle at its prompt,
+		// until the resumed agent's hooks speak again.
+		detail := fmt.Sprintf("%s until %s", limitPausedDetail, ctx.Now().Add(wait).UTC().Format(time.RFC3339))
+		if warn := recordLimitPause(ctx, st, rec.ID, detail); warn != "" {
+			paused = append(paused, warn)
+		}
 		// The same session goes on once the limit resets: its context and
 		// the work it committed stay.
 		runClock.Sleep(wait)
@@ -215,9 +221,9 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 			// told what it was first told.
 			launch.Resume, launch.Prompt = false, rec.Prompt
 			msg := fmt.Sprintf("the transcript of session %s is gone after the usage-limit pause: started a fresh session for the step instead of resuming", rec.ID)
-			fresh = append(fresh, msg)
+			paused = append(paused, msg)
 			if warn := recordFreshSession(ctx, st, rec, msg); warn != "" {
-				fresh = append(fresh, warn)
+				paused = append(paused, warn)
 			}
 		}
 		if argv, err = a.Command(launch); err != nil {
@@ -226,7 +232,7 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 		}
 		resp.Argv = argv
 	}
-	resp.Warnings = append(follow.stop(), fresh...)
+	resp.Warnings = append(follow.stop(), paused...)
 	resp.Code = code
 	updated, err := st.Update(rec.ID, func(r *session.Record) {
 		r.Status.Exit = &session.Report{State: session.StateExited, Code: &code, At: ctx.Now().UTC()}
@@ -252,6 +258,9 @@ const (
 	usageLimitWait      = 15 * time.Minute
 	maxUsageLimitPauses = 24
 	resumePrompt        = "The usage limit has reset. Continue where you left off."
+	// limitPausedDetail is the detail of the working report a session
+	// stopped at its usage limit gets in place of idle.
+	limitPausedDetail = "paused at its usage limit"
 )
 
 // limitPoll is how often a running agent's transcript is read for its usage
@@ -326,6 +335,22 @@ func limitWait(ctx *Ctx, a adapter.Adapter, sid string) (time.Duration, bool) {
 		return usageLimitWait, true
 	}
 	return max(0, l.ResetAt.Sub(ctx.Now())), true
+}
+
+// recordLimitPause records a working report with detail as the session's
+// hook source, unless it has exited: a session stopped at its usage limit
+// sits at its prompt, but it is not ready, and a run must not take it for
+// idle. It returns a warning, never an error.
+func recordLimitPause(ctx *Ctx, st *session.Store, sid, detail string) string {
+	rep := session.Report{State: session.StateWorking, Detail: detail, At: ctx.Now().UTC()}
+	if _, err := st.Update(sid, func(r *session.Record) {
+		if !r.Status.Exited() {
+			r.Status.Hook = &rep
+		}
+	}); err != nil {
+		return fmt.Sprintf("record session %s paused at its usage limit: %v", sid, err)
+	}
+	return ""
 }
 
 // recordTokenUse reads the session's token use from its transcript,
@@ -717,7 +742,8 @@ func sessionHook(ctx *Ctx, event string) (SessionHookResponse, error) {
 // says so in resp. A report that changes nothing, or arrives after the
 // session exited, is not recorded. In an autonomous session a question to
 // the owner is denied (resp's reply) and kept as the asked mark: the
-// arbiter answers it by message.
+// arbiter answers it by message. An idle report from an agent stopped at
+// its usage limit is recorded as working, paused (see recordLimitPause).
 func recordHook(ctx *Ctx, st *session.Store, rec session.Record, a adapter.Adapter, event string, payload []byte, rep adapter.HookReport, changed bool, resp *SessionHookResponse) error {
 	name := a.Name()
 	if !changed {
@@ -727,6 +753,13 @@ func recordHook(ctx *Ctx, st *session.Store, rec session.Record, a adapter.Adapt
 		return fmt.Errorf("%s reported unknown state %q", name, rep.State)
 	}
 	report := session.Report{State: rep.State, Kind: rep.Kind, Detail: rep.Detail, At: ctx.Now().UTC()}
+	// An agent stopped at its usage limit goes idle at its prompt and stays
+	// there; it is paused, not ready, until session.run stops and resumes it.
+	if report.State == session.StateIdle {
+		if _, limited := limitWait(ctx, a, rec.ID); limited {
+			report.State, report.Detail = session.StateWorking, limitPausedDetail
+		}
+	}
 	var reply []byte
 	if rec.Autonomous {
 		b, ask, err := a.AskReply(event, payload, autonomousAskReason)

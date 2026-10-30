@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"io"
 	"os"
 	"path/filepath"
@@ -36,6 +37,21 @@ func (limitAdapter) TranscriptGlobs(sid string, getenv func(string) string) []st
 }
 func (limitAdapter) UsageLimit(t []byte) (adapter.UsageLimit, bool) {
 	return adapter.UsageLimit{}, strings.Contains(string(t), "limited")
+}
+
+// HookStatus reports idle for a Stop of the session the payload's
+// session_id names.
+func (limitAdapter) HookStatus(event string, raw []byte) (adapter.HookReport, bool, error) {
+	var p struct {
+		SessionID string `json:"session_id"`
+	}
+	if err := json.Unmarshal(raw, &p); err != nil {
+		return adapter.HookReport{}, false, err
+	}
+	if event != "Stop" {
+		return adapter.HookReport{}, false, nil
+	}
+	return adapter.HookReport{SessionID: p.SessionID, State: session.StateIdle}, true, nil
 }
 
 // removeClock removes a file when the run sleeps.
@@ -189,5 +205,80 @@ func TestSessionRunFailsWhenPausesRunOut(t *testing.T) {
 	}
 	if rec.Status.Exit == nil || rec.Status.Exit.State != session.StateError {
 		t.Errorf("exit %+v, want an error", rec.Status.Exit)
+	}
+}
+
+// An agent that stops at its usage limit is recorded as working, paused,
+// not idle: a run must not take it for ready at its prompt. Once it goes
+// on, its Stop is idle again.
+func TestSessionHookStopAtLimitIsPaused(t *testing.T) {
+	f, s, path := limitFixture(t)
+	st := session.NewStore(session.Dir(f.common))
+	stop := func() session.Report {
+		t.Helper()
+		f.ctx.Stdin = strings.NewReader(`{"session_id":"` + s.ID + `"}`)
+		if _, err := callOp(t, f.ctx, "session.hook", `{"event":"Stop"}`); err != nil {
+			t.Fatal(err)
+		}
+		rec, err := st.Read(s.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		rep, _ := session.Resolve(rec)
+		return rep
+	}
+
+	if err := os.WriteFile(path, []byte("limited"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if rep := stop(); rep.State != session.StateWorking || rep.Detail != limitPausedDetail {
+		t.Errorf("report %+v at the limit: want working, %q", rep, limitPausedDetail)
+	}
+	if err := os.WriteFile(path, []byte("went on"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if rep := stop(); rep.State != session.StateIdle {
+		t.Errorf("report %+v past the limit: want idle", rep)
+	}
+}
+
+// pauseClock records the session's report when the run sleeps, then
+// ends the limit.
+type pauseClock struct {
+	path string
+	st   *session.Store
+	sid  string
+	seen *session.Report
+}
+
+func (c pauseClock) Now() time.Time { return time.Unix(0, 0) }
+func (c pauseClock) Sleep(time.Duration) {
+	if rec, err := c.st.Read(c.sid); err == nil {
+		*c.seen, _ = session.Resolve(rec)
+	}
+	os.WriteFile(c.path, []byte("done"), 0o644)
+}
+
+// While a session is paused at its usage limit its record says so.
+func TestSessionRunRecordsPause(t *testing.T) {
+	f, s, path := limitFixture(t)
+	if err := os.WriteFile(path, []byte("limited"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	st := session.NewStore(session.Dir(f.common))
+	if _, err := st.Update(s.ID, func(r *session.Record) {
+		r.Status.Hook = &session.Report{State: session.StateIdle}
+	}); err != nil {
+		t.Fatal(err)
+	}
+	var seen session.Report
+	useClock(t, pauseClock{path, st, s.ID, &seen})
+	f.ctx.Start = func(Program) (Process, error) { return &fakeProcess{}, nil }
+
+	if _, err := callOp(t, f.ctx, "session.run", `{"id":"`+s.ID+`"}`); err != nil {
+		t.Fatal(err)
+	}
+	if seen.State != session.StateWorking || !strings.HasPrefix(seen.Detail, limitPausedDetail+" until ") {
+		t.Errorf("report during the pause %+v: want working, %s until ...", seen, limitPausedDetail)
 	}
 }
