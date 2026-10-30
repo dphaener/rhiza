@@ -393,7 +393,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if _, ok := def.Steps["review/signoff"]; ok {
 		t.Error("review's signoff step is not skipped")
 	}
-	want := []string{"build/build", "build/check", "render", "review/code", "review/review", "render-pr", "open-pr", "wait-pr", "pr-green", "signoff", "rebase", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
+	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "render-pr", "open-pr", "wait-pr", "pr-green", "signoff", "rebase", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
 		"rebase-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
@@ -515,7 +515,7 @@ func TestBuildBuiltin(t *testing.T) {
 	if def.Name != "build" || def.Start != "build" {
 		t.Errorf("name %q, start %q; want build, build", def.Name, def.Start)
 	}
-	if want := []string{"build", "check"}; !slices.Equal(def.Order, want) {
+	if want := []string{"build", "render", "check"}; !slices.Equal(def.Order, want) {
 		t.Fatalf("steps = %v; want %v", def.Order, want)
 	}
 	build := def.Steps["build"]
@@ -561,7 +561,9 @@ func TestBuildBuiltin(t *testing.T) {
 		step, outcome, next string
 		end                 End
 	}{
-		{"build", OutcomePass, "check", EndNone},
+		{"build", OutcomePass, "render", EndNone},
+		{"render", OutcomePass, "check", EndNone},
+		{"render", OutcomeFail, "", EndFailed},
 		{"build", OutcomeFail, "", EndFailed},
 		{"check", OutcomePass, "", EndSucceeded},
 		{"check", OutcomeFail, "", EndFailed},

@@ -9,7 +9,7 @@ name = "build"
 [step.build]
 kind = "leaves"
 split = "auto"
-on.pass = "check"
+on.pass = "render"
 
 # A builder passes only with a new commit whose Leaf: trailer names its
 # leaf.
@@ -22,6 +22,21 @@ prompt = "/rhiza-build Build leaf {leaf} of change set {change} ({title}), attem
 [step.build.verifier]
 models = ["opus"]
 prompt = "/rhiza-build Verify leaf {leaf} of change set {change} ({title}) at commit $RHIZA_COMMIT, as the verifier: follow `rhiza guide build`. Never edit code. End with Evidence written as yourself that verifies {leaf}, or with findings recorded by `rhiza run findings --leaf {leaf}`, then run `rhiza session done` as your very last action."
+
+# Build's sessions register actors and write Evidence, which leaves
+# .rhiza/rendered stale. Render and commit the rendered folder on the
+# branch, with the .rhiza/log entries the sessions left uncommitted
+# (their actor records), so rhiza check passes on it; nothing to render
+# commits nothing.
+[step.render]
+kind = "command"
+run = """
+rhiza render &&
+git add -A -- .rhiza/rendered .rhiza/log &&
+{ git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
+  git commit -q -m 'Render after the build' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
+"""
+on.pass = "check"
 
 # build-check: every leaf has Evidence by an actor who wrote none of its
 # commits. The run then ends done; the change set stays accepted, as
