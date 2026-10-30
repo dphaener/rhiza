@@ -3,6 +3,7 @@ package run
 import (
 	"reflect"
 	"slices"
+	"strings"
 
 	"github.com/dphaener/rhiza/internal/workflow"
 )
@@ -14,6 +15,9 @@ const (
 	// StatusIdle: the run stopped (at a wait under NoWait) and can be
 	// resumed; Detail says why.
 	StatusIdle = "idle"
+	// StatusBlocked: the run finished failed with a review question open;
+	// Detail says why and Question is its first open question.
+	StatusBlocked = "blocked"
 	// StatusDone: the run finished and succeeded.
 	StatusDone = "done"
 	// StatusError: the run finished and failed; Detail says why.
@@ -34,6 +38,9 @@ type StatusReport struct {
 	State string
 	// Detail is, when finished or stopped, why; "" otherwise.
 	Detail string
+	// Question is, when State is StatusBlocked, the text of the first open
+	// review question of the step the run ended at.
+	Question string
 	// Leaves and Passed are, while Step is a leaves step whose leaves are
 	// known, how many leaves it has and how many passed (have Evidence).
 	Leaves int
@@ -85,6 +92,9 @@ func deriveStatus(st State, def *workflow.Definition, leaves []Leaf) StatusRepor
 		rep.State, rep.Detail = StatusDone, st.Detail
 		if st.Result != Succeeded {
 			rep.State = StatusError
+			if q, ok := openReviewQuestion(st, rep.Step); ok {
+				rep.State, rep.Question = StatusBlocked, q.Text
+			}
 		}
 		return rep
 	}
@@ -127,6 +137,31 @@ func deriveStatus(st State, def *workflow.Definition, leaves []Leaf) StatusRepor
 	}
 	rep.Progress = &p
 	return rep
+}
+
+// openReviewQuestion is the first of checks step step's questions of its
+// latest cycle that the step's last detail lists as unanswered.
+func openReviewQuestion(st State, step string) (ReviewQuestion, bool) {
+	var detail string
+	for _, s := range st.Steps {
+		if s.Step == step {
+			detail = s.Detail
+		}
+	}
+	_, tail, ok := strings.Cut(detail, "unanswered questions: ")
+	cur, has := st.LatestCycle(step)
+	if !ok || !has {
+		return ReviewQuestion{}, false
+	}
+	open, _, _ := strings.Cut(tail, ";")
+	for _, h := range strings.Split(open, ", ") {
+		for _, q := range st.ReviewQuestionsFor(step, cur.Cycle) {
+			if q.QuestionHandle == strings.TrimSpace(h) {
+				return q, true
+			}
+		}
+	}
+	return ReviewQuestion{}, false
 }
 
 // checksStatus is rep with checks step step's progress: its checks, how

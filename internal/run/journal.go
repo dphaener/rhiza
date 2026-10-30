@@ -767,7 +767,9 @@ type ReviewQuestion struct {
 	Handle         string
 	Question       string
 	QuestionHandle string
-	At             time.Time
+	// Text is the question as raised.
+	Text string
+	At   time.Time
 }
 
 // CheckSession is one check-session entry: a session of role Role (check)
@@ -1296,7 +1298,7 @@ func (j Journal) State() State {
 		case TypeReviewQuestion:
 			st.ReviewQuestions = append(st.ReviewQuestions, ReviewQuestion{
 				Step: e.Step, Check: e.Check, Cycle: e.Cycle, Finding: e.Finding, Leaf: e.Leaf, Handle: e.Handle,
-				Question: e.Question, QuestionHandle: e.QuestionHandle, At: e.At,
+				Question: e.Question, QuestionHandle: e.QuestionHandle, Text: e.Detail, At: e.At,
 			})
 		case TypeCodeCheck:
 			st.CodeChecks = append(st.CodeChecks, CodeCheck{Step: e.Step, Outcome: e.Outcome, Detail: e.Detail, At: e.At})

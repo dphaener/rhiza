@@ -27,6 +27,9 @@ type statusLeafRunner struct {
 	store *run.Store
 	// findings are what a check's first-cycle session records, by check.
 	findings map[string][]run.Finding
+	// everyCycle has a check record its findings in every cycle, not only
+	// the first, so they survive the fix cycles.
+	everyCycle bool
 }
 
 func statusSID(spec run.LeafSpec) string {
@@ -88,7 +91,7 @@ func (f *statusLeafRunner) ClosePane(string) error { return nil }
 func (f *statusLeafRunner) StartCheck(spec run.CheckSpec) (string, error) {
 	if f.store != nil {
 		e := run.Entry{Type: run.TypeFindings, Step: spec.Step.Name, Check: spec.Check.Name, Cycle: spec.Cycle}
-		if spec.Cycle == 1 {
+		if spec.Cycle == 1 || f.everyCycle {
 			e.Findings = f.findings[spec.Check.Name]
 		}
 		if err := f.store.Append("R1", e); err != nil {
@@ -407,5 +410,25 @@ func TestProgramStatusReviewCodeCheck(t *testing.T) {
 	}
 	if r := reports[1]; !root(r) || r["state"] != "error" || !strings.HasPrefix(r["msg"], "run failed: ") || !strings.Contains(r["msg"], `"code"`) {
 		t.Errorf("last report %v, want root error naming the failed code step", r)
+	}
+}
+
+// A review that still fails after its two fix cycles raises a question
+// for the surviving finding, and Rex's root record ends blocked, naming
+// the change set, the review step and the question's text.
+func TestProgramStatusReviewQuestions(t *testing.T) {
+	f := &statusLeafRunner{
+		findings:   map[string][]run.Finding{"alpha": {{ID: "f1", Severity: "major", Reason: "bad f1"}}},
+		everyCycle: true,
+	}
+	reports := statusRun(t, statusChecksWF, f)
+	last := reports[len(reports)-1]
+	if _, ok := last["id"]; ok || last["state"] != "blocked" {
+		t.Fatalf("last report %v, want root blocked", last)
+	}
+	for _, s := range []string{"Status runs", "step review", "finding f1", "bad f1"} {
+		if !strings.Contains(last["msg"], s) {
+			t.Errorf("msg %q lacks %q", last["msg"], s)
+		}
 	}
 }

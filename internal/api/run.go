@@ -1819,6 +1819,8 @@ func rexRoot(rep run.StatusReport) []byte {
 		msg = "run succeeded"
 	case run.StatusError:
 		msg = "run failed"
+	case run.StatusBlocked:
+		msg = fmt.Sprintf("%s: step %s waits on you: %s", title, rep.Step, strings.TrimSpace(rep.Question))
 	case run.StatusIdle:
 		msg = "run stopped at step " + rep.Step
 	default:
@@ -1830,7 +1832,7 @@ func rexRoot(rep run.StatusReport) []byte {
 			msg += fmt.Sprintf(" · %d of %d leaves passed", rep.Passed, rep.Leaves)
 		}
 	}
-	if d, _, _ := strings.Cut(strings.TrimSpace(rep.Detail), "\n"); d != "" && rep.State != run.StatusWorking {
+	if d, _, _ := strings.Cut(strings.TrimSpace(rep.Detail), "\n"); d != "" && rep.State != run.StatusWorking && rep.State != run.StatusBlocked {
 		msg += ": " + d
 	}
 	return rexRecord("", rep.State, "", title, msg, rep.Progress)
