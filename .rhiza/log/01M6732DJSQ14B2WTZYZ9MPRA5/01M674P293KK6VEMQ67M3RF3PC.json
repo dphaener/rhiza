@@ -1,0 +1,40 @@
+{
+  "actor": "01M6747GG61SEV68TYREX8K0EZ",
+  "after": [
+    "01M674CTQ5XD752SSBXY332X45"
+  ],
+  "at": "2026-10-30T19:30:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4e20b3c ran go test ./internal/tui/inboxapp -run 'Test(Open|Answer|Take|Approve|Retry|Abandon|Actions|Esc)' -v -count=1: all 8 pass. internal/tui/inboxapp/actions_test.go drives the Model with a fake Runner recording ops and a fake Exec recording argv (no real Rex or agent): o and enter call inbox.open q1; a + typed 'use pg' + enter calls session.message SESS1 'use pg'; t calls session.message SESS1 with the recommendation 'sqlite'; y on the sign-off calls inbox.approve s2; c + 'add tests' + enter calls inbox.request-changes s2 <file> whose findings[0].reason is 'add tests' (file removed after); R on the failed run execs 'rex window new RUNF00000 -c /repo --json -- /bin/rhiza run resume RUNF00000003 --retry' (gave-up: no --retry); x then n calls nothing, x then y calls run.abandon RUNF00000003; actions are ignored on other kinds. Read the diff: each act reloads the list; positional args match InboxOpen/Approve/RequestChanges, SessionMessage and RunAbandon request arg tags; run.resume has --retry; tui.go wires Exec/Self/Root/RexSession from the Ctx. make fmt-check vet and go test ./... pass (one make test run hit the known read-budget timing flake; reruns passed). make self-check fails only on stale .rhiza/rendered actor files recorded by this run, not on the leaf."
+        },
+        "handle": "inbox-app-actions-verified",
+        "id": "01M674P12Z97EM68P4EQTREZB9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M674P12Z97EM68P4EMYCV9SK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M674P12Z97EM68P4EMYCV9SK",
+        "id": "01M674P1JF5Q823QR1KJY56KGM",
+        "link": "01M674P1JF5Q823QR1KHTA9JSR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6734J6ESHFYKFJ09YK6TEWT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6732DJSQ14B2WTZYZ9MPRA5",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M674P293KK6VEMQ67M3RF3PC",
+  "type": "ops",
+  "v": 1
+}
