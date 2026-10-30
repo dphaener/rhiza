@@ -393,7 +393,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if _, ok := def.Steps["review/signoff"]; ok {
 		t.Error("review's signoff step is not skipped")
 	}
-	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "render-pr", "open-pr", "wait-pr", "pr-green", "signoff", "rebase", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
+	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "open-pr", "wait-pr", "pr-green", "signoff", "rebase", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
 		"rebase-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
@@ -1106,7 +1106,7 @@ func TestReviewBuiltin(t *testing.T) {
 	if def.Name != "review" || def.Start != "code" {
 		t.Errorf("name %q, start %q; want review, code", def.Name, def.Start)
 	}
-	if want := []string{"code", "review", "signoff"}; !slices.Equal(def.Order, want) {
+	if want := []string{"code", "review", "render", "signoff"}; !slices.Equal(def.Order, want) {
 		t.Fatalf("steps = %v; want %v", def.Order, want)
 	}
 	code := def.Steps["code"]
@@ -1198,7 +1198,9 @@ func TestReviewBuiltin(t *testing.T) {
 	}{
 		{"code", OutcomePass, "review", EndNone},
 		{"code", OutcomeFail, "", EndFailed},
-		{"review", OutcomePass, "signoff", EndNone},
+		{"review", OutcomePass, "render", EndNone},
+		{"render", OutcomePass, "signoff", EndNone},
+		{"render", OutcomeFail, "", EndFailed},
 		{"review", OutcomeFail, "", EndFailed},
 		{"signoff", OutcomePass, "", EndSucceeded},
 		{"signoff", OutcomeChanges, "review", EndNone},

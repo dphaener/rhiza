@@ -20,7 +20,7 @@ on.pass = "review"
 kind = "checks"
 split = "auto"
 max_visits = 3
-on.pass = "signoff"
+on.pass = "render"
 
 [[step.review.check]]
 name = "compliance"
@@ -65,6 +65,22 @@ prompt = "/rhiza-review Fix the findings below for change set {change} in review
 [step.review.verifier]
 models = ["opus"]
 prompt = "/rhiza-build Verify leaf {leaf} of change set {change} ({title}) at commit $RHIZA_COMMIT, as the verifier: follow `rhiza guide build`. Never edit code. End with Evidence written as yourself that verifies {leaf}, or with findings recorded by `rhiza run findings --leaf {leaf}`, then run `rhiza session done` as your very last action."
+
+# Fixers, verifiers and checks write records (actors, Evidence), which
+# leaves .rhiza/rendered stale. Render and commit the rendered folder on
+# the branch after the last of them, with the .rhiza/log entries they
+# left uncommitted, so rhiza check passes on it; nothing to render
+# commits nothing. Each request for changes comes back through here.
+[step.render]
+kind = "command"
+run = """
+rhiza render &&
+git add -A -- .rhiza/rendered .rhiza/log &&
+{ git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
+  git commit -q -m 'Render after the review' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
+"""
+max_visits = 3
+on.pass = "signoff"
 
 # The run waits for the owner: `rhiza run approve` ends it done, and the
 # change set stays accepted, as landing is left to the owner or a ship
