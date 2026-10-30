@@ -8,7 +8,7 @@ With a fake status of "menu open" no keys are sent, and they are sent once the s
 
 ## statement
 
-The pointer is typed only while the session waits at its prompt, never over an open menu or question, and otherwise waits until it does.
+A pointer that is typed goes in only while the session waits at its prompt, never over an open menu or question: a blocked session is waited on until it reaches its prompt, while a working session's pointer goes to its next tool call as hook context instead (busy-session-hook-delivery).
 
 ## Links
 
@@ -19,7 +19,9 @@ The pointer is typed only while the session waits at its prompt, never over an o
 ### In
 
 - verifies [pointer-at-prompt-script](../../../../evidence/pointer-at-prompt-script.md)
+- verifies [pr-105-message-a-busy-session](../../../../evidence/pr-105-message-a-busy-session.md)
 
 ## History
 
 - `01M5SWTQ11MR7CP75QWPYFBQFQ` Genesis amends a running step and sends it a message.
+- `01M61GW821FWSX05A9FC231N65` rhiza session message reaches a busy session without waiting for its prompt, so the owner or arbiter can steer a session mid-task.
