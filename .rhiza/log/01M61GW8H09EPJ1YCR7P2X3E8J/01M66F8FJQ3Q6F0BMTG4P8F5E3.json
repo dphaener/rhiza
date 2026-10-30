@@ -1,0 +1,40 @@
+{
+  "actor": "01M66F4MBWHADWMJDY8GS98EMA",
+  "after": [
+    "01M66F45BM9YKYGK2D6MN0A1Z7"
+  ],
+  "at": "2026-10-30T13:16:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e5649b3 with the built binary (go build ./cmd/rhiza), RHIZA_* env unset, in a scratch repo: rhiza run start --workflow ask with a fake claude whose AskUserQuestion ('Which colour?') goes through the built binary's real 'rhiza session hook PreToolUse', and a fake rex for window new. run status read 'blocked' with '- Question: Which colour?' and --json kind question; the run's stderr carried exactly one OSC 7501 ']7501;state=blocked:kind=question:app=rhiza:' report, no kind=permission, and the run succeeded after the answer. That exact report, replayed into a real Rex window, came back from real 'rex events --json' as program_status_changed with state blocked, kind question, msg 'Blocked runs: build waits on you in tab repo: Blocked runs: Which colour?'."
+        },
+        "handle": "ask-status-is-question-qa-1",
+        "id": "01M66F8EKNC18P48TV32ZQX381",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66F8EKNC18P48TV2Z19WSRN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66F8EKNC18P48TV2Z19WSRN",
+        "id": "01M66F8F0E7GJQXRWHZ5ZTDAJN",
+        "link": "01M66F8F0E7GJQXRWHZ59Z8BQZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505W1FFMVWMMDTMFDKA9CN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW8H09EPJ1YCR7P2X3E8J",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66F8FJQ3Q6F0BMTG4P8F5E3",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M66FJVJD4DFEABD57DHPSYKQ",
+  "after": [
+    "01M66F8FJQ3Q6F0BMTG4P8F5E3"
+  ],
+  "at": "2026-10-30T13:26:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 04a1df9, go test ./cmd/rhiza -run 'TestScripts/run-blocked$' -count=1 passes: the run's AskUserQuestion, now followed by Claude Code's permission_prompt Notification, reports exactly one ]7501;state=blocked:kind=question with msg decoding to '... Blocked runs: Which colour?', and no kind=permission on stderr; run status shows '- Question: Which colour?'. With the pre-fix internal/api/session_run.go restored in a scratch worktree the same script fails (no '- Question: Which colour?'), so the new questionPending guard is what keeps the question. Diff read: recordHook no longer lets a blocked/permission report replace a pending blocked/question. make fmt-check vet test pass; make self-check fails only on stale .rhiza/rendered actor files from run writes, not on this leaf's code."
+        },
+        "handle": "ask-status-is-question-verified-2",
+        "id": "01M66FVF3C4QPWRZPMTNN2AV8F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66FVF3C4QPWRZPMTHPW2H45",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66FVF3C4QPWRZPMTHPW2H45",
+        "id": "01M66FVFEWYWHHA2HZY8NMPA75",
+        "link": "01M66FVFEWYWHHA2HZY6BCQ7F8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505W1FFMVWMMDTMFDKA9CN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW8H09EPJ1YCR7P2X3E8J",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66FVG12PYDC6EEQ9XR67QKW",
+  "type": "ops",
+  "v": 1
+}

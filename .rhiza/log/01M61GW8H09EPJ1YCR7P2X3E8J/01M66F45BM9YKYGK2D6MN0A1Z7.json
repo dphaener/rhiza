@@ -1,0 +1,40 @@
+{
+  "actor": "01M66EVF513HFSTA35EAQWBAY7",
+  "after": [
+    "01M65093V5HRXWSHCA41M1T8N7"
+  ],
+  "at": "2026-10-30T13:13:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At commit 9dd7934, go test ./cmd/rhiza -run 'TestScripts/run-blocked$' -count=1 passes. The script drives a fake claude whose AskUserQuestion goes through the real PreToolUse hook, and asserts exactly one OSC 7501 report ']7501;state=blocked:kind=question:app=rhiza:' whose msg decodes to 'Blocked runs: build waits on you in tab repo: Blocked runs: Which colour?' (the question at its end), plus '! stderr kind=permission'. The diff adds only those assertions; the code path is claudecode.go mapping AskUserQuestion to blocked/question and run.go writing :kind=question. make check exits 0."
+        },
+        "handle": "ask-status-is-question-verified",
+        "id": "01M66F44DX0WVA9A0D7VDT0SRA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66F44DX0WVA9A0D7S2ZR1NJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66F44DX0WVA9A0D7S2ZR1NJ",
+        "id": "01M66F44SC1PE6PKDMRKTTSZQ4",
+        "link": "01M66F44SC1PE6PKDMRHXEQ30S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505W1FFMVWMMDTMFDKA9CN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW8H09EPJ1YCR7P2X3E8J",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66F45BM9YKYGK2D6MN0A1Z7",
+  "type": "ops",
+  "v": 1
+}
