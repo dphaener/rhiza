@@ -228,6 +228,7 @@
   - [ship-needs-leaves](capability/ship-through-rhiza/ship-needs-leaves.md)
   - [ship-change-file](capability/ship-through-rhiza/ship-change-file.md)
 - [unique-finding-ids](capability/unique-finding-ids.md)
+- [check-actor-records-committed](capability/check-actor-records-committed.md)
 
 ## Intents
 
@@ -389,6 +390,7 @@
 - [close-out-closes-tab](decision/close-out-closes-tab.md)
 - [close-out-fast-forwards-main](decision/close-out-fast-forwards-main.md)
 - [code-checks-first](decision/code-checks-first.md)
+- [commit-actor-record-entries](decision/commit-actor-record-entries.md)
 - [critics-on-serious-findings](decision/critics-on-serious-findings.md)
 - [cursor-paged-lists](decision/cursor-paged-lists.md)
 - [daemon-sends-inbox-notices](decision/daemon-sends-inbox-notices.md)
@@ -863,6 +865,8 @@
 - [carve-guards-verified](evidence/carve-guards-verified.md)
 - [carve-verified](evidence/carve-verified.md)
 - [change-set-title-test](evidence/change-set-title-test.md)
+- [check-actor-records-committed-qa-1](evidence/check-actor-records-committed-qa-1.md)
+- [check-actor-records-committed-verified](evidence/check-actor-records-committed-verified.md)
 - [check-evidence-actor-verified](evidence/check-evidence-actor-verified.md)
 - [check-identity-verified](evidence/check-identity-verified.md)
 - [close-out-tests](evidence/close-out-tests.md)
@@ -977,6 +981,7 @@
 - [pr-82-rhiza-run-findings-numbers](evidence/pr-82-rhiza-run-findings-numbers.md)
 - [pr-83-testguideinstallconcurrent](evidence/pr-83-testguideinstallconcurrent.md)
 - [pr-98-builder-sessions-actor](evidence/pr-98-builder-sessions-actor.md)
+- [pr-99-commit-idle-check-actors](evidence/pr-99-commit-idle-check-actors.md)
 - [quick-launch-layer-qa-1](evidence/quick-launch-layer-qa-1.md)
 - [quick-launch-layer-qa-2](evidence/quick-launch-layer-qa-2.md)
 - [quick-launch-layer-qa-3](evidence/quick-launch-layer-qa-3.md)
@@ -1111,6 +1116,7 @@
 
 - [build-workflow-plan](source/build-workflow-plan.md)
 - [builder-actor-interview](source/builder-actor-interview.md)
+- [commit-idle-check-actors-plan](source/commit-idle-check-actors-plan.md)
 - [findings-numbering-plan](source/findings-numbering-plan.md)
 - [founding-conversation](source/founding-conversation.md)
 - [inbox-stale-interview](source/inbox-stale-interview.md)
