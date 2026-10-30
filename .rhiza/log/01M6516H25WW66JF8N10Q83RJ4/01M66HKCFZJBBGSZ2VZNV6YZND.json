@@ -1,0 +1,40 @@
+{
+  "actor": "01M66HA1QW683JDQFWQ58962R8",
+  "after": [
+    "01M66H9P2BQMZ13AS97KXW5FAF"
+  ],
+  "at": "2026-10-30T13:57:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e28b6c7 I ran go test ./cmd/rhiza -run 'TestScripts/run-panes-one-window$' -count=1 -v: PASS. With the fake rex and claude, the run started checks alpha, beta and gamma, alpha's critic, thing's fixer and verifier, and alpha again in cycle 2 (claude.log matched want.log). rex.log held exactly one 'window new' followed by six 'split block:bN' lines against blocks of window w1 (b1..b5), so the review, critic and fixer sessions all split the run's one window. I read paneAnchor in internal/api/run_leaves.go, used by StartLeaf, StartCheck and StartFix: it falls back to the tab of the run's first session with a block, so only the first session opens a window. make fmt-check vet test pass; make self-check fails only on rendered actor files written during this run, not on the leaf's code."
+        },
+        "handle": "run-sessions-one-window-verified",
+        "id": "01M66HKBGPXD2HJV0K6XQK80ND",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66HKBGPXD2HJV0K6WN2NGER",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66HKBGPXD2HJV0K6WN2NGER",
+        "id": "01M66HKBXDJXZ893JM6MFTXWKQ",
+        "link": "01M66HKBXDJXZ893JM6HV6NDH3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M651M8TNJKY76E8G6KMV3V3Y",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6516H25WW66JF8N10Q83RJ4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66HKCFZJBBGSZ2VZNV6YZND",
+  "type": "ops",
+  "v": 1
+}
