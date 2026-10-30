@@ -1,0 +1,86 @@
+{
+  "actor": "01M66DA5VXBXJS5CFQQDC4XAME",
+  "after": [
+    "01M66D9K3183WD1FMXT9QRQ5NS"
+  ],
+  "at": "2026-10-30T12:46:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built ./cmd/rhiza at 5dd508d and ran rhiza run start --workflow review --permission-mode manual inside a real Rex block (rex run --wait). It ran on a scratch repo with a built two-leaf change set: a fake claude played the agents and a fake rex opened their tabs. Real Rex got the OSC 7501 reports, read back with rex events --json. Quality's cycle 1 had two confirmed majors, f1 on leaf alpha and f2 on the change set. Rex showed, in order: leaf/1 working 'alpha: fixer working (attempt 2)', a clear of leaf/1, leaf/1 'alpha: verifier working (attempt 2)', then fix 'review: fixer working (attempt 2)', and clears of leaf/1 and fix. The root record stayed 'step review · 4 of 5 checks passed' throughout. Quality cycle 2 then passed, and the run stopped at signoff."
+        },
+        "handle": "review-fixers-in-rex-qa-1",
+        "id": "01M66DH2A15QFYP3RHS8CBQA5Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66DH2A15QFYP3RHS77D32D8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66DH2A15QFYP3RHS77D32D8",
+        "id": "01M66DH2QAVZQJFG3GKF7TQ0FQ",
+        "link": "01M66DH2QAVZQJFG3GKEEBETKP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505Y4EB35E286KJRDR8JBV",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built ./cmd/rhiza at 5dd508d and ran the builtin review inside a real Rex block on a scratch repo whose leaf beta had no independent Evidence. Real Rex got, read back with rex events --json, the root record working 'step code', then error 'run failed: step \"code\" ended with outcome \"fail\"'. The run exited 1, and rhiza run status listed 'step code: fail (leaf beta: no Evidence verifies it)'."
+        },
+        "handle": "review-code-check-in-rex-qa-1",
+        "id": "01M66DH35AB8MH4JXYQ09EZXAJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66DH35AB8MH4JXYPZTT9A9G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66DH35AB8MH4JXYPZTT9A9G",
+        "id": "01M66DH3KQ3XZ0HNX26EZVKAZ8",
+        "link": "01M66DH3KQ3XZ0HNX26EVAESFH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505Z15CNR0WFDTKBVMHK70",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built ./cmd/rhiza at 5dd508d and ran the builtin review inside a real Rex block on a scratch repo where a fake quality check confirmed a major on leaf alpha in every cycle. Rex showed alpha's fixer and verifier at attempts 2 and 3, and quality at cycles 2 and 3. Then the root record was blocked: 'Review me: step review waits on you: Review check quality still fails after 3 cycles: finding f1 (major at alpha.txt:1) on leaf alpha: still too short. ...'. That message names the change set, the review step and the question's text. rhiza run status agreed: an unanswered question after cycle 3 on f1, blocking leaf alpha."
+        },
+        "handle": "review-questions-in-rex-qa-1",
+        "id": "01M66DH44JX9Q3B3NKB3C1SC7P",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66DH44JX9Q3B3NKAZM2KC76",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66DH44JX9Q3B3NKAZM2KC76",
+        "id": "01M66DH4JS8BWHHDQFV9M3QX5H",
+        "link": "01M66DH4JS8BWHHDQFV8H5ZYGR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505ZVVRWAHQW8S8FGJ25MC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M602TGXM184GVWJG4NE98P6Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66DH59RTXK4E2PRCADGX4ZN",
+  "type": "ops",
+  "v": 1
+}

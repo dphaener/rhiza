@@ -1,0 +1,40 @@
+{
+  "actor": "01M66BZHMRA22A4ZWEHK6X5VM2",
+  "after": [
+    "01M6509NJDZB5MFPYQY5WHT9P1"
+  ],
+  "at": "2026-10-30T12:26:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b9affc3, ran go test ./internal/api -run TestProgramStatus -count=1 -v: TestProgramStatusReviewFixers passes. It runs a review whose check alpha confirms one leaf finding and one change-set finding through the fake Rex runner; the report trace shows, in order, leaf/1 'leaf-a: fixer working (attempt 2)', leaf/1 cleared, leaf/1 'leaf-a: verifier working (attempt 2)', fix 'review: fixer working (attempt 2)', then leaf/1 and fix cleared, with root records 'step review ...' before each. Read the diff: fixStatus in internal/run/status.go adds unjudged leaf fixer/verifier and change-set fixer sessions to Live, rexLeafID maps the change-set fixer to 'fix', and endedLeaves now matches on sameLive so leaf/n and check/n records do not mask each other's clears. make check exits 0."
+        },
+        "handle": "review-fixers-in-rex-verified",
+        "id": "01M66CCEFMN3T519KE4N4CZTH5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66CCEFMN3T519KE4N0R22QR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66CCEFMN3T519KE4N0R22QR",
+        "id": "01M66CCFTXWYHKJH2FYGC36D31",
+        "link": "01M66CCFTXWYHKJH2FYFD1FK13",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505Y4EB35E286KJRDR8JBV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M602TGXM184GVWJG4NE98P6Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66CCH9AQ40XHQ8JB6JRN68T",
+  "type": "ops",
+  "v": 1
+}

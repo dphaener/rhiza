@@ -1763,10 +1763,14 @@ func (x *runRex) status(rep run.StatusReport) {
 
 // rexLeafID is a live leaf's record ID: leaf/<n>, n its position in leaf
 // order, since a handle may be longer than an ID segment; a live check's
-// is check/<n>, n its position in its step.
+// is check/<n>, n its position in its step; a review's change-set fixer
+// is fix.
 func rexLeafID(l run.LeafStatus) string {
 	if rexCheckRole(l.Role) {
 		return "check/" + strconv.Itoa(l.N)
+	}
+	if l.Leaf == "" && l.Role == workflow.RoleFixer {
+		return "fix"
 	}
 	return "leaf/" + strconv.Itoa(l.N)
 }
@@ -1823,6 +1827,8 @@ func rexRoot(rep run.StatusReport) []byte {
 		msg = "run succeeded"
 	case run.StatusError:
 		msg = "run failed"
+	case run.StatusBlocked:
+		msg = fmt.Sprintf("%s: step %s waits on you: %s", title, rep.Step, strings.TrimSpace(rep.Question))
 	case run.StatusIdle:
 		msg = "run stopped at step " + rep.Step
 	default:
@@ -1834,7 +1840,7 @@ func rexRoot(rep run.StatusReport) []byte {
 			msg += fmt.Sprintf(" · %d of %d leaves passed", rep.Passed, rep.Leaves)
 		}
 	}
-	if d, _, _ := strings.Cut(strings.TrimSpace(rep.Detail), "\n"); d != "" && rep.State != run.StatusWorking {
+	if d, _, _ := strings.Cut(strings.TrimSpace(rep.Detail), "\n"); d != "" && rep.State != run.StatusWorking && rep.State != run.StatusBlocked {
 		msg += ": " + d
 	}
 	return rexRecord("", rep.State, "", title, msg, rep.Progress)

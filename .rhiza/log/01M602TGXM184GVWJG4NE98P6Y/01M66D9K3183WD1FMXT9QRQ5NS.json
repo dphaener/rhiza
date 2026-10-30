@@ -1,0 +1,40 @@
+{
+  "actor": "01M66D0WA0DWA6GPBFRRM0QZW8",
+  "after": [
+    "01M66CWFGR7TP5P30ARW0VSKND"
+  ],
+  "at": "2026-10-30T12:41:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3b97350, go test ./internal/api -run TestProgramStatus -count=1 -v passes. TestProgramStatusReviewQuestions has check alpha record finding f1 in every cycle, so the review goes through fixer attempts 2 and 3 (its two fix cycles) and check cycle 3. Rex reports go to a buffer standing in for Rex. The last report is the root record (no id) with state=blocked and msg \"Status runs: step review waits on you: Review check alpha still fails after 3 cycles: finding f1 (major): bad f1. ...\". That names the change set by its title (rexRoot falls back to the change ID), the review step and the question's text. In the diff, deriveStatus maps a failed run whose ending step's detail lists unanswered questions to StatusBlocked, and the journal now keeps the question text in Detail. make check exits 0."
+        },
+        "handle": "review-questions-in-rex-verified",
+        "id": "01M66D9J248F171EYD3XVVDRVJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66D9J248F171EYD3TAG7VP8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66D9J248F171EYD3TAG7VP8",
+        "id": "01M66D9JEVSVEJ66S9MZ5WSZ0W",
+        "link": "01M66D9JEVSVEJ66S9MVPWWF55",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505ZVVRWAHQW8S8FGJ25MC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M602TGXM184GVWJG4NE98P6Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66D9K3183WD1FMXT9QRQ5NS",
+  "type": "ops",
+  "v": 1
+}
