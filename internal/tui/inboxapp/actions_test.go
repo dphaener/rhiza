@@ -2,8 +2,7 @@ package inboxapp
 
 import (
 	"encoding/json"
-	"errors"
-	"os"
+	"os/exec"
 	"strings"
 	"testing"
 
@@ -26,25 +25,18 @@ type rig struct {
 	m     *Model
 	calls []call
 	execs [][]string
-	// changes is the findings file's content at the time of the call.
-	changes string
+	// items is what the inbox operation returns.
+	items string
 }
 
 func newRig(t *testing.T) *rig {
 	t.Helper()
-	r := &rig{}
+	r := &rig{items: actionItems}
 	m := NewModel(func(op string, args []string) ([]byte, error) {
 		if op == Name {
-			return []byte(actionItems), nil
+			return []byte(r.items), nil
 		}
 		r.calls = append(r.calls, call{op, args})
-		if op == Name+".request-changes" {
-			b, err := os.ReadFile(args[1])
-			if err != nil {
-				t.Fatal(err)
-			}
-			r.changes = string(b)
-		}
 		return []byte(`{}`), nil
 	})
 	m.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
@@ -108,28 +100,67 @@ func TestTakeRecommendation(t *testing.T) {
 	}
 }
 
-func TestApproveAndRequestChanges(t *testing.T) {
+func TestApproveAndRequestChangesOpenTabs(t *testing.T) {
 	r := newRig(t)
 	r.at(1)
 	r.press("y")
-	if len(r.calls) != 1 || r.calls[0].op != "inbox.approve" || r.calls[0].args[0] != "s2" {
-		t.Fatalf("calls: %v", r.calls)
+	if len(r.calls) != 0 || len(r.execs) != 1 {
+		t.Fatalf("calls %v execs %v", r.calls, r.execs)
 	}
-	r.calls = nil
+	if got, want := strings.Join(r.execs[0], " "), "rex window new RUNS00000 -c /repo --json -- /bin/rhiza run approve RUNS00000002"; got != want {
+		t.Fatalf("exec %q, want %q", got, want)
+	}
 	r.press("c")
 	r.typeText("add tests")
 	r.press("enter")
-	if len(r.calls) != 1 || r.calls[0].op != "inbox.request-changes" || r.calls[0].args[0] != "s2" {
-		t.Fatalf("calls: %v", r.calls)
+	if len(r.calls) != 0 || len(r.execs) != 2 {
+		t.Fatalf("calls %v execs %v", r.calls, r.execs)
+	}
+	e := r.execs[1]
+	if got, want := strings.Join(e[:7], " "), "rex window new RUNS00000 -c /repo --json"; got != want || e[7] != "--" {
+		t.Fatalf("exec %q", e)
+	}
+	// Run the tab's command with echo for rhiza: the findings go on stdin.
+	cmd := e[8:]
+	cmd[4] = "echo"
+	out, err := exec.Command(cmd[0], cmd[1:]...).Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.TrimSpace(string(out)); got != "run request-changes - RUNS00000002" {
+		t.Fatalf("command printed %q", got)
 	}
 	var f struct {
 		Findings []map[string]string `json:"findings"`
 	}
-	if err := json.Unmarshal([]byte(r.changes), &f); err != nil || len(f.Findings) != 1 || f.Findings[0]["reason"] != "add tests" {
-		t.Fatalf("findings file %q: %v", r.changes, err)
+	if err := json.Unmarshal([]byte(cmd[5]), &f); err != nil || len(f.Findings) != 1 || f.Findings[0]["reason"] != "add tests" {
+		t.Fatalf("findings %q: %v", cmd[5], err)
 	}
-	if _, err := os.Stat(r.calls[0].args[1]); !errors.Is(err, os.ErrNotExist) {
-		t.Fatalf("findings file left behind: %v", err)
+}
+
+func TestModeActsOnItsItem(t *testing.T) {
+	r := newRig(t)
+	r.at(2)
+	r.press("x")
+	// f3 stops waiting: the cursor moves to g4, and the abandon is cancelled.
+	r.items = strings.Replace(actionItems, `{"id":"f3","kind":"failed","run":"RUNF00000003","change":"C3","step":"verify"},`, "", 1)
+	r.m.Update(TickMsg{})
+	r.press("y")
+	if len(r.calls) != 0 || len(r.execs) != 0 {
+		t.Fatalf("calls %v execs %v", r.calls, r.execs)
+	}
+	if !strings.Contains(r.m.View().Content, "no longer waits") {
+		t.Fatalf("view:\n%s", r.m.View().Content)
+	}
+	// The cursor moves while the answer is typed: it still goes to q1.
+	r.items = actionItems
+	r.m.cursor = 0
+	r.press("a")
+	r.m.cursor = 1
+	r.typeText("pg")
+	r.press("enter")
+	if len(r.calls) != 1 || strings.Join(r.calls[0].args, "|") != "SESS1|pg" {
+		t.Fatalf("calls: %v", r.calls)
 	}
 }
 

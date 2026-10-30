@@ -7,7 +7,6 @@ package inboxapp
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -32,7 +31,8 @@ func init() {
 type Runner func(op string, args []string) ([]byte, error)
 
 // Exec runs a program, as api.Ctx.Exec does: the app opens run tabs
-// through it with rex.
+// through it with rex, so the runs that retry, approve and request changes
+// continue run there and the app stays responsive.
 type Exec func(name string, args []string, dir string, env []string) ([]byte, error)
 
 // The finding an owner's typed changes become: the review step's quality
@@ -72,7 +72,8 @@ type Model struct {
 	cursor int
 
 	// Exec, Self, Root and RexSession open a run's tab: rex window new
-	// running Self run resume. Without Exec or Self, R says it cannot.
+	// running Self run resume, approve or request-changes. Without Exec
+	// or Self, R, y and c say they cannot.
 	Exec       Exec
 	Self       string
 	Root       string
@@ -81,6 +82,9 @@ type Model struct {
 	mode  string
 	input string
 	note  string
+	// target is the item the mode was entered on, which the mode acts on
+	// whatever the cursor is on by then.
+	target api.InboxItem
 }
 
 // NewModel returns the model over run, loaded once.
@@ -91,7 +95,8 @@ func NewModel(run Runner) *Model {
 }
 
 // Reload runs the operation again. The cursor stays on the same item when it
-// still waits, else on the nearest row.
+// still waits, else on the nearest row. A mode whose item no longer waits
+// is cancelled.
 func (m *Model) Reload() {
 	var kept string
 	if it, ok := m.Selected(); ok {
@@ -121,6 +126,20 @@ func (m *Model) Reload() {
 		}
 	}
 	m.cursor = max(0, min(m.cursor, len(m.items)-1))
+	if m.mode != modeNone && !m.waits(m.target.ID) {
+		m.mode, m.input = modeNone, ""
+		m.note = "that item no longer waits"
+	}
+}
+
+// waits says whether the item with ID id is in the list.
+func (m *Model) waits(id string) bool {
+	for _, it := range m.items {
+		if it.ID == id {
+			return true
+		}
+	}
+	return false
 }
 
 // Result is what the app shows: the operation's output, byte for byte, or
@@ -174,7 +193,7 @@ func (m *Model) normalKey(msg tea.KeyPressMsg) tea.Cmd {
 		}
 	case "a":
 		if has && it.Kind == api.InboxQuestion {
-			m.mode, m.input = modeAnswer, ""
+			m.mode, m.input, m.target = modeAnswer, "", it
 		}
 	case "t":
 		if has && it.Kind == api.InboxQuestion {
@@ -186,11 +205,11 @@ func (m *Model) normalKey(msg tea.KeyPressMsg) tea.Cmd {
 		}
 	case "y":
 		if has && it.Kind == api.InboxSignoff {
-			m.act("approve", Name+".approve", it.ID)
+			m.tab(it, "approve", m.Self, "run", "approve", it.Run)
 		}
 	case "c":
 		if has && it.Kind == api.InboxSignoff {
-			m.mode, m.input = modeChanges, ""
+			m.mode, m.input, m.target = modeChanges, "", it
 		}
 	case "R":
 		if has && retryable(it) {
@@ -198,7 +217,7 @@ func (m *Model) normalKey(msg tea.KeyPressMsg) tea.Cmd {
 		}
 	case "x":
 		if has && retryable(it) {
-			m.mode = modeAbandon
+			m.mode, m.target = modeAbandon, it
 		}
 	}
 	return nil
@@ -211,9 +230,9 @@ func retryable(it api.InboxItem) bool {
 }
 
 // modeKey handles a key while typing an answer or changes, or at the
-// y/n of an abandon.
+// y/n of an abandon. It acts on the item the mode was entered on.
 func (m *Model) modeKey(msg tea.KeyPressMsg) {
-	it, has := m.Selected()
+	it, has := m.target, m.waits(m.target.ID)
 	if m.mode == modeAbandon {
 		m.mode = modeNone
 		if msg.String() == "y" && has {
@@ -258,8 +277,9 @@ func (m *Model) act(what, op string, args ...string) {
 	m.Reload()
 }
 
-// requestChanges writes the typed text as the one finding of a findings
-// file and asks for changes with it.
+// requestChanges asks for changes with the typed text as the one finding,
+// in a new tab: the owner's findings go to rhiza run request-changes on
+// stdin.
 func (m *Model) requestChanges(it api.InboxItem, text string) {
 	body, err := json.Marshal(map[string]any{"findings": []map[string]string{{
 		"check": changesCheck, "severity": changesSeverity, "place": changesPlace, "reason": text,
@@ -268,26 +288,23 @@ func (m *Model) requestChanges(it api.InboxItem, text string) {
 		m.note = fmt.Sprintf("request changes failed: %v", err)
 		return
 	}
-	f, err := os.CreateTemp("", "rhiza-changes-*.json")
-	if err != nil {
-		m.note = fmt.Sprintf("request changes failed: %v", err)
-		return
-	}
-	defer os.Remove(f.Name())
-	_, werr := f.Write(body)
-	if cerr := f.Close(); werr == nil {
-		werr = cerr
-	}
-	if werr != nil {
-		m.note = fmt.Sprintf("request changes failed: %v", werr)
-		return
-	}
-	m.act("request changes", Name+".request-changes", it.ID, f.Name())
+	m.tab(it, "request changes", "sh", "-c", `printf %s "$2" | "$1" run request-changes - "$3"`, "sh", m.Self, string(body), it.Run)
 }
 
 // resume opens a new Rex tab running rhiza run resume on the item's run. A
 // failed run has ended, so its resume restarts it at the step that failed.
 func (m *Model) resume(it api.InboxItem) {
+	cmd := []string{m.Self, "run", "resume", it.Run}
+	if it.Kind == api.InboxFailed {
+		cmd = append(cmd, "--retry")
+	}
+	m.tab(it, "retry", cmd...)
+}
+
+// tab opens a new Rex tab, named after the item's run, running cmd in the
+// repo, so the run cmd continues runs there and not inside the app, and
+// reloads the list.
+func (m *Model) tab(it api.InboxItem, what string, cmd ...string) {
 	if m.Exec == nil || m.Self == "" {
 		m.note = "cannot open a tab: no rex or rhiza path"
 		return
@@ -296,14 +313,12 @@ func (m *Model) resume(it api.InboxItem) {
 	if m.RexSession != "" {
 		args = append(args, "-s", m.RexSession)
 	}
-	args = append(args, it.Run[:min(len(it.Run), 9)], "-c", m.Root, "--json", "--", m.Self, "run", "resume", it.Run)
-	if it.Kind == api.InboxFailed {
-		args = append(args, "--retry")
-	}
+	args = append(args, it.Run[:min(len(it.Run), 9)], "-c", m.Root, "--json", "--")
+	args = append(args, cmd...)
 	if _, err := m.Exec("rex", args, m.Root, nil); err != nil {
-		m.note = fmt.Sprintf("retry failed: %v", err)
+		m.note = fmt.Sprintf("%s failed: %v", what, err)
 	} else {
-		m.note = "retry opened in a new tab"
+		m.note = what + " opened in a new tab"
 	}
 	m.Reload()
 }
