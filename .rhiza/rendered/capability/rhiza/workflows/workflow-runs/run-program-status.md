@@ -8,7 +8,7 @@ A test captures the bytes a run writes with a fake Rex through a build of three 
 
 ## statement
 
-While a run goes, its process keeps Rex's program status current through OSC 7501: a root record with the current step in its message and, in the build workflow, progress as the share of leaves with Evidence; a child record per live leaf (hierarchical ID per the spec) saying which leaf, builder or verifier, and working or blocked; and a final root state of done when the run succeeds or error when it fails.
+While a run goes, its process keeps Rex's program status current through OSC 7501: a root record with the current step in its message and, in the build workflow, progress as the share of leaves with Evidence; a child record per live leaf (hierarchical ID per the spec) saying which leaf, builder or verifier, and working or blocked; and a final root state of done when the run succeeds, error when it fails, or blocked, naming the question, when a failed run's ending step leaves a review question open.
 
 ## Links
 
@@ -16,6 +16,7 @@ While a run goes, its process keeps Rex's program status current through OSC 750
 
 - depends-on [build-leaves-step](../built-in-workflows/build-workflow/build-leaves-step.md)
 - decided-by [run-reports-progress](../../../../decision/run-reports-progress.md)
+- decided-by [run-ends-blocked-on-review-question](../../../../decision/run-ends-blocked-on-review-question.md)
 
 ### In
 
@@ -25,3 +26,4 @@ While a run goes, its process keeps Rex's program status current through OSC 750
 ## History
 
 - `01M5WPTY7P14SSHQ1FJ0WA8ZR4` The build workflow: Rhiza's run engine conducts a change set's leaves, a builder session and then a fresh verifier session per leaf in panes of its tab, with only the verifier writing the leaf's Evidence and retries capped on stronger models.
+- `01M602TGXM184GVWJG4NE98P6Y` Rex program status shows a review run's live fixer, verifier and change-set fixer sessions, its open questions and its code check, as rhiza run status already does
