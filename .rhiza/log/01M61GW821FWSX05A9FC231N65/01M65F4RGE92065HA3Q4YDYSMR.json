@@ -1,0 +1,30 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M650X81GZSGZHSGTT5YC8P1J"
+  ],
+  "at": "2026-10-30T03:55:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "An agent adds the context a PostToolUse hook returns to its context at the next tool call; the hook prints JSON {\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"...\"}}. The build checks this with a fake hook before it ships",
+          "wording": "Arbiter answer: the documented Claude Code hook shape; the build verifies it, since the arbiter asked for a check before build"
+        },
+        "handle": "busy-hook-context-shape",
+        "id": "01M65F4R2H97J7YHPZAK3YMQ0T",
+        "key": null,
+        "kind": "decision",
+        "node": "01M65F4R2H97J7YHPZAHQ14T3H",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61GW821FWSX05A9FC231N65",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65F4RGE92065HA3Q4YDYSMR",
+  "type": "ops",
+  "v": 1
+}
