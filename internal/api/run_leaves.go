@@ -113,9 +113,10 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 }
 
 // paneAnchor is the tab a new session of the run splits: the tab of
-// session anchor when that has a record, else the tab of the run's first
+// session anchor when that has a record, else the tab of the run's latest
 // session with a pane, so every session of a run sits in the run's one
-// window. The zero tab, for the run's first session, opens a window.
+// window, the one it opened last when an earlier one closed. The zero
+// tab, for the run's first session, opens a window.
 func (r *stepRunner) paneAnchor(anchor string) session.Tab {
 	if anchor != "" {
 		if a, err := r.sessions.Read(anchor); err == nil {
@@ -126,8 +127,8 @@ func (r *stepRunner) paneAnchor(anchor string) session.Tab {
 	if err != nil {
 		return session.Tab{}
 	}
-	for _, rec := range recs {
-		if rec.Run == r.run && rec.Tab.Block != "" {
+	for i := len(recs) - 1; i >= 0; i-- {
+		if rec := recs[i]; rec.Run == r.run && rec.Tab.Block != "" {
 			return rec.Tab
 		}
 	}

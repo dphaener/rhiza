@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
@@ -73,4 +74,24 @@ func TestStartFix(t *testing.T) {
 		t.Fatal(err)
 	}
 	wantSplitOf(t, f, "block:a1")
+}
+
+// A session with no Anchor splits the pane of the run's latest session,
+// not its first: an earlier step's window may be gone.
+func TestStartCheckLatestAnchor(t *testing.T) {
+	f, r := paneRunner(t)
+	if err := r.sessions.Write(session.Record{ID: "S-later", Run: "R1", Change: r.change, StartedAt: time.Now(),
+		Tab: session.Tab{Window: "window:w10", Block: "block:a2"}}); err != nil {
+		t.Fatal(err)
+	}
+	f.rex.calls = nil
+	step := workflow.Step{Name: "review", Split: workflow.SplitRight}
+	if _, err := r.StartCheck(run.CheckSpec{
+		Step: step, Role: workflow.RoleCheck, Cycle: 1,
+		Check: workflow.Check{Name: "alpha", Role: workflow.Role{Prompt: "check {check}"}},
+		Dir:   filepath.Join(t.TempDir(), "unused"),
+	}); err != nil {
+		t.Fatal(err)
+	}
+	wantSplitOf(t, f, "block:a2")
 }
