@@ -52,6 +52,14 @@ func runRunOpen(ctx *Ctx, req any) (any, error) {
 	if r.Change == "" {
 		return nil, Usagef("run open needs a change set")
 	}
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return nil, err
+	}
+	cs, err := w.resolveChangeSet(r.Change)
+	if err != nil {
+		return nil, err
+	}
 	common, err := gitCommonDir(ctx)
 	if err != nil {
 		return nil, err
@@ -61,11 +69,11 @@ func runRunOpen(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, Errorf("read runs: %v", err)
 	}
-	resp := RunOpenResponse{Change: r.Change}
+	resp := RunOpenResponse{Change: cs.String()}
 	var st run.State
 	for _, j := range runs {
 		s := j.State()
-		if s.Change != r.Change || !rs.Live(j.ID) {
+		if s.Change != resp.Change || !rs.Live(j.ID) {
 			continue
 		}
 		if !resp.Live || s.StartedAt.After(st.StartedAt) {

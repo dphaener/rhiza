@@ -2,6 +2,7 @@ package api
 
 import (
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -9,7 +10,8 @@ import (
 )
 
 // run.open on a change set with a live run whose process recorded a Rex
-// block checks the block is still there, then focuses it in its session.
+// block, named by its ID or a unique prefix, checks the block is still
+// there, then focuses it in its session.
 // A change set with no live run, or a run that is not live, calls nothing
 // and says so; a live run whose block is gone or unrecorded says its tab
 // is gone and focuses nothing.
@@ -36,10 +38,14 @@ func TestRunOpenFocusesLiveRunTab(t *testing.T) {
 		}
 		t.Cleanup(unlock)
 	}
-	journal("LIVE", "CSLIVE", &run.Process{RexSession: "session:s", RexWindow: "window:w", RexBlock: "block:7"})
+	live := newChange(t, f.ctx, `{"intent":"Live","title":"Live"}`).ChangeSet.String()
+	idle := newChange(t, f.ctx, `{"intent":"Idle","title":"Idle"}`).ChangeSet.String()
+	none := newChange(t, f.ctx, `{"intent":"None","title":"None"}`).ChangeSet.String()
+	noBlock := newChange(t, f.ctx, `{"intent":"No block","title":"No block"}`).ChangeSet.String()
+	journal("LIVE", live, &run.Process{RexSession: "session:s", RexWindow: "window:w", RexBlock: "block:7"})
 	hold("LIVE")
-	journal("ENDED", "CSIDLE", &run.Process{RexSession: "session:s", RexBlock: "block:9"})
-	journal("NOBLOCK", "CSNOBLOCK", &run.Process{})
+	journal("ENDED", idle, &run.Process{RexSession: "session:s", RexBlock: "block:9"})
+	journal("NOBLOCK", noBlock, &run.Process{})
 	hold("NOBLOCK")
 
 	var calls [][]string
@@ -61,30 +67,32 @@ func TestRunOpenFocusesLiveRunTab(t *testing.T) {
 		return resp.(RunOpenResponse)
 	}
 
-	got := open("CSLIVE")
-	if want := (RunOpenResponse{Change: "CSLIVE", Live: true, Run: "LIVE", Opened: true, Tab: "block:7"}); got != want {
-		t.Errorf("live run: %+v, want %+v", got, want)
-	}
 	wantCalls := [][]string{
 		{"rex", "block", "inspect", "-s", "session:s", "--json", "block:7"},
 		{"rex", "focus", "-s", "session:s", "block:7"},
 	}
-	if !slices.EqualFunc(calls, wantCalls, slices.Equal) {
-		t.Errorf("live run rex calls = %q, want %q", calls, wantCalls)
+	for _, ref := range []string{live, strings.ToLower(live[:len(live)-1])} {
+		got := open(ref)
+		if want := (RunOpenResponse{Change: live, Live: true, Run: "LIVE", Opened: true, Tab: "block:7"}); got != want {
+			t.Errorf("live run by %s: %+v, want %+v", ref, got, want)
+		}
+		if !slices.EqualFunc(calls, wantCalls, slices.Equal) {
+			t.Errorf("live run by %s: rex calls = %q, want %q", ref, calls, wantCalls)
+		}
 	}
 
-	for _, change := range []string{"CSIDLE", "CSNONE"} {
+	for _, change := range []string{idle, none} {
 		if got := open(change); got != (RunOpenResponse{Change: change}) || len(calls) != 0 {
 			t.Errorf("%s: %+v, rex calls %q; want no live run and no calls", change, got, calls)
 		}
 	}
 
-	if got := open("CSNOBLOCK"); !got.Live || got.Opened || !got.TabGone || len(calls) != 0 {
+	if got := open(noBlock); !got.Live || got.Opened || !got.TabGone || len(calls) != 0 {
 		t.Errorf("unrecorded block: %+v, rex calls %q; want tab gone and no calls", got, calls)
 	}
 
 	inspectFails = true
-	if got := open("CSLIVE"); !got.Live || got.Opened || !got.TabGone || len(calls) != 1 {
+	if got := open(live); !got.Live || got.Opened || !got.TabGone || len(calls) != 1 {
 		t.Errorf("gone block: %+v, rex calls %q; want tab gone after one inspect", got, calls)
 	}
 }
