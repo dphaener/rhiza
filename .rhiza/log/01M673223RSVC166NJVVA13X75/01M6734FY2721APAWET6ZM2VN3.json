@@ -1,0 +1,159 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M673223RSVC166NJVX7YHYSS"
+  ],
+  "at": "2026-10-30T19:03:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A test in internal/tui builds the roadmap app over fake roadmap and ready results and asserts the view has the group headings, a row per change set with state, title and not-ready reasons, and no JSON braces; that j moves the cursor to the next change set row, skipping headings; and the --once test in cmd/rhiza/testdata/script still compares equal to rhiza roadmap --json",
+          "statement": "The roadmap app shows the roadmap as a cursor list, not JSON: a heading per milestone group and the backlog, one row per change set with its short ID, state, title, and the reasons it is not ready; j/k or the arrows move the cursor, r reloads, q quits, and rhiza tui app roadmap --once still prints what rhiza roadmap --json prints"
+        },
+        "handle": "roadmap-app-list",
+        "id": "01M67349MAEY43NAK3PCX2G7QT",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M67349MAEY43NAK3P9PG0H74",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M67349MAEY43NAK3P9PG0H74",
+        "id": "01M6734A2N2F4RNGXENW064ZEK",
+        "link": "01M6734A2N2F4RNGXENT6DQNGJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6732ZAA6YWFGK26227NGZZF",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M67349MAEY43NAK3P9PG0H74",
+        "id": "01M6734AH19XDZEV5BY6WK4TSV",
+        "link": "01M6734AH19XDZEV5BY3M17016",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6733070FQEJF1ZH8A7N1DHB",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test builds the app over fake change.show, ready and run results, presses enter on a change set row and asserts the detail lists its intent, each leaf's statement and acceptance, each blocking question's statement and the latest run's state and step; esc returns to the list with the same row selected",
+          "statement": "Enter on a change set in the roadmap app opens its detail: intent, kind and state, its leaves each with statement and acceptance, the open questions that block it, and its latest run with the run's state and current step; esc goes back to the list with the cursor where it was"
+        },
+        "handle": "roadmap-app-detail",
+        "id": "01M6734AZGT872HRJ9ZRFGV6EM",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M6734AZGT872HRJ9ZRBWAABE",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6734AZGT872HRJ9ZRBWAABE",
+        "id": "01M6734BDY4P6TGE1B5D1YEMP7",
+        "link": "01M6734BDY4P6TGE1B5C71SAJJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6732ZAA6YWFGK26227NGZZF",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6734AZGT872HRJ9ZRBWAABE",
+        "id": "01M6734BWCHPAWNJMSBJ0T1R4G",
+        "link": "01M6734BWCHPAWNJMSBHGEQACD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6733070FQEJF1ZH8A7N1DHB",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test with a fake exec presses p then y on a ready change set and asserts one rex window new call whose command is rhiza run start <cs> --workflow plan with no --autonomous; s then y gives rhiza run start <cs> --autonomous --permission-mode auto; n calls nothing; o on a change set with a live run calls rex to focus that run's tab, and on one without says no live run; no test runs real Rex",
+          "statement": "On the selected change set, p starts a plan run and s starts a ship run, each in a new Rex tab running rhiza run start, the plan run interactive and the ship run autonomous with permission mode auto; the app asks y/n first, stays open, and says which tab it opened; o focuses the Rex tab of the change set's live run, or says there is none"
+        },
+        "handle": "roadmap-app-start-runs",
+        "id": "01M6734CBEZPDTAJBAP279B34P",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M6734CBEZPDTAJBANZVV5GXC",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6734CBEZPDTAJBANZVV5GXC",
+        "id": "01M6734CV6CMJRTP60NTPFQQM4",
+        "link": "01M6734CV6CMJRTP60NQ08D7DF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6732ZAA6YWFGK26227NGZZF",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6734CBEZPDTAJBANZVV5GXC",
+        "id": "01M6734DBA1KKYYM00W106GDYB",
+        "link": "01M6734DBA1KKYYM00VX6WED77",
+        "note": "",
+        "op": "link.create",
+        "to": "01M67335C1XS6F5K5Z3ZYMWF7D",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6734CBEZPDTAJBANZVV5GXC",
+        "id": "01M6734DVA8F61HQ8K9C3X6FC1",
+        "link": "01M6734DVA8F61HQ8K9BZVTQRB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M67336BEQRTWTEFZPE86CR9H",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test over a temporary repository with a proposed change set presses a, sees the what-if, presses y and asserts the change set is accepted; another with a change set blocked by a question opens its detail, picks the question, types an answer and enter, and asserts a Decision quoting the typed text answers the question, rhiza ready reports the change set ready, and rhiza check passes",
+          "statement": "On the selected change set, a accepts a proposed one after showing the accept what-if and a y/n; in the detail, choosing a blocking question and typing an answer records a Decision with the owner's typed words as its quote, linked answers to the question, in that change set, so the change set becomes ready; the list reloads after either"
+        },
+        "handle": "roadmap-app-accept-answer",
+        "id": "01M6734EA3V7228YH8DJ0B84FT",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M6734EA3V7228YH8DGYVYDQA",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M6734EA3V7228YH8DGYVYDQA",
+        "id": "01M6734ERJJDZHRDCER2HZFK0X",
+        "link": "01M6734ERJJDZHRDCER0YF42ZA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6732ZAA6YWFGK26227NGZZF",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6734EA3V7228YH8DGYVYDQA",
+        "id": "01M6734F71X0DCA08J35QE08XG",
+        "link": "01M6734F71X0DCA08J347QAKAW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6733070FQEJF1ZH8A7N1DHB",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M673223RSVC166NJVVA13X75",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6734FY2721APAWET6ZM2VN3",
+  "type": "ops",
+  "v": 1
+}

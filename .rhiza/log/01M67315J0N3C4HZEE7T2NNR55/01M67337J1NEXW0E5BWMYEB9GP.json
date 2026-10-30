@@ -1,0 +1,218 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6731N66Y00FAWVFRT60PTJ9"
+  ],
+  "at": "2026-10-30T19:02:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rhiza is usable by the owner from Rex: the owner sees the roadmap and what waits on them, and starts and steers work from Rhiza's Rex apps, without typing rhiza commands"
+        },
+        "handle": "milestone-5",
+        "id": "01M6732YVYY1QECWMEB5E3NPQW",
+        "key": "zr",
+        "kind": "intent",
+        "node": "01M6732YVYY1QECWMEB3JHRWB4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "From the roadmap app the owner opens a change set's detail, plans it, ships it, accepts it, answers the questions that block it, or jumps to its run's Rex tab"
+        },
+        "handle": "m5-roadmap-actionable",
+        "id": "01M6732ZAA6YWFGK2622R4XX0Z",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M6732ZAA6YWFGK26227NGZZF",
+        "op": "node.create",
+        "parent": "01M6732YVYY1QECWMEB3JHRWB4"
+      },
+      {
+        "fields": {
+          "statement": "An inbox app shows what waits on the owner across every run and acts on each item in place"
+        },
+        "handle": "m5-inbox-app",
+        "id": "01M6732ZRNFB73BCTTS0G1ZTH1",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M6732ZRNFB73BCTTRYV73ZHP",
+        "op": "node.create",
+        "parent": "01M6732YVYY1QECWMEB3JHRWB4"
+      },
+      {
+        "fields": {
+          "statement": "Milestone 5's first slice is two apps: the roadmap app made actionable, and a new inbox app",
+          "wording": "Roadmap + Inbox (Recommended): the roadmap becomes a cursor list where you plan, ship, accept or open runs; a new Inbox app gathers questions, proposals and failed runs with actions in place, built as two change sets in parallel, the agent's option, picked by the owner"
+        },
+        "handle": "m5-roadmap-inbox-first",
+        "id": "01M6733070FQEJF1ZH8BRMHRT6",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6733070FQEJF1ZH8A7N1DHB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6733070FQEJF1ZH8A7N1DHB",
+        "id": "01M67330QAX4E4AGRWZQA1G04D",
+        "link": "01M67330QAX4E4AGRWZPQWGYV1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6731MPG929PA11VHEV8D5R0",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6732ZAA6YWFGK26227NGZZF",
+        "id": "01M6733176EHN922KC73V9E90N",
+        "link": "01M6733176EHN922KC70561MTR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6733070FQEJF1ZH8A7N1DHB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6732ZRNFB73BCTTRYV73ZHP",
+        "id": "01M67331Q50BCD4NCA0PRHJ90P",
+        "link": "01M67331Q50BCD4NCA0PP6WFAE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6733070FQEJF1ZH8A7N1DHB",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Milestone 5's change sets are built by the daemon's ship runs, not by the orchestrator directly",
+          "wording": "Daemon ship runs: plan the leaves and the daemon builds and reviews them as usual, the agent's option, picked by the owner"
+        },
+        "handle": "m5-built-by-daemon",
+        "id": "01M673326H4BGMTNENFW3B0V11",
+        "key": null,
+        "kind": "decision",
+        "node": "01M673326H4BGMTNENFSN2AM94",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M673326H4BGMTNENFSN2AM94",
+        "id": "01M67332MWEWXCKP3HD9J2EXPJ",
+        "link": "01M67332MWEWXCKP3HD6DFZ1DK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6731MPG929PA11VHEV8D5R0",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6732YVYY1QECWMEB3JHRWB4",
+        "id": "01M673333B4JEM6Q5WZG9M9VN2",
+        "link": "01M673333B4JEM6Q5WZFBTR517",
+        "note": "",
+        "op": "link.create",
+        "to": "01M673326H4BGMTNENFSN2AM94",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "The other mini apps stay as they are in milestone 5; the roadmap and inbox apps become the hub, and the many-mini-apps decision stands",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "m5-other-apps-stay",
+        "id": "01M67333HSKNJSPJJK8DEYX8XN",
+        "key": null,
+        "kind": "decision",
+        "node": "01M67333HSKNJSPJJK8CB13PBX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M67333HSKNJSPJJK8CB13PBX",
+        "id": "01M6733407R076C64FCCQR5SP3",
+        "link": "01M6733407R076C64FC9P12RMX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6731MPG929PA11VHEV8D5R0",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M67333HSKNJSPJJK8CB13PBX",
+        "id": "01M67334EQ59CV325VEK4P2MSJ",
+        "link": "01M67334EQ59CV325VEFCF9Q23",
+        "note": "keeps it: two of the mini apps become actionable, none are merged",
+        "op": "link.create",
+        "to": "01M62JMM4GYAAGBWRJGMP7X19P",
+        "type": "relates-to"
+      },
+      {
+        "decision": null,
+        "from": "01M6732YVYY1QECWMEB3JHRWB4",
+        "id": "01M67334X1KMYJVE8R6GN5S857",
+        "link": "01M67334X1KMYJVE8R6DC0EREB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M67333HSKNJSPJJK8CB13PBX",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "A run started from an app opens in a new Rex tab, as the daemon starts runs (rex window new running rhiza run start), so the app stays open and the run is watched in its own tab",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "app-runs-open-rex-tabs",
+        "id": "01M67335C1XS6F5K5Z403D89ET",
+        "key": null,
+        "kind": "decision",
+        "node": "01M67335C1XS6F5K5Z3ZYMWF7D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M67335C1XS6F5K5Z3ZYMWF7D",
+        "id": "01M67335VQWRC93NNWVPPJHG4B",
+        "link": "01M67335VQWRC93NNWVJXZ6R0T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6731MPG929PA11VHEV8D5R0",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A plan run started from the roadmap app is interactive, since the owner is at the keyboard to be interviewed; a ship run started from it is autonomous with permission mode auto, as the daemon starts it",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "app-plan-interactive-ship-autonomous",
+        "id": "01M67336BEQRTWTEFZPJ1560D4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M67336BEQRTWTEFZPE86CR9H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M67336BEQRTWTEFZPE86CR9H",
+        "id": "01M67336V1FC7AG285ZBX58GJR",
+        "link": "01M67336V1FC7AG285Z9AEETSB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6731MPG929PA11VHEV8D5R0",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M67315J0N3C4HZEE7T2NNR55",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M67337J1NEXW0E5BWMYEB9GP",
+  "type": "ops",
+  "v": 1
+}

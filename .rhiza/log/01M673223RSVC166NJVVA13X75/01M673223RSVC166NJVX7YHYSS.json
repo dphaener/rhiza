@@ -1,0 +1,18 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-30T19:02:20Z",
+  "body": {
+    "intent": "The roadmap app is a cursor list of milestones and change sets that the owner acts on: open a change set's detail, plan it, ship it, accept it, answer its blocking questions, or jump to its run's Rex tab",
+    "kind": "intention",
+    "sources": [
+      "01M6731MPG929PA11VHEV8D5R0"
+    ],
+    "title": "Actionable roadmap app"
+  },
+  "change_set": "01M673223RSVC166NJVVA13X75",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M673223RSVC166NJVX7YHYSS",
+  "type": "open",
+  "v": 2
+}

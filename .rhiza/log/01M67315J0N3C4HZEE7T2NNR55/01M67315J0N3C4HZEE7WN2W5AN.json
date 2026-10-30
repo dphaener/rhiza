@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-30T19:01:51Z",
+  "body": {
+    "intent": "Plan milestone 5: Rhiza usable from Rex, with an actionable roadmap app and an inbox app",
+    "kind": "record",
+    "sources": [],
+    "title": "Plan milestone 5"
+  },
+  "change_set": "01M67315J0N3C4HZEE7T2NNR55",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M67315J0N3C4HZEE7WN2W5AN",
+  "type": "open",
+  "v": 2
+}
