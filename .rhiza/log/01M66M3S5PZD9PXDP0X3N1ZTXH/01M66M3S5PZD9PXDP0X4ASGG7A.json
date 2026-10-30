@@ -1,0 +1,15 @@
+{
+  "actor": "01M66M1WFA8X8PH46W0NHDQHQ8",
+  "after": [],
+  "at": "2026-10-30T14:41:08Z",
+  "body": {
+    "intent": "A run's agent-step, arbiter and advisor sessions open as tiled panes of the run's window, like its leaf, check, critic and fixer sessions, so autonomous runs with many arbiter calls add no window each",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M66M3S5PZD9PXDP0X3N1ZTXH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66M3S5PZD9PXDP0X4ASGG7A",
+  "type": "open",
+  "v": 1
+}

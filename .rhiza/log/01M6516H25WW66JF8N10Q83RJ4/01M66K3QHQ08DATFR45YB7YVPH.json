@@ -1,0 +1,40 @@
+{
+  "actor": "01M66JT1ACSKTJJRN968QGH461",
+  "after": [
+    "01M66JKRGK8NTVYV2D87TZWCTN"
+  ],
+  "at": "2026-10-30T14:23:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 9cb629a (attempt 2), go test ./internal/api -run 'TestOpenSessionPane|TestStartCheck|TestStartFix' -count=1 -v: all PASS. TestOpenSessionPane's 'anchor gone splits another pane' case gives a fake rex whose split fails 'block block:b1 not found' and asserts calls size, split -b block:b1, block ls -w window:w1, size of block:b9, split -b block:b9, with no window new, landing in window:w1. New cases: no other pane or window gone (block ls 'not found') opens a new tab; other block ls errors fail. TestStartCheckLatestAnchor asserts paneAnchor uses the run's latest session's pane. Read the diff: livePane returns ok=false only for a gone window or no other pane, per decision anchor-gone-splits-other-pane as revised. go test ./... and gofmt pass; make self-check's only failures are render of run-local actor records outside the commit, not this change."
+        },
+        "handle": "anchor-gone-splits-run-window-verified-2",
+        "id": "01M66K3PGMD6HGHQ0THQJ66T47",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66K3PGMD6HGHQ0THPB32D57",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66K3PGMD6HGHQ0THPB32D57",
+        "id": "01M66K3PXB7Y99PDEJD6Z99Q8B",
+        "link": "01M66K3PXB7Y99PDEJD3VDJEER",
+        "note": "",
+        "op": "link.create",
+        "to": "01M651MBGX79H2AV7N9YA0EC9X",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6516H25WW66JF8N10Q83RJ4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66K3QHQ08DATFR45YB7YVPH",
+  "type": "ops",
+  "v": 1
+}

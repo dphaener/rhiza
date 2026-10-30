@@ -1,0 +1,44 @@
+{
+  "actor": "01M66KH4577FXG1CCHH7AXPB98",
+  "after": [
+    "01M66KC7QVTG96ME3GDEADFAC8"
+  ],
+  "at": "2026-10-30T14:31:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "TestStartCheck and TestStartFix with an Anchor record split the anchored session's block and open no window; both pass",
+          "statement": "Review, critic and fixer sessions split the pane of the run's latest session with a pane, so every one sits in the run's window"
+        },
+        "handle": "checks-and-fixes-anchored",
+        "id": "01M651ME1N3KVWZ1D6MC7Q58JH",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M651ME1N3KVWZ1D6M8BYFHBQ",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "fields": {
+          "reasoning": "The built code already does this, and the run's first session is the first thing of the run with a pane, so opening the window there needs no window owned by daemonStart and keeps every session of one run, whatever its change set, side by side. Anchoring later sessions on the latest session with a pane, not the first, keeps them in the window the run opened last when an earlier one closed.",
+          "statement": "A run's panes live in one window per run, the one its first session with a pane opens (paneAnchor in internal/api/run_leaves.go). Each later session of the run splits its step anchor's tab when that has a record, else the tab of the run's latest session with a pane, which is the first session's while that window lives (see anchor-gone-splits-other-pane). Not the window rhiza run start (daemonStart) opens, and not one window per change set.",
+          "wording": "the implementing agent's choice, accepted by the orchestrator acting as arbiter"
+        },
+        "handle": "run-window-is-first-session-window",
+        "id": "01M66JBKWS4MK7H2YBFVR1490Q",
+        "key": null,
+        "kind": "decision",
+        "node": "01M66JBKWS4MK7H2YBFSNDJRKP",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6516H25WW66JF8N10Q83RJ4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66KHRBCMCV83ZR97K9YGRH5",
+  "type": "ops",
+  "v": 1
+}

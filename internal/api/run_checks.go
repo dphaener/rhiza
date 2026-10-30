@@ -56,11 +56,7 @@ func (r *stepRunner) StartCheck(spec run.CheckSpec) (string, error) {
 		req.dir, req.root = spec.Dir, filepath.Join(t.worktree, t.prefix)
 	}
 	req.split = spec.Step.Split
-	if spec.Anchor != "" {
-		if a, err := r.sessions.Read(spec.Anchor); err == nil {
-			req.anchor = a.Tab
-		}
-	}
+	req.anchor = r.paneAnchor(spec.Anchor)
 	req.Prompt = role.RenderCheckPrompt(workflow.CheckVars{
 		PromptVars: workflow.PromptVars{
 			Change: t.cs.String(), Slug: session.Slug(t.title), Title: t.title, Run: r.run, Step: spec.Step.Name,
@@ -93,11 +89,7 @@ func (r *stepRunner) StartFix(spec run.FixSpec) (string, error) {
 		return "", err
 	}
 	req.split = spec.Step.Split
-	if spec.Anchor != "" {
-		if a, err := r.sessions.Read(spec.Anchor); err == nil {
-			req.anchor = a.Tab
-		}
-	}
+	req.anchor = r.paneAnchor(spec.Anchor)
 	req.Prompt = changeSetFixerPrompt(*role, spec, workflow.PromptVars{
 		Change: t.cs.String(), Slug: session.Slug(t.title), Title: t.title, Run: r.run, Step: spec.Step.Name,
 	})

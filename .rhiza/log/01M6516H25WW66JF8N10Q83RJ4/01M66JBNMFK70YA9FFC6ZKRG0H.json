@@ -1,0 +1,65 @@
+{
+  "actor": "01M66JATQFADTB9H5AP6CK2QR2",
+  "after": [
+    "01M66J3GY9954J7QCHKKS5YK8V"
+  ],
+  "at": "2026-10-30T14:10:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The built code already does this, and the run's first session is the first thing of the run with a pane, so anchoring on it needs no window owned by daemonStart and keeps every session of one run, whatever its change set, side by side.",
+          "statement": "A run's panes live in one window per run: the window holding the run's first session with a pane (paneAnchor in internal/api/run_leaves.go). Each later session of the run splits that session's tab, or its step anchor's tab when that has a record. Not the window rhiza run start (daemonStart) opens, and not one window per change set; the run's first session opens the window.",
+          "wording": "the implementing agent's choice, accepted by the orchestrator acting as arbiter"
+        },
+        "handle": "run-window-is-first-session-window",
+        "id": "01M66JBKWS4MK7H2YBFVR1490Q",
+        "key": null,
+        "kind": "decision",
+        "node": "01M66JBKWS4MK7H2YBFSNDJRKP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66JBKWS4MK7H2YBFSNDJRKP",
+        "id": "01M66JBMAFQDAQP62J083C0BXJ",
+        "link": "01M66JBMAFQDAQP62J07205HZV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M651MGEQ3AE8PP2646MGEPAX",
+        "type": "answers"
+      },
+      {
+        "fields": {
+          "reasoning": "The question's recommended answer, and what the built code does: the run stays in its one window when a single pane is closed.",
+          "statement": "When a session's anchor pane is gone, the new session splits another live pane of the anchor's window (livePane, from rex block ls), never opening a window of its own. The session fails only when that window has no other pane left to split.",
+          "wording": "the implementing agent's choice, accepted by the orchestrator acting as arbiter"
+        },
+        "handle": "anchor-gone-splits-other-pane",
+        "id": "01M66JBMPAHK74J6ZZN1D5D0KA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M66JBMPAHK74J6ZZMZT5KVZ8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66JBMPAHK74J6ZZMZT5KVZ8",
+        "id": "01M66JBN20S5K0J170FDV8VV28",
+        "link": "01M66JBN20S5K0J170FD6T5192",
+        "note": "",
+        "op": "link.create",
+        "to": "01M651MKC8M34FZ8K1GBRS7BS1",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6516H25WW66JF8N10Q83RJ4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66JBNMFK70YA9FFC6ZKRG0H",
+  "type": "ops",
+  "v": 1
+}

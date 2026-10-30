@@ -1,0 +1,40 @@
+{
+  "actor": "01M66H1M5NWM4F064TPN08811R",
+  "after": [
+    "01M651WPPN0FJV1F1XA9J55V8H"
+  ],
+  "at": "2026-10-30T13:51:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 044b9e9 ran go test ./internal/api -run TestOpenSessionPane -v -count=1: PASS. Its 'anchor gone splits another pane' case has the fake rex fail the anchor split with 'block block:b1 not found' and asserts the exact rex calls [block call size, split -b block:b1, block ls -w window:w1 --json, block call size of b9, split -b block:b9], which has no window new, and the result is block:b2 in window:w1. The 'anchor gone, no other pane' case fails the session and also opens no window. Read the diff: openSessionPane now calls livePane (rex block ls) and splitPane on a not-found error, and no longer falls through to rexWindowArgs. Checked against the real rex: rex block ls -s <session> --json returns blocks[].block_id, the shape livePane parses. make check exited 0."
+        },
+        "handle": "anchor-gone-splits-run-window-verified",
+        "id": "01M66H9N3YPQQVVTQM35JZG9EA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66H9N3YPQQVVTQM33NK5WMA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66H9N3YPQQVVTQM33NK5WMA",
+        "id": "01M66H9NFHYPERD5SQ4YRDZPJ1",
+        "link": "01M66H9NFHYPERD5SQ4V66M7YX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M651MBGX79H2AV7N9YA0EC9X",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6516H25WW66JF8N10Q83RJ4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66H9P2BQMZ13AS97KXW5FAF",
+  "type": "ops",
+  "v": 1
+}

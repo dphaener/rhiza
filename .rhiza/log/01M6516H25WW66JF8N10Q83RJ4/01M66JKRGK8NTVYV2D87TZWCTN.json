@@ -1,0 +1,64 @@
+{
+  "actor": "01M66JG4PA5FHF2C1EMB83WWP2",
+  "after": [
+    "01M66JK1JW0E5GYPTGC2YPNBES"
+  ],
+  "at": "2026-10-30T14:14:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question's recommended answer kept the run in its one window when a single pane closes. Review cycle 2 (qa f1, f2) showed the run's window goes away when its last pane closes, at a step's end or when agents exit, so failing there broke every multi-step run; opening a window then is a recoverable placement.",
+          "statement": "When a session's anchor pane is gone, the new session splits another live pane of the anchor's window (livePane, from rex block ls). Only when Rex no longer has that window, its last pane closed, or the window has no other pane, does the session open a new window; a session with no anchor of its own anchors on the run's latest session with a pane, so the run's later sessions join that new window.",
+          "wording": "the implementing agent's choice, accepted by the orchestrator acting as arbiter"
+        },
+        "handle": "anchor-gone-splits-other-pane",
+        "id": "01M66JBMPAHK74J6ZZN1D5D0KA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M66JBMPAHK74J6ZZMZT5KVZ8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "The next session's pane splits a live pane of the run's window, and the engine opens a new window only when the run's window is gone, no pane of it left.",
+          "wording": "the review fixer's choice from confirmed findings qa f1, qa f2 and model f1, revising build-ruling-3 for one window per run"
+        },
+        "handle": "run-window-gone-opens-window",
+        "id": "01M66JKQ5KG2YNDCS0RPSFYDAH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M66JKQ5KG2YNDCS0RKJDBJ5M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66JKQ5KG2YNDCS0RKJDBJ5M",
+        "id": "01M66JKQHG82F3MH1FXF09F8NF",
+        "link": "01M66JKQHG82F3MH1FXBT1KQ1Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5ZARSENEQS7RK867GMCN97Y",
+        "type": "supersedes"
+      },
+      {
+        "decision": null,
+        "from": "01M5YX3GT71M5KWXZYCZA684DF",
+        "id": "01M66JKQXHPT3TW2P79X9G6KN4",
+        "link": "01M66JKQXHPT3TW2P79SP26APV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M66JKQ5KG2YNDCS0RKJDBJ5M",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6516H25WW66JF8N10Q83RJ4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66JKRGK8NTVYV2D87TZWCTN",
+  "type": "ops",
+  "v": 1
+}

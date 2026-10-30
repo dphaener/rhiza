@@ -718,24 +718,26 @@ func rexBlockCloseArgs(tab session.Tab) []string {
 // window and block, and the rex argv that opened it. With an anchor block
 // it splits that block, in direction split when that is right or below,
 // else (auto) along the longer side in pixels of the anchor (paneSize;
-// right when the size cannot be read); an anchor Rex no longer has opens a new tab instead.
-// Without one it opens a new tab, as every session not of a leaves step
-// does.
+// right when the size cannot be read); an anchor Rex no longer has splits another live pane of its window instead.
+// Without one, or when the anchor's whole window is gone, it opens a new
+// tab, as every session not of a leaves step does.
 func openSessionPane(ctx *Ctx, tab, anchor session.Tab, split, label, worktree, self, sid string) (session.Tab, []string, error) {
 	if anchor.Block != "" {
-		dir := session.SplitFor(0, 0, split)
-		if dir != split {
-			w, h := paneSize(ctx, anchor, worktree)
-			dir = session.SplitFor(w, h, split)
-		}
-		args := rexSplitArgs(tab, anchor.Block, dir, label, worktree, self, sid)
-		out, err := ctx.Exec("rex", args, worktree, nil)
-		if err == nil {
-			t, err := parseRexSplit(tab, anchor, out)
+		t, args, err := splitPane(ctx, tab, anchor, split, label, worktree, self, sid)
+		if err == nil || !strings.Contains(err.Error(), "not found") {
 			return t, args, err
 		}
-		if !strings.Contains(err.Error(), "not found") {
+		if anchor.Window == "" {
 			return tab, args, err
+		}
+		// The anchor is gone: split another live pane of its window. Only a
+		// window Rex no longer has, its last pane closed, opens a new one.
+		other, ok, lerr := livePane(ctx, anchor, worktree)
+		if lerr != nil {
+			return tab, args, lerr
+		}
+		if ok {
+			return splitPane(ctx, tab, other, split, label, worktree, self, sid)
 		}
 	}
 	args := rexWindowArgs(tab, worktree, self, sid)
@@ -744,6 +746,57 @@ func openSessionPane(ctx *Ctx, tab, anchor session.Tab, split, label, worktree, 
 		tab, err = parseRexWindow(tab, out)
 	}
 	return tab, args, err
+}
+
+// splitPane splits the anchor block in direction split when that is right
+// or below, else along the longer side of the anchor in pixels.
+func splitPane(ctx *Ctx, tab, anchor session.Tab, split, label, worktree, self, sid string) (session.Tab, []string, error) {
+	dir := session.SplitFor(0, 0, split)
+	if dir != split {
+		w, h := paneSize(ctx, anchor, worktree)
+		dir = session.SplitFor(w, h, split)
+	}
+	args := rexSplitArgs(tab, anchor.Block, dir, label, worktree, self, sid)
+	out, err := ctx.Exec("rex", args, worktree, nil)
+	if err != nil {
+		return tab, args, err
+	}
+	t, err := parseRexSplit(tab, anchor, out)
+	return t, args, err
+}
+
+// livePane is a pane of the window of the gone anchor, read with `rex
+// block ls`: the anchor with its block replaced by another block of that
+// window. ok is false when Rex no longer has the window or the window has
+// no other pane.
+func livePane(ctx *Ctx, anchor session.Tab, dir string) (session.Tab, bool, error) {
+	args := []string{"block", "ls"}
+	if anchor.Session != "" {
+		args = append(args, "-s", anchor.Session)
+	}
+	args = append(args, "-w", anchor.Window, "--json")
+	out, err := ctx.Exec("rex", args, dir, nil)
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			return anchor, false, nil
+		}
+		return anchor, false, fmt.Errorf("list the blocks of %s: %v", anchor.Window, err)
+	}
+	var ls struct {
+		Blocks []struct {
+			BlockID string `json:"block_id"`
+		} `json:"blocks"`
+	}
+	if err := json.Unmarshal(out, &ls); err != nil {
+		return anchor, false, fmt.Errorf("list the blocks of %s: unreadable JSON: %v", anchor.Window, err)
+	}
+	for _, b := range ls.Blocks {
+		if b.BlockID != "" && b.BlockID != anchor.Block {
+			anchor.Block = b.BlockID
+			return anchor, true, nil
+		}
+	}
+	return anchor, false, nil
 }
 
 // paneSize is block anchor's size in pixels, read with `rex block call

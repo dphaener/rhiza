@@ -1,0 +1,30 @@
+{
+  "actor": "01M66KBG89S65JME9ZPFVN79WE",
+  "after": [
+    "01M66KA4H8ZDE5D2ZJZNP3R6ZF"
+  ],
+  "at": "2026-10-30T14:28:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "With a fake rex that reports the anchor block not found, the session runs rex split on another pane of the run's window and no rex window new; it runs rex window new only when rex block ls reports the window not found or lists no other pane. TestOpenSessionPane's 'anchor gone splits another pane', 'anchor gone, no other pane opens a new tab' and 'window gone opens a new tab' cases pass",
+          "statement": "A session whose anchor pane is gone splits a live pane of its run's window, and opens a window only when the run's window is gone or has no other pane"
+        },
+        "handle": "anchor-gone-splits-run-window",
+        "id": "01M651MBGX79H2AV7NA1Z1REB7",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M651MBGX79H2AV7N9YA0EC9X",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      }
+    ]
+  },
+  "change_set": "01M6516H25WW66JF8N10Q83RJ4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66KC7QVTG96ME3GDEADFAC8",
+  "type": "ops",
+  "v": 1
+}
