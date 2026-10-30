@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [],
+  "at": "2026-10-30T13:14:11Z",
+  "body": {
+    "intent": "Record agent actor claude-code-ceb39fac for session ceb39fac-cabb-46f1-86c9-01a18cf24677",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M66F4J61D54BGJ0K1B91BW1M",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66F4J61D54BGJ0K1F2Q0GZN",
+  "type": "open",
+  "v": 1
+}
