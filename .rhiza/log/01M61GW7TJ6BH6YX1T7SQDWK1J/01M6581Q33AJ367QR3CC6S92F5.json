@@ -1,0 +1,63 @@
+{
+  "actor": "01M657XE3BHPDZS88PBR97SY2S",
+  "after": [
+    "01M657VYMRBRGZJA30DDNNTC9K"
+  ],
+  "at": "2026-10-30T01:51:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e499bf2 I built rhiza (go build -o $TMPDIR/rhiza-qa ./cmd/rhiza) and ran rhiza run start --workflow review --permission-mode manual in a scratch repo, with a two-check checks workflow, a fake rex that runs the pane command in place and a fake claude: check alpha records one major finding with no leaf in cycle 1, the critic confirms it, and the change-set fixer exits 1 with no commit on its first call and commits with Change:/Review: trailers on its second. The run succeeded (exit 0, review pass, 2 of 2 checks). run status listed two cycle 2 fixer sessions (fail exit 1, then pass with a commit), alpha passed after 2 cycles with no cycle 3, and the fake's log shows fixer call 1 (cycle 2), fixer call 2 (cycle 2), then alpha's check of cycle 2: the cycle's check started only after the retry passed."
+        },
+        "handle": "fixer-retry-in-cycle-qa-1",
+        "id": "01M6581N82Q5YSD3TA3E9XDGMA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6581N82Q5YSD3TA3CMS96KX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6581N82Q5YSD3TA3CMS96KX",
+        "id": "01M6581NN6Z5PEYZQDPCCYR9CD",
+        "link": "01M6581NN6Z5PEYZQDPA1SXWDG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506EMCPMJKKCE8B3JX16RP",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e499bf2, with the built binary and the same scratch repo, fake rex and fake claude as fixer-retry-in-cycle-qa-1, I ran rhiza run start twice. (1) Fixer fails its first 3 calls, then commits: cycle 2 ran three fixer sessions (1 + MaxFixCycles), all fail exit 1, and no check session; run status --json gave alpha's cycle 2 the detail 'cycle 2: fix failed: change set: fixer failed: exit 1'; cycle 3 started a fresh fixer, which passed, then alpha's check, and the run passed with alpha passed after 3 cycles. (2) Fixer always fails: cycles 2 and 3 each ran three failing fixer sessions and no check session; no cycle 4 ran; the step failed with '1 of 2 checks passed after 3 cycles; failed: alpha' and the run exited 1. So a spent cycle counts against MaxFixCycles=2."
+        },
+        "handle": "fixer-exhaustion-spends-cycle-qa-1",
+        "id": "01M6581P3PY3JV6PXJTGHS0E1X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6581P3PY3JV6PXJTFPQCMS8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6581P3PY3JV6PXJTFPQCMS8",
+        "id": "01M6581PFRTZDD5FXSW225RSPW",
+        "link": "01M6581PFRTZDD5FXSW0129MZR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506FZTPP6JZJBYMMPZMQFC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW7TJ6BH6YX1T7SQDWK1J",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6581Q33AJ367QR3CC6S92F5",
+  "type": "ops",
+  "v": 1
+}
