@@ -214,7 +214,11 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 			// Nothing to resume: the step starts over as a fresh session,
 			// told what it was first told.
 			launch.Resume, launch.Prompt = false, rec.Prompt
-			fresh = append(fresh, fmt.Sprintf("the transcript of session %s is gone after the usage-limit pause: started a fresh session for the step instead of resuming", rec.ID))
+			msg := fmt.Sprintf("the transcript of session %s is gone after the usage-limit pause: started a fresh session for the step instead of resuming", rec.ID)
+			fresh = append(fresh, msg)
+			if warn := recordFreshSession(ctx, st, rec, msg); warn != "" {
+				fresh = append(fresh, warn)
+			}
 		}
 		if argv, err = a.Command(launch); err != nil {
 			follow.stop()
@@ -363,6 +367,30 @@ func recordTokenUse(ctx *Ctx, st *session.Store, rec session.Record) string {
 	e := run.Entry{Type: run.TypeTokens, At: ctx.Now(), Step: rec.Step, Session: rec.ID, Tokens: &ru}
 	if err := run.NewStore(run.Dir(common)).Append(rec.Run, e); err != nil {
 		return warn(fmt.Sprintf("journal session %s's token use in run %s: %v", rec.ID, rec.Run, err))
+	}
+	return ""
+}
+
+// recordFreshSession stamps the session's record with the time it started
+// over as a fresh session and, for a session in a run, journals a
+// fresh-session entry with detail, so the restart outlives the session's
+// terminal. It returns a warning, never an error.
+func recordFreshSession(ctx *Ctx, st *session.Store, rec session.Record, detail string) string {
+	warn := func(msg string) string { return "record the fresh session: " + msg }
+	now := ctx.Now()
+	if _, err := st.Update(rec.ID, func(r *session.Record) { r.Fresh = append(r.Fresh, now.UTC()) }); err != nil {
+		return warn(fmt.Sprintf("record session %s: %v", rec.ID, err))
+	}
+	if rec.Run == "" {
+		return ""
+	}
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return warn(AsError(err).Message)
+	}
+	e := run.Entry{Type: run.TypeFreshSession, At: now, Step: rec.Step, Session: rec.ID, Detail: detail}
+	if err := run.NewStore(run.Dir(common)).Append(rec.Run, e); err != nil {
+		return warn(fmt.Sprintf("journal session %s's fresh session in run %s: %v", rec.ID, rec.Run, err))
 	}
 	return ""
 }

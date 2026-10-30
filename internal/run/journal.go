@@ -34,9 +34,12 @@ const (
 	TypeAnswered    = "answered"
 	TypeMessage     = "message"
 	TypeTokens      = "tokens"
-	TypeFindings    = "findings"
-	TypeVerdict     = "verdict"
-	TypeGated       = "gated"
+	// TypeFreshSession records that a session started over as a fresh
+	// session after a usage-limit pause, its transcript gone.
+	TypeFreshSession = "fresh-session"
+	TypeFindings     = "findings"
+	TypeVerdict      = "verdict"
+	TypeGated        = "gated"
 	// TypeLeafSession, TypeLeafAttempt and TypeLeaf are a leaves step's
 	// entries: a leaf's session started, a session's work judged, and a
 	// leaf's outcome.
@@ -246,6 +249,9 @@ type Block struct {
 //	           in Detail; it answers nothing)
 //	message:   Step, Session, Actor (the sender), To, Text, Summary, Structured (a session sent another a message)
 //	tokens:    Step, Session, Tokens (a reading of the session's token use; the latest counts)
+//	fresh-session: Step, Session, Detail (the session's transcript was gone
+//	           after a usage-limit pause, so its step started over as a
+//	           fresh session instead of resuming)
 //	findings:  Findings (a plan reviewer's findings, maybe none; each findings entry
 //	           opens the next review round). With Leaf set it is instead a
 //	           verifier's findings on leaf Leaf (handle Handle) of leaves step

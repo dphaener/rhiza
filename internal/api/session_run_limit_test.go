@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/dphaener/rhiza/internal/adapter"
+	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 )
 
@@ -48,6 +49,14 @@ func TestSessionRunFreshSessionWhenTranscriptGone(t *testing.T) {
 	if err := os.WriteFile(path, []byte("limited"), 0o644); err != nil {
 		t.Fatal(err)
 	}
+	st := session.NewStore(session.Dir(f.common))
+	if _, err := st.Update(s.ID, func(r *session.Record) { r.Run, r.Step = "run-1", "build" }); err != nil {
+		t.Fatal(err)
+	}
+	rs := run.NewStore(run.Dir(f.common))
+	if err := rs.Create("run-1", run.Entry{Type: run.TypeStarted, At: time.Now()}); err != nil {
+		t.Fatal(err)
+	}
 	useClock(t, removeClock{path})
 
 	resp, err := callOp(t, f.ctx, "session.run", `{"id":"`+s.ID+`"}`)
@@ -61,6 +70,29 @@ func TestSessionRunFreshSessionWhenTranscriptGone(t *testing.T) {
 	}
 	if !strings.Contains(strings.Join(r.Warnings, "\n"), "started a fresh session") {
 		t.Errorf("warnings %v do not record the fresh session", r.Warnings)
+	}
+
+	// The restart outlives the session's terminal: its record and its
+	// run's journal keep it.
+	rec, err := st.Read(s.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rec.Fresh) != 1 {
+		t.Errorf("record's fresh %v: want one restart", rec.Fresh)
+	}
+	j, err := rs.Read("run-1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fresh []run.Entry
+	for _, e := range j.Entries {
+		if e.Type == run.TypeFreshSession {
+			fresh = append(fresh, e)
+		}
+	}
+	if len(fresh) != 1 || fresh[0].Session != s.ID || fresh[0].Step != "build" || !strings.Contains(fresh[0].Detail, "started a fresh session") {
+		t.Errorf("journal's fresh-session entries %+v: want one for session %s", fresh, s.ID)
 	}
 }
 
