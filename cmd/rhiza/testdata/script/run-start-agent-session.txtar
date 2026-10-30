@@ -1,0 +1,30 @@
+# run start refuses inside an agent session (RHIZA_SESSION set), naming
+# the session, and writes no journal or worktree.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Start a run' --title 'Run starts' --json
+mkdir .rhiza/workflows
+cp ../one.toml .rhiza/workflows/one.toml
+
+env RHIZA_SESSION=01SESSIONFORTESTING
+! exec rhiza run start --workflow one
+stderr '01SESSIONFORTESTING'
+! exists .git/rhiza/runs
+
+# Without RHIZA_SESSION the start is unchanged.
+env RHIZA_SESSION=
+exec rhiza run start --workflow one
+stdout 'succeeded$'
+
+-- one.toml --
+name = "one"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"

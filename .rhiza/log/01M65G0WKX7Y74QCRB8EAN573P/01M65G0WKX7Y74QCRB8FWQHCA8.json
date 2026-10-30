@@ -1,0 +1,16 @@
+{
+  "actor": "01M65FYVBJ32TWDPX4482CXTAV",
+  "after": [],
+  "at": "2026-10-30T04:10:25Z",
+  "body": {
+    "intent": "A repo constraint states that no agent session starts a run, so every run-starting path (run start, run resume, a future daemon) is checked against it, not only rhiza run start",
+    "kind": "intention",
+    "sources": [],
+    "title": "No agent session starts runs"
+  },
+  "change_set": "01M65G0WKX7Y74QCRB8EAN573P",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65G0WKX7Y74QCRB8FWQHCA8",
+  "type": "open",
+  "v": 2
+}
