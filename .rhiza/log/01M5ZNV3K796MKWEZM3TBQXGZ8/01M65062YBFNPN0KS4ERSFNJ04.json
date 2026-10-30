@@ -1,0 +1,30 @@
+{
+  "actor": "01M6502BAZESZZT7C915Z6V1QF",
+  "after": [
+    "01M61S7MTZVFY53K68EKVSHS0T"
+  ],
+  "at": "2026-10-29T23:33:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "3140003e-5643-4487-b77d-01a18a0128af",
+          "statement": "Which actors must have their records committed in the build worktree? Decides the check's scope. / How do an actor's record entries get committed? Decides the commit shape."
+        },
+        "handle": "question-3140003e-1",
+        "id": "01M65062MMCP5FWMAFQ2R02J4M",
+        "key": null,
+        "kind": "question",
+        "node": "01M65062MMCP5FWMAFPZENP75F",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M5ZNV3K796MKWEZM3TBQXGZ8",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M65062YBFNPN0KS4ERSFNJ04",
+  "type": "ops",
+  "v": 1
+}

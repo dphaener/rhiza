@@ -1,0 +1,95 @@
+{
+  "actor": "01M6502CC7ZQKQNRHC96X9CYNC",
+  "after": [
+    "01M6506ZT9MZ8DZSG8WAHJ9JS6"
+  ],
+  "at": "2026-10-29T23:34:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M650608BEF1XS31K5BFKJHPM",
+        "id": "01M6507FBWYP3Z314RK0T6JD0G",
+        "link": "01M6507FBWYP3Z314RK04C3FC5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506ZB2JRS8G6EHR2M4EQVM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "With a fake agent that reports the usage limit once, the run resumes the stored session ID with the Claude CLI's resume flag, the step completes, and no second session starts",
+          "statement": "A run whose agent session hits the Claude usage limit continues that same session once the limit resets, instead of failing"
+        },
+        "handle": "usage-limit-resume",
+        "id": "01M6507G6PPPPEVQYKYNT8FE6V",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6507G6PPPPEVQYKYJNQRSD6",
+        "op": "node.create",
+        "parent": "01M5TYGK7EFHKPB9JG3A2MH2G2"
+      },
+      {
+        "decision": null,
+        "from": "01M6507G6PPPPEVQYKYJNQRSD6",
+        "id": "01M6507GQ3B55FNQGB0K9WVVRW",
+        "link": "01M6507GQ3B55FNQGB0K2GD5DA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M650608BEF1XS31K5BFKJHPM",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "With the stored session's transcript removed, the run starts a fresh session for the step and records that it did so",
+          "statement": "When a usage-limited session's transcript is missing, the run starts a fresh session for the step instead of resuming"
+        },
+        "handle": "usage-limit-fresh-session",
+        "id": "01M6507H8DN68SWSSCRW2J07XA",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6507H8DN68SWSSCRT613VZM",
+        "op": "node.create",
+        "parent": "01M5TYGK7EFHKPB9JG3A2MH2G2"
+      },
+      {
+        "decision": null,
+        "from": "01M6507H8DN68SWSSCRT613VZM",
+        "id": "01M6507HRCGF1FNN15ZBC9FZ5S",
+        "link": "01M6507HRCGF1FNN15ZBAR04SG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M650608BEF1XS31K5BFKJHPM",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "How does a run recognise the Claude usage limit, and how long does it wait before resuming: the reset time given in the limit message, or a fixed interval?"
+        },
+        "handle": "usage-limit-detect-and-wait",
+        "id": "01M6507JM2EC82K2P7MPB3NQWZ",
+        "key": null,
+        "kind": "question",
+        "node": "01M6507JM2EC82K2P7MJHPK4Z9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6507JM2EC82K2P7MJHPK4Z9",
+        "id": "01M6507M3ZJXM4FZ2P0MGNMM9Z",
+        "link": "01M6507M3ZJXM4FZ2P0HA9N3Z2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6507G6PPPPEVQYKYJNQRSD6",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M61R3RG70WZD5EDH293ZGVWN",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6507PA752Q9GK5CGZV32ZDB",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,15 @@
+{
+  "actor": "01M657Y4B78PPPJ9NBV0KD57G8",
+  "after": [],
+  "at": "2026-10-30T01:50:24Z",
+  "body": {
+    "intent": "A failed review leaf fixer, or its verifier, is retried within its cycle as the change-set fixer is, so only a leaf fix failing every attempt spends the cycle",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6580HBAKHN7XTR7XQV3XR0Q",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6580HBAKHN7XTR7XRWKMAGA",
+  "type": "open",
+  "v": 1
+}

@@ -1,0 +1,31 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M65F4VW3X5QKNHS5WM5MPA57",
+    "01M65PAW80H5RARSD468H2FCVE"
+  ],
+  "at": "2026-10-30T06:02:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The usage-limit branch conflicts with main only where both sides append to the same test files and to rendered index; both sides are kept, the branch's UsageLimit stubs after main's methods, and the rendered files are re-rendered",
+          "wording": "Arbiter answer under the standing autonomous instruction: keep both sides, re-render; go vet and the internal/api tests pass"
+        },
+        "handle": "usage-limit-rebase-resolution",
+        "id": "01M65PE1MKZ9N5X8M52JKF9XTN",
+        "key": null,
+        "kind": "decision",
+        "node": "01M65PE1MKZ9N5X8M52H9ZDR0N",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61R3RG70WZD5EDH293ZGVWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65PE23525Q3ZEM9E1CR5MC3",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M65KH8ZC20GN76JZSHQBS113",
+  "after": [
+    "01M65KAZ5SFEE4BJ90VFPSJ44Z"
+  ],
+  "at": "2026-10-30T05:19:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 4ba849e (attempt 2): go test -count=1 ./cmd/rhiza -run TestScripts/session-run-usage-limit passes. Its fake claude writes 'Claude AI usage limit reached|<past reset>' on its first launch and finishes on the second. session run reports 'ended: the agent exited with code 0', and claude.log holds exactly one 'start --session-id <id>' and one 'resume --resume <id>' for the same stored session ID, so no second session starts. go test -race -count=20 of TestSessionRunStopsAgentOpenAtLimit, TestSessionRunFailsWhenPausesRunOut and TestSessionRunFreshSessionWhenTranscriptGone passes. These tests cover the review findings: an agent left open at its limit is killed by the transcript watcher and resumed, and running out of the 24 pauses fails the session with a StateError exit instead of passing. Decision usage-limit-detect-and-wait-answer answers the blocking question. Diff read: watchLimit polls the transcript past its pre-launch length and kills p, and the loop now records a failure at the cap. The first make check failed only in the test target right after the timing-budget output, a known timing-contention flake; a rerun passed clean (exit 0), and go test ./... passed."
+        },
+        "handle": "usage-limit-resume-verified-2",
+        "id": "01M65KZYQHBBFGFWVE5MMBCCGG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65KZYQHBBFGFWVE5JM9EA4B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65KZYQHBBFGFWVE5JM9EA4B",
+        "id": "01M65KZZSVKH9EAK6E8979WC3N",
+        "link": "01M65KZZSVKH9EAK6E872GP0DR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6507G6PPPPEVQYKYJNQRSD6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61R3RG70WZD5EDH293ZGVWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65M01N1C8CSPRRB5GV8K7M6",
+  "type": "ops",
+  "v": 1
+}

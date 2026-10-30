@@ -1,0 +1,54 @@
+# session message to a session that is working returns at once: it writes
+# the message file, types nothing into the Rex tab, and the session's next
+# tool-call hook prints the pointer as additional context, once.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza change new 'Pick a palette for the dashboard' --title Palette --json
+exec git add -A
+exec git commit -qm init
+
+exec rhiza session start --permission-mode manual --json
+stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+
+# The agent is working.
+stdin $WORK/tool.json
+exec rhiza session hook PostToolUse
+! stdout .
+exec rhiza session show 158fe87f-5cf3-4ff0-ae50-01a16dc84988
+stdout '^- Status: working'
+
+# The command does not wait: the file is there, nothing is typed.
+exec rhiza session message 158fe87f-5cf3-4ff0-ae50-01a16dc84988 'Use the blue palette' --timeout 1s
+stdout '^Sent session 158fe87f-5cf3-4ff0-ae50-01a16dc84988 a message from test$'
+stdout '^- Waited: 0s$'
+exec cat $WORK/repo.palette/.rhiza/local/messages/158fe87f-5cf3-4ff0-ae50-01a16dc84988/0001.md
+stdout '^Use the blue palette$'
+! exec grep -c '^send' $WORK/rex.log
+
+# The next tool-call hook carries the pointer.
+stdin $WORK/tool.json
+exec rhiza session hook PostToolUse
+stdout '"hookEventName":"PostToolUse"'
+stdout '"additionalContext":"rhiza: message from test: read \.rhiza/local/messages/158fe87f-5cf3-4ff0-ae50-01a16dc84988/0001\.md and act on it\."'
+
+# The one after it does not repeat it.
+stdin $WORK/tool.json
+exec rhiza session hook PostToolUse
+! stdout .
+! exec grep -c '^send' $WORK/rex.log
+
+fold-ok
+
+-- tool.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","hook_event_name":"PostToolUse","tool_name":"Bash","tool_input":{"command":"ls"}}
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+case "$1 $2" in
+"window new") echo '{"window_id":"window:w1","block_ids":["block:b1"]}' ;;
+esac

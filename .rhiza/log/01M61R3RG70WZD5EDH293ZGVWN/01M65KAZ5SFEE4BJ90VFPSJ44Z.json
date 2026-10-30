@@ -1,0 +1,54 @@
+{
+  "actor": "01M65K66Z6HPWAN7TZCR6QSHM2",
+  "after": [
+    "01M65K3MNQWBENMJ2BT9P2JMBY"
+  ],
+  "at": "2026-10-30T05:08:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "reset time from the limit message, else a fixed 15 minutes",
+            "a fixed interval only"
+          ],
+          "statement": "The Claude adapter recognises the usage limit when the last assistant line of the session's transcript says 'usage limit reached' (the reset as a Unix time after a bar) or 'hit your limit'. While the agent runs, the run reads the transcript every 30 seconds and stops an agent left open at its limit; after the agent ends, a limited session waits until the reset time the message gives, else a fixed 15 minutes, then resumes. One session pauses at most 24 times: still limited after that, the session fails with that reason instead of passing.",
+          "wording": "the implementing agent's choice, made by the review-cycle-2 fixer to answer the confirmed qa and model findings; not the owner's words"
+        },
+        "handle": "usage-limit-detect-and-wait-answer",
+        "id": "01M65KAXW8HAESW7N738VEWQJP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M65KAXW8HAESW7N737Q9YHPH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65KAXW8HAESW7N737Q9YHPH",
+        "id": "01M65KAY7XPM2CVYZVQ24GZR2F",
+        "link": "01M65KAY7XPM2CVYZVPZJZK39J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6507JM2EC82K2P7MJHPK4Z9",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M6507G6PPPPEVQYKYJNQRSD6",
+        "id": "01M65KAYK9XFHJ6JHASX0MTSXG",
+        "link": "01M65KAYK9XFHJ6JHASWAQFBGB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65KAXW8HAESW7N737Q9YHPH",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M61R3RG70WZD5EDH293ZGVWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65KAZ5SFEE4BJ90VFPSJ44Z",
+  "type": "ops",
+  "v": 1
+}

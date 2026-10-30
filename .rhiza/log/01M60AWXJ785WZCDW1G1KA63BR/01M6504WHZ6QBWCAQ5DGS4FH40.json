@@ -1,0 +1,83 @@
+{
+  "actor": "01M6502BQCD2NYPFFGHG0VCMYQ",
+  "after": [
+    "01M6504N3TH88C3F9MWF148MAH"
+  ],
+  "at": "2026-10-29T23:32:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A test refuses a definition whose two steps both run the same workflow, naming both steps",
+          "statement": "A workflow runs another workflow at most once: two workflow steps of one workflow may not name the same workflow"
+        },
+        "handle": "workflow-runs-another-once",
+        "id": "01M6504ST566B8PMBWN3F9V1R9",
+        "key": null,
+        "kind": "constraint",
+        "node": "01M6504ST566B8PMBWN10XJEAV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6504ST566B8PMBWN10XJEAV",
+        "id": "01M6504T8W3QADZRSAMMG7N2KP",
+        "link": "01M6504T8W3QADZRSAMGJ7RSPY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6504MNQD634VWNBCG720D55",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6504ST566B8PMBWN10XJEAV",
+        "id": "01M6504TNPZY52ANXV0ECT13KD",
+        "link": "01M6504TNPZY52ANXV0AZWBD4C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWT9A05VXSMXQME4CPJN2D",
+        "type": "constrains"
+      },
+      {
+        "fields": {
+          "acceptance": "A test refuses each of those keys on a workflow step, with a message naming the key",
+          "statement": "A workflow step takes no session, condition or max_visits keys: prompt, agent, permission_mode, run, until, until_when, timeout, interval and max_visits are refused, and it needs workflow = the name of a workflow"
+        },
+        "handle": "workflow-step-no-session-keys",
+        "id": "01M6504V7GEH5DQDQEC7P2VBWQ",
+        "key": null,
+        "kind": "constraint",
+        "node": "01M6504V7GEH5DQDQEC4200VRS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6504V7GEH5DQDQEC4200VRS",
+        "id": "01M6504VK8XXKFYJPR5K6R0ZG4",
+        "link": "01M6504VK8XXKFYJPR5GYEBAHS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6504MNQD634VWNBCG720D55",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6504V7GEH5DQDQEC4200VRS",
+        "id": "01M6504VYQBPT1CCE612XC1J03",
+        "link": "01M6504VYQBPT1CCE611V9Z9A3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWT9A05VXSMXQME4CPJN2D",
+        "type": "constrains"
+      }
+    ]
+  },
+  "change_set": "01M60AWXJ785WZCDW1G1KA63BR",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6504WHZ6QBWCAQ5DGS4FH40",
+  "type": "ops",
+  "v": 1
+}

@@ -68,7 +68,7 @@ cmp stdout $WORK/want.checks
 # actor, with no Leaf: trailer; then alpha's fix and its Evidence. The
 # fixer's commit holds none of qa's writes.
 exec sh -c 'cd ../repo.review-me && git log --format=%s $(git rev-parse main)..HEAD'
-stdout '\ARender after the review\nchore\(rhiza\): evidence for alpha\nfix alpha\nchore\(rhiza\): record qa check writes\n\z'
+stdout '\ARender after the review\nchore\(rhiza\): record quality check writes\nchore\(rhiza\): evidence for alpha\nfix alpha\nchore\(rhiza\): record quality critic writes\nchore\(rhiza\): record model check writes\nchore\(rhiza\): record scope check writes\nchore\(rhiza\): record qa check writes\nchore\(rhiza\): record quality check writes\nchore\(rhiza\): record compliance check writes\n\z'
 # The branch is rendered and committed: no log entry is left
 # uncommitted and rhiza check passes there.
 exec sh -c 'cd ../repo.review-me && git status --porcelain -- .rhiza'
@@ -79,9 +79,9 @@ stdout '^Change: [0-9A-Z]{26}$'
 ! stdout '^Leaf:'
 exec sh -c 'cd ../repo.review-me && git log -1 --format=%B --grep="record qa check writes" | sed -n "s/^Actor: //p"'
 cmp stdout $WORK/qa.actor
-exec sh -c 'cd ../repo.review-me && git show --name-only --format= HEAD~2'
+exec sh -c 'cd ../repo.review-me && git show --name-only --format= HEAD~3'
 stdout '\Aalpha.txt\n\z'
-exec sh -c 'cd ../repo.review-me && git show --name-only --format= HEAD~3 | grep -c "\.rhiza/log/$(cat $WORK/cs)/"'
+exec sh -c 'cd ../repo.review-me && git show --name-only --format= HEAD~7 | grep -c "\.rhiza/log/$(cat $WORK/cs)/"'
 stdout '^2$'
 exec sh -c 'cd ../repo.review-me && git status --porcelain --untracked-files=all -- .rhiza/log/$(cat $WORK/cs)'
 ! stdout .

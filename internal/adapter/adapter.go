@@ -12,6 +12,7 @@ import (
 	"slices"
 	"sort"
 	"sync"
+	"time"
 )
 
 // Adapter describes how to launch one kind of agent and how to read its hooks.
@@ -38,6 +39,11 @@ type Adapter interface {
 	// no message. It errors on a payload it cannot read, or on a message
 	// call with no recipient or no message.
 	HookMessage(event string, payload []byte) (Message, bool, error)
+	// ContextReply returns what a hook prints on stdout for the agent to
+	// add text to its context at its next step, when event is a tool-call
+	// boundary that can carry it; the bool is false when it cannot. It is
+	// pure: it builds bytes only.
+	ContextReply(event, context string) ([]byte, bool, error)
 	// TranscriptGlobs returns file glob patterns, most specific first, where
 	// the agent keeps the session's own transcript (not those of any helper
 	// agents it started). getenv looks up an environment variable. It is
@@ -54,6 +60,16 @@ type Adapter interface {
 	// toward Helpers. Unreadable lines are skipped, not fatal. It reads
 	// nothing itself.
 	TokenUse(transcript []byte) (TokenUse, error)
+	// UsageLimit reports whether transcript ends with the agent stopped by
+	// its usage limit, and when the limit resets if the agent said. It
+	// reads nothing itself.
+	UsageLimit(transcript []byte) (UsageLimit, bool)
+}
+
+// UsageLimit is a session stopped by the agent's usage limit.
+type UsageLimit struct {
+	// ResetAt is when the limit resets; zero when the agent did not say.
+	ResetAt time.Time
 }
 
 // Answer is one question the agent asked the owner and the owner's answer,
@@ -93,6 +109,9 @@ type Launch struct {
 	HookCommand []string
 	// Prompt is the agent's first prompt; empty starts it with none.
 	Prompt string
+	// Resume continues the session SessionID instead of starting it; Prompt
+	// is then what the resumed session is told.
+	Resume bool
 	// Model is the model the agent starts on; "" means the agent's
 	// default.
 	Model string

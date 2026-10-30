@@ -1,0 +1,40 @@
+{
+  "actor": "01M65JKCWV4ED030W05RQSYKE7",
+  "after": [
+    "01M65JK0E7KJ0F7YN44AZ5FC42"
+  ],
+  "at": "2026-10-30T05:00:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At commit 2af1b61 ran go test ./internal/api -run TestSessionRunFreshSessionWhenTranscriptGone -count=1 -v: PASS. A fake agent's transcript says 'limited', and the run's sleep during the usage-limit pause deletes that transcript. session.run then launched a second time with the same session ID, Resume=false and the stored first prompt 'do the step', so it started a fresh session instead of resuming. The response's warnings record 'started a fresh session for the step instead of resuming'. Read the diff of internal/api/session_run.go: after the pause, readTranscript decides between resume (transcript present) and fresh launch (transcript missing), and the fresh-session warning is appended to resp.Warnings. Without the change, the second launch would have Resume=true and the test would fail. make check passed (exit 0)."
+        },
+        "handle": "usage-limit-fresh-session-verified",
+        "id": "01M65JWK3TTC4J4ST579SQ1GK4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65JWK3TTC4J4ST578XA5WS9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65JWK3TTC4J4ST578XA5WS9",
+        "id": "01M65JWKFRTMHAF44BW1Y3T2SH",
+        "link": "01M65JWKFRTMHAF44BVY4JNSQ5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6507H8DN68SWSSCRT613VZM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61R3RG70WZD5EDH293ZGVWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65JWM2PGXNMZ13Y9RJ9EJQD",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,41 @@
+{
+  "actor": "01M650QVHAAJ1D1H47JA9KCNRW",
+  "after": [
+    "01M650QTMKZ3WHTAAD06ME0EGC"
+  ],
+  "at": "2026-10-29T23:43:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question asks whether the intent or the decision should change. The decision fakes-only-in-build-and-review and leaf review-guide-fakes-only already carve out the qa check, internal/guide/text/review.md:15 says qa is hands-on with the built binary, and internal/guide/review_test.go:24 pins that. Only the intent states the broader no-exception rule. Aligning the intent to the decision and code is the smaller change and leaves the agreed behaviour unchanged. Also the critic's finding is real: the intent and decision disagree on what the review guide must say.",
+          "statement": "The change set intent carries the same qa exemption as the decision fakes-only-in-build-and-review: the build and review guides tell verifiers and checks to test runs with fakes only, never real Rex, agents or gh, except the review qa check, which runs the built binary hands-on, and fakes alone do not count for it.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "qa-exemption-in-intent",
+        "id": "01M650RAVJZ1JHTPMKY78EMXBZ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M650RAVJZ1JHTPMKY658WE7B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M650RAVJZ1JHTPMKY658WE7B",
+        "id": "01M650RB62T7YWGDGFTT1Q5QEF",
+        "link": "01M650RB62T7YWGDGFTRDJE309",
+        "note": "",
+        "op": "link.create",
+        "to": "01M650QT3B8H0HHWXEZKP24WPY",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M61GW73H05YHE4DK0CXFD1KH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M650RBPKXK0YZFKXHB81HATN",
+  "type": "ops",
+  "v": 1
+}

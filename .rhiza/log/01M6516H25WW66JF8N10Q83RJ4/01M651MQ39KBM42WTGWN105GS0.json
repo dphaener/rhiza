@@ -1,0 +1,175 @@
+{
+  "actor": "01M651HDXDXKP0M8NS11A2XSJZ",
+  "after": [
+    "01M651KM2K9QDZBMMB96MDB6D7"
+  ],
+  "at": "2026-10-29T23:59:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quote": "sounds like a rhiza problem. we should be co-locating like processes in the same window with tiled panes.",
+          "statement": "A run's sessions run as tiled panes in one Rex window, not a window each"
+        },
+        "handle": "co-locate-run-panes",
+        "id": "01M651M3D5FMS7XBVZBBH6M5FS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M651M3D5FMS7XBVZBB67YN2C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M651M3D5FMS7XBVZBB67YN2C",
+        "id": "01M651M4ZHQ6MPNFQKGBCZWF96",
+        "link": "01M651M4ZHQ6MPNFQKG9ZHS1CN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M651KJPSKDQJED0C7BS3ASMN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M651M3D5FMS7XBVZBB67YN2C",
+        "id": "01M651M6WS9FFQVJN1N6S63SAF",
+        "link": "01M651M6WS9FFQVJN1N63078GF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6516M9J4XRQADVHQ4DFK0MV",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "With a fake rex, a run that starts a review, a critic and a fixer session runs one rex window new and splits the rest against that window's block; a testscript run-panes-one-window passes",
+          "statement": "A run's agent sessions open as tiled panes of the run's own Rex window, not a window of their own"
+        },
+        "handle": "run-sessions-one-window",
+        "id": "01M651M8TNJKY76E8G6MK19C6R",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M651M8TNJKY76E8G6KMV3V3Y",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "decision": null,
+        "from": "01M651M8TNJKY76E8G6KMV3V3Y",
+        "id": "01M651MA8NYYPCBVB2DZYD7FTW",
+        "link": "01M651MA8NYYPCBVB2DZK41WG7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M651M3D5FMS7XBVZBB67YN2C",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "With a fake rex that reports the anchor block not found, the session runs rex split on another pane of the run's window and no rex window new; TestOpenSessionPane covers it and passes",
+          "statement": "A session whose anchor pane is gone splits a live pane of its run's window and never opens a window"
+        },
+        "handle": "anchor-gone-splits-run-window",
+        "id": "01M651MBGX79H2AV7NA1Z1REB7",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M651MBGX79H2AV7N9YA0EC9X",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "decision": null,
+        "from": "01M651MBGX79H2AV7N9YA0EC9X",
+        "id": "01M651MCRMBVYYC6GFD1Y4WMZ0",
+        "link": "01M651MCRMBVYYC6GFD0FD9WX8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M651M3D5FMS7XBVZBB67YN2C",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "TestStartCheck and TestStartFix with an Anchor record split the anchored session's block and open no window; both pass",
+          "statement": "Review, critic and fixer sessions split the pane of the run's first session, so every one sits in the run's window"
+        },
+        "handle": "checks-and-fixes-anchored",
+        "id": "01M651ME1N3KVWZ1D6MC7Q58JH",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M651ME1N3KVWZ1D6M8BYFHBQ",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "decision": null,
+        "from": "01M651ME1N3KVWZ1D6M8BYFHBQ",
+        "id": "01M651MFE4CNZ9GZ6GYWCGG4CK",
+        "link": "01M651MFE4CNZ9GZ6GYTNG6NCB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M651M3D5FMS7XBVZBB67YN2C",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Which window does a run's panes live in: the one rhiza run start opens (daemonStart), or one per change set?"
+        },
+        "handle": "run-window-owner",
+        "id": "01M651MGEQ3AE8PP26498VQ2KM",
+        "key": null,
+        "kind": "question",
+        "node": "01M651MGEQ3AE8PP2646MGEPAX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M651MGEQ3AE8PP2646MGEPAX",
+        "id": "01M651MHV0NK9EBHME3Q8VH9TR",
+        "link": "01M651MHV0NK9EBHME3MEF9AA5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M651M8TNJKY76E8G6KMV3V3Y",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "When a session's anchor pane is gone, split another live pane of the run's window (recommended), or fail the session?"
+        },
+        "handle": "anchor-gone-policy",
+        "id": "01M651MKC8M34FZ8K1GCT1HATD",
+        "key": null,
+        "kind": "question",
+        "node": "01M651MKC8M34FZ8K1GBRS7BS1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M651MKC8M34FZ8K1GBRS7BS1",
+        "id": "01M651MMEBTS27QX3DRYPHF6TN",
+        "link": "01M651MMEBTS27QX3DRVQ972VB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M651MBGX79H2AV7N9YA0EC9X",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "The change set's serves link points at 01M5SWT6HKYEKHXJAQT000NSDA, which no longer resolves (carved into runtime). Serve rex-sessions (01M5SWT6QN894SDW5V7GJNYK3H) instead?"
+        },
+        "handle": "serves-intent-link",
+        "id": "01M651MNJ9E2MYYEPF7H44WEH7",
+        "key": null,
+        "kind": "question",
+        "node": "01M651MNJ9E2MYYEPF7ETRQ1RS",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6516H25WW66JF8N10Q83RJ4",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M651MQ39KBM42WTGWN105GS0",
+  "type": "ops",
+  "v": 1
+}

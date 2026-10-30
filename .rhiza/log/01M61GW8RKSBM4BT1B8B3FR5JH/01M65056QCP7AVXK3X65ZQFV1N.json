@@ -1,0 +1,33 @@
+{
+  "actor": "01M6502C8YXFC5SSEYR5DQ91EF",
+  "after": [
+    "01M61S7RED8QPTXTR4Z5H2JBDN"
+  ],
+  "at": "2026-10-29T23:33:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "1e33afcc9117a64cdd7e0ef5821d04afc683e930148c11d4c4fedec8a657eb5d",
+          "session": "4ba1eee9-94f7-4b51-8950-01a18a012c9c",
+          "summary": "No owner answered this plan run. The change set's intent is that a run's final printout and run status show each session's token use and never say 'no token use recorded' for a session that used tokens. Today the printout (internal/api/run.go, the Sessions section) prints that line for any session with no journaled token reading. Readings are journaled only when a session says done, its step ends or it exits, so a live session, or one whose transcript could not be read, shows the line though it has used tokens. Open: whether the printout and run status read the transcript at print time when no reading is journaled. Raised as a question; no owner words are recorded.",
+          "title": "Run token printout: autonomous plan plus arbiter-raised question"
+        },
+        "handle": "run-token-printout-autonomous-plan",
+        "id": "01M65055ZY7G2C54ETK2PSFBVF",
+        "key": null,
+        "kind": "source",
+        "node": "01M65055ZY7G2C54ETJZGACA4G",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M61GW8RKSBM4BT1B8B3FR5JH",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M65056QCP7AVXK3X65ZQFV1N",
+  "type": "ops",
+  "v": 1
+}

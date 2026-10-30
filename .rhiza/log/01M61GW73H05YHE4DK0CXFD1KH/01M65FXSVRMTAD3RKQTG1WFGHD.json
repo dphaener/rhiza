@@ -1,0 +1,40 @@
+{
+  "actor": "01M65FH0B115897N9M3BZN9PGB",
+  "after": [
+    "01M65FXN2D49711R0QMTHYQ9KK"
+  ],
+  "at": "2026-10-30T04:08:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6f27dd0 I read the diff: internal/guide/text/build.md's Verifier section now says 'Test runs with fakes only, never real Rex, agents or `gh`', and TestBuildText in internal/guide/build_test.go pins that phrase under a 'fakes-only' key. go test ./internal/guide -run 'TestBuildText|Cap' -count=1 -v passed. TestCaps showed build at 2344 bytes, 586 tokens, under TopicCap 800. The rest of go test ./... passed except internal/tui/modelapp TestGeneratedModel, a read-timing check (median ~63ms, want <50ms) that this text-only change cannot affect. make self-check flagged a stale render for the builder's landed actor record, which is outside this leaf."
+        },
+        "handle": "build-guide-fakes-only-verified",
+        "id": "01M65FXRQ9A5FGQVDH3MKH9A8M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65FXRQ9A5FGQVDH3J1YJDX2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65FXRQ9A5FGQVDH3J1YJDX2",
+        "id": "01M65FXS4JANFPH4DT67FSS0SG",
+        "link": "01M65FXS4JANFPH4DT6447GJ6D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505JJY04DWHQZ3EQRFCHAM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW73H05YHE4DK0CXFD1KH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65FXSVRMTAD3RKQTG1WFGHD",
+  "type": "ops",
+  "v": 1
+}

@@ -720,3 +720,58 @@ func TestTokenUseLongLine(t *testing.T) {
 		t.Fatalf("TokenUse = %+v, want %+v", got, want)
 	}
 }
+
+func TestCommandResume(t *testing.T) {
+	argv, err := Adapter{}.Command(adapter.Launch{
+		SessionID: "s-1", PermissionMode: "manual", HookCommand: []string{"rhiza", "session", "hook"},
+		Resume: true, Prompt: "go on",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := strings.Join(argv[:5], " ")
+	if want := "claude --resume s-1 --permission-mode manual"; got != want {
+		t.Errorf("argv = %q, want prefix %q", got, want)
+	}
+	if strings.Contains(strings.Join(argv, " "), "--session-id") {
+		t.Errorf("a resumed session must not start a new ID: %v", argv)
+	}
+	if argv[len(argv)-1] != "go on" {
+		t.Errorf("last arg = %q, want the prompt", argv[len(argv)-1])
+	}
+}
+
+func TestUsageLimit(t *testing.T) {
+	limited := `{"type":"user","message":{"content":"work"}}
+{"type":"assistant","isApiErrorMessage":true,"message":{"model":"<synthetic>","content":[{"type":"text","text":"Claude AI usage limit reached|1700000000"}]}}
+`
+	l, ok := Adapter{}.UsageLimit([]byte(limited))
+	if !ok || l.ResetAt.Unix() != 1700000000 {
+		t.Errorf("UsageLimit = %v, %v; want reset 1700000000", l, ok)
+	}
+	l, ok = Adapter{}.UsageLimit([]byte(`{"type":"assistant","message":{"model":"<synthetic>","content":"You've hit your limit"}}`))
+	if !ok || !l.ResetAt.IsZero() {
+		t.Errorf("no reset given: got %v, %v", l, ok)
+	}
+	resumed := limited + `{"type":"assistant","message":{"content":[{"type":"text","text":"done"}]}}` + "\n"
+	if _, ok := (Adapter{}).UsageLimit([]byte(resumed)); ok {
+		t.Error("a session that went on past the limit is not limited")
+	}
+	if _, ok := (Adapter{}).UsageLimit(nil); ok {
+		t.Error("an empty transcript is not limited")
+	}
+}
+
+// The phrases in the model's own turn, a tool call's input or its prose,
+// are not the limit: only the synthetic API-error message is.
+func TestUsageLimitIgnoresModelTurns(t *testing.T) {
+	for name, line := range map[string]string{
+		"tool_use input": `{"type":"assistant","message":{"model":"claude-opus-4","content":[{"type":"tool_use","id":"t1","name":"Bash","input":{"command":"grep -rn \"hit your limit\" internal/"}}]}}`,
+		"model prose":    `{"type":"assistant","message":{"model":"claude-opus-4","content":[{"type":"text","text":"UsageLimit matches \"usage limit reached|1700000000\"."}]}}`,
+		"error tool_use": `{"type":"assistant","isApiErrorMessage":true,"message":{"model":"<synthetic>","content":[{"type":"tool_use","id":"t1","name":"Bash","input":{"command":"echo usage limit reached"}}]}}`,
+	} {
+		if l, ok := (Adapter{}).UsageLimit([]byte(line + "\n")); ok {
+			t.Errorf("%s: UsageLimit = %v, true; want not limited", name, l)
+		}
+	}
+}

@@ -1,9 +1,11 @@
 package api
 
 // This file holds session.done, the command an agent runs as its very last
-// action to say its work is finished. It writes only the record's done
-// mark, which an agent step with until_when = "done" waits for (see
-// run.Engine): idle at the prompt is not the same as finished.
+// action to say its work is finished. It writes the record's done mark,
+// which an agent step with until_when = "done" waits for (see run.Engine):
+// idle at the prompt is not the same as finished. Before the mark it
+// proposes the session's answered questions as Decisions (see
+// captureInterview), so a step that waits on done finds them.
 
 import (
 	"fmt"
@@ -34,19 +36,26 @@ type SessionDoneRequest struct {
 
 // SessionDoneResponse is the session's done mark.
 type SessionDoneResponse struct {
-	Session  string   `json:"session" desc:"The session's full ID"`
-	At       string   `json:"at" desc:"When the session first said done, RFC 3339 UTC"`
-	Already  bool     `json:"already,omitempty" desc:"True if the session had already said done; the first mark stands"`
-	DryRun   bool     `json:"dry_run,omitempty" desc:"True if nothing was written"`
-	Warnings []string `json:"warnings,omitempty" desc:"Token use that could not be read or recorded when the session said done; the done mark stands"`
+	Session   string   `json:"session" desc:"The session's full ID"`
+	At        string   `json:"at" desc:"When the session first said done, RFC 3339 UTC"`
+	Already   bool     `json:"already,omitempty" desc:"True if the session had already said done; the first mark stands"`
+	DryRun    bool     `json:"dry_run,omitempty" desc:"True if nothing was written"`
+	Decisions []string `json:"decisions,omitempty" desc:"Handles of the Decisions proposed from the questions the owner answered (see session.interview)"`
+	Warnings  []string `json:"warnings,omitempty" desc:"Answers that could not be captured, or token use that could not be read or recorded, when the session said done; the done mark stands"`
 }
+
+// beforeDoneMark, when set, is called with the session's record after the
+// answers are captured and before the done mark is written. Tests use it
+// to see that the mark is not yet set.
+var beforeDoneMark func(rec session.Record)
 
 // runSessionDone records that the session's agent says its work is done.
 // The session is the argument or, when there is none, RHIZA_SESSION. A
 // session that has exited cannot say anything more: that is a conflict.
 // Saying done twice keeps the first mark. A new mark also records the
 // session's token use (see recordTokenUse); a failure there is only a
-// warning.
+// warning. The answers are captured first, so the mark never comes before
+// them; a capture that fails is a warning too, and the mark stands.
 func runSessionDone(ctx *Ctx, req any) (any, error) {
 	r := req.(SessionDoneRequest)
 	ref := strings.TrimSpace(r.ID)
@@ -75,6 +84,10 @@ func runSessionDone(ctx *Ctx, req any) (any, error) {
 	if ctx.DryRun {
 		return SessionDoneResponse{Session: rec.ID, At: rfc3339(mark.At), DryRun: true}, nil
 	}
+	handles, warnings := captureAfterRun(ctx, rec, nil)
+	if beforeDoneMark != nil {
+		beforeDoneMark(rec)
+	}
 	exited, already := false, false
 	updated, err := st.Update(rec.ID, func(r *session.Record) {
 		// Read again under the record's lock: the agent may have exited,
@@ -94,10 +107,11 @@ func runSessionDone(ctx *Ctx, req any) (any, error) {
 	if exited {
 		return nil, exitedConflict(rec.ID)
 	}
-	resp := SessionDoneResponse{Session: rec.ID, At: rfc3339(updated.Status.Done.At), Already: already}
+	resp := SessionDoneResponse{Session: rec.ID, At: rfc3339(updated.Status.Done.At), Already: already,
+		Decisions: handles, Warnings: warnings}
 	if !already {
 		if warn := recordTokenUse(ctx, st, updated); warn != "" {
-			resp.Warnings = []string{warn}
+			resp.Warnings = append(resp.Warnings, warn)
 		}
 	}
 	return resp, nil
@@ -120,6 +134,9 @@ func (r SessionDoneResponse) Human(w io.Writer) {
 		fmt.Fprintf(w, "Session %s already said done at %s.\n", r.Session, r.At)
 	default:
 		fmt.Fprintf(w, "Session %s is done.\n", r.Session)
+	}
+	for _, h := range r.Decisions {
+		fmt.Fprintf(w, "- Proposed decision %s\n", h)
 	}
 	for _, warn := range r.Warnings {
 		fmt.Fprintf(w, "- Warning: %s\n", warn)

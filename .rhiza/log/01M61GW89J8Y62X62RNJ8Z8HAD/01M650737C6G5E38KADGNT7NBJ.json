@@ -1,0 +1,168 @@
+{
+  "actor": "01M6502C1JP6H8XN06Y5VMN13J",
+  "after": [
+    "01M6505KF9CH8S9VKTX1TN7SQZ"
+  ],
+  "at": "2026-10-29T23:34:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "96655f23f3d9e7e07263f4fadbc9403875f08d299e4921db3a0bfaf6f890a295",
+          "session": "966f91a7-f1fb-4e11-a81b-01a18a012bca",
+          "summary": "Autonomous plan run, no owner to ask. The change set's intent: a plan run captures the interview's picks and answers as Decisions when the interview step says done, not only when its session exits. Code read: session done (internal/api/session_done.go) writes only the done mark; answers are captured only on exit (captureAfterRun in internal/api/session_run.go) and by session interview; captureInterview skips handles already proposed, so a second capture adds nothing. Token use already reads the transcript at done (recordTokenUse), the precedent for capturing there. Choices settled here, each marked as assumed in its Decision's wording: capture at done before the done mark is written, so a step waiting on done sees the Decisions; a capture failure is a warning and the mark stands; session done reports the Decisions it proposed.",
+          "title": "Plan captures on done: autonomous planning of the change set"
+        },
+        "handle": "plan-captures-on-done-interview",
+        "id": "01M6505J7HQMJSDSZT78TH7XXQ",
+        "key": null,
+        "kind": "source",
+        "node": "01M6505J7GJEFAA0DMFD4994D2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "Answers are proposed as Decisions when the session says done, before the done mark is written, and again when its agent exits; the handle skip keeps a repeat capture from adding twice",
+          "wording": "(assumed, would have escalated): capture at done, as the change set's intent says, and before the mark, so a step waiting on done finds the Decisions"
+        },
+        "handle": "capture-before-done-mark",
+        "id": "01M6506WDNHFTDSE2C58TE6ESY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6506WDNHFTDSE2C55VN0BW7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6506WDNHFTDSE2C55VN0BW7",
+        "id": "01M6506X437CFV5R5AFGDK3TZN",
+        "link": "01M6506X437CFV5R5AFF3P41GJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505J7GJEFAA0DMFD4994D2",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A capture that fails when the session says done is a warning in the response; the done mark stands",
+          "wording": "(assumed, would have escalated): follows the token-use precedent, where a failed read at done is a warning"
+        },
+        "handle": "done-capture-failure-warns",
+        "id": "01M6506XREJH8F2P9D5VX8BNHH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6506XREJH8F2P9D5RSB3TV6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6506XREJH8F2P9D5RSB3TV6",
+        "id": "01M6506Y5RWFQYX74KSVKF6DVF",
+        "link": "01M6506Y5RWFQYX74KSQQ84P33",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505J7GJEFAA0DMFD4994D2",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "rhiza session done --json lists the handles of the Decisions it proposed under decisions, as rhiza session run --json does",
+          "wording": "(assumed, would have escalated): matches the response of session run"
+        },
+        "handle": "done-reports-decisions",
+        "id": "01M6506YJHJ0D3EW5NJ8E5AGM1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6506YJHJ0D3EW5NJ7TRPNME",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6506YJHJ0D3EW5NJ7TRPNME",
+        "id": "01M6506Z22XRP0YY1ESQQZW876",
+        "link": "01M6506Z22XRP0YY1ESNX1CG2T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505J7GJEFAA0DMFD4994D2",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript whose fake agent leaves a transcript with one picked and one typed answer and says done: the change set holds both answer Decisions when session done returns, a second session done proposes nothing, a later session run exit adds nothing already proposed, and a session with no transcript says done with a warning and keeps its mark. A Go test with a capture hook shows the done mark is not yet set when the capture runs",
+          "statement": "rhiza session done proposes the session's answered questions as Decisions before it writes the done mark, so a step that waits on done finds them; a dry run captures nothing, and a capture that fails is a warning while the mark stands"
+        },
+        "handle": "done-captures-answers",
+        "id": "01M6506ZFX7SJEH3W2V2CRTH3R",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6506ZFX7SJEH3W2TYSQWWJR",
+        "op": "node.create",
+        "parent": "01M5SZJ2G1C136TPR73S2C93QG"
+      },
+      {
+        "decision": null,
+        "from": "01M6506ZFX7SJEH3W2TYSQWWJR",
+        "id": "01M650700GBCEJYJ3K7KY2RQ3Y",
+        "link": "01M650700GBCEJYJ3K7GVC0JTQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506WDNHFTDSE2C55VN0BW7",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6506ZFX7SJEH3W2TYSQWWJR",
+        "id": "01M65070GZT09DE6PS174KX18D",
+        "link": "01M65070GZT09DE6PS13VR0SYN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506XREJH8F2P9D5RSB3TV6",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6506ZFX7SJEH3W2TYSQWWJR",
+        "id": "01M65070X8DZ9XH9T6D1XG4S9J",
+        "link": "01M65070X8DZ9XH9T6CZB2PNX3",
+        "note": "adds a capture at done; the capture on exit stays",
+        "op": "link.create",
+        "to": "01M5WE45ME1M2R7HJKAGXGRXWW",
+        "type": "relates-to"
+      },
+      {
+        "fields": {
+          "acceptance": "The done testscript's --json output lists both answer handles under decisions, and describe-golden is regenerated for the new response field",
+          "statement": "rhiza session done --json lists the handles of the Decisions it proposed under decisions, so the planner and the run see what was captured"
+        },
+        "handle": "done-reports-proposed",
+        "id": "01M65071DAX3X3K3AEBQA0010P",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M65071DAX3X3K3AEBNHAV49N",
+        "op": "node.create",
+        "parent": "01M5SZJ2G1C136TPR73S2C93QG"
+      },
+      {
+        "decision": null,
+        "from": "01M65071DAX3X3K3AEBNHAV49N",
+        "id": "01M650723NJGGA283ER4589XTA",
+        "link": "01M650723NJGGA283ER0SEGFC2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506YJHJ0D3EW5NJ7TRPNME",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M61GW89J8Y62X62RNJ8Z8HAD",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M650737C6G5E38KADGNT7NBJ",
+  "type": "ops",
+  "v": 1
+}

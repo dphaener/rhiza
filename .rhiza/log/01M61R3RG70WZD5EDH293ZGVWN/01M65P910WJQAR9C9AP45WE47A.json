@@ -1,0 +1,63 @@
+{
+  "actor": "01M65NQ7EVCWBP2EBR2RHHQNS0",
+  "after": [
+    "01M65NPRFS6VPVQ15YNC0F49C4"
+  ],
+  "at": "2026-10-30T05:59:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3, hands-on with a scratch build of the branch head (rhiza session run in a scratch repo, fake claude and rex on PATH, isolated HOME). The agent wrote Claude Code's synthetic usage-limit line with a reset 6s ahead. The run waited 6s, and session show read working, 'paused at its usage limit until <reset>', during the wait. It then relaunched claude with --resume and the same session ID, told 'The usage limit has reset. Continue where you left off.' as the last arg. No second --session-id launch, exit 0. An agent left open at its limit (sleeping) was killed by the 30s watcher and resumed (elapsed 30s). An agent limited every time got 1 start and 24 resumes, then the session failed: 'still stopped at its usage limit after 24 pauses'. Via rhiza session hook: a Stop hook with the synthetic 'hit your limit' line last recorded working 'paused at its usage limit'. A normal Stop, and a later model turn quoting 'usage limit reached|1700000000' and 'hit your limit', recorded idle."
+        },
+        "handle": "usage-limit-resume-qa-3",
+        "id": "01M65P8Z3QRHW7SGS8PB9YQWQ4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65P8Z3QRHW7SGS8PAXPB1W6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65P8Z3QRHW7SGS8PAXPB1W6",
+        "id": "01M65P8ZFFJ5F2WG49TVQEZHZ4",
+        "link": "01M65P8ZFFJ5F2WG49TT9CH1HB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6507G6PPPPEVQYKYJNQRSD6",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3, hands-on with a scratch build: rhiza run start --workflow one (a single agent step) in a scratch repo, with a fake rex that runs the tab command and a fake claude. On first launch the fake wrote the synthetic usage-limit line (reset 4s ahead) and deleted the transcript 2s later. After the wait, the run relaunched claude with --session-id, not --resume: a fresh session for the step. The step passed. The run journal (.git/rhiza/runs/<run>.jsonl) gained a fresh-session entry for step build and that session, and the session record's fresh list got a timestamp. session run printed the warning that the transcript was gone and a fresh session was started instead of resuming."
+        },
+        "handle": "usage-limit-fresh-session-qa-3",
+        "id": "01M65P8ZWBMYCHQM98P6WZN37Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65P8ZWBMYCHQM98P5XZBWNG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65P8ZWBMYCHQM98P5XZBWNG",
+        "id": "01M65P90A0BM6CSE9D63DMEMJ8",
+        "link": "01M65P90A0BM6CSE9D5ZHY8MDZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6507H8DN68SWSSCRT613VZM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61R3RG70WZD5EDH293ZGVWN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65P910WJQAR9C9AP45WE47A",
+  "type": "ops",
+  "v": 1
+}

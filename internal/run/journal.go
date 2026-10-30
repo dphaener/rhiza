@@ -34,9 +34,12 @@ const (
 	TypeAnswered    = "answered"
 	TypeMessage     = "message"
 	TypeTokens      = "tokens"
-	TypeFindings    = "findings"
-	TypeVerdict     = "verdict"
-	TypeGated       = "gated"
+	// TypeFreshSession records that a session started over as a fresh
+	// session after a usage-limit pause, its transcript gone.
+	TypeFreshSession = "fresh-session"
+	TypeFindings     = "findings"
+	TypeVerdict      = "verdict"
+	TypeGated        = "gated"
 	// TypeLeafSession, TypeLeafAttempt and TypeLeaf are a leaves step's
 	// entries: a leaf's session started, a session's work judged, and a
 	// leaf's outcome.
@@ -246,6 +249,9 @@ type Block struct {
 //	           in Detail; it answers nothing)
 //	message:   Step, Session, Actor (the sender), To, Text, Summary, Structured (a session sent another a message)
 //	tokens:    Step, Session, Tokens (a reading of the session's token use; the latest counts)
+//	fresh-session: Step, Session, Detail (the session's transcript was gone
+//	           after a usage-limit pause, so its step started over as a
+//	           fresh session instead of resuming)
 //	findings:  Findings (a plan reviewer's findings, maybe none; each findings entry
 //	           opens the next review round). With Leaf set it is instead a
 //	           verifier's findings on leaf Leaf (handle Handle) of leaves step
@@ -804,7 +810,8 @@ type CheckOutcome struct {
 	At      time.Time
 }
 
-// ReviewFix is a checks step's change-set fixer in cycle Cycle, folded
+// ReviewFix is a checks step's change-set fixer in cycle Cycle, on its
+// Attempt (from 1; a fixer that failed is retried within its cycle), folded
 // from its review-fix entry and, once judged, its review-fix-judged
 // entry: the fixer for the confirmed findings that name no leaf of the
 // change set. Since is the worktree's HEAD when it started, which its
@@ -816,6 +823,7 @@ type CheckOutcome struct {
 type ReviewFix struct {
 	Step       string
 	Cycle      int
+	Attempt    int
 	Session    string
 	Model      string
 	Since      string
@@ -1135,15 +1143,17 @@ func (st State) ReviewQuestionsFor(step string, cycle int) []ReviewQuestion {
 	return out
 }
 
-// ReviewFix is checks step step's change-set fixer in cycle, if the
-// journal has one.
+// ReviewFix is checks step step's change-set fixer in cycle, its latest
+// attempt, if the journal has one.
 func (st State) ReviewFix(step string, cycle int) (ReviewFix, bool) {
+	var out ReviewFix
+	found := false
 	for _, f := range st.Fixes {
 		if f.Step == step && f.Cycle == cycle {
-			return f, true
+			out, found = f, true
 		}
 	}
-	return ReviewFix{}, false
+	return out, found
 }
 
 // Check is step's check named name, if the journal has one.
@@ -1314,12 +1324,12 @@ func (j Journal) State() State {
 			c.Outcomes = append(c.Outcomes, CheckOutcome{Cycle: e.Cycle, Outcome: e.Outcome, Detail: e.Detail, At: e.At})
 		case TypeReviewFix:
 			st.Fixes = append(st.Fixes, ReviewFix{
-				Step: e.Step, Cycle: e.Cycle, Session: e.Session, Model: e.Model, Since: e.Commit, At: e.At, Seq: seq,
+				Step: e.Step, Cycle: e.Cycle, Attempt: max(e.Attempt, 1), Session: e.Session, Model: e.Model, Since: e.Commit, At: e.At, Seq: seq,
 			})
 			st.addSession(e.Step, e.Session)
 		case TypeReviewFixJudged:
 			for i := range st.Fixes {
-				if f := &st.Fixes[i]; f.Step == e.Step && f.Cycle == e.Cycle {
+				if f := &st.Fixes[i]; f.Step == e.Step && f.Cycle == e.Cycle && f.Attempt == max(e.Attempt, 1) {
 					f.Judged, f.Outcome, f.Commit, f.Detail, f.JudgedAt = true, e.Outcome, e.Commit, e.Detail, e.At
 				}
 			}

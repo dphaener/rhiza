@@ -1,0 +1,41 @@
+{
+  "actor": "01M65049W52SHGDCFZV2EVQN23",
+  "after": [
+    "01M65048RYWDYTNQH30GC4XDF6"
+  ],
+  "at": "2026-10-29T23:33:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set intent says a failed fixer must not use up a review fix cycle, so the retry happens inside the cycle and the cycle's checks re-run only after its fixers pass. The intent sets no retry count, and the code today (internal/run/checks.go nextCheckActions, fixActions failure path) spends the cycle on the first failed fix. Retries must be bounded or a broken fixer loops forever, so I reused MaxFixCycles (2) as the in-cycle retry budget rather than adding a new constant: one knob, same meaning as the existing cap, and the existing tests that count cycles against MaxFixCycles stay valid. Unbounded retries and a zero-retry answer were rejected: the first never terminates, the second is today's behaviour the intent asks to change.",
+          "statement": "A failed review fixer is retried within its cycle up to MaxFixCycles more times (the same cap as the checks' further cycles). Only when those retries are exhausted does the cycle count as spent, and the checks of that cycle fail with the fix-failed detail.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "fixer-retries-within-cycle",
+        "id": "01M65054XFRT6Z9CWSFWA2XRNT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M65054XFRT6Z9CWSFS9MYH2R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65054XFRT6Z9CWSFS9MYH2R",
+        "id": "01M65055BNXWGWYP00DH37YAQ9",
+        "link": "01M65055BNXWGWYP00DGMZ95R6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65048H5GPAKKSKRQ9CQ7CZF",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M61GW7TJ6BH6YX1T7SQDWK1J",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M65056BY4DK4DY6TMCPG3V43",
+  "type": "ops",
+  "v": 1
+}

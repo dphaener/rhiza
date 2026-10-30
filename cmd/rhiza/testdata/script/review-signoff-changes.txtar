@@ -49,7 +49,7 @@ stdout '^Run [0-9A-Z]{26} stopped$'
 stdout '^next: rhiza run approve [0-9A-Z]{26}$'
 exec cat $WORK/claude.log
 stdout '\nrole=check check=alpha cycle=3 leaf=\nrole=fixer check= cycle=4 leaf=thing findings=yes\nrole=verifier check= cycle=4 leaf=thing\nrole=check check=alpha cycle=4 leaf=\n\z'
-exec sh -c 'cd ../repo.change-me && git log -1 --format=%B HEAD^ | grep "^Leaf: thing$"'
+exec sh -c 'cd ../repo.change-me && git log -1 --format=%B HEAD~2 | grep "^Leaf: thing$"'
 exec rhiza run status
 stdout '^- review \(visit 1\): pass, then signoff: 1 of 1 checks passed$'
 stdout '^- signoff \(visit 1\): changes, then review: changes asked by test: 1 finding$'

@@ -1,0 +1,72 @@
+{
+  "actor": "01M6502C77GKMNYTWPXVMY8F32",
+  "after": [
+    "01M6505PYSNDQTC3PY4KT6BQC3"
+  ],
+  "at": "2026-10-29T23:33:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "cmd/rhiza/testdata/script/run-blocked.txtar passes: a run's AskUserQuestion reports state=blocked:kind=question with the question as msg",
+          "statement": "Rex program status shows a session's AskUserQuestion as blocked with kind question and the question as its message, never as a permission"
+        },
+        "handle": "ask-status-is-question",
+        "id": "01M6505W1FFMVWMMDTMG3006XE",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6505W1FFMVWMMDTMFDKA9CN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6505W1FFMVWMMDTMFDKA9CN",
+        "id": "01M6505WM51QHTR5RC642FCEQJ",
+        "link": "01M6505WM51QHTR5RC61S4BEKP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WGZJF80R73FMQNV8M80R65",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6505W1FFMVWMMDTMFDKA9CN",
+        "id": "01M6505X65CXATNJZ8N8FCQMGZ",
+        "link": "01M6505X65CXATNJZ8N7HDVP25",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505PF0CR3E1B9V6DPBPQSE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Where does the 'Claude needs your permission' wording come from: Rex's own renderer or Claude Code's permission prompt, and does Rex show kind question as a question?"
+        },
+        "handle": "rex-ask-wording",
+        "id": "01M6505XKTY4QRF2KYYQJKCXZC",
+        "key": null,
+        "kind": "question",
+        "node": "01M6505XKTY4QRF2KYYP3HAKPT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6505XKTY4QRF2KYYP3HAKPT",
+        "id": "01M6505Y0NVXX3PBSZJ2YV74NG",
+        "link": "01M6505Y0NVXX3PBSZHZ00Q4PE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505W1FFMVWMMDTMFDKA9CN",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M61GW8H09EPJ1YCR7P2X3E8J",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6505YQE69F1Z7N05MJ9VREX",
+  "type": "ops",
+  "v": 1
+}

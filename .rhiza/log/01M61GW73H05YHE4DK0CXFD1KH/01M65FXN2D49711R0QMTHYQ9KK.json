@@ -1,0 +1,40 @@
+{
+  "actor": "01M65FJCFZW6X9W8MJW5ZBA0P2",
+  "after": [
+    "01M65FQGJQRJQMB8G5Q1TNYTQB"
+  ],
+  "at": "2026-10-30T04:08:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 42217dd, read the diff: internal/guide/text/review.md adds 'Every check except `qa` tests runs with fakes only, never real Rex, agents or `gh`.' at the head of the Checks list (covering compliance, quality, scope and model), and the existing qa line still says hands-on with the built binary, fakes alone do not count. Ran go test ./internal/guide -run 'TestReviewText|Cap' -v: TestReviewText PASS, its new fakes-only group pins that sentence (naming Rex, agents and gh) and its five-checks group pins 'built binary' and 'fakes alone do not count'; TestCaps PASS with review at 728 of 800 tokens (TopicCap). go test ./... passes with no failures and gofmt -l is empty. make check's self-check only reports stale .rhiza/rendered files from the run's actor records, not from this leaf."
+        },
+        "handle": "review-guide-fakes-only-verified",
+        "id": "01M65FXM0JG01MA0H2ZSEGJVTM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65FXM0JG01MA0H2ZSD8B64H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65FXM0JG01MA0H2ZSD8B64H",
+        "id": "01M65FXME8228WR9AQTHNPC6MP",
+        "link": "01M65FXME8228WR9AQTFD2QDRB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505MN5E02V3Y30RMC16FN5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW73H05YHE4DK0CXFD1KH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65FXN2D49711R0QMTHYQ9KK",
+  "type": "ops",
+  "v": 1
+}
