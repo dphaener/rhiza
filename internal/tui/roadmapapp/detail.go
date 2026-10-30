@@ -18,9 +18,16 @@ type detail struct {
 	state     string
 	intent    string
 	leaves    []leafView
-	questions []string
+	questions []question
+	picked    int
 	run       *api.RunInfo
 	err       error
+}
+
+// question is an open question that blocks the change set.
+type question struct {
+	handle string
+	text   string
 }
 
 type leafView struct {
@@ -59,7 +66,7 @@ func (m *Model) loadDetail(r row) *detail {
 	d.leaves = leafViews(cr)
 	for _, reason := range r.reasons {
 		if sub := blockedBy.FindStringSubmatch(reason); sub != nil {
-			d.questions = append(d.questions, m.questionText(cs, sub[1]))
+			d.questions = append(d.questions, question{handle: sub[1], text: m.questionText(cs, sub[1])})
 		}
 	}
 	// With no run for the change set, run.status answers with the latest
@@ -136,8 +143,12 @@ func (d *detail) write(b *strings.Builder) {
 	if len(d.questions) == 0 {
 		b.WriteString("  none\n")
 	}
-	for _, q := range d.questions {
-		fmt.Fprintf(b, "  %s\n", q)
+	for i, q := range d.questions {
+		mark := "  "
+		if i == d.picked && len(d.questions) > 1 {
+			mark = "> "
+		}
+		fmt.Fprintf(b, "%s%s\n", mark, q.text)
 	}
 	b.WriteString("\nLatest run\n")
 	if d.run == nil {

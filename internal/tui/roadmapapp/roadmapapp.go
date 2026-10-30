@@ -54,6 +54,9 @@ type Model struct {
 	height int
 	detail *detail
 
+	preview Runner
+	answer  *answer
+
 	starter Starter
 	pending *pending
 	notice  string
@@ -163,7 +166,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		}
+		if m.answer != nil {
+			return m, m.typeAnswer(msg)
+		}
 		switch msg.String() {
+		case "a":
+			m.askAccept()
+			return m, nil
 		case "p":
 			m.ask("plan")
 			return m, nil
@@ -180,6 +189,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			case "esc":
 				m.detail = nil
+			case "down", "j":
+				m.pick(1)
+			case "up", "k":
+				m.pick(-1)
+			case "enter":
+				m.startAnswer()
 			}
 			return m, nil
 		}
@@ -229,7 +244,7 @@ func (m *Model) View() tea.View {
 	var b strings.Builder
 	if m.detail != nil {
 		m.detail.write(&b)
-		b.WriteString(m.footer("\nesc back · p plan · s ship · o open run · q quit"))
+		b.WriteString(m.footer("\nesc back · a accept · j/k pick question · enter answer · p plan · s ship · o open run · q quit"))
 		return tea.NewView(b.String())
 	}
 	if m.err != nil {
@@ -255,12 +270,15 @@ func (m *Model) View() tea.View {
 		}
 		b.WriteString("\n")
 	}
-	b.WriteString(m.footer("\nroadmap · j/k move · enter open · p plan · s ship · o open run · r reload · q quit"))
+	b.WriteString(m.footer("\nroadmap · j/k move · enter open · a accept · p plan · s ship · o open run · r reload · q quit"))
 	return tea.NewView(b.String())
 }
 
 // footer is the key help, or the y/n question, preceded by the last notice.
 func (m *Model) footer(help string) string {
+	if m.answer != nil {
+		return "\n" + m.answer.prompt()
+	}
 	if m.pending != nil {
 		return "\n" + m.pending.prompt()
 	}

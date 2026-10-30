@@ -19,13 +19,18 @@ type Starter struct {
 	RexSession string
 }
 
+// SetPreview gives the model the runner of what-ifs: the same operations
+// run as --dry-run does, so nothing is written.
+func (m *Model) SetPreview(r Runner) { m.preview = r }
+
 // SetStarter gives the model the means to start runs in Rex tabs.
 func (m *Model) SetStarter(s Starter) { m.starter = s }
 
 // pending is a run waiting for the owner's y or n.
 type pending struct {
-	kind string // "plan" or "ship"
+	kind string // "plan", "ship" or "accept"
 	id   id.ID
+	what string // accept only: the what-if the question shows
 }
 
 // target is the change set p, s and o act on: the open detail's, else the
@@ -49,6 +54,9 @@ func (m *Model) ask(kind string) {
 
 // prompt is the question shown while a run waits for confirmation.
 func (p *pending) prompt() string {
+	if p.kind == "accept" {
+		return p.what
+	}
 	if p.kind == "plan" {
 		return fmt.Sprintf("Start an interactive plan run of %s in a new Rex tab? y/n", short(p.id))
 	}
@@ -73,6 +81,10 @@ func (p *pending) args(s Starter) []string {
 func (m *Model) confirm() {
 	p := m.pending
 	m.pending = nil
+	if p.kind == "accept" {
+		m.accept(p.id)
+		return
+	}
 	if m.starter.Exec == nil || m.starter.Self == "" {
 		m.notice = "Cannot start a run: no rex or rhiza path"
 		return

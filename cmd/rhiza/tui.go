@@ -99,13 +99,7 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		}
 		m, result = im, im.Result
 	case isRoadmap:
-		am := roadmapapp.NewModel(func(op, change string, args []string) ([]byte, error) {
-			gg := g
-			if change != "" {
-				gg.change, gg.changeSet = change, true
-			}
-			return callWith(gg, op, false, false, args)
-		})
+		am := roadmapModel(g, callWith)
 		if ctx, err := newCtx(g, os.Stdin, getenv); err == nil {
 			am.SetStarter(roadmapapp.Starter{
 				Exec: func(name string, args []string, dir string) ([]byte, error) {
@@ -198,4 +192,22 @@ func tuiModel(g globals, args []string, stdout, stderr io.Writer, getenv func(st
 		return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
 	}
 	return 0
+}
+
+// roadmapModel is the roadmap app over call, which runs an operation as
+// the matching command does. Its what-ifs are the same operations with
+// --dry-run.
+func roadmapModel(g globals, call func(g globals, op string, record, dry bool, args []string) ([]byte, error)) *roadmapapp.Model {
+	runner := func(dry bool) roadmapapp.Runner {
+		return func(op, change string, args []string) ([]byte, error) {
+			gg := g
+			if change != "" {
+				gg.change, gg.changeSet = change, true
+			}
+			return call(gg, op, false, dry, args)
+		}
+	}
+	am := roadmapapp.NewModel(runner(false))
+	am.SetPreview(runner(true))
+	return am
 }
