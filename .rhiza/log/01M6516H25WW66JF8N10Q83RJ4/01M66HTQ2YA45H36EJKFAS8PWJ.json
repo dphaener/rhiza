@@ -1,0 +1,40 @@
+{
+  "actor": "01M66HERHV4SG8Y8PZYQBE580C",
+  "after": [
+    "01M66HKCFZJBBGSZ2VZNV6YZND"
+  ],
+  "at": "2026-10-30T14:01:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c6c2527 I ran go test ./internal/api -run 'TestStartCheck$|TestStartFix$' -count=1 -v: both PASS. Each starts a session (a check via StartCheck, a change set fixer via StartFix) with Anchor S-first, whose record holds block:a1 in window:w9, against the fake rex, and asserts rex got split -b block:a1 and no window new call. I read the diff (one new test file) and StartCheck/StartFix in internal/api/run_checks.go: both set req.anchor = r.paneAnchor(spec.Anchor), which returns the anchored record's tab. go test ./... passes. make check fails only in self-check, on stale .rhiza/rendered files from the earlier evidence commit 2a76e54 (actor claude-code-bc1374d8), which this leaf's commit does not touch."
+        },
+        "handle": "checks-and-fixes-anchored-verified",
+        "id": "01M66HTP49YKAF2A9M57QWZCKD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66HTP49YKAF2A9M57P2DJEY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66HTP49YKAF2A9M57P2DJEY",
+        "id": "01M66HTPGP3J6W1SDRHDES1P47",
+        "link": "01M66HTPGP3J6W1SDRHC4RXWXJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M651ME1N3KVWZ1D6M8BYFHBQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6516H25WW66JF8N10Q83RJ4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66HTQ2YA45H36EJKFAS8PWJ",
+  "type": "ops",
+  "v": 1
+}
