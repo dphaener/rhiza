@@ -415,6 +415,12 @@ func (r RunResponse) ExitCode() int {
 // journal and runs it in the foreground. A dry run writes and runs nothing.
 func runRunStart(ctx *Ctx, req any) (any, error) {
 	r := req.(RunStartRequest)
+	if ctx.Getenv != nil {
+		if sid := strings.TrimSpace(ctx.Getenv(envSession)); sid != "" {
+			return nil, Usagef("run start refused: this is agent session %s, and no agent session starts a run", sid).
+				WithNext("ask the owner to run it outside an agent session")
+		}
+	}
 	path, def, data, err := resolveWorkflow(ctx.Root, r.Workflow)
 	if err != nil {
 		return nil, err
