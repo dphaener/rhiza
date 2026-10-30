@@ -5,9 +5,13 @@
 # untracked edits in the build worktree stay exactly as they were. The
 # commit is journalled on the passed leaf.
 #
+# The builder's own actor record goes in its leaf commit, so after the run
+# no builder actor entry is left untracked under .rhiza/log.
+#
 # The fake rex runs the tab's command synchronously in the window's
-# directory. The fake claude, as the builder, commits its leaf's file with
-# a Leaf: trailer, then leaves a staged and an unstaged edit and an
+# directory. The fake claude, as the builder, stages its actor record with
+# the recipe `rhiza guide build` gives and commits it with its leaf's file
+# under Leaf: and Actor: trailers, then leaves a staged and an unstaged edit and an
 # untracked file behind and snapshots them; as the verifier it writes its
 # Evidence as its own actor with an add and a link: two entries.
 
@@ -48,12 +52,27 @@ stdout '^ +2 '
 exec sh -c 'cd "$(cat $WORK/build.pwd)" && for f in $(git show --name-only --format= HEAD); do grep -l good-ok "$f"; grep -l verifies "$f"; done; true'
 stdout -count=2 '\.json$'
 
-# The actor the Actor: trailer names is created in the commit's tree; the
-# builder's actor record is not committed and stays untracked.
+# The actor the Actor: trailer names is created in the commit's tree.
 exec sh -c 'cd "$(cat $WORK/build.pwd)" && a=$(git log -1 --format="%(trailers:key=Actor,valueonly)" | tr -d "[:space:]") && git show --name-only --format= HEAD | xargs grep -l "\"handle\": *\"$a\"" && git show --name-only --format= HEAD | xargs grep -l "\"kind\": *\"actor\""'
 stdout -count=2 '\.json$'
-exec sh -c 'cd "$(cat $WORK/build.pwd)" && git status --porcelain --untracked-files=all -- .rhiza | cut -d/ -f3 | sort -u'
-stdout -count=1 '^[0-9A-Z]{26}$'
+
+# The builder's leaf commit holds its actor record: the actor its Actor:
+# trailer names is created in that commit's tree, which also holds the
+# leaf's file. No builder actor entry is left untracked under .rhiza.
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git show --name-only --format= HEAD^'
+stdout '^good\.txt$'
+stdout '^\.rhiza/log/[0-9A-Z]{26}/[0-9A-Z]{26}\.json$'
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && a=$(git log -1 --format="%(trailers:key=Actor,valueonly)" HEAD^ | tr -d "[:space:]") && test "$a" = "$(cat $WORK/builder.actor)" && git show --name-only --format= HEAD^ | grep "^\.rhiza/" | xargs grep -l "\"handle\": *\"$a\"" && git show --name-only --format= HEAD^ | grep "^\.rhiza/" | xargs grep -l "\"kind\": *\"actor\""'
+stdout -count=2 '\.json$'
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git status --porcelain --untracked-files=all -- .rhiza'
+! stdout .
+
+# A clean clone of the leaf commit folds and reads the builder's actor, so
+# its record is committed, not just present in the build worktree.
+exec sh -c 'git clone -q "$(cat $WORK/build.pwd)" $WORK/leaf && cd $WORK/leaf && git checkout -q "$(cat $WORK/want.commit)"'
+fold-ok $WORK/leaf/.rhiza
+exec sh -c 'cd $WORK/leaf && rhiza show "$(cat $WORK/builder.actor)" --json'
+stdout '"kind": "actor"'
 
 # The leaf passed with that commit journalled on it.
 exec sh -c 'cd "$(cat $WORK/build.pwd)" && git rev-parse HEAD > $WORK/evidence.commit'
@@ -110,8 +129,11 @@ if [ "$RHIZA_ROLE" = builder ]; then
 	pwd -P > "$WORK/build.pwd"
 	echo base > notes.txt
 	echo "$RHIZA_LEAF" > "$RHIZA_LEAF.txt"
+	echo "$RHIZA_ACTOR" > "$WORK/builder.actor"
 	git add "$RHIZA_LEAF.txt" notes.txt
-	git commit -q -m "build $RHIZA_LEAF" -m "Leaf: $RHIZA_LEAF" -- "$RHIZA_LEAF.txt" notes.txt || exit 1
+	eval "$(rhiza guide build | grep '^git add .*Record agent actor')" || exit 1
+	git commit -q -m "build $RHIZA_LEAF" -m "Leaf: $RHIZA_LEAF
+Actor: $RHIZA_ACTOR" || exit 1
 	git rev-parse HEAD > "$WORK/want.commit"
 	echo staged >> notes.txt
 	git add notes.txt
