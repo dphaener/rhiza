@@ -27,6 +27,7 @@ the assistant's summary in the founding conversation
 
 ### In
 
+- relates-to [usage-limit-resume-same-session](usage-limit-resume-same-session.md) — Exception to engine-orchestrates: a usage-limited step resumes its agent session after the pause instead of starting a fresh one
 - decided-by [workflows](../capability/rhiza/workflows.md)
 - decided-by [agent-step](../capability/rhiza/workflows/workflow-definitions/agent-step.md)
 
