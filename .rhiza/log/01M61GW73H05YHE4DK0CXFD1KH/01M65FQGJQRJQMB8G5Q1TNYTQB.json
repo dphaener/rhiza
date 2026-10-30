@@ -1,0 +1,40 @@
+{
+  "actor": "01M65F6DPZ8BZX035032EVPY9J",
+  "after": [
+    "01M650RG9PGWRQV8KSJ5GN8GTT"
+  ],
+  "at": "2026-10-30T04:05:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b00d77a, go test ./cmd/rhiza -run TestScripts/run-start-agent-session passes: with RHIZA_SESSION=01SESSIONFORTESTING, rhiza run start --workflow one exits 2 with 'run start refused: this is agent session 01SESSIONFORTESTING, and no agent session starts a run' and no .git/rhiza/runs; with RHIZA_SESSION empty the same start succeeds. By hand in a scratch repo with RHIZA_SESSION=abc-123, run start (plain and --json) exits 2 naming abc-123, and neither .git/rhiza nor a sibling run worktree is created. The diff puts the guard first in runRunStart, before the workflow is resolved or anything is written. make check exits 0."
+        },
+        "handle": "run-start-refuses-agent-session-verified",
+        "id": "01M65FQFAWKSVR6KKQW68FQTMV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65FQFAVF7BMNZ3ZGARNA4A5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65FQFAVF7BMNZ3ZGARNA4A5",
+        "id": "01M65FQFTQ74JQZYRPVBH0PABM",
+        "link": "01M65FQFTQ74JQZYRPVB6CV8EE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505GVBMV8B71YA23043CEE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW73H05YHE4DK0CXFD1KH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65FQGJQRJQMB8G5Q1TNYTQB",
+  "type": "ops",
+  "v": 1
+}
