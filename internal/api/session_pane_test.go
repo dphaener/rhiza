@@ -17,16 +17,26 @@ type paneRex struct {
 	sizeErr  error
 	splitOut string
 	splitErr error
-	calls    []string
+	blocks   string
+	// splitErrOnce fails only the first split with splitErr.
+	splitErrOnce bool
+	calls        []string
 }
 
 func (p *paneRex) exec(name string, args []string, _ string, _ []string) ([]byte, error) {
 	p.calls = append(p.calls, strings.Join(args, " "))
 	switch args[0] {
 	case "block":
+		if args[1] == "ls" {
+			return []byte(p.blocks), nil
+		}
 		return []byte(p.size), p.sizeErr
 	case "split":
-		return []byte(p.splitOut), p.splitErr
+		err := p.splitErr
+		if p.splitErrOnce {
+			p.splitErr = nil
+		}
+		return []byte(p.splitOut), err
 	}
 	return []byte(`{"window_id":"window:w2","block_ids":["block:new"]}`), nil
 }
@@ -34,7 +44,7 @@ func (p *paneRex) exec(name string, args []string, _ string, _ []string) ([]byte
 // openSessionPane splits the anchor along its longer side in pixels,
 // unless the step's split fixes the direction, in which case Rex is not
 // asked the size; an unreadable size splits right; an anchor Rex no
-// longer has opens a new tab.
+// longer has splits another pane of its window.
 func TestOpenSessionPane(t *testing.T) {
 	anchor := session.Tab{Window: "window:w1", Block: "block:b1"}
 	landscape := `{"columns":200,"rows":50,"cell_width_px":8,"cell_height_px":16}`
@@ -43,7 +53,9 @@ func TestOpenSessionPane(t *testing.T) {
 		return "split -b block:b1 --split " + dir + " --ratio 50 -c /wt --json --label verifier a #1 -- rhiza session run S1"
 	}
 	size := "block call -b block:b1 size"
-	window := "window new T -c /wt --json -- rhiza session run S1"
+	ls := "block ls -w window:w1 --json"
+	split2 := "split -b block:b9 --split right --ratio 50 -c /wt --json --label verifier a #1 -- rhiza session run S1"
+	size2 := "block call -b block:b9 size"
 	for _, c := range []struct {
 		name      string
 		rex       paneRex
@@ -63,8 +75,12 @@ func TestOpenSessionPane(t *testing.T) {
 			"right", []string{split("right")}, "block:b3", "window:w1", false},
 		{"size unreadable splits right", paneRex{sizeErr: errors.New("rex: no such method"), splitOut: `{"block_id":"block:b2"}`},
 			"auto", []string{size, split("right")}, "block:b2", "window:w1", false},
-		{"anchor gone opens a new tab", paneRex{size: landscape, splitErr: errors.New("rex split: block block:b1 not found")},
-			"auto", []string{size, split("right"), window}, "block:new", "window:w2", false},
+		{"anchor gone splits another pane", paneRex{size: landscape, splitErr: errors.New("rex split: block block:b1 not found"), splitErrOnce: true,
+			blocks: `{"blocks":[{"block_id":"block:b1"},{"block_id":"block:b9"}]}`, splitOut: `{"block_id":"block:b2"}`},
+			"auto", []string{size, split("right"), ls, size2, split2}, "block:b2", "window:w1", false},
+		{"anchor gone, no other pane", paneRex{size: landscape, splitErr: errors.New("rex split: block block:b1 not found"),
+			blocks: `{"blocks":[{"block_id":"block:b1"}]}`},
+			"auto", []string{size, split("right"), ls}, "", "", true},
 		{"split fails", paneRex{size: landscape, splitErr: errors.New("rex split: server down")},
 			"auto", []string{size, split("right")}, "", "", true},
 		{"split prints no block", paneRex{size: landscape, splitOut: `{}`},
