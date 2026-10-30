@@ -89,6 +89,9 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		im := inboxapp.NewModel(func(op string, args []string) ([]byte, error) {
 			return call(op, false, false, args)
 		})
+		if ctx, err := newCtx(g, os.Stdin, getenv); err == nil {
+			im.Exec, im.Self, im.Root, im.RexSession = ctx.Exec, ctx.Self, ctx.Root, ctx.RexSession
+		}
 		m, result = im, im.Result
 	case isWrite:
 		wm := writeapps.NewModel(write, func(a writeapps.App, args []string, dry bool) ([]byte, error) {
