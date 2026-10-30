@@ -22,6 +22,8 @@ grep 'name = "rhiza_app_roadmap"' conf/rhiza.lua
 grep 'title = "roadmap"' conf/rhiza.lua
 grep '"tui", "app", "roadmap"' conf/rhiza.lua
 grep 'title = "session-ls"' conf/rhiza.lua
+grep 'name = "rhiza_app_inbox"' conf/rhiza.lua
+grep '"tui", "app", "inbox"' conf/rhiza.lua
 grep 'name = "rhiza_app_session_ls"' conf/rhiza.lua
 ! grep 'name = "rhiza_app_[a-z0-9_]*[^a-z0-9_"]' conf/rhiza.lua
 grep '"tui", "app", "model"' conf/rhiza.lua

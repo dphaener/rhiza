@@ -20,6 +20,7 @@ Roadmap + Inbox (Recommended): the roadmap becomes a cursor list where you plan,
 
 - decided-by [m5-roadmap-actionable](../intent/milestone-5/m5-roadmap-actionable.md)
 - decided-by [m5-inbox-app](../intent/milestone-5/m5-inbox-app.md)
+- decided-by [inbox-app-list](../capability/rhiza/inbox-app-list.md)
 
 ## History
 

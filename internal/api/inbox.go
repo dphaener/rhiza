@@ -76,6 +76,7 @@ type InboxItem struct {
 	At             string `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
 	Run            string `json:"run" desc:"The run it belongs to"`
 	Change         string `json:"change" desc:"The change set of the run"`
+	ChangeTitle    string `json:"change_title,omitempty" desc:"The change set's title; absent when the log has no such change set"`
 	Step           string `json:"step,omitempty" desc:"The step: the asking session's, the sign-off's, the failed step, or where the run was interrupted"`
 	Question       string `json:"question,omitempty" desc:"A question: what the agent asked"`
 	Tab            string `json:"tab,omitempty" desc:"A question: the title of the session's tab"`
@@ -253,7 +254,31 @@ func runInbox(ctx *Ctx, req any) (any, error) {
 		return nil, Errorf("read runs: %v", err)
 	}
 	host, _ := os.Hostname()
-	return InboxResponse{Items: inboxItems(runs, host, nil, rs.Live, changeStateOf(ctx))}, nil
+	items := inboxItems(runs, host, nil, rs.Live, changeStateOf(ctx))
+	title := changeTitleOf(ctx)
+	for i := range items {
+		items[i].ChangeTitle = title(items[i].Change)
+	}
+	return InboxResponse{Items: items}, nil
+}
+
+// changeTitleOf gives the display title of a change set by ID, empty when
+// the log has none or the ID does not parse.
+func changeTitleOf(ctx *Ctx) func(change string) string {
+	ws, err := openCtxWorkspace(ctx)
+	return func(change string) string {
+		if err != nil {
+			return ""
+		}
+		cs, perr := id.Parse(change)
+		if perr != nil {
+			return ""
+		}
+		if c, ok := ws.changeSet(cs); ok {
+			return c.Open.DisplayTitle()
+		}
+		return ""
+	}
 }
 
 // InboxOpenRequest names the item to open.
