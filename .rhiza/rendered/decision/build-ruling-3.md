@@ -36,7 +36,6 @@ picked by the orchestrator acting as arbiter
 ### In
 
 - decided-by [build-panes](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-panes.md)
-- supersedes [run-window-gone-opens-window](run-window-gone-opens-window.md)
 
 ## History
 
