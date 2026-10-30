@@ -1,9 +1,11 @@
 package api
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -12,17 +14,20 @@ import (
 )
 
 // limitAdapter is a fake agent whose transcript is $HOME/limit/<session>.txt
-// and which is usage-limited while that file says "limited".
-type limitAdapter struct {
-	interviewAdapter
-	launches *[]adapter.Launch
-}
+// and which is usage-limited while that file says "limited". Every command
+// it builds goes to limitLaunches.
+type limitAdapter struct{ interviewAdapter }
 
 const limitAgent = "limit-fake"
 
+var (
+	limitLaunches []adapter.Launch
+	limitRegister sync.Once
+)
+
 func (limitAdapter) Name() string { return limitAgent }
-func (a limitAdapter) Command(l adapter.Launch) ([]string, error) {
-	*a.launches = append(*a.launches, l)
+func (limitAdapter) Command(l adapter.Launch) ([]string, error) {
+	limitLaunches = append(limitLaunches, l)
 	return []string{limitAgent}, nil
 }
 func (limitAdapter) TranscriptGlobs(sid string, getenv func(string) string) []string {
@@ -39,18 +44,7 @@ func (c removeClock) Now() time.Time      { return time.Unix(0, 0) }
 func (c removeClock) Sleep(time.Duration) { os.Remove(c.path) }
 
 func TestSessionRunFreshSessionWhenTranscriptGone(t *testing.T) {
-	f, s, _ := interviewFixture(t)
-	var launches []adapter.Launch
-	adapter.Register(limitAdapter{launches: &launches})
-	if _, err := session.NewStore(session.Dir(f.common)).Update(s.ID, func(r *session.Record) {
-		r.Agent, r.Prompt = limitAgent, "do the step"
-	}); err != nil {
-		t.Fatal(err)
-	}
-	path := filepath.Join(f.ctx.Home, "limit", s.ID+".txt")
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		t.Fatal(err)
-	}
+	f, s, path := limitFixture(t)
 	if err := os.WriteFile(path, []byte("limited"), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -61,10 +55,107 @@ func TestSessionRunFreshSessionWhenTranscriptGone(t *testing.T) {
 		t.Fatal(err)
 	}
 	r := resp.(SessionRunResponse)
+	launches := limitLaunches
 	if len(launches) != 2 || launches[1].Resume || launches[1].Prompt != "do the step" || launches[1].SessionID != s.ID {
 		t.Errorf("launches %+v: want a second, fresh launch of the same session with its first prompt", launches)
 	}
 	if !strings.Contains(strings.Join(r.Warnings, "\n"), "started a fresh session") {
 		t.Errorf("warnings %v do not record the fresh session", r.Warnings)
+	}
+}
+
+// blockingProcess is an agent that stays open until killed, as an
+// interactive agent does at its usage limit.
+type blockingProcess struct {
+	killed chan struct{}
+	once   sync.Once
+}
+
+func (p *blockingProcess) Output() io.Reader { return nil }
+func (p *blockingProcess) Wait() (int, error) {
+	<-p.killed
+	return 137, nil
+}
+func (p *blockingProcess) Kill() { p.once.Do(func() { close(p.killed) }) }
+
+// writeClock writes text to a file when the run sleeps.
+type writeClock struct{ path, text string }
+
+func (c writeClock) Now() time.Time { return time.Unix(0, 0) }
+func (c writeClock) Sleep(time.Duration) {
+	os.WriteFile(c.path, []byte(c.text), 0o644)
+}
+
+// limitFixture is a session of the limit-fake agent, with no launches yet,
+// and the path of its transcript.
+func limitFixture(t *testing.T) (*sessionFixture, SessionInfo, string) {
+	t.Helper()
+	f, s, _ := interviewFixture(t)
+	limitRegister.Do(func() { adapter.Register(limitAdapter{}) })
+	limitLaunches = nil
+	if _, err := session.NewStore(session.Dir(f.common)).Update(s.ID, func(r *session.Record) {
+		r.Agent, r.Prompt = limitAgent, "do the step"
+	}); err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(f.ctx.Home, "limit", s.ID+".txt")
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	return f, s, path
+}
+
+// An agent that stays open at its usage limit is stopped, and the session
+// resumed once the limit resets.
+func TestSessionRunStopsAgentOpenAtLimit(t *testing.T) {
+	f, s, path := limitFixture(t)
+	old := limitPoll
+	limitPoll = time.Millisecond
+	t.Cleanup(func() { limitPoll = old })
+	useClock(t, writeClock{path, "done"})
+	open := &blockingProcess{killed: make(chan struct{})}
+	starts := 0
+	f.ctx.Start = func(p Program) (Process, error) {
+		starts++
+		if starts > 1 {
+			return &fakeProcess{}, nil
+		}
+		if err := os.WriteFile(path, []byte("limited"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		return open, nil
+	}
+
+	if _, err := callOp(t, f.ctx, "session.run", `{"id":"`+s.ID+`"}`); err != nil {
+		t.Fatal(err)
+	}
+	if len(limitLaunches) != 2 || !limitLaunches[1].Resume {
+		t.Errorf("launches %+v: want the open agent stopped and the session resumed", limitLaunches)
+	}
+}
+
+// A session still at its usage limit after the last pause fails: the step
+// did not finish.
+func TestSessionRunFailsWhenPausesRunOut(t *testing.T) {
+	f, s, path := limitFixture(t)
+	if err := os.WriteFile(path, []byte("limited"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	useClock(t, writeClock{path, "limited"})
+	f.ctx.Start = func(Program) (Process, error) { return &fakeProcess{}, nil }
+
+	_, err := callOp(t, f.ctx, "session.run", `{"id":"`+s.ID+`"}`)
+	if err == nil || !strings.Contains(err.Error(), "still stopped at its usage limit") {
+		t.Fatalf("error %v: want the session failed at its usage limit", err)
+	}
+	if len(limitLaunches) != maxUsageLimitPauses+1 {
+		t.Errorf("%d launches, want %d", len(limitLaunches), maxUsageLimitPauses+1)
+	}
+	rec, rerr := session.NewStore(session.Dir(f.common)).Read(s.ID)
+	if rerr != nil {
+		t.Fatal(rerr)
+	}
+	if rec.Status.Exit == nil || rec.Status.Exit.State != session.StateError {
+		t.Errorf("exit %+v, want an error", rec.Status.Exit)
 	}
 }

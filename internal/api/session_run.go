@@ -184,19 +184,26 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 	var code int
 	var fresh []string
 	for pause := 0; ; pause++ {
+		base := transcriptLen(ctx, a, rec.ID)
 		p, err := ctx.Start(Program{Name: argv[0], Args: argv[1:], Dir: agentDir(rec), Env: env, Unset: unset, Terminal: true})
 		if err != nil {
 			follow.stop()
 			return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("start %s: %v", a.Name(), err))
 		}
+		stopWatch := watchLimit(ctx, a, rec.ID, base, p)
 		code, err = p.Wait()
+		stopWatch()
 		if err != nil {
 			resp.Warnings = follow.stop()
 			return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("wait for %s: %v", a.Name(), err))
 		}
 		wait, limited := limitWait(ctx, a, rec.ID)
-		if !limited || pause >= maxUsageLimitPauses {
+		if !limited {
 			break
+		}
+		if pause >= maxUsageLimitPauses {
+			resp.Warnings = follow.stop()
+			return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("%s is still stopped at its usage limit after %d pauses: gave up instead of pausing again", a.Name(), maxUsageLimitPauses))
 		}
 		// The same session goes on once the limit resets: its context and
 		// the work it committed stay.
@@ -242,6 +249,58 @@ const (
 	maxUsageLimitPauses = 24
 	resumePrompt        = "The usage limit has reset. Continue where you left off."
 )
+
+// limitPoll is how often a running agent's transcript is read for its usage
+// limit; tests shorten it.
+var limitPoll = 30 * time.Second
+
+// transcriptLen is the length of the session's transcript; 0 when there is
+// none to read.
+func transcriptLen(ctx *Ctx, a adapter.Adapter, sid string) int {
+	if ctx.Home == "" && ctx.Getenv == nil {
+		return 0
+	}
+	t, err := readTranscript(ctx, a, sid)
+	if err != nil {
+		return 0
+	}
+	return len(t)
+}
+
+// watchLimit kills p once what the agent wrote to the session's transcript
+// past base shows it stopped at its usage limit: an interactive agent stays
+// open at its prompt there instead of exiting, so the pause would never
+// come. The returned stop ends the watching and waits until it has.
+func watchLimit(ctx *Ctx, a adapter.Adapter, sid string, base int, p Process) (stop func()) {
+	if ctx.Home == "" && ctx.Getenv == nil {
+		return func() {}
+	}
+	quit, ended := make(chan struct{}), make(chan struct{})
+	go func() {
+		defer close(ended)
+		tick := time.NewTicker(limitPoll)
+		defer tick.Stop()
+		for {
+			select {
+			case <-quit:
+				return
+			case <-tick.C:
+			}
+			t, err := readTranscript(ctx, a, sid)
+			if err != nil || len(t) <= base {
+				continue
+			}
+			if _, limited := a.UsageLimit(t[base:]); limited {
+				p.Kill()
+				return
+			}
+		}
+	}()
+	return func() {
+		close(quit)
+		<-ended
+	}
+}
 
 // limitWait reports whether the session's agent stopped at its usage
 // limit and how long to wait before resuming it: until the reset time the
