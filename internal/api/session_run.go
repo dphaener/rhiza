@@ -561,6 +561,7 @@ func sessionHook(ctx *Ctx, event string) (SessionHookResponse, error) {
 		resp.Session = rec.ID
 		serr := recordHook(ctx, st, rec, a, event, payload, rep, changed, &resp)
 		serr = errors.Join(serr, deliverPending(st, rec, a, event, &resp))
+		serr = errors.Join(serr, typeIdlePending(ctx, st, rec.ID))
 		journaled, jerr := journalHookMessage(ctx, a, rec, event, payload)
 		resp.Journaled = journaled
 		return resp, errors.Join(serr, jerr)
@@ -637,6 +638,38 @@ func deliverPending(st *session.Store, rec session.Record, a adapter.Adapter, ev
 	}
 	resp.reply = reply
 	return nil
+}
+
+// typeIdlePending types the pointers still pending for session sid, each
+// then Enter, once the session waits at its prompt: the fallback for a
+// message that no tool-call hook carried before the session went idle.
+// Pointers a hook already handed over are cleared, so none is typed twice.
+// A session at any other status keeps them for its next hook.
+func typeIdlePending(ctx *Ctx, st *session.Store, sid string) error {
+	if ctx.Exec == nil {
+		return nil
+	}
+	var lines []string
+	var rec session.Record
+	if _, err := st.Update(sid, func(r *session.Record) {
+		if r.Status.Exited() || len(r.Pending) == 0 {
+			return
+		}
+		if rep, _ := session.Resolve(*r); rep.State != session.StateIdle {
+			return
+		}
+		lines, r.Pending = r.Pending, nil
+		rec = *r
+	}); err != nil {
+		return fmt.Errorf("read session %s's pending messages: %v", sid, err)
+	}
+	var errs []error
+	for _, line := range lines {
+		if err := sendPointer(ctx, rec, line); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return errors.Join(errs...)
 }
 
 // journalHookMessage appends the message the payload says the session sent

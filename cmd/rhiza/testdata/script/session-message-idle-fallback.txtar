@@ -1,0 +1,63 @@
+# A message to a working session whose agent goes idle with no further tool
+# call still has its pointer typed at the prompt, once, then Enter; a pointer
+# a tool-call hook already delivered is not typed again.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza change new 'Pick a palette for the dashboard' --title Palette --json
+exec git add -A
+exec git commit -qm init
+
+exec rhiza session start --permission-mode manual --json
+stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+
+# The agent is working.
+stdin $WORK/tool.json
+exec rhiza session hook PostToolUse
+exec rhiza session message 158fe87f-5cf3-4ff0-ae50-01a16dc84988 'Use the blue palette'
+! exec grep -c '^send' $WORK/rex.log
+
+# It goes idle without another tool call: the pointer is typed once, then
+# Enter.
+stdin $WORK/stop.json
+exec rhiza session hook Stop
+exec grep -c '^send -b block:b1 rhiza: message from test: read .rhiza/local/messages/158fe87f-5cf3-4ff0-ae50-01a16dc84988/0001.md and act on it.$' $WORK/rex.log
+stdout '^1$'
+exec grep -c '^send-key -b block:b1 enter$' $WORK/rex.log
+stdout '^1$'
+
+# A later hook does not type it again.
+stdin $WORK/stop.json
+exec rhiza session hook Stop
+exec grep -c '^send' $WORK/rex.log
+stdout '^2$'
+
+# A second message is carried by the next tool-call hook; going idle after
+# that types nothing.
+stdin $WORK/tool.json
+exec rhiza session hook PostToolUse
+exec rhiza session message 158fe87f-5cf3-4ff0-ae50-01a16dc84988 'And rounder corners'
+stdin $WORK/tool.json
+exec rhiza session hook PostToolUse
+stdout '0002\.md'
+stdin $WORK/stop.json
+exec rhiza session hook Stop
+exec grep -c '^send' $WORK/rex.log
+stdout '^2$'
+
+fold-ok
+
+-- stop.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","hook_event_name":"Stop"}
+-- tool.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","hook_event_name":"PostToolUse","tool_name":"Bash","tool_input":{"command":"ls"}}
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+case "$1 $2" in
+"window new") echo '{"window_id":"window:w1","block_ids":["block:b1"]}' ;;
+esac
