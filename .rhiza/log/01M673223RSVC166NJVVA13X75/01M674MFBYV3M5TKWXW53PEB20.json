@@ -1,0 +1,40 @@
+{
+  "actor": "01M674836W56XP4FE07X253ZQ3",
+  "after": [
+    "01M6747NH6XB0K6MVQ59C4SP92"
+  ],
+  "at": "2026-10-30T19:29:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At commit 22551fb, go test ./internal/tui/roadmapapp -count=1 -v passes TestEnterOpensDetailAndEscReturns: it builds the app over fake change.show, show (question), ready and run.status results, presses j then enter on change set b and asserts the detail lists its intent, kind intention, state, leaf-one's statement and acceptance, the blocking question's statement (resolved from the ready reason 'blocked by question which-way on leaf-one') and the run's workflow ship, state stopped and step build; esc returns to the list (Backlog heading shown) with Cursor() still on b. Read the diff (internal/tui/roadmapapp/detail.go, roadmapapp.go, cmd/rhiza/tui.go): the reason regexp matches the format internal/api/plan.go emits, and leafViews reads node.create ops whose shape matches real rhiza change show --json output on this repo. make check exits 0."
+        },
+        "handle": "roadmap-app-detail-verified",
+        "id": "01M674MDXSF1G0Z3A2G54PVNHB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M674MDXSF1G0Z3A2G43K8CW6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M674MDXSF1G0Z3A2G43K8CW6",
+        "id": "01M674MEFB693XB0JE0B8XH33M",
+        "link": "01M674MEFB693XB0JE07VAM9HE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6734AZGT872HRJ9ZRBWAABE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M673223RSVC166NJVVA13X75",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M674MFBYV3M5TKWXW53PEB20",
+  "type": "ops",
+  "v": 1
+}
