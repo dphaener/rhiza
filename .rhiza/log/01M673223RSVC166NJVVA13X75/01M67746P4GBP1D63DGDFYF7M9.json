@@ -1,0 +1,29 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M676T9MW9WWS2SWTNG7XFQYY"
+  ],
+  "at": "2026-10-30T20:13:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rebasing branch cs/actionable-roadmap-app onto origin/main conflicts outside the rendered files, so ship-change stopped. How should these conflicts be resolved: cmd/rhiza/tui.go?"
+        },
+        "handle": "rebase-conflict-actionable-roadmap-app",
+        "id": "01M67745YA5P46FKKT63ANKQQT",
+        "key": null,
+        "kind": "question",
+        "node": "01M67745YA5P46FKKT615BRT36",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M673223RSVC166NJVVA13X75",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M67746P4GBP1D63DGDFYF7M9",
+  "type": "ops",
+  "v": 1
+}
