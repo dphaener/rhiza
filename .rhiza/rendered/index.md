@@ -284,6 +284,8 @@
 - [rex-required-from-runtime](constraint/rex-required-from-runtime.md)
 - [same-model-same-output](constraint/same-model-same-output.md)
 - [state-never-in-rex](constraint/state-never-in-rex.md)
+- [workflow-runs-another-once](constraint/workflow-runs-another-once.md)
+- [workflow-step-no-session-keys](constraint/workflow-step-no-session-keys.md)
 
 ## Decisions
 
@@ -1252,6 +1254,7 @@
 - [task-interviews](source/task-interviews.md)
 - [tui-planning-conversation](source/tui-planning-conversation.md)
 - [usage-limit-pause-interview](source/usage-limit-pause-interview.md)
+- [workflow-step-limits-plan](source/workflow-step-limits-plan.md)
 
 ## Actors
 
