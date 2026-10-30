@@ -391,3 +391,21 @@ func TestProgramStatusReviewFixers(t *testing.T) {
 		}
 	}
 }
+
+// A review whose code check fails keeps Rex's root record on the code
+// step while it runs and ends it in error naming the failed run, before
+// the checks step ever starts.
+func TestProgramStatusReviewCodeCheck(t *testing.T) {
+	f := &statusLeafRunner{code: 1}
+	reports := statusRun(t, "[step.code]\nkind = \"command\"\nrun = \"rhiza run code-check\"\non.pass = \"review\"\n"+statusChecksWF, f)
+	root := func(r map[string]string) bool { _, ok := r["id"]; return !ok }
+	if len(reports) != 2 {
+		t.Fatalf("reports %v, want working then error", reports)
+	}
+	if r := reports[0]; !root(r) || r["state"] != "working" || r["msg"] != "step code" {
+		t.Errorf("first report %v, want root working at step code", r)
+	}
+	if r := reports[1]; !root(r) || r["state"] != "error" || !strings.HasPrefix(r["msg"], "run failed: ") || !strings.Contains(r["msg"], `"code"`) {
+		t.Errorf("last report %v, want root error naming the failed code step", r)
+	}
+}
