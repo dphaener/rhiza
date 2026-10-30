@@ -1,0 +1,63 @@
+{
+  "actor": "01M674PMC5AB2P2Q67SNTVZ7BX",
+  "after": [
+    "01M674P293KK6VEMQ67M3RF3PC"
+  ],
+  "at": "2026-10-30T19:37:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built the binary at 8f9c3b9 with go build, outside PATH. In a scratch repo (RHIZA_ROOT, RHIZA_CHANGE, RHIZA_RUN and RHIZA_ACTOR unset) with two accepted change sets, a question run, failed runs (one on an unknown change set) and two real runs waiting at sign-off (started with rhiza run start, fake rex on PATH): rhiza tui app inbox --once matched rhiza inbox --json byte for byte with cmp; change_title appears for known change sets and is left out for the unknown one. I ran rhiza tui app inbox in a real Rex window and drove it with rex send and rex capture. It grouped Questions, Sign-offs and Failed runs, each row with the change set title (the raw ID when the title is unknown) and step, then the question or failure detail. A run journal written from outside appeared within 4s with no key press. A fresh repo showed Nothing waits on you. rhiza rex install into a scratch config dir wrote rhiza_app_inbox (title inbox) and the inbox entry in the app map."
+        },
+        "handle": "inbox-app-list-qa-1",
+        "id": "01M6752NYN7NQ19JWBAB90T5WP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6752NYN7NQ19JWBA94AJ2QK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6752NYN7NQ19JWBA94AJ2QK",
+        "id": "01M6752PFE9RBZ9W6KZ704KNMC",
+        "link": "01M6752PFE9RBZ9W6KZ4SNJWET",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6734GPG3SZCY93EBRDS1CA8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "Built at 8f9c3b9 and drove rhiza tui app inbox in a real Rex window over a scratch repo, with a fake rex on PATH that logs its argv. o on the question called rex block inspect and focus block:b1 and showed open done. t with no recommendation said the advisor has no recommendation yet. a, typing 'use pg', backspace and enter sent session.message to S1, which failed as expected with no session matches S1 (the fixture session has no record). y on a real sign-off journalled signoff approved by the owner and the run continued. c with 'add tests' journalled outcome changes with the finding {check quality, severity major, place owner, reason add tests}, moved the run to review, and left no temp file. Uppercase R on a failed run ran rex window new -s <session> FAILEDRUN -c <repo> --json -- <binary> run resume FAILEDRUN001 --retry and showed retry opened in a new tab. x then n said not abandoned; x then y abandoned the run, and it left the list. FAIL: y and c run the run's engine in-process. Approving a sign-off whose next step is a 15s wait froze the app for 15s, and the engine's stderr corrupted the screen until restart. In ship-change that is rebase, wait-pr and land (hours), against Decision app-runs-open-rex-tabs. The finding is recorded in the qa round."
+        },
+        "handle": "inbox-app-actions-qa-1",
+        "id": "01M6752Q0RJ4FRQYT7ZN3BGXE7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6752Q0RJ4FRQYT7ZK01KYPD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6752Q0RJ4FRQYT7ZK01KYPD",
+        "id": "01M6752QH9F1PTKBSKDTEWB51F",
+        "link": "01M6752QH9F1PTKBSKDR5BDJMR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6734J6ESHFYKFJ09YK6TEWT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6732DJSQ14B2WTZYZ9MPRA5",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6752R86MHPJ0Q60BG5AACZ4",
+  "type": "ops",
+  "v": 1
+}
