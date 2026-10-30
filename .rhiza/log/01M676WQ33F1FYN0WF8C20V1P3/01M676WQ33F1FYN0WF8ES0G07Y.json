@@ -1,0 +1,15 @@
+{
+  "actor": "01M676TMJR2XB63E515P3S9JJY",
+  "after": [],
+  "at": "2026-10-30T20:09:19Z",
+  "body": {
+    "intent": "Capability read-apps-match-cli says roadmap is a read app showing rhiza roadmap --json; the roadmap app is now an interactive cursor list (only --once matches the JSON), so restate it for ready, show, why, slice, run-status and session-ls",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M676WQ33F1FYN0WF8C20V1P3",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M676WQ33F1FYN0WF8ES0G07Y",
+  "type": "open",
+  "v": 1
+}
