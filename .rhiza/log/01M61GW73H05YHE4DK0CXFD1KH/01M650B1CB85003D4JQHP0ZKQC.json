@@ -1,0 +1,30 @@
+{
+  "actor": "01M650A221DP68HPXY0XDMHDJV",
+  "after": [
+    "01M6505R12PC0V8DJ7CR9J4N0H"
+  ],
+  "at": "2026-10-29T23:36:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go guide test finds the fakes-only rule in the review topic for the compliance, quality, scope and model checks, naming Rex, agents and gh; it finds that qa is hands-on with the built binary and that fakes alone do not count; and the topic stays within TopicCap",
+          "statement": "rhiza guide review tells each check except qa to test runs with fakes only, never real Rex, agents or gh; qa runs the built binary hands-on, since fakes alone do not count for it"
+        },
+        "handle": "review-guide-fakes-only",
+        "id": "01M6505MN5E02V3Y30RQQVN0BT",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6505MN5E02V3Y30RMC16FN5",
+        "op": "node.create",
+        "parent": "01M5Z0ENY6PDKAQS7QEY0AR5RN"
+      }
+    ]
+  },
+  "change_set": "01M61GW73H05YHE4DK0CXFD1KH",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M650B1CB85003D4JQHP0ZKQC",
+  "type": "ops",
+  "v": 1
+}
