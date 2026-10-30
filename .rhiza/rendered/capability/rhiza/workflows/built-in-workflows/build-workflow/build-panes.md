@@ -20,6 +20,7 @@ A leaves step opens one tab for the change set with the builder in its first pan
 - decided-by [answer-ab54d544-9](../../../../../decision/answer-ab54d544-9.md)
 - decided-by [build-ruling-3](../../../../../decision/build-ruling-3.md)
 - decided-by [build-ruling-9](../../../../../decision/build-ruling-9.md)
+- decided-by [run-window-gone-opens-window](../../../../../decision/run-window-gone-opens-window.md)
 - derived-from [build-workflow-plan](../../../../../source/build-workflow-plan.md)
 
 ### In
