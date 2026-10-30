@@ -65,9 +65,9 @@ cmp stdout $WORK/want.log
 exec sh -c 'grep -c "role=check" $WORK/claude.log'
 stdout '^2$'
 exec rhiza run status
-stdout '^- build/build \(visit 1\): pass, then build/check: 2 of 2 leaves passed$'
-stdout '^- build/check \(visit 1\): pass, then render: exit 0$'
-stdout '^- render \(visit 1\): pass, then review/code: exit 0$'
+stdout '^- build/build \(visit 1\): pass, then build/render: 2 of 2 leaves passed$'
+stdout '^- build/render \(visit 1\): pass, then build/check: exit 0$'
+stdout '^- build/check \(visit 1\): pass, then review/code: exit 0$'
 stdout '^- review/code \(visit 1\): pass, then review/review'
 stdout '^- review/review \(visit 1\): pass, then render-pr'
 stdout '^- render-pr \(visit 1\): pass, then open-pr: exit 0$'

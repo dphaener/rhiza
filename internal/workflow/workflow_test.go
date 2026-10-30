@@ -2,6 +2,8 @@ package workflow
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"slices"
@@ -393,7 +395,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if _, ok := def.Steps["review/signoff"]; ok {
 		t.Error("review's signoff step is not skipped")
 	}
-	want := []string{"build/build", "build/check", "render", "review/code", "review/review", "render-pr", "open-pr", "wait-pr", "pr-green", "signoff", "rebase", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
+	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "open-pr", "wait-pr", "pr-green", "signoff", "rebase", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
 		"rebase-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
@@ -515,7 +517,7 @@ func TestBuildBuiltin(t *testing.T) {
 	if def.Name != "build" || def.Start != "build" {
 		t.Errorf("name %q, start %q; want build, build", def.Name, def.Start)
 	}
-	if want := []string{"build", "check"}; !slices.Equal(def.Order, want) {
+	if want := []string{"build", "render", "check"}; !slices.Equal(def.Order, want) {
 		t.Fatalf("steps = %v; want %v", def.Order, want)
 	}
 	build := def.Steps["build"]
@@ -561,7 +563,9 @@ func TestBuildBuiltin(t *testing.T) {
 		step, outcome, next string
 		end                 End
 	}{
-		{"build", OutcomePass, "check", EndNone},
+		{"build", OutcomePass, "render", EndNone},
+		{"render", OutcomePass, "check", EndNone},
+		{"render", OutcomeFail, "", EndFailed},
 		{"build", OutcomeFail, "", EndFailed},
 		{"check", OutcomePass, "", EndSucceeded},
 		{"check", OutcomeFail, "", EndFailed},
@@ -1104,7 +1108,7 @@ func TestReviewBuiltin(t *testing.T) {
 	if def.Name != "review" || def.Start != "code" {
 		t.Errorf("name %q, start %q; want review, code", def.Name, def.Start)
 	}
-	if want := []string{"code", "review", "signoff"}; !slices.Equal(def.Order, want) {
+	if want := []string{"code", "review", "render", "signoff"}; !slices.Equal(def.Order, want) {
 		t.Fatalf("steps = %v; want %v", def.Order, want)
 	}
 	code := def.Steps["code"]
@@ -1196,7 +1200,9 @@ func TestReviewBuiltin(t *testing.T) {
 	}{
 		{"code", OutcomePass, "review", EndNone},
 		{"code", OutcomeFail, "", EndFailed},
-		{"review", OutcomePass, "signoff", EndNone},
+		{"review", OutcomePass, "render", EndNone},
+		{"render", OutcomePass, "signoff", EndNone},
+		{"render", OutcomeFail, "", EndFailed},
 		{"review", OutcomeFail, "", EndFailed},
 		{"signoff", OutcomePass, "", EndSucceeded},
 		{"signoff", OutcomeChanges, "review", EndNone},
@@ -1389,5 +1395,73 @@ on.changes = "` + changes + `"
 		if err == nil || !strings.Contains(err.Error(), tt.want) {
 			t.Errorf("on.changes %q: error %v, want one containing %q", tt.changes, err, tt.want)
 		}
+	}
+}
+
+// The render step of the build and the review workflow, run against a
+// stub rhiza in a scratch git repo: a branch that is already rendered
+// and has no uncommitted .rhiza/log entry gets no commit; one left stale
+// gets exactly one.
+func TestRenderStepAddsNoCommitWhenClean(t *testing.T) {
+	for _, name := range []string{"build", "review"} {
+		t.Run(name, func(t *testing.T) {
+			data, ok := Builtin(name)
+			if !ok {
+				t.Fatalf("no %s built-in", name)
+			}
+			def, err := Parse(name, data)
+			if err != nil {
+				t.Fatal(err)
+			}
+			run := def.Steps["render"].Run
+			if run == "" {
+				t.Fatalf("%s has no render command", name)
+			}
+			dir := t.TempDir()
+			bin := filepath.Join(dir, "bin")
+			repo := filepath.Join(dir, "repo")
+			for _, d := range []string{bin, repo} {
+				if err := os.MkdirAll(d, 0o755); err != nil {
+					t.Fatal(err)
+				}
+			}
+			// The stub's render rewrites the rendered page with the
+			// content of $STUB_PAGE, as a real render does when stale.
+			stub := "#!/bin/sh\n[ \"$1\" = render ] || exit 2\nmkdir -p .rhiza/rendered\nprintf '%s\\n' \"$STUB_PAGE\" > .rhiza/rendered/index.md\n"
+			if err := os.WriteFile(filepath.Join(bin, "rhiza"), []byte(stub), 0o755); err != nil {
+				t.Fatal(err)
+			}
+			env := append(os.Environ(),
+				"PATH="+bin+string(os.PathListSeparator)+os.Getenv("PATH"),
+				"RHIZA_CHANGE=01M61GW7K1PDG7HMFXMN3YNA7B",
+				"GIT_AUTHOR_NAME=t", "GIT_AUTHOR_EMAIL=t@example.com",
+				"GIT_COMMITTER_NAME=t", "GIT_COMMITTER_EMAIL=t@example.com",
+				"GIT_CONFIG_GLOBAL=/dev/null", "GIT_CONFIG_SYSTEM=/dev/null")
+			sh := func(script, page string) string {
+				t.Helper()
+				cmd := exec.Command("sh", "-c", script)
+				cmd.Dir = repo
+				cmd.Env = append(env, "STUB_PAGE="+page)
+				out, err := cmd.CombinedOutput()
+				if err != nil {
+					t.Fatalf("%s: %v\n%s", script, err, out)
+				}
+				return strings.TrimSpace(string(out))
+			}
+			sh("git init -q && mkdir -p .rhiza/log && echo x > .rhiza/log/a.json", "v1")
+			sh(run, "v1")
+			head := sh("git rev-parse HEAD", "")
+			if n := sh("git rev-list --count HEAD", ""); n != "1" {
+				t.Fatalf("stale render made %s commits; want 1", n)
+			}
+
+			sh(run, "v1")
+			if got := sh("git rev-parse HEAD", ""); got != head {
+				t.Errorf("render on a rendered branch moved HEAD %s to %s", head, got)
+			}
+			if st := sh("git status --porcelain -- .rhiza", ""); st != "" {
+				t.Errorf("render left %q uncommitted", st)
+			}
+		})
 	}
 }

@@ -1,0 +1,86 @@
+{
+  "actor": "01M66DPNBTCCKZFC4WT6D8TFTS",
+  "after": [
+    "01M66DP0E7JFZCXPTHYFJGWK9S"
+  ],
+  "at": "2026-10-30T12:51:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 29929ba with this commit's built rhiza: go test TestScripts/build-workflow and run-ship-change(-fail) pass. In a scratch repo on a branch, committed a capability, then left a landed actor record (rhiza add actor --record) and an Evidence entry uncommitted, so rhiza check failed (rendered folder stale/missing). Ran build.toml's [step.render] command verbatim with RHIZA_CHANGE set: exit 0, one new commit 'Render after the build' with 'Change: <change id>', holding both log entries and the rendered actor pages and index; git status empty and rhiza check prints ok afterwards."
+        },
+        "handle": "build-renders-branch-qa-1",
+        "id": "01M66DTZQGHJGM4RAY0VG05BCM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66DTZQGHJGM4RAY0S8W88BG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66DTZQGHJGM4RAY0S8W88BG",
+        "id": "01M66DV15FXH8RWD1K62Y6JTQS",
+        "link": "01M66DV15FXH8RWD1K619B1B2K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506RT8ZF7BTAQNKA5X7XV4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 29929ba with this commit's built rhiza: go test TestScripts/review-workflow passes (asserts 'Render after the review' last, clean .rhiza status and rhiza check on the branch). In a scratch repo with a landed actor record and an Evidence entry left uncommitted (rhiza check failing), ran review.toml's [step.render] command verbatim: exit 0, one commit 'Render after the review' with 'Change: <change id>', holding the log entries and rendered pages; git status empty and rhiza check ok after."
+        },
+        "handle": "review-renders-branch-qa-1",
+        "id": "01M66DV238S26E24BGTBH2XSZE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66DV238S26E24BGT993VTJ4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66DV238S26E24BGT993VTJ4",
+        "id": "01M66DV2W5KN6Z1V54W4FQBMQR",
+        "link": "01M66DV2W5KN6Z1V54W3TWF5S5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506T856R5QRMHAYGP8QGJ6",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 29929ba with this commit's built rhiza: after each scratch repo's render commit, re-ran the same build/review render command: exit 0, HEAD unchanged, git status empty. On a fresh clone of the branch head 29929ba (rhiza check ok), ran both build and review render commands verbatim: 'Rendered 1501 files (0 written, 0 removed, 1501 unchanged)', both exit 0, HEAD unchanged, no working-tree changes."
+        },
+        "handle": "clean-render-adds-no-commit-qa-1",
+        "id": "01M66DV3EV5V810JCZB5Y71SD6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66DV3EV5V810JCZB3CSNYMN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66DV3EV5V810JCZB3CSNYMN",
+        "id": "01M66DV3ZM79ZD82E5823PTSC5",
+        "link": "01M66DV3ZM79ZD82E5804WSS0B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506VDTVZ6SYN4WFQE44VFS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW7K1PDG7HMFXMN3YNA7B",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66DV4RB994B0EVZA7D4C71D",
+  "type": "ops",
+  "v": 1
+}

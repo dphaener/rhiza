@@ -55,7 +55,7 @@ cmp stdout $WORK/want.log
 
 exec rhiza run status
 stdout '^- code \(visit 1\): pass, then review'
-stdout '^- review \(visit 1\): pass, then signoff: 5 of 5 checks passed'
+stdout '^- review \(visit 1\): pass, then render: 5 of 5 checks passed'
 stdout '^- Current step: signoff$'
 stdout '\n## Code checks\n\n- step code: pass\n'
 exec rhiza run status --json
@@ -68,15 +68,20 @@ cmp stdout $WORK/want.checks
 # actor, with no Leaf: trailer; then alpha's fix and its Evidence. The
 # fixer's commit holds none of qa's writes.
 exec sh -c 'cd ../repo.review-me && git log --format=%s $(git rev-parse main)..HEAD'
-stdout '\Achore\(rhiza\): record quality check writes\nchore\(rhiza\): evidence for alpha\nfix alpha\nchore\(rhiza\): record quality critic writes\nchore\(rhiza\): record model check writes\nchore\(rhiza\): record scope check writes\nchore\(rhiza\): record qa check writes\nchore\(rhiza\): record quality check writes\nchore\(rhiza\): record compliance check writes\n\z'
+stdout '\ARender after the review\nchore\(rhiza\): record quality check writes\nchore\(rhiza\): evidence for alpha\nfix alpha\nchore\(rhiza\): record quality critic writes\nchore\(rhiza\): record model check writes\nchore\(rhiza\): record scope check writes\nchore\(rhiza\): record qa check writes\nchore\(rhiza\): record quality check writes\nchore\(rhiza\): record compliance check writes\n\z'
+# The branch is rendered and committed: no log entry is left
+# uncommitted and rhiza check passes there.
+exec sh -c 'cd ../repo.review-me && git status --porcelain -- .rhiza'
+! stdout .
+exec sh -c 'cd ../repo.review-me && rhiza check'
 exec sh -c 'cd ../repo.review-me && git log -1 --format=%B --grep="record qa check writes"'
 stdout '^Change: [0-9A-Z]{26}$'
 ! stdout '^Leaf:'
 exec sh -c 'cd ../repo.review-me && git log -1 --format=%B --grep="record qa check writes" | sed -n "s/^Actor: //p"'
 cmp stdout $WORK/qa.actor
-exec sh -c 'cd ../repo.review-me && git show --name-only --format= HEAD~2'
+exec sh -c 'cd ../repo.review-me && git show --name-only --format= HEAD~3'
 stdout '\Aalpha.txt\n\z'
-exec sh -c 'cd ../repo.review-me && git show --name-only --format= HEAD~6 | grep -c "\.rhiza/log/$(cat $WORK/cs)/"'
+exec sh -c 'cd ../repo.review-me && git show --name-only --format= HEAD~7 | grep -c "\.rhiza/log/$(cat $WORK/cs)/"'
 stdout '^2$'
 exec sh -c 'cd ../repo.review-me && git status --porcelain --untracked-files=all -- .rhiza/log/$(cat $WORK/cs)'
 ! stdout .

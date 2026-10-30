@@ -1,0 +1,40 @@
+{
+  "actor": "01M66D94PHATCY6SPQZ0RBQ3W9",
+  "after": [
+    "01M66DG32JJVR1YZRW7AD6S8A1"
+  ],
+  "at": "2026-10-30T12:48:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 9573ee0: go test ./internal/workflow -run TestRenderStepAddsNoCommitWhenClean -v passes for build and review; the test runs each workflow's real [step.render] command against a stub rhiza, gets one commit on a stale branch and an unchanged HEAD with clean .rhiza status on a rerun. Hands-on: built this commit's rhiza, cloned the already-rendered branch, ran the build and review render commands verbatim with it on PATH: 'Rendered 1498 files (0 written...)', both exit 0, HEAD stayed 9573ee0 and git status was empty. rhiza check on that clone passes; make fmt-check, vet and test pass. make self-check in the run checkout fails only on this run's uncommitted actor records (in-flight state the render step is meant to commit), not on the commit."
+        },
+        "handle": "clean-render-adds-no-commit-verified",
+        "id": "01M66DNZH9Y3HB4WEW7ZXBRE1W",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M66DNZH9Y3HB4WEW7YJ2A2RJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M66DNZH9Y3HB4WEW7YJ2A2RJ",
+        "id": "01M66DNZW8Y142BGTJDKVTQ8T3",
+        "link": "01M66DNZW8Y142BGTJDHA9XAR2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6506VDTVZ6SYN4WFQE44VFS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW7K1PDG7HMFXMN3YNA7B",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M66DP0E7JFZCXPTHYFJGWK9S",
+  "type": "ops",
+  "v": 1
+}

@@ -48,7 +48,7 @@ cmp stdout $WORK/want.log
 # Both leaves passed, the build step passed and went to check, and
 # build-check passed, ending the run.
 exec rhiza run status
-stdout '^- build \(visit 1\): pass, then check: 2 of 2 leaves passed$'
+stdout '^- build \(visit 1\): pass, then render: 2 of 2 leaves passed$'
 stdout '^- check \(visit 1\): pass'
 stdout '- first \(step build\): passed: attempt 1: verifier passed\n'
 stdout '- second \(step build\): passed: attempt 1: verifier passed\n'
@@ -64,10 +64,10 @@ stdout '"state": "accepted"'
 ! stdout '"state": "landed"'
 
 # Each leaf's Evidence is committed in the build worktree, first's
-# before second's.
+# before second's, then the render of what the sessions wrote.
 exec sh -c 'cd "$(cat $WORK/build.pwd)" && git log --format=%s'
-stdout 'chore\(rhiza\): evidence for second\nbuild second\nchore\(rhiza\): evidence for first\nbuild first\n'
-exec sh -c 'cd "$(cat $WORK/build.pwd)" && git log -1 --format=%B HEAD~1'
+stdout '^Render after the build\nchore\(rhiza\): evidence for second\nbuild second\nchore\(rhiza\): evidence for first\nbuild first\n'
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git log -1 --format=%B HEAD~2'
 stdout '^Leaf: second$'
 stdout '^Actor: claude-code-[0-9a-z-]+$'
 stdout '^Change: [0-9A-Z]{26}$'
