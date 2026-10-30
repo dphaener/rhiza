@@ -1,0 +1,40 @@
+{
+  "actor": "01M65G370Y250QZM6RN8PG7SFN",
+  "after": [
+    "01M65GBZ18NFPB058B2JAHKF51"
+  ],
+  "at": "2026-10-30T04:17:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b98ed19, git diff be12967..HEAD shows cmd/rhiza/testdata/script/session-message.txtar unchanged, and go test ./cmd/rhiza -run 'TestScripts/(session-message|session-message-busy|session-message-idle-fallback|session-hook-message)$' -count=5 passed. session-message.txtar asserts that an idle session gets the pointer typed once, then one Enter, with exactly 2 sends. The new session-message-idle-fallback.txtar checks three cases: a message queued while the session is working is typed once with Enter when Stop arrives with no tool call between; a later Stop types nothing; and a message already carried by a PostToolUse hook (0002.md in stdout) is not typed again (sends stay at 2). The diff adds typeIdlePending in internal/api/session_run.go. Under one store Update it takes the pending pointers only when the session resolves to idle, and clears them before typing, so none is typed twice. go test ./... passed on two reruns (one earlier run failed on the timing-sensitive read-path test). make check's self-check fails only on rendered actor files for sessions recorded after this commit, not on this leaf's code."
+        },
+        "handle": "idle-typed-pointer-kept-verified",
+        "id": "01M65GDX306CRDY2Y6M882JKKH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65GDX306CRDY2Y6M4EEANPT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65GDX306CRDY2Y6M4EEANPT",
+        "id": "01M65GDXG6AV19BNXS11SYZDRK",
+        "link": "01M65GDXG6AV19BNXS0YGPTNTE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65074BASR8PYQHQSC7B7WJ7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW821FWSX05A9FC231N65",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65GDY39NJMF46GG0AA7NQ53",
+  "type": "ops",
+  "v": 1
+}

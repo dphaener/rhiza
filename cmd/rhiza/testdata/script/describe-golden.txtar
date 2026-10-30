@@ -15612,7 +15612,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Send a running agent session a message: a file in its worktree and a one-line pointer typed at its prompt",
+      "summary": "Send a running agent session a message: a file in its worktree and a one-line pointer, typed at its prompt or, while it works, handed over at its next tool call",
       "write": true
     },
     {

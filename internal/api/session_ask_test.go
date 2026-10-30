@@ -209,3 +209,5 @@ func TestDeliver(t *testing.T) {
 		t.Error("delivered to an exited session")
 	}
 }
+
+func (askAdapter) ContextReply(string, string) ([]byte, bool, error) { return nil, false, nil }

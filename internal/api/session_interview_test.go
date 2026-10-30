@@ -439,3 +439,5 @@ func TestSessionRunDryRunCapturesNothing(t *testing.T) {
 		t.Errorf("after a dry run: %+v", r)
 	}
 }
+
+func (interviewAdapter) ContextReply(string, string) ([]byte, bool, error) { return nil, false, nil }

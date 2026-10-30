@@ -38,6 +38,11 @@ type Adapter interface {
 	// no message. It errors on a payload it cannot read, or on a message
 	// call with no recipient or no message.
 	HookMessage(event string, payload []byte) (Message, bool, error)
+	// ContextReply returns what a hook prints on stdout for the agent to
+	// add text to its context at its next step, when event is a tool-call
+	// boundary that can carry it; the bool is false when it cannot. It is
+	// pure: it builds bytes only.
+	ContextReply(event, context string) ([]byte, bool, error)
 	// TranscriptGlobs returns file glob patterns, most specific first, where
 	// the agent keeps the session's own transcript (not those of any helper
 	// agents it started). getenv looks up an environment variable. It is

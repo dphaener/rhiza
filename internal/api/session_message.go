@@ -31,7 +31,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "session.message",
-		Summary:  "Send a running agent session a message: a file in its worktree and a one-line pointer typed at its prompt",
+		Summary:  "Send a running agent session a message: a file in its worktree and a one-line pointer, typed at its prompt or, while it works, handed over at its next tool call",
 		Write:    true,
 		Request:  reflect.TypeFor[SessionMessageRequest](),
 		Response: reflect.TypeFor[SessionMessageResponse](),
@@ -130,12 +130,36 @@ func runSessionMessage(ctx *Ctx, req any) (any, error) {
 	}
 	resp.File = filepath.Join(dir, name)
 	resp.Pointer = messagePointer(from.Handle, rel+"/"+name)
+	if queued, err := queuePointer(st, rec.ID, resp.Pointer); err != nil {
+		return nil, withNote(err, "the message is in "+resp.File)
+	} else if queued {
+		return resp, nil
+	}
 	waited, err := typePointer(ctx, st, rec.ID, resp.Pointer, timeout)
 	if err != nil {
 		return nil, withNote(err, "the message is in "+resp.File)
 	}
 	resp.Waited = roundWait(waited)
 	return resp, nil
+}
+
+// queuePointer keeps line in the session's record for its next tool-call
+// hook to hand over, when the session is working, and reports whether it
+// did. Any other status leaves it to typePointer.
+func queuePointer(st *session.Store, sid, line string) (bool, error) {
+	queued := false
+	_, err := st.Update(sid, func(r *session.Record) {
+		if r.Status.Exited() {
+			return
+		}
+		if rep, _ := session.Resolve(*r); rep.State == session.StateWorking {
+			r.Pending, queued = append(r.Pending, line), true
+		}
+	})
+	if err != nil {
+		return false, Errorf("record the message for session %s: %v", sid, err)
+	}
+	return queued, nil
 }
 
 // messageTimeout parses the request's timeout, default 10m.

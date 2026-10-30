@@ -1,0 +1,40 @@
+{
+  "actor": "01M65FRA6BV5ZSAWHGKX6R53GD",
+  "after": [
+    "01M650X81GZSGZHSGTT5YC8P1J"
+  ],
+  "at": "2026-10-30T04:12:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f858406 ran go test ./cmd/rhiza -run 'TestScripts/session-message' -count=1: ok. session-message-busy.txtar drives a session to working via a PostToolUse hook, then session message --timeout 1s returns at once (Waited: 0s), writes .rhiza/local/messages/<sid>/0001.md with the text, and the fake rex log has no send line; the next PostToolUse hook prints hookSpecificOutput {hookEventName PostToolUse, additionalContext 'rhiza: message from test: read .rhiza/local/messages/<sid>/0001.md and act on it.'}, and the following PostToolUse hook prints nothing. Read the diff: session.message queues the pointer in Record.Pending only when the resolved state is working, else types it as before; sessionHook's deliverPending drains Pending once on an event the adapter's ContextReply accepts (PostToolUse for Claude Code). gofmt, vet and go test ./... pass apart from TestReadBudget, a timing check that failed under full-suite load and passes alone (also passes on the parent commit); make self-check fails only on stale rendered actor files for live sessions outside the commit."
+        },
+        "handle": "busy-session-hook-delivery-verified",
+        "id": "01M65G4DMMNN1RDEXMW98P7JTS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M65G4DMMNN1RDEXMW6JNTYAV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M65G4DMMNN1RDEXMW6JNTYAV",
+        "id": "01M65G4E2Z2YKWHSJ131K8QPAY",
+        "link": "01M65G4E2Z2YKWHSJ12YJGV7VX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65072NYFJ9RDZPJMXRKSWZ3",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M61GW821FWSX05A9FC231N65",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M65G4ES679RJQ5YWJS7ZPP71",
+  "type": "ops",
+  "v": 1
+}

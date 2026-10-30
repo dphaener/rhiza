@@ -210,6 +210,25 @@ func (Adapter) AskReply(event string, raw []byte, reason string) ([]byte, bool, 
 	return reply, true, nil
 }
 
+// ContextReply implements adapter.Adapter. A PostToolUse hook adds its
+// additionalContext to the agent's context at its next step.
+func (Adapter) ContextReply(event, context string) ([]byte, bool, error) {
+	if event != "PostToolUse" {
+		return nil, false, nil
+	}
+	type hookOutput struct {
+		HookEventName     string `json:"hookEventName"`
+		AdditionalContext string `json:"additionalContext"`
+	}
+	reply, err := json.Marshal(struct {
+		HookSpecificOutput hookOutput `json:"hookSpecificOutput"`
+	}{hookOutput{event, context}})
+	if err != nil {
+		return nil, false, err
+	}
+	return reply, true, nil
+}
+
 // sendPayload is the part of a hook payload a send call's message is read
 // from. ToolInput stays raw until the tool is known to be the send tool.
 type sendPayload struct {
