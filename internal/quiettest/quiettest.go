@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
+	"testing"
 	"time"
 )
 
@@ -33,22 +35,46 @@ const (
 	quietChecks   = 8
 )
 
+// waiterDir holds one empty file per process that is waiting its turn
+// to time, named by its pid, and waiterLock the lock that gives the turn.
+// Wait leaves those processes out: one blocked on the lock, or itself
+// timing, is not a package go test is still running beside the waiter,
+// and counting it made two waiters (api.test and modelapp.test) each wait
+// out quietWait and then time beside the other.
+var (
+	waiterDir  = filepath.Join(os.TempDir(), "rhiza-quiet")
+	waiterLock = filepath.Join(os.TempDir(), "rhiza-quiet.lock")
+)
+
 // otherTestProcesses returns the names of the processes go test is running
 // beside this one: the other children of this process's parent that are a
-// package's test binary or a toolchain step. ps is asked, not /proc, so
-// that Linux and darwin read the same.
+// package's test binary or a toolchain step, less the waiters. ps is
+// asked, not /proc, so that Linux and darwin read the same.
 func otherTestProcesses() ([]string, error) {
 	out, err := exec.Command("ps", "-A", "-ww", "-o", "pid=", "-o", "ppid=", "-o", "args=").Output()
 	if err != nil {
 		return nil, fmt.Errorf("ps: %w", err)
 	}
-	return testProcesses(string(out), os.Getpid(), os.Getppid()), nil
+	return testProcesses(string(out), os.Getpid(), os.Getppid(), waiters()), nil
+}
+
+// waiters returns the pids marked in waiterDir; none when it cannot be read.
+func waiters() map[int]bool {
+	entries, _ := os.ReadDir(waiterDir)
+	pids := map[int]bool{}
+	for _, e := range entries {
+		if p, err := strconv.Atoi(e.Name()); err == nil {
+			pids[p] = true
+		}
+	}
+	return pids
 }
 
 // testProcesses reads ps output, one process per line as pid, ppid and
 // command line, and returns the command names of the test-run processes
-// (see isTestProcess) whose parent is ppid, other than pid itself.
-func testProcesses(ps string, pid, ppid int) []string {
+// (see isTestProcess) whose parent is ppid, other than pid itself and the
+// pids in skip.
+func testProcesses(ps string, pid, ppid int, skip map[int]bool) []string {
 	var names []string
 	for line := range strings.Lines(ps) {
 		fields := strings.Fields(line)
@@ -56,7 +82,7 @@ func testProcesses(ps string, pid, ppid int) []string {
 			continue
 		}
 		p, err := strconv.Atoi(fields[0])
-		if err != nil || p == pid {
+		if err != nil || p == pid || skip[p] {
 			continue
 		}
 		pp, err := strconv.Atoi(fields[1])
@@ -93,12 +119,23 @@ type Quiet struct {
 }
 
 // Wait waits until go test runs no other package's build or test
-// beside this process, for at most quietWait. It must run before
-// budgetLock is taken: the budget tests of index and slice wait on that
-// lock, so holding it here would keep the run from ever going quiet.
-func Wait() Quiet {
-	start := time.Now()
+// beside this process, for at most quietWait. The waiters go one at a
+// time: Wait marks this process as a waiter, takes waiterLock and holds
+// both until t ends, and leaves the other waiters out of what it counts.
+// quietWait and the time reported count from when the lock is taken.
+// It must run before budgetLock is taken: the budget tests of index and
+// slice wait on that lock, so holding it here would keep the run from
+// ever going quiet.
+func Wait(t testing.TB) Quiet {
+	t.Helper()
 	var q Quiet
+	if err := takeTurn(t); err != nil {
+		q.err = err
+		return q
+	}
+	// The clock starts once the turn is taken, so that a waiter that
+	// waited out another's timing still waits for that package to end.
+	start := time.Now()
 	checks := 0
 	for {
 		running, err := otherTestProcesses()
@@ -122,6 +159,33 @@ func Wait() Quiet {
 	}
 	q.waited = time.Since(start)
 	return q
+}
+
+// takeTurn marks this process in waiterDir, then takes waiterLock,
+// releasing both when t ends. The mark comes first so that the waiter
+// holding the lock leaves this one out while it is blocked.
+func takeTurn(t testing.TB) error {
+	if err := os.MkdirAll(waiterDir, 0o700); err != nil {
+		return err
+	}
+	mark := filepath.Join(waiterDir, strconv.Itoa(os.Getpid()))
+	if err := os.WriteFile(mark, nil, 0o600); err != nil {
+		return err
+	}
+	t.Cleanup(func() { os.Remove(mark) })
+	f, err := os.OpenFile(waiterLock, os.O_CREATE|os.O_RDWR, 0o600)
+	if err != nil {
+		return err
+	}
+	if err := syscall.Flock(int(f.Fd()), syscall.LOCK_EX); err != nil {
+		f.Close()
+		return err
+	}
+	t.Cleanup(func() {
+		syscall.Flock(int(f.Fd()), syscall.LOCK_UN)
+		f.Close()
+	})
+	return nil
 }
 
 // String says how the reads were timed, for the timing log's header:

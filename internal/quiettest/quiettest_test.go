@@ -25,15 +25,20 @@ func TestTestProcesses(t *testing.T) {
   308   200 /private/var/folders/x/T/go-build2/b005/changeset.test -test.paniconexit0
 bad line
 `
-	got := testProcesses(ps, 300, 200)
+	got := testProcesses(ps, 300, 200, nil)
 	want := []string{"slice.test", "compile", "vet", "link", "changeset.test"}
 	if !slices.Equal(got, want) {
 		t.Errorf("testProcesses = %q, want %q", got, want)
 	}
-	if got := testProcesses(ps, 300, 999); got != nil {
+	// 308 is another waiter: blocked on the lock or timing, not running.
+	want = []string{"slice.test", "compile", "vet", "link"}
+	if got := testProcesses(ps, 300, 200, map[int]bool{308: true}); !slices.Equal(got, want) {
+		t.Errorf("testProcesses beside waiter 308 = %q, want %q", got, want)
+	}
+	if got := testProcesses(ps, 300, 999, nil); got != nil {
 		t.Errorf("testProcesses under another parent = %q, want none", got)
 	}
-	if got := testProcesses("", 300, 200); got != nil {
+	if got := testProcesses("", 300, 200, nil); got != nil {
 		t.Errorf("testProcesses of nothing = %q, want none", got)
 	}
 }

@@ -114,7 +114,7 @@ func TestGeneratedModel(t *testing.T) {
 	if testing.Short() {
 		t.Skip("generates the 50,000-node model; skipped under -short")
 	}
-	q := quiettest.Wait()
+	q := quiettest.Wait(t)
 	t.Logf("other packages: %s", q)
 	budgetLock(t)
 	dir := t.TempDir()

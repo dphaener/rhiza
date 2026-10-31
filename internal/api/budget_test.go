@@ -213,7 +213,7 @@ func TestReadBudget(t *testing.T) {
 	if testing.Short() {
 		t.Skip("the read budget generates the 50,000-node model; skipped under -short")
 	}
-	q := quiettest.Wait()
+	q := quiettest.Wait(t)
 	t.Logf("other packages: %s", q)
 	budgetLock(t)
 	timingLog := openTimingLog(t, q.String())
