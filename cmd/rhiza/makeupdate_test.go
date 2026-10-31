@@ -59,6 +59,23 @@ func TestMakeUpdateDryRun(t *testing.T) {
 	}
 }
 
+// TestMakeTestTimeout checks that `make test` gives go test 20 minutes, so the
+// script suite does not hit go test's 10-minute default on CI's slow runner.
+func TestMakeTestTimeout(t *testing.T) {
+	if _, err := exec.LookPath("make"); err != nil {
+		t.Skip("make is not on PATH")
+	}
+	cmd := exec.Command("make", "-n", "test")
+	cmd.Dir = "../.."
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("make -n test: %v\n%s", err, out)
+	}
+	if !strings.Contains(string(out), "go test -timeout 20m ./...") {
+		t.Errorf("make -n test has no go test -timeout 20m ./... line:\n%s", out)
+	}
+}
+
 // TestClaudeMDCommandsNameMakeUpdate checks that the code block under
 // CLAUDE.md's "## Commands" heading has a line starting with `make update`.
 func TestClaudeMDCommandsNameMakeUpdate(t *testing.T) {
