@@ -12722,6 +12722,14 @@ cmp stdout describe.golden.json
             "description": "The change set: a full ID or a unique prefix of 4+ characters; default --change, else the current one",
             "type": "string"
           },
+          "milestone": {
+            "description": "With --new: open a record change set, to plan a milestone in; without it an intention",
+            "type": "boolean"
+          },
+          "new": {
+            "description": "With --workflow plan and no change set: open a draft change set with this one-line intent and start the plan run on it",
+            "type": "string"
+          },
           "no_wait": {
             "description": "Stop at a wait step whose condition does not hold yet, instead of waiting; resume the run later",
             "type": "boolean"
