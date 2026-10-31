@@ -1,0 +1,29 @@
+# check warns, under the link rule, once on each live constraint with no
+# constrains link; derived-from or relates-to links alone do not count. It
+# only warns, so check still exits 0.
+
+exec rhiza init
+exec rhiza add capability thing --field 'statement=Does the thing' --record
+exec rhiza add constraint linked --field 'statement=Binds the thing' --record
+exec rhiza add constraint loose --field 'statement=Binds nothing' --record
+exec rhiza link linked constrains thing --record
+exec rhiza link loose relates-to thing --note 'context only' --record
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+stdout -count=1 '^warn link change set [0-9A-Z]{26}: constraint loose constrains nothing: it has no constrains link$'
+! stdout 'constraint linked'
+stdout '^  next: rhiza link loose constrains <capability-or-intent> --change <change set>$'
+exec rhiza check --json
+stdout '"ok": true'
+stdout -count=1 '"rule": "link"'
+stdout '"severity": "warn"'
+! stdout '"severity": "fail"'
+
+# Linking it silences the warning.
+exec rhiza link loose constrains thing --record
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+! stdout 'constrains nothing'
+fold-ok

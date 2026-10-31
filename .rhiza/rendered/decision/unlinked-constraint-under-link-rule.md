@@ -16,6 +16,10 @@ The unlinked-constraint warning lives in its own file in internal/check and is r
 
 - derived-from [m9-orchestrator-picks](../source/m9-orchestrator-picks.md)
 
+### In
+
+- decided-by [check-warns-unlinked-constraint](../capability/rhiza/integrity/check/check-warns-unlinked-constraint.md)
+
 ## History
 
 - `01M69T001ZQ80P0QXWSJMRZSXM` Plan milestone 9: the model keeps itself honest, picked by the orchestrator under the owner's standing instruction

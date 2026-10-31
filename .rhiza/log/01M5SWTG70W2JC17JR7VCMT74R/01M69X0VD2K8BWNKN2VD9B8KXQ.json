@@ -1,0 +1,40 @@
+{
+  "actor": "01M69WY70B3GC664TMTT7SJJWE",
+  "after": [
+    "01M69WXJS4WGREV2WG3987X6TY"
+  ],
+  "at": "2026-10-31T21:14:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1 with a binary built from the branch head, in a scratch git repo: constraints linked by constrains to a capability and to an intent gave no warning; one with only relates-to, and one with only a derived-from link to a source, each gave exactly one 'warn link ... constrains nothing' line with a next hint; a retired constraint and an unlanded draft-change-set constraint gave none; check printed ok and exited 0, and --json had ok true with severity warn. Running the next hint (rhiza link loose constrains thing) silenced that warning. rhiza check on this repo stayed ok with no warnings; go test of TestRunUnlinkedConstraint and the check-constraint/check-git/check-move scripts passed."
+        },
+        "handle": "check-warns-unlinked-constraint-qa-1",
+        "id": "01M69X0NMVFD8MC1CYX5X7G2RA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69X0NMVFD8MC1CYX469FZE4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69X0NMVFD8MC1CYX469FZE4",
+        "id": "01M69X0QP75W3SEQEVQM8GTFJR",
+        "link": "01M69X0QP75W3SEQEVQGNR09F8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T0MZJZFJNQS12RYP79XYG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTG70W2JC17JR7VCMT74R",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69X0VD2K8BWNKN2VD9B8KXQ",
+  "type": "ops",
+  "v": 1
+}

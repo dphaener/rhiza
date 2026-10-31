@@ -917,3 +917,34 @@ func TestRunEvidenceActor(t *testing.T) {
 		}
 	})
 }
+
+func TestRunUnlinkedConstraint(t *testing.T) {
+	r := newRepo(t)
+	_, capab := clean(r)
+	linked, related, bare := r.next(), r.next(), r.next()
+	relates := mkLink(r.next(), r.next(), op.LinkRelatesTo, related, capab)
+	relates.Note = "context only"
+	r.record("Constraints",
+		mkNode(r.next(), linked, op.KindConstraint, "linked"),
+		mkNode(r.next(), related, op.KindConstraint, "related"),
+		mkNode(r.next(), bare, op.KindConstraint, "bare"),
+		mkLink(r.next(), r.next(), op.LinkConstrains, linked, capab),
+		relates,
+	)
+	rep := Run(r.input())
+	if !rep.OK {
+		t.Fatalf("not OK: %+v", rep.Findings)
+	}
+	got := ofRule(rep, RuleLink)
+	if len(got) != 2 {
+		t.Fatalf("link findings = %+v, want 2", got)
+	}
+	for i, name := range []string{"bare", "related"} {
+		if got[i].Severity != SeverityWarn || !strings.Contains(got[i].Message, "constraint "+name+" ") {
+			t.Errorf("finding %d = %+v, want warn on %s", i, got[i], name)
+		}
+	}
+	if len(rep.Findings) != 2 {
+		t.Errorf("findings = %+v, want only the two", rep.Findings)
+	}
+}

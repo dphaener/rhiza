@@ -7,14 +7,14 @@ mkdir repo
 cd repo
 exec git init -q
 exec rhiza init
-exec rhiza add constraint c1 --field statement=x --record
+exec rhiza add decision c1 --field statement=x --record
 exec rhiza render
 exec git add -A
 exec git commit -qm one
 
 # Entries added on a branch are fine, committed or not.
 exec git checkout -q -b feature
-exec rhiza add constraint c2 --record
+exec rhiza add decision c2 --record
 exec rhiza render
 exec rhiza check
 stdout '^ok$'
@@ -79,20 +79,20 @@ stdout '^ok$'
 # differ); their merge, rendered, is ok.
 exec git checkout -q -f main
 exec git checkout -q -b a
-exec rhiza add constraint ca --record
+exec rhiza add decision ca --record
 exec git add .rhiza/log
 exec git commit -qm a
 exec git checkout -q main
 exec git checkout -q -b b
 env RHIZA_TEST_SEED=7
-exec rhiza add constraint cb --record
+exec rhiza add decision cb --record
 env RHIZA_TEST_SEED=1
 exec git add .rhiza/log
 exec git commit -qm b
 exec git checkout -q a
 exec git merge -q --no-edit b
 exec rhiza render
-stdout 'wrote \.rhiza/rendered/constraint/cb\.md'
+stdout 'wrote \.rhiza/rendered/decision/cb\.md'
 exec rhiza check
 stdout '^ok$'
 stdout '^base: [0-9a-f]{40} \(merge-base of HEAD and main\)$'
@@ -116,7 +116,7 @@ cd $WORK/top
 exec git init -q
 cd sub
 exec rhiza init
-exec rhiza add constraint c1 --field statement=x --record
+exec rhiza add decision c1 --field statement=x --record
 exec rhiza render
 exec git add -A
 exec git commit -qm one
@@ -144,7 +144,7 @@ stdout '^  next: git checkout HEAD -- \.rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M
         "handle": "c1",
         "id": "01M5PWGEF85Y185JZ2ZNK1YAZ0",
         "key": null,
-        "kind": "constraint",
+        "kind": "decision",
         "node": "01M5PWGEF85Y185JZ2ZMTJ11QP",
         "op": "node.create",
         "parent": null
