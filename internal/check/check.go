@@ -36,6 +36,9 @@
 //     Ends the endpoint table does not allow, each once.
 //   - link fails on each live as-is link whose Ends the endpoint table does
 //     not allow.
+//   - link also warns once on each live as-is constraint with no live
+//     constrains link from it; derived-from or relates-to links alone do
+//     not count (unlinked.go).
 //   - depends-on fails once on each depends-on loop among change sets
 //     (changeset.Cycles), whatever their states, and once on each loop of
 //     live as-is depends-on links among capabilities.
@@ -186,6 +189,7 @@ func Run(in Input) Report {
 	sets := c.fold()
 	asIs := c.model(sets)
 	c.links(asIs, sets)
+	c.unlinkedConstraints(asIs)
 	c.inFlightLinks(sets)
 	c.dependsOn(sets)
 	c.capabilityLoops(asIs)

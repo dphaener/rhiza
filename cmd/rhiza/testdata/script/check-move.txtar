@@ -7,7 +7,7 @@ mkdir repo
 cd repo
 exec git init -q
 exec rhiza init
-exec rhiza add constraint c1 --field statement=x --record
+exec rhiza add decision c1 --field statement=x --record
 exec rhiza render
 exec git add -A
 # No rhiza command runs while the folder is .genesis.
@@ -74,7 +74,7 @@ stdout '^exit 1$'
         "handle": "c1",
         "id": "01M5PWGEF85Y185JZ2ZNK1YAZ0",
         "key": null,
-        "kind": "constraint",
+        "kind": "decision",
         "node": "01M5PWGEF85Y185JZ2ZMTJ11QP",
         "op": "node.create",
         "parent": null
