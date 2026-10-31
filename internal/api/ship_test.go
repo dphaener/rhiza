@@ -1247,3 +1247,55 @@ func TestShipRebaseRefusals(t *testing.T) {
 	_, err = callOp(t, f.ctx, "ship.rebase", `{}`)
 	wantExit(t, err, 2)
 }
+
+// shipFollowFixture is a rebase fixture whose origin branch holds more
+// than HEAD: origin's branch is not an ancestor of HEAD, and HEAD is an
+// ancestor of it.
+func shipFollowFixture(t *testing.T) *sessionFixture {
+	t.Helper()
+	f, _ := shipRebaseFixture(t)
+	delete(f.git.out, "merge-base --is-ancestor "+rebaseOrigin+" HEAD")
+	f.git.out["merge-base --is-ancestor HEAD "+rebaseOrigin] = ""
+	return f
+}
+
+func TestShipFollowFastForwards(t *testing.T) {
+	f := shipFollowFixture(t)
+	f.git.out["status --porcelain --untracked-files=no"] = ""
+	f.git.out["merge --ff-only "+rebaseOrigin] = ""
+	// The fake cannot show origin's branch now held by HEAD, so the
+	// rebase that follows stops; the fast-forward is what matters.
+	callOp(t, f.ctx, "ship.rebase", `{}`)
+	if !slices.Contains(f.git.calls, "merge --ff-only "+rebaseOrigin) {
+		t.Errorf("no fast-forward; calls %q", f.git.calls)
+	}
+}
+
+func TestShipFollowRefusesDirtyWorktree(t *testing.T) {
+	f := shipFollowFixture(t)
+	f.git.out["status --porcelain --untracked-files=no"] = " M feature.txt\n"
+	_, err := callOp(t, f.ctx, "ship.rebase", `{}`)
+	if err == nil || !strings.Contains(err.Error(), "feature.txt") || !strings.Contains(err.Error(), "uncommitted") {
+		t.Fatalf("err = %v", err)
+	}
+	for _, c := range f.git.calls {
+		if strings.HasPrefix(c, "merge ") || strings.HasPrefix(c, "reset") || strings.HasPrefix(c, "push") {
+			t.Errorf("git call %q moved the worktree", c)
+		}
+	}
+}
+
+func TestShipFollowRefusesLocalCommits(t *testing.T) {
+	f := shipFollowFixture(t)
+	delete(f.git.out, "merge-base --is-ancestor HEAD "+rebaseOrigin)
+	f.git.out["rev-list --oneline "+rebaseOrigin+"..HEAD"] = "abc1234 Local only commit\n"
+	_, err := callOp(t, f.ctx, "ship.rebase", `{}`)
+	if err == nil || !strings.Contains(err.Error(), "Local only commit") {
+		t.Fatalf("err = %v", err)
+	}
+	for _, c := range f.git.calls {
+		if strings.HasPrefix(c, "merge ") || strings.HasPrefix(c, "reset") || strings.HasPrefix(c, "push") {
+			t.Errorf("git call %q moved the worktree", c)
+		}
+	}
+}

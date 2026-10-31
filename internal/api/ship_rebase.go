@@ -130,6 +130,9 @@ func runShipRebase(ctx *Ctx, _ any) (any, error) {
 	if _, err := ctx.Git("fetch", "-q", "origin"); err != nil {
 		return nil, Errorf("%v", err)
 	}
+	if err := shipFollowPR(ctx, t); err != nil {
+		return nil, err
+	}
 	onto, err := ctx.Git("rev-parse", "--verify", "--quiet", "refs/remotes/origin/"+shipMain)
 	if err != nil {
 		return nil, Errorf("ship rebase: origin has no %s branch: %v", shipMain, err)

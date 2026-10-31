@@ -1,0 +1,126 @@
+# Someone else pushes to the PR branch (the orchestrator fixing a conflict):
+# rhiza ship rebase and ship land fast-forward the clean worktree to it
+# before committing or pushing, so the worktree's HEAD equals the pushed
+# head and land's push succeeds. A worktree with uncommitted changes, or
+# with a local commit origin lacks, is refused naming them, and HEAD stays.
+
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+
+exec git init -q --bare origin.git
+env ORIGIN=$WORK/origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+cp $WORK/other.mod go.mod
+exec rhiza init
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+exec rhiza add capability shipping --field 'statement=Ships a change set'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+exec git checkout -q -b cs/ship-it
+cp $WORK/feature.txt feature.txt
+exec git add feature.txt
+exec git commit -qm 'Build the feature'
+exec git push -q -u origin cs/ship-it
+exec rhiza ship check
+stdout 'passed'
+
+# A second clone pushes a commit to the branch.
+cd $WORK
+exec git clone -q origin.git second
+cd second
+exec git config user.email other@example.test
+exec git config user.name Other
+exec git checkout -q cs/ship-it
+cp $WORK/feature.txt other.txt
+exec git add other.txt
+exec git commit -qm 'Fix the conflict'
+exec git push -q origin cs/ship-it
+exec git rev-parse HEAD
+cp stdout $WORK/moved-head.txt
+
+# A dirty worktree is refused, naming the file; HEAD is unchanged.
+cd $WORK/repo
+exec git rev-parse HEAD
+cp stdout $WORK/run-head.txt
+exec sh -c 'echo changed >> feature.txt'
+! exec rhiza ship rebase
+stderr 'uncommitted changes'
+stderr 'feature.txt'
+exec git rev-parse HEAD
+cmp stdout $WORK/run-head.txt
+exec git checkout -q feature.txt
+
+# Clean, it fast-forwards instead of failing.
+exec rhiza ship rebase
+exec git rev-parse HEAD
+cmp stdout $WORK/moved-head.txt
+
+# Another push, then land follows it and its push succeeds.
+cd $WORK/second
+cp $WORK/feature.txt third.txt
+exec git add third.txt
+exec git commit -qm 'Another fix'
+exec git push -q origin cs/ship-it
+exec git rev-parse HEAD
+cp stdout $WORK/third-head.txt
+cd $WORK/repo
+exec rhiza ship check
+exec rhiza ship land
+# HEAD holds the pushed head and the land commit reached origin.
+exec sh -c 'git merge-base --is-ancestor $(cat $WORK/third-head.txt) HEAD'
+exec git rev-parse HEAD
+cp stdout $WORK/land-head.txt
+exec git --git-dir=$ORIGIN rev-parse refs/heads/cs/ship-it
+cmp stdout $WORK/land-head.txt
+
+# A local commit origin lacks, with origin ahead, is refused naming it.
+cd $WORK/second
+exec git pull -q --ff-only origin cs/ship-it
+cp $WORK/feature.txt fourth.txt
+exec git add fourth.txt
+exec git commit -qm 'Fourth upstream'
+exec git push -q origin cs/ship-it
+cd $WORK/repo
+cp $WORK/feature.txt local.txt
+exec git add local.txt
+exec git commit -qm 'Local only commit'
+exec git rev-parse HEAD
+cp stdout $WORK/local-head.txt
+! exec rhiza ship rebase --change 01M5PWGEF85Y185JZ2ZGCNH40N
+stderr 'Local only commit'
+exec git rev-parse HEAD
+cmp stdout $WORK/local-head.txt
+
+-- other.mod --
+module example.com/other
+
+go 1.25
+-- feature.txt --
+feature
+-- bin/gh --
+#!/bin/sh
+case "$1 $2" in
+"pr view")
+	if [ "$3" = 7 ]; then
+		echo '{"state":"MERGED","mergeCommit":{"oid":"fff0000aaa"}}'
+		exit 0
+	fi
+	if ! head=$(git -C "$ORIGIN" rev-parse --verify --quiet "refs/heads/$3"); then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
+	;;
+"pr merge")
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac
