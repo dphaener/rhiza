@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-31T05:26:13Z",
+  "body": {
+    "intent": "Plan milestone 7: drive Rhiza from Rex and see what it does, picked by the orchestrator under the owner's standing instruction",
+    "kind": "record",
+    "sources": [],
+    "title": "Plan milestone 7"
+  },
+  "change_set": "01M686RDMZR9FBZXN7DZWRWQW9",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M686RDMZR9FBZXN7E23AVDP6",
+  "type": "open",
+  "v": 2
+}

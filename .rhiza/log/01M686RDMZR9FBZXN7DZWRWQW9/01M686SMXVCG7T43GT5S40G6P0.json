@@ -1,0 +1,224 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M686S8K11B10MFFBAE8E2JNC"
+  ],
+  "at": "2026-10-31T05:26:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "7",
+          "statement": "The owner drives Rhiza from Rex and sees what it does: unattended failures say why, everything waiting on the owner is in the inbox, new work starts from the roadmap app, the live app shows runs in progress, umbrella areas stay out of the way, and updating Rhiza is one command"
+        },
+        "handle": "milestone-7",
+        "id": "01M686S9JF5GP5KMDQG4YTZASF",
+        "key": "zy",
+        "kind": "intent",
+        "node": "01M686S9JF5GP5KMDQG2SVHCTZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "if you run out of work keep picking high value tasks. don't stop and wait for my input.",
+          "statement": "Milestone 7 is seven change sets picked by the orchestrator for the owner's two goals: failed steps keep output, the daemon explains skips, the inbox shows blocking questions, umbrella areas are grouped, new work starts from the roadmap app, a live runs app, and make update"
+        },
+        "handle": "m7-picked-by-orchestrator",
+        "id": "01M686SA6DGNQYJCC2HVQ9KQX9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M686SA6DGNQYJCC2HRWWZ7FZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M686SA6DGNQYJCC2HRWWZ7FZ",
+        "id": "01M686SASZGD4CC42V1QFV5QDM",
+        "link": "01M686SASZGD4CC42V1QEFM8K2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686S7YS7Z5Z26YP3XE0CKA7",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M686S9JF5GP5KMDQG2SVHCTZ",
+        "id": "01M686SBDM957GTBSFQD954AER",
+        "link": "01M686SBDM957GTBSFQD37DCMR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SA6DGNQYJCC2HRWWZ7FZ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "A failed command step keeps one interleaved tail of its stdout and stderr, the last 20 lines and at most 2 KiB cut on a UTF-8 boundary",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "step-output-tail-cap",
+        "id": "01M686SC1VK3FSRSYSZJS2RR5G",
+        "key": null,
+        "kind": "decision",
+        "node": "01M686SC1VK3FSRSYSZGEYC759",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M686SC1VK3FSRSYSZGEYC759",
+        "id": "01M686SCNYH2N5BSRMTXA4YJNW",
+        "link": "01M686SCNYH2N5BSRMTX8ATXC6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686S7YS7Z5Z26YP3XE0CKA7",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The daemon works out its skip reasons at each poll, including waiting for a slot, and saves them in its state file; daemon status reads them back as of the last poll",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "daemon-skips-saved-at-poll",
+        "id": "01M686SD9VM3411J6KDJN04EWB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M686SD9VM3411J6KDG2ZNPVK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M686SD9VM3411J6KDG2ZNPVK",
+        "id": "01M686SDTZ2CNMA2TJJ0XR6VVY",
+        "link": "01M686SDTZ2CNMA2TJHY6VHRRT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686S7YS7Z5Z26YP3XE0CKA7",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The inbox lists one blocker item per open question and blocked change set, for proposed and accepted change sets only; both apps answer through one question.answer operation that writes the owner's words as a Decision in the blocked change set",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "inbox-blockers-per-change-set",
+        "id": "01M686SED30KDNGH2C9G8YJMJA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M686SED30KDNGH2C9F18JDVQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M686SED30KDNGH2C9F18JDVQ",
+        "id": "01M686SF1RYYPETQGAPJ60Z4QY",
+        "link": "01M686SF1RYYPETQGAPFB913NQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686S7YS7Z5Z26YP3XE0CKA7",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A change set serving an intent with a non-empty umbrella field is an umbrella: it is listed only in that intent's umbrella group after the milestones and the backlog, is never ready, and the roadmap app collapses the group to one row; the CLI still lists every row",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "umbrella-intent-field",
+        "id": "01M686SFNE5K0CY3E4DPCZCTX8",
+        "key": null,
+        "kind": "decision",
+        "node": "01M686SFNE5K0CY3E4DM7FG15J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M686SFNE5K0CY3E4DM7FG15J",
+        "id": "01M686SG96Y8NMZZWR2RNPXD4Q",
+        "link": "01M686SG96Y8NMZZWR2NWY8ZY3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686S7YS7Z5Z26YP3XE0CKA7",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "New work starts from the roadmap app with m for a milestone plan and n for a change-set plan; rhiza run start --workflow plan --new opens the draft change set itself, record for a milestone and intention otherwise, so one Rex command starts it",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "new-work-through-run-start",
+        "id": "01M686SGWKDN1MYPWX53RJEKDF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M686SGWKDN1MYPWX527GHT3E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M686SGWKDN1MYPWX527GHT3E",
+        "id": "01M686SHG8VK9JH89TBDDJJB1Z",
+        "link": "01M686SHG8VK9JH89TBC24KHNY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686S7YS7Z5Z26YP3XE0CKA7",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The runs view is the live app, so no existing app's default Rex key moves, and it reads a new run.ls operation listing recent runs newest first, refreshing every 3 seconds as the inbox does",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "live-app-name-and-op",
+        "id": "01M686SJ41FND41X2F7XBAHDWC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M686SJ41FND41X2F7WS4KVQF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M686SJ41FND41X2F7WS4KVQF",
+        "id": "01M686SJQ57S0DNCJ92MDE7K40",
+        "link": "01M686SJQ57S0DNCJ92KV470H6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686S7YS7Z5Z26YP3XE0CKA7",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Updating Rhiza is a make update target that builds in place into PREFIX and runs that binary's rex install; the ship command stays make install, since rex install fails where no Rex config exists",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "update-is-a-make-target",
+        "id": "01M686SKASE2RWS6A8W5FH06F0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M686SKASE2RWS6A8W56P6H1Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M686SKASE2RWS6A8W56P6H1Y",
+        "id": "01M686SKY8BBNX4AYC95MVDV34",
+        "link": "01M686SKY8BBNX4AYC9226WVXV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686S7YS7Z5Z26YP3XE0CKA7",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M686RDMZR9FBZXN7DZWRWQW9",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M686SMXVCG7T43GT5S40G6P0",
+  "type": "ops",
+  "v": 1
+}

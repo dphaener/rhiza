@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-31T05:26:24Z",
+  "body": {
+    "intent": "When a run's command step fails, its journal detail keeps the tail of the step's output, shown by run status and the inbox, so an unattended failure says why",
+    "kind": "intention",
+    "sources": [],
+    "title": "Failed steps keep output"
+  },
+  "change_set": "01M686RRCJSQ57M82FENWT2HNM",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M686RRCJSQ57M82FES735BMA",
+  "type": "open",
+  "v": 2
+}
