@@ -1,0 +1,40 @@
+{
+  "actor": "01M697P135FRKZD65NYN0GS1RD",
+  "after": [
+    "01M686WAMYX84AE0PFA74G6XN5"
+  ],
+  "at": "2026-10-31T15:11:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b297efa: make -n update PREFIX=<mktemp dir> printed mkdir -p, then go build ... -o <tmp>/rhiza ./cmd/rhiza, then <tmp>/rhiza rex install, with no cp (the update target depends on install, which builds in place). go test ./cmd/rhiza -run TestMakeUpdateDryRun -count=1 -v PASSED. The test asserts the go build -o <tmp>/rhiza line comes before <tmp>/rhiza rex install and that no cp field appears. A compiled test binary run with PATH=/nonexistent SKIPPED with 'make is not on PATH'. rhiza rex install --help confirms it rewrites the Rex config and reloads Rex. fmt-check, vet and go test ./... all pass. make check fails only in self-check, on stale .rhiza/rendered actor and index files from this run's own bookkeeping, not on the leaf's diff."
+        },
+        "handle": "make-update-verified",
+        "id": "01M698787RT2KNQF2W48P95RB4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M698787RT2KNQF2W45M6BS7N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M698787RT2KNQF2W45M6BS7N",
+        "id": "01M69878Y4RRQ91YT0T1G6MSGG",
+        "link": "01M69878Y4RRQ91YT0SYET4VVG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686VEB0CY43YARC8XCA55J2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RWSEKXXBCNC7RZMT07HB",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6987A181ED3VMRP7ZB7MPMC",
+  "type": "ops",
+  "v": 1
+}
