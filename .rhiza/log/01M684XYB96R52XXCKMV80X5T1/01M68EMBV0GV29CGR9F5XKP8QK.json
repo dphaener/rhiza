@@ -1,0 +1,28 @@
+{
+  "actor": "01M68EKM7KW75YPFVJJMC0KBMV",
+  "after": [
+    "01M68E9EGAVNQJZH1235K58C63"
+  ],
+  "at": "2026-10-31T07:43:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M68557HN470AVYK4NSERGPSQ",
+        "handle": null,
+        "id": "01M68EMB8HRCP934PX2Q3YZPXF",
+        "node": "01M68557HN470AVYK4NQC26BRH",
+        "op": "node.update",
+        "set": {
+          "statement": "A run follows a PR head it did not push only when that head contains the head the run pushed; a head that drops the run's commits leaves ship check unsettled, with a detail naming the dropped head, and raises no question; ship check only adopts the head, and the write steps fast-forward a clean worktree to it, refusing one with uncommitted changes or local commits the head lacks; a branch that holds a merge of main is merged with main again rather than rebased"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M684XYB96R52XXCKMV80X5T1",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M68EMBV0GV29CGR9F5XKP8QK",
+  "type": "ops",
+  "v": 1
+}
