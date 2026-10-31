@@ -1,0 +1,40 @@
+{
+  "actor": "01M69PEMENEVF6AR2HWKB7EQBB",
+  "after": [
+    "01M69NWJQV9SG8MHREHCWRAR8C"
+  ],
+  "at": "2026-10-31T19:28:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At dc6e4a22, go test ./cmd/rhiza -run TestScripts/run-command-step-output -count=1 passed: plain rhiza run status matched '^- b \\(visit 1\\): fail, then end: exit 3$' and an indented '^    boom$' line beneath it. Diff: RunInfo.Human prints the detail's first line on the step line and the rest indented; Rex status (run.go rexRecord path) still cuts detail to its first line, unchanged. make check exited 0."
+        },
+        "handle": "failed-step-detail-shown-verified",
+        "id": "01M69PZ1Z7TAYA694DBX0R2XCS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69PZ1Z7TAYA694DBV7YHTPB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69PZ1Z7TAYA694DBV7YHTPB",
+        "id": "01M69PZ2JJYDCCXJA5EN9HS0PW",
+        "link": "01M69PZ2JJYDCCXJA5EMD7MFB8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TEEXFC829G7CJ4EA044C",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RRCJSQ57M82FENWT2HNM",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69PZ3JED0XH0G4DPJ6CNQ7R",
+  "type": "ops",
+  "v": 1
+}

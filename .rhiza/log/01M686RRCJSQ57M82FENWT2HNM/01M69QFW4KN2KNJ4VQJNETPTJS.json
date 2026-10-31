@@ -1,0 +1,86 @@
+{
+  "actor": "01M69QD0B86CFK4KFQGTX2C0QG",
+  "after": [
+    "01M69QCG545CM5JBGERCE1V74N"
+  ],
+  "at": "2026-10-31T19:37:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza at fc88da4a into $TMPDIR and ran it by hand in a scratch git repo (rhiza init, change new). A command step 'echo out1; echo boom >&2; exit 3' failed the run and run status --json gave the step detail \"exit 3\\nout1\\nboom\". A step printing 'line 1'..'line 500' then exit 1 kept 'exit 1' plus lines 481-500 (21 lines, 186 bytes). A 5000-char single line kept 2048 bytes; 3000 'é' kept a 2046-byte tail starting on a rune boundary. A step that exits 5 silently keeps 'exit 5'; 'nosuchcmd_qa' kept 'exit 127' plus the sh error; a stderr-to-/dev/null step kept only its stdout. A passing step that writes to stdout and stderr kept detail exactly 'exit 0'. go test ./internal/run -run TestCommandDetailKeepsRunnerOutput passed."
+        },
+        "handle": "command-step-keeps-output-qa-1",
+        "id": "01M69QFQW6PBQBDQZJG4G5CJJ6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69QFQW6PBQBDQZJG2DA54JF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69QFQW6PBQBDQZJG2DA54JF",
+        "id": "01M69QFRHD15XRDX1S2Q4SKTTF",
+        "link": "01M69QFRHD15XRDX1S2PNSPW3Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TD7X0X91G79FG5S2Q1GJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "With the built binary in a scratch repo, plain rhiza run status after the out workflow failed printed '- b (visit 1): fail, then end: exit 3' then '    out1' and '    boom' indented beneath it; the run start output ends with the same block. The Rex OSC 7501 message rhiza emitted decoded to the single line 'run failed: step \"b\" ended with outcome \"fail\"', and run.go's Rex report still cuts detail at its first newline."
+        },
+        "handle": "failed-step-detail-shown-qa-1",
+        "id": "01M69QFS6AY9TXXDC8RD3K019F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69QFS6AY9TXXDC8RCGYFC0N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69QFS6AY9TXXDC8RCGYFC0N",
+        "id": "01M69QFSVAQQCXHMGT9VVXZY3R",
+        "link": "01M69QFSVAQQCXHMGT9RMYRJGP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TEEXFC829G7CJ4EA044C",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "With the built binary in a scratch repo, after the out workflow failed at command step b, rhiza inbox printed the failed item, '  step \"b\" ended with outcome \"fail\"', then '    exit 3', '    out1', '    boom' indented, then the resume --retry next line; rhiza inbox --json gave detail 'step \"b\" ended with outcome \"fail\"\\nexit 3\\nout1\\nboom'. A later run failing on 'nosuchcmd_qa' showed 'exit 127' and the sh error indented the same way."
+        },
+        "handle": "inbox-failed-step-output-qa-1",
+        "id": "01M69QFTJ27CDR61MNWRARGWMT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69QFTJ27CDR61MNWPFZADMM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69QFTJ27CDR61MNWPFZADMM",
+        "id": "01M69QFV5S47PKZ6YQ039TBRZ2",
+        "link": "01M69QFV5S47PKZ6YPZZQ49KVN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TFM9P7BREP2N91XSK6AG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RRCJSQ57M82FENWT2HNM",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69QFW4KN2KNJ4VQJNETPTJS",
+  "type": "ops",
+  "v": 1
+}

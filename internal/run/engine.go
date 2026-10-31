@@ -564,7 +564,7 @@ func (r *running) command(step workflow.Step, env []string) result {
 	}
 	d := fmt.Sprintf("exit %d", code)
 	if detail != "" {
-		d += ": " + detail
+		d += "\n" + detail
 	}
 	if code == 0 {
 		return result{outcome: workflow.OutcomePass, detail: d}

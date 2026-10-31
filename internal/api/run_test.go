@@ -28,7 +28,8 @@ func (s *shStart) start(p Program) (Process, error) {
 	s.programs = append(s.programs, p)
 	cmd := ""
 	if len(p.Args) == 2 {
-		cmd = p.Args[1]
+		// A command step's script starts with exec 2>&1 so output interleaves.
+		cmd = strings.TrimPrefix(p.Args[1], "exec 2>&1\n")
 	}
 	return &fakeProcess{out: strings.NewReader(""), code: s.codes[cmd]}, nil
 }
@@ -266,7 +267,7 @@ timeout = "1m"
 	}
 	prep := 0
 	for _, p := range sh.programs {
-		if p.Args[1] == "prep" {
+		if strings.TrimPrefix(p.Args[1], "exec 2>&1\n") == "prep" {
 			prep++
 		}
 	}

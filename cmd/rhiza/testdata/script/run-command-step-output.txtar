@@ -1,0 +1,54 @@
+# A command step that exits non-zero keeps the tail of its interleaved
+# standard output and error in its journal detail: exit N, then the last
+# 20 lines at most. A passing step's detail stays exit 0.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Keep output' --title 'Keep output' --json
+mkdir .rhiza/workflows
+cp ../out.toml .rhiza/workflows/out.toml
+cp ../long.toml .rhiza/workflows/long.toml
+cp ../ok.toml .rhiza/workflows/ok.toml
+
+! exec rhiza run start --workflow out
+exec rhiza run status --json
+stdout '"detail": "exit 3\\nout1\\nboom"'
+
+exec rhiza run status
+stdout '^- b \(visit 1\): fail, then end: exit 3$'
+stdout '^    boom$'
+
+! exec rhiza run start --workflow long
+exec rhiza run status --json
+stdout 'line 500'
+! stdout 'line 1\\n'
+! stdout 'line 1"'
+! stdout 'line 480\\n'
+stdout 'line 481'
+
+exec rhiza run start --workflow ok
+exec rhiza run status --json
+stdout '"detail": "exit 0"'
+
+-- out.toml --
+name = "out"
+
+[step.b]
+kind = "command"
+run = "echo out1; echo boom >&2; exit 3"
+-- long.toml --
+name = "long"
+
+[step.b]
+kind = "command"
+run = "seq 1 500 | sed 's/^/line /'; exit 1"
+-- ok.toml --
+name = "ok"
+
+[step.b]
+kind = "command"
+run = "echo fine"

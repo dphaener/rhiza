@@ -18,6 +18,7 @@ import (
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 func init() {
@@ -118,8 +119,14 @@ func (r InboxResponse) Human(w io.Writer) {
 				fmt.Fprintf(w, "  reasons: %s\n", it.Reasons)
 			}
 		default:
-			if it.Detail != "" {
-				fmt.Fprintf(w, "  %s\n", it.Detail)
+			first, rest, _ := strings.Cut(it.Detail, "\n")
+			if first != "" {
+				fmt.Fprintf(w, "  %s\n", first)
+			}
+			for _, l := range strings.Split(rest, "\n") {
+				if l != "" {
+					fmt.Fprintf(w, "    %s\n", l)
+				}
 			}
 		}
 		if it.Next != "" {
@@ -164,7 +171,7 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 			}
 			step, _ := st.FailedStep()
 			add(InboxFailed, "", st.EndedAt, InboxItem{
-				Step: step, Detail: st.Detail, Next: "rhiza run resume --retry " + j.ID,
+				Step: step, Detail: failedDetail(st, step), Next: "rhiza run resume --retry " + j.ID,
 			})
 		case !live && strings.HasPrefix(st.Stopped, run.OpenStop):
 			add(InboxOpen, st.Stopped, st.StoppedAt, InboxItem{
@@ -220,6 +227,23 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 		return strings.Compare(a.ID, b.ID)
 	})
 	return items
+}
+
+// failedDetail is why a failed run failed, followed by the detail of the
+// last fail the step ended with when it has more than one line: a command
+// step's exit code and the tail of its output.
+func failedDetail(st run.State, step string) string {
+	for i := len(st.Steps) - 1; i >= 0; i-- {
+		s := st.Steps[i]
+		if s.Step != step || s.Outcome != workflow.OutcomeFail {
+			continue
+		}
+		if strings.Contains(s.Detail, "\n") {
+			return strings.TrimSuffix(st.Detail, "\n") + "\n" + s.Detail
+		}
+		break
+	}
+	return st.Detail
 }
 
 // changeStateOf gives the state of a change set by ID, and whether the log

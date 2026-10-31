@@ -28,6 +28,7 @@ func (c *fakeClock) Sleep(d time.Duration) {
 // fakeRunner scripts each step's results and counts calls.
 type fakeRunner struct {
 	codes      map[string][]int         // command exit codes per step, in call order
+	details    map[string]string        // command detail per step
 	holds      map[string][]bool        // wait results per step; past the end, the last
 	agentOut   map[string][]bool        // done per poll per session; past the end, true
 	agentSeq   map[string][]AgentStatus // status per poll per session; past the end, agentOut
@@ -115,7 +116,7 @@ type fakeEvidence struct {
 
 func newFakeRunner() *fakeRunner {
 	return &fakeRunner{
-		codes: map[string][]int{}, holds: map[string][]bool{}, agentOut: map[string][]bool{},
+		codes: map[string][]int{}, details: map[string]string{}, holds: map[string][]bool{}, agentOut: map[string][]bool{},
 		agentSeq: map[string][]AgentStatus{}, agentErr: map[string]error{},
 		outcome: map[string]string{}, failOn: map[string]error{},
 		commands: map[string]int{}, polls: map[string]int{}, starts: map[string]int{},
@@ -137,7 +138,7 @@ func (f *fakeRunner) Command(step workflow.Step, env []string) (int, string, err
 	}
 	codes := f.codes[step.Name]
 	if n < len(codes) {
-		return codes[n], "", nil
+		return codes[n], f.details[step.Name], nil
 	}
 	return 0, "", nil
 }
@@ -436,6 +437,21 @@ func TestCommandFailFollowsOnFail(t *testing.T) {
 	// fix's on.pass = "failed" ends the run failed.
 	if st.Result != Failed || st.Detail != `step "fix" ended with outcome "pass"` {
 		t.Errorf("result %q detail %q", st.Result, st.Detail)
+	}
+}
+
+// TestCommandDetailKeepsRunnerOutput keeps a runner's detail under the
+// exit line of a failed step.
+func TestCommandDetailKeepsRunnerOutput(t *testing.T) {
+	e, r, _, _ := setup(t, cmdWF)
+	r.codes["test"] = []int{3}
+	r.details["test"] = "out1\nboom"
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := st.Steps[0].Detail; got != "exit 3\nout1\nboom" {
+		t.Errorf("detail = %q", got)
 	}
 }
 

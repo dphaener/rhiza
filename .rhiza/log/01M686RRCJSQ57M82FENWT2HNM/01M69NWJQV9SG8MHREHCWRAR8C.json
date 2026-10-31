@@ -1,0 +1,40 @@
+{
+  "actor": "01M69NKFWNJ0MZ7B02NK1GE3Q0",
+  "after": [
+    "01M686W0PMHW6BMGQ8XCWRSBPJ"
+  ],
+  "at": "2026-10-31T19:09:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 17514df9: go test ./cmd/rhiza -run TestScripts/run-command-step-output passes; the script runs 'echo out1; echo boom >&2; exit 3' and run status --json shows detail \"exit 3\\nout1\\nboom\", a 500-line step keeps lines 481-500 (line 500 present, line 1 and line 480 absent), and a passing step's detail is exactly \"exit 0\". go test ./internal/run -run TestCommandDetailKeepsRunnerOutput passes, showing a runner's detail kept under the exit line. Diff read: stepRunner.Command merges stderr into stdout (exec 2>&1) and keeps a tail capped at 20 lines and 2048 bytes, cut on a UTF-8 rune start; detail is returned only for non-zero exits. go test ./... passes except a timing test (modelapp TestGeneratedModel, 55ms vs 50ms) that passes when rerun alone; make self-check passes with RHIZA_ROOT unset."
+        },
+        "handle": "command-step-keeps-output-verified",
+        "id": "01M69NWH1VF4CN7T9GXQJQPM5M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69NWH1VF4CN7T9GXQCBF6R0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69NWH1VF4CN7T9GXQCBF6R0",
+        "id": "01M69NWHPFFCHC8P03FCB5G9YR",
+        "link": "01M69NWHPFFCHC8P03F98FZQ0V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TD7X0X91G79FG5S2Q1GJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RRCJSQ57M82FENWT2HNM",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69NWJQV9SG8MHREHCWRAR8C",
+  "type": "ops",
+  "v": 1
+}

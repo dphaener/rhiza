@@ -1,0 +1,40 @@
+{
+  "actor": "01M69PZRBXGA0MTQQFEFBZ4R9A",
+  "after": [
+    "01M69PZ3JED0XH0G4DPJ6CNQ7R"
+  ],
+  "at": "2026-10-31T19:36:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 37da5f26, run-abandon-failed.txtar gains a loud workflow whose command step runs 'echo out1; echo boom >&2; exit 3'; the script asserts rhiza inbox prints '    exit 3' and '    boom' indented under the failed item, and inbox --json's detail is 'step \"b\" ended with outcome \"fail\"\\nexit 3\\nout1\\nboom'. go test ./cmd/rhiza -run 'TestScripts/(run-abandon-failed|inbox-list)$' -count=1 passed; fmt-check, vet and go test ./... passed. Diff read: internal/api/inbox.go failedDetail appends the last failing visit's multi-line step detail to the run detail, and Human indents lines after the first. make self-check flagged only the unrendered actor file of this verifier session, not the leaf."
+        },
+        "handle": "inbox-failed-step-output-verified",
+        "id": "01M69QCEQEEAYDG3CQJQGZZD6Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69QCEQEEAYDG3CQJKMV8PC1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69QCEQEEAYDG3CQJKMV8PC1",
+        "id": "01M69QCF94741BF736AJPF8678",
+        "link": "01M69QCF94741BF736AJM0GA28",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TFM9P7BREP2N91XSK6AG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RRCJSQ57M82FENWT2HNM",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69QCG545CM5JBGERCE1V74N",
+  "type": "ops",
+  "v": 1
+}
