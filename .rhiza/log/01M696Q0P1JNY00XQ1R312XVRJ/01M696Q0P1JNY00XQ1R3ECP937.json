@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-31T14:44:41Z",
+  "body": {
+    "intent": "The model app's read timing test waits until go test runs nothing else before it times, as TestReadBudget does, so machine load no longer fails CI or a run",
+    "kind": "intention",
+    "sources": [],
+    "title": "Model app timing waits"
+  },
+  "change_set": "01M696Q0P1JNY00XQ1R312XVRJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M696Q0P1JNY00XQ1R3ECP937",
+  "type": "open",
+  "v": 2
+}

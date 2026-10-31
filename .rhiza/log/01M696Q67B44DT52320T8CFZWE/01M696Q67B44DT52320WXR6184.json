@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-31T14:44:47Z",
+  "body": {
+    "intent": "link 01M696Q0P1JNY00XQ1R312XVRJ serves milestone-7",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M696Q67B44DT52320T8CFZWE",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M696Q67B44DT52320WXR6184",
+  "type": "open",
+  "v": 1
+}
