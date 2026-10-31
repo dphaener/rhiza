@@ -1,0 +1,41 @@
+{
+  "actor": "01M6A31J45RSEMEVJ08Q1XWFVT",
+  "after": [
+    "01M69ZV05HA8ZXFG4H21MJ53JB"
+  ],
+  "at": "2026-10-31T23:10:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "command": "go test ./cmd/rhiza -run TestScripts/field-schema -count=1 -v && make check",
+          "result": "PASS",
+          "statement": "At 776785fc: new cmd/rhiza/testdata/script/field-schema.txtar passes (go test -run TestScripts/field-schema): add evidence --field bogus=x is refused naming the known fields (command, head, observed, pr, result, statement, status, test, tests), --json gives code usage, anchor says it has no fields, set refuses on a new and a landed node, nothing is written by refusals, and a log entry hand-edited to an unknown field (sed command->bogus) passes fold-ok, render and check. By hand in a scratch repo with a fresh build, add evidence e1 --field bogus=x and set e1 --field bogus=x both exit 2. Scripts that used made-up fields (tags, weight, owner, a/b/x/s, actor on evidence, milestone on capability) now use real kind fields; the one left (record.txtar set draft --field a=b) still fails on not_found first as intended. Diff: knownFieldsOnly in internal/api/write_node.go guards buildAdd and buildSet only, so folding is untouched; notes_quote added to Decision fields. make check exits 0 with the run RHIZA_* env unset (with it set, self-check only flags the verifier's own actor render from RHIZA_ROOT)."
+        },
+        "handle": "add-refuses-unknown-field-verified",
+        "id": "01M6A3N7TADFYRBFMVR7T2X25B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6A3N7TADFYRBFMVR71PAK04",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A3N7TADFYRBFMVR71PAK04",
+        "id": "01M6A3N8FTJ0GJV22997NEDKVH",
+        "link": "01M6A3N8FTJ0GJV22995V7VAWQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T0JB213041HC3VS3HRQCS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTH32C73BQET8E0708F9F",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A3N9G4S39Z57A0V0EXZFYZ",
+  "type": "ops",
+  "v": 1
+}
