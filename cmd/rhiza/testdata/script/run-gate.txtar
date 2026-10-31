@@ -5,7 +5,8 @@
 # rhiza accept --rule owner for each proposed one. In an autonomous run it
 # accepts each with rule autonomous once the review passed and every
 # question the review left is answered; while one is open it accepts
-# nothing and exits 1 naming it. With no RHIZA_RUN it is usage.
+# nothing and stops for the owner (exit 75) naming it. With no RHIZA_RUN
+# it is usage.
 #
 # Every run stops at a wait step whose until does not hold, so it stays
 # unfinished and launches no agent.
@@ -146,8 +147,9 @@ stdout '^exit=75$'
 stdout 'review-[0-9a-z]{8}-r3-f1 \(01[0-9A-Z]{24}\)'
 stdout 'stop: open questions: review-[0-9a-z]{8}-r3-f1'
 ! stdout 'accepted'
+# Named once in the list and once on the stop line.
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run gate 2>&1 | grep -c "$(cat $WORK/qc)"'
-stdout '^1$'
+stdout '^2$'
 exec sh -c 'rhiza change show $(cat $WORK/c1) --json'
 stdout '"state": "proposed"'
 exec sh -c 'rhiza change show $(cat $WORK/c2) --json'
