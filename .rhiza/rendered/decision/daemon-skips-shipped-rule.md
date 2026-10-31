@@ -16,6 +16,11 @@ The daemon skips an accepted change set whose latest run is a succeeded ship-cha
 
 - derived-from [m8-orchestrator-picks](../source/m8-orchestrator-picks.md)
 
+### In
+
+- decided-by [daemon-skips-shipped](../capability/rhiza/orchestration/daemon/daemon-picks/daemon-skips-shipped.md)
+- decided-by [shipped-skip-reason](../capability/rhiza/orchestration/daemon/daemon-picks/daemon-skip-reasons/shipped-skip-reason.md)
+
 ## History
 
 - `01M69DFFE95XDD58TYREQR0HXE` Plan milestone 8: Rhiza notices conflicts before they bite, picked by the orchestrator under the owner's standing instruction

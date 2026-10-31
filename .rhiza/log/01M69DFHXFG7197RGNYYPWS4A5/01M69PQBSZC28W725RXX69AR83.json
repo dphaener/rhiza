@@ -1,0 +1,40 @@
+{
+  "actor": "01M69PA2AA86SHYWGRBVW17ARX",
+  "after": [
+    "01M69NHGASD662DZ8RM4ZBJMP5"
+  ],
+  "at": "2026-10-31T19:24:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 8d5d49ec. internal/daemon/pick_test.go TestSkips has shipped cases (succeeded ship run after the accept -> SkipShipped in both the one-slot and room tables); go test ./internal/daemon -run 'Skips|Pick' passes. daemon-status.txtar adds a Shipped change set with a hand-written succeeded ship-change journal (.git/rhiza/runs/SHIPPED0001.jsonl) under the fake bin/rex, and asserts 'Skipped: ... Shipped: its latest run shipped it' and '\"reason\": \"shipped\"'; go test ./cmd/rhiza -run TestScripts/(daemon-status|describe-golden)$ passes. DaemonSkip.Reason desc now lists shipped; re-running describe-golden with -update leaves the tree clean, so the golden is regenerated. make check fmt/vet/test pass; self-check passes with the run env (RHIZA_ROOT etc.) unset; with it set it only flags this run's live actor render files."
+        },
+        "handle": "shipped-skip-reason-verified",
+        "id": "01M69PQA2X9K6B3KHANGXQ33C0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69PQA2X9K6B3KHAND2VXW3E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69PQA2X9K6B3KHAND2VXW3E",
+        "id": "01M69PQAR4XP90CKXPK7MY1E6S",
+        "link": "01M69PQAR4XP90CKXPK4YZQM11",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DHDGP588ZJPVVXZ80QD8Z",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M69DFHXFG7197RGNYYPWS4A5",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69PQBSZC28W725RXX69AR83",
+  "type": "ops",
+  "v": 1
+}

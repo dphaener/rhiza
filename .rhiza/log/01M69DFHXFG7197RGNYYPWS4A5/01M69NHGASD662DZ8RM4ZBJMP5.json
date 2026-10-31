@@ -1,0 +1,40 @@
+{
+  "actor": "01M69N3115H85155QQM71V8R3W",
+  "after": [
+    "01M69DHT07DHXAK8BG8SFNK7HJ"
+  ],
+  "at": "2026-10-31T19:03:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 03e9795e, TestPickSkipsShipped in internal/daemon/pick_test.go has the three table cases the acceptance names: a succeeded ship-change run after the accept is skipped, a succeeded plan run is picked, and a succeeded ship-change run followed by a reopen is picked. go test ./internal/daemon -run 'TestPickSkipsShipped|TestSkips' -count=1 passed, and go test ./... passed for every package. With go test -overlay mutations of pick.go (the checkout unchanged), each case failed on its own: removing the shipped skip failed the skip case, ignoring Since failed the reopen case, and dropping the workflow check failed the plan case. make check's self-check failed only on stale .rhiza/rendered actor and index files from this run's actor records, not on code."
+        },
+        "handle": "daemon-skips-shipped-verified",
+        "id": "01M69NHEM4M0A3KDGQ66DF1AKQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69NHEM4M0A3KDGQ640DSM3Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69NHEM4M0A3KDGQ640DSM3Q",
+        "id": "01M69NHF94XEGW5EVT8NSDBKGW",
+        "link": "01M69NHF94XEGW5EVT8JT2TX64",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DHC8T4MV7X7VWZFYD5YRP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M69DFHXFG7197RGNYYPWS4A5",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69NHGASD662DZ8RM4ZBJMP5",
+  "type": "ops",
+  "v": 1
+}

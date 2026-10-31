@@ -42,6 +42,17 @@ exec rhiza add capability waiting-leaf
 exec rhiza propose
 exec rhiza accept --reason ok
 
+
+# Shipped: ready, with a leaf, and its latest run is a succeeded ship-change
+# run (a fixture journal) that ended after the accept.
+exec rhiza change new Shipped --title Shipped
+exec rhiza link 01M5PWH6WG057XVB12H62KNP5F serves m
+exec rhiza add capability shipped-leaf
+exec rhiza propose
+exec rhiza accept --reason ok
+mkdir .git/rhiza/runs
+exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2099-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWH6WG057XVB12H62KNP5F\"}}" "{\"type\":\"finished\",\"at\":\"2099-01-01T00:00:02Z\",\"end\":\"succeeded\"}" > .git/rhiza/runs/SHIPPED0001.jsonl'
+
 exec rhiza daemon --permission-mode manual --once --max-runs=3 --autonomous
 stdout '^Started a run of '
 
@@ -54,6 +65,7 @@ stdout '^Last started: a run of '
 stdout '^Skipped: 01M5PWGS702G3VYA781BNZ0K7Q Orphan: serves no milestone$'
 stdout '^Skipped: 01M5PWGX40FB1RBRN9YHMNJW07 Leafless: has no leaves$'
 stdout '^Skipped: 01M5PWH110D047SG185GTXKBCB Waiting: not ready \(.*\)$'
+stdout '^Skipped: 01M5PWH6WG057XVB12H62KNP5F Shipped: its latest run shipped it$'
 exec rhiza daemon status --json
 stdout '"running": false'
 stdout '"max_runs": 3'
@@ -61,6 +73,7 @@ stdout '"autonomous": true'
 stdout '"last_started": \{'
 exec rhiza daemon status --json
 stdout '"reason": "not-ready"'
+stdout '"reason": "shipped"'
 stdout '"title": "Waiting"'
 stdout '"detail": \[\n *"depends on'
 

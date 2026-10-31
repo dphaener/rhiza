@@ -70,7 +70,7 @@ func TestDaemonPicks(t *testing.T) {
 		}
 	}
 	pick := func(max int, failure string) []string {
-		return daemon.Pick(cands, runs(failure), nil, host, up, max)
+		return daemon.Pick(cands, runs(failure), nil, host, up, max, daemon.Ship{})
 	}
 	want := func(max int, failure string, w ...id.ID) {
 		t.Helper()
@@ -90,7 +90,7 @@ func TestDaemonPicks(t *testing.T) {
 
 	// A change set the daemon just started counts as running until its
 	// journal shows.
-	if got := daemon.Pick(cands, runs("boom"), []string{first.String()}, host, up, 3); !slices.Equal(got, []string{second.String()}) {
+	if got := daemon.Pick(cands, runs("boom"), []string{first.String()}, host, up, 3, daemon.Ship{}); !slices.Equal(got, []string{second.String()}) {
 		t.Errorf("with %s pending picked %v", first, got)
 	}
 }
