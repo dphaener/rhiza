@@ -25,6 +25,23 @@ exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
 exec rhiza propose
 exec rhiza accept --reason ok
 
+# Three more accepted change sets the daemon will not start: one serving no
+# milestone, one with no leaves and one depending on an unlanded change set.
+exec rhiza change new Orphan --title Orphan
+exec rhiza add capability orphan-leaf
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza change new Leafless --title Leafless
+exec rhiza link 01M5PWGX40FB1RBRN9YHMNJW07 serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza change new Waiting --title Waiting
+exec rhiza link 01M5PWH110D047SG185GTXKBCB serves m
+exec rhiza link 01M5PWH110D047SG185GTXKBCB depends-on 01M5PWGS702G3VYA781BNZ0K7Q
+exec rhiza add capability waiting-leaf
+exec rhiza propose
+exec rhiza accept --reason ok
+
 exec rhiza daemon --permission-mode manual --once --max-runs=3 --autonomous
 stdout '^Started a run of '
 
@@ -34,11 +51,18 @@ stdout '^Daemon not running$'
 stdout '^Max runs: 3$'
 stdout '^Autonomous: true$'
 stdout '^Last started: a run of '
+stdout '^Skipped: 01M5PWGS702G3VYA781BNZ0K7Q Orphan: serves no milestone$'
+stdout '^Skipped: 01M5PWGX40FB1RBRN9YHMNJW07 Leafless: has no leaves$'
+stdout '^Skipped: 01M5PWH110D047SG185GTXKBCB Waiting: not ready \(.*\)$'
 exec rhiza daemon status --json
 stdout '"running": false'
 stdout '"max_runs": 3'
 stdout '"autonomous": true'
 stdout '"last_started": \{'
+exec rhiza daemon status --json
+stdout '"reason": "not-ready"'
+stdout '"title": "Waiting"'
+stdout '"detail": \[\n *"depends on'
 
 # A start whose run never journaled is reported, not retried.
 exec sh -c 'sed "s/}\$/,\"unjournaled\":[{\"change\":\"CSX\",\"at\":\"2026-01-01T00:00:00Z\"}]}/" .git/rhiza/daemon.state.json > s.tmp && mv s.tmp .git/rhiza/daemon.state.json'

@@ -35,9 +35,20 @@ func TestDaemonPicks(t *testing.T) {
 	running, interrupted, failed := mk("running", m), mk("interrupted", m), mk("failed", m)
 	draft := f.cs("draft", changeset.StateDraft)
 	f.serve(draft, m)
+	notReady := mk("not-ready", m)
+	f.dep(notReady, first)
 
 	hasLeaves := func(cs id.ID) bool { return cs != leafless }
-	cands := daemonCandidates(f.core(), hasLeaves)
+	cands, skips := daemonCandidates(f.core(), hasLeaves)
+	reasons := map[string]string{}
+	for _, sk := range skips {
+		reasons[sk.Change] = sk.Reason
+	}
+	for cs, want := range map[id.ID]string{backlog: daemon.SkipNoMilestone, leafless: daemon.SkipNoLeaves, notReady: daemon.SkipNotReady} {
+		if reasons[cs.String()] != want {
+			t.Errorf("skip of %s = %q, want %q (skips %v)", cs, reasons[cs.String()], want, skips)
+		}
+	}
 	if len(cands) == 0 || slices.Contains(cands, leafless.String()) || slices.Contains(cands, backlog.String()) || slices.Contains(cands, draft.String()) {
 		t.Fatalf("candidates = %v", cands)
 	}
