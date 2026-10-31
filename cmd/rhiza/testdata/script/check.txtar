@@ -78,6 +78,27 @@ cp $WORK/corrupt.json .rhiza/log/01M5PWGEF85Y185JZ2ZB9QSVK7/01M5PWGEF85Y185JZ2ZE
 ! exec rhiza check
 stdout '^fail log \.rhiza/log/01M5PWGEF85Y185JZ2ZB9QSVK7/01M5PWGEF85Y185JZ2ZEVTPAGP\.json: '
 
+# A bad link only in a draft, proposed or accepted change set warns, rule
+# in-flight; a withdrawn change set holding it gives no warning.
+cd $WORK
+mkdir inflightlink
+cd inflightlink
+exec rhiza init
+exec rhiza change new Shape
+exec rhiza add intent fast
+exec rhiza add capability store
+exec rhiza link store serves fast
+exec sh -c 'for f in $(grep -l "\"serves\"" .rhiza/log/*/*.json); do sed "s/\"serves\"/\"verifies\"/" $f > $f.new && mv $f.new $f; done'
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+stdout '^warn in-flight change set [0-9A-Z]{26}, op [0-9A-Z]{26}, link [0-9A-Z]{26}: link type "verifies" does not go from capability to intent$'
+! stdout '^fail'
+exec rhiza withdraw
+exec rhiza render
+exec rhiza check
+! stdout 'in-flight'
+
 # A landed conflict fails the model rule. Two record change sets set the
 # same field from the same base: the first is hidden while the second is
 # written (with another seed, so their IDs differ), then put back.
