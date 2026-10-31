@@ -121,7 +121,11 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		daemon.WriteState(common, state)
 	}()
 	poll := func() error {
-		started, resumed, err := daemonPoll1(ctx, rs, pending, unjournaled, r.MaxRuns, r.Autonomous, r.PermissionMode)
+		var skips []daemon.Skip
+		started, resumed, err := daemonPoll1(ctx, rs, pending, unjournaled, r.MaxRuns, r.Autonomous, r.PermissionMode, &skips)
+		if err == nil {
+			state.Skips = skips
+		}
 		resp.Started = append(resp.Started, started...)
 		resp.Resumed = append(resp.Resumed, resumed...)
 		if len(started) > 0 {
@@ -279,7 +283,7 @@ func daemonRunsOf(runs []run.Journal, cs string) int {
 
 // daemonPoll1 picks and starts runs once. pending holds the change sets
 // started; unjournaled those whose start never journaled (see daemonHeld).
-func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, autonomous bool, mode string) ([]string, []string, error) {
+func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, autonomous bool, mode string, skips *[]daemon.Skip) ([]string, []string, error) {
 	res, _, _, err := planRead(ctx, "daemon", "")
 	if err != nil {
 		return nil, nil, err
@@ -288,7 +292,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	if err != nil {
 		return nil, nil, err
 	}
-	cands := daemonCandidates(res, func(cs id.ID) bool {
+	cands, planSkips := daemonCandidates(res, func(cs id.ID) bool {
 		c, ok := ws.changeSet(cs)
 		return ok && len(changeLeaves(ws.model(cs), c.Ops)) > 0
 	})
@@ -317,8 +321,16 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		resumed = append(resumed, id)
 	}
 	held := daemonHeld(pending, unjournaled, runs, ctx.Now())
-	cands = slices.DeleteFunc(cands, func(cs string) bool { _, ok := unjournaled[cs]; return ok })
+	var unj []daemon.Skip
+	cands = slices.DeleteFunc(cands, func(cs string) bool {
+		_, ok := unjournaled[cs]
+		if ok {
+			unj = append(unj, daemon.Skip{Change: cs, Reason: daemon.SkipUnjournaled})
+		}
+		return ok
+	})
 	picked := daemon.Pick(cands, runs, held, host, nil, max)
+	*skips = append(append(planSkips, unj...), daemon.Skips(cands, runs, held, host, nil, max)...)
 	var started []string
 	for _, cs := range picked {
 		if err := daemonStart(ctx, cs, autonomous, mode); err != nil {
@@ -331,25 +343,45 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 }
 
 // daemonCandidates are the accepted, ready change sets of the milestone
-// groups that hasLeaves, in roadmap order, each once.
-func daemonCandidates(res planResult, hasLeaves func(id.ID) bool) []string {
+// groups that hasLeaves, in roadmap order, each once. skips are the other
+// accepted change sets, each once: those serving no milestone, those not
+// ready (with their readiness reasons) and those with no leaves.
+func daemonCandidates(res planResult, hasLeaves func(id.ID) bool) ([]string, []daemon.Skip) {
 	var out []string
+	var skips []daemon.Skip
 	seen := map[id.ID]bool{}
 	for _, g := range res.groups {
 		if g.backlog {
 			continue
 		}
 		for _, p := range g.members {
-			if seen[p.info.ID] || !p.ready || p.info.State != changeset.StateAccepted {
+			if seen[p.info.ID] || p.info.State != changeset.StateAccepted {
 				continue
 			}
 			seen[p.info.ID] = true
-			if hasLeaves(p.info.ID) {
+			switch {
+			case !p.ready:
+				skips = append(skips, daemon.Skip{Change: p.info.ID.String(), Reason: daemon.SkipNotReady, Detail: slices.Clone(p.reasons)})
+			case !hasLeaves(p.info.ID):
+				skips = append(skips, daemon.Skip{Change: p.info.ID.String(), Reason: daemon.SkipNoLeaves})
+			default:
 				out = append(out, p.info.ID.String())
 			}
 		}
 	}
-	return out
+	for _, g := range res.groups {
+		if !g.backlog {
+			continue
+		}
+		for _, p := range g.members {
+			if seen[p.info.ID] || p.info.State != changeset.StateAccepted {
+				continue
+			}
+			seen[p.info.ID] = true
+			skips = append(skips, daemon.Skip{Change: p.info.ID.String(), Reason: daemon.SkipNoMilestone})
+		}
+	}
+	return out, skips
 }
 
 // daemonStart starts the run of change set cs in a new Rex tab, with

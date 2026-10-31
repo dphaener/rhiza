@@ -22,6 +22,43 @@ const DefaultMaxRuns = 2
 // change sets the daemon started whose runs have no journal yet; each
 // counts as running, and is not picked again, until a journal of it shows.
 func Pick(candidates []string, runs []run.Journal, pending []string, host string, alive func(pid int) bool, max int) []string {
+	picked, _ := decide(candidates, runs, pending, host, alive, max)
+	return picked
+}
+
+// Skip reasons, fixed: the state file and its readers match on them.
+const (
+	SkipNoMilestone = "no-milestone"
+	SkipNoLeaves    = "no-leaves"
+	SkipNotReady    = "not-ready"
+	SkipLive        = "live"
+	SkipFailed      = "failed"
+	SkipHeld        = "held"
+	SkipUnjournaled = "unjournaled"
+	SkipNoSlot      = "no-slot"
+)
+
+// Skip is an accepted change set the daemon does not start, and why.
+type Skip struct {
+	Change string `json:"change"`
+	// Reason is one of the Skip constants.
+	Reason string `json:"reason"`
+	// Detail holds the readiness reasons of a not-ready change set.
+	Detail []string `json:"detail,omitempty"`
+}
+
+// Skips returns, in the order of candidates, the candidates Pick (called
+// with the same arguments) does not pick, each with its reason: live (a
+// running or interrupted run), failed (the latest run failed and was not
+// abandoned or retried, so it waits in the inbox), held (started and not
+// yet journaled) or no-slot (max runs are running). Candidates are the
+// accepted, ready change sets that serve a milestone and have a leaf.
+func Skips(candidates []string, runs []run.Journal, pending []string, host string, alive func(pid int) bool, max int) []Skip {
+	_, skips := decide(candidates, runs, pending, host, alive, max)
+	return skips
+}
+
+func decide(candidates []string, runs []run.Journal, pending []string, host string, alive func(pid int) bool, max int) ([]string, []Skip) {
 	live := map[string]bool{}
 	latest := map[string]run.State{}
 	running := 0
@@ -44,20 +81,23 @@ func Pick(candidates []string, runs []run.Journal, pending []string, host string
 		}
 	}
 	var picked []string
+	var skips []Skip
 	for _, cs := range candidates {
-		if running >= max {
-			break
+		switch st, ok := latest[cs]; {
+		case live[cs]:
+			skips = append(skips, Skip{Change: cs, Reason: SkipLive})
+		case held[cs]:
+			skips = append(skips, Skip{Change: cs, Reason: SkipHeld})
+		case ok && st.Ended && st.Result == run.Failed && !st.Abandoned():
+			skips = append(skips, Skip{Change: cs, Reason: SkipFailed})
+		case running >= max:
+			skips = append(skips, Skip{Change: cs, Reason: SkipNoSlot})
+		default:
+			picked = append(picked, cs)
+			running++
 		}
-		if live[cs] || held[cs] {
-			continue
-		}
-		if st, ok := latest[cs]; ok && st.Ended && st.Result == run.Failed && !st.Abandoned() {
-			continue
-		}
-		picked = append(picked, cs)
-		running++
 	}
-	return picked
+	return picked, skips
 }
 
 // Unrecorded is how long after its start a run with no process record is
