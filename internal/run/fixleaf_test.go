@@ -212,6 +212,46 @@ func TestFixLeafNoCommitFailsCycle(t *testing.T) {
 	}
 }
 
+// A leaf fixer failing every attempt of cycle 2 spends that cycle: its
+// checks fail with the fix-failed detail, no check session starts in it,
+// and cycle 3 starts a fresh first attempt that passes.
+func TestFixLeafExhaustionSpendsCycle(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	r.leaves = fixLeaves
+	a := fixLeaves[0]
+	passChecks(r, 1, threeChecks...)
+	passChecks(r, 3, "alpha")
+	r.findings[checkSID("alpha", "check", 1)] = []Finding{onLeaf(sev("f1", SeverityMajor), a)}
+	r.outcome[checkSID("alpha", "critic", 1)] = workflow.OutcomePass
+	for try := 1; try <= 1+MaxFixCycles; try++ {
+		r.outcome[leafSID("leaf-a", workflow.RoleFixer, leafFixAttempt(2, try))] = workflow.OutcomeFail
+	}
+	passFixes(r, 3, a)
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	c, _ := st.Check("review", "alpha")
+	o, _ := c.Outcome(2)
+	if o.Outcome != CheckFailed || !strings.HasPrefix(o.Detail, "cycle 2: fix failed: leaf leaf-a: fixer failed:") {
+		t.Errorf("alpha's cycle 2 outcome = %+v", o)
+	}
+	var want []string
+	for n := 2; n <= 4; n++ {
+		want = append(want, "leaf-a fixer "+strconv.Itoa(n))
+	}
+	want = append(want, "leaf-a fixer 5", "leaf-a verifier 5")
+	if !reflect.DeepEqual(leafSpecRoles(r), want) {
+		t.Errorf("leaf sessions %v, want %v", leafSpecRoles(r), want)
+	}
+	if want := []string{"alpha check 1", "beta check 1", "gamma check 1", "alpha critic 1", "alpha check 3"}; !reflect.DeepEqual(roles(r), want) {
+		t.Errorf("check sessions %v, want %v", roles(r), want)
+	}
+}
+
 // A fixed leaf's verifier that finds problems, or writes no Evidence of
 // its own, fails the cycle too.
 func TestFixLeafVerifierFailsCycle(t *testing.T) {
