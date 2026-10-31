@@ -219,6 +219,8 @@ func inboxNotice(what string, it InboxItem) string {
 		return msg
 	case InboxSignoff:
 		return what + ": a sign-off waits on you"
+	case InboxOpen:
+		return what + ": a plan run stopped for open questions"
 	case InboxFailed:
 		return what + ": a run failed"
 	case InboxSkipped:

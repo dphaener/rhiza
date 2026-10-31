@@ -1,0 +1,63 @@
+{
+  "actor": "01M69E0EH2N72SZE0S0WPSR186",
+  "after": [
+    "01M69DZM2P1R4G4MTEQA343N6N"
+  ],
+  "at": "2026-10-31T16:57:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 29339ad6 with the built binary in a scratch repo (hold workflow, no fakes): a record change set with a three-round confirmed finding left question review-01m69ea7-r3-f1; rhiza run gate printed '1 question(s) the plan left are open: - review-01m69ea7-r3-f1', a stop: line and next: rhiza run resume, exit 75. After a --record Decision answered it, run gate --json gave \"open\": [] and exit 0. In a plan run (below) the gate also listed the planner-parked question park-disk, and run gate --dry-run --json in the run worktree returned open [{handle park-disk}] with exit 0."
+        },
+        "handle": "plan-gate-open-items-qa-1",
+        "id": "01M69EAN98KZ7XYPY3KNAJH0XR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69EAN98KZ7XYPY3KNAGZQVK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69EAN98KZ7XYPY3KNAGZQVK",
+        "id": "01M69EANXJXGWET915ABJWF2ST",
+        "link": "01M69EANXJXGWET915A9V2YEQ6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857XR66P2FBADYVDRMMTWX",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 29339ad6 with the built binary on PATH in a scratch repo and bare origin, the agent, rex and gh stood in by the plan-workflow-open.txtar shell fakes: rhiza run start <rec> --workflow plan ran interview, review, critic, check, then the gate printed the open question park-disk and the run ended 'stopped' at step gate (not succeeded); no gh call was made. run status --json showed state stopped, current gate, detail 'open questions: park-disk; answer each with a Decision, then rhiza run resume <run>'; rhiza inbox listed a kind open item with next 'rhiza run resume <run>'. Resuming before answering stopped again at the gate with no gh call. After adding Decision disk-ssd answering park-disk in the planned change set, rhiza run resume printed succeeded, gh.log had exactly one 'pr create', and the inbox was empty."
+        },
+        "handle": "plan-run-stops-open-qa-1",
+        "id": "01M69EAPK7HY0PEN9R3GW082TJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69EAPK7HY0PEN9R3D1C441Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69EAPK7HY0PEN9R3D1C441Z",
+        "id": "01M69EAQ6Z0HQMJJQ06SPZWRXH",
+        "link": "01M69EAQ6Y46GW5K27QQVEFSBM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857YNN8RZG1ZHVPBF9YP4J",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M625W0AJZ6AMCCWGFXQW19FN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69EAR67FND47JRP3H6QKVHB",
+  "type": "ops",
+  "v": 1
+}

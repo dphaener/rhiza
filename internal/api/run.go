@@ -1109,8 +1109,17 @@ type stepRunner struct {
 
 // Command runs the step's command, its output copied to ctx.Stderr.
 func (r *stepRunner) Command(step workflow.Step, env []string) (int, string, error) {
-	code, err := r.sh(step.Run, env, r.ctx.Stderr)
-	return code, "", err
+	var buf bytes.Buffer
+	code, err := r.sh(step.Run, env, io.MultiWriter(r.ctx.Stderr, &buf))
+	detail := ""
+	if code == run.StopExit {
+		for _, l := range strings.Split(buf.String(), "\n") {
+			if d, ok := strings.CutPrefix(l, "stop: "); ok {
+				detail = d
+			}
+		}
+	}
+	return code, detail, err
 }
 
 // Holds runs the wait step's condition once; exit 0 means it holds.

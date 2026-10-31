@@ -94,3 +94,16 @@ func TestRegisteredWithLauncher(t *testing.T) {
 	}
 	t.Fatal("inbox is not in the launcher registry")
 }
+
+func TestViewListsOpenStop(t *testing.T) {
+	out, calls := `{"items":[
+{"id":"f6","kind":"open","change":"C6","change_title":"Six","step":"gate","detail":"open questions: park-disk"}
+]}`, 0
+	m := NewModel(fake(&out, &calls))
+	v := m.View().Content
+	for _, want := range []string{"Open questions", "Six · gate", "open questions: park-disk"} {
+		if !strings.Contains(v, want) {
+			t.Errorf("view lacks %q:\n%s", want, v)
+		}
+	}
+}
