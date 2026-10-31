@@ -9377,6 +9377,27 @@ cmp stdout describe.golden.json
             "description": "True if nothing was written or journalled",
             "type": "boolean"
           },
+          "open": {
+            "description": "Every question the plan left with no live answering Decision: the review's questions and each question node created in the plan's change sets, in order; empty when none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "handle": {
+                  "description": "Its handle, when it has one",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The question node's full ID",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "run": {
             "description": "The run's full ID",
             "type": "string"
@@ -9385,6 +9406,7 @@ cmp stdout describe.golden.json
         "required": [
           "autonomous",
           "change_sets",
+          "open",
           "run"
         ],
         "type": "object"

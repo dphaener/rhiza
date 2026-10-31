@@ -1164,8 +1164,53 @@ type RunGateResponse struct {
 	Run        string             `json:"run" desc:"The run's full ID"`
 	Autonomous bool               `json:"autonomous" desc:"True if the run is autonomous, so the gate accepted in the owner's place"`
 	ChangeSets []RunGateChangeSet `json:"change_sets" desc:"The plan's change sets: the run's change set and every change set serving an intent it adds, by ID"`
+	Open       []RunGateQuestion  `json:"open" desc:"Every question the plan left with no live answering Decision: the review's questions and each question node created in the plan's change sets, in order; empty when none"`
 	Commit     string             `json:"commit,omitempty" desc:"The commit that renders and commits .rhiza on the run's branch; absent when there was nothing to commit, or in a dry run"`
 	DryRun     bool               `json:"dry_run,omitempty" desc:"True if nothing was written or journalled"`
+}
+
+// RunGateQuestion is one question the plan left unanswered.
+type RunGateQuestion struct {
+	ID     string `json:"id" desc:"The question node's full ID"`
+	Handle string `json:"handle,omitempty" desc:"Its handle, when it has one"`
+}
+
+// gateOpenQuestions are the questions the plan left unanswered: the
+// run's review questions (reviewQuestions) and every question node a
+// plan change set's ops create, each with no live answering Decision
+// (reviewAnswered) and not retired, once each, in discovery order.
+func gateOpenQuestions(sets []changeset.ChangeSet, plan []changeset.ChangeSet, m Model, st run.State) []RunGateQuestion {
+	out := []RunGateQuestion{}
+	seen := map[id.ID]bool{}
+	consider := func(q id.ID, handle string) {
+		if seen[q] {
+			return
+		}
+		seen[q] = true
+		if n, ok := m.Node(q); ok {
+			if n.Retired {
+				return
+			}
+			if handle == "" {
+				handle = n.Handle
+			}
+		}
+		if reviewAnswered(sets, m, q) {
+			return
+		}
+		out = append(out, RunGateQuestion{ID: q.String(), Handle: handle})
+	}
+	for _, a := range reviewQuestions(st) {
+		consider(mustParseID(a.Question), a.Handle)
+	}
+	for _, c := range plan {
+		for _, o := range c.Ops {
+			if o.Type == op.TypeNodeCreate && o.Kind == op.KindQuestion {
+				consider(o.Node, o.Handle)
+			}
+		}
+	}
+	return out
 }
 
 // gateCommitMessage is the message of the commit that closes a plan run's
@@ -1210,7 +1255,7 @@ func runRunGate(ctx *Ctx, _ any) (any, error) {
 	if err != nil {
 		return nil, Errorf("%s: %v", cmd, err).WithNext("rhiza run status " + rr.id)
 	}
-	resp := RunGateResponse{Run: rr.id, Autonomous: rr.state.Autonomous, ChangeSets: make([]RunGateChangeSet, 0, len(plan)), DryRun: ctx.DryRun}
+	resp := RunGateResponse{Run: rr.id, Autonomous: rr.state.Autonomous, ChangeSets: make([]RunGateChangeSet, 0, len(plan)), Open: gateOpenQuestions(sets, plan, m, rr.state), DryRun: ctx.DryRun}
 	propose, _ := Lookup("propose")
 	ids := make([]string, 0, len(plan))
 	for _, c := range plan {
@@ -1421,6 +1466,16 @@ func (r RunGateResponse) Human(w io.Writer) {
 		fmt.Fprintln(w, s)
 		if c.Next != "" {
 			next = append(next, c.Next)
+		}
+	}
+	if len(r.Open) > 0 {
+		fmt.Fprintf(w, "\n%d question(s) the plan left are open:\n", len(r.Open))
+		for _, q := range r.Open {
+			s := "- " + q.ID
+			if q.Handle != "" {
+				s = "- " + q.Handle + " (" + q.ID + ")"
+			}
+			fmt.Fprintln(w, s)
 		}
 	}
 	if r.DryRun {
