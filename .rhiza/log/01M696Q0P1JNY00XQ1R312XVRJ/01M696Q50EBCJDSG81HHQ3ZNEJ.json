@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M696Q0P1JNY00XQ1R3ECP937"
+  ],
+  "at": "2026-10-31T14:44:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The model app's read timing waits until go test runs nothing else before timing, sharing TestReadBudget's quiet wait, instead of raising its 50 ms budget; it failed run 01M68KVFSG and CI on #129 at 50.6 ms under load",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "modelapp-timing-waits-for-quiet",
+        "id": "01M696Q1NF8JE21ZGKFSN20Y4H",
+        "key": null,
+        "kind": "decision",
+        "node": "01M696Q1NF8JE21ZGKFS160BVG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M696Q1NF8JE21ZGKFS160BVG",
+        "id": "01M696Q2D1D2KB033PVW1J1M8X",
+        "link": "01M696Q2D1D2KB033PVS65CTF7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686S7YS7Z5Z26YP3XE0CKA7",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "TestGeneratedModel in internal/tui/modelapp uses the same quiet wait as TestReadBudget (moved to a shared test helper package if needed), logs an alone after header, and still fails when the read median is 50 ms or more; go test ./... passes with the package run beside others",
+          "statement": "The model app's tree and roadmap read timing runs only once go test is running nothing else, as TestReadBudget's does, and logs how long it waited"
+        },
+        "handle": "modelapp-timing-alone",
+        "id": "01M696Q30C6Z9DX0WGCWW8M5DT",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M696Q30C6Z9DX0WGCSNDSGHQ",
+        "op": "node.create",
+        "parent": "01M62JPK2HTYRZW2PD8ZFV1JVK"
+      },
+      {
+        "decision": null,
+        "from": "01M696Q30C6Z9DX0WGCSNDSGHQ",
+        "id": "01M696Q3YQE8WJGF3SPP84X2X2",
+        "link": "01M696Q3YQE8WJGF3SPN88AT7P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M696Q1NF8JE21ZGKFS160BVG",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M696Q0P1JNY00XQ1R312XVRJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M696Q50EBCJDSG81HHQ3ZNEJ",
+  "type": "ops",
+  "v": 1
+}

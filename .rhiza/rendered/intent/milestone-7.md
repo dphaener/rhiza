@@ -25,6 +25,7 @@ The owner drives Rhiza from Rex and sees what it does: unattended failures say w
 - serves change set `01M686RVAD1EHGERBBDJN3S45G` (The roadmap app starts a plan run for a new milestone or a new change set from a typed one-line intent)
 - serves change set `01M686RW277XSQ20MYCE580GG8` (A live app shows the daemon and each live or recent run's progress, backed by a run.ls operation, and the roadmap detail refreshes its latest run)
 - serves change set `01M686RWSEKXXBCNC7RZMT07HB` (make update rebuilds rhiza in place, rewrites the Rex script and reloads Rex in one command)
+- serves change set `01M696Q0P1JNY00XQ1R312XVRJ` (The model app's read timing test waits until go test runs nothing else before it times, as TestReadBudget does, so machine load no longer fails CI or a run)
 
 ## History
 
