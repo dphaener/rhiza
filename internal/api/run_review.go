@@ -1159,7 +1159,7 @@ type RunGateChangeSet struct {
 
 // RunGateResponse is the plan's change sets after the gate. An
 // autonomous run whose review has not passed is an error (exit 1), not a
-// response.
+// response; one whose review left a question open stops (ExitCode).
 type RunGateResponse struct {
 	Run        string             `json:"run" desc:"The run's full ID"`
 	Autonomous bool               `json:"autonomous" desc:"True if the run is autonomous, so the gate accepted in the owner's place"`
@@ -1308,8 +1308,18 @@ func runRunGate(ctx *Ctx, _ any) (any, error) {
 		}
 		return resp, nil
 	}
-	if err := gateReview(sets, m, rr); err != nil {
+	reviewOpen, err := gateReview(sets, m, rr)
+	if err != nil {
 		return nil, err
+	}
+	if reviewOpen {
+		// A review question still open stops the run for the owner, as a
+		// question the planner parked does: it accepts nothing (exit
+		// run.StopExit, resp.Open names each).
+		if err := gateCommitResp(ctx, &resp, rr.change); err != nil {
+			return nil, err
+		}
+		return resp, nil
 	}
 	accept, _ := Lookup("accept")
 	for i, g := range resp.ChangeSets {
@@ -1434,37 +1444,33 @@ func reviewAnswered(sets []changeset.ChangeSet, m Model, q id.ID) bool {
 }
 
 // gateReview decides whether an autonomous run's review passed, so the
-// gate may accept. With no review round it has not. Every question the
-// review left (reviewQuestions) must be answered (reviewAnswered); one
-// open fails it, naming each. Then the latest round passes with no
-// confirmed finding, or with a question left for each confirmed one.
-func gateReview(sets []changeset.ChangeSet, m Model, rr reviewRun) error {
+// gate may accept. With no review round it has not. The latest round
+// passes with no confirmed finding, or with a question left for each
+// confirmed one. It reports whether a question the review left
+// (reviewQuestions) is still unanswered (reviewAnswered): the gate then
+// stops for the owner and accepts nothing.
+func gateReview(sets []changeset.ChangeSet, m Model, rr reviewRun) (bool, error) {
 	const cmd = "run gate"
-	next := "rhiza run status " + rr.id
 	rd, ok := rr.state.LatestRound()
 	if !ok {
-		return Errorf("%s: run %s is autonomous and has no review round, so the plan is unreviewed and it accepts nothing: rhiza run findings opens one",
+		return false, Errorf("%s: run %s is autonomous and has no review round, so the plan is unreviewed and it accepts nothing: rhiza run findings opens one",
 			cmd, rr.id).WithNext("rhiza describe run.findings")
 	}
 	asked := map[string]bool{}
-	var open []string
+	open := false
 	for _, a := range reviewQuestions(rr.state) {
 		asked[a.Handle] = true
 		if !reviewAnswered(sets, m, mustParseID(a.Question)) {
-			open = append(open, "- "+a.Handle+" ("+a.Question+")")
+			open = true
 		}
-	}
-	if len(open) > 0 {
-		return Errorf("%s: run %s is autonomous and %d question(s) from the plan review are open, so it accepts nothing until a Decision answers each:\n%s",
-			cmd, rr.id, len(open), strings.Join(open, "\n")).WithNext(next)
 	}
 	for _, f := range rd.Confirmed() {
 		if !asked[reviewQuestionHandle(rr.id, rd.Number, f.ID)] {
-			return Errorf("%s: run %s is autonomous and review round %d has confirmed finding %s with no question left for it, so the review has not passed and it accepts nothing: run rhiza run review-check",
+			return false, Errorf("%s: run %s is autonomous and review round %d has confirmed finding %s with no question left for it, so the review has not passed and it accepts nothing: run rhiza run review-check",
 				cmd, rr.id, rd.Number, f.ID).WithNext(runReviewCheckNext)
 		}
 	}
-	return nil
+	return open, nil
 }
 
 // Human reports the plan's change sets after the gate.

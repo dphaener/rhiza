@@ -120,21 +120,27 @@ stdout '^2$'
 exec sh -c 'rhiza change show $(cat $WORK/s1) --json | grep -c "\"handle\": \"$(cat $WORK/q1)\""'
 stdout '^1$'
 
-# The autonomous gate sees both open and accepts nothing.
+# The autonomous gate sees both open, accepts nothing and stops for the
+# owner (exit 75), as for a question the planner parked.
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run gate; echo exit=$?'
-stdout '^exit=1$'
-stderr '2 question\(s\) from the plan review are open'
-stderr 'review-[0-9a-z]{8}-r3-f1 \(01[0-9A-Z]{24}\)'
-stderr 'review-[0-9a-z]{8}-r3-f2 \(01[0-9A-Z]{24}\)'
+stdout '^exit=75$'
+stdout '2 question\(s\) the plan left are open'
+stdout 'review-[0-9a-z]{8}-r3-f1 \(01[0-9A-Z]{24}\)'
+stdout 'review-[0-9a-z]{8}-r3-f2 \(01[0-9A-Z]{24}\)'
+stdout 'stop: open questions: '
+stdout 'next: rhiza run resume '
+! stdout 'accepted'
+exec sh -c 'rhiza change show $(cat $WORK/s1) --json'
+! stdout '"state": "accepted"'
 
 # A Decision in the draft answers f1's; a record Decision answers f2's.
 exec sh -c 'rhiza add decision ans-1 --field "statement=Add criteria" --change $(cat $WORK/s1)'
 exec sh -c 'rhiza link ans-1 answers $(cat $WORK/q1) --change $(cat $WORK/s1)'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run gate; echo exit=$?'
-stdout '^exit=1$'
-stderr '1 question\(s\) from the plan review are open'
-stderr 'r3-f2'
-! stderr 'r3-f1'
+stdout '^exit=75$'
+stdout '1 question\(s\) the plan left are open'
+stdout 'r3-f2'
+! stdout 'r3-f1'
 exec rhiza add decision ans-2 --field 'statement=Settled' --record
 exec sh -c 'rhiza link ans-2 answers $(cat $WORK/q2) --record'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run gate --json; echo exit=$?'

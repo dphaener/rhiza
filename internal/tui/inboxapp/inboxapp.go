@@ -58,6 +58,7 @@ type TickMsg struct{}
 var groups = []struct{ kind, heading string }{
 	{api.InboxQuestion, "Questions"},
 	{api.InboxSignoff, "Sign-offs"},
+	{api.InboxOpen, "Open questions"},
 	{api.InboxFailed, "Failed runs"},
 	{api.InboxGaveUp, "Gave up"},
 	{api.InboxSkipped, "Skipped"},

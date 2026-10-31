@@ -120,7 +120,8 @@ exec sh -c 'grep -c "\"type\":\"accepted\"" .git/rhiza/runs/$(cat $WORK/runb).js
 stdout '^2$'
 
 # --- Autonomous run whose review left a question: nothing is accepted
-# and the gate names the question until the arbiter's Decision answers it.
+# and the gate stops for the owner (exit 75), naming the question, until
+# the arbiter's Decision answers it.
 exec rhiza change new 'Plan C' --kind record --title 'Plan C' --json
 exec rhiza add intent want-c
 exec rhiza add decision dec-c --field 'statement=Use C'
@@ -141,9 +142,10 @@ exec sh -c 'rhiza change new "Serve C two" --json | sed -n "s/.*\"change_set\": 
 exec sh -c 'rhiza link $(cat $WORK/c2) serves want-c'
 
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run gate; echo exit=$?'
-stdout '^exit=1$'
-stderr 'review-[0-9a-z]{8}-r3-f1 \(01[0-9A-Z]{24}\)'
-stderr 'accepts nothing'
+stdout '^exit=75$'
+stdout 'review-[0-9a-z]{8}-r3-f1 \(01[0-9A-Z]{24}\)'
+stdout 'stop: open questions: review-[0-9a-z]{8}-r3-f1'
+! stdout 'accepted'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run gate 2>&1 | grep -c "$(cat $WORK/qc)"'
 stdout '^1$'
 exec sh -c 'rhiza change show $(cat $WORK/c1) --json'
