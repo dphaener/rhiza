@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-31T04:54:15Z",
+  "body": {
+    "intent": "Plan milestone 6: Rhiza runs unattended overnight, with the run machinery fixes that needed the orchestrator's hand in milestones 4 and 5",
+    "kind": "record",
+    "sources": [],
+    "title": "Plan milestone 6"
+  },
+  "change_set": "01M684XWDT3EKJD4JPXT0JVK2M",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M684XWDT3EKJD4JPXVTYAK5J",
+  "type": "open",
+  "v": 2
+}

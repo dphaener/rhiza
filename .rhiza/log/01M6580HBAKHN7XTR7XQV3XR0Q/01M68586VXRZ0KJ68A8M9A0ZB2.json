@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6580XC7W4ZRCPMYD8V13MRM"
+  ],
+  "at": "2026-10-31T04:59:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "New tests in internal/run/fixleaf_test.go with a fake runner as in fixcs_test.go: the leaf fixer fails attempt 1 and passes attempt 2 of cycle 2 and the step passes in 2 cycles with both attempts' sessions recorded apart and the second's judgement before cycle 2's check session; the same with the verifier failing first",
+          "statement": "A failed review leaf fixer, or its verifier, is retried within its cycle as a fresh fixer and verifier attempt, up to MaxFixCycles more times, and the cycle's checks start only once every leaf fix and the change-set fixer pass"
+        },
+        "handle": "leaf-fix-retry-in-cycle",
+        "id": "01M68584KCHFKS2RDF7PVTY1XG",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M68584KCHFKS2RDF7M3E8XFG",
+        "op": "node.create",
+        "parent": "01M6506EMCPMJKKCE8B3JX16RP"
+      },
+      {
+        "decision": null,
+        "from": "01M68584KCHFKS2RDF7M3E8XFG",
+        "id": "01M685852TGW767XF5RAYS9C4N",
+        "link": "01M685852TGW767XF5RA1V02R0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68558GKQRQC5GPA82KED00Q",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test where the leaf fixer fails all attempts of cycle 2: cycle 2's check outcome starts with cycle 2: fix failed: leaf leaf-a: fixer failed:, no check session starts in cycle 2, and cycle 3 starts a fresh first attempt; TestFixLeafNoCommitFailsCycle and TestFixLeafVerifierFailsCycle are updated to the new session lists",
+          "statement": "A leaf fixer or verifier failing every attempt of a cycle spends that cycle, and its checks fail with cycle N: fix failed: leaf <handle>: ..."
+        },
+        "handle": "leaf-fix-exhaustion-spends-cycle",
+        "id": "01M68585JZBX1K2RWAK3JV7RBK",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M68585JZBX1K2RWAK29TVWSZ",
+        "op": "node.create",
+        "parent": "01M6506FZTPP6JZJBYMMPZMQFC"
+      },
+      {
+        "decision": null,
+        "from": "01M68585JZBX1K2RWAK29TVWSZ",
+        "id": "01M6858631MWG6VW955YX9GTA6",
+        "link": "01M6858631MWG6VW955VSA9C2V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68558GKQRQC5GPA82KED00Q",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6580HBAKHN7XTR7XQV3XR0Q",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M68586VXRZ0KJ68A8M9A0ZB2",
+  "type": "ops",
+  "v": 1
+}

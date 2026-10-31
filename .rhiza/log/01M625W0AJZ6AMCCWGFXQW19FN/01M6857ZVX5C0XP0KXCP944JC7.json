@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M625W0AJZ6AMCCWGFYBY4BYN"
+  ],
+  "at": "2026-10-31T04:59:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "run-gate.txtar adds a planner-written question in a draft and an unanswered review question; run gate --json names both under open, and once a Decision answers each the list is empty; describe-golden.txtar is regenerated",
+          "statement": "rhiza run gate lists every unanswered question the plan left, the review's questions and any question node created in the plan's change sets with no live answering Decision, in an open field of its response"
+        },
+        "handle": "plan-gate-open-items",
+        "id": "01M6857XR66P2FBADYVHHX10DM",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6857XR66P2FBADYVDRMMTWX",
+        "op": "node.create",
+        "parent": "01M5WSGDEE854PFE4BXJM13CWS"
+      },
+      {
+        "decision": null,
+        "from": "01M6857XR66P2FBADYVDRMMTWX",
+        "id": "01M6857Y6ZMAEFY9X69BW59Q2Q",
+        "link": "01M6857Y6ZMAEFY9X69AZXB59J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68556METCGBFBJAGBWBME44",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A new plan-workflow-open.txtar with the fake rex and claude of plan-workflow.txtar: when the planner parks a question the run does not end succeeded, no gh pr create is logged, run status and inbox --json name the question; after a Decision answers it, run resume goes on and the run succeeds; a Go test in internal/run covers the stop outcome",
+          "statement": "A plan run whose gate finds open questions does not end succeeded and opens no PR: it stops for the owner, run status and rhiza inbox name each open question and the command to resume, and resuming after they are answered goes on to ship the plan"
+        },
+        "handle": "plan-run-stops-open",
+        "id": "01M6857YNN8RZG1ZHVPCQ9VANJ",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6857YNN8RZG1ZHVPBF9YP4J",
+        "op": "node.create",
+        "parent": "01M5WSGDEE854PFE4BXJM13CWS"
+      },
+      {
+        "decision": null,
+        "from": "01M6857YNN8RZG1ZHVPBF9YP4J",
+        "id": "01M6857Z4BJYQJ4EXAKFSYAJ59",
+        "link": "01M6857Z4BJYQJ4EXAKEM8R1KV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68556METCGBFBJAGBWBME44",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M625W0AJZ6AMCCWGFXQW19FN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6857ZVX5C0XP0KXCP944JC7",
+  "type": "ops",
+  "v": 1
+}

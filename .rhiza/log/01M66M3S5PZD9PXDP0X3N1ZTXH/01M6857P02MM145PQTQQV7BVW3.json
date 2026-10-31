@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M66M3YESE5HQYMAA1YK9F7E0"
+  ],
+  "at": "2026-10-31T04:59:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A new TestStartAgent in internal/api/run_checks_panes_test.go with paneRunner calls StartAgent for a plan step after a session with block:a1 and asserts one rex split of block:a1 and no window new; with an empty session store it asserts exactly one window new; no test runs real Rex",
+          "statement": "An agent step's session, such as a plan run's interview, review or revise, splits the pane of the run's latest session with a pane, and opens a window only when it is the run's first session with a pane"
+        },
+        "handle": "agent-steps-tile-run-window",
+        "id": "01M6857JXB8B7WXBN5VHZV2EAV",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6857JXB8B7WXBN5VHE7MV1K",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "decision": null,
+        "from": "01M6857JXB8B7WXBN5VHE7MV1K",
+        "id": "01M6857KCVDVA5H8HNC9FZH4NA",
+        "link": "01M6857KCVDVA5H8HNC811B9EE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68552BM2SV1GBSKZKA3R6Q8",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests TestStartArbiterSplits and TestStartAdvisorSplits build their fixtures with a run session whose tab block is block:a1 and assert the fake rex gets split -b block:a1 and never window new; a testscript arbiter-panes-one-window.txtar runs an autonomous agent step whose fake claude asks two questions and its fake rex log matches one window new then only splits",
+          "statement": "An autonomous run's arbiter sessions and the advisor sessions opened on owner questions split a pane of the run's window, so a run with many questions opens no window for them"
+        },
+        "handle": "question-sessions-tile-run-window",
+        "id": "01M6857KVT0NRCTAY6F201C9CY",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6857KVT0NRCTAY6EZ2DH209",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "decision": null,
+        "from": "01M6857KVT0NRCTAY6EZ2DH209",
+        "id": "01M6857MBDB7CQ8JG91HXSNAQE",
+        "link": "01M6857MBDB7CQ8JG91FCF4WQT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68552BM2SV1GBSKZKA3R6Q8",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test drives an arbiter to a journalled verdict and an advisor to a journalled recommendation with a fake rex and asserts a block close of each session's pane after the journal entry; a failed or still-running arbiter's pane is not closed",
+          "statement": "An arbiter session's pane is closed once its verdict is journalled, and an advisor session's once its recommendation is, so the run window keeps only live panes"
+        },
+        "handle": "question-session-panes-close",
+        "id": "01M6857MT46BQ7E27CZQEESKGZ",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6857MT46BQ7E27CZM8H7PFP",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "decision": null,
+        "from": "01M6857MT46BQ7E27CZM8H7PFP",
+        "id": "01M6857N8XJQG597GM69XE906S",
+        "link": "01M6857N8XJQG597GM660KY4YH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68553S598D4QSXF3CCA7YHC",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M66M3S5PZD9PXDP0X3N1ZTXH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6857P02MM145PQTQQV7BVW3",
+  "type": "ops",
+  "v": 1
+}
