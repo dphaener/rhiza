@@ -200,6 +200,9 @@ func runShipLand(ctx *Ctx, _ any) (any, error) {
 	if b := strings.TrimSpace(head); b != t.branch {
 		return nil, Conflictf("ship land commits to the change set's branch %s, but %s is on %s", t.branch, ctx.Root, b)
 	}
+	if err := shipFollowPR(ctx, t); err != nil {
+		return nil, err
+	}
 
 	// In Rhiza's own repo, build the PR head first: a branch that changes
 	// rendering lands with its own, and a failed build writes nothing.
@@ -335,6 +338,46 @@ func gitHead(ctx *Ctx) (string, error) {
 		return "", Errorf("%v", err)
 	}
 	return strings.TrimSpace(out), nil
+}
+
+// shipFollowPR brings the worktree up to origin's copy of the change set's
+// branch before ship commits or pushes, for a branch someone else (the
+// orchestrator fixing a conflict, say) pushed to. When origin's branch
+// holds HEAD, or origin has no such branch, nothing changes. When it
+// contains HEAD and is ahead, a clean worktree is fast-forwarded to it; a
+// worktree with uncommitted changes is refused, naming them. When the two
+// have diverged, local commits origin lacks are refused, naming them.
+func shipFollowPR(ctx *Ctx, t shipTarget) error {
+	// A failed fetch leaves what is known; the push then says what is wrong.
+	ctx.Git("fetch", "-q", "origin")
+	out, err := ctx.Git("rev-parse", "--verify", "--quiet", "refs/remotes/origin/"+t.branch)
+	if err != nil {
+		return nil
+	}
+	remote := strings.TrimSpace(out)
+	if remote == "" {
+		return nil
+	}
+	if _, err := ctx.Git("merge-base", "--is-ancestor", remote, "HEAD"); err == nil {
+		return nil
+	}
+	if _, err := ctx.Git("merge-base", "--is-ancestor", "HEAD", remote); err != nil {
+		local, _ := ctx.Git("rev-list", "--oneline", remote+"..HEAD")
+		return Conflictf("origin's %s has commits that %s does not, and %s has local commits that origin's lacks: %s; reconcile them before shipping",
+			t.branch, ctx.Root, ctx.Root, strings.Join(gitLines(local), "; "))
+	}
+	dirty, err := ctx.Git("status", "--porcelain", "--untracked-files=no")
+	if err != nil {
+		return Errorf("%v", err)
+	}
+	if files := gitLines(dirty); len(files) > 0 {
+		return Conflictf("origin's %s has moved to %s, but %s has uncommitted changes that stop it following: %s; commit or discard them",
+			t.branch, shortSHA(remote), ctx.Root, strings.Join(files, "; "))
+	}
+	if _, err := ctx.Git("merge", "--ff-only", remote); err != nil {
+		return Errorf("%v", err)
+	}
+	return nil
 }
 
 // shipPush pushes branch when it has no upstream (setting origin's) or is

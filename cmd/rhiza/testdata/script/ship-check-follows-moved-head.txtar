@@ -1,0 +1,96 @@
+# Someone else pushes on top of the run's pushed head: ship check follows
+# that head, records it as Head and Pushed, and ship merge pins to it. A
+# head that drops the run's commits stays unsettled and names the head.
+# The fake gh answers pr view from the bare origin: PR #7 open, every
+# check passed at the branch's head on origin.
+
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+
+exec git init -q --bare origin.git
+env ORIGIN=$WORK/origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+cp $WORK/other.mod go.mod
+exec rhiza init
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+exec rhiza add capability shipping --field 'statement=Ships a change set'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+exec git checkout -q -b cs/ship-it
+cp $WORK/feature.txt feature.txt
+exec git add feature.txt
+exec git commit -qm 'Build the feature'
+exec git push -q -u origin cs/ship-it
+exec rhiza ship check
+stdout 'passed'
+exec rhiza ship land
+stdout '^Pushed [0-9a-f]{7}\.$'
+exec git rev-parse HEAD
+cp stdout $WORK/run-head.txt
+
+# A second clone pushes on top of the run's head.
+cd $WORK
+exec git clone -q origin.git second
+cd second
+exec git config user.email other@example.test
+exec git config user.name Other
+exec git checkout -q cs/ship-it
+cp $WORK/feature.txt other.txt
+exec git add other.txt
+exec git commit -qm 'Fix the conflict'
+exec git push -q origin cs/ship-it
+exec git rev-parse HEAD
+cp stdout $WORK/moved-head.txt
+
+# The run's check passes on the moved head without timing out.
+cd $WORK/repo
+exec rhiza ship check --change 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout 'passed'
+exec rhiza ship merge --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
+exec cat $WORK/moved-head.txt
+stdout '^[0-9a-f]{40}$'
+
+# A head that drops the run's commits stays unsettled.
+cd $WORK/second
+exec git reset -q --hard main
+cp $WORK/feature.txt rewritten.txt
+exec git add rewritten.txt
+exec git commit -qm 'Rewrite the branch'
+exec git push -q -f origin cs/ship-it
+cd $WORK/repo
+! exec rhiza ship check --change 01M5PWGEF85Y185JZ2ZGCNH40N --settled
+stdout 'drops the pushed'
+
+-- other.mod --
+module example.com/other
+
+go 1.25
+-- feature.txt --
+feature
+-- bin/gh --
+#!/bin/sh
+case "$1 $2" in
+"pr view")
+	if [ "$3" = 7 ]; then
+		echo '{"state":"MERGED","mergeCommit":{"oid":"fff0000aaa"}}'
+		exit 0
+	fi
+	if ! head=$(git -C "$ORIGIN" rev-parse --verify --quiet "refs/heads/$3"); then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
+	;;
+"pr merge")
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

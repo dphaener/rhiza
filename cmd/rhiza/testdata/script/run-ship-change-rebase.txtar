@@ -14,6 +14,13 @@
 # rebase is aborted, the step and the run fail, and a question in the
 # change set names the file.
 #
+# Case 3: the branch already holds a merge of main. The builder merges
+# main, which also added feature.txt, resolving the conflict; main then
+# moves with an unrelated commit. Rebasing would replay the builder's
+# commit onto it and bring the conflict back, so rhiza merges main into the
+# branch instead: no question, the earlier merge stays in the pushed
+# head's history, and the run merges.
+#
 # The fakes and the repo's review are run-ship-change.txtar's, except that
 # the builder commits feature.txt, gh finds origin from the checkout it runs
 # in, and main moves at a set point: case 1's gh pushes a prepared commit to
@@ -173,6 +180,126 @@ stdout 'feature\.txt'
 stdout 'cs/ship-two onto origin/main'
 fold-ok
 
+rm $WORK/gh.log
+rm $WORK/pr.created
+rm $WORK/other2
+rm $WORK/other
+rm $WORK/merge.sha
+
+# Case 3: a merge the branch already holds.
+cd $WORK
+exec git init -q --bare origin3.git
+mkdir repo3
+cd repo3
+exec git init -q
+exec git remote add origin $WORK/origin3.git
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability shipping --field 'statement=Ships a change set'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+
+# The builder pushes main's feature.txt from other3, then merges it.
+exec git clone -q $WORK/origin3.git $WORK/other3
+cd $WORK/other3
+exec sh -c 'echo theirs > feature.txt'
+exec git add feature.txt
+exec git commit -qm 'Add a feature on main'
+# The fake gh moves main again, from other, once CI has seen the land commit.
+exec git clone -q $WORK/origin3.git $WORK/other
+cd $WORK/other
+exec sh -c 'echo unrelated > unrelated.txt'
+exec git add unrelated.txt
+exec git commit -qm 'Add something unrelated'
+cd $WORK/repo3
+exec touch $WORK/merge-in-build
+exec touch $WORK/move-main
+
+exec sh -c 'rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+stdout '"signoff_waiting": true'
+exec sh -c 'rhiza run approve; echo exit=$?'
+stdout '^exit=0$'
+stdout '^Run \S+ succeeded$'
+stderr '^Rebased cs/ship-it onto origin/main at [0-9a-f]{7}\.$'
+! exists $WORK/move-main
+! stderr 'Raised question'
+
+exec rhiza run status
+stdout '^- rebase-merge \(visit 1\): pass, then wait-rebased-merge: exit 0$'
+stdout '^- merge \(visit 1\): pass, then wait-main: exit 0$'
+
+# The pushed head holds main's new commit and still has the builder's
+# merge of main in its history.
+exec sh -c 'git -C $WORK/origin3.git merge-base --is-ancestor $(cat $WORK/other.sha) $(cat $WORK/landed.sha) && echo moved'
+stdout '^moved$'
+exec sh -c 'git -C $WORK/origin3.git merge-base --is-ancestor $(cat $WORK/builder-merge.sha) $(cat $WORK/landed.sha) && echo kept'
+stdout '^kept$'
+exec sh -c 'test "$(cat $WORK/landed.sha)" != "$(cat $WORK/before.sha)" && echo moved'
+stdout '^moved$'
+exec rhiza ls --kind question --json
+! stdout 'rebase-conflict'
+fold-ok
+
+rm $WORK/gh.log
+rm $WORK/pr.created
+rm $WORK/other3
+rm $WORK/other
+rm $WORK/merge.sha
+rm $WORK/builder-merge.sha
+
+# Case 4: as case 3, but main's new commit changes feature.txt again, so
+# the merge of main conflicts outside the rendered files: the question is
+# raised and the step fails.
+cd $WORK
+exec git init -q --bare origin4.git
+mkdir repo4
+cd repo4
+exec git init -q
+exec git remote add origin $WORK/origin4.git
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+exec rhiza add capability shipping --field 'statement=Ships a change set'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+exec git clone -q $WORK/origin4.git $WORK/other3
+cd $WORK/other3
+exec sh -c 'echo theirs > feature.txt'
+exec git add feature.txt
+exec git commit -qm 'Add a feature on main'
+exec git push -q origin HEAD:main
+exec git clone -q $WORK/origin4.git $WORK/other
+cd $WORK/other
+exec sh -c 'echo again > feature.txt'
+exec git commit -qam 'Change the feature again'
+cd $WORK/repo4
+exec touch $WORK/move-main
+
+exec rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json
+stdout '"signoff_waiting": true'
+! exec rhiza run approve
+stdout '^Run \S+ failed$'
+stdout '^- Detail: step "rebase-merge" ended with outcome "fail"$'
+stderr '^- feature\.txt$'
+stderr '^Raised question rebase-conflict-ship-it\.$'
+exec rhiza run status
+stdout '^- rebase-merge \(visit 1\): fail, then end: exit 1$'
+! grep '^pr merge' $WORK/gh.log
+cd $WORK/repo4.ship-it
+exec git status
+! stdout 'rebase|merge'
+fold-ok
+
 -- review.toml --
 # The repo's own review, as the built-in one but with two fake checks and
 # no code step: run-ship-change.txtar runs the code step after the render.
@@ -228,7 +355,15 @@ builder)
 	git commit -q -m "build $RHIZA_LEAF" -m "Change: $RHIZA_CHANGE
 Actor: $RHIZA_ACTOR
 Leaf: $RHIZA_LEAF" -- feature.txt || exit 1
-	if [ -d "$WORK/other2" ]; then
+	if [ -f "$WORK/merge-in-build" ]; then
+		git -C "$WORK/other3" push -q origin HEAD:main || exit 1
+		git fetch -q origin || exit 1
+		git merge -q --no-edit origin/main >&2 || true
+		echo built > feature.txt
+		git add feature.txt
+		git commit -q --no-edit || exit 1
+		git rev-parse HEAD > "$WORK/builder-merge.sha"
+	elif [ -d "$WORK/other2" ]; then
 		git -C "$WORK/other2" push -q origin HEAD:main || exit 1
 	fi
 	;;
@@ -258,6 +393,9 @@ case "$1 $2" in
 	fi
 	# Case 1: main moves once CI has seen the land commit.
 	if [ -f "$WORK/move-main" ] && [ "$(git -C "$o" log -1 --format=%s "$head")" = "Land the change set and record its CI" ]; then
+		if [ -f "$WORK/merge-in-build" ]; then
+			git -C "$WORK/other" pull -q --rebase origin main || exit 1
+		fi
 		git -C "$WORK/other" push -q origin HEAD:main || exit 1
 		git -C "$WORK/other" rev-parse HEAD > "$WORK/other.sha"
 		echo "$head" > "$WORK/before.sha"

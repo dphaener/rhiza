@@ -390,8 +390,17 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 			return resp, nil
 		}
 		if st.Pushed != "" && v.Head != st.Pushed {
-			resp.Detail = fmt.Sprintf("not settled: the pull request's head is %s, not the pushed %s yet", shortSHA(v.Head), shortSHA(st.Pushed))
-			return resp, nil
+			// Someone else may have pushed on top of the run's head:
+			// follow a head that contains the pushed one.
+			if shipHeadHolds(ctx, t, v.Head, st.Pushed) {
+				st.Pushed = v.Head
+			} else if shipHeadHolds(ctx, t, st.Pushed, v.Head) {
+				resp.Detail = fmt.Sprintf("not settled: the pull request's head is %s, not the pushed %s yet", shortSHA(v.Head), shortSHA(st.Pushed))
+				return resp, nil
+			} else {
+				resp.Detail = fmt.Sprintf("not settled: the pull request's head %s drops the pushed %s", shortSHA(v.Head), shortSHA(st.Pushed))
+				return resp, nil
+			}
 		}
 	}
 	resp.Settled, resp.Green, resp.Failed = checksVerdict(resp.Checks)
@@ -419,6 +428,17 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 	}
 	resp.Written = true
 	return resp, nil
+}
+
+// shipHeadHolds reports whether commit anc is an ancestor of (or equal to)
+// desc, after fetching the branch so a head pushed from elsewhere is
+// known locally. Any git failure counts as not holding.
+func shipHeadHolds(ctx *Ctx, t shipTarget, desc, anc string) bool {
+	if _, err := gitAt(ctx, t.dir(), "fetch", "-q", "origin", t.branch); err != nil {
+		return false
+	}
+	_, err := gitAt(ctx, t.dir(), "merge-base", "--is-ancestor", anc, desc)
+	return err == nil
 }
 
 // notSettled says why checks are not settled.

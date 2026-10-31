@@ -107,7 +107,9 @@ func (f *fakeGH) run(name string, args []string, dir string, _ []string) ([]byte
 	k := strings.Join(args, " ")
 	f.calls = append(f.calls, name+" "+k)
 	f.dirs = append(f.dirs, dir)
-	if name != "gh" {
+	if name == "git" {
+		k = "git " + k
+	} else if name != "gh" {
 		return nil, errors.New("not gh")
 	}
 	a, ok := f.answers[k]
@@ -702,6 +704,8 @@ func TestShipCheckWaitsForPushedHead(t *testing.T) {
 	if err := writeShipState(state, shipState{PR: 7, Head: "0ld0000000", Pushed: "abc1234def"}); err != nil {
 		t.Fatal(err)
 	}
+	g.answers["git fetch -q origin cs/ship-it"] = ""
+	g.answers["git merge-base --is-ancestor 0ld0000000 abc1234def"] = ""
 	g.answers[shipPRView] = strings.Replace(openPR(greenRollup), "abc1234def", "0ld0000000", 1)
 	if r := shipCheck(t, f, `{"settled":true}`); r.Passed || r.Settled || !strings.Contains(r.Detail, "not the pushed abc1234") {
 		t.Errorf("old head: %+v", r)
@@ -712,6 +716,41 @@ func TestShipCheckWaitsForPushedHead(t *testing.T) {
 	}
 	if st, _ := readShipState(state); st.Head != "abc1234def" {
 		t.Errorf("state = %+v", st)
+	}
+}
+
+// A head someone else pushed on top of the run's is followed; one that
+// drops the run's commits stays unsettled and is named.
+func TestShipCheckFollowsMovedHead(t *testing.T) {
+	f, g, state := shipFixture(t)
+	if err := writeShipState(state, shipState{PR: 7, Head: "0ld0000000", Pushed: "0ld0000000"}); err != nil {
+		t.Fatal(err)
+	}
+	g.answers["git fetch -q origin cs/ship-it"] = ""
+	g.answers[shipPRView] = openPR(greenRollup)
+
+	if r := shipCheck(t, f, `{"settled":true}`); r.Passed || r.Settled || !strings.Contains(r.Detail, "drops the pushed 0ld0000") || !strings.Contains(r.Detail, "abc1234") {
+		t.Errorf("dropped head: %+v", r)
+	}
+	g.answers["git merge-base --is-ancestor 0ld0000000 abc1234def"] = ""
+	if r := shipCheck(t, f, `{"settled":true}`); !r.Passed || !r.Settled || r.Written {
+		t.Errorf("settled on a followed head: %+v", r)
+	}
+	if r := shipCheck(t, f, `{}`); !r.Passed || !r.Written {
+		t.Errorf("followed head: %+v", r)
+	}
+	st, _ := readShipState(state)
+	if st.Head != "abc1234def" || st.Pushed != "abc1234def" {
+		t.Errorf("state = %+v", st)
+	}
+	g.answers[shipMergeArg] = ""
+	g.answers[shipMergedPR] = `{"state":"MERGED","mergeCommit":{"oid":"fff0000aaa"}}`
+	resp, err := callOp(t, f.ctx, "ship.merge", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m := resp.(ShipMergeResponse); m.Head != "abc1234def" {
+		t.Errorf("merge = %+v", m)
 	}
 }
 
@@ -1033,10 +1072,11 @@ func shipRebaseFixture(t *testing.T) (*sessionFixture, string) {
 		"rev-parse --verify --quiet refs/remotes/origin/main":       rebaseOnto + "\n",
 		"rev-parse --verify --quiet refs/remotes/origin/cs/ship-it": rebaseOrigin + "\n",
 		"merge-base --is-ancestor " + rebaseOrigin + " HEAD":        "",
-		"rev-parse HEAD":                               "beef000111\n",
-		"rebase --abort":                               "",
-		"add -A -- " + renderedSpec:                    "",
-		"diff --cached --name-only -- " + renderedSpec: "",
+		"rev-parse HEAD": "beef000111\n",
+		"rebase --abort": "",
+		"rev-list --merges --count " + rebaseOnto + "..HEAD":                  "0\n",
+		"add -A -- " + renderedSpec:                                           "",
+		"diff --cached --name-only -- " + renderedSpec:                        "",
 		"rm -q -f --ignore-unmatch -- :(top,literal).rhiza/rendered/index.md": "",
 	} {
 		f.git.out[k] = v
@@ -1206,4 +1246,56 @@ func TestShipRebaseRefusals(t *testing.T) {
 	f.ctx.DryRun = true
 	_, err = callOp(t, f.ctx, "ship.rebase", `{}`)
 	wantExit(t, err, 2)
+}
+
+// shipFollowFixture is a rebase fixture whose origin branch holds more
+// than HEAD: origin's branch is not an ancestor of HEAD, and HEAD is an
+// ancestor of it.
+func shipFollowFixture(t *testing.T) *sessionFixture {
+	t.Helper()
+	f, _ := shipRebaseFixture(t)
+	delete(f.git.out, "merge-base --is-ancestor "+rebaseOrigin+" HEAD")
+	f.git.out["merge-base --is-ancestor HEAD "+rebaseOrigin] = ""
+	return f
+}
+
+func TestShipFollowFastForwards(t *testing.T) {
+	f := shipFollowFixture(t)
+	f.git.out["status --porcelain --untracked-files=no"] = ""
+	f.git.out["merge --ff-only "+rebaseOrigin] = ""
+	// The fake cannot show origin's branch now held by HEAD, so the
+	// rebase that follows stops; the fast-forward is what matters.
+	callOp(t, f.ctx, "ship.rebase", `{}`)
+	if !slices.Contains(f.git.calls, "merge --ff-only "+rebaseOrigin) {
+		t.Errorf("no fast-forward; calls %q", f.git.calls)
+	}
+}
+
+func TestShipFollowRefusesDirtyWorktree(t *testing.T) {
+	f := shipFollowFixture(t)
+	f.git.out["status --porcelain --untracked-files=no"] = " M feature.txt\n"
+	_, err := callOp(t, f.ctx, "ship.rebase", `{}`)
+	if err == nil || !strings.Contains(err.Error(), "feature.txt") || !strings.Contains(err.Error(), "uncommitted") {
+		t.Fatalf("err = %v", err)
+	}
+	for _, c := range f.git.calls {
+		if strings.HasPrefix(c, "merge ") || strings.HasPrefix(c, "reset") || strings.HasPrefix(c, "push") {
+			t.Errorf("git call %q moved the worktree", c)
+		}
+	}
+}
+
+func TestShipFollowRefusesLocalCommits(t *testing.T) {
+	f := shipFollowFixture(t)
+	delete(f.git.out, "merge-base --is-ancestor HEAD "+rebaseOrigin)
+	f.git.out["rev-list --oneline "+rebaseOrigin+"..HEAD"] = "abc1234 Local only commit\n"
+	_, err := callOp(t, f.ctx, "ship.rebase", `{}`)
+	if err == nil || !strings.Contains(err.Error(), "Local only commit") {
+		t.Fatalf("err = %v", err)
+	}
+	for _, c := range f.git.calls {
+		if strings.HasPrefix(c, "merge ") || strings.HasPrefix(c, "reset") || strings.HasPrefix(c, "push") {
+			t.Errorf("git call %q moved the worktree", c)
+		}
+	}
 }

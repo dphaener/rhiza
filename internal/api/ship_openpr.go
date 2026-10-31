@@ -87,6 +87,9 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 	if b := strings.TrimSpace(head); b != t.branch {
 		return nil, Conflictf("ship open-pr pushes the change set's branch %s, but %s is on %s", t.branch, ctx.Root, b)
 	}
+	if err := shipFollowPR(ctx, t); err != nil {
+		return nil, err
+	}
 	sha, err := gitHead(ctx)
 	if err != nil {
 		return nil, err
