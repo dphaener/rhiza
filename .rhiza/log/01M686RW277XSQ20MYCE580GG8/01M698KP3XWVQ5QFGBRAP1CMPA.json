@@ -1,0 +1,40 @@
+{
+  "actor": "01M697YX1GRP7FGTNBY06DNMBR",
+  "after": [
+    "01M698HVV9TK3SE2YXQ3H70PMB"
+  ],
+  "at": "2026-10-31T15:17:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 85f19c7 ran go test ./internal/tui/liveapp -run TestEnter -v -count=1: TestEnterFocusesLiveRunTab and TestEnterOnFinishedRunCallsNothing PASS. With a fake runner, enter on live row C2 calls run.open once with [C2]; opened:true shows 'Focused Rex tab block:b1 of run R2'; tab_gone:true shows 'The tab of run R2 is gone'; enter on the finished run R1 makes no run.open call and shows 'is not live'. Read the diff: focus() in internal/tui/liveapp/liveapp.go returns before calling the runner when the row is not Live, and decodes api.RunOpenResponse; cmd/rhiza/tui.go wires the runner to the real api call. go test ./..., gofmt check and go vet pass (one earlier make test run failed only the read-timing budget under load, passing on re-run); make self-check reports only stale rendered actor files and index from the run, not this leaf."
+        },
+        "handle": "live-app-focus-verified",
+        "id": "01M698KMENB5ZM3HA6XXYTF9C1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M698KMENB5ZM3HA6XV2ECBB9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M698KMENB5ZM3HA6XV2ECBB9",
+        "id": "01M698KN379KCT7ZNPYRRY5B61",
+        "link": "01M698KN379KCT7ZNPYPYRRCGT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686VAPN2NBZCGV4T968DYTD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RW277XSQ20MYCE580GG8",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M698KP3XWVQ5QFGBRAP1CMPA",
+  "type": "ops",
+  "v": 1
+}
