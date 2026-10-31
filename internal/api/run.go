@@ -1107,10 +1107,57 @@ type stepRunner struct {
 	sessions   *session.Store
 }
 
-// Command runs the step's command, its output copied to ctx.Stderr.
+// Command runs the step's command, its standard output and error
+// interleaved and copied to ctx.Stderr. When it exits non-zero the detail is
+// the tail of that output (see outputTail).
 func (r *stepRunner) Command(step workflow.Step, env []string) (int, string, error) {
-	code, err := r.sh(step.Run, env, r.ctx.Stderr)
-	return code, "", err
+	tail := &tailWriter{}
+	code, err := r.sh("exec 2>&1\n"+step.Run, env, io.MultiWriter(r.ctx.Stderr, tail))
+	if err != nil || code == 0 {
+		return code, "", err
+	}
+	return code, tail.String(), nil
+}
+
+// Caps of a failed command step's kept output.
+const (
+	stepTailLines = 20
+	stepTailBytes = 2048
+)
+
+// tailWriter keeps the last stepTailBytes of what is written to it.
+type tailWriter struct {
+	buf []byte
+	cut bool
+}
+
+func (t *tailWriter) Write(p []byte) (int, error) {
+	t.buf = append(t.buf, p...)
+	if over := len(t.buf) - stepTailBytes; over > 0 {
+		t.buf = append(t.buf[:0], t.buf[over:]...)
+		t.cut = true
+	}
+	return len(p), nil
+}
+
+// String is the kept output: at most stepTailLines whole lines and
+// stepTailBytes bytes, cut on a UTF-8 boundary, without trailing newlines.
+func (t *tailWriter) String() string {
+	b := t.buf
+	for len(b) > 0 && !utf8.RuneStart(b[0]) {
+		b = b[1:]
+	}
+	s := strings.TrimRight(string(b), "\r\n")
+	lines := strings.Split(s, "\n")
+	// A buffer cut mid-line starts with a partial line; drop it unless
+	// it is all there is.
+	if t.cut && len(lines) > 1 {
+		lines = lines[1:]
+	}
+	if len(lines) > stepTailLines {
+		lines = lines[len(lines)-stepTailLines:]
+	}
+	return strings.Join(lines, "\n")
 }
 
 // Holds runs the wait step's condition once; exit 0 means it holds.
