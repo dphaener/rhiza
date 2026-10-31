@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-31T04:54:17Z",
+  "body": {
+    "intent": "When a run's PR branch is updated by someone other than the run, such as the orchestrator fixing a conflict, the run's wait-pr, rebase and rebase-merge steps follow the new head instead of stalling until wait-pr's timeout or failing",
+    "kind": "intention",
+    "sources": [],
+    "title": "Runs follow a moved PR head"
+  },
+  "change_set": "01M684XYB96R52XXCKMV80X5T1",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M684XYB96R52XXCKMWV028V3",
+  "type": "open",
+  "v": 2
+}

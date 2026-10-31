@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M625RCFY4RB9HC0B6DQXTCH4"
+  ],
+  "at": "2026-10-31T04:59:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "plan-workflow.txtar, changed from its old expectation of changes only under .rhiza/, asserts that after the run git status --porcelain in the worktree is empty, rhiza check passes there, and the last commit is the render commit carrying Change: and Actor: trailers",
+          "statement": "After its gate a plan run renders and commits .rhiza/rendered and every .rhiza/log entry the run wrote on its branch, with Change: and Actor: trailers, so the branch passes rhiza check; a run with nothing to render adds no commit"
+        },
+        "handle": "plan-run-renders-branch",
+        "id": "01M6857SSEWGCV5WVPMJ6RXTQ1",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M6857SSEWGCV5WVPMG1VCH6A",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M6857SSEWGCV5WVPMG1VCH6A",
+        "id": "01M6857T86CYFXQ7NNTHVF4RDD",
+        "link": "01M6857T86CYFXQ7NNTE40CAMK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68555Q989EZZN42FPMGG5S5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A new plan-workflow-pr.txtar with a bare origin.git and a fake gh, as run-ship-change.txtar has, asserts gh.log holds one pr create with the change set's title, the body file holds the round and finding lines, origin has the branch head and the ship state records the PR number; a Go test shows ship open-pr still refuses a plan run with no review round",
+          "statement": "A plan run pushes its branch and opens a pull request titled by the change set, its body a plan summary of the review rounds, confirmed and dropped findings, questions and the gate's moves; a second visit pushes and replaces the body"
+        },
+        "handle": "plan-run-opens-pr",
+        "id": "01M6857TPTS3BZMRX3S5A45GR0",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M6857TPTS3BZMRX3S51FBSXT",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M6857TPTS3BZMRX3S51FBSXT",
+        "id": "01M6857V5VWAHC4SAQ5Y8HM5T7",
+        "link": "01M6857V5VWAHC4SAQ5V8VYAH7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68555Q989EZZN42FPMGG5S5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "plan-workflow-pr.txtar continues: with the fake gh reporting green checks the run merges with --match-head-commit, the change set's state is unchanged by the run, the branch and worktree are gone, and a following ship-change on the change set calls gh pr merge (AlreadyMerged false); a Go test in internal/api/ship_test.go starts from a ship state holding a plan's merge commit and shows open-pr then merge still merge",
+          "statement": "A plan run waits for its PR's CI, merges it pinned to the checked head without landing the change set, then closes out the branch and worktree and clears its ship state, so a later ship run on the same change set opens and merges its own PR"
+        },
+        "handle": "plan-run-merges-closes-out",
+        "id": "01M6857VP1T62T5SQHWEGNCXTE",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M6857VP1T62T5SQHWD7R38F6",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M6857VP1T62T5SQHWD7R38F6",
+        "id": "01M6857W637H99SMGS9357DKDW",
+        "link": "01M6857W637H99SMGS92RH1SQM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68555Q989EZZN42FPMGG5S5",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M625RCFY4RB9HC0B69Y08VFV",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6857WZA4NTEZG219BPHWVTH",
+  "type": "ops",
+  "v": 1
+}

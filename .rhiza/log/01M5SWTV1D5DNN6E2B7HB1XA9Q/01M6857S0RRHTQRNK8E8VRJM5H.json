@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5SWTVWT0T5ZCPJ8RD1VDFV0"
+  ],
+  "at": "2026-10-31T04:59:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "link.txtar checks rhiza link store serves log --json, with --record and with --dry-run, each exits 2 with code usage and the message link type \"serves\" does not go from capability to capability; a change set serving a capability is refused and a change set serving an intent succeeds; an apply.txtar case with one bad link item refuses the whole apply and adds no entry; a Go table test shows buildLink agrees with check.Allowed for every type and end kinds; existing scripts that wrote bad links are changed to valid ones",
+          "statement": "rhiza link, apply link items and --record links refuse a link whose type does not go from its from-end's kind to its to-end's kind, by the endpoint table rhiza check uses, as a usage error naming both kinds and writing nothing"
+        },
+        "handle": "link-write-checks-endpoint-kinds",
+        "id": "01M6857PTDC3M6J8MAWXRYY1F8",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6857PTDC3M6J8MAWWXFF0ZS",
+        "op": "node.create",
+        "parent": "01M5SWRWAHY54EYFTW9M7RVNYV"
+      },
+      {
+        "decision": null,
+        "from": "01M6857PTDC3M6J8MAWWXFF0ZS",
+        "id": "01M6857QAEY1CAFX0YXFVDRZWN",
+        "link": "01M6857QAEY1CAFX0YXCB0CTV7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68554SECVBJ0MMZ3G16093F",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "check.txtar writes a log entry file holding a verifies link from an intent to a capability in an open change set; rhiza check exits 0 and prints warn in-flight change set <id>, op <id>, link <id>: link type \"verifies\" does not go from intent to capability; a withdrawn change set holding the same link gives no warning",
+          "statement": "rhiza check warns, rule in-flight, on a link with bad endpoint kinds that is only in a draft, proposed or accepted change set, naming the change set, op and link, so a bad link written by hand or by an older binary shows before it lands"
+        },
+        "handle": "check-warns-in-flight-link-kinds",
+        "id": "01M6857QTJSC1V4R4FRGAFHEW3",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6857QTJSC1V4R4FRDD8ZX3X",
+        "op": "node.create",
+        "parent": "01M5SWSJ0K067EMGMKBTA224AY"
+      },
+      {
+        "decision": null,
+        "from": "01M6857QTJSC1V4R4FRDD8ZX3X",
+        "id": "01M6857R9NZTMNVEQHEKQKN3HG",
+        "link": "01M6857R9NZTMNVEQHEKCXFH63",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68554SECVBJ0MMZ3G16093F",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWTV1D5DNN6E2B7HB1XA9Q",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6857S0RRHTQRNK8E8VRJM5H",
+  "type": "ops",
+  "v": 1
+}

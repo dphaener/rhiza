@@ -1,0 +1,97 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6489SKXN33S7W3F7CPE8448"
+  ],
+  "at": "2026-10-31T04:59:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript runs ! exec rhiza tui launch and checks stderr has usage: rhiza tui app <name> and the exit code is 2",
+          "statement": "rhiza tui launch is no command: it exits 2 with the rhiza tui app <name> usage and opens no picker"
+        },
+        "handle": "tui-launch-usage",
+        "id": "01M68587MGRTB20J74QSYP5BZ7",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M68587MGRTB20J74QQF0AZS6",
+        "op": "node.create",
+        "parent": "01M644QW8GJBD8KTJ8Q00MMNYY"
+      },
+      {
+        "decision": null,
+        "from": "01M68587MGRTB20J74QQF0AZS6",
+        "id": "01M68588378XB0C54AHQ07HAQV",
+        "link": "01M68588378XB0C54AHMWT9X4R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68559GND84707RTR972M34B",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "rex-install.txtar checks the new wording and ! stdout quick-launch; describe-golden.txtar is regenerated and holds no quick-launch",
+          "statement": "rhiza rex install and rex uninstall describe the script as Rhiza's app actions and key mode, not a quick-launch script, in their summaries, request docs and output"
+        },
+        "handle": "rex-install-app-actions-wording",
+        "id": "01M68588HZM6S37NDTQM2PERJ8",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M68588HZM6S37NDTQKR5NK5B",
+        "op": "node.create",
+        "parent": "01M62JP4KDNBZKH1YT5NZRB347"
+      },
+      {
+        "decision": null,
+        "from": "01M68588HZM6S37NDTQKR5NK5B",
+        "id": "01M685890R11WSVKG3T3H7EN7K",
+        "link": "01M685890R11WSVKG3T15HHXXJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68559GND84707RTR972M34B",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M62JP9RTA2QHK5B6A76AD9ZF",
+        "handle": null,
+        "id": "01M68589FFNQ5GR0XWRTESZCVW",
+        "node": "01M62JP9RTA2QHK5B6A53852M8",
+        "op": "node.update",
+        "set": {
+          "acceptance": "For each of the four commands, a testscript on a fixture model checks the app's result equals the command's --json output, and the test starts no daemon and binds no socket",
+          "statement": "ready, show, why and slice run as apps that call the internal/api registry in-process and show the same result as the matching rhiza command --json"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M62JMJESD5MBJG9EEHXNZTB9",
+        "handle": null,
+        "id": "01M68589YZ5Y8MVQGCEV1EX85T",
+        "node": "01M62JMJESD5MBJG9EEEMQ6207",
+        "op": "node.update",
+        "set": {
+          "statement": "ready, show, why and slice run as apps and show the same result as the matching rhiza command --json"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M62JMHXNM6W4XBGP890GA3F2",
+        "handle": null,
+        "id": "01M6858AF7VP4MTDZHGMF67EC3",
+        "node": "01M62JMHXNM6W4XBGP85W06YY8",
+        "op": "node.update",
+        "set": {
+          "statement": "rhiza rex install writes Rhiza's app actions and key mode as a Lua script into the Rex config and reloads Rex, and a second run leaves the owner's own config untouched"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6489HCR688XKH99YV9E2VGY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6858B8SC829PH5DVJNYZ3TZ",
+  "type": "ops",
+  "v": 1
+}

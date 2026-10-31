@@ -1,0 +1,224 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M684XXQ70WA2J28N6YQBKKW3"
+  ],
+  "at": "2026-10-31T04:58:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "6",
+          "statement": "Rhiza runs unattended overnight: the daemon builds, reviews, lands and merges accepted change sets, and plans its own PRs, without the orchestrator committing, rebasing, fixing ship records or closing windows by hand"
+        },
+        "handle": "milestone-6",
+        "id": "01M68551X2HM0EB0AY4767DVJ2",
+        "key": "zw",
+        "kind": "intent",
+        "node": "01M68551X2HM0EB0AY469DXYY9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "Milestone 6 is the run-machinery fixes that needed the orchestrator's hand in milestones 4 and 5: tiled agent, arbiter and advisor sessions; link kinds checked at write; plan runs shipping their plan; runs following a moved PR head; plan runs stopping on open findings; leaf fixers retried within their cycle; and housekeeping",
+          "wording": "Tiled agent sessions, Link kinds checked at write, Plan run ships its plan, Runs follow a moved PR head (all recommended), plus Plan run open findings, Failed fixer retried in cycle and Housekeeping, the agent's options, picked by the owner"
+        },
+        "handle": "m6-overnight-batch",
+        "id": "01M68552BM2SV1GBSKZQ19JFYD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M68552BM2SV1GBSKZKA3R6Q8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68552BM2SV1GBSKZKA3R6Q8",
+        "id": "01M68552T7WYKSBHF56GAV36QP",
+        "link": "01M68552T7WYKSBHF56ENGVJ93",
+        "note": "",
+        "op": "link.create",
+        "to": "01M684XX7XKGDG3JMKKBFQ8SEV",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M68551X2HM0EB0AY469DXYY9",
+        "id": "01M6855395JCNPGYGSAYAJ4ZBN",
+        "link": "01M6855395JCNPGYGSATS9CY4S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68552BM2SV1GBSKZKA3R6Q8",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "An arbiter session's pane closes once its verdict is journalled, and an advisor's once its recommendation is, so one run window does not fill with ever smaller panes",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "question-panes-close-after-verdict",
+        "id": "01M68553S598D4QSXF3F4034AS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M68553S598D4QSXF3CCA7YHC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68553S598D4QSXF3CCA7YHC",
+        "id": "01M6855495G2B2JK6CM5GMY2HW",
+        "link": "01M6855495G2B2JK6CM2Y2YNKP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M684XX7XKGDG3JMKKBFQ8SEV",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A link write whose type does not go between its ends' kinds is refused as a usage error, with no way past it, using the same endpoint table rhiza check uses; the kind check comes after the note and decision checks, so their messages keep precedence",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "link-kinds-refused-at-write",
+        "id": "01M68554SECVBJ0MMZ3KK5P702",
+        "key": null,
+        "kind": "decision",
+        "node": "01M68554SECVBJ0MMZ3G16093F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68554SECVBJ0MMZ3G16093F",
+        "id": "01M685558JFY3JNJZ9PCET8ZKC",
+        "link": "01M685558JFY3JNJZ9P9XW9TT2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M684XX7XKGDG3JMKKBFQ8SEV",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A plan run ships its plan as ship-change ships code, minus landing: it renders and commits, opens the PR, waits for green CI, merges it and closes out the branch and worktree; it never lands the change set, whose acceptance stays the owner's gate",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "plan-pr-merges-without-landing",
+        "id": "01M68555Q989EZZN42FTBV8N7F",
+        "key": null,
+        "kind": "decision",
+        "node": "01M68555Q989EZZN42FPMGG5S5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68555Q989EZZN42FPMGG5S5",
+        "id": "01M685565XR4PTTD4E0M1ZRH74",
+        "link": "01M685565XR4PTTD4E0H5Z3Z00",
+        "note": "",
+        "op": "link.create",
+        "to": "01M684XX7XKGDG3JMKKBFQ8SEV",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A plan run whose gate finds unanswered questions stops for the owner before any PR step, listing them in run status and the inbox; once they are answered, resuming goes on to ship the plan",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "plan-stops-before-pr-on-open-items",
+        "id": "01M68556METCGBFBJAGENN7JMS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M68556METCGBFBJAGBWBME44",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68556METCGBFBJAGBWBME44",
+        "id": "01M685572Z9VWB1E2HT1XTJJP7",
+        "link": "01M685572Z9VWB1E2HSY9MN38E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M684XX7XKGDG3JMKKBFQ8SEV",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A run follows a PR head it did not push only when that head contains the head the run pushed; a head that drops the run's commits stops with a question; ship check only adopts the head, and the write steps fast-forward a clean worktree to it, refusing one with uncommitted changes or local commits the head lacks; a branch that holds a merge of main is merged with main again rather than rebased",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "follow-head-only-when-it-contains-pushed",
+        "id": "01M68557HN470AVYK4NSERGPSQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M68557HN470AVYK4NQC26BRH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68557HN470AVYK4NQC26BRH",
+        "id": "01M685580JZN7B0CXPMQRYMAGC",
+        "link": "01M685580JZN7B0CXPMN8X80VC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M684XX7XKGDG3JMKKBFQ8SEV",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A failed review leaf fixer or verifier is retried within its cycle as a fresh fixer and verifier attempt, with the change-set fixer's budget (MaxFixCycles more attempts), each attempt keyed apart from the others",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "leaf-fix-retry-fresh-attempt",
+        "id": "01M68558GKQRQC5GPA84P11P2D",
+        "key": null,
+        "kind": "decision",
+        "node": "01M68558GKQRQC5GPA82KED00Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68558GKQRQC5GPA82KED00Q",
+        "id": "01M685590QFDEV0MHP33BNJRKZ",
+        "link": "01M685590QFDEV0MHP30S4R6X6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M684XX7XKGDG3JMKKBFQ8SEV",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Housekeeping is one change set, 01M6489HCR: the picker is already gone (PR #77), so it adds a regression test for rhiza tui launch and drops the quick-launch wording, and it rewrites the stale statements of read-apps-match-cli (ready, show, why and slice only), tui-read-apps and tui-install-script; the duplicate picker draft 01M6489G9T and draft 01M676WQ33 are withdrawn into it",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "m6-housekeeping-folded",
+        "id": "01M68559GND84707RTR9N12YEY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M68559GND84707RTR972M34B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68559GND84707RTR972M34B",
+        "id": "01M6855A0CNBRNYS4JRX51AJZP",
+        "link": "01M6855A0CNBRNYS4JRVJJXDAK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M684XX7XKGDG3JMKKBFQ8SEV",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M684XWDT3EKJD4JPXT0JVK2M",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6855AQF506B5XA7DBQ691CZ",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M684XYB96R52XXCKMWV028V3"
+  ],
+  "at": "2026-10-31T04:59:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go tests beside TestShipCheckWaitsForPushedHead with a fake git and gh: when merge-base --is-ancestor pushed head holds, --settled passes, a green check records the new head as Head and Pushed, and ship merge pins to it; when it does not hold the check stays unsettled naming the dropped head; a testscript pushes from a second clone to a local bare remote and the run's wait-pr passes without timing out",
+          "statement": "When a PR's head is not the head the run pushed but contains it, rhiza ship check records it as the pushed head and judges its CI, so wait-pr and the later wait steps pass on a head someone else pushed on top of the run's; a head that drops the run's commits stays unsettled and its detail names the dropped head"
+        },
+        "handle": "follow-moved-pr-head",
+        "id": "01M68580Q11GDHVQY0FHS6KWSX",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M68580Q11GDHVQY0FF7A653E",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M68580Q11GDHVQY0FF7A653E",
+        "id": "01M6858172X8JBP7V6TNTYMNZE",
+        "link": "01M6858172X8JBP7V6TJMCVES5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68557HN470AVYK4NQC26BRH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "run-ship-change-rebase.txtar gains a case: the branch conflicts with main, a merge commit resolving it is pushed to origin, main then moves with an unrelated commit; rebase and rebase-merge pass, no rebase-conflict question is written, the pushed head has the earlier merge as an ancestor and the run merges; when main's new commit conflicts again, the question is still raised and the step exits 1",
+          "statement": "When a change set's branch already holds a merge of main, rhiza ship rebase merges origin's main into it instead of rebasing, settling rendered-only conflicts by rendering again, so conflicts that merge resolved do not come back"
+        },
+        "handle": "rebase-keeps-branch-merges",
+        "id": "01M68581Q6V7XS1VHP9Q4F011R",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M68581Q6V7XS1VHP9Q48KQJS",
+        "op": "node.create",
+        "parent": "01M5X3GCHZRJ9YPV8BA37J1AN3"
+      },
+      {
+        "decision": null,
+        "from": "01M68581Q6V7XS1VHP9Q48KQJS",
+        "id": "01M6858261YJ50M8DQ5YQFPXB2",
+        "link": "01M6858261YJ50M8DQ5Y9ZVM2M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68557HN470AVYK4NQC26BRH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a bare remote: after open-pr a second clone pushes a commit to the branch; the rebase step fast-forwards instead of exiting 3, land's push succeeds and the worktree's HEAD equals the pushed head; Go tests with a fake git show a dirty worktree or a local-only commit leaves HEAD unchanged and returns a conflict naming them",
+          "statement": "Before committing or pushing, rhiza ship rebase, land and open-pr fast-forward a clean worktree to origin's branch when that branch contains the worktree's HEAD, and refuse, naming the commits, when the worktree has uncommitted changes or local commits origin's branch lacks"
+        },
+        "handle": "ship-worktree-follows-pr",
+        "id": "01M68582MQEBTQNMGMAHBBEP35",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M68582MQEBTQNMGMAGHV53ZG",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M68582MQEBTQNMGMAGHV53ZG",
+        "id": "01M685833K26NA2FE7TFW1GNYA",
+        "link": "01M685833K26NA2FE7TFA9YG3S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68557HN470AVYK4NQC26BRH",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M684XYB96R52XXCKMV80X5T1",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M68583TT7GHE8VMQS341ZHY9",
+  "type": "ops",
+  "v": 1
+}
