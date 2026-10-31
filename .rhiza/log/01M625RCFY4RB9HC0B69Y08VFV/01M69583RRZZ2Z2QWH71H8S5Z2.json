@@ -1,0 +1,86 @@
+{
+  "actor": "01M6950JAJC5Q66GX404S8FM0N",
+  "after": [
+    "01M694ZWR7J7N9WY6JJN0YP3Y8"
+  ],
+  "at": "2026-10-31T14:19:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1 at a3dd859: built rhiza with go build to a scratch path and ran it by hand in a scratch repo with a bare origin.git, a fake rex/claude (roles doing real rhiza writes) and a fake gh (no network). rhiza run start <record> --workflow plan succeeded through gate -> open-pr. The branch's last commit was 'Render the plan' with Change: <cs> and Actor: trailers, holding every .rhiza/log entry the run's agents wrote plus .rhiza/rendered; git status --porcelain --untracked-files=all was empty and rhiza check printed ok with no manual render."
+        },
+        "handle": "plan-run-renders-branch-qa-1",
+        "id": "01M6958033GAXY78KMVPXMVA40",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6958033GAXY78KMVKY4N87K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6958033GAXY78KMVKY4N87K",
+        "id": "01M69580KG8MRA8EDTG9WJFEFA",
+        "link": "01M69580KG8MRA8EDTG9P140XT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857SSEWGCV5WVPMG1VCH6A",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1 at a3dd859: built rhiza with go build to a scratch path and ran it by hand in a scratch repo with a bare origin.git, a fake rex/claude (roles doing real rhiza writes) and a fake gh (no network). The run pushed cs/plan-reports and called gh pr create once with --title Plan reports; the body had '# Plan of run', Round 1 with 'confirmed f1 on export-csv ... — confirmed: ...', Round 2 'No findings.', Questions 'None.' and the Gate listing both change sets with states. In a second run held at wait-pr (CI pending), a new commit and RHIZA_RUN=<run> rhiza ship open-pr pushed the new head to origin, called gh pr edit 7 --body-file (no second pr create) with the refreshed body ('at step wait-pr'), and said 'Updated PR #7'. A run with red CI failed at pr-green and never called gh pr merge."
+        },
+        "handle": "plan-run-opens-pr-qa-1",
+        "id": "01M695815TN54K6CV4KW1480CG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M695815TN54K6CV4KTEN4D4R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M695815TN54K6CV4KTEN4D4R",
+        "id": "01M69581QSZE48Q8MJNKDBJWZG",
+        "link": "01M69581QSZE48Q8MJNJ1BPDPX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857TPTS3BZMRX3S51FBSXT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1 at a3dd859: built rhiza with go build to a scratch path and ran it by hand in a scratch repo with a bare origin.git, a fake rex/claude (roles doing real rhiza writes) and a fake gh (no network). With green checks the plan run ran wait-pr, pr-green, merge ('pr merge 7 --squash --match-head-commit <pushed head>', no --admin/--auto/--delete-branch) and close-out: worktree repo.plan-reports and cs/plan-reports gone locally and on origin, main fast-forwarded to the merged head, .git/rhiza/ship empty; the planned change set stayed proposed (run landed nothing). A following ship-change run on that change set opened PR #8 and its merge step called 'pr merge 8 --squash --match-head-commit <head>', reported a merge_commit and no already_merged; ship state then held pr 8."
+        },
+        "handle": "plan-run-merges-closes-out-qa-1",
+        "id": "01M695829QE9E73MBRD177MR3G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M695829QE9E73MBRD0V2KP2Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M695829QE9E73MBRD0V2KP2Q",
+        "id": "01M69582VQQJB2XD5QY0GDET2Q",
+        "link": "01M69582VQQJB2XD5QY06DT6G4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857VP1T62T5SQHWD7R38F6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M625RCFY4RB9HC0B69Y08VFV",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69583RRZZ2Z2QWH71H8S5Z2",
+  "type": "ops",
+  "v": 1
+}
