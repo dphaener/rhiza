@@ -1,0 +1,40 @@
+{
+  "actor": "01M69X7HJ120GNVKCDH92D826D",
+  "after": [
+    "01M69VVY76GTY4Y7T44H3HWNHN"
+  ],
+  "at": "2026-10-31T21:20:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At bf9829b4 (attempt 2): go test ./cmd/rhiza -run 'TestScripts/(question-answer|describe-golden)$' -count=1 passes. question-answer.txtar has questions blocking capabilities of the accepted change set; rhiza question answer <q> <words> --json drops them from ready; --dry-run reports dry_run and ready still lists the question; an unknown question returns code usage (a built binary exits 2 on it, checked by hand); two answers land as answer-store-q and answer-cache-q; the new step answers queue-q with --change <accepted cs> while change set Other is current, the Decision is in the accepted change set and not in Other, ready drops queue-q, and fold-ok passes. go test ./internal/tui/roadmapapp passes, with roadmapapp_test.go asserting the answer path calls question.answer via a fake runner (answer.go:108). describe-golden passes against the regenerated golden. Diff read: the fix commit only adds the --change scenario."
+        },
+        "handle": "question-answer-op-verified-2",
+        "id": "01M69XB6WEB3NYA0AG8340VC6W",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69XB6WEB3NYA0AG807AHHJ4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69XB6WEB3NYA0AG807AHHJ4",
+        "id": "01M69XB7FW7RGGP514RRTV4BBT",
+        "link": "01M69XB7FW7RGGP514RRGV0GNT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TPQBCC7169KT6WEPB85A",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RSVTRCWEV9GPT2V16M9Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69XB8F9PPG7DN0T0Y2XA253",
+  "type": "ops",
+  "v": 1
+}
