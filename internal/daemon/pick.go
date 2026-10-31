@@ -16,13 +16,13 @@ const DefaultMaxRuns = 2
 // running (see run.State.Liveness).
 //
 // A change set with a live run, running or interrupted, is not picked, and
-// neither is one whose latest run failed and was neither abandoned nor
+// neither is one whose latest run shipped it (see Ship) or failed and was neither abandoned nor
 // retried, which stays in the owner's inbox until cleared. Only running
 // runs take one of max slots: an interrupted run takes none. pending are
 // change sets the daemon started whose runs have no journal yet; each
 // counts as running, and is not picked again, until a journal of it shows.
-func Pick(candidates []string, runs []run.Journal, pending []string, host string, alive func(pid int) bool, max int) []string {
-	picked, _ := decide(candidates, runs, pending, host, alive, max)
+func Pick(candidates []string, runs []run.Journal, pending []string, host string, alive func(pid int) bool, max int, ship Ship) []string {
+	picked, _ := decide(candidates, runs, pending, host, alive, max, ship)
 	return picked
 }
 
@@ -33,10 +33,29 @@ const (
 	SkipNotReady    = "not-ready"
 	SkipLive        = "live"
 	SkipFailed      = "failed"
+	SkipShipped     = "shipped"
 	SkipHeld        = "held"
 	SkipUnjournaled = "unjournaled"
 	SkipNoSlot      = "no-slot"
 )
+
+// Ship says which succeeded runs mean a change set has shipped: those of
+// Workflow (the ship-change workflow's name, passed in so this package does
+// not import api) that ended after the change set was last accepted or
+// reopened, which Since reports (the zero time when it does not know).
+type Ship struct {
+	Workflow string
+	Since    func(change string) time.Time
+}
+
+// shipped reports whether st is a succeeded run of the ship workflow that
+// ended after its change set was last accepted or reopened.
+func (s Ship) shipped(st run.State) bool {
+	if s.Workflow == "" || s.Since == nil || !st.Ended || st.Result != run.Succeeded || st.Workflow != s.Workflow {
+		return false
+	}
+	return st.EndedAt.After(s.Since(st.Change))
+}
 
 // Skip is an accepted change set the daemon does not start, and why.
 type Skip struct {
@@ -52,15 +71,17 @@ type Skip struct {
 // Skips returns, in the order of candidates, the candidates Pick (called
 // with the same arguments) does not pick, each with its reason: live (a
 // running or interrupted run), failed (the latest run failed and was not
-// abandoned or retried, so it waits in the inbox), held (started and not
+// abandoned or retried, so it waits in the inbox), shipped (the latest run
+// is a succeeded ship run that ended after the change set was last accepted
+// or reopened; see Ship), held (started and not
 // yet journaled) or no-slot (max runs are running). Candidates are the
 // accepted, ready change sets that serve a milestone and have a leaf.
-func Skips(candidates []string, runs []run.Journal, pending []string, host string, alive func(pid int) bool, max int) []Skip {
-	_, skips := decide(candidates, runs, pending, host, alive, max)
+func Skips(candidates []string, runs []run.Journal, pending []string, host string, alive func(pid int) bool, max int, ship Ship) []Skip {
+	_, skips := decide(candidates, runs, pending, host, alive, max, ship)
 	return skips
 }
 
-func decide(candidates []string, runs []run.Journal, pending []string, host string, alive func(pid int) bool, max int) ([]string, []Skip) {
+func decide(candidates []string, runs []run.Journal, pending []string, host string, alive func(pid int) bool, max int, ship Ship) ([]string, []Skip) {
 	live := map[string]bool{}
 	latest := map[string]run.State{}
 	running := 0
@@ -90,6 +111,8 @@ func decide(candidates []string, runs []run.Journal, pending []string, host stri
 			skips = append(skips, Skip{Change: cs, Reason: SkipLive})
 		case held[cs]:
 			skips = append(skips, Skip{Change: cs, Reason: SkipHeld})
+		case ok && ship.shipped(st):
+			skips = append(skips, Skip{Change: cs, Reason: SkipShipped})
 		case ok && st.Ended && st.Result == run.Failed && !st.Abandoned():
 			skips = append(skips, Skip{Change: cs, Reason: SkipFailed})
 		case running >= max:

@@ -76,7 +76,24 @@ func TestSkips(t *testing.T) {
 		journal("retried", proc(3), retried),
 		journal("retried", proc(1)),
 	}
-	cands := []string{"running", "interrupted", "failed", "abandoned", "retried", "held", "fresh", "late"}
+	// Ship runs: shipped ended after the accept; reopened ended before a
+	// reopen; plan is a succeeded run of another workflow.
+	accepted := at.Add(-time.Hour)
+	done := func(cs, wf string, end time.Time) run.Journal {
+		return run.Journal{ID: "R" + cs, Entries: []run.Entry{
+			{Type: run.TypeStarted, At: at, Started: &run.Started{Change: cs, Workflow: wf}},
+			{Type: run.TypeFinished, At: end, End: run.Succeeded},
+		}}
+	}
+	runs = append(runs,
+		done("shipped", "ship", at.Add(time.Minute)),
+		done("plan", "plan", at.Add(time.Minute)),
+		done("reopened", "ship", at.Add(time.Minute)),
+		done("stale", "ship", accepted.Add(-time.Minute)),
+	)
+	since := map[string]time.Time{"shipped": accepted, "plan": accepted, "reopened": at.Add(2 * time.Minute), "stale": accepted}
+	ship := Ship{Workflow: "ship", Since: func(cs string) time.Time { return since[cs] }}
+	cands := []string{"running", "interrupted", "failed", "abandoned", "retried", "held", "fresh", "late", "shipped", "plan", "reopened", "stale"}
 	cases := []struct {
 		name string
 		max  int
@@ -87,21 +104,55 @@ func TestSkips(t *testing.T) {
 			{Change: "failed", Reason: SkipFailed}, {Change: "abandoned", Reason: SkipNoSlot},
 			{Change: "retried", Reason: SkipLive}, {Change: "held", Reason: SkipHeld},
 			{Change: "fresh", Reason: SkipNoSlot}, {Change: "late", Reason: SkipNoSlot},
+			{Change: "shipped", Reason: SkipShipped}, {Change: "plan", Reason: SkipNoSlot},
+			{Change: "reopened", Reason: SkipNoSlot}, {Change: "stale", Reason: SkipNoSlot},
 		}},
-		{"room", 6, []Skip{
+		{"room", 9, []Skip{
 			{Change: "running", Reason: SkipLive}, {Change: "interrupted", Reason: SkipLive},
 			{Change: "failed", Reason: SkipFailed}, {Change: "retried", Reason: SkipLive},
-			{Change: "held", Reason: SkipHeld},
+			{Change: "held", Reason: SkipHeld}, {Change: "shipped", Reason: SkipShipped},
 		}},
 	}
 	for _, c := range cases {
-		got := Skips(cands, runs, []string{"held"}, host, up, c.max)
+		got := Skips(cands, runs, []string{"held"}, host, up, c.max, ship)
 		if !reflect.DeepEqual(got, c.want) {
 			t.Errorf("%s: Skips = %v, want %v", c.name, got, c.want)
 		}
-		picked := Pick(cands, runs, []string{"held"}, host, up, c.max)
+		picked := Pick(cands, runs, []string{"held"}, host, up, c.max, ship)
 		if len(picked)+len(got) != len(cands) {
 			t.Errorf("%s: picked %v and skipped %v do not split %v", c.name, picked, got, cands)
+		}
+	}
+}
+
+func TestPickSkipsShipped(t *testing.T) {
+	at := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+	accepted := at.Add(-time.Hour)
+	done := func(cs, wf string) run.Journal {
+		return run.Journal{ID: "R" + cs, Entries: []run.Entry{
+			{Type: run.TypeStarted, At: at, Started: &run.Started{Change: cs, Workflow: wf}},
+			{Type: run.TypeFinished, At: at.Add(time.Minute), End: run.Succeeded},
+		}}
+	}
+	since := map[string]time.Time{
+		"shipped": accepted, "plan": accepted,
+		// Reopened after the ship run ended.
+		"reopened": at.Add(2 * time.Minute),
+	}
+	ship := Ship{Workflow: "ship", Since: func(cs string) time.Time { return since[cs] }}
+	runs := []run.Journal{done("shipped", "ship"), done("plan", "plan"), done("reopened", "ship")}
+	cases := []struct {
+		name, change string
+		picked       bool
+	}{
+		{"succeeded ship run after the accept is skipped", "shipped", false},
+		{"succeeded plan run is picked", "plan", true},
+		{"succeeded ship run followed by a reopen is picked", "reopened", true},
+	}
+	for _, c := range cases {
+		got := Pick([]string{c.change}, runs, nil, "h", func(int) bool { return false }, 2, ship)
+		if (len(got) == 1) != c.picked {
+			t.Errorf("%s: Pick = %v", c.name, got)
 		}
 	}
 }
