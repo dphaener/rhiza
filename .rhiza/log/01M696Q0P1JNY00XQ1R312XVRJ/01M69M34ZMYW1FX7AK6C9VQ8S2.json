@@ -1,0 +1,43 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M69JB9VVBRNCHSN04KM7BAJ8"
+  ],
+  "at": "2026-10-31T18:38:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "bd18af1830531fc596f03ea4c8c83baaf3fdd942",
+          "pr": "https://github.com/dphaener/rhiza/pull/138",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #138 (https://github.com/dphaener/rhiza/pull/138) passed CI at bd18af1",
+          "status": "verified"
+        },
+        "handle": "pr-138-model-app-timing-waits",
+        "id": "01M69M33FGCX3G8V85TGFJ2KB8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69M33FGCX3G8V85TG6QDQ6C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69M33FGCX3G8V85TG6QDQ6C",
+        "id": "01M69M342AB5M531E3P4Z1TG7D",
+        "link": "01M69M342AB5M531E3P43R2YXJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M696Q30C6Z9DX0WGCSNDSGHQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M696Q0P1JNY00XQ1R312XVRJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69M34ZMYW1FX7AK6C9VQ8S2",
+  "type": "ops",
+  "v": 1
+}
