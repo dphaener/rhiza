@@ -69,15 +69,31 @@ func (m *Model) loadDetail(r row) *detail {
 			d.questions = append(d.questions, question{handle: sub[1], text: m.questionText(cs, sub[1])})
 		}
 	}
-	// With no run for the change set, run.status answers with the latest
-	// run of another one, or an error: either way there is none to show.
-	if rout, err := m.run("run.status", cs, nil); err == nil {
-		var ri api.RunInfo
-		if json.Unmarshal(rout, &ri) == nil && ri.Change == cs {
-			d.run = &ri
-		}
-	}
+	d.run = m.latestRun(cs)
 	return d
+}
+
+// latestRun is the change set's latest run, or nil. With no run for the
+// change set, run.status answers with the latest run of another one, or an
+// error: either way there is none to show.
+func (m *Model) latestRun(cs string) *api.RunInfo {
+	rout, err := m.run("run.status", cs, nil)
+	if err != nil {
+		return nil
+	}
+	var ri api.RunInfo
+	if json.Unmarshal(rout, &ri) != nil || ri.Change != cs {
+		return nil
+	}
+	return &ri
+}
+
+// reloadRun refreshes the open detail's latest-run section alone.
+func (m *Model) reloadRun() {
+	if m.detail == nil || m.detail.err != nil {
+		return
+	}
+	m.detail.run = m.latestRun(m.detail.id.String())
 }
 
 // leafViews pairs each leaf with the statement and acceptance of the
