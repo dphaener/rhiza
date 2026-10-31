@@ -41,6 +41,8 @@ const (
 // Skip is an accepted change set the daemon does not start, and why.
 type Skip struct {
 	Change string `json:"change"`
+	// Title is the change set's display title, filled in by the poll.
+	Title string `json:"title,omitempty"`
 	// Reason is one of the Skip constants.
 	Reason string `json:"reason"`
 	// Detail holds the readiness reasons of a not-ready change set.
