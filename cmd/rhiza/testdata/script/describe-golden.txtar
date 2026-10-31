@@ -1684,8 +1684,12 @@ cmp stdout describe.golden.json
                   "description": "When it began to wait, RFC 3339 UTC",
                   "type": "string"
                 },
+                "blocks": {
+                  "description": "A blocker: what the question blocks, this change set or the handle of the node",
+                  "type": "string"
+                },
                 "change": {
-                  "description": "The change set of the run",
+                  "description": "The change set of the run; for a blocker, the change set the question blocks",
                   "type": "string"
                 },
                 "change_title": {
@@ -1696,12 +1700,16 @@ cmp stdout describe.golden.json
                   "description": "A failed run: why it failed; a sign-off: what it waits for",
                   "type": "string"
                 },
+                "handle": {
+                  "description": "A blocker: the question's handle",
+                  "type": "string"
+                },
                 "id": {
                   "description": "The item's short ID: stable while the item waits",
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up or skipped",
+                  "description": "question, open, signoff, failed, gave-up, skipped or blocker",
                   "type": "string"
                 },
                 "next": {
@@ -1709,7 +1717,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "question": {
-                  "description": "A question: what the agent asked",
+                  "description": "A question: what the agent asked; a blocker: the question's statement",
                   "type": "string"
                 },
                 "reasons": {
@@ -1721,7 +1729,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "run": {
-                  "description": "The run it belongs to",
+                  "description": "The run it belongs to; absent for a blocker",
                   "type": "string"
                 },
                 "session": {
@@ -1749,8 +1757,7 @@ cmp stdout describe.golden.json
                 "at",
                 "change",
                 "id",
-                "kind",
-                "run"
+                "kind"
               ],
               "type": "object"
             },

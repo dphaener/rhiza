@@ -1,0 +1,79 @@
+# rhiza inbox lists each open question that blocks a proposed or accepted
+# change set as a blocker item, next to the run items, in text and --json.
+# Answering the question takes it away. A question that blocks only a draft
+# or a landed change set is never listed.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza add capability store --record
+exec rhiza add capability cache --record
+exec rhiza add capability old --record
+
+# A landed change set touching old, and an open question blocking old.
+exec rhiza change new Landed
+exec rhiza set old --field statement=Old
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+exec rhiza add question old-q --field statement=Which-old --record
+exec rhiza link old-q blocks old --record
+
+# A draft touching cache, with an open question blocking cache.
+exec rhiza change new Drafty
+exec rhiza set cache --field statement=Cached
+exec rhiza add question cache-q --field statement=Which-cache --record
+exec rhiza link cache-q blocks cache --record
+
+exec rhiza inbox
+stdout '^Nothing waits on you$'
+
+# An accepted change set touching store, blocked by an open question.
+exec rhiza change new Accepted
+exec rhiza set store --field statement=Kept
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza add question store-q --field statement=Which-store --record
+exec rhiza link store-q blocks store --record
+
+# One run question on the same change set.
+mkdir .git/rhiza/runs
+exec rhiza roadmap --json
+cp stdout roadmap.json
+exec sh -c 'grep -o "\"id\": \"[0-9A-Z]*\"" roadmap.json | grep -v 01M5SWR | head -1 | cut -d\" -f4 > csid'
+exec sh -c 'sed "s/CSID/$(cat csid)/" ../question.jsonl > .git/rhiza/runs/QUESTIONRUN.jsonl'
+
+exec rhiza inbox
+stdout 'question run QUESTIONRUN, change set '
+stdout 'question: Which store\?'
+stdout 'blocker change set '
+stdout 'question: Which-store \(store-q\)'
+stdout 'blocks: store'
+! stdout 'Which-cache'
+! stdout 'Which-old'
+exec rhiza inbox --json
+stdout '"kind": "blocker"'
+stdout '"question": "Which-store"'
+stdout '"handle": "store-q"'
+stdout '"blocks": "store"'
+stdout '"kind": "question"'
+! stdout 'cache-q'
+! stdout 'old-q'
+
+# Answered, the model question is gone; the run question stays.
+exec rhiza add decision ssd --record
+exec rhiza link ssd answers store-q --record
+exec rhiza inbox
+! stdout 'blocker'
+! stdout 'Which-store'
+stdout 'question: Which store\?'
+exec rhiza inbox --json
+! stdout '"kind": "blocker"'
+-- question.jsonl --
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"CSID"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
+{"type":"blocked","at":"2026-01-01T01:00:00Z","step":"build","session":"S1","block":{"kind":"question","question":"Which store?","tab_title":"leaf one","tab_block":"block:b1"}}

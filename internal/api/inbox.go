@@ -7,7 +7,9 @@ package api
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"github.com/oklog/ulid/v2"
 	"io"
 	"os"
 	"reflect"
@@ -66,6 +68,7 @@ const (
 	InboxFailed   = "failed"
 	InboxGaveUp   = "gave-up"
 	InboxSkipped  = "skipped"
+	InboxBlocker  = "blocker"
 )
 
 // InboxRequest takes nothing.
@@ -74,19 +77,21 @@ type InboxRequest struct{}
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
 	ID             string `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string `json:"kind" desc:"question, open, signoff, failed, gave-up or skipped"`
+	Kind           string `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped or blocker"`
 	At             string `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
-	Run            string `json:"run" desc:"The run it belongs to"`
-	Change         string `json:"change" desc:"The change set of the run"`
+	Run            string `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker"`
+	Change         string `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks"`
 	ChangeTitle    string `json:"change_title,omitempty" desc:"The change set's title; absent when the log has no such change set"`
 	Step           string `json:"step,omitempty" desc:"The step: the asking session's, the sign-off's, the failed step, or where the run was interrupted"`
-	Question       string `json:"question,omitempty" desc:"A question: what the agent asked"`
+	Question       string `json:"question,omitempty" desc:"A question: what the agent asked; a blocker: the question's statement"`
 	Tab            string `json:"tab,omitempty" desc:"A question: the title of the session's tab"`
 	TabBlock       string `json:"tab_block,omitempty" desc:"A question: the Rex block of the session's tab"`
 	TabSession     string `json:"tab_session,omitempty" desc:"A question: the Rex session of the session's tab"`
 	Session        string `json:"session,omitempty" desc:"A question: the asking session"`
 	Recommendation string `json:"recommendation,omitempty" desc:"A question: what the advisor recommends answering; absent while it has not, or when it failed"`
 	Reasons        string `json:"reasons,omitempty" desc:"A question: why the advisor recommends it"`
+	Handle         string `json:"handle,omitempty" desc:"A blocker: the question's handle"`
+	Blocks         string `json:"blocks,omitempty" desc:"A blocker: what the question blocks, this change set or the handle of the node"`
 	Detail         string `json:"detail,omitempty" desc:"A failed run: why it failed; a sign-off: what it waits for"`
 	Next           string `json:"next,omitempty" desc:"The command that clears it, when one does"`
 }
@@ -103,6 +108,18 @@ func (r InboxResponse) Human(w io.Writer) {
 		return
 	}
 	for _, it := range r.Items {
+		if it.Kind == InboxBlocker {
+			fmt.Fprintf(w, "%s blocker change set %s\n", it.ID, it.Change)
+			if it.ChangeTitle != "" {
+				fmt.Fprintf(w, "  change set: %s\n", it.ChangeTitle)
+			}
+			fmt.Fprintf(w, "  question: %s (%s)\n", it.Question, it.Handle)
+			fmt.Fprintf(w, "  blocks: %s\n", it.Blocks)
+			if it.Next != "" {
+				fmt.Fprintf(w, "  next: %s\n", it.Next)
+			}
+			continue
+		}
 		fmt.Fprintf(w, "%s %s run %s, change set %s", it.ID, it.Kind, it.Run, it.Change)
 		if it.Step != "" {
 			fmt.Fprintf(w, ", step %s", it.Step)
@@ -284,11 +301,94 @@ func runInbox(ctx *Ctx, req any) (any, error) {
 	}
 	host, _ := os.Hostname()
 	items := inboxItems(runs, host, nil, rs.Live, changeStateOf(ctx))
+	blockers, err := inboxBlockers(ctx)
+	if err != nil {
+		return nil, err
+	}
+	items = sortInboxItems(append(items, blockers...))
 	title := changeTitleOf(ctx)
 	for i := range items {
 		items[i].ChangeTitle = title(items[i].Change)
 	}
 	return InboxResponse{Items: items}, nil
+}
+
+// sortInboxItems orders items oldest first, ties by ID.
+func sortInboxItems(items []InboxItem) []InboxItem {
+	slices.SortStableFunc(items, func(a, b InboxItem) int {
+		if c := strings.Compare(a.At, b.At); c != 0 {
+			return c
+		}
+		return strings.Compare(a.ID, b.ID)
+	})
+	return items
+}
+
+// inboxBlockers is one blocker item per open question and proposed or
+// accepted change set it blocks, read from the to-be view as ready reads
+// it: a question on a draft or landed change set is never listed. A
+// blocker began to wait when its question was raised, which its ID dates.
+func inboxBlockers(ctx *Ctx) ([]InboxItem, error) {
+	r, err := openReader(ctx, "inbox", "", toBeView)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+	in, err := planGather(r)
+	if err != nil {
+		return nil, err
+	}
+	res := planCore(in)
+	var qs []id.ID
+	for _, p := range res.order {
+		if p.info.State == changeset.StateDraft {
+			continue
+		}
+		for _, b := range p.blockers {
+			qs = append(qs, b.question)
+		}
+	}
+	statements := map[id.ID]string{}
+	if len(qs) > 0 {
+		ns, err := r.NodesFields(planSortIDs(qs))
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range ns {
+			var st string
+			_ = json.Unmarshal(n.Fields["statement"], &st)
+			statements[n.ID] = st
+		}
+	}
+	items := []InboxItem{}
+	for _, p := range res.order {
+		if p.info.State == changeset.StateDraft {
+			continue
+		}
+		seen := map[id.ID]bool{}
+		for _, b := range p.blockers {
+			if seen[b.question] {
+				continue
+			}
+			seen[b.question] = true
+			handle := planHandle(b.question, in.nodes)
+			blocks := "this change set"
+			if b.target != p.info.ID {
+				blocks = planHandle(b.target, in.nodes)
+			}
+			text := statements[b.question]
+			if text == "" {
+				text = handle
+			}
+			at := ulid.Time(ulid.ULID(b.question).Time()).UTC().Format(time.RFC3339)
+			sum := sha256.Sum256([]byte(strings.Join([]string{InboxBlocker, b.question.String(), p.info.ID.String()}, "\x00")))
+			items = append(items, InboxItem{
+				ID: hex.EncodeToString(sum[:])[:7], Kind: InboxBlocker, At: at, Change: p.info.ID.String(),
+				Question: text, Handle: handle, Blocks: blocks, Next: "rhiza show " + handle,
+			})
+		}
+	}
+	return items, nil
 }
 
 // changeTitleOf gives the display title of a change set by ID, empty when
@@ -366,7 +466,12 @@ func findInboxItem(ctx *Ctx, ref string) (InboxItem, run.State, error) {
 	}
 	host, _ := os.Hostname()
 	var found []InboxItem
-	for _, it := range inboxItems(runs, host, nil, rs.Live, changeStateOf(ctx)) {
+	all := inboxItems(runs, host, nil, rs.Live, changeStateOf(ctx))
+	blockers, err := inboxBlockers(ctx)
+	if err != nil {
+		return InboxItem{}, run.State{}, err
+	}
+	for _, it := range append(all, blockers...) {
 		if strings.HasPrefix(it.ID, ref) {
 			found = append(found, it)
 		}
