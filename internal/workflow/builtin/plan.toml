@@ -57,3 +57,31 @@ on.pass = "open-pr"
 kind = "command"
 run = "rhiza ship open-pr"
 max_visits = 3
+on.pass = "wait-pr"
+
+# The plan's PR merges once its CI is green, pinned to the checked head.
+# The merge does not land the change set; close-out removes the branch and
+# worktree and forgets the ship state, so a later ship run on the change
+# set opens and merges its own PR.
+[step.wait-pr]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "2h"
+interval = "30s"
+max_visits = 3
+on.pass = "pr-green"
+
+[step.pr-green]
+kind = "command"
+run = "rhiza ship check"
+max_visits = 3
+on.pass = "merge"
+
+[step.merge]
+kind = "command"
+run = "rhiza ship merge"
+on.pass = "close-out"
+
+[step.close-out]
+kind = "command"
+run = "rhiza ship close-out --forget"

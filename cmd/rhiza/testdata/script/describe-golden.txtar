@@ -17170,7 +17170,12 @@ cmp stdout describe.golden.json
       "name": "ship.close-out",
       "request": {
         "additionalProperties": false,
-        "properties": {},
+        "properties": {
+          "forget": {
+            "description": "Delete the change set's ship state file once closed out, so a later ship run opens and merges its own pull request (for a plan run, whose merge does not land the change set)",
+            "type": "boolean"
+          }
+        },
         "required": [],
         "type": "object"
       },

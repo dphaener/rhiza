@@ -75,7 +75,7 @@ stdout '"round": 2'
 
 # The record landed with the interview; the planned change set was
 # proposed by the gate, and has the reviser's acceptance.
-cd $WORK/repo.plan-reports
+cd $WORK/repo
 exec sh -c 'rhiza change show $(cat $WORK/rec) --json'
 stdout '"state": "landed"'
 exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
@@ -219,8 +219,19 @@ case "$1 $2" in
 		echo "no pull requests found for branch \"$3\"" >&2
 		exit 1
 	fi
+	if [ "$3" = 7 ]; then
+		printf '{"state":"MERGED","mergeCommit":{"oid":"%s"}}\n' "$(cat "$WORK/merged-head")"
+		exit 0
+	fi
 	head=$(git -C "$o" rev-parse --verify "refs/heads/$3")
-	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[]}\n' "$head"
+	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
+	;;
+"pr merge")
+	# Squash-free: main on origin takes the branch as it was checked.
+	b=$(git -C "$o" for-each-ref --format='%(refname:short)' 'refs/heads/cs/*')
+	git -C "$o" rev-parse "refs/heads/$b" > "$WORK/merged-head"
+	git -C "$o" update-ref refs/heads/main "refs/heads/$b"
+	touch "$WORK/pr.merged"
 	;;
 "pr create")
 	while [ $# -gt 0 ]; do

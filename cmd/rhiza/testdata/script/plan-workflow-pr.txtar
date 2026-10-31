@@ -79,7 +79,7 @@ stdout '"round": 2'
 
 # The record landed with the interview; the planned change set was
 # proposed by the gate, and has the reviser's acceptance.
-cd $WORK/repo.plan-reports
+cd $WORK/repo
 exec sh -c 'rhiza change show $(cat $WORK/rec) --json'
 stdout '"state": "landed"'
 exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
@@ -102,9 +102,31 @@ grep '^- confirmed f1 on export-csv: export-csv has no acceptance check — conf
 grep '^No findings\.$' $WORK/pr-body.md
 grep '^## Gate$' $WORK/pr-body.md
 grep '^- 01[0-9A-Z]{24} \(Export reports\): proposed$' $WORK/pr-body.md
-exec sh -c 'test "$(git --git-dir=$WORK/origin.git rev-parse refs/heads/cs/plan-reports)" = "$(git rev-parse HEAD)"'
-exec sh -c 'cat $(git rev-parse --git-common-dir)/rhiza/ship/*.json'
-stdout '"pr": 7'
+
+# With CI green the run merged the PR pinned to the checked head (the one
+# it pushed), without landing anything: the merge and the head are the
+# plan's branch, now main on origin.
+exec sh -c 'grep -c "^pr merge" $WORK/gh.log'
+stdout '^1$'
+exec sh -c 'grep "^pr merge 7 --squash --match-head-commit " $WORK/gh.log | sed "s/.*--match-head-commit //" > $WORK/pinned'
+exec sh -c 'test "$(cat $WORK/pinned)" = "$(cat $WORK/merged-head)"'
+exec sh -c 'test "$(git --git-dir=$WORK/origin.git rev-parse refs/heads/main)" = "$(cat $WORK/merged-head)"'
+! grep 'admin|auto|delete-branch' $WORK/gh.log
+
+# The close-out removed the branch and the worktree, locally and on
+# origin, brought main up to date and forgot the ship state, so a later
+# ship run starts from nothing: ship merge has no checked head to merge.
+! exists $WORK/repo.plan-reports
+exec sh -c 'git branch --list "cs/plan-reports" | wc -l | tr -d " "'
+stdout '^0$'
+exec sh -c 'git --git-dir=$WORK/origin.git branch --list "cs/plan-reports" | wc -l | tr -d " "'
+stdout '^0$'
+exec sh -c 'ls $(git rev-parse --git-common-dir)/rhiza/ship 2>/dev/null | wc -l | tr -d " "'
+stdout '^0$'
+exec sh -c 'test "$(git rev-parse HEAD)" = "$(cat $WORK/merged-head)"'
+exec rhiza run status
+stdout '^- merge \(visit 1\): pass, then close-out: exit 0$'
+stdout '^- close-out \(visit 1\): pass'
 
 # The run rendered and committed its branch: nothing is left to commit,
 # the branch checks as it is, and the last commit is the render commit
@@ -239,8 +261,19 @@ case "$1 $2" in
 		echo "no pull requests found for branch \"$3\"" >&2
 		exit 1
 	fi
+	if [ "$3" = 7 ]; then
+		printf '{"state":"MERGED","mergeCommit":{"oid":"%s"}}\n' "$(cat "$WORK/merged-head")"
+		exit 0
+	fi
 	head=$(git -C "$o" rev-parse --verify "refs/heads/$3")
-	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[]}\n' "$head"
+	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
+	;;
+"pr merge")
+	# Squash-free: main on origin takes the branch as it was checked.
+	b=$(git -C "$o" for-each-ref --format='%(refname:short)' 'refs/heads/cs/*')
+	git -C "$o" rev-parse "refs/heads/$b" > "$WORK/merged-head"
+	git -C "$o" update-ref refs/heads/main "refs/heads/$b"
+	touch "$WORK/pr.merged"
 	;;
 "pr create")
 	while [ $# -gt 0 ]; do
