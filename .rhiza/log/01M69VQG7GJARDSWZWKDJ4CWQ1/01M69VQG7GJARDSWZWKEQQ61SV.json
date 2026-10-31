@@ -1,0 +1,15 @@
+{
+  "actor": "01M69VNQESZ1R5S936BQCTDGRJ",
+  "after": [],
+  "at": "2026-10-31T20:51:58Z",
+  "body": {
+    "intent": "question.answer refuses a question that is not open or does not block the target change set, so an answer always lands in the change set the question blocks",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M69VQG7GJARDSWZWKDJ4CWQ1",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69VQG7GJARDSWZWKEQQ61SV",
+  "type": "open",
+  "v": 1
+}

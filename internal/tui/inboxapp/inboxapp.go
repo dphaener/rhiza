@@ -59,6 +59,7 @@ var groups = []struct{ kind, heading string }{
 	{api.InboxQuestion, "Questions"},
 	{api.InboxSignoff, "Sign-offs"},
 	{api.InboxOpen, "Open questions"},
+	{api.InboxBlocker, "Blocking questions"},
 	{api.InboxFailed, "Failed runs"},
 	{api.InboxGaveUp, "Gave up"},
 	{api.InboxSkipped, "Skipped"},
@@ -193,7 +194,7 @@ func (m *Model) normalKey(msg tea.KeyPressMsg) tea.Cmd {
 			m.act("open", Name+".open", it.ID)
 		}
 	case "a":
-		if has && it.Kind == api.InboxQuestion {
+		if has && (it.Kind == api.InboxQuestion || it.Kind == api.InboxBlocker) {
 			m.mode, m.input, m.target = modeAnswer, "", it
 		}
 	case "t":
@@ -257,7 +258,11 @@ func (m *Model) modeKey(msg tea.KeyPressMsg) {
 			m.note = "nothing typed, nothing sent"
 			return
 		}
-		if mode == modeAnswer {
+		if mode == modeAnswer && it.Kind == api.InboxBlocker {
+			// A blocker has no asking session: the words become a Decision
+			// in the blocked change set, which question.answer writes.
+			m.act("answer", "question.answer", it.Handle, it.Change, text)
+		} else if mode == modeAnswer {
 			m.act("answer", "session.message", it.Session, text)
 		} else {
 			m.requestChanges(it, text)

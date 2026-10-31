@@ -1,0 +1,86 @@
+{
+  "actor": "01M69VNGXND0KD8Q0K83KA87JR",
+  "after": [
+    "01M69VMRVBD1XF4PVG3DQK961D"
+  ],
+  "at": "2026-10-31T20:54:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 302d9b36, built rhiza and in a scratch repo made a landed change set and a draft each with a recorded open question blocking a node they touch: rhiza inbox printed Nothing waits on you. Then an accepted change set touching store with store-q blocking store: rhiza inbox showed a blocker item (question: Which store? (store-q), blocks: store, change set Accepted) and --json kind blocker with handle/blocks/question. Adding a run-log question on the same change set and a proposed change set blocked directly by cs-q listed the run question, the store-q blocker, and a blocks: this change set blocker together. After answering store-q the blocker was gone (Nothing waits on you)."
+        },
+        "handle": "inbox-blocking-questions-qa-1",
+        "id": "01M69VVSECRMZDH7CBVR9MZYHZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69VVSECRMZDH7CBVN971383",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69VVSECRMZDH7CBVN971383",
+        "id": "01M69VVT4YAADERX9PF0E48GWY",
+        "link": "01M69VVT4YAADERX9PEWQEKANK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TR0KYVRWTYHXJ3F8P1D0",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 302d9b36, with the built binary in a scratch repo: rhiza question answer store-q \"use sqlite\" --change <accepted cs> --dry-run --json reported dry_run true and ready still listed store-q; an unknown question and a blank answer each exit 2 with code usage; answering a capability exits 2 (not a question); the real answer wrote decision answer-store-q (statement and quote use sqlite, quote_where the owner, answering question store-q, answers store-q) and ready no longer lists the blocker; a second answer got answer-store-q-2. In the real roadmap app (rhiza tui app roadmap in a pty), enter on the change set, enter on the blocking question, typing use postgres and enter showed Recorded your answer to store-q, Blocking questions none, and the Decision answer-store-q was in the blocked change set."
+        },
+        "handle": "question-answer-op-qa-1",
+        "id": "01M69VVV1C4V2K96N2H724Z592",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69VVV1C4V2K96N2H5FTA6AJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69VVV1C4V2K96N2H5FTA6AJ",
+        "id": "01M69VVVQCDMHBFRD3GT89D661",
+        "link": "01M69VVVQCDMHBFRD3GQ5BX91E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TPQBCC7169KT6WEPB85A",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 302d9b36, drove the real inbox app (rhiza tui app inbox in a pty) on a scratch repo whose current change set was a draft and where store-q blocks an accepted change set: a opened the answer prompt on the blocker item, typing use sqlite then enter showed answer done and Nothing waits on you; rhiza show answer-store-q --change <accepted cs> showed the Decision quoting use sqlite, linked answers store-q, in the blocked change set rather than the current draft. In a copy, a, typing, then esc and r left the blocker listed and wrote no decision. The run-question session.message path needs a live Rex session and was covered only by the Go fake-runner test."
+        },
+        "handle": "inbox-app-answer-question-qa-1",
+        "id": "01M69VVWCNCNTRCJ5GDNJYA8ZH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69VVWCNCNTRCJ5GDM8XCBB2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69VVWCNCNTRCJ5GDM8XCBB2",
+        "id": "01M69VVX1YD6081830X93XCHC7",
+        "link": "01M69VVX1YD6081830X82C64S5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TSHQQ5XJ0YAZ3Z538821",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RSVTRCWEV9GPT2V16M9Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69VVY76GTY4Y7T44H3HWNHN",
+  "type": "ops",
+  "v": 1
+}

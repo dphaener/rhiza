@@ -216,3 +216,48 @@ func TestEscCancelsTyping(t *testing.T) {
 		t.Fatalf("calls: %v", r.calls)
 	}
 }
+
+const blockerItems = `{"items":[
+{"id":"b1","kind":"blocker","change":"C9","change_title":"Ship it","question":"Which db?","handle":"which-db","blocks":"C9"},
+{"id":"q1","kind":"question","run":"RUNQ00000001","change":"C1","step":"build","session":"SESS1","question":"Which db?"}
+]}`
+
+func TestAnswerBlockerCallsQuestionAnswer(t *testing.T) {
+	r := newRig(t)
+	r.items = blockerItems
+	r.m.Reload()
+	r.at(1)
+	r.press("a")
+	r.typeText("use sqlite")
+	r.press("enter")
+	if len(r.calls) != 1 || r.calls[0].op != "question.answer" ||
+		strings.Join(r.calls[0].args, "|") != "which-db|C9|use sqlite" {
+		t.Fatalf("calls: %v", r.calls)
+	}
+}
+
+func TestAnswerRunQuestionStillMessagesSession(t *testing.T) {
+	r := newRig(t)
+	r.items = blockerItems
+	r.m.Reload()
+	r.press("a")
+	r.typeText("sqlite")
+	r.press("enter")
+	if len(r.calls) != 1 || r.calls[0].op != "session.message" ||
+		strings.Join(r.calls[0].args, "|") != "SESS1|sqlite" {
+		t.Fatalf("calls: %v", r.calls)
+	}
+}
+
+func TestEscOnBlockerAnswerSendsNothing(t *testing.T) {
+	r := newRig(t)
+	r.items = blockerItems
+	r.m.Reload()
+	r.at(1)
+	r.press("a")
+	r.typeText("use sqlite")
+	r.press("esc")
+	if len(r.calls) != 0 {
+		t.Fatalf("calls: %v", r.calls)
+	}
+}

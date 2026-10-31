@@ -1,0 +1,40 @@
+{
+  "actor": "01M69V5W7NGHGHCVDBXHZV8E1Z",
+  "after": [
+    "01M69VMMEMV40TXRNN9KJADNWC"
+  ],
+  "at": "2026-10-31T20:50:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6f7c433d ran go test ./internal/tui/inboxapp -count=1 -v: TestAnswerBlockerCallsQuestionAnswer (fake runner) records exactly one question.answer call with args which-db|C9|use sqlite (question handle, change set, typed words) for a blocker item; TestAnswerRunQuestionStillMessagesSession records one session.message SESS1|sqlite for a run question; TestEscOnBlockerAnswerSendsNothing records no calls after esc. All pass, as do go test ./..., go vet and fmt-check. The diff adds a Blocking questions group, enables a on blocker items, and routes blocker answers to question.answer. Note: question.answer is not registered yet (leaf question-answer-op, unbuilt); the app passes change positionally, so that op must accept <q> <cs> <words> as argv or this call path errors in the real app."
+        },
+        "handle": "inbox-app-answer-question-verified",
+        "id": "01M69VMQ8PHFVCBFQ84DS2791M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69VMQ8PHFVCBFQ84D7303AH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69VMQ8PHFVCBFQ84D7303AH",
+        "id": "01M69VMQW6EZY2N9Z321NNMRN8",
+        "link": "01M69VMQW6EZY2N9Z3209E65CD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TSHQQ5XJ0YAZ3Z538821",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RSVTRCWEV9GPT2V16M9Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69VMRVBD1XF4PVG3DQK961D",
+  "type": "ops",
+  "v": 1
+}

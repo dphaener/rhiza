@@ -1,0 +1,40 @@
+{
+  "actor": "01M69VDW01F3H41YJ1J9BT06N2",
+  "after": [
+    "01M69VJV1PDZS5DPT4G9NHYEZV"
+  ],
+  "at": "2026-10-31T20:50:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 40d54f0d: go test ./cmd/rhiza -run 'TestScripts/(question-answer|describe-golden)$' passes (question-answer.txtar: question blocking an accepted change set drops out of ready after answer, --dry-run leaves ready unchanged, unknown question exits usage, two questions answered as answer-store-q and answer-cache-q, fold-ok); describe-golden includes question.answer and passes. go test ./internal/api/... ./internal/tui/... passes, incl. roadmapapp TestAnswerCallsQuestionAnswer (fake runner sees op question.answer, change set, args which-way|go west). By hand in a scratch repo with a scratch build and explicit --change <accepted cs> from another current change set: dry run printed dry_run true and git status unchanged; answer dropped store-q from ready; Decision answer-store-q has statement/quote 'use sqlite' and an answers link; second question got answer-other-q; a further dry-run answer to store-q proposed answer-store-q-2; unknown question exited 2. Diff read: roadmap app record() now calls m.run(question.answer) instead of hand-built apply writes."
+        },
+        "handle": "question-answer-op-verified",
+        "id": "01M69VMJV0D9EQXXHEME7D4WJK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69VMJV0D9EQXXHEMDQFEAQ6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69VMJV0D9EQXXHEMDQFEAQ6",
+        "id": "01M69VMKEZJX9DA7GQTZQ4MMPD",
+        "link": "01M69VMKEZJX9DA7GQTZ7TBMMB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TPQBCC7169KT6WEPB85A",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RSVTRCWEV9GPT2V16M9Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69VMMEMV40TXRNN9KJADNWC",
+  "type": "ops",
+  "v": 1
+}

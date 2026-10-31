@@ -203,6 +203,8 @@ type planChangeSet struct {
 	dependsOn []id.ID
 	ready     bool
 	reasons   []string
+	// blockers is the open questions blocking it, sorted as the reasons say.
+	blockers []planBlocker
 }
 
 // planGroup is one roadmap group: a milestone's, or the backlog's, whose
@@ -366,7 +368,8 @@ func planCore(in planInputs) planResult {
 			p.reasons = append(p.reasons, fmt.Sprintf("rests on %s (%s): %d operations", shortID(r.ChangeSet), r.State, len(r.Ops)))
 		}
 		p.reasons = append(p.reasons, planRevisedReasons(an.Revised(c.ID))...)
-		for _, b := range planSortBlockers(c.ID, blockers, in.nodes) {
+		p.blockers = planSortBlockers(c.ID, blockers, in.nodes)
+		for _, b := range p.blockers {
 			on := "this change set"
 			if b.target != c.ID {
 				on = planHandle(b.target, in.nodes)

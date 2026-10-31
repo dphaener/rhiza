@@ -94,6 +94,13 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 	switch {
 	case isInbox:
 		im := inboxapp.NewModel(func(op string, args []string) ([]byte, error) {
+			if op == "question.answer" && len(args) == 3 {
+				// The app passes question, change set, words; the change set
+				// is the write target, not a request field.
+				gg := g
+				gg.change, gg.changeSet = args[1], true
+				return callWith(gg, op, false, false, []string{args[0], args[2]})
+			}
 			return call(op, false, false, args)
 		})
 		if ctx, err := newCtx(g, os.Stdin, getenv); err == nil {

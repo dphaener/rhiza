@@ -1684,8 +1684,12 @@ cmp stdout describe.golden.json
                   "description": "When it began to wait, RFC 3339 UTC",
                   "type": "string"
                 },
+                "blocks": {
+                  "description": "A blocker: what the question blocks, this change set or the handle of the node",
+                  "type": "string"
+                },
                 "change": {
-                  "description": "The change set of the run",
+                  "description": "The change set of the run; for a blocker, the change set the question blocks",
                   "type": "string"
                 },
                 "change_title": {
@@ -1696,12 +1700,16 @@ cmp stdout describe.golden.json
                   "description": "A failed run: why it failed; a sign-off: what it waits for",
                   "type": "string"
                 },
+                "handle": {
+                  "description": "A blocker: the question's handle",
+                  "type": "string"
+                },
                 "id": {
                   "description": "The item's short ID: stable while the item waits",
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up or skipped",
+                  "description": "question, open, signoff, failed, gave-up, skipped or blocker",
                   "type": "string"
                 },
                 "next": {
@@ -1709,7 +1717,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "question": {
-                  "description": "A question: what the agent asked",
+                  "description": "A question: what the agent asked; a blocker: the question's statement",
                   "type": "string"
                 },
                 "reasons": {
@@ -1721,7 +1729,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "run": {
-                  "description": "The run it belongs to",
+                  "description": "The run it belongs to; absent for a blocker",
                   "type": "string"
                 },
                 "session": {
@@ -1749,8 +1757,7 @@ cmp stdout describe.golden.json
                 "at",
                 "change",
                 "id",
-                "kind",
-                "run"
+                "kind"
               ],
               "type": "object"
             },
@@ -5438,6 +5445,86 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "Propose the change set for review",
+      "write": true
+    },
+    {
+      "name": "question.answer",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "question": {
+            "description": "The question: an ID, a unique ID prefix of 4+ characters, or a live question's handle",
+            "type": "string"
+          },
+          "text": {
+            "description": "The owner's words, kept verbatim as the Decision's quote; must not be blank",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "text"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The change set written to (with --record, the new record change set)",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "drop": {
+            "description": "Dry run only: the op IDs the entry would drop",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The ops entry written; absent in a dry run",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "links": {
+            "description": "The links the write created or retired, sorted",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "nodes": {
+            "description": "The nodes the write created or changed, sorted; link endpoints are not included",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ops": {
+            "description": "Dry run only: the ops the entry would carry, as canonical op JSON",
+            "items": {},
+            "type": "array"
+          },
+          "record": {
+            "description": "True if the write opened and landed a record change set",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "change_set",
+          "nodes"
+        ],
+        "type": "object"
+      },
+      "summary": "Answer an open question that blocks a change set: write the owner's words as a Decision quoting them, linked answers to the question, into --change",
       "write": true
     },
     {
