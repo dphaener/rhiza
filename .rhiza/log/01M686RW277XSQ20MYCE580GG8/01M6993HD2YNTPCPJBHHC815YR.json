@@ -1,0 +1,109 @@
+{
+  "actor": "01M698R32NMD2R2W70Y57QEGV4",
+  "after": [
+    "01M698Q3YR53C1M72XYN69TDJ5"
+  ],
+  "at": "2026-10-31T15:26:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 0f0c797 with a scratch build on this repo's real runs: rhiza run ls --limit 5 printed five runs newest started first (two running live runs at build/build and review/review, then failed and succeeded ones with no step), each with ID, state, workflow, start time, change set and title; --json gave id, change, title, state, current, started_at, live, workflow, autonomous; --limit 0 gave the default 20; --limit 1001 and -1 exited 2 with 'out of range: give 1 to 1000'; rhiza api call run.ls {\"limit\":1} returned the newest run only."
+        },
+        "handle": "run-ls-qa-1",
+        "id": "01M6993C33KTQTHJJGDT2CQW06",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6993C33KTQTHJJGDP5F82QK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6993C33KTQTHJJGDP5F82QK",
+        "id": "01M6993CTNH4FJ2SJ9JA01XPQ1",
+        "link": "01M6993CTNH4FJ2SJ9J93BTB84",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686V7WES41E5KRCMQJ9MGCH",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at 0f0c797: rhiza tui app live --once printed bytes identical to rhiza run ls --json (diff empty). Running rhiza tui app live in a 24-row Rex pane over this repo's 20 runs showed each run's title, state, step, leaves passed/conducted, checks and elapsed, and elapsed advanced by 3s between captures 4s apart with no key press, so the 3s reload works. But the view has no height handling: the daemon line, the two live runs at the top and the cursor mark were scrolled off, and only the oldest finished runs and the key help were visible. Finished runs' elapsed also keeps counting to now (27h+)."
+        },
+        "handle": "live-app-runs-qa-1",
+        "id": "01M6993DFMZ1HHJFGH3D0HDRXE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6993DFMZ1HHJFGH3BXDQEMF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6993DFMZ1HHJFGH3BXDQEMF",
+        "id": "01M6993E4DEFN7BXWVHYX7V6D8",
+        "link": "01M6993E4DEFN7BXWVHX9Z8HW8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686V969FDV2SVYM7P244E86",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 0f0c797 in a real Rex pane: in rhiza tui app live, j then enter on the live run 01M696N43YZFCEBGBX6FFXQ4R1 showed 'Focused Rex tab block:01a1926a-... of run 01M696N43...' (real run.open against Rex); j then enter on the failed run 01M68KVFSG2RD1VY3EF287VFEK showed 'Run 01M68KVFSG2RD1VY3EF287VFEK is not live'. The tab-gone path was not exercised by hand."
+        },
+        "handle": "live-app-focus-qa-1",
+        "id": "01M6993EQVAWGQKK6WJ3W23G07",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6993EQVAWGQKK6WJ27S02DS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6993EQVAWGQKK6WJ27S02DS",
+        "id": "01M6993F9KT208Y7D259N2YWYX",
+        "link": "01M6993F9KT208Y7D2596M7JVS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686VAPN2NBZCGV4T968DYTD",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 0f0c797 in a real Rex pane: in rhiza tui app roadmap, opening change set 01M686RWSEKXXBCNC7RZMT07HB's detail showed 'Latest run ship-change · state running · step build/build'. While the detail stayed open with no key press, that line changed to 'step review/review' when the real run moved on, so the open detail reloads its run section by itself."
+        },
+        "handle": "roadmap-detail-run-tick-qa-1",
+        "id": "01M6993FVJ9YHTKH809N3X93KD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6993FVJ9YHTKH809JXTMW5S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6993FVJ9YHTKH809JXTMW5S",
+        "id": "01M6993GE2WDC8YC2B4JPKYQ99",
+        "link": "01M6993GE2WDC8YC2B4F6WQ657",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686VBX481BWSM5W1YT6N1PQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RW277XSQ20MYCE580GG8",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6993HD2YNTPCPJBHHC815YR",
+  "type": "ops",
+  "v": 1
+}

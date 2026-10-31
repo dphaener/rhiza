@@ -1,0 +1,40 @@
+{
+  "actor": "01M698P9WXTS3W5NW7RM4VYEK0",
+  "after": [
+    "01M6987A181ED3VMRP7ZB7MPMC"
+  ],
+  "at": "2026-10-31T15:25:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At bf71b8b: make help prints 'update  Rebuild into $(PREFIX), then rewrite the Rex script and reload Rex'. TestMakeUpdateDryRun (cmd/rhiza/makeupdate_test.go), the make-update test, now also runs make help and asserts a line whose first field is update (fixes f2). TestClaudeMDCommandsNameMakeUpdate reads CLAUDE.md, extracts the fenced block under '## Commands' and requires a line starting with 'make update' (fixes f1); CLAUDE.md has 'make update     # make install, then rewrite the Rex script and reload Rex' there. go test ./cmd/rhiza -run 'TestMakeUpdateDryRun|TestClaudeMDCommandsNameMakeUpdate' -count=1 -v: both PASS. Mutation in a scratch git-archive copy (moved make update out of the Commands block into trailing prose): TestClaudeMDCommandsNameMakeUpdate FAILs. go vet and go test ./... pass (modelapp timing test flaked once at 62ms under load, passed on rerun). make check's self-check fails only on stale .rhiza/rendered actor/index files from this run's in-flight actors, not this leaf's code."
+        },
+        "handle": "update-target-documented-verified",
+        "id": "01M69924G7JSM94BDG12RVG653",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69924G7JSM94BDG0ZD0MX07",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69924G7JSM94BDG0ZD0MX07",
+        "id": "01M699251RX7MNR9JXSTQWRP4F",
+        "link": "01M699251RX7MNR9JXSS0H2QD8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686VFHDHYAJP8B10B23TMSC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RWSEKXXBCNC7RZMT07HB",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69925XXPJZ0RCY4WS6HAK2H",
+  "type": "ops",
+  "v": 1
+}

@@ -31,6 +31,7 @@ make self-check # rhiza check on this repo, with this commit's build
 make test       # go test ./...
 make fmt        # gofmt every Go file in place
 make install    # build into ~/bin (PREFIX=... to override)
+make update     # make install, then rewrite the Rex script and reload Rex
 ```
 
 Run `make check` before calling any change done.

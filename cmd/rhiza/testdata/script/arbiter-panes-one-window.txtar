@@ -1,0 +1,250 @@
+# An autonomous run's arbiter sessions split panes of the run's window.
+# The planner asks two questions, the way an autonomous agent does (the
+# PreToolUse hook denies its AskUserQuestion and it waits at its prompt);
+# the run's arbiter answers each in its own session. The fake rex logs
+# every call: the run opens one window, for the planner, and the two
+# arbiter sessions only split it.
+#
+# Nothing here reaches Rex or Claude Code. The fake rex starts the tab's
+# command in the background and returns once the agent has touched
+# $WORK/ready.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+mkdir $HOME/.claude/projects/p
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec git push -q -u origin main
+
+exec rhiza change new 'Plan exports' --kind record --title 'Plan exports' --json
+stdout '"change_set": "(01[0-9A-Z]{24})"'
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/rec'
+exec git add -A
+exec git commit -qm 'Plan exports'
+exec git push -q origin main
+
+env REX_BLOCK=block:root
+env REX_SESSION=session:s1
+
+exec sh -c 'rhiza run start $(cat $WORK/rec) --workflow plan --permission-mode manual --autonomous > $WORK/out 2> $WORK/err; echo exit=$?'
+stdout '^exit=0$'
+exec cat $WORK/out
+stdout '^Run [0-9A-Z]{26} succeeded$'
+stdout '^- Autonomous: yes$'
+! stdout 'Blocked'
+exec cat $WORK/err
+stdout 'step interview: arbiter pass on question [0-9A-Z]{26}: answered by assume-1'
+stdout 'step interview: arbiter pass on question [0-9A-Z]{26}: answered by assume-2'
+
+# One window for the whole run, the planner's, then only splits: one per
+# arbiter (two), the reviewer and the critic.
+exec cat $WORK/rex.log
+stdout -count=1 '^window new '
+stdout -count=4 '^split -s session:s1 -b block:b[0-9] '
+
+# Both answers reached the planner, and the arbiters were told only their
+# question.
+exec cat $WORK/asker.log
+stdout -count=2 '^got \.rhiza/local/messages/[0-9a-f-]{36}/000[12]\.md$'
+exec cat $WORK/prompts.log
+stdout -count=2 '^Decide question [0-9A-Z]{26}: follow rhiza guide arbiter\.$'
+
+# The gate accepted the plan's draft with rule autonomous; the record
+# landed with the answering Decision.
+cd $WORK/repo
+exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
+stdout '"state": "accepted"'
+stdout '"rule": "autonomous"'
+exec sh -c 'rhiza change show $(cat $WORK/rec) --json'
+stdout '"state": "landed"'
+exec rhiza show assume-1 --json
+stdout '"wording": "\(assumed, would have escalated\)"'
+stdout '"type": "answers"'
+exec sh -c 'rhiza show export-csv --change $(cat $WORK/cs) --json'
+stdout '"type": "decided-by"'
+
+# The run rendered and committed its branch: nothing is left over.
+exec sh -c 'git status --porcelain --untracked-files=all | wc -l | tr -d " "'
+stdout '^0$'
+fold-ok
+
+-- source.json --
+{"title":"Planning interview","summary":"An autonomous planner planned the exports milestone; the arbiter settled its one question.","quotes":[]}
+-- record.json --
+{"writes":[
+  {"op":"add","kind":"intent","handle":"exports","fields":["statement=Users take their reports out of the product"]}
+]}
+-- leaf.json --
+{"writes":[
+  {"op":"add","kind":"capability","handle":"export-csv","fields":[
+    "statement=Users export any report as CSV",
+    "acceptance=A test exports a 100k-row report with flat memory use"]},
+  {"op":"link","from":"export-csv","type":"decided-by","to":"assume-1"}
+]}
+-- clean.json --
+{"findings":[]}
+-- transcript.jsonl --
+{"type": "user", "message": {"role": "user", "content": "Plan the exports"}}
+-- bin/rex --
+#!/bin/sh
+case "$1 $2" in
+"window new" | "split -s") echo "$*" >> "$WORK/rex.log" ;;
+esac
+case "$1" in
+events)
+	exit 0
+	;;
+send | send-key)
+	echo "$*" >> "$WORK/typed.log"
+	exit 0
+	;;
+esac
+case "$1 $2" in
+"window close" | "block close")
+	exit 0
+	;;
+"block call")
+	echo '{"columns":200,"rows":50,"cell_width_px":8,"cell_height_px":16}'
+	exit 0
+	;;
+esac
+verb=$1
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >>"$WORK/tab.out" 2>&1 </dev/null &
+		break
+	fi
+	shift
+done
+i=0
+until [ -f "$WORK/ready" ]; do
+	i=$((i + 1))
+	if [ $i -gt 1600 ]; then
+		echo 'fake rex: the agent never got ready' >&2
+		exit 1
+	fi
+	sleep 0.025
+done
+rm -f "$WORK/ready"
+if [ "$verb" = split ]; then
+	echo '{"block_id":"block:b2","window_id":"window:w1"}'
+else
+	echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+fi
+-- bin/claude --
+#!/bin/sh
+sid=
+for a; do last=$a; done
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
+printf '%s\n' "$last" >> "$WORK/prompts.log"
+fail() {
+	echo "fake claude: $*" >> "$WORK/claude.err"
+	touch "$WORK/ready"
+	exit 1
+}
+case "$last" in
+/rhiza-plan*)
+	rec=$RHIZA_CHANGE
+	[ "$RHIZA_AUTONOMOUS" = 1 ] || fail not autonomous
+	cp "$WORK/transcript.jsonl" "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl"
+	# No owner: the question is denied and goes to the arbiter.
+	n=0
+	for q in "Stream CSV exports, or build each file in memory?" "Quote every field, or only those that need it?"; do
+		n=$((n + 1))
+		echo '{"session_id":"'$sid'","hook_event_name":"PreToolUse","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"'"$q"'"}]}}' | rhiza session hook PreToolUse > "$WORK/deny.out" || fail hook
+		echo '{"session_id":"'$sid'","hook_event_name":"Stop"}' | rhiza session hook Stop >> "$WORK/hook.out" || fail stop
+		[ $n = 1 ] && touch "$WORK/ready"
+		msg=".rhiza/local/messages/$sid/000$n.md"
+		i=0
+		until [ -f "$msg" ] && [ "$(grep -c '^send-key ' "$WORK/typed.log" 2>/dev/null)" -ge $n ]; do
+			i=$((i + 1))
+			[ $i -gt 1600 ] && exit 9
+			sleep 0.025
+		done
+		echo "got $msg" >> "$WORK/asker.log"
+	done
+	rhiza source add plan-interview "$WORK/source.json" --raw-session "$RHIZA_SESSION" --json >> "$WORK/agent.out" || exit 3
+	rhiza apply "$WORK/record.json" --json >> "$WORK/agent.out" || exit 4
+	rhiza change new 'Export reports' --json > "$WORK/new.out" || exit 5
+	sed -n 's/.*"change_set": "\([0-9A-Z]*\)".*/\1/p' "$WORK/new.out" > "$WORK/cs"
+	rhiza link "$(cat "$WORK/cs")" serves exports --change "$rec" >> "$WORK/agent.out" || exit 6
+	rhiza land --json >> "$WORK/agent.out" || exit 7
+	rhiza apply "$WORK/leaf.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" || exit 8
+	rhiza session done >> "$WORK/done.out" || exit 10
+	exit 0
+	;;
+*'rhiza guide arbiter'*)
+	q=$(printf '%s\n' "$last" | sed -n 's/^Decide question \([0-9A-Z]*\):.*/\1/p')
+	echo x >> "$WORK/arbiters"
+	h=assume-$(wc -l < "$WORK/arbiters" | tr -d ' ')
+	printf '{"writes":[{"op":"add","kind":"decision","handle":"'$h'","fields":["statement=Stream CSV rows instead of building the file in memory","wording=(assumed, would have escalated)","reasoning=Reports can be large"]},{"op":"link","from":"'$h'","type":"answers","to":"%s"}]}\n' "$q" > "$WORK/decision.json"
+	rhiza apply "$WORK/decision.json" --json >> "$WORK/agent.out" || fail arbiter
+	;;
+*'as the reviewer'*)
+	rhiza run findings "$WORK/clean.json" --json >> "$WORK/agent.out" || fail findings
+	;;
+*'as the critic'*)
+	;;
+*)
+	fail "unexpected prompt: $last"
+	;;
+esac
+rhiza session done >> "$WORK/done.out" || fail done
+touch "$WORK/ready"
+exit 0
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if [ ! -f "$WORK/pr.created" ]; then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	if [ "$3" = 7 ]; then
+		printf '{"state":"MERGED","mergeCommit":{"oid":"%s"}}\n' "$(cat "$WORK/merged-head")"
+		exit 0
+	fi
+	head=$(git -C "$o" rev-parse --verify "refs/heads/$3")
+	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
+	;;
+"pr merge")
+	# Squash-free: main on origin takes the branch as it was checked.
+	b=$(git -C "$o" for-each-ref --format='%(refname:short)' 'refs/heads/cs/*')
+	git -C "$o" rev-parse "refs/heads/$b" > "$WORK/merged-head"
+	git -C "$o" update-ref refs/heads/main "refs/heads/$b"
+	touch "$WORK/pr.merged"
+	;;
+"pr create")
+	while [ $# -gt 0 ]; do
+		if [ "$1" = --body-file ]; then
+			cp "$2" "$WORK/pr-body.md"
+		fi
+		shift
+	done
+	touch "$WORK/pr.created"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

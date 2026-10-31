@@ -1,0 +1,29 @@
+{
+  "actor": "01M695HEMWES4RVS8Z7JQVZ41W",
+  "after": [
+    "01M69583RRZZ2Z2QWH71H8S5Z2"
+  ],
+  "at": "2026-10-31T14:24:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M5WSGDJMV9EEVE603PF7B67E",
+        "handle": null,
+        "id": "01M695J8MM753EH68C5SY9KNRK",
+        "node": "01M5WSGDJMV9EEVE603M22PTYT",
+        "op": "node.update",
+        "set": {
+          "acceptance": "Go workflow tests: BuiltinNames lists plan and its file parses with steps interview, review, critic, check, revise, gate, open-pr, wait-pr, pr-green, rebase, wait-rebased, rebased-green, merge and close-out, the gate passing to open-pr and close-out ending the run; the review step's prompt names only {change} and rhiza guide plan-review, and the interview step's prompt names the rhiza-plan skill. A testscript runs rhiza run start --workflow plan with fake agents and a fake gh on a draft change set through the gate to open-pr, and the run's branch is rendered and committed: git status is clean, rhiza check passes, and no plan file is written.",
+          "statement": "The binary ships a built-in plan workflow: an interview agent step driven by the rhiza-plan skill, then rounds of a fresh review agent step told only the change set's ID, a critic agent step and rhiza run review-check, with a revise agent step on a failed check, then rhiza run gate, and after it the ship steps open-pr, wait-pr, pr-green, rebase, wait-rebased, rebased-green, merge and close-out. It writes no plan file."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M625RCFY4RB9HC0B69Y08VFV",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M695J99CP58GXYBV55VPMAWF",
+  "type": "ops",
+  "v": 1
+}

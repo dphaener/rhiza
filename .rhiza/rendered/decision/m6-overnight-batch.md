@@ -19,6 +19,8 @@ Tiled agent sessions, Link kinds checked at write, Plan run ships its plan, Runs
 ### In
 
 - decided-by [milestone-6](../intent/milestone-6.md)
+- decided-by [agent-steps-tile-run-window](../capability/rhiza/runtime/rex-sessions/agent-steps-tile-run-window.md)
+- decided-by [question-sessions-tile-run-window](../capability/rhiza/runtime/rex-sessions/question-sessions-tile-run-window.md)
 
 ## History
 

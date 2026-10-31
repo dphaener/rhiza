@@ -15,20 +15,25 @@
 
 chmod 755 bin/rex
 chmod 755 bin/claude
+chmod 755 bin/gh
 env PATH=$WORK/bin:$PATH
 mkdir $HOME/.claude/projects/p
+exec git init -q --bare origin.git
 mkdir repo
 cd repo
 exec git init -q
+exec git remote add origin $WORK/origin.git
 exec rhiza init
 exec git add -A
 exec git commit -qm init
+exec git push -q -u origin main
 
 exec rhiza change new 'Plan exports' --kind record --title 'Plan exports' --json
 stdout '"change_set": "(01[0-9A-Z]{24})"'
 exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/rec'
 exec git add -A
 exec git commit -qm 'Plan exports'
+exec git push -q origin main
 
 env REX_BLOCK=block:root
 env REX_SESSION=session:s1
@@ -51,7 +56,7 @@ stdout '^- interview \(visit 1\): pass, then review, '
 stdout '^- review \(visit 1\): pass, then critic, '
 stdout '^- critic \(visit 1\): pass, then check, '
 stdout '^- check \(visit 1\): pass, then gate: exit 0$'
-stdout '^- gate \(visit 1\): pass, then end: exit 0$'
+stdout '^- gate \(visit 1\): pass, then open-pr: exit 0$'
 ! stdout 'revise'
 
 # The journal: the planner's block, its question, the arbiter, its
@@ -79,7 +84,7 @@ stdout -count=1 'as the critic'
 
 # The gate accepted the plan's draft with rule autonomous; the record
 # landed with the answering Decision.
-cd $WORK/repo.plan-exports
+cd $WORK/repo
 exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
 stdout '"state": "accepted"'
 stdout '"rule": "autonomous"'
@@ -91,11 +96,12 @@ stdout '"type": "answers"'
 exec sh -c 'rhiza show export-csv --change $(cat $WORK/cs) --json'
 stdout '"type": "decided-by"'
 
-# Only .rhiza/ changed in the worktree.
-exec sh -c 'git status --porcelain --untracked-files=all > $WORK/status; cat $WORK/status'
-stdout '^.. \.rhiza/'
-exec sh -c 'grep -v "^.. \.rhiza/" $WORK/status | wc -l | tr -d " "'
+# The run rendered and committed its branch: nothing is left over, and
+# the last commit is the render commit.
+exec sh -c 'git status --porcelain --untracked-files=all | wc -l | tr -d " "'
 stdout '^0$'
+exec git log -1 --format=%B
+stdout '^Render the plan$'
 fold-ok
 
 -- source.json --
@@ -126,9 +132,16 @@ send | send-key)
 	exit 0
 	;;
 esac
-if [ "$1 $2" = "window close" ]; then
+case "$1 $2" in
+"window close" | "block close")
 	exit 0
-fi
+	;;
+"block call")
+	echo '{"columns":200,"rows":50,"cell_width_px":8,"cell_height_px":16}'
+	exit 0
+	;;
+esac
+verb=$1
 dir=
 while [ $# -gt 0 ]; do
 	if [ "$1" = -c ]; then
@@ -151,7 +164,11 @@ until [ -f "$WORK/ready" ]; do
 	sleep 0.025
 done
 rm -f "$WORK/ready"
-echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+if [ "$verb" = split ]; then
+	echo '{"block_id":"block:b2","window_id":"window:w1"}'
+else
+	echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+fi
 -- bin/claude --
 #!/bin/sh
 sid=
@@ -213,3 +230,41 @@ esac
 rhiza session done >> "$WORK/done.out" || fail done
 touch "$WORK/ready"
 exit 0
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if [ ! -f "$WORK/pr.created" ]; then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	if [ "$3" = 7 ]; then
+		printf '{"state":"MERGED","mergeCommit":{"oid":"%s"}}\n' "$(cat "$WORK/merged-head")"
+		exit 0
+	fi
+	head=$(git -C "$o" rev-parse --verify "refs/heads/$3")
+	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
+	;;
+"pr merge")
+	# Squash-free: main on origin takes the branch as it was checked.
+	b=$(git -C "$o" for-each-ref --format='%(refname:short)' 'refs/heads/cs/*')
+	git -C "$o" rev-parse "refs/heads/$b" > "$WORK/merged-head"
+	git -C "$o" update-ref refs/heads/main "refs/heads/$b"
+	touch "$WORK/pr.merged"
+	;;
+"pr create")
+	while [ $# -gt 0 ]; do
+		if [ "$1" = --body-file ]; then
+			cp "$2" "$WORK/pr-body.md"
+		fi
+		shift
+	done
+	touch "$WORK/pr.created"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

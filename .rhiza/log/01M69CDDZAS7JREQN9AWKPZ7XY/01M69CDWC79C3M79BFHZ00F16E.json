@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M69CDDZAS7JREQN9AZ5QWHYQ"
+  ],
+  "at": "2026-10-31T16:24:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "make test runs go test with -timeout 20m: cmd/rhiza's scripts took 540 s on CI's two-core runner against the 10-minute default, and arbiter-panes-one-window timed out on main at 8afcc20, failing the run's main-green",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "test-timeout-twenty-minutes",
+        "id": "01M69CDSGEEYK37EBFA8R84KBP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M69CDSGEEYK37EBFA5661FBY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69CDSGEEYK37EBFA5661FBY",
+        "id": "01M69CDT33QW8TEGP9ZHF15SD4",
+        "link": "01M69CDT33QW8TEGP9ZDHW6G3T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686S7YS7Z5Z26YP3XE0CKA7",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test runs make -n test at the repo root and asserts the go test line carries -timeout 20m; it skips when make is not on PATH",
+          "statement": "make test gives each package 20 minutes, so the full suite does not hit go test's 10-minute default on a slow runner"
+        },
+        "handle": "test-timeout-set",
+        "id": "01M69CDTPVNVSQSER2JNM7HFTM",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M69CDTPVNVSQSER2JM4XB0MF",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M69CDTPVNVSQSER2JM4XB0MF",
+        "id": "01M69CDVAPW70CV8VYAVWPSKRJ",
+        "link": "01M69CDVAPW70CV8VYATMKW6A3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69CDSGEEYK37EBFA5661FBY",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M69CDDZAS7JREQN9AWKPZ7XY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69CDWC79C3M79BFHZ00F16E",
+  "type": "ops",
+  "v": 1
+}

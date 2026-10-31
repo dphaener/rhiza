@@ -1,0 +1,40 @@
+{
+  "actor": "01M68EN247CFHRCBZ34SPV7Y47",
+  "after": [
+    "01M6858SBEPYBX7NV1DN3BS1WS"
+  ],
+  "at": "2026-10-31T07:52:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6f62e29 I read the diff: StartAgent, StartArbiter and StartAdvisor in internal/api/run.go now set req.split and req.anchor = r.paneAnchor(\"\"), and session start splits whenever the anchor has a block, else opens a window. I ran go test ./internal/api -run 'TestStartAgent|TestStartCheck|TestStartFix' -count=1 -v: all pass. The new TestStartAgent in internal/api/run_checks_panes_test.go uses paneRunner, calls StartAgent for a plan interview step after session S-first with block:a1, and wantSplitOf asserts one rex split -b block:a1 and no window new. TestStartAgentFirstSession asserts exactly one window new and no split. It has no session of its own run (the store holds only another run's session, not an empty store), which reaches the same paneAnchor path that returns an empty Tab. Both use the fake rex exec of sessionFixture, so no real Rex runs. make check exits 0 with a clean tree."
+        },
+        "handle": "agent-steps-tile-run-window-verified",
+        "id": "01M68F4EHBW8HXBAXGNMAW5N4B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M68F4EHBW8HXBAXGNJPC5AHN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68F4EHBW8HXBAXGNJPC5AHN",
+        "id": "01M68F4F5K2GD7RH4T6GR5A3TZ",
+        "link": "01M68F4F5K2GD7RH4T6ER5XN1W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857JXB8B7WXBN5VHE7MV1K",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M66M3S5PZD9PXDP0X3N1ZTXH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M68F4G2QRV70P2QQ7DKHCDAK",
+  "type": "ops",
+  "v": 1
+}

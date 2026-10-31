@@ -3,8 +3,8 @@
 # into the model, a fresh reviewer finds one leaf with no acceptance, the
 # critic confirms it, review-check fails, the reviser adds the acceptance,
 # a second review is clean, review-check passes and the gate proposes the
-# plan's draft change set. The run writes only under .rhiza/ in its
-# worktree: no plan file.
+# plan's draft change set. The run renders and commits its
+# branch: no plan file.
 #
 # Nothing here reaches Rex or Claude Code. The fake rex starts the tab's
 # command in the background in the window's directory and returns once the
@@ -14,14 +14,18 @@
 
 chmod 755 bin/rex
 chmod 755 bin/claude
+chmod 755 bin/gh
 env PATH=$WORK/bin:$PATH
 mkdir $HOME/.claude/projects/p
+exec git init -q --bare origin.git
 mkdir repo
 cd repo
 exec git init -q
+exec git remote add origin $WORK/origin.git
 exec rhiza init
 exec git add -A
 exec git commit -qm init
+exec git push -q -u origin main
 
 # A draft record change set to plan a milestone in, committed (with the
 # owner's actor) so the run's worktree has it.
@@ -30,6 +34,7 @@ stdout '"change_set": "(01[0-9A-Z]{24})"'
 exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/rec'
 exec git add -A
 exec git commit -qm 'Plan reports'
+exec git push -q origin main
 
 exec sh -c 'rhiza run start $(cat $WORK/rec) --workflow plan --permission-mode manual > $WORK/out 2> $WORK/err; echo exit=$?'
 stdout '^exit=0$'
@@ -50,7 +55,7 @@ stdout '^- revise \(visit 1\): pass, then review, '
 stdout '^- review \(visit 2\): pass, then critic, '
 stdout '^- critic \(visit 2\): pass, then check, '
 stdout '^- check \(visit 2\): pass, then gate: exit 0$'
-stdout '^- gate \(visit 1\): pass, then end: exit 0$'
+stdout '^- gate \(visit 1\): pass, then open-pr: exit 0$'
 ! stdout 'visit 3'
 
 # Each agent was told its role; the review roles were told only the change
@@ -70,7 +75,7 @@ stdout '"round": 2'
 
 # The record landed with the interview; the planned change set was
 # proposed by the gate, and has the reviser's acceptance.
-cd $WORK/repo.plan-reports
+cd $WORK/repo
 exec sh -c 'rhiza change show $(cat $WORK/rec) --json'
 stdout '"state": "landed"'
 exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
@@ -81,16 +86,17 @@ exec sh -c 'rhiza show csv-streaming --json'
 stdout '"quote": "Stream it, reports get huge"'
 stdout '"type": "derived-from"'
 
-# The run wrote only under .rhiza/ in its worktree: no plan file.
-exec sh -c 'git status --porcelain --untracked-files=all > $WORK/status; cat $WORK/status'
-stdout '^.. \.rhiza/'
-exec sh -c 'grep -v "^.. \.rhiza/" $WORK/status | wc -l | tr -d " "'
+# The run rendered and committed its branch: nothing is left to commit,
+# the branch checks as it is, and the last commit is the render commit
+# with the Change and Actor trailers.
+exec sh -c 'git status --porcelain --untracked-files=all | wc -l | tr -d " "'
 stdout '^0$'
-
-# The model checks, once rendered as a commit of it would be.
-exec rhiza render
 exec rhiza check
 stdout '^ok'
+exec git log -1 --format=%B
+stdout '^Render the plan$'
+stdout '^Change: 01[0-9A-Z]{24}$'
+stdout '^Actor: '
 fold-ok
 
 -- source.json --
@@ -203,3 +209,41 @@ esac
 rhiza session done >> "$WORK/done.out" || fail done
 touch "$WORK/ready"
 exit 0
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if [ ! -f "$WORK/pr.created" ]; then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	if [ "$3" = 7 ]; then
+		printf '{"state":"MERGED","mergeCommit":{"oid":"%s"}}\n' "$(cat "$WORK/merged-head")"
+		exit 0
+	fi
+	head=$(git -C "$o" rev-parse --verify "refs/heads/$3")
+	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
+	;;
+"pr merge")
+	# Squash-free: main on origin takes the branch as it was checked.
+	b=$(git -C "$o" for-each-ref --format='%(refname:short)' 'refs/heads/cs/*')
+	git -C "$o" rev-parse "refs/heads/$b" > "$WORK/merged-head"
+	git -C "$o" update-ref refs/heads/main "refs/heads/$b"
+	touch "$WORK/pr.merged"
+	;;
+"pr create")
+	while [ $# -gt 0 ]; do
+		if [ "$1" = --body-file ]; then
+			cp "$2" "$WORK/pr-body.md"
+		fi
+		shift
+	done
+	touch "$WORK/pr.created"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

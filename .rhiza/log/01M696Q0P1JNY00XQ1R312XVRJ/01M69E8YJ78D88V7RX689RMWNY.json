@@ -1,0 +1,40 @@
+{
+  "actor": "01M69DDBVGQDSN1RJDETXWK7P0",
+  "after": [
+    "01M696Q81BMQARZVS27NREM9M4"
+  ],
+  "at": "2026-10-31T16:56:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d60260b0: the diff moves TestReadBudget's quiet wait from internal/api/budget_test.go into internal/quiettest (Wait, Quiet.String, Late; same logic, only renamed and exported, its ps-parsing test moved too) and TestGeneratedModel calls quiettest.Wait() before budgetLock, logs 'other packages: <q>', keeps 'if median >= 50*time.Millisecond { t.Errorf(...) }', and logs quiettest.Late afterwards. go test -count=1 ./... passed every package (modelapp 196s, as it waited for the others). go test -count=1 -v ./internal/tui/modelapp ./internal/index ./internal/slice ./internal/gen logged 'other packages: alone after 23.7s (last beside slice.test)' then 'tree and roadmap read: median 10.12ms' and passed; run alone it logged 'alone after 2.3s', median 12.99ms. make check exited 0."
+        },
+        "handle": "modelapp-timing-alone-verified",
+        "id": "01M69E8X1NS7DQC38ES5PDMW4Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69E8X1NS7DQC38ES2AQ1DMK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69E8X1NS7DQC38ES2AQ1DMK",
+        "id": "01M69E8XM6Y11RQ2PD31E6QDDA",
+        "link": "01M69E8XM6Y11RQ2PD2ZM9Y9QK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M696Q30C6Z9DX0WGCSNDSGHQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M696Q0P1JNY00XQ1R312XVRJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69E8YJ78D88V7RX689RMWNY",
+  "type": "ops",
+  "v": 1
+}

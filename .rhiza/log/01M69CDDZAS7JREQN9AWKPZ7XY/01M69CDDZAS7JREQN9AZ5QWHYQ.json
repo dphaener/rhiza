@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-31T16:24:19Z",
+  "body": {
+    "intent": "make test gives each package 20 minutes instead of go test's default 10, so cmd/rhiza's growing script suite stops timing out on CI's two-core runner",
+    "kind": "intention",
+    "sources": [],
+    "title": "Test timeout 20 minutes"
+  },
+  "change_set": "01M69CDDZAS7JREQN9AWKPZ7XY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69CDDZAS7JREQN9AZ5QWHYQ",
+  "type": "open",
+  "v": 2
+}

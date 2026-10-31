@@ -48,3 +48,60 @@ on.pass = "review"
 [step.gate]
 kind = "command"
 run = "rhiza run gate"
+on.pass = "open-pr"
+
+# The gate rendered and committed the branch. The plan ends with it on
+# origin and its pull request open, its body the plan's summary; a second
+# visit pushes and replaces that body.
+[step.open-pr]
+kind = "command"
+run = "rhiza ship open-pr"
+max_visits = 3
+on.pass = "wait-pr"
+
+# The plan's PR merges once its CI is green, pinned to the checked head.
+# Before the merge, as in ship-change, ship rebase brings the branch up to
+# origin's main when another change set landed meanwhile, settling the
+# rendered files' conflicts by rendering again, and the rebased head waits
+# for CI of its own. The merge does not land the change set; close-out removes the branch and
+# worktree and forgets the ship state, so a later ship run on the change
+# set opens and merges its own PR.
+[step.wait-pr]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "2h"
+interval = "30s"
+max_visits = 3
+on.pass = "pr-green"
+
+[step.pr-green]
+kind = "command"
+run = "rhiza ship check"
+max_visits = 3
+on.pass = "rebase"
+
+[step.rebase]
+kind = "command"
+run = "rhiza ship rebase"
+on.pass = "wait-rebased"
+
+[step.wait-rebased]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "2h"
+interval = "30s"
+on.pass = "rebased-green"
+
+[step.rebased-green]
+kind = "command"
+run = "rhiza ship check"
+on.pass = "merge"
+
+[step.merge]
+kind = "command"
+run = "rhiza ship merge"
+on.pass = "close-out"
+
+[step.close-out]
+kind = "command"
+run = "rhiza ship close-out --forget"

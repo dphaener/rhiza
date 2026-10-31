@@ -1,0 +1,404 @@
+# rhiza run start --workflow plan runs the built-in plan workflow on a
+# draft record change set, end to end: the interview writes the milestone
+# into the model, a fresh reviewer finds one leaf with no acceptance, the
+# critic confirms it, review-check fails, the reviser adds the acceptance,
+# a second review is clean, review-check passes and the gate proposes the
+# plan's draft change set. The run renders and commits its
+# branch: no plan file.
+#
+# The plan ends on a pushed branch with an open PR: origin is a bare repo
+# in $WORK and the fake gh logs its argv to gh.log and keeps the body a PR
+# is created with in pr-body.md. With its checks green the run rebases
+# onto origin's main (already in it here, so nothing moves), merges the
+# PR and closes out; a ship-change run on the planned change set after it
+# opens PR #8 and merges it, a merge of its own.
+#
+# Nothing here reaches Rex, GitHub or Claude Code. The fake rex starts the tab's
+# command in the background in the window's directory and returns once the
+# agent has touched $WORK/ready. One fake claude plays every role, by its
+# prompt (its last argument): it logs the prompt, does the role's writes
+# with the real rhiza, says done, touches $WORK/ready and exits 0.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+mkdir $HOME/.claude/projects/p
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec git push -q -u origin main
+
+# A draft record change set to plan a milestone in, committed (with the
+# owner's actor) so the run's worktree has it.
+exec rhiza change new 'Plan reports' --kind record --title 'Plan reports' --json
+stdout '"change_set": "(01[0-9A-Z]{24})"'
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/rec'
+exec git add -A
+exec git commit -qm 'Plan reports'
+exec git push -q origin main
+
+exec sh -c 'rhiza run start $(cat $WORK/rec) --workflow plan --permission-mode manual > $WORK/out 2> $WORK/err; echo exit=$?'
+stdout '^exit=0$'
+exec cat $WORK/out
+stdout '^Run [0-9A-Z]{26} succeeded$'
+
+# The steps ran in order: one failed check sent the plan to the reviser,
+# and the second round passed to the gate.
+exec rhiza run status --json
+stdout '"workflow": "plan"'
+stdout '"state": "succeeded"'
+exec rhiza run status
+stdout '^- interview \(visit 1\): pass, then review, '
+stdout '^- review \(visit 1\): pass, then critic, '
+stdout '^- critic \(visit 1\): pass, then check, '
+stdout '^- check \(visit 1\): fail, then revise: exit 1$'
+stdout '^- revise \(visit 1\): pass, then review, '
+stdout '^- review \(visit 2\): pass, then critic, '
+stdout '^- critic \(visit 2\): pass, then check, '
+stdout '^- check \(visit 2\): pass, then gate: exit 0$'
+stdout '^- gate \(visit 1\): pass, then open-pr: exit 0$'
+! stdout 'visit 3'
+
+# Each agent was told its role; the review roles were told only the change
+# set and the plan-review guide.
+exec cat $WORK/prompts.log
+stdout -count=1 '^/rhiza-plan Plan change set 01[0-9A-Z]{24} \(Plan reports\) '
+stdout -count=2 '^Review the plan of change set 01[0-9A-Z]{24} as the reviewer: follow `rhiza guide plan-review`, then run `rhiza session done`\.$'
+stdout -count=2 'as the critic'
+stdout -count=1 'as the reviser'
+! stdout 'plan file'
+
+# Two review rounds: one confirmed finding, then a clean round.
+exec rhiza run status --json
+stdout '"kind": "missing-acceptance"'
+stdout '"verdict": "confirmed"'
+stdout '"round": 2'
+
+# The record landed with the interview; the planned change set was
+# proposed by the gate, and has the reviser's acceptance.
+cd $WORK/repo
+exec sh -c 'rhiza change show $(cat $WORK/rec) --json'
+stdout '"state": "landed"'
+exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
+stdout '"state": "proposed"'
+exec sh -c 'rhiza show export-csv --change $(cat $WORK/cs) --json'
+stdout '"acceptance": "A test exports a 100k-row report with flat memory use"'
+exec sh -c 'rhiza show csv-streaming --json'
+stdout '"quote": "Stream it, reports get huge"'
+stdout '"type": "derived-from"'
+
+# The run pushed its branch and opened one PR, titled by the change set,
+# its body the plan's summary, and the ship state records its number.
+exec sh -c 'grep -c "^pr create" $WORK/gh.log'
+stdout '^1$'
+grep '^pr create .*--title Plan reports' $WORK/gh.log
+grep '^# Plan of run ' $WORK/pr-body.md
+grep '^### Round 1$' $WORK/pr-body.md
+grep '^### Round 2$' $WORK/pr-body.md
+grep '^- confirmed f1 on export-csv: export-csv has no acceptance check — confirmed: export-csv has no acceptance field$' $WORK/pr-body.md
+grep '^No findings\.$' $WORK/pr-body.md
+grep '^## Gate$' $WORK/pr-body.md
+grep '^- 01[0-9A-Z]{24} \(Export reports\): proposed$' $WORK/pr-body.md
+
+# With CI green the run merged the PR pinned to the checked head (the one
+# it pushed), without landing anything: the merge and the head are the
+# plan's branch, now main on origin.
+exec sh -c 'grep -c "^pr merge" $WORK/gh.log'
+stdout '^1$'
+exec sh -c 'grep "^pr merge 7 --squash --match-head-commit " $WORK/gh.log | sed "s/.*--match-head-commit //" > $WORK/pinned'
+exec sh -c 'test "$(cat $WORK/pinned)" = "$(cat $WORK/merged-head)"'
+exec sh -c 'test "$(git --git-dir=$WORK/origin.git rev-parse refs/heads/main)" = "$(cat $WORK/merged-head)"'
+! grep 'admin|auto|delete-branch' $WORK/gh.log
+
+# The close-out removed the branch and the worktree, locally and on
+# origin, brought main up to date and forgot the ship state, so a later
+# ship run starts from nothing: ship merge has no checked head to merge.
+! exists $WORK/repo.plan-reports
+exec sh -c 'git branch --list "cs/plan-reports" | wc -l | tr -d " "'
+stdout '^0$'
+exec sh -c 'git --git-dir=$WORK/origin.git branch --list "cs/plan-reports" | wc -l | tr -d " "'
+stdout '^0$'
+exec sh -c 'ls $(git rev-parse --git-common-dir)/rhiza/ship 2>/dev/null | wc -l | tr -d " "'
+stdout '^0$'
+exec sh -c 'test "$(git rev-parse HEAD)" = "$(cat $WORK/merged-head)"'
+exec rhiza run status
+stdout '^- pr-green \(visit 1\): pass, then rebase: exit 0$'
+stdout '^- rebase \(visit 1\): pass, then wait-rebased: exit 0$'
+stdout '^- rebased-green \(visit 1\): pass, then merge: exit 0$'
+stdout '^- merge \(visit 1\): pass, then close-out: exit 0$'
+stdout '^- close-out \(visit 1\): pass'
+
+# The run rendered and committed its branch: nothing is left to commit,
+# the branch checks as it is, and the last commit is the render commit
+# with the Change and Actor trailers.
+exec sh -c 'git status --porcelain --untracked-files=all | wc -l | tr -d " "'
+stdout '^0$'
+exec rhiza check
+stdout '^ok'
+exec git log -1 --format=%B
+stdout '^Render the plan$'
+stdout '^Change: 01[0-9A-Z]{24}$'
+stdout '^Actor: '
+fold-ok
+
+# A following ship-change run on the planned change set opens and merges
+# its own PR, after the plan's merge: gh pr merge is called again, pinned
+# to the new PR's checked head, and not reported as already merged. The
+# repo's ship-change here is the PR half of the built-in one, its steps as
+# they are there, after a review of one check that finds nothing, since
+# nothing here builds the leaves.
+mkdir .rhiza/workflows
+cp $WORK/ship-change.toml .rhiza/workflows/ship-change.toml
+exec git add -A
+exec git commit -qm 'Ship the PR half'
+exec git push -q origin main
+exec sh -c 'rhiza run start $(cat $WORK/cs) --permission-mode manual --json > $WORK/ship.out 2> $WORK/ship.err; echo exit=$?'
+stdout '^exit=0$'
+exec cat $WORK/ship.out
+stdout '"workflow": "ship-change"'
+stdout '"state": "succeeded"'
+
+# The merge step's own report (rhiza ship merge --json, on the run's
+# stderr) is a fresh merge of PR #8, not the plan's merge reported again:
+# already_merged is false, and so left out.
+grep '^rhiza: step merge: entered' $WORK/ship.err
+grep '"merge_commit": "' $WORK/ship.err
+! grep 'already_merged' $WORK/ship.err
+exec sh -c 'grep -c "^pr create" $WORK/gh.log'
+stdout '^2$'
+exec sh -c 'grep -c "^pr merge" $WORK/gh.log'
+stdout '^2$'
+exec sh -c 'grep -c "^pr merge 8 --squash --match-head-commit " $WORK/gh.log'
+stdout '^1$'
+exec sh -c 'grep "^pr merge 8 " $WORK/gh.log | sed "s/.*--match-head-commit //" > $WORK/pinned8'
+exec sh -c 'test "$(cat $WORK/pinned8)" = "$(cat $WORK/merged-head)"'
+exec sh -c 'cat $(git rev-parse --git-common-dir)/rhiza/ship/$(cat $WORK/cs).json'
+stdout '"pr": 8'
+stdout '"merge_commit": "'
+exec sh -c 'cd $WORK/repo.export-reports && rhiza run status'
+stdout '^- review \(visit 1\): pass, then open-pr: 1 of 1 checks passed$'
+stdout '^- open-pr \(visit 1\): pass, then wait-pr: exit 0$'
+stdout '^- merge \(visit 1\): pass, then end: exit 0$'
+exec sh -c 'cd $WORK/repo.export-reports && rhiza ship merge --json'
+stdout '"already_merged": true'
+stdout '"pr": 8'
+
+-- source.json --
+{"title":"Planning interview","summary":"The owner planned the reports milestone.","quotes":[{"text":"Stream it, reports get huge","by":"owner"}]}
+-- record.json --
+{"writes":[
+  {"op":"add","kind":"intent","handle":"reports","fields":["statement=Users take their reports out of the product"]},
+  {"op":"add","kind":"decision","handle":"csv-streaming","fields":[
+    "statement=Stream CSV rows instead of building the file in memory",
+    "quote=Stream it, reports get huge"]},
+  {"op":"link","from":"csv-streaming","type":"derived-from","to":"plan-interview"}
+]}
+-- leaf.json --
+{"writes":[
+  {"op":"add","kind":"capability","handle":"export-csv","fields":["statement=Users export any report as CSV"]},
+  {"op":"link","from":"export-csv","type":"decided-by","to":"csv-streaming"}
+]}
+-- findings.json --
+{"findings":[{"node":"export-csv","kind":"missing-acceptance","reason":"export-csv has no acceptance check"}]}
+-- clean.json --
+{"findings":[]}
+-- verdict.json --
+{"verdicts":[{"finding":"f1","verdict":"confirmed","reason":"export-csv has no acceptance field"}]}
+-- fix.json --
+{"writes":[
+  {"op":"set","ref":"export-csv","fields":["acceptance=A test exports a 100k-row report with flat memory use"]}
+]}
+-- ship-change.toml --
+name = "ship-change"
+
+[step.review]
+kind = "checks"
+interval = "50ms"
+on.pass = "open-pr"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+
+[step.open-pr]
+kind = "command"
+run = "rhiza ship open-pr"
+on.pass = "wait-pr"
+
+[step.wait-pr]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "1m"
+interval = "50ms"
+on.pass = "pr-green"
+
+[step.pr-green]
+kind = "command"
+run = "rhiza ship check"
+on.pass = "merge"
+
+[step.merge]
+kind = "command"
+run = "rhiza ship merge --json"
+-- transcript.jsonl --
+{"type": "user", "message": {"role": "user", "content": "Stream it, reports get huge"}}
+-- bin/rex --
+#!/bin/sh
+case "$1 $2" in
+window\ close | block\ close)
+	echo "$*" >> "$WORK/rex.log"
+	exit 0
+	;;
+esac
+case "$1" in
+events | send | send-key)
+	echo "$*" >> "$WORK/rex.log"
+	exit 0
+	;;
+esac
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >>"$WORK/tab.out" 2>&1 </dev/null &
+		break
+	fi
+	shift
+done
+i=0
+until [ -f "$WORK/ready" ]; do
+	i=$((i + 1))
+	if [ $i -gt 1600 ]; then
+		echo 'fake rex: the agent never got ready' >&2
+		exit 1
+	fi
+	sleep 0.025
+done
+rm -f "$WORK/ready"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+for a; do last=$a; done
+printf '%s\n' "$last" >> "$WORK/prompts.log"
+fail() {
+	echo "fake claude: $*" >> "$WORK/claude.err"
+	touch "$WORK/ready"
+	exit 1
+}
+has_acceptance() {
+	rhiza show export-csv --change "$(cat "$WORK/cs")" --json | grep -q '"acceptance"'
+}
+case "$last" in
+/rhiza-plan*)
+	rec=$RHIZA_CHANGE
+	cp "$WORK/transcript.jsonl" "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl"
+	rhiza source add plan-interview "$WORK/source.json" --raw-session "$RHIZA_SESSION" --json >> "$WORK/agent.out" || fail source
+	rhiza apply "$WORK/record.json" --json >> "$WORK/agent.out" || fail record
+	rhiza change new 'Export reports' --json > "$WORK/new.out" || fail change new
+	sed -n 's/.*"change_set": "\([0-9A-Z]*\)".*/\1/p' "$WORK/new.out" > "$WORK/cs"
+	rhiza link "$(cat "$WORK/cs")" serves reports --change "$rec" >> "$WORK/agent.out" || fail serves
+	rhiza land --json >> "$WORK/agent.out" || fail land
+	rhiza apply "$WORK/leaf.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" || fail leaf
+	;;
+*'as the reviewer'*)
+	if has_acceptance; then
+		rhiza run findings "$WORK/clean.json" --json >> "$WORK/agent.out" || fail findings
+	else
+		rhiza run findings "$WORK/findings.json" --json >> "$WORK/agent.out" || fail findings
+	fi
+	;;
+*'as the critic'*)
+	if ! has_acceptance; then
+		rhiza run verdict "$WORK/verdict.json" --json >> "$WORK/agent.out" || fail verdict
+	fi
+	;;
+*'as check '*)
+	rhiza run findings --check "$RHIZA_CHECK" "$WORK/clean.json" --json >> "$WORK/agent.out" || fail check
+	;;
+*'as the reviser'*)
+	rhiza apply "$WORK/fix.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" || fail fix
+	;;
+*)
+	fail "unexpected prompt: $last"
+	;;
+esac
+rhiza session done >> "$WORK/done.out" || fail done
+touch "$WORK/ready"
+exit 0
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if [ ! -f "$WORK/pr.created" ]; then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	case "$3" in
+	7 | 8)
+		printf '{"state":"MERGED","mergeCommit":{"oid":"%s"}}\n' "$(cat "$WORK/merged-head")"
+		exit 0
+		;;
+	esac
+	# The plan's branch has PR #7, merged by the plan run; the planned
+	# change set's branch has none until the ship run opens #8.
+	if [ "$3" != cs/plan-reports ] && [ ! -f "$WORK/pr2.created" ]; then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	n=7
+	state=OPEN
+	if [ -f "$WORK/pr.merged" ]; then
+		state=MERGED
+	fi
+	if [ -f "$WORK/pr2.created" ]; then
+		n=8
+		state=OPEN
+	fi
+	head=$(git -C "$o" rev-parse --verify "refs/heads/$3")
+	printf '{"number":%s,"url":"https://github.test/o/r/pull/%s","state":"%s","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$n" "$n" "$state" "$head"
+	;;
+"pr merge")
+	# Squash-free: main on origin takes the branch as it was checked.
+	b=$(git -C "$o" for-each-ref --format='%(refname:short)' 'refs/heads/cs/*')
+	git -C "$o" rev-parse "refs/heads/$b" > "$WORK/merged-head"
+	git -C "$o" update-ref refs/heads/main "refs/heads/$b"
+	rm -f "$WORK/pr2.created"
+	touch "$WORK/pr.merged"
+	;;
+"pr create")
+	while [ $# -gt 0 ]; do
+		if [ "$1" = --body-file ]; then
+			cp "$2" "$WORK/pr-body.md"
+		fi
+		shift
+	done
+	if [ -f "$WORK/pr.created" ]; then
+		touch "$WORK/pr2.created"
+	fi
+	touch "$WORK/pr.created"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

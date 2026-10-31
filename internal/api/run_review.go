@@ -1159,12 +1159,93 @@ type RunGateChangeSet struct {
 
 // RunGateResponse is the plan's change sets after the gate. An
 // autonomous run whose review has not passed is an error (exit 1), not a
-// response.
+// response; one whose review left a question open stops (ExitCode).
 type RunGateResponse struct {
 	Run        string             `json:"run" desc:"The run's full ID"`
 	Autonomous bool               `json:"autonomous" desc:"True if the run is autonomous, so the gate accepted in the owner's place"`
 	ChangeSets []RunGateChangeSet `json:"change_sets" desc:"The plan's change sets: the run's change set and every change set serving an intent it adds, by ID"`
+	Open       []RunGateQuestion  `json:"open" desc:"Every question the plan left with no live answering Decision: the review's questions and each question node created in the plan's change sets, in order; empty when none"`
+	Commit     string             `json:"commit,omitempty" desc:"The commit that renders and commits .rhiza on the run's branch; absent when there was nothing to commit, or in a dry run"`
 	DryRun     bool               `json:"dry_run,omitempty" desc:"True if nothing was written or journalled"`
+}
+
+// ExitCode is run.StopExit while questions are open (a plan run then
+// stops for the owner), else 0.
+func (r RunGateResponse) ExitCode() int {
+	if len(r.Open) > 0 && !r.DryRun {
+		return run.StopExit
+	}
+	return 0
+}
+
+// stopDetail is why a plan run stops at the gate: the open questions, by
+// handle, and the command that resumes it.
+func (r RunGateResponse) stopDetail() string {
+	names := make([]string, 0, len(r.Open))
+	for _, q := range r.Open {
+		if q.Handle != "" {
+			names = append(names, q.Handle)
+		} else {
+			names = append(names, q.ID)
+		}
+	}
+	return run.OpenStop + strings.Join(names, ", ") + "; answer each with a Decision, then rhiza run resume " + r.Run
+}
+
+// RunGateQuestion is one question the plan left unanswered.
+type RunGateQuestion struct {
+	ID     string `json:"id" desc:"The question node's full ID"`
+	Handle string `json:"handle,omitempty" desc:"Its handle, when it has one"`
+}
+
+// gateOpenQuestions are the questions the plan left unanswered: the
+// run's review questions (reviewQuestions) and every question node a
+// plan change set's ops create, each with no live answering Decision
+// (reviewAnswered) and not retired, once each, in discovery order.
+func gateOpenQuestions(sets []changeset.ChangeSet, plan []changeset.ChangeSet, m Model, st run.State) []RunGateQuestion {
+	out := []RunGateQuestion{}
+	seen := map[id.ID]bool{}
+	consider := func(q id.ID, handle string) {
+		if seen[q] {
+			return
+		}
+		seen[q] = true
+		if !questionOpen(sets, m, q) {
+			return
+		}
+		if n, ok := m.Node(q); ok && handle == "" {
+			handle = n.Handle
+		}
+		out = append(out, RunGateQuestion{ID: q.String(), Handle: handle})
+	}
+	for _, a := range reviewQuestions(st) {
+		consider(mustParseID(a.Question), a.Handle)
+	}
+	for _, c := range plan {
+		for _, o := range c.Ops {
+			if o.Type == op.TypeNodeCreate && o.Kind == op.KindQuestion {
+				consider(o.Node, o.Handle)
+			}
+		}
+	}
+	return out
+}
+
+// gateCommitMessage is the message of the commit that closes a plan run's
+// branch.
+const gateCommitMessage = "Render the plan"
+
+// gateRenderCommit renders .rhiza/rendered and commits it with every
+// .rhiza/log entry the run wrote, with the Change and Actor trailers, so
+// the branch passes rhiza check. Nothing to commit commits nothing.
+func gateRenderCommit(ctx *Ctx, cs id.ID) (string, error) {
+	if _, err := runRender(ctx, RenderRequest{}); err != nil {
+		return "", err
+	}
+	if _, err := ctx.Git("add", "-A", "--", ".rhiza"); err != nil {
+		return "", Errorf("%v", err)
+	}
+	return shipCommitStaged(ctx, shipTarget{cs: cs}, ".rhiza", gateCommitMessage)
 }
 
 // runRunGate ends the plan of the run RHIZA_RUN names. It proposes each
@@ -1192,7 +1273,7 @@ func runRunGate(ctx *Ctx, _ any) (any, error) {
 	if err != nil {
 		return nil, Errorf("%s: %v", cmd, err).WithNext("rhiza run status " + rr.id)
 	}
-	resp := RunGateResponse{Run: rr.id, Autonomous: rr.state.Autonomous, ChangeSets: make([]RunGateChangeSet, 0, len(plan)), DryRun: ctx.DryRun}
+	resp := RunGateResponse{Run: rr.id, Autonomous: rr.state.Autonomous, ChangeSets: make([]RunGateChangeSet, 0, len(plan)), Open: gateOpenQuestions(sets, plan, m, rr.state), DryRun: ctx.DryRun}
 	propose, _ := Lookup("propose")
 	ids := make([]string, 0, len(plan))
 	for _, c := range plan {
@@ -1217,10 +1298,23 @@ func runRunGate(ctx *Ctx, _ any) (any, error) {
 				resp.ChangeSets[i].Next = ownerAcceptNext(g.ID)
 			}
 		}
+		if err := gateCommitResp(ctx, &resp, rr.change); err != nil {
+			return nil, err
+		}
 		return resp, nil
 	}
-	if err := gateReview(sets, m, rr); err != nil {
+	reviewOpen, err := gateReview(sets, m, rr)
+	if err != nil {
 		return nil, err
+	}
+	if reviewOpen {
+		// A review question still open stops the run for the owner, as a
+		// question the planner parked does: it accepts nothing (exit
+		// run.StopExit, resp.Open names each).
+		if err := gateCommitResp(ctx, &resp, rr.change); err != nil {
+			return nil, err
+		}
+		return resp, nil
 	}
 	accept, _ := Lookup("accept")
 	for i, g := range resp.ChangeSets {
@@ -1234,7 +1328,21 @@ func runRunGate(ctx *Ctx, _ any) (any, error) {
 		}
 		resp.ChangeSets[i].State, resp.ChangeSets[i].Moves = changeset.StateAccepted, append(g.Moves, "accepted")
 	}
+	if err := gateCommitResp(ctx, &resp, rr.change); err != nil {
+		return nil, err
+	}
 	return resp, nil
+}
+
+// gateCommitResp renders and commits the branch after the gate's moves
+// (not in a dry run) and records the commit in resp.
+func gateCommitResp(ctx *Ctx, resp *RunGateResponse, cs id.ID) error {
+	if ctx.DryRun {
+		return nil
+	}
+	c, err := gateRenderCommit(ctx, cs)
+	resp.Commit = c
+	return err
 }
 
 // gateCtx is ctx acting on change set cs, as the gate's propose and
@@ -1330,38 +1438,44 @@ func reviewAnswered(sets []changeset.ChangeSet, m Model, q id.ID) bool {
 	return false
 }
 
+// questionOpen reports whether question q is still open: its node is not
+// retired and it is not answered (reviewAnswered). gateOpenQuestions and
+// gateReview both use it, so the gate's stop and resp.Open agree.
+func questionOpen(sets []changeset.ChangeSet, m Model, q id.ID) bool {
+	if n, ok := m.Node(q); ok && n.Retired {
+		return false
+	}
+	return !reviewAnswered(sets, m, q)
+}
+
 // gateReview decides whether an autonomous run's review passed, so the
-// gate may accept. With no review round it has not. Every question the
-// review left (reviewQuestions) must be answered (reviewAnswered); one
-// open fails it, naming each. Then the latest round passes with no
-// confirmed finding, or with a question left for each confirmed one.
-func gateReview(sets []changeset.ChangeSet, m Model, rr reviewRun) error {
+// gate may accept. With no review round it has not. The latest round
+// passes with no confirmed finding, or with a question left for each
+// confirmed one. It reports whether a question the review left
+// (reviewQuestions) is still open (questionOpen): the gate then stops for
+// the owner and accepts nothing.
+func gateReview(sets []changeset.ChangeSet, m Model, rr reviewRun) (bool, error) {
 	const cmd = "run gate"
-	next := "rhiza run status " + rr.id
 	rd, ok := rr.state.LatestRound()
 	if !ok {
-		return Errorf("%s: run %s is autonomous and has no review round, so the plan is unreviewed and it accepts nothing: rhiza run findings opens one",
+		return false, Errorf("%s: run %s is autonomous and has no review round, so the plan is unreviewed and it accepts nothing: rhiza run findings opens one",
 			cmd, rr.id).WithNext("rhiza describe run.findings")
 	}
 	asked := map[string]bool{}
-	var open []string
+	open := false
 	for _, a := range reviewQuestions(rr.state) {
 		asked[a.Handle] = true
-		if !reviewAnswered(sets, m, mustParseID(a.Question)) {
-			open = append(open, "- "+a.Handle+" ("+a.Question+")")
+		if questionOpen(sets, m, mustParseID(a.Question)) {
+			open = true
 		}
-	}
-	if len(open) > 0 {
-		return Errorf("%s: run %s is autonomous and %d question(s) from the plan review are open, so it accepts nothing until a Decision answers each:\n%s",
-			cmd, rr.id, len(open), strings.Join(open, "\n")).WithNext(next)
 	}
 	for _, f := range rd.Confirmed() {
 		if !asked[reviewQuestionHandle(rr.id, rd.Number, f.ID)] {
-			return Errorf("%s: run %s is autonomous and review round %d has confirmed finding %s with no question left for it, so the review has not passed and it accepts nothing: run rhiza run review-check",
+			return false, Errorf("%s: run %s is autonomous and review round %d has confirmed finding %s with no question left for it, so the review has not passed and it accepts nothing: run rhiza run review-check",
 				cmd, rr.id, rd.Number, f.ID).WithNext(runReviewCheckNext)
 		}
 	}
-	return nil
+	return open, nil
 }
 
 // Human reports the plan's change sets after the gate.
@@ -1388,8 +1502,23 @@ func (r RunGateResponse) Human(w io.Writer) {
 			next = append(next, c.Next)
 		}
 	}
+	if len(r.Open) > 0 {
+		fmt.Fprintf(w, "\n%d question(s) the plan left are open:\n", len(r.Open))
+		for _, q := range r.Open {
+			s := "- " + q.ID
+			if q.Handle != "" {
+				s = "- " + q.Handle + " (" + q.ID + ")"
+			}
+			fmt.Fprintln(w, s)
+		}
+	}
 	if r.DryRun {
 		fmt.Fprintf(w, "\nThis was a dry run: nothing was written or journalled.\n")
+		return
+	}
+	if len(r.Open) > 0 {
+		fmt.Fprintf(w, "\nstop: %s\n", r.stopDetail())
+		fmt.Fprintf(w, "next: rhiza run resume %s\n", r.Run)
 		return
 	}
 	if len(next) > 0 {

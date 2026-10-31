@@ -1,0 +1,40 @@
+{
+  "actor": "01M694JK35E5Z3PVTXHVWN8ECG",
+  "after": [
+    "01M68JEG7FFTRGZ27D715JDPGM"
+  ],
+  "at": "2026-10-31T14:14:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 26af883 (on 10d4d82) ran go test ./cmd/rhiza -run TestScripts/plan-workflow -count=1 (ok) and go test ./internal/api -run 'TestShipMergeAfterPlanMerge|TestShipCloseOut' -count=1 -v (all PASS); make fmt-check vet test pass (self-check only flagged the render of this verifier's own session actor, not in the commit). Read plan-workflow-pr.txtar: with fake gh green checks the plan run calls 'pr merge 7 --squash --match-head-commit <checked head>' once, the planned change set stays proposed, cs/plan-reports is gone locally and on origin, the worktree is removed and the ship state dir is empty; then a ship-change run on the change set succeeds, logs a second gh pr merge ('pr merge 8 --squash --match-head-commit <head>'), and its merge step's JSON has a merge_commit and no already_merged (AlreadyMerged false). TestShipMergeAfterPlanMerge starts from ship state holding a plan's merge commit, runs open-pr, check, merge, and asserts AlreadyMerged false with one gh pr merge call. Attempt-1 finding f1 is fixed."
+        },
+        "handle": "plan-run-merges-closes-out-verified",
+        "id": "01M694ZV3PQANDRY7GPG0Q4V8D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M694ZV3PQANDRY7GPE9F88XQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M694ZV3PQANDRY7GPE9F88XQ",
+        "id": "01M694ZVR1786JTNST8Y449D28",
+        "link": "01M694ZVR1786JTNST8VJ16FFA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857VP1T62T5SQHWD7R38F6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M625RCFY4RB9HC0B69Y08VFV",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M694ZWR7J7N9WY6JJN0YP3Y8",
+  "type": "ops",
+  "v": 1
+}

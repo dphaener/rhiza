@@ -1,0 +1,30 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M69QKN9GTQ7WPHV5NYZTWFFC"
+  ],
+  "at": "2026-10-31T19:40:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The conflict in internal/api/run.go is settled by keeping both: a command step exiting with run.StopExit keeps its last stop: line as detail (from #137), and any other failure keeps the capped tail of its output; the branch merges main instead of rebasing",
+          "wording": "(the orchestrator's ruling as arbiter, under the owner's standing instruction)"
+        },
+        "handle": "failed-steps-merge-resolution",
+        "id": "01M69QNAHHF8T0Q50E217JBP2S",
+        "key": null,
+        "kind": "decision",
+        "node": "01M69QNAHHF8T0Q50E1ZE21G6R",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M686RRCJSQ57M82FENWT2HNM",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69QNB5ATQXJGWMKV257NG7A",
+  "type": "ops",
+  "v": 1
+}

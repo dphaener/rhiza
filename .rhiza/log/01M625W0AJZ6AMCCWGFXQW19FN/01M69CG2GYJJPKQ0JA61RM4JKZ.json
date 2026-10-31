@@ -1,0 +1,40 @@
+{
+  "actor": "01M69BZ8T4Y30R9XZ4ZCT3VY4K",
+  "after": [
+    "01M6858VZM3MWD4ZTASGC8WHW0"
+  ],
+  "at": "2026-10-31T16:25:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 916e15f4: go test ./cmd/rhiza -run 'TestScripts/(run-gate|describe-golden)$' -count=1 passes and make check exits 0. run-gate.txtar adds a draft change set 'Serve E one' serving want-e with planner-written question pq-e, plus a run whose last review round leaves the unanswered question review-<run>-r3-f1. A temporary copy of the script that dumped the output showed run gate --json returning \"open\":[{handle review-01m5pwj1-r3-f1},{handle pq-e}] and the human text '2 question(s) the plan left are open' listing both. After Decision ans-e1 answers both (one --record, one in the plan change set), the script checks run gate --json exits 0 with \"open\": []. describe-golden.txtar is regenerated with the open array (id required, handle optional) and open added to required. In the diff, gateOpenQuestions in internal/api/run_review.go collects reviewQuestions plus every question node-create op in the plan's change sets, skips retired nodes and those reviewAnswered covers, and lists each once."
+        },
+        "handle": "plan-gate-open-items-verified",
+        "id": "01M69CG13SNAXXPVV534FY81PD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69CG13SNAXXPVV531THJE4J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69CG13SNAXXPVV531THJE4J",
+        "id": "01M69CG1P4FXVRP4XMF5SFA64N",
+        "link": "01M69CG1P4FXVRP4XMF3P0P7HY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857XR66P2FBADYVDRMMTWX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M625W0AJZ6AMCCWGFXQW19FN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69CG2GYJJPKQ0JA61RM4JKZ",
+  "type": "ops",
+  "v": 1
+}

@@ -61,6 +61,7 @@ func init() {
 // The kinds of an InboxItem.
 const (
 	InboxQuestion = "question"
+	InboxOpen     = "open"
 	InboxSignoff  = "signoff"
 	InboxFailed   = "failed"
 	InboxGaveUp   = "gave-up"
@@ -73,7 +74,7 @@ type InboxRequest struct{}
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
 	ID             string `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string `json:"kind" desc:"question, signoff, failed, gave-up or skipped"`
+	Kind           string `json:"kind" desc:"question, open, signoff, failed, gave-up or skipped"`
 	At             string `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
 	Run            string `json:"run" desc:"The run it belongs to"`
 	Change         string `json:"change" desc:"The change set of the run"`
@@ -171,6 +172,10 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 			step, _ := st.FailedStep()
 			add(InboxFailed, "", st.EndedAt, InboxItem{
 				Step: step, Detail: failedDetail(st, step), Next: "rhiza run resume --retry " + j.ID,
+			})
+		case !live && strings.HasPrefix(st.Stopped, run.OpenStop):
+			add(InboxOpen, st.Stopped, st.StoppedAt, InboxItem{
+				Step: st.Current, Detail: st.Stopped, Next: "rhiza run resume " + j.ID,
 			})
 		case !live && st.Stopped == run.SignoffWait && st.CurrentVisit > 0 && !hasSignoff(st):
 			add(InboxSignoff, st.Current, st.StoppedAt, InboxItem{

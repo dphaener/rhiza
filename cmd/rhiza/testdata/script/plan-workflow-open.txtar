@@ -1,0 +1,235 @@
+# A plan run whose gate finds a question the planner parked does not
+# succeed and opens no PR: it stops at the gate for the owner, run status
+# and the inbox name the question and the command to resume, and resuming
+# after a Decision answers it goes on to open the PR and merge it.
+#
+# The fake rex, claude and gh are plan-workflow-pr.txtar's; the planner
+# also parks one question in the planned change set, and the reviewer
+# finds nothing.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+mkdir $HOME/.claude/projects/p
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec git push -q -u origin main
+
+# A draft record change set to plan a milestone in, committed (with the
+# owner's actor) so the run's worktree has it.
+exec rhiza change new 'Plan reports' --kind record --title 'Plan reports' --json
+stdout '"change_set": "(01[0-9A-Z]{24})"'
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/rec'
+exec git add -A
+exec git commit -qm 'Plan reports'
+exec git push -q origin main
+
+exec sh -c 'rhiza run start $(cat $WORK/rec) --workflow plan --permission-mode manual > $WORK/out 2> $WORK/err; echo exit=$?'
+exec cat $WORK/out
+! stdout 'succeeded'
+
+# The planner parked a question in the planned change set: the run stopped
+# at the gate for the owner, opened no PR and names the question.
+! exists $WORK/gh.log
+exec rhiza run status --json
+stdout '"state": "stopped"'
+stdout '"current": "gate"'
+stdout 'open questions: park-disk'
+stdout 'rhiza run resume'
+exec rhiza run status
+stdout 'open questions: park-disk'
+exec rhiza inbox --json
+stdout '"kind": "open"'
+stdout 'open questions: park-disk'
+stdout '"next": "rhiza run resume '
+cd $WORK/repo.plan-reports
+exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
+stdout '"state": "proposed"'
+
+# A Decision answers it, and resuming goes on to ship the plan.
+exec sh -c 'rhiza add decision disk-ssd --field "statement=Exports go on the ssd" --change $(cat $WORK/cs)'
+exec sh -c 'rhiza link disk-ssd answers park-disk --change $(cat $WORK/cs)'
+cd $WORK/repo
+exec sh -c 'rhiza run resume $(rhiza run status --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" | head -1) > $WORK/out2 2> $WORK/err2; echo exit=$?'
+stdout '^exit=0$'
+exec cat $WORK/out2
+stdout 'succeeded'
+exec sh -c 'grep -c "^pr create" $WORK/gh.log'
+stdout '^1$'
+exec rhiza inbox --json
+! stdout '"kind": "open"'
+fold-ok
+
+-- source.json --
+{"title":"Planning interview","summary":"The owner planned the reports milestone.","quotes":[{"text":"Stream it, reports get huge","by":"owner"}]}
+-- record.json --
+{"writes":[
+  {"op":"add","kind":"intent","handle":"reports","fields":["statement=Users take their reports out of the product"]},
+  {"op":"add","kind":"decision","handle":"csv-streaming","fields":[
+    "statement=Stream CSV rows instead of building the file in memory",
+    "quote=Stream it, reports get huge"]},
+  {"op":"link","from":"csv-streaming","type":"derived-from","to":"plan-interview"}
+]}
+-- leaf.json --
+{"writes":[
+  {"op":"add","kind":"capability","handle":"export-csv","fields":["statement=Users export any report as CSV"]},
+  {"op":"link","from":"export-csv","type":"decided-by","to":"csv-streaming"}
+]}
+-- findings.json --
+{"findings":[{"node":"export-csv","kind":"missing-acceptance","reason":"export-csv has no acceptance check"}]}
+-- clean.json --
+{"findings":[]}
+-- verdict.json --
+{"verdicts":[{"finding":"f1","verdict":"confirmed","reason":"export-csv has no acceptance field"}]}
+-- fix.json --
+{"writes":[
+  {"op":"set","ref":"export-csv","fields":["acceptance=A test exports a 100k-row report with flat memory use"]}
+]}
+-- transcript.jsonl --
+{"type": "user", "message": {"role": "user", "content": "Stream it, reports get huge"}}
+-- bin/rex --
+#!/bin/sh
+case "$1 $2" in
+window\ close | block\ close)
+	echo "$*" >> "$WORK/rex.log"
+	exit 0
+	;;
+esac
+case "$1" in
+events | send | send-key)
+	echo "$*" >> "$WORK/rex.log"
+	exit 0
+	;;
+esac
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >>"$WORK/tab.out" 2>&1 </dev/null &
+		break
+	fi
+	shift
+done
+i=0
+until [ -f "$WORK/ready" ]; do
+	i=$((i + 1))
+	if [ $i -gt 1600 ]; then
+		echo 'fake rex: the agent never got ready' >&2
+		exit 1
+	fi
+	sleep 0.025
+done
+rm -f "$WORK/ready"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+for a; do last=$a; done
+printf '%s\n' "$last" >> "$WORK/prompts.log"
+fail() {
+	echo "fake claude: $*" >> "$WORK/claude.err"
+	touch "$WORK/ready"
+	exit 1
+}
+has_acceptance() {
+	rhiza show export-csv --change "$(cat "$WORK/cs")" --json | grep -q '"acceptance"'
+}
+case "$last" in
+/rhiza-plan*)
+	rec=$RHIZA_CHANGE
+	cp "$WORK/transcript.jsonl" "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl"
+	rhiza source add plan-interview "$WORK/source.json" --raw-session "$RHIZA_SESSION" --json >> "$WORK/agent.out" || fail source
+	rhiza apply "$WORK/record.json" --json >> "$WORK/agent.out" || fail record
+	rhiza change new 'Export reports' --json > "$WORK/new.out" || fail change new
+	sed -n 's/.*"change_set": "\([0-9A-Z]*\)".*/\1/p' "$WORK/new.out" > "$WORK/cs"
+	rhiza link "$(cat "$WORK/cs")" serves reports --change "$rec" >> "$WORK/agent.out" || fail serves
+	rhiza land --json >> "$WORK/agent.out" || fail land
+	rhiza apply "$WORK/leaf.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" || fail leaf
+	rhiza add question park-disk --field 'statement=Which disk holds the exports?' --change "$(cat "$WORK/cs")" >> "$WORK/agent.out" || fail question
+	;;
+*'as the reviewer'*)
+	rhiza run findings "$WORK/clean.json" --json >> "$WORK/agent.out" || fail findings
+	;;
+*'as the critic'*)
+	;;
+*'as check '*)
+	rhiza run findings --check "$RHIZA_CHECK" "$WORK/clean.json" --json >> "$WORK/agent.out" || fail check
+	;;
+*'as the reviser'*)
+	rhiza apply "$WORK/fix.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" || fail fix
+	;;
+*)
+	fail "unexpected prompt: $last"
+	;;
+esac
+rhiza session done >> "$WORK/done.out" || fail done
+touch "$WORK/ready"
+exit 0
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if [ ! -f "$WORK/pr.created" ]; then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	case "$3" in
+	7 | 8)
+		printf '{"state":"MERGED","mergeCommit":{"oid":"%s"}}\n' "$(cat "$WORK/merged-head")"
+		exit 0
+		;;
+	esac
+	# The plan's branch has PR #7, merged by the plan run; the planned
+	# change set's branch has none until the ship run opens #8.
+	if [ "$3" != cs/plan-reports ] && [ ! -f "$WORK/pr2.created" ]; then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	n=7
+	state=OPEN
+	if [ -f "$WORK/pr.merged" ]; then
+		state=MERGED
+	fi
+	if [ -f "$WORK/pr2.created" ]; then
+		n=8
+		state=OPEN
+	fi
+	head=$(git -C "$o" rev-parse --verify "refs/heads/$3")
+	printf '{"number":%s,"url":"https://github.test/o/r/pull/%s","state":"%s","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$n" "$n" "$state" "$head"
+	;;
+"pr merge")
+	# Squash-free: main on origin takes the branch as it was checked.
+	b=$(git -C "$o" for-each-ref --format='%(refname:short)' 'refs/heads/cs/*')
+	git -C "$o" rev-parse "refs/heads/$b" > "$WORK/merged-head"
+	git -C "$o" update-ref refs/heads/main "refs/heads/$b"
+	rm -f "$WORK/pr2.created"
+	touch "$WORK/pr.merged"
+	;;
+"pr create")
+	while [ $# -gt 0 ]; do
+		if [ "$1" = --body-file ]; then
+			cp "$2" "$WORK/pr-body.md"
+		fi
+		shift
+	done
+	if [ -f "$WORK/pr.created" ]; then
+		touch "$WORK/pr2.created"
+	fi
+	touch "$WORK/pr.created"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

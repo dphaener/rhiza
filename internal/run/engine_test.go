@@ -1408,6 +1408,30 @@ func TestArbitratePasses(t *testing.T) {
 	}
 }
 
+// TestArbitratePaneClosesAfterVerdict closes a passing arbiter's pane once
+// its verdict is journalled; a failed arbiter's pane stays open to be read.
+func TestArbitratePaneClosesAfterVerdict(t *testing.T) {
+	e, r, _, def := setup(t, arbiterWF)
+	r.answers["Q1"] = Answer{OK: true, Decision: "assume-sqlite"}
+	if res := arbitrateOn(t, e, def); res.outcome != workflow.OutcomePass {
+		t.Fatalf("result %+v", res)
+	}
+	if want := []string{"S-decide-Q1"}; !reflect.DeepEqual(r.closed, want) {
+		t.Errorf("closed %v, want %v", r.closed, want)
+	}
+	if a := arbitrations(t, e); len(a) != 1 || a[0].Open() {
+		t.Errorf("verdict not journalled before the close: %+v", a)
+	}
+
+	e, r, _, def = setup(t, arbiterWF)
+	if res := arbitrateOn(t, e, def); res.outcome != workflow.OutcomeFail {
+		t.Fatalf("result %+v", res)
+	}
+	if len(r.closed) != 0 {
+		t.Errorf("a failed arbiter's pane was closed: %v", r.closed)
+	}
+}
+
 // TestArbitrateFailsWithoutAnswer fails when the arbiter wrote nothing,
 // or a Decision the Runner does not accept (no reasoning), with the
 // Runner's why; an exited session is judged the same as one said done.
@@ -2120,5 +2144,41 @@ func TestAskedWithoutSessionIsNotTheBlocks(t *testing.T) {
 	}}
 	if a, ok := j.State().BlockAsked(""); ok {
 		t.Errorf("block asked %+v", a)
+	}
+}
+
+const stopWF = `
+name = "wf"
+[step.gate]
+kind = "command"
+run = "gate"
+on.pass = "after"
+
+[step.after]
+kind = "command"
+run = "after"
+`
+
+// A command that exits StopExit does not end its step: the run stops at it
+// for the owner, and resuming runs the same step again.
+func TestCommandStopExitStopsRun(t *testing.T) {
+	e, r, _, _ := setup(t, stopWF)
+	r.codes["gate"] = []int{StopExit, 0}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Ended || st.Current != "gate" || !strings.HasPrefix(st.Stopped, "stopped for the owner") {
+		t.Fatalf("ended %v current %q stopped %q", st.Ended, st.Current, st.Stopped)
+	}
+	if len(outcomes(st)) != 0 || r.commands["after"] != 0 {
+		t.Fatalf("steps %v after ran %d times", outcomes(st), r.commands["after"])
+	}
+	st, err = e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || !reflect.DeepEqual(outcomes(st), []string{"gate:pass", "after:pass"}) || st.Visits["gate"] != 1 {
+		t.Fatalf("result %q steps %v visits %v", st.Result, outcomes(st), st.Visits)
 	}
 }

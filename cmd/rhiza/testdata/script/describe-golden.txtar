@@ -1367,6 +1367,41 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "skipped": {
+            "description": "The accepted change sets it did not start at its last poll, each with its reason",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "change": {
+                  "description": "The change set's ID",
+                  "type": "string"
+                },
+                "detail": {
+                  "description": "The readiness reasons, when the reason is not-ready; else empty",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "reason": {
+                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, held, unjournaled or no-slot",
+                  "type": "string"
+                },
+                "title": {
+                  "description": "The change set's display title",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "change",
+                "detail",
+                "reason",
+                "title"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "started": {
             "description": "When the daemon started, RFC 3339 UTC",
             "type": "string"
@@ -1405,6 +1440,7 @@ cmp stdout describe.golden.json
           "autonomous",
           "running",
           "runs",
+          "skipped",
           "unjournaled"
         ],
         "type": "object"
@@ -1665,7 +1701,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, signoff, failed, gave-up or skipped",
+                  "description": "question, open, signoff, failed, gave-up or skipped",
                   "type": "string"
                 },
                 "next": {
@@ -9333,9 +9369,34 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "commit": {
+            "description": "The commit that renders and commits .rhiza on the run's branch; absent when there was nothing to commit, or in a dry run",
+            "type": "string"
+          },
           "dry_run": {
             "description": "True if nothing was written or journalled",
             "type": "boolean"
+          },
+          "open": {
+            "description": "Every question the plan left with no live answering Decision: the review's questions and each question node created in the plan's change sets, in order; empty when none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "handle": {
+                  "description": "Its handle, when it has one",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The question node's full ID",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "type": "object"
+            },
+            "type": "array"
           },
           "run": {
             "description": "The run's full ID",
@@ -9345,12 +9406,93 @@ cmp stdout describe.golden.json
         "required": [
           "autonomous",
           "change_sets",
+          "open",
           "run"
         ],
         "type": "object"
       },
       "summary": "End the plan of the run RHIZA_RUN names: propose each draft among its change sets; an autonomous run whose review passed accepts each under rule autonomous",
       "write": true
+    },
+    {
+      "name": "run.ls",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "limit": {
+            "description": "The most runs to return, 1 to 1000; default 20",
+            "type": "integer"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "runs": {
+            "description": "The runs, newest started first; empty when there are none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "autonomous": {
+                  "description": "True for a run started with --autonomous; absent otherwise",
+                  "type": "boolean"
+                },
+                "change": {
+                  "description": "The change set it runs on",
+                  "type": "string"
+                },
+                "current": {
+                  "description": "The step being run or to run next; empty once the run is finished",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The run ID",
+                  "type": "string"
+                },
+                "live": {
+                  "description": "True while another process holds the run",
+                  "type": "boolean"
+                },
+                "started_at": {
+                  "description": "When it started, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "state": {
+                  "description": "running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed",
+                  "type": "string"
+                },
+                "title": {
+                  "description": "The change set's title; empty when it has none",
+                  "type": "string"
+                },
+                "workflow": {
+                  "description": "The workflow's name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "change",
+                "id",
+                "live",
+                "started_at",
+                "state",
+                "title",
+                "workflow"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "runs"
+        ],
+        "type": "object"
+      },
+      "summary": "List the repository's runs newest first, each with its ID, change set, title, state, current step, start time and whether it is live",
+      "write": false
     },
     {
       "name": "run.open",
@@ -17166,7 +17308,12 @@ cmp stdout describe.golden.json
       "name": "ship.close-out",
       "request": {
         "additionalProperties": false,
-        "properties": {},
+        "properties": {
+          "forget": {
+            "description": "Delete the change set's ship state file once closed out, so a later ship run opens and merges its own pull request (for a plan run, whose merge does not land the change set)",
+            "type": "boolean"
+          }
+        },
         "required": [],
         "type": "object"
       },

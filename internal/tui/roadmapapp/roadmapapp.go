@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 
@@ -147,10 +148,23 @@ func (m *Model) Cursor() id.ID {
 	return id.ID{}
 }
 
-func (m *Model) Init() tea.Cmd { return nil }
+func (m *Model) Init() tea.Cmd { return tick() }
+
+// Interval is how often an open detail reloads its latest-run section.
+const Interval = 3 * time.Second
+
+// TickMsg is the reload timer firing.
+type TickMsg struct{}
+
+func tick() tea.Cmd {
+	return tea.Tick(Interval, func(time.Time) tea.Msg { return TickMsg{} })
+}
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case TickMsg:
+		m.reloadRun()
+		return m, tick()
 	case tea.WindowSizeMsg:
 		m.height = max(msg.Height-2, 1)
 		m.follow()
