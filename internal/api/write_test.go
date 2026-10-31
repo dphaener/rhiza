@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/check"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
 )
@@ -639,12 +640,12 @@ func TestLink(t *testing.T) {
 	t.Run("NoteAndDecision", func(t *testing.T) {
 		ctx, _ := setup(t)
 		mustWrite(t, ctx, "link", `{"from":"log","type":"relates-to","to":"store","note":"Same data"}`)
-		mustWrite(t, ctx, "link", `{"from":"c","type":"exempts","to":"log","note":"Prototype","decision":"d"}`)
+		mustWrite(t, ctx, "link", `{"from":"log","type":"exempts","to":"c","note":"Prototype","decision":"d"}`)
 		for _, req := range []string{
 			`{"from":"log","type":"bogus","to":"store"}`,
 			`{"from":"store","type":"relates-to","to":"log"}`,
-			`{"from":"c","type":"exempts","to":"store","note":"x"}`,
-			`{"from":"c","type":"exempts","to":"store","note":"x","decision":"log"}`,
+			`{"from":"store","type":"exempts","to":"c","note":"x"}`,
+			`{"from":"store","type":"exempts","to":"c","note":"x","decision":"log"}`,
 			`{"from":"log","type":"serves","to":"store","decision":"d"}`,
 			`{"from":"log","type":"serves","to":"log"}`,
 		} {
@@ -662,6 +663,61 @@ func TestLink(t *testing.T) {
 		_, err := callOp(t, ctx, "link", `{"from":"log","type":"depends-on","to":"`+r.Nodes[0].String()+`"}`)
 		wantExit(t, err, 3)
 	})
+}
+
+// TestLinkEndpointKinds shows buildLink agrees with check.Allowed for every
+// link type and every pair of end kinds, change sets included: a pair the
+// table allows is never refused as a kind mismatch, and any other is a
+// usage error naming both kinds that writes nothing.
+func TestLinkEndpointKinds(t *testing.T) {
+	ctx, cs := writeCtx(t)
+	handle := func(prefix string, e check.End) string { return prefix + "-" + strings.ReplaceAll(string(e), " ", "-") }
+	for _, k := range op.Kinds() {
+		for _, p := range []string{"x", "y"} {
+			if h := handle(p, check.NodeEnd(k)); op.HasParent(k) {
+				recordWrite(t, ctx, "add", fmt.Sprintf(`{"kind":%q,"handle":%q}`, k, h))
+			} else {
+				landNode(t, ctx, k, h)
+			}
+		}
+	}
+	other := newChange(t, ctx, `{"intent":"Other"}`).ChangeSet
+	ref := func(prefix string, e check.End) string {
+		switch {
+		case e != check.ChangeSet:
+			return handle(prefix, e)
+		case prefix == "x":
+			return cs.String()
+		}
+		return other.String()
+	}
+	for _, lt := range op.LinkTypes() {
+		for _, from := range check.Ends() {
+			for _, to := range check.Ends() {
+				r := LinkRequest{From: ref("x", from), Type: string(lt), To: ref("y", to), Note: "n"}
+				if lt == op.LinkExempts {
+					r.Decision = "x-decision"
+				}
+				req, err := json.Marshal(r)
+				if err != nil {
+					t.Fatal(err)
+				}
+				_, err = callOp(t, ctx, "link", string(req))
+				mismatch := err != nil && strings.Contains(err.Error(), "does not go from")
+				switch {
+				case check.Allowed(lt, from, to) && mismatch:
+					t.Errorf("%s from %s to %s is allowed, but refused: %v", lt, from, to, err)
+				case !check.Allowed(lt, from, to) && !mismatch:
+					t.Errorf("%s from %s to %s is not allowed, but got %v", lt, from, to, err)
+				case mismatch:
+					want := fmt.Sprintf("link type %q does not go from %s to %s", lt, from, to)
+					if ExitCode(err) != 2 || !strings.Contains(err.Error(), want) {
+						t.Errorf("%s from %s to %s: %v (exit %d), want usage %q", lt, from, to, err, ExitCode(err), want)
+					}
+				}
+			}
+		}
+	}
 }
 
 // TestLinkCycle refuses a depends-on link between change sets that would

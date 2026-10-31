@@ -31,7 +31,9 @@
 //     a conflict, Next says how.
 //   - in-flight warns on each in-flight problem, Next on a conflict saying
 //     where to look, and on each op of an in-flight change set that rests on
-//     a dropped one (changeset.RestsOn).
+//     a dropped one (changeset.RestsOn), and on each live link that a draft,
+//     proposed or accepted change set wrote itself, in its what-if, whose
+//     Ends the endpoint table does not allow, each once.
 //   - link fails on each live as-is link whose Ends the endpoint table does
 //     not allow.
 //   - depends-on fails once on each depends-on loop among change sets
@@ -184,6 +186,7 @@ func Run(in Input) Report {
 	sets := c.fold()
 	asIs := c.model(sets)
 	c.links(asIs, sets)
+	c.inFlightLinks(sets)
 	c.dependsOn(sets)
 	c.capabilityLoops(asIs)
 	c.evidenceActor(asIs, sets)
@@ -318,6 +321,42 @@ func target(sets []changeset.ChangeSet, p model.Problem) string {
 }
 
 func (c *checker) links(m model.Model, sets []changeset.ChangeSet) {
+	for _, l := range badLinks(m, sets) {
+		c.add(linkFinding(SeverityFail, RuleLink, l))
+	}
+}
+
+// inFlightLinks warns on each live link, in the what-if of a draft,
+// proposed or accepted change set, that the set itself wrote and whose Ends
+// the endpoint table does not allow, each once. As-is links are the link
+// rule's.
+func (c *checker) inFlightLinks(sets []changeset.ChangeSet) {
+	seen := map[id.ID]bool{}
+	for _, s := range sets {
+		switch s.State {
+		case changeset.StateDraft, changeset.StateProposed, changeset.StateAccepted:
+		default:
+			continue
+		}
+		whatIf, _ := model.WhatIf(sets, s.ID)
+		for _, l := range badLinks(whatIf, sets) {
+			if l.Created != s.ID || seen[l.ID] {
+				continue
+			}
+			seen[l.ID] = true
+			c.add(linkFinding(SeverityWarn, RuleInFlight, l))
+		}
+	}
+}
+
+// badLink is a live link of a model whose Ends its type does not allow,
+// with the names of its Ends.
+type badLink struct {
+	model.Link
+	fromName, toName string
+}
+
+func badLinks(m model.Model, sets []changeset.ChangeSet) []badLink {
 	known := make(map[id.ID]bool, len(sets))
 	for _, s := range sets {
 		known[s.ID] = true
@@ -331,22 +370,27 @@ func (c *checker) links(m model.Model, sets []changeset.ChangeSet) {
 		}
 		return "", "unknown " + i.String()
 	}
+	var bad []badLink
 	for _, l := range m.Links() {
 		if l.Retired {
 			continue
 		}
 		from, fromName := end(l.From)
 		to, toName := end(l.To)
-		if Allowed(l.Type, from, to) {
-			continue
+		if !Allowed(l.Type, from, to) {
+			bad = append(bad, badLink{l, fromName, toName})
 		}
-		f := Finding{Severity: SeverityFail, Rule: RuleLink, ChangeSet: str(l.Created), Link: l.ID.String(),
-			Message: fmt.Sprintf("link type %q does not go from %s to %s", l.Type, fromName, toName)}
-		if len(l.History) > 0 {
-			f.Op = str(l.History[0].Op)
-		}
-		c.add(f)
 	}
+	return bad
+}
+
+func linkFinding(severity, rule string, l badLink) Finding {
+	f := Finding{Severity: severity, Rule: rule, ChangeSet: str(l.Created), Link: l.ID.String(),
+		Message: fmt.Sprintf("link type %q does not go from %s to %s", l.Type, l.fromName, l.toName)}
+	if len(l.History) > 0 {
+		f.Op = str(l.History[0].Op)
+	}
+	return f
 }
 
 func (c *checker) dependsOn(sets []changeset.ChangeSet) {

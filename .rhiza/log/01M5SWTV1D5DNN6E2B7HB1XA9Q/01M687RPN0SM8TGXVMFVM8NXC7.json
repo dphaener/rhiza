@@ -1,0 +1,63 @@
+{
+  "actor": "01M687NJG0FNPXT5F3VYB0P2A5",
+  "after": [
+    "01M687MTW04X3N2SKBB37W0CXZ"
+  ],
+  "at": "2026-10-31T05:43:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 9c8d4bf with a scratch build in a fresh repo: in an open change set rhiza link store serves log (capability to capability) exits 2 with code usage and message link type \"serves\" does not go from capability to capability under --json, plain, --dry-run and --record, writing nothing; link fast verifies store gives intent to capability, link c1 exempts log gives constraint to capability, both exit 2; link store serves fast and link store exempts c1 --note x --decision d1 succeed; linking the change set serves store is refused (change set to capability) and serves fast succeeds; rhiza apply with an add decision plus one bad link exits 2 naming writes[1], the log entry count stays 9 and later-link is not added."
+        },
+        "handle": "link-write-checks-endpoint-kinds-qa-1",
+        "id": "01M687R4G1J8WAM4Q07505V0MZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M687R4G1J8WAM4Q072AQTMNY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M687R4G1J8WAM4Q072AQTMNY",
+        "id": "01M687R871S09S06SXCEYVN97Y",
+        "link": "01M687R871S09S06SXCB8FKSMH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857PTDC3M6J8MAWWXFF0ZS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 9c8d4bf with a scratch build in a fresh repo: in an open change set I wrote link store serves fast, then edited the log entry into a verifies link from intent fast to capability store; rhiza check exits 0, prints ok and warn in-flight change set <id>, op <id>, link <id>: link type \"verifies\" does not go from intent to capability, both while draft and after propose; after rhiza withdraw, check exits 0 with no in-flight line. In a second repo the same forged link warns in-flight once while accepted, and after rhiza land it becomes one fail link line with no in-flight warning."
+        },
+        "handle": "check-warns-in-flight-link-kinds-qa-1",
+        "id": "01M687RCCQRJDW6B2NR8X1V86E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M687RCCQRJDW6B2NR5280TBA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M687RCCQRJDW6B2NR5280TBA",
+        "id": "01M687RGAFY7YF1EF1HBSCVQMX",
+        "link": "01M687RGAFY7YF1EF1H8SK9G0S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857QTJSC1V4R4FRDD8ZX3X",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTV1D5DNN6E2B7HB1XA9Q",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M687RPN0SM8TGXVMFVM8NXC7",
+  "type": "ops",
+  "v": 1
+}

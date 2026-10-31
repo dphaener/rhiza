@@ -16,6 +16,11 @@ A link write whose type does not go between its ends' kinds is refused as a usag
 
 - derived-from [m6-overnight-interview](../source/m6-overnight-interview.md)
 
+### In
+
+- decided-by [link-write-checks-endpoint-kinds](../capability/rhiza/model/typed-links/link-write-checks-endpoint-kinds.md)
+- decided-by [check-warns-in-flight-link-kinds](../capability/rhiza/integrity/check/check-warns-in-flight-link-kinds.md)
+
 ## History
 
 - `01M684XWDT3EKJD4JPXT0JVK2M` Plan milestone 6: Rhiza runs unattended overnight, with the run machinery fixes that needed the orchestrator's hand in milestones 4 and 5

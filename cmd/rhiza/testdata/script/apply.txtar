@@ -42,6 +42,16 @@ exec rhiza change show
 stderr '^rhiza: writes\[1\]: add request: json: unknown field "nope"$'
 stderr '^next: rhiza describe add$'
 
+# A link item whose type does not go between its ends' kinds refuses the
+# whole apply, naming the item and both kinds, and adds no entry.
+! exec rhiza apply badlink.json --json
+stdout '"code": "usage"'
+stdout 'writes\[1\]: link type \\"serves\\" does not go from capability to capability'
+exec ls .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N
+stdout -count=3 '\.json$'
+exec rhiza change show
+! stdout 'later-link'
+
 # An unknown op is usage too.
 ! exec rhiza apply unknown.json --json
 stdout '"code": "usage"'
@@ -87,6 +97,11 @@ stdout '"const": "unlink"'
 {"writes":[
   {"op":"add","kind":"decision","handle":"later"},
   {"op":"add","kind":"decision","handle":"later-2","nope":1}
+]}
+-- badlink.json --
+{"writes":[
+  {"op":"add","kind":"decision","handle":"later-link"},
+  {"op":"link","from":"store","type":"serves","to":"log"}
 ]}
 -- unknown.json --
 {"writes":[{"op":"frob"}]}
