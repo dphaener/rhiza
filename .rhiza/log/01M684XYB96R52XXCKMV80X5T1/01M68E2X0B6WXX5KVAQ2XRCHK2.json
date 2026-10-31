@@ -1,0 +1,40 @@
+{
+  "actor": "01M68DEZ37E3MFZ8V32C71PSN9",
+  "after": [
+    "01M68CYS7QMHMTH57SEWKG84J3"
+  ],
+  "at": "2026-10-31T07:34:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 0c3e831, go test ./cmd/rhiza -run TestScripts/ship-follows-pr-head passes. The script uses a bare origin. After the branch is pushed with an upstream, a second clone pushes a commit to cs/ship-it. With a dirty feature.txt, rhiza ship rebase fails with 'uncommitted changes' and names feature.txt, and HEAD is unchanged. Clean, ship rebase fast-forwards HEAD to the moved head. After another outside push, ship land follows it and its push succeeds: origin's cs/ship-it equals the worktree HEAD, and HEAD contains the pushed head. A local-only commit with origin ahead is refused, naming 'Local only commit', and HEAD stays put. The script pushes the branch with git push -u instead of running ship open-pr, but that gives open-pr's resulting state. In a scratch worktree with the three shipFollowPR calls removed, the script fails twice. With the dirty step, rebase unexpectedly succeeds. With the dirty step removed, the clean rebase leaves HEAD at the old commit instead of the pushed head. So the script really guards the fix. go test ./internal/api -run TestShipFollow passes: TestShipFollowFastForwards, TestShipFollowRefusesDirtyWorktree and TestShipFollowRefusesLocalCommits. With a fake git, the last two return a conflict that names feature.txt or the local commit, and they make no merge, reset or push call. The diff calls shipFollowPR in ship rebase, land and open-pr before any commit or push. It returns early when origin has no such branch or already holds HEAD. fmt-check, vet and go test ./... pass. A run of make test right after make check failed only the timing-budget read test, and a rerun passed. make self-check fails only on this verifier session's own rendered actor file, claude-code-691e9e00, which the run recorded after the leaf commit."
+        },
+        "handle": "ship-worktree-follows-pr-verified",
+        "id": "01M68E2VHYW0A197EDVYE36326",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M68E2VHYW0A197EDVTH675C9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68E2VHYW0A197EDVTH675C9",
+        "id": "01M68E2W4FADG23D074CKTHEBA",
+        "link": "01M68E2W4FADG23D0749SP4887",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68582MQEBTQNMGMAGHV53ZG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M684XYB96R52XXCKMV80X5T1",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M68E2X0B6WXX5KVAQ2XRCHK2",
+  "type": "ops",
+  "v": 1
+}
