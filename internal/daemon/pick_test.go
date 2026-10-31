@@ -124,3 +124,35 @@ func TestSkips(t *testing.T) {
 		}
 	}
 }
+
+func TestPickSkipsShipped(t *testing.T) {
+	at := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+	accepted := at.Add(-time.Hour)
+	done := func(cs, wf string) run.Journal {
+		return run.Journal{ID: "R" + cs, Entries: []run.Entry{
+			{Type: run.TypeStarted, At: at, Started: &run.Started{Change: cs, Workflow: wf}},
+			{Type: run.TypeFinished, At: at.Add(time.Minute), End: run.Succeeded},
+		}}
+	}
+	since := map[string]time.Time{
+		"shipped": accepted, "plan": accepted,
+		// Reopened after the ship run ended.
+		"reopened": at.Add(2 * time.Minute),
+	}
+	ship := Ship{Workflow: "ship", Since: func(cs string) time.Time { return since[cs] }}
+	runs := []run.Journal{done("shipped", "ship"), done("plan", "plan"), done("reopened", "ship")}
+	cases := []struct {
+		name, change string
+		picked       bool
+	}{
+		{"succeeded ship run after the accept is skipped", "shipped", false},
+		{"succeeded plan run is picked", "plan", true},
+		{"succeeded ship run followed by a reopen is picked", "reopened", true},
+	}
+	for _, c := range cases {
+		got := Pick([]string{c.change}, runs, nil, "h", func(int) bool { return false }, 2, ship)
+		if (len(got) == 1) != c.picked {
+			t.Errorf("%s: Pick = %v", c.name, got)
+		}
+	}
+}
