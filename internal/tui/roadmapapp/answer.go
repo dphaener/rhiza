@@ -3,7 +3,6 @@ package roadmapapp
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
@@ -102,46 +101,16 @@ func (m *Model) typeAnswer(msg tea.KeyPressMsg) tea.Cmd {
 	return nil
 }
 
-// record writes a Decision quoting the typed words, linked answers to the
-// question, in the question's change set, then reloads.
+// record answers the question with the typed words through question.answer
+// in the question's change set, then reloads.
 func (m *Model) record(a *answer) {
 	text := strings.TrimSpace(a.text)
-	writes := map[string]any{"writes": []any{
-		map[string]any{"op": "add", "kind": "decision", "handle": "answer-" + a.q.handle,
-			"fields": []string{
-				"statement=" + text,
-				"quote=" + text,
-			}},
-		map[string]any{"op": "link", "from": "answer-" + a.q.handle, "type": "answers", "to": a.q.handle},
-	}}
-	data, err := json.Marshal(writes)
-	if err == nil {
-		err = m.apply(a.cs, data)
-	}
-	if err != nil {
+	if _, err := m.run("question.answer", a.cs.String(), []string{a.q.handle, text}); err != nil {
 		m.notice = fmt.Sprintf("rhiza: %v", err)
 		return
 	}
 	m.reload()
 	m.notice = fmt.Sprintf("Recorded your answer to %s", a.q.handle)
-}
-
-// apply runs the apply operation on a file of data, in change set cs.
-func (m *Model) apply(cs id.ID, data []byte) error {
-	f, err := os.CreateTemp("", "rhiza-answer-*.json")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(f.Name())
-	_, err = f.Write(data)
-	if cerr := f.Close(); err == nil {
-		err = cerr
-	}
-	if err != nil {
-		return err
-	}
-	_, err = m.run("apply", cs.String(), []string{f.Name()})
-	return err
 }
 
 // reload reads the list again and, if a detail is open, that too.

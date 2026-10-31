@@ -284,3 +284,28 @@ func TestTickInListCallsNoRunStatus(t *testing.T) {
 		t.Fatalf("list tick called run.status %d times", n)
 	}
 }
+
+func TestAnswerCallsQuestionAnswer(t *testing.T) {
+	type rec struct {
+		op, change string
+		args       []string
+	}
+	var got []rec
+	m := NewModel(func(op, change string, args []string) ([]byte, error) {
+		if op == "question.answer" {
+			got = append(got, rec{op, change, args})
+			return []byte(`{}`), nil
+		}
+		return detailFake(op, change, args)
+	})
+	key(m, "j")
+	m.Update(tea.KeyPressMsg{Code: tea.KeyEnter}) // opens the detail
+	m.Update(tea.KeyPressMsg{Code: tea.KeyEnter}) // starts the answer
+	for _, r := range "go west" {
+		key(m, string(r))
+	}
+	m.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	if len(got) != 1 || got[0].change != b || strings.Join(got[0].args, "|") != "which-way|go west" {
+		t.Fatalf("question.answer calls: %+v", got)
+	}
+}

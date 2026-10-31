@@ -1,0 +1,49 @@
+# rhiza question answer records the owner's words as a Decision quoting
+# them, linked answers to the question, in the change set the question
+# blocks. The question stops blocking, --dry-run writes nothing, an unknown
+# question exits 2, and two answers get distinct handles.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza add capability store --record
+exec rhiza add capability cache --record
+exec rhiza change new Accepted
+exec rhiza set store --field statement=Kept
+exec rhiza set cache --field statement=Cached
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza add question store-q --field statement=Which-store --record
+exec rhiza link store-q blocks store --record
+exec rhiza add question cache-q --field statement=Which-cache --record
+exec rhiza link cache-q blocks cache --record
+
+exec rhiza ready --json
+stdout 'store-q'
+
+# A dry run writes nothing.
+exec rhiza question answer store-q 'use sqlite' --dry-run --json
+stdout '"dry_run": true'
+exec rhiza ready --json
+stdout 'store-q'
+
+# An unknown question is a usage error.
+! exec rhiza question answer nope 'whatever' --json
+stdout '"code": "usage"'
+! exec rhiza question answer store-q '   ' --json
+
+exec rhiza question answer store-q 'use sqlite' --json
+exec rhiza question answer cache-q 'use redis' --json
+exec rhiza show answer-store-q --json
+stdout 'use sqlite'
+exec rhiza show answer-cache-q --json
+stdout 'use redis'
+exec rhiza ready --json
+! stdout 'store-q'
+! stdout 'cache-q'
+
+fold-ok
