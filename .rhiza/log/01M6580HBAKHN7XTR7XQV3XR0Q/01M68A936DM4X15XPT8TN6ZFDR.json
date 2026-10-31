@@ -1,0 +1,40 @@
+{
+  "actor": "01M68A1GYDZK1PCXPQ2QMTFQT5",
+  "after": [
+    "01M689F9HXWP45M42S3F3WC109"
+  ],
+  "at": "2026-10-31T06:27:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier of fix attempt 3 at 544cb11 (cycle 2's confirmed model f1: two leaf fixers live at once after a verifier retry). Read the diff: fixActions now starts with fixerFree false when any leaf with findings has a started, unjudged fixer of the cycle (liveFixer over leafFixAttempt tries), so a leaf whose verifier failed waits for the next leaf's live fixer. Its retry then starts first in leaf order once the slot is free. Two new TestFixActions cases cover both: retry waits (only 7:leaf-b:fixer polled), then takes the slot (6:leaf-a:fixer plus leaf-b's verifier). Ran go test ./internal/run -run 'Fix|Leaf' -count=1 -v: all pass, including TestFixLeafFixerRetriedInCycle and TestFixLeafVerifierRetriedInCycle (the acceptance tests) and TestFixActions. make fmt-check vet test pass. make self-check fails only on stale .rhiza/rendered actor/index files from the run's own record commits, not on code. Model f2 (the fixActions doc still says 'both on attempt cycle') is a minor finding and remains."
+        },
+        "handle": "leaf-fix-retry-in-cycle-fix2-verified",
+        "id": "01M68A91SYRH08DQXZADKN6SZZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M68A91SYRH08DQXZAAHS1426",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68A91SYRH08DQXZAAHS1426",
+        "id": "01M68A92B4BX6WHRWSX2DC3V1F",
+        "link": "01M68A92B4BX6WHRWSWZCRBJBW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68584KCHFKS2RDF7M3E8XFG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6580HBAKHN7XTR7XQV3XR0Q",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M68A936DM4X15XPT8TN6ZFDR",
+  "type": "ops",
+  "v": 1
+}
