@@ -1,0 +1,12 @@
+# `rhiza tui launch` is no command: it exits 2 with the app usage and opens
+# no picker.
+
+env REX_SESSION=
+env REX_SERVER=
+
+! exec rhiza tui launch
+stderr 'usage: rhiza tui app <name>'
+! stdout .
+
+! exec rhiza tui
+stderr 'usage: rhiza tui app <name>'
