@@ -95,3 +95,37 @@ func TestStartCheckLatestAnchor(t *testing.T) {
 	}
 	wantSplitOf(t, f, "block:a2")
 }
+
+// An agent step's session, such as a plan run's interview, splits the pane
+// of the run's latest session and opens no window.
+func TestStartAgent(t *testing.T) {
+	f, r := paneRunner(t)
+	f.rex.calls = nil
+	if _, err := r.StartAgent(workflow.Step{Name: "interview", Prompt: "go", Split: workflow.SplitRight}, "", nil); err != nil {
+		t.Fatal(err)
+	}
+	wantSplitOf(t, f, "block:a1")
+}
+
+// With no session of the run holding a pane, an agent step opens exactly
+// one window.
+func TestStartAgentFirstSession(t *testing.T) {
+	f, r := paneRunner(t)
+	r.run = "R-other"
+	f.rex.calls = nil
+	if _, err := r.StartAgent(workflow.Step{Name: "interview", Prompt: "go"}, "", nil); err != nil {
+		t.Fatal(err)
+	}
+	var n int
+	for _, c := range f.rex.calls {
+		if slices.Contains(c, "window") && slices.Contains(c, "new") {
+			n++
+		}
+		if len(c) > 1 && c[1] == "split" {
+			t.Errorf("rex split: %q", c)
+		}
+	}
+	if n != 1 {
+		t.Errorf("window new calls = %d, want 1: %q", n, f.rex.calls)
+	}
+}

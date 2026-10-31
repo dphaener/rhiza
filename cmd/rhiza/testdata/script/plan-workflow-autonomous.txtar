@@ -126,9 +126,16 @@ send | send-key)
 	exit 0
 	;;
 esac
-if [ "$1 $2" = "window close" ]; then
+case "$1 $2" in
+"window close" | "block close")
 	exit 0
-fi
+	;;
+"block call")
+	echo '{"columns":200,"rows":50,"cell_width_px":8,"cell_height_px":16}'
+	exit 0
+	;;
+esac
+verb=$1
 dir=
 while [ $# -gt 0 ]; do
 	if [ "$1" = -c ]; then
@@ -151,7 +158,11 @@ until [ -f "$WORK/ready" ]; do
 	sleep 0.025
 done
 rm -f "$WORK/ready"
-echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+if [ "$verb" = split ]; then
+	echo '{"block_id":"block:b2","window_id":"window:w1"}'
+else
+	echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+fi
 -- bin/claude --
 #!/bin/sh
 sid=
