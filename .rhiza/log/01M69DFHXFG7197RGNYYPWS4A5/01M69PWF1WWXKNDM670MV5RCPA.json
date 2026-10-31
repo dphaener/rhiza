@@ -1,0 +1,63 @@
+{
+  "actor": "01M69PR1GW2HZP9TR5GSXVRERP",
+  "after": [
+    "01M69PQBSZC28W725RXX69AR83"
+  ],
+  "at": "2026-10-31T19:27:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 186386b0 with a scratch build (go build -o $TMPDIR/rhiza-qa ./cmd/rhiza) in a fresh git repo, fake rex on PATH, run env unset. Three accepted milestone change sets with leaves and hand-written journals: a succeeded ship-change run ending after the accept, a succeeded plan run ending after the accept, a succeeded ship-change run ending (2020) before the accept. rhiza daemon --once --max-runs=5 started runs of the plan and stale ones only (two rex window new calls) and skipped the shipped one. In a second repo on a feature branch: accepted, a succeeded ship-change journal ending after the accept, daemon --once skipped it as shipped; then rhiza land, commit, rhiza reopen --change <cs> --base main (landed -> accepted), and the next daemon --once started a run of it."
+        },
+        "handle": "daemon-skips-shipped-qa-1",
+        "id": "01M69PWAY0MYJZ7TCYA3J051R9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69PWAY0MYJZ7TCYA24677J5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69PWAY0MYJZ7TCYA24677J5",
+        "id": "01M69PWBTFA1ABCWG1P6QJY2H5",
+        "link": "01M69PWBTFA1ABCWG1P3RD139C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DHC8T4MV7X7VWZFYD5YRP",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 186386b0 with a scratch build in a fresh repo, fake rex: after daemon --once, rhiza daemon status printed 'Skipped: <cs> shipped: its latest run shipped it' for the change set whose latest run is a succeeded ship-change run after its accept, and daemon status --json listed it with reason shipped and detail []; the plan-run and pre-accept ship-run change sets were not among the skips. After a reopen the same change set was no longer skipped and was started."
+        },
+        "handle": "shipped-skip-reason-qa-1",
+        "id": "01M69PWCR1G6ZFRZPHB8WDX7R2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69PWCR1G6ZFRZPHB5D96HA2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69PWCR1G6ZFRZPHB5D96HA2",
+        "id": "01M69PWDMWADC36SC9JHR9GC3A",
+        "link": "01M69PWDMWADC36SC9JHCQRNCA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DHDGP588ZJPVVXZ80QD8Z",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M69DFHXFG7197RGNYYPWS4A5",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69PWF1WWXKNDM670MV5RCPA",
+  "type": "ops",
+  "v": 1
+}
