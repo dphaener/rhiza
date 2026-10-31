@@ -1,0 +1,29 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M69QFW4KN2KNJ4VQJNETPTJS"
+  ],
+  "at": "2026-10-31T19:39:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rebasing branch cs/failed-steps-keep-output onto origin/main conflicts outside the rendered files, so ship-change stopped. How should these conflicts be resolved: internal/api/run.go?"
+        },
+        "handle": "rebase-conflict-failed-steps-keep-output",
+        "id": "01M69QKMCRRGFSP7R4RGETF27M",
+        "key": null,
+        "kind": "question",
+        "node": "01M69QKMCRRGFSP7R4RDY2EQ83",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M686RRCJSQ57M82FENWT2HNM",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69QKN9GTQ7WPHV5NYZTWFFC",
+  "type": "ops",
+  "v": 1
+}
