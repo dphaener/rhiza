@@ -1,0 +1,40 @@
+{
+  "actor": "01M686AX930JZGG07YR6A8K4AA",
+  "after": [
+    "01M6858ZA7CYY964SWK48EDK4Z"
+  ],
+  "at": "2026-10-31T05:23:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 2fca47e. Read the diff: buildLink in internal/api/write_link.go refuses a link unless check.Allowed(type, fromEnd, toEnd), which is the same table internal/check/check.go uses. The refusal is a usage error, \"link type %q does not go from %s to %s\", raised before anything is written. go test ./cmd/rhiza -run 'TestScripts/(link|apply|check)$' passes. link.txtar runs store serves log with --json (code usage), plain, --dry-run and --record, refuses a change set serving a capability and accepts one serving an intent. apply.txtar refuses a whole apply with one bad link item and adds no entry. check.txtar and write_test.go cases that wrote bad links now use valid ones. go test ./internal/api -run TestLinkEndpointKinds passes: for every link type and every pair of end kinds, change sets included, buildLink agrees with check.Allowed and refuses with exit 2. By hand, with a scratch binary in a fresh repo and run env unset, rhiza link store serves log with --json, with --dry-run and with no flag, and rhiza link a serves b --record on landed capabilities, each exit 2 with 'link type \"serves\" does not go from capability to capability'. The log entry count stays at 12. In make check, fmt, vet and all Go tests pass. Its self-check fails only on stale .rhiza/rendered actor files and index.md, left by this run's actor records. The commit does not touch .rhiza."
+        },
+        "handle": "link-write-checks-endpoint-kinds-verified",
+        "id": "01M686JHTN25TM9Z1AQ4ASBPTM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M686JHTN25TM9Z1AQ1WS32KB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M686JHTN25TM9Z1AQ1WS32KB",
+        "id": "01M686JJJASAAB9DX2XX2DT5R0",
+        "link": "01M686JJJASAAB9DX2XSR719RH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857PTDC3M6J8MAWWXFF0ZS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTV1D5DNN6E2B7HB1XA9Q",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M686JM45GEPEN345A6312P00",
+  "type": "ops",
+  "v": 1
+}
