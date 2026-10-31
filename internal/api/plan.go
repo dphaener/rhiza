@@ -115,14 +115,14 @@ type RoadmapRequest struct {
 
 // RoadmapResponse is the roadmap: its groups in order, and the view.
 type RoadmapResponse struct {
-	Groups []RoadmapGroup `json:"groups" desc:"One group per milestone served, in intent-tree order, then the backlog"`
+	Groups []RoadmapGroup `json:"groups" desc:"One group per milestone served, in intent-tree order, then the backlog, then one per umbrella"`
 	View   string         `json:"view" desc:"The view read: as-is, to-be or what-if:<ID>"`
 }
 
 // RoadmapGroup is the change sets of one milestone, or of the backlog, in
 // depends-on order.
 type RoadmapGroup struct {
-	Kind       string             `json:"kind" desc:"milestone, or backlog for the change sets that serve no milestone"`
+	Kind       string             `json:"kind" desc:"milestone, backlog for the change sets that serve no milestone, or umbrella for those serving an umbrella intent"`
 	Intent     RoadmapIntent      `json:"intent,omitzero" desc:"The milestone; absent for the backlog"`
 	ChangeSets []RoadmapChangeSet `json:"change_sets" desc:"The group's change sets, in depends-on order, ties by ID"`
 }
@@ -194,6 +194,8 @@ type planInputs struct {
 	// milestones is the nodes whose milestone field is non-empty; the core
 	// reads no fields, so planGather says which they are.
 	milestones map[id.ID]bool
+	// umbrellas is the intents whose umbrella field is non-empty.
+	umbrellas map[id.ID]bool
 }
 
 // planChangeSet is the core's verdict on one in-flight change set.
@@ -210,9 +212,10 @@ type planChangeSet struct {
 // planGroup is one roadmap group: a milestone's, or the backlog's, whose
 // intent is zero.
 type planGroup struct {
-	intent  id.ID
-	backlog bool
-	members []*planChangeSet
+	intent   id.ID
+	backlog  bool
+	umbrella bool
+	members  []*planChangeSet
 }
 
 // planResult is the core's output: the roadmap groups and the ready order.
@@ -386,8 +389,26 @@ func planCore(in planInputs) planResult {
 	members := map[id.ID][]*planChangeSet{}
 	var milestones []id.ID
 	var backlog []*planChangeSet
+	umbMembers := map[id.ID][]*planChangeSet{}
+	var umbrellas []id.ID
 	for _, p := range all {
 		if p.info.State == changeset.StateDraft {
+			continue
+		}
+		// An umbrella change set is in its umbrella groups only.
+		var us []id.ID
+		for _, i := range p.serves {
+			if in.umbrellas[i] {
+				us = append(us, i)
+			}
+		}
+		if us = planSortIDs(us); len(us) > 0 {
+			for _, u := range us {
+				if _, ok := umbMembers[u]; !ok {
+					umbrellas = append(umbrellas, u)
+				}
+				umbMembers[u] = append(umbMembers[u], p)
+			}
 			continue
 		}
 		var ms []id.ID
@@ -414,6 +435,10 @@ func planCore(in planInputs) planResult {
 	}
 	if len(backlog) > 0 {
 		res.groups = append(res.groups, planGroup{backlog: true, members: planTopo(backlog)})
+	}
+	slices.SortFunc(umbrellas, func(a, b id.ID) int { return planCompareIntents(a, b, in) })
+	for _, u := range umbrellas {
+		res.groups = append(res.groups, planGroup{intent: u, umbrella: true, members: planTopo(umbMembers[u])})
 	}
 
 	listed := map[id.ID]bool{}
@@ -649,7 +674,7 @@ const planCycleReason = "depends-on cycle"
 // third connection is opened.
 func planGather(r *reader) (planInputs, error) {
 	in := planInputs{ops: map[id.ID][]op.Op{}, nodes: map[id.ID]gmodel.Node{},
-		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}, milestones: map[id.ID]bool{}}
+		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}, milestones: map[id.ID]bool{}, umbrellas: map[id.ID]bool{}}
 	w := newPlanWalk(r)
 	// flown is the in-flight change sets folded, keyed by ID: their entries
 	// are read and folded on another connection while the change sets are
@@ -852,6 +877,9 @@ func planGather(r *reader) (planInputs, error) {
 		in.nodes[n.ID] = lightNode(n)
 		if n.Kind == op.KindIntent && planMilestoneField(n.Fields) {
 			in.milestones[n.ID] = true
+		}
+		if n.Kind == op.KindIntent && planFieldSet(n.Fields, "umbrella") {
+			in.umbrellas[n.ID] = true
 		}
 	}
 
@@ -1168,7 +1196,13 @@ func planParents(r *reader, ids []id.ID) ([]index.Parent, error) {
 // planMilestoneField reports whether fields has a non-empty milestone:
 // present, and neither JSON "" nor null.
 func planMilestoneField(fields map[string]json.RawMessage) bool {
-	v, ok := fields["milestone"]
+	return planFieldSet(fields, "milestone")
+}
+
+// planFieldSet reports whether fields has a non-empty name field: present,
+// and neither JSON "" nor null.
+func planFieldSet(fields map[string]json.RawMessage, name string) bool {
+	v, ok := fields[name]
 	if !ok {
 		return false
 	}
@@ -1378,6 +1412,9 @@ func planCreatedNode(i id.ID, in planInputs) {
 				if o.Kind == op.KindIntent && planMilestoneField(o.Fields) {
 					in.milestones[i] = true
 				}
+				if o.Kind == op.KindIntent && planFieldSet(o.Fields, "umbrella") {
+					in.umbrellas[i] = true
+				}
 				return
 			}
 		}
@@ -1412,6 +1449,9 @@ func runRoadmap(ctx *Ctx, req any) (any, error) {
 		rg := RoadmapGroup{Kind: "backlog", ChangeSets: []RoadmapChangeSet{}}
 		if !g.backlog {
 			rg.Kind = "milestone"
+			if g.umbrella {
+				rg.Kind = "umbrella"
+			}
 			rg.Intent = RoadmapIntent{ID: g.intent, Handle: in.nodes[g.intent].Handle, Path: []string{}}
 			for _, a := range paths[g.intent] {
 				rg.Intent.Path = append(rg.Intent.Path, planHandle(a, in.nodes))

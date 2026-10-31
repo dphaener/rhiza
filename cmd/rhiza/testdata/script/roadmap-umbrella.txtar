@@ -1,0 +1,41 @@
+# roadmap lists an umbrella change set (one serving an intent with a
+# non-empty umbrella field) only in that intent's umbrella group, after
+# the milestones and the backlog.
+
+exec rhiza init
+
+exec rhiza add intent m1 --field milestone=1 --record
+exec rhiza add intent umb --field umbrella=yes --record
+
+# U serves the umbrella.
+exec rhiza change new U
+stdout 'change set 01M5PWGQ8GB4618G4RH2TV0ZAH '
+exec rhiza link 01M5PWGQ8GB4618G4RH2TV0ZAH serves umb
+exec rhiza propose
+
+# V serves the umbrella and the milestone: the umbrella group only.
+exec rhiza change new V
+stdout 'change set 01M5PWGT68X5XKB54XFQMHKA0A '
+exec rhiza link 01M5PWGT68X5XKB54XFQMHKA0A serves m1
+exec rhiza link 01M5PWGT68X5XKB54XFQMHKA0A serves umb
+exec rhiza propose
+
+# W serves the milestone, X nothing.
+exec rhiza change new W
+stdout 'change set 01M5PWGY38TY4APFS7ZR0Q10WA '
+exec rhiza link 01M5PWGY38TY4APFS7ZR0Q10WA serves m1
+exec rhiza propose
+exec rhiza change new X
+stdout 'change set 01M5PWH110D047SG185GTXKBCB '
+exec rhiza propose
+fold-ok
+
+exec rhiza roadmap --json
+stdout '"kind": "milestone"[^\x00]*"kind": "backlog"[^\x00]*"kind": "umbrella"'
+stdout -count=1 '"id": "01M5PWGT68X5XKB54XFQMHKA0A"'
+stdout -count=1 '"id": "01M5PWGQ8GB4618G4RH2TV0ZAH"'
+cp stdout roadmap.json
+exec rhiza roadmap
+stdout '(?s)## m1.*## Backlog.*## umb'
+exec rhiza api call roadmap '{}'
+cmp stdout roadmap.json
