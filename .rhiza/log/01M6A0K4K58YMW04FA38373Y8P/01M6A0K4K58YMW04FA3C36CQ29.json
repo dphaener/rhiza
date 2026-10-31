@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-31T22:16:58Z",
+  "body": {
+    "intent": "A session with no activity for 20 minutes shows as stalled in run status and the inbox",
+    "kind": "intention",
+    "sources": [],
+    "title": "Stalled sessions surfaced"
+  },
+  "change_set": "01M6A0K4K58YMW04FA38373Y8P",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A0K4K58YMW04FA3C36CQ29",
+  "type": "open",
+  "v": 2
+}

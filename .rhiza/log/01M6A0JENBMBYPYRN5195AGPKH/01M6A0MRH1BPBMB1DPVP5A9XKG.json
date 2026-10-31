@@ -1,0 +1,178 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6A0KRTPB90V4RA250646K0E"
+  ],
+  "at": "2026-10-31T22:17:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "10",
+          "statement": "Runs heal themselves: a PR that conflicts after main moves is rebased by its own run, a flaky CI check is rerun once before a run fails, a daemon start that never journaled is retried without a restart, the daemon picks up a rebuilt binary by itself, and a session stuck with no activity shows as stalled"
+        },
+        "handle": "milestone-10",
+        "id": "01M6A0KZ2XJBXWDE4ENHW1QT3Z",
+        "key": "zzr",
+        "kind": "intent",
+        "node": "01M6A0KZ2XJBXWDE4ENGH8CD67",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "if you run out of work keep picking high value tasks. don't stop and wait for my input.",
+          "statement": "Milestone 10 is five change sets picked by the orchestrator from the hand fixes it still made on unattended runs: conflicting PRs settled in the wait, one CI rerun, the unjournaled block expiring, the daemon re-executing a rebuilt binary, and stalled sessions surfaced"
+        },
+        "handle": "m10-picked-by-orchestrator",
+        "id": "01M6A0M2GKJZTCN241AAZQ53ZG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6A0M2GKJZTCN241A8ZHZ1KE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A0M2GKJZTCN241A8ZHZ1KE",
+        "id": "01M6A0M63QZKCVDPWCHGX59VK6",
+        "link": "01M6A0M63QZKCVDPWCHD41BQ0A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0KMK61TNC56042NHQRJ4H",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6A0KZ2XJBXWDE4ENGH8CD67",
+        "id": "01M6A0M9X4FN8W1ZGPHRWHEJ1Y",
+        "link": "01M6A0M9X4FN8W1ZGPHQPFC8PQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0M2GKJZTCN241A8ZHZ1KE",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "ship check --settled reads the PR's mergeable state; on CONFLICTING it runs the ship rebase logic (which returns early when the branch already holds origin/main, so the later rebase steps stay harmless), settling rendered-only conflicts and recording the pushed head, then reports not settled; on a code conflict it raises the rebase-conflict question and exits 75 with a stop: line; wait steps learn to stop on 75 as command steps do; --settled may now write the ship record",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "wait-settles-conflict-rule",
+        "id": "01M6A0MCZRX2JM4BS1RENY53KP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6A0MCZRX2JM4BS1RDRXK34R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A0MCZRX2JM4BS1RDRXK34R",
+        "id": "01M6A0ME9GYRDTPZ7DRCRNSD9N",
+        "link": "01M6A0ME9GYRDTPZ7DRA2JK7ZA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0KMK61TNC56042NHQRJ4H",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "When a PR or main check fails, ship check reruns that GitHub Actions run's failed jobs once per head (run id from the check's detailsUrl, or databaseId for --main), records the rerun in the ship record and keeps waiting; a second failure on the same head fails as today; checks with no Actions run id are not rerun",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "ci-rerun-once-per-head",
+        "id": "01M6A0MFAVA728T8Y6TS7QYT0Z",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6A0MFAVA728T8Y6TNPJVJZQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A0MFAVA728T8Y6TNPJVJZQ",
+        "id": "01M6A0MGCQYKBBNKANM65QSJS9",
+        "link": "01M6A0MGCQYKBBNKANM3B1QW72",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0KMK61TNC56042NHQRJ4H",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "An unjournaled change set is held for a fixed 15 minutes (daemonUnjournaledRetry) and then picked again, re-entering the one-minute pending grace; a change set that has landed or been withdrawn leaves the unjournaled map at once; the pending grace that prevents double starts is unchanged",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "unjournaled-block-expires",
+        "id": "01M6A0MHC4KAS2SQWFNB66K4Z2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6A0MHC4KAS2SQWFN7FFZR7K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A0MHC4KAS2SQWFN7FFZR7K",
+        "id": "01M6A0MJD74B2PZXHKV6M8HQ2Q",
+        "link": "01M6A0MJD74B2PZXHKV634H34F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0KMK61TNC56042NHQRJ4H",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "At the end of a poll with nothing pending, the daemon compares its executable's size and modification time with those at startup and, if they changed, re-executes itself with the same arguments; live runs are separate processes and are untouched; the daemon records its version in its state, and daemon status prints it",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "daemon-reexec-when-idle",
+        "id": "01M6A0MKM9VJGPS6EX0NFSGQWT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6A0MKM9VJGPS6EX0JB52DW3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A0MKM9VJGPS6EX0JB52DW3",
+        "id": "01M6A0MMTZS6P8ZDMJMN9ZAEBE",
+        "link": "01M6A0MMTZS6P8ZDMJMHS8SQWJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0KMK61TNC56042NHQRJ4H",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A live run's session whose resolved hook status is working with a last report older than 20 minutes is stalled, except when paused for a usage limit; run status marks it stalled and the inbox lists it as a stalled item naming the session and its run; blocked and idle sessions are never stalled",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "stalled-after-20-minutes",
+        "id": "01M6A0MNY5QR1RSXNMW2YYG9YF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6A0MNY5QR1RSXNMW09VWDPZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A0MNY5QR1RSXNMW09VWDPZ",
+        "id": "01M6A0MPYF1CH2FF299B9E91CH",
+        "link": "01M6A0MPYF1CH2FF2997Z0DZ62",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0KMK61TNC56042NHQRJ4H",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6A0JENBMBYPYRN5195AGPKH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A0MRH1BPBMB1DPVP5A9XKG",
+  "type": "ops",
+  "v": 1
+}

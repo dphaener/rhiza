@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-31T22:16:54Z",
+  "body": {
+    "intent": "The daemon re-executes itself when its binary is rebuilt, and daemon status shows its version",
+    "kind": "intention",
+    "sources": [],
+    "title": "Daemon picks up rebuilt binary"
+  },
+  "change_set": "01M6A0K064DH4TP3JJ0861DFG4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A0K064DH4TP3JJ0ACX689G",
+  "type": "open",
+  "v": 2
+}

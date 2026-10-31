@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6A0JVE5ZV75XEMB10HS6MA5"
+  ],
+  "at": "2026-10-31T22:18:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "TestDaemonHeld in internal/api/daemon_picks_test.go: an unjournaled change set is still held at 15 minutes less a second, is released at 15 minutes, and is pending again after it is picked; a landed change set leaves the hold with no new journal; daemon-status.txtar's Not journaled line names when it will be retried",
+          "statement": "A change set whose daemon start wrote no journal is held for 15 minutes and then picked again, without a daemon restart; one that has landed or been withdrawn is dropped from the hold at once, and the one-minute grace before a start counts as unjournaled is unchanged"
+        },
+        "handle": "daemon-unjournaled-retry",
+        "id": "01M6A0NNP5H447ACNTCS39NQ0K",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6A0NNP5H447ACNTCPMS7D9F",
+        "op": "node.create",
+        "parent": "01M61R7K5W91SXWWX8AGDZ01HC"
+      },
+      {
+        "decision": null,
+        "from": "01M6A0NNP5H447ACNTCPMS7D9F",
+        "id": "01M6A0NPBG4JF61J9VYFSHMBD4",
+        "link": "01M6A0NPBG4JF61J9VYDYKVPZ6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0MHC4KAS2SQWFN7FFZR7K",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6A0JVE5ZV75XEMB0ZNYN8SR",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A0NQDNTRNQAWC52K5QH8P9",
+  "type": "ops",
+  "v": 1
+}
