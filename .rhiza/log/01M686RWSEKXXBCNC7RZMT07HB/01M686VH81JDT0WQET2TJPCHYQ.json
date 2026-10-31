@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M686RWSEKXXBCNC7S3C3NQXK"
+  ],
+  "at": "2026-10-31T05:27:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test runs make -n update PREFIX=<tmp> at the repo root and asserts the go build -o <tmp>/rhiza line comes before <tmp>/rhiza rex install and no cp appears; it skips when make is not on PATH",
+          "statement": "make update builds rhiza in place into PREFIX, then runs that binary's rex install, which rewrites the Rex script and reloads Rex"
+        },
+        "handle": "make-update",
+        "id": "01M686VEB0CY43YARC8ZEHBT80",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M686VEB0CY43YARC8XCA55J2",
+        "op": "node.create",
+        "parent": "01M62JP4KDNBZKH1YT5NZRB347"
+      },
+      {
+        "decision": null,
+        "from": "01M686VEB0CY43YARC8XCA55J2",
+        "id": "01M686VEXYDK7A4K12AAVZD5NN",
+        "link": "01M686VEXYDK7A4K12A9RMQK9Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SKASE2RWS6A8W56P6H1Y",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "The same test asserts make help's output names update, and a test reads CLAUDE.md and finds make update in its commands",
+          "statement": "make help and CLAUDE.md's command list name make update"
+        },
+        "handle": "update-target-documented",
+        "id": "01M686VFHDHYAJP8B10CY0HH00",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M686VFHDHYAJP8B10B23TMSC",
+        "op": "node.create",
+        "parent": "01M62JP4KDNBZKH1YT5NZRB347"
+      },
+      {
+        "decision": null,
+        "from": "01M686VFHDHYAJP8B10B23TMSC",
+        "id": "01M686VG5HD2QJYYQDTN7E2FV8",
+        "link": "01M686VG5HD2QJYYQDTMQGQTPP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SKASE2RWS6A8W56P6H1Y",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M686RWSEKXXBCNC7RZMT07HB",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M686VH81JDT0WQET2TJPCHYQ",
+  "type": "ops",
+  "v": 1
+}

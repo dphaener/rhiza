@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M686RVAD1EHGERBBDPJJPPH2"
+  ],
+  "at": "2026-10-31T05:27:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript with a fake agent shows change ls gaining a draft of the right kind and the run journal naming it; --dry-run predicts the ID; --new with a change set argument or with a workflow other than plan exits 2",
+          "statement": "rhiza run start --workflow plan --new <intent> [--milestone] opens a draft change set, a record with --milestone and an intention without, and starts the plan run on it"
+        },
+        "handle": "run-start-new-intent",
+        "id": "01M686V2Z913H9XPK0E3CDE1PF",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M686V2Z913H9XPK0E1E861YG",
+        "op": "node.create",
+        "parent": "01M6734CBEZPDTAJBANZVV5GXC"
+      },
+      {
+        "decision": null,
+        "from": "01M686V2Z913H9XPK0E1E861YG",
+        "id": "01M686V3MGDBVF953XSCMB2TKY",
+        "link": "01M686V3MGDBVF953XSBB193GR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SGWKDN1MYPWX527GHT3E",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test with a fake Starter.Exec: m, typed text, enter, y gives one rex window new running run start --workflow plan --new <intent> --milestone; n gives the same without --milestone; esc or n at the prompt and empty text call nothing",
+          "statement": "In the roadmap app, m and n prompt for a one-line intent, ask y/n, then open a Rex tab running a plan run for a new milestone or a new change set, with no change set selected"
+        },
+        "handle": "roadmap-app-new-work",
+        "id": "01M686V49K74FDKG4YV49EY5EY",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M686V49K74FDKG4YV2BDJCSN",
+        "op": "node.create",
+        "parent": "01M6734CBEZPDTAJBANZVV5GXC"
+      },
+      {
+        "decision": null,
+        "from": "01M686V49K74FDKG4YV2BDJCSN",
+        "id": "01M686V4X4KZM1J6FAVTCQPC2B",
+        "link": "01M686V4X4KZM1J6FAVPE99MJY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SGWKDN1MYPWX527GHT3E",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in internal/guide asserts the plan guide text covers planning an intention change set that serves no intent yet, including writing the serves link",
+          "statement": "The plan guide covers an intention change set that serves no intent yet: the planner writes or picks its intent and the serves link before writing leaves"
+        },
+        "handle": "plan-guide-new-change-set",
+        "id": "01M686V5H6DYGP62DZ2EV5S218",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M686V5H6DYGP62DZ2DDEG5MR",
+        "op": "node.create",
+        "parent": "01M6734CBEZPDTAJBANZVV5GXC"
+      },
+      {
+        "decision": null,
+        "from": "01M686V5H6DYGP62DZ2DDEG5MR",
+        "id": "01M686V645SSAMY6HH7QE1MYYX",
+        "link": "01M686V645SSAMY6HH7PP93EAP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SGWKDN1MYPWX527GHT3E",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M686RVAD1EHGERBBDJN3S45G",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M686V708XJCGQB4RXE80K73M",
+  "type": "ops",
+  "v": 1
+}

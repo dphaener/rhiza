@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-31T05:26:28Z",
+  "body": {
+    "intent": "A live app shows the daemon and each live or recent run's progress, backed by a run.ls operation, and the roadmap detail refreshes its latest run",
+    "kind": "intention",
+    "sources": [],
+    "title": "Live runs app"
+  },
+  "change_set": "01M686RW277XSQ20MYCE580GG8",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M686RW277XSQ20MYCHRXR21X",
+  "type": "open",
+  "v": 2
+}

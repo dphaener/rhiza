@@ -1,0 +1,109 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M686RW277XSQ20MYCHRXR21X"
+  ],
+  "at": "2026-10-31T05:27:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript with seeded run journals and RHIZA_TEST_NOW checks rhiza run ls --json's order, fields and --limit, and its human output; describe-golden.txtar is regenerated",
+          "statement": "A run.ls operation lists the repository's runs newest first with each run's ID, change set, title, state, current step, start time and whether it is live, limited by --limit"
+        },
+        "handle": "run-ls",
+        "id": "01M686V7WES41E5KRCMTE67D4N",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M686V7WES41E5KRCMQJ9MGCH",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M686V7WES41E5KRCMQJ9MGCH",
+        "id": "01M686V8DB1ZQZS7XZZZBMCCJ3",
+        "link": "01M686V8DB1ZQZS7XZZXBJPC1A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SJ41FND41X2F7WS4KVQF",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/tui/liveapp over a fake runner with canned daemon.status, run.ls and run.status results and an injected clock asserts the view's title, step, leaves count, check outcomes and elapsed time, and that a tick with changed results updates the view keeping the cursor on the same run; a testscript checks rhiza tui app live --once prints run.ls's JSON, and the app is in the launcher registry",
+          "statement": "A live app, registered as a Rex app, shows the daemon's state and each live or recent run with its change set title, current step, leaves passed of total, checks and elapsed time, refreshing every 3 seconds"
+        },
+        "handle": "live-app-runs",
+        "id": "01M686V969FDV2SVYM7SGCAHZW",
+        "key": "zzzzi",
+        "kind": "capability",
+        "node": "01M686V969FDV2SVYM7P244E86",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M686V969FDV2SVYM7P244E86",
+        "id": "01M686VA01QP68Q49K7E8GE8HX",
+        "link": "01M686VA01QP68Q49K7ADDP8Y0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SJ41FND41X2F7WS4KVQF",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test with a fake runner: enter calls run.open with the row's change set, opened true shows focused and tab_gone true shows tab gone; enter on a finished run calls nothing",
+          "statement": "Enter on a live run in the live app focuses its Rex tab, and the app says so when the run has no live tab"
+        },
+        "handle": "live-app-focus",
+        "id": "01M686VAPN2NBZCGV4TARRV25J",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M686VAPN2NBZCGV4T968DYTD",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M686VAPN2NBZCGV4T968DYTD",
+        "id": "01M686VBAVXEY51XEFH41Y0BGD",
+        "link": "01M686VBAVXEY51XEFH3CCN3E8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SJ41FND41X2F7WS4KVQF",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in internal/tui/roadmapapp opens the detail with a fake run.status saying running, changes it to succeeded, sends the tick and asserts the run section updated without calling change.show again; a tick in the list view calls no run.status",
+          "statement": "While the roadmap app's detail view is open it reloads its latest-run section every 3 seconds"
+        },
+        "handle": "roadmap-detail-run-tick",
+        "id": "01M686VBX481BWSM5W1ZR6B4JX",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M686VBX481BWSM5W1YT6N1PQ",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "decision": null,
+        "from": "01M686VBX481BWSM5W1YT6N1PQ",
+        "id": "01M686VCFHYQNFFN4VVT5BK1F6",
+        "link": "01M686VCFHYQNFFN4VVSXV1C8G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SJ41FND41X2F7WS4KVQF",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M686RW277XSQ20MYCE580GG8",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M686VDCXEKQDDW66QC91YWGZ",
+  "type": "ops",
+  "v": 1
+}

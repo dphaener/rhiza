@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M686RS47EK7F4H2WY3KNWVRF"
+  ],
+  "at": "2026-10-31T05:27:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A table test in internal/daemon/pick_test.go for a pure Skips function beside Pick covers live, failed-not-cleared, held and no-slot, and shows abandoned or retried failures are not skipped; an internal/api test shows daemonCandidates also reports backlog, not-ready and no-leaves skips",
+          "statement": "At each poll the daemon works out, for every accepted change set it does not start, a fixed reason (serves no milestone, no leaves, not ready with its readiness reasons, live, failed and not cleared, held, start not journaled, waiting for a slot) and saves the list in its state file"
+        },
+        "handle": "daemon-skip-reasons",
+        "id": "01M686TJN8KRFR48423KGMH014",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M686TJN8KRFR48423FXP6BMM",
+        "op": "node.create",
+        "parent": "01M61R7K5W91SXWWX8AGDZ01HC"
+      },
+      {
+        "decision": null,
+        "from": "01M686TJN8KRFR48423FXP6BMM",
+        "id": "01M686TKARJ852VGGQSBAJET03",
+        "link": "01M686TKARJ852VGGQS9NM30YQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SD9VM3411J6KDG2ZNPVK",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "daemon-status.txtar sets up an accepted change set serving no milestone, one with no leaves and one depending on an unlanded change set, runs daemon --once, and checks Skipped: lines with serves no milestone and the JSON skipped list with reason not-ready and its reasons; describe-golden.txtar is regenerated",
+          "statement": "rhiza daemon status and its --json list each skipped change set by ID and title with its reason, and its readiness reasons when it is not ready, as of the daemon's last poll"
+        },
+        "handle": "daemon-status-skips",
+        "id": "01M686TKZGT5S1SHQSCKFXQZ0B",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M686TKZGT5S1SHQSCK4QPPRR",
+        "op": "node.create",
+        "parent": "01M61R7NEEK19RP2QEHFRQ6W8S"
+      },
+      {
+        "decision": null,
+        "from": "01M686TKZGT5S1SHQSCK4QPPRR",
+        "id": "01M686TMKW95AV7EEMT0TMTGMF",
+        "link": "01M686TMKW95AV7EEMSY8PPXAQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SD9VM3411J6KDG2ZNPVK",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M686RS47EK7F4H2WY15TNAQ5",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M686TNMW7NP61PP8Z84QSACK",
+  "type": "ops",
+  "v": 1
+}

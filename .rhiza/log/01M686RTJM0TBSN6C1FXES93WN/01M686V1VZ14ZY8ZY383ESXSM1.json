@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M686RTJM0TBSN6C1G0QY5E0B"
+  ],
+  "at": "2026-10-31T05:27:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A new roadmap-umbrella.txtar with an umbrella intent, a milestone intent and change sets serving the umbrella, both, or nothing: roadmap --json shows group kinds milestone, backlog, umbrella in that order, an umbrella change set appears in no other group, and the human output heads the group with the intent's handle; describe-golden.txtar is regenerated",
+          "statement": "A proposed or accepted change set serving an intent with a non-empty umbrella field is listed only in that intent's umbrella group, after the milestone groups and the backlog"
+        },
+        "handle": "roadmap-umbrella-group",
+        "id": "01M686TX1JY61Z3V1YSVRS4M4N",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M686TX1JY61Z3V1YSRWCQRCR",
+        "op": "node.create",
+        "parent": "01M5SWS9C5KVKS7DEVJ08272NZ"
+      },
+      {
+        "decision": null,
+        "from": "01M686TX1JY61Z3V1YSRWCQRCR",
+        "id": "01M686TXRQ23P6024QD30NF7GC",
+        "link": "01M686TXRQ23P6024QCZASDCF8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SFNE5K0CY3E4DM7FG15J",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "In roadmap-umbrella.txtar ready --json gives that reason and its next is a non-umbrella change set; a case in internal/api's daemon tests shows an umbrella group with leaves yields no candidate",
+          "statement": "An umbrella change set is never ready, with the reason umbrella: work is carved out of it, so ready's next and the daemon skip it"
+        },
+        "handle": "umbrella-not-ready",
+        "id": "01M686TYF6800AVCAKJQ95A2N0",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M686TYF6800AVCAKJPHMAAM7",
+        "op": "node.create",
+        "parent": "01M5SWS9GDHNEE81EEBCQW1895"
+      },
+      {
+        "decision": null,
+        "from": "01M686TYF6800AVCAKJPHMAAM7",
+        "id": "01M686TZ6TDGAJGKK8TBG4ZQSG",
+        "link": "01M686TZ6TDGAJGKK8T8R7PJYS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SFNE5K0CY3E4DM7FG15J",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in internal/tui/roadmapapp with a fake runner returning an umbrella group shows one row while collapsed and the change set rows after enter; --once output is unchanged",
+          "statement": "The roadmap app shows each umbrella group as one collapsed row naming how many change sets it holds, and enter expands or collapses it"
+        },
+        "handle": "roadmap-app-umbrella-row",
+        "id": "01M686TZYQZXDVR5B38B1YDNRP",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M686TZYQZXDVR5B3880M6C21",
+        "op": "node.create",
+        "parent": "01M67349MAEY43NAK3P9PG0H74"
+      },
+      {
+        "decision": null,
+        "from": "01M686TZYQZXDVR5B3880M6C21",
+        "id": "01M686V0NV4P1T7CTS3Q0SMTCZ",
+        "link": "01M686V0NV4P1T7CTS3ME2CDT9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SFNE5K0CY3E4DM7FG15J",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M686RTJM0TBSN6C1FXES93WN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M686V1VZ14ZY8ZY383ESXSM1",
+  "type": "ops",
+  "v": 1
+}

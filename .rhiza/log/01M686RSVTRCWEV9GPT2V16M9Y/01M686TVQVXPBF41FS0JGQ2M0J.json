@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M686RSVTRCWEV9GPT5B03DTA"
+  ],
+  "at": "2026-10-31T05:27:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript where a question blocks an accepted change set: rhiza question answer <q> <words> --change <cs> --json makes ready drop the reason and fold-ok passes; --dry-run writes nothing; answering an unknown question exits 2; two answers to two questions get distinct handles; the roadmap app's answer path calls question.answer (Go test with a fake runner); describe-golden.txtar is regenerated",
+          "statement": "A question.answer operation answers an open question that blocks a change set by recording the owner's words as a Decision quoting them, linked answers to the question, under a free handle, in the change set it blocks; the roadmap app answers through it"
+        },
+        "handle": "question-answer-op",
+        "id": "01M686TPQBCC7169KT6ZJ7Z17R",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M686TPQBCC7169KT6WEPB85A",
+        "op": "node.create",
+        "parent": "01M6734EA3V7228YH8DGYVYDQA"
+      },
+      {
+        "decision": null,
+        "from": "01M686TPQBCC7169KT6WEPB85A",
+        "id": "01M686TQBZR2DY0FQM47ZB5S1Y",
+        "link": "01M686TQBZR2DY0FQM47HFN7RJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SED30KDNGH2C9F18JDVQ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "inbox-blocking-questions.txtar with one run question and one model question blocking an accepted change set shows both in text and --json; after the model question is answered it is gone; a question on a draft or landed change set is never listed",
+          "statement": "rhiza inbox lists each open question that blocks a proposed or accepted change set as a blocker item, giving the question, the change set and what it blocks, next to the run items"
+        },
+        "handle": "inbox-blocking-questions",
+        "id": "01M686TR0KYVRWTYHXJ4WMM8KW",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M686TR0KYVRWTYHXJ3F8P1D0",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "decision": null,
+        "from": "01M686TR0KYVRWTYHXJ3F8P1D0",
+        "id": "01M686TRMNC08RH2D4YZV2787N",
+        "link": "01M686TRMNC08RH2D4YXBC0BN4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SED30KDNGH2C9F18JDVQ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/tui/inboxapp with a fake runner asserts one question.answer call with the question, change set and typed words for a blocker item, that an answer on a run question still calls session.message, and that esc sends nothing",
+          "statement": "In the inbox app, typing an answer on a blocker item answers it in place through question.answer, and the item is gone on reload"
+        },
+        "handle": "inbox-app-answer-question",
+        "id": "01M686TSHQQ5XJ0YAZ40XWXZSN",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M686TSHQQ5XJ0YAZ3Z538821",
+        "op": "node.create",
+        "parent": "01M6734J6ESHFYKFJ09YK6TEWT"
+      },
+      {
+        "decision": null,
+        "from": "01M686TSHQQ5XJ0YAZ3Z538821",
+        "id": "01M686TTGMCCG5G225JXBV84F5",
+        "link": "01M686TTGMCCG5G225JWB1S7QJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SED30KDNGH2C9F18JDVQ",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M686RSVTRCWEV9GPT2V16M9Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M686TVQVXPBF41FS0JGQ2M0J",
+  "type": "ops",
+  "v": 1
+}

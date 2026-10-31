@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-31T05:26:27Z",
+  "body": {
+    "intent": "The roadmap app starts a plan run for a new milestone or a new change set from a typed one-line intent",
+    "kind": "intention",
+    "sources": [],
+    "title": "New work from roadmap"
+  },
+  "change_set": "01M686RVAD1EHGERBBDJN3S45G",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M686RVAD1EHGERBBDPJJPPH2",
+  "type": "open",
+  "v": 2
+}

@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M686RRCJSQ57M82FES735BMA"
+  ],
+  "at": "2026-10-31T05:27:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A new run-command-step-output.txtar runs a step echo out1; echo boom >&2; exit 3 and run status --json's detail holds exit 3, boom and out1; a step printing 500 lines keeps only the tail (line 500, not line 1); a passing step's detail stays exit 0; a unit test in internal/run/engine_test.go shows a runner's detail is kept",
+          "statement": "When a command step exits non-zero, its journal detail keeps exit N followed by the last lines of the step's interleaved stdout and stderr, capped at 20 lines and 2 KiB"
+        },
+        "handle": "command-step-keeps-output",
+        "id": "01M686TD7X0X91G79FG892R26R",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M686TD7X0X91G79FG5S2Q1GJ",
+        "op": "node.create",
+        "parent": "01M5TYGHN9QSF654FF0V1Q309N"
+      },
+      {
+        "decision": null,
+        "from": "01M686TD7X0X91G79FG5S2Q1GJ",
+        "id": "01M686TDV6ZJXGE7M36V3TPPQ9",
+        "link": "01M686TDV6ZJXGE7M36QGW7HXX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SC1VK3FSRSYSZGEYC759",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "In run-command-step-output.txtar, run status prints - b (visit 1): fail, then end: exit 3 and an indented boom line under it",
+          "statement": "rhiza run status shows a failed step's kept output as indented lines under the step's line, and Rex's status line still takes only the first line"
+        },
+        "handle": "failed-step-detail-shown",
+        "id": "01M686TEEXFC829G7CJ4WWKGCX",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M686TEEXFC829G7CJ4EA044C",
+        "op": "node.create",
+        "parent": "01M5TYGK04WT4AH5KMH4RF82YD"
+      },
+      {
+        "decision": null,
+        "from": "01M686TEEXFC829G7CJ4EA044C",
+        "id": "01M686TF1NRWHHCTRFAQEXN1T3",
+        "link": "01M686TF1NRWHHCTRFAMXE8RNJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SC1VK3FSRSYSZGEYC759",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "inbox-list.txtar or run-abandon-failed.txtar gains a run failing at a command step that prints boom; rhiza inbox shows boom indented under the item and inbox --json's detail holds it",
+          "statement": "The inbox item of a run that failed at a command step shows that step's kept output"
+        },
+        "handle": "inbox-failed-step-output",
+        "id": "01M686TFM9P7BREP2N930ADE8K",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M686TFM9P7BREP2N91XSK6AG",
+        "op": "node.create",
+        "parent": "01M61R7Q0JX5BXJP6M3P1SJXTG"
+      },
+      {
+        "decision": null,
+        "from": "01M686TFM9P7BREP2N91XSK6AG",
+        "id": "01M686TG7RN0P6ECDS3TTAA2G0",
+        "link": "01M686TG7RN0P6ECDS3TH215BC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686SC1VK3FSRSYSZGEYC759",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M686RRCJSQ57M82FENWT2HNM",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M686THFQN70QQ8BC14CCE2G5",
+  "type": "ops",
+  "v": 1
+}
