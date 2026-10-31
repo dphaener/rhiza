@@ -41,9 +41,14 @@ const (
 // timing, is not a package go test is still running beside the waiter,
 // and counting it made two waiters (api.test and modelapp.test) each wait
 // out quietWait and then time beside the other.
+//
+// Both are named by this process's parent, the go test run, so only its
+// own packages take turns: otherTestProcesses looks at that run alone, and
+// a lock shared by every run on the machine made a waiter queue behind
+// another run's whole quiet wait (over five minutes beside one other run).
 var (
-	waiterDir  = filepath.Join(os.TempDir(), "rhiza-quiet")
-	waiterLock = filepath.Join(os.TempDir(), "rhiza-quiet.lock")
+	waiterDir  = filepath.Join(os.TempDir(), "rhiza-quiet-"+strconv.Itoa(os.Getppid()))
+	waiterLock = filepath.Join(waiterDir, "lock")
 )
 
 // otherTestProcesses returns the names of the processes go test is running
