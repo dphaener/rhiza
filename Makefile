@@ -21,6 +21,13 @@ install: ## Build straight into $(PREFIX) (default ~/bin)
 	@mkdir -p $(PREFIX)
 	go build -ldflags "$(LDFLAGS)" -o $(PREFIX)/$(BINARY) ./cmd/rhiza
 
+.PHONY: update
+update: install ## Rebuild into $(PREFIX), then rewrite the Rex script and reload Rex
+# Runs the binary install just built, in place, so the Rex script always comes
+# from the same build as the binary. Nothing is copied (arm64 signature, see
+# install).
+	$(PREFIX)/$(BINARY) rex install
+
 .PHONY: test
 test: ## Run the full test suite and print the read-budget timings
 # TestReadBudget appends its timings to the file named by RHIZA_BUDGET_LOG.
