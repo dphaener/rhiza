@@ -17,6 +17,7 @@ type fakeData struct {
 	status map[string]string
 	change map[string]string
 	calls  int
+	shows  int
 	opens  []string
 	open   string
 }
@@ -34,6 +35,7 @@ func (f *fakeData) run(op string, args []string) ([]byte, error) {
 	case "run.status":
 		return []byte(f.status[args[0]]), nil
 	case "change.show":
+		f.shows++
 		return []byte(f.change[args[0]]), nil
 	}
 	return nil, nil
@@ -58,13 +60,56 @@ func newFake() *fakeData {
 	}
 }
 
+// load builds the model and runs its leaf fetch, as Init's command would.
+func load(f *fakeData, now Clock) *Model {
+	m := NewModel(f.run, now)
+	settle(m)
+	return m
+}
+
+// settle runs the pending leaf fetch and hands its message to Update.
+func settle(m *Model) {
+	if c := m.fetchLeaves(); c != nil {
+		m.Update(c())
+	}
+}
+
+// leavesFrom runs a batch's commands and returns its LeavesMsg; the tick's
+// command is left asleep.
+func leavesFrom(t *testing.T, cmd tea.Cmd) tea.Msg {
+	t.Helper()
+	if cmd == nil {
+		t.Fatal("no command")
+	}
+	batch, ok := cmd().(tea.BatchMsg)
+	if !ok {
+		t.Fatal("not a batch")
+	}
+	got := make(chan tea.Msg, len(batch))
+	for _, c := range batch {
+		if c != nil {
+			go func() { got <- c() }()
+		}
+	}
+	for {
+		select {
+		case msg := <-got:
+			if _, ok := msg.(LeavesMsg); ok {
+				return msg
+			}
+		case <-time.After(time.Second):
+			t.Fatal("no leaf fetch in the batch")
+		}
+	}
+}
+
 func clock(s string) Clock {
 	t, _ := time.Parse(time.RFC3339, s)
 	return func() time.Time { return t }
 }
 
 func TestViewShowsRunProgress(t *testing.T) {
-	m := NewModel(newFake().run, clock("2026-01-01T00:05:07Z"))
+	m := load(newFake(), clock("2026-01-01T00:05:07Z"))
 	v := m.View().Content
 	for _, want := range []string{
 		"Daemon: running · 1 live runs",
@@ -81,7 +126,7 @@ func TestViewShowsRunProgress(t *testing.T) {
 
 func TestTickUpdatesViewKeepingCursorOnRun(t *testing.T) {
 	f := newFake()
-	m := NewModel(f.run, clock("2026-01-01T00:05:07Z"))
+	m := load(f, clock("2026-01-01T00:05:07Z"))
 	m.Update(tea.KeyPressMsg{Code: 'j', Text: "j"})
 	if r, _ := m.Selected(); r.ID != "R1" {
 		t.Fatalf("selected %q", r.ID)
@@ -92,15 +137,32 @@ func TestTickUpdatesViewKeepingCursorOnRun(t *testing.T) {
 	f.status["R2"] = `{"id":"R2","leaves":[{"leaf":"a","outcome":"passed"},{"leaf":"b","outcome":"passed"},{"leaf":"c","outcome":"passed"}],"checks":[]}`
 	f.change["C2"] = `{"leaves":[{"handle":"a"},{"handle":"b"},{"handle":"c"}]}`
 	f.daemon = `{"running":false,"runs":[],"unjournaled":[]}`
-	m.Update(TickMsg{})
+	shows := f.shows
+	_, cmd := m.Update(TickMsg{})
+	if f.shows != shows {
+		t.Fatalf("the tick ran change.show %d times on the update loop", f.shows-shows)
+	}
+	m.Update(leavesFrom(t, cmd))
+	if f.shows != shows+1 {
+		t.Fatalf("change.show ran %d times for the one new change set", f.shows-shows)
+	}
 	v := m.View().Content
 	if r, _ := m.Selected(); r.ID != "R1" {
 		t.Fatalf("cursor moved to %q", r.ID)
 	}
-	for _, want := range []string{"Daemon: not running", "Third · running", "leaves 3/3 · checks none"} {
+	// C2's total is kept from the first fetch until r fetches it again.
+	for _, want := range []string{"Daemon: not running", "Third · running", "leaves 3/4 · checks none"} {
 		if !strings.Contains(v, want) {
 			t.Errorf("view lacks %q:\n%s", want, v)
 		}
+	}
+	_, cmd = m.Update(tea.KeyPressMsg{Code: 'r', Text: "r"})
+	if cmd == nil {
+		t.Fatal("r fetched no leaf totals")
+	}
+	m.Update(cmd())
+	if v := m.View().Content; !strings.Contains(v, "leaves 3/3 · checks none") {
+		t.Errorf("view lacks refetched leaves 3/3:\n%s", v)
 	}
 }
 
@@ -166,7 +228,7 @@ func TestLeavesCountChangeSetLeavesOnceEach(t *testing.T) {
 	// a and b passed; a checks step's fixer then fixed b again, an entry
 	// with no outcome. c and d are not conducted yet.
 	f.status["R2"] = `{"id":"R2","leaves":[{"step":"build","leaf":"a","outcome":"passed"},{"step":"build","leaf":"b","outcome":"passed"},{"step":"review","leaf":"b"}],"checks":[]}`
-	m := NewModel(f.run, clock("2026-01-01T00:05:07Z"))
+	m := load(f, clock("2026-01-01T00:05:07Z"))
 	if v := m.View().Content; !strings.Contains(v, "leaves 2/4 · checks none") {
 		t.Errorf("view lacks leaves 2/4:\n%s", v)
 	}
@@ -178,7 +240,7 @@ func TestLeavesCountChangeSetLeavesOnceEach(t *testing.T) {
 	}
 	// Without change.show the total is the distinct leaves the run lists.
 	delete(f.change, "C2")
-	m.Reload()
+	m = load(f, clock("2026-01-01T00:05:07Z"))
 	if v := m.View().Content; !strings.Contains(v, "leaves 4/4 · checks none") {
 		t.Errorf("view lacks fallback leaves 4/4:\n%s", v)
 	}
@@ -193,18 +255,30 @@ func TestViewScrollsToCursorKeepingDaemonLine(t *testing.T) {
 		f.status[id] = `{"id":"x","leaves":[],"checks":[]}`
 	}
 	f.ls = `{"runs":[` + strings.Join(runs, ",") + `]}`
-	m := NewModel(f.run, clock("2026-01-01T00:05:07Z"))
-	m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
-	lines := func() int { return strings.Count(m.View().Content, "\n") + 1 }
-	v := m.View().Content
-	if !strings.HasPrefix(v, "Daemon: running") || !strings.Contains(v, "> Run 00") || strings.Contains(v, "Run 19") || lines() > 24 {
-		t.Fatalf("top view (%d lines):\n%s", lines(), v)
-	}
-	for i := 0; i < 19; i++ {
-		m.Update(tea.KeyPressMsg{Code: 'j', Text: "j"})
-	}
-	v = m.View().Content
-	if !strings.HasPrefix(v, "Daemon: running") || !strings.Contains(v, "> Run 19") || strings.Contains(v, "Run 00") || lines() > 24 {
-		t.Fatalf("bottom view (%d lines):\n%s", lines(), v)
+	// Every height, with and without a notice: the frame fits, so the
+	// daemon line stays on top.
+	for h := 7; h <= 30; h++ {
+		for _, notice := range []bool{false, true} {
+			m := load(f, clock("2026-01-01T00:05:07Z"))
+			m.Update(tea.WindowSizeMsg{Width: 80, Height: h})
+			if notice {
+				enter(m) // Run 00 is not live
+			}
+			lines := func() int { return strings.Count(m.View().Content, "\n") + 1 }
+			v := m.View().Content
+			if notice && !strings.Contains(v, "is not live") {
+				t.Fatalf("height %d: no notice:\n%s", h, v)
+			}
+			if !strings.HasPrefix(v, "Daemon: running") || !strings.Contains(v, "> Run 00") || strings.Contains(v, "Run 19") || lines() > h {
+				t.Fatalf("height %d, notice %v: top view (%d lines):\n%s", h, notice, lines(), v)
+			}
+			for i := 0; i < 19; i++ {
+				m.Update(tea.KeyPressMsg{Code: 'j', Text: "j"})
+			}
+			v = m.View().Content
+			if !strings.HasPrefix(v, "Daemon: running") || !strings.Contains(v, "> Run 19") || strings.Contains(v, "Run 00") || lines() > h {
+				t.Fatalf("height %d, notice %v: bottom view (%d lines):\n%s", h, notice, lines(), v)
+			}
+		}
 	}
 }

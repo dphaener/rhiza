@@ -4,7 +4,9 @@
 // daemon.status, run.ls, run.status and change.show in-process through the
 // registry, so --once prints what `rhiza run ls --json` prints. The view
 // reloads every few seconds and on r, and scrolls to keep the cursor's run
-// on screen below the daemon line.
+// on screen below the daemon line. change.show folds the model, so each
+// change set's leaf total is fetched once, off the update loop, and kept;
+// r fetches the totals again.
 package liveapp
 
 import (
@@ -39,16 +41,16 @@ type Clock func() time.Time
 // TickMsg is the reload timer firing.
 type TickMsg struct{}
 
+// LeavesMsg carries leaf totals fetched off the update loop, by change set.
+// A change set whose change.show failed is missing from it.
+type LeavesMsg struct{ Totals map[string]int }
+
 // row is one run as the view shows it.
 type row struct {
 	api.RunLsItem
 	info    api.RunInfo
 	hasInfo bool
 	err     error
-	// leaves is the change set's leaf count from change.show; hasLeaves
-	// is false when that failed.
-	leaves    int
-	hasLeaves bool
 }
 
 // rowLines is how many lines a run takes: a blank line, its title, its
@@ -68,6 +70,10 @@ type Model struct {
 	top    int
 	height int
 	notice string
+	// leaves holds each change set's leaf total from change.show; asked
+	// holds the change sets fetched or being fetched.
+	leaves map[string]int
+	asked  map[string]bool
 }
 
 // NewModel returns the model over run, loaded once. A nil now means the
@@ -76,7 +82,7 @@ func NewModel(run Runner, now Clock) *Model {
 	if now == nil {
 		now = time.Now
 	}
-	m := &Model{run: run, now: now, height: 24}
+	m := &Model{run: run, now: now, height: 24, leaves: map[string]int{}, asked: map[string]bool{}}
 	m.Reload()
 	return m
 }
@@ -103,7 +109,6 @@ func (m *Model) Reload() {
 		m.hasD = true
 	}
 	m.rows = m.rows[:0]
-	leafCounts := map[string]int{}
 	for _, it := range ls.Runs {
 		r := row{RunLsItem: it}
 		if b, err := m.run("run.status", []string{it.ID}); err != nil {
@@ -112,15 +117,6 @@ func (m *Model) Reload() {
 			r.err = err
 		} else {
 			r.hasInfo = true
-		}
-		if n, ok := leafCounts[it.Change]; ok {
-			r.leaves, r.hasLeaves = n, true
-		} else if b, err := m.run("change.show", []string{it.Change}); err == nil {
-			var c api.ChangeShowResponse
-			if json.Unmarshal(b, &c) == nil {
-				r.leaves, r.hasLeaves = len(c.Leaves), true
-				leafCounts[it.Change] = r.leaves
-			}
 		}
 		m.rows = append(m.rows, r)
 	}
@@ -133,10 +129,37 @@ func (m *Model) Reload() {
 	m.follow()
 }
 
+// fetchLeaves fetches the leaf totals of the listed change sets not yet
+// asked for, off the update loop. It is nil when there are none.
+func (m *Model) fetchLeaves() tea.Cmd {
+	var changes []string
+	for _, r := range m.rows {
+		if !m.asked[r.Change] {
+			m.asked[r.Change] = true
+			changes = append(changes, r.Change)
+		}
+	}
+	if len(changes) == 0 {
+		return nil
+	}
+	run := m.run
+	return func() tea.Msg {
+		totals := map[string]int{}
+		for _, ch := range changes {
+			b, err := run("change.show", []string{ch})
+			var c api.ChangeShowResponse
+			if err == nil && json.Unmarshal(b, &c) == nil {
+				totals[ch] = len(c.Leaves)
+			}
+		}
+		return LeavesMsg{Totals: totals}
+	}
+}
+
 // visible is how many runs fit below the daemon line, above the notice
 // and the key help.
 func (m *Model) visible() int {
-	fixed := 2 // the daemon line and the key help
+	fixed := 3 // the daemon line, the blank line and the key help
 	if m.err != nil {
 		fixed++
 	}
@@ -173,13 +196,17 @@ func tick() tea.Cmd {
 	return tea.Tick(Interval, func(time.Time) tea.Msg { return TickMsg{} })
 }
 
-func (m *Model) Init() tea.Cmd { return tick() }
+func (m *Model) Init() tea.Cmd { return tea.Batch(tick(), m.fetchLeaves()) }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case TickMsg:
 		m.Reload()
-		return m, tick()
+		return m, tea.Batch(tick(), m.fetchLeaves())
+	case LeavesMsg:
+		for ch, n := range msg.Totals {
+			m.leaves[ch] = n
+		}
 	case tea.WindowSizeMsg:
 		m.height = max(msg.Height, 1)
 		m.follow()
@@ -192,7 +219,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "up", "k":
 			m.cursor = max(0, m.cursor-1)
 		case "r":
+			clear(m.asked)
 			m.Reload()
+			m.follow()
+			return m, m.fetchLeaves()
 		case "enter":
 			m.focus()
 		}
@@ -285,7 +315,8 @@ func (m *Model) format(r row) string {
 		return b.String()
 	}
 	if r.hasInfo {
-		passed, total := leavesPassed(r)
+		total, ok := m.leaves[r.Change]
+		passed, total := leavesPassed(r, total, ok)
 		fmt.Fprintf(&b, " · leaves %d/%d", passed, total)
 		fmt.Fprintf(&b, " · checks %s", checksSummary(r.info.Checks))
 	}
@@ -296,8 +327,9 @@ func (m *Model) format(r row) string {
 // leavesPassed is how many of the change set's leaves passed, and how many
 // it has. A leaf counts once however many entries it has: run.status lists
 // a leaf again for each checks step's fixer that fixed it, with no outcome.
-// Without change.show the total falls back to the leaves the run lists.
-func leavesPassed(r row) (passed, total int) {
+// total is the change set's leaf count when hasTotal; without it the total
+// falls back to the leaves the run lists.
+func leavesPassed(r row, total int, hasTotal bool) (passed, _ int) {
 	seen := map[string]bool{}
 	done := map[string]bool{}
 	for _, l := range r.info.Leaves {
@@ -311,9 +343,8 @@ func leavesPassed(r row) (passed, total int) {
 			passed++
 		}
 	}
-	total = len(seen)
-	if r.hasLeaves {
-		total = r.leaves
+	if !hasTotal {
+		total = len(seen)
 	}
 	return passed, total
 }
