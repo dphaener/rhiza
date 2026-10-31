@@ -16,6 +16,13 @@ The runs view is the live app, so no existing app's default Rex key moves, and i
 
 - derived-from [m7-keep-picking](../source/m7-keep-picking.md)
 
+### In
+
+- decided-by [run-ls](../capability/rhiza/workflows/workflow-runs/run-ls.md)
+- decided-by [live-app-runs](../capability/rhiza/live-app-runs.md)
+- decided-by [live-app-focus](../capability/rhiza/live-app-focus.md)
+- decided-by [roadmap-detail-run-tick](../capability/rhiza/roadmap-detail-run-tick.md)
+
 ## History
 
 - `01M686RDMZR9FBZXN7DZWRWQW9` Plan milestone 7: drive Rhiza from Rex and see what it does, picked by the orchestrator under the owner's standing instruction
