@@ -325,6 +325,7 @@
 - [milestone-6](intent/milestone-6.md)
 - [milestone-7](intent/milestone-7.md)
 - [milestone-8](intent/milestone-8.md)
+- [milestone-9](intent/milestone-9.md)
 
 ## Constraints
 
@@ -568,6 +569,7 @@
 - [m6-overnight-batch](decision/m6-overnight-batch.md)
 - [m7-picked-by-orchestrator](decision/m7-picked-by-orchestrator.md)
 - [m8-picked-by-orchestrator](decision/m8-picked-by-orchestrator.md)
+- [m9-picked-by-orchestrator](decision/m9-picked-by-orchestrator.md)
 - [manual-rebase-for-now](decision/manual-rebase-for-now.md)
 - [manual-resume-refuses](decision/manual-resume-refuses.md)
 - [message-summary-journaled](decision/message-summary-journaled.md)
@@ -903,6 +905,8 @@
 - [two-change-set-kinds](decision/two-change-set-kinds.md)
 - [two-owner-gates](decision/two-owner-gates.md)
 - [umbrella-intent-field](decision/umbrella-intent-field.md)
+- [unknown-fields-refused-on-new-writes](decision/unknown-fields-refused-on-new-writes.md)
+- [unlinked-constraint-under-link-rule](decision/unlinked-constraint-under-link-rule.md)
 - [update-is-a-make-target](decision/update-is-a-make-target.md)
 - [usage-limit-detect-and-wait-answer](decision/usage-limit-detect-and-wait-answer.md)
 - [usage-limit-rebase-resolution](decision/usage-limit-rebase-resolution.md)
@@ -911,6 +915,7 @@
 - [user-level-plugin](decision/user-level-plugin.md)
 - [verifier-writes-evidence](decision/verifier-writes-evidence.md)
 - [why-is-lineage-verb](decision/why-is-lineage-verb.md)
+- [why-quotes-by-substring](decision/why-quotes-by-substring.md)
 - [work-contract](decision/work-contract.md)
 - [work-state-outside-log](decision/work-state-outside-log.md)
 - [workflow-writing-tools](decision/workflow-writing-tools.md)
@@ -1460,6 +1465,7 @@
 - [m6-overnight-interview](source/m6-overnight-interview.md)
 - [m7-keep-picking](source/m7-keep-picking.md)
 - [m8-orchestrator-picks](source/m8-orchestrator-picks.md)
+- [m9-orchestrator-picks](source/m9-orchestrator-picks.md)
 - [milestone-1](source/milestone-1.md)
 - [milestone-2-conversation](source/milestone-2-conversation.md)
 - [milestone-3-conversation](source/milestone-3-conversation.md)

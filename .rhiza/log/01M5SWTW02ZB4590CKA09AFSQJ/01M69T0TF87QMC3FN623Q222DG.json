@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5SWTWVPC9B81XZSE7714VNJ"
+  ],
+  "at": "2026-10-31T20:22:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A lineage_test.go case with a two-quote source and a decision citing one returns only that quote; why.txtar shows the same",
+          "statement": "rhiza why on a decision shows only the quotes of its Source that contain the decision's quote, whitespace normalised"
+        },
+        "handle": "why-cited-quotes",
+        "id": "01M69T0QKZJRTB9ZYRCVTH91F6",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M69T0QKZJRTB9ZYRCT0ZBF1R",
+        "op": "node.create",
+        "parent": "01M5SWS8PX6B4YJZADM33YX1EP"
+      },
+      {
+        "decision": null,
+        "from": "01M69T0QKZJRTB9ZYRCT0ZBF1R",
+        "id": "01M69T0R7QGV6PQTXNNZ8PZ53X",
+        "link": "01M69T0R7QGV6PQTXNNVN5GDEG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T07XZRYMQ9MJWJFM158M8",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go cases for no match, no quote and a non-decision node keep all quotes; a trimmed case prints the left-out count in text and a count field in --json; describe-golden.txtar is regenerated if a response field is added",
+          "statement": "When no quote matches, the decision has no quote, or the node is not a decision, rhiza why keeps every quote, and its output notes how many quotes it left out when it trimmed"
+        },
+        "handle": "why-uncited-source-quotes",
+        "id": "01M69T0RVG5F71755B3D0SZ3DA",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M69T0RVG5F71755B3BMVVYHX",
+        "op": "node.create",
+        "parent": "01M5SWS8PX6B4YJZADM33YX1EP"
+      },
+      {
+        "decision": null,
+        "from": "01M69T0RVG5F71755B3BMVVYHX",
+        "id": "01M69T0SFBG8TP3VVCG0ME72BK",
+        "link": "01M69T0SFBG8TP3VVCFZKP6MWB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T07XZRYMQ9MJWJFM158M8",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWTW02ZB4590CKA09AFSQJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69T0TF87QMC3FN623Q222DG",
+  "type": "ops",
+  "v": 1
+}

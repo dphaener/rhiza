@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5SWTHWR7TEQCQ15565QADMS"
+  ],
+  "at": "2026-10-31T20:21:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/op asserts every field used in this repo's log is known for its kind (intent statement, milestone, umbrella; capability statement, acceptance, built_in; evidence statement, result, tests, test, status, head, pr, command, observed; and the decision, source, question, constraint and actor fields) and that bogus on an evidence node is unknown",
+          "statement": "Each core node kind has a fixed list of known fields in internal/op, covering every field in use today"
+        },
+        "handle": "field-schemas",
+        "id": "01M69T0H3RSV8MEH7JNMCJ85DY",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M69T0H3RSV8MEH7JNM194ZG4",
+        "op": "node.create",
+        "parent": "01M5SWRW9KSAH3SXZQHKJ34ANH"
+      },
+      {
+        "decision": null,
+        "from": "01M69T0H3RSV8MEH7JNM194ZG4",
+        "id": "01M69T0HQENWXXYWG11PR8WKBY",
+        "link": "01M69T0HQENWXXYWG11NX15MVX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T059GPN42FNY7DB9EFRHP",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A new field-schema.txtar has add evidence --field bogus=x exit 2 naming the known fields, and a hand-written log entry with an unknown field still passes fold-ok and check; scripts that used made-up field names are changed to real ones; make check passes",
+          "statement": "rhiza add and rhiza set refuse a field the node's kind does not have, as a usage error naming the known fields, while nodes already in the log with unknown fields still read and fold"
+        },
+        "handle": "add-refuses-unknown-field",
+        "id": "01M69T0JB213041HC3VVT5SSRD",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M69T0JB213041HC3VS3HRQCS",
+        "op": "node.create",
+        "parent": "01M5SWRW9KSAH3SXZQHKJ34ANH"
+      },
+      {
+        "decision": null,
+        "from": "01M69T0JB213041HC3VS3HRQCS",
+        "id": "01M69T0JYZC62MG291KZ4D649Q",
+        "link": "01M69T0JYZC62MG291KX3PBM9Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T059GPN42FNY7DB9EFRHP",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWTH32C73BQET8E0708F9F",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69T0KYE1H71W8BP7QEP1EMJ",
+  "type": "ops",
+  "v": 1
+}

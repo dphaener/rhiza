@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5SWTH01WMDN5W9S2HEHKJKQ"
+  ],
+  "at": "2026-10-31T20:22:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/check with one constraint linked by constrains, one with only relates-to and one with no links gives two warnings and OK true; a check-constraint.txtar shows the warning and exit 0; this repo's make self-check stays clean",
+          "statement": "rhiza check warns, under the link rule, once for each live as-is constraint with no live constrains link; derived-from or relates-to links alone still count as unlinked"
+        },
+        "handle": "check-warns-unlinked-constraint",
+        "id": "01M69T0MZJZFJNQS12S23BE4TB",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M69T0MZJZFJNQS12RYP79XYG",
+        "op": "node.create",
+        "parent": "01M5SWSJ0K067EMGMKBTA224AY"
+      },
+      {
+        "decision": null,
+        "from": "01M69T0MZJZFJNQS12RYP79XYG",
+        "id": "01M69T0NKTYQ3T1G6PB6KC3K4C",
+        "link": "01M69T0NKTYQ3T1G6PB57DSFXY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T06KW6RTJB7WPHJ9SVP5C",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWTG70W2JC17JR7VCMT74R",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69T0PKBFD0TD00ERZTWXBCP",
+  "type": "ops",
+  "v": 1
+}
