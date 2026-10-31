@@ -3,10 +3,12 @@ package api
 import (
 	"fmt"
 	"math/rand"
+	"slices"
 	"strings"
 	"testing"
 
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/workflow"
 )
@@ -222,4 +224,41 @@ func TestStartAdvisorSplits(t *testing.T) {
 		t.Fatal(err)
 	}
 	wantSplitOf(t, f, "block:a1")
+}
+
+// run recommend closes the advisor's pane once the recommendation is
+// journalled; a dry run journals nothing and closes nothing.
+func TestRunRecommendClosesAdvisorPane(t *testing.T) {
+	f, rs := signoffRaceFixture(t)
+	if err := session.NewStore(session.Dir(f.common)).Write(session.Record{ID: "S-advisor", Run: signoffRaceRun, Step: "review", Advises: "S-asker",
+		Tab: session.Tab{Window: "window:w9", Block: "block:a2"}}); err != nil {
+		t.Fatal(err)
+	}
+	f.rex.calls = nil
+	body := `{"session":"S-advisor","recommendation":"Use blue","reasons":"Brand"}`
+	f.ctx.DryRun = true
+	if _, err := callOp(t, f.ctx, "run.recommend", body); err != nil {
+		t.Fatal(err)
+	}
+	f.ctx.DryRun = false
+	if len(f.rex.calls) != 0 {
+		t.Fatalf("dry run ran rex: %q", f.rex.calls)
+	}
+	if _, err := callOp(t, f.ctx, "run.recommend", body); err != nil {
+		t.Fatal(err)
+	}
+	j, err := rs.Read(signoffRaceRun)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var journalled bool
+	for _, e := range j.Entries {
+		journalled = journalled || e.Type == run.TypeRecommended
+	}
+	if !journalled {
+		t.Error("recommendation not journalled")
+	}
+	if len(f.rex.calls) != 1 || !slices.Equal(f.rex.calls[0][1:3], []string{"block", "close"}) || f.rex.calls[0][len(f.rex.calls[0])-1] != "block:a2" {
+		t.Errorf("rex calls %q, want one block close of block:a2", f.rex.calls)
+	}
 }

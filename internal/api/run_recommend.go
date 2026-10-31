@@ -100,5 +100,9 @@ func runRunRecommend(ctx *Ctx, req any) (any, error) {
 	if err := rs.Append(j.ID, e); err != nil {
 		return nil, Errorf("journal the recommendation in run %s: %v", j.ID, err).WithNext("rhiza run status " + j.ID)
 	}
+	// The recommendation is journalled: the advisor's pane has done its
+	// work, so close it (this may end the process that asked). A pane that
+	// will not close is left open: the recommendation stands.
+	closeSessionPane(ctx, rec, ctx.Root)
 	return resp, nil
 }

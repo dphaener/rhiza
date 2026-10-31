@@ -1005,7 +1005,26 @@ func (r *running) arbitrate(asking workflow.Step, question string) (result, erro
 	if !ans.OK {
 		return r.arbitrated(asking, question, result{outcome: workflow.OutcomeFail, detail: ans.Why}, "")
 	}
-	return r.arbitrated(asking, question, result{outcome: workflow.OutcomePass, detail: "answered by " + ans.Decision}, ans.Decision)
+	res, err := r.arbitrated(asking, question, result{outcome: workflow.OutcomePass, detail: "answered by " + ans.Decision}, ans.Decision)
+	if err != nil {
+		return res, err
+	}
+	r.closeQuestionPane(session)
+	return res, nil
+}
+
+// closeQuestionPane closes the pane of arbiter session session, after its
+// passing verdict is journalled, so the run's window keeps only live panes.
+// A failed arbiter's pane stays open to be read. A Runner that cannot
+// close panes, or a close that fails, is only logged: nothing hangs on it.
+func (r *running) closeQuestionPane(session string) {
+	cp, ok := r.e.Runner.(interface{ ClosePane(session string) error })
+	if !ok || session == "" {
+		return
+	}
+	if err := cp.ClosePane(session); err != nil {
+		r.log("close the pane of arbiter session %s: %v", session, err)
+	}
 }
 
 // arbiterBlocked is why an arbiter whose session blocked on b fails.
