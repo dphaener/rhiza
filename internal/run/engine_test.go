@@ -2130,3 +2130,39 @@ func TestAskedWithoutSessionIsNotTheBlocks(t *testing.T) {
 		t.Errorf("block asked %+v", a)
 	}
 }
+
+const stopWF = `
+name = "wf"
+[step.gate]
+kind = "command"
+run = "gate"
+on.pass = "after"
+
+[step.after]
+kind = "command"
+run = "after"
+`
+
+// A command that exits StopExit does not end its step: the run stops at it
+// for the owner, and resuming runs the same step again.
+func TestCommandStopExitStopsRun(t *testing.T) {
+	e, r, _, _ := setup(t, stopWF)
+	r.codes["gate"] = []int{StopExit, 0}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Ended || st.Current != "gate" || !strings.HasPrefix(st.Stopped, "stopped for the owner") {
+		t.Fatalf("ended %v current %q stopped %q", st.Ended, st.Current, st.Stopped)
+	}
+	if len(outcomes(st)) != 0 || r.commands["after"] != 0 {
+		t.Fatalf("steps %v after ran %d times", outcomes(st), r.commands["after"])
+	}
+	st, err = e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || !reflect.DeepEqual(outcomes(st), []string{"gate:pass", "after:pass"}) || st.Visits["gate"] != 1 {
+		t.Fatalf("result %q steps %v visits %v", st.Result, outcomes(st), st.Visits)
+	}
+}

@@ -1169,6 +1169,29 @@ type RunGateResponse struct {
 	DryRun     bool               `json:"dry_run,omitempty" desc:"True if nothing was written or journalled"`
 }
 
+// ExitCode is run.StopExit while questions are open (a plan run then
+// stops for the owner), else 0.
+func (r RunGateResponse) ExitCode() int {
+	if len(r.Open) > 0 && !r.DryRun {
+		return run.StopExit
+	}
+	return 0
+}
+
+// stopDetail is why a plan run stops at the gate: the open questions, by
+// handle, and the command that resumes it.
+func (r RunGateResponse) stopDetail() string {
+	names := make([]string, 0, len(r.Open))
+	for _, q := range r.Open {
+		if q.Handle != "" {
+			names = append(names, q.Handle)
+		} else {
+			names = append(names, q.ID)
+		}
+	}
+	return run.OpenStop + strings.Join(names, ", ") + "; answer each with a Decision, then rhiza run resume " + r.Run
+}
+
 // RunGateQuestion is one question the plan left unanswered.
 type RunGateQuestion struct {
 	ID     string `json:"id" desc:"The question node's full ID"`
@@ -1480,6 +1503,11 @@ func (r RunGateResponse) Human(w io.Writer) {
 	}
 	if r.DryRun {
 		fmt.Fprintf(w, "\nThis was a dry run: nothing was written or journalled.\n")
+		return
+	}
+	if len(r.Open) > 0 {
+		fmt.Fprintf(w, "\nstop: %s\n", r.stopDetail())
+		fmt.Fprintf(w, "next: rhiza run resume %s\n", r.Run)
 		return
 	}
 	if len(next) > 0 {

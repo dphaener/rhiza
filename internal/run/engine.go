@@ -541,10 +541,26 @@ func (r *running) stepEnv(step, change string) []string {
 	}
 }
 
+// StopExit is the exit code of a command step that asks the run to stop
+// for the owner instead of failing: the step is not ended, the run is
+// stopped with the command's detail (a stop: line of its output) and
+// resumes at the same step. OpenStop prefixes that detail when the owner
+// has questions to answer.
+const (
+	StopExit = 75
+	OpenStop = "open questions: "
+)
+
 func (r *running) command(step workflow.Step, env []string) result {
 	code, detail, err := r.e.Runner.Command(step, env)
 	if err != nil {
 		return errResult(err)
+	}
+	if code == StopExit {
+		if detail == "" {
+			detail = fmt.Sprintf("stopped for the owner (exit %d)", code)
+		}
+		return result{stopped: detail}
 	}
 	d := fmt.Sprintf("exit %d", code)
 	if detail != "" {

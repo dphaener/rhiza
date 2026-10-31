@@ -1701,7 +1701,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, signoff, failed, gave-up or skipped",
+                  "description": "question, open, signoff, failed, gave-up or skipped",
                   "type": "string"
                 },
                 "next": {
