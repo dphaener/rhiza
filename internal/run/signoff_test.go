@@ -163,7 +163,7 @@ func TestSignoffChangesOwnerCycle(t *testing.T) {
 	if got, want := outcomes(st), []string{"review:pass", "signoff:changes", "review:pass"}; !reflect.DeepEqual(got, want) {
 		t.Errorf("outcomes = %v, want %v", got, want)
 	}
-	if want := []string{"leaf-a fixer 4", "leaf-a verifier 4"}; !reflect.DeepEqual(leafSpecRoles(r), want) {
+	if want := []string{"leaf-a fixer 8", "leaf-a verifier 8"}; !reflect.DeepEqual(leafSpecRoles(r), want) {
 		t.Fatalf("leaf sessions %v, want %v", leafSpecRoles(r), want)
 	}
 	if fs := r.leafSpecs[0].Findings; len(fs) != 1 || fs[0].ID != "f1" || fs[0].Check != "alpha" || fs[0].Reason != "the owner wants it" {
@@ -242,7 +242,7 @@ func TestSignoffReentryKeepsFixHistory(t *testing.T) {
 	if err != nil || st.Stopped != SignoffWait {
 		t.Fatalf("after changes: %v, stopped %q, outcomes %v", err, st.Stopped, outcomes(st))
 	}
-	want := []string{"leaf-a fixer 2", "leaf-a verifier 2", "leaf-a fixer 3", "leaf-a verifier 3"}
+	want := []string{"leaf-a fixer 2", "leaf-a verifier 2", "leaf-a fixer 5", "leaf-a verifier 5"}
 	if !reflect.DeepEqual(leafSpecRoles(r), want) {
 		t.Fatalf("leaf sessions %v, want %v", leafSpecRoles(r), want)
 	}

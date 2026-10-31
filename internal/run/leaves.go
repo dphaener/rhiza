@@ -148,6 +148,10 @@ type leafAction struct {
 	leaf    Leaf
 	role    string
 	attempt int
+	// cycle is, on a checks step, the cycle of the fix phase the session
+	// belongs to; attempt is then one of the cycle's, keyed apart from
+	// every other (leafFixAttempt).
+	cycle   int
 	session string
 	// commit is, for a verifier's start, the builder's commit it checks,
 	// and for a passed leaf's end its Evidence commit.
@@ -423,7 +427,7 @@ func (r *running) conductLeaves(lr LeafRunner, step workflow.Step, env []string)
 // round, and a fresh round's builder is given the question the leaf's
 // failure raised and the answering Decision, its statement read anew
 // (LeafAnswer), so the journal holds no model text. On a checks step
-// the session is a leaf's fixer or verifier in cycle a.attempt: it gets
+// the session is a leaf's fixer or verifier in cycle a.cycle: it gets
 // RHIZA_CYCLE and the cycle, a fixer its findings, and its pane opens
 // where stepPane says. A builder's or fixer's leaf-session is journalled
 // with the worktree's HEAD before it started, which its leaf
@@ -456,11 +460,11 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 		}
 	}
 	if step.Kind == workflow.KindChecks {
-		spec.Cycle, spec.Findings = a.attempt, a.findings
-		spec.Owner = r.j.State().OwnerCycle(step.Name, a.attempt)
-		spec.Env = append(spec.Env, EnvCycle+"="+strconv.Itoa(a.attempt))
+		spec.Cycle, spec.Findings = a.cycle, a.findings
+		spec.Owner = r.j.State().OwnerCycle(step.Name, a.cycle)
+		spec.Env = append(spec.Env, EnvCycle+"="+strconv.Itoa(a.cycle))
 		if a.role == workflow.RoleFixer {
-			answers, err := r.cycleAnswers(lr, step, a.attempt)
+			answers, err := r.cycleAnswers(lr, step, a.cycle)
 			if err != nil {
 				return errResult(fmt.Errorf("leaf %s: %v", a.leaf.Handle, err)), true, nil
 			}

@@ -19,11 +19,14 @@ func onLeaf(f Finding, lf Leaf) Finding {
 // fixLeaves are two independent leaves for the fix phase's tests.
 var fixLeaves = []Leaf{{ID: "L1", Handle: "leaf-a"}, {ID: "L2", Handle: "leaf-b"}}
 
-// passFixes makes the fixer and verifier of each leaf exit 0 in cycle.
+// passFixes makes the fixer and verifier of each leaf exit 0 in every
+// attempt of cycle.
 func passFixes(r *fakeRunner, cycle int, leaves ...Leaf) {
 	for _, l := range leaves {
-		for _, role := range []string{workflow.RoleFixer, workflow.RoleVerifier} {
-			r.outcome[leafSID(l.Handle, role, cycle)] = workflow.OutcomePass
+		for try := 1; try <= 1+MaxFixCycles; try++ {
+			for _, role := range []string{workflow.RoleFixer, workflow.RoleVerifier} {
+				r.outcome[leafSID(l.Handle, role, leafFixAttempt(cycle, try))] = workflow.OutcomePass
+			}
 		}
 	}
 }
@@ -190,7 +193,7 @@ func TestFixLeafNoCommitFailsCycle(t *testing.T) {
 	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:fail"}) {
 		t.Fatalf("outcomes = %v", got)
 	}
-	if want := []string{"leaf-a fixer 2", "leaf-a fixer 3"}; !reflect.DeepEqual(leafSpecRoles(r), want) {
+	if want := []string{"leaf-a fixer 2", "leaf-a fixer 3", "leaf-a fixer 4", "leaf-a fixer 5", "leaf-a fixer 6", "leaf-a fixer 7"}; !reflect.DeepEqual(leafSpecRoles(r), want) {
 		t.Errorf("leaf sessions %v, want %v", leafSpecRoles(r), want)
 	}
 	if want := []string{"alpha check 1", "beta check 1", "gamma check 1", "alpha critic 1"}; !reflect.DeepEqual(roles(r), want) {
@@ -231,7 +234,11 @@ func TestFixLeafVerifierFailsCycle(t *testing.T) {
 	if want := "cycle 2: fix failed: leaf leaf-a: verifier failed: verifier ended with neither Evidence nor findings"; o.Outcome != CheckFailed || o.Detail != want {
 		t.Errorf("beta's cycle 2 outcome = %+v, want %q", o, want)
 	}
-	if want := []string{"leaf-a fixer 2", "leaf-a verifier 2", "leaf-a fixer 3", "leaf-a verifier 3"}; !reflect.DeepEqual(leafSpecRoles(r), want) {
+	var want []string
+	for n := 2; n <= 7; n++ {
+		want = append(want, "leaf-a fixer "+strconv.Itoa(n), "leaf-a verifier "+strconv.Itoa(n))
+	}
+	if !reflect.DeepEqual(leafSpecRoles(r), want) {
 		t.Errorf("leaf sessions %v, want %v", leafSpecRoles(r), want)
 	}
 	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:fail"}) {
@@ -282,6 +289,15 @@ func TestFixActions(t *testing.T) {
 		return l
 	}
 	la, lb := LeafState{Leaf: a.ID, Handle: a.Handle}, LeafState{Leaf: b.ID, Handle: b.Handle}
+	// exhausted is l with its fixer failed on every attempt of cycle 2.
+	exhausted := func(l LeafState) LeafState {
+		for try := 1; try <= 1+MaxFixCycles; try++ {
+			n := leafFixAttempt(2, try)
+			l.Sessions = append(l.Sessions, LeafSession{Role: "fixer", Attempt: n, Session: "fixer-" + l.Handle})
+			l.Attempts = append(l.Attempts, LeafAttempt{Role: "fixer", Attempt: n, Outcome: "fail"})
+		}
+		return l
+	}
 	show := func(acts []checkAction) []string {
 		var out []string
 		for _, x := range acts {
@@ -305,9 +321,10 @@ func TestFixActions(t *testing.T) {
 			[]string{"6:leaf-a:verifier@C1", "6:leaf-b:fixer"}, ""},
 		{"polls", map[string]LeafState{a.ID: sess(sess(la, "fixer", "pass", "C1"), "verifier", "", ""), b.ID: sess(lb, "fixer", "", "")},
 			[]string{"7:leaf-a:verifier", "7:leaf-b:fixer"}, ""},
-		{"fixer failed: nothing more starts", map[string]LeafState{a.ID: sess(la, "fixer", "fail", "")}, nil, "leaf leaf-a: fixer failed: "},
+		{"failed fixer is retried on the next attempt", map[string]LeafState{a.ID: sess(la, "fixer", "fail", "")}, []string{"6:leaf-a:fixer"}, ""},
+		{"fixer failed every attempt: nothing more starts", map[string]LeafState{a.ID: exhausted(la)}, nil, "leaf leaf-a: fixer failed: "},
 		{"failure waits for live sessions", map[string]LeafState{
-			a.ID: sess(sess(la, "fixer", "pass", "C1"), "verifier", "", ""), b.ID: sess(lb, "fixer", "fail", "")},
+			a.ID: sess(sess(la, "fixer", "pass", "C1"), "verifier", "", ""), b.ID: exhausted(lb)},
 			[]string{"7:leaf-a:verifier"}, "leaf leaf-b: fixer failed: "},
 		{"all judged", map[string]LeafState{
 			a.ID: sess(sess(la, "fixer", "pass", "C1"), "verifier", "pass", "E1"),
@@ -338,9 +355,18 @@ func TestNextCheckActionsFixPhase(t *testing.T) {
 	}
 	y := CheckState{Check: "y", Outcomes: []CheckOutcome{{Cycle: 1, Outcome: CheckPassed}}}
 	states := map[string]CheckState{"x": x, "y": y}
+	// fixed is the leaf's fix with the fixer and verifier outcomes given on
+	// its first attempt, the fixer failing every attempt if it failed.
 	fixed := func(fixer, verifier string) map[string]LeafState {
 		l := LeafState{Leaf: a.ID, Handle: a.Handle, Sessions: []LeafSession{{Role: "fixer", Attempt: 2, Session: "F"}}}
 		l.Attempts = append(l.Attempts, LeafAttempt{Role: "fixer", Attempt: 2, Outcome: fixer, Commit: "C"})
+		if fixer != "pass" {
+			for try := 2; try <= 1+MaxFixCycles; try++ {
+				n := leafFixAttempt(2, try)
+				l.Sessions = append(l.Sessions, LeafSession{Role: "fixer", Attempt: n, Session: "F"})
+				l.Attempts = append(l.Attempts, LeafAttempt{Role: "fixer", Attempt: n, Outcome: fixer})
+			}
+		}
 		if verifier != "" {
 			l.Sessions = append(l.Sessions, LeafSession{Role: "verifier", Attempt: 2, Session: "V"})
 			l.Attempts = append(l.Attempts, LeafAttempt{Role: "verifier", Attempt: 2, Outcome: verifier})
@@ -375,5 +401,92 @@ func TestNextCheckActionsFixPhase(t *testing.T) {
 	got := show(nextCheckActions(step, cycles, map[string]CheckState{"x": ended, "y": y}, fixLeaves, fixed("fail", ""), nil))
 	if want := []string{"1::"}; !reflect.DeepEqual(got, want) {
 		t.Errorf("after the failed fix = %v, want the next cycle %v", got, want)
+	}
+}
+
+// A leaf fixer that fails its first attempt of a cycle is retried within
+// it as a fresh attempt, keyed apart from the first; the cycle's checks
+// start only once the second attempt's fixer and verifier are judged
+// pass, so the step passes in 2 cycles.
+func TestFixLeafFixerRetriedInCycle(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	r.leaves = fixLeaves
+	a := fixLeaves[0]
+	passChecks(r, 1, threeChecks...)
+	passChecks(r, 2, "alpha")
+	r.findings[checkSID("alpha", "check", 1)] = []Finding{onLeaf(sev("f1", SeverityMajor), a)}
+	r.outcome[checkSID("alpha", "critic", 1)] = workflow.OutcomePass
+	retry := leafFixAttempt(2, 2)
+	r.outcome[leafSID("leaf-a", workflow.RoleFixer, retry)] = workflow.OutcomePass
+	r.outcome[leafSID("leaf-a", workflow.RoleVerifier, retry)] = workflow.OutcomePass
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	if len(st.Cycles) != 2 {
+		t.Errorf("cycles = %+v, want 2", st.Cycles)
+	}
+	if want := []string{"leaf-a fixer 2", "leaf-a fixer 3", "leaf-a verifier 3"}; !reflect.DeepEqual(leafSpecRoles(r), want) {
+		t.Errorf("leaf sessions %v, want %v", leafSpecRoles(r), want)
+	}
+	for _, s := range r.leafSpecs {
+		if s.Cycle != 2 || !slices.Contains(s.Env, EnvCycle+"=2") {
+			t.Errorf("session %s %d: cycle %d, env %v", s.Role, s.Attempt, s.Cycle, s.Env)
+		}
+	}
+	l, _ := st.Leaf("review", a.ID)
+	if len(l.Sessions) != 3 || len(l.Attempts) != 3 {
+		t.Errorf("leaf-a: %d sessions, %d attempts; want 3 and 3", len(l.Sessions), len(l.Attempts))
+	}
+	if j, _ := l.Judged(workflow.RoleFixer, 2); j.Outcome != workflow.OutcomeFail {
+		t.Errorf("first fixer judgement = %+v", j)
+	}
+	if j, _ := l.Judged(workflow.RoleFixer, retry); j.Outcome != workflow.OutcomePass {
+		t.Errorf("retried fixer judgement = %+v", j)
+	}
+	entries := fixEntries(t, e)
+	for _, s := range []string{"leaf-attempt leaf-a fixer 2 fail", "leaf-attempt leaf-a verifier 3 pass"} {
+		if !slices.Contains(entries, s) {
+			t.Fatalf("no %q in %v", s, entries)
+		}
+	}
+	if slices.Index(entries, "leaf-attempt leaf-a verifier 3 pass") > slices.Index(entries, "check-session alpha check 2") {
+		t.Errorf("cycle 2's check started before the retried fix was judged: %v", entries)
+	}
+}
+
+// The same when the leaf's verifier fails the first attempt: a fresh
+// fixer and verifier follow, on the next attempt.
+func TestFixLeafVerifierRetriedInCycle(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	r.leaves = fixLeaves
+	a := fixLeaves[0]
+	passChecks(r, 1, threeChecks...)
+	passChecks(r, 2, "alpha")
+	r.findings[checkSID("alpha", "check", 1)] = []Finding{onLeaf(sev("f1", SeverityMajor), a)}
+	r.outcome[checkSID("alpha", "critic", 1)] = workflow.OutcomePass
+	retry := leafFixAttempt(2, 2)
+	r.outcome[leafSID("leaf-a", workflow.RoleFixer, 2)] = workflow.OutcomePass
+	r.outcome[leafSID("leaf-a", workflow.RoleFixer, retry)] = workflow.OutcomePass
+	r.outcome[leafSID("leaf-a", workflow.RoleVerifier, retry)] = workflow.OutcomePass
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	if len(st.Cycles) != 2 {
+		t.Errorf("cycles = %+v, want 2", st.Cycles)
+	}
+	if want := []string{"leaf-a fixer 2", "leaf-a verifier 2", "leaf-a fixer 3", "leaf-a verifier 3"}; !reflect.DeepEqual(leafSpecRoles(r), want) {
+		t.Errorf("leaf sessions %v, want %v", leafSpecRoles(r), want)
+	}
+	entries := fixEntries(t, e)
+	if slices.Index(entries, "leaf-attempt leaf-a verifier 3 pass") > slices.Index(entries, "check-session alpha check 2") {
+		t.Errorf("cycle 2's check started before the retried fix was judged: %v", entries)
 	}
 }

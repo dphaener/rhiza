@@ -101,7 +101,7 @@ func TestCycleCapRaisesQuestions(t *testing.T) {
 			t.Errorf("the sign-off step was entered")
 		}
 	}
-	if want := []string{"leaf-a fixer 2", "leaf-a verifier 2", "leaf-a fixer 3", "leaf-a verifier 3"}; !reflect.DeepEqual(leafSpecRoles(r), want) {
+	if want := []string{"leaf-a fixer 2", "leaf-a verifier 2", "leaf-a fixer 5", "leaf-a verifier 5"}; !reflect.DeepEqual(leafSpecRoles(r), want) {
 		t.Errorf("fix cycles' sessions %v, want %v", leafSpecRoles(r), want)
 	}
 	if len(st.Cycles) != 3 {
@@ -278,7 +278,7 @@ func TestCycleCapAutonomous(t *testing.T) {
 	if want := []string{"arbiter QL1"}; !reflect.DeepEqual(r.arbiters, want) {
 		t.Errorf("arbiters = %v, want %v", r.arbiters, want)
 	}
-	if want := []string{"leaf-a fixer 2", "leaf-a verifier 2", "leaf-a fixer 3", "leaf-a verifier 3", "leaf-a fixer 4", "leaf-a verifier 4"}; !reflect.DeepEqual(leafSpecRoles(r), want) {
+	if want := []string{"leaf-a fixer 2", "leaf-a verifier 2", "leaf-a fixer 5", "leaf-a verifier 5", "leaf-a fixer 8", "leaf-a verifier 8"}; !reflect.DeepEqual(leafSpecRoles(r), want) {
 		t.Errorf("leaf sessions %v, want %v", leafSpecRoles(r), want)
 	}
 	if len(st.Cycles) != 4 || !st.Cycles[3].Answered() || !reflect.DeepEqual(st.Cycles[3].Decisions, []string{"arbiter-ruling"}) {
