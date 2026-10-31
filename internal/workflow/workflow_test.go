@@ -420,7 +420,7 @@ func TestPlanBuiltin(t *testing.T) {
 	if def.Name != "plan" || def.Start != "interview" {
 		t.Errorf("name %q, start %q; want plan, interview", def.Name, def.Start)
 	}
-	want := []string{"interview", "review", "critic", "check", "revise", "gate"}
+	want := []string{"interview", "review", "critic", "check", "revise", "gate", "open-pr"}
 	if !slices.Equal(def.Order, want) {
 		t.Fatalf("steps = %v; want %v", def.Order, want)
 	}
@@ -481,8 +481,10 @@ func TestPlanBuiltin(t *testing.T) {
 		{"check", OutcomeFail, "revise", EndNone},
 		{"revise", OutcomePass, "review", EndNone},
 		{"revise", OutcomeFail, "", EndFailed},
-		{"gate", OutcomePass, "", EndSucceeded},
+		{"gate", OutcomePass, "open-pr", EndNone},
 		{"gate", OutcomeFail, "", EndFailed},
+		{"open-pr", OutcomePass, "", EndSucceeded},
+		{"open-pr", OutcomeFail, "", EndFailed},
 	}
 	for _, tt := range trans {
 		next, end := def.Next(tt.step, tt.outcome)
@@ -491,7 +493,7 @@ func TestPlanBuiltin(t *testing.T) {
 		}
 	}
 
-	caps := map[string]int{"interview": 1, "review": 3, "critic": 3, "check": 3, "revise": 2, "gate": 1}
+	caps := map[string]int{"interview": 1, "review": 3, "critic": 3, "check": 3, "revise": 2, "gate": 1, "open-pr": 3}
 	for name, c := range caps {
 		if got := def.Steps[name].Cap(); got != c {
 			t.Errorf("%s cap = %d; want %d", name, got, c)

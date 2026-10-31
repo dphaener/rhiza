@@ -69,7 +69,7 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !reviewJournaled(rr.state) {
+	if !reviewJournaled(rr.state) && len(rr.state.Rounds) == 0 {
 		return nil, Usagef("run %s has no review journaled: ship open-pr opens the pull request once the review has run", rr.id).
 			WithNext("rhiza run status " + rr.id)
 	}
@@ -104,7 +104,16 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 		return nil, Errorf("ship open-pr: %v", err)
 	}
 	defer os.Remove(body.Name())
-	_, werr := io.WriteString(body, reviewSummary(rr.state))
+	summary := reviewSummary(rr.state)
+	if len(rr.state.Rounds) > 0 {
+		// A plan run: its rounds are the review.
+		w, err := openCtxWorkspace(ctx)
+		if err != nil {
+			return nil, err
+		}
+		summary = planSummary(rr.state, w.changeSets())
+	}
+	_, werr := io.WriteString(body, summary)
 	if cerr := body.Close(); werr == nil {
 		werr = cerr
 	}

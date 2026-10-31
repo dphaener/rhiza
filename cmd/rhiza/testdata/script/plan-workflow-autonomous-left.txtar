@@ -14,19 +14,24 @@
 
 chmod 755 bin/rex
 chmod 755 bin/claude
+chmod 755 bin/gh
 env PATH=$WORK/bin:$PATH
 mkdir $HOME/.claude/projects/p
+exec git init -q --bare origin.git
 mkdir repo
 cd repo
 exec git init -q
+exec git remote add origin $WORK/origin.git
 exec rhiza init
 exec git add -A
 exec git commit -qm init
+exec git push -q -u origin main
 
 exec rhiza change new 'Plan exports' --kind record --title 'Plan exports' --json
 exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/rec'
 exec git add -A
 exec git commit -qm 'Plan exports'
+exec git push -q origin main
 
 env REX_BLOCK=block:root
 env REX_SESSION=session:s1
@@ -35,7 +40,7 @@ exec sh -c 'rhiza run start $(cat $WORK/rec) --workflow plan --permission-mode m
 exec cat $WORK/out
 stdout '^Run [0-9A-Z]{26} succeeded$'
 stdout '^- check \(visit 3\): pass, then gate: exit 0$'
-stdout '^- gate \(visit 1\): pass, then end: exit 0$'
+stdout '^- gate \(visit 1\): pass, then open-pr: exit 0$'
 exec cat $WORK/err
 stdout -count=2 'step check: arbiter pass on question [0-9A-Z]{26}: answered by settle-'
 
@@ -205,3 +210,30 @@ touch "$WORK/ready"
 exit 0
 -- transcript.jsonl --
 {"type": "user", "message": {"role": "user", "content": "Plan the exports"}}
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if [ ! -f "$WORK/pr.created" ]; then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	head=$(git -C "$o" rev-parse --verify "refs/heads/$3")
+	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[]}\n' "$head"
+	;;
+"pr create")
+	while [ $# -gt 0 ]; do
+		if [ "$1" = --body-file ]; then
+			cp "$2" "$WORK/pr-body.md"
+		fi
+		shift
+	done
+	touch "$WORK/pr.created"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac
