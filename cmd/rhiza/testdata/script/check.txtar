@@ -129,11 +129,11 @@ cd concurrent
 exec rhiza init
 exec rhiza change new Shape
 exec rhiza add capability a
-exec rhiza set a --field s=1
+exec rhiza set a --field acceptance=1
 stdout '^Wrote entry 01M5PWGKBGYFZMTH8Y8AF1G8GN to change set 01M5PWGEF85Y185JZ2ZGCNH40N\.$'
 mv .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/01M5PWGKBGYFZMTH8Y8AF1G8GN.json $WORK/hold.json
 env RHIZA_TEST_SEED=2
-exec rhiza set a --field s=2
+exec rhiza set a --field acceptance=2
 env RHIZA_TEST_SEED=1
 mv $WORK/hold.json .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/01M5PWGKBGYFZMTH8Y8AF1G8GN.json
 exec rhiza render

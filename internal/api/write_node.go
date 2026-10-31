@@ -6,6 +6,8 @@ package api
 // on the node, the write revises that op instead of adding another.
 
 import (
+	"encoding/json"
+	"maps"
 	"reflect"
 	"slices"
 	"strings"
@@ -117,6 +119,9 @@ func buildAdd(b writeBase, r AddRequest) (edit, error) {
 	if err != nil {
 		return edit{}, err
 	}
+	if err := knownFieldsOnly("add", kind, fields); err != nil {
+		return edit{}, err
+	}
 	var parent id.ID
 	var k string
 	if op.HasParent(kind) {
@@ -166,6 +171,9 @@ func buildSet(b writeBase, r SetRequest) (edit, error) {
 	}
 	set, err := parseFields(r.Fields, r.JSONFields)
 	if err != nil {
+		return edit{}, err
+	}
+	if err := knownFieldsOnly("set", n.Kind, set); err != nil {
 		return edit{}, err
 	}
 	unset := slices.Compact(slices.Sorted(slices.Values(r.Unset)))
@@ -434,4 +442,21 @@ func joinKinds() string {
 		s = append(s, string(k))
 	}
 	return strings.Join(s, ", ")
+}
+
+// knownFieldsOnly refuses a field the kind does not have, as a usage error
+// naming the known ones. Only new writes are checked: nodes already in the
+// log with other fields still read and fold.
+func knownFieldsOnly(cmd string, kind op.Kind, fields map[string]json.RawMessage) error {
+	for _, name := range slices.Sorted(maps.Keys(fields)) {
+		if op.FieldKnown(kind, name) {
+			continue
+		}
+		known := "it has no fields"
+		if ks := op.KnownFields(kind); len(ks) > 0 {
+			known = "known fields: " + strings.Join(ks, ", ")
+		}
+		return Usagef("%s %s has no field %q (%s)", article(string(kind)), kind, name, known).WithNext("rhiza describe " + cmd)
+	}
+	return nil
 }

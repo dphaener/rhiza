@@ -13,7 +13,7 @@ exec rhiza add capability base --field statement=Base
 exec rhiza change new B
 stdout 'change set 01M5PWGKBGYFZMTH8Y8AF1G8GN '
 exec rhiza link 01M5PWGKBGYFZMTH8Y8AF1G8GN depends-on 01M5PWGEF85Y185JZ2ZGCNH40N
-exec rhiza set base --field owner=b
+exec rhiza set base --field acceptance=b
 exec rhiza propose
 exec rhiza accept --reason ok
 exec rhiza render
@@ -53,7 +53,7 @@ exec rhiza propose
 exec rhiza change new D
 stdout 'change set 01M5PWGW4RMJ580CPWEPP3158J '
 exec rhiza link 01M5PWGW4RMJ580CPWEPP3158J depends-on 01M5PWGS702G3VYA781BNZ0K7Q
-exec rhiza set core --field owner=d
+exec rhiza set core --field acceptance=d
 exec rhiza check
 ! stdout 'rests on change set 01M5PWGS702G3VYA781BNZ0K7Q'
 exec rhiza reject --change 01M5PWGS702G3VYA781BNZ0K7Q --rule review --reason no

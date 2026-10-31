@@ -9,7 +9,7 @@ var knownFields = map[Kind][]string{
 	KindIntent:     {"milestone", "statement", "umbrella"},
 	KindCapability: {"acceptance", "built_in", "statement"},
 	KindConstraint: {"acceptance", "statement"},
-	KindDecision: {"accepted_by", "authorized_by", "options", "picked", "question", "quote", "quote_where",
+	KindDecision: {"accepted_by", "authorized_by", "notes_quote", "options", "picked", "question", "quote", "quote_where",
 		"reason", "reasoning", "refines", "revised", "ruling", "session", "settled_by", "statement", "wording"},
 	KindQuestion: {"session", "statement"},
 	KindEvidence: {"command", "head", "observed", "pr", "result", "statement", "status", "test", "tests"},

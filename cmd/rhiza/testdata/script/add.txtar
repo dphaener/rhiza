@@ -18,7 +18,7 @@ stdout '^Wrote entry 01M5PWGJC82P7YGZTWYN55E6YF to change set 01M5PWGEF85Y185JZ2
 stdout '^- node 01M5PWGJC82P7YGZTWYFFZ0VJG \(store\)$'
 
 # --json, with a parent, a JSON field and a position.
-exec rhiza add capability log --parent store --json-field 'tags=["a","b"]' --json
+exec rhiza add capability log --parent store --json-field 'acceptance="a"' --json
 stdout '"entry": "[0-9A-Z]{26}"'
 stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
 stdout '"nodes": \[\n    "[0-9A-Z]{26}"\n  \]'
@@ -26,7 +26,7 @@ stdout '"nodes": \[\n    "[0-9A-Z]{26}"\n  \]'
 exec rhiza add capability first --before store
 exec rhiza change show --json
 stdout '"handle": "first",\n      "id": "[0-9A-Z]{26}",\n      "key": "[0-9a-h]'
-stdout '"tags": \[\n          "a",'
+stdout '"acceptance": "a"'
 
 # A dry run prints the op and writes nothing.
 exec rhiza add decision d1 --dry-run
