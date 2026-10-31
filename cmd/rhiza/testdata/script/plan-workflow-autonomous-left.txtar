@@ -114,9 +114,15 @@ send | send-key)
 	exit 0
 	;;
 esac
-if [ "$1 $2" = "window close" ]; then
+case "$1 $2" in
+"window close" | "block close")
 	exit 0
-fi
+	;;
+"block call")
+	echo '{"columns":200,"rows":50,"cell_width_px":8,"cell_height_px":16}'
+	exit 0
+	;;
+esac
 dir=
 while [ $# -gt 0 ]; do
 	if [ "$1" = -c ]; then

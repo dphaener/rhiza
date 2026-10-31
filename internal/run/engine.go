@@ -960,8 +960,9 @@ func (r *running) notify(st State, step, session string, blocked bool, b *Block)
 // the arbiter's interval until the agent says done or the session exits,
 // then asks the Runner for the answer: a valid one passes, anything else
 // fails with why. A session that blocks, on a question above all, fails at
-// once: an arbiter never asks (it would recurse). The session is left open
-// either way. Runner failures are an error outcome; the error return is
+// once: an arbiter never asks (it would recurse). Once a passing verdict is
+// journalled the session's pane is closed (closeQuestionPane); a failed or
+// errored arbiter's is left open to be read. Runner failures are an error outcome; the error return is
 // for journal failures. The arbitrated entry records the verdict.
 func (r *running) arbitrate(asking workflow.Step, question string) (result, error) {
 	arb := r.def.Arbiter()
@@ -1005,7 +1006,26 @@ func (r *running) arbitrate(asking workflow.Step, question string) (result, erro
 	if !ans.OK {
 		return r.arbitrated(asking, question, result{outcome: workflow.OutcomeFail, detail: ans.Why}, "")
 	}
-	return r.arbitrated(asking, question, result{outcome: workflow.OutcomePass, detail: "answered by " + ans.Decision}, ans.Decision)
+	res, err := r.arbitrated(asking, question, result{outcome: workflow.OutcomePass, detail: "answered by " + ans.Decision}, ans.Decision)
+	if err != nil {
+		return res, err
+	}
+	r.closeQuestionPane(session)
+	return res, nil
+}
+
+// closeQuestionPane closes the pane of arbiter session session, after its
+// passing verdict is journalled, so the run's window keeps only live panes.
+// A failed arbiter's pane stays open to be read. A Runner that cannot
+// close panes, or a close that fails, is only logged: nothing hangs on it.
+func (r *running) closeQuestionPane(session string) {
+	cp, ok := r.e.Runner.(interface{ ClosePane(session string) error })
+	if !ok || session == "" {
+		return
+	}
+	if err := cp.ClosePane(session); err != nil {
+		r.log("close the pane of arbiter session %s: %v", session, err)
+	}
 }
 
 // arbiterBlocked is why an arbiter whose session blocked on b fails.

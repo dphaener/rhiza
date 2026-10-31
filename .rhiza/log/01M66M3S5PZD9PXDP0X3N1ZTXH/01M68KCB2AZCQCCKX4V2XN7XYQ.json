@@ -1,0 +1,86 @@
+{
+  "actor": "01M68J2AZN42ASZ61YSW7CDQ9Y",
+  "after": [
+    "01M68J1GYBZTH0JENB8X9GCCJC"
+  ],
+  "at": "2026-10-31T09:06:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6b5628b I built rhiza into a scratch dir and ran `rhiza run start <record> --workflow plan --autonomous` in a scratch repo against real Rex, in a dedicated Rex session. A caller-side rex shim forwarded every call to the real rex and only pointed new panes at a fake claude that stays alive after `rhiza session done`, as Claude Code does. Real Rex got exactly one `window new` (interview). The review session split the interview's live block, the critic split the review's block, and all five session records share one window. Panes left open by `until held` stayed alive. When the interview window had been emptied (an agent that exits on its own), the next step correctly fell back to `window new`. The named Go tests and testscripts also pass."
+        },
+        "handle": "agent-steps-tile-run-window-qa-1",
+        "id": "01M68KC7M4BEN4TDK494KSP772",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M68KC7M4BEN4TDK491C6VRS2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68KC7M4BEN4TDK491C6VRS2",
+        "id": "01M68KC84FCN08F17YR4XQ8J9D",
+        "link": "01M68KC84FCN08F17YR4TT0MF0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857JXB8B7WXBN5VHE7MV1K",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Same real-Rex autonomous plan run at 6b5628b. The planner asked two questions through the real PreToolUse hook. Each arbiter session opened with `rex split` of the planner's block, the second after the first arbiter's closed block failed as anchor and Rhiza split a live pane of the window instead. Neither arbiter opened a window, and the run succeeded with assume-1 and assume-2 landed. In a normal `ask` workflow run on real Rex, the advisor session for the owner question split the asking session's block in the run's one window, and rhiza inbox showed the recommendation."
+        },
+        "handle": "question-sessions-tile-run-window-qa-1",
+        "id": "01M68KC8M2ERENW0VWGDE2TKEA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M68KC8M2ERENW0VWGAMCPZFA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68KC8M2ERENW0VWGAMCPZFA",
+        "id": "01M68KC957AM72VWZC9K5DK0YC",
+        "link": "01M68KC957AM72VWZC9FM79FW2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857KVT0NRCTAY6EZ2DH209",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "On real Rex at 6b5628b, with fake agents that keep running after `session done`: each arbiter's journal had `arbitrated` (08:57:41.99Z), then rhiza issued `rex block close` of the arbiter's block, then sent the answer to the asker (`answered` 08:57:42.09Z). The arbiter block vanished from `rex block ls` within a second, killing its still-running agent, while the interview, review and critic panes stayed open. For the advisor, `recommended` was journalled at 09:01:22.018Z and `rex block close` of the advisor's block followed at once. The pane and its process were gone within a second, while the asker's pane stayed open. A first advisor run whose pane PATH lacked rex left the pane open (no close), confirming the close comes from run recommend."
+        },
+        "handle": "question-session-panes-close-qa-1",
+        "id": "01M68KC9PAB6ERTJX71R87CF87",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M68KC9PAB6ERTJX71QJW33TP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68KC9PAB6ERTJX71QJW33TP",
+        "id": "01M68KCA7BJVA9SW53Q2DC61H4",
+        "link": "01M68KCA7BJVA9SW53PYT5A2T2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857MT46BQ7E27CZM8H7PFP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M66M3S5PZD9PXDP0X3N1ZTXH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M68KCB2AZCQCCKX4V2XN7XYQ",
+  "type": "ops",
+  "v": 1
+}

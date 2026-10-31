@@ -1392,6 +1392,30 @@ func TestArbitratePasses(t *testing.T) {
 	}
 }
 
+// TestArbitratePaneClosesAfterVerdict closes a passing arbiter's pane once
+// its verdict is journalled; a failed arbiter's pane stays open to be read.
+func TestArbitratePaneClosesAfterVerdict(t *testing.T) {
+	e, r, _, def := setup(t, arbiterWF)
+	r.answers["Q1"] = Answer{OK: true, Decision: "assume-sqlite"}
+	if res := arbitrateOn(t, e, def); res.outcome != workflow.OutcomePass {
+		t.Fatalf("result %+v", res)
+	}
+	if want := []string{"S-decide-Q1"}; !reflect.DeepEqual(r.closed, want) {
+		t.Errorf("closed %v, want %v", r.closed, want)
+	}
+	if a := arbitrations(t, e); len(a) != 1 || a[0].Open() {
+		t.Errorf("verdict not journalled before the close: %+v", a)
+	}
+
+	e, r, _, def = setup(t, arbiterWF)
+	if res := arbitrateOn(t, e, def); res.outcome != workflow.OutcomeFail {
+		t.Fatalf("result %+v", res)
+	}
+	if len(r.closed) != 0 {
+		t.Errorf("a failed arbiter's pane was closed: %v", r.closed)
+	}
+}
+
 // TestArbitrateFailsWithoutAnswer fails when the arbiter wrote nothing,
 // or a Decision the Runner does not accept (no reasoning), with the
 // Runner's why; an exited session is judged the same as one said done.
