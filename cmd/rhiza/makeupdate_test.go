@@ -9,7 +9,8 @@ import (
 
 // TestMakeUpdateDryRun checks the order of what `make update` would run: the
 // in-place build into PREFIX comes first, then that binary's rex install, and
-// no cp ever appears (a copied Go binary is SIGKILLed on arm64).
+// no cp ever appears (a copied Go binary is SIGKILLed on arm64). It also
+// checks that `make help` names the update target.
 func TestMakeUpdateDryRun(t *testing.T) {
 	if _, err := exec.LookPath("make"); err != nil {
 		t.Skip("make is not on PATH")
@@ -40,34 +41,63 @@ func TestMakeUpdateDryRun(t *testing.T) {
 			}
 		}
 	}
-}
 
-// TestUpdateTargetDocumented checks that `make help` lists the update target
-// and that CLAUDE.md's command list names `make update`.
-func TestUpdateTargetDocumented(t *testing.T) {
-	if _, err := exec.LookPath("make"); err != nil {
-		t.Skip("make is not on PATH")
-	}
-	cmd := exec.Command("make", "help")
-	cmd.Dir = "../.."
-	out, err := cmd.CombinedOutput()
+	help := exec.Command("make", "help")
+	help.Dir = "../.."
+	helpOut, err := help.CombinedOutput()
 	if err != nil {
-		t.Fatalf("make help: %v\n%s", err, out)
+		t.Fatalf("make help: %v\n%s", err, helpOut)
 	}
-	found := false
-	for _, line := range strings.Split(string(out), "\n") {
+	named := false
+	for _, line := range strings.Split(string(helpOut), "\n") {
 		if f := strings.Fields(line); len(f) > 0 && f[0] == "update" {
-			found = true
+			named = true
 		}
 	}
-	if !found {
-		t.Errorf("make help does not name update:\n%s", out)
+	if !named {
+		t.Errorf("make help does not name update:\n%s", helpOut)
 	}
+}
+
+// TestClaudeMDCommandsNameMakeUpdate checks that the code block under
+// CLAUDE.md's "## Commands" heading has a line starting with `make update`.
+func TestClaudeMDCommandsNameMakeUpdate(t *testing.T) {
 	doc, err := os.ReadFile("../../CLAUDE.md")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(doc), "make update") {
-		t.Error("CLAUDE.md does not mention make update")
+	block, ok := commandsBlock(string(doc))
+	if !ok {
+		t.Fatal("CLAUDE.md has no code block under ## Commands")
 	}
+	for _, line := range strings.Split(block, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "make update") {
+			return
+		}
+	}
+	t.Errorf("CLAUDE.md's ## Commands block has no make update line:\n%s", block)
+}
+
+// commandsBlock returns the first fenced code block after the "## Commands"
+// heading and before the next "## " heading.
+func commandsBlock(doc string) (string, bool) {
+	lines := strings.Split(doc, "\n")
+	in, fenced := false, false
+	var block []string
+	for _, line := range lines {
+		switch {
+		case !in:
+			in = strings.TrimSpace(line) == "## Commands"
+		case !fenced && strings.HasPrefix(line, "## "):
+			return "", false
+		case strings.HasPrefix(line, "```"):
+			if fenced {
+				return strings.Join(block, "\n"), true
+			}
+			fenced = true
+		case fenced:
+			block = append(block, line)
+		}
+	}
+	return "", false
 }
