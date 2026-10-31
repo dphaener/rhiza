@@ -316,6 +316,7 @@
   - [m5-inbox-app](intent/milestone-5/m5-inbox-app.md)
 - [milestone-6](intent/milestone-6.md)
 - [milestone-7](intent/milestone-7.md)
+- [milestone-8](intent/milestone-8.md)
 
 ## Constraints
 
@@ -465,6 +466,7 @@
 - [cursor-paged-lists](decision/cursor-paged-lists.md)
 - [daemon-sends-inbox-notices](decision/daemon-sends-inbox-notices.md)
 - [daemon-skips-saved-at-poll](decision/daemon-skips-saved-at-poll.md)
+- [daemon-skips-shipped-rule](decision/daemon-skips-shipped-rule.md)
 - [daemon-status-needs-picks](decision/daemon-status-needs-picks.md)
 - [declarative-toml](decision/declarative-toml.md)
 - [depends-on-means-cannot-start](decision/depends-on-means-cannot-start.md)
@@ -556,6 +558,7 @@
 - [m6-housekeeping-folded](decision/m6-housekeeping-folded.md)
 - [m6-overnight-batch](decision/m6-overnight-batch.md)
 - [m7-picked-by-orchestrator](decision/m7-picked-by-orchestrator.md)
+- [m8-picked-by-orchestrator](decision/m8-picked-by-orchestrator.md)
 - [manual-rebase-for-now](decision/manual-rebase-for-now.md)
 - [manual-resume-refuses](decision/manual-resume-refuses.md)
 - [message-summary-journaled](decision/message-summary-journaled.md)
@@ -589,6 +592,7 @@
 - [only-cli-writes-log](decision/only-cli-writes-log.md)
 - [orchestrator-amends-plans](decision/orchestrator-amends-plans.md)
 - [orchestrator-merges](decision/orchestrator-merges.md)
+- [overlaps-reuse-model](decision/overlaps-reuse-model.md)
 - [overlays-on-as-is](decision/overlays-on-as-is.md)
 - [parent-and-authorship](decision/parent-and-authorship.md)
 - [parent-statements-stay-true](decision/parent-statements-stay-true.md)
@@ -599,6 +603,7 @@
 - [plan-pr-merges-without-landing](decision/plan-pr-merges-without-landing.md)
 - [plan-record-lands-early](decision/plan-record-lands-early.md)
 - [plan-review-left-arbitrated](decision/plan-review-left-arbitrated.md)
+- [plan-review-overlaps-as-contradiction](decision/plan-review-overlaps-as-contradiction.md)
 - [plan-review-rounds-journalled](decision/plan-review-rounds-journalled.md)
 - [plan-stops-before-pr-on-open-items](decision/plan-stops-before-pr-on-open-items.md)
 - [plan-workflow-shape](decision/plan-workflow-shape.md)
@@ -1418,6 +1423,7 @@
 - [m5-usable-from-rex-interview](source/m5-usable-from-rex-interview.md)
 - [m6-overnight-interview](source/m6-overnight-interview.md)
 - [m7-keep-picking](source/m7-keep-picking.md)
+- [m8-orchestrator-picks](source/m8-orchestrator-picks.md)
 - [milestone-1](source/milestone-1.md)
 - [milestone-2-conversation](source/milestone-2-conversation.md)
 - [milestone-3-conversation](source/milestone-3-conversation.md)
