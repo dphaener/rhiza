@@ -479,7 +479,7 @@ type DaemonEvent struct {
 type DaemonSkip struct {
 	Change string   `json:"change" desc:"The change set's ID"`
 	Title  string   `json:"title" desc:"The change set's display title"`
-	Reason string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, held, unjournaled or no-slot"`
+	Reason string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled or no-slot"`
 	Detail []string `json:"detail" desc:"The readiness reasons, when the reason is not-ready; else empty"`
 }
 
