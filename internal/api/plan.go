@@ -379,6 +379,12 @@ func planCore(in planInputs) planResult {
 			}
 			p.reasons = append(p.reasons, fmt.Sprintf("blocked by question %s on %s", planHandle(b.question, in.nodes), on))
 		}
+		for _, i := range p.serves {
+			if in.umbrellas[i] {
+				p.reasons = append(p.reasons, planUmbrellaReason)
+				break
+			}
+		}
 		p.ready = len(p.reasons) == 0
 		all = append(all, p)
 	}
@@ -652,6 +658,10 @@ func planTopo(ps []*planChangeSet) []*planChangeSet {
 	}
 	return out
 }
+
+// planUmbrellaReason is the reason of a change set serving an umbrella
+// intent: its work is carved out into other change sets, so it never starts.
+const planUmbrellaReason = "umbrella: work is carved out of it"
 
 // planCycleReason is the reason of a change set in or after a depends-on
 // cycle.

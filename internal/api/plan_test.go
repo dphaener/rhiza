@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
 	gmodel "github.com/dphaener/rhiza/internal/model"
@@ -36,7 +37,7 @@ type planFix struct {
 
 func newPlanFix() *planFix {
 	return &planFix{in: planInputs{ops: map[id.ID][]op.Op{}, nodes: map[id.ID]gmodel.Node{},
-		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}, milestones: map[id.ID]bool{}},
+		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}, milestones: map[id.ID]bool{}, umbrellas: map[id.ID]bool{}},
 		history: map[id.ID][]changeset.Revision{}}
 }
 
@@ -874,5 +875,22 @@ func TestPlanMilestoneField(t *testing.T) {
 	}
 	if planMilestoneField(map[string]json.RawMessage{"statement": json.RawMessage(`"x"`)}) || planMilestoneField(nil) {
 		t.Error("no milestone field: is a milestone")
+	}
+}
+
+// An umbrella change set is never ready, and the daemon never picks it.
+func TestUmbrellaNotReady(t *testing.T) {
+	f := newPlanFix()
+	u := f.intent("umb", id.ID{}, "a")
+	f.in.umbrellas[u] = true
+	cs := f.cs("umbrella", changeset.StateAccepted)
+	f.serve(cs, u)
+	wantReasons(t, f.verdict(t, cs), planUmbrellaReason)
+	cands, skips := daemonCandidates(f.core(), func(id.ID) bool { return true })
+	if len(cands) != 0 {
+		t.Errorf("candidates = %v", cands)
+	}
+	if len(skips) != 1 || skips[0].Reason != daemon.SkipNotReady {
+		t.Errorf("skips = %v", skips)
 	}
 }

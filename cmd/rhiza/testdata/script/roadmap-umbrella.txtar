@@ -39,3 +39,12 @@ exec rhiza roadmap
 stdout '(?s)## m1.*## Backlog.*## umb'
 exec rhiza api call roadmap '{}'
 cmp stdout roadmap.json
+
+# An umbrella change set is never ready; next skips it.
+exec rhiza change use 01M5PWGQ8GB4618G4RH2TV0ZAH
+exec rhiza accept --reason ok
+exec rhiza change use 01M5PWGY38TY4APFS7ZR0Q10WA
+exec rhiza accept --reason ok
+exec rhiza ready --json
+stdout '"umbrella: work is carved out of it"'
+stdout '"next": "01M5PWGY38TY4APFS7ZR0Q10WA"'
