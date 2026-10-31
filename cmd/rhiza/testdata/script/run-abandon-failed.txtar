@@ -34,6 +34,20 @@ exec rhiza inbox
 exec rhiza inbox --json
 ! stdout '01M5PWGJC82P7YGZTWYFFZ0VJG'
 
+# A run failing at a command step that prints boom lists that output
+# under its inbox item, and inbox --json's detail holds it.
+cp ../loud.toml .rhiza/workflows/loud.toml
+! exec rhiza run start --workflow loud
+exec rhiza inbox
+stdout '^    exit 3$'
+stdout '^    boom$'
+exec rhiza inbox --json
+stdout '"detail": "step \\"b\\" ended with outcome \\"fail\\"\\nexit 3\\nout1\\nboom"'
+exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl// > $WORK/loud'
+exec sh -c 'rhiza run abandon $(cat $WORK/loud)'
+exec rhiza inbox
+stdout '^Nothing waits on you$'
+
 # Resume, retry and a second abandon exit 2, naming the run.
 exec sh -c 'rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
 stdout '^exit=2$'
@@ -54,6 +68,12 @@ exec sh -c 'rhiza run abandon $(cat $WORK/second) 2>&1; echo exit=$?'
 stdout '^exit=2$'
 stdout 'is finished'
 
+-- loud.toml --
+name = "loud"
+
+[step.b]
+kind = "command"
+run = "echo out1; echo boom >&2; exit 3"
 -- flaky.toml --
 name = "flaky"
 
