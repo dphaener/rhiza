@@ -56,6 +56,7 @@ type Model struct {
 	rows   []row
 	err    error
 	cursor int
+	notice string
 }
 
 // NewModel returns the model over run, loaded once. A nil now means the
@@ -142,9 +143,42 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.cursor = max(0, m.cursor-1)
 		case "r":
 			m.Reload()
+		case "enter":
+			m.focus()
 		}
 	}
 	return m, nil
+}
+
+// focus focuses the Rex tab of the selected run when it is live. A finished
+// run calls nothing.
+func (m *Model) focus() {
+	r, ok := m.Selected()
+	if !ok {
+		return
+	}
+	if !r.Live {
+		m.notice = "Run " + r.ID + " is not live"
+		return
+	}
+	out, err := m.run("run.open", []string{r.Change})
+	if err != nil {
+		m.notice = fmt.Sprintf("rhiza: %v", err)
+		return
+	}
+	var o api.RunOpenResponse
+	if err := json.Unmarshal(out, &o); err != nil {
+		m.notice = fmt.Sprintf("run.open: %v", err)
+		return
+	}
+	switch {
+	case o.Opened:
+		m.notice = fmt.Sprintf("Focused Rex tab %s of run %s", o.Tab, o.Run)
+	case !o.Live:
+		m.notice = "No live run for " + r.Change
+	default:
+		m.notice = fmt.Sprintf("The tab of run %s is gone", o.Run)
+	}
 }
 
 func (m *Model) View() tea.View {
@@ -163,7 +197,10 @@ func (m *Model) View() tea.View {
 		}
 		b.WriteString("\n" + mark + m.format(r))
 	}
-	b.WriteString("\n" + Name + " · j/k move · r reload · q quit")
+	if m.notice != "" {
+		b.WriteString("\n" + m.notice)
+	}
+	b.WriteString("\n" + Name + " · j/k move · enter focus tab · r reload · q quit")
 	return tea.NewView(b.String())
 }
 

@@ -15,6 +15,8 @@ type fakeData struct {
 	daemon string
 	status map[string]string
 	calls  int
+	opens  []string
+	open   string
 }
 
 func (f *fakeData) run(op string, args []string) ([]byte, error) {
@@ -24,6 +26,9 @@ func (f *fakeData) run(op string, args []string) ([]byte, error) {
 		return []byte(f.ls), nil
 	case "daemon.status":
 		return []byte(f.daemon), nil
+	case "run.open":
+		f.opens = append(f.opens, args[0])
+		return []byte(f.open), nil
 	case "run.status":
 		return []byte(f.status[args[0]]), nil
 	}
@@ -111,5 +116,38 @@ func TestResultIsRunLsBytes(t *testing.T) {
 	m := NewModel(f.run, nil)
 	if out, err := m.Result(); err != nil || string(out) != ls1 {
 		t.Fatalf("result %q, %v", out, err)
+	}
+}
+
+func enter(m *Model) { m.Update(tea.KeyPressMsg{Code: tea.KeyEnter}) }
+
+func TestEnterFocusesLiveRunTab(t *testing.T) {
+	f := newFake()
+	m := NewModel(f.run, nil)
+	f.open = `{"change":"C2","live":true,"run":"R2","opened":true,"tab":"block:b1"}`
+	enter(m)
+	if len(f.opens) != 1 || f.opens[0] != "C2" {
+		t.Fatalf("run.open calls: %v", f.opens)
+	}
+	if v := m.View().Content; !strings.Contains(v, "Focused Rex tab block:b1 of run R2") {
+		t.Errorf("view lacks focused notice:\n%s", v)
+	}
+	f.open = `{"change":"C2","live":true,"run":"R2","opened":false,"tab_gone":true}`
+	enter(m)
+	if v := m.View().Content; !strings.Contains(v, "The tab of run R2 is gone") {
+		t.Errorf("view lacks tab gone notice:\n%s", v)
+	}
+}
+
+func TestEnterOnFinishedRunCallsNothing(t *testing.T) {
+	f := newFake()
+	m := NewModel(f.run, nil)
+	m.Update(tea.KeyPressMsg{Code: 'j', Text: "j"})
+	enter(m)
+	if len(f.opens) != 0 {
+		t.Fatalf("run.open called: %v", f.opens)
+	}
+	if v := m.View().Content; !strings.Contains(v, "is not live") {
+		t.Errorf("view lacks not-live notice:\n%s", v)
 	}
 }
