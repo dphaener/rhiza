@@ -634,6 +634,28 @@ func TestShipCloseOut(t *testing.T) {
 	}
 }
 
+func TestShipCloseOutForget(t *testing.T) {
+	f, _, state := shipFixture(t)
+	if err := writeShipState(state, shipState{PR: 7, Head: "abc1234def", MergeCommit: "fff0000aaa"}); err != nil {
+		t.Fatal(err)
+	}
+	x := &shipExec{answers: map[string]string{
+		"git worktree remove " + f.worktree:                    "",
+		"git rev-parse --verify --quiet refs/heads/cs/ship-it": "!",
+		"git push origin --delete cs/ship-it":                  "",
+		"git symbolic-ref --short HEAD":                        "main\n",
+		"git status --porcelain --untracked-files=no":          "",
+		"git pull --ff-only origin main":                       "",
+	}}
+	f.ctx.Exec = x.run
+	if _, err := callOp(t, f.ctx, "ship.close-out", `{"forget":true}`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(state); !errors.Is(err, os.ErrNotExist) {
+		t.Errorf("state file kept: %v", err)
+	}
+}
+
 func TestShipCloseOutDirtyWorktree(t *testing.T) {
 	f, _, state := shipFixture(t)
 	if err := writeShipState(state, shipState{PR: 7, Head: "abc1234def", MergeCommit: "fff0000aaa"}); err != nil {
@@ -1297,5 +1319,56 @@ func TestShipFollowRefusesLocalCommits(t *testing.T) {
 		if strings.HasPrefix(c, "merge ") || strings.HasPrefix(c, "reset") || strings.HasPrefix(c, "push") {
 			t.Errorf("git call %q moved the worktree", c)
 		}
+	}
+}
+
+// A plan run's merge leaves a merge commit in the change set's ship state.
+// A later ship run's open-pr starts over from it: ship check records the
+// new PR's head and ship merge merges it instead of reporting the plan's
+// merge as already done.
+func TestShipMergeAfterPlanMerge(t *testing.T) {
+	ctx, g, _, _ := openPRFixture(t, true)
+	var merges []string
+	base := g.run
+	ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+		k := strings.Join(args, " ")
+		switch {
+		case name == "gh" && strings.HasPrefix(k, "pr merge "):
+			merges = append(merges, k)
+			return nil, nil
+		case name == "gh" && k == "pr view 7 --json mergeCommit,state":
+			return []byte(`{"mergeCommit":{"oid":"bbb2222ccc"},"state":"MERGED"}`), nil
+		}
+		out, err := base(name, args, dir, env)
+		if name == "gh" && strings.HasPrefix(k, "pr view cs/ship-it") {
+			out = []byte(strings.Replace(string(out), `"statusCheckRollup":[]`, `"statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]`, 1))
+		}
+		return out, err
+	}
+	resp, err := callOp(t, ctx, "ship.open-pr", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cs := resp.(ShipOpenPRResponse).Change
+	state := filepath.Join(ctx.Root, ".git", "rhiza", "ship", cs+".json")
+	if err := writeShipState(state, shipState{PR: 3, MergeCommit: "aaa1111bbb", Head: "old", Main: []ShipCheck{{Name: "x"}}}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := callOp(t, ctx, "ship.open-pr", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	if st, _ := readShipState(state); st.MergeCommit != "" || st.Main != nil {
+		t.Errorf("open-pr kept the plan's merge: %+v", st)
+	}
+	cr, err := callOp(t, ctx, "ship.check", `{}`)
+	if err != nil || !cr.(ShipCheckResponse).Passed {
+		t.Fatalf("check: %+v, %v", cr, err)
+	}
+	resp, err = callOp(t, ctx, "ship.merge", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m := resp.(ShipMergeResponse); m.AlreadyMerged || m.MergeCommit != "bbb2222ccc" || len(merges) != 1 {
+		t.Errorf("merge = %+v, merges %q", m, merges)
 	}
 }

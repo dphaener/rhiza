@@ -1,0 +1,40 @@
+{
+  "actor": "01M68HS3Z8EKJ55TATXN3FPY92",
+  "after": [
+    "01M68H875W70REKYZ5BXRAX4FT"
+  ],
+  "at": "2026-10-31T08:50:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 101d41a ran go test ./cmd/rhiza -run TestScripts/plan-workflow -count=1 (ok): the new plan-workflow-pr.txtar, with a bare origin.git and a fake gh, asserts gh.log holds exactly one pr create titled 'Plan reports' (the change set's title), pr-body.md holds the Round 1/Round 2 headings, the confirmed f1 finding line, 'No findings.' and the gate line, origin's refs/heads/cs/plan-reports equals the branch head, and the ship state records pr 7. go test ./internal/api -run TestShipOpenPR -v passed TestShipOpenPRRefusesPlanWithoutRound (a plan run with no round exits 2 'no review journaled' and calls no gh). Workflow tests pass with gate -> open-pr -> succeeded. Read the diff (plan.toml open-pr step, planSummary, open-pr branch for plan runs). make check exit 0."
+        },
+        "handle": "plan-run-opens-pr-verified",
+        "id": "01M68JEEF6YN0A32A6XPPW3PK6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M68JEEF6YN0A32A6XP8VMVBN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68JEEF6YN0A32A6XP8VMVBN",
+        "id": "01M68JEF4D5NBX0H6ZMW29PNXX",
+        "link": "01M68JEF4D5NBX0H6ZMV2GGFS2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857TPTS3BZMRX3S51FBSXT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M625RCFY4RB9HC0B69Y08VFV",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M68JEG7FFTRGZ27D715JDPGM",
+  "type": "ops",
+  "v": 1
+}

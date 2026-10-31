@@ -9369,6 +9369,10 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "commit": {
+            "description": "The commit that renders and commits .rhiza on the run's branch; absent when there was nothing to commit, or in a dry run",
+            "type": "string"
+          },
           "dry_run": {
             "description": "True if nothing was written or journalled",
             "type": "boolean"
@@ -17202,7 +17206,12 @@ cmp stdout describe.golden.json
       "name": "ship.close-out",
       "request": {
         "additionalProperties": false,
-        "properties": {},
+        "properties": {
+          "forget": {
+            "description": "Delete the change set's ship state file once closed out, so a later ship run opens and merges its own pull request (for a plan run, whose merge does not land the change set)",
+            "type": "boolean"
+          }
+        },
         "required": [],
         "type": "object"
       },

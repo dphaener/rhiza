@@ -255,3 +255,36 @@ func TestShipOpenPRRefusals(t *testing.T) {
 		t.Errorf("origin has branches: %s", out)
 	}
 }
+
+// A plan run with no review round is refused like a review run with none:
+// ship open-pr opens nothing for a plan nobody has reviewed.
+func TestShipOpenPRRefusesPlanWithoutRound(t *testing.T) {
+	ctx, g, _, _ := openPRFixture(t, false)
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cs := w.changeSets()[0].ID.String()
+	store := run.NewStore(run.Dir(filepath.Join(ctx.Root, ".git")))
+	err = store.Create("R2", run.Entry{
+		Type: run.TypeStarted, Step: "interview", At: time.Date(2026, 10, 24, 12, 0, 0, 0, time.UTC),
+		Started: &run.Started{Workflow: "plan", Change: cs, Title: "Ship it"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx.Getenv = func(k string) string {
+		if k == envRun {
+			return "R2"
+		}
+		return ""
+	}
+	_, err = callOp(t, ctx, "ship.open-pr", `{}`)
+	wantExit(t, err, 2)
+	if !strings.Contains(err.Error(), "no review journaled") {
+		t.Errorf("plan run with no round: %v", err)
+	}
+	if len(g.calls) != 0 {
+		t.Errorf("gh called: %q", g.calls)
+	}
+}

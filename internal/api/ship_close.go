@@ -76,9 +76,11 @@ type ShipLandResponse struct {
 	Pushed          string   `json:"pushed,omitempty" desc:"The head pushed to the PR branch; empty if nothing needed pushing"`
 }
 
-// ShipCloseOutRequest takes nothing: the merge commit comes from the state
-// file ship.merge wrote.
-type ShipCloseOutRequest struct{}
+// ShipCloseOutRequest takes the merge commit from the state file ship.merge
+// wrote.
+type ShipCloseOutRequest struct {
+	Forget bool `json:"forget,omitempty" flag:"forget" desc:"Delete the change set's ship state file once closed out, so a later ship run opens and merges its own pull request (for a plan run, whose merge does not land the change set)"`
+}
 
 // ShipCloseOutResponse lists what close-out did.
 type ShipCloseOutResponse struct {
@@ -417,7 +419,8 @@ func gitAt(ctx *Ctx, dir string, args ...string) (string, error) {
 // fast-forwards main, all from the main checkout. Each part
 // already done is reported as such. A dirty worktree fails git's remove,
 // and so the step: nothing is forced.
-func runShipCloseOut(ctx *Ctx, _ any) (any, error) {
+func runShipCloseOut(ctx *Ctx, req any) (any, error) {
+	r := req.(ShipCloseOutRequest)
 	if err := refuseShipDryRun(ctx, "ship.close-out"); err != nil {
 		return nil, err
 	}
@@ -480,6 +483,12 @@ func runShipCloseOut(ctx *Ctx, _ any) (any, error) {
 		step("delete-remote-branch", false)
 	} else {
 		return nil, Errorf("%v", err)
+	}
+
+	if r.Forget {
+		if err := os.Remove(t.statePath()); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return nil, Errorf("forget ship state: %v", err)
+		}
 	}
 
 	resp.Detail = shipMainBlocked(ctx, t.main)
