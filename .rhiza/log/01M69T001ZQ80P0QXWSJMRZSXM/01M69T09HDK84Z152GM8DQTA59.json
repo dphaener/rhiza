@@ -1,0 +1,132 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M69T01R296TTJE316YZAMZW5"
+  ],
+  "at": "2026-10-31T20:21:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "9",
+          "statement": "The model keeps itself honest: writes refuse fields a node kind does not have, rhiza check warns about constraints that constrain nothing, and rhiza why shows a decision only the quotes it cites"
+        },
+        "handle": "milestone-9",
+        "id": "01M69T02S927E096QCM96MAK1V",
+        "key": "zzi",
+        "kind": "intent",
+        "node": "01M69T02S927E096QCM69Z4DAB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "if you run out of work keep picking high value tasks. don't stop and wait for my input.",
+          "statement": "Milestone 9 is three proposed change sets that run beside milestone 7's chain without touching its files: field schemas, the unlinked-constraint warning, and why's cited quotes"
+        },
+        "handle": "m9-picked-by-orchestrator",
+        "id": "01M69T03D3HKEVB9RTPQSH635J",
+        "key": null,
+        "kind": "decision",
+        "node": "01M69T03D3HKEVB9RTPMZX10F4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69T03D3HKEVB9RTPMZX10F4",
+        "id": "01M69T040XYAEE4176A9GW42A6",
+        "link": "01M69T040XYAEE4176A6Q234KJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T0145W0PAF53KM8S0NJQD",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M69T02S927E096QCM69Z4DAB",
+        "id": "01M69T04N4VRZEEGY840QTG6FW",
+        "link": "01M69T04N4VRZEEGY83ZDCHHQ8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T03D3HKEVB9RTPMZX10F4",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Each core kind has a fixed list of known fields, covering every field in use today (including intent umbrella and the evidence one-offs test and observed); rhiza add and set refuse an unknown field as a usage error naming the known ones, while existing nodes in the log are never refused",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "unknown-fields-refused-on-new-writes",
+        "id": "01M69T059GPN42FNY7DC9YP547",
+        "key": null,
+        "kind": "decision",
+        "node": "01M69T059GPN42FNY7DB9EFRHP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69T059GPN42FNY7DB9EFRHP",
+        "id": "01M69T05YS1SETX7Q9CZ1FX0W0",
+        "link": "01M69T05YS1SETX7Q9CVV68JDQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T0145W0PAF53KM8S0NJQD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The unlinked-constraint warning lives in its own file in internal/check and is reported as a warning under the existing link rule, so the rule enum and describe-golden do not change",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "unlinked-constraint-under-link-rule",
+        "id": "01M69T06KW6RTJB7WPHNV4YY4D",
+        "key": null,
+        "kind": "decision",
+        "node": "01M69T06KW6RTJB7WPHJ9SVP5C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69T06KW6RTJB7WPHJ9SVP5C",
+        "id": "01M69T078RKR8RVXJ09Y0SK5SH",
+        "link": "01M69T078RKR8RVXJ09WNAAJD8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T0145W0PAF53KM8S0NJQD",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "rhiza why on a decision keeps a source's quotes that contain the decision's quote, whitespace normalised, and keeps every quote when none match or the node is not a decision, noting how many were left out",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "why-quotes-by-substring",
+        "id": "01M69T07XZRYMQ9MJWJH4XCMS2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M69T07XZRYMQ9MJWJFM158M8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69T07XZRYMQ9MJWJFM158M8",
+        "id": "01M69T08HXPCVB9CX9A6TG5NEW",
+        "link": "01M69T08HXPCVB9CX9A5CVZR0Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T0145W0PAF53KM8S0NJQD",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M69T001ZQ80P0QXWSJMRZSXM",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69T09HDK84Z152GM8DQTA59",
+  "type": "ops",
+  "v": 1
+}
