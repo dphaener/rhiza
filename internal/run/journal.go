@@ -267,7 +267,8 @@ type Block struct {
 //	leaf-session: Step, Leaf, Handle, Role (builder or verifier), Attempt, Session,
 //	           Model, Commit (a builder's: the worktree's HEAD when it started; a
 //	           verifier's: the commit it checks), Detail (a leaves step started a
-//	           session on leaf node Leaf, handle Handle)
+//	           session on leaf node Leaf, handle Handle); on a checks step, Cycle
+//	           is the review cycle of the fix it belongs to
 //	leaf-attempt: Step, Leaf, Handle, Role, Attempt, Outcome (pass or fail), Commit
 //	           (a passed builder's leaf commit; a passed verifier's Evidence
 //	           commit), Detail (the role's session of the attempt was judged)
@@ -583,6 +584,8 @@ func (a Arbitration) Open() bool { return a.Outcome == "" }
 // LeafSession is one leaf-session entry: a session of role Role (builder
 // or verifier) on the leaf's attempt Attempt. A builder's Commit is the
 // worktree's HEAD when it started; a verifier's is the commit it checks.
+// On a checks step, Cycle is the review cycle of the fix it belongs to,
+// whose tries have attempts of their own (leafFixAttempt); 0 elsewhere.
 //
 // Seq is the position of its entry in the journal, which orders a step's
 // sessions across leaves. PaneClosed is true once a pane-closed entry
@@ -590,6 +593,7 @@ func (a Arbitration) Open() bool { return a.Outcome == "" }
 type LeafSession struct {
 	Role       string
 	Attempt    int
+	Cycle      int
 	Session    string
 	Model      string
 	Commit     string
@@ -697,6 +701,19 @@ func (l LeafState) Session(role string, attempt int) (LeafSession, bool) {
 		}
 	}
 	return LeafSession{}, false
+}
+
+// CycleAttempts are the attempts of role's sessions on the leaf in review
+// cycle cycle of a checks step, in journal order: for its fixer, one per
+// try of the cycle's fix.
+func (l LeafState) CycleAttempts(role string, cycle int) []int {
+	var out []int
+	for _, s := range l.Sessions {
+		if s.Role == role && s.Cycle == cycle {
+			out = append(out, s.Attempt)
+		}
+	}
+	return out
 }
 
 // Judged is the judgement of role's session on attempt, if it has one.
@@ -1275,7 +1292,7 @@ func (j Journal) State() State {
 		case TypeLeafSession:
 			l := st.leaf(e)
 			l.Sessions = append(l.Sessions, LeafSession{
-				Role: e.Role, Attempt: e.Attempt, Session: e.Session, Model: e.Model, Commit: e.Commit, Detail: e.Detail, At: e.At,
+				Role: e.Role, Attempt: e.Attempt, Cycle: e.Cycle, Session: e.Session, Model: e.Model, Commit: e.Commit, Detail: e.Detail, At: e.At,
 				Seq: seq,
 			})
 			st.addSession(e.Step, e.Session)

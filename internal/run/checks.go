@@ -190,8 +190,9 @@ type checkAction struct {
 // order and fixes the step's folded leaf sessions by leaf ID. A fix phase that fails ends each check
 // of the cycle failed ("cycle N: fix failed: ...") without a session, so
 // the cycle is spent: the next one, if any is left, tries the fix again.
-// A change-set fixer judged fail is first retried within its cycle, up to
-// MaxFixCycles more attempts (changeSetFix), so only a fixer failing all
+// A leaf's fixer or verifier judged fail, and a change-set fixer judged
+// fail, are first retried within the cycle, up to MaxFixCycles more
+// attempts (fixActions, changeSetFix), so only one failing all
 // 1 + MaxFixCycles of them fails the phase.
 // The confirmed findings naming no leaf of leaves (changeSetFindings) go
 // to one fixer for the change set, after every leaf's fixer
@@ -431,14 +432,19 @@ func changeSetFix(cycle int, findings []Finding, fixed []ReviewFix, acts []check
 // fixer, then, on the commit the fixer's judgement found, a verifier, both
 // on attempt cycle. Fixers run one at a time, in leaf order, as they
 // share the run's worktree; a fixed leaf's verifier runs alongside the
-// next fixer. The moves list each start before any poll. failure says
+// next fixer. A leaf whose verifier failed waits for any other leaf's
+// live fixer before its retry fixer starts. The moves list each start before any poll. failure says
 // why the phase failed, once a fixer or verifier was judged fail: then
 // nothing more starts, and the phase is over once its live sessions are
 // judged. No moves and no failure: the phase is done, or had nothing to
 // fix.
 func fixActions(cycle int, leaves []Leaf, found map[string][]Finding, fixes map[string]LeafState) (acts []checkAction, failure string) {
 	var starts, polls []checkAction
-	fixerFree := true
+	// The fixer slot is taken by any leaf's live fixer, not only an
+	// earlier leaf's: a retry can come up on a leaf the walk has passed.
+	fixerFree := !slices.ContainsFunc(leaves, func(lf Leaf) bool {
+		return len(found[lf.ID]) > 0 && liveFixer(cycle, fixes[lf.ID])
+	})
 	fail := func(lf Leaf, role, detail string) {
 		if failure == "" {
 			failure = fmt.Sprintf("leaf %s: %s failed: %s", lf.Handle, role, detail)
@@ -450,46 +456,80 @@ func fixActions(cycle int, leaves []Leaf, found map[string][]Finding, fixes map[
 			continue
 		}
 		l := fixes[lf.ID]
-		s, started := l.Session(workflow.RoleFixer, cycle)
-		if !started {
-			if fixerFree && failure == "" {
-				starts = append(starts, checkAction{kind: fixStart, cycle: cycle,
-					fix: leafAction{kind: leafStart, leaf: lf, role: workflow.RoleFixer, attempt: cycle, findings: fs}})
+		// A failed fixer or verifier is retried as a fresh pair on the
+		// next attempt of the cycle, up to MaxFixCycles more of them.
+	attempts:
+		for try := 1; try <= 1+MaxFixCycles; try++ {
+			attempt := leafFixAttempt(cycle, try)
+			retry := try <= MaxFixCycles
+			s, started := l.Session(workflow.RoleFixer, attempt)
+			if !started {
+				if fixerFree && failure == "" {
+					starts = append(starts, checkAction{kind: fixStart, cycle: cycle,
+						fix: leafAction{kind: leafStart, leaf: lf, role: workflow.RoleFixer, attempt: attempt, cycle: cycle, findings: fs}})
+				}
+				fixerFree = false
+				break
 			}
-			fixerFree = false
-			continue
-		}
-		j, judged := l.Judged(workflow.RoleFixer, cycle)
-		if !judged {
-			polls = append(polls, checkAction{kind: fixPoll, cycle: cycle,
-				fix: leafAction{kind: leafPoll, leaf: lf, role: workflow.RoleFixer, attempt: cycle, session: s.Session}})
-			fixerFree = false
-			continue
-		}
-		if j.Outcome != workflow.OutcomePass {
-			fail(lf, workflow.RoleFixer, j.Detail)
-			continue
-		}
-		v, started := l.Session(workflow.RoleVerifier, cycle)
-		if !started {
-			starts = append(starts, checkAction{kind: fixStart, cycle: cycle,
-				fix: leafAction{kind: leafStart, leaf: lf, role: workflow.RoleVerifier, attempt: cycle, commit: j.Commit}})
-			continue
-		}
-		vj, judged := l.Judged(workflow.RoleVerifier, cycle)
-		if !judged {
-			polls = append(polls, checkAction{kind: fixPoll, cycle: cycle,
-				fix: leafAction{kind: leafPoll, leaf: lf, role: workflow.RoleVerifier, attempt: cycle, session: v.Session}})
-			continue
-		}
-		if vj.Outcome != workflow.OutcomePass {
-			fail(lf, workflow.RoleVerifier, vj.Detail)
+			j, judged := l.Judged(workflow.RoleFixer, attempt)
+			if !judged {
+				polls = append(polls, checkAction{kind: fixPoll, cycle: cycle,
+					fix: leafAction{kind: leafPoll, leaf: lf, role: workflow.RoleFixer, attempt: attempt, session: s.Session}})
+				fixerFree = false
+				break
+			}
+			if j.Outcome != workflow.OutcomePass {
+				if !retry {
+					fail(lf, workflow.RoleFixer, j.Detail)
+				}
+				continue attempts
+			}
+			v, started := l.Session(workflow.RoleVerifier, attempt)
+			if !started {
+				starts = append(starts, checkAction{kind: fixStart, cycle: cycle,
+					fix: leafAction{kind: leafStart, leaf: lf, role: workflow.RoleVerifier, attempt: attempt, cycle: cycle, commit: j.Commit}})
+				break
+			}
+			vj, judged := l.Judged(workflow.RoleVerifier, attempt)
+			if !judged {
+				polls = append(polls, checkAction{kind: fixPoll, cycle: cycle,
+					fix: leafAction{kind: leafPoll, leaf: lf, role: workflow.RoleVerifier, attempt: attempt, session: v.Session}})
+				break
+			}
+			if vj.Outcome != workflow.OutcomePass {
+				if !retry {
+					fail(lf, workflow.RoleVerifier, vj.Detail)
+				}
+				continue attempts
+			}
+			break
 		}
 	}
 	if failure != "" {
 		starts = nil
 	}
 	return append(starts, polls...), failure
+}
+
+// liveFixer says whether one of l's fixers of cycle is started and not
+// yet judged.
+func liveFixer(cycle int, l LeafState) bool {
+	for try := 1; try <= 1+MaxFixCycles; try++ {
+		attempt := leafFixAttempt(cycle, try)
+		if _, started := l.Session(workflow.RoleFixer, attempt); started {
+			if _, judged := l.Judged(workflow.RoleFixer, attempt); !judged {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// leafFixAttempt is the attempt number, unique among the leaf's sessions
+// of the step, of try (from 1) of its fix in cycle (from 2): cycle 2's
+// first try is attempt 2, and each cycle gets 1 + MaxFixCycles of them.
+func leafFixAttempt(cycle, try int) int {
+	return (cycle-2)*(1+MaxFixCycles) + try + 1
 }
 
 // needsCritic says whether the check's session of cycle passed having

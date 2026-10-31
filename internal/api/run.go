@@ -275,7 +275,8 @@ type RunLeafRound struct {
 // RunLeafSession is one session a leaves step started on a leaf.
 type RunLeafSession struct {
 	Role    string `json:"role" desc:"builder or verifier; on a checks step fixer or verifier"`
-	Attempt int    `json:"attempt" desc:"The leaf's attempt it works on, from 1; on a checks step, the review cycle"`
+	Attempt int    `json:"attempt" desc:"The leaf's attempt it works on, from 1; on a checks step, one per try of a cycle's fix: cycle 2's first try is 2, and each cycle has 3 tries"`
+	Cycle   int    `json:"cycle,omitempty" desc:"On a checks step, the review cycle of the fix it belongs to"`
 	Session string `json:"session" desc:"The session's ID"`
 	Model   string `json:"model,omitempty" desc:"The model it runs; empty for the agent's default"`
 	Commit  string `json:"commit,omitempty" desc:"A builder's or fixer's: the worktree's HEAD when it started; a verifier's: the commit it checks"`
@@ -285,7 +286,8 @@ type RunLeafSession struct {
 // RunLeafAttempt is one judgement of a leaf session's work.
 type RunLeafAttempt struct {
 	Role    string `json:"role" desc:"builder or verifier; on a checks step fixer or verifier"`
-	Attempt int    `json:"attempt" desc:"The leaf's attempt, from 1; on a checks step, the review cycle"`
+	Attempt int    `json:"attempt" desc:"The leaf's attempt, from 1; on a checks step, its session's attempt, one per try of a cycle's fix"`
+	Cycle   int    `json:"cycle,omitempty" desc:"On a checks step, the review cycle of the fix it belongs to"`
 	Outcome string `json:"outcome" desc:"pass or fail"`
 	Commit  string `json:"commit,omitempty" desc:"A passed builder's or fixer's commit naming its leaf; a passed verifier's Evidence commit"`
 	Detail  string `json:"detail,omitempty" desc:"Why: the session's exit, that its agent said done, or that a builder left no commit naming its leaf"`
@@ -1955,12 +1957,13 @@ func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo
 		}
 		for _, ls := range l.Sessions {
 			rl.Sessions = append(rl.Sessions, RunLeafSession{
-				Role: ls.Role, Attempt: ls.Attempt, Session: ls.Session, Model: ls.Model, Commit: ls.Commit, At: rfc3339(ls.At),
+				Role: ls.Role, Attempt: ls.Attempt, Cycle: ls.Cycle, Session: ls.Session, Model: ls.Model, Commit: ls.Commit, At: rfc3339(ls.At),
 			})
 		}
 		for _, a := range l.Attempts {
+			s, _ := l.Session(a.Role, a.Attempt)
 			rl.Attempts = append(rl.Attempts, RunLeafAttempt{
-				Role: a.Role, Attempt: a.Attempt, Outcome: a.Outcome, Commit: a.Commit, Detail: a.Detail, At: rfc3339(a.At),
+				Role: a.Role, Attempt: a.Attempt, Cycle: s.Cycle, Outcome: a.Outcome, Commit: a.Commit, Detail: a.Detail, At: rfc3339(a.At),
 			})
 		}
 		for _, f := range l.Findings {
@@ -2161,7 +2164,11 @@ func (r RunInfo) Human(w io.Writer) {
 				fmt.Fprintf(w, "  - round %d from attempt %d: decision %s answers question %s (%s)\n", rd.Round, rd.After+1, rd.Decision, rd.QuestionHandle, rd.Question)
 			}
 			for _, ls := range l.Sessions {
-				fmt.Fprintf(w, "  - attempt %d %s, session %s", ls.Attempt, ls.Role, ls.Session)
+				fmt.Fprintf(w, "  - attempt %d %s", ls.Attempt, ls.Role)
+				if ls.Cycle > 0 {
+					fmt.Fprintf(w, " in cycle %d", ls.Cycle)
+				}
+				fmt.Fprintf(w, ", session %s", ls.Session)
 				for _, a := range l.Attempts {
 					if a.Role == ls.Role && a.Attempt == ls.Attempt {
 						fmt.Fprintf(w, ": %s", a.Outcome)

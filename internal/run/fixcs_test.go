@@ -387,6 +387,21 @@ func TestFixChangeSetActions(t *testing.T) {
 				l.Attempts = append(l.Attempts, LeafAttempt{Role: "verifier", Attempt: 2, Outcome: verifier})
 			}
 		}
+		if fixer == "fail" || verifier == "fail" {
+			// A failed leaf fix was retried until its attempts ran out.
+			first := l
+			for try := 2; try <= 1+MaxFixCycles; try++ {
+				n := leafFixAttempt(2, try)
+				for _, s := range first.Sessions {
+					s.Attempt = n
+					l.Sessions = append(l.Sessions, s)
+				}
+				for _, at := range first.Attempts {
+					at.Attempt = n
+					l.Attempts = append(l.Attempts, at)
+				}
+			}
+		}
 		return map[string]LeafState{a.ID: l}
 	}
 	fix := func(outcome string) []ReviewFix {

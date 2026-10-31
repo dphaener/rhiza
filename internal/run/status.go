@@ -54,7 +54,8 @@ type StatusReport struct {
 	// Live are the leaves step's open leaves with a session, in leaf
 	// order; on a checks step, its checks with a live session, in the
 	// step's order, each as a LeafStatus whose Handle is the check's name
-	// and Attempt its cycle.
+	// and Attempt its cycle, then its live fix sessions (fixStatus), each
+	// with its review cycle as Attempt.
 	Live []LeafStatus
 	// Ended are the leaves live in the last report and not in this one:
 	// the caller clears what it showed for them.
@@ -208,7 +209,8 @@ func checksStatus(rep StatusReport, st State, step workflow.Step, leaves []Leaf)
 // fixStatus are checks step step's live fix sessions: each leaf's fixer
 // or verifier whose latest session is not yet judged, in leaf order (as
 // leaves gives it, else the journal's), as a LeafStatus naming its leaf
-// and its cycle as Attempt; then the change-set fixer of the latest cycle
+// and the review cycle of its fix as Attempt (not the session's attempt,
+// which counts the cycle's tries apart: leafFixAttempt); then the change-set fixer of the latest cycle
 // that ran one, until judged, with no Leaf, N 0 and the step's name as
 // Handle.
 func fixStatus(st State, step workflow.Step, leaves []Leaf) []LeafStatus {
@@ -221,7 +223,7 @@ func fixStatus(st State, step workflow.Step, leaves []Leaf) []LeafStatus {
 		if _, judged := l.Judged(s.Role, s.Attempt); judged {
 			return
 		}
-		ls := LeafStatus{N: n, Leaf: l.Leaf, Handle: l.Handle, Role: s.Role, Attempt: s.Attempt, Session: s.Session}
+		ls := LeafStatus{N: n, Leaf: l.Leaf, Handle: l.Handle, Role: s.Role, Attempt: s.Cycle, Session: s.Session}
 		sessionBlock(&ls, st)
 		out = append(out, ls)
 	}
