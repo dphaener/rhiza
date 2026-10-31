@@ -1,0 +1,63 @@
+{
+  "actor": "01M6992YS4CG2ZAH1ZRMS14NM9",
+  "after": [
+    "01M69925XXPJZ0RCY4WS6HAK2H"
+  ],
+  "at": "2026-10-31T15:27:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6eb01e4, ran the real make update PREFIX=<mktemp>/bin with REX_CONFIG=<mktemp>/rexcfg/init.lua (holding one owner line) and the real rex on PATH. It ran go build -o <tmp>/bin/rhiza, then <tmp>/bin/rhiza rex install, with no cp. Output: 2 written, Rex reloaded, exit 0. The installed binary runs (rhiza version prints 6eb01e4, ad-hoc signature intact). init.lua kept the owner line and gained require(\"rhiza\"), and rhiza.lua was written beside it. A second make update rebuilt and reported 0 written, 2 unchanged, Rex reloaded. With rex missing from PATH, make update failed (Error 1, exit 2) with 'rex config reload failed' and next: rex config reload. TestMakeUpdateDryRun PASSED."
+        },
+        "handle": "make-update-qa-1",
+        "id": "01M6995GXH5V2GFBG0ZR2TCZX0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6995GXH5V2GFBG0ZPX62987",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6995GXH5V2GFBG0ZPX62987",
+        "id": "01M6995HSW6C18211D2A0BXS0H",
+        "link": "01M6995HSW6C18211D28F890V7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686VEB0CY43YARC8XCA55J2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6eb01e4, make help lists 'update  Rebuild into $(PREFIX), then rewrite the Rex script and reload Rex' beside install. CLAUDE.md's Commands block has 'make update     # make install, then rewrite the Rex script and reload Rex'. TestMakeUpdateDryRun (it asserts make help names update) and TestClaudeMDCommandsNameMakeUpdate both PASSED with -count=1."
+        },
+        "handle": "update-target-documented-qa-1",
+        "id": "01M6995JFG72C5NM8618BRJ4M6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6995JFG72C5NM8614PXCWWF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6995JFG72C5NM8614PXCWWF",
+        "id": "01M6995K0QEVXDKAPE9HRH42CG",
+        "link": "01M6995K0QEVXDKAPE9H5AC0ZG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686VFHDHYAJP8B10B23TMSC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RWSEKXXBCNC7RZMT07HB",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6995KX0DQT8N3DXHG2YN8QX",
+  "type": "ops",
+  "v": 1
+}
