@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/check"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
 )
@@ -68,11 +69,11 @@ func buildLink(b writeBase, r LinkRequest) (edit, error) {
 	if err != nil {
 		return edit{}, err
 	}
-	from, fromSet, err := linkEnd(b, r.From)
+	from, fromEnd, err := linkEnd(b, r.From)
 	if err != nil {
 		return edit{}, err
 	}
-	to, toSet, err := linkEnd(b, r.To)
+	to, toEnd, err := linkEnd(b, r.To)
 	if err != nil {
 		return edit{}, err
 	}
@@ -98,6 +99,10 @@ func buildLink(b writeBase, r LinkRequest) (edit, error) {
 	if from == to {
 		return edit{}, Usagef("a link cannot start and end at the same node %s", from)
 	}
+	if !check.Allowed(t, fromEnd, toEnd) {
+		return edit{}, Usagef("link type %q does not go from %s to %s", t, fromEnd, toEnd).WithNext("rhiza describe link")
+	}
+	fromSet, toSet := fromEnd == check.ChangeSet, toEnd == check.ChangeSet
 	switch k, err := b.m.LinkBetween(from, to, t); {
 	case err == nil:
 		return edit{}, Conflictf("%s %s link from %s to %s already exists: %s", article(string(t)), t, r.From, r.To, k.ID)
@@ -128,19 +133,20 @@ func buildLink(b writeBase, r LinkRequest) (edit, error) {
 
 // linkEnd resolves one end of a new link: a writable node, or else a
 // change set in the log, such as either end of a discovered-from link,
-// reporting which. A ref that is neither keeps the node's error.
-func linkEnd(b writeBase, ref string) (id.ID, bool, error) {
+// reporting which kind of end it is. A ref that is neither keeps the node's
+// error.
+func linkEnd(b writeBase, ref string) (id.ID, check.End, error) {
 	n, err := writableNode(b, ref)
 	if err == nil {
-		return n.ID, false, nil
+		return n.ID, check.NodeEnd(n.Kind), nil
 	}
 	if AsError(err).Code != CodeNotFound || b.changeSet == nil {
-		return id.ID{}, false, err
+		return id.ID{}, "", err
 	}
 	if cs, csErr := b.changeSet(ref); csErr == nil {
-		return cs, true, nil
+		return cs, check.ChangeSet, nil
 	}
-	return id.ID{}, false, err
+	return id.ID{}, "", err
 }
 
 // wouldCycle reports whether change set from depending on change set to

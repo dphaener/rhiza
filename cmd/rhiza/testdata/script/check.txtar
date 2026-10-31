@@ -53,20 +53,21 @@ exec sh -c 'rhiza check --dry-run 2>/dev/null; echo exit $?'
 stdout '^exit 2$'
 fold-ok
 
-# A link whose type does not join its endpoints' kinds fails. Writes do
-# not check endpoints; check does.
+# A link whose type does not join its endpoints' kinds fails check. Writes
+# refuse such a link, so one in the log is forged by hand.
 cd $WORK
 mkdir badlink
 cd badlink
 exec rhiza init
 exec rhiza add intent fast --record
 exec rhiza add capability store --record
-exec rhiza link fast verifies store --record
+exec rhiza link store serves fast --record
+exec sh -c 'for f in $(grep -l "\"serves\"" .rhiza/log/*/*.json); do sed "s/\"serves\"/\"verifies\"/" $f > $f.new && mv $f.new $f; done'
 exec rhiza render
 fold-ok
 ! exec rhiza check
-stdout '^fail link change set [0-9A-Z]{26}, op [0-9A-Z]{26}, link [0-9A-Z]{26}: link type "verifies" does not go from intent to capability$'
-exec rhiza unlink fast verifies store --record
+stdout '^fail link change set [0-9A-Z]{26}, op [0-9A-Z]{26}, link [0-9A-Z]{26}: link type "verifies" does not go from capability to intent$'
+exec rhiza unlink store verifies fast --record
 exec rhiza render
 exec rhiza check
 stdout '^ok$'
