@@ -1,6 +1,7 @@
 package liveapp
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -14,6 +15,7 @@ type fakeData struct {
 	ls     string
 	daemon string
 	status map[string]string
+	change map[string]string
 	calls  int
 	opens  []string
 	open   string
@@ -31,6 +33,8 @@ func (f *fakeData) run(op string, args []string) ([]byte, error) {
 		return []byte(f.open), nil
 	case "run.status":
 		return []byte(f.status[args[0]]), nil
+	case "change.show":
+		return []byte(f.change[args[0]]), nil
 	}
 	return nil, nil
 }
@@ -47,6 +51,10 @@ func newFake() *fakeData {
 			"R2": `{"id":"R2","leaves":[{"leaf":"a","outcome":"passed"},{"leaf":"b","outcome":"passed"},{"leaf":"c"}],"checks":[{"check":"q","outcome":"passed"},{"check":"s","outcome":"failed"},{"check":"t"}]}`,
 			"R1": `{"id":"R1","leaves":[{"leaf":"a","outcome":"passed"}],"checks":[]}`,
 		},
+		change: map[string]string{
+			"C1": `{"leaves":[{"handle":"a"}]}`,
+			"C2": `{"leaves":[{"handle":"a"},{"handle":"b"},{"handle":"c"},{"handle":"d"}]}`,
+		},
 	}
 }
 
@@ -61,7 +69,7 @@ func TestViewShowsRunProgress(t *testing.T) {
 	for _, want := range []string{
 		"Daemon: running · 1 live runs",
 		"> Second · running",
-		"step review · leaves 2/3 · checks 1 passed, 1 failed, 1 running · elapsed 5m07s",
+		"step review · leaves 2/4 · checks 1 passed, 1 failed, 1 running · elapsed 5m07s",
 		"First · succeeded",
 		"leaves 1/1 · checks none · elapsed 1h05m07s",
 	} {
@@ -81,7 +89,8 @@ func TestTickUpdatesViewKeepingCursorOnRun(t *testing.T) {
 	// A newer run appears on top and R2's results change.
 	f.ls = `{"runs":[{"id":"R3","change":"C3","title":"Third","state":"running","current":"build","started_at":"2026-01-01T00:05:00Z","live":true,"workflow":"ship-change"},` + ls1[len(`{"runs":[`):]
 	f.status["R3"] = `{"id":"R3","leaves":[],"checks":[]}`
-	f.status["R2"] = `{"id":"R2","leaves":[{"outcome":"passed"},{"outcome":"passed"},{"outcome":"passed"}],"checks":[]}`
+	f.status["R2"] = `{"id":"R2","leaves":[{"leaf":"a","outcome":"passed"},{"leaf":"b","outcome":"passed"},{"leaf":"c","outcome":"passed"}],"checks":[]}`
+	f.change["C2"] = `{"leaves":[{"handle":"a"},{"handle":"b"},{"handle":"c"}]}`
 	f.daemon = `{"running":false,"runs":[],"unjournaled":[]}`
 	m.Update(TickMsg{})
 	v := m.View().Content
@@ -149,5 +158,53 @@ func TestEnterOnFinishedRunCallsNothing(t *testing.T) {
 	}
 	if v := m.View().Content; !strings.Contains(v, "is not live") {
 		t.Errorf("view lacks not-live notice:\n%s", v)
+	}
+}
+
+func TestLeavesCountChangeSetLeavesOnceEach(t *testing.T) {
+	f := newFake()
+	// a and b passed; a checks step's fixer then fixed b again, an entry
+	// with no outcome. c and d are not conducted yet.
+	f.status["R2"] = `{"id":"R2","leaves":[{"step":"build","leaf":"a","outcome":"passed"},{"step":"build","leaf":"b","outcome":"passed"},{"step":"review","leaf":"b"}],"checks":[]}`
+	m := NewModel(f.run, clock("2026-01-01T00:05:07Z"))
+	if v := m.View().Content; !strings.Contains(v, "leaves 2/4 · checks none") {
+		t.Errorf("view lacks leaves 2/4:\n%s", v)
+	}
+	// Every leaf passed, with a fixer entry: the count reads complete.
+	f.status["R2"] = `{"id":"R2","leaves":[{"step":"build","leaf":"a","outcome":"passed"},{"step":"build","leaf":"b","outcome":"passed"},{"step":"build","leaf":"c","outcome":"passed"},{"step":"build","leaf":"d","outcome":"passed"},{"step":"review","leaf":"b"}],"checks":[]}`
+	m.Reload()
+	if v := m.View().Content; !strings.Contains(v, "leaves 4/4 · checks none") {
+		t.Errorf("view lacks leaves 4/4:\n%s", v)
+	}
+	// Without change.show the total is the distinct leaves the run lists.
+	delete(f.change, "C2")
+	m.Reload()
+	if v := m.View().Content; !strings.Contains(v, "leaves 4/4 · checks none") {
+		t.Errorf("view lacks fallback leaves 4/4:\n%s", v)
+	}
+}
+
+func TestViewScrollsToCursorKeepingDaemonLine(t *testing.T) {
+	f := newFake()
+	var runs []string
+	for i := 0; i < 20; i++ {
+		id := fmt.Sprintf("R%02d", i)
+		runs = append(runs, fmt.Sprintf(`{"id":%q,"change":"C1","title":"Run %02d","state":"succeeded","started_at":"2026-01-01T00:00:00Z","workflow":"ship-change"}`, id, i))
+		f.status[id] = `{"id":"x","leaves":[],"checks":[]}`
+	}
+	f.ls = `{"runs":[` + strings.Join(runs, ",") + `]}`
+	m := NewModel(f.run, clock("2026-01-01T00:05:07Z"))
+	m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
+	lines := func() int { return strings.Count(m.View().Content, "\n") + 1 }
+	v := m.View().Content
+	if !strings.HasPrefix(v, "Daemon: running") || !strings.Contains(v, "> Run 00") || strings.Contains(v, "Run 19") || lines() > 24 {
+		t.Fatalf("top view (%d lines):\n%s", lines(), v)
+	}
+	for i := 0; i < 19; i++ {
+		m.Update(tea.KeyPressMsg{Code: 'j', Text: "j"})
+	}
+	v = m.View().Content
+	if !strings.HasPrefix(v, "Daemon: running") || !strings.Contains(v, "> Run 19") || strings.Contains(v, "Run 00") || lines() > 24 {
+		t.Fatalf("bottom view (%d lines):\n%s", lines(), v)
 	}
 }

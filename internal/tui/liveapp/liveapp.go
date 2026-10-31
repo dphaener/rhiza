@@ -1,9 +1,10 @@
 // Package liveapp is the live app: the daemon's state and each live or
-// recent run with its change set title, current step, leaves passed of
-// those conducted, checks and elapsed time. It runs the api operations
-// daemon.status, run.ls and run.status in-process through the registry,
-// so --once prints what `rhiza run ls --json` prints. The view reloads
-// every few seconds and on r.
+// recent run with its change set title, current step, leaves passed of the
+// change set's leaves, checks and elapsed time. It runs the api operations
+// daemon.status, run.ls, run.status and change.show in-process through the
+// registry, so --once prints what `rhiza run ls --json` prints. The view
+// reloads every few seconds and on r, and scrolls to keep the cursor's run
+// on screen below the daemon line.
 package liveapp
 
 import (
@@ -44,7 +45,15 @@ type row struct {
 	info    api.RunInfo
 	hasInfo bool
 	err     error
+	// leaves is the change set's leaf count from change.show; hasLeaves
+	// is false when that failed.
+	leaves    int
+	hasLeaves bool
 }
+
+// rowLines is how many lines a run takes: a blank line, its title, its
+// progress.
+const rowLines = 3
 
 // Model is the app's bubbletea program. q or esc quits.
 type Model struct {
@@ -56,6 +65,8 @@ type Model struct {
 	rows   []row
 	err    error
 	cursor int
+	top    int
+	height int
 	notice string
 }
 
@@ -65,7 +76,7 @@ func NewModel(run Runner, now Clock) *Model {
 	if now == nil {
 		now = time.Now
 	}
-	m := &Model{run: run, now: now}
+	m := &Model{run: run, now: now, height: 24}
 	m.Reload()
 	return m
 }
@@ -92,6 +103,7 @@ func (m *Model) Reload() {
 		m.hasD = true
 	}
 	m.rows = m.rows[:0]
+	leafCounts := map[string]int{}
 	for _, it := range ls.Runs {
 		r := row{RunLsItem: it}
 		if b, err := m.run("run.status", []string{it.ID}); err != nil {
@@ -101,6 +113,15 @@ func (m *Model) Reload() {
 		} else {
 			r.hasInfo = true
 		}
+		if n, ok := leafCounts[it.Change]; ok {
+			r.leaves, r.hasLeaves = n, true
+		} else if b, err := m.run("change.show", []string{it.Change}); err == nil {
+			var c api.ChangeShowResponse
+			if json.Unmarshal(b, &c) == nil {
+				r.leaves, r.hasLeaves = len(c.Leaves), true
+				leafCounts[it.Change] = r.leaves
+			}
+		}
 		m.rows = append(m.rows, r)
 	}
 	for i, r := range m.rows {
@@ -109,6 +130,32 @@ func (m *Model) Reload() {
 		}
 	}
 	m.cursor = max(0, min(m.cursor, len(m.rows)-1))
+	m.follow()
+}
+
+// visible is how many runs fit below the daemon line, above the notice
+// and the key help.
+func (m *Model) visible() int {
+	fixed := 2 // the daemon line and the key help
+	if m.err != nil {
+		fixed++
+	}
+	if m.notice != "" {
+		fixed++
+	}
+	return max((m.height-fixed)/rowLines, 1)
+}
+
+// follow scrolls so the cursor's run is on screen.
+func (m *Model) follow() {
+	n := m.visible()
+	if m.cursor < m.top {
+		m.top = m.cursor
+	}
+	if m.cursor >= m.top+n {
+		m.top = m.cursor - n + 1
+	}
+	m.top = max(0, min(m.top, len(m.rows)-n))
 }
 
 // Result is the run.ls output, byte for byte, or the error met.
@@ -133,6 +180,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case TickMsg:
 		m.Reload()
 		return m, tick()
+	case tea.WindowSizeMsg:
+		m.height = max(msg.Height, 1)
+		m.follow()
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "q", "esc", "ctrl+c":
@@ -146,6 +196,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			m.focus()
 		}
+		m.follow()
 	}
 	return m, nil
 }
@@ -190,12 +241,13 @@ func (m *Model) View() tea.View {
 	if len(m.rows) == 0 && m.err == nil {
 		b.WriteString("\nNo runs\n")
 	}
-	for i, r := range m.rows {
+	end := min(m.top+m.visible(), len(m.rows))
+	for i := m.top; i < end; i++ {
 		mark := "  "
 		if i == m.cursor {
 			mark = "> "
 		}
-		b.WriteString("\n" + mark + m.format(r))
+		b.WriteString("\n" + mark + m.format(m.rows[i]))
 	}
 	if m.notice != "" {
 		b.WriteString("\n" + m.notice)
@@ -233,17 +285,37 @@ func (m *Model) format(r row) string {
 		return b.String()
 	}
 	if r.hasInfo {
-		passed := 0
-		for _, l := range r.info.Leaves {
-			if l.Outcome == "passed" {
-				passed++
-			}
-		}
-		fmt.Fprintf(&b, " · leaves %d/%d", passed, len(r.info.Leaves))
+		passed, total := leavesPassed(r)
+		fmt.Fprintf(&b, " · leaves %d/%d", passed, total)
 		fmt.Fprintf(&b, " · checks %s", checksSummary(r.info.Checks))
 	}
 	fmt.Fprintf(&b, " · %s\n", m.elapsed(r.StartedAt))
 	return b.String()
+}
+
+// leavesPassed is how many of the change set's leaves passed, and how many
+// it has. A leaf counts once however many entries it has: run.status lists
+// a leaf again for each checks step's fixer that fixed it, with no outcome.
+// Without change.show the total falls back to the leaves the run lists.
+func leavesPassed(r row) (passed, total int) {
+	seen := map[string]bool{}
+	done := map[string]bool{}
+	for _, l := range r.info.Leaves {
+		k := l.Leaf
+		if k == "" {
+			k = l.Handle
+		}
+		seen[k] = true
+		if l.Outcome == "passed" && !done[k] {
+			done[k] = true
+			passed++
+		}
+	}
+	total = len(seen)
+	if r.hasLeaves {
+		total = r.leaves
+	}
+	return passed, total
 }
 
 // checksSummary counts the checks by outcome, e.g. "2 passed, 1 failed, 1
