@@ -1,0 +1,40 @@
+{
+  "actor": "01M688EFMX8APYX0K5ZDE78CGQ",
+  "after": [
+    "01M688P7MQ00TWE12T11YA2AEF"
+  ],
+  "at": "2026-10-31T06:00:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1b5ba13, read the diff: TestFixLeafExhaustionSpendsCycle (internal/run/fixleaf_test.go) fails leaf-a's fixer on every attempt of cycle 2 (leafFixAttempt(2,1..1+MaxFixCycles) = 2,3,4) and asserts alpha's cycle 2 outcome is CheckFailed with detail prefix 'cycle 2: fix failed: leaf leaf-a: fixer failed:', check sessions are only alpha/beta/gamma check 1, alpha critic 1, alpha check 3 (none in cycle 2), and leaf sessions are fixer 2,3,4 then fixer 5 + verifier 5, i.e. cycle 3's fresh first attempt (leafFixAttempt(3,1)=5). TestFixLeafNoCommitFailsCycle now expects fixers 2-7 and TestFixLeafVerifierFailsCycle expects fixer+verifier 2-7, the new per-attempt session lists. Ran go test ./internal/run -run TestFixLeaf -count=1 -v: all 7 TestFixLeaf* pass. make check: fmt, vet, and tests pass apart from TestGeneratedModel in internal/tui/modelapp, which this change set does not touch; it took 41s under load and passes when run alone (4.8s). The self-check fails only on stale .rhiza/rendered files for this run's new actors, which is expected mid-run."
+        },
+        "handle": "leaf-fix-exhaustion-spends-cycle-verified",
+        "id": "01M688PC3QSBVWBC22HWM5S3M3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M688PC3QSBVWBC22HTWCSXY5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M688PC3QSBVWBC22HTWCSXY5",
+        "id": "01M688PCNH3M8C21D879SCTY9F",
+        "link": "01M688PCNH3M8C21D877HJD3ZB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68585JZBX1K2RWAK29TVWSZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6580HBAKHN7XTR7XQV3XR0Q",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M688PDHXKH62QM37AE1Y8TVE",
+  "type": "ops",
+  "v": 1
+}
