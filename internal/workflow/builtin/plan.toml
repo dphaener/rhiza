@@ -60,7 +60,10 @@ max_visits = 3
 on.pass = "wait-pr"
 
 # The plan's PR merges once its CI is green, pinned to the checked head.
-# The merge does not land the change set; close-out removes the branch and
+# Before the merge, as in ship-change, ship rebase brings the branch up to
+# origin's main when another change set landed meanwhile, settling the
+# rendered files' conflicts by rendering again, and the rebased head waits
+# for CI of its own. The merge does not land the change set; close-out removes the branch and
 # worktree and forgets the ship state, so a later ship run on the change
 # set opens and merges its own PR.
 [step.wait-pr]
@@ -75,6 +78,23 @@ on.pass = "pr-green"
 kind = "command"
 run = "rhiza ship check"
 max_visits = 3
+on.pass = "rebase"
+
+[step.rebase]
+kind = "command"
+run = "rhiza ship rebase"
+on.pass = "wait-rebased"
+
+[step.wait-rebased]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "2h"
+interval = "30s"
+on.pass = "rebased-green"
+
+[step.rebased-green]
+kind = "command"
+run = "rhiza ship check"
 on.pass = "merge"
 
 [step.merge]

@@ -8,7 +8,8 @@
 #
 # The plan ends on a pushed branch with an open PR: origin is a bare repo
 # in $WORK and the fake gh logs its argv to gh.log and keeps the body a PR
-# is created with in pr-body.md. With its checks green the run merges the
+# is created with in pr-body.md. With its checks green the run rebases
+# onto origin's main (already in it here, so nothing moves), merges the
 # PR and closes out; a ship-change run on the planned change set after it
 # opens PR #8 and merges it, a merge of its own.
 #
@@ -127,6 +128,9 @@ exec sh -c 'ls $(git rev-parse --git-common-dir)/rhiza/ship 2>/dev/null | wc -l 
 stdout '^0$'
 exec sh -c 'test "$(git rev-parse HEAD)" = "$(cat $WORK/merged-head)"'
 exec rhiza run status
+stdout '^- pr-green \(visit 1\): pass, then rebase: exit 0$'
+stdout '^- rebase \(visit 1\): pass, then wait-rebased: exit 0$'
+stdout '^- rebased-green \(visit 1\): pass, then merge: exit 0$'
 stdout '^- merge \(visit 1\): pass, then close-out: exit 0$'
 stdout '^- close-out \(visit 1\): pass'
 
