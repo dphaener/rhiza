@@ -16,6 +16,11 @@ Housekeeping is one change set, 01M6489HCR: the picker is already gone (PR #77),
 
 - derived-from [m6-overnight-interview](../source/m6-overnight-interview.md)
 
+### In
+
+- decided-by [tui-launch-usage](../capability/rhiza/rex-app-actions/tui-launch-usage.md)
+- decided-by [rex-install-app-actions-wording](../capability/rhiza/rex-install-command/rex-install-app-actions-wording.md)
+
 ## History
 
 - `01M684XWDT3EKJD4JPXT0JVK2M` Plan milestone 6: Rhiza runs unattended overnight, with the run machinery fixes that needed the orchestrator's hand in milestones 4 and 5
