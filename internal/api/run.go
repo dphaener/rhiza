@@ -2183,10 +2183,16 @@ func (r RunInfo) Human(w io.Writer) {
 			if s.Session != "" {
 				fmt.Fprintf(w, ", session %s", s.Session)
 			}
-			if s.Detail != "" {
-				fmt.Fprintf(w, ": %s", s.Detail)
+			first, rest, _ := strings.Cut(s.Detail, "\n")
+			if first != "" {
+				fmt.Fprintf(w, ": %s", first)
 			}
 			fmt.Fprintf(w, "\n")
+			for _, l := range strings.Split(rest, "\n") {
+				if l != "" {
+					fmt.Fprintf(w, "    %s\n", l)
+				}
+			}
 		}
 	}
 	if len(r.Leaves) > 0 {

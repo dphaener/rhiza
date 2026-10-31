@@ -18,6 +18,10 @@ cp ../ok.toml .rhiza/workflows/ok.toml
 exec rhiza run status --json
 stdout '"detail": "exit 3\\nout1\\nboom"'
 
+exec rhiza run status
+stdout '^- b \(visit 1\): fail, then end: exit 3$'
+stdout '^    boom$'
+
 ! exec rhiza run start --workflow long
 exec rhiza run status --json
 stdout 'line 500'
