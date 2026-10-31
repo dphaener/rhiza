@@ -2,7 +2,10 @@ package quiettest
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"slices"
+	"sync"
 	"testing"
 	"time"
 )
@@ -57,5 +60,53 @@ func TestQuietString(t *testing.T) {
 		if got := c.q.String(); got != c.want {
 			t.Errorf("%+v.String() = %q, want %q", c.q, got, c.want)
 		}
+	}
+}
+
+// TestTakeTurnOneAtATime checks that a second waiter blocks on the lock
+// until the first one's test ends, and that each leaves its mark only
+// while it waits or times.
+func TestTakeTurnOneAtATime(t *testing.T) {
+	dir := t.TempDir()
+	oldDir, oldLock := waiterDir, waiterLock
+	waiterDir, waiterLock = filepath.Join(dir, "quiet"), filepath.Join(dir, "quiet.lock")
+	t.Cleanup(func() { waiterDir, waiterLock = oldDir, oldLock })
+
+	var firstEnd, secondGot time.Time
+	started, release := make(chan struct{}), make(chan struct{})
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		t.Run("first", func(t *testing.T) {
+			if err := takeTurn(t); err != nil {
+				t.Fatal(err)
+			}
+			if !waiters()[os.Getpid()] {
+				t.Error("first waiter not marked")
+			}
+			close(started)
+			<-release
+			firstEnd = time.Now()
+		})
+	}()
+	<-started
+	go func() {
+		defer wg.Done()
+		t.Run("second", func(t *testing.T) {
+			if err := takeTurn(t); err != nil {
+				t.Fatal(err)
+			}
+			secondGot = time.Now()
+		})
+	}()
+	time.Sleep(200 * time.Millisecond)
+	close(release)
+	wg.Wait()
+	if !secondGot.After(firstEnd) {
+		t.Errorf("second waiter took its turn at %v, before the first ended at %v", secondGot, firstEnd)
+	}
+	if len(waiters()) != 0 {
+		t.Errorf("waiters after both ended = %v, want none", waiters())
 	}
 }
