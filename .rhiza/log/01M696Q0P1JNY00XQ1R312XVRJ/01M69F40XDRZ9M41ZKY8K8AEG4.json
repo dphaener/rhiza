@@ -1,0 +1,40 @@
+{
+  "actor": "01M69E9KAXQ0GAMJ4FE0Q32DWC",
+  "after": [
+    "01M69E8YJ78D88V7RX689RMWNY"
+  ],
+  "at": "2026-10-31T17:11:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "At 4df26617, built go build ./cmd/rhiza (rhiza version ran), then go test -count=1 -v ./internal/... ./cmd/...: TestGeneratedModel logged 'other packages: beside api.test rhiza.test after 3m0s' and 'note: api.test rhiza.test ran beside tree and roadmap as-is', and TestReadBudget logged 'beside modelapp.test rhiza.test after 3m0s'. Both passed, at a 10.3 ms median. go test of modelapp, api, quiettest, index, slice and gen together did the same: each waited the full 3 minutes for the other and then timed beside it. The two quiet waiters see each other as running, so neither runs alone in the normal run and each adds 3 minutes. quiettest unit tests pass."
+        },
+        "handle": "modelapp-timing-alone-qa-1",
+        "id": "01M69F3Z9Q0YTDCFXSY46GERFH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69F3Z9Q0YTDCFXSY10T62TD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69F3Z9Q0YTDCFXSY10T62TD",
+        "id": "01M69F3ZXKBJEGQPPA3HHW573Q",
+        "link": "01M69F3ZXKBJEGQPPA3GCR2TC6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M696Q30C6Z9DX0WGCSNDSGHQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M696Q0P1JNY00XQ1R312XVRJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69F40XDRZ9M41ZKY8K8AEG4",
+  "type": "ops",
+  "v": 1
+}

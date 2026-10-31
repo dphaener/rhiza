@@ -16,6 +16,7 @@ import (
 	"github.com/dphaener/rhiza/internal/gen"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
+	"github.com/dphaener/rhiza/internal/quiettest"
 )
 
 func key(s string) tea.KeyPressMsg {
@@ -107,11 +108,14 @@ func budgetLock(t *testing.T) {
 
 // TestGeneratedModel builds the app over the 50,000-node model, checks its
 // two panes against the text of the tree and roadmap operations, and
-// times the read, as the CLI does it: a fresh Ctx per operation.
+// times the read, as the CLI does it: a fresh Ctx per operation. It first
+// waits until go test runs nothing else, as TestReadBudget does.
 func TestGeneratedModel(t *testing.T) {
 	if testing.Short() {
 		t.Skip("generates the 50,000-node model; skipped under -short")
 	}
+	q := quiettest.Wait(t)
+	t.Logf("other packages: %s", q)
 	budgetLock(t)
 	dir := t.TempDir()
 	root := filepath.Join(dir, "repo")
@@ -172,6 +176,9 @@ func TestGeneratedModel(t *testing.T) {
 	t.Logf("tree and roadmap read: median %v (min %v, max %v)", median, times[0], times[runs-1])
 	if median >= 50*time.Millisecond {
 		t.Errorf("read median %v, want < 50ms", median)
+	}
+	if late := quiettest.Late("tree and roadmap", "as-is"); late != "" {
+		t.Log(late)
 	}
 
 	for _, c := range []struct{ pane, op string }{{"tree", "tree"}, {"roadmap", "roadmap"}} {

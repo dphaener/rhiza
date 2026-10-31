@@ -1,0 +1,40 @@
+{
+  "actor": "01M69HEPA2WCMCNM63NZZM6X1N",
+  "after": [
+    "01M69GZQTDTJ7RCWJJE21ZHWX4"
+  ],
+  "at": "2026-10-31T18:08:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 34037ad2 (cycle 3 fix: waiter dir and lock named by the go test parent pid, so only one run's waiters take turns), read the diff: TestGeneratedModel calls quiettest.Wait (shared with api's TestReadBudget) before budgetLock, logs 'other packages: <quiet>' as its header, keeps the 'median >= 50ms' t.Errorf, and logs quiettest.Late afterwards. Ran `go test -count=1 -v ./internal/api ./internal/tui/modelapp -run 'TestReadBudget|TestGeneratedModel'`: api logged 'alone after 3.2s (last beside modelapp.test)' and modelapp 'alone after 2.7s (last beside api.test)', median 9.7ms, both ok, so the two waiters take turns instead of waiting out 3m. Ran it again with ./internal/quiettest: all PASS. Ran `go test ./...` and fmt-check + vet: all ok. In a full -v ./... run, modelapp logged 'beside rhiza.test after 3m0s' plus the late note (cmd/rhiza's scripts outlast quietWait, the same cap TestReadBudget has) and still passed at median 9.7ms. make self-check fails only on stale .rhiza/rendered actor files from this run's own sessions, not on the leaf's code."
+        },
+        "handle": "modelapp-timing-alone-verified-3",
+        "id": "01M69JB896CXS70A89241G7ZDH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69JB896CXS70A892067XFX3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69JB896CXS70A892067XFX3",
+        "id": "01M69JB8WFQ8HAJ5F7PQBE1DS0",
+        "link": "01M69JB8WFQ8HAJ5F7PP8R953M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M696Q30C6Z9DX0WGCSNDSGHQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M696Q0P1JNY00XQ1R312XVRJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69JB9VVBRNCHSN04KM7BAJ8",
+  "type": "ops",
+  "v": 1
+}
