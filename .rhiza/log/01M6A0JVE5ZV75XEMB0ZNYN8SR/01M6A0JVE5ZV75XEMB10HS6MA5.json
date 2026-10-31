@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-31T22:16:49Z",
+  "body": {
+    "intent": "A daemon start that wrote no journal is retried after a hold, without restarting the daemon",
+    "kind": "intention",
+    "sources": [],
+    "title": "Unjournaled hold expires"
+  },
+  "change_set": "01M6A0JVE5ZV75XEMB0ZNYN8SR",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A0JVE5ZV75XEMB10HS6MA5",
+  "type": "open",
+  "v": 2
+}

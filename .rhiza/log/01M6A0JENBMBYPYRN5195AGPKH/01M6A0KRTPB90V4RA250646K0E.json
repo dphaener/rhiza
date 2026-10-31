@@ -1,0 +1,43 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6A0JENBMBYPYRN51AN4VH41"
+  ],
+  "at": "2026-10-31T22:17:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "if you run out of work keep picking high value tasks. don't stop and wait for my input.",
+              "where": "orchestrator session, 2026-10-31"
+            },
+            {
+              "by": "owner",
+              "text": "keep monitoring and don't stop. restart the monitor when it stops, that is your entire job. to keep this running.",
+              "where": "orchestrator session, 2026-10-30"
+            }
+          ],
+          "raw_sha256": "92f31b5efccd32a19a68e7647ef599f0d87592238c9242111071c27c12193740",
+          "summary": "With milestones 7 to 9 queued, the orchestrator planned milestone 10 under the owner's standing instruction to keep picking high-value work. It is the hand fixes the orchestrator still made while runs went unattended: a PR that conflicts after main moves sits in a wait step with no CI until a hand rhiza ship rebase (GitHub runs no CI on a conflicting PR, and ship check never reads mergeable); a flaky CI check fails the run, and the orchestrator reruns it and merges by hand; a daemon start that never journaled (disk full) blocks its change set until the daemon is restarted, because the unjournaled map never expires; the daemon keeps running an old binary after daemon code lands, until restarted by hand; and agent sessions sat on a Claude Code dialog for hours, found only by eye, although each session's hook status carries the time of its last tool call. Research agents traced each to its code: ship.go's pr view fields and checksVerdict, stepRunner.Holds dropping exit 75, daemonHeld's unjournaled map, ctx.Self and the flock lock (dropped on exec, so a re-exec is safe once no start is pending), and recordHook's Status.Hook.At.",
+          "title": "Milestone 10: runs heal themselves"
+        },
+        "handle": "m10-orchestrator-picks",
+        "id": "01M6A0KMK61TNC56042NNWXX8N",
+        "key": null,
+        "kind": "source",
+        "node": "01M6A0KMK61TNC56042NHQRJ4H",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6A0JENBMBYPYRN5195AGPKH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A0KRTPB90V4RA250646K0E",
+  "type": "ops",
+  "v": 1
+}

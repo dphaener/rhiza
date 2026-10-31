@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-31T22:16:44Z",
+  "body": {
+    "intent": "A failed CI check on a run's PR or main is rerun once per head before the run fails",
+    "kind": "intention",
+    "sources": [],
+    "title": "CI rerun once"
+  },
+  "change_set": "01M6A0JQ2WHGH7DDFKJGRXJD85",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A0JQ2WHGH7DDFKJHVRV38V",
+  "type": "open",
+  "v": 2
+}

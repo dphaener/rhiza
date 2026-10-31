@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6A0JQ2WHGH7DDFKJHVRV38V"
+  ],
+  "at": "2026-10-31T22:18:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript with a fake gh whose pr view reports a failed check with detailsUrl .../actions/runs/42/job/9 until gh run rerun is called, then success: gh.log holds exactly one 'run rerun 42 --failed' and the ship-change run passes pr-green; a second case where the check still fails after the rerun fails at pr-green with exactly one rerun in gh.log; a Go test covers the --main path reading databaseId",
+          "statement": "When a PR or main check fails, rhiza ship check reruns the failed jobs of that check's GitHub Actions run once per head, records the rerun in the ship record and reports not yet settled; a check that fails again on the same head fails as before, and a check with no Actions run id is never rerun"
+        },
+        "handle": "ship-check-reruns-failed-once",
+        "id": "01M6A0NJWB1HNVZ6QZAR1TTZ2Y",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6A0NJWB1HNVZ6QZAR17GDMJ",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M6A0NJWB1HNVZ6QZAR17GDMJ",
+        "id": "01M6A0NKHF46G2T2F959YDTTCM",
+        "link": "01M6A0NKHF46G2T2F956Y6VTXS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0MFAVA728T8Y6TNPJVJZQ",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6A0JQ2WHGH7DDFKJGRXJD85",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A0NMK2VWT6QB0X4QWK6862",
+  "type": "ops",
+  "v": 1
+}

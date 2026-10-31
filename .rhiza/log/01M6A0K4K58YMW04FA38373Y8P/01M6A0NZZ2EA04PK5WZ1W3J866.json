@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6A0K4K58YMW04FA3C36CQ29"
+  ],
+  "at": "2026-10-31T22:18:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test of the stall cutoff: working at 19 minutes is not stalled, at 21 minutes is, blocked, idle and usage-paused sessions never are; a testscript with a hand-written session record and RHIZA_TEST_NOW shows 'stalled' in run status only past the cutoff",
+          "statement": "rhiza run status marks a live session stalled when its hook status is working and its last report is more than 20 minutes old, unless it is paused for a usage limit"
+        },
+        "handle": "run-status-stalled-session",
+        "id": "01M6A0NWP7AH4JGMDT3B1CYKB1",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6A0NWP7AH4JGMDT37F6X7DG",
+        "op": "node.create",
+        "parent": "01M5TYGK04WT4AH5KMH4RF82YD"
+      },
+      {
+        "decision": null,
+        "from": "01M6A0NWP7AH4JGMDT37F6X7DG",
+        "id": "01M6A0NXDC1XQFSGZ7H0FJ6R6R",
+        "link": "01M6A0NXDC1XQFSGZ7GWM1NXZX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0MNY5QR1RSXNMW09VWDPZ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "inbox-stalled.txtar: with a working session record last reported at T and a live run journal, rhiza inbox --json has no stalled item at T+19m and one of kind stalled at T+21m; a blocked or idle record gives none; the inbox app test shows the stalled group",
+          "statement": "rhiza inbox lists each stalled session of a live run as a stalled item naming the session and its run, with rhiza session message as the next step, and the inbox app shows them"
+        },
+        "handle": "inbox-stalled-items",
+        "id": "01M6A0NY4FZ07ZQMR23F686Z61",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6A0NY4FZ07ZQMR23E700DTQ",
+        "op": "node.create",
+        "parent": "01M61R7Q0JX5BXJP6M3P1SJXTG"
+      },
+      {
+        "decision": null,
+        "from": "01M6A0NY4FZ07ZQMR23E700DTQ",
+        "id": "01M6A0NYVS4NVAQ1867094BCR2",
+        "link": "01M6A0NYVS4NVAQ1866Z5E3PZQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0MNY5QR1RSXNMW09VWDPZ",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6A0K4K58YMW04FA38373Y8P",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A0NZZ2EA04PK5WZ1W3J866",
+  "type": "ops",
+  "v": 1
+}

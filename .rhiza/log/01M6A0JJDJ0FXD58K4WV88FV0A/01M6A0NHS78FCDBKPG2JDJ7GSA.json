@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6A0JJDJ0FXD58K4WVZ9JPAA"
+  ],
+  "at": "2026-10-31T22:18:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/run: a wait whose condition reports 75 with a stop: line ends the run stopped with that detail and the step not ended, and a resume polls the wait again; an exit other than 0 or 75 still reads as not held",
+          "statement": "A wait step whose condition exits 75 stops its run for the owner instead of polling on: the step is not ended, the run's stop detail is the last 'stop: ' line of the condition's output, and resuming the run runs the wait again"
+        },
+        "handle": "wait-stops-on-75",
+        "id": "01M6A0NEQCRN4YPDW4ECMGFJDF",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6A0NEQCRN4YPDW4EBSKYSKJ",
+        "op": "node.create",
+        "parent": "01M5TYGHWFYX6PYBNED6R4X1M4"
+      },
+      {
+        "decision": null,
+        "from": "01M6A0NEQCRN4YPDW4EBSKYSKJ",
+        "id": "01M6A0NFCMR8D5V9A3AHBSBAAT",
+        "link": "01M6A0NFCMR8D5V9A3AGHM937V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0MCZRX2JM4BS1RDRXK34R",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A ship-check-settles-conflict.txtar with a fake gh whose pr view reports mergeable CONFLICTING until a new head is pushed: with origin/main conflicting only under .rhiza/rendered, ship check --settled exits non-zero, origin's branch then contains origin/main and the ship record's pushed is the new head; with a conflict in a code file it exits 75, prints a stop: line, raises a rebase-conflict question and leaves the branch unchanged",
+          "statement": "rhiza ship check --settled reads the PR's mergeable state and, when GitHub reports it CONFLICTING, rebases the branch onto origin/main as rhiza ship rebase does, settling rendered-only conflicts by rendering again and recording the pushed head, then reports not settled; a conflict in code raises the rebase-conflict question, leaves the branch as it was and exits 75 with a stop: line"
+        },
+        "handle": "wait-settles-conflicting-pr",
+        "id": "01M6A0NG1VRQKBM20M8GRJ3T9S",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6A0NG1VRQKBM20M8CSVTX3B",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M6A0NG1VRQKBM20M8CSVTX3B",
+        "id": "01M6A0NGPYKFFZ7ZS0RB3HDGVF",
+        "link": "01M6A0NGPYKFFZ7ZS0R9JKHNCS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0MCZRX2JM4BS1RDRXK34R",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6A0JJDJ0FXD58K4WV88FV0A",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A0NHS78FCDBKPG2JDJ7GSA",
+  "type": "ops",
+  "v": 1
+}

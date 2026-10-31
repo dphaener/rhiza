@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6A0K064DH4TP3JJ0ACX689G"
+  ],
+  "at": "2026-10-31T22:18:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test with an injected stat and exec: a changed executable triggers exec once, after the poll; an unchanged one never does; a pending start delays the exec to a later poll; the daemon lock is taken again by the new image",
+          "statement": "The daemon re-executes itself with the same arguments when its executable's size or modification time has changed since it started, checked at the end of a poll with no start pending, so a rebuilt rhiza takes over without a hand restart and live runs carry on"
+        },
+        "handle": "daemon-reexec-new-binary",
+        "id": "01M6A0NRGNH76FNWH3579VENSF",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6A0NRGNH76FNWH3564VWA1X",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6A0NRGNH76FNWH3564VWA1X",
+        "id": "01M6A0NS61D3YM8PVDV55Q3V1E",
+        "link": "01M6A0NS61D3YM8PVDV4F3MRTG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0MKM9VJGPS6EX0JB52DW3",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "daemon-status.txtar shows a Version: line with the test build's version; describe-golden.txtar is regenerated for the new field",
+          "statement": "rhiza daemon status prints the version of the binary the daemon runs, recorded in the daemon's state when it starts or re-executes"
+        },
+        "handle": "daemon-status-version",
+        "id": "01M6A0NSV7XVE3SXVN0Z1R7PD3",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6A0NSV7XVE3SXVN0V6AKTKR",
+        "op": "node.create",
+        "parent": "01M61R7NEEK19RP2QEHFRQ6W8S"
+      },
+      {
+        "decision": null,
+        "from": "01M6A0NSV7XVE3SXVN0V6AKTKR",
+        "id": "01M6A0NTGDSD9QY0G21EECF8HH",
+        "link": "01M6A0NTGDSD9QY0G21BZR0BBW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0MKM9VJGPS6EX0JB52DW3",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6A0K064DH4TP3JJ0861DFG4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A0NVHWQP05GGCX9A3X34JE",
+  "type": "ops",
+  "v": 1
+}

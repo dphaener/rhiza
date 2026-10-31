@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-31T22:16:40Z",
+  "body": {
+    "intent": "A ship-change wait settles a PR that conflicts after main moves by rebasing it itself, and stops for the owner on a code conflict",
+    "kind": "intention",
+    "sources": [],
+    "title": "Wait settles conflicting PR"
+  },
+  "change_set": "01M6A0JJDJ0FXD58K4WV88FV0A",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A0JJDJ0FXD58K4WVZ9JPAA",
+  "type": "open",
+  "v": 2
+}
