@@ -359,3 +359,64 @@ func TestUmbrellaGroupIsOneRowUntilEnter(t *testing.T) {
 		t.Errorf("Result changed")
 	}
 }
+
+func typeText(m *Model, s string) {
+	for _, r := range s {
+		m.Update(tea.KeyPressMsg{Code: r, Text: string(r)})
+	}
+}
+
+func enter(m *Model) { m.Update(tea.KeyPressMsg{Code: tea.KeyEnter}) }
+
+func TestNewWorkStartsPlanRunWithNoChangeSet(t *testing.T) {
+	for _, tc := range []struct {
+		key, want string
+	}{
+		{"m", "window new -s session:1 new-milestone -c /repo --json -- /bin/rhiza run start --workflow plan --new Ship the thing --milestone"},
+		{"n", "window new -s session:1 new-change-set -c /repo --json -- /bin/rhiza run start --workflow plan --new Ship the thing"},
+	} {
+		var calls []call
+		m := startModel("{}", &calls)
+		key(m, tc.key)
+		typeText(m, "Ship the thing")
+		enter(m)
+		if len(calls) != 0 {
+			t.Fatalf("%s called rex before y: %v", tc.key, calls)
+		}
+		if v := m.View().Content; !strings.Contains(v, "y/n") {
+			t.Errorf("no y/n question:\n%s", v)
+		}
+		key(m, "y")
+		if len(calls) != 1 || calls[0].name != "rex" {
+			t.Fatalf("%s calls = %v", tc.key, calls)
+		}
+		if got := strings.Join(calls[0].args, " "); got != tc.want {
+			t.Errorf("%s args = %q, want %q", tc.key, got, tc.want)
+		}
+		if v := m.View().Content; !strings.Contains(v, "Opened Rex tab") {
+			t.Errorf("view does not say a tab opened:\n%s", v)
+		}
+	}
+}
+
+func TestNewWorkDeclinedOrEmptyCallsNothing(t *testing.T) {
+	var calls []call
+	m := startModel("{}", &calls)
+	key(m, "m")
+	enter(m) // empty text stays in the prompt
+	if m.intent == nil {
+		t.Fatalf("empty enter left the prompt")
+	}
+	m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
+	key(m, "n")
+	typeText(m, "x")
+	enter(m)
+	key(m, "n")
+	key(m, "m")
+	typeText(m, "y")
+	enter(m)
+	m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
+	if len(calls) != 0 {
+		t.Errorf("declined or empty new work called rex: %v", calls)
+	}
+}
