@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M69XB8F9PPG7DN0T0Y2XA253"
+  ],
+  "at": "2026-10-31T21:43:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "fa9912e4dacedae6a00bfdef01b2a41beb030ba5",
+          "pr": "https://github.com/dphaener/rhiza/pull/143",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #143 (https://github.com/dphaener/rhiza/pull/143) passed CI at fa9912e",
+          "status": "verified"
+        },
+        "handle": "pr-143-inbox-shows-blockers",
+        "id": "01M69YND1A6H79WRP063MDMNX6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69YND1A6H79WRP06269Z9X7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69YND1A6H79WRP06269Z9X7",
+        "id": "01M69YNDN0Z0Z6AXM154RMZ99E",
+        "link": "01M69YNDN0Z0Z6AXM151G8C83N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TPQBCC7169KT6WEPB85A",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M69YND1A6H79WRP06269Z9X7",
+        "id": "01M69YNE8MX5KYTAVVRCAR453V",
+        "link": "01M69YNE8MX5KYTAVVRC52DS0Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TR0KYVRWTYHXJ3F8P1D0",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M69YND1A6H79WRP06269Z9X7",
+        "id": "01M69YNEWA16SRNDAB6PJ3ZC7Y",
+        "link": "01M69YNEWA16SRNDAB6PCSS31Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TSHQQ5XJ0YAZ3Z538821",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RSVTRCWEV9GPT2V16M9Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69YNFVED3RKCJGY3TTKZB2W",
+  "type": "ops",
+  "v": 1
+}
