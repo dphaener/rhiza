@@ -1,0 +1,40 @@
+{
+  "actor": "01M68HM0JG3TN3G1F3AGJRYDD8",
+  "after": [
+    "01M68GZPJ95RS4AATWSBED9TT5"
+  ],
+  "at": "2026-10-31T08:43:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e086794 ran go test ./internal/api -run 'TestArbiterPaneClosesAfterVerdict|TestRunRecommendClosesAdvisorPane' -v -count=1: all pass. TestArbiterPaneClosesAfterVerdict drives an autonomous run through run.Engine with the stepRunner's own ClosePane and a fake rex: a passing verdict gives exactly one `rex block close` of block:arb, and the verdict is already journalled when the close happens. A failed verdict and an arbiter lost while still running give no close, and no close happens while the arbiter is being polled. TestRunRecommendClosesAdvisorPane: run recommend journals the recommendation, then closes block:a2 once, and a dry run closes nothing. go test ./internal/run -run TestArbitrate passes. Mutation in a scratch copy: removing r.closeQuestionPane(session) in engine.go and closeSessionPane in run_recommend.go makes both tests fail. make fmt-check vet test pass. make check's self-check flagged only the unrendered actor file of this verifier session, which is not part of the leaf commit. This attempt fixes the attempt-1 findings (fake-rex arbiter test, still-running case, ordering, stale doc comment)."
+        },
+        "handle": "question-session-panes-close-verified",
+        "id": "01M68J1FDQYSDKDZ0X6SSS5Z9P",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M68J1FDQYSDKDZ0X6Q4GD0HF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68J1FDQYSDKDZ0X6Q4GD0HF",
+        "id": "01M68J1G0BDQ2CWN6GTQB8TF2N",
+        "link": "01M68J1G0BDQ2CWN6GTN9WZS5Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857MT46BQ7E27CZM8H7PFP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M66M3S5PZD9PXDP0X3N1ZTXH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M68J1GYBZTH0JENB8X9GCCJC",
+  "type": "ops",
+  "v": 1
+}
