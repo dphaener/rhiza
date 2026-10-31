@@ -16,6 +16,12 @@ A plan run ships its plan as ship-change ships code, minus landing: it renders a
 
 - derived-from [m6-overnight-interview](../source/m6-overnight-interview.md)
 
+### In
+
+- decided-by [plan-run-renders-branch](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-run-renders-branch.md)
+- decided-by [plan-run-opens-pr](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-run-opens-pr.md)
+- decided-by [plan-run-merges-closes-out](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-run-merges-closes-out.md)
+
 ## History
 
 - `01M684XWDT3EKJD4JPXT0JVK2M` Plan milestone 6: Rhiza runs unattended overnight, with the run machinery fixes that needed the orchestrator's hand in milestones 4 and 5
