@@ -40,6 +40,7 @@ Milestone 7: drive Rhiza from Rex, see what it does
 - derived-from [update-is-a-make-target](../decision/update-is-a-make-target.md)
 - derived-from [modelapp-timing-waits-for-quiet](../decision/modelapp-timing-waits-for-quiet.md)
 - derived-from [test-timeout-twenty-minutes](../decision/test-timeout-twenty-minutes.md)
+- derived-from [areas-are-umbrella](../decision/areas-are-umbrella.md)
 
 ## History
 
