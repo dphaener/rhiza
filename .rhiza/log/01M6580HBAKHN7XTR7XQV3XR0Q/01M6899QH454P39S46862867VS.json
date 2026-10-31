@@ -1,0 +1,71 @@
+{
+  "actor": "01M6898SC27BAFE4QTAV1BNFM2",
+  "after": [
+    "01M688W8MPEN13BP09A0CT6HX9"
+  ],
+  "at": "2026-10-31T06:10:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Restates fixer-retries-within-cycle with its change-set fixer part unchanged and replaces its leaf sentence ('A leaf's fixer or verifier is not retried'), which change set 01M6580HBAKHN7XTR7XQV3XR0Q reversed: internal/run now retries a failed leaf fix within the cycle with the change-set fixer's budget, per leaf-fix-retry-fresh-attempt.",
+          "statement": "A failed change-set review fixer is retried within its cycle up to MaxFixCycles more times (the same cap as the checks' further cycles). Only when those retries are exhausted does the cycle count as spent, and the checks of that cycle fail with the fix-failed detail. A failed leaf fixer or verifier is retried the same way, as a fresh fixer and verifier attempt (leaf-fix-retry-fresh-attempt); it no longer fails the phase on its first failure.",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "fixer-retries-within-cycle-v2",
+        "id": "01M6899M1XNCHCSWP9HW19JD6R",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6899M1XNCHCSWP9HTM0R7GT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6899M1XNCHCSWP9HTM0R7GT",
+        "id": "01M6899MQ41KC1JHNA4DYEVJ50",
+        "link": "01M6899MQ41KC1JHNA4A9MC05B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M65054XFRT6Z9CWSFS9MYH2R",
+        "type": "supersedes"
+      },
+      {
+        "decision": null,
+        "from": "01M6899M1XNCHCSWP9HTM0R7GT",
+        "id": "01M6899NBQAPTM5W4A3G0C0N5X",
+        "link": "01M6899NBQAPTM5W4A3EDF2TJJ",
+        "note": "The leaf part of this Decision is leaf-fix-retry-fresh-attempt",
+        "op": "link.create",
+        "to": "01M68558GKQRQC5GPA82KED00Q",
+        "type": "relates-to"
+      },
+      {
+        "decision": null,
+        "from": "01M6506EMCPMJKKCE8B3JX16RP",
+        "id": "01M6899P1TWY4FGMWS4EE9ZGSM",
+        "link": "01M6899P1TWY4FGMWS4AQ3G321",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6899M1XNCHCSWP9HTM0R7GT",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6506FZTPP6JZJBYMMPZMQFC",
+        "id": "01M6899PM5TJJ8SKDDQBN7MSCT",
+        "link": "01M6899PM5TJJ8SKDDQ98CS5JJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6899M1XNCHCSWP9HTM0R7GT",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6580HBAKHN7XTR7XQV3XR0Q",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6899QH454P39S46862867VS",
+  "type": "ops",
+  "v": 1
+}
