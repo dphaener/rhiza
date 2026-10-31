@@ -1,0 +1,40 @@
+{
+  "actor": "01M69D911FCAJSY9ZCJTBFQ996",
+  "after": [
+    "01M69CG2GYJJPKQ0JA61RM4JKZ"
+  ],
+  "at": "2026-10-31T16:51:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d56666c1: go test ./cmd/rhiza -run 'TestScripts/plan-workflow-open$' -count=1 -v passes. Read the script: with the fake rex/claude (plus gh) of the plan workflow scripts, the planner parks question park-disk; the run output is not 'succeeded', gh.log does not exist (no pr create), run status --json shows stopped at gate with 'open questions: park-disk' and 'rhiza run resume', inbox --json has kind open naming park-disk with next 'rhiza run resume <run>'; after a Decision answers park-disk, run resume exits 0, prints succeeded, gh.log has exactly one 'pr create', and the open inbox item is gone. go test ./internal/run -run TestCommandStopExitStopsRun passes (exit 75 stops the run at the gate without ending it; resume reruns it and the run succeeds). Diff: run gate returns ExitCode 75 with a 'stop:' line when questions are open; the step runner captures it as the stop detail; the engine stops instead of failing; inbox gains kind open. make fmt-check, vet and test all pass; make self-check passes with RHIZA_ROOT/CHANGE/RUN/ACTOR unset (with them set it only flags this verifier session's own unrendered actor file)."
+        },
+        "handle": "plan-run-stops-open-verified",
+        "id": "01M69DZJJ1QFZ2CMK5G9Q5R9KM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69DZJJ1QFZ2CMK5G8FQ5JE7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69DZJJ1QFZ2CMK5G8FQ5JE7",
+        "id": "01M69DZK4AG3RWWVCGA79WDMMX",
+        "link": "01M69DZK4AG3RWWVCGA4DAXHJZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857YNN8RZG1ZHVPBF9YP4J",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M625W0AJZ6AMCCWGFXQW19FN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69DZM2P1R4G4MTEQA343N6N",
+  "type": "ops",
+  "v": 1
+}
