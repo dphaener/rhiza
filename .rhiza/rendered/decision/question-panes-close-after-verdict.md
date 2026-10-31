@@ -16,6 +16,10 @@ An arbiter session's pane closes once its verdict is journalled, and an advisor'
 
 - derived-from [m6-overnight-interview](../source/m6-overnight-interview.md)
 
+### In
+
+- decided-by [question-session-panes-close](../capability/rhiza/runtime/rex-sessions/question-session-panes-close.md)
+
 ## History
 
 - `01M684XWDT3EKJD4JPXT0JVK2M` Plan milestone 6: Rhiza runs unattended overnight, with the run machinery fixes that needed the orchestrator's hand in milestones 4 and 5
