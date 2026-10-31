@@ -8,5 +8,13 @@ env REX_SERVER=
 stderr 'usage: rhiza tui app <name>'
 ! stdout .
 
+# `! exec` passes on any nonzero exit; this pins it to 2.
+exec sh -c 'rhiza tui launch; echo exit=$?'
+stdout '^exit=2$'
+stderr 'usage: rhiza tui app <name>'
+
 ! exec rhiza tui
 stderr 'usage: rhiza tui app <name>'
+
+exec sh -c 'rhiza tui; echo exit=$?'
+stdout '^exit=2$'
