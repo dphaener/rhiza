@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
@@ -49,5 +50,58 @@ func TestResumableOnlyAcceptedChangeSets(t *testing.T) {
 	got := Resumable(runs, "h", dead, func(string) bool { return false }, func(cs string) bool { return states[cs] }, now)
 	if len(got) != 1 || got[0] != "run-accepted" {
 		t.Fatalf("Resumable = %v, want [run-accepted]", got)
+	}
+}
+
+func TestSkips(t *testing.T) {
+	const host = "h"
+	up := func(pid int) bool { return pid == 1 }
+	at := time.Unix(1700000000, 0)
+	journal := func(cs string, es ...run.Entry) run.Journal {
+		return run.Journal{ID: "R" + cs, Entries: append([]run.Entry{{Type: run.TypeStarted, At: at, Started: &run.Started{Change: cs}}}, es...)}
+	}
+	proc := func(pid int) run.Entry {
+		return run.Entry{Type: run.TypeProcess, At: at, Process: &run.Process{Host: host, Pid: pid}}
+	}
+	fail := func(detail string) run.Entry {
+		return run.Entry{Type: run.TypeFinished, At: at, End: run.Failed, Detail: detail}
+	}
+	retried := run.Entry{Type: run.TypeFinished, At: at, End: run.Failed, Detail: "boom"}
+	runs := []run.Journal{
+		journal("running", proc(1)),
+		journal("interrupted", proc(2)),
+		journal("failed", proc(3), fail("boom")),
+		journal("abandoned", proc(3), fail(run.AbandonedPrefix+"me")),
+		// Failed, then a newer run that is not failed: retried.
+		journal("retried", proc(3), retried),
+		journal("retried", proc(1)),
+	}
+	cands := []string{"running", "interrupted", "failed", "abandoned", "retried", "held", "fresh", "late"}
+	cases := []struct {
+		name string
+		max  int
+		want []Skip
+	}{
+		{"one slot", 1, []Skip{
+			{Change: "running", Reason: SkipLive}, {Change: "interrupted", Reason: SkipLive},
+			{Change: "failed", Reason: SkipFailed}, {Change: "abandoned", Reason: SkipNoSlot},
+			{Change: "retried", Reason: SkipLive}, {Change: "held", Reason: SkipHeld},
+			{Change: "fresh", Reason: SkipNoSlot}, {Change: "late", Reason: SkipNoSlot},
+		}},
+		{"room", 6, []Skip{
+			{Change: "running", Reason: SkipLive}, {Change: "interrupted", Reason: SkipLive},
+			{Change: "failed", Reason: SkipFailed}, {Change: "retried", Reason: SkipLive},
+			{Change: "held", Reason: SkipHeld},
+		}},
+	}
+	for _, c := range cases {
+		got := Skips(cands, runs, []string{"held"}, host, up, c.max)
+		if !reflect.DeepEqual(got, c.want) {
+			t.Errorf("%s: Skips = %v, want %v", c.name, got, c.want)
+		}
+		picked := Pick(cands, runs, []string{"held"}, host, up, c.max)
+		if len(picked)+len(got) != len(cands) {
+			t.Errorf("%s: picked %v and skipped %v do not split %v", c.name, picked, got, cands)
+		}
 	}
 }

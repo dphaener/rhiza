@@ -121,7 +121,11 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		daemon.WriteState(common, state)
 	}()
 	poll := func() error {
-		started, resumed, err := daemonPoll1(ctx, rs, pending, unjournaled, r.MaxRuns, r.Autonomous, r.PermissionMode)
+		var skips []daemon.Skip
+		started, resumed, err := daemonPoll1(ctx, rs, pending, unjournaled, r.MaxRuns, r.Autonomous, r.PermissionMode, &skips)
+		if err == nil {
+			state.Skips = skips
+		}
 		resp.Started = append(resp.Started, started...)
 		resp.Resumed = append(resp.Resumed, resumed...)
 		if len(started) > 0 {
@@ -279,7 +283,7 @@ func daemonRunsOf(runs []run.Journal, cs string) int {
 
 // daemonPoll1 picks and starts runs once. pending holds the change sets
 // started; unjournaled those whose start never journaled (see daemonHeld).
-func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, autonomous bool, mode string) ([]string, []string, error) {
+func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, autonomous bool, mode string, skips *[]daemon.Skip) ([]string, []string, error) {
 	res, _, _, err := planRead(ctx, "daemon", "")
 	if err != nil {
 		return nil, nil, err
@@ -288,7 +292,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	if err != nil {
 		return nil, nil, err
 	}
-	cands := daemonCandidates(res, func(cs id.ID) bool {
+	cands, planSkips := daemonCandidates(res, func(cs id.ID) bool {
 		c, ok := ws.changeSet(cs)
 		return ok && len(changeLeaves(ws.model(cs), c.Ops)) > 0
 	})
@@ -317,8 +321,23 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		resumed = append(resumed, id)
 	}
 	held := daemonHeld(pending, unjournaled, runs, ctx.Now())
-	cands = slices.DeleteFunc(cands, func(cs string) bool { _, ok := unjournaled[cs]; return ok })
+	var unj []daemon.Skip
+	cands = slices.DeleteFunc(cands, func(cs string) bool {
+		_, ok := unjournaled[cs]
+		if ok {
+			unj = append(unj, daemon.Skip{Change: cs, Reason: daemon.SkipUnjournaled})
+		}
+		return ok
+	})
 	picked := daemon.Pick(cands, runs, held, host, nil, max)
+	*skips = append(append(planSkips, unj...), daemon.Skips(cands, runs, held, host, nil, max)...)
+	for i, sk := range *skips {
+		if cs, err := id.Parse(sk.Change); err == nil {
+			if c, ok := ws.changeSet(cs); ok {
+				(*skips)[i].Title = c.Open.DisplayTitle()
+			}
+		}
+	}
 	var started []string
 	for _, cs := range picked {
 		if err := daemonStart(ctx, cs, autonomous, mode); err != nil {
@@ -331,25 +350,45 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 }
 
 // daemonCandidates are the accepted, ready change sets of the milestone
-// groups that hasLeaves, in roadmap order, each once.
-func daemonCandidates(res planResult, hasLeaves func(id.ID) bool) []string {
+// groups that hasLeaves, in roadmap order, each once. skips are the other
+// accepted change sets, each once: those serving no milestone, those not
+// ready (with their readiness reasons) and those with no leaves.
+func daemonCandidates(res planResult, hasLeaves func(id.ID) bool) ([]string, []daemon.Skip) {
 	var out []string
+	var skips []daemon.Skip
 	seen := map[id.ID]bool{}
 	for _, g := range res.groups {
 		if g.backlog {
 			continue
 		}
 		for _, p := range g.members {
-			if seen[p.info.ID] || !p.ready || p.info.State != changeset.StateAccepted {
+			if seen[p.info.ID] || p.info.State != changeset.StateAccepted {
 				continue
 			}
 			seen[p.info.ID] = true
-			if hasLeaves(p.info.ID) {
+			switch {
+			case !p.ready:
+				skips = append(skips, daemon.Skip{Change: p.info.ID.String(), Reason: daemon.SkipNotReady, Detail: slices.Clone(p.reasons)})
+			case !hasLeaves(p.info.ID):
+				skips = append(skips, daemon.Skip{Change: p.info.ID.String(), Reason: daemon.SkipNoLeaves})
+			default:
 				out = append(out, p.info.ID.String())
 			}
 		}
 	}
-	return out
+	for _, g := range res.groups {
+		if !g.backlog {
+			continue
+		}
+		for _, p := range g.members {
+			if seen[p.info.ID] || p.info.State != changeset.StateAccepted {
+				continue
+			}
+			seen[p.info.ID] = true
+			skips = append(skips, daemon.Skip{Change: p.info.ID.String(), Reason: daemon.SkipNoMilestone})
+		}
+	}
+	return out, skips
 }
 
 // daemonStart starts the run of change set cs in a new Rex tab, with
@@ -415,6 +454,27 @@ type DaemonEvent struct {
 	At     string `json:"at" desc:"When, RFC 3339 UTC"`
 }
 
+// DaemonSkip is an accepted change set the daemon did not start at its last
+// poll.
+type DaemonSkip struct {
+	Change string   `json:"change" desc:"The change set's ID"`
+	Title  string   `json:"title" desc:"The change set's display title"`
+	Reason string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, held, unjournaled or no-slot"`
+	Detail []string `json:"detail" desc:"The readiness reasons, when the reason is not-ready; else empty"`
+}
+
+// skipText is the words for a skip reason in the text status.
+var skipText = map[string]string{
+	daemon.SkipNoMilestone: "serves no milestone",
+	daemon.SkipNoLeaves:    "has no leaves",
+	daemon.SkipNotReady:    "not ready",
+	daemon.SkipLive:        "has a live run",
+	daemon.SkipFailed:      "its latest run failed and waits in the inbox",
+	daemon.SkipHeld:        "started, its run not journaled yet",
+	daemon.SkipUnjournaled: "its start wrote no journal",
+	daemon.SkipNoSlot:      "waiting for a slot",
+}
+
 // DaemonStatusResponse is the daemon's state. While no daemon holds the
 // lock, Running is false and the rest, if any, is what the last daemon left.
 type DaemonStatusResponse struct {
@@ -428,6 +488,7 @@ type DaemonStatusResponse struct {
 	Runs        []DaemonRun   `json:"runs" desc:"The live runs (running or interrupted) as of its last poll"`
 	LastStarted *DaemonEvent  `json:"last_started,omitempty" desc:"The run it last started; absent if none"`
 	LastResumed *DaemonEvent  `json:"last_resumed,omitempty" desc:"The run it last resumed; absent if none"`
+	Skipped     []DaemonSkip  `json:"skipped" desc:"The accepted change sets it did not start at its last poll, each with its reason"`
 	Unjournaled []DaemonEvent `json:"unjournaled" desc:"The runs it started that never wrote a journal, by change set and when; it starts these no more until it restarts or a run of the change set journals"`
 }
 
@@ -457,6 +518,13 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 	if e := r.LastResumed; e != nil {
 		fmt.Fprintf(w, "Last resumed: run %s at %s\n", e.Run, e.At)
 	}
+	for _, k := range r.Skipped {
+		fmt.Fprintf(w, "Skipped: %s %s: %s", k.Change, k.Title, skipText[k.Reason])
+		if len(k.Detail) > 0 {
+			fmt.Fprintf(w, " (%s)", strings.Join(k.Detail, "; "))
+		}
+		fmt.Fprintln(w)
+	}
 	for _, e := range r.Unjournaled {
 		fmt.Fprintf(w, "Not journaled: the run of %s started at %s wrote no journal; not started again until the daemon restarts or a run of it journals\n", e.Change, e.At)
 	}
@@ -470,7 +538,7 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp := DaemonStatusResponse{Runs: []DaemonRun{}, Unjournaled: []DaemonEvent{}}
+	resp := DaemonStatusResponse{Runs: []DaemonRun{}, Skipped: []DaemonSkip{}, Unjournaled: []DaemonEvent{}}
 	_, resp.Running = daemon.Running(common)
 	st, ok := daemon.ReadState(common)
 	if !ok || (resp.Running && st.Process != daemon.ReadHolder(common)) {
@@ -493,6 +561,9 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 	}
 	resp.LastStarted = daemonEvent(st.LastStarted)
 	resp.LastResumed = daemonEvent(st.LastResumed)
+	for _, k := range st.Skips {
+		resp.Skipped = append(resp.Skipped, DaemonSkip{Change: k.Change, Title: k.Title, Reason: k.Reason, Detail: append([]string{}, k.Detail...)})
+	}
 	for _, e := range st.Unjournaled {
 		resp.Unjournaled = append(resp.Unjournaled, *daemonEvent(&e))
 	}

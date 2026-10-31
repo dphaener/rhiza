@@ -1,0 +1,40 @@
+{
+  "actor": "01M694E98Y3FDJ60M0PXDK6FKP",
+  "after": [
+    "01M694DKCM9J5XVQPKWXENS2AY"
+  ],
+  "at": "2026-10-31T14:10:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 33d05fa ran go test ./cmd/rhiza -run 'TestScripts/(daemon-status|describe-golden)$' -count=1 -v: both PASS. daemon-status.txtar accepts Orphan (no milestone), Leafless (no leaves) and Waiting (depends on unlanded Orphan), runs daemon --once, and matches 'Skipped: <id> Orphan: serves no milestone', '... Leafless: has no leaves', '... Waiting: not ready (...)' plus JSON reason not-ready, title Waiting and detail starting 'depends on'. describe-golden includes the new skipped field (DaemonSkip change/title/reason/detail) and passes, so it was regenerated. Diff read: poll fills Skip.Title, status maps st.Skips to Skipped with reason words and readiness detail. go test ./... all ok, gofmt clean; make check's self-check fails only on this verifier session's own actor render file (claude-code-b00af26d), not the leaf."
+        },
+        "handle": "daemon-status-skips-verified",
+        "id": "01M694QWFWCHV0FFTHTD2V67JR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M694QWFWCHV0FFTHTC6EV1PG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M694QWFWCHV0FFTHTC6EV1PG",
+        "id": "01M694QXVP742K9Q5PMKRBMJ31",
+        "link": "01M694QXVP742K9Q5PMKNBZWDQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TKZGT5S1SHQSCK4QPPRR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RS47EK7F4H2WY15TNAQ5",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M694R04XAGX73Y2S8P6KY2T4",
+  "type": "ops",
+  "v": 1
+}
