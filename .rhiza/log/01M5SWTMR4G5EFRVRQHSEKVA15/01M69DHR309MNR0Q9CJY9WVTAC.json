@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5SWTNS7ZZR90FZ80EZCTMN4"
+  ],
+  "at": "2026-10-31T16:44:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "internal/model/overlap_test.go covers a draft included only when named; a new overlaps.txtar has a proposed change set and a draft setting the same field of one node and checks text and --json output; describe-golden.txtar is regenerated",
+          "statement": "rhiza overlaps [--change <cs>] lists the overlaps between in-flight change sets, counting the named draft as in flight, each with both change sets, the target and its aspects"
+        },
+        "handle": "overlaps-command",
+        "id": "01M69DHN4ACW58QZ5BKWRVRFEW",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M69DHN4ACW58QZ5BKRZBC56B",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      },
+      {
+        "decision": null,
+        "from": "01M69DHN4ACW58QZ5BKRZBC56B",
+        "id": "01M69DHNR9XD7PKNDNFC13AVNR",
+        "link": "01M69DHNR9XD7PKNDNFC0BZ01G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DGYW3Z47Y9FXE5VWXCHW6",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A case in internal/guide/plan_test.go asserts the plan review guide names rhiza overlaps and the contradiction finding, and the guide size cap test still passes",
+          "statement": "The plan review guide has the reviewer run rhiza overlaps --change <cs> --json for each plan change set and record each overlap that contradicts the plan as a contradiction finding naming the other change set"
+        },
+        "handle": "plan-review-checks-overlaps",
+        "id": "01M69DHPCMJZPPZF9077MEEFWT",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M69DHPCMJZPPZF9076CWYS04",
+        "op": "node.create",
+        "parent": "01M5WSGD6GSZAS9X5C75R728DG"
+      },
+      {
+        "decision": null,
+        "from": "01M69DHPCMJZPPZF9076CWYS04",
+        "id": "01M69DHQ0R3WV9P4MZ6GYHNHMQ",
+        "link": "01M69DHQ0R3WV9P4MZ6EDFFQCX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DGYW3Z47Y9FXE5VWXCHW6",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWTMR4G5EFRVRQHSEKVA15",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69DHR309MNR0Q9CJY9WVTAC",
+  "type": "ops",
+  "v": 1
+}

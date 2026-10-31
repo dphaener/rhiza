@@ -1,0 +1,38 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M69DFFE95XDD58TYRH5112SZ"
+  ],
+  "at": "2026-10-31T16:43:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "if you run out of work keep picking high value tasks. don't stop and wait for my input.",
+              "where": "orchestrator session, 2026-10-31"
+            }
+          ],
+          "raw_sha256": "0dd68b596ed9e460373e5d675ea4a685febb1c28594453854ed844da38c2e003",
+          "summary": "With milestone 7 queued, the orchestrator planned milestone 8 under the owner's standing instruction to keep picking high-value work. It is the next gaps seen while running unattended: the daemon re-started a change set seconds after its ship run succeeded, because the land had not reached the main checkout yet; in-flight change sets that write the same node or retire a node another links to are never warned about, since rhiza check only folds accepted change sets onto each other; and plan reviews check the model but not the other change sets in flight. Research found model.Overlaps already computes write overlaps between proposed and accepted change sets but nothing calls it, so milestone 8 surfaces it in rhiza check, the inbox and a rhiza overlaps command the plan reviewer uses.",
+          "title": "Milestone 8: Rhiza notices conflicts before they bite"
+        },
+        "handle": "m8-orchestrator-picks",
+        "id": "01M69DGRB5SB5JGDMP8RA2CTA5",
+        "key": null,
+        "kind": "source",
+        "node": "01M69DGRB5SB5JGDMP8PS49ZM7",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M69DFFE95XDD58TYREQR0HXE",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69DGRYT42FM5MHAC2FRBGQF",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-31T16:42:57Z",
+  "body": {
+    "intent": "The daemon does not restart a change set whose latest run is a succeeded ship-change run that ended after the change set was last accepted or reopened",
+    "kind": "intention",
+    "sources": [],
+    "title": "Daemon skips just-shipped"
+  },
+  "change_set": "01M69DFHXFG7197RGNYYPWS4A5",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69DFHXFG7197RGNZ150K5AE",
+  "type": "open",
+  "v": 2
+}

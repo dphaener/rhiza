@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M69DFHXFG7197RGNZ150K5AE"
+  ],
+  "at": "2026-10-31T16:44:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Table cases in internal/daemon/pick_test.go: a succeeded ship-change run after the accept is skipped; a succeeded plan run is picked; a succeeded ship-change run followed by a reopen is picked",
+          "statement": "The daemon does not pick an accepted change set whose latest run is a succeeded ship-change run that ended after the change set was last accepted or reopened"
+        },
+        "handle": "daemon-skips-shipped",
+        "id": "01M69DHC8T4MV7X7VWZJ4J2YSG",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M69DHC8T4MV7X7VWZFYD5YRP",
+        "op": "node.create",
+        "parent": "01M61R7K5W91SXWWX8AGDZ01HC"
+      },
+      {
+        "decision": null,
+        "from": "01M69DHC8T4MV7X7VWZFYD5YRP",
+        "id": "01M69DHCWRW4CEA4YJSD6G6BAN",
+        "link": "01M69DHCWRW4CEA4YJS9KGNSVQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DGWF9S6W7NC58Z2AYE839",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A shipped case in the daemon's Skips table test and a step in daemon-status.txtar with a hand-written succeeded ship-change journal and fake rex show reason shipped; describe-golden.txtar is regenerated",
+          "statement": "rhiza daemon status reports such a change set with skip reason shipped"
+        },
+        "handle": "shipped-skip-reason",
+        "id": "01M69DHDGP588ZJPVVY03WGM80",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M69DHDGP588ZJPVVXZ80QD8Z",
+        "op": "node.create",
+        "parent": "01M686TJN8KRFR48423FXP6BMM"
+      },
+      {
+        "decision": null,
+        "from": "01M69DHDGP588ZJPVVXZ80QD8Z",
+        "id": "01M69DHE4H4H7KXXKCAYXZF5JH",
+        "link": "01M69DHE4H4H7KXXKCAWC9YQQS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DGWF9S6W7NC58Z2AYE839",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M69DFHXFG7197RGNYYPWS4A5",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69DHF474JVSC1QA9BWN9M8D",
+  "type": "ops",
+  "v": 1
+}

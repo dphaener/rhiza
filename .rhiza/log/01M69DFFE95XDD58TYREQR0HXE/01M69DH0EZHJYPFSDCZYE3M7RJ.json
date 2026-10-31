@@ -1,0 +1,132 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M69DGRYT42FM5MHAC2FRBGQF"
+  ],
+  "at": "2026-10-31T16:43:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "8",
+          "statement": "Rhiza notices conflicts before they bite: the daemon never restarts a change set it just shipped, rhiza check and the inbox warn when in-flight change sets overlap, and plan reviews check the plan against the other change sets in flight"
+        },
+        "handle": "milestone-8",
+        "id": "01M69DGT03S4PSMEZCCD476R08",
+        "key": "zz",
+        "kind": "intent",
+        "node": "01M69DGT03S4PSMEZCCAM4G1E5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "if you run out of work keep picking high value tasks. don't stop and wait for my input.",
+          "statement": "Milestone 8 is three change sets picked by the orchestrator: the daemon skips just-shipped change sets, overlap warnings in check and the inbox, and plan review checking overlaps"
+        },
+        "handle": "m8-picked-by-orchestrator",
+        "id": "01M69DGTM5CEPSGYP9J60WA1XB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M69DGTM5CEPSGYP9J3CGT6DA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69DGTM5CEPSGYP9J3CGT6DA",
+        "id": "01M69DGV87YEHSFER6ZNH3DFWC",
+        "link": "01M69DGV87YEHSFER6ZKR15WHB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DGRB5SB5JGDMP8PS49ZM7",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M69DGT03S4PSMEZCCAM4G1E5",
+        "id": "01M69DGVX3XNV5YAS39CH740AX",
+        "link": "01M69DGVX3XNV5YAS39A63VVNB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DGTM5CEPSGYP9J3CGT6DA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "The daemon skips an accepted change set whose latest run is a succeeded ship-change run that ended after the change set was last accepted or reopened; a succeeded plan or review run does not count, and a reopen makes it pickable again; the workflow name is passed into the daemon package, which does not import api",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "daemon-skips-shipped-rule",
+        "id": "01M69DGWF9S6W7NC58Z5ZQX0CP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M69DGWF9S6W7NC58Z2AYE839",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69DGWF9S6W7NC58Z2AYE839",
+        "id": "01M69DGX1DNXN6K763MHBM3Q8C",
+        "link": "01M69DGX1DNXN6K763MDMXM2W2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DGRB5SB5JGDMP8PS49ZM7",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Overlap detection reuses model.Overlaps, extended to report an in-flight retire of a node another in-flight change set links to; rhiza check warns on overlaps under the in-flight rule, the inbox lists them as overlap items with no run, and decisions linked supersedes or relates-to across change sets are not treated as conflicts",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "overlaps-reuse-model",
+        "id": "01M69DGXMVMHNP2127MH8P1Y22",
+        "key": null,
+        "kind": "decision",
+        "node": "01M69DGXMVMHNP2127MEB0XH72",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69DGXMVMHNP2127MEB0XH72",
+        "id": "01M69DGY8H210HG2G28Y3ARQXG",
+        "link": "01M69DGY8H210HG2G28T8JHEYM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DGRB5SB5JGDMP8PS49ZM7",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The plan reviewer runs rhiza overlaps for each plan change set, which counts the named draft as in flight, and records an overlap that contradicts the plan as a contradiction finding; no new finding kind is added",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "plan-review-overlaps-as-contradiction",
+        "id": "01M69DGYW3Z47Y9FXE5XXS3EHR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M69DGYW3Z47Y9FXE5VWXCHW6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69DGYW3Z47Y9FXE5VWXCHW6",
+        "id": "01M69DGZFP42K7R62Z66NR1H6P",
+        "link": "01M69DGZFP42K7R62Z64ZSPWJM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DGRB5SB5JGDMP8PS49ZM7",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M69DFFE95XDD58TYREQR0HXE",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69DH0EZHJYPFSDCZYE3M7RJ",
+  "type": "ops",
+  "v": 1
+}

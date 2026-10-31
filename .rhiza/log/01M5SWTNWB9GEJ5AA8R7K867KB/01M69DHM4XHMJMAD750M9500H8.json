@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5SWTPXWKZW9NHSDKH95ZJ8Q"
+  ],
+  "at": "2026-10-31T16:44:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A case in internal/check/check_test.go and a testscript where two proposed change sets set the same field of one node: rhiza check exits 0 and its warning names both change sets; existing scripts whose output changes are updated",
+          "statement": "rhiza check warns under the in-flight rule on each pair of proposed or accepted change sets that write overlapping aspects of the same target, naming both change sets, with next rhiza slice --change <A> --view what-if"
+        },
+        "handle": "check-warns-overlaps",
+        "id": "01M69DHG2Y91KWW8R5BM7JGGQX",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M69DHG2Y91KWW8R5BJEFQDH7",
+        "op": "node.create",
+        "parent": "01M5SWSJ0K067EMGMKBTA224AY"
+      },
+      {
+        "decision": null,
+        "from": "01M69DHG2Y91KWW8R5BJEFQDH7",
+        "id": "01M69DHGNCRRKAV67XCE4889B7",
+        "link": "01M69DHGNCRRKAV67XCCYB6TR0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DGXMVMHNP2127MEB0XH72",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "New cases in TestOverlaps for a retire against a link create in another change set, and the order-independence property test still passes",
+          "statement": "model.Overlaps also reports an in-flight retire of a node that another in-flight change set links to"
+        },
+        "handle": "overlap-retire-link",
+        "id": "01M69DHH927ZGJ0JH8YHSGYAS9",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M69DHH927ZGJ0JH8YHJSRQYR",
+        "op": "node.create",
+        "parent": "01M5SWRZ69FKFXS01D7Y60C0S4"
+      },
+      {
+        "decision": null,
+        "from": "01M69DHH927ZGJ0JH8YHJSRQYR",
+        "id": "01M69DHHWW435AP3HFBZ6RHR3Y",
+        "link": "01M69DHHWW435AP3HFBYNNX69Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DGXMVMHNP2127MEB0XH72",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A case in inbox-list.txtar shows an overlap item in text and --json, and inbox open on it exits 2; the daemon's inbox notice labels it overlap; the inbox app groups overlap items, with a test; describe-golden.txtar is regenerated",
+          "statement": "rhiza inbox and the inbox app list each overlap between in-flight change sets as an overlap item with no run, naming both change sets and the target"
+        },
+        "handle": "inbox-overlap-items",
+        "id": "01M69DHJGRNQNZK1JG005022XW",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M69DHJGRNQNZK1JFZY4QYWZ3",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "decision": null,
+        "from": "01M69DHJGRNQNZK1JFZY4QYWZ3",
+        "id": "01M69DHK4ZZY0CCH43MVF82S4S",
+        "link": "01M69DHK4ZZY0CCH43MS6JPA9Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DGXMVMHNP2127MEB0XH72",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWTNWB9GEJ5AA8R7K867KB",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69DHM4XHMJMAD750M9500H8",
+  "type": "ops",
+  "v": 1
+}
