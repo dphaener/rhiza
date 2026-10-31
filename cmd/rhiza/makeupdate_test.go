@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"os/exec"
 	"strings"
 	"testing"
@@ -38,5 +39,35 @@ func TestMakeUpdateDryRun(t *testing.T) {
 				t.Errorf("cp appears in make -n update:\n%s", got)
 			}
 		}
+	}
+}
+
+// TestUpdateTargetDocumented checks that `make help` lists the update target
+// and that CLAUDE.md's command list names `make update`.
+func TestUpdateTargetDocumented(t *testing.T) {
+	if _, err := exec.LookPath("make"); err != nil {
+		t.Skip("make is not on PATH")
+	}
+	cmd := exec.Command("make", "help")
+	cmd.Dir = "../.."
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("make help: %v\n%s", err, out)
+	}
+	found := false
+	for _, line := range strings.Split(string(out), "\n") {
+		if f := strings.Fields(line); len(f) > 0 && f[0] == "update" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("make help does not name update:\n%s", out)
+	}
+	doc, err := os.ReadFile("../../CLAUDE.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(doc), "make update") {
+		t.Error("CLAUDE.md does not mention make update")
 	}
 }
