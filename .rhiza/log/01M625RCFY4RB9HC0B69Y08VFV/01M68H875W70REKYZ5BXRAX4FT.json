@@ -1,0 +1,40 @@
+{
+  "actor": "01M68GMRDQK2DGXEX5H6785F4B",
+  "after": [
+    "01M6858TQ4TR70KXEJVNMB3BE6"
+  ],
+  "at": "2026-10-31T08:29:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At commit 0bbf289, ran go test ./cmd/rhiza -run 'TestScripts/(plan-workflow|describe-golden)' -count=1: ok. plan-workflow.txtar no longer expects changes only under .rhiza/; after the run it asserts git status --porcelain --untracked-files=all is empty, rhiza check prints ok in the worktree (no manual rhiza render first), and git log -1 is 'Render the plan' with Change: <ULID> and Actor: trailers. Read the diff: runRunGate calls gateRenderCommit on both the owner and autonomous paths (skipped in dry run), which runs render, stages .rhiza, and commits via shipCommitStaged, which commits nothing when nothing is staged. make check exits 0."
+        },
+        "handle": "plan-run-renders-branch-verified",
+        "id": "01M68H82YWD8NQBWAKJV08D8D1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M68H82YWD8NQBWAKJT1XPNCD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68H82YWD8NQBWAKJT1XPNCD",
+        "id": "01M68H84S0R3HQY6ZA963HM05K",
+        "link": "01M68H84S0R3HQY6ZA94V48W2S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857SSEWGCV5WVPMG1VCH6A",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M625RCFY4RB9HC0B69Y08VFV",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M68H875W70REKYZ5BXRAX4FT",
+  "type": "ops",
+  "v": 1
+}
