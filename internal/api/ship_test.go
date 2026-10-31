@@ -107,7 +107,9 @@ func (f *fakeGH) run(name string, args []string, dir string, _ []string) ([]byte
 	k := strings.Join(args, " ")
 	f.calls = append(f.calls, name+" "+k)
 	f.dirs = append(f.dirs, dir)
-	if name != "gh" {
+	if name == "git" {
+		k = "git " + k
+	} else if name != "gh" {
 		return nil, errors.New("not gh")
 	}
 	a, ok := f.answers[k]
@@ -702,6 +704,8 @@ func TestShipCheckWaitsForPushedHead(t *testing.T) {
 	if err := writeShipState(state, shipState{PR: 7, Head: "0ld0000000", Pushed: "abc1234def"}); err != nil {
 		t.Fatal(err)
 	}
+	g.answers["git fetch -q origin cs/ship-it"] = ""
+	g.answers["git merge-base --is-ancestor 0ld0000000 abc1234def"] = ""
 	g.answers[shipPRView] = strings.Replace(openPR(greenRollup), "abc1234def", "0ld0000000", 1)
 	if r := shipCheck(t, f, `{"settled":true}`); r.Passed || r.Settled || !strings.Contains(r.Detail, "not the pushed abc1234") {
 		t.Errorf("old head: %+v", r)
@@ -712,6 +716,41 @@ func TestShipCheckWaitsForPushedHead(t *testing.T) {
 	}
 	if st, _ := readShipState(state); st.Head != "abc1234def" {
 		t.Errorf("state = %+v", st)
+	}
+}
+
+// A head someone else pushed on top of the run's is followed; one that
+// drops the run's commits stays unsettled and is named.
+func TestShipCheckFollowsMovedHead(t *testing.T) {
+	f, g, state := shipFixture(t)
+	if err := writeShipState(state, shipState{PR: 7, Head: "0ld0000000", Pushed: "0ld0000000"}); err != nil {
+		t.Fatal(err)
+	}
+	g.answers["git fetch -q origin cs/ship-it"] = ""
+	g.answers[shipPRView] = openPR(greenRollup)
+
+	if r := shipCheck(t, f, `{"settled":true}`); r.Passed || r.Settled || !strings.Contains(r.Detail, "drops the pushed 0ld0000") || !strings.Contains(r.Detail, "abc1234") {
+		t.Errorf("dropped head: %+v", r)
+	}
+	g.answers["git merge-base --is-ancestor 0ld0000000 abc1234def"] = ""
+	if r := shipCheck(t, f, `{"settled":true}`); !r.Passed || !r.Settled || r.Written {
+		t.Errorf("settled on a followed head: %+v", r)
+	}
+	if r := shipCheck(t, f, `{}`); !r.Passed || !r.Written {
+		t.Errorf("followed head: %+v", r)
+	}
+	st, _ := readShipState(state)
+	if st.Head != "abc1234def" || st.Pushed != "abc1234def" {
+		t.Errorf("state = %+v", st)
+	}
+	g.answers[shipMergeArg] = ""
+	g.answers[shipMergedPR] = `{"state":"MERGED","mergeCommit":{"oid":"fff0000aaa"}}`
+	resp, err := callOp(t, f.ctx, "ship.merge", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m := resp.(ShipMergeResponse); m.Head != "abc1234def" {
+		t.Errorf("merge = %+v", m)
 	}
 }
 
