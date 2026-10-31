@@ -1,0 +1,63 @@
+{
+  "actor": "01M6A3NW4XGQ2ZVB651P31TX77",
+  "after": [
+    "01M6A3N9G4S39Z57A0V0EXZFYZ"
+  ],
+  "at": "2026-10-31T23:19:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At cacee34c, built go build -o $TMPDIR/rhiza-qa ./cmd/rhiza and used it in a scratch git repo with the run env unset. add evidence e1 --field bogus=x exits 2 with 'an evidence has no field \"bogus\" (known fields: command, head, observed, pr, result, statement, status, test, tests)', next 'rhiza describe add'; --json gives code usage; capability with zeta and alpha names alpha first; anchor says it has no fields; actor --field nickname refused; rhiza apply with weight=3 refused as writes[0] usage; api call add refused the same; set e2 --field bogus=x exits 2 naming known fields; nothing refused shows in change show. Known fields (intent umbrella, decision notes_quote, evidence observed/head) are accepted. After hand-editing the log so e2 carries an unknown field legacyx, show e2 lists it, set e2 --field test=t1 still succeeds, render and check pass. set --unset of an unknown name is allowed. make check passes on this checkout with RHIZA_* unset."
+        },
+        "handle": "add-refuses-unknown-field-qa-1",
+        "id": "01M6A44X44XGEMQKW0V42DZVEE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6A44X44XGEMQKW0V0Z4J4GZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A44X44XGEMQKW0V0Z4J4GZ",
+        "id": "01M6A44XVDRB3G21RJSJTD8JNQ",
+        "link": "01M6A44XVDRB3G21RJSJJV54HV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T0JB213041HC3VS3HRQCS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At cacee34c with a fresh build, every field the internal/op schema lists was exercised through the CLI where the leaf names it (intent statement+umbrella, decision statement+notes_quote, evidence statement/result/observed/head/test, capability statement, actor refusal listing agent, email, for, model, name, role, session) and accepted, while bogus on evidence is refused; the refusal messages print the sorted per-kind lists from internal/op/fields.go. make check (which runs TestEveryFieldInRepoLogIsKnown and rhiza check on this repo's own log) passes with RHIZA_* unset."
+        },
+        "handle": "field-schemas-qa-1",
+        "id": "01M6A44YGXSHJST0GDCQKVCMBH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6A44YGXSHJST0GDCMPKAC0K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A44YGXSHJST0GDCMPKAC0K",
+        "id": "01M6A44Z6ZHBHD71HNWD5D6F0T",
+        "link": "01M6A44Z6ZHBHD71HNW9BA4KDF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T0H3RSV8MEH7JNM194ZG4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTH32C73BQET8E0708F9F",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A4509CKG084CAHVME5XKZV",
+  "type": "ops",
+  "v": 1
+}
