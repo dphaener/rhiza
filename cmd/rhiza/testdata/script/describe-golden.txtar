@@ -9333,6 +9333,10 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "commit": {
+            "description": "The commit that renders and commits .rhiza on the run's branch; absent when there was nothing to commit, or in a dry run",
+            "type": "string"
+          },
           "dry_run": {
             "description": "True if nothing was written or journalled",
             "type": "boolean"

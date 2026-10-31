@@ -1164,7 +1164,25 @@ type RunGateResponse struct {
 	Run        string             `json:"run" desc:"The run's full ID"`
 	Autonomous bool               `json:"autonomous" desc:"True if the run is autonomous, so the gate accepted in the owner's place"`
 	ChangeSets []RunGateChangeSet `json:"change_sets" desc:"The plan's change sets: the run's change set and every change set serving an intent it adds, by ID"`
+	Commit     string             `json:"commit,omitempty" desc:"The commit that renders and commits .rhiza on the run's branch; absent when there was nothing to commit, or in a dry run"`
 	DryRun     bool               `json:"dry_run,omitempty" desc:"True if nothing was written or journalled"`
+}
+
+// gateCommitMessage is the message of the commit that closes a plan run's
+// branch.
+const gateCommitMessage = "Render the plan"
+
+// gateRenderCommit renders .rhiza/rendered and commits it with every
+// .rhiza/log entry the run wrote, with the Change and Actor trailers, so
+// the branch passes rhiza check. Nothing to commit commits nothing.
+func gateRenderCommit(ctx *Ctx, cs id.ID) (string, error) {
+	if _, err := runRender(ctx, RenderRequest{}); err != nil {
+		return "", err
+	}
+	if _, err := ctx.Git("add", "-A", "--", ".rhiza"); err != nil {
+		return "", Errorf("%v", err)
+	}
+	return shipCommitStaged(ctx, shipTarget{cs: cs}, ".rhiza", gateCommitMessage)
 }
 
 // runRunGate ends the plan of the run RHIZA_RUN names. It proposes each
@@ -1217,6 +1235,9 @@ func runRunGate(ctx *Ctx, _ any) (any, error) {
 				resp.ChangeSets[i].Next = ownerAcceptNext(g.ID)
 			}
 		}
+		if err := gateCommitResp(ctx, &resp, rr.change); err != nil {
+			return nil, err
+		}
 		return resp, nil
 	}
 	if err := gateReview(sets, m, rr); err != nil {
@@ -1234,7 +1255,21 @@ func runRunGate(ctx *Ctx, _ any) (any, error) {
 		}
 		resp.ChangeSets[i].State, resp.ChangeSets[i].Moves = changeset.StateAccepted, append(g.Moves, "accepted")
 	}
+	if err := gateCommitResp(ctx, &resp, rr.change); err != nil {
+		return nil, err
+	}
 	return resp, nil
+}
+
+// gateCommitResp renders and commits the branch after the gate's moves
+// (not in a dry run) and records the commit in resp.
+func gateCommitResp(ctx *Ctx, resp *RunGateResponse, cs id.ID) error {
+	if ctx.DryRun {
+		return nil
+	}
+	c, err := gateRenderCommit(ctx, cs)
+	resp.Commit = c
+	return err
 }
 
 // gateCtx is ctx acting on change set cs, as the gate's propose and

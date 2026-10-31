@@ -91,11 +91,12 @@ stdout '"type": "answers"'
 exec sh -c 'rhiza show export-csv --change $(cat $WORK/cs) --json'
 stdout '"type": "decided-by"'
 
-# Only .rhiza/ changed in the worktree.
-exec sh -c 'git status --porcelain --untracked-files=all > $WORK/status; cat $WORK/status'
-stdout '^.. \.rhiza/'
-exec sh -c 'grep -v "^.. \.rhiza/" $WORK/status | wc -l | tr -d " "'
+# The run rendered and committed its branch: nothing is left over, and
+# the last commit is the render commit.
+exec sh -c 'git status --porcelain --untracked-files=all | wc -l | tr -d " "'
 stdout '^0$'
+exec git log -1 --format=%B
+stdout '^Render the plan$'
 fold-ok
 
 -- source.json --

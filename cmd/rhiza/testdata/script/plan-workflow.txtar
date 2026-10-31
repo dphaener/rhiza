@@ -3,8 +3,8 @@
 # into the model, a fresh reviewer finds one leaf with no acceptance, the
 # critic confirms it, review-check fails, the reviser adds the acceptance,
 # a second review is clean, review-check passes and the gate proposes the
-# plan's draft change set. The run writes only under .rhiza/ in its
-# worktree: no plan file.
+# plan's draft change set. The run renders and commits its
+# branch: no plan file.
 #
 # Nothing here reaches Rex or Claude Code. The fake rex starts the tab's
 # command in the background in the window's directory and returns once the
@@ -81,16 +81,17 @@ exec sh -c 'rhiza show csv-streaming --json'
 stdout '"quote": "Stream it, reports get huge"'
 stdout '"type": "derived-from"'
 
-# The run wrote only under .rhiza/ in its worktree: no plan file.
-exec sh -c 'git status --porcelain --untracked-files=all > $WORK/status; cat $WORK/status'
-stdout '^.. \.rhiza/'
-exec sh -c 'grep -v "^.. \.rhiza/" $WORK/status | wc -l | tr -d " "'
+# The run rendered and committed its branch: nothing is left to commit,
+# the branch checks as it is, and the last commit is the render commit
+# with the Change and Actor trailers.
+exec sh -c 'git status --porcelain --untracked-files=all | wc -l | tr -d " "'
 stdout '^0$'
-
-# The model checks, once rendered as a commit of it would be.
-exec rhiza render
 exec rhiza check
 stdout '^ok'
+exec git log -1 --format=%B
+stdout '^Render the plan$'
+stdout '^Change: 01[0-9A-Z]{24}$'
+stdout '^Actor: '
 fold-ok
 
 -- source.json --
