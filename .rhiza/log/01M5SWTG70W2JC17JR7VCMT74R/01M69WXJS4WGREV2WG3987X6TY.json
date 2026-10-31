@@ -1,0 +1,40 @@
+{
+  "actor": "01M69WD8B5C2E7H5BTCZ2T5SC7",
+  "after": [
+    "01M69T0W4XWXBK4J1TGNK1SVB2"
+  ],
+  "at": "2026-10-31T21:12:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d70f621c, go test -count=1 ./internal/check -run TestRunUnlinkedConstraint passes: one constraint linked by constrains, one with only relates-to and one bare give exactly two link-rule warnings (bare, related) and OK true. go test ./cmd/rhiza -run TestScripts/check-constraint (plus the edited check-git and check-move) passes: rhiza check prints ok, one 'warn link ... constraint loose constrains nothing' line with a next hint, exits 0, --json has ok true and no fail; linking it silences the warning. make check exits 0 and make self-check prints only ok with no warnings. Diff read: internal/check/unlinked.go skips retired constraints and counts only live constrains links from the constraint."
+        },
+        "handle": "check-warns-unlinked-constraint-verified",
+        "id": "01M69WXH5X2TTG8DBJW9RQWE6C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69WXH5X2TTG8DBJW94CDFYM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69WXH5X2TTG8DBJW94CDFYM",
+        "id": "01M69WXHSNQMDBDNJPBAYDEVPM",
+        "link": "01M69WXHSNQMDBDNJPBA64K8M7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T0MZJZFJNQS12RYP79XYG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTG70W2JC17JR7VCMT74R",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69WXJS4WGREV2WG3987X6TY",
+  "type": "ops",
+  "v": 1
+}
