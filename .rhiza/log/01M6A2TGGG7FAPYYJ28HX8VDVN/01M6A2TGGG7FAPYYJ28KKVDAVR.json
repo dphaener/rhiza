@@ -1,0 +1,16 @@
+{
+  "actor": "01M6A2RC2SRJKE50DH2AXNXK00",
+  "after": [],
+  "at": "2026-10-31T22:55:56Z",
+  "body": {
+    "intent": "Rhiza's own Area change sets serve one new intent with the umbrella field set, so its roadmap groups them apart and ready and the daemon stop offering them, and the orchestration Area's duplicate daemon and inbox nodes are retired",
+    "kind": "intention",
+    "sources": [],
+    "title": "Mark the Areas umbrella"
+  },
+  "change_set": "01M6A2TGGG7FAPYYJ28HX8VDVN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A2TGGG7FAPYYJ28KKVDAVR",
+  "type": "open",
+  "v": 2
+}

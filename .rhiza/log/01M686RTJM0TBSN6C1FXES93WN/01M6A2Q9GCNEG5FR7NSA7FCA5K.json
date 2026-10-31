@@ -1,0 +1,40 @@
+{
+  "actor": "01M6A2BKASM0DGN2K91SPYZYBT",
+  "after": [
+    "01M6A20QSQMYWFZA7779F51A30"
+  ],
+  "at": "2026-10-31T22:54:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 90d02941 ran go test -count=1 -run TestUmbrella -v ./internal/tui/roadmapapp: TestUmbrellaGroupIsOneRowUntilEnter passes. It uses a fake runner returning an umbrella group and checks that the collapsed view shows one row 'rhiza / areas (2 change sets)' and no member rows, that enter on it expands to both change set rows (j then lands on the first one), that enter collapses it again, and that Result() still returns the runner's roadmap bytes unchanged. That last check is the --once path, which prints result() in cmd/rhiza/tui.go, and the commit leaves cmd/ untouched. Read the diff: umbrella rows are selectable, enter toggles before opening, and the cursor is kept across reloads. Also ran go test ./... (all ok), gofmt -l (clean) and go vet. make self-check passes with the session's RHIZA_* env unset. With the env set it flags only this verifier session's own actor render, which the commit does not cause."
+        },
+        "handle": "roadmap-app-umbrella-row-verified",
+        "id": "01M6A2Q7MZV52435XMHQ7XFFA2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6A2Q7MZV52435XMHNASG9X4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A2Q7MZV52435XMHNASG9X4",
+        "id": "01M6A2Q8BV6NNYME96P1YNZNCB",
+        "link": "01M6A2Q8BV6NNYME96NZV71991",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TZYQZXDVR5B3880M6C21",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RTJM0TBSN6C1FXES93WN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A2Q9GCNEG5FR7NSA7FCA5K",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,86 @@
+{
+  "actor": "01M6A2R4N56H3MF148FNETYZXP",
+  "after": [
+    "01M6A2Q9GCNEG5FR7NSA7FCA5K"
+  ],
+  "at": "2026-10-31T22:59:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built 3c614aeb to a scratch binary and, in a scratch git repo with RHIZA_* unset, added intents m1 (milestone=1), umb and umb2 (umbrella=yes), and proposed change sets U (serves umb), V (serves m1 and umb), U2 (serves umb2), W (serves m1) and X (serves nothing). rhiza roadmap --json gave groups milestone m1 [W], backlog [X], umbrella umb [U, V], umbrella umb2 [U2] in that order. V appears only under umb, not under m1. The human rhiza roadmap printed '## m1', '## Backlog', '## umb', '## umb2', and rhiza api call roadmap '{}' gave the same bytes as roadmap --json. go test -run TestScripts/(roadmap-umbrella|describe-golden) passes."
+        },
+        "handle": "roadmap-umbrella-group-qa-1",
+        "id": "01M6A3103NECWM70QK0Y19SNFF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6A3103NECWM70QK0X3D4EDV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A3103NECWM70QK0X3D4EDV",
+        "id": "01M6A310TKDM3YHS4THK6S0Q13",
+        "link": "01M6A310TKDM3YHS4THHCKNPYK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TX1JY61Z3V1YSRWCQRCR",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "In the same scratch repo I accepted U, W and U2. rhiza ready --json marked U and U2 not ready with reason 'umbrella: work is carved out of it', marked V with that reason plus 'not accepted: proposed', and W was ready with next = W. The human rhiza ready printed 'next: ... W milestone' and listed the umbrella reason under each umbrella change set. go test ./internal/api passes, including TestUmbrellaNotReady."
+        },
+        "handle": "umbrella-not-ready-qa-1",
+        "id": "01M6A311HERB0VNRKAPWM0MMJP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6A311HERB0VNRKAPVBV0WAG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A311HERB0VNRKAPVBV0WAG",
+        "id": "01M6A3128FYQG655GAEG6G5KRR",
+        "link": "01M6A3128FYQG655GAEF7X2FWD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TYF6800AVCAKJPHMAAM7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Ran the scratch binary's rhiza tui app roadmap in a real Rex terminal pane over the same repo and drove it with send-key. Collapsed, it showed '+ umb (2 change sets)' and '+ umb2 (1 change set)' with no member rows. j reached the umb row, and enter turned it into '- umb' with U and V listed below, with their not-ready reasons. j moved onto U, and enter opened U's detail. esc went back, and r kept the cursor on U with the group still expanded. k then enter collapsed it again, and r kept the cursor on the umb row. a, p, s and o on a header row do nothing. tui app roadmap --once printed the same bytes as rhiza roadmap --json, and cmd/rhiza/tui.go is unchanged. go test ./internal/tui/roadmapapp passes."
+        },
+        "handle": "roadmap-app-umbrella-row-qa-1",
+        "id": "01M6A312ZZ6GVYH4J1VCJ3914N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6A312ZZ6GVYH4J1V9DH41TY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A312ZZ6GVYH4J1V9DH41TY",
+        "id": "01M6A313QE1D75V0VF53B8NGXF",
+        "link": "01M6A313QE1D75V0VF50KFTYG0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TZYQZXDVR5B3880M6C21",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RTJM0TBSN6C1FXES93WN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A314WQCEF0RWFX11H43X3Y",
+  "type": "ops",
+  "v": 1
+}

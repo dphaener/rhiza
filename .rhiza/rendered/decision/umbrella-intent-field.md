@@ -16,6 +16,12 @@ A change set serving an intent with a non-empty umbrella field is an umbrella: i
 
 - derived-from [m7-keep-picking](../source/m7-keep-picking.md)
 
+### In
+
+- decided-by [roadmap-umbrella-group](../capability/rhiza/views/roadmap/roadmap-umbrella-group.md)
+- decided-by [umbrella-not-ready](../capability/rhiza/views/ready-next/umbrella-not-ready.md)
+- decided-by [roadmap-app-umbrella-row](../capability/rhiza/roadmap-app-list/roadmap-app-umbrella-row.md)
+
 ## History
 
 - `01M686RDMZR9FBZXN7DZWRWQW9` Plan milestone 7: drive Rhiza from Rex and see what it does, picked by the orchestrator under the owner's standing instruction

@@ -5943,7 +5943,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "groups": {
-            "description": "One group per milestone served, in intent-tree order, then the backlog",
+            "description": "One group per milestone served, in intent-tree order, then the backlog, then one per umbrella",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -6032,7 +6032,7 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "kind": {
-                  "description": "milestone, or backlog for the change sets that serve no milestone",
+                  "description": "milestone, backlog for the change sets that serve no milestone, or umbrella for those serving an umbrella intent",
                   "type": "string"
                 }
               },

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6A1G3THRBDGPSS094EESVCE",
+  "after": [
+    "01M686W5MS3JYQWHCR0BPSB6XK"
+  ],
+  "at": "2026-10-31T22:39:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5ab05b16 I ran go test ./cmd/rhiza -run 'TestScripts/(roadmap|describe-golden)' -count=1: ok. The new roadmap-umbrella.txtar sets up an umbrella intent (umb), a milestone intent (m1) and change sets serving the umbrella (U), both (V), the milestone (W) and nothing (X). It asserts that roadmap --json gives group kinds milestone, backlog, umbrella in that order, that U and V each appear once (so V is in no milestone group), that the human output is '## m1 ... ## Backlog ... ## umb', and that api call roadmap gives the same bytes. describe-golden.txtar is regenerated with the new kind/groups descriptions and passes. I read the plan.go diff: planCore sends any non-draft change set serving an intent with a non-empty umbrella field (planFieldSet, also set in planCreatedNode) to that intent's umbrella group only and skips milestone and backlog placement, and those groups are appended after the backlog in intent order. make fmt-check vet test pass. make self-check fails only on stale renders for actors recorded after this commit (including this verifier session), not on the leaf. Daemon/ready treatment of umbrella groups belongs to the separate leaf umbrella-not-ready."
+        },
+        "handle": "roadmap-umbrella-group-verified",
+        "id": "01M6A1WKEQ89WCCJNFR08M8118",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6A1WKEQ89WCCJNFQW8RD25Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A1WKEQ89WCCJNFQW8RD25Q",
+        "id": "01M6A1WM71C3TF8D994QESFH5H",
+        "link": "01M6A1WM71C3TF8D994KJY08Q0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TX1JY61Z3V1YSRWCQRCR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RTJM0TBSN6C1FXES93WN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A1WNEGJNR8RX251RRQSE9P",
+  "type": "ops",
+  "v": 1
+}
