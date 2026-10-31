@@ -1,0 +1,63 @@
+{
+  "actor": "01M686J335B4Y9ESWXGAC45Y3G",
+  "after": [
+    "01M686HJ7B5TNSEN0S4FK1V7NW"
+  ],
+  "at": "2026-10-31T05:27:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At dccf0f0 built go build -o $TMPDIR/rhiza-qa ./cmd/rhiza and ran it by hand: 'rhiza tui launch' printed 'usage: rhiza tui app <name> [args] [--once]' on stderr and exited 2; bare 'rhiza tui' did the same; nothing opened and stdout was empty. rhiza --help lists only 'tui app', no launch."
+        },
+        "handle": "tui-launch-usage-qa-1",
+        "id": "01M686VFKGRRFNGMMK424Q6A7N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M686VFKGRRFNGMMK40G6PWR4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M686VFKGRRFNGMMK40G6PWR4",
+        "id": "01M686VG7E39MF1APN6TRMBKNR",
+        "link": "01M686VG7E39MF1APN6R3G632E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68587MGRTB20J74QQF0AZS6",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At dccf0f0 ran the built binary with REX_CONFIG pointing at a scratch init.lua and a stub rex on PATH that only logs 'config reload': 'rhiza rex install' printed \"Installed Rhiza's app actions and key mode in .../rhiza.lua (2 written, 0 unchanged); Rex reloaded.\", a second run wrote 0 with 2 unchanged, --json reported the same, and the written rhiza.lua held no rhiza_launch; 'rhiza rex uninstall' printed \"Removed Rhiza's app actions and key mode from Rex; Rex reloaded.\" and init.lua came back byte for byte (cmp). rhiza --help and describe --json show the new rex.install/rex.uninstall summaries, and describe --json holds 0 'quick-launch'. make check passed with RHIZA_ROOT/RHIZA_CHANGE/RHIZA_RUN unset."
+        },
+        "handle": "rex-install-app-actions-wording-qa-1",
+        "id": "01M686VGX30T6A0KCWW35BRDX5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M686VGX30T6A0KCWW0R26N8E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M686VGX30T6A0KCWW0R26N8E",
+        "id": "01M686VHJCZKJYBXGGET69GDWE",
+        "link": "01M686VHJCZKJYBXGGES062DQF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68588HZM6S37NDTQKR5NK5B",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6489HCR688XKH99YV9E2VGY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M686VJGHZ68YWB6AQ6S67PB0",
+  "type": "ops",
+  "v": 1
+}
