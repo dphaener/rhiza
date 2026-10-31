@@ -1,0 +1,40 @@
+{
+  "actor": "01M6876TMX6PFPX8FWNWXWJT4M",
+  "after": [
+    "01M686JM45GEPEN345A6312P00"
+  ],
+  "at": "2026-10-31T05:41:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 27a2f6d: go test ./... passes, including TestScripts/check (check.txtar's new in-flight case: a sed-edited log entry turns a serves link into verifies; rhiza check exits 0, prints ok and warn in-flight change set <id>, op <id>, link <id>: link type \"verifies\" does not go from capability to intent, no fail; after rhiza withdraw no in-flight line). The script's link runs capability to intent rather than the acceptance's intent to capability, so I reproduced the acceptance by hand with a scratch build in a fresh repo: in an open change set I edited the link.create log entry to a verifies link from intent fast to capability store; rhiza check exited 0 and printed warn in-flight change set 01M687M4116DXQX5K6E4HFVD9E, op 01M687M44HFHT2YT6CS6QTCYPM, link 01M687M44HFHT2YT6CS3M2J693: link type \"verifies\" does not go from intent to capability; after rhiza withdraw, check exited 0 with no in-flight warning. Diff read: inFlightLinks in internal/check/check.go warns only for draft, proposed and accepted sets, on links that set created in its what-if, each once, sharing badLinks/linkFinding with the fail-severity link rule. make check's fmt-check, vet and test pass; its self-check fails only on render staleness from this verifier session's own actor record, not on the commit."
+        },
+        "handle": "check-warns-in-flight-link-kinds-verified",
+        "id": "01M687MSHTBCBD6QZ3TEYPK7E9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M687MSHTBCBD6QZ3TBPK0NJM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M687MSHTBCBD6QZ3TBPK0NJM",
+        "id": "01M687MT231W86GTVXYFN5714A",
+        "link": "01M687MT231W86GTVXYEP888RK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857QTJSC1V4R4FRDD8ZX3X",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTV1D5DNN6E2B7HB1XA9Q",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M687MTW04X3N2SKBB37W0CXZ",
+  "type": "ops",
+  "v": 1
+}
