@@ -296,7 +296,7 @@ const rexScriptTail = `
 return settings
 `
 
-// RexInstallRequest asks for the quick-launch script installed in Rex.
+// RexInstallRequest asks for Rhiza's app actions and key mode installed in Rex.
 type RexInstallRequest struct {
 	Force bool `json:"force,omitempty" desc:"Overwrite a rhiza.lua rhiza rex install did not write"`
 }
@@ -309,7 +309,7 @@ type RexInstallResponse struct {
 	Unchanged []string `json:"unchanged" desc:"The files that were already current"`
 }
 
-// RexUninstallRequest asks for the quick-launch script removed from Rex.
+// RexUninstallRequest asks for Rhiza's app actions and key mode removed from Rex.
 type RexUninstallRequest struct{}
 
 // RexUninstallResponse says what uninstall removed.
@@ -320,14 +320,14 @@ type RexUninstallResponse struct {
 func init() {
 	register(Operation{
 		Name:     "rex.install",
-		Summary:  "Install the quick-launch script into the Rex config and reload Rex",
+		Summary:  "Install Rhiza's app actions and key mode into the Rex config and reload Rex",
 		Request:  reflect.TypeFor[RexInstallRequest](),
 		Response: reflect.TypeFor[RexInstallResponse](),
 		Run:      runRexInstall,
 	})
 	register(Operation{
 		Name:     "rex.uninstall",
-		Summary:  "Remove the quick-launch script from the Rex config and reload Rex",
+		Summary:  "Remove Rhiza's app actions and key mode from the Rex config and reload Rex",
 		Request:  reflect.TypeFor[RexUninstallRequest](),
 		Response: reflect.TypeFor[RexUninstallResponse](),
 		Run:      runRexUninstall,
@@ -559,7 +559,7 @@ func writeKeepingMode(p string, data []byte) error {
 
 // Human reports the files, then each path written.
 func (r RexInstallResponse) Human(w io.Writer) {
-	fmt.Fprintf(w, "Installed the Rhiza quick-launch script in %s (%d written, %d unchanged); Rex reloaded.\n", r.Script, len(r.Written), len(r.Unchanged))
+	fmt.Fprintf(w, "Installed Rhiza's app actions and key mode in %s (%d written, %d unchanged); Rex reloaded.\n", r.Script, len(r.Written), len(r.Unchanged))
 	for _, p := range r.Written {
 		fmt.Fprintf(w, "- wrote %s\n", p)
 	}
@@ -571,7 +571,7 @@ func (r RexUninstallResponse) Human(w io.Writer) {
 		fmt.Fprintln(w, "Nothing to remove; Rex reloaded.")
 		return
 	}
-	fmt.Fprintf(w, "Removed the Rhiza quick-launch script from Rex; Rex reloaded.\n")
+	fmt.Fprintf(w, "Removed Rhiza's app actions and key mode from Rex; Rex reloaded.\n")
 	for _, p := range r.Removed {
 		fmt.Fprintf(w, "- changed %s\n", p)
 	}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M686CDWXGCJ8CNSS7TN78MT9",
+  "after": [
+    "01M6864DET3934DGDNT65FKFXD"
+  ],
+  "at": "2026-10-31T05:22:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 28ce530 ran go test ./cmd/rhiza -run TestScripts/tui-launch-usage -count=1 -v: PASS. The script runs ! exec rhiza tui launch, checks stderr has 'usage: rhiza tui app <name>' and empty stdout, then runs it under sh and checks exit=2 (also for bare rhiza tui). cmd/rhiza/tui.go tuiCommand only dispatches 'app <name>'; anything else prints the usage and returns 2, so no picker opens. make check: fmt, vet and tests pass; self-check fails only on stale renders of this run's own actor records (outside the leaf's diff)."
+        },
+        "handle": "tui-launch-usage-verified",
+        "id": "01M686HGS9GBRF6PCZ34WPXB6M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M686HGS9GBRF6PCZ34V043P9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M686HGS9GBRF6PCZ34V043P9",
+        "id": "01M686HHBCTSB68EPSY27VHX90",
+        "link": "01M686HHBCTSB68EPSY14WNAN8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68587MGRTB20J74QQF0AZS6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6489HCR688XKH99YV9E2VGY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M686HJ7B5TNSEN0S4FK1V7NW",
+  "type": "ops",
+  "v": 1
+}

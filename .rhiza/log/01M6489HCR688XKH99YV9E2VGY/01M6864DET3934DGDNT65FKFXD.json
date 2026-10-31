@@ -1,0 +1,40 @@
+{
+  "actor": "01M68638TEKHDHP4293NJ9XCCM",
+  "after": [
+    "01M6858YMZFP55C8REKDEHH4MH"
+  ],
+  "at": "2026-10-31T05:15:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 36f3811: go test ./cmd/rhiza -run 'TestScripts/(rex-install|describe-golden)$' -count=1 passed; rex-install.txtar asserts 'Installed Rhiza.s app actions and key mode' and 'Removed Rhiza.s app actions and key mode from Rex' with ! stdout 'quick-launch' after both install and uninstall. Re-running describe-golden with -update left the tree clean (golden current), and grep finds 0 'quick-launch' in describe-golden.txtar. The diff changes the rex.install/rex.uninstall summaries, request doc comments and Human output in internal/api/rex_install.go; no quick-launch text remains in Go or txtar files."
+        },
+        "handle": "rex-install-app-actions-wording-verified",
+        "id": "01M6864BHEPJS6V3GV0G633NC2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6864BHEPJS6V3GV0DWXFB6P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6864BHEPJS6V3GV0DWXFB6P",
+        "id": "01M6864C929SXXRP7WA51RM4ZP",
+        "link": "01M6864C929SXXRP7WA46X34HM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68588HZM6S37NDTQKR5NK5B",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6489HCR688XKH99YV9E2VGY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6864DET3934DGDNT65FKFXD",
+  "type": "ops",
+  "v": 1
+}

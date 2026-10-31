@@ -5757,7 +5757,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Install the quick-launch script into the Rex config and reload Rex",
+      "summary": "Install Rhiza's app actions and key mode into the Rex config and reload Rex",
       "write": false
     },
     {
@@ -5784,7 +5784,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Remove the quick-launch script from the Rex config and reload Rex",
+      "summary": "Remove Rhiza's app actions and key mode from the Rex config and reload Rex",
       "write": false
     },
     {

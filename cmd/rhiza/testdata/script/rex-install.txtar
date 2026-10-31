@@ -9,7 +9,8 @@ mkdir conf
 cp owner.lua conf/init.lua
 
 exec rhiza rex install
-stdout 'Installed the Rhiza quick-launch script'
+stdout 'Installed Rhiza.s app actions and key mode'
+! stdout 'quick-launch'
 grep '^-- Written by rhiza rex install\.$' conf/rhiza.lua
 grep 'launch_key = "ctrl\+a>a"' conf/rhiza.lua
 grep -count=1 'require\("rhiza"\)' conf/init.lua
@@ -58,6 +59,8 @@ grep '^-- settings end$' conf/rhiza.lua
 
 # Uninstall gives the owner's file back byte for byte.
 exec rhiza rex uninstall
+stdout 'Removed Rhiza.s app actions and key mode from Rex'
+! stdout 'quick-launch'
 cmp conf/init.lua owner.lua
 ! exists conf/rhiza.lua
 

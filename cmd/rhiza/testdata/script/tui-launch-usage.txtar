@@ -1,0 +1,20 @@
+# `rhiza tui launch` is no command: it exits 2 with the app usage and opens
+# no picker.
+
+env REX_SESSION=
+env REX_SERVER=
+
+! exec rhiza tui launch
+stderr 'usage: rhiza tui app <name>'
+! stdout .
+
+# `! exec` passes on any nonzero exit; this pins it to 2.
+exec sh -c 'rhiza tui launch; echo exit=$?'
+stdout '^exit=2$'
+stderr 'usage: rhiza tui app <name>'
+
+! exec rhiza tui
+stderr 'usage: rhiza tui app <name>'
+
+exec sh -c 'rhiza tui; echo exit=$?'
+stdout '^exit=2$'
