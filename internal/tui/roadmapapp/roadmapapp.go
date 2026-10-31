@@ -41,7 +41,17 @@ type row struct {
 	state   string
 	title   string
 	reasons []string
+	// umbrella is set on an umbrella group's row, which stands for count
+	// change sets.
+	umbrella id.ID
+	count    int
 }
+
+// selectable is whether the cursor can rest on the row.
+func (r row) selectable() bool { return !r.id.IsZero() || !r.umbrella.IsZero() }
+
+// same is whether two rows are the same line of the list across a reload.
+func (r row) same(o row) bool { return r.id == o.id && r.umbrella == o.umbrella }
 
 // Model is the app's bubbletea program. j/k or the arrows move the cursor
 // over the change set rows, r reloads, q or esc quits.
@@ -52,8 +62,10 @@ type Model struct {
 	err    error
 	cursor int
 	top    int
-	height int
-	detail *detail
+	// expanded is the umbrella groups the person has expanded.
+	expanded map[id.ID]bool
+	height   int
+	detail   *detail
 
 	preview Runner
 	answer  *answer
@@ -65,7 +77,7 @@ type Model struct {
 
 // NewModel returns the model over run, loaded.
 func NewModel(run Runner) *Model {
-	m := &Model{run: run, height: 24}
+	m := &Model{run: run, height: 24, expanded: map[id.ID]bool{}}
 	m.load()
 	return m
 }
@@ -73,9 +85,10 @@ func NewModel(run Runner) *Model {
 // load reads the roadmap and the ready reasons and rebuilds the rows,
 // keeping the cursor on the same change set where it is still there.
 func (m *Model) load() {
-	var keep id.ID
-	if m.cursor < len(m.rows) {
-		keep = m.rows[m.cursor].id
+	var keep row
+	haveKeep := m.cursor < len(m.rows) && m.rows[m.cursor].selectable()
+	if haveKeep {
+		keep = m.rows[m.cursor]
 	}
 	out, err := m.run("roadmap", "", nil)
 	m.out, m.err = out, err
@@ -107,14 +120,21 @@ func (m *Model) load() {
 		if g.Kind != "backlog" {
 			name = strings.Join(append(slices.Clone(g.Intent.Path), cmp.Or(g.Intent.Handle, short(g.Intent.ID))), " / ")
 		}
-		m.rows = append(m.rows, row{heading: name})
+		if g.Kind == "umbrella" {
+			m.rows = append(m.rows, row{heading: name, umbrella: g.Intent.ID, count: len(g.ChangeSets)})
+			if !m.expanded[g.Intent.ID] {
+				continue
+			}
+		} else {
+			m.rows = append(m.rows, row{heading: name})
+		}
 		for _, c := range g.ChangeSets {
 			m.rows = append(m.rows, row{id: c.ID, state: string(c.State), title: c.Intent, reasons: reasons[c.ID]})
 		}
 	}
 	m.cursor = m.first()
 	for i, r := range m.rows {
-		if !keep.IsZero() && r.id == keep {
+		if haveKeep && r.selectable() && r.same(keep) {
 			m.cursor = i
 		}
 	}
@@ -130,7 +150,7 @@ func short(i id.ID) string {
 // first is the index of the first change set row, or 0 if there is none.
 func (m *Model) first() int {
 	for i, r := range m.rows {
-		if !r.id.IsZero() {
+		if r.selectable() {
 			return i
 		}
 	}
@@ -216,7 +236,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "esc", "ctrl+c":
 			return m, tea.Quit
 		case "enter":
-			m.open()
+			if !m.toggle() {
+				m.open()
+			}
 		case "down", "j":
 			m.move(1)
 		case "up", "k":
@@ -232,7 +254,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // headings; at either end it stays.
 func (m *Model) move(d int) {
 	for i := m.cursor + d; i >= 0 && i < len(m.rows); i += d {
-		if !m.rows[i].id.IsZero() {
+		if m.rows[i].selectable() {
 			m.cursor = i
 			break
 		}
@@ -240,12 +262,28 @@ func (m *Model) move(d int) {
 	m.follow()
 }
 
+// toggle expands or collapses the umbrella group under the cursor and
+// reports whether the cursor was on one. The cursor stays on its row.
+func (m *Model) toggle() bool {
+	if m.cursor >= len(m.rows) || m.rows[m.cursor].umbrella.IsZero() {
+		return false
+	}
+	u := m.rows[m.cursor].umbrella
+	if m.expanded[u] {
+		delete(m.expanded, u)
+	} else {
+		m.expanded[u] = true
+	}
+	m.load()
+	return true
+}
+
 // follow scrolls so the cursor row is on screen, with its heading when it
 // is the first row of a group.
 func (m *Model) follow() {
 	if m.cursor < m.top {
 		m.top = m.cursor
-		if m.top > 0 && m.rows[m.top-1].id.IsZero() {
+		if m.top > 0 && !m.rows[m.top-1].selectable() {
 			m.top--
 		}
 	}
@@ -270,13 +308,24 @@ func (m *Model) View() tea.View {
 	end := min(m.top+m.height, len(m.rows))
 	for i := m.top; i < end; i++ {
 		r := m.rows[i]
-		if r.id.IsZero() {
-			fmt.Fprintf(&b, "\n%s\n", r.heading)
-			continue
-		}
 		mark := "  "
 		if i == m.cursor {
 			mark = "> "
+		}
+		if !r.umbrella.IsZero() {
+			sign, noun := "+", "change sets"
+			if m.expanded[r.umbrella] {
+				sign = "-"
+			}
+			if r.count == 1 {
+				noun = "change set"
+			}
+			fmt.Fprintf(&b, "\n%s%s %s (%d %s)\n", mark, sign, r.heading, r.count, noun)
+			continue
+		}
+		if r.id.IsZero() {
+			fmt.Fprintf(&b, "\n%s\n", r.heading)
+			continue
 		}
 		fmt.Fprintf(&b, "%s%s [%s] %s", mark, short(r.id), r.state, r.title)
 		if len(r.reasons) > 0 {
@@ -284,7 +333,7 @@ func (m *Model) View() tea.View {
 		}
 		b.WriteString("\n")
 	}
-	b.WriteString(m.footer("\nroadmap · j/k move · enter open · a accept · p plan · s ship · o open run · r reload · q quit"))
+	b.WriteString(m.footer("\nroadmap · j/k move · enter open or expand · a accept · p plan · s ship · o open run · r reload · q quit"))
 	return tea.NewView(b.String())
 }
 

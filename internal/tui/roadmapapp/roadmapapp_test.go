@@ -309,3 +309,53 @@ func TestAnswerCallsQuestionAnswer(t *testing.T) {
 		t.Fatalf("question.answer calls: %+v", got)
 	}
 }
+
+const umbRoadmap = `{"groups":[
+ {"kind":"backlog","change_sets":[
+   {"id":"` + c + `","state":"accepted","kind":"intention","intent":"Loose change","ready":false,"depends_on":[],"serves":[]}]},
+ {"kind":"umbrella","intent":{"id":"01M67300000000000000000001","handle":"areas","path":["rhiza"]},
+  "change_sets":[
+   {"id":"` + a + `","state":"accepted","kind":"intention","intent":"Area one","ready":false,"depends_on":[],"serves":[]},
+   {"id":"` + b + `","state":"proposed","kind":"intention","intent":"Area two","ready":false,"depends_on":[],"serves":[]}]}],
+ "view":"to-be"}`
+
+func umbFake(op, _ string, args []string) ([]byte, error) {
+	if op == "ready" {
+		return []byte(`{"change_sets":[],"view":"to-be"}`), nil
+	}
+	return []byte(umbRoadmap), nil
+}
+
+func TestUmbrellaGroupIsOneRowUntilEnter(t *testing.T) {
+	m := NewModel(umbFake)
+	v := m.View().Content
+	if !strings.Contains(v, "rhiza / areas (2 change sets)") {
+		t.Errorf("collapsed view lacks the umbrella row:\n%s", v)
+	}
+	if strings.Contains(v, "Area one") || strings.Contains(v, "Area two") {
+		t.Errorf("collapsed view shows members:\n%s", v)
+	}
+	key(m, "j") // onto the umbrella row
+	if !m.Cursor().IsZero() {
+		t.Fatalf("cursor on a change set, want the umbrella row")
+	}
+	m.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	v = m.View().Content
+	for _, want := range []string{"rhiza / areas (2 change sets)", "Area one", "Area two"} {
+		if !strings.Contains(v, want) {
+			t.Errorf("expanded view lacks %q:\n%s", want, v)
+		}
+	}
+	key(m, "j")
+	if got := m.Cursor().String(); got != a {
+		t.Fatalf("j moved to %s, want %s", got, a)
+	}
+	key(m, "k")
+	m.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	if v = m.View().Content; strings.Contains(v, "Area one") {
+		t.Errorf("collapsed again but members show:\n%s", v)
+	}
+	if out, _ := m.Result(); string(out) != umbRoadmap {
+		t.Errorf("Result changed")
+	}
+}
