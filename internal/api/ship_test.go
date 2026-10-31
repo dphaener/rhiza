@@ -1033,10 +1033,11 @@ func shipRebaseFixture(t *testing.T) (*sessionFixture, string) {
 		"rev-parse --verify --quiet refs/remotes/origin/main":       rebaseOnto + "\n",
 		"rev-parse --verify --quiet refs/remotes/origin/cs/ship-it": rebaseOrigin + "\n",
 		"merge-base --is-ancestor " + rebaseOrigin + " HEAD":        "",
-		"rev-parse HEAD":                               "beef000111\n",
-		"rebase --abort":                               "",
-		"add -A -- " + renderedSpec:                    "",
-		"diff --cached --name-only -- " + renderedSpec: "",
+		"rev-parse HEAD": "beef000111\n",
+		"rebase --abort": "",
+		"rev-list --merges --count " + rebaseOnto + "..HEAD":                  "0\n",
+		"add -A -- " + renderedSpec:                                           "",
+		"diff --cached --name-only -- " + renderedSpec:                        "",
 		"rm -q -f --ignore-unmatch -- :(top,literal).rhiza/rendered/index.md": "",
 	} {
 		f.git.out[k] = v

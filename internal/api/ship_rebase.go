@@ -105,7 +105,8 @@ func topPath(p string) string {
 }
 
 // runShipRebase rebases the change set's branch, checked out in ctx.Root,
-// onto origin's main when main has moved past it, then pushes it with a
+// onto origin's main (or merges main into it, when the branch already
+// holds a merge) when main has moved past it, then pushes it with a
 // lease and records the pushed head. It never pushes to main and never
 // settles a conflict outside the rendered files.
 func runShipRebase(ctx *Ctx, _ any) (any, error) {
@@ -158,7 +159,20 @@ func runShipRebase(ctx *Ctx, _ any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	conflicts, err := shipRebaseOnto(ctx, t, resp.Onto, rendered, &resp)
+	// A branch that already holds a merge (an owner or the orchestrator
+	// resolved a conflict by merging main) is merged with main again, not
+	// rebased: a rebase would replay the branch's commits flat and bring
+	// back the conflicts that merge resolved.
+	merges, err := ctx.Git("rev-list", "--merges", "--count", resp.Onto+"..HEAD")
+	if err != nil {
+		return nil, Errorf("%v", err)
+	}
+	var conflicts []string
+	if strings.TrimSpace(merges) != "0" {
+		conflicts, err = shipMergeOnto(ctx, t, resp.Onto, rendered, &resp)
+	} else {
+		conflicts, err = shipRebaseOnto(ctx, t, resp.Onto, rendered, &resp)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -274,6 +288,52 @@ func shipRebaseOnto(ctx *Ctx, t shipTarget, onto, rendered string, resp *ShipReb
 	}
 	shipRebaseAbort(ctx)
 	return nil, Errorf("ship rebase: the rebase stopped more than %d times", shipRebaseLimit)
+}
+
+// shipMergeOnto merges onto into HEAD, keeping the branch's history. A
+// conflict only under rendered is settled by removing those files and
+// rendering again; any other conflict aborts the merge and returns every
+// conflicted path. A merge that fails without a conflict is aborted and
+// is an error.
+func shipMergeOnto(ctx *Ctx, t shipTarget, onto, rendered string, resp *ShipRebaseResponse) ([]string, error) {
+	abort := func() { ctx.Git("merge", "--abort") }
+	_, err := ctx.Git("merge", "--no-edit", "-m", "Merge origin/"+shipMain+" into "+t.branch, onto)
+	if err == nil {
+		return nil, nil
+	}
+	out, derr := ctx.Git("diff", "--name-only", "--diff-filter=U")
+	conflicts := gitLines(out)
+	if derr != nil || len(conflicts) == 0 {
+		abort()
+		return nil, Errorf("ship rebase: %v", err)
+	}
+	inRendered, other := splitConflicts(rendered, conflicts)
+	if len(other) > 0 {
+		abort()
+		return conflicts, nil
+	}
+	for _, p := range inRendered {
+		if _, err := ctx.Git("rm", "-q", "-f", "--ignore-unmatch", "--", topPath(p)); err != nil {
+			abort()
+			return nil, Errorf("ship rebase: %v", err)
+		}
+		if !slices.Contains(resp.Settled, p) {
+			resp.Settled = append(resp.Settled, p)
+		}
+	}
+	if _, err := shipRender(ctx, t); err != nil {
+		abort()
+		return nil, err
+	}
+	if _, err := ctx.Git("add", "-A", "--", topPath(rendered)); err != nil {
+		abort()
+		return nil, Errorf("ship rebase: %v", err)
+	}
+	if _, err := ctx.Git("commit", "-q", "--no-edit"); err != nil {
+		abort()
+		return nil, Errorf("ship rebase: %v", err)
+	}
+	return nil, nil
 }
 
 // shipRebaseAbort aborts a rebase in progress, leaving the branch as it
