@@ -15,6 +15,7 @@ import (
 	"github.com/dphaener/rhiza/internal/api"
 	"github.com/dphaener/rhiza/internal/canon"
 	"github.com/dphaener/rhiza/internal/tui/inboxapp"
+	"github.com/dphaener/rhiza/internal/tui/liveapp"
 	"github.com/dphaener/rhiza/internal/tui/modelapp"
 	"github.com/dphaener/rhiza/internal/tui/readapps"
 	"github.com/dphaener/rhiza/internal/tui/roadmapapp"
@@ -46,8 +47,9 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 	read, isRead := readapps.Lookup(name)
 	isInbox := name == inboxapp.Name
 	isRoadmap := name == roadmapapp.Name
+	isLive := name == liveapp.Name
 	write, isWrite := writeapps.Lookup(name)
-	if !isRead && !isWrite && !isInbox && !isRoadmap {
+	if !isRead && !isWrite && !isInbox && !isRoadmap && !isLive {
 		return writeError(stdout, stderr, api.NotFoundf("unknown app %q", name), false)
 	}
 	once, confirm := false, false
@@ -98,6 +100,11 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 			im.Exec, im.Self, im.Root, im.RexSession = ctx.Exec, ctx.Self, ctx.Root, ctx.RexSession
 		}
 		m, result = im, im.Result
+	case isLive:
+		lm := liveapp.NewModel(func(op string, args []string) ([]byte, error) {
+			return call(op, false, false, args)
+		}, nil)
+		m, result = lm, lm.Result
 	case isRoadmap:
 		am := roadmapModel(g, callWith)
 		if ctx, err := newCtx(g, os.Stdin, getenv); err == nil {
