@@ -1,0 +1,86 @@
+{
+  "actor": "01M68E3HWSAADWHGEGKWM4Q241",
+  "after": [
+    "01M68E2X0B6WXX5KVAQ2XRCHK2"
+  ],
+  "at": "2026-10-31T07:37:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 14d9f17, as QA with a scratch build (go build -o $TMPDIR) in a scratch repo with a local bare origin and a fake gh that reports origin's branch head: after the run's own ship rebase pushed eb82547 (recorded as pushed), a second clone pushed 0b34323 on top; ship check --settled exited 0 at once, a green ship check wrote head=pushed=0b34323, and ship merge --json returned head 0b34323. A force-pushed rewrite 592a57a that dropped those commits gave 'not settled: the pull request's head 592a57a drops the pushed 0b34323', and --settled exited 1. go test ./internal/api -run TestShip and the ship-check-follows-moved-head testscript pass."
+        },
+        "handle": "follow-moved-pr-head-qa-1",
+        "id": "01M68E9AB9S8WZ0FK45J6NYS9Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M68E9AB9S8WZ0FK45HCWTFZN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68E9AB9S8WZ0FK45HCWTFZN",
+        "id": "01M68E9AZES81RF88MZBKX41QQ",
+        "link": "01M68E9AZES81RF88MZAM9EZZR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68580Q11GDHVQY0FF7A653E",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 14d9f17, as QA with a scratch build in a scratch repo with a bare origin: a second clone pushed a commit to cs/ship-it. With feature.txt modified, ship rebase exited 3 with 'origin's cs/ship-it has moved to 30b4e3a, but <repo> has uncommitted changes that stop it following: M feature.txt' and HEAD stayed put. Once the worktree was clean, ship rebase exited 0 and HEAD equalled the moved head. With a local commit origin lacked ('Raise a question on the rebase conflicts') and origin ahead, ship rebase exited 3 naming '429a4e6 Raise a question on the rebase conflicts', and HEAD stayed put. The ship-follows-pr-head testscript passes."
+        },
+        "handle": "ship-worktree-follows-pr-qa-1",
+        "id": "01M68E9BKNEKA0HXCJY0EYJ6NB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M68E9BKNEKA0HXCJY0B35H0P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68E9BKNEKA0HXCJY0B35H0P",
+        "id": "01M68E9C7KW7HX8SR5T2965SZB",
+        "link": "01M68E9C7KW7HX8SR5T1EB61FQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68582MQEBTQNMGMAGHV53ZG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 14d9f17, as QA with a scratch build in a scratch repo: when main conflicted on shared.txt, ship rebase raised rebase-conflict-ship-it and exited 1. A second clone then merged main into cs/ship-it with a resolution (14a1dab) and pushed it, and main moved again with unrelated commits. ship rebase exited 0: it merged origin/main into the branch ('Merge origin/main into cs/ship-it' plus a render commit) instead of rebasing, raised no new question, and pushed eb82547. 14a1dab is an ancestor of the pushed head, and origin equals local. The run-ship-change-rebase testscript (cases 3 and 4) passes."
+        },
+        "handle": "rebase-keeps-branch-merges-qa-1",
+        "id": "01M68E9CVVK36EPB70J5XW5QQE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M68E9CVVK36EPB70J39GHHTE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M68E9CVVK36EPB70J39GHHTE",
+        "id": "01M68E9DG3RCRDEMPM5X28T42Q",
+        "link": "01M68E9DG3RCRDEMPM5WRM7F6S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68581Q6V7XS1VHP9Q48KQJS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M684XYB96R52XXCKMV80X5T1",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M68E9EGAVNQJZH1235K58C63",
+  "type": "ops",
+  "v": 1
+}
