@@ -1,0 +1,40 @@
+{
+  "actor": "01M698C3SFZ73SS3X2YACZ5NRH",
+  "after": [
+    "01M698KP3XWVQ5QFGBRAP1CMPA"
+  ],
+  "at": "2026-10-31T15:19:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 628be46, go test ./internal/tui/roadmapapp -run Tick -v -count=1 passes TestTickReloadsOnlyTheRunSectionOfAnOpenDetail (opens the detail with a fake run.status in state running, switches it to succeeded, sends TickMsg, sees 'state succeeded' in the view, change.show count unchanged, tick re-arms) and TestTickInListCallsNoRunStatus (TickMsg in the list view makes zero run.status calls). Diff read: Init arms a 3s tea.Tick (Interval = 3*time.Second); TickMsg calls reloadRun, which returns early when m.detail is nil or errored and otherwise replaces only detail.run via latestRun (run.status). gofmt -l is clean, go vet and go test ./... pass; make check's self-check fails only on stale .rhiza/rendered actor/index files for this run's actors, unrelated to the leaf."
+        },
+        "handle": "roadmap-detail-run-tick-verified",
+        "id": "01M698Q2HTW1347X7VA0Z0Y0H7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M698Q2HTW1347X7V9YP5VVC6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M698Q2HTW1347X7V9YP5VVC6",
+        "id": "01M698Q330M1DGN3RCMWP2WAV2",
+        "link": "01M698Q330M1DGN3RCMVQWGA2G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686VBX481BWSM5W1YT6N1PQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RW277XSQ20MYCE580GG8",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M698Q3YR53C1M72XYN69TDJ5",
+  "type": "ops",
+  "v": 1
+}

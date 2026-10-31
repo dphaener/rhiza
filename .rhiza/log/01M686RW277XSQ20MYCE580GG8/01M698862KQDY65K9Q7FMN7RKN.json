@@ -1,0 +1,40 @@
+{
+  "actor": "01M6971G0VZ5P4QEJ8XRD9SX45",
+  "after": [
+    "01M686W90PQFRC4G97SDZNH386"
+  ],
+  "at": "2026-10-31T15:11:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ccba290 ran go test ./cmd/rhiza -run 'TestScripts/(run-ls|describe-golden)$' -count=1: both PASS. run-ls.txtar (RHIZA_TEST_NOW/SEED set by Setup) creates three runs' journals (ok, bad, ok workflows), checks run ls --json is empty with no runs, lists titles Third, Second, First in that order, shows live, state succeeded/failed and an RFC 3339 started_at, keeps only the newest with --limit 1, rejects --limit -1 and 1001, and checks the human line '<ID> succeeded ok since <time>, change set <ID>: Third run'. describe-golden.txtar carries run.ls's request/response schema. Read internal/api/run_ls.go: it reverses run.Store.List (sorted by start time then ID), applies the limit, and takes state and live from the shared runInfo. make check passed on a rerun; the first run failed only on the known read-timing budget, and go test ./... passed on its own."
+        },
+        "handle": "run-ls-verified",
+        "id": "01M69884E9JHSJSP447KN2YQVY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69884E9JHSJSP447G7M6V37",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69884E9JHSJSP447G7M6V37",
+        "id": "01M698851YQ2W119SWY3JTJ70E",
+        "link": "01M698851YQ2W119SWY2E631AS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686V7WES41E5KRCMQJ9MGCH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RW277XSQ20MYCE580GG8",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M698862KQDY65K9Q7FMN7RKN",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,63 @@
+{
+  "actor": "01M69AQVDW5PK6JX0B8VE6ET4B",
+  "after": [
+    "01M69AQ99FQBZD1MRY1EFJDQ96"
+  ],
+  "at": "2026-10-31T15:57:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e65e34a with a scratch build in a real 80x24 Rex pane over this repo's 20 runs: rhiza tui app live shows 'Daemon: running · 2 live runs' on line 1 and the key help on line 24, with each run's title, state, step, leaves n/n, checks and elapsed. j x25 scrolled to the last run with the daemon line kept on top; enter there set the notice 'Run ... is not live' and the frame still fit 24 lines. j/k redrew in ~0.1s and q quit in ~0.3s (cycle 2 measured 7-10s). tui app live --once took 0.29s and cmp matches rhiza run ls --json byte for byte. go test -race ./internal/tui/liveapp ./internal/tui/roadmapapp pass."
+        },
+        "handle": "live-app-runs-qa-3",
+        "id": "01M69AVCG8H6RGTMBX3GHSFKWW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69AVCG8H6RGTMBX3D2S8WVZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69AVCG8H6RGTMBX3D2S8WVZ",
+        "id": "01M69AVD3MFBT7F7RAKC2Z1057",
+        "link": "01M69AVD3MFBT7F7RAKBE8B47T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686V969FDV2SVYM7P244E86",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e65e34a in a real Rex pane: in rhiza tui app live, enter on the live run 01M696N43YZFCEBGBX6FFXQ4R1 (Live runs app) showed 'Focused Rex tab block:01a1926a-... of run 01M696N43...' via real run.open; enter on the succeeded run 01M65742T0X11RSA6HVFRZGNH6 showed 'Run 01M65742T0X11RSA6HVFRZGNH6 is not live'. The tab-gone path was not exercised by hand."
+        },
+        "handle": "live-app-focus-qa-3",
+        "id": "01M69AVDQ4D8VMTJ728CJZSNMY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69AVDQ4D8VMTJ728AM3ZWAE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69AVDQ4D8VMTJ728AM3ZWAE",
+        "id": "01M69AVEAFMS83ENZ1ZGH9GPJ4",
+        "link": "01M69AVEAFMS83ENZ1ZFS8EBHH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686VAPN2NBZCGV4T968DYTD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RW277XSQ20MYCE580GG8",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69AVF8YCV9PP3N1RQF5KEWG",
+  "type": "ops",
+  "v": 1
+}

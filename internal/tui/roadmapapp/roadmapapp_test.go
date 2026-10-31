@@ -237,3 +237,50 @@ func TestOFocusesLiveRunOrSaysNone(t *testing.T) {
 		t.Errorf("o started a run: %v", calls)
 	}
 }
+
+func TestTickReloadsOnlyTheRunSectionOfAnOpenDetail(t *testing.T) {
+	state := "running"
+	counts := map[string]int{}
+	fk := func(op, change string, args []string) ([]byte, error) {
+		counts[op]++
+		if op == "run.status" {
+			return []byte(`{"id":"01M6730000GGGGGGGGGGGGGGGG","workflow":"ship","change":"` + b + `","state":"` + state + `","steps":[]}`), nil
+		}
+		return detailFake(op, change, args)
+	}
+	m := NewModel(fk)
+	key(m, "j")
+	m.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	if v := m.View().Content; !strings.Contains(v, "state running") {
+		t.Fatalf("detail lacks running:\n%s", v)
+	}
+	shows := counts["change.show"]
+	state = "succeeded"
+	_, cmd := m.Update(TickMsg{})
+	if cmd == nil {
+		t.Fatal("tick did not re-arm")
+	}
+	if v := m.View().Content; !strings.Contains(v, "state succeeded") {
+		t.Fatalf("run section not updated:\n%s", v)
+	}
+	if counts["change.show"] != shows {
+		t.Fatalf("tick called change.show again")
+	}
+}
+
+func TestTickInListCallsNoRunStatus(t *testing.T) {
+	n := 0
+	fk := func(op, change string, args []string) ([]byte, error) {
+		if op == "run.status" {
+			n++
+		}
+		return detailFake(op, change, args)
+	}
+	m := NewModel(fk)
+	if _, cmd := m.Update(TickMsg{}); cmd == nil {
+		t.Fatal("tick did not re-arm")
+	}
+	if n != 0 {
+		t.Fatalf("list tick called run.status %d times", n)
+	}
+}

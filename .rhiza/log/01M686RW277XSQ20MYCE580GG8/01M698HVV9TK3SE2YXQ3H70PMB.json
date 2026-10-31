@@ -1,0 +1,40 @@
+{
+  "actor": "01M697FDYZKYC71G252R1J9CKP",
+  "after": [
+    "01M698862KQDY65K9Q7FMN7RKN"
+  ],
+  "at": "2026-10-31T15:16:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at e5429a5: go test -count=1 -v ./internal/tui/liveapp passes TestViewShowsRunProgress (fake runner with canned daemon.status, run.ls and run.status and an injected clock; asserts title, step, leaves 2/3, checks 1 passed, 1 failed, 1 running, elapsed 5m07s/1h05m07s and the daemon line), TestTickUpdatesViewKeepingCursorOnRun (a TickMsg with changed results updates the daemon line, a new run and leaves 3/3 while the cursor stays on R1), TestEmptyAndRegistered (live is in launcher.Apps()) and TestResultIsRunLsBytes. go test ./cmd/rhiza -run TestScripts/tui-live-app passes: rhiza tui app live --once cmp-matches rhiza run ls --json with no runs and with one run. Reading the diff: Interval is 3s via tea.Tick; launcher.Register in init; the app is wired in cmd/rhiza/tui.go. A scratch build's rhiza tui app live --once printed this repo's live run.ls JSON. make check exits 0 (one earlier run failed only on read-budget timing under load and passed on rerun). Note: the leaves total is len(run.status leaves), meaning the leaves conducted so far, not every leaf in the change set."
+        },
+        "handle": "live-app-runs-verified",
+        "id": "01M698HT9437SVEDTF5V5QY53F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M698HT9437SVEDTF5SS572TJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M698HT9437SVEDTF5SS572TJ",
+        "id": "01M698HTWFK6KPZN505S1438RB",
+        "link": "01M698HTWFK6KPZN505RK9YVW3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686V969FDV2SVYM7P244E86",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RW277XSQ20MYCE580GG8",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M698HVV9TK3SE2YXQ3H70PMB",
+  "type": "ops",
+  "v": 1
+}
