@@ -16,6 +16,11 @@ Each core kind has a fixed list of known fields, covering every field in use tod
 
 - derived-from [m9-orchestrator-picks](../source/m9-orchestrator-picks.md)
 
+### In
+
+- decided-by [field-schemas](../capability/rhiza/model/node-kinds/field-schemas.md)
+- decided-by [add-refuses-unknown-field](../capability/rhiza/model/node-kinds/add-refuses-unknown-field.md)
+
 ## History
 
 - `01M69T001ZQ80P0QXWSJMRZSXM` Plan milestone 9: the model keeps itself honest, picked by the orchestrator under the owner's standing instruction
