@@ -1,0 +1,66 @@
+# run ls lists the repository's runs newest first with each run's ID,
+# change set, title, state, current step, start time and whether it is
+# live; --limit keeps the newest.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+mkdir .rhiza/workflows
+cp ../ok.toml .rhiza/workflows/ok.toml
+cp ../bad.toml .rhiza/workflows/bad.toml
+
+# No runs yet.
+exec rhiza run ls
+stdout '^No runs$'
+exec rhiza run ls --json
+stdout '"runs": \[\]'
+
+exec rhiza change new 'First' --title 'First run' --json
+exec rhiza run start --workflow ok
+exec rhiza change new 'Second' --title 'Second run' --json
+! exec rhiza run start --workflow bad
+exec rhiza change new 'Third' --title 'Third run' --json
+exec rhiza run start --workflow ok
+
+# Newest first, with every field.
+exec rhiza run ls --json
+stdout '"title": "Third run"'
+stdout '"live": false'
+stdout '"state": "succeeded"'
+stdout '"state": "failed"'
+stdout '"started_at": "20[0-9-]+T[0-9:]+Z"'
+exec sh -c 'rhiza run ls --json | grep "\"title\"" | tr -d " \n"'
+stdout '^"title":"Thirdrun","title":"Secondrun","title":"Firstrun",$'
+
+# --limit keeps the newest.
+exec rhiza run ls --limit 1 --json
+stdout '"title": "Third run"'
+! stdout 'Second run'
+! stdout 'First run'
+! exec rhiza run ls --limit -1 --json
+! exec rhiza run ls --limit 1001
+
+# Human output: one line per run, newest first.
+exec rhiza run ls
+stdout '^[0-9A-Z]{26} succeeded ok since 20[0-9-]+T[0-9:]+Z, change set [0-9A-Z]{26}: Third run$'
+stdout 'failed bad'
+fold-ok
+
+-- ok.toml --
+name = "ok"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+
+-- bad.toml --
+name = "bad"
+
+[step.a]
+kind = "command"
+run = "exit 1"
+on.fail = "failed"

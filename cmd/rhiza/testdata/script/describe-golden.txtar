@@ -9393,6 +9393,86 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "run.ls",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "limit": {
+            "description": "The most runs to return, 1 to 1000; default 20",
+            "type": "integer"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "runs": {
+            "description": "The runs, newest started first; empty when there are none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "autonomous": {
+                  "description": "True for a run started with --autonomous; absent otherwise",
+                  "type": "boolean"
+                },
+                "change": {
+                  "description": "The change set it runs on",
+                  "type": "string"
+                },
+                "current": {
+                  "description": "The step being run or to run next; empty once the run is finished",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The run ID",
+                  "type": "string"
+                },
+                "live": {
+                  "description": "True while another process holds the run",
+                  "type": "boolean"
+                },
+                "started_at": {
+                  "description": "When it started, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "state": {
+                  "description": "running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed",
+                  "type": "string"
+                },
+                "title": {
+                  "description": "The change set's title; empty when it has none",
+                  "type": "string"
+                },
+                "workflow": {
+                  "description": "The workflow's name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "change",
+                "id",
+                "live",
+                "started_at",
+                "state",
+                "title",
+                "workflow"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "runs"
+        ],
+        "type": "object"
+      },
+      "summary": "List the repository's runs newest first, each with its ID, change set, title, state, current step, start time and whether it is live",
+      "write": false
+    },
+    {
       "name": "run.open",
       "request": {
         "additionalProperties": false,
