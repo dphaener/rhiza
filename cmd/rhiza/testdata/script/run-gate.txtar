@@ -214,6 +214,31 @@ exec sh -c 'RHIZA_RUN=$(cat $WORK/rune) rhiza run gate --json; echo exit=$?'
 stdout '^exit=0$'
 stdout '"open": \[\]'
 
+# --- A retired review question is not open, for the stop as for open:
+# the autonomous gate accepts (exit 0) with open empty.
+exec rhiza change new 'Plan F' --kind record --title 'Plan F' --json
+exec rhiza add intent want-f
+exec rhiza add decision dec-f --field 'statement=Use F'
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/before'
+exec rhiza run start --workflow hold --autonomous --no-wait
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runf'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runf) rhiza run findings $WORK/findings-f.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runf) rhiza run findings $WORK/findings-f.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runf) rhiza run findings $WORK/findings-f.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runf) rhiza run verdict $WORK/verdict.json'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runf) RHIZA_STEP=check rhiza run review-check --json'
+stdout '"passed": true'
+exec sh -c 'echo review-$(cut -c1-8 $WORK/runf | tr A-Z a-z)-r3-f1 > $WORK/qf'
+exec rhiza land
+exec sh -c 'rhiza change new "Serve F one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/f1'
+exec sh -c 'rhiza link $(cat $WORK/f1) serves want-f'
+exec sh -c 'rhiza retire $(cat $WORK/qf) --reason Moot --record'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runf) rhiza run gate --json; echo exit=$?'
+stdout '^exit=0$'
+stdout '"open": \[\]'
+exec sh -c 'rhiza change show $(cat $WORK/f1) --json | grep -c "\"reason\": \"autonomous run $(cat $WORK/runf)\""'
+stdout '^1$'
+
 fold-ok
 
 -- hold.toml --
@@ -232,5 +257,7 @@ on.timeout = "failed"
 {"findings":[{"node":"dec-c","kind":"contradiction","reason":"Contradicts want-c"}]}
 -- findings-e.json --
 {"findings":[{"node":"dec-e","kind":"contradiction","reason":"Contradicts want-e"}]}
+-- findings-f.json --
+{"findings":[{"node":"dec-f","kind":"contradiction","reason":"Contradicts want-f"}]}
 -- verdict.json --
 {"verdicts":[{"finding":"f1","verdict":"confirmed","reason":"It does"}]}

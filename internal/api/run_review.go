@@ -1210,16 +1210,11 @@ func gateOpenQuestions(sets []changeset.ChangeSet, plan []changeset.ChangeSet, m
 			return
 		}
 		seen[q] = true
-		if n, ok := m.Node(q); ok {
-			if n.Retired {
-				return
-			}
-			if handle == "" {
-				handle = n.Handle
-			}
-		}
-		if reviewAnswered(sets, m, q) {
+		if !questionOpen(sets, m, q) {
 			return
+		}
+		if n, ok := m.Node(q); ok && handle == "" {
+			handle = n.Handle
 		}
 		out = append(out, RunGateQuestion{ID: q.String(), Handle: handle})
 	}
@@ -1443,12 +1438,22 @@ func reviewAnswered(sets []changeset.ChangeSet, m Model, q id.ID) bool {
 	return false
 }
 
+// questionOpen reports whether question q is still open: its node is not
+// retired and it is not answered (reviewAnswered). gateOpenQuestions and
+// gateReview both use it, so the gate's stop and resp.Open agree.
+func questionOpen(sets []changeset.ChangeSet, m Model, q id.ID) bool {
+	if n, ok := m.Node(q); ok && n.Retired {
+		return false
+	}
+	return !reviewAnswered(sets, m, q)
+}
+
 // gateReview decides whether an autonomous run's review passed, so the
 // gate may accept. With no review round it has not. The latest round
 // passes with no confirmed finding, or with a question left for each
 // confirmed one. It reports whether a question the review left
-// (reviewQuestions) is still unanswered (reviewAnswered): the gate then
-// stops for the owner and accepts nothing.
+// (reviewQuestions) is still open (questionOpen): the gate then stops for
+// the owner and accepts nothing.
 func gateReview(sets []changeset.ChangeSet, m Model, rr reviewRun) (bool, error) {
 	const cmd = "run gate"
 	rd, ok := rr.state.LatestRound()
@@ -1460,7 +1465,7 @@ func gateReview(sets []changeset.ChangeSet, m Model, rr reviewRun) (bool, error)
 	open := false
 	for _, a := range reviewQuestions(rr.state) {
 		asked[a.Handle] = true
-		if !reviewAnswered(sets, m, mustParseID(a.Question)) {
+		if questionOpen(sets, m, mustParseID(a.Question)) {
 			open = true
 		}
 	}
