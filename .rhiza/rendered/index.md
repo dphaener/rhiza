@@ -262,7 +262,9 @@
 - [check-actor-records-committed](capability/check-actor-records-committed.md)
 - [ask-status-is-question](capability/ask-status-is-question.md)
 - [fixer-retry-in-cycle](capability/fixer-retry-in-cycle.md)
+  - [leaf-fix-retry-in-cycle](capability/fixer-retry-in-cycle/leaf-fix-retry-in-cycle.md)
 - [fixer-exhaustion-spends-cycle](capability/fixer-exhaustion-spends-cycle.md)
+  - [leaf-fix-exhaustion-spends-cycle](capability/fixer-exhaustion-spends-cycle/leaf-fix-exhaustion-spends-cycle.md)
 
 ## Intents
 
@@ -476,6 +478,7 @@
 - [fixed-core-kinds](decision/fixed-core-kinds.md)
 - [fixed-link-types](decision/fixed-link-types.md)
 - [fixer-retries-within-cycle](decision/fixer-retries-within-cycle.md)
+- [fixer-retries-within-cycle-v2](decision/fixer-retries-within-cycle-v2.md)
 - [follow-head-only-when-it-contains-pushed](decision/follow-head-only-when-it-contains-pushed.md)
 - [four-workflows](decision/four-workflows.md)
 - [fourteen-links](decision/fourteen-links.md)
@@ -1080,6 +1083,12 @@
 - [launch-env-stamping-test](evidence/launch-env-stamping-test.md)
 - [leaf-depends-on-acyclic-verified](evidence/leaf-depends-on-acyclic-verified.md)
 - [leaf-depends-on-guide-verified](evidence/leaf-depends-on-guide-verified.md)
+- [leaf-fix-exhaustion-spends-cycle-qa-1](evidence/leaf-fix-exhaustion-spends-cycle-qa-1.md)
+- [leaf-fix-exhaustion-spends-cycle-verified](evidence/leaf-fix-exhaustion-spends-cycle-verified.md)
+- [leaf-fix-retry-in-cycle-fix-verified](evidence/leaf-fix-retry-in-cycle-fix-verified.md)
+- [leaf-fix-retry-in-cycle-fix2-verified](evidence/leaf-fix-retry-in-cycle-fix2-verified.md)
+- [leaf-fix-retry-in-cycle-qa-1](evidence/leaf-fix-retry-in-cycle-qa-1.md)
+- [leaf-fix-retry-in-cycle-verified](evidence/leaf-fix-retry-in-cycle-verified.md)
 - [leaf-order-verified](evidence/leaf-order-verified.md)
 - [link-write-checks-endpoint-kinds-qa-1](evidence/link-write-checks-endpoint-kinds-qa-1.md)
 - [link-write-checks-endpoint-kinds-verified](evidence/link-write-checks-endpoint-kinds-verified.md)
@@ -1126,6 +1135,7 @@
 - [pr-120-actionable-roadmap-app](evidence/pr-120-actionable-roadmap-app.md)
 - [pr-122-remove-the-all-apps-picker](evidence/pr-122-remove-the-all-apps-picker.md)
 - [pr-124-genesis-link-checks-endpoint](evidence/pr-124-genesis-link-checks-endpoint.md)
+- [pr-125-a-failed-review-leaf-fixer](evidence/pr-125-a-failed-review-leaf-fixer.md)
 - [pr-35-reopening-a-change-set](evidence/pr-35-reopening-a-change-set.md)
 - [pr-36-leaf-dependencies-and](evidence/pr-36-leaf-dependencies-and.md)
 - [pr-38-session-messages-and-token-use](evidence/pr-38-session-messages-and-token-use.md)

@@ -24,6 +24,7 @@ A failed change-set review fixer is retried within its cycle up to MaxFixCycles 
 
 - decided-by [fixer-retry-in-cycle](../capability/fixer-retry-in-cycle.md)
 - decided-by [fixer-exhaustion-spends-cycle](../capability/fixer-exhaustion-spends-cycle.md)
+- supersedes [fixer-retries-within-cycle-v2](fixer-retries-within-cycle-v2.md)
 
 ## History
 

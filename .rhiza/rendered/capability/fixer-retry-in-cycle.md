@@ -15,6 +15,7 @@ A failed change-set review fixer is retried within its cycle, and the cycle's ch
 ### Out
 
 - decided-by [fixer-retries-within-cycle](../decision/fixer-retries-within-cycle.md)
+- decided-by [fixer-retries-within-cycle-v2](../decision/fixer-retries-within-cycle-v2.md)
 
 ### In
 

@@ -15,6 +15,7 @@ A review fixer that fails every retry spends its cycle, and the cycle's checks f
 ### Out
 
 - decided-by [fixer-retries-within-cycle](../decision/fixer-retries-within-cycle.md)
+- decided-by [fixer-retries-within-cycle-v2](../decision/fixer-retries-within-cycle-v2.md)
 
 ### In
 
