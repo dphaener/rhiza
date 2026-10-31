@@ -334,6 +334,7 @@
 - [milestone-8](intent/milestone-8.md)
 - [milestone-9](intent/milestone-9.md)
 - [milestone-10](intent/milestone-10.md)
+- [areas](intent/areas.md)
 
 ## Constraints
 
@@ -427,6 +428,7 @@
 - [arbiter-inline-step](decision/arbiter-inline-step.md)
 - [arbiter-no-recursion](decision/arbiter-no-recursion.md)
 - [arbiter-session-block-fails](decision/arbiter-session-block-fails.md)
+- [areas-are-umbrella](decision/areas-are-umbrella.md)
 - [ask-wording-found-in-build](decision/ask-wording-found-in-build.md)
 - [autonomous-accepts-journalled](decision/autonomous-accepts-journalled.md)
 - [autonomous-mode](decision/autonomous-mode.md)

@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6A4XZFVCDXV8WS3KW3KPZJ5"
+  ],
+  "at": "2026-10-31T23:32:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The rest of the product spec, area by area: each Area change set holds what remains of one area and is split into milestone change sets when it is planned",
+          "umbrella": "yes"
+        },
+        "handle": "areas",
+        "id": "01M6A4Y0KG9T2DKRC7HRKTKWY1",
+        "key": "zzw",
+        "kind": "intent",
+        "node": "01M6A4Y0KG9T2DKRC7HPAT9TQH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "The eleven Area change sets serve one umbrella intent, areas, so the roadmap groups them apart, the daemon never picks them, and the roadmap app shows them as one row",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "areas-are-umbrella",
+        "id": "01M6A4Y18H62DGY8441N751XXJ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6A4Y18H62DGY8441H9PR0QD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A4Y18H62DGY8441H9PR0QD",
+        "id": "01M6A4Y1WXW6VRV8KMQM6SMHPB",
+        "link": "01M6A4Y1WXW6VRV8KMQJB8TVBS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686S7YS7Z5Z26YP3XE0CKA7",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6A4Y0KG9T2DKRC7HPAT9TQH",
+        "id": "01M6A4Y2H6Z5MAEMFMA7XQ8T7V",
+        "link": "01M6A4Y2H6Z5MAEMFMA6PTY2NN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A4Y18H62DGY8441H9PR0QD",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6A4XZFVCDXV8WS3KSX0F9WB",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A4Y3HHE477SHHGCXY7CTSX",
+  "type": "ops",
+  "v": 1
+}

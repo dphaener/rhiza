@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-10-31T23:32:47Z",
+  "body": {
+    "intent": "Mark the eleven Area change sets as an umbrella, now that umbrella grouping has landed",
+    "kind": "record",
+    "sources": [],
+    "title": "Areas umbrella"
+  },
+  "change_set": "01M6A4XZFVCDXV8WS3KSX0F9WB",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A4XZFVCDXV8WS3KW3KPZJ5",
+  "type": "open",
+  "v": 2
+}
