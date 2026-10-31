@@ -366,6 +366,12 @@ func TestFixActions(t *testing.T) {
 		{"failure waits for live sessions", map[string]LeafState{
 			a.ID: sess(sess(la, "fixer", "pass", "C1"), "verifier", "", ""), b.ID: exhausted(lb)},
 			[]string{"7:leaf-a:verifier"}, "leaf leaf-b: fixer failed: "},
+		{"a verifier's retry waits for the next leaf's live fixer", map[string]LeafState{
+			a.ID: sess(sess(la, "fixer", "pass", "C1"), "verifier", "fail", ""), b.ID: sess(lb, "fixer", "", "")},
+			[]string{"7:leaf-b:fixer"}, ""},
+		{"a verifier's retry takes the slot first once it is free", map[string]LeafState{
+			a.ID: sess(sess(la, "fixer", "pass", "C1"), "verifier", "fail", ""), b.ID: sess(lb, "fixer", "pass", "C2")},
+			[]string{"6:leaf-a:fixer", "6:leaf-b:verifier@C2"}, ""},
 		{"all judged", map[string]LeafState{
 			a.ID: sess(sess(la, "fixer", "pass", "C1"), "verifier", "pass", "E1"),
 			b.ID: sess(sess(lb, "fixer", "pass", "C2"), "verifier", "pass", "E2")}, nil, ""},

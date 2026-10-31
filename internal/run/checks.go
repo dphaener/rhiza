@@ -432,14 +432,19 @@ func changeSetFix(cycle int, findings []Finding, fixed []ReviewFix, acts []check
 // fixer, then, on the commit the fixer's judgement found, a verifier, both
 // on attempt cycle. Fixers run one at a time, in leaf order, as they
 // share the run's worktree; a fixed leaf's verifier runs alongside the
-// next fixer. The moves list each start before any poll. failure says
+// next fixer. A leaf whose verifier failed waits for any other leaf's
+// live fixer before its retry fixer starts. The moves list each start before any poll. failure says
 // why the phase failed, once a fixer or verifier was judged fail: then
 // nothing more starts, and the phase is over once its live sessions are
 // judged. No moves and no failure: the phase is done, or had nothing to
 // fix.
 func fixActions(cycle int, leaves []Leaf, found map[string][]Finding, fixes map[string]LeafState) (acts []checkAction, failure string) {
 	var starts, polls []checkAction
-	fixerFree := true
+	// The fixer slot is taken by any leaf's live fixer, not only an
+	// earlier leaf's: a retry can come up on a leaf the walk has passed.
+	fixerFree := !slices.ContainsFunc(leaves, func(lf Leaf) bool {
+		return len(found[lf.ID]) > 0 && liveFixer(cycle, fixes[lf.ID])
+	})
 	fail := func(lf Leaf, role, detail string) {
 		if failure == "" {
 			failure = fmt.Sprintf("leaf %s: %s failed: %s", lf.Handle, role, detail)
@@ -504,6 +509,20 @@ func fixActions(cycle int, leaves []Leaf, found map[string][]Finding, fixes map[
 		starts = nil
 	}
 	return append(starts, polls...), failure
+}
+
+// liveFixer says whether one of l's fixers of cycle is started and not
+// yet judged.
+func liveFixer(cycle int, l LeafState) bool {
+	for try := 1; try <= 1+MaxFixCycles; try++ {
+		attempt := leafFixAttempt(cycle, try)
+		if _, started := l.Session(workflow.RoleFixer, attempt); started {
+			if _, judged := l.Judged(workflow.RoleFixer, attempt); !judged {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // leafFixAttempt is the attempt number, unique among the leaf's sessions
