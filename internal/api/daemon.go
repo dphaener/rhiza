@@ -16,6 +16,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
 )
@@ -331,8 +332,25 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 		return ok
 	})
-	picked := daemon.Pick(cands, runs, held, host, nil, max)
-	*skips = append(append(planSkips, unj...), daemon.Skips(cands, runs, held, host, nil, max)...)
+	ship := daemon.Ship{Workflow: shipChangeWorkflow, Since: func(change string) time.Time {
+		cs, err := id.Parse(change)
+		if err != nil {
+			return time.Time{}
+		}
+		c, ok := ws.changeSet(cs)
+		if !ok {
+			return time.Time{}
+		}
+		var at time.Time
+		for _, m := range c.Lifecycle {
+			if m.Type == entry.TypeAccept || m.Type == entry.TypeReopen {
+				at = m.At
+			}
+		}
+		return at
+	}}
+	picked := daemon.Pick(cands, runs, held, host, nil, max, ship)
+	*skips = append(append(planSkips, unj...), daemon.Skips(cands, runs, held, host, nil, max, ship)...)
 	for i, sk := range *skips {
 		if cs, err := id.Parse(sk.Change); err == nil {
 			if c, ok := ws.changeSet(cs); ok {
@@ -472,6 +490,7 @@ var skipText = map[string]string{
 	daemon.SkipNotReady:    "not ready",
 	daemon.SkipLive:        "has a live run",
 	daemon.SkipFailed:      "its latest run failed and waits in the inbox",
+	daemon.SkipShipped:     "its latest run shipped it",
 	daemon.SkipHeld:        "started, its run not journaled yet",
 	daemon.SkipUnjournaled: "its start wrote no journal",
 	daemon.SkipNoSlot:      "waiting for a slot",
