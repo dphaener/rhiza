@@ -1,0 +1,63 @@
+{
+  "actor": "01M688Q090E6PQ7DP44XM3QVQ1",
+  "after": [
+    "01M688PDHXKH62QM37AE1Y8TVE"
+  ],
+  "at": "2026-10-31T06:03:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza at 04cd35f (go build -o $TMPDIR/rhiza ./cmd/rhiza) and ran the built-in review workflow with rhiza run start --workflow review --permission-mode manual in hermetic scratch repos (own HOME and git config; fake rex running the pane command, fake claude acting each role) on a built two-leaf change set where quality's cycle-1 major on leaf alpha is confirmed. Fixer exits 1 on its first session: cycle 2 ran fixer, fixer, verifier, then quality check 2; journal leaf-attempt fixer 2 fail, fixer 3 pass, verifier 3 pass, all before the cycle-2 check session; quality passed after 2 cycles and the run reached sign-off. Verifier exits 1 on its first session: cycle 2 ran fixer, verifier, fixer, verifier (a fresh pair), then quality check 2; passed after 2 cycles, run at sign-off."
+        },
+        "handle": "leaf-fix-retry-in-cycle-qa-1",
+        "id": "01M688W60QPHE0XKJ21687Z7Z4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M688W60QPHE0XKJ213TMN9PK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M688W60QPHE0XKJ213TMN9PK",
+        "id": "01M688W6HNVCXA5NTR1D015ZB0",
+        "link": "01M688W6HNVCXA5NTR19JF3BE4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68584KCHFKS2RDF7M3E8XFG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Same built binary and scratch setup as leaf-fix-retry-in-cycle-qa-1. Fixer exits 1 on every session of cycle 2: three fixers ran in cycle 2 (journal leaf-attempt fixer 2, 3, 4 all fail), no check session started in cycle 2, quality's cycle 2 was journalled failed with detail 'cycle 2: fix failed: leaf alpha: fixer failed: exit 1', and cycle 3 started a fresh first attempt (fixer 5 pass, verifier 5 pass) before quality check 3, which passed; run reached sign-off. Verifier exits 1 on every session of cycle 2: three fixer+verifier pairs ran in cycle 2, cycle 2 failed with 'cycle 2: fix failed: leaf alpha: verifier failed: exit 1', cycle 3 ran a fresh pair then quality check 3. Note: rhiza run status text shows only 'cycle 2: failed', without the detail."
+        },
+        "handle": "leaf-fix-exhaustion-spends-cycle-qa-1",
+        "id": "01M688W72PYDMFZ4QVS5JYCVYC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M688W72PYDMFZ4QVS3Q5KVYJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M688W72PYDMFZ4QVS3Q5KVYJ",
+        "id": "01M688W7MEN4V4BC1PEKQ8PBYB",
+        "link": "01M688W7MEN4V4BC1PEHWTFH42",
+        "note": "",
+        "op": "link.create",
+        "to": "01M68585JZBX1K2RWAK29TVWSZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6580HBAKHN7XTR7XQV3XR0Q",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M688W8MPEN13BP09A0CT6HX9",
+  "type": "ops",
+  "v": 1
+}
