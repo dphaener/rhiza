@@ -38,6 +38,7 @@ Milestone 7: drive Rhiza from Rex, see what it does
 - derived-from [new-work-through-run-start](../decision/new-work-through-run-start.md)
 - derived-from [live-app-name-and-op](../decision/live-app-name-and-op.md)
 - derived-from [update-is-a-make-target](../decision/update-is-a-make-target.md)
+- derived-from [test-timeout-twenty-minutes](../decision/test-timeout-twenty-minutes.md)
 
 ## History
 

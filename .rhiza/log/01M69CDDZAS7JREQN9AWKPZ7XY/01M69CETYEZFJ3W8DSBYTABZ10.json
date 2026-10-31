@@ -1,0 +1,30 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M69CDWC79C3M79BFHZ00F16E"
+  ],
+  "at": "2026-10-31T16:25:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "observed": "go test ./cmd/rhiza -run TestMakeTestTimeout passed in the hotfix worktree on 6d5c62a9",
+          "statement": "TestMakeTestTimeout passes: make -n test prints go test -timeout 20m ./..."
+        },
+        "handle": "test-timeout-set-verified",
+        "id": "01M69CET8VN4MYHWR8F8RSA72T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69CET8VN4MYHWR8F89K1DDE",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M69CDDZAS7JREQN9AWKPZ7XY",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69CETYEZFJ3W8DSBYTABZ10",
+  "type": "ops",
+  "v": 1
+}
