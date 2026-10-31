@@ -1,0 +1,40 @@
+{
+  "actor": "01M6A1YQKAXRD91695128Z9ZXE",
+  "after": [
+    "01M6A1WNEGJNR8RX251RRQSE9P"
+  ],
+  "at": "2026-10-31T22:41:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 28dbfc9f: go test ./cmd/rhiza -run TestScripts/roadmap-umbrella passes; its new tail accepts umbrella U and milestone W, and ready --json shows the reason \"umbrella: work is carved out of it\" with next 01M5PWGY38TY4APFS7ZR0Q10WA (W, non-umbrella). go test ./internal/api -run 'TestUmbrellaNotReady|TestDaemon' passes; TestUmbrellaNotReady (in plan_test.go, package internal/api) serves an accepted change set to an umbrella intent, asserts planUmbrellaReason, and calls daemonCandidates with hasLeaves always true: no candidates, one SkipNotReady skip. The diff adds the reason in planCore for any served umbrella intent. make check passes with the RHIZA_ROOT/CHANGE/RUN/ACTOR env unset."
+        },
+        "handle": "umbrella-not-ready-verified",
+        "id": "01M6A20NMZ8RKV6DYMYZ6PJ4BG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6A20NMZ8RKV6DYMYVT5P6AQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A20NMZ8RKV6DYMYVT5P6AQ",
+        "id": "01M6A20PMNX208JSQQ3D3NYE0Z",
+        "link": "01M6A20PMNX208JSQQ3C212N3Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686TYF6800AVCAKJPHMAAM7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RTJM0TBSN6C1FXES93WN",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A20QSQMYWFZA7779F51A30",
+  "type": "ops",
+  "v": 1
+}
