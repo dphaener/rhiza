@@ -500,7 +500,7 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 	}
 	if err := r.append(Entry{
 		Type: TypeLeafSession, Step: step.Name, Leaf: a.leaf.ID, Handle: a.leaf.Handle,
-		Role: a.role, Attempt: a.attempt, Session: s, Model: spec.Model, Commit: commit, Detail: spec.Dir,
+		Role: a.role, Attempt: a.attempt, Cycle: a.cycle, Session: s, Model: spec.Model, Commit: commit, Detail: spec.Dir,
 	}); err != nil {
 		return result{}, false, err
 	}

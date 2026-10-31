@@ -481,6 +481,14 @@ func TestFixLeafFixerRetriedInCycle(t *testing.T) {
 	if len(l.Sessions) != 3 || len(l.Attempts) != 3 {
 		t.Errorf("leaf-a: %d sessions, %d attempts; want 3 and 3", len(l.Sessions), len(l.Attempts))
 	}
+	for _, s := range l.Sessions {
+		if s.Cycle != 2 {
+			t.Errorf("journalled %s %d: cycle %d, want 2", s.Role, s.Attempt, s.Cycle)
+		}
+	}
+	if got := l.CycleAttempts(workflow.RoleFixer, 2); !reflect.DeepEqual(got, []int{2, retry}) {
+		t.Errorf("cycle 2's fixer attempts = %v, want [2 %d]", got, retry)
+	}
 	if j, _ := l.Judged(workflow.RoleFixer, 2); j.Outcome != workflow.OutcomeFail {
 		t.Errorf("first fixer judgement = %+v", j)
 	}

@@ -235,7 +235,7 @@ func summaryCheck(b *strings.Builder, st run.State, c run.CheckState) {
 // summaryCycles renders checks step step's fix cycles: every cycle after
 // the first, and any that raised questions, with what it re-ran, the
 // owner's findings in an owner cycle, its leaf fixers and their
-// verifiers, its change-set fixer and the questions raised once it ended
+// verifiers (one line per try of a leaf's fix), its change-set fixer and the questions raised once it ended
 // with no fix cycle left.
 func summaryCycles(b *strings.Builder, st run.State, step string) {
 	var lines []string
@@ -259,14 +259,17 @@ func summaryCycles(b *strings.Builder, st run.State, step string) {
 			if l.Step != step {
 				continue
 			}
-			if _, ok := l.Session(workflow.RoleFixer, cy.Cycle); !ok {
-				continue
+			for try, attempt := range l.CycleAttempts(workflow.RoleFixer, cy.Cycle) {
+				line := "  - leaf " + l.Handle
+				if try > 0 {
+					line += fmt.Sprintf(", try %d", try+1)
+				}
+				line += ": fixer " + summaryJudged(l, workflow.RoleFixer, attempt)
+				if _, ok := l.Session(workflow.RoleVerifier, attempt); ok {
+					line += "; verifier " + summaryJudged(l, workflow.RoleVerifier, attempt)
+				}
+				lines = append(lines, line)
 			}
-			line := "  - leaf " + l.Handle + ": fixer " + summaryJudged(l, workflow.RoleFixer, cy.Cycle)
-			if _, ok := l.Session(workflow.RoleVerifier, cy.Cycle); ok {
-				line += "; verifier " + summaryJudged(l, workflow.RoleVerifier, cy.Cycle)
-			}
-			lines = append(lines, line)
 		}
 		if f, ok := st.ReviewFix(step, cy.Cycle); ok {
 			line := "  - change set: fixer "
@@ -293,10 +296,10 @@ func summaryCycles(b *strings.Builder, st run.State, step string) {
 	}
 }
 
-// summaryJudged is how role's session on cycle of leaf l was judged:
+// summaryJudged is how role's session on attempt of leaf l was judged:
 // open, or pass or fail with its commit and, for a fail, its detail.
-func summaryJudged(l run.LeafState, role string, cycle int) string {
-	a, ok := l.Judged(role, cycle)
+func summaryJudged(l run.LeafState, role string, attempt int) string {
+	a, ok := l.Judged(role, attempt)
 	if !ok {
 		return "open"
 	}

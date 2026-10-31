@@ -32,9 +32,11 @@ func TestReviewSummary(t *testing.T) {
 		{Type: run.TypeCheckCycle, Step: "review", Cycle: 3, Checks: []string{"alpha"}, Kind: run.CycleOwner, Findings: []run.Finding{
 			{ID: "f1", Check: "alpha", Severity: run.SeverityMinor, Leaf: "L1", LeafHandle: "thing", Place: "thing.txt:1", Reason: "say more"},
 		}},
-		{Type: run.TypeLeafSession, Step: "review", Leaf: "L1", Handle: "thing", Role: workflow.RoleFixer, Attempt: 3, Session: "S3"},
-		{Type: run.TypeLeafAttempt, Step: "review", Leaf: "L1", Role: workflow.RoleFixer, Attempt: 3, Outcome: workflow.OutcomePass, Commit: sha},
-		{Type: run.TypeLeafSession, Step: "review", Leaf: "L1", Role: workflow.RoleVerifier, Attempt: 3, Session: "S4"},
+		{Type: run.TypeLeafSession, Step: "review", Leaf: "L1", Handle: "thing", Role: workflow.RoleFixer, Attempt: 5, Cycle: 3, Session: "S3"},
+		{Type: run.TypeLeafAttempt, Step: "review", Leaf: "L1", Role: workflow.RoleFixer, Attempt: 5, Outcome: workflow.OutcomeFail, Detail: "no commit naming its leaf"},
+		{Type: run.TypeLeafSession, Step: "review", Leaf: "L1", Handle: "thing", Role: workflow.RoleFixer, Attempt: 6, Cycle: 3, Session: "S4"},
+		{Type: run.TypeLeafAttempt, Step: "review", Leaf: "L1", Role: workflow.RoleFixer, Attempt: 6, Outcome: workflow.OutcomePass, Commit: sha},
+		{Type: run.TypeLeafSession, Step: "review", Leaf: "L1", Role: workflow.RoleVerifier, Attempt: 6, Cycle: 3, Session: "S5"},
 		{Type: run.TypeFindings, Step: "review", Check: "alpha", Cycle: 3, Findings: []run.Finding{}},
 		{Type: run.TypeCheck, Step: "review", Check: "alpha", Cycle: 3, Outcome: run.CheckPassed},
 		{Type: run.TypeSignoff, Step: "signoff", Visit: 2, Actor: "ada", Rule: run.RuleOwner, Outcome: run.SignoffApproved},
@@ -67,7 +69,8 @@ Fix cycles:
   - question review-failed-r1-1 on check alpha f1
 - cycle 3, the owner's changes: re-runs alpha
   - owner's alpha f1 minor at thing.txt:1 on thing: say more
-  - leaf thing: fixer pass, commit 0123456789ab; verifier open
+  - leaf thing: fixer fail (no commit naming its leaf)
+  - leaf thing, try 2: fixer pass, commit 0123456789ab; verifier open
 
 ## Sign-off
 

@@ -2275,12 +2275,16 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "attempt": {
-                            "description": "The leaf's attempt, from 1; on a checks step, the review cycle",
+                            "description": "The leaf's attempt, from 1; on a checks step, its session's attempt, one per try of a cycle's fix",
                             "type": "integer"
                           },
                           "commit": {
                             "description": "A passed builder's or fixer's commit naming its leaf; a passed verifier's Evidence commit",
                             "type": "string"
+                          },
+                          "cycle": {
+                            "description": "On a checks step, the review cycle of the fix it belongs to",
+                            "type": "integer"
                           },
                           "detail": {
                             "description": "Why: the session's exit, that its agent said done, or that a builder left no commit naming its leaf",
@@ -2420,12 +2424,16 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "attempt": {
-                            "description": "The leaf's attempt it works on, from 1; on a checks step, the review cycle",
+                            "description": "The leaf's attempt it works on, from 1; on a checks step, one per try of a cycle's fix: cycle 2's first try is 2, and each cycle has 3 tries",
                             "type": "integer"
                           },
                           "commit": {
                             "description": "A builder's or fixer's: the worktree's HEAD when it started; a verifier's: the commit it checks",
                             "type": "string"
+                          },
+                          "cycle": {
+                            "description": "On a checks step, the review cycle of the fix it belongs to",
+                            "type": "integer"
                           },
                           "model": {
                             "description": "The model it runs; empty for the agent's default",
@@ -3837,12 +3845,16 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "attempt": {
-                            "description": "The leaf's attempt, from 1; on a checks step, the review cycle",
+                            "description": "The leaf's attempt, from 1; on a checks step, its session's attempt, one per try of a cycle's fix",
                             "type": "integer"
                           },
                           "commit": {
                             "description": "A passed builder's or fixer's commit naming its leaf; a passed verifier's Evidence commit",
                             "type": "string"
+                          },
+                          "cycle": {
+                            "description": "On a checks step, the review cycle of the fix it belongs to",
+                            "type": "integer"
                           },
                           "detail": {
                             "description": "Why: the session's exit, that its agent said done, or that a builder left no commit naming its leaf",
@@ -3982,12 +3994,16 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "attempt": {
-                            "description": "The leaf's attempt it works on, from 1; on a checks step, the review cycle",
+                            "description": "The leaf's attempt it works on, from 1; on a checks step, one per try of a cycle's fix: cycle 2's first try is 2, and each cycle has 3 tries",
                             "type": "integer"
                           },
                           "commit": {
                             "description": "A builder's or fixer's: the worktree's HEAD when it started; a verifier's: the commit it checks",
                             "type": "string"
+                          },
+                          "cycle": {
+                            "description": "On a checks step, the review cycle of the fix it belongs to",
+                            "type": "integer"
                           },
                           "model": {
                             "description": "The model it runs; empty for the agent's default",
@@ -6461,12 +6477,16 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "attempt": {
-                            "description": "The leaf's attempt, from 1; on a checks step, the review cycle",
+                            "description": "The leaf's attempt, from 1; on a checks step, its session's attempt, one per try of a cycle's fix",
                             "type": "integer"
                           },
                           "commit": {
                             "description": "A passed builder's or fixer's commit naming its leaf; a passed verifier's Evidence commit",
                             "type": "string"
+                          },
+                          "cycle": {
+                            "description": "On a checks step, the review cycle of the fix it belongs to",
+                            "type": "integer"
                           },
                           "detail": {
                             "description": "Why: the session's exit, that its agent said done, or that a builder left no commit naming its leaf",
@@ -6606,12 +6626,16 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "attempt": {
-                            "description": "The leaf's attempt it works on, from 1; on a checks step, the review cycle",
+                            "description": "The leaf's attempt it works on, from 1; on a checks step, one per try of a cycle's fix: cycle 2's first try is 2, and each cycle has 3 tries",
                             "type": "integer"
                           },
                           "commit": {
                             "description": "A builder's or fixer's: the worktree's HEAD when it started; a verifier's: the commit it checks",
                             "type": "string"
+                          },
+                          "cycle": {
+                            "description": "On a checks step, the review cycle of the fix it belongs to",
+                            "type": "integer"
                           },
                           "model": {
                             "description": "The model it runs; empty for the agent's default",
@@ -7895,12 +7919,16 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "attempt": {
-                            "description": "The leaf's attempt, from 1; on a checks step, the review cycle",
+                            "description": "The leaf's attempt, from 1; on a checks step, its session's attempt, one per try of a cycle's fix",
                             "type": "integer"
                           },
                           "commit": {
                             "description": "A passed builder's or fixer's commit naming its leaf; a passed verifier's Evidence commit",
                             "type": "string"
+                          },
+                          "cycle": {
+                            "description": "On a checks step, the review cycle of the fix it belongs to",
+                            "type": "integer"
                           },
                           "detail": {
                             "description": "Why: the session's exit, that its agent said done, or that a builder left no commit naming its leaf",
@@ -8040,12 +8068,16 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "attempt": {
-                            "description": "The leaf's attempt it works on, from 1; on a checks step, the review cycle",
+                            "description": "The leaf's attempt it works on, from 1; on a checks step, one per try of a cycle's fix: cycle 2's first try is 2, and each cycle has 3 tries",
                             "type": "integer"
                           },
                           "commit": {
                             "description": "A builder's or fixer's: the worktree's HEAD when it started; a verifier's: the commit it checks",
                             "type": "string"
+                          },
+                          "cycle": {
+                            "description": "On a checks step, the review cycle of the fix it belongs to",
+                            "type": "integer"
                           },
                           "model": {
                             "description": "The model it runs; empty for the agent's default",
@@ -10030,12 +10062,16 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "attempt": {
-                            "description": "The leaf's attempt, from 1; on a checks step, the review cycle",
+                            "description": "The leaf's attempt, from 1; on a checks step, its session's attempt, one per try of a cycle's fix",
                             "type": "integer"
                           },
                           "commit": {
                             "description": "A passed builder's or fixer's commit naming its leaf; a passed verifier's Evidence commit",
                             "type": "string"
+                          },
+                          "cycle": {
+                            "description": "On a checks step, the review cycle of the fix it belongs to",
+                            "type": "integer"
                           },
                           "detail": {
                             "description": "Why: the session's exit, that its agent said done, or that a builder left no commit naming its leaf",
@@ -10175,12 +10211,16 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "attempt": {
-                            "description": "The leaf's attempt it works on, from 1; on a checks step, the review cycle",
+                            "description": "The leaf's attempt it works on, from 1; on a checks step, one per try of a cycle's fix: cycle 2's first try is 2, and each cycle has 3 tries",
                             "type": "integer"
                           },
                           "commit": {
                             "description": "A builder's or fixer's: the worktree's HEAD when it started; a verifier's: the commit it checks",
                             "type": "string"
+                          },
+                          "cycle": {
+                            "description": "On a checks step, the review cycle of the fix it belongs to",
+                            "type": "integer"
                           },
                           "model": {
                             "description": "The model it runs; empty for the agent's default",
@@ -11488,12 +11528,16 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "attempt": {
-                            "description": "The leaf's attempt, from 1; on a checks step, the review cycle",
+                            "description": "The leaf's attempt, from 1; on a checks step, its session's attempt, one per try of a cycle's fix",
                             "type": "integer"
                           },
                           "commit": {
                             "description": "A passed builder's or fixer's commit naming its leaf; a passed verifier's Evidence commit",
                             "type": "string"
+                          },
+                          "cycle": {
+                            "description": "On a checks step, the review cycle of the fix it belongs to",
+                            "type": "integer"
                           },
                           "detail": {
                             "description": "Why: the session's exit, that its agent said done, or that a builder left no commit naming its leaf",
@@ -11633,12 +11677,16 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "attempt": {
-                            "description": "The leaf's attempt it works on, from 1; on a checks step, the review cycle",
+                            "description": "The leaf's attempt it works on, from 1; on a checks step, one per try of a cycle's fix: cycle 2's first try is 2, and each cycle has 3 tries",
                             "type": "integer"
                           },
                           "commit": {
                             "description": "A builder's or fixer's: the worktree's HEAD when it started; a verifier's: the commit it checks",
                             "type": "string"
+                          },
+                          "cycle": {
+                            "description": "On a checks step, the review cycle of the fix it belongs to",
+                            "type": "integer"
                           },
                           "model": {
                             "description": "The model it runs; empty for the agent's default",
@@ -12992,12 +13040,16 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "attempt": {
-                            "description": "The leaf's attempt, from 1; on a checks step, the review cycle",
+                            "description": "The leaf's attempt, from 1; on a checks step, its session's attempt, one per try of a cycle's fix",
                             "type": "integer"
                           },
                           "commit": {
                             "description": "A passed builder's or fixer's commit naming its leaf; a passed verifier's Evidence commit",
                             "type": "string"
+                          },
+                          "cycle": {
+                            "description": "On a checks step, the review cycle of the fix it belongs to",
+                            "type": "integer"
                           },
                           "detail": {
                             "description": "Why: the session's exit, that its agent said done, or that a builder left no commit naming its leaf",
@@ -13137,12 +13189,16 @@ cmp stdout describe.golden.json
                             "type": "string"
                           },
                           "attempt": {
-                            "description": "The leaf's attempt it works on, from 1; on a checks step, the review cycle",
+                            "description": "The leaf's attempt it works on, from 1; on a checks step, one per try of a cycle's fix: cycle 2's first try is 2, and each cycle has 3 tries",
                             "type": "integer"
                           },
                           "commit": {
                             "description": "A builder's or fixer's: the worktree's HEAD when it started; a verifier's: the commit it checks",
                             "type": "string"
+                          },
+                          "cycle": {
+                            "description": "On a checks step, the review cycle of the fix it belongs to",
+                            "type": "integer"
                           },
                           "model": {
                             "description": "The model it runs; empty for the agent's default",
@@ -14327,12 +14383,16 @@ cmp stdout describe.golden.json
                         "type": "string"
                       },
                       "attempt": {
-                        "description": "The leaf's attempt, from 1; on a checks step, the review cycle",
+                        "description": "The leaf's attempt, from 1; on a checks step, its session's attempt, one per try of a cycle's fix",
                         "type": "integer"
                       },
                       "commit": {
                         "description": "A passed builder's or fixer's commit naming its leaf; a passed verifier's Evidence commit",
                         "type": "string"
+                      },
+                      "cycle": {
+                        "description": "On a checks step, the review cycle of the fix it belongs to",
+                        "type": "integer"
                       },
                       "detail": {
                         "description": "Why: the session's exit, that its agent said done, or that a builder left no commit naming its leaf",
@@ -14472,12 +14532,16 @@ cmp stdout describe.golden.json
                         "type": "string"
                       },
                       "attempt": {
-                        "description": "The leaf's attempt it works on, from 1; on a checks step, the review cycle",
+                        "description": "The leaf's attempt it works on, from 1; on a checks step, one per try of a cycle's fix: cycle 2's first try is 2, and each cycle has 3 tries",
                         "type": "integer"
                       },
                       "commit": {
                         "description": "A builder's or fixer's: the worktree's HEAD when it started; a verifier's: the commit it checks",
                         "type": "string"
+                      },
+                      "cycle": {
+                        "description": "On a checks step, the review cycle of the fix it belongs to",
+                        "type": "integer"
                       },
                       "model": {
                         "description": "The model it runs; empty for the agent's default",
