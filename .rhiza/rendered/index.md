@@ -1407,6 +1407,7 @@
 
 ## Actors
 
+- [claude-code-00c897fb](actor/claude-code-00c897fb.md)
 - [claude-code-01m5szj4](actor/claude-code-01m5szj4.md)
 - [claude-code-02fff339](actor/claude-code-02fff339.md)
 - [claude-code-0413c95b](actor/claude-code-0413c95b.md)
@@ -1680,6 +1681,7 @@
 - [claude-code-5a6134d4](actor/claude-code-5a6134d4.md)
 - [claude-code-5a87ddc7](actor/claude-code-5a87ddc7.md)
 - [claude-code-5a92b8ed](actor/claude-code-5a92b8ed.md)
+- [claude-code-5a972cc2](actor/claude-code-5a972cc2.md)
 - [claude-code-5ab2fc6b](actor/claude-code-5ab2fc6b.md)
 - [claude-code-5aef9d8f](actor/claude-code-5aef9d8f.md)
 - [claude-code-5b91cdbb](actor/claude-code-5b91cdbb.md)
