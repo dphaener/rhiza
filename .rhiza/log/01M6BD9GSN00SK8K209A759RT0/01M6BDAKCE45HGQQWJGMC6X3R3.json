@@ -1,0 +1,75 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6BD9KVSK0T79WJ0QCET66GX"
+  ],
+  "at": "2026-11-01T11:18:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "rhiza search finds model nodes by the text of their handles and fields"
+        },
+        "handle": "text-search",
+        "id": "01M6BD9KVSK0T79WJ0Q882T99Z",
+        "key": "gi",
+        "kind": "capability",
+        "node": "01M5SWSZJ3RPZB49RSW714256H",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      },
+      {
+        "fields": {
+          "acceptance": "A search.txtar records three nodes and gets them in the expected ranked order; --kind narrows; --limit 1 gives a next_cursor whose page holds the rest; a bad cursor exits 2; a retired node is not found; a node updated in an unlanded change set is found by its new text only under --view what-if:<cs>; search --json and api call search print the same bytes; describe-golden.txtar is regenerated; the index bumps its schema version and rebuilds",
+          "statement": "rhiza search <text> lists live nodes whose handle or field text matches, ranked, with handle, ID, kind, path, matched field and a snippet, narrowed by --kind, read in any view, and paged with --limit and a cursor"
+        },
+        "handle": "search-command",
+        "id": "01M6BDAFV0SK190M10KJWZQDMY",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6BDAFV0SK190M10KJ76PMFM",
+        "op": "node.create",
+        "parent": "01M5SWSZJ3RPZB49RSW714256H"
+      },
+      {
+        "decision": null,
+        "from": "01M6BDAFV0SK190M10KJ76PMFM",
+        "id": "01M6BDAGKX63R28EJ5ZYDDJ660",
+        "link": "01M6BDAGKX63R28EJ5ZVPNF9QY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BD9Y45QJ12D7CHBQ8XMB11",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A model app unit test on a fake runner types / and text and sees only the search op's hits, and esc restores the tree; rex-install.txtar shows no key moved",
+          "statement": "In the model app, / opens a filter that shows the nodes rhiza search finds for the typed text, and esc clears it"
+        },
+        "handle": "model-app-search",
+        "id": "01M6BDAHCGWVSDN2MXQM8KDWF3",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6BDAHCGWVSDN2MXQKK63CXJ",
+        "op": "node.create",
+        "parent": "01M5SWSZJ3RPZB49RSW714256H"
+      },
+      {
+        "decision": null,
+        "from": "01M6BDAHCGWVSDN2MXQKK63CXJ",
+        "id": "01M6BDAJ5074GYGKW6QCXDHX18",
+        "link": "01M6BDAJ5074GYGKW6QB74MVXD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BD9Y45QJ12D7CHBQ8XMB11",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6BD9GSN00SK8K209A759RT0",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BDAKCE45HGQQWJGMC6X3R3",
+  "type": "ops",
+  "v": 1
+}

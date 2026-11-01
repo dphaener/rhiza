@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T11:18:09Z",
+  "body": {
+    "intent": "The daemon runs an owner-configured command once per new inbox item, with or without Rex",
+    "kind": "intention",
+    "sources": [],
+    "title": "Inbox notify hook"
+  },
+  "change_set": "01M6BD9HT87Z8WCD31EKQQ47R1",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BD9HT87Z8WCD31EQGM9MRS",
+  "type": "open",
+  "v": 2
+}

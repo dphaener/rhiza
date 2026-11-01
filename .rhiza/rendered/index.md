@@ -365,6 +365,7 @@
 - [milestone-11](intent/milestone-11.md)
 - [milestone-12](intent/milestone-12.md)
 - [milestone-13](intent/milestone-13.md)
+- [milestone-14](intent/milestone-14.md)
 
 ## Constraints
 
@@ -598,6 +599,7 @@
 - [m11-picked-by-orchestrator](decision/m11-picked-by-orchestrator.md)
 - [m12-picked-by-orchestrator](decision/m12-picked-by-orchestrator.md)
 - [m13-picked-by-orchestrator](decision/m13-picked-by-orchestrator.md)
+- [m14-picked-by-orchestrator](decision/m14-picked-by-orchestrator.md)
 - [m2-done-point](decision/m2-done-point.md)
 - [m2-eight-change-sets](decision/m2-eight-change-sets.md)
 - [m2-genesis-runs-the-work](decision/m2-genesis-runs-the-work.md)
@@ -648,6 +650,7 @@
 - [no-state-in-tab-title](decision/no-state-in-tab-title.md)
 - [no-tmux-fallback](decision/no-tmux-fallback.md)
 - [notes-are-discussion](decision/notes-are-discussion.md)
+- [notify-command-flag-or-git-config](decision/notify-command-flag-or-git-config.md)
 - [one-capability-tree](decision/one-capability-tree.md)
 - [one-change-set-one-pr](decision/one-change-set-one-pr.md)
 - [one-model-per-repo](decision/one-model-per-repo.md)
@@ -755,6 +758,7 @@
 - [run-window-gone-opens-window](decision/run-window-gone-opens-window.md)
 - [run-window-is-first-session-window](decision/run-window-is-first-session-window.md)
 - [same-model-same-bytes](decision/same-model-same-bytes.md)
+- [search-fts-asis-scan-whatif](decision/search-fts-asis-scan-whatif.md)
 - [session-orchestrates](decision/session-orchestrates.md)
 - [sessions-talk-freely](decision/sessions-talk-freely.md)
 - [ship-change-file-inherits-render](decision/ship-change-file-inherits-render.md)
@@ -1626,6 +1630,7 @@
 - [m11-orchestrator-picks](source/m11-orchestrator-picks.md)
 - [m12-orchestrator-picks](source/m12-orchestrator-picks.md)
 - [m13-orchestrator-picks](source/m13-orchestrator-picks.md)
+- [m14-orchestrator-picks](source/m14-orchestrator-picks.md)
 - [m5-usable-from-rex-interview](source/m5-usable-from-rex-interview.md)
 - [m6-overnight-interview](source/m6-overnight-interview.md)
 - [m7-keep-picking](source/m7-keep-picking.md)
