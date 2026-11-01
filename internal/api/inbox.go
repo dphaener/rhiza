@@ -274,15 +274,15 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 	return items
 }
 
-// inboxStalledOf reads each run's session record at the clock's now. Without
-// a clock no run is stalled.
+// inboxStalledOf reads each run's session records at the clock's now. The
+// inbox asks only of live runs. Without a clock no run is stalled.
 func inboxStalledOf(ctx *Ctx, common string) func(st run.State) *RunStalled {
 	if ctx == nil || ctx.Now == nil {
 		return nil
 	}
 	sessions := session.NewStore(session.Dir(common))
 	now := ctx.Now()
-	return func(st run.State) *RunStalled { return runStalledNow(st, sessions, now) }
+	return func(st run.State) *RunStalled { return runStalledNow(st, true, sessions, now) }
 }
 
 // failedDetail is why a failed run failed, followed by the detail of the

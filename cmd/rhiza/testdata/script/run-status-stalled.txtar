@@ -1,6 +1,7 @@
 # run status marks a live run's working session stalled only once its last
 # hook report is more than 20 minutes old. The session record is written by
-# hand: its hook report is set to a fixed time and the clock moved.
+# hand: its hook report is set to a fixed time and the clock moved. Once
+# the run's process is gone, the run is stopped and never stalled.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -18,7 +19,7 @@ mkdir .rhiza/workflows
 cp $WORK/work.toml .rhiza/workflows/work.toml
 env REX_BLOCK=block:root
 env REX_SESSION=session:s1
-exec rhiza run start --workflow work --permission-mode manual &
+! exec rhiza run start --workflow work --permission-mode manual &runner&
 
 # Wait (bounded) until the agent has reported working through its hook.
 exec sh -c 'i=0; while [ $i -lt 400 ]; do grep -q "\"hook\"" "$WORK"/repo/.git/rhiza/sessions/*.json && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
@@ -38,13 +39,24 @@ stdout '^- Stalled: build session [0-9A-Za-z-]+ has not reported since 2030-01-0
 exec rhiza run status --json
 stdout '"stalled": \{'
 
+# A stopped run is never stalled: kill the run's process, leaving the
+# session record working with its old hook report.
+kill -KILL runner
+wait runner
+exec rhiza run status
+stdout '^Run [0-9A-Z]{26} stopped$'
+! stdout 'Stalled'
+exec rhiza run status --json
+! stdout '"stalled"'
+exec rhiza run ls
+! stdout 'Stalled'
+
 # An idle report is never stalled, however old.
 exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/(\"hook\": \{.*?\"state\": \")working/\${1}idle/s" "$f" > "$f.new" && mv "$f.new" "$f"; done'
 exec rhiza run status
 ! stdout 'Stalled'
 
 exec sh -c 'echo > $WORK/go'
-wait
 
 -- work.toml --
 name = "work"
