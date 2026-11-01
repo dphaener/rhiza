@@ -43,6 +43,7 @@ type DaemonRequest struct {
 	Autonomous     bool   `json:"autonomous,omitempty" desc:"Start each run with --autonomous: it goes on without the owner"`
 	MinFree        string `json:"min_free,omitempty" desc:"Start and resume nothing while the repo's filesystem has less free space than this: bytes, or a number with K, M, G or T (powers of 1024); default 10G; 0 turns the guard off"`
 	PermissionMode string `json:"permission_mode,omitempty" desc:"Start each run with this --permission-mode, for its agent steps that set none; checked against ship-change before the daemon starts"`
+	NotifyCommand  string `json:"notify_command,omitempty" desc:"Run this command through sh -c in the repo root once per new inbox item, with the item's JSON on stdin and RHIZA_INBOX_KIND, RHIZA_INBOX_ID, RHIZA_INBOX_CHANGE and RHIZA_INBOX_TITLE set; default: git config rhiza.notifyCommand. A failing or timed-out (10 s) command is logged and not retried"`
 }
 
 // DaemonResponse is the daemon after it stopped.
@@ -110,6 +111,12 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if ctx.Stderr != nil {
 		fmt.Fprintf(ctx.Stderr, "rhiza: daemon running, process %s\n", self)
 	}
+	notifyCmd := strings.TrimSpace(r.NotifyCommand)
+	if notifyCmd == "" && ctx.Git != nil {
+		if out, err := ctx.Git("config", "--get", "rhiza.notifyCommand"); err == nil {
+			notifyCmd = strings.TrimSpace(out)
+		}
+	}
 	rs := run.NewStore(run.Dir(common))
 	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}}
 	pending := map[string]daemonPending{}
@@ -118,6 +125,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if prev, ok := daemon.ReadState(common); ok {
 		state.LastStarted, state.LastResumed = prev.LastStarted, prev.LastResumed
 		state.Notified = prev.Notified
+		state.Hooked = prev.Hooked
 		state.DiskLow = prev.DiskLow
 		// A re-exec, or a restart, keeps the holds of the daemon before.
 		unjournaled = daemonRestoreUnjournaled(prev.Unjournaled)
@@ -160,7 +168,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			state.Unjournaled = append(state.Unjournaled, daemon.Event{Change: cs, At: p.at.UTC(), Runs: p.runs})
 		}
 		slices.SortFunc(state.Unjournaled, func(a, b daemon.Event) int { return strings.Compare(a.Change, b.Change) })
-		if nerr := daemonNotify(ctx, rs, &state); err == nil {
+		if nerr := daemonNotify(ctx, rs, &state, notifyCmd); err == nil {
 			err = nerr
 		}
 		saveState()
@@ -232,7 +240,7 @@ var daemonReexec = daemon.NewReexec
 // blocked-run notice; this is the daemon's, written as a blocked report to
 // the terminal Rex shows the daemon in (ctx.Rex). A working report goes
 // before each one so that Rex sees each as a new blocked state.
-func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State) error {
+func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string) error {
 	runs, err := rs.List()
 	if err != nil {
 		return Errorf("read runs: %v", err)
@@ -250,6 +258,7 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State) error {
 			titles[st.Change] = st.Title
 		}
 	}
+	state.Hooked = daemonHook(ctx, notifyCmd, items, titles, state.Hooked)
 	var kept []string
 	for _, it := range items {
 		if slices.Contains(state.Notified, it.ID) {

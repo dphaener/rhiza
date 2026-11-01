@@ -1234,6 +1234,10 @@ cmp stdout describe.golden.json
             "description": "Start and resume nothing while the repo's filesystem has less free space than this: bytes, or a number with K, M, G or T (powers of 1024); default 10G; 0 turns the guard off",
             "type": "string"
           },
+          "notify_command": {
+            "description": "Run this command through sh -c in the repo root once per new inbox item, with the item's JSON on stdin and RHIZA_INBOX_KIND, RHIZA_INBOX_ID, RHIZA_INBOX_CHANGE and RHIZA_INBOX_TITLE set; default: git config rhiza.notifyCommand. A failing or timed-out (10 s) command is logged and not retried",
+            "type": "string"
+          },
           "once": {
             "description": "Poll once, start what is picked and stop",
             "type": "boolean"
