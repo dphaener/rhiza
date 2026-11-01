@@ -20,6 +20,9 @@ stdout '"pr": 7'
 stdout '(?s)add evidence.*add capability beta.*add capability alpha'
 exists .git/rhiza/feed.json
 
+# The actor-only change set is left out.
+! stdout 'Record actor'
+
 # Seen now: a second look lists none.
 exec rhiza tui app changes --once
 stdout '"change_sets": \[\]'
