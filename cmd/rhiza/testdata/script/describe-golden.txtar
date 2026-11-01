@@ -5409,6 +5409,61 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "overlaps",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "overlaps": {
+            "description": "The overlaps, by first change set, second change set and target; empty when none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "a": {
+                  "description": "The first change set's ID",
+                  "type": "string"
+                },
+                "aspects": {
+                  "description": "The aspects that take part in the overlap, sorted",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "b": {
+                  "description": "The second change set's ID",
+                  "type": "string"
+                },
+                "target": {
+                  "description": "The node or link both write, its handle when it has one",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "a",
+                "aspects",
+                "b",
+                "target"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "overlaps"
+        ],
+        "type": "object"
+      },
+      "summary": "List the overlaps between in-flight change sets",
+      "write": false
+    },
+    {
       "name": "propose",
       "request": {
         "additionalProperties": false,
