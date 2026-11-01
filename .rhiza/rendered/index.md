@@ -377,6 +377,7 @@
 - [milestone-14](intent/milestone-14.md)
 - [milestone-15](intent/milestone-15.md)
 - [milestone-16](intent/milestone-16.md)
+- [milestone-17](intent/milestone-17.md)
 
 ## Constraints
 
@@ -549,6 +550,7 @@
 - [engine-orchestrates](decision/engine-orchestrates.md)
 - [engine-writes-question](decision/engine-writes-question.md)
 - [entry-envelope](decision/entry-envelope.md)
+- [event-hooks-from-daemon](decision/event-hooks-from-daemon.md)
 - [evidence-actor-code-commits](decision/evidence-actor-code-commits.md)
 - [evidence-actor-is-creator](decision/evidence-actor-is-creator.md)
 - [evidence-actor-leaf-scope](decision/evidence-actor-leaf-scope.md)
@@ -615,6 +617,7 @@
 - [m14-picked-by-orchestrator](decision/m14-picked-by-orchestrator.md)
 - [m15-picked-by-orchestrator](decision/m15-picked-by-orchestrator.md)
 - [m16-picked-by-orchestrator](decision/m16-picked-by-orchestrator.md)
+- [m17-picked-by-orchestrator](decision/m17-picked-by-orchestrator.md)
 - [m2-done-point](decision/m2-done-point.md)
 - [m2-eight-change-sets](decision/m2-eight-change-sets.md)
 - [m2-genesis-runs-the-work](decision/m2-genesis-runs-the-work.md)
@@ -1668,6 +1671,7 @@
 - [m14-orchestrator-picks](source/m14-orchestrator-picks.md)
 - [m15-orchestrator-picks](source/m15-orchestrator-picks.md)
 - [m16-orchestrator-picks](source/m16-orchestrator-picks.md)
+- [m17-orchestrator-picks](source/m17-orchestrator-picks.md)
 - [m5-usable-from-rex-interview](source/m5-usable-from-rex-interview.md)
 - [m6-overnight-interview](source/m6-overnight-interview.md)
 - [m7-keep-picking](source/m7-keep-picking.md)

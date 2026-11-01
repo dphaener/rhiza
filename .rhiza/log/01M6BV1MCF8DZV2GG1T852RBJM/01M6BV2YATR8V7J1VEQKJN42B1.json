@@ -1,0 +1,52 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6BV1SK7W0H8R128YK3S6K7E"
+  ],
+  "at": "2026-11-01T15:19:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Change set lifecycle events (proposed, accepted, rejected, withdrawn, landed and reopened) run a script the user configures; drift events come with drift detection"
+        },
+        "handle": "model-event-hooks",
+        "id": "01M6BV1SK7W0H8R128Y7VXGQEE",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5SWT5AEW8ZEV2XPHEFJZNRP",
+        "op": "node.create",
+        "parent": "01M5SWT589DVTV22JWM7V62Y1Q"
+      },
+      {
+        "fields": {
+          "acceptance": "daemon-event-hook.txtar with a fake command appending stdin and RHIZA_EVENT:RHIZA_EVENT_CHANGE to a file: the first daemon --once on an existing log writes nothing; after propose and accept one --once writes exactly two lines in log order and a second writes none; a move committed in a second clone and pulled fires once; git config rhiza.eventCommand is used when the flag is absent; a failing or timed-out command is logged with its entry ID, the poll succeeds and it is not retried; describe-golden.txtar is regenerated",
+          "statement": "The daemon runs the user's event command once per lifecycle move it has not handled, in log order, with the move as JSON on stdin and its event, change set, entry and title in RHIZA_EVENT_* variables, including moves pulled from other clones, never replaying history on its first run"
+        },
+        "handle": "event-hook-daemon",
+        "id": "01M6BV2VY4YA51SRD2632PTA0Q",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6BV2VY4YA51SRD25ZF3S09M",
+        "op": "node.create",
+        "parent": "01M5SWT5AEW8ZEV2XPHEFJZNRP"
+      },
+      {
+        "decision": null,
+        "from": "01M6BV2VY4YA51SRD25ZF3S09M",
+        "id": "01M6BV2WVTYDB00ZFZKJKR6WZF",
+        "link": "01M6BV2WVTYDB00ZFZKJ6KVZNN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BV2EV8GJG7S4MV9HF8HHSV",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6BV1MCF8DZV2GG1T852RBJM",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BV2YATR8V7J1VEQKJN42B1",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6BV26KDFC9S3RG68Z95CNKM"
+  ],
+  "at": "2026-11-01T15:19:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "17",
+          "statement": "Model events run your scripts: the daemon runs an owner-configured command once for each change set proposed, accepted, rejected, withdrawn, landed or reopened, including transitions pulled from other clones"
+        },
+        "handle": "milestone-17",
+        "id": "01M6BV29C8F21R1N8H8KHYYRYQ",
+        "key": "zzzz",
+        "kind": "intent",
+        "node": "01M6BV29C8F21R1N8H8HY5TYH8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "if you run out of work keep picking high value tasks. don't stop and wait for my input.",
+          "statement": "Milestone 17 carves hooks and model-event-hooks out of the Area hooks umbrella and builds lifecycle event hooks in the daemon; hook-commands and custom-kinds stay in the umbrella, and drift events wait for Area integrity"
+        },
+        "handle": "m17-picked-by-orchestrator",
+        "id": "01M6BV2AVB1WYYYFKEZZFCDY5B",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6BV2AVB1WYYYFKEZYM2BH9E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BV2AVB1WYYYFKEZYM2BH9E",
+        "id": "01M6BV2C8F22WP7P6JC4TR781R",
+        "link": "01M6BV2C8F22WP7P6JC4DMFBYY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BV24TK47JGT57WK281CG1J",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6BV29C8F21R1N8H8HY5TYH8",
+        "id": "01M6BV2DJZRC79T77WN45FT12J",
+        "link": "01M6BV2DJZRC79T77WN21ES98Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BV2AVB1WYYYFKEZYM2BH9E",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "The daemon, each poll, runs the event command (--event-command, or else git config rhiza.eventCommand) through sh -c in the repo root once per lifecycle move it has not handled, in log order, with the move as JSON on stdin and RHIZA_EVENT, RHIZA_EVENT_CHANGE, RHIZA_EVENT_ENTRY and RHIZA_EVENT_TITLE set; it records handled entry IDs in its state, seeding every existing move on first run so history is not replayed; a failing or timed-out (10 s) command is logged and not retried",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "event-hooks-from-daemon",
+        "id": "01M6BV2EV8GJG7S4MV9J19HDTT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6BV2EV8GJG7S4MV9HF8HHSV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BV2EV8GJG7S4MV9HF8HHSV",
+        "id": "01M6BV2FY2JT88ME2V3D74E5GP",
+        "link": "01M6BV2FY2JT88ME2V3CZ6KJ0M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BV24TK47JGT57WK281CG1J",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6BV1J7WC184NBNWQCX7C9WJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BV2HECR60XVYGPFKR0N57G",
+  "type": "ops",
+  "v": 1
+}
