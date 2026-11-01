@@ -1,0 +1,40 @@
+{
+  "actor": "01M6B0NJ2Y35CBPJJDNHJ74NCN",
+  "after": [
+    "01M6AZH0Z99W564D7326SD04AS"
+  ],
+  "at": "2026-11-01T08:02:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2 at 7214f794. Ran go test ./cmd/rhiza -run TestScripts/question-answer -count=1 -v: PASS. In the script, store-q and cache-q block store and cache, which change set Accepted touches; both are answered (accepted). Re-answering store-q exits 2 with code usage ('not an open question blocking this change set') and answer-store-q-2 does not exist. apart-q blocks apart; the new fix has change set Other touch apart (set apart statement=Apart, shown in change show). Answering apart-q with --change Accepted then exits 2 with code usage, and answer-apart-q exists in neither the current view nor what-if:Accepted. fold-ok passes. This closes compliance finding f1. make fmt-check vet test exits 0 (one earlier run exited 2 and passed on rerun with no FAIL lines). make self-check fails only on stale .rhiza/rendered actor/index files, which also fail at the parent commit e655f3a8, so the leaf did not cause them. The diff adds only test lines."
+        },
+        "handle": "answer-refuses-closed-or-unblocking-verified-2",
+        "id": "01M6B229Z5HYP3RPQKBPWA9B6S",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6B229Z5HYP3RPQKBMM1ADYS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B229Z5HYP3RPQKBMM1ADYS",
+        "id": "01M6B22B0WETSMQH5DTBZWPS6S",
+        "link": "01M6B22B0WETSMQH5DT8Y0HA9E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6AG9K13K9QP9QWR4NWM02HG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M69VQG7GJARDSWZWKDJ4CWQ1",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B22CR74EQRHAC931GN1WRZ",
+  "type": "ops",
+  "v": 1
+}
