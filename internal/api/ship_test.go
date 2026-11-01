@@ -126,7 +126,7 @@ const (
 	shipPRView   = "pr view cs/ship-it --json number,url,state,headRefOid,mergeable,statusCheckRollup"
 	shipMergeArg = "pr merge 7 --squash --match-head-commit abc1234def"
 	shipMergedPR = "pr view 7 --json mergeCommit,state"
-	shipRunList  = "run list --commit fff0000aaa --json name,status,conclusion"
+	shipRunList  = "run list --commit fff0000aaa --json databaseId,name,status,conclusion"
 )
 
 // shipFixture is a session fixture with the change set "Ship it" current
@@ -1370,5 +1370,41 @@ func TestShipMergeAfterPlanMerge(t *testing.T) {
 	}
 	if m := resp.(ShipMergeResponse); m.AlreadyMerged || m.MergeCommit != "bbb2222ccc" || len(merges) != 1 {
 		t.Errorf("merge = %+v, merges %q", m, merges)
+	}
+}
+
+func TestShipCheckMainRerunsFailedOnce(t *testing.T) {
+	f, g, state := shipFixture(t)
+	if err := writeShipState(state, shipState{PR: 7, Branch: "cs/ship-it", Head: "abc1234def", MergeCommit: "fff0000aaa"}); err != nil {
+		t.Fatal(err)
+	}
+	g.answers[shipRunList] = `[{"databaseId":99,"name":"CI","status":"completed","conclusion":"failure"},{"name":"nodb","status":"completed","conclusion":"failure"}]`
+	g.answers["run rerun 99 --failed"] = ""
+	r := shipCheck(t, f, `{"main":true}`)
+	if r.Passed || r.Settled || !slices.Equal(r.Reran, []string{"99"}) || !strings.Contains(r.Detail, "not settled") {
+		t.Fatalf("first failure: %+v", r)
+	}
+	if st, _ := readShipState(state); st.RerunHead != "fff0000aaa" || !slices.Equal(st.Reruns, []string{"99"}) {
+		t.Errorf("state = %+v", st)
+	}
+	// Failing again on the same head fails as before, with no second rerun.
+	n := len(g.calls)
+	r = shipCheck(t, f, `{"main":true}`)
+	if r.Passed || !r.Settled || len(r.Reran) != 0 || !strings.HasPrefix(r.Detail, "failed: ") {
+		t.Errorf("second failure: %+v", r)
+	}
+	for _, c := range g.calls[n:] {
+		if strings.Contains(c, "run rerun") {
+			t.Errorf("reran twice: %q", g.calls[n:])
+		}
+	}
+}
+
+func TestShipCheckNoRunIDNotRerun(t *testing.T) {
+	f, g, _ := shipFixture(t)
+	g.answers[shipPRView] = openPR(`{"name":"ext","status":"COMPLETED","conclusion":"FAILURE","detailsUrl":"https://ci.example/job/1"}`)
+	r := shipCheck(t, f, `{"settled":true}`)
+	if !r.Settled || r.Green || len(r.Reran) != 0 {
+		t.Errorf("no run id: %+v", r)
 	}
 }

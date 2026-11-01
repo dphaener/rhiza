@@ -23,6 +23,8 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/id"
@@ -84,6 +86,7 @@ type ShipCheckResponse struct {
 	Rebased   string      `json:"rebased,omitempty" desc:"With --settled on a conflicting pull request: the head pushed after rebasing the branch onto main"`
 	Conflicts []string    `json:"conflicts,omitempty" desc:"With --settled on a conflicting pull request: the files whose conflict outside the rendered files stopped the rebase; the command exits 75"`
 	Question  string      `json:"question,omitempty" desc:"The handle of the question raised about those conflicts"`
+	Reran     []string    `json:"reran,omitempty" desc:"The GitHub Actions run IDs whose failed jobs this check reran, once per head, instead of failing; the check then reports not settled"`
 }
 
 // ShipCheck is one CI check on a commit, normalised from gh's check runs,
@@ -92,6 +95,10 @@ type ShipCheck struct {
 	Name       string `json:"name" desc:"The check's name"`
 	Status     string `json:"status" desc:"COMPLETED once it has finished, else its status, such as IN_PROGRESS or PENDING"`
 	Conclusion string `json:"conclusion,omitempty" desc:"How it finished, such as SUCCESS or FAILURE; empty until it has"`
+	// RunID is the GitHub Actions run the check belongs to, when known
+	// (from the check's detailsUrl, or a workflow run's databaseId). It
+	// is what a rerun needs; checks without one are never rerun.
+	RunID string `json:"-"`
 }
 
 // ShipMergeRequest takes nothing: the PR and its head come from the state
@@ -208,6 +215,11 @@ type shipState struct {
 	// head before. ship.rebase also clears Head and Checks, so nothing
 	// lands or merges until ship.check records the rebased head's CI.
 	Pushed string `json:"pushed,omitempty"`
+	// RerunHead is the head (or merge commit) whose failed checks were
+	// rerun, and Reruns the Actions run IDs rerun for it: a head is rerun
+	// once, so a second failure on it fails.
+	RerunHead string   `json:"rerun_head,omitempty"`
+	Reruns    []string `json:"reruns,omitempty"`
 }
 
 // readShipState reads the state file at path; a missing file is the zero
@@ -283,6 +295,7 @@ func parsePRView(b []byte) (prView, error) {
 			Conclusion string `json:"conclusion"`
 			Context    string `json:"context"`
 			State      string `json:"state"`
+			DetailsURL string `json:"detailsUrl"`
 		} `json:"statusCheckRollup"`
 	}
 	if err := json.Unmarshal(b, &raw); err != nil {
@@ -298,15 +311,29 @@ func parsePRView(b []byte) (prView, error) {
 			v.Checks = append(v.Checks, c)
 			continue
 		}
-		v.Checks = append(v.Checks, ShipCheck{Name: r.Name, Status: r.Status, Conclusion: r.Conclusion})
+		v.Checks = append(v.Checks, ShipCheck{Name: r.Name, Status: r.Status, Conclusion: r.Conclusion, RunID: actionsRunID(r.DetailsURL)})
 	}
 	return v, nil
 }
 
+// actionsRunRe finds the run ID in an Actions details URL such as
+// https://github.com/o/r/actions/runs/42/job/9.
+var actionsRunRe = regexp.MustCompile(`/actions/runs/([0-9]+)`)
+
+// actionsRunID is the GitHub Actions run ID in a check's details URL, or
+// "" when the URL is not an Actions one.
+func actionsRunID(url string) string {
+	if m := actionsRunRe.FindStringSubmatch(url); m != nil {
+		return m[1]
+	}
+	return ""
+}
+
 // parseRunList parses `gh run list --commit <sha> --json
-// name,status,conclusion`.
+// databaseId,name,status,conclusion`.
 func parseRunList(b []byte) ([]ShipCheck, error) {
 	var raw []struct {
+		DatabaseID int64  `json:"databaseId"`
 		Name       string `json:"name"`
 		Status     string `json:"status"`
 		Conclusion string `json:"conclusion"`
@@ -316,7 +343,11 @@ func parseRunList(b []byte) ([]ShipCheck, error) {
 	}
 	out := make([]ShipCheck, 0, len(raw))
 	for _, r := range raw {
-		out = append(out, ShipCheck{Name: r.Name, Status: r.Status, Conclusion: r.Conclusion})
+		c := ShipCheck{Name: r.Name, Status: r.Status, Conclusion: r.Conclusion}
+		if r.DatabaseID != 0 {
+			c.RunID = strconv.FormatInt(r.DatabaseID, 10)
+		}
+		out = append(out, c)
 	}
 	return out, nil
 }
@@ -371,7 +402,7 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 				WithNext(shipMergeNext)
 		}
 		resp.PR, resp.URL, resp.Commit = st.PR, st.URL, st.MergeCommit
-		out, err := gh(ctx, t.dir(), "run", "list", "--commit", st.MergeCommit, "--json", "name,status,conclusion")
+		out, err := gh(ctx, t.dir(), "run", "list", "--commit", st.MergeCommit, "--json", "databaseId,name,status,conclusion")
 		if err != nil {
 			return nil, Errorf("%v", err)
 		}
@@ -424,8 +455,15 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 	default:
 		resp.Passed = resp.Green
 	}
+	if resp.Settled && !resp.Green {
+		if err := shipRerunFailed(ctx, t, &st, &resp, path); err != nil {
+			return nil, err
+		}
+	}
 	if !resp.Settled {
-		resp.Detail = notSettled(resp.Checks)
+		if resp.Detail == "" {
+			resp.Detail = notSettled(resp.Checks)
+		}
 	} else if !resp.Green {
 		resp.Detail = "failed: " + strings.Join(resp.Failed, ", ")
 	}
@@ -442,6 +480,45 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 	}
 	resp.Written = true
 	return resp, nil
+}
+
+// shipRerunFailed reruns, once per head, the failed jobs of the Actions
+// runs of the settled checks that failed: it records the runs in the state
+// file and turns resp into not settled, so a wait keeps waiting for the
+// rerun. A head already rerun, and failed checks with no Actions run ID,
+// are left to fail as before.
+func shipRerunFailed(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckResponse, path string) error {
+	if st.RerunHead == resp.Commit && len(st.Reruns) > 0 {
+		return nil
+	}
+	var runs []string
+	seen := map[string]bool{}
+	for _, c := range resp.Checks {
+		if c.RunID == "" || seen[c.RunID] || passingConclusions[strings.ToUpper(c.Conclusion)] {
+			continue
+		}
+		seen[c.RunID] = true
+		runs = append(runs, c.RunID)
+	}
+	if len(runs) == 0 {
+		return nil
+	}
+	// Record before rerunning: a crash between the two then costs a
+	// missed rerun, never a second one.
+	st.RerunHead, st.Reruns = resp.Commit, runs
+	if err := writeShipState(path, *st); err != nil {
+		return err
+	}
+	for _, id := range runs {
+		if _, err := gh(ctx, t.dir(), "run", "rerun", id, "--failed"); err != nil {
+			return Errorf("%v", err)
+		}
+	}
+	resp.Reran = runs
+	resp.Settled, resp.Green, resp.Passed = false, false, false
+	resp.Detail = fmt.Sprintf("not settled: reran the failed jobs of %s %s after %s failed", shipPlural(len(runs), "run", "runs"), strings.Join(runs, ", "), strings.Join(resp.Failed, ", "))
+	resp.Failed = nil
+	return nil
 }
 
 // shipSettleConflict runs the ship rebase logic for a pull request GitHub

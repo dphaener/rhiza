@@ -16,6 +16,10 @@ When a PR or main check fails, ship check reruns that GitHub Actions run's faile
 
 - derived-from [m10-orchestrator-picks](../source/m10-orchestrator-picks.md)
 
+### In
+
+- decided-by [ship-check-reruns-failed-once](../capability/rhiza/orchestration/shipping/wait-green-pr/ship-check-reruns-failed-once.md)
+
 ## History
 
 - `01M6A0JENBMBYPYRN5195AGPKH` Plan milestone 10: runs heal themselves, picked by the orchestrator under the owner's standing instruction
