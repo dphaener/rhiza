@@ -1,0 +1,22 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6BQJSKYR9SB3TF0GDYD1ACD"
+  ],
+  "at": "2026-11-01T15:32:18Z",
+  "body": {
+    "carve": {
+      "entry": "01M6BVTT4H2DP1VDHGSZB5XV7A",
+      "to": "01M6BVTCJCSG1JKEERK7Y3ACYJ"
+    },
+    "drop": [
+      "01M5SWSXMB3P4D5RJH5P93S5PT"
+    ],
+    "ops": []
+  },
+  "change_set": "01M5SWSXAV6DZAQAPTJKH3TCFA",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BVTT4H2DP1VDHGSZ87X33M",
+  "type": "ops",
+  "v": 2
+}

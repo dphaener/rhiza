@@ -1,0 +1,109 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6BZTTNXEYEKZQRRCWSHFZQV"
+  ],
+  "at": "2026-11-01T16:42:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "18",
+          "statement": "Test your hooks, discuss a change: rhiza hook ls shows which hook commands are set and where from, rhiza hook run tries one with a sample, and notes attached to a node, a change set or one of its operations hold the discussion, shown by show and change show"
+        },
+        "handle": "milestone-18",
+        "id": "01M6BZTXXNFYG680ETMA4438F4",
+        "key": "zzzzi",
+        "kind": "intent",
+        "node": "01M6BZTXXNFYG680ETM6EFDFC9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "just checking in. keep cracking on",
+          "statement": "Milestone 18 carves hook-commands out of the Area hooks umbrella and change-notes out of the Area change-sets umbrella; actor stamping is already landed and needs nothing"
+        },
+        "handle": "m18-picked-by-orchestrator",
+        "id": "01M6BZV11BQJ4MYAB0309B7MDK",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6BZV11BQJ4MYAB02ZS3T7TW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BZV11BQJ4MYAB02ZS3T7TW",
+        "id": "01M6BZV47CEM9800CVYSK7THFJ",
+        "link": "01M6BZV47CEM9800CVYP4S79MJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZTRS34CKEPT1JT06CRN8C",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6BZTXXNFYG680ETM6EFDFC9",
+        "id": "01M6BZV6RVEE1K34TKE1J05J2D",
+        "link": "01M6BZV6RVEE1K34TKDY5V8YDG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZV11BQJ4MYAB02ZS3T7TW",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "The daemon records its notify and event commands and where each came from (daemon flag or git config) in its state at start; rhiza hook ls lists notify and event with command and source, preferring a live daemon's values over git config, and unset otherwise; rhiza hook run <notify|event> [--command c] runs the command once with a sample payload through the daemon's own runner, prints its output and exit status, fails when it fails, exits 2 when unset, and writes nothing to the daemon's state",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "hook-ls-reads-daemon-state",
+        "id": "01M6BZV8T9EGJ3QE3ZG09K0WT3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6BZV8T9EGJ3QE3ZG02AXKY3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BZV8T9EGJ3QE3ZG02AXKY3",
+        "id": "01M6BZVA6Z4AW5D75G4AVBQT7E",
+        "link": "01M6BZVA6Z4AW5D75G49QPYZPX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZTRS34CKEPT1JT06CRN8C",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A note is a new node kind, note, with no parent, its body in statement and an optional op field naming an operation ID, linked to what it discusses by a new link type discusses that may point at any node or change set; a note on an operation links to the operation's change set; rhiza note add <target> <text> [--op id] writes the note and its link in one entry with an automatic handle note-<short id>; show and change show list the notes that discuss them, oldest first, with actor and time",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "notes-are-note-nodes",
+        "id": "01M6BZVBEP9QHNWMDDYZJG3EBW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6BZVBEP9QHNWMDDYW13RPZE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BZVBEP9QHNWMDDYW13RPZE",
+        "id": "01M6BZVD4CYRE2S6RPS5E7VYBA",
+        "link": "01M6BZVD4CYRE2S6RPS2H88YA5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZTRS34CKEPT1JT06CRN8C",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6BVT9HNN801JPDD99CM049F",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BZVG4E7KCAE3BVHFSD71JY",
+  "type": "ops",
+  "v": 1
+}

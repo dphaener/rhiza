@@ -1,0 +1,75 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6BVTM1NRW34YQJKM6ZRTSDS"
+  ],
+  "at": "2026-11-01T16:42:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "rhiza hook ls lists the hook commands and where each is set, and rhiza hook run runs one by hand with a sample to test it"
+        },
+        "handle": "hook-commands",
+        "id": "01M6BVTM1NRW34YQJKM0YESYXW",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5SWT5CJM33MQT7VC5AFCBDJ",
+        "op": "node.create",
+        "parent": "01M5SWT589DVTV22JWM7V62Y1Q"
+      },
+      {
+        "fields": {
+          "acceptance": "hook-commands.txtar: hook ls shows both unset; after git config rhiza.notifyCommand it shows notify from git config; with a recorded daemon state carrying --notify-command it shows daemon flag; daemon status --json shows the recorded commands; describe-golden.txtar is regenerated",
+          "statement": "rhiza hook ls lists the notify and event hooks, each with its command and source: daemon flag (read from a live daemon's state), git config, or unset"
+        },
+        "handle": "hook-ls",
+        "id": "01M6BZW3EF9VGT73M6T5C606QN",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6BZW3EF9VGT73M6T3FB655T",
+        "op": "node.create",
+        "parent": "01M5SWT5CJM33MQT7VC5AFCBDJ"
+      },
+      {
+        "decision": null,
+        "from": "01M6BZW3EF9VGT73M6T3FB655T",
+        "id": "01M6BZW4NE3519AEKCHRHBKQND",
+        "link": "01M6BZW4NE3519AEKCHNGDWQAS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZV8T9EGJ3QE3ZG02AXKY3",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "hook-commands.txtar: hook run notify with a fake command appending stdin and RHIZA_INBOX_KIND writes one line and exits 0; hook run event sets RHIZA_EVENT; a failing command exits non-zero with its output shown; an unset hook exits 2; the daemon state's handled items are unchanged",
+          "statement": "rhiza hook run <notify|event> [--command c] runs that hook's command once with a sample payload through the daemon's runner, showing its output and exit status, and records nothing"
+        },
+        "handle": "hook-run",
+        "id": "01M6BZW5XMG33S31H2BQ4TM5HR",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6BZW5XMG33S31H2BKT2JBZG",
+        "op": "node.create",
+        "parent": "01M5SWT5CJM33MQT7VC5AFCBDJ"
+      },
+      {
+        "decision": null,
+        "from": "01M6BZW5XMG33S31H2BKT2JBZG",
+        "id": "01M6BZW75HKTJCNCQ5BR664JJQ",
+        "link": "01M6BZW75HKTJCNCQ5BQBZC8XD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZV8T9EGJ3QE3ZG02AXKY3",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6BVTB161RJF58ZDY12SFBH3",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BZW94GTS7ZYP6KF1EPEHRH",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,33 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6BVTHAQF3ZZ54NHVWT3BTSB"
+  ],
+  "at": "2026-11-01T15:32:12Z",
+  "body": {
+    "carve": {
+      "entry": "01M6BVTM1NRW34YQJKM42PNDC8",
+      "from": "01M5SWT54GSWBT5V7M19YZ1WZ2"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "genesis hook ls lists hooks and genesis hook run runs one by hand to test it."
+        },
+        "handle": "hook-commands",
+        "id": "01M6BVTM1NRW34YQJKM0YESYXW",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5SWT5CJM33MQT7VC5AFCBDJ",
+        "op": "node.create",
+        "parent": "01M5SWT589DVTV22JWM7V62Y1Q"
+      }
+    ]
+  },
+  "change_set": "01M6BVTB161RJF58ZDY12SFBH3",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BVTM1NRW34YQJKM6ZRTSDS",
+  "type": "ops",
+  "v": 2
+}

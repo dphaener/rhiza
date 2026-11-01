@@ -378,6 +378,7 @@
 - [milestone-15](intent/milestone-15.md)
 - [milestone-16](intent/milestone-16.md)
 - [milestone-17](intent/milestone-17.md)
+- [milestone-18](intent/milestone-18.md)
 
 ## Constraints
 
@@ -583,6 +584,7 @@
 - [golden-files](decision/golden-files.md)
 - [helper-token-total](decision/helper-token-total.md)
 - [hook-context-posttooluse-shape](decision/hook-context-posttooluse-shape.md)
+- [hook-ls-reads-daemon-state](decision/hook-ls-reads-daemon-state.md)
 - [hooks-from-the-start](decision/hooks-from-the-start.md)
 - [human-readable-tab-names](decision/human-readable-tab-names.md)
 - [import-shape](decision/import-shape.md)
@@ -618,6 +620,7 @@
 - [m15-picked-by-orchestrator](decision/m15-picked-by-orchestrator.md)
 - [m16-picked-by-orchestrator](decision/m16-picked-by-orchestrator.md)
 - [m17-picked-by-orchestrator](decision/m17-picked-by-orchestrator.md)
+- [m18-picked-by-orchestrator](decision/m18-picked-by-orchestrator.md)
 - [m2-done-point](decision/m2-done-point.md)
 - [m2-eight-change-sets](decision/m2-eight-change-sets.md)
 - [m2-genesis-runs-the-work](decision/m2-genesis-runs-the-work.md)
@@ -668,6 +671,7 @@
 - [no-state-in-tab-title](decision/no-state-in-tab-title.md)
 - [no-tmux-fallback](decision/no-tmux-fallback.md)
 - [notes-are-discussion](decision/notes-are-discussion.md)
+- [notes-are-note-nodes](decision/notes-are-note-nodes.md)
 - [notify-command-flag-or-git-config](decision/notify-command-flag-or-git-config.md)
 - [one-capability-tree](decision/one-capability-tree.md)
 - [one-change-set-one-pr](decision/one-change-set-one-pr.md)
@@ -1672,6 +1676,7 @@
 - [m15-orchestrator-picks](source/m15-orchestrator-picks.md)
 - [m16-orchestrator-picks](source/m16-orchestrator-picks.md)
 - [m17-orchestrator-picks](source/m17-orchestrator-picks.md)
+- [m18-orchestrator-picks](source/m18-orchestrator-picks.md)
 - [m5-usable-from-rex-interview](source/m5-usable-from-rex-interview.md)
 - [m6-overnight-interview](source/m6-overnight-interview.md)
 - [m7-keep-picking](source/m7-keep-picking.md)
