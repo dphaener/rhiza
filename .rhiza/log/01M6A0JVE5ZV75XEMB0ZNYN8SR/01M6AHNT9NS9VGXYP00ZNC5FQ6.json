@@ -1,0 +1,40 @@
+{
+  "actor": "01M6AH4G2AEYQFJ0EBKNSZM4B8",
+  "after": [
+    "01M6A0P5MCRBXPQ8PEK0H3T46P"
+  ],
+  "at": "2026-11-01T03:15:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c4ed0b9c, go test ./internal/api -run 'TestDaemonHeld|TestDaemonPicks' -count=1 -v passes: TestDaemonHeld keeps an unjournaled change set held at daemonUnjournaledHold-1s, releases it at 15 minutes, holds it again as pending after a re-pick, releases it early on a new journal, and drops a no-longer-accepted (landed) one at once with no new journal. go test ./cmd/rhiza -run 'TestScripts/(daemon-status|describe-golden)$' passes, with daemon-status.txtar matching 'Not journaled: ... wrote no journal; retried at 2026-01-01T00:15:00Z, or sooner when a run of it journals'. The diff wires the accepted check into daemonHeld in daemonPoll1 and leaves daemonStartGrace at one minute. make fmt-check vet test exit 0; make self-check fails only on stale rendered actor files from this run, not the leaf's code."
+        },
+        "handle": "daemon-unjournaled-retry-verified",
+        "id": "01M6AHNREP55X8R58NAFKCAB48",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AHNREP55X8R58NAF1XD1HB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AHNREP55X8R58NAF1XD1HB",
+        "id": "01M6AHNS5BX00MY64ZWJKF8067",
+        "link": "01M6AHNS5BX00MY64ZWER1MD8J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NNP5H447ACNTCPMS7D9F",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6A0JVE5ZV75XEMB0ZNYN8SR",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AHNT9NS9VGXYP00ZNC5FQ6",
+  "type": "ops",
+  "v": 1
+}
