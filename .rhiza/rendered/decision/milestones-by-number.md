@@ -14,7 +14,13 @@ Sibling intents that carry a milestone field are ordered by its number, before t
 
 ### Out
 
+- supersedes [m2cs2-milestone-order](m2cs2-milestone-order.md)
 - derived-from [m12-orchestrator-picks](../source/m12-orchestrator-picks.md)
+
+### In
+
+- decided-by [milestones-in-number-order](../capability/rhiza/orchestration/daemon/daemon-picks/milestones-in-number-order.md)
+- decided-by [milestone-groups](../capability/rhiza/views/roadmap/milestone-groups.md)
 
 ## History
 

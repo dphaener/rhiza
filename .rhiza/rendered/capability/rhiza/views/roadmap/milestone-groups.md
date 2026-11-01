@@ -17,6 +17,7 @@ genesis roadmap shows the groups of milestone intents first, then the rest.
 - decided-by [m2cs2-milestone-order](../../../../decision/m2cs2-milestone-order.md)
 - decided-by [m2cs2-roadmap-headings](../../../../decision/m2cs2-roadmap-headings.md)
 - decided-by [m2cs2-nearest-milestone](../../../../decision/m2cs2-nearest-milestone.md)
+- decided-by [milestones-by-number](../../../../decision/milestones-by-number.md)
 
 ### In
 
