@@ -1,0 +1,15 @@
+{
+  "actor": "01M6ACQR2WXQ7BKESXZY5G1GFG",
+  "after": [],
+  "at": "2026-11-01T01:50:04Z",
+  "body": {
+    "intent": "rhiza why trims a source's quotes to those cited by every decision of the walk that reaches it, so a shared source keeps each decision's cited quote and the result does not depend on walk order",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6ACSB6VDMCY60F0JDJARNPW",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6ACSB6VDMCY60F0JGYJVNDV",
+  "type": "open",
+  "v": 1
+}
