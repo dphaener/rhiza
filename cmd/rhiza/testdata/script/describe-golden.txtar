@@ -1537,6 +1537,10 @@ cmp stdout describe.golden.json
       "request": {
         "additionalProperties": false,
         "properties": {
+          "all": {
+            "description": "Include the change sets whose ops only create or update actor nodes, which are left out by default",
+            "type": "boolean"
+          },
           "cursor": {
             "description": "Where to go on: the next_cursor of the page before",
             "type": "string"

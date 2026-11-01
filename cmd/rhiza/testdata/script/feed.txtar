@@ -16,22 +16,28 @@ exec rhiza feed --since 2030-01-01T00:00:00Z
 stdout '^Nothing landed\.$'
 
 # Three record change sets land at three times, after the actor record the
-# first of them writes.
+# first of them writes: two planning records and an intention record.
 env RHIZA_TEST_NOW=2026-10-25T12:00:00Z
 exec rhiza add capability alpha --record --field 'statement=Alpha'
 env RHIZA_TEST_NOW=2026-10-26T12:00:00Z
-exec rhiza add capability beta --record --field 'statement=Beta'
+exec rhiza add intent beta --record
 env RHIZA_TEST_NOW=2026-10-27T12:00:00Z
 exec rhiza add capability gamma --record --field 'statement=Gamma'
 
-# Land order, oldest first, none of them with a PR.
+# Land order, oldest first, none of them with a PR. The actor-only record is
+# hidden by default while the planning records and the intent are shown;
+# --all shows all of them.
 exec rhiza feed --since 2026-10-25T00:00:00Z
-stdout -count=4 '^- '
-stdout '(?s)Record actor.*add capability alpha.*add capability beta.*add capability gamma'
+stdout -count=3 '^- '
+! stdout 'Record actor'
+stdout '(?s)add capability alpha.*add intent beta.*add capability gamma'
 stdout ' record '
 stdout '\(1 leaf\)$'
 ! stdout '#[0-9]'
 ! stdout 'next:'
+exec rhiza feed --since 2026-10-25T00:00:00Z --all
+stdout -count=4 '^- '
+stdout '(?s)Record actor.*add capability alpha.*add intent beta.*add capability gamma'
 
 # --since filters by land time, the instant itself included.
 exec rhiza feed --since 2026-10-26T00:00:00Z --json
@@ -43,7 +49,8 @@ stdout '^Nothing landed\.$'
 ! exec rhiza feed --since yesterday --json
 stdout '"code": "usage"'
 
-# --limit 2 gives a cursor; the next page holds the other two.
+# --limit 2 gives a cursor; the next page holds the other one. The hidden
+# record is filtered before paging, so the first page is full.
 exec rhiza feed --since 2026-10-25T00:00:00Z --limit 2 --json
 stdout '"next_cursor": "[A-Za-z0-9_-]+"'
 exec rhiza feed --since 2026-10-25T00:00:00Z --limit 2
@@ -51,6 +58,17 @@ stdout -count=2 '^- '
 stdout '^next: rhiza feed --limit 2 --since 2026-10-25T00:00:00Z --cursor [A-Za-z0-9_-]+$'
 exec sh -c 'rhiza feed --since 2026-10-25T00:00:00Z --limit 2 | sed -n "s/^next: .* --cursor //p" > cursor.txt'
 exec sh -c 'rhiza feed --since 2026-10-25T00:00:00Z --limit 2 --cursor "$(cat cursor.txt)"'
+stdout -count=1 '^- '
+stdout 'add capability gamma'
+! stdout 'next:'
+
+# With --all the pages are full too, and the next-page line carries --all.
+exec rhiza feed --since 2026-10-25T00:00:00Z --limit 2 --all
+stdout -count=2 '^- '
+stdout 'Record actor'
+stdout '^next: rhiza feed --limit 2 --since 2026-10-25T00:00:00Z --all --cursor [A-Za-z0-9_-]+$'
+exec sh -c 'rhiza feed --since 2026-10-25T00:00:00Z --limit 2 --all | sed -n "s/^next: .* --cursor //p" > cursor.txt'
+exec sh -c 'rhiza feed --since 2026-10-25T00:00:00Z --limit 2 --all --cursor "$(cat cursor.txt)"'
 stdout -count=2 '^- '
 stdout 'add capability gamma'
 ! stdout 'next:'
@@ -85,6 +103,9 @@ exec rhiza render
 exec git add -A
 exec git commit -qm 'Land Store things'
 exec rhiza feed --since 2026-10-29T00:00:00Z
+stdout -count=1 '^- '
+stdout 'intention'
+exec rhiza feed --since 2026-10-29T00:00:00Z --all
 stdout -count=1 '^- '
 stdout 'intention'
 exec sh -c 'rhiza reopen --change $(rhiza change ls | sed -n "s/^- \\([0-9A-Z]*\\) landed intention.*/\\1/p")'

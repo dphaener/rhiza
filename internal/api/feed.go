@@ -50,6 +50,7 @@ type FeedRequest struct {
 	Limit  int    `json:"limit,omitempty" desc:"The most change sets to return, 1 to 1000; default 100"`
 	Cursor string `json:"cursor,omitempty" desc:"Where to go on: the next_cursor of the page before"`
 	Since  string `json:"since,omitempty" desc:"Keep the change sets landed at or after this time, RFC 3339"`
+	All    bool   `json:"all,omitempty" flag:"all" desc:"Include the change sets whose ops only create or update actor nodes, which are left out by default"`
 }
 
 // FeedResponse is one page of the feed.
@@ -111,6 +112,9 @@ func runFeed(ctx *Ctx, req any) (any, error) {
 		if c.State != changeset.StateLanded {
 			continue
 		}
+		if !q.All && feedActorOnly(m, c) {
+			continue
+		}
 		land, ok := latestLand(c)
 		if !ok || (!since.IsZero() && land.At.Before(since)) || id.Compare(land.Entry, after) <= 0 {
 			continue
@@ -132,6 +136,26 @@ func runFeed(ctx *Ctx, req any) (any, error) {
 	}
 	resp.ChangeSets = append(resp.ChangeSets, items...)
 	return resp, nil
+}
+
+// feedActorOnly reports whether every op of c creates or updates an actor
+// node: the record of an agent or person joining, not work.
+func feedActorOnly(m Model, c changeset.ChangeSet) bool {
+	if len(c.Ops) == 0 {
+		return false
+	}
+	for _, o := range c.Ops {
+		if o.Type != op.TypeNodeCreate && o.Type != op.TypeNodeUpdate {
+			return false
+		}
+		if o.Type == op.TypeNodeCreate && o.Kind == op.KindActor {
+			continue
+		}
+		if n, ok := m.Node(o.Node); !ok || n.Kind != op.KindActor {
+			return false
+		}
+	}
+	return true
 }
 
 // latestLand is the last land move that applied to c.
@@ -228,6 +252,9 @@ func feedCommand(q FeedRequest) string {
 	}
 	if q.Since != "" {
 		parts = append(parts, "--since", q.Since)
+	}
+	if q.All {
+		parts = append(parts, "--all")
 	}
 	return commandLine(parts...)
 }

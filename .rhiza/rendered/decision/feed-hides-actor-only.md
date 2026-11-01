@@ -16,6 +16,10 @@ rhiza feed and the changes app leave out a landed change set whose ops all creat
 
 - derived-from [m15-orchestrator-picks](../source/m15-orchestrator-picks.md)
 
+### In
+
+- decided-by [feed-hides-actor-records](../capability/rhiza/views/change-feed/feed-command/feed-hides-actor-records.md)
+
 ## History
 
 - `01M6BH7V2AFN6B2PYHQ4NFY3AG` Plan milestone 15: the feed shows the work, what-if reads stop rereading the log, picked by the orchestrator under the owner's standing instruction
