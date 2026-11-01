@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M65G1AR97PXK13895PP9XNK8"
+  ],
+  "at": "2026-11-01T02:51:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript stops a run, sets RHIZA_SESSION and expects rhiza run resume to fail with the session ID on stderr and the run's journal unchanged; with RHIZA_SESSION cleared the resume goes on",
+          "statement": "rhiza run resume refuses inside an agent session (RHIZA_SESSION set) exactly as rhiza run start does, naming the session on stderr and journaling nothing"
+        },
+        "handle": "run-resume-refuses-agent-session",
+        "id": "01M6AG9P18J4KJEAWFPS4NA0BF",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6AG9P18J4KJEAWFPQ5N731G",
+        "op": "node.create",
+        "parent": "01M5TYGK7EFHKPB9JG3A2MH2G2"
+      },
+      {
+        "decision": null,
+        "from": "01M6AG9P18J4KJEAWFPQ5N731G",
+        "id": "01M6AG9PQV44363CR4FN4P266E",
+        "link": "01M6AG9PQV44363CR4FMXG3W45",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6AG995WE42M1YZ3GAJ77W2T",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M65G0WKX7Y74QCRB8EAN573P",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AG9QVZMQ9PX8XWHB319KYY",
+  "type": "ops",
+  "v": 1
+}

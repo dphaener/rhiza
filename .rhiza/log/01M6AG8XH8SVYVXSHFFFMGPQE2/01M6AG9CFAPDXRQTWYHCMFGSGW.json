@@ -1,0 +1,121 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6AG90VK8XXS7KAJ0VRZR2V0"
+  ],
+  "at": "2026-11-01T02:51:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "11",
+          "statement": "Owner gates hold: an answer always lands in the change set its question blocks and never answers a question twice, no agent session resumes a run any more than it starts one, and the command step's capability says what exit 75 does"
+        },
+        "handle": "milestone-11",
+        "id": "01M6AG92RC8S6Q0G5ZG43H8VNK",
+        "key": "zzy",
+        "kind": "intent",
+        "node": "01M6AG92RC8S6Q0G5ZG1EE6FBQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "if you run out of work keep picking high value tasks. don't stop and wait for my input.",
+          "statement": "Milestone 11 is the drafts discovered in milestones 7 to 10 that guard the owner's gates: question.answer refusals and run resume refusing inside an agent session, plus the command step's exit-75 statement recorded directly; paging log, roadmap and why stays proposed as low value"
+        },
+        "handle": "m11-picked-by-orchestrator",
+        "id": "01M6AG942SAGB9GPN7VR1GZJRE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6AG942SAGB9GPN7VQ8G4RW4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AG942SAGB9GPN7VQ8G4RW4",
+        "id": "01M6AG9574444AWFXKAGSD62EM",
+        "link": "01M6AG9574444AWFXKAGRDGF0W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6AG8ZQGJBAGAN31DV3M6EFN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6AG92RC8S6Q0G5ZG1EE6FBQ",
+        "id": "01M6AG967Z64H0P0F0DQTYAVP7",
+        "link": "01M6AG967Z64H0P0F0DQQG4DKQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6AG942SAGB9GPN7VQ8G4RW4",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "question.answer refuses, as a usage error, a question that already has a live answers link and one that does not block the target change set, using the blocker rule the inbox and plan already use (a blocks link to the change set, or to a node it touches or one of that node's ancestors)",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "answer-reuses-blocker-rule",
+        "id": "01M6AG977BGTQNG1XJRYJBCSWM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6AG977BGTQNG1XJRWS2GRQF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AG977BGTQNG1XJRWS2GRQF",
+        "id": "01M6AG987CY023FFBPXNJ22K6V",
+        "link": "01M6AG987CY023FFBPXK2FE9T0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6AG8ZQGJBAGAN31DV3M6EFN",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "rhiza run resume refuses inside an agent session (RHIZA_SESSION set) as run start does, naming the session and journaling nothing; sign-off is not changed here",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "resume-refuses-agent-session",
+        "id": "01M6AG995WE42M1YZ3GEDHQ252",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6AG995WE42M1YZ3GAJ77W2T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AG995WE42M1YZ3GAJ77W2T",
+        "id": "01M6AG9A710QBK9CAKZMFKHCM4",
+        "link": "01M6AG9A710QBK9CAKZM6WP2TS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6AG8ZQGJBAGAN31DV3M6EFN",
+        "type": "derived-from"
+      },
+      {
+        "base": "01M5TYGHN9QSF654FF0XZJCF1K",
+        "handle": null,
+        "id": "01M6AG9B6S2JB15ZB7XJX89793",
+        "node": "01M5TYGHN9QSF654FF0V1Q309N",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A testscript runs a command step that exits 0 and one that exits 1 and follows each outcome; a Go test in internal/run shows a command exiting 75 stops the run with its stop: detail and a resume reruns the step",
+          "statement": "A command step runs a shell command in the worktree and maps its exit code to an outcome; exit 75 is not an outcome: it stops the run for the owner with the command's last stop: line as the detail, the step is not ended, and resuming reruns it"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6AG8XH8SVYVXSHFFFMGPQE2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AG9CFAPDXRQTWYHCMFGSGW",
+  "type": "ops",
+  "v": 1
+}
