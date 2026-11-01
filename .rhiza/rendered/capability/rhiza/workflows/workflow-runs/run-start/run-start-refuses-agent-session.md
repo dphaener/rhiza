@@ -18,6 +18,7 @@ rhiza run start refuses inside an agent session, when RHIZA_SESSION is set, and 
 
 ### In
 
+- constrains [no-agent-session-starts-runs](../../../../../constraint/no-agent-session-starts-runs.md)
 - blocks [dry-run-in-agent-session](../../../../../question/dry-run-in-agent-session.md)
 - blocks [resume-in-agent-session](../../../../../question/resume-in-agent-session.md)
 - verifies [run-start-refuses-agent-session-verified](../../../../../evidence/run-start-refuses-agent-session-verified.md)
