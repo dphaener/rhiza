@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6C3QFCBECEQZA27MB0PTES4"
+  ],
+  "at": "2026-11-01T17:50:15Z",
+  "body": {
+    "reason": "Picked by the orchestrator for milestone 19 under the owner's standing instruction to keep picking high-value work; accepted on their behalf",
+    "rule": "owner"
+  },
+  "change_set": "01M6C3PVXPV5DFQ4G0N6JQGH0Q",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6C3QGGJDMEYE30F4DNXHF5Y",
+  "type": "accept",
+  "v": 1
+}
