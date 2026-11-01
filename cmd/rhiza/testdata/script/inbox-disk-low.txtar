@@ -1,0 +1,35 @@
+# The inbox lists one disk-low item while the daemon's last poll found free
+# space under its minimum, and none once a later poll finds enough. The
+# daemon state is a fixture.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza inbox
+stdout '^Nothing waits on you$'
+
+mkdir .git/rhiza
+cp ../low.json .git/rhiza/daemon.state.json
+exec rhiza inbox --json
+stdout -count=1 '"kind": "disk-low"'
+stdout '1.0 GiB free, under the minimum of 10.0 GiB'
+exec rhiza inbox
+stdout -count=1 '^[0-9a-f]+ disk-low$'
+stdout '1.0 GiB free, under the minimum of 10.0 GiB'
+exec sh -c 'rhiza inbox | head -1 | cut -d" " -f1 > ../id'
+! exec sh -c 'rhiza inbox open $(cat ../id)'
+stderr 'no tab to open'
+
+cp ../ok.json .git/rhiza/daemon.state.json
+exec rhiza inbox --json
+! stdout 'disk-low'
+stdout '"items": \[\]'
+
+-- low.json --
+{"process":{"host":"h","pid":1,"started":"2030-01-01T00:00:00Z"},"last_poll":"2030-01-01T00:05:00Z","max_runs":2,"autonomous":false,"runs":[],"disk_low":{"since":"2030-01-01T00:01:00Z","free":1073741824,"min":10737418240}}
+-- ok.json --
+{"process":{"host":"h","pid":1,"started":"2030-01-01T00:00:00Z"},"last_poll":"2030-01-01T00:10:00Z","max_runs":2,"autonomous":false,"runs":[]}

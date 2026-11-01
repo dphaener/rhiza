@@ -45,6 +45,33 @@ stderr 'no permission mode: give --permission-mode'
 stderr 'bypasses the agent''s permission checks'
 ! exists $WORK/rex.log
 
+# Disk guard: under 10 GiB free the daemon starts nothing and status says
+# why; --min-free 0 turns the guard off; at 20 GiB the run starts.
+env RHIZA_TEST_FREE_BYTES=1073741824
+exec rhiza daemon --permission-mode manual --once
+! stdout 'Started'
+! exists $WORK/rex.log
+exec rhiza daemon status --json
+stdout '"reason": "disk-low"'
+stdout '1.0 GiB free, under the minimum of 10.0 GiB'
+exec rhiza daemon status
+stdout 'Built: disk space is low \(1.0 GiB free'
+exec rhiza inbox --json
+stdout -count=1 '"kind": "disk-low"'
+env RHIZA_TEST_FREE_BYTES=21474836480
+exec rhiza daemon --permission-mode manual --once
+stdout -count=1 '^Started a run of '
+exec rhiza inbox --json
+! stdout 'disk-low'
+exec rm $WORK/rex.log
+env RHIZA_TEST_FREE_BYTES=1073741824
+exec rhiza daemon --permission-mode manual --once --min-free 0
+stdout -count=1 '^Started a run of '
+! exec rhiza daemon --permission-mode manual --once --min-free lots
+stderr '--min-free'
+exec rm $WORK/rex.log
+env RHIZA_TEST_FREE_BYTES=
+
 # The mode reaches each started run's command.
 exec rhiza daemon --permission-mode manual --once
 stdout -count=1 '^Started a run of '

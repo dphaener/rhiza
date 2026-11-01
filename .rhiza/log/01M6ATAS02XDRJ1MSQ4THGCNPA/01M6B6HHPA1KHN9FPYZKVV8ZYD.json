@@ -1,0 +1,53 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6B5318WNE0KGVTR3ZB7RVWA"
+  ],
+  "at": "2026-11-01T09:20:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "dcc835db17ccf2cc5c305d0833450a8a18fdd62d",
+          "pr": "https://github.com/dphaener/rhiza/pull/162",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #162 (https://github.com/dphaener/rhiza/pull/162) passed CI at dcc835d",
+          "status": "verified"
+        },
+        "handle": "pr-162-disk-guard",
+        "id": "01M6B6HF6J9SWNE9GMHKF4M7B2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6B6HF6J9SWNE9GMHK014K85",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B6HF6J9SWNE9GMHK014K85",
+        "id": "01M6B6HFWP3T8GXZ0D97TH0VRK",
+        "link": "01M6B6HFWP3T8GXZ0D96HT17G6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATBRV8PA51H3HXP74XNV9H",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6B6HF6J9SWNE9GMHK014K85",
+        "id": "01M6B6HGJXD6ERK54J52QW80K6",
+        "link": "01M6B6HGJXD6ERK54J506CDDG6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATBT8PTDQ8JQ49CV33ZG28",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ATAS02XDRJ1MSQ4THGCNPA",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B6HHPA1KHN9FPYZKVV8ZYD",
+  "type": "ops",
+  "v": 1
+}

@@ -11,6 +11,7 @@ import (
 	"os"
 	"reflect"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -40,6 +41,7 @@ type DaemonRequest struct {
 	MaxRuns        int    `json:"max_runs,omitempty" desc:"Start runs until this many are running; default 2. An interrupted run takes no slot"`
 	Once           bool   `json:"once,omitempty" desc:"Poll once, start what is picked and stop"`
 	Autonomous     bool   `json:"autonomous,omitempty" desc:"Start each run with --autonomous: it goes on without the owner"`
+	MinFree        string `json:"min_free,omitempty" desc:"Start and resume nothing while the repo's filesystem has less free space than this: bytes, or a number with K, M, G or T (powers of 1024); default 10G; 0 turns the guard off"`
 	PermissionMode string `json:"permission_mode,omitempty" desc:"Start each run with this --permission-mode, for its agent steps that set none; checked against ship-change before the daemon starts"`
 }
 
@@ -75,6 +77,14 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if r.MaxRuns == 0 {
 		r.MaxRuns = daemon.DefaultMaxRuns
 	}
+	minFree := daemon.DefaultMinFree
+	if r.MinFree != "" {
+		v, err := daemon.ParseSize(r.MinFree)
+		if err != nil {
+			return nil, Usagef("--min-free: %v", err)
+		}
+		minFree = v
+	}
 	// Every run the daemon starts is a ship-change run with this mode: one
 	// that run start would refuse is refused here, before any tab opens.
 	_, def, _, err := resolveWorkflow(ctx.Root, "")
@@ -108,6 +118,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if prev, ok := daemon.ReadState(common); ok {
 		state.LastStarted, state.LastResumed = prev.LastStarted, prev.LastResumed
 		state.Notified = prev.Notified
+		state.DiskLow = prev.DiskLow
 		// A re-exec, or a restart, keeps the holds of the daemon before.
 		unjournaled = daemonRestoreUnjournaled(prev.Unjournaled)
 	}
@@ -125,9 +136,16 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	}()
 	poll := func() error {
 		var skips []daemon.Skip
-		started, resumed, err := daemonPoll1(ctx, rs, pending, unjournaled, r.MaxRuns, r.Autonomous, r.PermissionMode, &skips)
+		started, resumed, err := daemonPoll1(ctx, rs, pending, unjournaled, r.MaxRuns, minFree, r.Autonomous, r.PermissionMode, &skips)
 		if err == nil {
 			state.Skips = skips
+			if low, free := daemonDiskLow(ctx, minFree); !low {
+				state.DiskLow = nil
+			} else if state.DiskLow == nil {
+				state.DiskLow = &daemon.DiskLow{Since: ctx.Now().UTC(), Free: free, Min: minFree}
+			} else {
+				state.DiskLow.Free, state.DiskLow.Min = free, minFree
+			}
 		}
 		resp.Started = append(resp.Started, started...)
 		resp.Resumed = append(resp.Resumed, resumed...)
@@ -224,6 +242,8 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State) error {
 	if overlaps, err := inboxOverlaps(ctx); err == nil {
 		items = append(items, overlaps...)
 	}
+	// This poll's disk-low state, not the one saved after the last poll.
+	items = append(items, diskLowItems(state.DiskLow)...)
 	titles := map[string]string{}
 	for _, j := range runs {
 		if st := j.State(); st.Title != "" {
@@ -268,6 +288,8 @@ func inboxNotice(what string, it InboxItem) string {
 		return what + ": a run failed"
 	case InboxSkipped:
 		return what + ": an interrupted run was not resumed"
+	case InboxDiskLow:
+		return "disk space is low: the daemon holds new starts and resumes"
 	case InboxOverlap:
 		return what + ": an overlap with change set " + it.Other + " waits on you"
 	default:
@@ -351,7 +373,7 @@ func daemonRunsOf(runs []run.Journal, cs string) int {
 
 // daemonPoll1 picks and starts runs once. pending holds the change sets
 // started; unjournaled those whose start never journaled (see daemonHeld).
-func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, autonomous bool, mode string, skips *[]daemon.Skip) ([]string, []string, error) {
+func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, minFree uint64, autonomous bool, mode string, skips *[]daemon.Skip) ([]string, []string, error) {
 	res, _, _, err := planRead(ctx, "daemon", "")
 	if err != nil {
 		return nil, nil, err
@@ -370,6 +392,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	}
 	host, _ := os.Hostname()
 	var resumed []string
+	low, free := daemonDiskLow(ctx, minFree)
 	accepted := func(change string) bool {
 		cs, err := id.Parse(change)
 		if err != nil {
@@ -378,7 +401,11 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		c, ok := ws.changeSet(cs)
 		return ok && c.State == changeset.StateAccepted
 	}
-	for _, id := range daemon.Resumable(runs, host, nil, rs.Live, accepted, ctx.Now()) {
+	var resumable []string
+	if !low {
+		resumable = daemon.Resumable(runs, host, nil, rs.Live, accepted, ctx.Now())
+	}
+	for _, id := range resumable {
 		// Journal the resume before the tab opens: a resume is tried once.
 		if err := rs.Append(id, run.Entry{Type: run.TypeDaemonResumed, At: ctx.Now(), Detail: "resumed by the daemon"}); err != nil {
 			return nil, resumed, Errorf("journal the resume of run %s: %v", id, err)
@@ -414,8 +441,18 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 		return at
 	}}
-	picked := daemon.Pick(cands, runs, held, host, nil, max, ship)
-	*skips = append(append(planSkips, unj...), daemon.Skips(cands, runs, held, host, nil, max, ship)...)
+	var picked []string
+	if low {
+		detail := fmt.Sprintf("%s free, under the minimum of %s", daemon.FormatSize(free), daemon.FormatSize(minFree))
+		var low []daemon.Skip
+		for _, cs := range cands {
+			low = append(low, daemon.Skip{Change: cs, Reason: daemon.SkipDiskLow, Detail: []string{detail}})
+		}
+		*skips = append(append(planSkips, unj...), low...)
+	} else {
+		picked = daemon.Pick(cands, runs, held, host, nil, max, ship)
+		*skips = append(append(planSkips, unj...), daemon.Skips(cands, runs, held, host, nil, max, ship)...)
+	}
 	for i, sk := range *skips {
 		if cs, err := id.Parse(sk.Change); err == nil {
 			if c, ok := ws.changeSet(cs); ok {
@@ -432,6 +469,30 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		started = append(started, cs)
 	}
 	return started, resumed, nil
+}
+
+// daemonDiskLow reports whether free space on the repo's filesystem is under
+// minFree, and the free space. A minFree of 0 turns the guard off, and so
+// does a filesystem whose free space cannot be read. RHIZA_TEST_FREE_BYTES
+// stands in for the real figure in tests; like RHIZA_TEST_RENDER_STALE it
+// applies only alongside RHIZA_TEST_NOW, so a real daemon never sees it.
+func daemonDiskLow(ctx *Ctx, minFree uint64) (bool, uint64) {
+	if minFree == 0 {
+		return false, 0
+	}
+	free, err := daemon.FreeBytes(ctx.Root)
+	getenv := ctxGetenv(ctx)
+	if v := getenv("RHIZA_TEST_FREE_BYTES"); v != "" && getenv("RHIZA_TEST_NOW") != "" {
+		n, perr := strconv.ParseUint(v, 10, 64)
+		if perr != nil {
+			return false, 0
+		}
+		free, err = n, nil
+	}
+	if err != nil {
+		return false, 0
+	}
+	return free < minFree, free
 }
 
 // daemonCandidates are the accepted, ready change sets of the milestone
@@ -544,7 +605,7 @@ type DaemonEvent struct {
 type DaemonSkip struct {
 	Change string   `json:"change" desc:"The change set's ID"`
 	Title  string   `json:"title" desc:"The change set's display title"`
-	Reason string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled or no-slot"`
+	Reason string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot or disk-low"`
 	Detail []string `json:"detail" desc:"The readiness reasons, when the reason is not-ready; else empty"`
 }
 
@@ -559,6 +620,7 @@ var skipText = map[string]string{
 	daemon.SkipHeld:        "started, its run not journaled yet",
 	daemon.SkipUnjournaled: "its start wrote no journal",
 	daemon.SkipNoSlot:      "waiting for a slot",
+	daemon.SkipDiskLow:     "disk space is low",
 }
 
 // DaemonStatusResponse is the daemon's state. While no daemon holds the

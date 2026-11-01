@@ -1,0 +1,40 @@
+{
+  "actor": "01M6B2SSTYN95S9FX223K50F5E",
+  "after": [
+    "01M6B1MKBVGTS0ZF5X4EXM9GMR"
+  ],
+  "at": "2026-11-01T08:20:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e8e4de61 ran go test ./cmd/rhiza -run 'TestScripts/(inbox-disk-low|daemon-picks)$' -count=1: both PASS. inbox-disk-low.txtar puts a daemon state with disk_low (1 GiB free, 10 GiB min) and rhiza inbox --json shows exactly one \"kind\": \"disk-low\" item naming '1.0 GiB free, under the minimum of 10.0 GiB'; after a later state without disk_low it shows none (items []). daemon-picks.txtar shows the same through real daemon polls (RHIZA_TEST_FREE_BYTES low, then 20 GiB clears it). go test ./internal/tui/inboxapp -run DiskLow PASS (app groups it under 'Disk space'). make test, fmt-check, vet pass; make self-check passes with RHIZA_ROOT unset. Read the diff: daemon sets/clears State.DiskLow per successful poll and keeps Since across polls; inbox open refuses the item."
+        },
+        "handle": "inbox-disk-low-verified",
+        "id": "01M6B345X6WXTS2W8FEKX1245C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6B345X6WXTS2W8FEH5DTRX8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B345X6WXTS2W8FEH5DTRX8",
+        "id": "01M6B346K2R93CQGEJZNNXZNME",
+        "link": "01M6B346K2R93CQGEJZM22CV6C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATBT8PTDQ8JQ49CV33ZG28",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ATAS02XDRJ1MSQ4THGCNPA",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B347P0QYGHQ2021YQ6PZ8F",
+  "type": "ops",
+  "v": 1
+}

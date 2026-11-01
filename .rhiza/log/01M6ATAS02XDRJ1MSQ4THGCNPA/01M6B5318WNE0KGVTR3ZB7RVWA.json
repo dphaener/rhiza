@@ -1,0 +1,63 @@
+{
+  "actor": "01M6B501T8NDHB8ZHSAYY5CNND",
+  "after": [
+    "01M6B4ZDFM0660NJFVDPPP82DF"
+  ],
+  "at": "2026-11-01T08:54:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5218260b built rhiza into $TMPDIR and drove it in a scratch repo (one accepted milestone change set with a leaf, Rex faked to log only, RHIZA_* run vars unset). RHIZA_TEST_FREE_BYTES=1 GiB without RHIZA_TEST_NOW is now ignored: with the real statfs (55 GiB free, default 10 GiB minimum) daemon --once started the run and logged rex window new. With RHIZA_TEST_NOW also set, the same 1 GiB is honoured: nothing started, daemon status shows 'Skipped: <cs> Built: disk space is low (1.0 GiB free, under the minimum of 10.0 GiB)'. --min-free 100G against the real statfs skips with '54.3 GiB free, under the minimum of 100.0 GiB'; --min-free 1G starts the run. go test of daemon-picks, daemon-notify-disk-low, inbox-disk-low and describe-golden: ok."
+        },
+        "handle": "daemon-disk-guard-qa-2",
+        "id": "01M6B52XAW90B2HK3EZFT1TKAM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6B52XAW90B2HK3EZEVKGNY8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B52XAW90B2HK3EZEVKGNY8",
+        "id": "01M6B52Y6P3AFQ3T20TKKB0BCG",
+        "link": "01M6B52Y6P3AFQ3T20THKV1KN8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATBRV8PA51H3HXP74XNV9H",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5218260b, same scratch repo and built binary, real statfs with --min-free 100G then 1G, each daemon --once: poll 1 (low) emits the OSC 7501 state=blocked notice 'disk space is low: the daemon holds new starts and resumes' on the very first --once poll, and rhiza inbox --json lists one item of kind disk-low; poll 2 (still low) sends no notice; poll 3 (enough space) starts the run, sends no disk-low notice and the inbox has no disk-low item; poll 4 (low again) sends a fresh notice. The cycle-1 one-poll-late notice is fixed."
+        },
+        "handle": "inbox-disk-low-qa-2",
+        "id": "01M6B52Z2EZBSHWQ8FBY2XZVRW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6B52Z2EZBSHWQ8FBWWHJADK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B52Z2EZBSHWQ8FBWWHJADK",
+        "id": "01M6B52ZX146W6D778SM9E2T81",
+        "link": "01M6B52ZX146W6D778SJ9PTE8S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATBT8PTDQ8JQ49CV33ZG28",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ATAS02XDRJ1MSQ4THGCNPA",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B5318WNE0KGVTR3ZB7RVWA",
+  "type": "ops",
+  "v": 1
+}

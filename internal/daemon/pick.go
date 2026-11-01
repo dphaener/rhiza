@@ -37,6 +37,7 @@ const (
 	SkipHeld        = "held"
 	SkipUnjournaled = "unjournaled"
 	SkipNoSlot      = "no-slot"
+	SkipDiskLow     = "disk-low"
 )
 
 // Ship says which succeeded runs mean a change set has shipped: those of

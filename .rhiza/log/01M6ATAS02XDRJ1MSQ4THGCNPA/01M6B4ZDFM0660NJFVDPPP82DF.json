@@ -1,0 +1,40 @@
+{
+  "actor": "01M6B4CJ955M36Q1EGZXNXP86F",
+  "after": [
+    "01M6B4XS22TCS90CAZKS889M8J"
+  ],
+  "at": "2026-11-01T08:52:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 20922097: go test ./cmd/rhiza -run 'TestScripts/(inbox-disk-low|daemon-notify-disk-low|daemon-picks)$' passes; inbox-disk-low.txtar, with a daemon.state.json fixture recording a disk-low poll, shows exactly one \"kind\": \"disk-low\" item in rhiza inbox --json ('1.0 GiB free, under the minimum of 10.0 GiB') and items [] once the state from a later poll has no disk_low. End to end with a scratch build in a fresh repo (RHIZA_TEST_NOW set): rhiza daemon --once with RHIZA_TEST_FREE_BYTES=1 GiB then rhiza inbox --json listed one disk-low item naming the free space; a second --once poll at 20 GiB left items []. Diff read: diskLowItems is shared by the inbox and daemonNotify, which now uses this poll's in-memory state. make fmt-check vet test pass; make self-check fails only on stale .rhiza/rendered actor files from the review run's chore commits, not this leaf."
+        },
+        "handle": "inbox-disk-low-verified-2",
+        "id": "01M6B4ZBGMFZ6210J555WRS5DW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6B4ZBGMFZ6210J553XZ70WD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B4ZBGMFZ6210J553XZ70WD",
+        "id": "01M6B4ZC8YR8EQTQMJE4T7ZR0Y",
+        "link": "01M6B4ZC8YR8EQTQMJE3SB0WA7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATBT8PTDQ8JQ49CV33ZG28",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ATAS02XDRJ1MSQ4THGCNPA",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B4ZDFM0660NJFVDPPP82DF",
+  "type": "ops",
+  "v": 1
+}

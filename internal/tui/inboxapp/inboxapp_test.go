@@ -133,3 +133,16 @@ func TestViewGroupsStalled(t *testing.T) {
 		}
 	}
 }
+
+func TestViewGroupsDiskLow(t *testing.T) {
+	out, calls := `{"items":[
+{"id":"i9","kind":"disk-low","detail":"1.0 GiB free, under the minimum of 10.0 GiB: the daemon holds new starts and resumes"}
+]}`, 0
+	m := NewModel(fake(&out, &calls))
+	v := m.View().Content
+	for _, want := range []string{"Disk space", "Daemon holds starts", "1.0 GiB free"} {
+		if !strings.Contains(v, want) {
+			t.Errorf("view lacks %q:\n%s", want, v)
+		}
+	}
+}

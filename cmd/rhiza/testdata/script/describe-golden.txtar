@@ -1230,6 +1230,10 @@ cmp stdout describe.golden.json
             "description": "Start runs until this many are running; default 2. An interrupted run takes no slot",
             "type": "integer"
           },
+          "min_free": {
+            "description": "Start and resume nothing while the repo's filesystem has less free space than this: bytes, or a number with K, M, G or T (powers of 1024); default 10G; 0 turns the guard off",
+            "type": "string"
+          },
           "once": {
             "description": "Poll once, start what is picked and stop",
             "type": "boolean"
@@ -1393,7 +1397,7 @@ cmp stdout describe.golden.json
                   "type": "array"
                 },
                 "reason": {
-                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled or no-slot",
+                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot or disk-low",
                   "type": "string"
                 },
                 "title": {
@@ -1722,7 +1726,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker or overlap",
+                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap or disk-low",
                   "type": "string"
                 },
                 "next": {
@@ -1790,7 +1794,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on, interrupted runs it skipped because their change set is no longer accepted and stalled sessions of live runs, oldest first",
+      "summary": "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on, interrupted runs it skipped because their change set is no longer accepted and stalled sessions of live runs, and the daemon's low disk space, oldest first",
       "write": false
     },
     {

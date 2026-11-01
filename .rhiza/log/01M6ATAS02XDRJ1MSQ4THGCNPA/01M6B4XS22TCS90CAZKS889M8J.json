@@ -1,0 +1,40 @@
+{
+  "actor": "01M6B3RQ3YJ6JHTYWZA15N4AFF",
+  "after": [
+    "01M6B38KY769H0JVXDJN845H71"
+  ],
+  "at": "2026-11-01T08:51:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2, at 50de518c (fix for review finding f1 on top of bed13ffa). go test ./cmd/rhiza -run 'TestScripts/(daemon-picks|describe-golden)$' -count=1 -v: both PASS. daemon-picks covers RHIZA_TEST_FREE_BYTES=1 GiB -> daemon --once starts nothing, opens no rex tab, daemon status --json shows reason disk-low with '1.0 GiB free, under the minimum of 10.0 GiB'; 20 GiB -> one run started; --min-free 0 at 1 GiB -> run started; --min-free lots rejected. Read the code: daemonPoll1 skips daemon.Resumable when low, so resumes are held too. describe-golden includes --min-free. Fix diff: daemonDiskLow now reads RHIZA_TEST_FREE_BYTES through ctxGetenv and only when RHIZA_TEST_NOW is set, matching testRenderStale and Decision disk-guard-10-gib. Built the binary and ran daemon --once in a scratch repo with RHIZA_TEST_FREE_BYTES=5: without RHIZA_TEST_NOW, no disk_low in daemon.state.json and no blocked status. With RHIZA_TEST_NOW set, it emits the blocked 'disk space is low' status. make fmt-check, vet and go test ./... pass; one make test run tripped the read-timing benchmark under load and passed on three reruns. make self-check fails only on stale .rhiza/rendered actor files from the review run's chore commits, which this leaf's commits do not touch."
+        },
+        "handle": "daemon-disk-guard-verified-2",
+        "id": "01M6B4XQ0N72JK8TZ4NF11B7NZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6B4XQ0N72JK8TZ4NDP4N70B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B4XQ0N72JK8TZ4NDP4N70B",
+        "id": "01M6B4XQSYCA7QZAJCA67B32K5",
+        "link": "01M6B4XQSYCA7QZAJCA32K4YCG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATBRV8PA51H3HXP74XNV9H",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ATAS02XDRJ1MSQ4THGCNPA",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B4XS22TCS90CAZKS889M8J",
+  "type": "ops",
+  "v": 1
+}
