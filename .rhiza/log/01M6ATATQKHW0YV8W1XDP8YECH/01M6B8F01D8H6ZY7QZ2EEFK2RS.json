@@ -1,0 +1,40 @@
+{
+  "actor": "01M6B8ASGK8G17ZGS30ZNH3886",
+  "after": [
+    "01M6B8A4QMFQFPJ4Y5PV4A85M5"
+  ],
+  "at": "2026-11-01T09:53:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1: built go build -o $TMPDIR/rhiza-qa ./cmd/rhiza at 5a0d3973 and drove it by hand in scratch git repos (RHIZA_ROOT/CHANGE/RUN unset) with a hold workflow (wait step) started via run start --no-wait. Clean worktree: run abandon --dry-run left the worktree; run abandon printed '## Clean-up' with 'remove-worktree done' and 'delete-branch done', the <repo>.<slug> folder was gone, git worktree list showed only main, git branch --list cs/* was empty, and the cs/<slug> branch pushed beforehand to a bare origin was still listed by git ls-remote (remote untouched); the leftover untracked .rhiza/log copy did not count as dirty. Untracked scratch.txt in the worktree: 'remove-worktree kept: the worktree is dirty', 'delete-branch kept: the worktree is kept', file and branch remained, and a new run started on the change set. Modified tracked file: both kept, dirty. Worktree rm -rf'd first: remove-worktree already-gone (pruned), delete-branch done. Worktree and branch both removed first: both already-gone. A second abandon exits 2. TestScripts/run-abandon and run-abandon-dirty pass. Seen: a clean worktree whose branch holds an unpushed commit still gets branch -D, so that commit is dropped (reported as a finding)."
+        },
+        "handle": "abandon-clears-worktree-qa-1",
+        "id": "01M6B8EXZ7N2T6WVJ3DZ987JWP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6B8EXZ7N2T6WVJ3DY01YBAP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B8EXZ7N2T6WVJ3DY01YBAP",
+        "id": "01M6B8EYPF9K3MVJR4VR301ASH",
+        "link": "01M6B8EYPF9K3MVJR4VN2GN9AH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATC08K455FW14QCXPZ9QHD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ATATQKHW0YV8W1XDP8YECH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B8F01D8H6ZY7QZ2EEFK2RS",
+  "type": "ops",
+  "v": 1
+}
