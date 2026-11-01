@@ -1,0 +1,15 @@
+{
+  "actor": "01M6ATKARVPN011NH2RBMCC01A",
+  "after": [],
+  "at": "2026-11-01T05:52:20Z",
+  "body": {
+    "intent": "rhiza daemon notifies stalled inbox items, and rhiza inbox open on a stalled item focuses the stalled session's tab, or the model records that both are left out",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6ATMZ5YHS4CFTWP90KW68XD",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6ATMZ5YHS4CFTWP9491ADFP",
+  "type": "open",
+  "v": 1
+}
