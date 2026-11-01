@@ -19520,7 +19520,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "quotes_left_out": {
-                  "description": "How many of the source's quotes were left out because the decision does not cite them; 0 when all are shown",
+                  "description": "How many of the source's quotes were left out because no decision that reached the source cites them; 0 when all are shown",
                   "type": "integer"
                 },
                 "via": {

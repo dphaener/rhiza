@@ -67,6 +67,20 @@ stdout 'Quotes left out: 1'
 exec rhiza why small --json
 stdout '"quotes_left_out": 1'
 
+# Quotes stored as objects match by their text; a second decision on the
+# same source adds the quote it cites.
+exec rhiza add source talk3 --json-field 'quotes=[{"text":"alpha one","by":"owner"},{"text":"beta two"},{"text":"gamma three"}]'
+exec rhiza add decision d1 --field 'quote=alpha one'
+exec rhiza add decision d2 --field 'quote=beta two'
+exec rhiza link d1 derived-from talk3
+exec rhiza link d2 derived-from talk3
+exec rhiza link d2 supersedes d1
+exec rhiza why d2
+stdout 'alpha one'
+stdout 'beta two'
+! stdout 'gamma three'
+stdout 'Quotes left out: 1'
+
 # Nothing to say: None.
 exec rhiza why talk
 stdout -count=2 '^None\.$'

@@ -464,14 +464,76 @@ func TestWhyCitedQuotes(t *testing.T) {
 
 func TestWhyCitedQuotesKeepsAll(t *testing.T) {
 	src := map[string]json.RawMessage{"quotes": json.RawMessage(`["a b","c d"]`)}
-	for name, dec := range map[string]map[string]json.RawMessage{
-		"no match": {"quote": json.RawMessage(`"zzz"`)},
-		"no quote": {},
-		"empty":    {"quote": json.RawMessage(`""`)},
+	for name, cited := range map[string][]string{
+		"no match":     {"zzz"},
+		"one no match": {"a b", "zzz"},
+		"nothing":      nil,
+		"all":          {"a b", "c d"},
 	} {
-		got, n := whyCitedQuotes(src, dec)
+		got, n := whyCitedQuotes(src, cited)
 		if n != 0 || string(got["quotes"]) != `["a b","c d"]` {
 			t.Errorf("%s: got %s, left out %d", name, got["quotes"], n)
+		}
+	}
+}
+
+// Quotes stored as objects, as source add writes them, are matched by
+// their text field and kept whole.
+func TestWhyCitedQuotesObjects(t *testing.T) {
+	src := map[string]json.RawMessage{"quotes": json.RawMessage(`[{"text":"we must  keep\nit small","by":"owner"},{"text":"we shall grow"},"a plain one"]`)}
+	got, n := whyCitedQuotes(src, []string{"must keep it", "plain"})
+	if n != 1 || string(got["quotes"]) != `[{"text":"we must  keep\nit small","by":"owner"},"a plain one"]` {
+		t.Errorf("got %s, left out %d", got["quotes"], n)
+	}
+}
+
+// A source reached by two decisions shows the quotes each cites; reached
+// by a node that is not a decision too, it shows all of them.
+func TestWhyCitedQuotesShared(t *testing.T) {
+	ctx := readCtx(t)
+	newChange(t, ctx, `{"intent":"Base"}`)
+	mustWrite(t, ctx, "add", `{"kind":"source","handle":"talk","json_fields":["quotes=[{\"text\":\"alpha one\"},{\"text\":\"beta two\"},{\"text\":\"gamma three\"}]"]}`)
+	mustWrite(t, ctx, "add", `{"kind":"decision","handle":"d1","fields":["quote=alpha one"]}`)
+	mustWrite(t, ctx, "add", `{"kind":"decision","handle":"d2","fields":["quote=beta two"]}`)
+	mustWrite(t, ctx, "link", `{"from":"d1","type":"derived-from","to":"talk"}`)
+	mustWrite(t, ctx, "link", `{"from":"d2","type":"derived-from","to":"talk"}`)
+	mustWrite(t, ctx, "link", `{"from":"d2","type":"supersedes","to":"d1"}`)
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"c2","fields":["statement=two"]}`)
+	mustWrite(t, ctx, "link", `{"from":"c2","type":"decided-by","to":"d1"}`)
+	mustWrite(t, ctx, "link", `{"from":"c2","type":"decided-by","to":"d2"}`)
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"c3","fields":["statement=three"]}`)
+	mustWrite(t, ctx, "link", `{"from":"c3","type":"decided-by","to":"d1"}`)
+	mustWrite(t, ctx, "link", `{"from":"c3","type":"derived-from","to":"talk"}`)
+	move(t, ctx, "propose", `{}`)
+	move(t, ctx, "accept", `{"reason":"ok"}`)
+	move(t, ctx, "land", `{}`)
+
+	for _, tc := range []struct {
+		ref  string
+		want []string
+		left int
+	}{
+		{"d2", []string{"alpha one", "beta two"}, 1},
+		{"d1", []string{"alpha one", "beta two"}, 1},
+		{"c2", []string{"alpha one", "beta two"}, 1},
+		{"c3", []string{"alpha one", "beta two", "gamma three"}, 0},
+	} {
+		r := whyOf(t, ctx, `{"ref":"`+tc.ref+`","view":"as-is"}`)
+		if len(r.Sources) != 1 || r.Sources[0].Handle != "talk" {
+			t.Fatalf("%s: sources %+v", tc.ref, r.Sources)
+		}
+		var qs []struct {
+			Text string `json:"text"`
+		}
+		if err := json.Unmarshal(r.Sources[0].Fields["quotes"], &qs); err != nil {
+			t.Fatal(err)
+		}
+		var got []string
+		for _, q := range qs {
+			got = append(got, q.Text)
+		}
+		if !slices.Equal(got, tc.want) || r.Sources[0].QuotesLeftOut != tc.left {
+			t.Errorf("%s: quotes %q, left out %d; want %q, %d", tc.ref, got, r.Sources[0].QuotesLeftOut, tc.want, tc.left)
 		}
 	}
 }

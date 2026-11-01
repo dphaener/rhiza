@@ -128,7 +128,7 @@ type WhySource struct {
 	Fields map[string]json.RawMessage `json:"fields" desc:"Every field, name to JSON value"`
 	Via    WhyRef                     `json:"via" desc:"The node whose derived-from link led here"`
 	// QuotesLeftOut counts the source's quotes the walk left out.
-	QuotesLeftOut int `json:"quotes_left_out" desc:"How many of the source's quotes were left out because the decision does not cite them; 0 when all are shown"`
+	QuotesLeftOut int `json:"quotes_left_out" desc:"How many of the source's quotes were left out because no decision that reached the source cites them; 0 when all are shown"`
 }
 
 // WhyChangeSet is one change set of the node's history.
@@ -149,6 +149,19 @@ type whyWalk struct {
 	resp  *WhyResponse
 	// answers indexes resp.Decisions by ID.
 	answers map[id.ID]int
+	// cites holds, per source listed, what its quotes are cut to.
+	cites map[id.ID]*whyCite
+}
+
+// whyCite is what a listed source's quotes are cut to: the quotes cited by
+// every decision whose derived-from link reached it, or all of them once a
+// node that is not a decision, or a decision with no quote, reached it.
+type whyCite struct {
+	// at indexes resp.Sources.
+	at     int
+	fields map[string]json.RawMessage
+	all    bool
+	cited  []string
 }
 
 func runWhy(ctx *Ctx, req any) (any, error) {
@@ -299,8 +312,13 @@ func (w *whyWalk) addDecision(i id.ID, via gmodel.Node, relation string, inherit
 }
 
 // addSource lists node i, reached from via by derived-from, unless it was
-// visited.
+// visited. A source reached again by another derived-from link is not
+// listed again, but the quotes it shows grow by what via cites.
 func (w *whyWalk) addSource(i id.ID, via gmodel.Node) error {
+	if c, ok := w.cites[i]; ok {
+		w.cite(c, via)
+		return nil
+	}
 	if w.seen[i] {
 		return nil
 	}
@@ -310,36 +328,74 @@ func (w *whyWalk) addSource(i id.ID, via gmodel.Node) error {
 	}
 	w.seen[i] = true
 	fields := lineageFields(n.Fields)
-	left := 0
-	if n.Kind == op.KindSource && via.Kind == op.KindDecision {
-		fields, left = whyCitedQuotes(fields, via.Fields)
-	}
 	w.resp.Sources = append(w.resp.Sources, WhySource{ID: n.ID, Handle: n.Handle, Kind: n.Kind,
-		Fields: fields, Via: WhyRef{ID: via.ID, Handle: via.Handle}, QuotesLeftOut: left})
+		Fields: fields, Via: WhyRef{ID: via.ID, Handle: via.Handle}})
+	if n.Kind != op.KindSource {
+		return nil
+	}
+	if w.cites == nil {
+		w.cites = map[id.ID]*whyCite{}
+	}
+	c := &whyCite{at: len(w.resp.Sources) - 1, fields: fields}
+	w.cites[i] = c
+	w.cite(c, via)
 	return nil
 }
 
+// cite adds what via cites to source c and cuts the listed source's quotes
+// again: to those cited, or to all of them when via is not a decision or
+// has no quote.
+func (w *whyWalk) cite(c *whyCite, via gmodel.Node) {
+	var q string
+	if via.Kind != op.KindDecision || json.Unmarshal(via.Fields["quote"], &q) != nil || whyNormalise(q) == "" {
+		c.all = true
+	} else {
+		c.cited = append(c.cited, whyNormalise(q))
+	}
+	s := &w.resp.Sources[c.at]
+	s.Fields, s.QuotesLeftOut = c.fields, 0
+	if !c.all {
+		s.Fields, s.QuotesLeftOut = whyCitedQuotes(c.fields, c.cited)
+	}
+}
+
 // whyCitedQuotes is the source's fields with its quotes cut to those that
-// contain the decision's quote, whitespace normalised. The fields are
-// returned as they are when the decision has no quote, the source has no
-// list of quotes, or no quote matches.
-func whyCitedQuotes(fields, decision map[string]json.RawMessage) (map[string]json.RawMessage, int) {
-	var cited string
-	if json.Unmarshal(decision["quote"], &cited) != nil {
+// contain one of the cited quotes, whitespace normalised. A quote is a
+// string or an object with a text field. The fields are returned as they
+// are when nothing is cited, the source has no list of quotes, or a cited
+// quote matches none of them.
+func whyCitedQuotes(fields map[string]json.RawMessage, cited []string) (map[string]json.RawMessage, int) {
+	var quotes []json.RawMessage
+	if len(cited) == 0 || json.Unmarshal(fields["quotes"], &quotes) != nil {
 		return fields, 0
 	}
-	cited = whyNormalise(cited)
-	var quotes []string
-	if cited == "" || json.Unmarshal(fields["quotes"], &quotes) != nil {
-		return fields, 0
+	texts := make([]string, len(quotes))
+	for k, q := range quotes {
+		t, ok := whyQuoteText(q)
+		if !ok {
+			return fields, 0
+		}
+		texts[k] = whyNormalise(t)
 	}
-	kept := []string{}
-	for _, q := range quotes {
-		if strings.Contains(whyNormalise(q), cited) {
+	keep := make([]bool, len(quotes))
+	for _, c := range cited {
+		found := false
+		for k, t := range texts {
+			if strings.Contains(t, c) {
+				keep[k], found = true, true
+			}
+		}
+		if !found {
+			return fields, 0
+		}
+	}
+	kept := []json.RawMessage{}
+	for k, q := range quotes {
+		if keep[k] {
 			kept = append(kept, q)
 		}
 	}
-	if len(kept) == 0 || len(kept) == len(quotes) {
+	if len(kept) == len(quotes) {
 		return fields, 0
 	}
 	raw, err := json.Marshal(kept)
@@ -352,6 +408,22 @@ func whyCitedQuotes(fields, decision map[string]json.RawMessage) (map[string]jso
 	}
 	out["quotes"] = raw
 	return out, len(quotes) - len(kept)
+}
+
+// whyQuoteText is the text of one quote of a source: a string, or an
+// object's text field.
+func whyQuoteText(q json.RawMessage) (string, bool) {
+	var s string
+	if json.Unmarshal(q, &s) == nil {
+		return s, true
+	}
+	var o struct {
+		Text *string `json:"text"`
+	}
+	if json.Unmarshal(q, &o) != nil || o.Text == nil {
+		return "", false
+	}
+	return *o.Text, true
 }
 
 // whyNormalise collapses every run of whitespace in s to one space.
