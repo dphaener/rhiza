@@ -1,0 +1,40 @@
+{
+  "actor": "01M6AHPFBHBYYMP3ERKZARDM82",
+  "after": [
+    "01M6AHNT9NS9VGXYP00ZNC5FQ6"
+  ],
+  "at": "2026-11-01T03:33:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built 78aa79c0 to a scratch binary and ran the real `rhiza daemon --permission-mode manual` (no --once) in a scratch repo with two accepted milestone change sets a and b, with a fake rex on PATH that only logs (so no run journals). Both started at 03:17:08Z; after the one-minute grace `rhiza daemon status` showed each as 'Not journaled: ... started at 2026-11-01T03:17:08Z wrote no journal; retried at 2026-11-01T03:32:08Z, or sooner when a run of it journals'. Withdrawing b at 03:19:51Z dropped it from the unjournaled list at the next poll (03:19:55Z) with no new start of it. With the daemon never restarted, rex.log showed no new start until 03:32:10Z, when the daemon started a again (the first poll past 15 minutes); a went back to 'started, its run not journaled yet', and after the grace was held anew with 'retried at 2026-11-01T03:47:10Z'. b was never started again."
+        },
+        "handle": "daemon-unjournaled-retry-qa-1",
+        "id": "01M6AJQ9NDDPRBNSHQC6XF32K8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AJQ9NDDPRBNSHQC3SGANFV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AJQ9NDDPRBNSHQC3SGANFV",
+        "id": "01M6AJQAAW69DV4QVG23DQYWZ0",
+        "link": "01M6AJQAAW69DV4QVG20E7JEVE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NNP5H447ACNTCPMS7D9F",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6A0JVE5ZV75XEMB0ZNYN8SR",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AJQBD12SH45F4D5MTSKFSC",
+  "type": "ops",
+  "v": 1
+}
