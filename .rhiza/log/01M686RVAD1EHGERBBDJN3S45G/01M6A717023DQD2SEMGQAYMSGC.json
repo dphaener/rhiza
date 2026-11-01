@@ -1,0 +1,40 @@
+{
+  "actor": "01M6A6BJFS7FQDQSRZZY083NF3",
+  "after": [
+    "01M6A6KAZ4DW76HAJF584Y4DJW"
+  ],
+  "at": "2026-11-01T00:09:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5933776f ran go test ./internal/tui/roadmapapp -run NewWork -v -count=1: TestNewWorkStartsPlanRunWithNoChangeSet passes with a fake Starter.Exec: m, typed text, enter, y makes exactly one call, rex window new ... -- rhiza run start --workflow plan --new <intent> --milestone, with no change set argument; n gives the same without --milestone; no call before y and the view shows y/n. TestNewWorkDeclinedOrEmptyCallsNothing passes: empty enter stays in the prompt, esc at the intent prompt, n at the y/n prompt and esc at the y/n prompt make no call. Read the diff (start.go typeIntent, pending kind new, roadmapapp.go m/n keys and footers): matches the acceptance. make check exits 0 with RHIZA_ROOT/CHANGE/RUN unset."
+        },
+        "handle": "roadmap-app-new-work-verified",
+        "id": "01M6A71573KGPZ00ZVM1CS1FQS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6A71573KGPZ00ZVM014D827",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A71573KGPZ00ZVM014D827",
+        "id": "01M6A715XJW1AG6RJN55ERCHY3",
+        "link": "01M6A715XJW1AG6RJN54CEDK48",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686V49K74FDKG4YV2BDJCSN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RVAD1EHGERBBDJN3S45G",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A717023DQD2SEMGQAYMSGC",
+  "type": "ops",
+  "v": 1
+}
