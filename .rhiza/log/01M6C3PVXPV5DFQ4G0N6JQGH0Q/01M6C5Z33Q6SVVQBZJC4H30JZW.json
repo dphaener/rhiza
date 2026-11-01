@@ -1,0 +1,40 @@
+{
+  "actor": "01M6C5R78VFFKA547VDT66FX1S",
+  "after": [
+    "01M6C5Q9PEJS6VK1J4Q3VQP798"
+  ],
+  "at": "2026-11-01T18:29:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 840de73e with a binary built from the branch and one from the merge-base 608debed. In a scratch repo with a landed, an accepted (root statement changed) and a draft change set (adds draftcap), show root, show draftcap, slice root and tree with no --view gave byte-identical JSON from both binaries with current = landed (as-is), accepted (to-be, 'Root to-be'), draft (what-if:<draft>, draftcap visible), no current (as-is), an unknown ULID (as-is) and garbage in .rhiza/local/change (same error). show root --change by full ID, by prefix, for the landed one, an ambiguous prefix (usage), 'nope' and an unknown ULID (not_found) were identical too. After propose then accept of the current draft, the next read switched to to-be at once (index caught up). On a copy of this repo's .rhiza (5168 log files), show rhiza with a landed current change set and no --view: median 58 ms wall per process on the branch vs 572-632 ms on the base, against 52 ms with no current, 46 ms with --view as-is and 34 ms for rhiza version, with identical output. go test ./internal/api -run 'TestDefaultView|TestReadBudget' -count=1 ok."
+        },
+        "handle": "default-view-no-fold-qa-1",
+        "id": "01M6C5Z0T73MREAMHA9AE7S5B4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6C5Z0T73MREAMHA96YW1TRS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6C5Z0T73MREAMHA96YW1TRS",
+        "id": "01M6C5Z1QQ6Q6TCHQCDTC271XQ",
+        "link": "01M6C5Z1QQ6Q6TCHQCDRA17WX8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6C3QBZ6N7WNS21SYQPCYWFM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6C3PVXPV5DFQ4G0N6JQGH0Q",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6C5Z33Q6SVVQBZJC4H30JZW",
+  "type": "ops",
+  "v": 1
+}
