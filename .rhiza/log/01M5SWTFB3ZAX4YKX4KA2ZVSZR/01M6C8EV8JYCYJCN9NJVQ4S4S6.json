@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M5SWTG3YS5HXXCKKKZ2NXWAA"
+  ],
+  "at": "2026-11-01T19:12:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "TestReadBudget times every budgetReads read in what-if:<the fixture's draft> under 50 ms median, and the not-budgeted note on BenchmarkShowWhatIf is removed; read_test.go's stored-versus-what-if comparison passes for every read; a property test over generated logs finds the overlay reader's answers equal to the full model's",
+          "statement": "Every budgeted read in a what-if view answers from the stored as-is rows overlaid with the change set's records, under the 50 ms median on the 50,000-node model, with the same answers as the full model"
+        },
+        "handle": "whatif-reads-in-budget",
+        "id": "01M6C8ES8FHJJXHJND4SG0WKNE",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6C8ES8FHJJXHJND4RZJ8DPW",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M6C8ES8FHJJXHJND4RZJ8DPW",
+        "id": "01M6C8ET16BS8JCTCHCN5XT9N6",
+        "link": "01M6C8ET16BS8JCTCHCK1M9EKN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6C8EJCQZSCA7RK5SZNP0BRF",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M5SWTFB3ZAX4YKX4KA2ZVSZR",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6C8EV8JYCYJCN9NJVQ4S4S6",
+  "type": "ops",
+  "v": 1
+}

@@ -382,6 +382,7 @@
 - [milestone-17](intent/milestone-17.md)
 - [milestone-18](intent/milestone-18.md)
 - [milestone-19](intent/milestone-19.md)
+- [milestone-20](intent/milestone-20.md)
 
 ## Constraints
 
@@ -633,6 +634,7 @@
 - [m2-plan-authorship](decision/m2-plan-authorship.md)
 - [m2-scope-in](decision/m2-scope-in.md)
 - [m2-scope-out](decision/m2-scope-out.md)
+- [m20-picked-by-orchestrator](decision/m20-picked-by-orchestrator.md)
 - [m2cs2-done-points-count](decision/m2cs2-done-points-count.md)
 - [m2cs2-flat-backlog](decision/m2cs2-flat-backlog.md)
 - [m2cs2-milestone-field](decision/m2cs2-milestone-field.md)
@@ -1005,6 +1007,7 @@
 - [verifier-writes-evidence](decision/verifier-writes-evidence.md)
 - [wait-settles-conflict-rule](decision/wait-settles-conflict-rule.md)
 - [whatif-folds-inflight-over-asis](decision/whatif-folds-inflight-over-asis.md)
+- [whatif-overlay-reader](decision/whatif-overlay-reader.md)
 - [why-is-lineage-verb](decision/why-is-lineage-verb.md)
 - [why-quotes-by-substring](decision/why-quotes-by-substring.md)
 - [work-contract](decision/work-contract.md)
@@ -1689,6 +1692,7 @@
 - [m17-orchestrator-picks](source/m17-orchestrator-picks.md)
 - [m18-orchestrator-picks](source/m18-orchestrator-picks.md)
 - [m19-orchestrator-picks](source/m19-orchestrator-picks.md)
+- [m20-orchestrator-picks](source/m20-orchestrator-picks.md)
 - [m5-usable-from-rex-interview](source/m5-usable-from-rex-interview.md)
 - [m6-overnight-interview](source/m6-overnight-interview.md)
 - [m7-keep-picking](source/m7-keep-picking.md)

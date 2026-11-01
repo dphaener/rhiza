@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T19:12:39Z",
+  "body": {
+    "intent": "Plan milestone 20: what-if reads meet the budget, picked by the orchestrator under the owner's standing instruction",
+    "kind": "record",
+    "sources": [],
+    "title": "Plan milestone 20"
+  },
+  "change_set": "01M6C8EBWCSJZC8TGSN36SZ3QR",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6C8EBWCSJZC8TGSN4AZR084",
+  "type": "open",
+  "v": 2
+}
