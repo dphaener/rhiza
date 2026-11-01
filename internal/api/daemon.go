@@ -156,21 +156,32 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		interrupted, stop = ctx.Interrupts()
 		defer stop()
 	}
-	tick := time.NewTicker(daemonPoll)
-	defer tick.Stop()
+	ticks, stopTicks := daemonTicker()
+	defer stopTicks()
+	l, err := daemonLoop(ctx, common, lock, poll, func() int { return len(pending) }, reexec, ticks, interrupted)
+	if l != nil {
+		lock = l
+	}
+	return resp, err
+}
+
+// daemonLoop polls now and at each tick until interrupted. At the end of a
+// poll with no start pending (pending), a rebuilt binary takes over
+// (reexec): live runs are separate processes and carry on. An exec that
+// returns is not tried again. It returns the lock it holds at the end, nil
+// with the error when it could not take the lock back after an exec.
+func daemonLoop(ctx *Ctx, common string, lock *daemon.Lock, poll func() error, pending func() int, reexec *daemon.Reexec, ticks <-chan time.Time, interrupted <-chan struct{}) (*daemon.Lock, error) {
 	for {
 		if err := poll(); err != nil && ctx.Stderr != nil {
 			fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %v\n", err)
 		}
-		// The end of a poll with nothing pending: a rebuilt binary takes
-		// over. Live runs are separate processes and carry on.
-		if reexec.Due(len(pending)) {
+		if reexec.Due(pending()) {
 			if ctx.Stderr != nil {
 				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: binary changed, re-executing\n")
 			}
 			l, err := reexec.Do(common, lock, ctx.Now())
 			if l == nil {
-				return resp, err
+				return nil, err
 			}
 			lock = l
 			if err != nil && ctx.Stderr != nil {
@@ -180,10 +191,16 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		}
 		select {
 		case <-interrupted:
-			return resp, nil
-		case <-tick.C:
+			return lock, nil
+		case <-ticks:
 		}
 	}
+}
+
+// daemonTicker ticks once per poll interval; tests replace it.
+var daemonTicker = func() (<-chan time.Time, func()) {
+	t := time.NewTicker(daemonPoll)
+	return t.C, t.Stop
 }
 
 // daemonReexec is how the daemon re-executes itself; tests replace it.
