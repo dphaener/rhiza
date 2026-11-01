@@ -53,6 +53,46 @@ func TestTabSwitchesAndScrolls(t *testing.T) {
 	}
 }
 
+func TestSlashFiltersWithSearchHits(t *testing.T) {
+	var searched [][]string
+	read := func(op string, args []string) (string, error) {
+		if op == "search" {
+			searched = append(searched, args)
+			return "- capability hit-" + args[0] + " 01X\n", nil
+		}
+		return op + " body\n", nil
+	}
+	m := NewModel(read, "")
+	m.Update(tea.WindowSizeMsg{Width: 80, Height: 20})
+	m.Update(key("/"))
+	m.Update(key("a"))
+	m.Update(key("b"))
+	v := m.View().Content
+	if !strings.Contains(v, "/ab_") || !strings.Contains(v, "hit-ab") || strings.Contains(v, "tree body") {
+		t.Fatalf("want only the search hits, got %q", v)
+	}
+	if got := searched[len(searched)-1]; len(got) != 1 || got[0] != "ab" {
+		t.Fatalf("search args %v", got)
+	}
+	m.Update(tea.KeyPressMsg{Code: tea.KeyBackspace})
+	if v := m.View().Content; !strings.Contains(v, "hit-a ") || strings.Contains(v, "hit-ab") {
+		t.Fatalf("backspace did not re-search: %q", v)
+	}
+	// q types into the filter; it does not quit.
+	if _, cmd := m.Update(key("q")); cmd != nil {
+		t.Fatal("q quit while filtering")
+	}
+	if _, cmd := m.Update(key("esc")); cmd != nil {
+		t.Fatal("esc quit while filtering")
+	}
+	if v := m.View().Content; !strings.Contains(v, "tree body") || strings.Contains(v, "hit-") {
+		t.Fatalf("esc did not restore the tree: %q", v)
+	}
+	if _, cmd := m.Update(key("esc")); cmd == nil {
+		t.Fatal("esc on the tree no longer quits")
+	}
+}
+
 func TestViewFitsTheWindow(t *testing.T) {
 	read := func(op string, args []string) (string, error) {
 		return strings.Repeat(op+" line\n", 100), nil
