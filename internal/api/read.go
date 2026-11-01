@@ -161,6 +161,13 @@ func openReader(ctx *Ctx, opName, s string, rule viewRule) (*reader, error) {
 	if err != nil {
 		return nil, err
 	}
+	return openReaderIn(ctx, w, opName, s, rule)
+}
+
+// openReaderIn is openReader over the open workspace w, whose pending
+// entries a no-view read sees.
+func openReaderIn(ctx *Ctx, w *workspace, opName, s string, rule viewRule) (*reader, error) {
+	var err error
 	// The index answers a what-if ref without reading the log; it is opened
 	// once, and only when the view needs it or the read goes on.
 	var x *index.Index
@@ -208,17 +215,16 @@ func openReader(ctx *Ctx, opName, s string, rule viewRule) (*reader, error) {
 		return nil, err
 	}
 	if v == (view{}) {
-		cs, err := w.effectiveChangeSet(ctx)
-		if err != nil {
-			return nil, err
-		}
+		var cs id.ID
 		var state changeset.State
-		if !cs.IsZero() {
-			if c, ok := w.changeSet(cs); ok {
-				state = c.State
-			} else {
-				cs = id.ID{}
-			}
+		if len(w.pending) == 0 && ctx.IndexPath != "" {
+			cs, state, err = indexedChangeSet(ctx, w, open)
+		} else {
+			cs, state, err = foldedChangeSet(ctx, w)
+		}
+		if err != nil {
+			closeX()
+			return nil, err
 		}
 		v = rule(cs, state)
 	}
@@ -240,6 +246,69 @@ func openReader(ctx *Ctx, opName, s string, rule viewRule) (*reader, error) {
 	}
 	r.m = &m
 	return r, nil
+}
+
+// foldedChangeSet is the effective change set and its state, folded from
+// the log: the path a workspace with pending writes takes.
+func foldedChangeSet(ctx *Ctx, w *workspace) (id.ID, changeset.State, error) {
+	cs, err := w.effectiveChangeSet(ctx)
+	if err != nil {
+		return id.ID{}, "", err
+	}
+	if cs.IsZero() {
+		return cs, "", nil
+	}
+	c, ok := w.changeSet(cs)
+	if !ok {
+		return id.ID{}, "", nil
+	}
+	return cs, c.State, nil
+}
+
+// indexedChangeSet is foldedChangeSet over the index's change set table: it
+// folds nothing, and answers the same change set and state when nothing is
+// pending.
+func indexedChangeSet(ctx *Ctx, w *workspace, open func() (*index.Index, error)) (id.ID, changeset.State, error) {
+	ref := strings.TrimSpace(ctx.ChangeRef)
+	if !ctx.ChangeSet.IsZero() && ref != "" {
+		return id.ID{}, "", Usagef("set either ChangeSet or ChangeRef, not both")
+	}
+	cs := ctx.ChangeSet
+	if cs.IsZero() && ref == "" {
+		cur, err := w.current()
+		if err != nil || cur.IsZero() {
+			return id.ID{}, "", err
+		}
+		cs = cur
+	}
+	xi, err := open()
+	if err != nil {
+		return id.ID{}, "", err
+	}
+	infos, err := xi.ChangeSets()
+	if err != nil {
+		return id.ID{}, "", Errorf("%s", err.Error())
+	}
+	switch {
+	case !ctx.ChangeSet.IsZero():
+		if !slices.ContainsFunc(infos, func(c index.ChangeSetInfo) bool { return c.ID == cs }) {
+			return id.ID{}, "", NotFoundf("no change set %s", cs).WithNext(changeLsNext)
+		}
+	case ref != "":
+		sets := make([]id.ID, len(infos))
+		for i, c := range infos {
+			sets[i] = c.ID
+		}
+		if cs, err = matchChangeSet(sets, ref); err != nil {
+			return id.ID{}, "", err
+		}
+	}
+	for _, c := range infos {
+		if c.ID == cs {
+			return cs, c.State, nil
+		}
+	}
+	return id.ID{}, "", nil
 }
 
 // whatIfViewError is the Error for the what-if problems ps of change set cs:

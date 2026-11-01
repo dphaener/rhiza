@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 // Operation is one named call. Request and Response are struct types; Run
@@ -118,6 +119,9 @@ type Ctx struct {
 	Now func() time.Time
 	// IDs makes new IDs.
 	IDs *id.Generator
+	// readLog, when set, replaces the store's log read; tests count folds
+	// with it.
+	readLog func() store.Log
 	// GitConfig returns the value of a git config key such as
 	// "user.email", or an error if it is unset.
 	GitConfig func(key string) (string, error)

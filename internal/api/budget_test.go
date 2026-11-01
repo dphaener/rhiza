@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/gen"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
@@ -284,10 +285,72 @@ func TestReadBudget(t *testing.T) {
 			}
 		}
 	}
+	// The default view with a landed current change set: no view, so the
+	// change set's state comes from the index, not a fold of the log.
+	landed := landedChangeSet(t, g)
+	for _, rd := range budgetReads(g, "") {
+		label := fmt.Sprintf("%-7s %-5s", rd.name, "default")
+		log := func(line string) {
+			t.Log(line)
+			timingLog(line)
+		}
+		ok, err := timeWithinBudget(label, func() (readTiming, error) {
+			var times []time.Duration
+			var size int
+			for range readBudgetRuns {
+				ctx := testCtx(g.root)
+				ctx.IndexPath = g.indexPath
+				ctx.ChangeSet = landed
+				o, _ := Lookup(rd.op)
+				start := time.Now()
+				resp, err := o.Run(ctx, rd.req)
+				times = append(times, time.Since(start))
+				if err != nil {
+					return readTiming{}, fmt.Errorf("%s default: %w", rd.name, err)
+				}
+				if size = answerSize(resp); size == 0 {
+					return readTiming{}, fmt.Errorf("%s default answered nothing: %+v", rd.name, resp)
+				}
+			}
+			slices.Sort(times)
+			median := (times[readBudgetRuns/2-1] + times[readBudgetRuns/2]) / 2
+			return readTiming{median, times[0], times[len(times)-1], size}, nil
+		}, log)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !ok {
+			t.Errorf("%s default median over %v on every attempt", rd.name, readBudget)
+		}
+		if late == "" {
+			late = quiettest.Late(rd.name, "default")
+		}
+	}
 	if late != "" {
 		t.Log(late)
 		timingLog(late)
 	}
+}
+
+// landedChangeSet returns a landed change set of g's index.
+func landedChangeSet(t *testing.T, g generated) id.ID {
+	t.Helper()
+	x, err := index.Open(g.root, g.indexPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer x.Close()
+	infos, err := x.ChangeSets()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range infos {
+		if c.State == changeset.StateLanded {
+			return c.ID
+		}
+	}
+	t.Fatal("the generated model has no landed change set")
+	return id.ID{}
 }
 
 // benchRead runs the read named name in to-be b.N times.
