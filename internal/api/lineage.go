@@ -41,6 +41,7 @@ import (
 	"reflect"
 	"slices"
 	"sort"
+	"strings"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/entry"
@@ -306,9 +307,53 @@ func (w *whyWalk) addSource(i id.ID, via gmodel.Node) error {
 		return err
 	}
 	w.seen[i] = true
+	fields := lineageFields(n.Fields)
+	if n.Kind == op.KindSource && via.Kind == op.KindDecision {
+		fields = whyCitedQuotes(fields, via.Fields)
+	}
 	w.resp.Sources = append(w.resp.Sources, WhySource{ID: n.ID, Handle: n.Handle, Kind: n.Kind,
-		Fields: lineageFields(n.Fields), Via: WhyRef{ID: via.ID, Handle: via.Handle}})
+		Fields: fields, Via: WhyRef{ID: via.ID, Handle: via.Handle}})
 	return nil
+}
+
+// whyCitedQuotes is the source's fields with its quotes cut to those that
+// contain the decision's quote, whitespace normalised. The fields are
+// returned as they are when the decision has no quote, the source has no
+// list of quotes, or no quote matches.
+func whyCitedQuotes(fields, decision map[string]json.RawMessage) map[string]json.RawMessage {
+	var cited string
+	if json.Unmarshal(decision["quote"], &cited) != nil {
+		return fields
+	}
+	cited = whyNormalise(cited)
+	var quotes []string
+	if cited == "" || json.Unmarshal(fields["quotes"], &quotes) != nil {
+		return fields
+	}
+	kept := []string{}
+	for _, q := range quotes {
+		if strings.Contains(whyNormalise(q), cited) {
+			kept = append(kept, q)
+		}
+	}
+	if len(kept) == 0 || len(kept) == len(quotes) {
+		return fields
+	}
+	raw, err := json.Marshal(kept)
+	if err != nil {
+		return fields
+	}
+	out := make(map[string]json.RawMessage, len(fields))
+	for k, v := range fields {
+		out[k] = v
+	}
+	out["quotes"] = raw
+	return out
+}
+
+// whyNormalise collapses every run of whitespace in s to one space.
+func whyNormalise(s string) string {
+	return strings.Join(strings.Fields(s), " ")
 }
 
 // addAnswer adds node q to what decision d answers, when d is listed.

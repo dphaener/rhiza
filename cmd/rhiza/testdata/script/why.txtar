@@ -55,6 +55,15 @@ stdout '"statement": "We keep the hot set in RAM because disk is too slow for us
 stdout '"summary": "The owner said caching is the point\."'
 stdout '"view": "as-is"'
 
+# A decision shows only the quotes of its source that contain its quote.
+exec rhiza change new Cite
+exec rhiza add source talk2 --json-field 'quotes=["we must  keep\nit small","we shall grow"]'
+exec rhiza add decision small --field 'quote=must keep it'
+exec rhiza link small derived-from talk2
+exec rhiza why small
+stdout 'we must  keep'
+! stdout 'we shall grow'
+
 # Nothing to say: None.
 exec rhiza why talk
 stdout -count=2 '^None\.$'

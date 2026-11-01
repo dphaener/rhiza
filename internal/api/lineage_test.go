@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"slices"
@@ -432,5 +433,28 @@ func TestLogCarve(t *testing.T) {
 	r.Human(&b)
 	if strings.Contains(b.String(), "Carved") {
 		t.Errorf("Human:\n%s", b.String())
+	}
+}
+
+func TestWhyCitedQuotes(t *testing.T) {
+	ctx := readCtx(t)
+	newChange(t, ctx, `{"intent":"Base"}`)
+	mustWrite(t, ctx, "add", `{"kind":"source","handle":"talk","json_fields":["quotes=[\"we must  keep\\nit small\",\"we shall grow\"]"]}`)
+	mustWrite(t, ctx, "add", `{"kind":"decision","handle":"small","fields":["quote=must keep it"]}`)
+	mustWrite(t, ctx, "link", `{"from":"small","type":"derived-from","to":"talk"}`)
+	move(t, ctx, "propose", `{}`)
+	move(t, ctx, "accept", `{"reason":"ok"}`)
+	move(t, ctx, "land", `{}`)
+
+	r := whyOf(t, ctx, `{"ref":"small","view":"as-is"}`)
+	if len(r.Sources) != 1 {
+		t.Fatalf("sources %+v", r.Sources)
+	}
+	var got []string
+	if err := json.Unmarshal(r.Sources[0].Fields["quotes"], &got); err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 1 || got[0] != "we must  keep\nit small" {
+		t.Errorf("quotes %q, want only the cited one", got)
 	}
 }
