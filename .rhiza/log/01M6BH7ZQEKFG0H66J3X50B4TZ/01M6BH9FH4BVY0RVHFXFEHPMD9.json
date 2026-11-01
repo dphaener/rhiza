@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6BH7ZQEKFG0H66J3Z28B0PP"
+  ],
+  "at": "2026-11-01T12:28:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A property test over generated logs (with change sets based on unlanded ones, retires and links to change sets) finds the new what-if equal to model.WhatIf over the full fold, model and problems both; read_test.go's stored-versus-what-if comparison still passes; BenchmarkShowWhatIf on the 50k model improves at least fivefold, recorded in the Evidence",
+          "statement": "A what-if read decodes only the in-flight change sets it needs and the landed ones their revisions name, over the index's stored as-is rows, instead of folding the whole log, and gives the same model and problems as the full fold"
+        },
+        "handle": "whatif-skips-log-scan",
+        "id": "01M6BH9DH9XCPBR849KMB869AE",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6BH9DH9XCPBR849KJ72RSYB",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M6BH9DH9XCPBR849KJ72RSYB",
+        "id": "01M6BH9EA5YXVKXVZNBQF6B6KY",
+        "link": "01M6BH9EA5YXVKXVZNBNRVHCK8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BH8H3QZH284QXNYAFZ1K3F",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6BH7ZQEKFG0H66J3X50B4TZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BH9FH4BVY0RVHFXFEHPMD9",
+  "type": "ops",
+  "v": 1
+}

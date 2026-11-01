@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6BH7XPH07NSDTBKE3J02R9W"
+  ],
+  "at": "2026-11-01T12:27:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "feed.txtar: by default an actor-only record is hidden while a planning record and an intention are shown, and with --all all three are shown; with --limit the pages are full and the next-page line carries --all; the changes app test hides the actor-only change set; describe-golden.txtar is regenerated",
+          "statement": "rhiza feed and the changes app leave out landed change sets whose ops only create or update actor nodes unless --all is given, filtering before paging so pages stay full and cursors stable"
+        },
+        "handle": "feed-hides-actor-records",
+        "id": "01M6BH9A4779HN5ZTFQJXHYV54",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6BH9A4779HN5ZTFQGW718ZT",
+        "op": "node.create",
+        "parent": "01M6B3PEPKV2KGQRZWN4PG4BYT"
+      },
+      {
+        "decision": null,
+        "from": "01M6BH9A4779HN5ZTFQGW718ZT",
+        "id": "01M6BH9AY6MVRWAJ75XSBQPQWS",
+        "link": "01M6BH9AY6MVRWAJ75XNNRPHXX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BH8EDF21A6AZEF95SVAYGZ",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6BH7XPH07NSDTBKE2RGX949",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BH9C6Q239CM92G1PYP7PVM",
+  "type": "ops",
+  "v": 1
+}

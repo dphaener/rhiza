@@ -1,0 +1,109 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6BH85123Y54H3E4P0KNS7PC"
+  ],
+  "at": "2026-11-01T12:27:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "15",
+          "statement": "The feed shows the work and what-if reads stop rereading the log: rhiza feed and the changes app leave out actor-only change sets unless asked, and a what-if read folds only the change sets it needs over the indexed as-is"
+        },
+        "handle": "milestone-15",
+        "id": "01M6BH87V016E6KKY9B1SAQNC4",
+        "key": "zzzw",
+        "kind": "intent",
+        "node": "01M6BH87V016E6KKY9AZSSVPP2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "if you run out of work keep picking high value tasks. don't stop and wait for my input.",
+          "statement": "Milestone 15 is the feed's actor-only filter and a what-if read that folds only the in-flight change sets it needs over the stored as-is; the 50 ms budget for what-if reads stays in proposed change set 01M5SWTFB3, which now depends on it"
+        },
+        "handle": "m15-picked-by-orchestrator",
+        "id": "01M6BH89F656CT0WSJV3ZVT8RZ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6BH89F656CT0WSJV36VEWJ8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BH89F656CT0WSJV36VEWJ8",
+        "id": "01M6BH8AZ9YV9DCFCBBYMG4AVP",
+        "link": "01M6BH8AZ9YV9DCFCBBVVJA5YB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BH834ZR9NRBBZWMJD3J96K",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6BH87V016E6KKY9AZSSVPP2",
+        "id": "01M6BH8CRGGEBS1ZW8D8PA7148",
+        "link": "01M6BH8CRGGEBS1ZW8D63ZJEZ0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BH89F656CT0WSJV36VEWJ8",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "rhiza feed and the changes app leave out a landed change set whose ops all create or update actor nodes, filtering before the limit and cursor, unless --all is given; hidden change sets are not marked seen",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "feed-hides-actor-only",
+        "id": "01M6BH8EDF21A6AZEF99282AFW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6BH8EDF21A6AZEF95SVAYGZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BH8EDF21A6AZEF95SVAYGZ",
+        "id": "01M6BH8FT6ERVP1NQ3H41RVDS1",
+        "link": "01M6BH8FT6ERVP1NQ3H0MTHN7N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BH834ZR9NRBBZWMJD3J96K",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A what-if read no longer folds the whole log: it decodes only the in-flight change sets' entries (and the landed ones Revised needs), seeds the model from the index's stored as-is rows, and layers the change set and its closure, giving exactly the full fold's model and problems",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "whatif-folds-inflight-over-asis",
+        "id": "01M6BH8H3QZH284QXNYCCXHR3F",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6BH8H3QZH284QXNYAFZ1K3F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BH8H3QZH284QXNYAFZ1K3F",
+        "id": "01M6BH8JHD7830538QGTYMAER2",
+        "link": "01M6BH8JHD7830538QGQ5WYHW2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BH834ZR9NRBBZWMJD3J96K",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6BH7V2AFN6B2PYHQ4NFY3AG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BH8MWJ0NCYP3A418T3MS1P",
+  "type": "ops",
+  "v": 1
+}
