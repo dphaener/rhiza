@@ -34,7 +34,12 @@ func ToBe(sets []changeset.ChangeSet) (Model, []Problem) {
 // sets the result is as-is plus an ErrMissing problem on cs; when it is not
 // draft, proposed or accepted, as-is plus an ErrState problem on cs.
 func WhatIf(sets []changeset.ChangeSet, cs id.ID) (Model, []Problem) {
-	b := asIs(sets)
+	return whatIf(asIs(sets), sets, cs, true)
+}
+
+// whatIf layers change set cs of sets on b, an as-is builder. clone says
+// whether the result must share nothing with b.
+func whatIf(b *builder, sets []changeset.ChangeSet, cs id.ID, clone bool) (Model, []Problem) {
 	i := -1
 	for j, s := range sets {
 		if s.ID == cs {
@@ -62,7 +67,7 @@ func WhatIf(sets []changeset.ChangeSet, cs id.ID) (Model, []Problem) {
 			b.problems = append(b.problems, Problem{ChangeSet: cs, Op: r.Op, Err: revisedErr(r)})
 		}
 	}
-	return b.finish()
+	return b.finishModel(clone)
 }
 
 // revisedErr is the ErrConflict for r: the dependency's op that was revised

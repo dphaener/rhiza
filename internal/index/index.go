@@ -97,7 +97,7 @@ import (
 // SchemaVersion is the schema this package writes, kept in PRAGMA
 // user_version. Bump it on any change to the tables or what they hold: an
 // index of another version is deleted and rebuilt.
-const SchemaVersion = 2
+const SchemaVersion = 3
 
 // busyTimeout is how long a connection waits for a lock another connection
 // holds. Tests shorten it.
@@ -369,6 +369,8 @@ var schema = []string{
 		version TEXT NOT NULL,
 		created TEXT NOT NULL,
 		history TEXT,
+		aspects TEXT,
+		placed  TEXT,
 		hash    BLOB NOT NULL,
 		PRIMARY KEY (view, id)
 	) WITHOUT ROWID`,
@@ -386,8 +388,21 @@ var schema = []string{
 		version  TEXT NOT NULL,
 		created  TEXT NOT NULL,
 		history  TEXT,
+		aspects  TEXT,
 		hash     BLOB NOT NULL,
 		PRIMARY KEY (view, id)
+	) WITHOUT ROWID`,
+	// landed_links holds, in apply order, the depends-on link.create and the
+	// link.retire ops of the landed change sets, as the change set analysis
+	// reads them: whether or not the model applied them.
+	`CREATE TABLE landed_links (
+		change_set TEXT NOT NULL,
+		n          INTEGER NOT NULL,
+		retire     INTEGER NOT NULL,
+		link       TEXT NOT NULL,
+		from_id    TEXT NOT NULL,
+		to_id      TEXT NOT NULL,
+		PRIMARY KEY (change_set, n)
 	) WITHOUT ROWID`,
 	`CREATE INDEX links_from ON links (view, from_id)`,
 	`CREATE INDEX links_to ON links (view, to_id)`,

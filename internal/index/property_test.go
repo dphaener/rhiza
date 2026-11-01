@@ -95,7 +95,7 @@ func (g *logGen) drawOp(t *rapid.T, ends []id.ID) (o op.Op, ok bool) {
 		o.Reason = "gone"
 	case op.TypeLinkCreate:
 		o.Link = pick("link", propLinks)
-		o.LinkType = rapid.SampledFrom([]op.LinkType{op.LinkServes, op.LinkRelatesTo}).Draw(t, "link type")
+		o.LinkType = rapid.SampledFrom([]op.LinkType{op.LinkServes, op.LinkRelatesTo, op.LinkDependsOn, op.LinkDependsOn}).Draw(t, "link type")
 		o.From = pick("from", ends)
 		o.To = pick("to", ends)
 		if o.LinkType == op.LinkRelatesTo || rapid.Bool().Draw(t, "note?") {

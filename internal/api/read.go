@@ -112,6 +112,11 @@ func toBeView(id.ID, changeset.State) view {
 // sets (not_found or usage as resolveChangeSet says). Anything else is a
 // usage error.
 func parseView(w *workspace, opName, s string) (view, error) {
+	return parseViewWith(w.resolveChangeSet, opName, s)
+}
+
+// parseViewWith is parseView with resolve for a what-if's change set ref.
+func parseViewWith(resolve func(string) (id.ID, error), opName, s string) (view, error) {
 	switch s = strings.TrimSpace(s); {
 	case s == "":
 		return view{}, nil
@@ -125,7 +130,7 @@ func parseView(w *workspace, opName, s string) (view, error) {
 			return view{}, Usagef("view %q names no change set: give what-if:<change set>", s).
 				WithNext("rhiza describe " + opName)
 		}
-		cs, err := w.resolveChangeSet(ref)
+		cs, err := resolve(ref)
 		if err != nil {
 			return view{}, err
 		}
@@ -156,8 +161,50 @@ func openReader(ctx *Ctx, opName, s string, rule viewRule) (*reader, error) {
 	if err != nil {
 		return nil, err
 	}
-	v, err := parseView(w, opName, s)
+	// The index answers a what-if ref without reading the log; it is opened
+	// once, and only when the view needs it or the read goes on.
+	var x *index.Index
+	open := func() (*index.Index, error) {
+		if x != nil {
+			return x, nil
+		}
+		if ctx.IndexPath == "" {
+			return nil, Errorf("no index path")
+		}
+		xi, err := index.Open(ctx.Root, ctx.IndexPath)
+		if err != nil {
+			return nil, Errorf("%s", err.Error())
+		}
+		x = xi
+		return x, nil
+	}
+	closeX := func() {
+		if x != nil {
+			x.Close()
+			x = nil
+		}
+	}
+	resolve := w.resolveChangeSet
+	if len(w.pending) == 0 && ctx.IndexPath != "" {
+		resolve = func(ref string) (id.ID, error) {
+			xi, err := open()
+			if err != nil {
+				return id.ID{}, err
+			}
+			infos, err := xi.ChangeSets()
+			if err != nil {
+				return id.ID{}, Errorf("%s", err.Error())
+			}
+			sets := make([]id.ID, len(infos))
+			for i, c := range infos {
+				sets[i] = c.ID
+			}
+			return matchChangeSet(sets, ref)
+		}
+	}
+	v, err := parseViewWith(resolve, opName, s)
 	if err != nil {
+		closeX()
 		return nil, err
 	}
 	if v == (view{}) {
@@ -175,12 +222,9 @@ func openReader(ctx *Ctx, opName, s string, rule viewRule) (*reader, error) {
 		}
 		v = rule(cs, state)
 	}
-	if ctx.IndexPath == "" {
-		return nil, Errorf("no index path")
-	}
-	x, err := index.Open(ctx.Root, ctx.IndexPath)
+	x, err = open()
 	if err != nil {
-		return nil, Errorf("%s", err.Error())
+		return nil, err
 	}
 	r := &reader{x: x, view: v}
 	if v.whatIf.IsZero() {

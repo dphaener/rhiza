@@ -400,16 +400,3 @@ func (x *Index) Problems() ([]Problem, error) {
 	}
 	return out, rows.Err()
 }
-
-// WhatIf returns the what-if view of change set cs, as model.WhatIf
-// computes it over the change sets folded from every stored entry: as-is
-// with cs on top. Problems are model.WhatIf's (ErrMissing when cs is not
-// in the log, ErrState when it is not in flight).
-func (x *Index) WhatIf(cs id.ID) (model.Model, []model.Problem, error) {
-	sets, _, err := foldStored(x.db)
-	if err != nil {
-		return model.Model{}, nil, err
-	}
-	m, ps := model.WhatIf(sets, cs)
-	return m, ps, nil
-}

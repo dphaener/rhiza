@@ -16,6 +16,7 @@ import (
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/store"
 )
 
@@ -170,7 +171,7 @@ func (x *Index) catchUpTx(tx *sql.Tx, sp statPrint) error {
 		}
 	}
 	if x.stats.rebuilt {
-		for _, t := range []string{"meta", "files", "entries", "change_sets", "nodes", "links", "problems"} {
+		for _, t := range []string{"meta", "files", "entries", "change_sets", "nodes", "links", "problems", "landed_links"} {
 			if _, err := tx.Exec(`DELETE FROM ` + t); err != nil {
 				return err
 			}
@@ -380,6 +381,37 @@ func writeChangeSets(tx *sql.Tx, sets []changeset.ChangeSet) error {
 		if _, err := st.Exec(idText(s.ID), string(s.State), string(s.Open.Kind), s.Open.Intent,
 			idText(s.OpenEntry), idText(s.SupersededBy), idText(s.TerminalEntry)); err != nil {
 			return err
+		}
+	}
+	return writeLandedLinks(tx, sets)
+}
+
+// writeLandedLinks replaces the stored landed_links of sets.
+func writeLandedLinks(tx *sql.Tx, sets []changeset.ChangeSet) error {
+	if _, err := tx.Exec(`DELETE FROM landed_links`); err != nil {
+		return err
+	}
+	st, err := tx.Prepare(`INSERT INTO landed_links (change_set, n, retire, link, from_id, to_id) VALUES (?, ?, ?, ?, ?, ?)`)
+	if err != nil {
+		return err
+	}
+	defer st.Close()
+	for _, s := range sets {
+		if s.State != changeset.StateLanded {
+			continue
+		}
+		for n, o := range s.Ops {
+			switch {
+			case o.Type == op.TypeLinkCreate && o.LinkType == op.LinkDependsOn:
+				_, err = st.Exec(idText(s.ID), n, 0, idText(o.Link), idText(o.From), idText(o.To))
+			case o.Type == op.TypeLinkRetire:
+				_, err = st.Exec(idText(s.ID), n, 1, idText(o.Link), "", "")
+			default:
+				continue
+			}
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil

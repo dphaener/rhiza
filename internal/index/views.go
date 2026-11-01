@@ -34,8 +34,11 @@ func modelSentinel(err error) string { return nameOf(err, modelSentinels) }
 // difference, adding the rows written per view to writes.
 func writeViews(tx *sql.Tx, sets []changeset.ChangeSet, asIs, toBe bool, writes map[string]int) error {
 	if asIs {
-		m, ps := model.AsIs(sets)
-		n, err := writeView(tx, viewAsIs, m, ps)
+		m, ps, st := model.AsIsState(sets)
+		if err := writeAsIsState(tx, sets, m, st); err != nil {
+			return err
+		}
+		n, err := writeView(tx, viewAsIs, m, ps, &st)
 		if err != nil {
 			return err
 		}
@@ -45,7 +48,7 @@ func writeViews(tx *sql.Tx, sets []changeset.ChangeSet, asIs, toBe bool, writes 
 	}
 	if toBe {
 		m, ps := model.ToBe(sets)
-		n, err := writeView(tx, viewToBe, m, ps)
+		n, err := writeView(tx, viewToBe, m, ps, nil)
 		if err != nil {
 			return err
 		}
@@ -59,13 +62,13 @@ func writeViews(tx *sql.Tx, sets []changeset.ChangeSet, asIs, toBe bool, writes 
 // writeView makes the stored rows of view equal m and its problems equal
 // ps: rows whose hash changed are upserted, rows not in m deleted. It
 // returns the number of node and link rows written or deleted.
-func writeView(tx *sql.Tx, view string, m model.Model, ps []model.Problem) (int, error) {
+func writeView(tx *sql.Tx, view string, m model.Model, ps []model.Problem, st *model.State) (int, error) {
 	written := 0
 
 	nodes := m.Nodes()
 	rows := make([]row, len(nodes))
 	for i, n := range nodes {
-		rows[i] = nodeRow(n)
+		rows[i] = nodeRow(n, st)
 	}
 	n, err := diffRows(tx, "nodes", nodeColumns, view, rows)
 	if err != nil {
@@ -80,7 +83,7 @@ func writeView(tx *sql.Tx, view string, m model.Model, ps []model.Problem) (int,
 	links := m.Links()
 	rows = make([]row, len(links))
 	for i, l := range links {
-		rows[i] = linkRow(l)
+		rows[i] = linkRow(l, st)
 	}
 	if n, err = diffRows(tx, "links", linkColumns, view, rows); err != nil {
 		return 0, err
@@ -105,8 +108,8 @@ type row struct {
 
 // The columns after view and id, in the order row.vals holds them.
 var (
-	nodeColumns = []string{"kind", "handle", "parent", "key", "fields", "retired", "reason", "version", "created", "history"}
-	linkColumns = []string{"type", "from_id", "to_id", "note", "decision", "retired", "version", "created", "history"}
+	nodeColumns = []string{"kind", "handle", "parent", "key", "fields", "retired", "reason", "version", "created", "history", "aspects", "placed"}
+	linkColumns = []string{"type", "from_id", "to_id", "note", "decision", "retired", "version", "created", "history", "aspects"}
 )
 
 // newRow builds a row and hashes its values. Values are strings, ints or
@@ -134,15 +137,27 @@ func boolInt(b bool) int {
 }
 
 // nodeRow is n as stored.
-func nodeRow(n model.Node) row {
+// st, when not nil, is the state of the view, whose aspects and placement
+// the row keeps.
+func nodeRow(n model.Node, st *model.State) row {
+	var aspects, placed any
+	if st != nil {
+		aspects = encodeAspects(st.Aspects[n.ID])
+		m := st.Placed[n.ID]
+		placed = fmt.Sprintf("%d %s %s", m.Seq, idText(m.Ref.ChangeSet), idText(m.Ref.Op))
+	}
 	return newRow(idText(n.ID), string(n.Kind), n.Handle, idText(n.Parent), n.Key, encodeFields(n.Fields),
-		boolInt(n.Retired), n.Reason, idText(n.Version), idText(n.Created), encodeHistory(n.History))
+		boolInt(n.Retired), n.Reason, idText(n.Version), idText(n.Created), encodeHistory(n.History), aspects, placed)
 }
 
 // linkRow is l as stored.
-func linkRow(l model.Link) row {
+func linkRow(l model.Link, st *model.State) row {
+	var aspects any
+	if st != nil {
+		aspects = encodeAspects(st.Aspects[l.ID])
+	}
 	return newRow(idText(l.ID), string(l.Type), idText(l.From), idText(l.To), l.Note, idText(l.Decision),
-		boolInt(l.Retired), idText(l.Version), idText(l.Created), encodeHistory(l.History))
+		boolInt(l.Retired), idText(l.Version), idText(l.Created), encodeHistory(l.History), aspects)
 }
 
 // encodeFields spells a field map as a JSON object with sorted keys and
@@ -295,14 +310,14 @@ type scanner interface {
 }
 
 // scanNode reads one row of nodeSelect back into a model.Node.
-func scanNode(s scanner) (model.Node, error) {
+func scanNode(s scanner, extra ...any) (model.Node, error) {
 	var (
 		n                                   model.Node
 		nid, kind, parent, version, created string
 		fields, history                     sql.NullString
 		retired                             int
 	)
-	if err := s.Scan(&nid, &kind, &n.Handle, &parent, &n.Key, &fields, &retired, &n.Reason, &version, &created, &history); err != nil {
+	if err := s.Scan(append([]any{&nid, &kind, &n.Handle, &parent, &n.Key, &fields, &retired, &n.Reason, &version, &created, &history}, extra...)...); err != nil {
 		return model.Node{}, err
 	}
 	var err error
@@ -318,14 +333,14 @@ func scanNode(s scanner) (model.Node, error) {
 }
 
 // scanLink reads one row of linkSelect back into a model.Link.
-func scanLink(s scanner) (model.Link, error) {
+func scanLink(s scanner, extra ...any) (model.Link, error) {
 	var (
 		l                                              model.Link
 		lid, typ, from, to, decision, version, created string
 		history                                        sql.NullString
 		retired                                        int
 	)
-	if err := s.Scan(&lid, &typ, &from, &to, &l.Note, &decision, &retired, &version, &created, &history); err != nil {
+	if err := s.Scan(append([]any{&lid, &typ, &from, &to, &l.Note, &decision, &retired, &version, &created, &history}, extra...)...); err != nil {
 		return model.Link{}, err
 	}
 	var err error

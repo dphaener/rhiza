@@ -295,6 +295,24 @@ func checkModel(t tb, x *Index, gdir string) {
 		same(t, v.name+" links", storedLinks(t, x, v.name), m.Links())
 		same(t, v.name+" problems", storedProblems(t, x, v.name), viewProblems(v.name, ps))
 	}
+
+	// A what-if over the stored rows equals the full fold's.
+	whatIfs := []id.ID{csID(77)}
+	for _, s := range sets {
+		whatIfs = append(whatIfs, s.ID)
+	}
+	for _, cs := range whatIfs {
+		want, wps := model.WhatIf(sets, cs)
+		got, gps, err := x.WhatIf(cs)
+		if err != nil {
+			t.Fatalf("WhatIf %s: %v", cs, err)
+		}
+		name := "what-if " + cs.String()
+		same(t, name+" nodes", got.Nodes(), want.Nodes())
+		same(t, name+" links", got.Links(), want.Links())
+		same(t, name+" roots", got.Children(id.ID{}), want.Children(id.ID{}))
+		same(t, name+" problems", viewProblems("what-if", gps), viewProblems("what-if", wps))
+	}
 }
 
 func same[T any](t tb, what string, got, want T) {
