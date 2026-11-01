@@ -127,6 +127,8 @@ type WhySource struct {
 	Kind   op.Kind                    `json:"kind" desc:"Its kind: source, unless the model links something else"`
 	Fields map[string]json.RawMessage `json:"fields" desc:"Every field, name to JSON value"`
 	Via    WhyRef                     `json:"via" desc:"The node whose derived-from link led here"`
+	// QuotesLeftOut counts the source's quotes the walk left out.
+	QuotesLeftOut int `json:"quotes_left_out" desc:"How many of the source's quotes were left out because the decision does not cite them; 0 when all are shown"`
 }
 
 // WhyChangeSet is one change set of the node's history.
@@ -308,11 +310,12 @@ func (w *whyWalk) addSource(i id.ID, via gmodel.Node) error {
 	}
 	w.seen[i] = true
 	fields := lineageFields(n.Fields)
+	left := 0
 	if n.Kind == op.KindSource && via.Kind == op.KindDecision {
-		fields = whyCitedQuotes(fields, via.Fields)
+		fields, left = whyCitedQuotes(fields, via.Fields)
 	}
 	w.resp.Sources = append(w.resp.Sources, WhySource{ID: n.ID, Handle: n.Handle, Kind: n.Kind,
-		Fields: fields, Via: WhyRef{ID: via.ID, Handle: via.Handle}})
+		Fields: fields, Via: WhyRef{ID: via.ID, Handle: via.Handle}, QuotesLeftOut: left})
 	return nil
 }
 
@@ -320,15 +323,15 @@ func (w *whyWalk) addSource(i id.ID, via gmodel.Node) error {
 // contain the decision's quote, whitespace normalised. The fields are
 // returned as they are when the decision has no quote, the source has no
 // list of quotes, or no quote matches.
-func whyCitedQuotes(fields, decision map[string]json.RawMessage) map[string]json.RawMessage {
+func whyCitedQuotes(fields, decision map[string]json.RawMessage) (map[string]json.RawMessage, int) {
 	var cited string
 	if json.Unmarshal(decision["quote"], &cited) != nil {
-		return fields
+		return fields, 0
 	}
 	cited = whyNormalise(cited)
 	var quotes []string
 	if cited == "" || json.Unmarshal(fields["quotes"], &quotes) != nil {
-		return fields
+		return fields, 0
 	}
 	kept := []string{}
 	for _, q := range quotes {
@@ -337,18 +340,18 @@ func whyCitedQuotes(fields, decision map[string]json.RawMessage) map[string]json
 		}
 	}
 	if len(kept) == 0 || len(kept) == len(quotes) {
-		return fields
+		return fields, 0
 	}
 	raw, err := json.Marshal(kept)
 	if err != nil {
-		return fields
+		return fields, 0
 	}
 	out := make(map[string]json.RawMessage, len(fields))
 	for k, v := range fields {
 		out[k] = v
 	}
 	out["quotes"] = raw
-	return out
+	return out, len(quotes) - len(kept)
 }
 
 // whyNormalise collapses every run of whitespace in s to one space.
@@ -491,6 +494,9 @@ func (r WhyResponse) Human(w io.Writer) {
 		fmt.Fprintf(w, "### %s\n\n- %s derived from %s\n- ID: %s\n", s.Handle, s.Via.Handle, s.Handle, s.ID)
 		if s.Kind != op.KindSource {
 			fmt.Fprintf(w, "- Kind: %s\n", s.Kind)
+		}
+		if s.QuotesLeftOut > 0 {
+			fmt.Fprintf(w, "- Quotes left out: %d\n", s.QuotesLeftOut)
 		}
 		lineageHumanFields(w, s.Fields)
 	}

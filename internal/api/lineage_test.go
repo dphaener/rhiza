@@ -457,4 +457,21 @@ func TestWhyCitedQuotes(t *testing.T) {
 	if len(got) != 1 || got[0] != "we must  keep\nit small" {
 		t.Errorf("quotes %q, want only the cited one", got)
 	}
+	if r.Sources[0].QuotesLeftOut != 1 {
+		t.Errorf("left out %d, want 1", r.Sources[0].QuotesLeftOut)
+	}
+}
+
+func TestWhyCitedQuotesKeepsAll(t *testing.T) {
+	src := map[string]json.RawMessage{"quotes": json.RawMessage(`["a b","c d"]`)}
+	for name, dec := range map[string]map[string]json.RawMessage{
+		"no match": {"quote": json.RawMessage(`"zzz"`)},
+		"no quote": {},
+		"empty":    {"quote": json.RawMessage(`""`)},
+	} {
+		got, n := whyCitedQuotes(src, dec)
+		if n != 0 || string(got["quotes"]) != `["a b","c d"]` {
+			t.Errorf("%s: got %s, left out %d", name, got["quotes"], n)
+		}
+	}
 }

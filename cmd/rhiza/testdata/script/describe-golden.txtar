@@ -19519,6 +19519,10 @@ cmp stdout describe.golden.json
                   "description": "Its kind: source, unless the model links something else",
                   "type": "string"
                 },
+                "quotes_left_out": {
+                  "description": "How many of the source's quotes were left out because the decision does not cite them; 0 when all are shown",
+                  "type": "integer"
+                },
                 "via": {
                   "additionalProperties": false,
                   "description": "The node whose derived-from link led here",
@@ -19545,6 +19549,7 @@ cmp stdout describe.golden.json
                 "handle",
                 "id",
                 "kind",
+                "quotes_left_out",
                 "via"
               ],
               "type": "object"

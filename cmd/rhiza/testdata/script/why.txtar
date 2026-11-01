@@ -63,6 +63,9 @@ exec rhiza link small derived-from talk2
 exec rhiza why small
 stdout 'we must  keep'
 ! stdout 'we shall grow'
+stdout 'Quotes left out: 1'
+exec rhiza why small --json
+stdout '"quotes_left_out": 1'
 
 # Nothing to say: None.
 exec rhiza why talk

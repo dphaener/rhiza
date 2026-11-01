@@ -1564,6 +1564,7 @@
 
 - [claude-code-007d2717](actor/claude-code-007d2717.md)
 - [claude-code-00c897fb](actor/claude-code-00c897fb.md)
+- [claude-code-0111bfc1](actor/claude-code-0111bfc1.md)
 - [claude-code-01m5szj4](actor/claude-code-01m5szj4.md)
 - [claude-code-026e43e2](actor/claude-code-026e43e2.md)
 - [claude-code-0270f381](actor/claude-code-0270f381.md)
@@ -1623,6 +1624,7 @@
 - [claude-code-116cd28d](actor/claude-code-116cd28d.md)
 - [claude-code-11e7fd12](actor/claude-code-11e7fd12.md)
 - [claude-code-11ead977](actor/claude-code-11ead977.md)
+- [claude-code-12006766](actor/claude-code-12006766.md)
 - [claude-code-12352af8](actor/claude-code-12352af8.md)
 - [claude-code-1275fa8d](actor/claude-code-1275fa8d.md)
 - [claude-code-12e10317](actor/claude-code-12e10317.md)
@@ -1648,6 +1650,7 @@
 - [claude-code-188bc201](actor/claude-code-188bc201.md)
 - [claude-code-18a6b3b6](actor/claude-code-18a6b3b6.md)
 - [claude-code-18a918dd](actor/claude-code-18a918dd.md)
+- [claude-code-18b0777f](actor/claude-code-18b0777f.md)
 - [claude-code-193e157c](actor/claude-code-193e157c.md)
 - [claude-code-1944333a](actor/claude-code-1944333a.md)
 - [claude-code-19549350](actor/claude-code-19549350.md)
