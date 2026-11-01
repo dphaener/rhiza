@@ -385,10 +385,10 @@ func row(it api.InboxItem) string {
 	if it.Step != "" {
 		b.WriteString(" · " + it.Step)
 	}
-	b.WriteString("\n")
 	if it.Kind == api.InboxOverlap {
 		b.WriteString(" · with " + it.Other + " · " + it.Target)
 	}
+	b.WriteString("\n")
 	text := it.Detail
 	if it.Kind == api.InboxQuestion {
 		text = it.Question
