@@ -482,14 +482,22 @@ func inboxDiskLow(ctx *Ctx) []InboxItem {
 		return nil
 	}
 	st, ok := daemon.ReadState(common)
-	if !ok || st.DiskLow == nil {
+	if !ok {
 		return nil
 	}
-	at := st.DiskLow.Since.UTC().Format(time.RFC3339)
+	return diskLowItems(st.DiskLow)
+}
+
+// diskLowItems is one disk-low item for low, none when low is nil.
+func diskLowItems(low *daemon.DiskLow) []InboxItem {
+	if low == nil {
+		return nil
+	}
+	at := low.Since.UTC().Format(time.RFC3339)
 	sum := sha256.Sum256([]byte(strings.Join([]string{InboxDiskLow, at}, "\x00")))
 	return []InboxItem{{
 		ID: hex.EncodeToString(sum[:])[:7], Kind: InboxDiskLow, At: at,
-		Detail: fmt.Sprintf("%s free, under the minimum of %s: the daemon holds new starts and resumes", daemon.FormatSize(st.DiskLow.Free), daemon.FormatSize(st.DiskLow.Min)),
+		Detail: fmt.Sprintf("%s free, under the minimum of %s: the daemon holds new starts and resumes", daemon.FormatSize(low.Free), daemon.FormatSize(low.Min)),
 	}}
 }
 

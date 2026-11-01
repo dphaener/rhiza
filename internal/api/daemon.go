@@ -242,7 +242,8 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State) error {
 	if overlaps, err := inboxOverlaps(ctx); err == nil {
 		items = append(items, overlaps...)
 	}
-	items = append(items, inboxDiskLow(ctx)...)
+	// This poll's disk-low state, not the one saved after the last poll.
+	items = append(items, diskLowItems(state.DiskLow)...)
 	titles := map[string]string{}
 	for _, j := range runs {
 		if st := j.State(); st.Title != "" {
