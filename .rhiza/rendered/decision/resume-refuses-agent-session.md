@@ -16,6 +16,10 @@ rhiza run resume refuses inside an agent session (RHIZA_SESSION set) as run star
 
 - derived-from [m11-orchestrator-picks](../source/m11-orchestrator-picks.md)
 
+### In
+
+- decided-by [run-resume-refuses-agent-session](../capability/rhiza/workflows/workflow-runs/run-resume/run-resume-refuses-agent-session.md)
+
 ## History
 
 - `01M6AG8XH8SVYVXSHFFFMGPQE2` Plan milestone 11: owner gates hold, picked by the orchestrator under the owner's standing instruction

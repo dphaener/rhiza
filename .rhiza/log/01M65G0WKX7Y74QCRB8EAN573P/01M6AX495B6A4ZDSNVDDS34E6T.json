@@ -1,0 +1,40 @@
+{
+  "actor": "01M6AWFGN7KGVVNM9X3239MR8S",
+  "after": [
+    "01M6AG9VM6R1HGZMJD2T8ZG02N"
+  ],
+  "at": "2026-11-01T06:35:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 23d866e5 ran go test ./cmd/rhiza -run TestScripts/run-resume-agent-session -count=1 -v: PASS. The script stops a run (run start --no-wait), sets RHIZA_SESSION=01SESSIONFORTESTING, and rhiza run resume exits 2 with stderr 'run resume refused: this is agent session 01SESSIONFORTESTING, and no agent session starts a run'; cmp of .git/rhiza/runs/* before/after shows the journal unchanged; with RHIZA_SESSION cleared the resume continues and the run succeeds. Diff read: refuseAgentSession in internal/api/run.go uses the same message and next hint as run start's refusal, and sits in runRunResume at the same point start puts it (after the dry-run return, before canRun and any journal write). go test ./..., go vet and fmt-check pass; make check's only failure is a stale render for this verifier's own actor record, not part of the commit."
+        },
+        "handle": "run-resume-refuses-agent-session-verified",
+        "id": "01M6AX47D7HMHSTSFSHT461ZKZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AX47D7HMHSTSFSHP9VQAEA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AX47D7HMHSTSFSHP9VQAEA",
+        "id": "01M6AX482WYCG34BERJYH11Z48",
+        "link": "01M6AX482WYCG34BERJYFGK66N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6AG9P18J4KJEAWFPQ5N731G",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M65G0WKX7Y74QCRB8EAN573P",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AX495B6A4ZDSNVDDS34E6T",
+  "type": "ops",
+  "v": 1
+}

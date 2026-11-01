@@ -697,6 +697,19 @@ func checkShipLeaves(t changeWorktree) error {
 		WithNext("rhiza run start --workflow plan")
 }
 
+// refuseAgentSession refuses a run-starting path (verb is start or resume)
+// inside an agent session, naming the session. No agent session starts a run.
+func refuseAgentSession(ctx *Ctx, verb string) error {
+	if ctx.Getenv == nil {
+		return nil
+	}
+	if sid := strings.TrimSpace(ctx.Getenv(envSession)); sid != "" {
+		return Usagef("run %s refused: this is agent session %s, and no agent session starts a run", verb, sid).
+			WithNext("ask the owner to run it outside an agent session")
+	}
+	return nil
+}
+
 // runRunResume continues a run that is neither finished nor running in
 // another process, with the definition its journal started with. With
 // Retry it also restarts a failed run at its failed step: the engine
@@ -775,6 +788,9 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 			st = j.State()
 		}
 		return RunResponse{Run: runInfo(ctx, st, false, session.NewStore(session.Dir(common))), DryRun: true, Retry: retryStep}, nil
+	}
+	if err := refuseAgentSession(ctx, "resume"); err != nil {
+		return nil, err
 	}
 	if err := canRun(ctx, def); err != nil {
 		return nil, err
