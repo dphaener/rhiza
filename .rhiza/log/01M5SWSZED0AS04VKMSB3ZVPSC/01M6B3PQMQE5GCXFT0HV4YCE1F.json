@@ -1,0 +1,30 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6B3NF8E2SYGEWX4WSWRV4FP"
+  ],
+  "at": "2026-11-01T08:30:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "To be planned when carved out of Area views",
+          "statement": "The change feed can stream changes as they happen (events --follow)"
+        },
+        "handle": "change-feed-follow",
+        "id": "01M6B3PPF7X8K68YEWCRT1WV7Y",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6B3PPF7X8K68YEWCN80ZXKB",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      }
+    ]
+  },
+  "change_set": "01M5SWSZED0AS04VKMSB3ZVPSC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B3PQMQE5GCXFT0HV4YCE1F",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,33 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6B3NCDEX88PC3NFRWSKH8GA"
+  ],
+  "at": "2026-11-01T08:29:57Z",
+  "body": {
+    "carve": {
+      "entry": "01M6B3NF8E2SYGEWX4WSWRV4FP",
+      "from": "01M5SWSZED0AS04VKMSB3ZVPSC"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A change feed lists what changed since a cursor and can stream changes as they happen."
+        },
+        "handle": "change-feed",
+        "id": "01M6B3NF8E2SYGEWX4WSTKATPF",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5SWSZM5XD3C2PXBA5GYGT04",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      }
+    ]
+  },
+  "change_set": "01M6B3NCDEX88PC3NFRW16YTVZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B3NF8E2SYGEWX4WVQXT3TF",
+  "type": "ops",
+  "v": 2
+}

@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T08:29:51Z",
+  "body": {
+    "intent": "rhiza feed lists what landed in land order with PR numbers, and a Rex changes app shows what landed since the owner last looked",
+    "kind": "intention",
+    "sources": [],
+    "title": "Change feed and changes app"
+  },
+  "change_set": "01M6B3NCDEX88PC3NFRW16YTVZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B3NCDEX88PC3NFRWSKH8GA",
+  "type": "open",
+  "v": 2
+}

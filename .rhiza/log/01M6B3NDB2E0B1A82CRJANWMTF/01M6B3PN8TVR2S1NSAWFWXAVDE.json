@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6B3NDB2E0B1A82CRJYQJ1EM"
+  ],
+  "at": "2026-11-01T08:30:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/api with an injected timer that is over budget once then under passes, one over budget three times fails, and the budget log records each attempt; the 50 ms budget constant is unchanged",
+          "statement": "The read-budget test times a read whose median is over its budget up to two more times and fails only if every attempt is over, logging each attempt, so a short spike of load from outside the test run does not fail make check"
+        },
+        "handle": "read-budget-retries",
+        "id": "01M6B3PKC46SS5FN4YP7Y7HW36",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6B3PKC46SS5FN4YP5FKQDHD",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M6B3PKC46SS5FN4YP5FKQDHD",
+        "id": "01M6B3PM3HPJMMJHTA4R7ZCM6C",
+        "link": "01M6B3PM3HPJMMJHTA4NW0A3S6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6B3P4Z8XQSN36W5HZJP84XG",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6B3NDB2E0B1A82CRJANWMTF",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B3PN8TVR2S1NSAWFWXAVDE",
+  "type": "ops",
+  "v": 1
+}

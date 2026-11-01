@@ -1,0 +1,75 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6B3NF8E2SYGEWX4WVQXT3TF"
+  ],
+  "at": "2026-11-01T08:30:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A change feed lists the change sets that landed, in land order, a page at a time from a cursor"
+        },
+        "handle": "change-feed",
+        "id": "01M6B3NF8E2SYGEWX4WSTKATPF",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M5SWSZM5XD3C2PXBA5GYGT04",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      },
+      {
+        "fields": {
+          "acceptance": "A feed.txtar lands three record change sets and sees them in land order; --limit 2 gives a next_cursor and the next page holds the third; a bad cursor exits 2; --since filters by land time; a change set reopened and landed again appears once at its new land; a change set with PR Evidence (pr field) shows its PR number; feed --json and api call feed print the same bytes; describe-golden.txtar is regenerated",
+          "statement": "rhiza feed lists landed change sets ordered by their latest land entry, each with ID, title, kind, leaf count, land time, actor and PR number when PR Evidence holds one, paged with --limit and a cursor, and filtered with --since <RFC 3339 time>"
+        },
+        "handle": "feed-command",
+        "id": "01M6B3PEPKV2KGQRZWN77SPD1W",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6B3PEPKV2KGQRZWN4PG4BYT",
+        "op": "node.create",
+        "parent": "01M5SWSZM5XD3C2PXBA5GYGT04"
+      },
+      {
+        "decision": null,
+        "from": "01M6B3PEPKV2KGQRZWN4PG4BYT",
+        "id": "01M6B3PFDY4N53Y225A5PHM75K",
+        "link": "01M6B3PFDY4N53Y225A2YN1827",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6B3P1RND056TWHR7TFB4TF9",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A tui-changes-app.txtar: --once lists the unseen landed change sets; after marking them seen a second --once lists none, and a change set landed later appears; unit tests on a fake runner cover seen IDs and ordering; rex-install.txtar shows the rhiza_app_changes action on key g and no other key moved",
+          "statement": "A Rex app, changes, on key g of the rhiza key mode, shows landed change sets the viewer has not seen, newest first, with their PR numbers, and marks them seen in .git/rhiza/feed.json; --once prints the unseen list as JSON"
+        },
+        "handle": "changes-app",
+        "id": "01M6B3PG5BQ496EZCTRGV9WCEA",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6B3PG5BQ496EZCTRDFMH0T2",
+        "op": "node.create",
+        "parent": "01M5SWSZM5XD3C2PXBA5GYGT04"
+      },
+      {
+        "decision": null,
+        "from": "01M6B3PG5BQ496EZCTRDFMH0T2",
+        "id": "01M6B3PGWSTGB9ZWKPYA49JK5Q",
+        "link": "01M6B3PGWSTGB9ZWKPY9B5RHPS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6B3P3BGR8M6ZGYMDJTSTVNW",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6B3NCDEX88PC3NFRW16YTVZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B3PJ35C1G4JAHVHBG9H2QJ",
+  "type": "ops",
+  "v": 1
+}
