@@ -21,6 +21,10 @@ Record what is wrong, one finding per problem, each of one of five kinds:
 - `outside-intent`: a node outside its change set's intent.
 - `contradiction`: nodes that contradict each other, the model or the code.
 
+For each plan change set run `rhiza overlaps --change <cs> --json`: it lists the in-flight
+change sets that write the same node or link. Record each overlap that contradicts the plan as
+a `contradiction` finding naming the other change set; skip one that fits the plan.
+
 ```
 {"findings":[{"node":"<handle or ID>","kind":"missing-acceptance","reason":"<why>"}]}
 ```

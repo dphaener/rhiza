@@ -89,6 +89,7 @@ func TestPlanReviewText(t *testing.T) {
 		"plan-review-guide": {
 			"missing-acceptance", "missing-provenance", "unreal-depends-on",
 			"outside-intent", "contradiction",
+			"rhiza overlaps --change <cs> --json", "naming the other change set",
 			"rhiza run findings", `{"findings":[{"node":"`, `"kind":`, `"reason":`, `{"findings":[]}`,
 			"rhiza run verdict", `{"verdicts":[{"finding":"f1","verdict":`, "`confirmed` or `dropped`",
 			"serving an intent it adds", "rhiza change show", "rhiza slice", "rhiza why",
