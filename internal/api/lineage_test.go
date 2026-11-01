@@ -475,3 +475,53 @@ func TestWhyCitedQuotesKeepsAll(t *testing.T) {
 		}
 	}
 }
+
+// A node that is not a decision keeps every quote of its source: through
+// the walk from a capability, and in addSource even when the node reached
+// from carries a quote that matches only some of them.
+func TestWhyNonDecisionKeepsAllQuotes(t *testing.T) {
+	ctx := readCtx(t)
+	newChange(t, ctx, `{"intent":"Base"}`)
+	mustWrite(t, ctx, "add", `{"kind":"source","handle":"talk","json_fields":["quotes=[\"we must keep it small\",\"we shall grow\"]"]}`)
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"tiny","fields":["statement=must keep it"]}`)
+	mustWrite(t, ctx, "link", `{"from":"tiny","type":"derived-from","to":"talk"}`)
+	move(t, ctx, "propose", `{}`)
+	move(t, ctx, "accept", `{"reason":"ok"}`)
+	move(t, ctx, "land", `{}`)
+	both := func(f map[string]json.RawMessage) bool {
+		var q []string
+		return json.Unmarshal(f["quotes"], &q) == nil && slices.Equal(q, []string{"we must keep it small", "we shall grow"})
+	}
+
+	r := whyOf(t, ctx, `{"ref":"tiny","view":"as-is"}`)
+	if len(r.Sources) != 1 || r.Sources[0].Handle != "talk" {
+		t.Fatalf("sources %+v", r.Sources)
+	}
+	if !both(r.Sources[0].Fields) || r.Sources[0].QuotesLeftOut != 0 {
+		t.Errorf("walk: quotes %s, left out %d; want both, 0", r.Sources[0].Fields["quotes"], r.Sources[0].QuotesLeftOut)
+	}
+
+	rd := mustReader(t, ctx, "as-is", defaultView)
+	talk, err := rd.Resolve("talk")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tiny, err := rd.Resolve("tiny")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cited := map[string]json.RawMessage{"quote": json.RawMessage(`"must keep it"`)}
+	for _, kind := range []op.Kind{op.KindCapability, op.KindQuestion, op.KindSource} {
+		via := tiny
+		via.Kind = kind
+		via.Fields = cited
+		w := &whyWalk{r: rd, seen: map[id.ID]bool{}, resp: &WhyResponse{}, answers: map[id.ID]int{}}
+		if err := w.addSource(talk.ID, via); err != nil {
+			t.Fatal(err)
+		}
+		s := w.resp.Sources[0]
+		if !both(s.Fields) || s.QuotesLeftOut != 0 {
+			t.Errorf("%s: quotes %s, left out %d; want both, 0", kind, s.Fields["quotes"], s.QuotesLeftOut)
+		}
+	}
+}
