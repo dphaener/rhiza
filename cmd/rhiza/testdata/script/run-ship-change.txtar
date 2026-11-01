@@ -137,7 +137,7 @@ stdout '^1$'
 ! grep '[-]-admin|[-]-auto|[-]-delete-branch' $WORK/gh.log
 grep '^pr view cs/ship-it --json number,url,state,headRefOid,mergeable,statusCheckRollup$' $WORK/gh.log
 grep '^pr view 7 --json mergeCommit,state$' $WORK/gh.log
-exec sh -c 'grep -c -x "run list --commit $(cat $WORK/merge.sha) --json name,status,conclusion" $WORK/gh.log'
+exec sh -c 'grep -c -x "run list --commit $(cat $WORK/merge.sha) --json databaseId,name,status,conclusion" $WORK/gh.log'
 ! stdout '^0$'
 
 # The land commit is the PR head's last commit, with the Change trailer

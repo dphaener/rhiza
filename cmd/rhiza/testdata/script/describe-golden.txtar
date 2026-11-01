@@ -17456,6 +17456,13 @@ cmp stdout describe.golden.json
             "description": "With --settled on a conflicting pull request: the head pushed after rebasing the branch onto main",
             "type": "string"
           },
+          "reran": {
+            "description": "The GitHub Actions run IDs whose failed jobs this check reran, once per head, instead of failing; the check then reports not settled",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "settled": {
             "description": "True if there is an open PR (or a merge commit) and every check on it has finished",
             "type": "boolean"
