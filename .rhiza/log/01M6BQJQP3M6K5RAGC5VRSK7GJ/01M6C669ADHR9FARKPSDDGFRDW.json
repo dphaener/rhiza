@@ -1,0 +1,40 @@
+{
+  "actor": "01M6C5SSJA95FK2EYV7NEFQVC9",
+  "after": [
+    "01M6C541HNJ7XZWZCQ7XMDNFG3"
+  ],
+  "at": "2026-11-01T18:33:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d0f1d260: read the diff (ChangeShowResponse gains changes, built by buildChangeDiff over changeset.BuildDiff, and Human ends with a '## Changes' section via ChangeDiffResponse.Human). change-diff.txtar sets thing's statement a -> c and asserts change show prints '## Changes' and '^  statement: a -> c$'; tui-write-apps.txtar cmp's the change-show app's --once output with change show --json and asserts it holds \"changes\" with the draft handle. Ran go test ./... (all ok), go test ./cmd/rhiza -run 'TestScripts/(change-diff|tui-write-apps|run-review-check-landed|describe-golden)$' -count=1 (ok), and make self-check fmt-check with RHIZA_ROOT/CHANGE/RUN unset (ok)."
+        },
+        "handle": "change-show-diff-verified",
+        "id": "01M6C667373BJ2DGT497NR3WYH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6C667373BJ2DGT4961KAKSY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6C667373BJ2DGT4961KAKSY",
+        "id": "01M6C667YYGR6PZ9T84B3DAR4P",
+        "link": "01M6C667YYGR6PZ9T8496MPBE6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BQKKV7CTFV9W0T453F3RSY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6BQJQP3M6K5RAGC5VRSK7GJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6C669ADHR9FARKPSDDGFRDW",
+  "type": "ops",
+  "v": 1
+}
