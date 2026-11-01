@@ -16,6 +16,12 @@ A change set's diff is built from its folded ops, one entry per node merging all
 
 - derived-from [m16-orchestrator-picks](../source/m16-orchestrator-picks.md)
 
+### In
+
+- decided-by [change-diff-op](../capability/rhiza/change-sets/change-diff/change-diff-op.md)
+- decided-by [change-diff-text](../capability/rhiza/change-sets/change-diff/change-diff-text.md)
+- decided-by [change-show-diff](../capability/rhiza/change-sets/change-diff/change-show-diff.md)
+
 ## History
 
 - `01M6BQJPJPWB8CZVCKAKWWC9T7` Plan milestone 16: see what a change set changes, picked by the orchestrator under the owner's standing instruction
