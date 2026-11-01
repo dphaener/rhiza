@@ -1,0 +1,155 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6ATAXPTCET6FAGMN1E73MTW"
+  ],
+  "at": "2026-11-01T05:47:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "12",
+          "statement": "The night runs clean: the daemon holds new work when disk runs low, run status tells an open review cycle from a failed one, abandoning a run clears its worktree and branch, and milestones are worked in number order"
+        },
+        "handle": "milestone-12",
+        "id": "01M6ATAYY8X1ZM5E2R9FM8JEGS",
+        "key": "zzz",
+        "kind": "intent",
+        "node": "01M6ATAYY8X1ZM5E2R9BM9J00S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "if you run out of work keep picking high value tasks. don't stop and wait for my input.",
+          "statement": "Milestone 12 is four change sets picked by the orchestrator from what it still watched for by hand overnight: a disk guard on the daemon, the open review cycle label, abandon clearing the run's worktree and branch, and milestones ordered by number"
+        },
+        "handle": "m12-picked-by-orchestrator",
+        "id": "01M6ATAZPH181K51M6S16K4V8M",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6ATAZPH181K51M6RYRQE3R7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ATAZPH181K51M6RYRQE3R7",
+        "id": "01M6ATB0ESXZH9AJC2PQ6GM2TR",
+        "link": "01M6ATB0ESXZH9AJC2PPKTPJ6C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATAWYP6483ZDF7EDWKZKZP",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6ATAYY8X1ZM5E2R9BM9J00S",
+        "id": "01M6ATB17MMGX7BAPE6P8D89Y9",
+        "link": "01M6ATB17MMGX7BAPE6MTYSXNM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATAZPH181K51M6RYRQE3R7",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "While free space on the repo's filesystem is under 10 GiB (overridable with daemon --min-free), the daemon starts and resumes no runs, reports each candidate skipped with reason disk-low naming the free space, and the inbox shows one disk-low item read from the daemon's state; tests inject free space through RHIZA_TEST_FREE_BYTES, honoured only when RHIZA_TEST_NOW is set",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "disk-guard-10-gib",
+        "id": "01M6ATB21VA3XW8EKPA41NQ6JZ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6ATB21VA3XW8EKPA0SAAEKZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ATB21VA3XW8EKPA0SAAEKZ",
+        "id": "01M6ATB2VRAGYNDV8WEHRDDH4E",
+        "link": "01M6ATB2VRAGYNDV8WEGFASXQQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATAWYP6483ZDF7EDWKZKZP",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A review check whose latest cycle is open reports no outcome (open) in JSON, and its text reads 'open in cycle N (cycle N-1 failed)'; the live app counts it running and run summary heads it open",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "open-cycle-reads-open",
+        "id": "01M6ATB3MJDQ4WKWMHNYX02KEH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6ATB3MJDQ4WKWMHNWXTVVJX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ATB3MJDQ4WKWMHNWXTVVJX",
+        "id": "01M6ATB4BW5MZQCGGKC6Z6GSA4",
+        "link": "01M6ATB4BW5MZQCGGKC6K9YG3J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATAWYP6483ZDF7EDWKZKZP",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "rhiza run abandon removes the run's worktree without force and deletes its local cs/<slug> branch, keeping both when the worktree is dirty and saying so; the remote branch and any PR are left alone",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "abandon-removes-clean-worktree",
+        "id": "01M6ATB53GNCYCW9CYF1WTMRAN",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6ATB53GNCYCW9CYEZMP6E7A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ATB53GNCYCW9CYEZMP6E7A",
+        "id": "01M6ATB5WA6SWKK9DBAYM4V7KF",
+        "link": "01M6ATB5WA6SWKK9DBAYC9VQRT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATAWYP6483ZDF7EDWKZKZP",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Sibling intents that carry a milestone field are ordered by its number, before those without one; ties fall back to key then ID; within a group change sets keep depends-on order then ID; this orders both rhiza roadmap and the daemon's picks",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "milestones-by-number",
+        "id": "01M6ATB6KY91ETQCNCSDSD0QQD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6ATB6KY91ETQCNCSCBSPN8E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ATB6KY91ETQCNCSCBSPN8E",
+        "id": "01M6ATB7BE0R06SAW5ATB54FPJ",
+        "link": "01M6ATB7BE0R06SAW5AQFCVTJ9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATAWYP6483ZDF7EDWKZKZP",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6ATAR49P8K7TM7RCW7D20KF",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6ATB8HGR0PNGC3ZCJ4N00VV",
+  "type": "ops",
+  "v": 1
+}

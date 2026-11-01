@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6ATATQKHW0YV8W1XFG21R32"
+  ],
+  "at": "2026-11-01T05:47:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "run-abandon.txtar: after rhiza run abandon the worktree folder is gone, git branch --list cs/<slug> is empty and the output reports remove-worktree done; with an uncommitted file in the worktree both are kept and the output says the worktree is dirty",
+          "statement": "rhiza run abandon removes the run's clean worktree and deletes its local branch, reporting each as done, already gone, or kept because the worktree is dirty; the remote branch and PR are untouched"
+        },
+        "handle": "abandon-clears-worktree",
+        "id": "01M6ATC08K455FW14QD0G1Z5KT",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6ATC08K455FW14QCXPZ9QHD",
+        "op": "node.create",
+        "parent": "01M61R7GG0GGBSVKV2585MNPCW"
+      },
+      {
+        "decision": null,
+        "from": "01M6ATC08K455FW14QCXPZ9QHD",
+        "id": "01M6ATC0ZYWY365G5DW5BQWYCS",
+        "link": "01M6ATC0ZYWY365G5DW5AQZFFA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATB53GNCYCW9CYEZMP6E7A",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6ATATQKHW0YV8W1XDP8YECH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6ATC27M4PGEQEDYA2E5XW2H",
+  "type": "ops",
+  "v": 1
+}

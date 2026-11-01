@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6ATAVKKGF9SWBWVTGWHKVWJ"
+  ],
+  "at": "2026-11-01T05:47:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "daemon-picks.txtar with ready change sets serving milestone-9 and milestone-10 and --max-runs 1: rhiza daemon --once starts the milestone-9 one, and rhiza roadmap --json lists milestone 9's group before milestone 10's",
+          "statement": "The roadmap and the daemon order sibling milestone intents by their milestone number, so milestone 9 comes before milestone 10, with key then ID breaking ties and depends-on order kept within each milestone"
+        },
+        "handle": "milestones-in-number-order",
+        "id": "01M6ATC3EGWXK28A2NGHPRZR31",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6ATC3EGWXK28A2NGFY475TE",
+        "op": "node.create",
+        "parent": "01M61R7K5W91SXWWX8AGDZ01HC"
+      },
+      {
+        "decision": null,
+        "from": "01M6ATC3EGWXK28A2NGFY475TE",
+        "id": "01M6ATC46TRF7D38JZ4F6QB5H3",
+        "link": "01M6ATC46TRF7D38JZ4CQ3G3SK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATB6KY91ETQCNCSCBSPN8E",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6ATAVKKGF9SWBWVTF7N98QS",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6ATC5B4NQXSTGRVQFBS05RS",
+  "type": "ops",
+  "v": 1
+}
