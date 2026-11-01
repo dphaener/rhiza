@@ -19,6 +19,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
+	gmodel "github.com/dphaener/rhiza/internal/model"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/workflow"
 )
@@ -69,6 +70,7 @@ const (
 	InboxGaveUp   = "gave-up"
 	InboxSkipped  = "skipped"
 	InboxBlocker  = "blocker"
+	InboxOverlap  = "overlap"
 )
 
 // InboxRequest takes nothing.
@@ -77,10 +79,10 @@ type InboxRequest struct{}
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
 	ID             string `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped or blocker"`
+	Kind           string `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, blocker or overlap"`
 	At             string `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
-	Run            string `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker"`
-	Change         string `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks"`
+	Run            string `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker and an overlap"`
+	Change         string `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)"`
 	ChangeTitle    string `json:"change_title,omitempty" desc:"The change set's title; absent when the log has no such change set"`
 	Step           string `json:"step,omitempty" desc:"The step: the asking session's, the sign-off's, the failed step, or where the run was interrupted"`
 	Question       string `json:"question,omitempty" desc:"A question: what the agent asked; a blocker: the question's statement"`
@@ -92,6 +94,8 @@ type InboxItem struct {
 	Reasons        string `json:"reasons,omitempty" desc:"A question: why the advisor recommends it"`
 	Handle         string `json:"handle,omitempty" desc:"A blocker: the question's handle"`
 	Blocks         string `json:"blocks,omitempty" desc:"A blocker: what the question blocks, this change set or the handle of the node"`
+	Other          string `json:"other,omitempty" desc:"An overlap: the second change set (B)"`
+	Target         string `json:"target,omitempty" desc:"An overlap: the node or link both change sets write, its handle when it has one"`
 	Detail         string `json:"detail,omitempty" desc:"A failed run: why it failed; a sign-off: what it waits for"`
 	Next           string `json:"next,omitempty" desc:"The command that clears it, when one does"`
 }
@@ -115,6 +119,15 @@ func (r InboxResponse) Human(w io.Writer) {
 			}
 			fmt.Fprintf(w, "  question: %s (%s)\n", it.Question, it.Handle)
 			fmt.Fprintf(w, "  blocks: %s\n", it.Blocks)
+			if it.Next != "" {
+				fmt.Fprintf(w, "  next: %s\n", it.Next)
+			}
+			continue
+		}
+		if it.Kind == InboxOverlap {
+			fmt.Fprintf(w, "%s overlap change sets %s and %s\n", it.ID, it.Change, it.Other)
+			fmt.Fprintf(w, "  target: %s\n", it.Target)
+			fmt.Fprintf(w, "  %s\n", it.Detail)
 			if it.Next != "" {
 				fmt.Fprintf(w, "  next: %s\n", it.Next)
 			}
@@ -305,7 +318,11 @@ func runInbox(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	items = sortInboxItems(append(items, blockers...))
+	overlaps, err := inboxOverlaps(ctx)
+	if err != nil {
+		return nil, err
+	}
+	items = sortInboxItems(append(append(items, blockers...), overlaps...))
 	title := changeTitleOf(ctx)
 	for i := range items {
 		items[i].ChangeTitle = title(items[i].Change)
@@ -391,6 +408,38 @@ func inboxBlockers(ctx *Ctx) ([]InboxItem, error) {
 	return items, nil
 }
 
+// inboxOverlaps is one overlap item per overlap between in-flight change
+// sets (model.Overlaps), with no run. It began to wait when the later of
+// the two change sets was opened, which its ID dates.
+func inboxOverlaps(ctx *Ctx) ([]InboxItem, error) {
+	ws, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return nil, err
+	}
+	ovs := gmodel.Overlaps(ws.changeSets())
+	if len(ovs) == 0 {
+		return []InboxItem{}, nil
+	}
+	m := ws.model(id.ID{})
+	items := make([]InboxItem, 0, len(ovs))
+	for _, ov := range ovs {
+		target := ov.Target.String()
+		if n, ok := m.Node(ov.Target); ok && n.Handle != "" {
+			target = n.Handle
+		}
+		later := max(ulid.ULID(ov.A).Time(), ulid.ULID(ov.B).Time())
+		at := ulid.Time(later).UTC().Format(time.RFC3339)
+		sum := sha256.Sum256([]byte(strings.Join([]string{InboxOverlap, ov.A.String(), ov.B.String(), ov.Target.String()}, "\x00")))
+		items = append(items, InboxItem{
+			ID: hex.EncodeToString(sum[:])[:7], Kind: InboxOverlap, At: at,
+			Change: ov.A.String(), Other: ov.B.String(), Target: target,
+			Detail: "both write " + strings.Join(ov.Aspects, ", "),
+			Next:   "rhiza slice --change " + ov.A.String() + " --view what-if",
+		})
+	}
+	return items, nil
+}
+
 // changeTitleOf gives the display title of a change set by ID, empty when
 // the log has none or the ID does not parse.
 func changeTitleOf(ctx *Ctx) func(change string) string {
@@ -471,7 +520,11 @@ func findInboxItem(ctx *Ctx, ref string) (InboxItem, run.State, error) {
 	if err != nil {
 		return InboxItem{}, run.State{}, err
 	}
-	for _, it := range append(all, blockers...) {
+	overlaps, err := inboxOverlaps(ctx)
+	if err != nil {
+		return InboxItem{}, run.State{}, err
+	}
+	for _, it := range append(append(all, blockers...), overlaps...) {
 		if strings.HasPrefix(it.ID, ref) {
 			found = append(found, it)
 		}
@@ -501,6 +554,9 @@ func runInboxOpen(ctx *Ctx, req any) (any, error) {
 	item, st, err := findInboxItem(ctx, r.Item)
 	if err != nil {
 		return nil, err
+	}
+	if item.Kind == InboxOverlap {
+		return nil, Usagef("item %s is an overlap between change sets %s and %s: it has no tab to open", item.ID, item.Change, item.Other).WithNext(item.Next)
 	}
 	rexSession, block := itemTab(item, st)
 	resp := InboxOpenResponse{Item: item.ID, Kind: item.Kind, Run: item.Run, Tab: block}

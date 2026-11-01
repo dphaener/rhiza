@@ -1698,7 +1698,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "change": {
-                  "description": "The change set of the run; for a blocker, the change set the question blocks",
+                  "description": "The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)",
                   "type": "string"
                 },
                 "change_title": {
@@ -1718,11 +1718,15 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped or blocker",
+                  "description": "question, open, signoff, failed, gave-up, skipped, blocker or overlap",
                   "type": "string"
                 },
                 "next": {
                   "description": "The command that clears it, when one does",
+                  "type": "string"
+                },
+                "other": {
+                  "description": "An overlap: the second change set (B)",
                   "type": "string"
                 },
                 "question": {
@@ -1738,7 +1742,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "run": {
-                  "description": "The run it belongs to; absent for a blocker",
+                  "description": "The run it belongs to; absent for a blocker and an overlap",
                   "type": "string"
                 },
                 "session": {
@@ -1759,6 +1763,10 @@ cmp stdout describe.golden.json
                 },
                 "tab_session": {
                   "description": "A question: the Rex session of the session's tab",
+                  "type": "string"
+                },
+                "target": {
+                  "description": "An overlap: the node or link both change sets write, its handle when it has one",
                   "type": "string"
                 }
               },

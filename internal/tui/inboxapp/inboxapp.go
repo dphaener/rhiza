@@ -60,6 +60,7 @@ var groups = []struct{ kind, heading string }{
 	{api.InboxSignoff, "Sign-offs"},
 	{api.InboxOpen, "Open questions"},
 	{api.InboxBlocker, "Blocking questions"},
+	{api.InboxOverlap, "Overlaps"},
 	{api.InboxFailed, "Failed runs"},
 	{api.InboxGaveUp, "Gave up"},
 	{api.InboxSkipped, "Skipped"},
@@ -385,6 +386,9 @@ func row(it api.InboxItem) string {
 		b.WriteString(" · " + it.Step)
 	}
 	b.WriteString("\n")
+	if it.Kind == api.InboxOverlap {
+		b.WriteString(" · with " + it.Other + " · " + it.Target)
+	}
 	text := it.Detail
 	if it.Kind == api.InboxQuestion {
 		text = it.Question

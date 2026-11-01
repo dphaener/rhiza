@@ -182,6 +182,9 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State) error {
 	}
 	host, _ := os.Hostname()
 	items := inboxItems(runs, host, nil, rs.Live, changeStateOf(ctx))
+	if overlaps, err := inboxOverlaps(ctx); err == nil {
+		items = append(items, overlaps...)
+	}
 	titles := map[string]string{}
 	for _, j := range runs {
 		if st := j.State(); st.Title != "" {
@@ -226,6 +229,8 @@ func inboxNotice(what string, it InboxItem) string {
 		return what + ": a run failed"
 	case InboxSkipped:
 		return what + ": an interrupted run was not resumed"
+	case InboxOverlap:
+		return what + ": an overlap with change set " + it.Other + " waits on you"
 	default:
 		return what + ": the daemon gave up on a run"
 	}

@@ -11,3 +11,10 @@ func TestInboxNoticeOpen(t *testing.T) {
 		t.Fatalf("notice: %q", got)
 	}
 }
+
+func TestInboxNoticeOverlap(t *testing.T) {
+	got := inboxNotice("Edit one", InboxItem{Kind: InboxOverlap, Other: "CSB"})
+	if got != "Edit one: an overlap with change set CSB waits on you" {
+		t.Fatalf("notice: %q", got)
+	}
+}

@@ -107,3 +107,16 @@ func TestViewListsOpenStop(t *testing.T) {
 		}
 	}
 }
+
+func TestViewGroupsOverlaps(t *testing.T) {
+	out, calls := `{"items":[
+{"id":"g7","kind":"overlap","change":"C7","other":"C8","change_title":"Seven","target":"thing","detail":"both write field:statement"}
+]}`, 0
+	m := NewModel(fake(&out, &calls))
+	v := m.View().Content
+	for _, want := range []string{"Overlaps", "Seven · with C8 · thing", "both write field:statement"} {
+		if !strings.Contains(v, want) {
+			t.Errorf("view lacks %q:\n%s", want, v)
+		}
+	}
+}

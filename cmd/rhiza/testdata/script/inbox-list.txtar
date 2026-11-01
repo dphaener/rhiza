@@ -54,6 +54,32 @@ exec rhiza inbox
 stdout '^Nothing waits on you$'
 exec rhiza inbox --json
 stdout '"items": \[\]'
+# Two proposed change sets setting one field of a node overlap: the inbox
+# lists the overlap with no run, naming both change sets and the target, and
+# inbox open on it exits 2.
+exec rhiza add capability thing --field 'statement=Does the thing' --record
+exec rhiza render
+exec rhiza change new 'First edit' --json
+exec rhiza set thing --field statement=A
+exec rhiza propose
+exec rhiza change new 'Second edit' --json
+exec rhiza set thing --field statement=B
+exec rhiza propose
+exec rhiza inbox
+stdout -count=1 '^[0-9a-f]{7} overlap change sets [0-9A-Z]{26} and [0-9A-Z]{26}$'
+stdout -count=1 '^  target: thing$'
+stdout '^  both write field:statement$'
+stdout -count=1 '^  next: rhiza slice --change [0-9A-Z]{26} --view what-if$'
+exec rhiza inbox --json
+stdout '"kind": "overlap"'
+stdout '"target": "thing"'
+stdout '"other": "[0-9A-Z]{26}"'
+! stdout '"run"'
+exec sh -c 'rhiza inbox | grep -E "^[0-9a-f]{7} overlap" | cut -d" " -f1 > id.txt'
+exec sh -c 'rhiza inbox open $(cat id.txt) 2>err.txt; echo $?'
+stdout '^2$'
+exec cat err.txt
+stdout 'overlap'
 -- question.jsonl --
 {"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"CSQUESTION"}}
 {"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
