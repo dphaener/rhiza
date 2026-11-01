@@ -1,0 +1,103 @@
+# feed lists the landed change sets in land order, a page at a time from an
+# opaque cursor, filtered by land time, with the PR number from PR Evidence.
+
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+exec git add -A
+exec git commit -qm 'Init'
+exec git push -q -u origin main
+
+# Nothing landed after 2030.
+exec rhiza feed --since 2030-01-01T00:00:00Z
+stdout '^Nothing landed\.$'
+
+# Three record change sets land at three times, after the actor record the
+# first of them writes.
+env RHIZA_TEST_NOW=2026-10-25T12:00:00Z
+exec rhiza add capability alpha --record --field 'statement=Alpha'
+env RHIZA_TEST_NOW=2026-10-26T12:00:00Z
+exec rhiza add capability beta --record --field 'statement=Beta'
+env RHIZA_TEST_NOW=2026-10-27T12:00:00Z
+exec rhiza add capability gamma --record --field 'statement=Gamma'
+
+# Land order, oldest first, none of them with a PR.
+exec rhiza feed --since 2026-10-25T00:00:00Z
+stdout -count=4 '^- '
+stdout '(?s)Record actor.*add capability alpha.*add capability beta.*add capability gamma'
+stdout ' record '
+stdout '\(1 leaf\)$'
+! stdout '#[0-9]'
+! stdout 'next:'
+
+# --since filters by land time, the instant itself included.
+exec rhiza feed --since 2026-10-26T00:00:00Z --json
+! stdout 'alpha'
+stdout '"landed_at": "2026-10-26T12:00:[0-9]+Z"'
+stdout '"landed_at": "2026-10-27T12:00:[0-9]+Z"'
+exec rhiza feed --since 2026-10-28T00:00:00Z
+stdout '^Nothing landed\.$'
+! exec rhiza feed --since yesterday --json
+stdout '"code": "usage"'
+
+# --limit 2 gives a cursor; the next page holds the other two.
+exec rhiza feed --since 2026-10-25T00:00:00Z --limit 2 --json
+stdout '"next_cursor": "[A-Za-z0-9_-]+"'
+exec rhiza feed --since 2026-10-25T00:00:00Z --limit 2
+stdout -count=2 '^- '
+stdout '^next: rhiza feed --limit 2 --since 2026-10-25T00:00:00Z --cursor [A-Za-z0-9_-]+$'
+exec sh -c 'rhiza feed --since 2026-10-25T00:00:00Z --limit 2 | sed -n "s/^next: .* --cursor //p" > cursor.txt'
+exec sh -c 'rhiza feed --since 2026-10-25T00:00:00Z --limit 2 --cursor "$(cat cursor.txt)"'
+stdout -count=2 '^- '
+stdout 'add capability gamma'
+! stdout 'next:'
+
+# A bad cursor and a bad limit are usage errors, exit 2.
+! exec rhiza feed --cursor nonsense --json
+stdout '"code": "usage"'
+stdout '"next": "rhiza describe feed"'
+! exec rhiza feed --limit 2000 --json
+stdout '"code": "usage"'
+
+# A change set with PR Evidence shows its PR number.
+env RHIZA_TEST_NOW=2026-10-28T12:00:00Z
+exec rhiza add capability delta --record --field 'statement=Delta'
+exec rhiza add evidence delta-ci --record --field 'statement=Pull request #42 passed CI' --field 'pr=https://github.com/o/r/pull/42' --field 'status=verified'
+exec rhiza link delta-ci verifies delta --record
+exec rhiza feed --since 2026-10-28T00:00:00Z --json
+stdout '"pr": 42'
+
+# A change set reopened and landed again appears once, at its new land.
+exec git add -A
+exec git commit -qm 'Land'
+exec git checkout -q -b cs/x
+env RHIZA_TEST_NOW=2026-10-29T12:00:00Z
+exec rhiza change new 'Store things' --json
+stdout '"change_set": "([0-9A-Z]{26})"'
+exec rhiza add capability store --field 'statement=Stores things'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+exec rhiza render
+exec git add -A
+exec git commit -qm 'Land Store things'
+exec rhiza feed --since 2026-10-29T00:00:00Z
+stdout -count=1 '^- '
+stdout 'intention'
+exec sh -c 'rhiza reopen --change $(rhiza change ls | sed -n "s/^- \\([0-9A-Z]*\\) landed intention.*/\\1/p")'
+env RHIZA_TEST_NOW=2026-10-30T12:00:00Z
+exec rhiza add capability shelve --field 'statement=Shelves things'
+exec rhiza land
+exec rhiza feed --since 2026-10-29T00:00:00Z
+stdout -count=1 '^- '
+stdout ' 2026-10-30T12:00:'
+! stdout ' 2026-10-29T12:00:'
+
+# feed --json and api call print the same bytes.
+exec rhiza feed --limit 2 --json
+cp stdout feed.json
+exec rhiza api call feed '{"limit":2}'
+cmp stdout feed.json

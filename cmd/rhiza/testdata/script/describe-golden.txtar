@@ -1529,6 +1529,96 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "feed",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "cursor": {
+            "description": "Where to go on: the next_cursor of the page before",
+            "type": "string"
+          },
+          "limit": {
+            "description": "The most change sets to return, 1 to 1000; default 100",
+            "type": "integer"
+          },
+          "since": {
+            "description": "Keep the change sets landed at or after this time, RFC 3339",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_sets": {
+            "description": "The landed change sets, oldest land first",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "actor": {
+                  "description": "Who landed it: the actor's handle, else its ID",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The change set's ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "intention or record",
+                  "type": "string"
+                },
+                "land_entry": {
+                  "description": "The land entry the change set sits at",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "landed_at": {
+                  "description": "When it landed, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "leaves": {
+                  "description": "How many leaf capabilities it created",
+                  "type": "integer"
+                },
+                "pr": {
+                  "description": "The pull request number from its PR Evidence; absent when there is none",
+                  "type": "integer"
+                },
+                "title": {
+                  "description": "The change set's title, else its intent's first clause",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "actor",
+                "id",
+                "kind",
+                "land_entry",
+                "landed_at",
+                "leaves",
+                "title"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "next_cursor": {
+            "description": "The cursor of the next page; absent when no more remain",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change_sets"
+        ],
+        "type": "object"
+      },
+      "summary": "List the change sets that landed, in land order, a page at a time",
+      "write": false
+    },
+    {
       "name": "guide",
       "request": {
         "additionalProperties": false,
