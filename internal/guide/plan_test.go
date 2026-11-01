@@ -58,6 +58,7 @@ func TestPlanText(t *testing.T) {
 		"plan-no-intent-yet": {
 			"serves no intent yet", "pick a landed intent", `"kind":"intent"`,
 			`rhiza link "$RHIZA_CHANGE" serves <intent>`, "before any leaf",
+			`rhiza slice --change "$RHIZA_CHANGE" --json`, `"relation":"serves"`,
 		},
 		"plan-interview": {
 			"rhiza slice", "rhiza why", "Never ask a fact", "One topic per message",
