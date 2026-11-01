@@ -1,0 +1,102 @@
+# The inbox lists a live run's working session as stalled only once its last
+# hook report is more than 20 minutes old. The session record is written by
+# hand: its hook report is set to a fixed time and the clock moved.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Silent runs' --title 'Silent runs' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+
+mkdir .rhiza/workflows
+cp $WORK/work.toml .rhiza/workflows/work.toml
+env REX_BLOCK=block:root
+env REX_SESSION=session:s1
+exec rhiza run start --workflow work --permission-mode manual &
+
+# Wait (bounded) until the agent has reported working through its hook.
+exec sh -c 'i=0; while [ $i -lt 400 ]; do grep -q "\"hook\"" "$WORK"/repo/.git/rhiza/sessions/*.json && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
+
+# Hand-write the hook report: working, last reported at 00:00:00.
+exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/(\"hook\": \{.*?\"at\": \")[^\"]*/\${1}2030-01-01T00:00:00Z/s" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+
+env RHIZA_TEST_NOW=2030-01-01T00:19:00Z
+exec rhiza inbox --json
+! stdout '"stalled"'
+
+env RHIZA_TEST_NOW=2030-01-01T00:21:00Z
+exec rhiza inbox --json
+stdout '"kind": "stalled"'
+stdout '"step": "build"'
+stdout '"at": "2030-01-01T00:00:00Z"'
+stdout '"next": "rhiza session message [0-9A-Za-z-]+ <text>"'
+exec rhiza inbox
+stdout 'stalled run [0-9A-Za-z]+, change set [0-9A-Z]+, step build'
+stdout 'has not reported since 2030-01-01T00:00:00Z'
+stdout 'next: rhiza session message'
+
+# A blocked report is never stalled, however old.
+exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/(\"hook\": \{.*?\"state\": \")working/\${1}blocked/s" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+exec rhiza inbox --json
+! stdout '"stalled"'
+
+# Nor is an idle one.
+exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/(\"hook\": \{.*?\"state\": \")blocked/\${1}idle/s" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+exec rhiza inbox --json
+! stdout '"stalled"'
+
+exec sh -c 'echo > $WORK/go'
+wait
+
+-- work.toml --
+name = "work"
+
+[step.build]
+kind = "agent"
+prompt = "Build {change}"
+interval = "50ms"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+if [ "$1" = events ]; then
+	exit 0
+fi
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >"$WORK/tab.out" 2>&1 </dev/null &
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+sid=
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
+echo '{"session_id":"'$sid'","hook_event_name":"UserPromptSubmit"}' | rhiza session hook UserPromptSubmit >> "$WORK/hook.out" || exit 8
+i=0
+until [ -f "$WORK/go" ]; do
+	i=$((i + 1))
+	if [ $i -gt 800 ]; then
+		exit 9
+	fi
+	sleep 0.025
+done
+exit 0

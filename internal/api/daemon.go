@@ -220,7 +220,7 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State) error {
 		return Errorf("read runs: %v", err)
 	}
 	host, _ := os.Hostname()
-	items := inboxItems(runs, host, nil, rs.Live, changeStateOf(ctx))
+	items := inboxItems(runs, host, nil, rs.Live, changeStateOf(ctx), nil)
 	if overlaps, err := inboxOverlaps(ctx); err == nil {
 		items = append(items, overlaps...)
 	}

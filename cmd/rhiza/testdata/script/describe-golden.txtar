@@ -1722,7 +1722,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, blocker or overlap",
+                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker or overlap",
                   "type": "string"
                 },
                 "next": {
@@ -1750,7 +1750,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "session": {
-                  "description": "A question: the asking session",
+                  "description": "A question: the asking session; a stalled item: the stalled session",
                   "type": "string"
                 },
                 "step": {
@@ -1790,7 +1790,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on and interrupted runs it skipped because their change set is no longer accepted, oldest first",
+      "summary": "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on, interrupted runs it skipped because their change set is no longer accepted and stalled sessions of live runs, oldest first",
       "write": false
     },
     {

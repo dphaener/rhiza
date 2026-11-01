@@ -64,6 +64,7 @@ var groups = []struct{ kind, heading string }{
 	{api.InboxFailed, "Failed runs"},
 	{api.InboxGaveUp, "Gave up"},
 	{api.InboxSkipped, "Skipped"},
+	{api.InboxStalled, "Stalled"},
 }
 
 // Model is the app's bubbletea program. q or esc quits.

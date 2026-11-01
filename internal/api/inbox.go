@@ -21,13 +21,14 @@ import (
 	"github.com/dphaener/rhiza/internal/id"
 	gmodel "github.com/dphaener/rhiza/internal/model"
 	"github.com/dphaener/rhiza/internal/run"
+	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 func init() {
 	register(Operation{
 		Name:     "inbox",
-		Summary:  "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on and interrupted runs it skipped because their change set is no longer accepted, oldest first",
+		Summary:  "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on, interrupted runs it skipped because their change set is no longer accepted and stalled sessions of live runs, oldest first",
 		Request:  reflect.TypeFor[InboxRequest](),
 		Response: reflect.TypeFor[InboxResponse](),
 		Run:      runInbox,
@@ -71,6 +72,7 @@ const (
 	InboxSkipped  = "skipped"
 	InboxBlocker  = "blocker"
 	InboxOverlap  = "overlap"
+	InboxStalled  = "stalled"
 )
 
 // InboxRequest takes nothing.
@@ -79,7 +81,7 @@ type InboxRequest struct{}
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
 	ID             string `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, blocker or overlap"`
+	Kind           string `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, blocker or overlap"`
 	At             string `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
 	Run            string `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker and an overlap"`
 	Change         string `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)"`
@@ -89,7 +91,7 @@ type InboxItem struct {
 	Tab            string `json:"tab,omitempty" desc:"A question: the title of the session's tab"`
 	TabBlock       string `json:"tab_block,omitempty" desc:"A question: the Rex block of the session's tab"`
 	TabSession     string `json:"tab_session,omitempty" desc:"A question: the Rex session of the session's tab"`
-	Session        string `json:"session,omitempty" desc:"A question: the asking session"`
+	Session        string `json:"session,omitempty" desc:"A question: the asking session; a stalled item: the stalled session"`
 	Recommendation string `json:"recommendation,omitempty" desc:"A question: what the advisor recommends answering; absent while it has not, or when it failed"`
 	Reasons        string `json:"reasons,omitempty" desc:"A question: why the advisor recommends it"`
 	Handle         string `json:"handle,omitempty" desc:"A blocker: the question's handle"`
@@ -169,7 +171,10 @@ func (r InboxResponse) Human(w io.Writer) {
 // repository's runs, oldest first; host and alive say which processes run
 // locked reports a run another process holds. changeState gives the state
 // of a change set and whether the log has it at all.
-func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, changeState func(change string) (string, bool)) []InboxItem {
+//
+// stalled gives the stalled session of a run, nil when it has none; a nil
+// stalled lists none. Only a run another process holds can have one.
+func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, changeState func(change string) (string, bool), stalled func(st run.State) *RunStalled) []InboxItem {
 	// gone reports a change set that is landed, withdrawn, rejected or
 	// superseded: a failed or given-up run on one is left out, as its next
 	// command could only fail.
@@ -225,6 +230,16 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 					})
 				}
 			}
+			if live && stalled != nil {
+				if sl := stalled(st); sl != nil {
+					at, _ := time.Parse(time.RFC3339, sl.Since)
+					add(InboxStalled, sl.Session, at, InboxItem{
+						Step: sl.Step, Session: sl.Session,
+						Detail: "session " + sl.Session + " has not reported since " + sl.Since,
+						Next:   "rhiza session message " + sl.Session + " <text>",
+					})
+				}
+			}
 			// Only questions are the orchestrator's in an autonomous run.
 			if st.Autonomous {
 				continue
@@ -257,6 +272,17 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 		return strings.Compare(a.ID, b.ID)
 	})
 	return items
+}
+
+// inboxStalledOf reads each run's session record at the clock's now. Without
+// a clock no run is stalled.
+func inboxStalledOf(ctx *Ctx, common string) func(st run.State) *RunStalled {
+	if ctx == nil || ctx.Now == nil {
+		return nil
+	}
+	sessions := session.NewStore(session.Dir(common))
+	now := ctx.Now()
+	return func(st run.State) *RunStalled { return runStalledNow(st, sessions, now) }
 }
 
 // failedDetail is why a failed run failed, followed by the detail of the
@@ -313,7 +339,7 @@ func runInbox(ctx *Ctx, req any) (any, error) {
 		return nil, Errorf("read runs: %v", err)
 	}
 	host, _ := os.Hostname()
-	items := inboxItems(runs, host, nil, rs.Live, changeStateOf(ctx))
+	items := inboxItems(runs, host, nil, rs.Live, changeStateOf(ctx), inboxStalledOf(ctx, common))
 	blockers, err := inboxBlockers(ctx)
 	if err != nil {
 		return nil, err
@@ -515,7 +541,7 @@ func findInboxItem(ctx *Ctx, ref string) (InboxItem, run.State, error) {
 	}
 	host, _ := os.Hostname()
 	var found []InboxItem
-	all := inboxItems(runs, host, nil, rs.Live, changeStateOf(ctx))
+	all := inboxItems(runs, host, nil, rs.Live, changeStateOf(ctx), inboxStalledOf(ctx, common))
 	blockers, err := inboxBlockers(ctx)
 	if err != nil {
 		return InboxItem{}, run.State{}, err
