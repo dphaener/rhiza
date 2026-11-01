@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T14:17:55Z",
+  "body": {
+    "intent": "Plan milestone 16: see what a change set changes, picked by the orchestrator under the owner's standing instruction",
+    "kind": "record",
+    "sources": [],
+    "title": "Plan milestone 16"
+  },
+  "change_set": "01M6BQJPJPWB8CZVCKAKWWC9T7",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BQJPJPWB8CZVCKAQH4WPA8",
+  "type": "open",
+  "v": 2
+}

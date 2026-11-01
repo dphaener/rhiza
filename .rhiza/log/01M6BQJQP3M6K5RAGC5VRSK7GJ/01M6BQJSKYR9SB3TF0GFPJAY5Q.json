@@ -1,0 +1,33 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6BQJQP3M6K5RAGC5Z0C8C1V"
+  ],
+  "at": "2026-11-01T14:18:01Z",
+  "body": {
+    "carve": {
+      "entry": "01M6BQJSKYR9SB3TF0GDYD1ACD",
+      "from": "01M5SWSXAV6DZAQAPTJKH3TCFA"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A change set shows its changes as a structured, field-level diff."
+        },
+        "handle": "change-diff",
+        "id": "01M6BQJSKYR9SB3TF0GDKN7S8C",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5SWSXGD35Q84M2HAG3MPPP7",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      }
+    ]
+  },
+  "change_set": "01M6BQJQP3M6K5RAGC5VRSK7GJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BQJSKYR9SB3TF0GFPJAY5Q",
+  "type": "ops",
+  "v": 2
+}

@@ -374,6 +374,7 @@
 - [milestone-13](intent/milestone-13.md)
 - [milestone-14](intent/milestone-14.md)
 - [milestone-15](intent/milestone-15.md)
+- [milestone-16](intent/milestone-16.md)
 
 ## Constraints
 
@@ -535,6 +536,7 @@
 - [daemon-status-needs-picks](decision/daemon-status-needs-picks.md)
 - [declarative-toml](decision/declarative-toml.md)
 - [depends-on-means-cannot-start](decision/depends-on-means-cannot-start.md)
+- [diff-against-op-base](decision/diff-against-op-base.md)
 - [disk-guard-10-gib](decision/disk-guard-10-gib.md)
 - [done-capture-failure-warns](decision/done-capture-failure-warns.md)
 - [done-points-as-intents](decision/done-points-as-intents.md)
@@ -610,6 +612,7 @@
 - [m13-picked-by-orchestrator](decision/m13-picked-by-orchestrator.md)
 - [m14-picked-by-orchestrator](decision/m14-picked-by-orchestrator.md)
 - [m15-picked-by-orchestrator](decision/m15-picked-by-orchestrator.md)
+- [m16-picked-by-orchestrator](decision/m16-picked-by-orchestrator.md)
 - [m2-done-point](decision/m2-done-point.md)
 - [m2-eight-change-sets](decision/m2-eight-change-sets.md)
 - [m2-genesis-runs-the-work](decision/m2-genesis-runs-the-work.md)
@@ -1656,6 +1659,7 @@
 - [m13-orchestrator-picks](source/m13-orchestrator-picks.md)
 - [m14-orchestrator-picks](source/m14-orchestrator-picks.md)
 - [m15-orchestrator-picks](source/m15-orchestrator-picks.md)
+- [m16-orchestrator-picks](source/m16-orchestrator-picks.md)
 - [m5-usable-from-rex-interview](source/m5-usable-from-rex-interview.md)
 - [m6-overnight-interview](source/m6-overnight-interview.md)
 - [m7-keep-picking](source/m7-keep-picking.md)
