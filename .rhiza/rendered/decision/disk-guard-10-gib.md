@@ -16,6 +16,11 @@ While free space on the repo's filesystem is under 10 GiB (overridable with daem
 
 - derived-from [m12-orchestrator-picks](../source/m12-orchestrator-picks.md)
 
+### In
+
+- decided-by [daemon-disk-guard](../capability/rhiza/orchestration/daemon/daemon-picks/daemon-disk-guard.md)
+- decided-by [inbox-disk-low](../capability/rhiza/orchestration/inbox/inbox-list/inbox-disk-low.md)
+
 ## History
 
 - `01M6ATAR49P8K7TM7RCW7D20KF` Plan milestone 12: the night runs clean, picked by the orchestrator under the owner's standing instruction
