@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ABJ4SJNVTV3YYGC0JFXVVM",
+  "after": [
+    "01M69T0WZRZ9A3EKGXXYDZVAPH"
+  ],
+  "at": "2026-11-01T01:38:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 77f9a776 ran go test ./internal/api -run TestWhy -count=1: TestWhyCitedQuotes passes (source with two quotes, decision quote 'must keep it' cited across a double space and newline, why returns only 'we must  keep\\nit small'). Ran go test ./cmd/rhiza -run TestScripts/why: the new why.txtar step shows 'we must  keep' and not 'we shall grow', PASS. Read the diff: whyCitedQuotes in internal/api/lineage.go filters a source's quotes by whitespace-normalised substring of the decision's quote, only for sources reached from a decision. make check exits 0."
+        },
+        "handle": "why-cited-quotes-verified",
+        "id": "01M6AC3669E1DGPZ2FYSBCWB9V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AC3669E1DGPZ2FYS2ZQ64R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AC3669E1DGPZ2FYS2ZQ64R",
+        "id": "01M6AC371GECS6ZG42977W21QZ",
+        "link": "01M6AC371GECS6ZG42943ESC10",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T0QKZJRTB9ZYRCT0ZBF1R",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTW02ZB4590CKA09AFSQJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AC38AFQA6T2SW1SAR2BZCF",
+  "type": "ops",
+  "v": 1
+}
