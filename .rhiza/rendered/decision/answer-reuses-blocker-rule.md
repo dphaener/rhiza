@@ -16,6 +16,10 @@ question.answer refuses, as a usage error, a question that already has a live an
 
 - derived-from [m11-orchestrator-picks](../source/m11-orchestrator-picks.md)
 
+### In
+
+- decided-by [answer-refuses-closed-or-unblocking](../capability/rhiza/roadmap-app-accept-answer/question-answer-op/answer-refuses-closed-or-unblocking.md)
+
 ## History
 
 - `01M6AG8XH8SVYVXSHFFFMGPQE2` Plan milestone 11: owner gates hold, picked by the orchestrator under the owner's standing instruction
