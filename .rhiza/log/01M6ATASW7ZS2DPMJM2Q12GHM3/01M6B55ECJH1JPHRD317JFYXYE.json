@@ -1,0 +1,40 @@
+{
+  "actor": "01M6B4KHZ5CPZ0FS7EEEBBW2YZ",
+  "after": [
+    "01M6ATC962DDXGKX6KK0P2SRNM"
+  ],
+  "at": "2026-11-01T08:56:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at a30953d0: go test ./cmd/rhiza -run TestScripts/run-status passes; its hand-written journal (alpha cycle 1 failed, cycle 2 open) prints '- alpha (step review): open in cycle 2 (cycle 1 failed)' and --json has no check-level outcome. Rebuilt the binary and ran the same journal in a scratch repo: text matches, JSON check object has open_cycle 2 / prior_outcome failed and no outcome, cycle 1 keeps outcome failed. TestChecksSummaryCountsOpenCycleRunning (liveapp) passes: an open-cycle check with empty outcome counts '1 running'. TestOpenCycleReadsOpen (api) passes: runCheckInfo leaves outcome empty, reviewSummary heads '### alpha: open', and a judged cycle 2 restores outcome passed. Read the diff: CheckOutcome/CheckOpen in internal/run/journal.go now feed run status, run summary and checksStatus. make check exits 0."
+        },
+        "handle": "run-status-open-cycle-verified",
+        "id": "01M6B55CD9ZVEHE3E0TD1XHFCY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6B55CD9ZVEHE3E0T97JY2TT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B55CD9ZVEHE3E0T97JY2TT",
+        "id": "01M6B55D5C0TZFHPHMFHX1VQW4",
+        "link": "01M6B55D5C0TZFHPHMFFGYDPSS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATBX8NH5KPKEAY7MMZ7JBC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ATASW7ZS2DPMJM2Q12GHM3",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B55ECJH1JPHRD317JFYXYE",
+  "type": "ops",
+  "v": 1
+}

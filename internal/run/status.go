@@ -176,7 +176,7 @@ func checksStatus(rep StatusReport, st State, step workflow.Step, leaves []Leaf)
 		if !ok {
 			continue
 		}
-		if o, ok := cs.Latest(); ok && o.Outcome == CheckPassed {
+		if o, ok := st.CheckOutcome(cs); ok && o.Outcome == CheckPassed {
 			rep.Passed++
 		}
 		n := len(cs.Sessions)

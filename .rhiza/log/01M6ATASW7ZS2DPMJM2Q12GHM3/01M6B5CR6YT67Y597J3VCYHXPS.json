@@ -1,0 +1,40 @@
+{
+  "actor": "01M6B564SZCS6ZJ5S1KJ9V7ZFG",
+  "after": [
+    "01M6B55ECJH1JPHRD317JFYXYE"
+  ],
+  "at": "2026-11-01T09:00:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at d6d0e740 with a freshly built binary in a scratch git repo, hand-written journals. OPEN1 (alpha cycle 1 failed, cycle 2 open; beta cycle 1 passed): run status prints '- alpha (step review): open in cycle 2 (cycle 1 failed)' with no 'after N cycles'; --json alpha has no outcome, open_cycle 2, prior_cycle 1, prior_outcome failed, its cycle 1 keeps outcome failed; run summary heads '### alpha: open' and '### beta: passed'; the live app (rhiza tui app live, driven in a pty) shows 'checks 1 passed, 1 running'. DONE1 (same plus alpha cycle 2 passed): status 'passed after 2 cycles', JSON outcome passed with no open_cycle, summary '### alpha: passed', live app 'checks 2 passed'. go test of internal/run, internal/api and internal/tui/liveapp passes."
+        },
+        "handle": "run-status-open-cycle-qa-1",
+        "id": "01M6B5CPB0Y2VGZ2QNT9YV4PY3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6B5CPB0Y2VGZ2QNT8TVPVHM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B5CPB0Y2VGZ2QNT8TVPVHM",
+        "id": "01M6B5CQ1EJ7A92960JNZ6C901",
+        "link": "01M6B5CQ1EJ7A92960JNY7K0ZQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATBX8NH5KPKEAY7MMZ7JBC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ATASW7ZS2DPMJM2Q12GHM3",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B5CR6YT67Y597J3VCYHXPS",
+  "type": "ops",
+  "v": 1
+}

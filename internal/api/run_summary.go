@@ -182,7 +182,7 @@ func summaryOrder(st run.State) ([]string, map[string][]string) {
 // and the minors and nits.
 func summaryCheck(b *strings.Builder, st run.State, c run.CheckState) {
 	outcome := "open"
-	if o, ok := c.Latest(); ok {
+	if o, ok := st.CheckOutcome(c); ok {
 		outcome = o.Outcome
 	}
 	fmt.Fprintf(b, "\n### %s: %s\n\n", c.Check, outcome)

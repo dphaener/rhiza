@@ -51,6 +51,16 @@ stdout '^- last \(visit 1\): pass, then end: exit 0$'
 exec rhiza run status --json
 stdout '"state": "succeeded"'
 
+# A review check whose cycle 1 failed and cycle 2 is open reads as open in
+# cycle 2, with no outcome in JSON. The journal is written by hand.
+exec sh -c 'printf "%s\n%s\n%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"review\",\"definition\":\"\",\"change\":\"01M5PWGEF85Y185JZ2ZGCNH40N\"}}" "{\"type\":\"check-cycle\",\"at\":\"2026-01-01T00:00:01Z\",\"step\":\"review\",\"cycle\":1,\"checks\":[\"alpha\"]}" "{\"type\":\"check\",\"at\":\"2026-01-01T00:00:02Z\",\"step\":\"review\",\"check\":\"alpha\",\"cycle\":1,\"outcome\":\"failed\"}" "{\"type\":\"check-cycle\",\"at\":\"2026-01-01T00:00:03Z\",\"step\":\"review\",\"cycle\":2,\"checks\":[\"alpha\"]}" > .git/rhiza/runs/OPENCYCLE01.jsonl'
+exec rhiza run status OPENCYCLE01
+stdout '^- alpha \(step review\): open in cycle 2 \(cycle 1 failed\)$'
+exec rhiza run status OPENCYCLE01 --json
+! stdout '^      "outcome"'
+stdout '^          "outcome": "failed",'
+stdout '"open_cycle": 2'
+
 -- gate.toml --
 name = "gate"
 
