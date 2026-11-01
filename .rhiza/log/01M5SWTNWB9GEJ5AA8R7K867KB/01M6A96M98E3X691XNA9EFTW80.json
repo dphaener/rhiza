@@ -1,0 +1,40 @@
+{
+  "actor": "01M6A8HZZJZDWE88WA7J8FE2T8",
+  "after": [
+    "01M6A89W0AWTD0WVGK2PWH3TGQ"
+  ],
+  "at": "2026-11-01T00:47:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8f186a10: go test ./internal/check (new TestRun 'overlap' case: two proposed change sets set one capability's field; one warn in-flight finding naming both sets and the node, ChangeSet A, Next 'rhiza slice --change A --view what-if') passes; go test ./cmd/rhiza -run TestScripts/check-overlaps (new script: two proposed sets set statement of one node; rhiza check prints ok and exactly one 'warn in-flight ... change sets X and Y both write field:statement of N' with next rhiza slice --change X --view what-if; --json ok true, no fail) passes; full go test ./... passes, so no existing script output needed updating; diff read: check.go adds model.Overlaps findings under RuleInFlight. make check's self-check fails only on stale .rhiza/rendered from prior commit c0fa1d22 (same failure at HEAD~1; leaf touches no .rhiza file)."
+        },
+        "handle": "check-warns-overlaps-verified",
+        "id": "01M6A96JJKHNXNEXK581X020PG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6A96JJKHNXNEXK580ES4NNX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A96JJKHNXNEXK580ES4NNX",
+        "id": "01M6A96K7PHHR7XNRVFZTDC6YF",
+        "link": "01M6A96K7PHHR7XNRVFZJBDZHH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DHG2Y91KWW8R5BJEFQDH7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTNWB9GEJ5AA8R7K867KB",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A96M98E3X691XNA9EFTW80",
+  "type": "ops",
+  "v": 1
+}

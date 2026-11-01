@@ -265,6 +265,31 @@ func TestRun(t *testing.T) {
 				}
 			}
 		}},
+		{"overlap", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
+			r := newRepo(t)
+			_, capab, capOp := cleanOps(r)
+			var sets []*set
+			for _, v := range []string{"one", "two"} {
+				s := r.open(changeset.KindIntention, "Edit "+v)
+				s.then(changeset.Ops{Ops: []op.Op{setField(r.next(), capab, capOp, v)}})
+				s.then(changeset.Propose{})
+				sets = append(sets, s)
+			}
+			return r.input(), []string{"warn in-flight"}, func(t *testing.T, rep Report) {
+				f := rep.Findings[0]
+				a, b := sets[0].id, sets[1].id
+				if a.String() > b.String() {
+					a, b = b, a
+				}
+				if f.ChangeSet != a.String() || !strings.Contains(f.Message, a.String()) ||
+					!strings.Contains(f.Message, b.String()) || !strings.Contains(f.Message, capab.String()) {
+					t.Errorf("finding %+v", f)
+				}
+				if want := "rhiza slice --change " + a.String() + " --view what-if"; f.Next != want {
+					t.Errorf("next %q, want %q", f.Next, want)
+				}
+			}
+		}},
 		{"link", func(t *testing.T) (Input, []string, func(*testing.T, Report)) {
 			r := newRepo(t)
 			intent, capab := clean(r)

@@ -1,0 +1,23 @@
+# check warns, under the in-flight rule, on each pair of proposed change
+# sets that set the same field of one node, naming both change sets, with
+# next rhiza slice --change <A> --view what-if. It only warns: exit 0.
+
+exec rhiza init
+exec rhiza add capability thing --field 'statement=Does the thing' --record
+exec rhiza render
+
+exec rhiza change new 'First edit' --json
+exec rhiza set thing --field statement=A
+exec rhiza propose
+exec rhiza change new 'Second edit' --json
+exec rhiza set thing --field statement=B
+exec rhiza propose
+
+exec rhiza check
+stdout '^ok$'
+stdout -count=1 '^warn in-flight change set [0-9A-Z]{26}: change sets [0-9A-Z]{26} and [0-9A-Z]{26} both write field:statement of [0-9A-Z]{26}$'
+stdout -count=1 '^  next: rhiza slice --change [0-9A-Z]{26} --view what-if$'
+exec rhiza check --json
+stdout '"ok": true'
+! stdout '"severity": "fail"'
+fold-ok

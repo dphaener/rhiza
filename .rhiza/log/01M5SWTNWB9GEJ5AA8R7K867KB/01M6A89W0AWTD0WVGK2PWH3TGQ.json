@@ -1,0 +1,40 @@
+{
+  "actor": "01M6A7YE2ZJBKN9W2PTK24M3QW",
+  "after": [
+    "01M69DHTY6PXMFH75TXMK7XTKW"
+  ],
+  "at": "2026-11-01T00:31:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At bf373189, go test ./internal/model -run TestOverlaps -count=1 -v passes: TestOverlaps has new cases 'retire vs link create to the node' and 'retire vs link create from the node' (each wants one Overlap on the retired node with aspects [linked retired]), plus negative cases 'retire and link in one set', 'two link creates to one node' and 'link create vs update' (no overlap); TestOverlapsInputOrder (order-independence over every permutation) still passes. go test ./... -count=1 passes. Diff read: Overlaps indexes each link create under both endpoints with aspect 'linked', which overlapAspects never reports as a shared aspect, so it only overlaps a retirement."
+        },
+        "handle": "overlap-retire-link-verified",
+        "id": "01M6A89T72D5HYQ3879EADDA7Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6A89T72D5HYQ3879E3C8JQW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A89T72D5HYQ3879E3C8JQW",
+        "id": "01M6A89TX4NHQ7XP70Q2PGEBN8",
+        "link": "01M6A89TX4NHQ7XP70Q2HEA8Y5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DHH927ZGJ0JH8YHJSRQYR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTNWB9GEJ5AA8R7K867KB",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A89W0AWTD0WVGK2PWH3TGQ",
+  "type": "ops",
+  "v": 1
+}
