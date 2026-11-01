@@ -78,4 +78,14 @@ exec rhiza link apart-q blocks apart --record
 stdout '"code": "usage"'
 ! exec rhiza show answer-apart-q --json
 
+# A second open question that blocks only another change set's node is
+# refused too: Other touches apart, Accepted does not.
+exec rhiza set apart --field statement=Apart
+exec rhiza change show --json
+stdout '"statement": "Apart"'
+! exec rhiza question answer apart-q 'nope' --change 01M5PWGT68X5XKB54XFQMHKA0A --json
+stdout '"code": "usage"'
+! exec rhiza show answer-apart-q --json
+! exec rhiza show answer-apart-q --view what-if:01M5PWGT68X5XKB54XFQMHKA0A --json
+
 fold-ok
