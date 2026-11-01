@@ -17366,7 +17366,7 @@ cmp stdout describe.golden.json
             "type": "boolean"
           },
           "settled": {
-            "description": "Exit 0 once every check has finished, passed or not, instead of only when all passed; records nothing (for a wait step)",
+            "description": "Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it rebases the branch onto main as ship rebase does, then reports not settled, and exits 75 with a stop: line on a conflict in code",
             "type": "boolean"
           }
         },
@@ -17414,6 +17414,13 @@ cmp stdout describe.golden.json
             "description": "The commit checked: the PR's head, or the merge commit",
             "type": "string"
           },
+          "conflicts": {
+            "description": "With --settled on a conflicting pull request: the files whose conflict outside the rendered files stopped the rebase; the command exits 75",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "detail": {
             "description": "Why it did not pass, such as no open pull request",
             "type": "string"
@@ -17440,6 +17447,14 @@ cmp stdout describe.golden.json
           "pr": {
             "description": "The pull request's number; 0 if none was found",
             "type": "integer"
+          },
+          "question": {
+            "description": "The handle of the question raised about those conflicts",
+            "type": "string"
+          },
+          "rebased": {
+            "description": "With --settled on a conflicting pull request: the head pushed after rebasing the branch onto main",
+            "type": "string"
           },
           "settled": {
             "description": "True if there is an open PR (or a merge commit) and every check on it has finished",
@@ -17468,8 +17483,8 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Check that a change set's pull request, or main after its merge, has every CI check passed",
-      "write": false
+      "summary": "Check that a change set's pull request, or main after its merge, has every CI check passed; with --settled, rebase a pull request GitHub reports conflicting",
+      "write": true
     },
     {
       "name": "ship.close-out",

@@ -123,7 +123,7 @@ func (f *fakeGH) run(name string, args []string, dir string, _ []string) ([]byte
 }
 
 const (
-	shipPRView   = "pr view cs/ship-it --json number,url,state,headRefOid,statusCheckRollup"
+	shipPRView   = "pr view cs/ship-it --json number,url,state,headRefOid,mergeable,statusCheckRollup"
 	shipMergeArg = "pr merge 7 --squash --match-head-commit abc1234def"
 	shipMergedPR = "pr view 7 --json mergeCommit,state"
 	shipRunList  = "run list --commit fff0000aaa --json name,status,conclusion"
