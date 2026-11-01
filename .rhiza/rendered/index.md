@@ -370,6 +370,7 @@
 - [milestone-12](intent/milestone-12.md)
 - [milestone-13](intent/milestone-13.md)
 - [milestone-14](intent/milestone-14.md)
+- [milestone-15](intent/milestone-15.md)
 
 ## Constraints
 
@@ -553,6 +554,7 @@
 - [failed-steps-merge-resolution](decision/failed-steps-merge-resolution.md)
 - [fakes-only-in-build-and-review](decision/fakes-only-in-build-and-review.md)
 - [feature-is-capability](decision/feature-is-capability.md)
+- [feed-hides-actor-only](decision/feed-hides-actor-only.md)
 - [feed-lists-landed-by-land-entry](decision/feed-lists-landed-by-land-entry.md)
 - [field-level-diffs](decision/field-level-diffs.md)
 - [file-per-entry](decision/file-per-entry.md)
@@ -604,6 +606,7 @@
 - [m12-picked-by-orchestrator](decision/m12-picked-by-orchestrator.md)
 - [m13-picked-by-orchestrator](decision/m13-picked-by-orchestrator.md)
 - [m14-picked-by-orchestrator](decision/m14-picked-by-orchestrator.md)
+- [m15-picked-by-orchestrator](decision/m15-picked-by-orchestrator.md)
 - [m2-done-point](decision/m2-done-point.md)
 - [m2-eight-change-sets](decision/m2-eight-change-sets.md)
 - [m2-genesis-runs-the-work](decision/m2-genesis-runs-the-work.md)
@@ -981,6 +984,7 @@
 - [user-level-plugin](decision/user-level-plugin.md)
 - [verifier-writes-evidence](decision/verifier-writes-evidence.md)
 - [wait-settles-conflict-rule](decision/wait-settles-conflict-rule.md)
+- [whatif-folds-inflight-over-asis](decision/whatif-folds-inflight-over-asis.md)
 - [why-is-lineage-verb](decision/why-is-lineage-verb.md)
 - [why-quotes-by-substring](decision/why-quotes-by-substring.md)
 - [work-contract](decision/work-contract.md)
@@ -1643,6 +1647,7 @@
 - [m12-orchestrator-picks](source/m12-orchestrator-picks.md)
 - [m13-orchestrator-picks](source/m13-orchestrator-picks.md)
 - [m14-orchestrator-picks](source/m14-orchestrator-picks.md)
+- [m15-orchestrator-picks](source/m15-orchestrator-picks.md)
 - [m5-usable-from-rex-interview](source/m5-usable-from-rex-interview.md)
 - [m6-overnight-interview](source/m6-overnight-interview.md)
 - [m7-keep-picking](source/m7-keep-picking.md)

@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T12:27:10Z",
+  "body": {
+    "intent": "rhiza feed and the changes app leave out actor-only change sets unless --all is given",
+    "kind": "intention",
+    "sources": [],
+    "title": "Feed hides actor records"
+  },
+  "change_set": "01M6BH7XPH07NSDTBKE2RGX949",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BH7XPH07NSDTBKE3J02R9W",
+  "type": "open",
+  "v": 2
+}
