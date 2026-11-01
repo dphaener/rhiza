@@ -28,6 +28,7 @@ agent of milestone-2 change set 2 (shipit plan), accepted by the owner
 ### In
 
 - decided-by [milestone-groups](../capability/rhiza/views/roadmap/milestone-groups.md)
+- supersedes [milestones-by-number](milestones-by-number.md)
 
 ## History
 
