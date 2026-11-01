@@ -1,0 +1,40 @@
+{
+  "actor": "01M6B901R8D1Y0JT99MKPZMH26",
+  "after": [
+    "01M6B8N1EWZH7HDDVKEM74TY9S"
+  ],
+  "at": "2026-11-01T10:10:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At de1efb4f ran go test ./cmd/rhiza -run TestScripts/run-abandon -count=1: run-abandon, run-abandon-dirty, run-abandon-shared and run-abandon-failed pass. run-abandon.txtar asserts abandon prints remove-worktree done and delete-branch done, git worktree list drops to 1 and git branch --list cs/* is empty; run-abandon-dirty.txtar asserts an uncommitted file keeps worktree and branch with 'remove-worktree kept: the worktree is dirty'; run-abandon-shared.txtar asserts abandoning a failed run keeps the worktree and branch a newer live run uses, then abandoning that run removes both (! exists on the folder). Read the diff: abandonCleanup now consults worktreeUser (LiveOf plus later runs in the same worktree) before git worktree remove / branch -D, fixing the review blocker; remote branch and PR untouched. go test ./..., go vet and gofmt clean; make check's only failure is self-check's stale .rhiza/rendered for actor records written during this run."
+        },
+        "handle": "abandon-clears-worktree-verified-2",
+        "id": "01M6B9CVRNQ3SCN20A9RVN957Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6B9CVRNQ3SCN20A9NDB09BX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B9CVRNQ3SCN20A9NDB09BX",
+        "id": "01M6B9CWFN1F4JH4H1N8HZMNZN",
+        "link": "01M6B9CWFN1F4JH4H1N68HQQBF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATC08K455FW14QCXPZ9QHD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ATATQKHW0YV8W1XDP8YECH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B9CXMPK49XGKT578J4X7Y5",
+  "type": "ops",
+  "v": 1
+}
