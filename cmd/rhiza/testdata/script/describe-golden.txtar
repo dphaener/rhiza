@@ -2050,8 +2050,20 @@ cmp stdout describe.golden.json
                       },
                       "type": "array"
                     },
+                    "open_cycle": {
+                      "description": "The cycle that is open, when its latest cycle is open after an earlier one was judged; absent otherwise",
+                      "type": "integer"
+                    },
                     "outcome": {
-                      "description": "passed or failed: its latest cycle's outcome; empty while its first cycle is open",
+                      "description": "passed or failed: its latest cycle's outcome; empty while that cycle is open, even when an earlier cycle was judged",
+                      "type": "string"
+                    },
+                    "prior_cycle": {
+                      "description": "The newest earlier cycle that was judged, when open_cycle is set",
+                      "type": "integer"
+                    },
+                    "prior_outcome": {
+                      "description": "That cycle's outcome, passed or failed, when open_cycle is set",
                       "type": "string"
                     },
                     "questions": {
@@ -3644,8 +3656,20 @@ cmp stdout describe.golden.json
                       },
                       "type": "array"
                     },
+                    "open_cycle": {
+                      "description": "The cycle that is open, when its latest cycle is open after an earlier one was judged; absent otherwise",
+                      "type": "integer"
+                    },
                     "outcome": {
-                      "description": "passed or failed: its latest cycle's outcome; empty while its first cycle is open",
+                      "description": "passed or failed: its latest cycle's outcome; empty while that cycle is open, even when an earlier cycle was judged",
+                      "type": "string"
+                    },
+                    "prior_cycle": {
+                      "description": "The newest earlier cycle that was judged, when open_cycle is set",
+                      "type": "integer"
+                    },
+                    "prior_outcome": {
+                      "description": "That cycle's outcome, passed or failed, when open_cycle is set",
                       "type": "string"
                     },
                     "questions": {
@@ -6435,8 +6459,20 @@ cmp stdout describe.golden.json
                       },
                       "type": "array"
                     },
+                    "open_cycle": {
+                      "description": "The cycle that is open, when its latest cycle is open after an earlier one was judged; absent otherwise",
+                      "type": "integer"
+                    },
                     "outcome": {
-                      "description": "passed or failed: its latest cycle's outcome; empty while its first cycle is open",
+                      "description": "passed or failed: its latest cycle's outcome; empty while that cycle is open, even when an earlier cycle was judged",
+                      "type": "string"
+                    },
+                    "prior_cycle": {
+                      "description": "The newest earlier cycle that was judged, when open_cycle is set",
+                      "type": "integer"
+                    },
+                    "prior_outcome": {
+                      "description": "That cycle's outcome, passed or failed, when open_cycle is set",
                       "type": "string"
                     },
                     "questions": {
@@ -7901,8 +7937,20 @@ cmp stdout describe.golden.json
                       },
                       "type": "array"
                     },
+                    "open_cycle": {
+                      "description": "The cycle that is open, when its latest cycle is open after an earlier one was judged; absent otherwise",
+                      "type": "integer"
+                    },
                     "outcome": {
-                      "description": "passed or failed: its latest cycle's outcome; empty while its first cycle is open",
+                      "description": "passed or failed: its latest cycle's outcome; empty while that cycle is open, even when an earlier cycle was judged",
+                      "type": "string"
+                    },
+                    "prior_cycle": {
+                      "description": "The newest earlier cycle that was judged, when open_cycle is set",
+                      "type": "integer"
+                    },
+                    "prior_outcome": {
+                      "description": "That cycle's outcome, passed or failed, when open_cycle is set",
                       "type": "string"
                     },
                     "questions": {
@@ -10174,8 +10222,20 @@ cmp stdout describe.golden.json
                       },
                       "type": "array"
                     },
+                    "open_cycle": {
+                      "description": "The cycle that is open, when its latest cycle is open after an earlier one was judged; absent otherwise",
+                      "type": "integer"
+                    },
                     "outcome": {
-                      "description": "passed or failed: its latest cycle's outcome; empty while its first cycle is open",
+                      "description": "passed or failed: its latest cycle's outcome; empty while that cycle is open, even when an earlier cycle was judged",
+                      "type": "string"
+                    },
+                    "prior_cycle": {
+                      "description": "The newest earlier cycle that was judged, when open_cycle is set",
+                      "type": "integer"
+                    },
+                    "prior_outcome": {
+                      "description": "That cycle's outcome, passed or failed, when open_cycle is set",
                       "type": "string"
                     },
                     "questions": {
@@ -11664,8 +11724,20 @@ cmp stdout describe.golden.json
                       },
                       "type": "array"
                     },
+                    "open_cycle": {
+                      "description": "The cycle that is open, when its latest cycle is open after an earlier one was judged; absent otherwise",
+                      "type": "integer"
+                    },
                     "outcome": {
-                      "description": "passed or failed: its latest cycle's outcome; empty while its first cycle is open",
+                      "description": "passed or failed: its latest cycle's outcome; empty while that cycle is open, even when an earlier cycle was judged",
+                      "type": "string"
+                    },
+                    "prior_cycle": {
+                      "description": "The newest earlier cycle that was judged, when open_cycle is set",
+                      "type": "integer"
+                    },
+                    "prior_outcome": {
+                      "description": "That cycle's outcome, passed or failed, when open_cycle is set",
                       "type": "string"
                     },
                     "questions": {
@@ -13208,8 +13280,20 @@ cmp stdout describe.golden.json
                       },
                       "type": "array"
                     },
+                    "open_cycle": {
+                      "description": "The cycle that is open, when its latest cycle is open after an earlier one was judged; absent otherwise",
+                      "type": "integer"
+                    },
                     "outcome": {
-                      "description": "passed or failed: its latest cycle's outcome; empty while its first cycle is open",
+                      "description": "passed or failed: its latest cycle's outcome; empty while that cycle is open, even when an earlier cycle was judged",
+                      "type": "string"
+                    },
+                    "prior_cycle": {
+                      "description": "The newest earlier cycle that was judged, when open_cycle is set",
+                      "type": "integer"
+                    },
+                    "prior_outcome": {
+                      "description": "That cycle's outcome, passed or failed, when open_cycle is set",
                       "type": "string"
                     },
                     "questions": {
@@ -14575,8 +14659,20 @@ cmp stdout describe.golden.json
                   },
                   "type": "array"
                 },
+                "open_cycle": {
+                  "description": "The cycle that is open, when its latest cycle is open after an earlier one was judged; absent otherwise",
+                  "type": "integer"
+                },
                 "outcome": {
-                  "description": "passed or failed: its latest cycle's outcome; empty while its first cycle is open",
+                  "description": "passed or failed: its latest cycle's outcome; empty while that cycle is open, even when an earlier cycle was judged",
+                  "type": "string"
+                },
+                "prior_cycle": {
+                  "description": "The newest earlier cycle that was judged, when open_cycle is set",
+                  "type": "integer"
+                },
+                "prior_outcome": {
+                  "description": "That cycle's outcome, passed or failed, when open_cycle is set",
                   "type": "string"
                 },
                 "questions": {

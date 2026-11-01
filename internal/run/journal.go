@@ -928,6 +928,42 @@ func (c CheckState) Outcome(cycle int) (CheckOutcome, bool) {
 	return CheckOutcome{}, false
 }
 
+// CheckOutcome is check c's current outcome in st: its latest cycle's, or
+// none while that cycle is still open, even when an earlier cycle was
+// judged. Open is the cycle number that is open then (0 when none is),
+// and Prior the outcome of the cycle judged before it, if any.
+func (s State) CheckOutcome(c CheckState) (o CheckOutcome, ok bool) {
+	open, _, _ := s.CheckOpen(c)
+	if open > 0 {
+		return CheckOutcome{}, false
+	}
+	return c.Latest()
+}
+
+// CheckOpen reports whether c's latest cycle in st is open: its cycle
+// number (0 when it is not), and the outcome of the newest earlier cycle
+// that was judged, if any.
+func (s State) CheckOpen(c CheckState) (cycle int, prior CheckOutcome, hasPrior bool) {
+	latest := 0
+	for _, cy := range s.Cycles {
+		if cy.Step == c.Step && slices.Contains(cy.Checks, c.Check) && cy.Cycle > latest {
+			latest = cy.Cycle
+		}
+	}
+	if latest == 0 {
+		return 0, CheckOutcome{}, false
+	}
+	if _, ok := c.Outcome(latest); ok {
+		return 0, CheckOutcome{}, false
+	}
+	for _, o := range c.Outcomes {
+		if o.Cycle < latest && (!hasPrior || o.Cycle >= prior.Cycle) {
+			prior, hasPrior = o, true
+		}
+	}
+	return latest, prior, hasPrior
+}
+
 // Latest is the check's latest outcome, if it has one.
 func (c CheckState) Latest() (CheckOutcome, bool) {
 	if n := len(c.Outcomes); n > 0 {

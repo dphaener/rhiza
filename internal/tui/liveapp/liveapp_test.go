@@ -8,6 +8,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/dphaener/rhiza/internal/api"
 	"github.com/dphaener/rhiza/internal/tui/launcher"
 )
 
@@ -280,5 +281,14 @@ func TestViewScrollsToCursorKeepingDaemonLine(t *testing.T) {
 				t.Fatalf("height %d, notice %v: bottom view (%d lines):\n%s", h, notice, lines(), v)
 			}
 		}
+	}
+}
+
+// A check whose latest cycle is open has an empty outcome in run.status,
+// and the checks summary counts it running, not as its earlier outcome.
+func TestChecksSummaryCountsOpenCycleRunning(t *testing.T) {
+	cs := []api.RunCheck{{Check: "q", Outcome: "passed"}, {Check: "s", OpenCycle: 2, PriorCycle: 1, PriorOutcome: "failed"}}
+	if got, want := checksSummary(cs), "1 passed, 1 running"; got != want {
+		t.Errorf("checksSummary = %q, want %q", got, want)
 	}
 }

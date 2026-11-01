@@ -200,12 +200,15 @@ type RunFix struct {
 
 // RunCheck is one check a checks step ran.
 type RunCheck struct {
-	Step      string             `json:"step" desc:"The checks step"`
-	Check     string             `json:"check" desc:"The check's name"`
-	Cycles    []RunCheckCycle    `json:"cycles" desc:"The cycles it ran in, in order"`
-	Rounds    []RunCheckRound    `json:"rounds,omitempty" desc:"Its findings rounds, journalled by run findings --check and judged by run verdict --check, in order; absent when there were none"`
-	Outcome   string             `json:"outcome,omitempty" desc:"passed or failed: its latest cycle's outcome; empty while its first cycle is open"`
-	Questions []RunCheckQuestion `json:"questions,omitempty" desc:"The questions it raised when it still failed with no fix cycle left, in order; absent when none"`
+	Step         string             `json:"step" desc:"The checks step"`
+	Check        string             `json:"check" desc:"The check's name"`
+	Cycles       []RunCheckCycle    `json:"cycles" desc:"The cycles it ran in, in order"`
+	Rounds       []RunCheckRound    `json:"rounds,omitempty" desc:"Its findings rounds, journalled by run findings --check and judged by run verdict --check, in order; absent when there were none"`
+	Outcome      string             `json:"outcome,omitempty" desc:"passed or failed: its latest cycle's outcome; empty while that cycle is open, even when an earlier cycle was judged"`
+	OpenCycle    int                `json:"open_cycle,omitempty" desc:"The cycle that is open, when its latest cycle is open after an earlier one was judged; absent otherwise"`
+	PriorCycle   int                `json:"prior_cycle,omitempty" desc:"The newest earlier cycle that was judged, when open_cycle is set"`
+	PriorOutcome string             `json:"prior_outcome,omitempty" desc:"That cycle's outcome, passed or failed, when open_cycle is set"`
+	Questions    []RunCheckQuestion `json:"questions,omitempty" desc:"The questions it raised when it still failed with no fix cycle left, in order; absent when none"`
 }
 
 // RunCheckQuestion is one question a capped review raised for a check.
@@ -2271,8 +2274,11 @@ func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo
 // step's cycles that ran it, with its sessions and outcome there.
 func runCheckInfo(st run.State, c run.CheckState) RunCheck {
 	rc := RunCheck{Step: c.Step, Check: c.Check, Cycles: []RunCheckCycle{}}
-	if o, ok := c.Latest(); ok {
+	if o, ok := st.CheckOutcome(c); ok {
 		rc.Outcome = o.Outcome
+	}
+	if cy, prior, ok := st.CheckOpen(c); cy > 0 && ok {
+		rc.OpenCycle, rc.PriorCycle, rc.PriorOutcome = cy, prior.Cycle, prior.Outcome
 	}
 	for _, cy := range st.Cycles {
 		if cy.Step != c.Step || !slices.Contains(cy.Checks, c.Check) {
@@ -2474,8 +2480,11 @@ func (r RunInfo) Human(w io.Writer) {
 			if outcome == "" {
 				outcome = "open"
 			}
+			if c.OpenCycle > 0 {
+				outcome = fmt.Sprintf("open in cycle %d (cycle %d %s)", c.OpenCycle, c.PriorCycle, c.PriorOutcome)
+			}
 			fmt.Fprintf(w, "- %s (step %s): %s", c.Check, c.Step, outcome)
-			if n := len(c.Cycles); n > 0 {
+			if n := len(c.Cycles); n > 0 && c.OpenCycle == 0 {
 				fmt.Fprintf(w, " after %d %s", n, shipPlural(n, "cycle", "cycles"))
 			}
 			fmt.Fprintf(w, "\n")
