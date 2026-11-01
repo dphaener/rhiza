@@ -1,0 +1,43 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6ANV4T22ZNQJTZRH2MKB8BE"
+  ],
+  "at": "2026-11-01T04:50:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "11fec5b580579ef6b598624400c93d5b658f3926",
+          "pr": "https://github.com/dphaener/rhiza/pull/155",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #155 (https://github.com/dphaener/rhiza/pull/155) passed CI at 11fec5b",
+          "status": "verified"
+        },
+        "handle": "pr-155-ci-rerun-once",
+        "id": "01M6AQ3HEE8YAB30GAEEPPC39J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AQ3HEE8YAB30GAEDKD81MK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AQ3HEE8YAB30GAEDKD81MK",
+        "id": "01M6AQ3J7YGK4PGPR14Y9WMEF3",
+        "link": "01M6AQ3J7YGK4PGPR14V1MHDQ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NJWB1HNVZ6QZAR17GDMJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6A0JQ2WHGH7DDFKJGRXJD85",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AQ3KGA6CVZ393HZBX47CSY",
+  "type": "ops",
+  "v": 1
+}
