@@ -1,0 +1,40 @@
+{
+  "actor": "01M6C3S9C3H0E2DHXXAYFTTJZ8",
+  "after": [
+    "01M6BQKR3FP0B5F13901PZBK2G"
+  ],
+  "at": "2026-11-01T17:57:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7726eaf6, go test ./cmd/rhiza -run 'TestScripts/(change-diff|describe-golden|frame)$' -count=1 passes. change-diff.txtar checks, in order: set after add gives 'statement: a -> b' and the unset 'acceptance: ok -> unset'; a second set gives one 'statement: a -> c' with no 'a -> b'; a retire prints 'retired capability gone: not needed'; a create prints 'created capability fresh' with '  statement: new one' (no old value) and 'added link relates-to fresh thing'; after another change set lands acceptance on thing with --record, the diff still shows 'statement: a -> c' and not 'landed first'; change diff --json and api call change.diff '{}' are cmp-identical. Re-running describe-golden with -update leaves the tree clean, so describe-golden.txtar is current (change.diff added). make fmt-check vet test all pass. Read the diff: internal/changeset/diff.go rebuilds the old node by replaying the base chain of other change sets' ops from the first op's base, and internal/api/change_diff.go registers change.diff with a thin Human view. make self-check in the checkout fails only on rendered actor files for sessions started after this commit (claude-code-4831f979, claude-code-89561799), not on this leaf."
+        },
+        "handle": "change-diff-op-verified",
+        "id": "01M6C45FQ9C0Y13JJZMX7B38J2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6C45FQ9C0Y13JJZMV1NAHHV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6C45FQ9C0Y13JJZMV1NAHHV",
+        "id": "01M6C45GFDMGH5TA6QYX60YWXZ",
+        "link": "01M6C45GFDMGH5TA6QYVTQEHNY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BQKGB62F75TG9YPKM13QNT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6BQJQP3M6K5RAGC5VRSK7GJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6C45HNZ863C56HDPY822Z7Z",
+  "type": "ops",
+  "v": 1
+}
