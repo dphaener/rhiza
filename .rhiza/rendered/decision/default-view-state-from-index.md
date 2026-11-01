@@ -16,6 +16,10 @@ When a read has no view and nothing is pending in the workspace, openReader take
 
 - derived-from [m19-orchestrator-picks](../source/m19-orchestrator-picks.md)
 
+### In
+
+- decided-by [default-view-no-fold](../capability/rhiza/views/fast-reads/default-view-no-fold.md)
+
 ## History
 
 - `01M6C3PTXZA57M17Y2Y9DX6NW9` Plan milestone 19: default reads stay fast, picked by the orchestrator under the owner's standing instruction

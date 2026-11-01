@@ -1,0 +1,43 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6C5Z33Q6SVVQBZJC4H30JZW"
+  ],
+  "at": "2026-11-01T18:48:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "db62e660a55aad01004b62b0ee5c1359ba34c402",
+          "pr": "https://github.com/dphaener/rhiza/pull/178",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #178 (https://github.com/dphaener/rhiza/pull/178) passed CI at db62e66",
+          "status": "verified"
+        },
+        "handle": "pr-178-default-reads-skip-the-fold",
+        "id": "01M6C72D8YMR02Y5B2J0CW7BDC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6C72D8YMR02Y5B2HY8DK9PR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6C72D8YMR02Y5B2HY8DK9PR",
+        "id": "01M6C72E1369SQM01ANTGY1Y1F",
+        "link": "01M6C72E1369SQM01ANQ5KKA66",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6C3QBZ6N7WNS21SYQPCYWFM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6C3PVXPV5DFQ4G0N6JQGH0Q",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6C72F8BRDTQ5E8RKH85DERY",
+  "type": "ops",
+  "v": 1
+}

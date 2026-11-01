@@ -93,6 +93,9 @@ type workspace struct {
 	ids     *id.Generator
 	dryRun  bool
 	pending []entry.Entry
+	// readLog reads the log from disk; nil means st.ReadLog. A test sets it
+	// through Ctx to count the folds a read costs.
+	readLog func() store.Log
 }
 
 // openWorkspace opens the repository in root. No repository is not_found
@@ -111,15 +114,28 @@ func openWorkspace(root string, now func() time.Time, ids *id.Generator, dryRun 
 	return &workspace{root: root, st: st, now: now, ids: ids, dryRun: dryRun}, nil
 }
 
+// diskLog reads the log from disk through w.readLog, or the store.
+func (w *workspace) diskLog() store.Log {
+	if w.readLog != nil {
+		return w.readLog()
+	}
+	return w.st.ReadLog()
+}
+
 // openCtxWorkspace opens the workspace of ctx: its root, clock, IDs and
 // dry-run flag.
 func openCtxWorkspace(ctx *Ctx) (*workspace, error) {
-	return openWorkspace(ctx.Root, ctx.Now, ctx.IDs, ctx.DryRun)
+	w, err := openWorkspace(ctx.Root, ctx.Now, ctx.IDs, ctx.DryRun)
+	if err != nil {
+		return nil, err
+	}
+	w.readLog = ctx.readLog
+	return w, nil
 }
 
 // log reads the log, plus the entries a dry run has built so far.
 func (w *workspace) log() store.Log {
-	l := w.st.ReadLog()
+	l := w.diskLog()
 	if len(w.pending) > 0 {
 		l.Entries = append(l.Entries, w.pending...)
 		slices.SortFunc(l.Entries, func(a, b entry.Entry) int {

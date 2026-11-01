@@ -3,16 +3,19 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"reflect"
 	"slices"
 	"strings"
 	"testing"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
 	gmodel "github.com/dphaener/rhiza/internal/model"
 	"github.com/dphaener/rhiza/internal/op"
+	"github.com/dphaener/rhiza/internal/store"
 )
 
 // readCtx is initCtx with an index path in a temp folder.
@@ -472,5 +475,104 @@ func TestReadHelpers(t *testing.T) {
 	}
 	if readError(nil) != nil {
 		t.Error("readError(nil) is not nil")
+	}
+}
+
+// countingCtx counts the log folds a read through ctx costs.
+func countingCtx(ctx *Ctx) *int {
+	n := new(int)
+	ctx.readLog = func() store.Log {
+		*n++
+		return store.ReadLog(os.DirFS(filepath.Join(ctx.Root, store.Dir)))
+	}
+	return n
+}
+
+func TestDefaultViewFoldsNothing(t *testing.T) {
+	ctx, landed, accepted := readLog(t)
+	draft := newChange(t, ctx, `{"intent":"Later"}`).ChangeSet
+	folds := countingCtx(ctx)
+	cases := []struct {
+		name string
+		cs   id.ID
+		want string
+	}{
+		{"landed", landed, "as-is"},
+		{"accepted", accepted, "to-be"},
+		{"draft", draft, "what-if:" + draft.String()},
+	}
+	for _, c := range cases {
+		for _, byRef := range []bool{false, true} {
+			rc := *ctx
+			rc.readLog = ctx.readLog
+			if byRef {
+				rc.ChangeRef = c.cs.String()
+			} else {
+				rc.ChangeSet = c.cs
+			}
+			*folds = 0
+			r, err := openReader(&rc, "show", "", defaultView)
+			if err != nil {
+				t.Fatalf("%s: %v", c.name, err)
+			}
+			got := r.View()
+			r.Close()
+			// What-if computes its model from the index; it folds no log.
+			if got != c.want || *folds != 0 {
+				t.Errorf("%s (byRef %v): view %q, %d folds; want %q, 0", c.name, byRef, got, *folds, c.want)
+			}
+		}
+	}
+	// The current change set, the landed one, costs no fold either.
+	if err := ctxWorkspace(t, ctx).setCurrent(landed); err != nil {
+		t.Fatal(err)
+	}
+	*folds = 0
+	r := mustReader(t, ctx, "", defaultView)
+	if r.View() != "as-is" || *folds != 0 {
+		t.Errorf("current landed: view %q, %d folds", r.View(), *folds)
+	}
+	// Errors stay as they were.
+	bad := *ctx
+	bad.ChangeSet = accepted
+	bad.ChangeRef = "abcd"
+	if _, err := openReader(&bad, "show", "", defaultView); err == nil {
+		t.Error("ChangeSet and ChangeRef together: no error")
+	}
+	bad = *ctx
+	bad.ChangeRef = "ZZZZZZZZ"
+	if _, err := openReader(&bad, "show", "", defaultView); err == nil {
+		t.Error("unknown ChangeRef: no error")
+	}
+}
+
+func TestDefaultViewSeesPending(t *testing.T) {
+	ctx, _, _ := readLog(t)
+	folds := countingCtx(ctx)
+	w := ctxWorkspace(t, ctx)
+	w.dryRun = true
+	w.readLog = ctx.readLog
+	pend, _, err := w.openChangeSet(changeset.Open{Kind: changeset.KindIntention, Intent: "Pending"}, id.ID{}, id.ID{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rc := *ctx
+	rc.ChangeSet = pend
+	*folds = 0
+	var gotCS id.ID
+	var gotState changeset.State
+	r, err := openReaderIn(&rc, w, "show", "", func(cs id.ID, st changeset.State) view {
+		gotCS, gotState = cs, st
+		return view{stored: index.AsIs}
+	})
+	if err != nil {
+		t.Fatalf("a pending change set: %v", err)
+	}
+	defer r.Close()
+	if gotCS != pend || gotState != changeset.StateDraft {
+		t.Errorf("rule saw %v in %q, want %v in draft", gotCS, gotState, pend)
+	}
+	if *folds == 0 {
+		t.Error("a workspace with pending writes folded nothing")
 	}
 }
