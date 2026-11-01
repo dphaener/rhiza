@@ -27,6 +27,7 @@ agent of milestone-1 task 5 (shipit plan), accepted by the owner
 
 ### In
 
+- relates-to [whatif-folds-inflight-over-asis](whatif-folds-inflight-over-asis.md) — supersedes it for the what-if part: a what-if no longer runs model.WhatIf over every stored folded change set; it seeds model.WhatIfFrom from the stored as-is rows and decodes only the change set, its in-flight closure and its landed dependencies. As-is and to-be stay materialized as t5-d5 says
 - decided-by [fast-reads](../capability/rhiza/views/fast-reads.md)
 
 ## History
