@@ -1,0 +1,63 @@
+{
+  "actor": "01M6BJKQAM8JGV5MTQAQYM6DCC",
+  "after": [
+    "01M6BJK1S7K66FQEVTK6BYPVHM"
+  ],
+  "at": "2026-11-01T12:54:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7a46ec69 with a scratch build ($TMPDIR/rhiza-qa1) on a clone of this repo's real model: rhiza search search ranks the handle hit search-fts-asis-scan-whatif (score 100) over field hits (score 20) with snippets; --kind capability narrows; --limit gives a next: line with --cursor and --json a next_cursor; '*' exits 2 with 'nothing to search for'; FTS syntax like 'AND OR NOT' and 'fts5\"' is taken as plain words, no error; what-if:01M6BD9G finds this change set's unlanded text-search, search-command and model-app-search nodes while as-is does not. An index built at user_version 1 by an origin/main build was rebuilt to user_version 2 with 5623 nodes_fts rows on the first search. In a scratch repo, adding beta, then setting alpha's statement, showed in the next search each time (gizmo then plain, prefix GIZ case-insensitive)."
+        },
+        "handle": "search-command-qa-1",
+        "id": "01M6BJT43Y80R3TJTJWV07SK4W",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6BJT43Y80R3TJTJWS61EM9D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BJT43Y80R3TJTJWS61EM9D",
+        "id": "01M6BJT4WKFM68371JYTAH9A0G",
+        "link": "01M6BJT4WKFM68371JYSZ3288Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BDAFV0SK190M10KJ76PMFM",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7a46ec69, ran the built rhiza tui app model in a real pty (100x30) on a scratch repo and on a clone of this repo's model: the footer shows '/ search'; / opens '/_' with 'esc clear · enter keep · j/k scroll'; typing giz shows only the search hit beta 'Another gizmo'; backspaces and 'plain' re-search to alpha; q types into the filter ('/plainq_', No nodes match.) instead of quitting; on the real model /rex lists rex hits, enter keeps them and j scrolls them, / edits again ('/rexx_'), spaces-only shows no hits; esc restores the tree and its footer, and q then quits with exit 0. rex-install.txtar is untouched by the diff."
+        },
+        "handle": "model-app-search-qa-1",
+        "id": "01M6BJT5NNQS6GNTY5K8VZDGAA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6BJT5NNQS6GNTY5K699VEYM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BJT5NNQS6GNTY5K699VEYM",
+        "id": "01M6BJT6DX0DRC39GVDDKXPXZ2",
+        "link": "01M6BJT6DX0DRC39GVDA710QFT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BDAHCGWVSDN2MXQKK63CXJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6BD9GSN00SK8K209A759RT0",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BJT7MDMSDWKVJ8GG9AVHAP",
+  "type": "ops",
+  "v": 1
+}
