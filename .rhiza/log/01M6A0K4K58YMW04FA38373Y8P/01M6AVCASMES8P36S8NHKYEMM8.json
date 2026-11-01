@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ATZ2M3K20V6H8A9TK5SY55",
+  "after": [
+    "01M6ATQ9AJVRT86190KCEAGQBX"
+  ],
+  "at": "2026-11-01T06:05:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 50ea91b0 (attempt 2, fix of review findings quality f1 and qa f1). go test ./internal/session -run TestStalled passes: working at 19m and 20m not stalled, 21m stalled; blocked, idle, usage-paused, exited and no report never. go test ./internal/api -run TestRunStalledNow passes: agent step, open leaves' latest sessions, checks (closed panes skipped), unjudged fixers, and a stopped (not live) run never stalls. Testscripts run-status-stalled (hand-written hook report at 00:00, RHIZA_TEST_NOW 00:19 no Stalled, 00:21 '- Stalled: build session ...', then after killing the runner the run is stopped with no Stalled in status, --json or run ls; idle never), inbox-stalled and describe-golden pass; go test ./... passes, gofmt and vet clean. Hands-on with a scratch build on live ship-change run 01M6AREK66 at review/review: RHIZA_TEST_NOW=2026-11-01T09:00:00Z gives stalled {step review/review, session 6a792fd4 (this verifier's leaf session)} in run status --json and a stalled item in rhiza inbox --json; at the real clock stalled is absent. Diff read: runInfo now passes live into runStalledNow; stepSessions covers agent, leaf, check and fixer sessions. make check's self-check fails only on stale .rhiza/rendered actor files from this run's model writes, not on code."
+        },
+        "handle": "run-status-stalled-session-verified-2",
+        "id": "01M6AVC8R6HYRTR1BWTH70D11V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AVC8R6HYRTR1BWTDDV9633",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AVC8R6HYRTR1BWTDDV9633",
+        "id": "01M6AVC9H4N5X5TC6YSNHMKBS6",
+        "link": "01M6AVC9H4N5X5TC6YSMHG15XS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NWP7AH4JGMDT37F6X7DG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6A0K4K58YMW04FA38373Y8P",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AVCASMES8P36S8NHKYEMM8",
+  "type": "ops",
+  "v": 1
+}
