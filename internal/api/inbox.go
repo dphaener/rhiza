@@ -174,7 +174,7 @@ func (r InboxResponse) Human(w io.Writer) {
 //
 // stalled gives the stalled session of a run, nil when it has none; a nil
 // stalled lists none. Only a run another process holds can have one.
-func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, changeState func(change string) (string, bool), stalled func(st run.State) *RunStalled) []InboxItem {
+func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, changeState func(change string) (string, bool), stalled func(st run.State) []RunStalled) []InboxItem {
 	// gone reports a change set that is landed, withdrawn, rejected or
 	// superseded: a failed or given-up run on one is left out, as its next
 	// command could only fail.
@@ -231,7 +231,7 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 				}
 			}
 			if live && stalled != nil {
-				if sl := stalled(st); sl != nil {
+				for _, sl := range stalled(st) {
 					at, _ := time.Parse(time.RFC3339, sl.Since)
 					add(InboxStalled, sl.Session, at, InboxItem{
 						Step: sl.Step, Session: sl.Session,
@@ -274,15 +274,16 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 	return items
 }
 
-// inboxStalledOf reads each run's session records at the clock's now. The
-// inbox asks only of live runs. Without a clock no run is stalled.
-func inboxStalledOf(ctx *Ctx, common string) func(st run.State) *RunStalled {
+// inboxStalledOf reads each run's session records at the clock's now, for
+// every stalled session of the run's current step. The inbox asks only of
+// live runs. Without a clock no run is stalled.
+func inboxStalledOf(ctx *Ctx, common string) func(st run.State) []RunStalled {
 	if ctx == nil || ctx.Now == nil {
 		return nil
 	}
 	sessions := session.NewStore(session.Dir(common))
 	now := ctx.Now()
-	return func(st run.State) *RunStalled { return runStalledNow(st, true, sessions, now) }
+	return func(st run.State) []RunStalled { return runStalledAll(st, true, sessions, now) }
 }
 
 // failedDetail is why a failed run failed, followed by the detail of the

@@ -871,4 +871,21 @@ func TestRunStalledNow(t *testing.T) {
 	if got := stalled(fixes, true); got != "review/fixer" {
 		t.Errorf("fixer: %q", got)
 	}
+	// runStalledAll lists every stalled session of the step, as the inbox
+	// does: parallel checks and the fixer each stall on their own.
+	parallel := run.State{Current: "review", Checks: []run.CheckState{
+		{Step: "review", Sessions: []run.CheckSession{{Session: "check", Seq: 1}}},
+		{Step: "review", Sessions: []run.CheckSession{{Session: "verifier", Seq: 2}}},
+		{Step: "review", Sessions: []run.CheckSession{{Session: "idle", Seq: 3}}},
+	}, Fixes: []run.ReviewFix{{Step: "review", Session: "fixer"}}}
+	var got []string
+	for _, s := range runStalledAll(parallel, true, sessions, now) {
+		got = append(got, s.Step+"/"+s.Session)
+	}
+	if want := []string{"review/check", "review/verifier", "review/fixer"}; !slices.Equal(got, want) {
+		t.Errorf("all stalled = %v, want %v", got, want)
+	}
+	if all := runStalledAll(parallel, false, sessions, now); len(all) != 0 {
+		t.Errorf("stopped run, all stalled = %v", all)
+	}
 }

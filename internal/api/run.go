@@ -404,27 +404,37 @@ type RunStalled struct {
 }
 
 // runStalledNow is the first stalled session at now of the current step of
-// a live, unfinished run: an agent step's session, then the latest session
-// of each open leaf, of each check and of each unjudged change-set fixer of
-// a leaves or checks step. Only a live run's sessions stall: a stopped run
-// has no process holding it. A record that cannot be read is not stalled.
+// a live, unfinished run, of those runStalledAll lists.
 func runStalledNow(st run.State, live bool, sessions *session.Store, now time.Time) *RunStalled {
+	if all := runStalledAll(st, live, sessions, now); len(all) > 0 {
+		return &all[0]
+	}
+	return nil
+}
+
+// runStalledAll is every stalled session at now of the current step of a
+// live, unfinished run: an agent step's session, then the latest session of
+// each open leaf, of each check and of each unjudged change-set fixer of a
+// leaves or checks step. Only a live run's sessions stall: a stopped run has
+// no process holding it. A record that cannot be read is not stalled.
+func runStalledAll(st run.State, live bool, sessions *session.Store, now time.Time) []RunStalled {
 	if !live || st.Ended || sessions == nil {
 		return nil
 	}
+	var out []RunStalled
 	for _, sid := range stepSessions(st) {
 		rec, err := sessions.Read(sid)
 		if err != nil || !session.Stalled(rec, now) {
 			continue
 		}
 		rep, _ := session.Resolve(rec)
-		return &RunStalled{Step: st.Current, Session: sid, Since: rfc3339(rep.At)}
+		out = append(out, RunStalled{Step: st.Current, Session: sid, Since: rfc3339(rep.At)})
 	}
-	return nil
+	return out
 }
 
 // stepSessions are the sessions of the run's current step that can still
-// be working, in the order runStalledNow checks them. A session whose pane
+// be working, in the order runStalledAll checks them. A session whose pane
 // is closed is gone.
 func stepSessions(st run.State) []string {
 	var out []string
