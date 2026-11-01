@@ -79,9 +79,9 @@ stdout '"handle": "review-[0-9a-z]{8}-r3-f1"'
 stdout '"handle": "review-[0-9a-z]{8}-r3-f2"'
 stdout '^exit=0$'
 
-# f1's question is in the draft that created cap-l, and blocks it.
-exec sh -c 'rhiza change show $(cat $WORK/s1) --json | grep -c "$(cat $WORK/q1)"'
-stdout '^1$'
+# f1's question is in the draft that created cap-l, and blocks it. (in the ops and in the changes)
+exec sh -c 'rhiza change show $(cat $WORK/s1) --json | grep -c "\"handle\": \"$(cat $WORK/q1)\""'
+stdout '^2$'
 exec sh -c 'rhiza show $(cat $WORK/q1) --change $(cat $WORK/s1) --json'
 stdout '"kind": "question"'
 stdout 'finding f1 \(missing-acceptance on cap-l\): No acceptance criteria'
@@ -118,7 +118,7 @@ stdout '"added": false'
 exec sh -c 'grep -c "\"type\":\"asked\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
 stdout '^2$'
 exec sh -c 'rhiza change show $(cat $WORK/s1) --json | grep -c "\"handle\": \"$(cat $WORK/q1)\""'
-stdout '^1$'
+stdout '^2$'
 
 # The autonomous gate sees both open, accepts nothing and stops for the
 # owner (exit 75), as for a question the planner parked.

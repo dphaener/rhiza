@@ -61,3 +61,8 @@ cp stdout $WORK/cli.json
 exec rhiza api call change.diff '{}'
 cmp stdout $WORK/cli.json
 fold-ok
+
+# change show ends with the same changes in a Changes section.
+exec rhiza change show
+stdout '## Changes'
+stdout '^  statement: a -> c$'

@@ -28,6 +28,8 @@ exec rhiza change show --json
 cp stdout want-change-show.json
 exec rhiza tui app change-show --once
 cmp stdout want-change-show.json
+stdout '"changes"'
+stdout '"handle": "draft"'
 
 # Cancelling a preview: the log is untouched, whatever the app.
 exec sh -c 'cat $(find .rhiza/log -type f | sort)'
