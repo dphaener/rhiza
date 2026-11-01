@@ -1,0 +1,63 @@
+{
+  "actor": "01M6AQJ1Z00942K9Z85RVD95YF",
+  "after": [
+    "01M6AQH9SVZP4CN3P8ANMB1Q3X"
+  ],
+  "at": "2026-11-01T05:02:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8a20d26a I built rhiza into a scratch dir with -X main.version=qa-v1, ran `rhiza daemon --permission-mode manual` in a fresh scratch repo (pid 4031), then rebuilt the same path in place as qa-v2. Within one 5s poll stderr printed 'binary changed, re-executing' and 'daemon running, process ...:4031': same pid, argv unchanged (ps shows `rhiza daemon --permission-mode manual`), and daemon status then showed Version: qa-v2. Over the next polls it did not re-exec again. Moving the binary away for two polls (as mid-rebuild) and back with the same mtime caused no exec. After the re-exec a second `rhiza daemon --once` was refused with exit 2 ('another daemon holds the lock: process ...:4031'), so the new image holds the lock. SIGINT then stopped it cleanly ('Daemon ...:4031 stopped'). The pending-start delay and live runs carrying on were not exercised by hand (empty model, no runs); go test ./internal/daemon ./internal/api pass."
+        },
+        "handle": "daemon-reexec-new-binary-qa-1",
+        "id": "01M6AQSCFWACZFPVB0QXVT5JKC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AQSCFWACZFPVB0QX4FZ298",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AQSCFWACZFPVB0QX4FZ298",
+        "id": "01M6AQSD8RKBTYBB0BXVZXA153",
+        "link": "01M6AQSD8RKBTYBB0BXRGR629S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NRGNH76FNWH3564VWA1X",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8a20d26a, with a binary built with -X main.version=qa-v1 running `rhiza daemon` in a scratch repo, `rhiza daemon status` printed 'Version: qa-v1' and --json carried \"version\": \"qa-v1\". After rebuilding in place as qa-v2 and the daemon re-executing, status printed 'Version: qa-v2'. After SIGINT, status printed 'Daemon not running', 'Last daemon: ... stopped ...' and still 'Version: qa-v2'. go test ./cmd/rhiza -run 'TestScripts/(daemon-status|describe-golden)$' passes."
+        },
+        "handle": "daemon-status-version-qa-1",
+        "id": "01M6AQSE7NVRW1GM4RWBTMCR3W",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AQSE7NVRW1GM4RWAJQTF6K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AQSE7NVRW1GM4RWAJQTF6K",
+        "id": "01M6AQSF0QMM0W37Y35M9GPYC3",
+        "link": "01M6AQSF0QMM0W37Y35JX0QFNC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NSV7XVE3SXVN0V6AKTKR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6A0K064DH4TP3JJ0861DFG4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AQSG75QK94WW1QT18KWP61",
+  "type": "ops",
+  "v": 1
+}
