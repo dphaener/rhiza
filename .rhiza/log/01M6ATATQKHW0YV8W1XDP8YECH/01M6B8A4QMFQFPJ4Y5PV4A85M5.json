@@ -1,0 +1,40 @@
+{
+  "actor": "01M6B7ZHW92AY504PX0PVZ8HXN",
+  "after": [
+    "01M6ATCB4EKHF51657V23R62PM"
+  ],
+  "at": "2026-11-01T09:51:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 70424b00 ran go test ./cmd/rhiza -run 'TestScripts/(run-abandon|run-abandon-dirty|describe-golden)$' -count=1: all PASS. run-abandon.txtar asserts 'remove-worktree done' and 'delete-branch done' in the abandon output, git worktree list drops to 1 entry (the run worktree removed by git worktree remove) and git branch --list cs/* is empty. run-abandon-dirty.txtar writes an uncommitted scratch.txt into the run worktree, then asserts 'remove-worktree kept: the worktree is dirty', 'delete-branch kept', the file still exists and the cs/* branch remains. Read the diff of internal/api/run.go: abandonCleanup removes the worktree without force (force only when the sole leftovers are byte-identical copies of .rhiza/log entries), deletes the local cs/<slug> branch only after the worktree is gone, reports done/already-gone/kept, and runs no push or gh call, so the remote branch and PR are untouched. go test ./... passes; make check's fmt/vet/test pass, self-check flags only stale .rhiza/rendered files from this run's actor writes."
+        },
+        "handle": "abandon-clears-worktree-verified",
+        "id": "01M6B8A2WD9FP22DQYF0TRJJ4K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6B8A2WD9FP22DQYF017MYEB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B8A2WD9FP22DQYF017MYEB",
+        "id": "01M6B8A3K8BDJBB6YHZDC3P0N1",
+        "link": "01M6B8A3K8BDJBB6YHZAKDN93C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATC08K455FW14QCXPZ9QHD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ATATQKHW0YV8W1XDP8YECH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B8A4QMFQFPJ4Y5PV4A85M5",
+  "type": "ops",
+  "v": 1
+}
