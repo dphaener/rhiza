@@ -6228,6 +6228,41 @@ cmp stdout describe.golden.json
       "response": {
         "additionalProperties": false,
         "properties": {
+          "cleanup": {
+            "description": "The clean-up of the run's worktree and local branch, in order; absent in a dry run or when the run has no worktree",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "detail": {
+                  "description": "Why it was kept",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "done, already-gone, or kept (the worktree is dirty, or git refused)",
+                  "enum": [
+                    "done",
+                    "already-gone",
+                    "kept"
+                  ],
+                  "type": "string"
+                },
+                "step": {
+                  "description": "remove-worktree or delete-branch",
+                  "enum": [
+                    "remove-worktree",
+                    "delete-branch"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "status",
+                "step"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "dry_run": {
             "description": "True if nothing was written",
             "type": "boolean"

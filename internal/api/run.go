@@ -133,6 +133,15 @@ type RunAbandonRequest struct {
 type RunAbandonResponse struct {
 	Run    RunInfo `json:"run" desc:"The run as its journal stands, failed with the abandoned detail"`
 	DryRun bool    `json:"dry_run,omitempty" desc:"True if nothing was written"`
+	// Cleanup reports the removal of the run's worktree and local branch.
+	Cleanup []RunAbandonStep `json:"cleanup,omitempty" desc:"The clean-up of the run's worktree and local branch, in order; absent in a dry run or when the run has no worktree"`
+}
+
+// RunAbandonStep is one clean-up step of an abandon.
+type RunAbandonStep struct {
+	Step   string `json:"step" enum:"remove-worktree,delete-branch" desc:"remove-worktree or delete-branch"`
+	Status string `json:"status" enum:"done,already-gone,kept" desc:"done, already-gone, or kept (the worktree is dirty, or git refused)"`
+	Detail string `json:"detail,omitempty" desc:"Why it was kept"`
 }
 
 // RunResponse is a run after run.start or run.resume ran it, or in a dry
@@ -866,7 +875,88 @@ func runRunAbandon(ctx *Ctx, req any) (any, error) {
 		return nil, Errorf("journal the abandoning of run %s: %v", j.ID, err).WithNext("rhiza run status " + j.ID)
 	}
 	j.Entries = append(j.Entries, e)
-	return RunAbandonResponse{Run: runInfo(ctx, j.State(), false, sessions)}, nil
+	st := j.State()
+	return RunAbandonResponse{Run: runInfo(ctx, st, false, sessions), Cleanup: abandonCleanup(ctx, common, st)}, nil
+}
+
+// worktreeDirty reports whether git status --porcelain -uall output holds
+// a change worth keeping the worktree for. Untracked log entries that the
+// main checkout holds byte for byte are copies Rhiza made, not work.
+func worktreeDirty(porcelain, worktree, main string) bool {
+	for l := range strings.SplitSeq(porcelain, "\n") {
+		if strings.TrimSpace(l) == "" {
+			continue
+		}
+		rel, ok := strings.CutPrefix(l, "?? ")
+		if !ok || !strings.Contains(rel, ".rhiza/log/") {
+			return true
+		}
+		rel = strings.Trim(rel, `"`)
+		a, err1 := os.ReadFile(filepath.Join(worktree, rel))
+		b, err2 := os.ReadFile(filepath.Join(main, rel))
+		if err1 != nil || err2 != nil || !bytes.Equal(a, b) {
+			return true
+		}
+	}
+	return false
+}
+
+// abandonCleanup removes the abandoned run's worktree without force and
+// deletes its local cs/<slug> branch, keeping both when the worktree is
+// dirty. The remote branch and any PR are left alone. Failures are
+// reported as kept, never as errors: the run is already abandoned.
+func abandonCleanup(ctx *Ctx, common string, st run.State) []RunAbandonStep {
+	if st.Worktree == "" || st.Title == "" || ctx.Exec == nil {
+		return nil
+	}
+	main := filepath.Dir(common)
+	if samePath(st.Worktree, main) {
+		return nil
+	}
+	branch := session.Branch(session.Slug(st.Title))
+	git := func(args ...string) ([]byte, error) {
+		return ctx.Exec("git", append([]string{"-C", main}, args...), main, nil)
+	}
+	var out []RunAbandonStep
+	kept := func(step, why string) {
+		out = append(out, RunAbandonStep{Step: step, Status: "kept", Detail: why})
+	}
+	if fi, err := os.Stat(st.Worktree); err != nil || !fi.IsDir() {
+		git("worktree", "prune")
+		out = append(out, RunAbandonStep{Step: "remove-worktree", Status: "already-gone"})
+	} else {
+		dirty, err := ctx.Exec("git", []string{"-C", st.Worktree, "status", "--porcelain", "-uall"}, st.Worktree, nil)
+		switch {
+		case err != nil:
+			kept("remove-worktree", "cannot read the worktree's status: "+err.Error())
+		case worktreeDirty(string(dirty), st.Worktree, main):
+			kept("remove-worktree", "the worktree is dirty")
+		default:
+			// Only verified copies of log entries can remain, which git
+			// counts as untracked files and so needs --force to drop.
+			args := []string{"worktree", "remove"}
+			if strings.TrimSpace(string(dirty)) != "" {
+				args = append(args, "--force")
+			}
+			if _, err := git(append(args, st.Worktree)...); err != nil {
+				kept("remove-worktree", err.Error())
+			} else {
+				out = append(out, RunAbandonStep{Step: "remove-worktree", Status: "done"})
+			}
+		}
+	}
+	if out[0].Status == "kept" {
+		kept("delete-branch", "the worktree is kept")
+		return out
+	}
+	if _, err := git("show-ref", "--verify", "--quiet", "refs/heads/"+branch); err != nil {
+		return append(out, RunAbandonStep{Step: "delete-branch", Status: "already-gone"})
+	}
+	if _, err := git("branch", "-D", branch); err != nil {
+		kept("delete-branch", err.Error())
+		return out
+	}
+	return append(out, RunAbandonStep{Step: "delete-branch", Status: "done"})
 }
 
 // runRunStatus reports a run from its journal alone.
@@ -2398,6 +2488,16 @@ func (r RunAbandonResponse) Human(w io.Writer) {
 		return
 	}
 	r.Run.Human(w)
+	if len(r.Cleanup) > 0 {
+		fmt.Fprintf(w, "\n## Clean-up\n\n")
+		for _, c := range r.Cleanup {
+			fmt.Fprintf(w, "- %s %s", c.Step, c.Status)
+			if c.Detail != "" {
+				fmt.Fprintf(w, ": %s", c.Detail)
+			}
+			fmt.Fprintln(w)
+		}
+	}
 }
 
 // Human shows the run and the steps it has done.

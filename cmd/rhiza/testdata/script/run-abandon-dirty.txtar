@@ -1,0 +1,34 @@
+# rhiza run abandon keeps a worktree with an uncommitted file, and its
+# branch, and says the worktree is dirty.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Abandon a dirty run' --title 'Abandon dirty' --json
+mkdir .rhiza/workflows
+cp ../hold.toml .rhiza/workflows/hold.toml
+
+exec rhiza run start --workflow hold --no-wait
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG stopped$'
+exec sh -c 'echo wip > ../repo.abandon-dirty/scratch.txt'
+
+exec rhiza run abandon 01M5PWGJC82P7YGZTWYFFZ0VJG
+stdout 'remove-worktree kept: the worktree is dirty'
+stdout 'delete-branch kept'
+exists ../repo.abandon-dirty/scratch.txt
+exec sh -c 'git branch --list "cs/*" | wc -l'
+stdout '^ *1$'
+
+-- hold.toml --
+name = "hold"
+
+[step.hold]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"

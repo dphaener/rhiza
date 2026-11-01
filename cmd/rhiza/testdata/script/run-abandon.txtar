@@ -1,6 +1,6 @@
 # rhiza run abandon gives up on an unfinished run: its journal says failed,
-# abandoned by the actor, its worktree and branch stay, and the change set
-# can start a new run. A resume of the abandoned run, a retry included, and
+# abandoned by the actor, its clean worktree and local branch are removed,
+# and the change set can start a new run. A resume of the abandoned run, a retry included, and
 # an abandon of a finished run exit 2.
 
 mkdir repo
@@ -26,17 +26,19 @@ exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG --json
 
 # Abandon it.
 exec rhiza run abandon 01M5PWGJC82P7YGZTWYFFZ0VJG
+stdout 'remove-worktree done'
+stdout 'delete-branch done'
 exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG
 stdout 'abandoned by test'
 exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG --json
 stdout '"state": "failed"'
 stdout '"detail": "abandoned by test"'
 
-# Worktree and branch are left alone.
+# Worktree and branch are gone.
 exec sh -c 'git worktree list | wc -l'
-stdout '^ *2$'
-exec sh -c 'git branch --list "cs/*" | wc -l'
 stdout '^ *1$'
+exec sh -c 'git branch --list "cs/*" | wc -l'
+stdout '^ *0$'
 
 # Resume, retry and a second abandon are refused with exit 2, naming the run.
 exec sh -c 'rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
