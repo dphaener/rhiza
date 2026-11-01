@@ -118,6 +118,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if prev, ok := daemon.ReadState(common); ok {
 		state.LastStarted, state.LastResumed = prev.LastStarted, prev.LastResumed
 		state.Notified = prev.Notified
+		state.DiskLow = prev.DiskLow
 		// A re-exec, or a restart, keeps the holds of the daemon before.
 		unjournaled = daemonRestoreUnjournaled(prev.Unjournaled)
 	}
@@ -138,6 +139,13 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		started, resumed, err := daemonPoll1(ctx, rs, pending, unjournaled, r.MaxRuns, minFree, r.Autonomous, r.PermissionMode, &skips)
 		if err == nil {
 			state.Skips = skips
+			if low, free := daemonDiskLow(ctx, minFree); !low {
+				state.DiskLow = nil
+			} else if state.DiskLow == nil {
+				state.DiskLow = &daemon.DiskLow{Since: ctx.Now().UTC(), Free: free, Min: minFree}
+			} else {
+				state.DiskLow.Free, state.DiskLow.Min = free, minFree
+			}
 		}
 		resp.Started = append(resp.Started, started...)
 		resp.Resumed = append(resp.Resumed, resumed...)
@@ -234,6 +242,7 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State) error {
 	if overlaps, err := inboxOverlaps(ctx); err == nil {
 		items = append(items, overlaps...)
 	}
+	items = append(items, inboxDiskLow(ctx)...)
 	titles := map[string]string{}
 	for _, j := range runs {
 		if st := j.State(); st.Title != "" {
@@ -278,6 +287,8 @@ func inboxNotice(what string, it InboxItem) string {
 		return what + ": a run failed"
 	case InboxSkipped:
 		return what + ": an interrupted run was not resumed"
+	case InboxDiskLow:
+		return "disk space is low: the daemon holds new starts and resumes"
 	case InboxOverlap:
 		return what + ": an overlap with change set " + it.Other + " waits on you"
 	default:

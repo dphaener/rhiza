@@ -65,6 +65,7 @@ var groups = []struct{ kind, heading string }{
 	{api.InboxGaveUp, "Gave up"},
 	{api.InboxSkipped, "Skipped"},
 	{api.InboxStalled, "Stalled"},
+	{api.InboxDiskLow, "Disk space"},
 }
 
 // Model is the app's bubbletea program. q or esc quits.
@@ -380,6 +381,9 @@ func row(it api.InboxItem) string {
 	title := it.ChangeTitle
 	if title == "" {
 		title = it.Change
+	}
+	if it.Kind == api.InboxDiskLow {
+		title = "Daemon holds starts"
 	}
 	var b strings.Builder
 	b.WriteString(title)

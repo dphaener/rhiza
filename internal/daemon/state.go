@@ -56,6 +56,18 @@ type State struct {
 	// notification for and that still wait, so a later poll, or a later
 	// daemon, sends none again while they stay.
 	Notified []string `json:"notified,omitempty"`
+	// DiskLow is set while the last poll found free space under the
+	// daemon's minimum, and absent once a poll finds enough.
+	DiskLow *DiskLow `json:"disk_low,omitempty"`
+}
+
+// DiskLow is a low-disk finding of a poll.
+type DiskLow struct {
+	// Since is the first of the polls in a row that found it low.
+	Since time.Time `json:"since"`
+	// Free and Min are the free bytes and the minimum, as the last poll saw.
+	Free uint64 `json:"free"`
+	Min  uint64 `json:"min"`
 }
 
 // WriteState replaces the state file, whole.
