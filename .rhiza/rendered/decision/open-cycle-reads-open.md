@@ -16,6 +16,10 @@ A review check whose latest cycle is open reports no outcome (open) in JSON, and
 
 - derived-from [m12-orchestrator-picks](../source/m12-orchestrator-picks.md)
 
+### In
+
+- decided-by [run-status-open-cycle](../capability/rhiza/workflows/workflow-runs/run-status/run-status-open-cycle.md)
+
 ## History
 
 - `01M6ATAR49P8K7TM7RCW7D20KF` Plan milestone 12: the night runs clean, picked by the orchestrator under the owner's standing instruction
