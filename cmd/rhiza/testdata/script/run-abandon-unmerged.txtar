@@ -1,0 +1,48 @@
+# rhiza run abandon keeps the local branch when it holds commits merged
+# nowhere: a build run succeeds with an unpushed commit on cs/<slug>, a
+# later run of the change set fails, and abandoning that run removes the
+# clean worktree but keeps the branch and its commit.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Abandon after a build' --title 'Abandon built' --json
+mkdir .rhiza/workflows
+cp ../build.toml .rhiza/workflows/build.toml
+
+# Run A builds a commit on the branch and succeeds.
+exec sh -c 'echo > $WORK/pass'
+exec rhiza run start --workflow build
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
+
+# Run B fails at its check.
+rm $WORK/pass
+! exec rhiza run start --workflow build
+stdout '^Run [0-9A-Z]{26} failed$'
+exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl// > $WORK/second'
+
+# Abandoning B removes the clean worktree but keeps the unmerged branch.
+exec sh -c 'rhiza run abandon $(cat $WORK/second)'
+stdout 'remove-worktree done'
+stdout 'delete-branch kept: it has commits merged into neither its upstream nor HEAD'
+! exists ../repo.abandon-built
+exec git log --format=%s cs/abandon-built
+stdout '^built$'
+
+-- build.toml --
+name = "build"
+
+[step.check]
+kind = "command"
+run = "test -f ../pass"
+on.pass = "build"
+on.fail = "failed"
+
+[step.build]
+kind = "command"
+run = "git commit -q --allow-empty -m built"
+on.pass = "done"
+on.fail = "failed"
