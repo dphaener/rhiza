@@ -904,7 +904,8 @@ func worktreeDirty(porcelain, worktree, main string) bool {
 
 // abandonCleanup removes the abandoned run's worktree without force and
 // deletes its local cs/<slug> branch, keeping both when the worktree is
-// dirty or another run still uses them. The remote branch and any PR are
+// dirty or another run still uses them, and the branch when it holds
+// commits not merged into its upstream or HEAD. The remote branch and any PR are
 // left alone. Failures are reported as kept, never as errors: the run is
 // already abandoned.
 func abandonCleanup(ctx *Ctx, common string, rs *run.Store, id string, st run.State) []RunAbandonStep {
@@ -958,8 +959,14 @@ func abandonCleanup(ctx *Ctx, common string, rs *run.Store, id string, st run.St
 	if _, err := git("show-ref", "--verify", "--quiet", "refs/heads/"+branch); err != nil {
 		return append(out, RunAbandonStep{Step: "delete-branch", Status: "already-gone"})
 	}
-	if _, err := git("branch", "-D", branch); err != nil {
-		kept("delete-branch", err.Error())
+	// -d, not -D: git refuses a branch with commits on neither its
+	// upstream nor HEAD, such as an earlier build run's unpushed work.
+	if _, err := git("branch", "-d", branch); err != nil {
+		if strings.Contains(err.Error(), "not fully merged") {
+			kept("delete-branch", "it has commits merged into neither its upstream nor HEAD")
+		} else {
+			kept("delete-branch", err.Error())
+		}
 		return out
 	}
 	return append(out, RunAbandonStep{Step: "delete-branch", Status: "done"})
