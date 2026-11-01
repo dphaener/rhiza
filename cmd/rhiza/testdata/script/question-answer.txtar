@@ -64,4 +64,18 @@ stdout 'answer-queue-q'
 exec rhiza ready --json
 ! stdout 'queue-q'
 
+# A question already answered is refused, and nothing is written.
+! exec rhiza question answer store-q 'again' --json
+stdout '"code": "usage"'
+! exec rhiza show answer-store-q-2 --json
+
+# A question that blocks only a node the change set does not touch is
+# refused, and nothing is written.
+exec rhiza add capability apart --record
+exec rhiza add question apart-q --field statement=Which-apart --record
+exec rhiza link apart-q blocks apart --record
+! exec rhiza question answer apart-q 'nope' --change 01M5PWGT68X5XKB54XFQMHKA0A --json
+stdout '"code": "usage"'
+! exec rhiza show answer-apart-q --json
+
 fold-ok
