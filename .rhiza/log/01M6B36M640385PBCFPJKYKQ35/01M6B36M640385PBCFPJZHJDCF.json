@@ -1,0 +1,15 @@
+{
+  "actor": "01M6B358B8TPBK440W0V3APF56",
+  "after": [],
+  "at": "2026-11-01T08:21:48Z",
+  "body": {
+    "intent": "Constraint: test-only RHIZA_TEST_* hooks (beyond NOW and SEED) take effect only alongside RHIZA_TEST_NOW, so a stray variable in a real shell changes no behaviour",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6B36M640385PBCFPJKYKQ35",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B36M640385PBCFPJZHJDCF",
+  "type": "open",
+  "v": 1
+}
