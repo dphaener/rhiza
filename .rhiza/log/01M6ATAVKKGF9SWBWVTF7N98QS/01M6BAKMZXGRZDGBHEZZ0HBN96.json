@@ -1,0 +1,40 @@
+{
+  "actor": "01M6BA3ERA50R5RJ9H36MC762N",
+  "after": [
+    "01M6ATCD2NZ5A14DDP21ECT491"
+  ],
+  "at": "2026-11-01T10:31:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3b2eb9bd, daemon-picks.txtar now has a repo with intents nine (milestone=9) and ten (milestone=10, recorded first), each served by an accepted change set with a leaf. go test ./cmd/rhiza -run 'TestScripts/^daemon-picks$' passes: rhiza roadmap --json lists nine's group before ten's, and rhiza daemon --once --max-runs 1 starts exactly one run, Nine's change set (01M5PWGW...). With internal/api/plan.go reverted to dee5e4d7 the same script fails at daemon-picks.txtar:116 (roadmap order). The diff sorts siblings by milestone number (a JSON number or numeric string; numbered ones before unnumbered), then key, then ID. Depends-on topo order within a group is unchanged. make check exits 0 once RHIZA_ROOT/RHIZA_CHANGE/RHIZA_RUN are unset. With them set, self-check reads the run worktree's actor records and reports their rendered pages as missing, which is unrelated to this commit. Both attempt-1 findings are fixed: the stray actor render is gone and the scenario moved into daemon-picks.txtar."
+        },
+        "handle": "milestones-in-number-order-verified",
+        "id": "01M6BAKK4HW04AE4HDCJMXACFW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6BAKK4HW04AE4HDCHN50D60",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BAKK4HW04AE4HDCHN50D60",
+        "id": "01M6BAKKVDEBD9ZFED2GACCEB3",
+        "link": "01M6BAKKVDEBD9ZFED2FMD4S28",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATC3EGWXK28A2NGFY475TE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ATAVKKGF9SWBWVTF7N98QS",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BAKMZXGRZDGBHEZZ0HBN96",
+  "type": "ops",
+  "v": 1
+}
