@@ -347,6 +347,7 @@
 - [milestone-9](intent/milestone-9.md)
 - [milestone-10](intent/milestone-10.md)
 - [areas](intent/areas.md)
+- [milestone-11](intent/milestone-11.md)
 
 ## Constraints
 
@@ -426,6 +427,7 @@
 - [answer-cb8bd934-5](decision/answer-cb8bd934-5.md)
 - [answer-message-contents](decision/answer-message-contents.md)
 - [answer-reread-from-model](decision/answer-reread-from-model.md)
+- [answer-reuses-blocker-rule](decision/answer-reuses-blocker-rule.md)
 - [answer-sent-as-caller](decision/answer-sent-as-caller.md)
 - [app-plan-interactive-ship-autonomous](decision/app-plan-interactive-ship-autonomous.md)
 - [app-runs-open-rex-tabs](decision/app-runs-open-rex-tabs.md)
@@ -570,6 +572,7 @@
 - [live-app-name-and-op](decision/live-app-name-and-op.md)
 - [log-in-product-repo](decision/log-in-product-repo.md)
 - [m10-picked-by-orchestrator](decision/m10-picked-by-orchestrator.md)
+- [m11-picked-by-orchestrator](decision/m11-picked-by-orchestrator.md)
 - [m2-done-point](decision/m2-done-point.md)
 - [m2-eight-change-sets](decision/m2-eight-change-sets.md)
 - [m2-genesis-runs-the-work](decision/m2-genesis-runs-the-work.md)
@@ -671,6 +674,7 @@
 - [reopen-format-three](decision/reopen-format-three.md)
 - [reopen-makes-current](decision/reopen-makes-current.md)
 - [repo-location](decision/repo-location.md)
+- [resume-refuses-agent-session](decision/resume-refuses-agent-session.md)
 - [resume-rejoins-arbiter](decision/resume-rejoins-arbiter.md)
 - [review-feeds-model](decision/review-feeds-model.md)
 - [review-profiles-by-rule](decision/review-profiles-by-rule.md)
@@ -1538,6 +1542,7 @@
 - [inbox-stale-interview](source/inbox-stale-interview.md)
 - [leaf-trailer-split-paragraphs-plan](source/leaf-trailer-split-paragraphs-plan.md)
 - [m10-orchestrator-picks](source/m10-orchestrator-picks.md)
+- [m11-orchestrator-picks](source/m11-orchestrator-picks.md)
 - [m5-usable-from-rex-interview](source/m5-usable-from-rex-interview.md)
 - [m6-overnight-interview](source/m6-overnight-interview.md)
 - [m7-keep-picking](source/m7-keep-picking.md)

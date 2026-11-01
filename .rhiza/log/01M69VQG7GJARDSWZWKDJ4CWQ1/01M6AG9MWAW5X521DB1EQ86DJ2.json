@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M69VQW2PWG9WBCF19ETKNYSE"
+  ],
+  "at": "2026-11-01T02:51:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript answers a blocking question, then answers it again and gets exit 2 with no answer-<q>-2 written; a second open question that blocks only another change set, answered with --change <cs>, also exits 2; a question that blocks a capability the change set touches is accepted; fold-ok passes",
+          "statement": "rhiza question answer refuses with a usage error (exit 2), writing nothing, a question that is already answered and a question that does not block the target change set, directly or through a node it touches or an ancestor of one"
+        },
+        "handle": "answer-refuses-closed-or-unblocking",
+        "id": "01M6AG9K13K9QP9QWR4Q7ZT2J6",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6AG9K13K9QP9QWR4NWM02HG",
+        "op": "node.create",
+        "parent": "01M686TPQBCC7169KT6WEPB85A"
+      },
+      {
+        "decision": null,
+        "from": "01M6AG9K13K9QP9QWR4NWM02HG",
+        "id": "01M6AG9KQGPPWEMRKM4FAX514Q",
+        "link": "01M6AG9KQGPPWEMRKM4ECDFEKX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6AG977BGTQNG1XJRWS2GRQF",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M69VQG7GJARDSWZWKDJ4CWQ1",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AG9MWAW5X521DB1EQ86DJ2",
+  "type": "ops",
+  "v": 1
+}

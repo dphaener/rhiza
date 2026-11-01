@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T02:51:00Z",
+  "body": {
+    "intent": "Plan milestone 11: owner gates hold, picked by the orchestrator under the owner's standing instruction",
+    "kind": "record",
+    "sources": [],
+    "title": "Plan milestone 11"
+  },
+  "change_set": "01M6AG8XH8SVYVXSHFFFMGPQE2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AG8XH8SVYVXSHFFGZFFBA5",
+  "type": "open",
+  "v": 2
+}
