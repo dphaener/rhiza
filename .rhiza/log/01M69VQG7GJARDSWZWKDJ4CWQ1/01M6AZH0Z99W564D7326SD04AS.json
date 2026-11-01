@@ -1,0 +1,40 @@
+{
+  "actor": "01M6AZECKRG3EZG63W89DF9Y95",
+  "after": [
+    "01M6AZDKKMB88NJH86RDY5FMZ7"
+  ],
+  "at": "2026-11-01T07:17:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at f270de1a: built go build -o $TMPDIR/rhiza-x ./cmd/rhiza and used it in a clean scratch git repo (RHIZA_* unset). With accepted change set A touching capabilities store and child (parent's child), and open questions store-q blocks store, par-q blocks parent, apart-q blocks apart, while another change set was current: question answer apart-q --change A exited 2 (usage: not an open question blocking this change set) and show answer-apart-q exits 4; par-q (blocks an ancestor of a touched node) and store-q were accepted and written to A; answering store-q again, with --json and with --dry-run, exited 2 with code usage and answer-store-q-2 does not exist; answering apart-q into the current Other change set exited 2; --record is refused. go test ./cmd/rhiza -run TestScripts/question-answer -count=1 ok; go vet and gofmt clean."
+        },
+        "handle": "answer-refuses-closed-or-unblocking-qa-1",
+        "id": "01M6AZGXVDCAFH3669NZ13QZM0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AZGXVDCAFH3669NYDVA2PW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AZGXVDCAFH3669NYDVA2PW",
+        "id": "01M6AZGZ0M31S3HJAS86K37ZTC",
+        "link": "01M6AZGZ0M31S3HJAS84HQEFKV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6AG9K13K9QP9QWR4NWM02HG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M69VQG7GJARDSWZWKDJ4CWQ1",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AZH0Z99W564D7326SD04AS",
+  "type": "ops",
+  "v": 1
+}

@@ -70,6 +70,15 @@ func runQuestionAnswer(ctx *Ctx, req any) (any, error) {
 		if q.Kind != op.KindQuestion {
 			return edit{}, Usagef("%s is a %s, not a question", ref, q.Kind).WithNext("rhiza ls --kind question")
 		}
+		if !cs.IsZero() {
+			blocks, err := questionBlocks(ctx, cs, q.ID)
+			if err != nil {
+				return edit{}, err
+			}
+			if !blocks {
+				return edit{}, Usagef("%s is not an open question blocking this change set: it is answered, or blocks something else", ref).WithNext("rhiza inbox")
+			}
+		}
 		handle := answerHandle(m, q.Handle)
 		items := []applyItem{
 			{op: "add", build: func(b writeBase) (edit, error) {
@@ -85,4 +94,30 @@ func runQuestionAnswer(ctx *Ctx, req any) (any, error) {
 		}
 		return buildApply(w, cs, ctx.IDs, items)
 	})
+}
+
+// questionBlocks reports whether question q is open and blocks change set
+// cs by the rule ready and the inbox use: a blocks link to cs, or to a node
+// it touches or one of that node's ancestors.
+func questionBlocks(ctx *Ctx, cs, q id.ID) (bool, error) {
+	r, err := openReader(ctx, "question.answer", "", toBeView)
+	if err != nil {
+		return false, err
+	}
+	defer r.Close()
+	in, err := planGather(r)
+	if err != nil {
+		return false, err
+	}
+	for _, p := range planCore(in).order {
+		if p.info.ID != cs {
+			continue
+		}
+		for _, b := range p.blockers {
+			if b.question == q {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
 }
