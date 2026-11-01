@@ -16,6 +16,10 @@ An unjournaled change set is held for a fixed 15 minutes (daemonUnjournaledRetry
 
 - derived-from [m10-orchestrator-picks](../source/m10-orchestrator-picks.md)
 
+### In
+
+- decided-by [daemon-unjournaled-retry](../capability/rhiza/orchestration/daemon/daemon-picks/daemon-unjournaled-retry.md)
+
 ## History
 
 - `01M6A0JENBMBYPYRN5195AGPKH` Plan milestone 10: runs heal themselves, picked by the orchestrator under the owner's standing instruction

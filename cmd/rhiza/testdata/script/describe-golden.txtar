@@ -1420,7 +1420,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "unjournaled": {
-            "description": "The runs it started that never wrote a journal, by change set and when; it starts these no more until it restarts or a run of the change set journals",
+            "description": "The runs it started that never wrote a journal, by change set and when; it starts these again 15 minutes after the start, or sooner when a run of the change set journals",
             "items": {
               "additionalProperties": false,
               "properties": {
