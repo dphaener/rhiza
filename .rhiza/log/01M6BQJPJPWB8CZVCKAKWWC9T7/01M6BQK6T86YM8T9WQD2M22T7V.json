@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6BQJZ53YW9KNM09XQY17BNW"
+  ],
+  "at": "2026-11-01T14:18:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "16",
+          "statement": "See what a change set changes: rhiza change diff and the change-show app show each node's fields before and after, with multi-line text as a line diff, measured against what the change set was written on"
+        },
+        "handle": "milestone-16",
+        "id": "01M6BQK0PP7TP5PWPS84G877WH",
+        "key": "zzzy",
+        "kind": "intent",
+        "node": "01M6BQK0PP7TP5PWPS817BWASQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "if you run out of work keep picking high value tasks. don't stop and wait for my input.",
+          "statement": "Milestone 16 carves change-diff out of the Area change-sets umbrella; rebase, markdown-edit and change-notes stay there"
+        },
+        "handle": "m16-picked-by-orchestrator",
+        "id": "01M6BQK1NCBHXK4RKCZ9SED8Y7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6BQK1NCBHXK4RKCZ6JYQT8H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BQK1NCBHXK4RKCZ6JYQT8H",
+        "id": "01M6BQK2JQHH0BESQKD7KWP30X",
+        "link": "01M6BQK2JQHH0BESQKD65SXH8E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BQJY7M0ZNYE2THSFGCZGNW",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6BQK0PP7TP5PWPS817BWASQ",
+        "id": "01M6BQK3F7E5VMFAFXD905AN27",
+        "link": "01M6BQK3F7E5VMFAFXD80B9ERX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BQK1NCBHXK4RKCZ6JYQT8H",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "A change set's diff is built from its folded ops, one entry per node merging all its writes in the change set: old values are the node at the first op's base (replaying the node's history), new values the change set's last write; created nodes have no old values, retires show the reason, links added and retired are listed; string fields are unquoted and multi-line ones shown as a line diff from a small in-repo LCS, other values as compact JSON; change show gains a Changes section so the change-show app shows it",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "diff-against-op-base",
+        "id": "01M6BQK4CT3NYGBWD74Y3QQXDN",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6BQK4CT3NYGBWD74WAJG3Z6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BQK4CT3NYGBWD74WAJG3Z6",
+        "id": "01M6BQK5BK837727135HD4NSZX",
+        "link": "01M6BQK5BK837727135DH0XG7D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BQJY7M0ZNYE2THSFGCZGNW",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6BQJPJPWB8CZVCKAKWWC9T7",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BQK6T86YM8T9WQD2M22T7V",
+  "type": "ops",
+  "v": 1
+}

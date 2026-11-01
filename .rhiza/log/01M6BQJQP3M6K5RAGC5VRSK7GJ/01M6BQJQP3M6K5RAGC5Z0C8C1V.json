@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T14:17:56Z",
+  "body": {
+    "intent": "rhiza change diff and the change-show app show each node's fields before and after, against the change set's base",
+    "kind": "intention",
+    "sources": [],
+    "title": "Field-level diff"
+  },
+  "change_set": "01M6BQJQP3M6K5RAGC5VRSK7GJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BQJQP3M6K5RAGC5Z0C8C1V",
+  "type": "open",
+  "v": 2
+}
