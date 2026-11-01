@@ -1,0 +1,40 @@
+{
+  "actor": "01M6B127AZ30DMGY205T86S912",
+  "after": [
+    "01M6ATC78F1NR0BBEJ0SVBJFFX"
+  ],
+  "at": "2026-11-01T07:54:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At bed13ffa ran go test ./cmd/rhiza -run 'TestScripts/(daemon-picks|describe-golden)$' -count=1: ok. daemon-picks.txtar with RHIZA_TEST_FREE_BYTES=1 GiB runs daemon --once: no 'Started', no rex.log, daemon status --json shows reason disk-low with '1.0 GiB free, under the minimum of 10.0 GiB'; at 20 GiB the same fixture starts one run; at 1 GiB with --min-free 0 it starts one run; --min-free lots is a usage error. Regenerating describe-golden with -update left the tree clean (min_free and disk-low present). Read the diff: daemonPoll1 skips both Resumable and Pick when low, marks every candidate disk-low with the free space; default 10 GiB; FreeBytes via statfs Bavail*Bsize. make check exit 0."
+        },
+        "handle": "daemon-disk-guard-verified",
+        "id": "01M6B1MCY9EHQ4T75JFRKYYEW7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6B1MCY9EHQ4T75JFQXG1XSX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B1MCY9EHQ4T75JFQXG1XSX",
+        "id": "01M6B1MFDA80FJSYJ89DB87VJC",
+        "link": "01M6B1MFDA80FJSYJ89C5A6B1N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATBRV8PA51H3HXP74XNV9H",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ATAS02XDRJ1MSQ4THGCNPA",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B1MKBVGTS0ZF5X4EXM9GMR",
+  "type": "ops",
+  "v": 1
+}
