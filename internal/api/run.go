@@ -1206,15 +1206,32 @@ func (r *stepRunner) Command(step workflow.Step, env []string) (int, string, err
 		return code, "", err
 	}
 	if code == run.StopExit {
-		detail := ""
-		for _, l := range strings.Split(buf.String(), "\n") {
-			if d, ok := strings.CutPrefix(l, "stop: "); ok {
-				detail = d
-			}
-		}
-		return code, detail, nil
+		return code, lastStopLine(buf.String()), nil
 	}
 	return code, tail.String(), nil
+}
+
+// lastStopLine is the text after the last "stop: " line of out.
+func lastStopLine(out string) string {
+	detail := ""
+	for _, l := range strings.Split(out, "\n") {
+		if d, ok := strings.CutPrefix(l, "stop: "); ok {
+			detail = d
+		}
+	}
+	return detail
+}
+
+// Condition runs the wait step's condition once and returns its exit code;
+// on run.StopExit, detail is the last stop: line of its output.
+func (r *stepRunner) Condition(step workflow.Step, env []string) (int, string, error) {
+	var buf bytes.Buffer
+	code, err := r.sh("exec 2>&1\n"+step.Until, env, &buf)
+	if err != nil || code != run.StopExit {
+		return code, "", err
+	}
+	io.WriteString(r.ctx.Stderr, buf.String())
+	return code, lastStopLine(buf.String()), nil
 }
 
 // Caps of a failed command step's kept output.
