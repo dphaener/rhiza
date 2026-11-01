@@ -16,6 +16,10 @@ The daemon, each poll, runs the event command (--event-command, or else git conf
 
 - derived-from [m17-orchestrator-picks](../source/m17-orchestrator-picks.md)
 
+### In
+
+- decided-by [event-hook-daemon](../capability/rhiza/hooks/model-event-hooks/event-hook-daemon.md)
+
 ## History
 
 - `01M6BV1J7WC184NBNWQCX7C9WJ` Plan milestone 17: model events run your scripts, picked by the orchestrator under the owner's standing instruction
