@@ -1,0 +1,63 @@
+{
+  "actor": "01M6AE98B48A3KBFVSWTS35M4B",
+  "after": [
+    "01M6AE8BMY1WF40Q443CHTJCVV"
+  ],
+  "at": "2026-11-01T02:17:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 04deb2ed I built rhiza with go build -o $TMPDIR/rhiza-qa ./cmd/rhiza and used it in a scratch git repo: landed A adding capabilities base and other, proposed B setting base.statement, drafts C (base.statement, other.acceptance) and D (other.acceptance, current). rhiza overlaps printed 'No overlaps' and --json {\"overlaps\": []} with D current, so the current draft is not counted unless named. --change C printed 'change sets B and C both write field:statement of base' and JSON with a, b, target base and aspects [field:statement]; rhiza api call overlaps --change C gave byte-identical output. --change D gave No overlaps (unnamed draft C ignored), --change B (proposed) gave No overlaps, a 10-char prefix and RHIZA_CHANGE both resolved C, an unknown ID exited 4 with 'no change set'. After proposing C, --change D listed B/C on base and C/D on field:acceptance of other. go test of internal/model Overlap and the overlaps and describe-golden scripts pass."
+        },
+        "handle": "overlaps-command-qa-1",
+        "id": "01M6AEBRWGM0Q17JPRVWDNFC26",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AEBRWGM0Q17JPRVT26FX5V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AEBRWGM0Q17JPRVT26FX5V",
+        "id": "01M6AEBSM1Q8E4PSHRZBTHQMCT",
+        "link": "01M6AEBSM1Q8E4PSHRZ8739JTZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DHN4ACW58QZ5BKRZBC56B",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 04deb2ed the built binary's rhiza guide plan-review prints, at line 24, the paragraph telling the reviewer to run `rhiza overlaps --change <cs> --json` for each plan change set and record each contradicting overlap as a `contradiction` finding naming the other change set. I ran that command as the guide says against a scratch repo and it returned the overlap JSON the guide describes. go test ./internal/guide -count=1 passes (TestPlanReviewText and the cap tests)."
+        },
+        "handle": "plan-review-checks-overlaps-qa-1",
+        "id": "01M6AEBTD7GNNZNK9EJHH39V0P",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AEBTD7GNNZNK9EJF2KHVRW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AEBTD7GNNZNK9EJF2KHVRW",
+        "id": "01M6AEBV6SCBFXATDAK3MHY6ZA",
+        "link": "01M6AEBV6SCBFXATDAK1Z28K7A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DHPCMJZPPZF9076CWYS04",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTMR4G5EFRVRQHSEKVA15",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AEBWAH8HGMKQBQBTP8MA7Q",
+  "type": "ops",
+  "v": 1
+}
