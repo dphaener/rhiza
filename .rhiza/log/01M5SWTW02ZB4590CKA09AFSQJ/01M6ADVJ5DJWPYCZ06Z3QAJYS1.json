@@ -1,0 +1,40 @@
+{
+  "actor": "01M6AD36RBJ4DKCZJKRSZQBD7M",
+  "after": [
+    "01M6ACV0KX0CMWCRC7EX13HNJK"
+  ],
+  "at": "2026-11-01T02:08:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier (attempt 2, cycle 2) at 4dff386b: go test ./internal/api -run TestWhy -count=1 passes, incl. TestWhyCitedQuotes (two-quote source, decision citing one returns only that quote, quotes_left_out 1) and new TestWhyCitedQuotesShared/Objects; go test ./cmd/rhiza -run TestScripts/why passes (why.txtar shows the cited quote and 'Quotes left out: 1'). Review finding f1 reproduced with a built binary in a scratch repo: source talk [alpha one, beta two, gamma three], d1/d2 derived-from talk, d2 supersedes d1 — 'rhiza why d2' and 'why' on a capability decided-by both now show alpha one and beta two with 'Quotes left out: 1'; a capability also derived-from talk shows all three. make fmt-check vet test exit 0; make self-check fails only on stale .rhiza/rendered actor/index files from the run's own model writes, not on code. Diff read: addSource now unions cited quotes per source via whyCite, object quotes match by text."
+        },
+        "handle": "why-cited-quotes-verified-2",
+        "id": "01M6ADVGCGX1TFPF2NXJ057NV4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ADVGCGX1TFPF2NXF1060HV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ADVGCGX1TFPF2NXF1060HV",
+        "id": "01M6ADVH2N47EK3848X3NJSA9J",
+        "link": "01M6ADVH2N47EK3848X0TAR3QD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T0QKZJRTB9ZYRCT0ZBF1R",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTW02ZB4590CKA09AFSQJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6ADVJ5DJWPYCZ06Z3QAJYS1",
+  "type": "ops",
+  "v": 1
+}
