@@ -473,13 +473,15 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 // daemonDiskLow reports whether free space on the repo's filesystem is under
 // minFree, and the free space. A minFree of 0 turns the guard off, and so
 // does a filesystem whose free space cannot be read. RHIZA_TEST_FREE_BYTES
-// stands in for the real figure in tests.
+// stands in for the real figure in tests; like RHIZA_TEST_RENDER_STALE it
+// applies only alongside RHIZA_TEST_NOW, so a real daemon never sees it.
 func daemonDiskLow(ctx *Ctx, minFree uint64) (bool, uint64) {
 	if minFree == 0 {
 		return false, 0
 	}
 	free, err := daemon.FreeBytes(ctx.Root)
-	if v := os.Getenv("RHIZA_TEST_FREE_BYTES"); v != "" {
+	getenv := ctxGetenv(ctx)
+	if v := getenv("RHIZA_TEST_FREE_BYTES"); v != "" && getenv("RHIZA_TEST_NOW") != "" {
 		n, perr := strconv.ParseUint(v, 10, 64)
 		if perr != nil {
 			return false, 0
