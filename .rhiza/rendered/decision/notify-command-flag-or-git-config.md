@@ -16,6 +16,10 @@ The daemon runs a notify command, from --notify-command or else git config rhiza
 
 - derived-from [m14-orchestrator-picks](../source/m14-orchestrator-picks.md)
 
+### In
+
+- decided-by [inbox-notify-hook](../capability/rhiza/orchestration/notifications/inbox-notify-hook.md)
+
 ## History
 
 - `01M6BD9FT5SGV1CMZXV25XZCMR` Plan milestone 14: find it, hear about it, picked by the orchestrator under the owner's standing instruction
