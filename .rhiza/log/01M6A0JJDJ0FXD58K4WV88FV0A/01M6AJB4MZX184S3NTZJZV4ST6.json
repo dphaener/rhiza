@@ -1,0 +1,63 @@
+{
+  "actor": "01M6AJ7H2GQET0Q6JDB3ZGGG5W",
+  "after": [
+    "01M6AJ6QJY70F0Q6BH12JG3TE6"
+  ],
+  "at": "2026-11-01T03:27:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA by hand at af6e4b54 with a scratch build (go build ./cmd/rhiza), in scratch repos with a bare origin and a fake gh on PATH whose pr view reports mergeable CONFLICTING until origin's branch holds main. Rendered-only conflict (both sides appended to .rhiza/rendered/index.md): rhiza ship check --settled printed 'not settled: the pull request conflicted; rebased onto main and pushed 0f55571' and exited 1; origin/cs/ship-it then contained origin/main; .git/rhiza/ship/<cs>.json held pushed = the new origin head; a second --settled --json call reported settled, passed and exited 0. Code conflict (both sides appended to code.txt): it exited 75, printing 'stop: rebasing cs/ship-it onto origin/main conflicts in code.txt; the rebase was aborted; answer question rebase-conflict-ship-it, then resume the run'; --json listed conflicts [code.txt] and question rebase-conflict-ship-it; the only new commit was 'Raise a question on the rebase conflicts', HEAD~1 and origin/cs/ship-it stayed at the pre-check head, the working tree was clean, and a second call exited 75 again without raising a duplicate question."
+        },
+        "handle": "wait-settles-conflicting-pr-qa-1",
+        "id": "01M6AJB17P2GGFZ6XEYBF3DEMW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AJB17P2GGFZ6XEY9Z1HG77",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AJB17P2GGFZ6XEY9Z1HG77",
+        "id": "01M6AJB209PGESW591YPBWNF0Q",
+        "link": "01M6AJB209PGESW591YNWF73QW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NG1VRQKBM20M8CSVTX3B",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA by hand at af6e4b54 with a scratch build, in a scratch repo with RHIZA_* and REX_* unset: a hold workflow with one wait step (until = sh ../cond.sh, interval 50ms), where cond.sh exits 1 on poll 1, on poll 2 prints 'stop: first line' to stdout and 'stop: rebase conflict in code.txt' to stderr and exits 75, then exits 0. rhiza run start --workflow hold logged 'step gate: stopped, rebase conflict in code.txt' after 2 polls; run status showed the run stopped, current step gate, detail 'rebase conflict in code.txt' (the last stop: line, stderr included) and no step outcome. rhiza run resume <run> logged 'continuing visit 1', polled a third time, passed and the run succeeded with gate: pass."
+        },
+        "handle": "wait-stops-on-75-qa-1",
+        "id": "01M6AJB2QT7497K5BR058BBDTA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AJB2QT7497K5BR0339CZDW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AJB2QT7497K5BR0339CZDW",
+        "id": "01M6AJB3FF83VD9195QB7QAC38",
+        "link": "01M6AJB3FF83VD9195Q8VC0SNW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NEQCRN4YPDW4EBSKYSKJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6A0JJDJ0FXD58K4WV88FV0A",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AJB4MZX184S3NTZJZV4ST6",
+  "type": "ops",
+  "v": 1
+}

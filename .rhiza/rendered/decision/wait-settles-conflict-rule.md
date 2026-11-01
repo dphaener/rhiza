@@ -16,6 +16,11 @@ ship check --settled reads the PR's mergeable state; on CONFLICTING it runs the 
 
 - derived-from [m10-orchestrator-picks](../source/m10-orchestrator-picks.md)
 
+### In
+
+- decided-by [wait-stops-on-75](../capability/rhiza/workflows/workflow-definitions/wait-step/wait-stops-on-75.md)
+- decided-by [wait-settles-conflicting-pr](../capability/rhiza/orchestration/shipping/wait-green-pr/wait-settles-conflicting-pr.md)
+
 ## History
 
 - `01M6A0JENBMBYPYRN5195AGPKH` Plan milestone 10: runs heal themselves, picked by the orchestrator under the owner's standing instruction

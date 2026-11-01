@@ -551,6 +551,14 @@ const (
 	OpenStop = "open questions: "
 )
 
+// Conditioner is a Runner that also reports a wait step's condition as its
+// exit code, so a wait can tell StopExit from a condition that does not
+// hold. detail is the last stop: line of the output when the code is
+// StopExit. A Runner without it reads every non-zero exit as not held.
+type Conditioner interface {
+	Condition(step workflow.Step, env []string) (code int, detail string, err error)
+}
+
 func (r *running) command(step workflow.Step, env []string) result {
 	code, detail, err := r.e.Runner.Command(step, env)
 	if err != nil {
@@ -652,9 +660,24 @@ func (r *running) wait(step workflow.Step, env []string) result {
 	}
 	began := c.Now()
 	for polls := 1; ; polls++ {
-		held, err := r.e.Runner.Holds(step, env)
-		if err != nil {
-			return errResult(err)
+		held := false
+		if cr, ok := r.e.Runner.(Conditioner); ok {
+			code, detail, err := cr.Condition(step, env)
+			if err != nil {
+				return errResult(err)
+			}
+			if code == StopExit {
+				if detail == "" {
+					detail = fmt.Sprintf("stopped for the owner (exit %d)", code)
+				}
+				return result{stopped: detail}
+			}
+			held = code == 0
+		} else {
+			var err error
+			if held, err = r.e.Runner.Holds(step, env); err != nil {
+				return errResult(err)
+			}
 		}
 		if held {
 			return result{outcome: workflow.OutcomePass, detail: fmt.Sprintf("held after %d checks", polls)}

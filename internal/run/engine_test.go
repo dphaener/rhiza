@@ -2182,3 +2182,48 @@ func TestCommandStopExitStopsRun(t *testing.T) {
 		t.Fatalf("result %q steps %v visits %v", st.Result, outcomes(st), st.Visits)
 	}
 }
+
+// fakeCondRunner is a fakeRunner that also reports a wait's exit code.
+type fakeCondRunner struct {
+	*fakeRunner
+	cond []int
+}
+
+func (f *fakeCondRunner) Condition(step workflow.Step, env []string) (int, string, error) {
+	n := f.polls[step.Name]
+	f.polls[step.Name]++
+	code := 1
+	if n < len(f.cond) {
+		code = f.cond[n]
+	}
+	if code == StopExit {
+		return code, "rebase conflict", nil
+	}
+	return code, "", nil
+}
+
+// A wait whose condition exits StopExit stops the run for the owner with
+// the condition's stop detail and does not end the step; resuming polls it
+// again. Any other non-zero exit still reads as not held.
+func TestWaitStopExitStopsRun(t *testing.T) {
+	e, r, _, _ := setup(t, waitWF)
+	cr := &fakeCondRunner{fakeRunner: r, cond: []int{1, StopExit, 0}}
+	e.Runner = cr
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Ended || st.Current != "ci" || st.Stopped != "rebase conflict" || len(outcomes(st)) != 0 {
+		t.Fatalf("ended %v current %q stopped %q steps %v", st.Ended, st.Current, st.Stopped, outcomes(st))
+	}
+	if r.polls["ci"] != 2 {
+		t.Errorf("polls = %d, want 2 (exit 1 is not held)", r.polls["ci"])
+	}
+	st, err = e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || !reflect.DeepEqual(outcomes(st), []string{"ci:pass"}) || r.polls["ci"] != 3 {
+		t.Fatalf("result %q steps %v polls %d", st.Result, outcomes(st), r.polls["ci"])
+	}
+}

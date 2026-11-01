@@ -135,7 +135,7 @@ exec cat $WORK/landed.sha
 exec sh -c 'grep -c -x "pr merge 7 --squash --match-head-commit $(cat $WORK/landed.sha)" $WORK/gh.log'
 stdout '^1$'
 ! grep '[-]-admin|[-]-auto|[-]-delete-branch' $WORK/gh.log
-grep '^pr view cs/ship-it --json number,url,state,headRefOid,statusCheckRollup$' $WORK/gh.log
+grep '^pr view cs/ship-it --json number,url,state,headRefOid,mergeable,statusCheckRollup$' $WORK/gh.log
 grep '^pr view 7 --json mergeCommit,state$' $WORK/gh.log
 exec sh -c 'grep -c -x "run list --commit $(cat $WORK/merge.sha) --json name,status,conclusion" $WORK/gh.log'
 ! stdout '^0$'

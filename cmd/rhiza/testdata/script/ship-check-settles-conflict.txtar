@@ -1,0 +1,127 @@
+# ship check --settled on a PR GitHub reports CONFLICTING rebases the branch
+# onto origin's main as ship rebase does, then reports not settled.
+#
+# Case 1: main moved with a change to a rendered file the branch changed too.
+# The conflict is settled by rendering again, origin's branch then holds
+# origin/main, and the ship record's pushed is the new head.
+#
+# Case 2: main moved with a change to a code file the branch changed too.
+# The check exits 75 with a stop: line, raises a rebase-conflict question and
+# leaves the branch as it was.
+#
+# The fake gh reports CONFLICTING until origin's branch holds origin's main.
+
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+
+# Case 1: a rendered-only conflict.
+exec git init -q --bare origin.git
+env ORIGIN=$WORK/origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+exec rhiza add capability shipping --field 'statement=Ships a change set'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza render
+cp $WORK/base.txt code.txt
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+exec git checkout -q -b cs/ship-it
+exec sh -c 'echo branch >> .rhiza/rendered/index.md'
+exec git add -A
+exec git commit -qm 'Branch edits rendered'
+exec git push -q -u origin cs/ship-it
+
+exec git clone -q $WORK/origin.git $WORK/other
+cd $WORK/other
+exec git config user.email other@example.test
+exec git config user.name Other
+exec sh -c 'echo main >> .rhiza/rendered/index.md'
+exec git add -A
+exec git commit -qm 'Main edits rendered'
+exec git push -q origin main
+
+cd $WORK/repo
+! exec rhiza ship check --settled
+stdout 'rebased onto main and pushed'
+exec git fetch -q origin
+exec git merge-base --is-ancestor origin/main origin/cs/ship-it
+exec sh -c 'grep -q "\"pushed\": \"$(git rev-parse origin/cs/ship-it)\"" "$(git rev-parse --git-common-dir)"/rhiza/ship/*.json'
+# Settled now that GitHub no longer reports a conflict.
+exec rhiza ship check --settled
+
+# Case 2: a conflict in a code file.
+cd $WORK
+exec git init -q --bare origin2.git
+env ORIGIN=$WORK/origin2.git
+mkdir repo2
+cd repo2
+exec git init -q
+exec git remote add origin $WORK/origin2.git
+exec rhiza init
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+exec rhiza add capability shipping --field 'statement=Ships a change set'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza render
+cp $WORK/base.txt code.txt
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+exec git checkout -q -b cs/ship-it
+exec sh -c 'echo branch >> code.txt'
+exec git add -A
+exec git commit -qm 'Branch edits code'
+exec git push -q -u origin cs/ship-it
+exec git rev-parse HEAD
+cp stdout $WORK/before.txt
+
+exec git clone -q $WORK/origin2.git $WORK/other2
+cd $WORK/other2
+exec git config user.email other@example.test
+exec git config user.name Other
+exec sh -c 'echo main >> code.txt'
+exec git add -A
+exec git commit -qm 'Main edits code'
+exec git push -q origin main
+
+cd $WORK/repo2
+exec sh -c 'rhiza ship check --settled; echo exit=$?'
+stdout '^stop: .*code\.txt'
+stdout '^exit=75$'
+stdout 'rebase-conflict'
+exec git status --porcelain --untracked-files=no
+! stdout 'code.txt'
+exec git log -1 --format=%s
+stdout 'Raise a question on the rebase conflicts'
+exec git rev-parse HEAD~1
+cmp stdout $WORK/before.txt
+exec git rev-parse origin/cs/ship-it
+cmp stdout $WORK/before.txt
+
+-- base.txt --
+base
+-- bin/gh --
+#!/bin/sh
+case "$1 $2" in
+"pr view")
+	if ! head=$(git -C "$ORIGIN" rev-parse --verify --quiet "refs/heads/$3"); then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	m=MERGEABLE
+	if ! git -C "$ORIGIN" merge-base --is-ancestor main "$head"; then
+		m=CONFLICTING
+	fi
+	printf '{"number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","mergeable":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head" "$m"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

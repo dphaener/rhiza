@@ -1,0 +1,40 @@
+{
+  "actor": "01M6AHPGK0D3SZC4Z2WY4AKR81",
+  "after": [
+    "01M6AH9BHTQ5E410KRQHVGJMM3"
+  ],
+  "at": "2026-11-01T03:24:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 2cfda3de, go test ./cmd/rhiza -run TestScripts/ship-check-settles-conflict passes: its fake gh reports mergeable CONFLICTING until origin's branch holds main; with a conflict only in .rhiza/rendered, ship check --settled exits non-zero printing 'rebased onto main and pushed', origin/cs/ship-it then contains origin/main, the ship record's pushed equals the new origin head, and a second --settled check exits 0; with a conflict in code.txt it exits 75, prints a stop: line naming code.txt and rebase-conflict, commits only the question, and HEAD~1 and origin/cs/ship-it equal the pre-check head. Reverting internal/api/ship.go to HEAD~1 makes the script fail (line 50, unexpected success). Diff read: ship.check fetches mergeable, and on --settled + CONFLICTING calls runShipRebase, mapping Conflicts to exit run.StopExit. run-ship-change and describe-golden pass; make check exits 0."
+        },
+        "handle": "wait-settles-conflicting-pr-verified",
+        "id": "01M6AJ6NTXHM2PEJVT9PDEJX5N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AJ6NTXHM2PEJVT9N3HNHRV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AJ6NTXHM2PEJVT9N3HNHRV",
+        "id": "01M6AJ6PGC9ZY2TT9EGMAG28K3",
+        "link": "01M6AJ6PGC9ZY2TT9EGKGRXCR6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NG1VRQKBM20M8CSVTX3B",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6A0JJDJ0FXD58K4WV88FV0A",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AJ6QJY70F0Q6BH12JG3TE6",
+  "type": "ops",
+  "v": 1
+}
