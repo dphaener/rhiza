@@ -15,6 +15,7 @@ Agents get small, accurate context.
 ### In
 
 - serves change set `01M5SWTJY0AZP9TR3V1QJ54HMY` (planGather (behind roadmap and ready) and the index's fresh read get faster, so CI has headroom under 25 ms again.)
+- serves change set `01M5SWTW02ZB4590CKA09AFSQJ` (`genesis why` on a decision shows only the quotes that decision cites, not every quote of its Source, so a decision's lineage stays short.)
 
 ## History
 

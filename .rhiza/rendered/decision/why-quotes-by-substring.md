@@ -16,6 +16,11 @@ rhiza why on a decision keeps a source's quotes that contain the decision's quot
 
 - derived-from [m9-orchestrator-picks](../source/m9-orchestrator-picks.md)
 
+### In
+
+- decided-by [why-cited-quotes](../capability/rhiza/lineage/why-walk/why-cited-quotes.md)
+- decided-by [why-uncited-source-quotes](../capability/rhiza/lineage/why-walk/why-uncited-source-quotes.md)
+
 ## History
 
 - `01M69T001ZQ80P0QXWSJMRZSXM` Plan milestone 9: the model keeps itself honest, picked by the orchestrator under the owner's standing instruction
