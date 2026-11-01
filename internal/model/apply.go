@@ -134,6 +134,12 @@ func (b *builder) clone() *builder {
 // with every problem so far but the repaired conflicts, sorted, nil when
 // there are none. The builder itself is unchanged.
 func (b *builder) finish() (Model, []Problem) {
+	return b.finishModel(true)
+}
+
+// finishModel is finish; with clone false the model returned is b's own,
+// which b must not be used for again.
+func (b *builder) finishModel(clone bool) (Model, []Problem) {
 	type place struct {
 		parent id.ID
 		kind   op.Kind
@@ -169,6 +175,9 @@ func (b *builder) finish() (Model, []Problem) {
 			ps = append(ps, Problem{ChangeSet: ref.ChangeSet, Op: ref.Op,
 				Err: fmt.Errorf("%w: node %s has handle %q, already held by node %s", ErrHandle, n, p.handle, ns[0])})
 		}
+	}
+	if !clone {
+		return b.m, sortProblems(ps)
 	}
 	return b.m.clone(), sortProblems(ps)
 }

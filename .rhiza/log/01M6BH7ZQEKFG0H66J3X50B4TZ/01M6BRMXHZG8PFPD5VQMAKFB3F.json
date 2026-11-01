@@ -1,0 +1,27 @@
+{
+  "actor": "01M6BRM5EYVC930PDEXMTSXC6Q",
+  "after": [
+    "01M6BRE5YW41X42M1A6ZF4SCGS"
+  ],
+  "at": "2026-11-01T14:36:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6BH8H3QZH284QXNYAFZ1K3F",
+        "id": "01M6BRMWSR1PCBHGAA1QCJ6RZA",
+        "link": "01M6BRMWSR1PCBHGAA1PPJ9WME",
+        "note": "supersedes it for the what-if part: a what-if no longer runs model.WhatIf over every stored folded change set; it seeds model.WhatIfFrom from the stored as-is rows and decodes only the change set, its in-flight closure and its landed dependencies. As-is and to-be stay materialized as t5-d5 says",
+        "op": "link.create",
+        "to": "01M5SWS29TSS62V86818WHZBT3",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M6BH7ZQEKFG0H66J3X50B4TZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BRMXHZG8PFPD5VQMAKFB3F",
+  "type": "ops",
+  "v": 1
+}
