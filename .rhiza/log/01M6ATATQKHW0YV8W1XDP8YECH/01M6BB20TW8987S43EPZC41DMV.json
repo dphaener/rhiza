@@ -1,0 +1,53 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6B9ZQRVSKTKHHRMESRXYKE2"
+  ],
+  "at": "2026-11-01T10:39:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "793c19b0096014c986b99e5192ed8a174888ec4a",
+          "pr": "https://github.com/dphaener/rhiza/pull/164",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #164 (https://github.com/dphaener/rhiza/pull/164) passed CI at 793c19b",
+          "status": "verified"
+        },
+        "handle": "pr-164-abandon-clears-worktree",
+        "id": "01M6BB1Y6CWR82RJC2A7J4WEEP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6BB1Y6CWR82RJC2A6NAPDBC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BB1Y6CWR82RJC2A6NAPDBC",
+        "id": "01M6BB1YXP2CXVP7GWDSB5NRTK",
+        "link": "01M6BB1YXP2CXVP7GWDPBX2TDN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATC08K455FW14QCXPZ9QHD",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6BB1Y6CWR82RJC2A6NAPDBC",
+        "id": "01M6BB1ZMY6BN1AA73NP8NCMJX",
+        "link": "01M6BB1ZMY6BN1AA73NJM8W8SV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7GG0GGBSVKV2585MNPCW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ATATQKHW0YV8W1XDP8YECH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BB20TW8987S43EPZC41DMV",
+  "type": "ops",
+  "v": 1
+}

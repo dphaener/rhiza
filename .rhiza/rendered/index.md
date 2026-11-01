@@ -159,6 +159,7 @@
       - [resume-failed-run](capability/rhiza/workflows/workflow-runs/resume-failed-run.md)
       - [run-one-live](capability/rhiza/workflows/workflow-runs/run-one-live.md)
       - [run-abandon](capability/rhiza/workflows/workflow-runs/run-abandon.md)
+        - [abandon-clears-worktree](capability/rhiza/workflows/workflow-runs/run-abandon/abandon-clears-worktree.md)
       - [run-process-record](capability/rhiza/workflows/workflow-runs/run-process-record.md)
       - [abandon-failed-run](capability/rhiza/workflows/workflow-runs/abandon-failed-run.md)
       - [run-ls](capability/rhiza/workflows/workflow-runs/run-ls.md)
@@ -1038,6 +1039,10 @@
 
 ## Evidence
 
+- [abandon-clears-worktree-qa-1](evidence/abandon-clears-worktree-qa-1.md)
+- [abandon-clears-worktree-verified](evidence/abandon-clears-worktree-verified.md)
+- [abandon-clears-worktree-verified-2](evidence/abandon-clears-worktree-verified-2.md)
+- [abandon-clears-worktree-verified-3](evidence/abandon-clears-worktree-verified-3.md)
 - [abandon-failed-run-qa-1](evidence/abandon-failed-run-qa-1.md)
 - [abandon-failed-run-verified](evidence/abandon-failed-run-verified.md)
 - [abandon-failed-run-verified-2](evidence/abandon-failed-run-verified-2.md)
@@ -1347,6 +1352,7 @@
 - [pr-160-question-answer-refuses-a](evidence/pr-160-question-answer-refuses-a.md)
 - [pr-162-disk-guard](evidence/pr-162-disk-guard.md)
 - [pr-163-open-review-cycle-label](evidence/pr-163-open-review-cycle-label.md)
+- [pr-164-abandon-clears-worktree](evidence/pr-164-abandon-clears-worktree.md)
 - [pr-35-reopening-a-change-set](evidence/pr-35-reopening-a-change-set.md)
 - [pr-36-leaf-dependencies-and](evidence/pr-36-leaf-dependencies-and.md)
 - [pr-38-session-messages-and-token-use](evidence/pr-38-session-messages-and-token-use.md)
