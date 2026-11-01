@@ -1,0 +1,40 @@
+{
+  "actor": "01M6C9YM0E7ZDXEG1XMV06MRQD",
+  "after": [
+    "01M6C8EW9KDA8YKM08E1DMBXSQ"
+  ],
+  "at": "2026-11-01T19:49:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 11ef4621: go test ./internal/api -run TestReadBudget -count=1 -v passed; it now times all 7 budgetReads (show, ls, tree, why, log, roadmap, ready) in what-if:<the fixture's draft> on the 50,000-node model, medians 7.0-11.4 ms on the first attempt, well under 50 ms. The 'not budgeted (D14)' note on BenchmarkShowWhatIf is removed (diff of budget_test.go). TestReadBackendsAgree (read_test.go stored-versus-what-if comparison over Node, Children, Ancestors, Links, Subtree, SubtreeLight, List, Resolve, Link, ResolveLink, NodesLight, LinksAt, LinksTo, EntriesOf) passed, now asserting the what-if reader uses the overlay (ov) backend. internal/index TestPropertyOverlayAgrees (rapid, 100 generated logs, 99 overlays, 209 nodes) passed, comparing overlay answers with model.WhatIf. make check exited 0."
+        },
+        "handle": "whatif-reads-in-budget-verified",
+        "id": "01M6CAHMW858KAVR2VC1VAT4TC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6CAHMW858KAVR2VC135BG4A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CAHMW858KAVR2VC135BG4A",
+        "id": "01M6CAHNPMVM4423JQGJRYD613",
+        "link": "01M6CAHNPMVM4423JQGG0C5N1T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6C8ES8FHJJXHJND4RZJ8DPW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTFB3ZAX4YKX4KA2ZVSZR",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CAHQ1P62JGNJ88SA4R01V5",
+  "type": "ops",
+  "v": 1
+}
