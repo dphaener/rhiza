@@ -240,6 +240,11 @@ func inboxNotice(what string, it InboxItem) string {
 // running while its run has no journal yet.
 const daemonStartGrace = time.Minute
 
+// daemonUnjournaledHold is how long after its start a change set whose run
+// wrote no journal stays out of the daemon's picks before it is picked
+// again.
+const daemonUnjournaledHold = 15 * time.Minute
+
 // daemonPending is a start of the daemon's: when, and how many runs the
 // change set had then, so a new journal shows as one more.
 type daemonPending struct {
@@ -252,9 +257,10 @@ type daemonPending struct {
 // a new journal is dropped from pending. One with none once the grace
 // passed failed before it journaled (a refused permission mode, a dirty
 // worktree, a usage error): it moves to unjournaled, which are not picked
-// again for the daemon's life, nor take a slot, until a journal of the
-// change set shows.
-func daemonHeld(pending map[string]daemonPending, unjournaled map[string]daemonPending, runs []run.Journal, now time.Time) []string {
+// nor take a slot until a journal of the change set shows, daemonUnjournaledHold
+// passes since the start, or the change set is no longer accepted (landed or
+// withdrawn: live says whether it still is), whichever comes first.
+func daemonHeld(pending map[string]daemonPending, unjournaled map[string]daemonPending, runs []run.Journal, live func(string) bool, now time.Time) []string {
 	var held []string
 	for cs, p := range pending {
 		switch {
@@ -268,9 +274,12 @@ func daemonHeld(pending map[string]daemonPending, unjournaled map[string]daemonP
 		}
 	}
 	for cs, p := range unjournaled {
-		if daemonRunsOf(runs, cs) > p.runs {
+		switch {
+		case daemonRunsOf(runs, cs) > p.runs:
 			// A run of it journaled since (the owner started one): its
 			// runs say what to do with it now.
+			delete(unjournaled, cs)
+		case now.Sub(p.at) >= daemonUnjournaledHold, !live(cs):
 			delete(unjournaled, cs)
 		}
 	}
@@ -328,7 +337,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 		resumed = append(resumed, id)
 	}
-	held := daemonHeld(pending, unjournaled, runs, ctx.Now())
+	held := daemonHeld(pending, unjournaled, runs, accepted, ctx.Now())
 	var unj []daemon.Skip
 	cands = slices.DeleteFunc(cands, func(cs string) bool {
 		_, ok := unjournaled[cs]
@@ -515,7 +524,7 @@ type DaemonStatusResponse struct {
 	LastStarted *DaemonEvent  `json:"last_started,omitempty" desc:"The run it last started; absent if none"`
 	LastResumed *DaemonEvent  `json:"last_resumed,omitempty" desc:"The run it last resumed; absent if none"`
 	Skipped     []DaemonSkip  `json:"skipped" desc:"The accepted change sets it did not start at its last poll, each with its reason"`
-	Unjournaled []DaemonEvent `json:"unjournaled" desc:"The runs it started that never wrote a journal, by change set and when; it starts these no more until it restarts or a run of the change set journals"`
+	Unjournaled []DaemonEvent `json:"unjournaled" desc:"The runs it started that never wrote a journal, by change set and when; it starts these again 15 minutes after the start, or sooner when a run of the change set journals"`
 }
 
 // Human writes the status as text.
@@ -552,8 +561,17 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 		fmt.Fprintln(w)
 	}
 	for _, e := range r.Unjournaled {
-		fmt.Fprintf(w, "Not journaled: the run of %s started at %s wrote no journal; not started again until the daemon restarts or a run of it journals\n", e.Change, e.At)
+		fmt.Fprintf(w, "Not journaled: the run of %s started at %s wrote no journal; retried at %s, or sooner when a run of it journals\n", e.Change, e.At, daemonRetryAt(e.At))
 	}
+}
+
+// daemonRetryAt is when a start at the RFC 3339 time at is picked again.
+func daemonRetryAt(at string) string {
+	t, err := time.Parse(time.RFC3339, at)
+	if err != nil {
+		return at
+	}
+	return t.Add(daemonUnjournaledHold).UTC().Format(time.RFC3339)
 }
 
 // runDaemonStatus reads the lock and the state file. Without a live

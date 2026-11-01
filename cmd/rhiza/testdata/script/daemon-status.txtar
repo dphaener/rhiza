@@ -77,10 +77,10 @@ stdout '"reason": "shipped"'
 stdout '"title": "Waiting"'
 stdout '"detail": \[\n *"depends on'
 
-# A start whose run never journaled is reported, not retried.
+# A start whose run never journaled is reported, with when it is retried.
 exec sh -c 'sed "s/}\$/,\"unjournaled\":[{\"change\":\"CSX\",\"at\":\"2026-01-01T00:00:00Z\"}]}/" .git/rhiza/daemon.state.json > s.tmp && mv s.tmp .git/rhiza/daemon.state.json'
 exec rhiza daemon status
-stdout '^Not journaled: the run of CSX started at 2026-01-01T00:00:00Z wrote no journal; not started again until the daemon restarts or a run of it journals$'
+stdout '^Not journaled: the run of CSX started at 2026-01-01T00:00:00Z wrote no journal; retried at 2026-01-01T00:15:00Z, or sooner when a run of it journals$'
 exec rhiza daemon status --json
 stdout '"change": "CSX"'
 
