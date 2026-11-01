@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T15:32:00Z",
+  "body": {
+    "intent": "rhiza hook ls shows which hook commands are set and where from, and rhiza hook run tries one with a sample",
+    "kind": "intention",
+    "sources": [],
+    "title": "Hook commands"
+  },
+  "change_set": "01M6BVTB161RJF58ZDY12SFBH3",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BVTB161RJF58ZDY1ZBH0HP",
+  "type": "open",
+  "v": 2
+}

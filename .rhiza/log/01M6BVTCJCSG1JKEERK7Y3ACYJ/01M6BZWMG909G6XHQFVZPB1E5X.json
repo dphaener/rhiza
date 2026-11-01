@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6BVTT4H2DP1VDHGSZB5XV7A"
+  ],
+  "at": "2026-11-01T16:43:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/op and internal/check: a note with a discusses link to a node and one to a change set fold and check clean; a discusses link from a non-note is refused; the field schema knows note's fields; describe-golden.txtar and the guide's count of kinds and link types are updated",
+          "statement": "The model has a note node kind, with its body in statement and an optional op field, and a discusses link type from a note to any node or change set"
+        },
+        "handle": "note-kind",
+        "id": "01M6BZWB6CR3ERK0Z0DV4J3K13",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6BZWB6CR3ERK0Z0DSVVVPEP",
+        "op": "node.create",
+        "parent": "01M5SWSXMB3P4D5RJH5M1N4S3J"
+      },
+      {
+        "decision": null,
+        "from": "01M6BZWB6CR3ERK0Z0DSVVVPEP",
+        "id": "01M6BZWCGY44FPT2Q82QNJRGA5",
+        "link": "01M6BZWCGY44FPT2Q82QH2YRAT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZVBEP9QHNWMDDYW13RPZE",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "change-notes.txtar: note add on a node, on a change set, and on a change set with --op each pass fold-ok and rhiza check; a note on an unknown target exits 2; --op naming an operation not in the target change set exits 2",
+          "statement": "rhiza note add <target> <text> [--op id] writes a note discussing a node or change set (and naming an operation with --op) into the current change set in one entry"
+        },
+        "handle": "note-add",
+        "id": "01M6BZWDXPERND94DYYYYYJ1SJ",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6BZWDXPERND94DYYXHTQ8WK",
+        "op": "node.create",
+        "parent": "01M5SWSXMB3P4D5RJH5M1N4S3J"
+      },
+      {
+        "decision": null,
+        "from": "01M6BZWDXPERND94DYYXHTQ8WK",
+        "id": "01M6BZWF7Z4T2RBNHZCN920K3H",
+        "link": "01M6BZWF7Z4T2RBNHZCJ55KPK8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZVBEP9QHNWMDDYW13RPZE",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "change-notes.txtar: after two notes on a node and one on a change set, show lists the node's two in order with actor and time, and change show lists the change set's note",
+          "statement": "rhiza show and rhiza change show list the notes that discuss the node or change set, oldest first, with actor and time"
+        },
+        "handle": "notes-shown",
+        "id": "01M6BZWGV5ZTMWYTG4M6E22SZP",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6BZWGV5ZTMWYTG4M3JD7Z4K",
+        "op": "node.create",
+        "parent": "01M5SWSXMB3P4D5RJH5M1N4S3J"
+      },
+      {
+        "decision": null,
+        "from": "01M6BZWGV5ZTMWYTG4M3JD7Z4K",
+        "id": "01M6BZWJB1KF6RWKF9NR3CNQK8",
+        "link": "01M6BZWJB1KF6RWKF9NMDKHZS2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZVBEP9QHNWMDDYW13RPZE",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6BVTCJCSG1JKEERK7Y3ACYJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BZWMG909G6XHQFVZPB1E5X",
+  "type": "ops",
+  "v": 1
+}

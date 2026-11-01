@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T15:32:01Z",
+  "body": {
+    "intent": "Notes attached to a node, a change set or one of its operations hold the discussion, shown by show and change show",
+    "kind": "intention",
+    "sources": [],
+    "title": "Notes on a change"
+  },
+  "change_set": "01M6BVTCJCSG1JKEERK7Y3ACYJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BVTCJCSG1JKEERK98DT9N1",
+  "type": "open",
+  "v": 2
+}

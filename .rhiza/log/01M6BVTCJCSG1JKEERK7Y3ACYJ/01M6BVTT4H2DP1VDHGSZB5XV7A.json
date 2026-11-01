@@ -1,0 +1,33 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6BVTCJCSG1JKEERK98DT9N1"
+  ],
+  "at": "2026-11-01T15:32:19Z",
+  "body": {
+    "carve": {
+      "entry": "01M6BVTT4H2DP1VDHGSZ87X33M",
+      "from": "01M5SWSXAV6DZAQAPTJKH3TCFA"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Notes attached to a change set, one of its operations or a node hold the discussion about a change."
+        },
+        "handle": "change-notes",
+        "id": "01M6BVTT4H2DP1VDHGSY6AXT5C",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5SWSXMB3P4D5RJH5M1N4S3J",
+        "op": "node.create",
+        "parent": "01M5SWRH04THTBE60MQHT9H1ZJ"
+      }
+    ]
+  },
+  "change_set": "01M6BVTCJCSG1JKEERK7Y3ACYJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BVTT4H2DP1VDHGSZB5XV7A",
+  "type": "ops",
+  "v": 2
+}
