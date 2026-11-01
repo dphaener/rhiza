@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ACBCBN8DKXZHDGRR923GXH",
+  "after": [
+    "01M6AC38AFQA6T2SW1SAR2BZCF"
+  ],
+  "at": "2026-11-01T01:48:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 88414375, go test ./internal/api -run TestWhy passes: TestWhyCitedQuotesKeepsAll covers no match, no quote and empty quote (all quotes kept, left out 0), and TestWhyNonDecisionKeepsAllQuotes covers a capability walk plus addSource via capability, question and source nodes carrying a matching quote (both quotes kept, left out 0). Mutating the guard in addSource to drop `via.Kind == op.KindDecision` makes TestWhyNonDecisionKeepsAllQuotes fail for all three kinds, so the attempt-1 finding is fixed. TestWhyCitedQuotes checks QuotesLeftOut 1 on a trimmed case; why.txtar asserts 'Quotes left out: 1' in text and '\"quotes_left_out\": 1' in --json; describe-golden.txtar was regenerated with quotes_left_out and the describe-golden and why scripts pass. go test ./... and go vet pass. The make self-check fails only on stale run actor renders (.rhiza/rendered/actor/*, index.md), and the same failure shows at the previously verified commit 3078bc96, so this leaf does not cause it."
+        },
+        "handle": "why-uncited-source-quotes-verified",
+        "id": "01M6ACPQTDKRVFD7ECVTVKNKMF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ACPQTDKRVFD7ECVSBXFVEF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ACPQTDKRVFD7ECVSBXFVEF",
+        "id": "01M6ACPRG76ENHEB2B37G50WWF",
+        "link": "01M6ACPRG76ENHEB2B34P51V5X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T0RVG5F71755B3BMVVYHX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTW02ZB4590CKA09AFSQJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6ACPSJXDMZHHK5WFG8QAG8E",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ADW9NFV552ZNMA6NBWVDQM",
+  "after": [
+    "01M6ADVJ5DJWPYCZ06Z3QAJYS1"
+  ],
+  "at": "2026-11-01T02:16:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built 22c94aa1 into a scratch binary. On this repo's model, rhiza why name-is-genesis and six-layers now show 1 of founding-conversation's 40 object quotes (quotes_left_out 39, 41 lines instead of 235), go-one-binary 3 (its quote '3. Yes' is in 3 of them, left out 37). In a scratch repo, source talk with object quotes [{text:'alpha  one\\nhere',by:owner},{text:'beta two'},{text:'gamma three'}]: why d1 (quote 'alpha one here') kept only the first quote, by field intact, left out 2, text output 'Quotes left out: 2'; why d2 kept 'beta two'; why c2, decided by d1 and d2, kept both cited quotes, left out 1; why d3 (quote matching nothing) and why c4 (a capability derived from talk) kept all 3, left out 0. TestWhyCitedQuotes*, TestScripts/why and make fmt-check vet test pass."
+        },
+        "handle": "why-cited-quotes-qa-2",
+        "id": "01M6AE9AGR8Z3DKJR1DRT6Y1XW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AE9AGR8Z3DKJR1DQPWW14G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AE9AGR8Z3DKJR1DQPWW14G",
+        "id": "01M6AE9BG9F478GNCRSY3Q9JER",
+        "link": "01M6AE9BG9F478GNCRSWNZQB1W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T0QKZJRTB9ZYRCT0ZBF1R",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTW02ZB4590CKA09AFSQJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AE9CYHVQNZVPX8WGXCTH5N",
+  "type": "ops",
+  "v": 1
+}

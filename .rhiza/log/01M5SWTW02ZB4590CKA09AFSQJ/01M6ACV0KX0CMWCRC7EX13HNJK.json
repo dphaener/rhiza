@@ -1,0 +1,63 @@
+{
+  "actor": "01M6ACQG49B1WS1ZXF1GT6TMJD",
+  "after": [
+    "01M6ACPSJXDMZHHK5WFG8QAG8E"
+  ],
+  "at": "2026-11-01T01:50:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "Built 4df6a76b into a scratch binary. In a scratch repo, a source added with --json-field quotes as plain strings ['We must  keep\\nit small, always.','We shall grow later.','Cheap is fine: must keep it lean too? no'] and decision small (quote 'must keep it') derived from it: rhiza why small printed only the two matching quotes and 'Quotes left out: 1', --json quotes_left_out 1. But on this repo's own model, rhiza why name-is-genesis / go-one-binary / six-layers still print all 40 quotes of founding-conversation (235 lines, quotes_left_out 0), though name-is-genesis's quote 'yes, Genesis it is, move on to the log format' is the text of exactly one of them: sources written by rhiza source add store quotes as objects {text,by,where}, and whyCitedQuotes unmarshals quotes only as []string, so it never trims a real source. Also rhiza why c2 for a capability decided by two decisions citing different quotes of one source showed the source once, trimmed to the first decision's quotes, hiding the second decision's cited quote."
+        },
+        "handle": "why-cited-quotes-qa-1",
+        "id": "01M6ACTXBRC0P6Y53PST44TD8X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ACTXBRC0P6Y53PSR26JBNF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ACTXBRC0P6Y53PSR26JBNF",
+        "id": "01M6ACTY1DMYAFQR0C8SYVXXQP",
+        "link": "01M6ACTY1DMYAFQR0C8R2ZBZ7N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T0QKZJRTB9ZYRCT0ZBF1R",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built 4df6a76b into a scratch binary; in a scratch repo with a three-string-quote source: rhiza why on a decision whose quote matches nothing, a decision with no quote, and a capability derived from the source each printed all three quotes with no 'Quotes left out' line and quotes_left_out 0 in --json; a trimmed decision printed 'Quotes left out: 1' in text and quotes_left_out 1 in --json. go test ./internal/api -run TestWhy and TestScripts/(why|describe-golden) pass."
+        },
+        "handle": "why-uncited-source-quotes-qa-1",
+        "id": "01M6ACTYR23FAX85JAWWK4JXH4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ACTYR23FAX85JAWSTY1RHS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ACTYR23FAX85JAWSTY1RHS",
+        "id": "01M6ACTZEPTHKWSPAY9Y4D5V3F",
+        "link": "01M6ACTZEPTHKWSPAY9VH24FR7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T0RVG5F71755B3BMVVYHX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTW02ZB4590CKA09AFSQJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6ACV0KX0CMWCRC7EX13HNJK",
+  "type": "ops",
+  "v": 1
+}
