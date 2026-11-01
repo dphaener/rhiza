@@ -112,6 +112,42 @@ func TestOverlaps(t *testing.T) {
 			want: []Overlap{{A: csA, B: csB, Target: ln(1), Aspects: []string{"retired"}}},
 		},
 		{
+			name: "retire vs link create to the node",
+			sets: []changeset.ChangeSet{
+				ovSet(csA, prop, mkLink(1, 1, nd(2), nd(1))),
+				ovSet(csB, acc, retire(2, 1, 0)),
+			},
+			want: []Overlap{{A: csA, B: csB, Target: nd(1), Aspects: []string{"linked", "retired"}}},
+		},
+		{
+			name: "retire vs link create from the node",
+			sets: []changeset.ChangeSet{
+				ovSet(csA, prop, retire(1, 1, 0)),
+				ovSet(csB, prop, mkLink(2, 1, nd(1), nd(2))),
+			},
+			want: []Overlap{{A: csA, B: csB, Target: nd(1), Aspects: []string{"linked", "retired"}}},
+		},
+		{
+			name: "retire and link in one set",
+			sets: []changeset.ChangeSet{
+				ovSet(csA, prop, retire(1, 1, 0), mkLink(2, 1, nd(1), nd(2))),
+			},
+		},
+		{
+			name: "two link creates to one node",
+			sets: []changeset.ChangeSet{
+				ovSet(csA, prop, mkLink(1, 1, nd(2), nd(1))),
+				ovSet(csB, prop, mkLink(2, 2, nd(3), nd(1))),
+			},
+		},
+		{
+			name: "link create vs update",
+			sets: []changeset.ChangeSet{
+				ovSet(csA, prop, mkLink(1, 1, nd(2), nd(1))),
+				ovSet(csB, prop, set(2, 1, 0, "title", `"b"`)),
+			},
+		},
+		{
 			name: "creates never overlap",
 			sets: []changeset.ChangeSet{
 				ovSet(csA, prop, mkCap(1, 1, "x", 0, "a"), mkLink(2, 1, nd(1), nd(1))),

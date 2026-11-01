@@ -7,7 +7,12 @@ import (
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 )
+
+// aspectLinked marks a node that an operation links from or to. It overlaps
+// only with a retirement of the node, never with another link.
+const aspectLinked = "linked"
 
 // Overlap is two in-flight change sets writing overlapping aspects of the
 // same target, whatever their bases.
@@ -18,7 +23,8 @@ type Overlap struct {
 	Target id.ID
 	// Aspects are the aspects of A's and B's operations on Target that take
 	// part in the overlap, sorted and unique: those both write, and every
-	// aspect of two operations when either is a retirement.
+	// aspect of two operations when either is a retirement (a link created
+	// to or from the node counts as the aspect "linked").
 	Aspects []string
 }
 
@@ -37,6 +43,17 @@ func Overlaps(sets []changeset.ChangeSet) []Overlap {
 			continue
 		}
 		for _, o := range cs.Ops {
+			if o.Type == op.TypeLinkCreate {
+				// A new link touches both endpoints: only a retirement
+				// of one conflicts with it.
+				for _, n := range []id.ID{o.From, o.To} {
+					if byTarget[n] == nil {
+						byTarget[n] = map[id.ID][][]string{}
+					}
+					byTarget[n][cs.ID] = append(byTarget[n][cs.ID], []string{aspectLinked})
+				}
+				continue
+			}
 			as := aspects(o)
 			if as == nil {
 				continue
@@ -81,7 +98,7 @@ func overlapAspects(as, bs [][]string) []string {
 				out = append(append(out, a...), b...)
 			default:
 				for _, s := range a {
-					if slices.Contains(b, s) {
+					if s != aspectLinked && slices.Contains(b, s) {
 						out = append(out, s)
 					}
 				}
