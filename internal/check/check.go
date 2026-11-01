@@ -31,7 +31,9 @@
 //     a conflict, Next says how.
 //   - in-flight warns on each in-flight problem, Next on a conflict saying
 //     where to look, and on each op of an in-flight change set that rests on
-//     a dropped one (changeset.RestsOn), and on each live link that a draft,
+//     a dropped one (changeset.RestsOn), on each pair of proposed or accepted
+//     change sets writing overlapping aspects of one target
+//     (model.Overlaps; Next is rhiza slice --change <A> --view what-if), and on each live link that a draft,
 //     proposed or accepted change set wrote itself, in its what-if, whose
 //     Ends the endpoint table does not allow, each once.
 //   - link fails on each live as-is link whose Ends the endpoint table does
@@ -304,6 +306,12 @@ func (c *checker) model(sets []changeset.ChangeSet) model.Model {
 					Next:    "rhiza change show " + s.ID.String()})
 			}
 		}
+	}
+	for _, ov := range model.Overlaps(sets) {
+		c.add(Finding{Severity: SeverityWarn, Rule: RuleInFlight, ChangeSet: ov.A.String(),
+			Message: fmt.Sprintf("change sets %s and %s both write %s of %s", ov.A, ov.B,
+				strings.Join(ov.Aspects, ", "), ov.Target),
+			Next: fmt.Sprintf("rhiza slice --change %s --view what-if", ov.A)})
 	}
 	return asIs
 }
