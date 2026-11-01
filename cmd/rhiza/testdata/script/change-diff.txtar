@@ -9,6 +9,8 @@ exec rhiza add intent goal --record
 exec rhiza add capability thing --field 'statement=a' --field 'acceptance=ok' --record
 exec rhiza add capability gone --field 'statement=old' --record
 
+exec rhiza add capability notes --json-field 'statement="one\ntwo\nthree"' --record
+
 exec rhiza change new 'Edit things'
 
 # add then set gives statement a to b; an unset field shows old to unset.
@@ -43,6 +45,15 @@ exec rhiza set thing --field 'acceptance=landed first' --record
 exec rhiza change diff
 stdout '^  statement: a -> c$'
 ! stdout 'landed first'
+
+# A multi-line string shows as a line diff: one - and one + around the rest.
+exec rhiza set notes --json-field 'statement="one\nTWO\nthree"'
+exec rhiza change diff
+stdout '^  statement:$'
+stdout '^      one$'
+stdout '^    - two$'
+stdout '^    \+ TWO$'
+stdout '^      three$'
 
 # --json and api call print the same bytes.
 exec rhiza change diff --json

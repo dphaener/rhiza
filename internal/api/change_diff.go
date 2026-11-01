@@ -145,6 +145,11 @@ func (r ChangeDiffResponse) Human(w io.Writer) {
 				fmt.Fprintf(w, "  %s: %s\n", c.Name, *c.New)
 			case c.New == nil:
 				fmt.Fprintf(w, "  %s: %s -> unset\n", c.Name, *c.Old)
+			case strings.Contains(*c.Old, "\n") || strings.Contains(*c.New, "\n"):
+				fmt.Fprintf(w, "  %s:\n", c.Name)
+				for _, l := range changeset.LineDiff(*c.Old, *c.New) {
+					fmt.Fprintf(w, "    %c %s\n", l.Op, l.Text)
+				}
 			default:
 				fmt.Fprintf(w, "  %s: %s -> %s\n", c.Name, *c.Old, *c.New)
 			}
