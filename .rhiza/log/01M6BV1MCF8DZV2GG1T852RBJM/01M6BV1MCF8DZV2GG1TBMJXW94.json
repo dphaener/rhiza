@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T15:18:30Z",
+  "body": {
+    "intent": "The daemon runs an owner-configured command once per change set lifecycle event, including events pulled from other clones",
+    "kind": "intention",
+    "sources": [],
+    "title": "Lifecycle event hooks"
+  },
+  "change_set": "01M6BV1MCF8DZV2GG1T852RBJM",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BV1MCF8DZV2GG1TBMJXW94",
+  "type": "open",
+  "v": 2
+}

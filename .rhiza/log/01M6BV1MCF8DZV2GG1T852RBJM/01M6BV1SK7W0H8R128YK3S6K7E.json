@@ -1,0 +1,55 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6BV1MCF8DZV2GG1TBMJXW94"
+  ],
+  "at": "2026-11-01T15:18:43Z",
+  "body": {
+    "carve": {
+      "entry": "01M6BV1SK7W0H8R128YJKH5TAX",
+      "from": "01M5SWT54GSWBT5V7M19YZ1WZ2"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Genesis runs scripts the user configures on model events, so the model can be wired to anything."
+        },
+        "handle": "hooks",
+        "id": "01M6BV1SK7W0H8R128Y6QZSPHW",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5SWT589DVTV22JWM7V62Y1Q",
+        "op": "node.create",
+        "parent": "01M5SWRGYQGD0QD427DMK4RTM2"
+      },
+      {
+        "fields": {
+          "statement": "Model events such as proposed, accepted, landed and drift found run scripts the user configures."
+        },
+        "handle": "model-event-hooks",
+        "id": "01M6BV1SK7W0H8R128Y7VXGQEE",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M5SWT5AEW8ZEV2XPHEFJZNRP",
+        "op": "node.create",
+        "parent": "01M5SWT589DVTV22JWM7V62Y1Q"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT589DVTV22JWM7V62Y1Q",
+        "id": "01M6BV1SK7W0H8R128Y9WP4M8V",
+        "link": "01M5SWT5GX5MHXY0WKDDT4DHPP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRJ60KYSFGJ732292W4HP",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6BV1MCF8DZV2GG1T852RBJM",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BV1SK7W0H8R128YK3S6K7E",
+  "type": "ops",
+  "v": 2
+}
