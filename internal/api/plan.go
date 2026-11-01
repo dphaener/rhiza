@@ -1224,17 +1224,12 @@ func (w *planWalk) blocks(targets map[id.ID]bool) ([]gmodel.Link, error) {
 // sorted by ID, each once, as index.Index.Parents gives them; from the
 // what-if model when r reads one.
 func planParents(r *reader, ids []id.ID) ([]index.Parent, error) {
-	if r.m == nil {
-		ps, err := r.x.Parents(r.view.stored, ids)
+	if r.ov != nil {
+		ps, err := r.ov.Parents(ids)
 		return ps, readError(err)
 	}
-	var out []index.Parent
-	for _, i := range planSortIDs(slices.Clone(ids)) {
-		if n, ok := r.m.Node(i); ok {
-			out = append(out, index.Parent{ID: i, Parent: n.Parent})
-		}
-	}
-	return out, nil
+	ps, err := r.x.Parents(r.view.stored, ids)
+	return ps, readError(err)
 }
 
 // planMilestoneField reports whether fields has a non-empty milestone:

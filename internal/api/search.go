@@ -328,18 +328,12 @@ func (r SearchResponse) Human(w io.Writer) {
 
 // Search returns the live nodes that may match terms (lower-case words),
 // of kinds when given, sorted by ID. The stored views read the FTS table;
-// what-if scans the computed model.
+// what-if reads the overlay.
 func (r *reader) Search(terms []string, kinds []op.Kind) ([]gmodel.Node, error) {
-	if r.m == nil {
-		ns, err := r.x.Search(r.view.stored, terms, kinds)
+	if r.ov != nil {
+		ns, err := r.ov.Search(terms, kinds)
 		return ns, readError(err)
 	}
-	var out []gmodel.Node
-	for _, n := range r.m.Nodes() {
-		if n.Retired || len(kinds) > 0 && !slices.Contains(kinds, n.Kind) {
-			continue
-		}
-		out = append(out, n)
-	}
-	return out, nil
+	ns, err := r.x.Search(r.view.stored, terms, kinds)
+	return ns, readError(err)
 }

@@ -35,7 +35,6 @@ import (
 	"cmp"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"slices"
 	"strings"
 
@@ -147,8 +146,8 @@ func parseViewWith(resolve func(string) (id.ID, error), opName, s string) (view,
 type reader struct {
 	x    *index.Index
 	view view
-	// m is the what-if model, nil for a stored view.
-	m *gmodel.Model
+	// ov is the what-if overlay on the as-is rows, nil for a stored view.
+	ov *index.Overlay
 }
 
 // openReader opens a reader for operation opName in the view named by s,
@@ -236,7 +235,7 @@ func openReaderIn(ctx *Ctx, w *workspace, opName, s string, rule viewRule) (*rea
 	if v.whatIf.IsZero() {
 		return r, nil
 	}
-	m, ps, err := x.WhatIf(v.whatIf)
+	ov, ps, err := x.WhatIfOverlay(v.whatIf)
 	if err == nil {
 		err = whatIfViewError(v.whatIf, ps)
 	}
@@ -244,7 +243,7 @@ func openReaderIn(ctx *Ctx, w *workspace, opName, s string, rule viewRule) (*rea
 		x.Close()
 		return nil, AsError(err)
 	}
-	r.m = &m
+	r.ov = ov
 	return r, nil
 }
 
@@ -360,9 +359,9 @@ func readError(err error) error {
 
 // Node returns the node with ID i, live or retired.
 func (r *reader) Node(i id.ID) (gmodel.Node, bool, error) {
-	if r.m != nil {
-		n, ok := r.m.Node(i)
-		return n, ok, nil
+	if r.ov != nil {
+		n, ok, err := r.ov.Node(i)
+		return n, ok, readError(err)
 	}
 	n, ok, err := r.x.Node(r.view.stored, i)
 	return n, ok, readError(err)
@@ -370,9 +369,9 @@ func (r *reader) Node(i id.ID) (gmodel.Node, bool, error) {
 
 // Link returns the link with ID i, live or retired.
 func (r *reader) Link(i id.ID) (gmodel.Link, bool, error) {
-	if r.m != nil {
-		l, ok := r.m.Link(i)
-		return l, ok, nil
+	if r.ov != nil {
+		l, ok, err := r.ov.Link(i)
+		return l, ok, readError(err)
 	}
 	l, ok, err := r.x.Link(r.view.stored, i)
 	return l, ok, readError(err)
@@ -381,92 +380,31 @@ func (r *reader) Link(i id.ID) (gmodel.Link, bool, error) {
 // Resolve finds a node by ref as index.Index.Resolve does: a full ID, a
 // unique ID prefix of 4+ characters as given, or a live node's handle.
 func (r *reader) Resolve(ref string) (gmodel.Node, error) {
-	if r.m == nil {
-		n, err := r.x.Resolve(r.view.stored, ref)
+	if r.ov != nil {
+		n, err := r.ov.Resolve(ref)
 		return n, readError(err)
 	}
-	if i, err := id.Parse(ref); err == nil {
-		if n, ok := r.m.Node(i); ok {
-			return n, nil
-		}
-	}
-	all := r.m.Nodes()
-	if len(ref) >= minPrefix {
-		var ns []gmodel.Node
-		for _, n := range all {
-			if strings.HasPrefix(n.ID.String(), ref) {
-				ns = append(ns, n)
-			}
-		}
-		if len(ns) > 0 {
-			return oneNode(ref, ns)
-		}
-	}
-	var ns []gmodel.Node
-	for _, n := range all {
-		if !n.Retired && n.Handle == ref {
-			ns = append(ns, n)
-		}
-	}
-	if len(ns) == 0 {
-		return gmodel.Node{}, readError(fmt.Errorf("%w: no node matches %q", index.ErrNotFound, ref))
-	}
-	return oneNode(ref, ns)
-}
-
-// oneNode is the only node of ns, sorted by ID, or the ambiguity
-// index.Index.Resolve reports.
-func oneNode(ref string, ns []gmodel.Node) (gmodel.Node, error) {
-	if len(ns) == 1 {
-		return ns[0], nil
-	}
-	names := make([]string, len(ns))
-	for i, n := range ns {
-		names[i] = n.ID.String() + " (" + n.Handle + ")"
-	}
-	return gmodel.Node{}, readError(fmt.Errorf("%w: %q matches %d nodes: %s",
-		index.ErrAmbiguous, ref, len(ns), strings.Join(names, ", ")))
+	n, err := r.x.Resolve(r.view.stored, ref)
+	return n, readError(err)
 }
 
 // ResolveLink finds a link by ref as index.Index.ResolveLink does: a full
 // ID or a unique ID prefix of 4+ characters, live or retired.
 func (r *reader) ResolveLink(ref string) (gmodel.Link, error) {
-	if r.m == nil {
-		l, err := r.x.ResolveLink(r.view.stored, ref)
+	if r.ov != nil {
+		l, err := r.ov.ResolveLink(ref)
 		return l, readError(err)
 	}
-	if i, err := id.Parse(ref); err == nil {
-		if l, ok := r.m.Link(i); ok {
-			return l, nil
-		}
-	}
-	var ls []gmodel.Link
-	if len(ref) >= minPrefix {
-		for _, l := range r.m.Links() {
-			if strings.HasPrefix(l.ID.String(), ref) {
-				ls = append(ls, l)
-			}
-		}
-	}
-	switch len(ls) {
-	case 0:
-		return gmodel.Link{}, readError(fmt.Errorf("%w: no link matches %q", index.ErrNotFound, ref))
-	case 1:
-		return ls[0], nil
-	}
-	names := make([]string, len(ls))
-	for i, l := range ls {
-		names[i] = l.ID.String()
-	}
-	return gmodel.Link{}, readError(fmt.Errorf("%w: %q matches %d links: %s",
-		index.ErrAmbiguous, ref, len(ls), strings.Join(names, ", ")))
+	l, err := r.x.ResolveLink(r.view.stored, ref)
+	return l, readError(err)
 }
 
 // Children returns the nodes directly under parent, live and retired,
 // sorted by key then ID; the zero parent gives the roots of the tree.
 func (r *reader) Children(parent id.ID) ([]gmodel.Node, error) {
-	if r.m != nil {
-		return r.m.Children(parent), nil
+	if r.ov != nil {
+		ns, err := r.ov.Children(parent)
+		return ns, readError(err)
 	}
 	ns, err := r.x.Children(r.view.stored, parent)
 	return ns, readError(err)
@@ -478,221 +416,106 @@ const maxDepth = 1000
 // Ancestors returns node i's parent chain, the root first, without i; nil
 // for a root or a node outside the tree. An unknown i is not_found.
 func (r *reader) Ancestors(i id.ID) ([]gmodel.Node, error) {
-	if r.m == nil {
-		ns, err := r.x.Ancestors(r.view.stored, i)
+	if r.ov != nil {
+		ns, err := r.ov.Ancestors(i)
 		return ns, readError(err)
 	}
-	n, ok := r.m.Node(i)
-	if !ok {
-		return nil, readError(fmt.Errorf("%w: no node %s", index.ErrNotFound, i))
-	}
-	var out []gmodel.Node
-	seen := map[id.ID]bool{}
-	for p := n.Parent; !p.IsZero() && !seen[p] && len(out) < maxDepth; {
-		seen[p] = true
-		pn, ok := r.m.Node(p)
-		if !ok {
-			break
-		}
-		out = append(out, pn)
-		p = pn.Parent
-	}
-	slices.Reverse(out)
-	return out, nil
+	ns, err := r.x.Ancestors(r.view.stored, i)
+	return ns, readError(err)
 }
 
 // Links returns the links at node in direction dir, live and retired,
 // sorted by ID; node may be a change set.
 func (r *reader) Links(node id.ID, dir index.Direction) ([]gmodel.Link, error) {
-	if r.m == nil {
-		ls, err := r.x.Links(r.view.stored, node, dir)
+	if r.ov != nil {
+		ls, err := r.ov.Links(node, dir)
 		return ls, readError(err)
 	}
-	if dir != index.From && dir != index.To && dir != index.Both {
-		return nil, Errorf("index: unknown direction %d", dir)
-	}
-	var out []gmodel.Link
-	for _, l := range r.m.Links() {
-		from, to := l.From == node, l.To == node
-		if dir == index.From && from || dir == index.To && to || dir == index.Both && (from || to) {
-			out = append(out, l)
-		}
-	}
-	return out, nil
+	ls, err := r.x.Links(r.view.stored, node, dir)
+	return ls, readError(err)
 }
 
 // Subtree returns the nodes under root, pre-order, as index.Index.Subtree
-// does: the zero root walks every root of the tree; depth is the deepest
-// Depth returned, zero or less no limit; retired nodes and what is under
-// them only with retired (a retired root left out gives nil); an unknown
-// root is not_found.
+// does.
 func (r *reader) Subtree(root id.ID, depth int, retired bool) ([]index.TreeNode, error) {
-	if r.m == nil {
-		ts, err := r.x.Subtree(r.view.stored, root, depth, retired)
+	if r.ov != nil {
+		ts, err := r.ov.Subtree(root, depth, retired)
 		return ts, readError(err)
 	}
-	if depth <= 0 || depth > maxDepth {
-		depth = maxDepth
-	}
-	var tops []gmodel.Node
-	if root.IsZero() {
-		tops = r.m.Children(id.ID{})
-	} else {
-		n, ok := r.m.Node(root)
-		if !ok {
-			return nil, readError(fmt.Errorf("%w: no node %s", index.ErrNotFound, root))
-		}
-		tops = []gmodel.Node{n}
-	}
-	var out []index.TreeNode
-	done := map[id.ID]bool{}
-	var visit func(n gmodel.Node, d int)
-	visit = func(n gmodel.Node, d int) {
-		if done[n.ID] || n.Retired && !retired {
-			return
-		}
-		done[n.ID] = true
-		out = append(out, index.TreeNode{Node: n, Depth: d})
-		if d >= depth {
-			return
-		}
-		for _, c := range r.m.Children(n.ID) {
-			visit(c, d+1)
-		}
-	}
-	for _, n := range tops {
-		visit(n, 0)
-	}
-	return out, nil
+	ts, err := r.x.Subtree(r.view.stored, root, depth, retired)
+	return ts, readError(err)
 }
 
 // SubtreeLight is Subtree with light nodes, as index.Index.SubtreeLight
 // gives them: Fields and History nil.
 func (r *reader) SubtreeLight(root id.ID, depth int, retired bool) ([]index.TreeNode, error) {
-	if r.m == nil {
-		ts, err := r.x.SubtreeLight(r.view.stored, root, depth, retired)
+	if r.ov != nil {
+		ts, err := r.ov.SubtreeLight(root, depth, retired)
 		return ts, readError(err)
 	}
-	ts, err := r.Subtree(root, depth, retired)
-	for i := range ts {
-		ts[i].Node = lightNode(ts[i].Node)
-	}
-	return ts, err
+	ts, err := r.x.SubtreeLight(r.view.stored, root, depth, retired)
+	return ts, readError(err)
 }
 
 // NodesLight returns the nodes with the given IDs, live or retired, sorted
-// by ID, each once, as index.Index.NodesLight does: IDs the view lacks
-// left out, Fields and History nil.
+// by ID, each once, as index.Index.NodesLight does.
 func (r *reader) NodesLight(ids []id.ID) ([]gmodel.Node, error) {
-	if r.m == nil {
-		ns, err := r.x.NodesLight(r.view.stored, ids)
+	if r.ov != nil {
+		ns, err := r.ov.NodesLight(ids)
 		return ns, readError(err)
 	}
-	ids = slices.Clone(ids)
-	slices.SortFunc(ids, id.Compare)
-	var out []gmodel.Node
-	for _, i := range slices.Compact(ids) {
-		if n, ok := r.m.Node(i); ok {
-			out = append(out, lightNode(n))
-		}
-	}
-	return out, nil
+	ns, err := r.x.NodesLight(r.view.stored, ids)
+	return ns, readError(err)
 }
 
 // NodesFields is NodesLight with each node's Fields, as
 // index.Index.NodesFields gives them: History nil.
 func (r *reader) NodesFields(ids []id.ID) ([]gmodel.Node, error) {
-	if r.m == nil {
-		ns, err := r.x.NodesFields(r.view.stored, ids)
+	if r.ov != nil {
+		ns, err := r.ov.NodesFields(ids)
 		return ns, readError(err)
 	}
-	ids = slices.Clone(ids)
-	slices.SortFunc(ids, id.Compare)
-	var out []gmodel.Node
-	for _, i := range slices.Compact(ids) {
-		if n, ok := r.m.Node(i); ok {
-			n.History = nil
-			out = append(out, n)
-		}
-	}
-	return out, nil
+	ns, err := r.x.NodesFields(r.view.stored, ids)
+	return ns, readError(err)
 }
 
 // LinksAt returns the links at any of ids in direction dir, live and
-// retired, sorted by ID, each once, as index.Index.LinksAt does; ids may
-// hold change sets.
+// retired, sorted by ID, each once, as index.Index.LinksAt does.
 func (r *reader) LinksAt(ids []id.ID, dir index.Direction) ([]gmodel.Link, error) {
-	if r.m == nil {
-		ls, err := r.x.LinksAt(r.view.stored, ids, dir)
+	if r.ov != nil {
+		ls, err := r.ov.LinksAt(ids, dir)
 		return ls, readError(err)
 	}
-	if dir != index.From && dir != index.To && dir != index.Both {
-		return nil, Errorf("index: unknown direction %d", dir)
+	ls, err := r.x.LinksAt(r.view.stored, ids, dir)
+	return ls, readError(err)
+}
+
+// LinksTo returns the links of type t whose To end is one of ids, live and
+// retired, sorted by ID, as index.Index.LinksTo does.
+func (r *reader) LinksTo(ids []id.ID, t op.LinkType) ([]gmodel.Link, error) {
+	if r.ov != nil {
+		ls, err := r.ov.LinksTo(ids, t)
+		return ls, readError(err)
 	}
-	at := map[id.ID]bool{}
-	for _, i := range ids {
-		at[i] = true
+	ls, err := r.x.LinksTo(r.view.stored, ids, t)
+	return ls, readError(err)
+}
+
+// List returns the nodes q selects, sorted by ID, at most q.Limit, as
+// index.Index.List does; a Limit of zero or less is an error.
+func (r *reader) List(q index.ListQuery) ([]gmodel.Node, error) {
+	if r.ov != nil {
+		ns, err := r.ov.List(q)
+		return ns, readError(err)
 	}
-	var out []gmodel.Link
-	for _, l := range r.m.Links() {
-		from, to := at[l.From], at[l.To]
-		if dir == index.From && from || dir == index.To && to || dir == index.Both && (from || to) {
-			out = append(out, l)
-		}
-	}
-	return out, nil
+	ns, err := r.x.List(r.view.stored, q)
+	return ns, readError(err)
 }
 
 // lightNode is n without its Fields and History.
 func lightNode(n gmodel.Node) gmodel.Node {
 	n.Fields, n.History = nil, nil
 	return n
-}
-
-// LinksTo returns the links of type t whose To end is one of ids, live and
-// retired, sorted by ID, as index.Index.LinksTo does.
-func (r *reader) LinksTo(ids []id.ID, t op.LinkType) ([]gmodel.Link, error) {
-	if r.m == nil {
-		ls, err := r.x.LinksTo(r.view.stored, ids, t)
-		return ls, readError(err)
-	}
-	to := map[id.ID]bool{}
-	for _, i := range ids {
-		to[i] = true
-	}
-	var out []gmodel.Link
-	for _, l := range r.m.Links() {
-		if l.Type == t && to[l.To] {
-			out = append(out, l)
-		}
-	}
-	return out, nil
-}
-
-// List returns the nodes q selects, sorted by ID, at most q.Limit, as
-// index.Index.List does; a Limit of zero or less is an error.
-func (r *reader) List(q index.ListQuery) ([]gmodel.Node, error) {
-	if r.m == nil {
-		ns, err := r.x.List(r.view.stored, q)
-		return ns, readError(err)
-	}
-	if q.Limit <= 0 {
-		return nil, Errorf("index: list limit %d is not positive", q.Limit)
-	}
-	var out []gmodel.Node
-	for _, n := range r.m.Nodes() {
-		switch {
-		case len(out) == q.Limit:
-			return out, nil
-		case !q.After.IsZero() && id.Compare(n.ID, q.After) <= 0,
-			q.HasParent && n.Parent != q.Parent,
-			len(q.Kinds) > 0 && !slices.Contains(q.Kinds, n.Kind),
-			n.Retired && !q.Retired:
-			continue
-		}
-		out = append(out, n)
-	}
-	return out, nil
 }
 
 // ChangeSets returns every folded change set, sorted by ID, from the index
