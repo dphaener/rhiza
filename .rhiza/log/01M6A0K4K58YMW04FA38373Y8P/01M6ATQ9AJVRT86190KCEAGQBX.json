@@ -1,0 +1,63 @@
+{
+  "actor": "01M6ATK305583P0HB1Y7FH2CSQ",
+  "after": [
+    "01M6ATJ9DM8KNDVA1DWAHYSHKH"
+  ],
+  "at": "2026-11-01T05:53:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "At 973ce724 I built go build -o \\$TMPDIR/rhiza-qa ./cmd/rhiza and, in a scratch repo, started a real rhiza run (one agent step, fake rex and claude whose hook reported working through rhiza session hook). On the real clock: fresh report, run status shows no Stalled; hook at back-dated 2026-11-01T04:00:00Z (1h50m old) prints '- Stalled: build session 107f052b-... has not reported since 2026-11-01T04:00:00Z' and --json has stalled {step build, session, since}; turned blocked, or working with detail 'paused at its usage limit until ...', or after the run ended: no Stalled. Gap: in this repo's own ship-change run 01M6AREK66 (current step review/review), the built binary's run status --json gives stalled null and inbox --json lists no stalled item at RHIZA_TEST_NOW=2026-11-01T09:00:00Z although check session 7b8ceb12 is a live session whose hook is working and last reported 05:52Z: runStalledNow reads only st.Session[st.Current], and ship-change records its builder, verifier and check sessions as leaf-session/check-session entries, so they never stall."
+        },
+        "handle": "run-status-stalled-session-qa-1",
+        "id": "01M6ATQ5T7MG20PKQGAT3Q19ZY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ATQ5T7MG20PKQGAQ33A4M0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ATQ5T7MG20PKQGAQ33A4M0",
+        "id": "01M6ATQ6JDVDT28GPAMBATM36Q",
+        "link": "01M6ATQ6JDVDT28GPAM993QRKH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NWP7AH4JGMDT37F6X7DG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "Same scratch run with the built binary at 973ce724, real clock: hook back-dated to 04:00Z, rhiza inbox prints '03aba66 stalled run 01M6ATPA..., change set 01M6ATPA..., step build / session 107f052b-... has not reported since 2026-11-01T04:00:00Z / next: rhiza session message 107f052b-... <text>' and --json has one item kind stalled with run, session, step, at 04:00:00Z and that next; turned blocked: no stalled item. Fresh report: none. Gap: in this repo's own ship-change run 01M6AREK66 (current step review/review), the built binary's run status --json gives stalled null and inbox --json lists no stalled item at RHIZA_TEST_NOW=2026-11-01T09:00:00Z although check session 7b8ceb12 is a live session whose hook is working and last reported 05:52Z: runStalledNow reads only st.Session[st.Current], and ship-change records its builder, verifier and check sessions as leaf-session/check-session entries, so they never stall."
+        },
+        "handle": "inbox-stalled-items-qa-1",
+        "id": "01M6ATQ7CD67FEF55BA6F12ZKF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ATQ7CD67FEF55BA5R319F2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ATQ7CD67FEF55BA5R319F2",
+        "id": "01M6ATQ831V0CG3NPAF5S1SJ7T",
+        "link": "01M6ATQ831V0CG3NPAF2BXB5KN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NY4FZ07ZQMR23E700DTQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6A0K4K58YMW04FA38373Y8P",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6ATQ9AJVRT86190KCEAGQBX",
+  "type": "ops",
+  "v": 1
+}
