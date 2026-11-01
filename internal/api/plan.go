@@ -76,6 +76,7 @@ import (
 	"reflect"
 	"runtime"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -194,6 +195,9 @@ type planInputs struct {
 	// milestones is the nodes whose milestone field is non-empty; the core
 	// reads no fields, so planGather says which they are.
 	milestones map[id.ID]bool
+	// milestoneNums is the milestone number of each milestone whose field
+	// is a number (1, "9"); siblings with one sort by it before key and ID.
+	milestoneNums map[id.ID]float64
 	// umbrellas is the intents whose umbrella field is non-empty.
 	umbrellas map[id.ID]bool
 }
@@ -603,8 +607,37 @@ func planCompareIntents(a, b id.ID, in planInputs) int {
 		return id.Compare(a, b)
 	}
 	return slices.CompareFunc(ka, kb, func(x, y gmodel.Node) int {
-		return cmp.Or(strings.Compare(x.Key, y.Key), id.Compare(x.ID, y.ID))
+		return cmp.Or(planCompareMilestoneNums(x.ID, y.ID, in), strings.Compare(x.Key, y.Key), id.Compare(x.ID, y.ID))
 	})
+}
+
+// planCompareMilestoneNums orders siblings a and b by milestone number,
+// a numbered one before an unnumbered one; 0 when equal or both unnumbered.
+func planCompareMilestoneNums(a, b id.ID, in planInputs) int {
+	x, oka := in.milestoneNums[a]
+	y, okb := in.milestoneNums[b]
+	switch {
+	case oka && okb:
+		return cmp.Compare(x, y)
+	case oka:
+		return -1
+	case okb:
+		return 1
+	}
+	return 0
+}
+
+// planNoteMilestoneNum records milestone intent i's number when its
+// milestone field is a JSON number or a string holding one.
+func planNoteMilestoneNum(in planInputs, i id.ID, fields map[string]json.RawMessage) {
+	raw := bytes.TrimSpace(fields["milestone"])
+	var s string
+	if json.Unmarshal(raw, &s) != nil {
+		s = string(raw)
+	}
+	if f, err := strconv.ParseFloat(strings.TrimSpace(s), 64); err == nil && in.milestoneNums != nil {
+		in.milestoneNums[i] = f
+	}
 }
 
 // planTopo orders a group's change sets by depends-on among them: Kahn's
@@ -684,7 +717,7 @@ const planCycleReason = "depends-on cycle"
 // third connection is opened.
 func planGather(r *reader) (planInputs, error) {
 	in := planInputs{ops: map[id.ID][]op.Op{}, nodes: map[id.ID]gmodel.Node{},
-		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}, milestones: map[id.ID]bool{}, umbrellas: map[id.ID]bool{}}
+		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}, milestones: map[id.ID]bool{}, milestoneNums: map[id.ID]float64{}, umbrellas: map[id.ID]bool{}}
 	w := newPlanWalk(r)
 	// flown is the in-flight change sets folded, keyed by ID: their entries
 	// are read and folded on another connection while the change sets are
@@ -887,6 +920,7 @@ func planGather(r *reader) (planInputs, error) {
 		in.nodes[n.ID] = lightNode(n)
 		if n.Kind == op.KindIntent && planMilestoneField(n.Fields) {
 			in.milestones[n.ID] = true
+			planNoteMilestoneNum(in, n.ID, n.Fields)
 		}
 		if n.Kind == op.KindIntent && planFieldSet(n.Fields, "umbrella") {
 			in.umbrellas[n.ID] = true
@@ -1421,6 +1455,7 @@ func planCreatedNode(i id.ID, in planInputs) {
 				in.nodes[i] = gmodel.Node{ID: i, Kind: o.Kind, Handle: o.Handle, Parent: o.Parent, Key: o.Key}
 				if o.Kind == op.KindIntent && planMilestoneField(o.Fields) {
 					in.milestones[i] = true
+					planNoteMilestoneNum(in, i, o.Fields)
 				}
 				if o.Kind == op.KindIntent && planFieldSet(o.Fields, "umbrella") {
 					in.umbrellas[i] = true
