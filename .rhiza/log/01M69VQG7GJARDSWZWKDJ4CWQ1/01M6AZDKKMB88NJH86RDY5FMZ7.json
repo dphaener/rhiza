@@ -1,0 +1,40 @@
+{
+  "actor": "01M6AYTM7MFZX6QFE7AY79XZH6",
+  "after": [
+    "01M6AG9SRCVYE37RX63N9SZH0V"
+  ],
+  "at": "2026-11-01T07:15:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f6a9bd70 I ran go test ./cmd/rhiza -run TestScripts/question-answer -count=1 (ok). The script answers store-q, then re-answers it and gets exit 2 with code usage and no answer-store-q-2; apart-q, blocking only a node the target change set does not touch, answered with --change exits 2 with no answer-apart-q; store-q blocking the touched capability store is accepted; fold-ok passes. Read the diff: runQuestionAnswer refuses via questionBlocks, which reuses planCore's blockers (open question, blocks link to the change set, a touched node or its ancestor). Probed by hand with a scratch build in a clean repo: re-answer into the same blocking change set exits 2 and writes nothing; a question blocking another accepted change set's node is refused with --change of the wrong one and accepted with the right one; a blocks link straight to the change set is accepted; a question blocking the parent of a touched child is accepted; a draft change set touching the blocked node is accepted; --record is refused outright, so the check cannot be bypassed. make check exits 0."
+        },
+        "handle": "answer-refuses-closed-or-unblocking-verified",
+        "id": "01M6AZDHV51QFXYFYKFH9FCSR6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AZDHV51QFXYFYKFDYDFBC3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AZDHV51QFXYFYKFDYDFBC3",
+        "id": "01M6AZDJGXR9YGC5YK6QHM1YRJ",
+        "link": "01M6AZDJGXR9YGC5YK6QBYAN6X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6AG9K13K9QP9QWR4NWM02HG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M69VQG7GJARDSWZWKDJ4CWQ1",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AZDKKMB88NJH86RDY5FMZ7",
+  "type": "ops",
+  "v": 1
+}
