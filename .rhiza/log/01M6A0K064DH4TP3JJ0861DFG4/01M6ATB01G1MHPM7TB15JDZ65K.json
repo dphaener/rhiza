@@ -1,0 +1,53 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6AS2EYJ7YG5R6PYZ8W5W6S2"
+  ],
+  "at": "2026-11-01T05:46:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "bca237f62a22f368f6e5ebc31e863658ff5572d8",
+          "pr": "https://github.com/dphaener/rhiza/pull/156",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #156 (https://github.com/dphaener/rhiza/pull/156) passed CI at bca237f",
+          "status": "verified"
+        },
+        "handle": "pr-156-daemon-picks-up-rebuilt-binary",
+        "id": "01M6ATAX9SGAPZ7HNFD8M6WCBY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ATAX9SGAPZ7HNFD6VPYRAT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ATAX9SGAPZ7HNFD6VPYRAT",
+        "id": "01M6ATAY25HMXJNMAKMKZF0RTV",
+        "link": "01M6ATAY25HMXJNMAKMJB97ZQK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NRGNH76FNWH3564VWA1X",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6ATAX9SGAPZ7HNFD6VPYRAT",
+        "id": "01M6ATAYT93AMRG34XXV760BRJ",
+        "link": "01M6ATAYT93AMRG34XXSD337TW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NSV7XVE3SXVN0V6AKTKR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6A0K064DH4TP3JJ0861DFG4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6ATB01G1MHPM7TB15JDZ65K",
+  "type": "ops",
+  "v": 1
+}
