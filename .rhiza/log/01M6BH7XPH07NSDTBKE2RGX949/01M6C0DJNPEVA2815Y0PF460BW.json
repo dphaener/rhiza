@@ -1,0 +1,40 @@
+{
+  "actor": "01M6BZSST5VYPYK506DNMRERZ5",
+  "after": [
+    "01M6BH9HKJ7ENM56E8JQQDWH8A"
+  ],
+  "at": "2026-11-01T16:52:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 3ee71a7e. I read the diff from cdfd5af5. internal/api/feed.go adds an `all` flag and feedActorOnly, which drops a landed change set when every op creates an actor or updates an actor node. The drop happens inside the landed loop, before paging, and the next-page command carries --all. cmd/rhiza/tui.go runs the same feed op. feed.txtar now lands alpha and gamma capability records and an intent record (beta). It checks that by default 3 are listed and 'Record actor' is not, and that with --all 4 are listed in order. With --limit 2 the first page holds 2 items and the next page holds the rest. With --all, the next: line contains --all and both pages are full. An intention change set is shown by default and with --all. tui-changes-app.txtar asserts that 'Record actor' is not shown. Re-running describe-golden with -update left no diff, and the golden file has the `all` field. `go test ./cmd/rhiza -run 'TestScripts/(feed|tui-changes-app|describe-golden)$' -count=1` passed. `go test ./...` passed in every package. `make self-check` passed with RHIZA_* unset. The attempt-1 finding (no intent record in the test) is fixed."
+        },
+        "handle": "feed-hides-actor-records-verified",
+        "id": "01M6C0DGQ6ZGR2XBA0J2MTY8Q2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6C0DGQ6ZGR2XBA0J1E1T945",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6C0DGQ6ZGR2XBA0J1E1T945",
+        "id": "01M6C0DHFGZDM01ERSQ5AMA7ZG",
+        "link": "01M6C0DHFGZDM01ERSQ2CS44K1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BH9A4779HN5ZTFQGW718ZT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6BH7XPH07NSDTBKE2RGX949",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6C0DJNPEVA2815Y0PF460BW",
+  "type": "ops",
+  "v": 1
+}
