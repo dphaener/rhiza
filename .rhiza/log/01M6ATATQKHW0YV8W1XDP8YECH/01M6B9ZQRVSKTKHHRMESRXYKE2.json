@@ -1,0 +1,40 @@
+{
+  "actor": "01M6B9XZ2S9J7738ZM5XSWGHYD",
+  "after": [
+    "01M6B9CXMPK49XGKT578J4X7Y5"
+  ],
+  "at": "2026-11-01T10:20:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 70f0876b, go test ./cmd/rhiza -count=1 -run TestScripts/run-abandon passes run-abandon, run-abandon-dirty, run-abandon-unmerged, run-abandon-shared and run-abandon-failed. run-abandon.txtar asserts 'remove-worktree done' and 'delete-branch done', that git worktree list drops to the main checkout only (so the run's worktree folder is removed) and that git branch --list cs/* is empty. run-abandon-dirty.txtar, with an uncommitted scratch.txt in the worktree, asserts 'remove-worktree kept: the worktree is dirty', 'delete-branch kept', that the file still exists and that the cs/ branch remains. Reading the diff: branch deletion now uses git branch -d, so a branch with unmerged commits is kept (run-abandon-unmerged asserts that, and that the folder is gone via ! exists). go fmt, vet and the full go test pass in make check. Its self-check step fails only on rendered actor files and index.md made stale by this run's own model writes, my own actor among them, not by the commit."
+        },
+        "handle": "abandon-clears-worktree-verified-3",
+        "id": "01M6B9ZNJ9DZVVPGXC4QYQV69X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6B9ZNJ9DZVVPGXC4N0K906G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B9ZNJ9DZVVPGXC4N0K906G",
+        "id": "01M6B9ZPDA7NJGD068W8JK4Q39",
+        "link": "01M6B9ZPDA7NJGD068W7V6TJQV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATC08K455FW14QCXPZ9QHD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ATATQKHW0YV8W1XDP8YECH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B9ZQRVSKTKHHRMESRXYKE2",
+  "type": "ops",
+  "v": 1
+}
