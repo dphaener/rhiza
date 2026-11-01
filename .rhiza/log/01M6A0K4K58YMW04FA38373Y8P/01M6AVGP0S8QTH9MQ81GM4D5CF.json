@@ -1,0 +1,40 @@
+{
+  "actor": "01M6AVEMAGEXX48FHYE4FGBVTQ",
+  "after": [
+    "01M6AVCASMES8P36S8NHKYEMM8"
+  ],
+  "at": "2026-11-01T06:07:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At eb20db85 (attempt 2): go test ./cmd/rhiza -run TestScripts/inbox-stalled passes (live run, hand-set working hook report at 00:00Z: no stalled item at 00:19Z, one kind stalled at 00:21Z with step build, at, and next rhiza session message; blocked and idle records give none). go test ./internal/tui/inboxapp -run TestViewGroupsStalled passes (Stalled group shown). The fix diff replaces runStalledNow with runStalledAll in inboxStalledOf so the inbox adds one item per stalled session of the current step; TestRunStalledNow now checks parallel checks plus fixer all listed and none for a stopped run; this addresses QA finding f2. go vet and gofmt clean; make check fails only on stale .rhiza/rendered files from the run's own model writes."
+        },
+        "handle": "inbox-stalled-items-verified-2",
+        "id": "01M6AVGM78DX3R860E59TZPEGA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AVGM78DX3R860E599NDRE5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AVGM78DX3R860E599NDRE5",
+        "id": "01M6AVGMXDQK3YN3TGZBD2CTCT",
+        "link": "01M6AVGMXDQK3YN3TGZA3YC0BQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NY4FZ07ZQMR23E700DTQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6A0K4K58YMW04FA38373Y8P",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AVGP0S8QTH9MQ81GM4D5CF",
+  "type": "ops",
+  "v": 1
+}
