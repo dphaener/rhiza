@@ -1,0 +1,59 @@
+# rhiza run abandon keeps the worktree and local branch when another run
+# of the change set still uses them: a failed run abandoned while a newer
+# run waits leaves the newer run's worktree and branch in place. Abandoning
+# the newer run then removes both.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Abandon a shared run' --title 'Abandon shared' --json
+mkdir .rhiza/workflows
+cp ../gate.toml .rhiza/workflows/gate.toml
+
+# Run A fails at its check.
+! exec rhiza run start --workflow gate
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG failed$'
+
+# Run B starts on the same change set and stops at its wait.
+exec sh -c 'echo > $WORK/pass'
+exec rhiza run start --workflow gate --no-wait
+stdout '^Run [0-9A-Z]{26} stopped$'
+exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl// > $WORK/second'
+
+# Abandoning A keeps B's worktree and branch.
+exec rhiza run abandon 01M5PWGJC82P7YGZTWYFFZ0VJG
+stdout 'remove-worktree kept: run [0-9A-Z]{26} still uses it'
+stdout 'delete-branch kept'
+exists ../repo.abandon-shared
+exec sh -c 'git worktree list | wc -l'
+stdout '^ *2$'
+exec sh -c 'git branch --list "cs/*" | wc -l'
+stdout '^ *1$'
+
+# Abandoning B, the last run using them, removes both.
+exec sh -c 'rhiza run abandon $(cat $WORK/second)'
+stdout 'remove-worktree done'
+stdout 'delete-branch done'
+! exists ../repo.abandon-shared
+exec sh -c 'git branch --list "cs/*" | wc -l'
+stdout '^ *0$'
+
+-- gate.toml --
+name = "gate"
+
+[step.check]
+kind = "command"
+run = "test -f ../pass"
+on.pass = "hold"
+on.fail = "failed"
+
+[step.hold]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"

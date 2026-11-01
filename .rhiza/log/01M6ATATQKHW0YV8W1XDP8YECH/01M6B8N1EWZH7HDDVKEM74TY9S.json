@@ -1,0 +1,29 @@
+{
+  "actor": "01M6B8JG03VV2YTXK2ZARMWRWD",
+  "after": [
+    "01M6B8F01D8H6ZY7QZ2EEFK2RS"
+  ],
+  "at": "2026-11-01T09:57:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M634EVJCQ5GYPC0ZZG4TJW7H",
+        "handle": null,
+        "id": "01M6B8N09PQ46ZV2215KY4WVPH",
+        "node": "01M61R7GG0GGBSVKV2585MNPCW",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A testscript abandons an interrupted fake run: run status shows it failed with the abandoned detail and the actor, its clean worktree and local branch are gone, rhiza run start on the change set then succeeds, rhiza run resume on the abandoned run exits 2 naming it, and abandoning a succeeded or already abandoned run exits 2; describe-golden is regenerated.",
+          "statement": "rhiza run abandon <run> journals an unfinished or failed run as failed with the detail 'abandoned by <actor>', removing its clean worktree and local branch unless another run still uses them (see abandon-clears-worktree), so a new run can start on the change set; it refuses a succeeded or already abandoned run, and rhiza run resume refuses an abandoned run, naming it."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6ATATQKHW0YV8W1XDP8YECH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B8N1EWZH7HDDVKEM74TY9S",
+  "type": "ops",
+  "v": 1
+}

@@ -817,8 +817,9 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 
 // runRunAbandon journals an unfinished run as failed with the detail
 // "abandoned by <actor>", under the run's lock so a run going in another
-// process is refused. It leaves the worktree and branch alone; the change
-// set then has no live run, so a new one can start. A failed run can be
+// process is refused. It removes the run's clean worktree and local branch
+// unless another run still uses them; the change set then has no live run,
+// so a new one can start. A failed run can be
 // abandoned too, which clears it from the inbox; a succeeded or already
 // abandoned run is refused.
 func runRunAbandon(ctx *Ctx, req any) (any, error) {
@@ -876,7 +877,7 @@ func runRunAbandon(ctx *Ctx, req any) (any, error) {
 	}
 	j.Entries = append(j.Entries, e)
 	st := j.State()
-	return RunAbandonResponse{Run: runInfo(ctx, st, false, sessions), Cleanup: abandonCleanup(ctx, common, st)}, nil
+	return RunAbandonResponse{Run: runInfo(ctx, st, false, sessions), Cleanup: abandonCleanup(ctx, common, rs, j.ID, st)}, nil
 }
 
 // worktreeDirty reports whether git status --porcelain -uall output holds
@@ -903,9 +904,10 @@ func worktreeDirty(porcelain, worktree, main string) bool {
 
 // abandonCleanup removes the abandoned run's worktree without force and
 // deletes its local cs/<slug> branch, keeping both when the worktree is
-// dirty. The remote branch and any PR are left alone. Failures are
-// reported as kept, never as errors: the run is already abandoned.
-func abandonCleanup(ctx *Ctx, common string, st run.State) []RunAbandonStep {
+// dirty or another run still uses them. The remote branch and any PR are
+// left alone. Failures are reported as kept, never as errors: the run is
+// already abandoned.
+func abandonCleanup(ctx *Ctx, common string, rs *run.Store, id string, st run.State) []RunAbandonStep {
 	if st.Worktree == "" || st.Title == "" || ctx.Exec == nil {
 		return nil
 	}
@@ -921,7 +923,11 @@ func abandonCleanup(ctx *Ctx, common string, st run.State) []RunAbandonStep {
 	kept := func(step, why string) {
 		out = append(out, RunAbandonStep{Step: step, Status: "kept", Detail: why})
 	}
-	if fi, err := os.Stat(st.Worktree); err != nil || !fi.IsDir() {
+	if other, err := worktreeUser(rs, id, st); err != nil {
+		kept("remove-worktree", "cannot list the runs: "+err.Error())
+	} else if other != "" {
+		kept("remove-worktree", "run "+other+" still uses it")
+	} else if fi, err := os.Stat(st.Worktree); err != nil || !fi.IsDir() {
 		git("worktree", "prune")
 		out = append(out, RunAbandonStep{Step: "remove-worktree", Status: "already-gone"})
 	} else {
@@ -957,6 +963,31 @@ func abandonCleanup(ctx *Ctx, common string, st run.State) []RunAbandonStep {
 		return out
 	}
 	return append(out, RunAbandonStep{Step: "delete-branch", Status: "done"})
+}
+
+// worktreeUser returns another run that still needs the abandoned run's
+// worktree and branch: a live run of the same change set, or any run
+// started later in the same worktree. It returns "" when there is none.
+func worktreeUser(rs *run.Store, id string, st run.State) (string, error) {
+	if live, ok, err := rs.LiveOf(st.Change, id); err != nil {
+		return "", err
+	} else if ok {
+		return live.ID, nil
+	}
+	runs, err := rs.List()
+	if err != nil {
+		return "", err
+	}
+	for _, j := range runs {
+		if j.ID == id {
+			continue
+		}
+		o := j.State()
+		if o.Worktree != "" && samePath(o.Worktree, st.Worktree) && o.StartedAt.After(st.StartedAt) {
+			return j.ID, nil
+		}
+	}
+	return "", nil
 }
 
 // runRunStatus reports a run from its journal alone.
