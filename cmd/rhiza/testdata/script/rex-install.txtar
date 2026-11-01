@@ -38,6 +38,12 @@ grep 'window_id = block_window\(ctx.block_id\),' conf/rhiza.lua
 grep 'client.mode.enter", \{ name = MODE' conf/rhiza.lua
 grep '^  \["roadmap"\] = "[a-z0-9]",$' conf/rhiza.lua
 grep '^  \["model"\] = "[a-z0-9]",$' conf/rhiza.lua
+grep 'name = "rhiza_app_changes"' conf/rhiza.lua
+grep '"tui", "app", "changes"' conf/rhiza.lua
+grep '^  \["changes"\] = "g",$' conf/rhiza.lua
+# The other apps keep the keys they had before the changes app.
+grep '^  \["show"\] = "h",$' conf/rhiza.lua
+grep '^  \["change-show"\] = "c",$' conf/rhiza.lua
 grep 'keys = \{\},' conf/rhiza.lua
 grep '^  \["session-ls"\] = "rhiza_app_session_ls",$' conf/rhiza.lua
 grep 'rex.bind\(MODE .. "/" .. k, APP_ACTIONS\[app\]\)' conf/rhiza.lua

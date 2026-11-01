@@ -1,0 +1,63 @@
+{
+  "actor": "01M6BDX78C2MVZYKH8QEYWMAQF",
+  "after": [
+    "01M6BDVWC8280QTP5N695KQMM5"
+  ],
+  "at": "2026-11-01T11:38:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 52027dba with a binary built from HEAD, on this repo's real .rhiza: rhiza feed --limit 3 listed the oldest landed record change sets in land order with ID, kind, actor, title and leaf count, and printed a next: line with a cursor; --json gave next_cursor and land_entry/landed_at per item; 62 of the landed change sets carry pr (e.g. The review workflow pr 45, Abandon clears worktree pr 164); --cursor nonsense and --since yesterday each exited 2 with next: rhiza describe feed; --since 2026-10-31T00:00:00Z started at that day's lands; feed --limit 5 --json and api call feed {\"limit\":5} were byte-identical (cmp). In a scratch clone a newly landed record appeared in feed --since at its land time. go test feed, describe-golden and internal/api passed."
+        },
+        "handle": "feed-command-qa-1",
+        "id": "01M6BEFE41WQ9CR3Y0P4W00MQR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6BEFE41WQ9CR3Y0P1WJBS73",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BEFE41WQ9CR3Y0P1WJBS73",
+        "id": "01M6BEFEWTWGN4SZPFGB266YG4",
+        "link": "01M6BEFEWTWGN4SZPFGAAPGP2R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6B3PEPKV2KGQRZWN4PG4BYT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 52027dba with a binary built from HEAD, in a scratch clone of this repo: the first rhiza tui app changes --once listed all 1230 landed change sets newest first (PR numbers present, e.g. pr 164), wrote .git/rhiza/feed.json with sorted seen IDs, and a second --once printed change_sets []. From a git worktree of the clone, a record landed there showed up alone in --once and was gone on the next run, so the worktree shares the clone's feed.json. Then I ran the interactive app in a real Rex window: it rendered '1 landed since you last looked' with the newly landed qa-probe-three row (time, ID, title) and a 'j/k scroll · q quit' hint. Pressing q closed it, and a later --once listed none, with the ID now in feed.json. go test tui-changes-app, rex-install and internal/tui/changesapp passed."
+        },
+        "handle": "changes-app-qa-1",
+        "id": "01M6BEFFNJCP8PMRHWNZH7D0Z8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6BEFFNJCP8PMRHWNXV0W1M0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BEFFNJCP8PMRHWNXV0W1M0",
+        "id": "01M6BEFGE8YTGPXHNA7EV6B7T5",
+        "link": "01M6BEFGE8YTGPXHNA7ERH6XEF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6B3PG5BQ496EZCTRDFMH0T2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6B3NCDEX88PC3NFRW16YTVZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BEFHP0G6JJ7HD01B0DZ03G",
+  "type": "ops",
+  "v": 1
+}

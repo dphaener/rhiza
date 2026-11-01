@@ -8,12 +8,14 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/dphaener/rhiza/internal/api"
 	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/tui/changesapp"
 	"github.com/dphaener/rhiza/internal/tui/inboxapp"
 	"github.com/dphaener/rhiza/internal/tui/liveapp"
 	"github.com/dphaener/rhiza/internal/tui/modelapp"
@@ -43,6 +45,9 @@ func tuiCommand(g globals, args []string, stdout, stderr io.Writer, getenv func(
 func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, getenv func(string) string) int {
 	if name == modelapp.Name {
 		return tuiModel(g, args, stdout, stderr, getenv)
+	}
+	if name == changesapp.Name {
+		return tuiChanges(g, args, stdout, stderr, getenv)
 	}
 	read, isRead := readapps.Lookup(name)
 	isInbox := name == inboxapp.Name
@@ -224,4 +229,66 @@ func roadmapModel(g globals, call func(g globals, op string, record, dry bool, a
 	am := roadmapapp.NewModel(runner(false))
 	am.SetPreview(runner(true))
 	return am
+}
+
+// tuiChanges runs the changes app: the landed change sets not seen yet,
+// newest first. Showing them marks them seen in .git/rhiza/feed.json under
+// the git common dir. With --once it prints them as JSON and exits.
+func tuiChanges(g globals, args []string, stdout, stderr io.Writer, getenv func(string) string) int {
+	once := false
+	for _, a := range args {
+		if a != "--once" {
+			return writeError(stdout, stderr, api.Usagef("tui app changes takes [--once]"), false)
+		}
+		once = true
+	}
+	ctx, err := newCtx(g, os.Stdin, getenv)
+	if err != nil {
+		return writeError(stdout, stderr, err, false)
+	}
+	if ctx.Git == nil {
+		return writeError(stdout, stderr, api.Errorf("changes needs git: it remembers what you saw in the git common dir"), false)
+	}
+	out, err := ctx.Git("rev-parse", "--git-common-dir")
+	if err != nil {
+		return writeError(stdout, stderr, api.Errorf("changes needs a git repository: %v", err), false)
+	}
+	common := strings.TrimSpace(out)
+	if !filepath.IsAbs(common) {
+		common = filepath.Join(ctx.Root, common)
+	}
+	o, _ := api.Lookup("feed")
+	read := func(args []string) ([]byte, error) {
+		req, err := requestFromArgs(o, args)
+		if err != nil {
+			return nil, err
+		}
+		resp, err := o.Run(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+		return canon.Marshal(resp)
+	}
+	m := changesapp.NewModel(read, filepath.Join(common, "rhiza", changesapp.SeenFile))
+	if err := m.Err(); err != nil {
+		return writeError(stdout, stderr, err, false)
+	}
+	if once {
+		res, err := m.Result()
+		if err == nil {
+			err = m.MarkSeen()
+		}
+		if err != nil {
+			return writeError(stdout, stderr, err, false)
+		}
+		stdout.Write(res)
+		return 0
+	}
+	if err := m.MarkSeen(); err != nil {
+		return writeError(stdout, stderr, err, false)
+	}
+	if _, err := tea.NewProgram(m).Run(); err != nil {
+		return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
+	}
+	return 0
 }
