@@ -1,0 +1,30 @@
+# rhiza overlaps lists the overlaps between in-flight change sets; a draft
+# counts only when named with --change.
+
+exec rhiza init
+exec rhiza change new A
+exec rhiza add capability base --field statement=Base --field acceptance=a
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+exec rhiza change new B
+exec rhiza set base --field statement=FromB
+exec rhiza propose
+exec rhiza change new C
+exec rhiza set base --field statement=FromC
+
+# Without a name the draft is not in flight.
+exec rhiza overlaps
+stdout '^No overlaps$'
+exec rhiza overlaps --json
+stdout '"overlaps": \[\]'
+
+# Naming the draft counts it.
+exec rhiza overlaps --change 01M5PWGS702G3VYA781BNZ0K7Q
+stdout '^change sets 01M5PWGP98GD3JXPKEPHTS0TQE and 01M5PWGS702G3VYA781BNZ0K7Q both write field:statement of base$'
+exec rhiza overlaps --change 01M5PWGS702G3VYA781BNZ0K7Q --json
+stdout '"a": "01M5PWGP98GD3JXPKEPHTS0TQE"'
+stdout '"b": "01M5PWGS702G3VYA781BNZ0K7Q"'
+stdout '"target": "base"'
+stdout '"field:statement"'
+fold-ok

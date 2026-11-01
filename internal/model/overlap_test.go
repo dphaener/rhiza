@@ -257,3 +257,22 @@ func ovPermutations(n int) [][]int {
 	}
 	return out
 }
+
+func TestOverlapsNamedDraft(t *testing.T) {
+	sets := []changeset.ChangeSet{
+		ovSet(csA, changeset.StateDraft, set(1, 1, 0, "title", `"a"`)),
+		ovSet(csB, changeset.StateProposed, set(2, 1, 0, "title", `"b"`)),
+		ovSet(csC, changeset.StateDraft, set(3, 1, 0, "title", `"c"`)),
+	}
+	if got := Overlaps(sets); got != nil {
+		t.Fatalf("no draft named: %v", got)
+	}
+	want := []Overlap{{A: csA, B: csB, Target: nd(1), Aspects: []string{"field:title"}}}
+	if got := Overlaps(sets, csA); !reflect.DeepEqual(got, want) {
+		t.Fatalf("draft A named: %v, want %v", got, want)
+	}
+	// Naming a proposed set changes nothing; naming an absent one neither.
+	if got := Overlaps(sets, csB, csID(9)); got != nil {
+		t.Fatalf("proposed named: %v", got)
+	}
+}

@@ -1,0 +1,13 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6AD57ETM31F5AD6G9ZQ0HMJ"
+  ],
+  "at": "2026-11-01T01:56:33Z",
+  "body": {},
+  "change_set": "01M6AD576VN41G3SET01YTMD1T",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AD57NF5GWYS247TA4G930Q",
+  "type": "land",
+  "v": 1
+}

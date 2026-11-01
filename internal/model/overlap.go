@@ -31,15 +31,16 @@ type Overlap struct {
 // Overlaps returns every overlap between the proposed and accepted change
 // sets in sets: one per pair of change sets and target, sorted by (A, B,
 // Target), nil when there are none. Drafts and terminal change sets are
-// ignored. No model is computed and bases are not compared: two proposals
+// ignored, except the drafts named in drafts, which count as in flight. No model is computed and bases are not compared: two proposals
 // writing the same field overlap whatever their bases. The result does not
 // depend on the order of sets.
-func Overlaps(sets []changeset.ChangeSet) []Overlap {
+func Overlaps(sets []changeset.ChangeSet, drafts ...id.ID) []Overlap {
 	// For each target, the aspects each change set's operations write, one
 	// slice per operation, creates left out.
 	byTarget := map[id.ID]map[id.ID][][]string{}
 	for _, cs := range sets {
-		if cs.State != changeset.StateProposed && cs.State != changeset.StateAccepted {
+		named := cs.State == changeset.StateDraft && slices.Contains(drafts, cs.ID)
+		if cs.State != changeset.StateProposed && cs.State != changeset.StateAccepted && !named {
 			continue
 		}
 		for _, o := range cs.Ops {

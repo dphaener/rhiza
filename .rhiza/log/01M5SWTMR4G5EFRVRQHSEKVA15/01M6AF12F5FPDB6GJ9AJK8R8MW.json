@@ -1,0 +1,53 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6AEBWAH8HGMKQBQBTP8MA7Q"
+  ],
+  "at": "2026-11-01T02:29:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "198139e612d9cbfe0f6944fc7f57293965fd0b52",
+          "pr": "https://github.com/dphaener/rhiza/pull/151",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #151 (https://github.com/dphaener/rhiza/pull/151) passed CI at 198139e",
+          "status": "verified"
+        },
+        "handle": "pr-151-genesis-reviews-each-plan",
+        "id": "01M6AF103AWVT8591PZ1D1K7ES",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AF103AWVT8591PYXEH0CF5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AF103AWVT8591PYXEH0CF5",
+        "id": "01M6AF10RBQJQYZ6ANZ09FQ0CA",
+        "link": "01M6AF10RBQJQYZ6ANYZ7VMQHQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DHN4ACW58QZ5BKRZBC56B",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6AF103AWVT8591PYXEH0CF5",
+        "id": "01M6AF11DCDXY9D30J7VWEPPJE",
+        "link": "01M6AF11DCDXY9D30J7T82NGGV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DHPCMJZPPZF9076CWYS04",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTMR4G5EFRVRQHSEKVA15",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AF12F5FPDB6GJ9AJK8R8MW",
+  "type": "ops",
+  "v": 1
+}
