@@ -95,7 +95,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		}
 		return nil, err
 	}
-	defer lock.Unlock()
+	defer func() { lock.Unlock() }()
 	self := daemon.ReadHolder(common)
 	if ctx.Stderr != nil {
 		fmt.Fprintf(ctx.Stderr, "rhiza: daemon running, process %s\n", self)
@@ -149,6 +149,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if r.Once {
 		return resp, poll()
 	}
+	reexec := daemonReexec()
 	var interrupted <-chan struct{}
 	if ctx.Interrupts != nil {
 		var stop func()
@@ -161,6 +162,22 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		if err := poll(); err != nil && ctx.Stderr != nil {
 			fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %v\n", err)
 		}
+		// The end of a poll with nothing pending: a rebuilt binary takes
+		// over. Live runs are separate processes and carry on.
+		if reexec.Due(len(pending)) {
+			if ctx.Stderr != nil {
+				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: binary changed, re-executing\n")
+			}
+			l, err := reexec.Do(common, lock, ctx.Now())
+			if l == nil {
+				return resp, err
+			}
+			lock = l
+			if err != nil && ctx.Stderr != nil {
+				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: re-exec: %v\n", err)
+			}
+			reexec = nil // do not retry a failed exec every poll
+		}
 		select {
 		case <-interrupted:
 			return resp, nil
@@ -168,6 +185,9 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		}
 	}
 }
+
+// daemonReexec is how the daemon re-executes itself; tests replace it.
+var daemonReexec = daemon.NewReexec
 
 // daemonNotify sends one Rex notification for each inbox item that waits
 // and that state does not list as notified, and records it there. An item
