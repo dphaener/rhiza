@@ -63,23 +63,30 @@ func runNotifyCommand(ctx *Ctx, command string, it InboxItem, notice string) err
 	if err != nil {
 		return err
 	}
+	return runHookCommand(ctx, command, in, []string{
+		"RHIZA_INBOX_KIND=" + it.Kind,
+		"RHIZA_INBOX_ID=" + it.ID,
+		"RHIZA_INBOX_CHANGE=" + it.Change,
+		"RHIZA_INBOX_TITLE=" + notice,
+	})
+}
+
+// runHookCommand runs command through sh -c in the repo root with in and a
+// newline on stdin and env added to the environment, killing it past the
+// hook timeout.
+func runHookCommand(ctx *Ctx, command string, in []byte, env []string) error {
 	timeout := notifyTimeoutFor(ctx)
 	c, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	cmd := exec.CommandContext(c, "sh", "-c", command)
 	cmd.Dir = ctx.Root
-	cmd.Env = append(os.Environ(),
-		"RHIZA_INBOX_KIND="+it.Kind,
-		"RHIZA_INBOX_ID="+it.ID,
-		"RHIZA_INBOX_CHANGE="+it.Change,
-		"RHIZA_INBOX_TITLE="+notice,
-	)
+	cmd.Env = append(os.Environ(), env...)
 	cmd.Stdin = bytes.NewReader(append(in, '\n'))
 	var out bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &out, &out
 	// A child that outlives the shell keeps the pipes open: stop waiting.
 	cmd.WaitDelay = time.Second
-	err = cmd.Run()
+	err := cmd.Run()
 	if c.Err() != nil {
 		return fmt.Errorf("timed out after %s", timeout)
 	}

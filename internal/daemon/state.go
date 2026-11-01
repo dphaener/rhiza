@@ -60,6 +60,11 @@ type State struct {
 	// that still wait. It is apart from Notified so the hook runs with or
 	// without Rex.
 	Hooked []string `json:"hooked,omitempty"`
+	// Events are the IDs of the lifecycle moves the event command has been
+	// handled for, run or seeded; EventsSeeded says the first run recorded
+	// every move then in the log, so history is not replayed.
+	Events       []string `json:"events,omitempty"`
+	EventsSeeded bool     `json:"events_seeded,omitempty"`
 	// DiskLow is set while the last poll found free space under the
 	// daemon's minimum, and absent once a poll finds enough.
 	DiskLow *DiskLow `json:"disk_low,omitempty"`

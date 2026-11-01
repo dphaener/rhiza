@@ -43,6 +43,7 @@ type DaemonRequest struct {
 	Autonomous     bool   `json:"autonomous,omitempty" desc:"Start each run with --autonomous: it goes on without the owner"`
 	MinFree        string `json:"min_free,omitempty" desc:"Start and resume nothing while the repo's filesystem has less free space than this: bytes, or a number with K, M, G or T (powers of 1024); default 10G; 0 turns the guard off"`
 	PermissionMode string `json:"permission_mode,omitempty" desc:"Start each run with this --permission-mode, for its agent steps that set none; checked against ship-change before the daemon starts"`
+	EventCommand   string `json:"event_command,omitempty" desc:"Run this command through sh -c in the repo root once per change set lifecycle move (proposed, accepted, rejected, withdrawn, superseded, landed, reopened) it has not handled, in log order, with the move as JSON on stdin and RHIZA_EVENT, RHIZA_EVENT_CHANGE, RHIZA_EVENT_ENTRY and RHIZA_EVENT_TITLE set; default: git config rhiza.eventCommand. The first run only records the moves already in the log. A failing or timed-out (10 s) command is logged and not retried"`
 	NotifyCommand  string `json:"notify_command,omitempty" desc:"Run this command through sh -c in the repo root once per new inbox item, with the item's JSON on stdin and RHIZA_INBOX_KIND, RHIZA_INBOX_ID, RHIZA_INBOX_CHANGE and RHIZA_INBOX_TITLE set; default: git config rhiza.notifyCommand. A failing or timed-out (10 s) command is logged and not retried"`
 }
 
@@ -117,6 +118,12 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			notifyCmd = strings.TrimSpace(out)
 		}
 	}
+	eventCmd := strings.TrimSpace(r.EventCommand)
+	if eventCmd == "" && ctx.Git != nil {
+		if out, err := ctx.Git("config", "--get", "rhiza.eventCommand"); err == nil {
+			eventCmd = strings.TrimSpace(out)
+		}
+	}
 	rs := run.NewStore(run.Dir(common))
 	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}}
 	pending := map[string]daemonPending{}
@@ -126,6 +133,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		state.LastStarted, state.LastResumed = prev.LastStarted, prev.LastResumed
 		state.Notified = prev.Notified
 		state.Hooked = prev.Hooked
+		state.Events, state.EventsSeeded = prev.Events, prev.EventsSeeded
 		state.DiskLow = prev.DiskLow
 		// A re-exec, or a restart, keeps the holds of the daemon before.
 		unjournaled = daemonRestoreUnjournaled(prev.Unjournaled)
@@ -170,6 +178,9 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		slices.SortFunc(state.Unjournaled, func(a, b daemon.Event) int { return strings.Compare(a.Change, b.Change) })
 		if nerr := daemonNotify(ctx, rs, &state, notifyCmd); err == nil {
 			err = nerr
+		}
+		if eerr := daemonEvents(ctx, &state, eventCmd); err == nil {
+			err = eerr
 		}
 		saveState()
 		return err

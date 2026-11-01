@@ -1,0 +1,101 @@
+# The daemon runs the owner's event command once per lifecycle move it has
+# not handled, in log order, with the move as JSON on stdin and RHIZA_EVENT_*
+# set. The first run only records the moves already in the log. Moves pulled
+# from another clone run too. A failing or timed-out command is logged with
+# the entry ID and not retried.
+
+chmod 755 hook.sh
+chmod 755 fail.sh
+env HOOKOUT=$WORK/hook.out
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'First change' --title 'First change' --json
+exec rhiza propose
+exec git add -A
+exec git commit -qm first
+
+# The first poll sees a log with a move in it and writes nothing.
+exec rhiza daemon --permission-mode manual --once --event-command $WORK/hook.sh
+! exists $HOOKOUT
+
+# Accept: one new move, one line. A second poll writes none.
+exec rhiza accept
+exec rhiza daemon --permission-mode manual --once --event-command $WORK/hook.sh
+exec sh -c 'wc -l < $HOOKOUT'
+stdout '^ *1$'
+exec grep -c '"event":"accepted"' $HOOKOUT
+exec grep -c 'env=accepted:.*:First change' $HOOKOUT
+exec rhiza daemon --permission-mode manual --once --event-command $WORK/hook.sh
+exec sh -c 'wc -l < $HOOKOUT'
+stdout '^ *1$'
+
+# Two moves in one poll run in log order.
+exec rhiza change new 'Second change' --title 'Second change' --json
+exec rhiza propose
+exec rhiza accept
+exec rhiza daemon --permission-mode manual --once --event-command $WORK/hook.sh
+exec sh -c 'wc -l < $HOOKOUT'
+stdout '^ *3$'
+exec sh -c 'tail -2 $HOOKOUT | cut -c1-40'
+stdout 'proposed'
+exec sh -c 'tail -1 $HOOKOUT'
+stdout '"event":"accepted"'
+exec rhiza daemon --permission-mode manual --once --event-command $WORK/hook.sh
+exec sh -c 'wc -l < $HOOKOUT'
+stdout '^ *3$'
+
+# A move committed in a second clone and pulled fires once.
+exec git add -A
+exec git commit -qm second
+cd $WORK
+exec git clone -q repo other
+cd other
+exec rhiza change new 'Third change' --title 'Third change' --json
+exec rhiza propose
+exec git add -A
+exec git commit -qm third
+cd $WORK/repo
+exec git pull -q --no-rebase ../other HEAD
+exec rhiza daemon --permission-mode manual --once --event-command $WORK/hook.sh
+exec sh -c 'wc -l < $HOOKOUT'
+stdout '^ *4$'
+exec grep -c 'env=proposed:.*:Third change' $HOOKOUT
+exec rhiza daemon --permission-mode manual --once --event-command $WORK/hook.sh
+exec sh -c 'wc -l < $HOOKOUT'
+stdout '^ *4$'
+
+# git config rhiza.eventCommand is used when the flag is absent.
+exec git config rhiza.eventCommand $WORK/hook.sh
+exec rhiza withdraw
+exec rhiza daemon --permission-mode manual --once
+exec sh -c 'wc -l < $HOOKOUT'
+stdout '^ *5$'
+
+# A command exiting 1 is logged with the entry ID and the poll succeeds; it
+# is not run again for that move.
+exec git config --unset rhiza.eventCommand
+exec rhiza change new 'Fourth change' --title 'Fourth change' --json
+exec rhiza propose
+exec rhiza daemon --permission-mode manual --once --event-command $WORK/fail.sh
+stderr -count=1 'event command for entry [0-9A-Z]{26}: exit status 1.*boom'
+exec rhiza daemon --permission-mode manual --once --event-command $WORK/fail.sh
+! stderr 'event command'
+
+# A command past the timeout is killed and logged.
+exec rhiza accept
+env RHIZA_TEST_NOW=2026-01-03T00:00:00Z RHIZA_TEST_NOTIFY_TIMEOUT=200ms
+exec rhiza daemon --permission-mode manual --once --event-command 'sleep 30'
+stderr -count=1 'event command for entry .*timed out after 200ms'
+
+-- fail.sh --
+#!/bin/sh
+echo boom
+exit 1
+-- hook.sh --
+#!/bin/sh
+in=$(cat)
+echo "$in env=$RHIZA_EVENT:$RHIZA_EVENT_CHANGE:$RHIZA_EVENT_ENTRY:$RHIZA_EVENT_TITLE" >> "$HOOKOUT"
