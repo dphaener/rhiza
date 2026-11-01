@@ -16,6 +16,12 @@ New work starts from the roadmap app with m for a milestone plan and n for a cha
 
 - derived-from [m7-keep-picking](../source/m7-keep-picking.md)
 
+### In
+
+- decided-by [run-start-new-intent](../capability/rhiza/roadmap-app-start-runs/run-start-new-intent.md)
+- decided-by [roadmap-app-new-work](../capability/rhiza/roadmap-app-start-runs/roadmap-app-new-work.md)
+- decided-by [plan-guide-new-change-set](../capability/rhiza/roadmap-app-start-runs/plan-guide-new-change-set.md)
+
 ## History
 
 - `01M686RDMZR9FBZXN7DZWRWQW9` Plan milestone 7: drive Rhiza from Rex and see what it does, picked by the orchestrator under the owner's standing instruction
