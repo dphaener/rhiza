@@ -2411,7 +2411,6 @@
 - [claude-code-b364612a](actor/claude-code-b364612a.md)
 - [claude-code-b3d6875a](actor/claude-code-b3d6875a.md)
 - [claude-code-b426a4bf](actor/claude-code-b426a4bf.md)
-- [claude-code-b43717c8](actor/claude-code-b43717c8.md)
 - [claude-code-b477d0ae](actor/claude-code-b477d0ae.md)
 - [claude-code-b48a512e](actor/claude-code-b48a512e.md)
 - [claude-code-b4ba41b7](actor/claude-code-b4ba41b7.md)
