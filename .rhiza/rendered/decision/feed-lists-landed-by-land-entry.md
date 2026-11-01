@@ -16,6 +16,10 @@ rhiza feed lists landed change sets only, ordered by their latest land entry, ea
 
 - derived-from [m13-orchestrator-picks](../source/m13-orchestrator-picks.md)
 
+### In
+
+- decided-by [feed-command](../capability/rhiza/views/change-feed/feed-command.md)
+
 ## History
 
 - `01M6B3NBFS2XB29R29457RSCGA` Plan milestone 13: catch up at a glance, picked by the orchestrator under the owner's standing instruction

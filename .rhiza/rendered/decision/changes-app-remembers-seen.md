@@ -16,6 +16,10 @@ The Rex app is named changes (key g, so no existing key moves); it shows landed 
 
 - derived-from [m13-orchestrator-picks](../source/m13-orchestrator-picks.md)
 
+### In
+
+- decided-by [changes-app](../capability/rhiza/views/change-feed/changes-app.md)
+
 ## History
 
 - `01M6B3NBFS2XB29R29457RSCGA` Plan milestone 13: catch up at a glance, picked by the orchestrator under the owner's standing instruction
