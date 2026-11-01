@@ -977,6 +977,14 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "serves": {
+            "description": "The intents its live serves links point to, in its write view, by link ID; empty when it serves none yet",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
           "sources": {
             "description": "The source node IDs",
             "items": {
@@ -1010,6 +1018,7 @@ cmp stdout describe.golden.json
           "leaves",
           "ops",
           "problems",
+          "serves",
           "sources",
           "state",
           "title"

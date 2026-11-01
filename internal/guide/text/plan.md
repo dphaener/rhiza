@@ -12,8 +12,8 @@ the plan, and tasks belong to the work layer.
 2. Tell the scope from `kind` in `rhiza change show --json`:
    - `intention`: one change set serving an existing intent. Plan its leaves, within its
      intent, into `RHIZA_CHANGE`. Anything outside the intent becomes a question.
-     If it serves no intent yet (no `context` entry with `"relation":"serves"` in
-     `rhiza slice --change "$RHIZA_CHANGE" --json`; `rhiza change show` never lists it), settle
+     If it serves no intent yet (`"serves": []` in `rhiza change show --json`, the change
+     set's own serves links; slice's `serves` context follows its nodes, not it), settle
      that first, before any leaf: pick a landed intent it belongs under, or write a new one
      (`"kind":"intent"`, under its parent) into `RHIZA_CHANGE`, with the owner. Then write
      the `serves` link: `rhiza link "$RHIZA_CHANGE" serves <intent> --change "$RHIZA_CHANGE"`.

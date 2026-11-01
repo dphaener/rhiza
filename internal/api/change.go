@@ -220,6 +220,7 @@ type ChangeShowResponse struct {
 	Intent       string            `json:"intent" desc:"The change set's intent"`
 	Title        string            `json:"title" desc:"The change set's title, else its intent's first clause"`
 	Sources      []id.ID           `json:"sources" desc:"The source node IDs"`
+	Serves       []id.ID           `json:"serves" desc:"The intents its live serves links point to, in its write view, by link ID; empty when it serves none yet"`
 	State        changeset.State   `json:"state" desc:"The lifecycle state; empty without a valid open"`
 	Current      bool              `json:"current" desc:"Whether it is the current change set"`
 	Ops          []json.RawMessage `json:"ops" desc:"The current operations, as canonical op JSON, in change set order"`
@@ -287,16 +288,22 @@ func runChangeShow(ctx *Ctx, req any) (any, error) {
 		return nil, NotFoundf("no change set %s", cs).WithNext(changeLsNext)
 	}
 	c, problems := changeset.Fold(cs, es)
+	m := w.model(cs)
+	serves := []id.ID{}
+	for _, l := range m.LinksFrom(cs, op.LinkServes) {
+		serves = append(serves, l.To)
+	}
 	resp := ChangeShowResponse{
 		ID:           cs,
 		Kind:         c.Open.Kind,
 		Intent:       c.Open.Intent,
 		Title:        c.Open.DisplayTitle(),
 		Sources:      orEmpty(c.Open.Sources),
+		Serves:       serves,
 		State:        c.State,
 		Current:      cs == current,
 		Ops:          []json.RawMessage{},
-		Leaves:       changeLeaves(w.model(cs), c.Ops),
+		Leaves:       changeLeaves(m, c.Ops),
 		SupersededBy: c.SupersededBy,
 		Heads:        orEmpty(c.Heads),
 		Applied:      orEmpty(c.Applied),
