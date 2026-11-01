@@ -1,0 +1,68 @@
+# change diff lists, per node a change set writes, its action, each changed
+# field before and after (the node at the first op's base) and its links.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add intent goal --record
+exec rhiza add capability thing --field 'statement=a' --field 'acceptance=ok' --record
+exec rhiza add capability gone --field 'statement=old' --record
+
+exec rhiza add capability notes --json-field 'statement="one\ntwo\nthree"' --record
+
+exec rhiza change new 'Edit things'
+
+# add then set gives statement a to b; an unset field shows old to unset.
+exec rhiza set thing --field 'statement=b' --unset acceptance
+exec rhiza change diff
+stdout '^updated capability thing$'
+stdout '^  statement: a -> b$'
+stdout '^  acceptance: ok -> unset$'
+
+# Two sets of one node give one before and after.
+exec rhiza set thing --field 'statement=c'
+exec rhiza change diff
+stdout '^  statement: a -> c$'
+! stdout 'a -> b'
+
+# A retire shows its reason.
+exec rhiza retire gone --reason 'not needed'
+exec rhiza change diff
+stdout '^retired capability gone: not needed$'
+
+# A create shows every field with no old value, and its links.
+exec rhiza add capability fresh --field 'statement=new one' --parent thing
+exec rhiza link fresh relates-to thing --note related
+exec rhiza change diff
+stdout '^created capability fresh$'
+stdout '^  statement: new one$'
+stdout '^added link relates-to fresh thing$'
+
+# Another change set landing a different field of the node first does not
+# change this change set's own diff against its base.
+exec rhiza set thing --field 'acceptance=landed first' --record
+exec rhiza change diff
+stdout '^  statement: a -> c$'
+! stdout 'landed first'
+
+# A multi-line string shows as a line diff: one - and one + around the rest.
+exec rhiza set notes --json-field 'statement="one\nTWO\nthree"'
+exec rhiza change diff
+stdout '^  statement:$'
+stdout '^      one$'
+stdout '^    - two$'
+stdout '^    \+ TWO$'
+stdout '^      three$'
+
+# --json and api call print the same bytes.
+exec rhiza change diff --json
+cp stdout $WORK/cli.json
+exec rhiza api call change.diff '{}'
+cmp stdout $WORK/cli.json
+fold-ok
+
+# change show ends with the same changes in a Changes section.
+exec rhiza change show
+stdout '## Changes'
+stdout '^  statement: a -> c$'

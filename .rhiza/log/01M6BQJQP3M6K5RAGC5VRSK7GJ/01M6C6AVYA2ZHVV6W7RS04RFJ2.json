@@ -1,0 +1,86 @@
+{
+  "actor": "01M6C67A6309FWJ5CC79K57XWE",
+  "after": [
+    "01M6C669ADHR9FARKPSDDGFRDW"
+  ],
+  "at": "2026-11-01T18:35:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 500c4d63, built go build -o $TMPDIR/rhiza-qa ./cmd/rhiza and ran it by hand in a fresh scratch repo with RHIZA_* unset. In one change set: set thing statement a->b, unset acceptance, set statement again ->c, retire gone --reason obsolete, add fresh under thing, link fresh relates-to thing. change diff printed 'updated capability thing / acceptance: ok -> unset / statement: a -> c' (one before/after for two sets), 'retired capability gone: obsolete', 'created capability fresh' with every field and no old value, and 'added link relates-to fresh thing'. After landing acceptance on thing in another change set (--record), the diff still showed only this change set's 'statement: a -> c' and 'acceptance: ok -> unset'. A pure mv of a node printed 'moved capability solo' with '@key: z -> r'; unlink printed 'retired link relates-to parent2 solo'. change diff --json and api call change.diff '{}' were cmp-identical. go test -run TestScripts/(change-diff|describe-golden) passes."
+        },
+        "handle": "change-diff-op-qa-1",
+        "id": "01M6C6AJY9E4W9ZJE7W1VZ1D3E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6C6AJY9E4W9ZJE7W0NJHFDH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6C6AJY9E4W9ZJE7W0NJHFDH",
+        "id": "01M6C6AMBTD7R8QFNN76N42V62",
+        "link": "01M6C6AMBTD7R8QFNN73Q811VF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BQKGB62F75TG9YPKM13QNT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 500c4d63 with a scratch build in a fresh repo: a landed four-line statement l1/l2/l3/l4 set to l1/L2/l3/l4/l5 in a change set gave, under '  statement:', exactly '      l1', '    - l2', '    + L2', '      l3', '      l4', '    + l5', so one - and one + for the changed middle line around the unchanged lines; single-line fields kept the 'a -> c' form. go test ./internal/changeset passes."
+        },
+        "handle": "change-diff-text-qa-1",
+        "id": "01M6C6ANKYZPB2VDGRZS38810E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6C6ANKYZPB2VDGRZQMKM3GT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6C6ANKYZPB2VDGRZQMKM3GT",
+        "id": "01M6C6APSSG8CEHFAR3D2CSTEF",
+        "link": "01M6C6APSSG8CEHFAR3CB7CDVV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BQKJ124RYHHZ3TAR972EA8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 500c4d63 with a scratch build in the same scratch repo: change show ended with a '## Changes' section holding the same text as change diff, including 'statement: a -> c' for the updated statement and the line diff. rhiza tui app change-show --once was cmp-identical to change show --json and held the changes. go test -run TestScripts/tui-write-apps passes."
+        },
+        "handle": "change-show-diff-qa-1",
+        "id": "01M6C6AR4VEBEG37M4HJDE1V30",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6C6AR4VEBEG37M4HGARQV76",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6C6AR4VEBEG37M4HGARQV76",
+        "id": "01M6C6ASKMNVG5D1YV0QDEEVD4",
+        "link": "01M6C6ASKMNVG5D1YV0PP7W8BV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BQKKV7CTFV9W0T453F3RSY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6BQJQP3M6K5RAGC5VRSK7GJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6C6AVYA2ZHVV6W7RS04RFJ2",
+  "type": "ops",
+  "v": 1
+}

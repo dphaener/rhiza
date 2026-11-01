@@ -215,22 +215,23 @@ type ChangeShowRequest struct {
 
 // ChangeShowResponse is one change set as its entries fold.
 type ChangeShowResponse struct {
-	ID           id.ID             `json:"id" desc:"The change set's ID"`
-	Kind         changeset.Kind    `json:"kind" desc:"intention or record; empty without a valid open"`
-	Intent       string            `json:"intent" desc:"The change set's intent"`
-	Title        string            `json:"title" desc:"The change set's title, else its intent's first clause"`
-	Sources      []id.ID           `json:"sources" desc:"The source node IDs"`
-	Serves       []id.ID           `json:"serves" desc:"The intents its live serves links point to, in its write view, by link ID; empty when it serves none yet"`
-	State        changeset.State   `json:"state" desc:"The lifecycle state; empty without a valid open"`
-	Current      bool              `json:"current" desc:"Whether it is the current change set"`
-	Ops          []json.RawMessage `json:"ops" desc:"The current operations, as canonical op JSON, in change set order"`
-	Leaves       []ChangeLeaf      `json:"leaves" desc:"The live capabilities it adds that have no live child capability, in build order: each after every leaf it depends on, ties in tree order"`
-	Decided      *DecisionInfo     `json:"decided,omitempty" desc:"The applied accept or reject, if any"`
-	SupersededBy id.ID             `json:"superseded_by,omitzero" desc:"The change set that superseded it, if any"`
-	Heads        []id.ID           `json:"heads" desc:"The entries a new entry would follow"`
-	Applied      []id.ID           `json:"applied" desc:"Every folded entry, in causal order"`
-	History      []LifecycleEvent  `json:"history" desc:"The lifecycle entries that applied, in causal order"`
-	Problems     []string          `json:"problems" desc:"Everything wrong with its entries"`
+	ID           id.ID              `json:"id" desc:"The change set's ID"`
+	Kind         changeset.Kind     `json:"kind" desc:"intention or record; empty without a valid open"`
+	Intent       string             `json:"intent" desc:"The change set's intent"`
+	Title        string             `json:"title" desc:"The change set's title, else its intent's first clause"`
+	Sources      []id.ID            `json:"sources" desc:"The source node IDs"`
+	Serves       []id.ID            `json:"serves" desc:"The intents its live serves links point to, in its write view, by link ID; empty when it serves none yet"`
+	State        changeset.State    `json:"state" desc:"The lifecycle state; empty without a valid open"`
+	Current      bool               `json:"current" desc:"Whether it is the current change set"`
+	Ops          []json.RawMessage  `json:"ops" desc:"The current operations, as canonical op JSON, in change set order"`
+	Leaves       []ChangeLeaf       `json:"leaves" desc:"The live capabilities it adds that have no live child capability, in build order: each after every leaf it depends on, ties in tree order"`
+	Decided      *DecisionInfo      `json:"decided,omitempty" desc:"The applied accept or reject, if any"`
+	SupersededBy id.ID              `json:"superseded_by,omitzero" desc:"The change set that superseded it, if any"`
+	Heads        []id.ID            `json:"heads" desc:"The entries a new entry would follow"`
+	Applied      []id.ID            `json:"applied" desc:"Every folded entry, in causal order"`
+	History      []LifecycleEvent   `json:"history" desc:"The lifecycle entries that applied, in causal order"`
+	Problems     []string           `json:"problems" desc:"Everything wrong with its entries"`
+	Changes      ChangeDiffResponse `json:"changes" desc:"The change set's field-level diff, as change.diff reports it"`
 }
 
 // ChangeLeaf is one leaf of a change set.
@@ -309,6 +310,7 @@ func runChangeShow(ctx *Ctx, req any) (any, error) {
 		Applied:      orEmpty(c.Applied),
 		History:      []LifecycleEvent{},
 		Problems:     foldProblems(problems),
+		Changes:      buildChangeDiff(cs, changeset.BuildDiff(w.changeSets(), cs)),
 	}
 	for _, m := range c.Lifecycle {
 		resp.History = append(resp.History, LifecycleEvent{Type: m.Type, Entry: m.Entry,
@@ -388,6 +390,8 @@ func (r ChangeShowResponse) Human(w io.Writer) {
 		fmt.Fprintf(w, "- %s %s by %s\n", e.Type, e.At, e.Actor)
 	}
 	writeProblems(w, r.Problems)
+	fmt.Fprintf(w, "\n## Changes\n\n")
+	r.Changes.Human(w)
 }
 
 // changeLeaves finds the leaves among the capabilities that ops create, as

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6C4CGRNYNH2B7XGNYR58476",
+  "after": [
+    "01M6C45HNZ863C56HDPY822Z7Z"
+  ],
+  "at": "2026-11-01T18:14:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d5dedb22: go test ./internal/changeset -run TestLineDiff passes (middle changed, same, line added, line removed, single to multi cases). go test ./cmd/rhiza -run TestScripts/change-diff passes, including the new step that sets a three-line statement one/two/three to one/TWO/three and checks the '  statement:' header, '      one', '    - two', '    + TWO', '      three' lines. Because the txtar regexes only check that each line is present, I also reproduced it by hand with a scratch build in a fresh repo: change diff printed exactly one - line (two), one + line (TWO) and the two unchanged lines (one, three) around them, nothing else for the field. Read the diff: LineDiff in internal/changeset/linediff.go is an LCS that puts removed runs before added runs, and ChangeDiffResponse.Human uses it only when the old or new value contains a newline, so single-line fields keep the 'a -> b' form. gofmt -l is clean, go vet ./... is clean and go test ./... -count=1 passes."
+        },
+        "handle": "change-diff-text-verified",
+        "id": "01M6C53YPP6W161M2DT5P1V3BC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6C53YPP6W161M2DT29CFVR5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6C53YPP6W161M2DT29CFVR5",
+        "id": "01M6C53ZWTJJN1408XCK2M06AA",
+        "link": "01M6C53ZWTJJN1408XCFQSR4QK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BQKJ124RYHHZ3TAR972EA8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6BQJQP3M6K5RAGC5VRSK7GJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6C541HNJ7XZWZCQ7XMDNFG3",
+  "type": "ops",
+  "v": 1
+}
