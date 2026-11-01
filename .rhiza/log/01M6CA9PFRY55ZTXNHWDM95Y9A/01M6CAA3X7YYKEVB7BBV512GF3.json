@@ -1,0 +1,109 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6CA9TCH7Z36BCPJRP4QFFEN"
+  ],
+  "at": "2026-11-01T19:45:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "21",
+          "statement": "Status tells the truth: daemon status keeps showing the daemon's state through a re-exec, and a current change set that has landed elsewhere comes with the command that clears it"
+        },
+        "handle": "milestone-21",
+        "id": "01M6CA9VZSKXW7MBXDRQSJJZ2N",
+        "key": "zzzzy",
+        "kind": "intent",
+        "node": "01M6CA9VZSKXW7MBXDRQ1G5DQS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "just checking in. keep cracking on",
+          "statement": "Milestone 21 is one change set fixing daemon status during a re-exec and hinting at a terminal current change set; it changes no request type, so it runs beside the describe-golden chain"
+        },
+        "handle": "m21-picked-by-orchestrator",
+        "id": "01M6CA9WXXJZTMK6KEXP3DAB8M",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6CA9WXXJZTMK6KEXK01ZB69",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CA9WXXJZTMK6KEXK01ZB69",
+        "id": "01M6CA9XY5J0Z6WGTXJC2TRCBM",
+        "link": "01M6CA9XY5J0Z6WGTXJ8KVRPWC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CA9SBSR9192WWQJY8MMCV2",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6CA9VZSKXW7MBXDRQ1G5DQS",
+        "id": "01M6CA9YVPMGZMDTH4V2MTWFAH",
+        "link": "01M6CA9YVPMGZMDTH4V1M2V30A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CA9WXXJZTMK6KEXK01ZB69",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "A starting daemon image writes its state once before its first poll, with its own process, start time and settings and the previous image's last poll, live runs, skips and unjournaled holds, so status matches the lock holder at once",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "daemon-writes-state-at-start",
+        "id": "01M6CA9ZT2YKEQ41XMMMV2JGZ8",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6CA9ZT2YKEQ41XMMKB91M1R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CA9ZT2YKEQ41XMMKB91M1R",
+        "id": "01M6CAA0NX797CZ1RBHQH18X24",
+        "link": "01M6CAA0NX797CZ1RBHN8YWD04",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CA9SBSR9192WWQJY8MMCV2",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "When the current change set (from the current file, not --change) is landed, withdrawn or rejected, rhiza status adds next: rhiza change use --none, the session hook adds a one-line hint, and a write refused for it carries the same next step; nothing clears the file implicitly",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "terminal-current-hint",
+        "id": "01M6CAA1J7C7TCV0VFC45K0Z5B",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6CAA1J7C7TCV0VFC228EY67",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CAA1J7C7TCV0VFC228EY67",
+        "id": "01M6CAA2EZR0XJXN7QMM31VHQG",
+        "link": "01M6CAA2EZR0XJXN7QMM0G66Y4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CA9SBSR9192WWQJY8MMCV2",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6CA9PFRY55ZTXNHWDM95Y9A",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CAA3X7YYKEVB7BBV512GF3",
+  "type": "ops",
+  "v": 1
+}

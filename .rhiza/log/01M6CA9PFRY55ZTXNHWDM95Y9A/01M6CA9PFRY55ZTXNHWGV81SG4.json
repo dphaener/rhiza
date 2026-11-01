@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T19:45:03Z",
+  "body": {
+    "intent": "Plan milestone 21: status tells the truth, picked by the orchestrator under the owner's standing instruction",
+    "kind": "record",
+    "sources": [],
+    "title": "Plan milestone 21"
+  },
+  "change_set": "01M6CA9PFRY55ZTXNHWDM95Y9A",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CA9PFRY55ZTXNHWGV81SG4",
+  "type": "open",
+  "v": 2
+}

@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T19:45:04Z",
+  "body": {
+    "intent": "daemon status keeps the daemon's state through a re-exec, and a terminal current change set comes with the command that clears it",
+    "kind": "intention",
+    "sources": [],
+    "title": "Status tells the truth"
+  },
+  "change_set": "01M6CA9QMHN6N95AS3F935ZVN2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CA9QMHN6N95AS3FAFPGCPX",
+  "type": "open",
+  "v": 2
+}
