@@ -12,6 +12,12 @@ the plan, and tasks belong to the work layer.
 2. Tell the scope from `kind` in `rhiza change show --json`:
    - `intention`: one change set serving an existing intent. Plan its leaves, within its
      intent, into `RHIZA_CHANGE`. Anything outside the intent becomes a question.
+     If it serves no intent yet (`"serves": []` in `rhiza change show --json`, the change
+     set's own serves links; slice's `serves` context follows its nodes, not it), settle
+     that first, before any leaf: pick a landed intent it belongs under, or write a new one
+     (`"kind":"intent"`, under its parent) into `RHIZA_CHANGE`, with the owner. Then write
+     the `serves` link: `rhiza link "$RHIZA_CHANGE" serves <intent> --change "$RHIZA_CHANGE"`.
+     Only then write leaves.
    - `record`: a draft opened for the plan, so you plan a milestone (see Milestone).
 3. Interview the owner (see Interview) until every leaf has a statement and an acceptance
    check, and every choice is a Decision or a parked question.

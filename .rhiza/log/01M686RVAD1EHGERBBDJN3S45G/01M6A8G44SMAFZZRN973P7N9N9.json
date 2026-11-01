@@ -1,0 +1,40 @@
+{
+  "actor": "01M6A8DZT3PPH2FCW4NC1C6DFE",
+  "after": [
+    "01M6A717023DQD2SEMGQAYMSGC"
+  ],
+  "at": "2026-11-01T00:35:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 125c2c9c, `go test ./internal/guide -run TestPlanText -count=1` passes; its plan-no-intent-yet case asserts plan.md covers an intention change set that serves no intent yet (detected by `\"serves\": []` in `rhiza change show --json`), picking a landed intent or writing a new `\"kind\":\"intent\"`, and writing the serves link with `rhiza link \"$RHIZA_CHANGE\" serves <intent>` before any leaf. Read the diff of all three Leaf commits: plan.md step 2 says exactly that. The guide's read is real: change show --json now carries a serves field (LinksFrom over the change set's own live serves links), and `go test ./cmd/rhiza -run 'TestScripts/(change-show-serves|describe-golden)'` passes, showing `\"serves\": []` on a fresh draft and the intent ID after linking. `rhiza check` on a clean clone at the commit prints ok; make check in the run checkout only flags render of this verifier's own actor record."
+        },
+        "handle": "plan-guide-new-change-set-verified",
+        "id": "01M6A8G2BNYM7X98DZY3C0V71Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6A8G2BNYM7X98DZY03NBJPK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A8G2BNYM7X98DZY03NBJPK",
+        "id": "01M6A8G31S3T0SVPSRBBF69JJE",
+        "link": "01M6A8G31S3T0SVPSRB87EYW76",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686V5H6DYGP62DZ2DDEG5MR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RVAD1EHGERBBDJN3S45G",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A8G44SMAFZZRN973P7N9N9",
+  "type": "ops",
+  "v": 1
+}

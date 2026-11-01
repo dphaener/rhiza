@@ -72,6 +72,7 @@ type Model struct {
 
 	starter Starter
 	pending *pending
+	intent  *intentInput
 	notice  string
 }
 
@@ -200,6 +201,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		}
+		if m.intent != nil {
+			return m, m.typeIntent(msg)
+		}
 		if m.answer != nil {
 			return m, m.typeAnswer(msg)
 		}
@@ -215,6 +219,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case "o":
 			m.openRun()
+			return m, nil
+		case "m", "n":
+			m.intent = &intentInput{milestone: msg.String() == "m"}
+			m.notice = ""
 			return m, nil
 		}
 		if m.detail != nil {
@@ -296,7 +304,7 @@ func (m *Model) View() tea.View {
 	var b strings.Builder
 	if m.detail != nil {
 		m.detail.write(&b)
-		b.WriteString(m.footer("\nesc back · a accept · j/k pick question · enter answer · p plan · s ship · o open run · q quit"))
+		b.WriteString(m.footer("\nesc back · a accept · j/k pick question · enter answer · p plan · s ship · m new milestone · n new change set · o open run · q quit"))
 		return tea.NewView(b.String())
 	}
 	if m.err != nil {
@@ -333,7 +341,7 @@ func (m *Model) View() tea.View {
 		}
 		b.WriteString("\n")
 	}
-	b.WriteString(m.footer("\nroadmap · j/k move · enter open or expand · a accept · p plan · s ship · o open run · r reload · q quit"))
+	b.WriteString(m.footer("\nroadmap · j/k move · enter open or expand · a accept · p plan · s ship · m new milestone · n new change set · o open run · r reload · q quit"))
 	return tea.NewView(b.String())
 }
 
@@ -341,6 +349,9 @@ func (m *Model) View() tea.View {
 func (m *Model) footer(help string) string {
 	if m.answer != nil {
 		return "\n" + m.answer.prompt()
+	}
+	if m.intent != nil {
+		return "\n" + m.intent.prompt()
 	}
 	if m.pending != nil {
 		return "\n" + m.pending.prompt()

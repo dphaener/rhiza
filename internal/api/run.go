@@ -105,6 +105,8 @@ type RunStartRequest struct {
 	Agent          string `json:"agent,omitempty" desc:"The agent adapter of agent steps that name none; default the built-in default adapter"`
 	NoWait         bool   `json:"no_wait,omitempty" desc:"Stop at a wait step whose condition does not hold yet, instead of waiting; resume the run later"`
 	Autonomous     bool   `json:"autonomous,omitempty" desc:"Run without the owner: skip the owner's gates and questions, recording each; never changes agent permissions. Resume keeps it"`
+	New            string `json:"new,omitempty" desc:"With --workflow plan and no change set: open a draft change set with this one-line intent and start the plan run on it"`
+	Milestone      bool   `json:"milestone,omitempty" desc:"With --new: open a record change set, to plan a milestone in; without it an intention"`
 }
 
 // RunStatusRequest names a run, or none for the latest.
@@ -417,6 +419,9 @@ func (r RunResponse) ExitCode() int {
 // journal and runs it in the foreground. A dry run writes and runs nothing.
 func runRunStart(ctx *Ctx, req any) (any, error) {
 	r := req.(RunStartRequest)
+	if r.Milestone && strings.TrimSpace(r.New) == "" {
+		return nil, Usagef("--milestone goes with --new").WithNext(runStartNext)
+	}
 	path, def, data, err := resolveWorkflow(ctx.Root, r.Workflow)
 	if err != nil {
 		return nil, err
@@ -424,7 +429,12 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err := checkAgentSteps(def, r.PermissionMode, r.Agent, r.Autonomous, runStartNext); err != nil {
 		return nil, err
 	}
-	t, err := resolveChangeWorktree(ctx, r.Change, "no run can work on it")
+	var t changeWorktree
+	if strings.TrimSpace(r.New) != "" {
+		t, err = newPlanChange(ctx, r, def)
+	} else {
+		t, err = resolveChangeWorktree(ctx, r.Change, "no run can work on it")
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -470,6 +480,84 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	}
 	return runEngine(ctx, rs, t.common, rid, started.Change, t.worktree, r.PermissionMode, r.Agent, started.Autonomous, r.NoWait)
 }
+
+// newPlanChange opens the draft change set run start --new plans in (a
+// record with --milestone, else an intention) and derives its worktree.
+// It refuses a change set argument and any workflow but plan first, and in
+// a real run also the agent-session and can-run refusals, so a refused
+// start leaves no draft behind. A dry run writes nothing: the change set
+// is the ID the real run would draw, with the worktree its title gives.
+func newPlanChange(ctx *Ctx, r RunStartRequest, def *workflow.Definition) (changeWorktree, error) {
+	var t changeWorktree
+	if strings.TrimSpace(r.Change) != "" || strings.TrimSpace(ctx.ChangeRef) != "" || !ctx.ChangeSet.IsZero() {
+		return t, Usagef("--new opens the change set to plan: it takes no change set").WithNext(runStartNext)
+	}
+	if def.Name != planWorkflow {
+		return t, Usagef("--new starts a plan run: workflow %q is not %s", def.Name, planWorkflow).
+			WithNext("rhiza run start --workflow plan --new \"<intent>\"")
+	}
+	kind := changeset.KindIntention
+	if r.Milestone {
+		kind = changeset.KindRecord
+	}
+	open := changeset.Open{Kind: kind, Intent: strings.TrimSpace(r.New)}
+	if err := open.Validate(); err != nil {
+		return t, Usagef("%s", err.Error()).WithNext(runStartNext)
+	}
+	if !ctx.DryRun {
+		if ctx.Getenv != nil {
+			if sid := strings.TrimSpace(ctx.Getenv(envSession)); sid != "" {
+				return t, Usagef("run start refused: this is agent session %s, and no agent session starts a run", sid).
+					WithNext("ask the owner to run it outside an agent session")
+			}
+		}
+		if err := canRun(ctx, def); err != nil {
+			return t, err
+		}
+	}
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return t, err
+	}
+	current, err := w.current()
+	if err != nil {
+		return t, err
+	}
+	actor, forID, err := w.resolveActor(current, ctx)
+	if err != nil {
+		return t, err
+	}
+	cs, _, err := w.openChangeSet(open, actor, forID)
+	if err != nil {
+		return t, err
+	}
+	if ctx.DryRun {
+		common, err := gitCommonDir(ctx)
+		if err != nil {
+			return t, err
+		}
+		prefix, err := ctx.Git("rev-parse", "--show-prefix")
+		if err != nil {
+			return t, Errorf("%v", err)
+		}
+		t = changeWorktree{w: w, cs: cs, title: open.DisplayTitle(), common: common, prefix: strings.TrimSpace(prefix)}
+		mainRoot := filepath.Dir(common)
+		t.repo = filepath.Base(mainRoot)
+		slug := session.Slug(t.title)
+		t.branch = session.Branch(slug)
+		t.worktree = session.Worktree(mainRoot, t.repo, slug)
+		return t, nil
+	}
+	if err := w.setCurrent(cs); err != nil {
+		return t, err
+	}
+	nctx := *ctx
+	nctx.ChangeSet, nctx.ChangeRef = cs, ""
+	return resolveChangeWorktree(&nctx, "", "no run can work on it")
+}
+
+// planWorkflow is the workflow run start --new opens a change set for.
+const planWorkflow = "plan"
 
 // startRun journals a new run under the change set's lock, after checking
 // that the change set has no other live run, so two starts never both begin.

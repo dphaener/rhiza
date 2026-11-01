@@ -41,6 +41,9 @@ type Model interface {
 	// LinksTo returns the live links of type t whose To is to, sorted by
 	// ID. It is nil when there are none.
 	LinksTo(to id.ID, t op.LinkType) []Link
+	// LinksFrom returns the live links of type t whose From is from, sorted
+	// by ID. It is nil when there are none.
+	LinksFrom(from id.ID, t op.LinkType) []Link
 	// DependsOn returns what n depends on: the To of each live depends-on
 	// link from n, sorted by ID, each once. It is nil when there are none.
 	DependsOn(n id.ID) []id.ID
@@ -445,6 +448,10 @@ func (m *model) LinkBetween(from, to id.ID, t op.LinkType) (Link, error) {
 
 func (m *model) LinksTo(to id.ID, t op.LinkType) []Link {
 	return m.sortedLinks(func(k *Link) bool { return !k.Retired && k.To == to && k.Type == t })
+}
+
+func (m *model) LinksFrom(from id.ID, t op.LinkType) []Link {
+	return m.sortedLinks(func(k *Link) bool { return !k.Retired && k.From == from && k.Type == t })
 }
 
 func (m *model) DependsOn(n id.ID) []id.ID {

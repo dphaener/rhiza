@@ -1,0 +1,99 @@
+# run start --workflow plan --new <intent> opens a draft change set (a
+# record with --milestone, an intention without) and starts the plan run on
+# it. --dry-run predicts the change set's ID; a change set argument, or a
+# workflow other than plan, is a usage error (exit 2) that opens nothing.
+#
+# The fake rex runs the tab's command; the fake claude does nothing.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+mkdir .rhiza/workflows
+cp $WORK/plan.toml .rhiza/workflows/plan.toml
+cp $WORK/other.toml .rhiza/workflows/other.toml
+exec rhiza change new 'Existing' --title 'Existing' --json
+stdout '"change_set": "(01[0-9A-Z]{24})"'
+exec sh -c 'rhiza change ls --json | grep -c "\"intent\"" > $WORK/before'
+exec cat $WORK/before
+
+# Refused starts open nothing.
+exec sh -c 'rhiza run start --workflow plan --new "Plan reports" 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual 2>&1; echo exit=$?'
+stdout 'takes no change set'
+stdout '^exit=2$'
+exec sh -c 'rhiza run start --workflow other --new "Plan reports" --permission-mode manual 2>&1; echo exit=$?'
+stdout 'not plan'
+stdout '^exit=2$'
+! exec rhiza run start --workflow plan --milestone --permission-mode manual
+stderr '--milestone goes with --new'
+exec sh -c 'rhiza change ls --json | grep -c "\"intent\""'
+cmp stdout $WORK/before
+! exists .git/rhiza/runs
+
+# A dry run predicts the ID and writes nothing.
+exec rhiza run start --workflow plan --new 'Plan reports' --permission-mode manual --dry-run --json
+stdout '"dry_run": true'
+stdout '"change": "([0-9A-Z]{26})"'
+exec sh -c 'rhiza run start --workflow plan --new "Plan reports" --permission-mode manual --dry-run --json | sed -n "s/^    \"change\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/predicted'
+exec sh -c 'rhiza change ls --json | grep -c "\"intent\""'
+cmp stdout $WORK/before
+! exists .git/rhiza/runs
+
+# An intention without --milestone.
+exec rhiza run start --workflow plan --new 'Plan reports' --permission-mode manual --json
+stdout '"state": "succeeded"'
+exec sh -c 'rhiza change ls --json | grep -A8 "Plan reports"'
+stdout '"kind": "intention"'
+stdout '"state": "draft"'
+exec sh -c 'rhiza change ls --json | grep "\"id\"" | grep -c "$(cat $WORK/predicted)"'
+stdout '^1$'
+exec sh -c 'cat .git/rhiza/runs/*.jsonl'
+stdout '"change":"'
+stdout 'Plan reports'
+
+# A record with --milestone.
+exec rhiza run start --workflow plan --new 'Plan the milestone' --milestone --permission-mode manual --json
+stdout '"state": "succeeded"'
+exec sh -c 'rhiza change ls --json | grep -A8 "Plan the milestone"'
+stdout '"kind": "record"'
+stdout '"state": "draft"'
+
+fold-ok
+
+-- plan.toml --
+name = "plan"
+
+[step.interview]
+kind = "agent"
+prompt = "Plan {change}"
+on.pass = "done"
+-- other.toml --
+name = "other"
+
+[step.a]
+kind = "command"
+run = "true"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+exit 0

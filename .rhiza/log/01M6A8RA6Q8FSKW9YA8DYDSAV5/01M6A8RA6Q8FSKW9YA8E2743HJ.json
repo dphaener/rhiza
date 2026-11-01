@@ -1,0 +1,15 @@
+{
+  "actor": "01M6A8H0JXDE9VMWKDHJK1SX7S",
+  "after": [],
+  "at": "2026-11-01T00:39:36Z",
+  "body": {
+    "intent": "Plan runs the roadmap app starts (p, m, n) give the run a permission mode, so they start with the built-in plan workflow",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6A8RA6Q8FSKW9YA8DYDSAV5",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A8RA6Q8FSKW9YA8E2743HJ",
+  "type": "open",
+  "v": 1
+}

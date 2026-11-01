@@ -977,6 +977,14 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "serves": {
+            "description": "The intents its live serves links point to, in its write view, by link ID; empty when it serves none yet",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
           "sources": {
             "description": "The source node IDs",
             "items": {
@@ -1010,6 +1018,7 @@ cmp stdout describe.golden.json
           "leaves",
           "ops",
           "problems",
+          "serves",
           "sources",
           "state",
           "title"
@@ -12720,6 +12729,14 @@ cmp stdout describe.golden.json
           },
           "change": {
             "description": "The change set: a full ID or a unique prefix of 4+ characters; default --change, else the current one",
+            "type": "string"
+          },
+          "milestone": {
+            "description": "With --new: open a record change set, to plan a milestone in; without it an intention",
+            "type": "boolean"
+          },
+          "new": {
+            "description": "With --workflow plan and no change set: open a draft change set with this one-line intent and start the plan run on it",
             "type": "string"
           },
           "no_wait": {

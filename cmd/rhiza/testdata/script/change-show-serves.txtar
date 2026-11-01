@@ -1,0 +1,23 @@
+# change show --json lists the intents the change set's own serves links
+# point to: empty for a fresh draft, then the intent once the draft links
+# it. The plan guide reads it to tell a change set that serves no intent
+# yet. Slice's serves context does not show it (it follows touched nodes).
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add intent goal --record
+
+exec rhiza change new 'Build a thing'
+exec rhiza change show --json
+stdout '"kind": "intention"'
+stdout '"serves": \[\]'
+
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/cs'
+exec sh -c 'rhiza show goal --json | sed -n "s/^    \"id\": \"\([0-9A-Z]*\)\".*/\1/p" | head -1 > $WORK/goal'
+exec sh -c 'rhiza link $(cat $WORK/cs) serves goal --change $(cat $WORK/cs) >/dev/null && rhiza change show --json | tr -d " \n" | grep -o "\"serves\":\[[^]]*\]"'
+stdout '^"serves":\["01[0-9A-Z]{24}"\]$'
+exec sh -c 'rhiza change show --json | tr -d " \n" | grep -q "\"serves\":\[\"$(cat $WORK/goal)\"\]" && echo match'
+stdout '^match$'
+fold-ok

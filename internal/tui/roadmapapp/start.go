@@ -3,6 +3,9 @@ package roadmapapp
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
+	tea "charm.land/bubbletea/v2"
 
 	"github.com/dphaener/rhiza/internal/api"
 	"github.com/dphaener/rhiza/internal/id"
@@ -31,6 +34,10 @@ type pending struct {
 	kind string // "plan", "ship" or "accept"
 	id   id.ID
 	what string // accept only: the what-if the question shows
+	// intent and milestone: a "new" run only, the typed one-line intent and
+	// whether it opens a milestone rather than a change set.
+	intent    string
+	milestone bool
 }
 
 // target is the change set p, s and o act on: the open detail's, else the
@@ -57,6 +64,13 @@ func (p *pending) prompt() string {
 	if p.kind == "accept" {
 		return p.what
 	}
+	if p.kind == "new" {
+		noun := "change set"
+		if p.milestone {
+			noun = "milestone"
+		}
+		return fmt.Sprintf("Start an interactive plan run of a new %s %q in a new Rex tab? y/n", noun, p.intent)
+	}
 	if p.kind == "plan" {
 		return fmt.Sprintf("Start an interactive plan run of %s in a new Rex tab? y/n", short(p.id))
 	}
@@ -65,16 +79,76 @@ func (p *pending) prompt() string {
 
 // args are the arguments of the `rex window new` call that starts p.
 func (p *pending) args(s Starter) []string {
-	cs := p.id.String()
-	args := []string{"window", "new"}
-	if s.RexSession != "" {
-		args = append(args, "-s", s.RexSession)
+	if p.kind == "new" {
+		name := "new-change-set"
+		if p.milestone {
+			name = "new-milestone"
+		}
+		args := p.windowArgs(s, name)
+		args = append(args, "--workflow", "plan", "--new", p.intent)
+		if p.milestone {
+			args = append(args, "--milestone")
+		}
+		return args
 	}
-	args = append(args, cs[:min(len(cs), 9)], "-c", s.Root, "--json", "--", s.Self, "run", "start", cs)
+	cs := p.id.String()
+	args := p.windowArgs(s, cs[:min(len(cs), 9)])
+	args = append(args, cs)
 	if p.kind == "plan" {
 		return append(args, "--workflow", "plan")
 	}
 	return append(args, "--autonomous", "--permission-mode", "auto")
+}
+
+// windowArgs opens the `rex window new` call named name, running the rhiza
+// binary's run start.
+func (p *pending) windowArgs(s Starter, name string) []string {
+	args := []string{"window", "new"}
+	if s.RexSession != "" {
+		args = append(args, "-s", s.RexSession)
+	}
+	args = append(args, name, "-c", s.Root, "--json", "--", s.Self, "run", "start")
+	return args
+}
+
+// intentInput is the owner typing the one-line intent of new work.
+type intentInput struct {
+	milestone bool
+	text      string
+}
+
+func (i *intentInput) prompt() string {
+	noun := "change set"
+	if i.milestone {
+		noun = "milestone"
+	}
+	return fmt.Sprintf("Intent of the new %s: %s_  (enter continues, esc cancels)", noun, i.text)
+}
+
+// typeIntent handles a key while an intent is being typed. Enter with
+// empty text does nothing; enter with text asks y/n.
+func (m *Model) typeIntent(msg tea.KeyPressMsg) tea.Cmd {
+	in := m.intent
+	switch msg.String() {
+	case "ctrl+c":
+		return tea.Quit
+	case "esc":
+		m.intent = nil
+	case "enter":
+		text := strings.TrimSpace(in.text)
+		if text == "" {
+			return nil
+		}
+		m.intent = nil
+		m.pending = &pending{kind: "new", intent: text, milestone: in.milestone}
+	case "backspace":
+		if r := []rune(in.text); len(r) > 0 {
+			in.text = string(r[:len(r)-1])
+		}
+	default:
+		in.text += msg.Text
+	}
+	return nil
 }
 
 // confirm starts the pending run and says which tab it opened.
@@ -91,6 +165,10 @@ func (m *Model) confirm() {
 	}
 	if _, err := m.starter.Exec("rex", p.args(m.starter), m.starter.Root); err != nil {
 		m.notice = fmt.Sprintf("rex window new failed: %v", err)
+		return
+	}
+	if p.kind == "new" {
+		m.notice = fmt.Sprintf("Opened Rex tab running the plan run of a new %q", p.intent)
 		return
 	}
 	cs := p.id.String()

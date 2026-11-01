@@ -1,0 +1,86 @@
+{
+  "actor": "01M6A8H0JXDE9VMWKDHJK1SX7S",
+  "after": [
+    "01M6A8G44SMAFZZRN973P7N9N9"
+  ],
+  "at": "2026-11-01T00:40:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at cafec91c with a scratch build of ./cmd/rhiza in a scratch git repo (real git, fake rex and claude on PATH, RHIZA_* run env unset). run start --workflow plan --new X <cs> exits 2 'takes no change set'; --workflow build --new X exits 2 'workflow \"build\" is not plan'; --milestone without --new exits 2; none opened a change set or a run. With RHIZA_TEST_NOW/SEED fixed, --dry-run --json predicted change 01M6A6FYW86T3BKSK9V4MCGPCP and wrote nothing; the real run (--permission-mode manual) opened that same ID as a draft intention 'Plan reports', made it current, created worktree repo.plan-reports on cs/plan-reports, started the agent with 'Plan 01M6A6FYW86T3BKSK9V4MCGPCP', and the run journal's change field named it. --new ... --milestone opened a draft record. With RHIZA_SESSION set the start is refused (exit 2) and no draft is left behind."
+        },
+        "handle": "run-start-new-intent-qa-1",
+        "id": "01M6A8S0C4WXK59R9CZ2PGX3F6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6A8S0C4WXK59R9CYZ34QENB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A8S0C4WXK59R9CYZ34QENB",
+        "id": "01M6A8S1KZ6VS8PYAVH4WQ83T6",
+        "link": "01M6A8S1KZ6VS8PYAVH1HM9BVM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686V2Z913H9XPK0E1E861YG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at cafec91c: ran the scratch build's `rhiza tui app roadmap` in a 200x40 pty with a logging fake rex on PATH. m shows 'Intent of the new milestone: _', typed Go and enter show 'Start an interactive plan run of a new milestone \"Go\" in a new Rex tab? y/n', y makes one call `rex window new -s session:qa new-milestone -c <repo> --json -- <rhiza> run start --workflow plan --new Go --milestone` with no change set argument, and the app stays open saying 'Opened Rex tab running the plan run of a new \"Go\"'. n gives new-change-set and no --milestone; backspace edits the text (Shipx then backspace gave --new Ship). Empty enter, esc at the intent prompt, and n or esc at y/n made no call. Works on an empty roadmap. Seen: the tab's run start carries no --permission-mode, so with the built-in plan workflow it exits 2 in the tab ('agent step with no permission mode') before opening a draft. The existing p key has the same gap. Raised as a discovered-from draft change set."
+        },
+        "handle": "roadmap-app-new-work-qa-1",
+        "id": "01M6A8S2X693P9EJSSS0ZHKP08",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6A8S2X693P9EJSSRYACFAXP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A8S2X693P9EJSSRYACFAXP",
+        "id": "01M6A8S4423DT0N9TZZA7H7ZHZ",
+        "link": "01M6A8S4423DT0N9TZZ738YRDG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686V49K74FDKG4YV2BDJCSN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at cafec91c: `rhiza guide plan` from the scratch build prints the new step-2 text for an intention change set that serves no intent yet. Followed it by hand on the draft that run start --new opened: change show --json gave \"serves\": []; added an intent with rhiza apply, then ran the guide's exact `rhiza link <cs> serves <intent> --change <cs>`; change show --json then listed that intent's ID under serves."
+        },
+        "handle": "plan-guide-new-change-set-qa-1",
+        "id": "01M6A8S58AQ3AYTGEW6ER24AR6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6A8S58AQ3AYTGEW6DG0BF3G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6A8S58AQ3AYTGEW6DG0BF3G",
+        "id": "01M6A8S6BSMB0W8251PFWCQGRT",
+        "link": "01M6A8S6BSMB0W8251PDYW5ES5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686V5H6DYGP62DZ2DDEG5MR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M686RVAD1EHGERBBDJN3S45G",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6A8S7Q8G9VGH3AT48R77HB7",
+  "type": "ops",
+  "v": 1
+}
