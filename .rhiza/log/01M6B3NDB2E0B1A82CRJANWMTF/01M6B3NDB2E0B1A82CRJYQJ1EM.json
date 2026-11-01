@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T08:29:52Z",
+  "body": {
+    "intent": "The read-budget test retries over-budget reads so load from outside the test run does not fail make check",
+    "kind": "intention",
+    "sources": [],
+    "title": "Read budget retries"
+  },
+  "change_set": "01M6B3NDB2E0B1A82CRJANWMTF",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B3NDB2E0B1A82CRJYQJ1EM",
+  "type": "open",
+  "v": 2
+}

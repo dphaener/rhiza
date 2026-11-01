@@ -359,6 +359,7 @@
 - [areas](intent/areas.md)
 - [milestone-11](intent/milestone-11.md)
 - [milestone-12](intent/milestone-12.md)
+- [milestone-13](intent/milestone-13.md)
 
 ## Constraints
 
@@ -461,6 +462,7 @@
 - [autonomous-mode](decision/autonomous-mode.md)
 - [autonomous-on-session-record](decision/autonomous-on-session-record.md)
 - [autonomous-rule-any-change-set](decision/autonomous-rule-any-change-set.md)
+- [budget-retries-over-reads](decision/budget-retries-over-reads.md)
 - [budget-timed-alone](decision/budget-timed-alone.md)
 - [build-ruling-1](decision/build-ruling-1.md)
 - [build-ruling-2](decision/build-ruling-2.md)
@@ -494,6 +496,7 @@
 - [change-set-per-worktree](decision/change-set-per-worktree.md)
 - [change-set-title-field](decision/change-set-title-field.md)
 - [change-trailers](decision/change-trailers.md)
+- [changes-app-remembers-seen](decision/changes-app-remembers-seen.md)
 - [check-by-entry-identity](decision/check-by-entry-identity.md)
 - [checks-itself-in-ci](decision/checks-itself-in-ci.md)
 - [ci-fails-on](decision/ci-fails-on.md)
@@ -540,6 +543,7 @@
 - [failed-steps-merge-resolution](decision/failed-steps-merge-resolution.md)
 - [fakes-only-in-build-and-review](decision/fakes-only-in-build-and-review.md)
 - [feature-is-capability](decision/feature-is-capability.md)
+- [feed-lists-landed-by-land-entry](decision/feed-lists-landed-by-land-entry.md)
 - [field-level-diffs](decision/field-level-diffs.md)
 - [file-per-entry](decision/file-per-entry.md)
 - [findings-under-run-lock](decision/findings-under-run-lock.md)
@@ -588,6 +592,7 @@
 - [m10-picked-by-orchestrator](decision/m10-picked-by-orchestrator.md)
 - [m11-picked-by-orchestrator](decision/m11-picked-by-orchestrator.md)
 - [m12-picked-by-orchestrator](decision/m12-picked-by-orchestrator.md)
+- [m13-picked-by-orchestrator](decision/m13-picked-by-orchestrator.md)
 - [m2-done-point](decision/m2-done-point.md)
 - [m2-eight-change-sets](decision/m2-eight-change-sets.md)
 - [m2-genesis-runs-the-work](decision/m2-genesis-runs-the-work.md)
@@ -1594,6 +1599,7 @@
 - [m10-orchestrator-picks](source/m10-orchestrator-picks.md)
 - [m11-orchestrator-picks](source/m11-orchestrator-picks.md)
 - [m12-orchestrator-picks](source/m12-orchestrator-picks.md)
+- [m13-orchestrator-picks](source/m13-orchestrator-picks.md)
 - [m5-usable-from-rex-interview](source/m5-usable-from-rex-interview.md)
 - [m6-overnight-interview](source/m6-overnight-interview.md)
 - [m7-keep-picking](source/m7-keep-picking.md)

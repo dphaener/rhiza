@@ -1,0 +1,132 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6B3NX6W9EX87K83K39VKCNH"
+  ],
+  "at": "2026-11-01T08:30:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "13",
+          "statement": "Catch up at a glance: rhiza feed lists what landed in land order with PR numbers, a Rex changes app shows what landed since the owner last looked, and the read-budget test survives a busy machine"
+        },
+        "handle": "milestone-13",
+        "id": "01M6B3NYH81SYF91WGPEQS8926",
+        "key": "zzzi",
+        "kind": "intent",
+        "node": "01M6B3NYH81SYF91WGPEAH5HNW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "if you run out of work keep picking high value tasks. don't stop and wait for my input.",
+          "statement": "Milestone 13 carves the change feed's listing out of the Area views umbrella, adds a Rex changes app over it, and makes the read-budget test retry over-budget reads; streaming the feed (--follow) stays in the umbrella"
+        },
+        "handle": "m13-picked-by-orchestrator",
+        "id": "01M6B3NZBFXT7N62QSE88SAZ40",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6B3NZBFXT7N62QSE70V0KEC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B3NZBFXT7N62QSE70V0KEC",
+        "id": "01M6B3P05344NG15DY24V868C9",
+        "link": "01M6B3P05344NG15DY2111J5H2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6B3NWCTG92ZGHQE28XWAF1V",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6B3NYH81SYF91WGPEAH5HNW",
+        "id": "01M6B3P0YTPF7FRZDK8CRK01F4",
+        "link": "01M6B3P0YSQ7ZZ5BZG3D72DAPD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6B3NZBFXT7N62QSE70V0KEC",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "rhiza feed lists landed change sets only, ordered by their latest land entry, each with ID, title, kind, leaf count, land time, actor and the PR number from its PR Evidence when there is one; it pages with --limit and an opaque cursor built as ls builds it, and --since takes an RFC 3339 time; a change set reopened and landed again appears once, at its latest land",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "feed-lists-landed-by-land-entry",
+        "id": "01M6B3P1RND056TWHR7XVG7913",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6B3P1RND056TWHR7TFB4TF9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B3P1RND056TWHR7TFB4TF9",
+        "id": "01M6B3P2J25PPTN7CRVD2GF5CB",
+        "link": "01M6B3P2J25PPTN7CRVCHCBW2B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6B3NWCTG92ZGHQE28XWAF1V",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The Rex app is named changes (key g, so no existing key moves); it shows landed change sets the viewer has not seen, newest first, and marks them seen in .git/rhiza/feed.json (per clone, shared by worktrees), remembering seen change set IDs rather than a cursor so work landed on a branch and merged later is not skipped",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "changes-app-remembers-seen",
+        "id": "01M6B3P3BGR8M6ZGYMDNAE8T0B",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6B3P3BGR8M6ZGYMDJTSTVNW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B3P3BGR8M6ZGYMDJTSTVNW",
+        "id": "01M6B3P457P2JXWNFMSRG56YEE",
+        "link": "01M6B3P457P2JXWNFMSPB7PA6J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6B3NWCTG92ZGHQE28XWAF1V",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "TestReadBudget times a read whose median is over budget up to two more times and fails only if every attempt is over, logging each attempt to the budget log; the 50 ms budget is unchanged",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "budget-retries-over-reads",
+        "id": "01M6B3P4Z8XQSN36W5J2JV9KVA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6B3P4Z8XQSN36W5HZJP84XG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B3P4Z8XQSN36W5HZJP84XG",
+        "id": "01M6B3P5SWQ7PWF7W4M51FPB80",
+        "link": "01M6B3P5SWQ7PWF7W4M1F2T9BY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6B3NWCTG92ZGHQE28XWAF1V",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6B3NBFS2XB29R29457RSCGA",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B3P738AA7PXT2QTAHTP4M7",
+  "type": "ops",
+  "v": 1
+}
