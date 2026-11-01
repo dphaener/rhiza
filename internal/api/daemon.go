@@ -104,7 +104,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}}
 	pending := map[string]daemonPending{}
 	unjournaled := map[string]daemonPending{}
-	state := daemon.State{Process: self, MaxRuns: r.MaxRuns, Autonomous: r.Autonomous, Runs: []daemon.LiveRun{}}
+	state := daemon.State{Process: self, Version: ctx.Version, MaxRuns: r.MaxRuns, Autonomous: r.Autonomous, Runs: []daemon.LiveRun{}}
 	if prev, ok := daemon.ReadState(common); ok {
 		state.LastStarted, state.LastResumed = prev.LastStarted, prev.LastResumed
 		state.Notified = prev.Notified
@@ -515,6 +515,7 @@ var skipText = map[string]string{
 type DaemonStatusResponse struct {
 	Running     bool          `json:"running" desc:"True while a live daemon holds the repository's lock"`
 	Process     string        `json:"process,omitempty" desc:"The daemon's process, as host:pid; absent when none ever ran"`
+	Version     string        `json:"version,omitempty" desc:"The version of the binary the daemon runs, as recorded when it started"`
 	Started     string        `json:"started,omitempty" desc:"When the daemon started, RFC 3339 UTC"`
 	LastPoll    string        `json:"last_poll,omitempty" desc:"When it last polled, RFC 3339 UTC"`
 	Stopped     string        `json:"stopped,omitempty" desc:"When the last daemon stopped, RFC 3339 UTC; absent while it runs"`
@@ -537,6 +538,9 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 			return
 		}
 		fmt.Fprintf(w, "Last daemon: process %s, stopped %s\n", r.Process, r.Stopped)
+	}
+	if r.Version != "" {
+		fmt.Fprintf(w, "Version: %s\n", r.Version)
 	}
 	fmt.Fprintf(w, "Started: %s\nLast poll: %s\nMax runs: %d\nAutonomous: %t\n", r.Started, r.LastPoll, r.MaxRuns, r.Autonomous)
 	if len(r.Runs) == 0 {
@@ -594,6 +598,7 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 		return resp, nil
 	}
 	resp.Process = st.Process.String()
+	resp.Version = st.Version
 	resp.Started = st.Process.Started.UTC().Format(time.RFC3339)
 	resp.LastPoll = st.LastPoll.UTC().Format(time.RFC3339)
 	if !st.Stopped.IsZero() && !resp.Running {

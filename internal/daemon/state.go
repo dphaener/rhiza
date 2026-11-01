@@ -31,7 +31,10 @@ type Event struct {
 // Stopped set. Whether the daemon runs now is the lock's to say, not this
 // file's.
 type State struct {
-	Process     Holder    `json:"process"`
+	Process Holder `json:"process"`
+	// Version is the version of the binary the daemon runs, recorded when
+	// it starts.
+	Version     string    `json:"version,omitempty"`
 	LastPoll    time.Time `json:"last_poll"`
 	Stopped     time.Time `json:"stopped,omitempty"`
 	MaxRuns     int       `json:"max_runs"`
