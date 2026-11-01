@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T05:46:49Z",
+  "body": {
+    "intent": "The roadmap and the daemon order milestones by their number",
+    "kind": "intention",
+    "sources": [],
+    "title": "Milestones in number order"
+  },
+  "change_set": "01M6ATAVKKGF9SWBWVTF7N98QS",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6ATAVKKGF9SWBWVTGWHKVWJ",
+  "type": "open",
+  "v": 2
+}

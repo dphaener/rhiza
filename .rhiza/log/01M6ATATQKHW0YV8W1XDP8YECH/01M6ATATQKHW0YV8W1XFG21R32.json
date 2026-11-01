@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T05:46:48Z",
+  "body": {
+    "intent": "Abandoning a run removes its clean worktree and local branch",
+    "kind": "intention",
+    "sources": [],
+    "title": "Abandon clears worktree"
+  },
+  "change_set": "01M6ATATQKHW0YV8W1XDP8YECH",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6ATATQKHW0YV8W1XFG21R32",
+  "type": "open",
+  "v": 2
+}

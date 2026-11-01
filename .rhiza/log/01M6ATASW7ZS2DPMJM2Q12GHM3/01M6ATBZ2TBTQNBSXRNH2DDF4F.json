@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6ATASW7ZS2DPMJM2T0YKRKY"
+  ],
+  "at": "2026-11-01T05:47:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "run-status.txtar with a journal where a check's cycle 1 failed and cycle 2 is open prints 'open in cycle 2 (cycle 1 failed)' and --json has an empty outcome for it; a Go test of the live app's checks summary counts it running; a run summary test heads it open",
+          "statement": "A review check whose latest cycle is open reads as open, not as its previous cycle's outcome: run status text says 'open in cycle N (cycle N-1 failed)', its JSON outcome is empty, the live app counts it running and run summary heads it open"
+        },
+        "handle": "run-status-open-cycle",
+        "id": "01M6ATBX8NH5KPKEAY7QZNBAKT",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6ATBX8NH5KPKEAY7MMZ7JBC",
+        "op": "node.create",
+        "parent": "01M5TYGK04WT4AH5KMH4RF82YD"
+      },
+      {
+        "decision": null,
+        "from": "01M6ATBX8NH5KPKEAY7MMZ7JBC",
+        "id": "01M6ATBXZ0DTMH1K9357N68SJ4",
+        "link": "01M6ATBXZ0DTMH1K9356K5YGC7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATB3MJDQ4WKWMHNWXTVVJX",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6ATASW7ZS2DPMJM2Q12GHM3",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6ATBZ2TBTQNBSXRNH2DDF4F",
+  "type": "ops",
+  "v": 1
+}

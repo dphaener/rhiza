@@ -352,6 +352,7 @@
 - [milestone-10](intent/milestone-10.md)
 - [areas](intent/areas.md)
 - [milestone-11](intent/milestone-11.md)
+- [milestone-12](intent/milestone-12.md)
 
 ## Constraints
 
@@ -367,6 +368,7 @@
 
 ## Decisions
 
+- [abandon-removes-clean-worktree](decision/abandon-removes-clean-worktree.md)
 - [actionable-roadmap-rebase-resolution](decision/actionable-roadmap-rebase-resolution.md)
 - [actor-on-every-entry](decision/actor-on-every-entry.md)
 - [actor-set-at-launch](decision/actor-set-at-launch.md)
@@ -509,6 +511,7 @@
 - [daemon-status-needs-picks](decision/daemon-status-needs-picks.md)
 - [declarative-toml](decision/declarative-toml.md)
 - [depends-on-means-cannot-start](decision/depends-on-means-cannot-start.md)
+- [disk-guard-10-gib](decision/disk-guard-10-gib.md)
 - [done-capture-failure-warns](decision/done-capture-failure-warns.md)
 - [done-points-as-intents](decision/done-points-as-intents.md)
 - [done-reports-decisions](decision/done-reports-decisions.md)
@@ -577,6 +580,7 @@
 - [log-in-product-repo](decision/log-in-product-repo.md)
 - [m10-picked-by-orchestrator](decision/m10-picked-by-orchestrator.md)
 - [m11-picked-by-orchestrator](decision/m11-picked-by-orchestrator.md)
+- [m12-picked-by-orchestrator](decision/m12-picked-by-orchestrator.md)
 - [m2-done-point](decision/m2-done-point.md)
 - [m2-eight-change-sets](decision/m2-eight-change-sets.md)
 - [m2-genesis-runs-the-work](decision/m2-genesis-runs-the-work.md)
@@ -607,6 +611,7 @@
 - [message-summary-journaled](decision/message-summary-journaled.md)
 - [milestone-1-scope](decision/milestone-1-scope.md)
 - [milestone-as-intent](decision/milestone-as-intent.md)
+- [milestones-by-number](decision/milestones-by-number.md)
 - [model-app-read-budget](decision/model-app-read-budget.md)
 - [model-is-plan-and-state](decision/model-is-plan-and-state.md)
 - [modelapp-timing-waits-for-quiet](decision/modelapp-timing-waits-for-quiet.md)
@@ -634,6 +639,7 @@
 - [one-slug-everywhere](decision/one-slug-everywhere.md)
 - [one-worktree-first](decision/one-worktree-first.md)
 - [only-cli-writes-log](decision/only-cli-writes-log.md)
+- [open-cycle-reads-open](decision/open-cycle-reads-open.md)
 - [orchestrator-amends-plans](decision/orchestrator-amends-plans.md)
 - [orchestrator-merges](decision/orchestrator-merges.md)
 - [overlaps-reuse-model](decision/overlaps-reuse-model.md)
@@ -1558,6 +1564,7 @@
 - [leaf-trailer-split-paragraphs-plan](source/leaf-trailer-split-paragraphs-plan.md)
 - [m10-orchestrator-picks](source/m10-orchestrator-picks.md)
 - [m11-orchestrator-picks](source/m11-orchestrator-picks.md)
+- [m12-orchestrator-picks](source/m12-orchestrator-picks.md)
 - [m5-usable-from-rex-interview](source/m5-usable-from-rex-interview.md)
 - [m6-overnight-interview](source/m6-overnight-interview.md)
 - [m7-keep-picking](source/m7-keep-picking.md)

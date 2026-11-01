@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T05:46:46Z",
+  "body": {
+    "intent": "The daemon holds new starts and resumes while disk space is low, and daemon status and the inbox say so",
+    "kind": "intention",
+    "sources": [],
+    "title": "Disk guard"
+  },
+  "change_set": "01M6ATAS02XDRJ1MSQ4THGCNPA",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6ATAS02XDRJ1MSQ4TSS9MK6",
+  "type": "open",
+  "v": 2
+}

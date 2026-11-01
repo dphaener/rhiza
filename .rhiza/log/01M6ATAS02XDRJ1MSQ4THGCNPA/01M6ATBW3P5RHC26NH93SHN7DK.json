@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6ATAS02XDRJ1MSQ4TSS9MK6"
+  ],
+  "at": "2026-11-01T05:47:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "daemon-picks.txtar with RHIZA_TEST_FREE_BYTES at 1 GiB: rhiza daemon --once starts and resumes nothing and daemon status --json shows reason disk-low; at 20 GiB the same fixture starts its run; --min-free 0 disables the guard; describe-golden.txtar is regenerated",
+          "statement": "While free space on the repo's filesystem is under the daemon's minimum (10 GiB unless --min-free says otherwise), the daemon starts and resumes no runs and daemon status reports each candidate skipped as disk-low with the free space"
+        },
+        "handle": "daemon-disk-guard",
+        "id": "01M6ATBRV8PA51H3HXP753QW82",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6ATBRV8PA51H3HXP74XNV9H",
+        "op": "node.create",
+        "parent": "01M61R7K5W91SXWWX8AGDZ01HC"
+      },
+      {
+        "decision": null,
+        "from": "01M6ATBRV8PA51H3HXP74XNV9H",
+        "id": "01M6ATBSHV5Q0MCFEE68BXYPVW",
+        "link": "01M6ATBSHV5Q0MCFEE64N67EWA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATB21VA3XW8EKPA0SAAEKZ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "An inbox testscript with a daemon state recording a disk-low poll shows one item of kind disk-low in rhiza inbox --json, and none once a later poll records enough space",
+          "statement": "rhiza inbox lists one disk-low item while the daemon's last poll found free space under its minimum, naming the free space, and the inbox app shows it"
+        },
+        "handle": "inbox-disk-low",
+        "id": "01M6ATBT8PTDQ8JQ49CWTMYJT5",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6ATBT8PTDQ8JQ49CV33ZG28",
+        "op": "node.create",
+        "parent": "01M61R7Q0JX5BXJP6M3P1SJXTG"
+      },
+      {
+        "decision": null,
+        "from": "01M6ATBT8PTDQ8JQ49CV33ZG28",
+        "id": "01M6ATBTZMQWCDNDWZA8DHFWZ5",
+        "link": "01M6ATBTZMQWCDNDWZA73XWHR2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATB21VA3XW8EKPA0SAAEKZ",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6ATAS02XDRJ1MSQ4THGCNPA",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6ATBW3P5RHC26NH93SHN7DK",
+  "type": "ops",
+  "v": 1
+}
