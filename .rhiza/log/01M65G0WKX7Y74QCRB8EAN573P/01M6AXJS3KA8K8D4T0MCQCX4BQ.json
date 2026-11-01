@@ -1,0 +1,40 @@
+{
+  "actor": "01M6AX53BNAWB1XDTNQ8AT2855",
+  "after": [
+    "01M6AX495B6A4ZDSNVDDS34E6T"
+  ],
+  "at": "2026-11-01T06:43:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Hands-on at e8198352 with a scratch build (go build -o $TMPDIR/rhiza-x ./cmd/rhiza) in a fresh scratch git repo, RHIZA_* env unset: rhiza init, change new, a one-step wait workflow, run start --no-wait -> run stopped. With RHIZA_SESSION set to a real session ID, rhiza run resume <run> exits 2 with stderr 'run resume refused: this is agent session <id>, and no agent session starts a run' and next 'ask the owner to run it outside an agent session'; --json and rhiza api call run.resume return the same usage error with the ID. shasum of .git/rhiza/runs/* before and after all refused attempts is identical (journal unchanged). --dry-run inside the session still previews (as run start --dry-run does); a whitespace-only RHIZA_SESSION is not treated as a session. With RHIZA_SESSION unset the same resume continues and the run passes. run start in the session still refuses with the same wording. make check: fmt, vet and go test pass; self-check fails only on stale renders for this review run's actor records."
+        },
+        "handle": "run-resume-refuses-agent-session-qa-1",
+        "id": "01M6AXJQ11D3E8SKFE8M77XJ28",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AXJQ11D3E8SKFE8J8XZ6K8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AXJQ11D3E8SKFE8J8XZ6K8",
+        "id": "01M6AXJQV3ZC2D4KB2MT4JD8AR",
+        "link": "01M6AXJQV3ZC2D4KB2MRV9CXMQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6AG9P18J4KJEAWFPQ5N731G",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M65G0WKX7Y74QCRB8EAN573P",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AXJS3KA8K8D4T0MCQCX4BQ",
+  "type": "ops",
+  "v": 1
+}
