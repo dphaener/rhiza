@@ -16,6 +16,10 @@ TestReadBudget times a read whose median is over budget up to two more times and
 
 - derived-from [m13-orchestrator-picks](../source/m13-orchestrator-picks.md)
 
+### In
+
+- decided-by [read-budget-retries](../capability/rhiza/views/fast-reads/read-budget-retries.md)
+
 ## History
 
 - `01M6B3NBFS2XB29R29457RSCGA` Plan milestone 13: catch up at a glance, picked by the orchestrator under the owner's standing instruction

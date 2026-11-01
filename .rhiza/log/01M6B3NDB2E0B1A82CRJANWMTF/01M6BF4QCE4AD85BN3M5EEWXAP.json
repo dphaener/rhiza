@@ -1,0 +1,40 @@
+{
+  "actor": "01M6BEPKZNG9ABVA29NMXASWT0",
+  "after": [
+    "01M6BENRFV5103YXTFT44WTM6Z"
+  ],
+  "at": "2026-11-01T11:50:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e8f4c34c, hands-on. (1) go test ./internal/api -run 'TestReadBudget$|TestTimeWithinBudget' -count=1 -v with RHIZA_BUDGET_LOG set: both PASS; the log has one 'attempt 1/3' line per read, medians 1.5-6.7 ms under the 50 ms budget. (2) Budget lowered to 4 ms in a throwaway edit (reverted): roadmap and ready in both views were timed 3 times each, every attempt logged as 'attempt 1/3'..'3/3' to the budget log, and the test failed with 'median over 4ms on every attempt'; reads under budget stopped after attempt 1. (3) Real 50 ms budget with 22 'yes' CPU hogs running outside the test: PASS, medians up to 16 ms. The over-then-under path was not hit with real timings at a borderline budget; TestTimeWithinBudget covers it with an injected timer and asserts readBudget == 50ms. make check with the run env unset exited 0."
+        },
+        "handle": "read-budget-retries-qa-1",
+        "id": "01M6BF4NGEBD7QSWXB8XT0DTMT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6BF4NGEBD7QSWXB8WB5BE7B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BF4NGEBD7QSWXB8WB5BE7B",
+        "id": "01M6BF4P7G23CR9RPDYF28FSZS",
+        "link": "01M6BF4P7G23CR9RPDYBJ9XE18",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6B3PKC46SS5FN4YP5FKQDHD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6B3NDB2E0B1A82CRJANWMTF",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BF4QCE4AD85BN3M5EEWXAP",
+  "type": "ops",
+  "v": 1
+}

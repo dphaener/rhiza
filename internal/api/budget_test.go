@@ -25,6 +25,35 @@ const readBudget = 50 * time.Millisecond
 // readBudgetRuns is how many fresh runs TestReadBudget times per read.
 const readBudgetRuns = 20
 
+// readBudgetRetries is how many more times a read whose median is over
+// readBudget is timed again. Load from outside the test run comes in short
+// spikes; the read fails only if every attempt is over.
+const readBudgetRetries = 2
+
+// readTiming is one attempt's timings of a read.
+type readTiming struct {
+	median, min, max time.Duration
+	size             int
+}
+
+// timeWithinBudget calls measure up to 1+readBudgetRetries times, stopping
+// at the first attempt whose median is under readBudget, and logs every
+// attempt through log. It reports whether some attempt was under budget.
+func timeWithinBudget(label string, measure func() (readTiming, error), log func(string)) (bool, error) {
+	attempts := 1 + readBudgetRetries
+	for n := 1; n <= attempts; n++ {
+		rt, err := measure()
+		if err != nil {
+			return false, err
+		}
+		log(fmt.Sprintf("%s attempt %d/%d: median %v (min %v, max %v), size %d", label, n, attempts, rt.median, rt.min, rt.max, rt.size))
+		if rt.median < readBudget {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 // generated is gen.Default() written once, with its index built, shared by
 // TestReadBudget and the benchmarks. It lives under one os.MkdirTemp folder
 // that TestMain removes.
@@ -221,26 +250,34 @@ func TestReadBudget(t *testing.T) {
 	var late string
 	for _, v := range []string{viewAsIs, viewToBe} {
 		for _, rd := range budgetReads(g, v) {
-			var times []time.Duration
-			var size int
-			for range readBudgetRuns {
-				start := time.Now()
-				resp, err := runRead(g, rd)
-				times = append(times, time.Since(start))
-				if err != nil {
-					t.Fatalf("%s %s: %v", rd.name, v, err)
-				}
-				if size = answerSize(resp); size == 0 {
-					t.Fatalf("%s %s answered nothing: %+v", rd.name, v, resp)
-				}
+			label := fmt.Sprintf("%-7s %-5s", rd.name, v)
+			log := func(line string) {
+				t.Log(line)
+				timingLog(line)
 			}
-			slices.Sort(times)
-			median := (times[readBudgetRuns/2-1] + times[readBudgetRuns/2]) / 2
-			line := fmt.Sprintf("%-7s %-5s median %v (min %v, max %v), size %d", rd.name, v, median, times[0], times[len(times)-1], size)
-			t.Log(line)
-			timingLog(line)
-			if median >= readBudget {
-				t.Errorf("%s %s median %v, want < %v", rd.name, v, median, readBudget)
+			ok, err := timeWithinBudget(label, func() (readTiming, error) {
+				var times []time.Duration
+				var size int
+				for range readBudgetRuns {
+					start := time.Now()
+					resp, err := runRead(g, rd)
+					times = append(times, time.Since(start))
+					if err != nil {
+						return readTiming{}, fmt.Errorf("%s %s: %w", rd.name, v, err)
+					}
+					if size = answerSize(resp); size == 0 {
+						return readTiming{}, fmt.Errorf("%s %s answered nothing: %+v", rd.name, v, resp)
+					}
+				}
+				slices.Sort(times)
+				median := (times[readBudgetRuns/2-1] + times[readBudgetRuns/2]) / 2
+				return readTiming{median, times[0], times[len(times)-1], size}, nil
+			}, log)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !ok {
+				t.Errorf("%s %s median over %v on every attempt", rd.name, v, readBudget)
 			}
 			if late == "" {
 				late = quiettest.Late(rd.name, v)
@@ -294,5 +331,35 @@ func BenchmarkShowWhatIf(b *testing.B) {
 		if _, err := runRead(g, rd); err != nil {
 			b.Fatal(err)
 		}
+	}
+}
+
+func TestTimeWithinBudget(t *testing.T) {
+	over := readTiming{median: readBudget, size: 1}
+	under := readTiming{median: readBudget - 1, size: 1}
+	run := func(seq ...readTiming) (bool, int, []string) {
+		var lines []string
+		calls := 0
+		ok, err := timeWithinBudget("x", func() (readTiming, error) {
+			rt := seq[min(calls, len(seq)-1)]
+			calls++
+			return rt, nil
+		}, func(l string) { lines = append(lines, l) })
+		if err != nil {
+			t.Fatal(err)
+		}
+		return ok, calls, lines
+	}
+	if ok, calls, lines := run(over, under); !ok || calls != 2 || len(lines) != 2 {
+		t.Errorf("over then under: ok %v, %d calls, log %q", ok, calls, lines)
+	}
+	if ok, calls, lines := run(over, over, over); ok || calls != 3 || len(lines) != 3 {
+		t.Errorf("over three times: ok %v, %d calls, log %q", ok, calls, lines)
+	}
+	if ok, calls, _ := run(under); !ok || calls != 1 {
+		t.Errorf("under at once: ok %v, %d calls", ok, calls)
+	}
+	if readBudget != 50*time.Millisecond {
+		t.Errorf("readBudget = %v, want 50ms", readBudget)
 	}
 }

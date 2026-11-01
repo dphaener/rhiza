@@ -1,0 +1,40 @@
+{
+  "actor": "01M6BE5XFGZCMQNEVPRDAZPX4G",
+  "after": [
+    "01M6B3PVNDJF8PVVFCX6G1NE1V"
+  ],
+  "at": "2026-11-01T11:42:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 042e3a91 ran go test ./internal/api -run 'TestTimeWithinBudget|TestReadBudget' -count=1 -v: both PASS. TestTimeWithinBudget injects a measure func: over-then-under returns ok after 2 calls with 2 log lines; over three times returns not-ok after 3 calls with 3 log lines; under at once stops after 1 call; it also asserts readBudget == 50ms. TestReadBudget logs each read as 'attempt n/3'. The diff leaves const readBudget = 50 * time.Millisecond unchanged and adds readBudgetRetries = 2 with timeWithinBudget. make check exited 0."
+        },
+        "handle": "read-budget-retries-verified",
+        "id": "01M6BENPKD55TH5TNXRMA4RDMJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6BENPKD55TH5TNXRJ7K1H3V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BENPKD55TH5TNXRJ7K1H3V",
+        "id": "01M6BENQAK6HASAEGNX48D2S4D",
+        "link": "01M6BENQAK6HASAEGNX40Q0GWT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6B3PKC46SS5FN4YP5FKQDHD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6B3NDB2E0B1A82CRJANWMTF",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BENRFV5103YXTFT44WTM6Z",
+  "type": "ops",
+  "v": 1
+}
