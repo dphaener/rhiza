@@ -387,6 +387,7 @@
 - [milestone-18](intent/milestone-18.md)
 - [milestone-19](intent/milestone-19.md)
 - [milestone-20](intent/milestone-20.md)
+- [milestone-21](intent/milestone-21.md)
 
 ## Constraints
 
@@ -546,6 +547,7 @@
 - [daemon-skips-saved-at-poll](decision/daemon-skips-saved-at-poll.md)
 - [daemon-skips-shipped-rule](decision/daemon-skips-shipped-rule.md)
 - [daemon-status-needs-picks](decision/daemon-status-needs-picks.md)
+- [daemon-writes-state-at-start](decision/daemon-writes-state-at-start.md)
 - [declarative-toml](decision/declarative-toml.md)
 - [default-view-state-from-index](decision/default-view-state-from-index.md)
 - [depends-on-means-cannot-start](decision/depends-on-means-cannot-start.md)
@@ -639,6 +641,7 @@
 - [m2-scope-in](decision/m2-scope-in.md)
 - [m2-scope-out](decision/m2-scope-out.md)
 - [m20-picked-by-orchestrator](decision/m20-picked-by-orchestrator.md)
+- [m21-picked-by-orchestrator](decision/m21-picked-by-orchestrator.md)
 - [m2cs2-done-points-count](decision/m2cs2-done-points-count.md)
 - [m2cs2-flat-backlog](decision/m2cs2-flat-backlog.md)
 - [m2cs2-milestone-field](decision/m2cs2-milestone-field.md)
@@ -982,6 +985,7 @@
 - [tasks-are-disposable](decision/tasks-are-disposable.md)
 - [temporary-task-list](decision/temporary-task-list.md)
 - [ten-slice-sections](decision/ten-slice-sections.md)
+- [terminal-current-hint](decision/terminal-current-hint.md)
 - [test-timeout-twenty-minutes](decision/test-timeout-twenty-minutes.md)
 - [testscript-scenarios](decision/testscript-scenarios.md)
 - [three-agent-checks](decision/three-agent-checks.md)
@@ -1704,6 +1708,7 @@
 - [m18-orchestrator-picks](source/m18-orchestrator-picks.md)
 - [m19-orchestrator-picks](source/m19-orchestrator-picks.md)
 - [m20-orchestrator-picks](source/m20-orchestrator-picks.md)
+- [m21-orchestrator-picks](source/m21-orchestrator-picks.md)
 - [m5-usable-from-rex-interview](source/m5-usable-from-rex-interview.md)
 - [m6-overnight-interview](source/m6-overnight-interview.md)
 - [m7-keep-picking](source/m7-keep-picking.md)

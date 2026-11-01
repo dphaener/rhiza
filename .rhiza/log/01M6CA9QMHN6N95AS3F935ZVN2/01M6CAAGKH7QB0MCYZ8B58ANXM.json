@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6CA9QMHN6N95AS3FAFPGCPX"
+  ],
+  "at": "2026-11-01T19:45:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test seeds a state file from an earlier image of the same pid with a last poll, max runs 3, one live run and one skip, takes the lock as the new image, writes the start state and runs daemon status before any poll: it reports the new start time, the old last poll, the request's max runs, the seeded run and skip, and no stopped line",
+          "statement": "A daemon image writes its state before its first poll, carrying the previous image's last poll, live runs, skips and unjournaled holds, so daemon status shows a running daemon's state through a re-exec"
+        },
+        "handle": "daemon-state-at-start",
+        "id": "01M6CAACNGV26NMDMKV097AWJ3",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6CAACNGV26NMDMKTZZ3759E",
+        "op": "node.create",
+        "parent": "01M6A0NRGNH76FNWH3564VWA1X"
+      },
+      {
+        "decision": null,
+        "from": "01M6CAACNGV26NMDMKTZZ3759E",
+        "id": "01M6CAADJ43H6XB91G7CFKCG3V",
+        "link": "01M6CAADJ43H6XB91G7A6EMSDF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CA9ZT2YKEQ41XMMKB91M1R",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "status-terminal-current.txtar: land change set A with --change, write A into .rhiza/local/change by hand; rhiza status shows (landed) and next: rhiza change use --none; rhiza status --hook prints the hint; a model write exits with a conflict carrying the same next; after rhiza change use --none, status shows none current",
+          "statement": "When the current change set has landed, been withdrawn or been rejected, rhiza status and the session hook say so with next: rhiza change use --none, and a write refused for it carries the same next step"
+        },
+        "handle": "terminal-current-next",
+        "id": "01M6CAAEEEEZ1XHKEA81T3GD70",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6CAAEEEEZ1XHKEA811180P7",
+        "op": "node.create",
+        "parent": "01M5SWS4TY8DNWWMQ36WGXMEPS"
+      },
+      {
+        "decision": null,
+        "from": "01M6CAAEEEEZ1XHKEA811180P7",
+        "id": "01M6CAAFBGXB03TSGDS7CXG9D5",
+        "link": "01M6CAAFBGXB03TSGDS709Y4VK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CAA1J7C7TCV0VFC228EY67",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6CA9QMHN6N95AS3F935ZVN2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CAAGKH7QB0MCYZ8B58ANXM",
+  "type": "ops",
+  "v": 1
+}
