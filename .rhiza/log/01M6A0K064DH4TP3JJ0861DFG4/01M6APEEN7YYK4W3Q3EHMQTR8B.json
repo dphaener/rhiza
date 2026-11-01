@@ -1,0 +1,40 @@
+{
+  "actor": "01M6ANWT8S25DFQC4CX6WETK2S",
+  "after": [
+    "01M6A0P7J06WCJYVTXVJGR50D9"
+  ],
+  "at": "2026-11-01T04:38:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 39f8fc67, go test ./cmd/rhiza -run 'TestScripts/(daemon-status|describe-golden)$' -count=1 -v passes; the daemon-status log prints 'Version: dev' (the test build's versionString(), via ctx.Version) and the script asserts ^Version: .+$. Regenerating describe-golden with -update leaves no diff, so the golden already carries the new version field. Diff read: State gains Version recorded from ctx.Version when runDaemon starts, DaemonStatusResponse gains version (json omitempty) and a Version: line. make fmt-check, vet and test pass; self-check flags only unrendered actor files from this run's own sessions, not the leaf."
+        },
+        "handle": "daemon-status-version-verified",
+        "id": "01M6APECTP7VXNBM2RAW9D3GTP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6APECTP7VXNBM2RARWWPAYS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6APECTP7VXNBM2RARWWPAYS",
+        "id": "01M6APEDHTP21BKNE9NXSDHHGB",
+        "link": "01M6APEDHTP21BKNE9NTDHPQY8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NSV7XVE3SXVN0V6AKTKR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6A0K064DH4TP3JJ0861DFG4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6APEEN7YYK4W3Q3EHMQTR8B",
+  "type": "ops",
+  "v": 1
+}

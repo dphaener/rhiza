@@ -1,0 +1,40 @@
+{
+  "actor": "01M6AS108T698G86YZMY4NK4PT",
+  "after": [
+    "01M6AQSG75QK94WW1QT18KWP61"
+  ],
+  "at": "2026-11-01T05:24:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8e63b943 (attempt 2), go test -count=1 -run 'Reexec|Daemon(Loop|Keeps)' ./internal/api ./internal/daemon passed: TestDaemonReexecsRebuiltBinary drives runDaemon over 4 polls with an injected stat and exec, a changed executable execs once after the first poll wrote state, with the lock free for the new image (TryLock inside Exec) and held again after, an unchanged one never execs (0 execs, 4 stats); TestDaemonLoopReexecWaitsForPending shows a pending start delays the exec to poll 3, the first with none pending, not retried after a failed exec; TestReexec and TestDaemonKeepsUnjournaledHolds pass. Read the diff: the fix carries unjournaled holds and their run counts through daemon state so a re-exec keeps the 15-minute hold (the review's quality f1). make check passes fmt-check, vet and test; its self-check fails only on stale .rhiza/rendered actor and index files from this run's model writes, not on code."
+        },
+        "handle": "daemon-reexec-new-binary-verified-2",
+        "id": "01M6AS2D250GYCZMPY1JMTXGQP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AS2D250GYCZMPY1F7P6R06",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AS2D250GYCZMPY1F7P6R06",
+        "id": "01M6AS2DS95MFHPQHDA2MN45PC",
+        "link": "01M6AS2DS95MFHPQHD9Z4F4BQN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NRGNH76FNWH3564VWA1X",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6A0K064DH4TP3JJ0861DFG4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AS2EYJ7YG5R6PYZ8W5W6S2",
+  "type": "ops",
+  "v": 1
+}

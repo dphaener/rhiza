@@ -1443,6 +1443,10 @@ cmp stdout describe.golden.json
               "type": "object"
             },
             "type": "array"
+          },
+          "version": {
+            "description": "The version of the binary the daemon runs, as recorded when it started",
+            "type": "string"
           }
         },
         "required": [

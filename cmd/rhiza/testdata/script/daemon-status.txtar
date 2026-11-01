@@ -59,6 +59,7 @@ stdout '^Started a run of '
 # The daemon is gone, so it is not running, but its state says what it did.
 exec rhiza daemon status
 stdout '^Daemon not running$'
+stdout '^Version: .+$'
 stdout '^Max runs: 3$'
 stdout '^Autonomous: true$'
 stdout '^Last started: a run of '

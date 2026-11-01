@@ -1,0 +1,40 @@
+{
+  "actor": "01M6AQ67C3ZW495E3B2NEYVH0E",
+  "after": [
+    "01M6APEEN7YYK4W3Q3EHMQTR8B"
+  ],
+  "at": "2026-11-01T04:57:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a1222ea3 I ran go test -race -count=3 -run 'TestDaemonReexecsRebuiltBinary|TestDaemonLoopReexecWaitsForPending' ./internal/api (PASS) and go test -run TestReexec ./internal/daemon (PASS); gofmt, go vet and go test ./... all pass. make check passes fmt, vet and test; its self-check fails only on stale .rhiza/rendered files from this run's actor writes, not on code. Read the diff of 63a4cafb and a1222ea3. TestDaemonReexecsRebuiltBinary drives runDaemon over 4 polls with daemonReexec and daemonTicker replaced by a fake stat/exec. With a changed size it execs exactly once. The exec happens after the first poll wrote LastPoll. Inside the exec the daemon lock is free for the new image to take (TryLock succeeds), and the lock is held again on later ticks. With an unchanged image it never execs and stats 4 times. TestDaemonLoopReexecWaitsForPending drives daemonLoop with starts pending at polls 1 and 2: the exec runs once, at poll 3, and is not retried over 5 polls. This holds for both a nil and a failing exec. Due and Do in internal/daemon/reexec.go compare size and mod time and release, then retake, the lock around Exec. This addresses finding f1 from attempt 1."
+        },
+        "handle": "daemon-reexec-new-binary-verified",
+        "id": "01M6AQH81E84Q98864ZYR5NS0Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AQH81E84Q98864ZTRKHXVD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AQH81E84Q98864ZTRKHXVD",
+        "id": "01M6AQH8Q7G0VS8DPQAYDYRHEB",
+        "link": "01M6AQH8Q7G0VS8DPQAV4J03Y8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NRGNH76FNWH3564VWA1X",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6A0K064DH4TP3JJ0861DFG4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AQH9SVZP4CN3P8ANMB1Q3X",
+  "type": "ops",
+  "v": 1
+}

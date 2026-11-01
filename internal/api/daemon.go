@@ -95,7 +95,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		}
 		return nil, err
 	}
-	defer lock.Unlock()
+	defer func() { lock.Unlock() }()
 	self := daemon.ReadHolder(common)
 	if ctx.Stderr != nil {
 		fmt.Fprintf(ctx.Stderr, "rhiza: daemon running, process %s\n", self)
@@ -104,10 +104,12 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}}
 	pending := map[string]daemonPending{}
 	unjournaled := map[string]daemonPending{}
-	state := daemon.State{Process: self, MaxRuns: r.MaxRuns, Autonomous: r.Autonomous, Runs: []daemon.LiveRun{}}
+	state := daemon.State{Process: self, Version: ctx.Version, MaxRuns: r.MaxRuns, Autonomous: r.Autonomous, Runs: []daemon.LiveRun{}}
 	if prev, ok := daemon.ReadState(common); ok {
 		state.LastStarted, state.LastResumed = prev.LastStarted, prev.LastResumed
 		state.Notified = prev.Notified
+		// A re-exec, or a restart, keeps the holds of the daemon before.
+		unjournaled = daemonRestoreUnjournaled(prev.Unjournaled)
 	}
 	saveState := func() {
 		state.LastPoll = ctx.Now().UTC()
@@ -137,7 +139,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		}
 		state.Unjournaled = []daemon.Event{}
 		for cs, p := range unjournaled {
-			state.Unjournaled = append(state.Unjournaled, daemon.Event{Change: cs, At: p.at.UTC()})
+			state.Unjournaled = append(state.Unjournaled, daemon.Event{Change: cs, At: p.at.UTC(), Runs: p.runs})
 		}
 		slices.SortFunc(state.Unjournaled, func(a, b daemon.Event) int { return strings.Compare(a.Change, b.Change) })
 		if nerr := daemonNotify(ctx, rs, &state); err == nil {
@@ -149,25 +151,62 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if r.Once {
 		return resp, poll()
 	}
+	reexec := daemonReexec()
 	var interrupted <-chan struct{}
 	if ctx.Interrupts != nil {
 		var stop func()
 		interrupted, stop = ctx.Interrupts()
 		defer stop()
 	}
-	tick := time.NewTicker(daemonPoll)
-	defer tick.Stop()
+	ticks, stopTicks := daemonTicker()
+	defer stopTicks()
+	l, err := daemonLoop(ctx, common, lock, poll, func() int { return len(pending) }, reexec, ticks, interrupted)
+	if l != nil {
+		lock = l
+	}
+	return resp, err
+}
+
+// daemonLoop polls now and at each tick until interrupted. At the end of a
+// poll with no start pending (pending), a rebuilt binary takes over
+// (reexec): live runs are separate processes and carry on. An exec that
+// returns is not tried again. It returns the lock it holds at the end, nil
+// with the error when it could not take the lock back after an exec.
+func daemonLoop(ctx *Ctx, common string, lock *daemon.Lock, poll func() error, pending func() int, reexec *daemon.Reexec, ticks <-chan time.Time, interrupted <-chan struct{}) (*daemon.Lock, error) {
 	for {
 		if err := poll(); err != nil && ctx.Stderr != nil {
 			fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %v\n", err)
 		}
+		if reexec.Due(pending()) {
+			if ctx.Stderr != nil {
+				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: binary changed, re-executing\n")
+			}
+			l, err := reexec.Do(common, lock, ctx.Now())
+			if l == nil {
+				return nil, err
+			}
+			lock = l
+			if err != nil && ctx.Stderr != nil {
+				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: re-exec: %v\n", err)
+			}
+			reexec = nil // do not retry a failed exec every poll
+		}
 		select {
 		case <-interrupted:
-			return resp, nil
-		case <-tick.C:
+			return lock, nil
+		case <-ticks:
 		}
 	}
 }
+
+// daemonTicker ticks once per poll interval; tests replace it.
+var daemonTicker = func() (<-chan time.Time, func()) {
+	t := time.NewTicker(daemonPoll)
+	return t.C, t.Stop
+}
+
+// daemonReexec is how the daemon re-executes itself; tests replace it.
+var daemonReexec = daemon.NewReexec
 
 // daemonNotify sends one Rex notification for each inbox item that waits
 // and that state does not list as notified, and records it there. An item
@@ -250,6 +289,18 @@ const daemonUnjournaledHold = 15 * time.Minute
 type daemonPending struct {
 	at   time.Time
 	runs int
+}
+
+// daemonRestoreUnjournaled is the unjournaled holds a daemon's state
+// recorded, for the daemon that takes over from it.
+func daemonRestoreUnjournaled(events []daemon.Event) map[string]daemonPending {
+	unjournaled := map[string]daemonPending{}
+	for _, e := range events {
+		if e.Change != "" {
+			unjournaled[e.Change] = daemonPending{at: e.At, runs: e.Runs}
+		}
+	}
+	return unjournaled
 }
 
 // daemonHeld settles pending against runs at now and returns the change
@@ -515,6 +566,7 @@ var skipText = map[string]string{
 type DaemonStatusResponse struct {
 	Running     bool          `json:"running" desc:"True while a live daemon holds the repository's lock"`
 	Process     string        `json:"process,omitempty" desc:"The daemon's process, as host:pid; absent when none ever ran"`
+	Version     string        `json:"version,omitempty" desc:"The version of the binary the daemon runs, as recorded when it started"`
 	Started     string        `json:"started,omitempty" desc:"When the daemon started, RFC 3339 UTC"`
 	LastPoll    string        `json:"last_poll,omitempty" desc:"When it last polled, RFC 3339 UTC"`
 	Stopped     string        `json:"stopped,omitempty" desc:"When the last daemon stopped, RFC 3339 UTC; absent while it runs"`
@@ -537,6 +589,9 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 			return
 		}
 		fmt.Fprintf(w, "Last daemon: process %s, stopped %s\n", r.Process, r.Stopped)
+	}
+	if r.Version != "" {
+		fmt.Fprintf(w, "Version: %s\n", r.Version)
 	}
 	fmt.Fprintf(w, "Started: %s\nLast poll: %s\nMax runs: %d\nAutonomous: %t\n", r.Started, r.LastPoll, r.MaxRuns, r.Autonomous)
 	if len(r.Runs) == 0 {
@@ -594,6 +649,7 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 		return resp, nil
 	}
 	resp.Process = st.Process.String()
+	resp.Version = st.Version
 	resp.Started = st.Process.Started.UTC().Format(time.RFC3339)
 	resp.LastPoll = st.LastPoll.UTC().Format(time.RFC3339)
 	if !st.Stopped.IsZero() && !resp.Running {
