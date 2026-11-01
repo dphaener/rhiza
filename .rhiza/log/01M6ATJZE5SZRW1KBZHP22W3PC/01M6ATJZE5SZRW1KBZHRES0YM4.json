@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [],
+  "at": "2026-11-01T05:51:15Z",
+  "body": {
+    "intent": "Record agent actor claude-code-a1d0af81 for session a1d0af81-ef3e-4127-9f7f-01a195a97aa3",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6ATJZE5SZRW1KBZHP22W3PC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6ATJZE5SZRW1KBZHRES0YM4",
+  "type": "open",
+  "v": 1
+}

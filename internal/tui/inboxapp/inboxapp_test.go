@@ -120,3 +120,16 @@ func TestViewGroupsOverlaps(t *testing.T) {
 		}
 	}
 }
+
+func TestViewGroupsStalled(t *testing.T) {
+	out, calls := `{"items":[
+{"id":"h8","kind":"stalled","change":"C9","change_title":"Nine","step":"build","session":"S1","detail":"session S1 has not reported since 2030-01-01T00:00:00Z","next":"rhiza session message S1 <text>"}
+]}`, 0
+	m := NewModel(fake(&out, &calls))
+	v := m.View().Content
+	for _, want := range []string{"Stalled", "Nine · build", "session S1 has not reported"} {
+		if !strings.Contains(v, want) {
+			t.Errorf("view lacks %q:\n%s", want, v)
+		}
+	}
+}

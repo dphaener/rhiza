@@ -813,3 +813,79 @@ func TestRunResumeRetry(t *testing.T) {
 		t.Errorf("next = %q", e.Next)
 	}
 }
+
+// TestRunStalledNow checks a live run's current step: an agent step's
+// session, a leaves step's open leaves, a checks step's checks and its
+// unjudged fixer, each by its latest session. A stopped run never stalls.
+func TestRunStalledNow(t *testing.T) {
+	sessions := session.NewStore(t.TempDir())
+	old := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	now := old.Add(21 * time.Minute)
+	for id, state := range map[string]string{
+		"agent": session.StateWorking, "built": session.StateWorking, "old": session.StateWorking,
+		"verifier": session.StateWorking, "idle": session.StateIdle, "check": session.StateWorking,
+		"closed": session.StateWorking, "fixer": session.StateWorking,
+	} {
+		rec := session.Record{ID: id}
+		rec.Status.Hook = &session.Report{State: state, At: old}
+		if err := sessions.Write(rec); err != nil {
+			t.Fatal(err)
+		}
+	}
+	stalled := func(st run.State, live bool) string {
+		if s := runStalledNow(st, live, sessions, now); s != nil {
+			return s.Step + "/" + s.Session
+		}
+		return ""
+	}
+	agent := run.State{Current: "build", Session: map[string]string{"build": "agent"}}
+	if got := stalled(agent, true); got != "build/agent" {
+		t.Errorf("agent step: %q", got)
+	}
+	if got := stalled(agent, false); got != "" {
+		t.Errorf("stopped run: %q", got)
+	}
+	leaves := run.State{Current: "leaves", Leaves: []run.LeafState{
+		{Step: "leaves", Outcome: "passed", Sessions: []run.LeafSession{{Session: "built", Seq: 1}}},
+		{Step: "leaves", Sessions: []run.LeafSession{{Session: "old", Seq: 2}, {Session: "idle", Seq: 3}}},
+		{Step: "leaves", Sessions: []run.LeafSession{{Session: "verifier", Seq: 4}}},
+	}}
+	if got := stalled(leaves, true); got != "leaves/verifier" {
+		t.Errorf("leaves step: %q", got)
+	}
+	checks := run.State{Current: "review", Checks: []run.CheckState{
+		{Step: "plan", Sessions: []run.CheckSession{{Session: "agent", Seq: 1}}},
+		{Step: "review", Sessions: []run.CheckSession{{Session: "closed", Seq: 2, PaneClosed: true}}},
+		{Step: "review", Sessions: []run.CheckSession{{Session: "check", Seq: 3}}},
+	}}
+	if got := stalled(checks, true); got != "review/check" {
+		t.Errorf("checks step: %q", got)
+	}
+	if got := stalled(checks, false); got != "" {
+		t.Errorf("stopped checks step: %q", got)
+	}
+	fixes := run.State{Current: "review", Fixes: []run.ReviewFix{
+		{Step: "review", Session: "agent", Judged: true},
+		{Step: "review", Session: "fixer"},
+	}}
+	if got := stalled(fixes, true); got != "review/fixer" {
+		t.Errorf("fixer: %q", got)
+	}
+	// runStalledAll lists every stalled session of the step, as the inbox
+	// does: parallel checks and the fixer each stall on their own.
+	parallel := run.State{Current: "review", Checks: []run.CheckState{
+		{Step: "review", Sessions: []run.CheckSession{{Session: "check", Seq: 1}}},
+		{Step: "review", Sessions: []run.CheckSession{{Session: "verifier", Seq: 2}}},
+		{Step: "review", Sessions: []run.CheckSession{{Session: "idle", Seq: 3}}},
+	}, Fixes: []run.ReviewFix{{Step: "review", Session: "fixer"}}}
+	var got []string
+	for _, s := range runStalledAll(parallel, true, sessions, now) {
+		got = append(got, s.Step+"/"+s.Session)
+	}
+	if want := []string{"review/check", "review/verifier", "review/fixer"}; !slices.Equal(got, want) {
+		t.Errorf("all stalled = %v, want %v", got, want)
+	}
+	if all := runStalledAll(parallel, false, sessions, now); len(all) != 0 {
+		t.Errorf("stopped run, all stalled = %v", all)
+	}
+}

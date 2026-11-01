@@ -1,0 +1,63 @@
+{
+  "actor": "01M6AVHBXTEEDGVY6QHAV7GHVQ",
+  "after": [
+    "01M6AVGP0S8QTH9MQ81GM4D5CF"
+  ],
+  "at": "2026-11-01T06:11:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built binary at 8276602a against this repo's own live ship-change run 01M6AREK66 at step review/review (cycle-1 gap): the working cycle-2 quality check session c98484a2 last hook report 06:08:41Z. With RHIZA_TEST_NOW set (corrected for the log offset of 5503s) to report+19m, rhiza run status --json gives no stalled and rhiza inbox --json no stalled item; at report+21m run status --json gives stalled {step review/review, session c98484a2, since 06:08:41Z}. Earlier cycle sessions (compliance f9e4d1bf done, quality cycle-1 a1d0af81) and the other run (wait-main) never show. go test -run TestScripts/(run-status-stalled|describe-golden) passes, including the stopped-run and idle cases; go test ./internal/session ./internal/api pass."
+        },
+        "handle": "run-status-stalled-session-qa-2",
+        "id": "01M6AVR2Q6CHMCTKT4MQTCQVBF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AVR2Q6CHMCTKT4MPGPWMTR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AVR2Q6CHMCTKT4MPGPWMTR",
+        "id": "01M6AVR3DPHM2VZEFGZ38YYHFS",
+        "link": "01M6AVR3DPHM2VZEFGZ28VPAXJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NWP7AH4JGMDT37F6X7DG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built binary at 8276602a against this repo's own live ship-change run 01M6AREK66 (review/review, the cycle-1 gap): rhiza inbox --json at report+21m lists two items of kind stalled, one per working check session (quality c98484a2 and qa 2d4e2697), each with run, change, step review/review, session, at, and next 'rhiza session message <session> <text>'; at report+19m none. Human rhiza inbox prints '<id> stalled run 01M6AREK66..., change set 01M6A0K4..., step review/review / session <id> has not reported since <at> / next: rhiza session message <id> <text>' per session. go test -run TestScripts/inbox-stalled passes (blocked and idle give none) and go test ./internal/tui/inboxapp passes (Stalled group)."
+        },
+        "handle": "inbox-stalled-items-qa-2",
+        "id": "01M6AVR4428K6TA6A9RFBH3YB0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AVR4428K6TA6A9RC1HRRBM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AVR4428K6TA6A9RC1HRRBM",
+        "id": "01M6AVR4T2Q8SJ97QDXJHRBTNZ",
+        "link": "01M6AVR4T2Q8SJ97QDXJF32FVE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NY4FZ07ZQMR23E700DTQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6A0K4K58YMW04FA38373Y8P",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AVR5YM989XKM4A805D6SH1",
+  "type": "ops",
+  "v": 1
+}

@@ -1722,7 +1722,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, blocker or overlap",
+                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker or overlap",
                   "type": "string"
                 },
                 "next": {
@@ -1750,7 +1750,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "session": {
-                  "description": "A question: the asking session",
+                  "description": "A question: the asking session; a stalled item: the stalled session",
                   "type": "string"
                 },
                 "step": {
@@ -1790,7 +1790,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on and interrupted runs it skipped because their change set is no longer accepted, oldest first",
+      "summary": "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on, interrupted runs it skipped because their change set is no longer accepted and stalled sessions of live runs, oldest first",
       "write": false
     },
     {
@@ -2959,6 +2959,30 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "stalled": {
+                "additionalProperties": false,
+                "description": "A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
+                "properties": {
+                  "session": {
+                    "description": "The stalled session",
+                    "type": "string"
+                  },
+                  "since": {
+                    "description": "When the session last reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The step whose session is stalled",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "session",
+                  "since",
+                  "step"
+                ],
+                "type": "object"
               },
               "started_at": {
                 "description": "When it started, RFC 3339 UTC",
@@ -4529,6 +4553,30 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "stalled": {
+                "additionalProperties": false,
+                "description": "A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
+                "properties": {
+                  "session": {
+                    "description": "The stalled session",
+                    "type": "string"
+                  },
+                  "since": {
+                    "description": "When the session last reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The step whose session is stalled",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "session",
+                  "since",
+                  "step"
+                ],
+                "type": "object"
               },
               "started_at": {
                 "description": "When it started, RFC 3339 UTC",
@@ -7297,6 +7345,30 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "stalled": {
+                "additionalProperties": false,
+                "description": "A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
+                "properties": {
+                  "session": {
+                    "description": "The stalled session",
+                    "type": "string"
+                  },
+                  "since": {
+                    "description": "When the session last reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The step whose session is stalled",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "session",
+                  "since",
+                  "step"
+                ],
+                "type": "object"
+              },
               "started_at": {
                 "description": "When it started, RFC 3339 UTC",
                 "type": "string"
@@ -8738,6 +8810,30 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "stalled": {
+                "additionalProperties": false,
+                "description": "A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
+                "properties": {
+                  "session": {
+                    "description": "The stalled session",
+                    "type": "string"
+                  },
+                  "since": {
+                    "description": "When the session last reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The step whose session is stalled",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "session",
+                  "since",
+                  "step"
+                ],
+                "type": "object"
               },
               "started_at": {
                 "description": "When it started, RFC 3339 UTC",
@@ -10988,6 +11084,30 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "stalled": {
+                "additionalProperties": false,
+                "description": "A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
+                "properties": {
+                  "session": {
+                    "description": "The stalled session",
+                    "type": "string"
+                  },
+                  "since": {
+                    "description": "When the session last reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The step whose session is stalled",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "session",
+                  "since",
+                  "step"
+                ],
+                "type": "object"
+              },
               "started_at": {
                 "description": "When it started, RFC 3339 UTC",
                 "type": "string"
@@ -12453,6 +12573,30 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "stalled": {
+                "additionalProperties": false,
+                "description": "A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
+                "properties": {
+                  "session": {
+                    "description": "The stalled session",
+                    "type": "string"
+                  },
+                  "since": {
+                    "description": "When the session last reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The step whose session is stalled",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "session",
+                  "since",
+                  "step"
+                ],
+                "type": "object"
               },
               "started_at": {
                 "description": "When it started, RFC 3339 UTC",
@@ -13974,6 +14118,30 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "stalled": {
+                "additionalProperties": false,
+                "description": "A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
+                "properties": {
+                  "session": {
+                    "description": "The stalled session",
+                    "type": "string"
+                  },
+                  "since": {
+                    "description": "When the session last reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The step whose session is stalled",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "session",
+                  "since",
+                  "step"
+                ],
+                "type": "object"
+              },
               "started_at": {
                 "description": "When it started, RFC 3339 UTC",
                 "type": "string"
@@ -15316,6 +15484,30 @@ cmp stdout describe.golden.json
               "type": "object"
             },
             "type": "array"
+          },
+          "stalled": {
+            "additionalProperties": false,
+            "description": "A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
+            "properties": {
+              "session": {
+                "description": "The stalled session",
+                "type": "string"
+              },
+              "since": {
+                "description": "When the session last reported, RFC 3339 UTC",
+                "type": "string"
+              },
+              "step": {
+                "description": "The step whose session is stalled",
+                "type": "string"
+              }
+            },
+            "required": [
+              "session",
+              "since",
+              "step"
+            ],
+            "type": "object"
           },
           "started_at": {
             "description": "When it started, RFC 3339 UTC",

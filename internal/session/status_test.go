@@ -84,3 +84,32 @@ func TestSaidDoneLeavesResolveAlone(t *testing.T) {
 		t.Error("the exit cleared the done mark")
 	}
 }
+
+func TestStalled(t *testing.T) {
+	at := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	rec := func(s Status) Record { return Record{StartedAt: at, Status: s} }
+	hook := func(state, detail string) Status {
+		return Status{Hook: &Report{State: state, Detail: detail, At: at}}
+	}
+	code := 0
+	cases := []struct {
+		name string
+		r    Record
+		in   time.Duration
+		want bool
+	}{
+		{"working at 19m", rec(hook(StateWorking, "")), 19 * time.Minute, false},
+		{"working at 20m", rec(hook(StateWorking, "")), 20 * time.Minute, false},
+		{"working at 21m", rec(hook(StateWorking, "")), 21 * time.Minute, true},
+		{"blocked", rec(hook(StateBlocked, "")), 3 * time.Hour, false},
+		{"idle", rec(hook(StateIdle, "")), 3 * time.Hour, false},
+		{"usage paused", rec(hook(StateWorking, LimitPausedDetail+" until 2026-01-01T05:00:00Z")), 3 * time.Hour, false},
+		{"exited", rec(Status{Hook: &Report{State: StateWorking, At: at}, Exit: &Report{State: StateExited, Code: &code, At: at}}), 3 * time.Hour, false},
+		{"no report", rec(Status{}), 3 * time.Hour, false},
+	}
+	for _, c := range cases {
+		if got := Stalled(c.r, at.Add(c.in)); got != c.want {
+			t.Errorf("%s: Stalled = %v, want %v", c.name, got, c.want)
+		}
+	}
+}

@@ -14,6 +14,7 @@ package api
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -156,6 +157,7 @@ type RunInfo struct {
 	Steps          []RunStep       `json:"steps" desc:"The steps done, in order"`
 	StartedAt      string          `json:"started_at" desc:"When it started, RFC 3339 UTC"`
 	Blocked        *RunBlocked     `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
+	Stalled        *RunStalled     `json:"stalled,omitempty" desc:"A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise"`
 	Amendments     []RunAmendment  `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
 	Messages       []RunMessage    `json:"messages" desc:"The messages its sessions sent each other, in order"`
 	Sessions       []RunSession    `json:"sessions" desc:"The sessions it launched or read token use for, in order of first appearance, each with its latest reading"`
@@ -391,6 +393,96 @@ type RunBlocked struct {
 	Kind     string     `json:"kind,omitempty" desc:"What kind of block: permission, question or auth; empty when the session gave none"`
 	Question string     `json:"question,omitempty" desc:"What the session asks the owner, as it reported it; empty when it gave nothing"`
 	Tab      SessionTab `json:"tab" desc:"The terminal tab the session runs in, where the owner answers"`
+}
+
+// RunStalled is a session of an unfinished run that works but has not
+// reported for more than 20 minutes.
+type RunStalled struct {
+	Step    string `json:"step" desc:"The step whose session is stalled"`
+	Session string `json:"session" desc:"The stalled session"`
+	Since   string `json:"since" desc:"When the session last reported, RFC 3339 UTC"`
+}
+
+// runStalledNow is the first stalled session at now of the current step of
+// a live, unfinished run, of those runStalledAll lists.
+func runStalledNow(st run.State, live bool, sessions *session.Store, now time.Time) *RunStalled {
+	if all := runStalledAll(st, live, sessions, now); len(all) > 0 {
+		return &all[0]
+	}
+	return nil
+}
+
+// runStalledAll is every stalled session at now of the current step of a
+// live, unfinished run: an agent step's session, then the latest session of
+// each open leaf, of each check and of each unjudged change-set fixer of a
+// leaves or checks step. Only a live run's sessions stall: a stopped run has
+// no process holding it. A record that cannot be read is not stalled.
+func runStalledAll(st run.State, live bool, sessions *session.Store, now time.Time) []RunStalled {
+	if !live || st.Ended || sessions == nil {
+		return nil
+	}
+	var out []RunStalled
+	for _, sid := range stepSessions(st) {
+		rec, err := sessions.Read(sid)
+		if err != nil || !session.Stalled(rec, now) {
+			continue
+		}
+		rep, _ := session.Resolve(rec)
+		out = append(out, RunStalled{Step: st.Current, Session: sid, Since: rfc3339(rep.At)})
+	}
+	return out
+}
+
+// stepSessions are the sessions of the run's current step that can still
+// be working, in the order runStalledAll checks them. A session whose pane
+// is closed is gone.
+func stepSessions(st run.State) []string {
+	var out []string
+	if sid := st.Session[st.Current]; sid != "" {
+		out = append(out, sid)
+	}
+	// add takes the latest of a leaf's or a check's sessions, by journal
+	// position.
+	type started struct {
+		seq    int
+		id     string
+		closed bool
+	}
+	add := func(all []started) {
+		if len(all) == 0 {
+			return
+		}
+		last := slices.MaxFunc(all, func(a, b started) int { return cmp.Compare(a.seq, b.seq) })
+		if !last.closed && last.id != "" {
+			out = append(out, last.id)
+		}
+	}
+	for _, l := range st.Leaves {
+		if l.Step != st.Current || l.Outcome != "" {
+			continue
+		}
+		var all []started
+		for _, s := range l.Sessions {
+			all = append(all, started{s.Seq, s.Session, s.PaneClosed})
+		}
+		add(all)
+	}
+	for _, c := range st.Checks {
+		if c.Step != st.Current {
+			continue
+		}
+		var all []started
+		for _, s := range c.Sessions {
+			all = append(all, started{s.Seq, s.Session, s.PaneClosed})
+		}
+		add(all)
+	}
+	for _, f := range st.Fixes {
+		if f.Step == st.Current && !f.Judged && !f.PaneClosed && f.Session != "" {
+			out = append(out, f.Session)
+		}
+	}
+	return out
 }
 
 // RunStep is one step a run has done.
@@ -2055,6 +2147,9 @@ func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo
 	if b := runBlockedNow(st, sessions); b != nil {
 		info.State, info.Blocked = runBlocked, b
 	}
+	if ctx != nil && ctx.Now != nil {
+		info.Stalled = runStalledNow(st, live, sessions, ctx.Now())
+	}
 	for _, s := range st.Steps {
 		info.Steps = append(info.Steps, RunStep{
 			Step: s.Step, Visit: s.Visit, Outcome: s.Outcome, Next: s.Next, Detail: s.Detail,
@@ -2586,6 +2681,9 @@ func runLines(w io.Writer, r RunInfo) {
 	}
 	if r.Detail != "" {
 		fmt.Fprintf(w, "- Detail: %s\n", r.Detail)
+	}
+	if s := r.Stalled; s != nil {
+		fmt.Fprintf(w, "- Stalled: %s session %s has not reported since %s\n", s.Step, s.Session, s.Since)
 	}
 	if b := r.Blocked; b != nil {
 		tab := b.Tab.Title
