@@ -1,0 +1,40 @@
+{
+  "actor": "01M6BQ15T45D8VXW1RZHKGRCAC",
+  "after": [
+    "01M6BDATTPHT4XC3WK1A30G40Y"
+  ],
+  "at": "2026-11-01T14:18:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 060f7afd, go test ./cmd/rhiza -run 'TestScripts/(daemon-notify-hook|daemon-notify|describe-golden)$' -count=1 passed, and make test (gofmt, vet and all packages) passed. daemon-notify-hook.txtar runs without Rex over the four daemon-notify.txtar items: a fake hook appending stdin plus RHIZA_INBOX_* writes 4 lines with question, signoff, failed and gave-up kinds and matching env; a second --once writes none; a new item adds one line; an item removed and returned runs it again; git config rhiza.notifyCommand is used without the flag; fail.sh (exit 1) is logged 4 times with item ID and 'exit status 1: boom', the poll succeeds and it is not rerun; 'sleep 30' under RHIZA_TEST_NOTIFY_TIMEOUT=200ms (honoured only with RHIZA_TEST_NOW, see notifyTimeoutFor) is killed and logged 'timed out after 200ms' 4 times. describe-golden.txtar carries notify_command. The diff keeps Hooked state apart from Notified, so the hook runs with or without Rex. make self-check fails only on stale .rhiza/rendered actor files and index from this run's actor records, not on the leaf's code."
+        },
+        "handle": "inbox-notify-hook-verified",
+        "id": "01M6BQK5DF8553ZTG1DBNXETDH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6BQK5DF8553ZTG1D8AVS1RY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BQK5DF8553ZTG1D8AVS1RY",
+        "id": "01M6BQK6AH90KP98WGHAR6N8GT",
+        "link": "01M6BQK6AH90KP98WGH7RJ0BB1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BDAMMR2G2KYT2ZTF2HK9XX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6BD9HT87Z8WCD31EKQQ47R1",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BQK7SRJPSDV2Q5HY6NBY1K",
+  "type": "ops",
+  "v": 1
+}
