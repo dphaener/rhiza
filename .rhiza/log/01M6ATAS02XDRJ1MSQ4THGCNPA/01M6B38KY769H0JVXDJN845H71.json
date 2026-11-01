@@ -1,0 +1,63 @@
+{
+  "actor": "01M6B350BP0KJK64WD2Q0NE52X",
+  "after": [
+    "01M6B347P0QYGHQ2021YQ6PZ8F"
+  ],
+  "at": "2026-11-01T08:22:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 584cd6c3 built rhiza into $TMPDIR and ran it in a scratch repo (one accepted milestone change set with a leaf, Rex faked to log only, no test env vars). daemon --once --min-free 100G with the real statfs (57.8 GiB free): no Started, no rex call; daemon status shows 'Skipped: <cs> Built: disk space is low (57.8 GiB free, under the minimum of 100.0 GiB)' and --json reason disk-low. --min-free 1G: 'Started a run of <cs>', rex window new logged. --min-free -1, 10x, 1PB are usage errors (exit 2). The daemon-picks, inbox-disk-low and describe-golden scripts pass. Found two problems: RHIZA_TEST_FREE_BYTES works without RHIZA_TEST_NOW, and the disk-low Rex notice comes one poll late"
+        },
+        "handle": "daemon-disk-guard-qa-1",
+        "id": "01M6B38GKKE3RMMQCKQ7YSR90G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6B38GKKE3RMMQCKQ5AE90YG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B38GKKE3RMMQCKQ5AE90YG",
+        "id": "01M6B38HARQ7DWYDPXQW3G1HD7",
+        "link": "01M6B38HARQ7DWYDPXQTQPN0HB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATBRV8PA51H3HXP74XNV9H",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 584cd6c3, in the same scratch repo with the built binary: after a real low-disk poll (--min-free 100G), rhiza inbox lists one '<id> disk-low' item reading '57.8 GiB free, under the minimum of 100.0 GiB: the daemon holds new starts and resumes'. The ID stays the same across a second low poll. After a poll with --min-free 1G it prints 'Nothing waits on you'. The inbox app view was checked only through go test ./internal/tui/inboxapp (PASS), not by hand"
+        },
+        "handle": "inbox-disk-low-qa-1",
+        "id": "01M6B38J1ZFQ6MYY39NDS9YRX3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6B38J1ZFQ6MYY39NAMKVPE3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6B38J1ZFQ6MYY39NAMKVPE3",
+        "id": "01M6B38JS092STADFDYTC7HZDP",
+        "link": "01M6B38JS092STADFDYRZ1NHVF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATBT8PTDQ8JQ49CV33ZG28",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ATAS02XDRJ1MSQ4THGCNPA",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B38KY769H0JVXDJN845H71",
+  "type": "ops",
+  "v": 1
+}
