@@ -287,19 +287,19 @@ func TestAdd(t *testing.T) {
 
 	t.Run("Fields", func(t *testing.T) {
 		ctx, _ := writeCtx(t)
-		mustWrite(t, ctx, "add", `{"kind":"capability","handle":"store","fields":["statement=A <b> & c"],"json_fields":["n=[1, 2]","o={\"b\":1,\"a\":true}"]}`)
+		mustWrite(t, ctx, "add", `{"kind":"capability","handle":"store","fields":["statement=A <b> & c"],"json_fields":["built_in=[1, 2]","acceptance={\"b\":1,\"a\":true}"]}`)
 		f := nodeAt(t, ctx, "store").Fields
 		if string(f["statement"]) != `"A <b> & c"` {
 			t.Errorf("statement = %s", f["statement"])
 		}
-		if string(f["n"]) != "[\n  1,\n  2\n]" || !strings.HasPrefix(string(f["o"]), "{\n  \"a\": true") {
-			t.Errorf("json fields = %s, %s", f["n"], f["o"])
+		if string(f["built_in"]) != "[\n  1,\n  2\n]" || !strings.HasPrefix(string(f["acceptance"]), "{\n  \"a\": true") {
+			t.Errorf("json fields = %s, %s", f["built_in"], f["acceptance"])
 		}
 		for _, req := range []string{
-			`{"kind":"capability","handle":"x","fields":["a=1","a=2"]}`,
-			`{"kind":"capability","handle":"x","fields":["a=1"],"json_fields":["a=1"]}`,
-			`{"kind":"capability","handle":"x","json_fields":["a={"]}`,
-			`{"kind":"capability","handle":"x","json_fields":["a=1.5"]}`,
+			`{"kind":"capability","handle":"x","fields":["acceptance=1","acceptance=2"]}`,
+			`{"kind":"capability","handle":"x","fields":["acceptance=1"],"json_fields":["acceptance=1"]}`,
+			`{"kind":"capability","handle":"x","json_fields":["acceptance={"]}`,
+			`{"kind":"capability","handle":"x","json_fields":["acceptance=1.5"]}`,
 			`{"kind":"capability","handle":"x","fields":["noequals"]}`,
 			`{"kind":"capability","handle":"x","fields":["Bad=1"]}`,
 		} {
@@ -343,14 +343,14 @@ func TestAdd(t *testing.T) {
 func TestSet(t *testing.T) {
 	t.Run("RevisesCreate", func(t *testing.T) {
 		ctx, cs := writeCtx(t)
-		mustWrite(t, ctx, "add", `{"kind":"capability","handle":"store","fields":["a=1","b=2"]}`)
+		mustWrite(t, ctx, "add", `{"kind":"capability","handle":"store","fields":["acceptance=1","built_in=2"]}`)
 		created := onlyOp(t, opsOf(t, ctx, cs))
-		r := mustWrite(t, ctx, "set", `{"ref":"store","handle":"files","fields":["c=3"],"unset":["a"]}`)
+		r := mustWrite(t, ctx, "set", `{"ref":"store","handle":"files","fields":["statement=3"],"unset":["acceptance"]}`)
 		o := onlyOp(t, opsOf(t, ctx, cs))
 		if o.ID != created.ID || o.Type != op.TypeNodeCreate || o.Handle != "files" {
 			t.Fatalf("op = %+v", o)
 		}
-		want := map[string]json.RawMessage{"b": raw(`"2"`), "c": raw(`"3"`)}
+		want := map[string]json.RawMessage{"built_in": raw(`"2"`), "statement": raw(`"3"`)}
 		if !reflect.DeepEqual(o.Fields, want) {
 			t.Errorf("fields = %v", o.Fields)
 		}
@@ -363,24 +363,24 @@ func TestSet(t *testing.T) {
 		ctx, cs := writeCtx(t)
 		recordWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
 		landed := nodeAt(t, ctx, "store")
-		mustWrite(t, ctx, "set", `{"ref":"store","fields":["a=1","b=2"]}`)
+		mustWrite(t, ctx, "set", `{"ref":"store","fields":["acceptance=1","built_in=2"]}`)
 		first := onlyOp(t, opsOf(t, ctx, cs))
 		if first.Type != op.TypeNodeUpdate || first.Base != landed.Version || first.Node != landed.ID || len(first.Set) != 2 {
 			t.Fatalf("update = %+v", first)
 		}
-		mustWrite(t, ctx, "set", `{"ref":"store","fields":["c=3"],"unset":["a","z"]}`)
+		mustWrite(t, ctx, "set", `{"ref":"store","fields":["statement=3"],"unset":["acceptance","z"]}`)
 		o := onlyOp(t, opsOf(t, ctx, cs))
 		if o.ID != first.ID || o.Base != landed.Version {
 			t.Fatalf("merged = %+v", o)
 		}
-		want := map[string]json.RawMessage{"b": raw(`"2"`), "c": raw(`"3"`)}
-		if !reflect.DeepEqual(o.Set, want) || !slices.Equal(o.Unset, []string{"a", "z"}) {
+		want := map[string]json.RawMessage{"built_in": raw(`"2"`), "statement": raw(`"3"`)}
+		if !reflect.DeepEqual(o.Set, want) || !slices.Equal(o.Unset, []string{"acceptance", "z"}) {
 			t.Errorf("set %v unset %v", o.Set, o.Unset)
 		}
 		// Setting an unset field moves it back to set.
-		mustWrite(t, ctx, "set", `{"ref":"store","fields":["a=4"],"handle":"files"}`)
+		mustWrite(t, ctx, "set", `{"ref":"store","fields":["acceptance=4"],"handle":"files"}`)
 		o = onlyOp(t, opsOf(t, ctx, cs))
-		if string(o.Set["a"]) != `"4"` || !slices.Equal(o.Unset, []string{"z"}) || o.Handle != "files" {
+		if string(o.Set["acceptance"]) != `"4"` || !slices.Equal(o.Unset, []string{"z"}) || o.Handle != "files" {
 			t.Errorf("set %v unset %v handle %q", o.Set, o.Unset, o.Handle)
 		}
 	})
@@ -398,11 +398,11 @@ func TestSet(t *testing.T) {
 		ctx, _ := writeCtx(t)
 		mustWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
 		for req, code := range map[string]int{
-			`{"ref":"store"}`:                                2, // nothing to change
-			`{"ref":"nosuch","fields":["a=b"]}`:              4,
-			`{"ref":"store","fields":["a=1"],"unset":["a"]}`: 2,
-			`{"ref":"store","unset":["Bad"]}`:                2,
-			`{"ref":"store","handle":"Bad"}`:                 2,
+			`{"ref":"store"}`: 2, // nothing to change
+			`{"ref":"nosuch","fields":["acceptance=b"]}`:                       4,
+			`{"ref":"store","fields":["acceptance=1"],"unset":["acceptance"]}`: 2,
+			`{"ref":"store","unset":["Bad"]}`:                                  2,
+			`{"ref":"store","handle":"Bad"}`:                                   2,
 		} {
 			_, err := callOp(t, ctx, "set", req)
 			if ExitCode(err) != code {
@@ -419,7 +419,7 @@ func TestSet(t *testing.T) {
 		if len(prefix) < 4 {
 			t.Skipf("prefix %q too short", prefix)
 		}
-		_, err := callOp(t, ctx, "set", `{"ref":"`+prefix+`","fields":["a=b"]}`)
+		_, err := callOp(t, ctx, "set", `{"ref":"`+prefix+`","fields":["acceptance=b"]}`)
 		wantExit(t, err, 2)
 	})
 
@@ -429,7 +429,7 @@ func TestSet(t *testing.T) {
 		recordWrite(t, ctx, "retire", `{"ref":"store","reason":"Gone"}`)
 		for _, name := range []string{"set", "mv", "retire"} {
 			req := map[string]string{
-				"set":    `{"ref":"` + r.Nodes[0].String() + `","fields":["a=b"]}`,
+				"set":    `{"ref":"` + r.Nodes[0].String() + `","fields":["acceptance=b"]}`,
 				"mv":     `{"ref":"` + r.Nodes[0].String() + `","root":true}`,
 				"retire": `{"ref":"` + r.Nodes[0].String() + `","reason":"x"}`,
 			}[name]
@@ -445,7 +445,7 @@ func TestSet(t *testing.T) {
 		w := ctxWorkspace(t, ctx)
 		for _, v := range []string{`"1"`, `"2"`} {
 			u := op.Op{ID: w.mustID(t), Type: op.TypeNodeUpdate, Node: n.ID, Base: n.Version,
-				Set: map[string]json.RawMessage{"a": raw(v)}}
+				Set: map[string]json.RawMessage{"acceptance": raw(v)}}
 			if _, _, err := w.writeRecord("Fork", []op.Op{u}, w.mustID(t), w.mustID(t)); err != nil {
 				t.Fatal(err)
 			}
@@ -454,7 +454,7 @@ func TestSet(t *testing.T) {
 			t.Fatal("no landed conflict")
 		}
 		for name, req := range map[string]string{
-			"set":    `{"ref":"store","fields":["a=3"]}`,
+			"set":    `{"ref":"store","fields":["acceptance=3"]}`,
 			"mv":     `{"ref":"store","root":true}`,
 			"retire": `{"ref":"store","reason":"x"}`,
 		} {
@@ -549,7 +549,7 @@ func TestRetire(t *testing.T) {
 		ctx, cs := writeCtx(t)
 		recordWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
 		n := nodeAt(t, ctx, "store")
-		mustWrite(t, ctx, "set", `{"ref":"store","fields":["a=1"]}`)
+		mustWrite(t, ctx, "set", `{"ref":"store","fields":["acceptance=1"]}`)
 		r := mustWrite(t, ctx, "retire", `{"ref":"store","reason":"Gone"}`)
 		ops := opsOf(t, ctx, cs)
 		if len(ops) != 2 || ops[1].Type != op.TypeNodeRetire || ops[1].Base != n.Version || ops[1].Reason != "Gone" {
@@ -566,7 +566,7 @@ func TestRetire(t *testing.T) {
 		ctx, cs := writeCtx(t)
 		recordWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
 		mustWrite(t, ctx, "add", `{"kind":"capability","handle":"tmp"}`)
-		mustWrite(t, ctx, "set", `{"ref":"store","fields":["a=1"]}`)
+		mustWrite(t, ctx, "set", `{"ref":"store","fields":["acceptance=1"]}`)
 		mustWrite(t, ctx, "link", `{"from":"tmp","type":"depends-on","to":"store"}`)
 		created := opsOf(t, ctx, cs)[0]
 		r := mustWrite(t, ctx, "retire", `{"ref":"tmp","reason":"Never mind"}`)

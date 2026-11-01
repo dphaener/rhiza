@@ -1,0 +1,40 @@
+{
+  "actor": "01M69ZETPK9VHQTGFV8PE056WB",
+  "after": [
+    "01M69T0VA19ZWEEQN83CBDH1XM"
+  ],
+  "at": "2026-10-31T22:03:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 553e1f53 I ran go test ./internal/op -count=1 -v: TestEveryFieldInRepoLogIsKnown walks every .rhiza/log entry's node.create fields and node.update set keys (shapes checked against the real log) and finds each known for its kind; TestBogusFieldUnknown shows bogus unknown and result known on evidence; TestKnownFieldsSortedAndCoverEveryKind passes. Reading internal/op/fields.go, every field the acceptance names (intent statement/milestone/umbrella; capability statement/acceptance/built_in; evidence statement/result/tests/test/status/head/pr/command/observed; decision, source, question, constraint, actor fields) is listed. make check passes on a clean detached worktree of the commit."
+        },
+        "handle": "field-schemas-verified",
+        "id": "01M69ZTY3DF3P22MMXB21ZZTWQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M69ZTY3DF3P22MMXAY8J4J0H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M69ZTY3DF3P22MMXAY8J4J0H",
+        "id": "01M69ZTYX6XMN9PRQ2291J8RZ7",
+        "link": "01M69ZTYX6XMN9PRQ226S21QR7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69T0H3RSV8MEH7JNM194ZG4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTH32C73BQET8E0708F9F",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M69ZV05HA8ZXFG4H21MJ53JB",
+  "type": "ops",
+  "v": 1
+}

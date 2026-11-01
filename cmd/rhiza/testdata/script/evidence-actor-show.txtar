@@ -11,14 +11,14 @@ env RHIZA_ACTOR=verifier
 exec rhiza add evidence store-ok --field 'statement=store keeps the log' --field result=PASS --record
 exec rhiza link store-ok verifies store --record
 env RHIZA_ACTOR=other
-exec rhiza set store-ok --field result=FAIL --field actor=other --record
+exec rhiza set store-ok --field result=FAIL --field command=other --record
 env RHIZA_ACTOR=
 
-# show --json gives the creating actor's handle; a field named actor stays
+# show --json gives the creating actor's handle; a field named command stays
 # a field.
 exec rhiza show store-ok --json
 stdout '^    "actor": "verifier",$'
-stdout '^      "actor": "other",?$'
+stdout '^      "command": "other",?$'
 ! stdout '^    "actor": "other"'
 stdout '^      "result": "FAIL",?$'
 

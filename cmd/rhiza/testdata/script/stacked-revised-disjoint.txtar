@@ -7,14 +7,14 @@ exec rhiza init
 # A adds base; B depends on A and sets base's statement.
 exec rhiza change new A
 stdout 'change set 01M5PWGEF85Y185JZ2ZGCNH40N '
-exec rhiza add capability base --field statement=Base --field owner=a
+exec rhiza add capability base --field statement=Base --field acceptance=a
 exec rhiza change new B
 stdout 'change set 01M5PWGKBGYFZMTH8Y8AF1G8GN '
 exec rhiza link 01M5PWGKBGYFZMTH8Y8AF1G8GN depends-on 01M5PWGEF85Y185JZ2ZGCNH40N
 exec rhiza set base --field statement=FromB
 
-# A revises owner, a field B never wrote.
-exec rhiza set base --field owner=revised --change 01M5PWGEF85Y185JZ2ZGCNH40N
+# A revises acceptance, a field B never wrote.
+exec rhiza set base --field acceptance=revised --change 01M5PWGEF85Y185JZ2ZGCNH40N
 fold-ok
 
 # No conflict in check or ready.
@@ -25,7 +25,7 @@ stdout '^ok$'
 exec rhiza ready --json
 ! stdout 'revised under it'
 
-# B's what-if has A's revised owner and B's own statement.
+# B's what-if has A's revised acceptance and B's own statement.
 exec rhiza show base --change 01M5PWGKBGYFZMTH8Y8AF1G8GN
 stdout '^- View: what-if:01M5PWGKBGYFZMTH8Y8AF1G8GN$'
 stdout '^revised$'

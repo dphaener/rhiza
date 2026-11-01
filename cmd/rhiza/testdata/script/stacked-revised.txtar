@@ -9,7 +9,7 @@ exec rhiza init
 # A adds base; B depends on A and sets base's statement.
 exec rhiza change new A
 stdout 'change set 01M5PWGEF85Y185JZ2ZGCNH40N '
-exec rhiza add capability base --field statement=Base --field owner=a
+exec rhiza add capability base --field statement=Base --field acceptance=a
 stdout '^- node 01M5PWGJC82P7YGZTWYFFZ0VJG \(base\)$'
 exec rhiza change new B
 stdout 'change set 01M5PWGKBGYFZMTH8Y8AF1G8GN '

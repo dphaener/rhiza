@@ -21,7 +21,7 @@ stdout 'to change set 01M5PWGKBGYFZMTH8Y8AF1G8GN\.$'
 # to it.
 exec rhiza add capability leaf --parent base --field statement=Leaf
 stdout '^- node 01M5PWGNA0MVZ1H5AXG5VQ0BY9 \(leaf\)$'
-exec rhiza set base --field owner=b
+exec rhiza set base --field acceptance=b
 stdout '^- node 01M5PWGJC82P7YGZTWYFFZ0VJG \(base\)$'
 exec rhiza link leaf relates-to base --note why
 fold-ok
@@ -30,7 +30,7 @@ fold-ok
 exec rhiza slice --change 01M5PWGKBGYFZMTH8Y8AF1G8GN --view what-if --json
 stdout '"view": "what-if"'
 stdout '"handle": "base"'
-stdout '"owner": "b"'
+stdout '"acceptance": "b"'
 stdout '"handle": "leaf"'
 stdout '"in_flight": \[\n +\{\n +"id": "01M5PWGEF85Y185JZ2ZGCNH40N"'
 

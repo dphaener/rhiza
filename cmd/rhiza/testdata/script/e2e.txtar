@@ -34,7 +34,7 @@ stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
 exec rhiza add capability log --parent store
 stdout '^- node [0-9A-Z]{26} \(log\)$'
 exec rhiza add capability index
-exec rhiza set log --field statement='Appends entries' --json-field weight=3
+exec rhiza set log --field statement='Appends entries' --json-field built_in=3
 exec rhiza mv index --parent store --before log
 exec rhiza add decision d1 --field statement='One file per entry'
 exec rhiza link log decided-by d1 --note 'why the log is files'
@@ -65,7 +65,7 @@ stdout -count=2 '"op": "link.create"'
 ! stdout '"op": "node.(update|move|retire)"'
 ! stdout '"op": "link.retire"'
 ! stdout 'q-tmp'
-stdout '"weight": 3'
+stdout '"built_in": 3'
 stdout '"statement": "Finds entries fast"'
 
 # Lifecycle: propose, accept, land. Landing clears the current change set.
@@ -80,9 +80,9 @@ fold-ok
 # Record writes on the landed tree: no current change set needed. Now the
 # nodes and links are landed, so each write is its own op (a dry run shows
 # it).
-exec rhiza set store --field owner=storage --record --dry-run --json
+exec rhiza set store --field acceptance=storage --record --dry-run --json
 stdout '"op": "node.update"'
-exec rhiza set store --field owner=storage --record --json
+exec rhiza set store --field acceptance=storage --record --json
 stdout '"record": true'
 exec rhiza mv render --before index --record --dry-run --json
 stdout '"op": "node.move"'

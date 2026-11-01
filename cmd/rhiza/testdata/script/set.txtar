@@ -4,36 +4,36 @@
 
 exec rhiza init
 exec rhiza change new Shape
-exec rhiza add capability store --field a=1
+exec rhiza add capability store --field acceptance=1
 
 # On a node added here: the create is revised, no update appears.
-exec rhiza set store --handle files --field b=2 --unset a
+exec rhiza set store --handle files --field built_in=2 --unset acceptance
 stdout '^Wrote entry [0-9A-Z]{26} to change set 01M5PWGEF85Y185JZ2ZGCNH40N\.$'
 stdout '^- node 01M5PWGJC82P7YGZTWYFFZ0VJG \(files\)$'
 exec rhiza change show --json
 stdout '"handle": "files"'
-stdout '"b": "2"'
-! stdout '"a": "1"'
+stdout '"built_in": "2"'
+! stdout '"acceptance": "1"'
 ! stdout 'node.update'
 
 # On a landed node: a node.update against its version, then merged.
 exec rhiza add capability api --record
 exec rhiza set api --field statement=Serves --json
 stdout '"nodes": \[\n    "[0-9A-Z]{26}"\n  \]'
-exec rhiza set api --field owner=me --unset statement
+exec rhiza set api --field built_in=me --unset statement
 exec rhiza change show --json
 stdout '"op": "node.update"'
-stdout '"owner": "me"'
+stdout '"built_in": "me"'
 stdout '"unset": \[\n +"statement"\n +\]'
 ! stdout '"statement": "Serves"'
 
 # A dry run prints the merged update and writes nothing.
-exec rhiza set api --field x=1 --dry-run
+exec rhiza set api --field built_in=1 --dry-run
 stdout '^Dry run: would write 1 operation\(s\)'
 stdout '"op":"node.update"'
-stdout '"x":"1"'
+stdout '"built_in":"1"'
 exec rhiza change show --json
-! stdout '"x": "1"'
+! stdout '"built_in": "1"'
 
 # A taken handle is a conflict, exit 3; keeping one's own is fine.
 ! exec rhiza set api --handle files --json
@@ -41,30 +41,30 @@ stdout '"code": "conflict"'
 exec rhiza set api --handle api
 
 # Unknown, ambiguous and empty requests.
-! exec rhiza set nosuch --field a=b --json
+! exec rhiza set nosuch --field acceptance=b --json
 stdout '"code": "not_found"'
-! exec rhiza set 01M5PWG --field a=b --json
+! exec rhiza set 01M5PWG --field acceptance=b --json
 stdout '"code": "usage"'
 stdout 'matches [0-9] nodes'
 ! exec rhiza set api
 stderr '^rhiza: nothing to change'
-! exec rhiza set api --field a=1 --unset a
+! exec rhiza set api --field acceptance=1 --unset acceptance
 stderr 'both set and unset'
 
 # No change set: usage with next.
 exec rhiza change use --none
-! exec rhiza set api --field a=b
+! exec rhiza set api --field acceptance=b
 stderr '^next: rhiza change new "<intent>"$'
 
 # Two intentions set the same landed node from the same base. Once one
 # lands, land refuses the other: its what-if view has the conflict, exit 3.
 exec rhiza add capability shared --record
 exec rhiza change new A
-exec rhiza set shared --field a=1
+exec rhiza set shared --field acceptance=1
 exec rhiza propose
 exec rhiza accept
 exec rhiza change new B
-exec rhiza set shared --field a=2
+exec rhiza set shared --field acceptance=2
 exec rhiza propose
 exec rhiza accept
 exec git init -q
@@ -92,7 +92,7 @@ exec git commit -qm A
 exec git checkout -q main
 exec git merge -q --no-edit other
 exec rhiza change use 01M5PWGEF85Y185JZ2ZGCNH40N
-! exec rhiza set shared --field a=3 --json
+! exec rhiza set shared --field acceptance=3 --json
 stdout '"code": "conflict"'
 stdout 'conflicting changes'
 stdout '"next": "rhiza check"'

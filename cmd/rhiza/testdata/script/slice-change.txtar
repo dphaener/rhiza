@@ -68,7 +68,7 @@ cmp stdout accepted.md
 
 # A second draft that also touches log: the accepted one is in flight.
 exec rhiza change new 'Tune the log'
-exec rhiza set log --field 'owner=core team'
+exec rhiza set log --field 'acceptance=core team'
 exec rhiza slice log
 cmp stdout in-flight.md
 exec rhiza slice log
@@ -77,7 +77,7 @@ cmp stdout in-flight.md
 -- model.json --
 {"writes":[
   {"op":"add","kind":"capability","handle":"store","fields":["statement=Keeps the log on disk"]},
-  {"op":"add","kind":"capability","handle":"log","parent":"store","fields":["statement=Appends entries, one file each","owner=storage team"]},
+  {"op":"add","kind":"capability","handle":"log","parent":"store","fields":["statement=Appends entries, one file each","acceptance=storage team"]},
   {"op":"add","kind":"capability","handle":"segment","parent":"log","fields":["statement=Splits the log into segments"]},
   {"op":"add","kind":"capability","handle":"index","fields":["statement=Answers queries fast"]},
   {"op":"add","kind":"constraint","handle":"no-network","fields":["statement=Never touches the network"]},
@@ -104,7 +104,7 @@ cmp stdout in-flight.md
   {"op":"link","from":"log-tests","type":"verifies","to":"log"},
   {"op":"add","kind":"evidence","handle":"fsync-bench","fields":["statement=fsync stays under 2 ms","status=failing"]},
   {"op":"link","from":"fsync-bench","type":"verifies","to":"segment"},
-  {"op":"add","kind":"anchor","handle":"log-go","fields":["statement=internal/store/log.go"]},
+  {"op":"add","kind":"anchor","handle":"log-go"},
   {"op":"link","from":"log-go","type":"implements","to":"log"},
   {"op":"link","from":"log","type":"depends-on","to":"index"},
   {"op":"add","kind":"capability","handle":"render","fields":["statement=Writes markdown"]},
@@ -122,7 +122,7 @@ Proposed: new
 
 **log** `01M5PWGEF85Y185JZ35S` · capability · evidence: verified
 Appends entries in batches
-owner: storage team
+acceptance: storage team
 Proposed: statement: Appends entries, one file each → Appends entries in batches
 
 ## Context
@@ -146,7 +146,7 @@ Proposed: statement: Appends entries, one file each → Appends entries in batch
 
 ## Anchors
 
-- log-go `01M5PWGEF85Y185JZ3B3` — internal/store/log.go
+- log-go `01M5PWGEF85Y185JZ3B3` — log-go
 
 ## Evidence
 
@@ -169,7 +169,7 @@ Proposed: statement: Appends entries, one file each → Appends entries in batch
       "id": "01M5PWGEF85Y185JZ3B3S680H1",
       "kind": "anchor",
       "short": "01M5PWGEF85Y185JZ3B3",
-      "statement": "internal/store/log.go"
+      "statement": "log-go"
     }
   ],
   "budget": 4000,
@@ -262,7 +262,7 @@ Proposed: statement: Appends entries, one file each → Appends entries in batch
     },
     {
       "fields": {
-        "owner": "storage team",
+        "acceptance": "storage team",
         "statement": "Appends entries in batches"
       },
       "handle": "log",
@@ -327,7 +327,7 @@ Proposed: statement: Appends entries, one file each → Appends entries in batch
     }
   ],
   "ref": "01M5PWGM",
-  "tokens": 1036,
+  "tokens": 1034,
   "view": "what-if"
 }
 -- cache.md --
@@ -362,7 +362,7 @@ Proposed: new
 
 **log** `01M5PWGEF85Y185JZ35S` · capability · evidence: verified
 Appends entries, one file each
-owner: storage team
+acceptance: storage team
 
 ## Context
 
@@ -384,7 +384,7 @@ owner: storage team
 
 ## Anchors
 
-- log-go `01M5PWGEF85Y185JZ3B3` — internal/store/log.go
+- log-go `01M5PWGEF85Y185JZ3B3` — log-go
 
 ## Evidence
 
@@ -410,7 +410,7 @@ Proposed: new
 
 **log** `01M5PWGEF85Y185JZ35S` · capability · evidence: verified
 Appends entries in batches
-owner: storage team
+acceptance: storage team
 Proposed: statement: Appends entries, one file each → Appends entries in batches
 
 ## Context
@@ -434,7 +434,7 @@ Proposed: statement: Appends entries, one file each → Appends entries in batch
 
 ## Anchors
 
-- log-go `01M5PWGEF85Y185JZ3B3` — internal/store/log.go
+- log-go `01M5PWGEF85Y185JZ3B3` — log-go
 
 ## Evidence
 
@@ -456,8 +456,8 @@ Proposed: statement: Appends entries, one file each → Appends entries in batch
 
 **log** `01M5PWGEF85Y185JZ35S` · capability · evidence: verified
 Appends entries, one file each
-owner: core team
-Proposed: owner: storage team → core team
+acceptance: core team
+Proposed: acceptance: storage team → core team
 
 ## Context
 
@@ -479,7 +479,7 @@ Proposed: owner: storage team → core team
 
 ## Anchors
 
-- log-go `01M5PWGEF85Y185JZ3B3` — internal/store/log.go
+- log-go `01M5PWGEF85Y185JZ3B3` — log-go
 
 ## Evidence
 

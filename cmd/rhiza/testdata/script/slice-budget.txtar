@@ -5,7 +5,7 @@
 # Constraints and Open questions are never cut. Past that, the slice is
 # printed anyway, marked over budget, and the exit code is still 0.
 #
-# Uncut, log's slice is 292 tokens of markdown and 843 of JSON. At 250
+# Uncut, log's slice is 292 tokens of markdown and 840 of JSON. At 250
 # (markdown) and 700 (JSON) some sections are brief and the rest counts.
 
 exec rhiza init
@@ -35,7 +35,7 @@ cmp stdout over.json
 -- model.json --
 {"writes":[
   {"op":"add","kind":"capability","handle":"store","fields":["statement=Keeps the log on disk"]},
-  {"op":"add","kind":"capability","handle":"log","parent":"store","fields":["statement=Appends entries, one file each","owner=storage team"]},
+  {"op":"add","kind":"capability","handle":"log","parent":"store","fields":["statement=Appends entries, one file each","acceptance=storage team"]},
   {"op":"add","kind":"capability","handle":"segment","parent":"log","fields":["statement=Splits the log into segments"]},
   {"op":"add","kind":"capability","handle":"index","fields":["statement=Answers queries fast"]},
   {"op":"add","kind":"constraint","handle":"no-network","fields":["statement=Never touches the network"]},
@@ -62,7 +62,7 @@ cmp stdout over.json
   {"op":"link","from":"log-tests","type":"verifies","to":"log"},
   {"op":"add","kind":"evidence","handle":"fsync-bench","fields":["statement=fsync stays under 2 ms","status=failing"]},
   {"op":"link","from":"fsync-bench","type":"verifies","to":"segment"},
-  {"op":"add","kind":"anchor","handle":"log-go","fields":["statement=internal/store/log.go"]},
+  {"op":"add","kind":"anchor","handle":"log-go"},
   {"op":"link","from":"log-go","type":"implements","to":"log"},
   {"op":"link","from":"log","type":"depends-on","to":"index"},
   {"op":"add","kind":"capability","handle":"render","fields":["statement=Writes markdown"]},
@@ -76,7 +76,7 @@ cmp stdout over.json
 
 **log** `01M5PWGEF85Y185JZ35S` · capability · evidence: verified
 Appends entries, one file each
-owner: storage team
+acceptance: storage team
 
 ## Context
 
@@ -155,7 +155,7 @@ Omitted: neighbours 3 — `rhiza slice log --budget 1000`
   "focus": [
     {
       "fields": {
-        "owner": "storage team",
+        "acceptance": "storage team",
         "statement": "Appends entries, one file each"
       },
       "handle": "log",
@@ -229,7 +229,7 @@ Omitted: neighbours 3 — `rhiza slice log --budget 1000`
     }
   ],
   "ref": "log",
-  "tokens": 691,
+  "tokens": 693,
   "view": "as-is"
 }
 -- over.md --
@@ -239,7 +239,7 @@ Omitted: neighbours 3 — `rhiza slice log --budget 1000`
 
 **log** `01M5PWGEF85Y185JZ35S` · capability · evidence: verified
 Appends entries, one file each
-owner: storage team
+acceptance: storage team
 
 ## Constraints
 
@@ -257,7 +257,7 @@ Omitted: anchors 1 — `rhiza slice log --budget 1000`
 Omitted: evidence 1 — `rhiza slice log --budget 1000`
 Omitted: children 1 — `rhiza tree log`
 Omitted: neighbours 3 — `rhiza slice log --budget 1000`
-Still over budget by 185 tokens.
+Still over budget by 186 tokens.
 -- over.json --
 {
   "anchors": [],
@@ -279,7 +279,7 @@ Still over budget by 185 tokens.
   "focus": [
     {
       "fields": {
-        "owner": "storage team",
+        "acceptance": "storage team",
         "statement": "Appends entries, one file each"
       },
       "handle": "log",
@@ -353,6 +353,6 @@ Still over budget by 185 tokens.
     }
   ],
   "ref": "log",
-  "tokens": 543,
+  "tokens": 544,
   "view": "as-is"
 }

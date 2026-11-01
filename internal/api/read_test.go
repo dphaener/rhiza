@@ -45,7 +45,7 @@ func readLog(t *testing.T) (*Ctx, id.ID, id.ID) {
 	landed := newChange(t, ctx, `{"intent":"Base"}`).ChangeSet
 	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"store","fields":["statement=Keep things"]}`)
 	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"cache","parent":"store"}`)
-	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"disk","parent":"store","json_fields":["size={\"gb\":2}"]}`)
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"disk","parent":"store","json_fields":["acceptance={\"gb\":2}"]}`)
 	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"tape","parent":"disk"}`)
 	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"old","parent":"store"}`)
 	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"under-old","parent":"old"}`)

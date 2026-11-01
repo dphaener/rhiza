@@ -68,7 +68,7 @@ func TestShowNode(t *testing.T) {
 	if !disk.Retired || disk.Reason != "gone" || len(disk.LinksOut) != 1 || disk.LinksOut[0].Name != "decided-by" {
 		t.Errorf("disk = %+v", disk)
 	}
-	if got := string(disk.Fields["size"]); got != "{\n  \"gb\": 2\n}" {
+	if got := string(disk.Fields["acceptance"]); got != "{\n  \"gb\": 2\n}" {
 		t.Errorf("size = %s", got)
 	}
 	use := showCall(t, ctx, `{"ref":"use-ssd","view":"to-be"}`).Node
@@ -138,7 +138,7 @@ func TestShowHuman(t *testing.T) {
 		t.Errorf("tape human:\n%s", h)
 	}
 	h = human(t, showCall(t, ctx, `{"ref":"disk","view":"as-is"}`))
-	if !strings.Contains(h, "### size\n\n{\n  \"gb\": 2\n}\n") || !strings.Contains(h, "- decided-by use-ssd (") {
+	if !strings.Contains(h, "### acceptance\n\n{\n  \"gb\": 2\n}\n") || !strings.Contains(h, "- decided-by use-ssd (") {
 		t.Errorf("disk human:\n%s", h)
 	}
 	oldID := showCall(t, ctx, `{"ref":"store","view":"to-be"}`).Node.Children[2].ID

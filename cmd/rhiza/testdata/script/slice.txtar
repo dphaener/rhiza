@@ -34,7 +34,7 @@ cmp stdout store.md
 -- model.json --
 {"writes":[
   {"op":"add","kind":"capability","handle":"store","fields":["statement=Keeps the log on disk"]},
-  {"op":"add","kind":"capability","handle":"log","parent":"store","fields":["statement=Appends entries, one file each","owner=storage team"]},
+  {"op":"add","kind":"capability","handle":"log","parent":"store","fields":["statement=Appends entries, one file each","acceptance=storage team"]},
   {"op":"add","kind":"capability","handle":"segment","parent":"log","fields":["statement=Splits the log into segments"]},
   {"op":"add","kind":"capability","handle":"index","fields":["statement=Answers queries fast"]},
   {"op":"add","kind":"constraint","handle":"no-network","fields":["statement=Never touches the network"]},
@@ -61,7 +61,7 @@ cmp stdout store.md
   {"op":"link","from":"log-tests","type":"verifies","to":"log"},
   {"op":"add","kind":"evidence","handle":"fsync-bench","fields":["statement=fsync stays under 2 ms","status=failing"]},
   {"op":"link","from":"fsync-bench","type":"verifies","to":"segment"},
-  {"op":"add","kind":"anchor","handle":"log-go","fields":["statement=internal/store/log.go"]},
+  {"op":"add","kind":"anchor","handle":"log-go"},
   {"op":"link","from":"log-go","type":"implements","to":"log"},
   {"op":"link","from":"log","type":"depends-on","to":"index"},
   {"op":"add","kind":"capability","handle":"render","fields":["statement=Writes markdown"]},
@@ -75,7 +75,7 @@ cmp stdout store.md
 
 **log** `01M5PWGEF85Y185JZ35S` · capability · evidence: verified
 Appends entries, one file each
-owner: storage team
+acceptance: storage team
 
 ## Context
 
@@ -97,7 +97,7 @@ owner: storage team
 
 ## Anchors
 
-- log-go `01M5PWGEF85Y185JZ3B3` — internal/store/log.go
+- log-go `01M5PWGEF85Y185JZ3B3` — log-go
 
 ## Evidence
 
@@ -120,7 +120,7 @@ owner: storage team
       "id": "01M5PWGEF85Y185JZ3B3S680H1",
       "kind": "anchor",
       "short": "01M5PWGEF85Y185JZ3B3",
-      "statement": "internal/store/log.go"
+      "statement": "log-go"
     }
   ],
   "budget": 4000,
@@ -184,7 +184,7 @@ owner: storage team
   "focus": [
     {
       "fields": {
-        "owner": "storage team",
+        "acceptance": "storage team",
         "statement": "Appends entries, one file each"
       },
       "handle": "log",
@@ -247,7 +247,7 @@ owner: storage team
     }
   ],
   "ref": "log",
-  "tokens": 843,
+  "tokens": 840,
   "view": "as-is"
 }
 -- store.md --

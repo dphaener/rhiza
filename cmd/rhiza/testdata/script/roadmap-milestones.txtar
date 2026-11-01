@@ -15,7 +15,7 @@ exec rhiza add intent done --parent m1 --record
 exec rhiza add intent m11 --parent m1 --field milestone=1.1 --record
 exec rhiza add intent plain --record
 exec rhiza add intent blank --field milestone= --record
-exec rhiza add capability store --field milestone=9 --record
+exec rhiza add capability store --field acceptance=9 --record
 
 # E serves the milestone.
 exec rhiza change new E
