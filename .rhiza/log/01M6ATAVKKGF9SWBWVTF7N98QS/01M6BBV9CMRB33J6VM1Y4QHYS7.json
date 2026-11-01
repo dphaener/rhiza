@@ -1,0 +1,40 @@
+{
+  "actor": "01M6BBA4PDTDK1NN1RTHEJT6K3",
+  "after": [
+    "01M6BAV82GR7NFPBJRYZBE91RE"
+  ],
+  "at": "2026-11-01T10:52:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At df62c547 (review fixer commit): go test ./cmd/rhiza -run TestScripts/daemon-picks -count=1 passes; its milestone-order section sets up intents ten (milestone=10) and nine (milestone=9) with a ready accepted change set serving each, asserts rhiza roadmap --json lists nine before ten, and asserts rhiza daemon --once --max-runs 1 starts only the milestone-9 change set. The fix commit adds milestones-by-number supersedes m2cs2-milestone-order and milestone-groups decided-by milestones-by-number (rhiza show m2cs2-milestone-order --change shows 'superseded by milestones-by-number'; rhiza why milestone-groups lists milestones-by-number), resolving model finding f1. make check exits 0 (fmt-check, vet, go test ./..., self-check incl. render)."
+        },
+        "handle": "milestones-in-number-order-fix-verified",
+        "id": "01M6BBV7GN5C07CTHT7E8ZW115",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6BBV7GN5C07CTHT7BB3XRGB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BBV7GN5C07CTHT7BB3XRGB",
+        "id": "01M6BBV87VTFJ7MRVDRV52B8GG",
+        "link": "01M6BBV87VTFJ7MRVDRRAHDHHY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ATC3EGWXK28A2NGFY475TE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6ATAVKKGF9SWBWVTF7N98QS",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BBV9CMRB33J6VM1Y4QHYS7",
+  "type": "ops",
+  "v": 1
+}
