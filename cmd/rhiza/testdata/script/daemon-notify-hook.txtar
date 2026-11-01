@@ -1,0 +1,106 @@
+# The daemon runs the owner's notify command once per new inbox item, over the
+# four items daemon-notify.txtar uses, with the item as JSON on stdin and
+# RHIZA_INBOX_* set. It runs without Rex too. A failing or timed-out command
+# is logged with the item ID and not retried. The journals are fixtures.
+
+chmod 755 hook.sh
+chmod 755 fail.sh
+env HOOKOUT=$WORK/hook.out
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+mkdir .git/rhiza/runs
+cp ../question.jsonl .git/rhiza/runs/QUESTIONRUN.jsonl
+cp ../signoff.jsonl .git/rhiza/runs/SIGNOFFRUN01.jsonl
+cp ../failed.jsonl .git/rhiza/runs/FAILEDRUN001.jsonl
+exec sh -c 'sed "s/HOST/$(hostname)/" ../gaveup.jsonl > .git/rhiza/runs/GAVEUPRUN001.jsonl'
+
+# No Rex here: four items, four JSON lines.
+exec rhiza daemon --permission-mode manual --once --notify-command $WORK/hook.sh
+exec sh -c 'wc -l < $HOOKOUT'
+stdout '^ *4$'
+exec grep -c '"kind":"question"' $HOOKOUT
+exec grep -c '"kind":"signoff"' $HOOKOUT
+exec grep -c '"kind":"failed"' $HOOKOUT
+exec grep -c '"kind":"gave-up"' $HOOKOUT
+exec grep -c 'env=question:.*:CSQUESTION:CSQUESTION: a question waits on you: Which store?' $HOOKOUT
+exec grep -c 'env=signoff:.*:CSSIGNOFF:' $HOOKOUT
+
+# Nothing new: nothing written.
+exec rhiza daemon --permission-mode manual --once --notify-command $WORK/hook.sh
+exec sh -c 'wc -l < $HOOKOUT'
+stdout '^ *4$'
+
+# The sign-off is approved and a new failed run turns up: one more line.
+exec sh -c 'echo "{\"type\":\"signoff\",\"at\":\"2026-01-02T00:00:01Z\",\"step\":\"signoff\",\"visit\":1,\"rule\":\"owner\",\"outcome\":\"approved\"}" >> .git/rhiza/runs/SIGNOFFRUN01.jsonl'
+cp ../failed2.jsonl .git/rhiza/runs/FAILEDRUN002.jsonl
+exec rhiza daemon --permission-mode manual --once --notify-command $WORK/hook.sh
+exec sh -c 'wc -l < $HOOKOUT'
+stdout '^ *5$'
+
+# An item that clears and returns runs the command again.
+exec sh -c 'rm .git/rhiza/runs/FAILEDRUN002.jsonl'
+exec rhiza daemon --permission-mode manual --once --notify-command $WORK/hook.sh
+exec sh -c 'wc -l < $HOOKOUT'
+stdout '^ *5$'
+cp ../failed2.jsonl .git/rhiza/runs/FAILEDRUN002.jsonl
+exec rhiza daemon --permission-mode manual --once --notify-command $WORK/hook.sh
+exec sh -c 'wc -l < $HOOKOUT'
+stdout '^ *6$'
+
+# git config rhiza.notifyCommand is used when the flag is absent.
+exec git config rhiza.notifyCommand $WORK/hook.sh
+rm $WORK/hook.out
+exec rm .git/rhiza/daemon.state.json
+exec rhiza daemon --permission-mode manual --once
+exec sh -c 'wc -l < $HOOKOUT'
+stdout '^ *4$'
+
+# A command exiting 1 is logged with the item ID and the poll succeeds; it
+# is not run again for that item.
+exec rm .git/rhiza/daemon.state.json
+exec rhiza daemon --permission-mode manual --once --notify-command $WORK/fail.sh
+stderr -count=4 'notify command for item .*exit status 1.*boom'
+exec rhiza daemon --permission-mode manual --once --notify-command $WORK/fail.sh
+! stderr 'notify command'
+
+# A command past the timeout is killed and logged.
+exec rm .git/rhiza/daemon.state.json
+env RHIZA_TEST_NOW=2026-01-03T00:00:00Z RHIZA_TEST_NOTIFY_TIMEOUT=200ms
+exec rhiza daemon --permission-mode manual --once --notify-command 'sleep 30'
+stderr -count=4 'notify command for item .*timed out after 200ms'
+
+-- question.jsonl --
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"CSQUESTION"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
+{"type":"blocked","at":"2026-01-01T01:00:00Z","step":"build","session":"S1","block":{"kind":"question","question":"Which store?","tab_title":"leaf one","tab_block":"block:b1"}}
+-- signoff.jsonl --
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"signoff","started":{"workflow":"ship-change","definition":"","change":"CSSIGNOFF"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"signoff","visit":1}
+{"type":"stopped","at":"2026-01-01T02:00:00Z","step":"signoff","detail":"waiting for the owner's sign-off: rhiza run approve | rhiza run request-changes <file>; rhiza run summary"}
+-- failed.jsonl --
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"CSFAILED"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
+{"type":"finished","at":"2026-01-01T03:00:00Z","step":"build","end":"failed","detail":"boom"}
+-- gaveup.jsonl --
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"CSGAVEUP"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
+{"type":"process","at":"2026-01-01T00:00:02Z","process":{"host":"HOST","pid":999999}}
+{"type":"daemon-resumed","at":"2026-01-01T04:00:00Z","detail":"resumed by the daemon"}
+{"type":"process","at":"2026-01-01T04:00:30Z","process":{"host":"HOST","pid":999999}}
+-- failed2.jsonl --
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"CSFAILEDTWO"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
+{"type":"finished","at":"2026-01-01T06:00:00Z","step":"build","end":"failed","detail":"bang"}
+-- fail.sh --
+#!/bin/sh
+echo boom
+exit 1
+-- hook.sh --
+#!/bin/sh
+in=$(cat)
+echo "$in env=$RHIZA_INBOX_KIND:$RHIZA_INBOX_ID:$RHIZA_INBOX_CHANGE:$RHIZA_INBOX_TITLE" >> "$HOOKOUT"

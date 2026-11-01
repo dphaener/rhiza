@@ -56,6 +56,10 @@ type State struct {
 	// notification for and that still wait, so a later poll, or a later
 	// daemon, sends none again while they stay.
 	Notified []string `json:"notified,omitempty"`
+	// Hooked are the IDs of the inbox items the notify command ran for and
+	// that still wait. It is apart from Notified so the hook runs with or
+	// without Rex.
+	Hooked []string `json:"hooked,omitempty"`
 	// DiskLow is set while the last poll found free space under the
 	// daemon's minimum, and absent once a poll finds enough.
 	DiskLow *DiskLow `json:"disk_low,omitempty"`
