@@ -97,7 +97,7 @@ import (
 // SchemaVersion is the schema this package writes, kept in PRAGMA
 // user_version. Bump it on any change to the tables or what they hold: an
 // index of another version is deleted and rebuilt.
-const SchemaVersion = 1
+const SchemaVersion = 2
 
 // busyTimeout is how long a connection waits for a lock another connection
 // holds. Tests shorten it.
@@ -391,6 +391,13 @@ var schema = []string{
 	) WITHOUT ROWID`,
 	`CREATE INDEX links_from ON links (view, from_id)`,
 	`CREATE INDEX links_to ON links (view, to_id)`,
+	// nodes_fts is the text search table: one row per live node of a stored
+	// view, holding its handle and the text of its fields. sig is the hash
+	// of that text, so a sync writes only what changed.
+	`CREATE VIRTUAL TABLE nodes_fts USING fts5(
+		view UNINDEXED, id UNINDEXED, sig UNINDEXED, handle, body,
+		tokenize = 'unicode61 remove_diacritics 0'
+	)`,
 	// problems holds every problem, by source: "log" (layout and per-file,
 	// path set), "fold" (change_set and entry set), "asis" and "tobe"
 	// (change_set and op set). seq is the problem's place in its source's

@@ -1,0 +1,87 @@
+# search finds live nodes by the text of their handle and fields, ranked: a
+# whole word of the handle beats a whole word of a field beats the start of
+# a word. --kind narrows, --limit and a cursor page, and what-if sees a
+# change set's own text.
+
+exec rhiza init
+
+exec rhiza add capability store --field 'statement=Keeps the data on disk' --record
+exec rhiza add capability cache --field 'statement=Spills to a diskette' --record
+exec rhiza add capability disk --field 'statement=Raw blocks' --record
+exec rhiza add decision pick-ssd --field 'statement=Use the ssd, not a spinning platter' --record
+
+# Three nodes, ranked: handle word, field word, field prefix.
+exec rhiza search disk
+stdout '^- capability disk [0-9A-Z]{26}$'
+stdout -count=3 '^- '
+stdout '^  handle: disk$'
+stdout '^  statement: Keeps the data on disk$'
+exec sh -c 'rhiza search disk | grep "^- " | sed "s/^- [a-z]* \([a-z-]*\) .*/\1/" | tr "\n" " "'
+stdout '^disk store cache $'
+
+# The JSON has handle, ID, kind, path, field and snippet.
+exec rhiza search disk --json
+stdout '"field": "handle"'
+stdout '"field": "statement"'
+stdout '"snippet": "Keeps the data on disk"'
+stdout '"path": \['
+cp stdout search.json
+exec rhiza api call search '{"text":"disk"}'
+cmp stdout search.json
+
+# Every word must match.
+exec rhiza search 'disk keeps'
+stdout -count=1 '^- '
+stdout '^- capability store '
+exec rhiza search 'disk nosuchword'
+stdout '^No nodes match\.$'
+
+# --kind narrows.
+exec rhiza search ssd --kind capability
+stdout '^No nodes match\.$'
+exec rhiza search ssd --kind decision
+stdout '^- decision pick-ssd '
+! exec rhiza search disk --kind widget
+stderr '^next: rhiza describe search$'
+
+# --limit 1 gives a cursor whose page holds the rest.
+exec rhiza search disk --limit 1
+stdout '^- capability disk '
+stdout '^next: rhiza search disk --limit 1 --cursor [A-Za-z0-9_-]+$'
+exec rhiza search disk --limit 1 --json
+stdout '"next_cursor": "[A-Za-z0-9_-]+"'
+exec sh -c 'rhiza search disk --limit 1 | sed -n "s/^next: .* --cursor //p" > cursor.txt'
+exec sh -c 'rhiza search disk --cursor "$(cat cursor.txt)" | grep "^- " | sed "s/^- [a-z]* \([a-z-]*\) .*/\1/" | tr "\n" " "'
+stdout '^store cache $'
+! stdout 'next:'
+
+# A bad cursor, no text, and a bad limit are usage errors, exit 2.
+! exec rhiza search disk --cursor '!!'
+stderr '^rhiza: bad cursor "!!"'
+exec sh -c 'rhiza search disk --cursor "!!" 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+exec sh -c 'rhiza search "  " 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+exec sh -c 'rhiza search disk --limit 500 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+
+# A retired node is not found.
+exec rhiza retire disk --reason 'Gone' --record
+exec rhiza search disk
+stdout -count=2 '^- '
+! stdout 'capability disk '
+
+# A node updated in an unlanded change set is found by its new text only
+# under what-if.
+exec rhiza change new Wording
+stdout 'change set 01M5PWH01R1B9MDYF6J8XB3MQG '
+exec rhiza set cache --field 'statement=Holds recent reads'
+exec rhiza search recent --view as-is
+stdout '^No nodes match\.$'
+exec sh -c 'rhiza search recent --view what-if:01M5PWH01R1B9MDYF6J8XB3MQG'
+stdout '^- capability cache '
+stdout '^  statement: Holds recent reads$'
+exec rhiza search recent
+stdout '^- capability cache '
+
+fold-ok

@@ -16075,6 +16075,139 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "search",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "cursor": {
+            "description": "Where to go on: the next_cursor of the page before",
+            "type": "string"
+          },
+          "kinds": {
+            "description": "Keep the nodes of this kind; repeat for several; default every kind",
+            "items": {
+              "enum": [
+                "intent",
+                "capability",
+                "constraint",
+                "decision",
+                "question",
+                "evidence",
+                "source",
+                "actor",
+                "anchor"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "description": "The most hits to return, 1 to 200; default 20",
+            "type": "integer"
+          },
+          "text": {
+            "description": "The words to find; every word must start a word of the handle or of a field",
+            "type": "string"
+          },
+          "view": {
+            "description": "as-is, to-be or what-if:<change set>; default follows the effective change set",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "hits": {
+            "description": "The hits, best first, equal scores by ID",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "description": "Where the text matched best: \"handle\" or a field name",
+                  "type": "string"
+                },
+                "handle": {
+                  "description": "The node's handle",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The node's ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "The node's kind",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "Its ancestors in the tree, the root first; empty for a root or a kind outside the tree",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "handle": {
+                        "description": "The ancestor's handle",
+                        "type": "string"
+                      },
+                      "id": {
+                        "description": "The ancestor's ID",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "handle",
+                      "id"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "score": {
+                  "description": "The rank: higher is better",
+                  "type": "integer"
+                },
+                "snippet": {
+                  "description": "The matched text, shortened around the match",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "field",
+                "handle",
+                "id",
+                "kind",
+                "path",
+                "score",
+                "snippet"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "next_cursor": {
+            "description": "The cursor of the next page; absent when no more remain",
+            "type": "string"
+          },
+          "view": {
+            "description": "The view it was read in: as-is, to-be or what-if:<change set ID>",
+            "type": "string"
+          }
+        },
+        "required": [
+          "hits",
+          "view"
+        ],
+        "type": "object"
+      },
+      "summary": "Find live nodes by the text of their handles and fields, ranked",
+      "write": false
+    },
+    {
       "name": "session.done",
       "request": {
         "additionalProperties": false,
