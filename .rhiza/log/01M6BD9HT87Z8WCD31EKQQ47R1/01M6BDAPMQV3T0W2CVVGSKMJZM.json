@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6BD9HT87Z8WCD31EQGM9MRS"
+  ],
+  "at": "2026-11-01T11:18:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "daemon-notify-hook.txtar: a fake command appending stdin to a file, over the four items daemon-notify.txtar uses, writes four JSON lines with matching kinds and env; a second daemon --once writes none; an item that clears and returns runs it again; a command exiting 1 is logged with the item ID and the poll succeeds; a command past the timeout (shortened in tests through a RHIZA_TEST_ variable honoured only with RHIZA_TEST_NOW) is killed and logged; without Rex the hook still runs once per item; git config rhiza.notifyCommand is used when the flag is absent; describe-golden.txtar is regenerated",
+          "statement": "The daemon runs the owner's notify command (--notify-command, or git config rhiza.notifyCommand) once per new inbox item, with or without Rex, giving it the item as JSON on stdin and its kind, ID, change set and notice text in RHIZA_INBOX_* variables; a failing or timed-out command is logged and not retried"
+        },
+        "handle": "inbox-notify-hook",
+        "id": "01M6BDAMMR2G2KYT2ZTHKCZK5C",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6BDAMMR2G2KYT2ZTF2HK9XX",
+        "op": "node.create",
+        "parent": "01M5SWTCGG54JMNZNRSYQ2WAHH"
+      },
+      {
+        "decision": null,
+        "from": "01M6BDAMMR2G2KYT2ZTF2HK9XX",
+        "id": "01M6BDAND96NZ10G6AQHWQSN1Z",
+        "link": "01M6BDAND96NZ10G6AQFZSHHB1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BD9ZSCTSFJ66DZEYPD6P0P",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6BD9HT87Z8WCD31EKQQ47R1",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BDAPMQV3T0W2CVVGSKMJZM",
+  "type": "ops",
+  "v": 1
+}

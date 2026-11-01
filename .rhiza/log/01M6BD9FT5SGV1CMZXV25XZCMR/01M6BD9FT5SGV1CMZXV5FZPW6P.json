@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T11:18:07Z",
+  "body": {
+    "intent": "Plan milestone 14: find it, hear about it, picked by the orchestrator under the owner's standing instruction",
+    "kind": "record",
+    "sources": [],
+    "title": "Plan milestone 14"
+  },
+  "change_set": "01M6BD9FT5SGV1CMZXV25XZCMR",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BD9FT5SGV1CMZXV5FZPW6P",
+  "type": "open",
+  "v": 2
+}

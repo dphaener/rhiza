@@ -1,0 +1,109 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6BD9SAR595VBM6DVEDXP12Z"
+  ],
+  "at": "2026-11-01T11:18:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "14",
+          "statement": "Find it, hear about it: rhiza search finds model nodes by their text and the model app filters with it, and the daemon runs an owner-configured command for each new inbox item so a phone can hear about it"
+        },
+        "handle": "milestone-14",
+        "id": "01M6BD9TQ44H6M2EB3MWQM6XZS",
+        "key": "zzzr",
+        "kind": "intent",
+        "node": "01M6BD9TQ44H6M2EB3MW7YQY71",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "if you run out of work keep picking high value tasks. don't stop and wait for my input.",
+          "statement": "Milestone 14 carves text search out of the Area views umbrella and adds an inbox notify hook under the landed notifications capability; Area hooks' model-event-hooks stays in its umbrella"
+        },
+        "handle": "m14-picked-by-orchestrator",
+        "id": "01M6BD9VJ1XCY3RKKDZDR13QNB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6BD9VJ1XCY3RKKDZC99VA1Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BD9VJ1XCY3RKKDZC99VA1Y",
+        "id": "01M6BD9WDYZEYEQDXJTVPPNK0E",
+        "link": "01M6BD9WDYZEYEQDXJTRH7EHHC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BD9RFTEFB4RG2QFGXG6B22",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6BD9TQ44H6M2EB3MW7YQY71",
+        "id": "01M6BD9X94WDWW7S7XDK0JTWMV",
+        "link": "01M6BD9X94WDWW7S7XDJRQMDNK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BD9VJ1XCY3RKKDZC99VA1Y",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "rhiza search matches live nodes' handles and field text, ranked; as-is and to-be views use an FTS5 table kept in step with the index's nodes (schema version bumped), and what-if views scan in memory; hits give handle, ID, kind, path, matched field and a snippet, paged with --limit and a cursor; the model app filters with / through the same op",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "search-fts-asis-scan-whatif",
+        "id": "01M6BD9Y45QJ12D7CHBQWETGTE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6BD9Y45QJ12D7CHBQ8XMB11",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BD9Y45QJ12D7CHBQ8XMB11",
+        "id": "01M6BD9YYQ79QEMRSNVM73DY8H",
+        "link": "01M6BD9YYQ79QEMRSNVJKDAAPR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BD9RFTEFB4RG2QFGXG6B22",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The daemon runs a notify command, from --notify-command or else git config rhiza.notifyCommand, through sh -c in the repo root once per new inbox item, with the item's JSON on stdin and RHIZA_INBOX_KIND, RHIZA_INBOX_ID, RHIZA_INBOX_CHANGE and RHIZA_INBOX_TITLE set; it records hooked items in its own state apart from Rex notifications so it runs with or without Rex; a failing or timed-out (10 s) command is logged with the item ID and not retried",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "notify-command-flag-or-git-config",
+        "id": "01M6BD9ZSCTSFJ66DZF2ENMN3V",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6BD9ZSCTSFJ66DZEYPD6P0P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BD9ZSCTSFJ66DZEYPD6P0P",
+        "id": "01M6BDA0MJR8H3ZAHFX9BHE12R",
+        "link": "01M6BDA0MJR8H3ZAHFX8B8S2EV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BD9RFTEFB4RG2QFGXG6B22",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6BD9FT5SGV1CMZXV25XZCMR",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BDA1ZFHPD91Z49SA4E9CCC",
+  "type": "ops",
+  "v": 1
+}

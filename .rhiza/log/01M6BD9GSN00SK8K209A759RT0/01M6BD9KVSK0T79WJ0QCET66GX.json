@@ -1,0 +1,33 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6BD9GSN00SK8K209CY7QSH9"
+  ],
+  "at": "2026-11-01T11:18:14Z",
+  "body": {
+    "carve": {
+      "entry": "01M6BD9KVSK0T79WJ0Q98EAZYR",
+      "from": "01M5SWSZED0AS04VKMSB3ZVPSC"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "genesis find searches the model's text."
+        },
+        "handle": "text-search",
+        "id": "01M6BD9KVSK0T79WJ0Q882T99Z",
+        "key": "gi",
+        "kind": "capability",
+        "node": "01M5SWSZJ3RPZB49RSW714256H",
+        "op": "node.create",
+        "parent": "01M5SWRH1E8SA4049QPHPK0HXW"
+      }
+    ]
+  },
+  "change_set": "01M6BD9GSN00SK8K209A759RT0",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BD9KVSK0T79WJ0QCET66GX",
+  "type": "ops",
+  "v": 2
+}
