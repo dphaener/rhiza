@@ -1,0 +1,40 @@
+{
+  "actor": "01M6BHP9V43QY3MBE50ZAQE0PE",
+  "after": [
+    "01M6BDARPV0E7EGNP59G8QVDCC"
+  ],
+  "at": "2026-11-01T12:45:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5e82132d, go test ./cmd/rhiza -run 'TestScripts/(search|describe-golden)$' passes: search.txtar records nodes and gets disk, store, cache in ranked order; --kind narrows; --limit 1 prints a next_cursor whose page holds store and cache; a bad cursor exits 2; a retired node is not found; a node set in an unlanded change set is found by its new text under what-if and not under as-is; search --json and api call search cmp equal; describe-golden.txtar includes search. By hand with a scratch build, --view as-is and to-be miss the new text and find the old, while what-if finds the new. SchemaVersion went from 1 to 2 with an nodes_fts table, and an index downgraded to user_version 1 with nodes_fts dropped was rebuilt to version 2 on the next search. make check exits 0."
+        },
+        "handle": "search-command-verified",
+        "id": "01M6BJ8EB404GS2XQ8GV5GSYGY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6BJ8EB404GS2XQ8GTMAHF8F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BJ8EB404GS2XQ8GTMAHF8F",
+        "id": "01M6BJ8FV6RKHYQH4VGEPPCJT5",
+        "link": "01M6BJ8FV6RKHYQH4VGBP3WS7S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BDAFV0SK190M10KJ76PMFM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6BD9GSN00SK8K209A759RT0",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BJ8K36VAZ5V357AVZ2K7QM",
+  "type": "ops",
+  "v": 1
+}

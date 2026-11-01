@@ -16,6 +16,11 @@ rhiza search matches live nodes' handles and field text, ranked; as-is and to-be
 
 - derived-from [m14-orchestrator-picks](../source/m14-orchestrator-picks.md)
 
+### In
+
+- decided-by [search-command](../capability/rhiza/views/text-search/search-command.md)
+- decided-by [model-app-search](../capability/rhiza/views/text-search/model-app-search.md)
+
 ## History
 
 - `01M6BD9FT5SGV1CMZXV25XZCMR` Plan milestone 14: find it, hear about it, picked by the orchestrator under the owner's standing instruction

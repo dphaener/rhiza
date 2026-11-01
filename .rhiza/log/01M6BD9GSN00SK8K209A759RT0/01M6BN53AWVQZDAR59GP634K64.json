@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6BJT7MDMSDWKVJ8GG9AVHAP"
+  ],
+  "at": "2026-11-01T13:35:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "4ca82b026252f037225c27b09acfb0d69ff0f027",
+          "pr": "https://github.com/dphaener/rhiza/pull/170",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #170 (https://github.com/dphaener/rhiza/pull/170) passed CI at 4ca82b0",
+          "status": "verified"
+        },
+        "handle": "pr-170-text-search",
+        "id": "01M6BN4ZZM7GP483AZA12VS9C9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6BN4ZZM7GP483AZ9ZXWXYBS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6BN4ZZM7GP483AZ9ZXWXYBS",
+        "id": "01M6BN50Q1EARHPAYCFFSXGWT5",
+        "link": "01M6BN50Q1EARHPAYCFBZADKVG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWSZJ3RPZB49RSW714256H",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6BN4ZZM7GP483AZ9ZXWXYBS",
+        "id": "01M6BN51E7PRJ4KWVWE74R1TDS",
+        "link": "01M6BN51E7PRJ4KWVWE3X7EABV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BDAFV0SK190M10KJ76PMFM",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6BN4ZZM7GP483AZ9ZXWXYBS",
+        "id": "01M6BN525K902FHZG51B3NQ07X",
+        "link": "01M6BN525K902FHZG517BR5S1G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BDAHCGWVSDN2MXQKK63CXJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6BD9GSN00SK8K209A759RT0",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6BN53AWVQZDAR59GP634K64",
+  "type": "ops",
+  "v": 1
+}

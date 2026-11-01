@@ -73,6 +73,10 @@ func writeView(tx *sql.Tx, view string, m model.Model, ps []model.Problem) (int,
 	}
 	written += n
 
+	if err := syncFTS(tx, view, nodes); err != nil {
+		return 0, err
+	}
+
 	links := m.Links()
 	rows = make([]row, len(links))
 	for i, l := range links {
