@@ -108,6 +108,8 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if prev, ok := daemon.ReadState(common); ok {
 		state.LastStarted, state.LastResumed = prev.LastStarted, prev.LastResumed
 		state.Notified = prev.Notified
+		// A re-exec, or a restart, keeps the holds of the daemon before.
+		unjournaled = daemonRestoreUnjournaled(prev.Unjournaled)
 	}
 	saveState := func() {
 		state.LastPoll = ctx.Now().UTC()
@@ -137,7 +139,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		}
 		state.Unjournaled = []daemon.Event{}
 		for cs, p := range unjournaled {
-			state.Unjournaled = append(state.Unjournaled, daemon.Event{Change: cs, At: p.at.UTC()})
+			state.Unjournaled = append(state.Unjournaled, daemon.Event{Change: cs, At: p.at.UTC(), Runs: p.runs})
 		}
 		slices.SortFunc(state.Unjournaled, func(a, b daemon.Event) int { return strings.Compare(a.Change, b.Change) })
 		if nerr := daemonNotify(ctx, rs, &state); err == nil {
@@ -287,6 +289,18 @@ const daemonUnjournaledHold = 15 * time.Minute
 type daemonPending struct {
 	at   time.Time
 	runs int
+}
+
+// daemonRestoreUnjournaled is the unjournaled holds a daemon's state
+// recorded, for the daemon that takes over from it.
+func daemonRestoreUnjournaled(events []daemon.Event) map[string]daemonPending {
+	unjournaled := map[string]daemonPending{}
+	for _, e := range events {
+		if e.Change != "" {
+			unjournaled[e.Change] = daemonPending{at: e.At, runs: e.Runs}
+		}
+	}
+	return unjournaled
 }
 
 // daemonHeld settles pending against runs at now and returns the change

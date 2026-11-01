@@ -198,3 +198,22 @@ func TestDaemonLoopReexecWaitsForPending(t *testing.T) {
 		res.lock.Unlock()
 	}
 }
+
+// A daemon that takes over, as a re-exec's new image does, keeps the
+// unjournaled holds of the daemon before it: their start, and the runs
+// their change set had then.
+func TestDaemonKeepsUnjournaledHolds(t *testing.T) {
+	at := time.Unix(1700000000, 0).UTC()
+	prev := []daemon.Event{{Change: "B", At: at, Runs: 2}, {Change: "A", At: at.Add(time.Minute)}}
+	got := daemonRestoreUnjournaled(prev)
+	if len(got) != 2 || got["B"] != (daemonPending{at: at, runs: 2}) || got["A"] != (daemonPending{at: at.Add(time.Minute)}) {
+		t.Fatalf("restored %v", got)
+	}
+	// Restored, the hold runs its 15 minutes from the first start.
+	yes := func(string) bool { return true }
+	daemonHeld(map[string]daemonPending{}, got, nil, yes, at.Add(daemonUnjournaledHold-time.Second))
+	if _, ok := got["B"]; !ok {
+		t.Fatalf("restored hold of B released before 15 minutes")
+	}
+
+}

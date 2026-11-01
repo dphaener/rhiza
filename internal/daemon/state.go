@@ -24,6 +24,9 @@ type Event struct {
 	Change string    `json:"change,omitempty"`
 	Run    string    `json:"run,omitempty"`
 	At     time.Time `json:"at"`
+	// Runs is, for an unjournaled start, how many runs its change set had
+	// at the start, so a later daemon tells a new journal from an old one.
+	Runs int `json:"runs,omitempty"`
 }
 
 // State is what a daemon keeps for `rhiza daemon status`: written at start
@@ -43,7 +46,8 @@ type State struct {
 	LastStarted *Event    `json:"last_started,omitempty"`
 	LastResumed *Event    `json:"last_resumed,omitempty"`
 	// Unjournaled are the starts whose run never wrote a journal, by
-	// change set: the daemon does not start them again while it runs.
+	// change set: the daemon does not start them again until the hold
+	// ends, and a daemon that takes over (a re-exec) keeps the holds.
 	Unjournaled []Event `json:"unjournaled,omitempty"`
 	// Skips are the accepted change sets the last poll did not start, each
 	// with its reason, in the order the poll worked them out.
