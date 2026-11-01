@@ -1,0 +1,16 @@
+{
+  "actor": "01M6B9DG9ZF6TM66JCE641Y08G",
+  "after": [],
+  "at": "2026-11-01T10:11:26Z",
+  "body": {
+    "intent": "rhiza run abandon keeps a local branch holding commits that were never pushed, instead of force-deleting them",
+    "kind": "intention",
+    "sources": [],
+    "title": "Abandon keeps unpushed branch"
+  },
+  "change_set": "01M6B9FCNTTH65W2HKY3SCPC1H",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6B9FCNTTH65W2HKY4K284SP",
+  "type": "open",
+  "v": 2
+}
