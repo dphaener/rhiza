@@ -652,6 +652,163 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "change.diff",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "description": "The change set: a full ID or a unique prefix of 4+ characters; default --change, else the current one",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "description": "The change set's ID",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "links": {
+            "description": "The links it adds and retires, in change set order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "action": {
+                  "description": "Whether the change set adds or retires the link",
+                  "enum": [
+                    "added",
+                    "retired"
+                  ],
+                  "type": "string"
+                },
+                "from": {
+                  "description": "The link's source",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "from_handle": {
+                  "description": "The source's handle, when it is a node",
+                  "type": "string"
+                },
+                "link": {
+                  "description": "The link's ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "note": {
+                  "description": "The link's note",
+                  "type": "string"
+                },
+                "to": {
+                  "description": "The link's target",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "to_handle": {
+                  "description": "The target's handle, when it is a node",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "The link type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "action",
+                "from",
+                "link",
+                "to",
+                "type"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "nodes": {
+            "description": "One entry per node the change set writes, in the order it first writes them",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "action": {
+                  "description": "What the change set does to the node",
+                  "enum": [
+                    "created",
+                    "updated",
+                    "moved",
+                    "retired"
+                  ],
+                  "type": "string"
+                },
+                "changes": {
+                  "description": "Each aspect that differs; handle, parent and key are named @handle, @parent and @key",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "name": {
+                        "description": "The field's name",
+                        "type": "string"
+                      },
+                      "new": {
+                        "description": "The value after the change set; absent when the field ends unset",
+                        "type": "string"
+                      },
+                      "old": {
+                        "description": "The value at the first op's base; absent for a created node or a field not set there",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "handle": {
+                  "description": "The node's handle after the change set",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "The node's kind",
+                  "type": "string"
+                },
+                "node": {
+                  "description": "The node's ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "reason": {
+                  "description": "Why it is retired, for a retire",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "action",
+                "changes",
+                "handle",
+                "kind",
+                "node"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "links",
+          "nodes"
+        ],
+        "type": "object"
+      },
+      "summary": "Show a change set's changes: per node, each field before and after",
+      "write": false
+    },
+    {
       "name": "change.ls",
       "request": {
         "additionalProperties": false,
