@@ -1,0 +1,40 @@
+{
+  "actor": "01M6AD576VN41G3SESZYNMJN12",
+  "after": [
+    "01M6ADQ12SRDWJKBMMCQ0DS07E"
+  ],
+  "at": "2026-11-01T02:15:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 9b04e081 I ran go test ./internal/model -run Overlap -v: TestOverlapsNamedDraft passes and checks that a draft counts only when named (no draft named gives nil, draft A named gives one A/B overlap on field:title, naming a proposed or absent set gives nil). go test ./cmd/rhiza -run 'TestScripts/(overlaps|describe-golden)$' passes. The new overlaps.txtar has a proposed change set B and a draft C both setting field statement of base. It checks 'No overlaps' and an empty JSON list without --change, then with --change C the text line 'change sets B and C both write field:statement of base' and the JSON a/b/target/aspects. describe-golden.txtar includes the overlaps operation and its cmp passes, so it is regenerated. I read the diff of internal/api/overlaps.go and model.Overlaps(sets, drafts...). make check exits 0; one earlier run failed on a timing test that later passed."
+        },
+        "handle": "overlaps-command-verified",
+        "id": "01M6AE89REGNM0TVNFQ765W4YJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6AE89REGNM0TVNFQ3WR28HY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AE89REGNM0TVNFQ3WR28HY",
+        "id": "01M6AE8AFF0MBNH09PXXXK917Q",
+        "link": "01M6AE8AFF0MBNH09PXXAHX0VT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M69DHN4ACW58QZ5BKRZBC56B",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTMR4G5EFRVRQHSEKVA15",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AE8BMY1WF40Q443CHTJCVV",
+  "type": "ops",
+  "v": 1
+}
