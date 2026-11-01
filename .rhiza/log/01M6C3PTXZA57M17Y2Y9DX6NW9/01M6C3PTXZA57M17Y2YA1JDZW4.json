@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T17:49:53Z",
+  "body": {
+    "intent": "Plan milestone 19: default reads stay fast, picked by the orchestrator under the owner's standing instruction",
+    "kind": "record",
+    "sources": [],
+    "title": "Plan milestone 19"
+  },
+  "change_set": "01M6C3PTXZA57M17Y2Y9DX6NW9",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6C3PTXZA57M17Y2YA1JDZW4",
+  "type": "open",
+  "v": 2
+}

@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6C3PY8B4XGXBYCP4A3ZWSZP"
+  ],
+  "at": "2026-11-01T17:50:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "19",
+          "statement": "Default reads stay fast: a read without --view learns the effective change set's state from the index, so it costs no fold of the log"
+        },
+        "handle": "milestone-19",
+        "id": "01M6C3PZKCQFW90D61QY5KEMJN",
+        "key": "zzzzr",
+        "kind": "intent",
+        "node": "01M6C3PZKCQFW90D61QXV6QGGG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "just checking in. keep cracking on",
+          "statement": "Milestone 19 is one change set making default reads take the effective change set's state from the index; it touches no request type, so it runs beside the describe-golden chain"
+        },
+        "handle": "m19-picked-by-orchestrator",
+        "id": "01M6C3Q0BVTX1BHJ0PDAXD3SHB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6C3Q0BVTX1BHJ0PD8BAMW7C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6C3Q0BVTX1BHJ0PD8BAMW7C",
+        "id": "01M6C3Q157373KMA0FR92M21Z4",
+        "link": "01M6C3Q157373KMA0FR7NAPX4N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6C3PXC1TTWTXQNSGCMX0MDZ",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6C3PZKCQFW90D61QXV6QGGG",
+        "id": "01M6C3Q20MNAWRPF1PZ3HDT1D3",
+        "link": "01M6C3Q20MNAWRPF1PZ1HRGNV5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6C3Q0BVTX1BHJ0PD8BAMW7C",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "When a read has no view and nothing is pending in the workspace, openReader takes the effective change set's state from the index's change set table instead of folding the log; with pending writes it keeps the fold, so unflushed state is never missed; the view rule is unchanged",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "default-view-state-from-index",
+        "id": "01M6C3Q2W4B4M5WRCH5TY08C93",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6C3Q2W4B4M5WRCH5TV2YM9J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6C3Q2W4B4M5WRCH5TV2YM9J",
+        "id": "01M6C3Q4BA168M8ZBTRJ0EXB04",
+        "link": "01M6C3Q4BA168M8ZBTRFX2P3CF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6C3PXC1TTWTXQNSGCMX0MDZ",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6C3PTXZA57M17Y2Y9DX6NW9",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6C3Q62XC8FXYWNYTG8SJ6KX",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6C3PVXPV5DFQ4G0N849VTN8"
+  ],
+  "at": "2026-11-01T17:50:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test with a counting log reader: a default-view read with a landed, an accepted and a draft current change set picks as-is, to-be and what-if as today and folds no change sets; with a pending write it still sees the pending state; TestReadBudget times a default-view read with a landed current change set under the 50 ms budget",
+          "statement": "A read without --view takes the effective change set's state from the index, so with a current change set it costs no fold of the log and picks the same view as before"
+        },
+        "handle": "default-view-no-fold",
+        "id": "01M6C3QBZ6N7WNS21SYRPEB1W6",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6C3QBZ6N7WNS21SYQPCYWFM",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M6C3QBZ6N7WNS21SYQPCYWFM",
+        "id": "01M6C3QCT6MPCN4JEYSSDQ9S5H",
+        "link": "01M6C3QCT6MPCN4JEYSR4GP5GN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6C3Q2W4B4M5WRCH5TV2YM9J",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6C3PVXPV5DFQ4G0N6JQGH0Q",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6C3QE72C8HGAJ454GT90MCP",
+  "type": "ops",
+  "v": 1
+}

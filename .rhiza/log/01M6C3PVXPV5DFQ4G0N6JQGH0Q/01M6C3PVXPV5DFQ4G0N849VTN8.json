@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-01T17:49:54Z",
+  "body": {
+    "intent": "A read without --view takes the effective change set's state from the index instead of folding the log",
+    "kind": "intention",
+    "sources": [],
+    "title": "Default reads skip the fold"
+  },
+  "change_set": "01M6C3PVXPV5DFQ4G0N6JQGH0Q",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6C3PVXPV5DFQ4G0N849VTN8",
+  "type": "open",
+  "v": 2
+}
