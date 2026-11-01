@@ -1,0 +1,50 @@
+{
+  "actor": "01M6AXPTXPH6TCSPS8D1DBRSXX",
+  "after": [
+    "01M6AXJS3KA8K8D4T0MCQCX4BQ"
+  ],
+  "at": "2026-11-01T06:46:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Tests show rhiza run start and rhiza run resume both refuse when called from inside an agent session",
+          "statement": "No agent session starts a run."
+        },
+        "handle": "no-agent-session-starts-runs",
+        "id": "01M6AXQJNPM78KBAPJHDV2YV9Y",
+        "key": null,
+        "kind": "constraint",
+        "node": "01M6AXQJNPM78KBAPJHASHJRPY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6AXQJNPM78KBAPJHASHJRPY",
+        "id": "01M6AXQKBPSHBC15GY918XJKV2",
+        "link": "01M6AXQKBPSHBC15GY8YYNYP00",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505GVBMV8B71YA23043CEE",
+        "type": "constrains"
+      },
+      {
+        "decision": null,
+        "from": "01M6AXQJNPM78KBAPJHASHJRPY",
+        "id": "01M6AXQM1MY4Z78FYNBH52DMM3",
+        "link": "01M6AXQM1MY4Z78FYNBGBD89ER",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6AG9P18J4KJEAWFPQ5N731G",
+        "type": "constrains"
+      }
+    ]
+  },
+  "change_set": "01M65G0WKX7Y74QCRB8EAN573P",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6AXQN4PVAZT3KAZG3BQQW7S",
+  "type": "ops",
+  "v": 1
+}
