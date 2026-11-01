@@ -89,6 +89,15 @@ func rexDefaultKeys(apps []launcher.App) map[string]string {
 	used := map[string]bool{}
 	keys := map[string]string{}
 	for _, a := range apps {
+		if a.Key != "" {
+			used[a.Key] = true
+			keys[a.Name] = a.Key
+		}
+	}
+	for _, a := range apps {
+		if a.Key != "" {
+			continue
+		}
 		pick := ""
 		name := strings.ToLower(a.Name)
 		for _, r := range rexInitials(name) + name + "abcdefghijklmnopqrstuvwxyz0123456789" {

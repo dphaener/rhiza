@@ -18,6 +18,9 @@ type App struct {
 	// Cols and Rows are the app layer's size in cells; zero means the
 	// default.
 	Cols, Rows int
+	// Key, when set, is the app's key in the rhiza key mode; it is
+	// reserved before the other apps pick theirs, so it moves none of them.
+	Key string
 }
 
 var (
