@@ -2960,6 +2960,30 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "stalled": {
+                "additionalProperties": false,
+                "description": "The agent step's session while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
+                "properties": {
+                  "session": {
+                    "description": "The stalled session",
+                    "type": "string"
+                  },
+                  "since": {
+                    "description": "When the session last reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The agent step whose session is stalled",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "session",
+                  "since",
+                  "step"
+                ],
+                "type": "object"
+              },
               "started_at": {
                 "description": "When it started, RFC 3339 UTC",
                 "type": "string"
@@ -4529,6 +4553,30 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "stalled": {
+                "additionalProperties": false,
+                "description": "The agent step's session while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
+                "properties": {
+                  "session": {
+                    "description": "The stalled session",
+                    "type": "string"
+                  },
+                  "since": {
+                    "description": "When the session last reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The agent step whose session is stalled",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "session",
+                  "since",
+                  "step"
+                ],
+                "type": "object"
               },
               "started_at": {
                 "description": "When it started, RFC 3339 UTC",
@@ -7297,6 +7345,30 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "stalled": {
+                "additionalProperties": false,
+                "description": "The agent step's session while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
+                "properties": {
+                  "session": {
+                    "description": "The stalled session",
+                    "type": "string"
+                  },
+                  "since": {
+                    "description": "When the session last reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The agent step whose session is stalled",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "session",
+                  "since",
+                  "step"
+                ],
+                "type": "object"
+              },
               "started_at": {
                 "description": "When it started, RFC 3339 UTC",
                 "type": "string"
@@ -8738,6 +8810,30 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "stalled": {
+                "additionalProperties": false,
+                "description": "The agent step's session while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
+                "properties": {
+                  "session": {
+                    "description": "The stalled session",
+                    "type": "string"
+                  },
+                  "since": {
+                    "description": "When the session last reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The agent step whose session is stalled",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "session",
+                  "since",
+                  "step"
+                ],
+                "type": "object"
               },
               "started_at": {
                 "description": "When it started, RFC 3339 UTC",
@@ -10988,6 +11084,30 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "stalled": {
+                "additionalProperties": false,
+                "description": "The agent step's session while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
+                "properties": {
+                  "session": {
+                    "description": "The stalled session",
+                    "type": "string"
+                  },
+                  "since": {
+                    "description": "When the session last reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The agent step whose session is stalled",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "session",
+                  "since",
+                  "step"
+                ],
+                "type": "object"
+              },
               "started_at": {
                 "description": "When it started, RFC 3339 UTC",
                 "type": "string"
@@ -12453,6 +12573,30 @@ cmp stdout describe.golden.json
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "stalled": {
+                "additionalProperties": false,
+                "description": "The agent step's session while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
+                "properties": {
+                  "session": {
+                    "description": "The stalled session",
+                    "type": "string"
+                  },
+                  "since": {
+                    "description": "When the session last reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The agent step whose session is stalled",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "session",
+                  "since",
+                  "step"
+                ],
+                "type": "object"
               },
               "started_at": {
                 "description": "When it started, RFC 3339 UTC",
@@ -13974,6 +14118,30 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "stalled": {
+                "additionalProperties": false,
+                "description": "The agent step's session while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
+                "properties": {
+                  "session": {
+                    "description": "The stalled session",
+                    "type": "string"
+                  },
+                  "since": {
+                    "description": "When the session last reported, RFC 3339 UTC",
+                    "type": "string"
+                  },
+                  "step": {
+                    "description": "The agent step whose session is stalled",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "session",
+                  "since",
+                  "step"
+                ],
+                "type": "object"
+              },
               "started_at": {
                 "description": "When it started, RFC 3339 UTC",
                 "type": "string"
@@ -15316,6 +15484,30 @@ cmp stdout describe.golden.json
               "type": "object"
             },
             "type": "array"
+          },
+          "stalled": {
+            "additionalProperties": false,
+            "description": "The agent step's session while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
+            "properties": {
+              "session": {
+                "description": "The stalled session",
+                "type": "string"
+              },
+              "since": {
+                "description": "When the session last reported, RFC 3339 UTC",
+                "type": "string"
+              },
+              "step": {
+                "description": "The agent step whose session is stalled",
+                "type": "string"
+              }
+            },
+            "required": [
+              "session",
+              "since",
+              "step"
+            ],
+            "type": "object"
           },
           "started_at": {
             "description": "When it started, RFC 3339 UTC",

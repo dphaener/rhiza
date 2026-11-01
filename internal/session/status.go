@@ -1,6 +1,9 @@
 package session
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 // States a report can carry.
 const (
@@ -91,4 +94,27 @@ func Resolve(r Record) (Report, Source) {
 		return *r.Status.Rex, SourceRex
 	}
 	return Report{State: StateStarting, At: r.StartedAt}, SourceDefault
+}
+
+// StallAfter is how long a working session may go without a report before
+// it counts as stalled.
+const StallAfter = 20 * time.Minute
+
+// LimitPausedDetail is the detail of the working report a session stopped
+// at its usage limit gets in place of idle.
+const LimitPausedDetail = "paused at its usage limit"
+
+// Stalled reports whether the session works but has been silent for more
+// than StallAfter at now. Only a live session whose hook status resolves to
+// working can stall; blocked, idle, exited and usage-paused sessions never
+// do.
+func Stalled(r Record, now time.Time) bool {
+	rep, src := Resolve(r)
+	if src != SourceHook || rep.State != StateWorking {
+		return false
+	}
+	if strings.HasPrefix(rep.Detail, LimitPausedDetail) {
+		return false
+	}
+	return now.Sub(rep.At) > StallAfter
 }

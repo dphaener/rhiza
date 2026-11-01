@@ -156,6 +156,7 @@ type RunInfo struct {
 	Steps          []RunStep       `json:"steps" desc:"The steps done, in order"`
 	StartedAt      string          `json:"started_at" desc:"When it started, RFC 3339 UTC"`
 	Blocked        *RunBlocked     `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
+	Stalled        *RunStalled     `json:"stalled,omitempty" desc:"The agent step's session while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise"`
 	Amendments     []RunAmendment  `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
 	Messages       []RunMessage    `json:"messages" desc:"The messages its sessions sent each other, in order"`
 	Sessions       []RunSession    `json:"sessions" desc:"The sessions it launched or read token use for, in order of first appearance, each with its latest reading"`
@@ -391,6 +392,29 @@ type RunBlocked struct {
 	Kind     string     `json:"kind,omitempty" desc:"What kind of block: permission, question or auth; empty when the session gave none"`
 	Question string     `json:"question,omitempty" desc:"What the session asks the owner, as it reported it; empty when it gave nothing"`
 	Tab      SessionTab `json:"tab" desc:"The terminal tab the session runs in, where the owner answers"`
+}
+
+// RunStalled is a session of an unfinished run that works but has not
+// reported for more than 20 minutes.
+type RunStalled struct {
+	Step    string `json:"step" desc:"The agent step whose session is stalled"`
+	Session string `json:"session" desc:"The stalled session"`
+	Since   string `json:"since" desc:"When the session last reported, RFC 3339 UTC"`
+}
+
+// runStalledNow is the current step's session of an unfinished run when it
+// is stalled at now. A record that cannot be read leaves the run not stalled.
+func runStalledNow(st run.State, sessions *session.Store, now time.Time) *RunStalled {
+	sid := st.Session[st.Current]
+	if st.Ended || sid == "" || sessions == nil {
+		return nil
+	}
+	rec, err := sessions.Read(sid)
+	if err != nil || !session.Stalled(rec, now) {
+		return nil
+	}
+	rep, _ := session.Resolve(rec)
+	return &RunStalled{Step: st.Current, Session: sid, Since: rfc3339(rep.At)}
 }
 
 // RunStep is one step a run has done.
@@ -2055,6 +2079,9 @@ func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo
 	if b := runBlockedNow(st, sessions); b != nil {
 		info.State, info.Blocked = runBlocked, b
 	}
+	if ctx != nil && ctx.Now != nil {
+		info.Stalled = runStalledNow(st, sessions, ctx.Now())
+	}
 	for _, s := range st.Steps {
 		info.Steps = append(info.Steps, RunStep{
 			Step: s.Step, Visit: s.Visit, Outcome: s.Outcome, Next: s.Next, Detail: s.Detail,
@@ -2586,6 +2613,9 @@ func runLines(w io.Writer, r RunInfo) {
 	}
 	if r.Detail != "" {
 		fmt.Fprintf(w, "- Detail: %s\n", r.Detail)
+	}
+	if s := r.Stalled; s != nil {
+		fmt.Fprintf(w, "- Stalled: %s session %s has not reported since %s\n", s.Step, s.Session, s.Since)
 	}
 	if b := r.Blocked; b != nil {
 		tab := b.Tab.Title

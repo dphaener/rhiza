@@ -260,7 +260,7 @@ const (
 	resumePrompt        = "The usage limit has reset. Continue where you left off."
 	// limitPausedDetail is the detail of the working report a session
 	// stopped at its usage limit gets in place of idle.
-	limitPausedDetail = "paused at its usage limit"
+	limitPausedDetail = session.LimitPausedDetail
 )
 
 // limitPoll is how often a running agent's transcript is read for its usage
