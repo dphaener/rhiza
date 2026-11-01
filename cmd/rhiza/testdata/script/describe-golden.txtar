@@ -1230,6 +1230,10 @@ cmp stdout describe.golden.json
             "description": "Start runs until this many are running; default 2. An interrupted run takes no slot",
             "type": "integer"
           },
+          "min_free": {
+            "description": "Start and resume nothing while the repo's filesystem has less free space than this: bytes, or a number with K, M, G or T (powers of 1024); default 10G; 0 turns the guard off",
+            "type": "string"
+          },
           "once": {
             "description": "Poll once, start what is picked and stop",
             "type": "boolean"
@@ -1393,7 +1397,7 @@ cmp stdout describe.golden.json
                   "type": "array"
                 },
                 "reason": {
-                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled or no-slot",
+                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot or disk-low",
                   "type": "string"
                 },
                 "title": {
