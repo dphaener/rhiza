@@ -93,6 +93,25 @@ func TestSlashFiltersWithSearchHits(t *testing.T) {
 	}
 }
 
+func TestFilterScrollsToTheLastHit(t *testing.T) {
+	read := func(op string, args []string) (string, error) {
+		var b strings.Builder
+		for i := range 40 {
+			fmt.Fprintf(&b, "line%d\n", i)
+		}
+		return b.String(), nil
+	}
+	m := NewModel(read, "")
+	m.Update(tea.WindowSizeMsg{Width: 80, Height: 14})
+	m.Update(key("/"))
+	m.Update(key("a"))
+	m.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	m.Update(key("G"))
+	if v := m.View().Content; !strings.Contains(v, "line39\n") {
+		t.Fatalf("G did not reach the last hit: %q", v)
+	}
+}
+
 func TestViewFitsTheWindow(t *testing.T) {
 	read := func(op string, args []string) (string, error) {
 		return strings.Repeat(op+" line\n", 100), nil

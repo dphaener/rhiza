@@ -201,9 +201,18 @@ func (m *Model) shown() *pane {
 	return m.panes[m.cur]
 }
 
+// shownRows is how many lines of the shown pane fit: one fewer while the
+// filter's own line is on screen.
+func (m *Model) shownRows() int {
+	if m.filter != nil {
+		return max(m.rows-1, 0)
+	}
+	return m.rows
+}
+
 func (m *Model) scroll(d int) {
 	p := m.shown()
-	p.top = max(0, min(p.top+d, len(p.lines)-m.rows))
+	p.top = max(0, min(p.top+d, len(p.lines)-m.shownRows()))
 }
 
 func (m *Model) View() tea.View {
@@ -227,11 +236,7 @@ func (m *Model) View() tea.View {
 	if p.err != nil {
 		fmt.Fprintf(&b, "rhiza: %v\n", p.err)
 	} else {
-		rows := m.rows
-		if m.filter != nil {
-			rows-- // the filter's own line
-		}
-		end := min(p.top+max(rows, 0), len(p.lines))
+		end := min(p.top+m.shownRows(), len(p.lines))
 		b.WriteString(strings.Join(p.lines[min(p.top, end):end], "\n"))
 	}
 	if m.filter != nil {
