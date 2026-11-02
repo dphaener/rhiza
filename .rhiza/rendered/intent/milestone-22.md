@@ -23,6 +23,7 @@ Run Rhiza from Rex: from the TUI apps alone the owner sees the whole system's he
 - serves change set `01M6CRZRVGZBRB51YFPXHKZA75` (A requests app files features, bugs and milestones and shows each request's progress)
 - serves change set `01M6CRZSRFQ94MAJ8CRTEE44P2` (rhiza health and a health app show the whole system's state on one screen)
 - serves change set `01M6CRZTNDTPF1SD2WGBY4835Y` (An autonomy app edits every setting, starts or stops the daemon, and the inbox nudges stalled sessions)
+- serves change set `01M6D4SB0D8F9SPGK471DF9RV6` (The request queue and the daemon turning requests into plan runs, as a leaf of plan requests)
 
 ## History
 

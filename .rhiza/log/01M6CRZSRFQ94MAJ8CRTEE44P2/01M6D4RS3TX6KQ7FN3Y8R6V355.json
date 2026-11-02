@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6CS2Y5Z360SAD0F4AK73N0J"
+  ],
+  "at": "2026-11-02T03:27:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "health.txtar: with no daemon the daemon part is warn and the report says how to start it; with RHIZA_TEST_FREE_BYTES under the minimum the disk part is bad and health exits 1; a dirty main checkout is warn; an inbox failed item is warn; a model problem makes check bad; health --json and api call health print the same bytes; describe-golden.txtar is regenerated",
+          "statement": "rhiza health reports the daemon, autonomy settings, free disk, the main checkout (branch, clean, behind origin), inbox counts by kind, queued requests, roadmap counts and rhiza check's result, each part ok, warn or bad, and exits 1 when any part is bad"
+        },
+        "handle": "health-report",
+        "id": "01M6D4RPTDYGEG48RYPG40C2JR",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6D4RPTDYGEG48RYPD0557BA",
+        "op": "node.create",
+        "parent": "01M6CS2B9S9YVY1WBBVAHWZFR9"
+      },
+      {
+        "decision": null,
+        "from": "01M6D4RPTDYGEG48RYPD0557BA",
+        "id": "01M6D4RQQ8R0HTJ6YQWQTGZTVB",
+        "link": "01M6D4RQQ8R0HTJ6YQWNP5DS34",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0NVEDE317KP68VY14GWR",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6CRZSRFQ94MAJ8CRTEE44P2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6D4RS3TX6KQ7FN3Y8R6V355",
+  "type": "ops",
+  "v": 1
+}

@@ -41,6 +41,7 @@ Milestone 22: run Rhiza from Rex
 - derived-from [requests-queue-local](../decision/requests-queue-local.md)
 - derived-from [health-one-screen](../decision/health-one-screen.md)
 - derived-from [autonomy-app-controls](../decision/autonomy-app-controls.md)
+- derived-from [m22-leaves-split](../decision/m22-leaves-split.md)
 
 ## History
 
