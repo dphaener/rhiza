@@ -6253,6 +6253,90 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "note.add",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "description": "An operation of the target change set the note is about (the ID change show lists, or the operation's own ID; a unique prefix of 4+ characters)",
+            "type": "string"
+          },
+          "target": {
+            "description": "What the note discusses: a node (an ID, a unique ID prefix of 4+ characters, or a live node's handle) or a change set",
+            "type": "string"
+          },
+          "text": {
+            "description": "The note; must not be blank",
+            "type": "string"
+          }
+        },
+        "required": [
+          "target",
+          "text"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "description": "The change set written to (with --record, the new record change set)",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "drop": {
+            "description": "Dry run only: the op IDs the entry would drop",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The ops entry written; absent in a dry run",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "links": {
+            "description": "The links the write created or retired, sorted",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "nodes": {
+            "description": "The nodes the write created or changed, sorted; link endpoints are not included",
+            "items": {
+              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ops": {
+            "description": "Dry run only: the ops the entry would carry, as canonical op JSON",
+            "items": {},
+            "type": "array"
+          },
+          "record": {
+            "description": "True if the write opened and landed a record change set",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "change_set",
+          "nodes"
+        ],
+        "type": "object"
+      },
+      "summary": "Add a note discussing a node or change set, optionally naming one of that change set's operations, into the current change set",
+      "write": true
+    },
+    {
       "name": "overlaps",
       "request": {
         "additionalProperties": false,
