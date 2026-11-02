@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6D12QTXDHWA790B8JYVZPCN"
+  ],
+  "at": "2026-11-02T02:23:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "23",
+          "statement": "Answer a conflict from the inbox: a run's rebase-conflict question blocks its change set, so the inbox lists it as a blocker and rhiza question answer accepts it"
+        },
+        "handle": "milestone-23",
+        "id": "01M6D12S4TE5ZFC8S6KQ5NQATA",
+        "key": "zzzzzi",
+        "kind": "intent",
+        "node": "01M6D12S4TE5ZFC8S6KM9A2JCB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "I can interact with rhiza via the mini TUI apps to examine the full health of the application, start new changes, report bugs, start new features, etc, without having this interactive session running.",
+          "statement": "Milestone 23 is one change set linking a run's rebase-conflict question to the change set it blocks, found while resolving the live daemon settings conflict by hand"
+        },
+        "handle": "m23-picked-by-orchestrator",
+        "id": "01M6D12SY7MY6P0DYXFE2PQTPD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6D12SY7MY6P0DYXFBJ23KYP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6D12SY7MY6P0DYXFBJ23KYP",
+        "id": "01M6D12TQN69ZVFJ4NX423YAV8",
+        "link": "01M6D12TQN69ZVFJ4NX3M281H2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6D12Q1PQ43BC4YD0Z4SQMWT",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6D12S4TE5ZFC8S6KM9A2JCB",
+        "id": "01M6D12VH0WBZDZGEGBPGFPZP6",
+        "link": "01M6D12VH0WBZDZGEGBKPXPTVB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6D12SY7MY6P0DYXFBJ23KYP",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "ship rebase raises its rebase-conflict question together with a blocks link from the question to the change set being shipped, in the same entry; an existing question with the same statement that lacks the link gains it",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "conflict-question-blocks",
+        "id": "01M6D12WABYE8HRKCN5TV1K6CH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6D12WABYE8HRKCN5RP6SYFA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6D12WABYE8HRKCN5RP6SYFA",
+        "id": "01M6D12X39ECB94CG3924BBYG9",
+        "link": "01M6D12X39ECB94CG38YCFN1Q4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6D12Q1PQ43BC4YD0Z4SQMWT",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6D12MQKVB82JNS8JR91K4FC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6D12YB4S0T30CQX5DTGN7Q2",
+  "type": "ops",
+  "v": 1
+}
