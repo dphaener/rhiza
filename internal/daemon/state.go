@@ -71,6 +71,16 @@ type State struct {
 	// DiskLow is set while the last poll found free space under the
 	// daemon's minimum, and absent once a poll finds enough.
 	DiskLow *DiskLow `json:"disk_low,omitempty"`
+	// Hooks are the notify and event commands the daemon took at start,
+	// each with where it came from (flag, git config or unset).
+	Hooks []HookValue `json:"hooks,omitempty"`
+}
+
+// HookValue is one hook command as the daemon resolved it at start.
+type HookValue struct {
+	Name    string `json:"name"`
+	Command string `json:"command"`
+	Source  string `json:"source"`
 }
 
 // DiskLow is a low-disk finding of a poll.

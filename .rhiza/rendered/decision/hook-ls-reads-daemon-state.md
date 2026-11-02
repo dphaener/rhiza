@@ -16,6 +16,11 @@ The daemon records its notify and event commands and where each came from (daemo
 
 - derived-from [m18-orchestrator-picks](../source/m18-orchestrator-picks.md)
 
+### In
+
+- decided-by [hook-ls](../capability/rhiza/hooks/hook-commands/hook-ls.md)
+- decided-by [hook-run](../capability/rhiza/hooks/hook-commands/hook-run.md)
+
 ## History
 
 - `01M6BVT9HNN801JPDD99CM049F` Plan milestone 18: test your hooks, discuss a change, picked by the orchestrator under the owner's standing instruction

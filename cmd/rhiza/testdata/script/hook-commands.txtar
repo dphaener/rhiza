@@ -1,0 +1,75 @@
+# rhiza hook ls lists the notify and event hooks with command and source:
+# unset, git config, or the daemon flag of a live daemon (which wins over
+# git config). daemon status --json shows the commands the daemon recorded.
+# Rex is faked and never called.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza hook ls
+stdout '^notify: unset$'
+stdout '^event: unset$'
+exec rhiza hook ls --json
+stdout '"source": "unset"'
+
+exec git config rhiza.notifyCommand 'echo cfg'
+exec rhiza hook ls
+stdout '^notify: echo cfg \(git config\)$'
+stdout '^event: unset$'
+
+# A live daemon with a flag: the flag shows, the event still comes from config.
+exec git config rhiza.eventCommand 'echo ev'
+exec rhiza daemon --permission-mode manual --notify-command 'echo flag' &d&
+exec sh -c 'for i in $(seq 100); do grep -q hooks .git/rhiza/daemon.state.json 2>/dev/null && exit 0; sleep 0.1; done; exit 1'
+exec rhiza hook ls
+stdout '^notify: echo flag \(daemon flag\)$'
+stdout '^event: echo ev \(git config\)$'
+exec rhiza daemon status --json
+stdout '"name": "notify"'
+stdout '"command": "echo flag"'
+stdout '"source": "daemon flag"'
+exec rhiza daemon status
+stdout '^Hook notify: echo flag \(daemon flag\)$'
+
+kill -INT d
+wait d
+
+# With the daemon gone, config alone answers.
+exec rhiza hook ls
+stdout '^notify: echo cfg \(git config\)$'
+
+# hook run runs a command once with a sample payload and writes nothing.
+exec git config rhiza.notifyCommand 'cat >> $WORK/notify.log; echo "kind=$RHIZA_INBOX_KIND" >> $WORK/notify.log; echo ran'
+cp .git/rhiza/daemon.state.json $WORK/state.before
+exec rhiza hook run notify
+stdout 'ran'
+stdout 'exit status 0'
+exec grep -c 'kind=question' $WORK/notify.log
+stdout '^1$'
+exec grep -q '"kind":"question"' $WORK/notify.log
+
+exec rhiza hook run event --command 'echo "ev=$RHIZA_EVENT"'
+stdout 'ev=accepted'
+
+! exec rhiza hook run event --command 'echo boom; exit 7'
+stdout 'boom'
+stdout 'exit status 7'
+
+exec git config --unset rhiza.eventCommand
+! exec rhiza hook run event
+stderr 'unset'
+exec rhiza hook run event --json --command true
+stdout '"code": 0'
+! exec rhiza hook run nope
+
+cmp .git/rhiza/daemon.state.json $WORK/state.before
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+exit 0
