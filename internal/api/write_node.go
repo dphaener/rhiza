@@ -74,13 +74,17 @@ func init() {
 
 // AddRequest adds a node.
 type AddRequest struct {
-	Kind       string   `json:"kind" arg:"0" enum:"intent,capability,constraint,decision,question,evidence,source,actor,anchor" desc:"The node's kind"`
+	Kind       string   `json:"kind" arg:"0" enum:"intent,capability,constraint,decision,question,evidence,source,actor,anchor,note" desc:"The node's kind"`
 	Handle     string   `json:"handle" arg:"1" desc:"The node's handle: lower-case words joined by single dashes, unique among live nodes"`
 	Parent     string   `json:"parent,omitempty" desc:"The parent node (capabilities and intents only, same kind); default a root"`
 	Before     string   `json:"before,omitempty" desc:"Place it just before this sibling"`
 	After      string   `json:"after,omitempty" desc:"Place it just after this sibling; default after the last one"`
 	Fields     []string `json:"fields,omitempty" flag:"field" desc:"A text field, name=text"`
 	JSONFields []string `json:"json_fields,omitempty" flag:"json-field" desc:"A JSON field, name=<json>"`
+
+	// handleFor, when set, names the node from its new ID in place of
+	// Handle: note add's automatic note-<short id>.
+	handleFor func(id.ID) string
 }
 
 // SetRequest changes a node's handle or fields.
@@ -141,6 +145,9 @@ func buildAdd(b writeBase, r AddRequest) (edit, error) {
 	node, err := b.newID()
 	if err != nil {
 		return edit{}, err
+	}
+	if r.handleFor != nil {
+		r.Handle = r.handleFor(node)
 	}
 	opID, err := b.newID()
 	if err != nil {

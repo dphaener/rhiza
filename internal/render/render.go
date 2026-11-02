@@ -94,6 +94,7 @@ var plurals = map[op.Kind]string{
 	op.KindSource:     "Sources",
 	op.KindActor:      "Actors",
 	op.KindAnchor:     "Anchors",
+	op.KindNote:       "Notes",
 }
 
 // Render returns the rendered files of m, the as-is view, keyed by their

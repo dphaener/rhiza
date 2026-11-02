@@ -12,7 +12,7 @@
 //     six levels deep under a few roots, sibling keys from package key, and
 //     constraints, decisions, questions, evidence, sources and actors
 //     outside it. The first set creates one node of each of those kinds.
-//   - The last four fifths create o.Links links across all fourteen
+//   - The last four fifths create o.Links links across all fifteen
 //     link types, between live nodes of plausible kinds.
 //   - The last three quarters also update fields and handles, move leaf
 //     nodes to new parents, and retire leaf nodes, other nodes and links,
@@ -392,9 +392,9 @@ var kindWeights = []struct {
 	kind   op.Kind
 	weight int
 }{
-	{op.KindIntent, 25}, {op.KindCapability, 45},
+	{op.KindIntent, 25}, {op.KindCapability, 40},
 	{op.KindConstraint, 5}, {op.KindDecision, 5}, {op.KindQuestion, 5},
-	{op.KindEvidence, 5}, {op.KindSource, 5}, {op.KindActor, 5},
+	{op.KindEvidence, 5}, {op.KindSource, 5}, {op.KindActor, 5}, {op.KindNote, 5},
 }
 
 func (g *generator) pickKind() op.Kind {
@@ -618,6 +618,7 @@ var linkKinds = map[op.LinkType][2]op.Kind{
 	op.LinkImplements:     {op.KindCapability, op.KindIntent},
 	op.LinkVerifies:       {op.KindEvidence, op.KindCapability},
 	op.LinkObserves:       {op.KindActor, op.KindCapability},
+	op.LinkDiscusses:      {op.KindNote, op.KindCapability},
 }
 
 // endpoint picks a live node, of kind k when there is one.

@@ -16,6 +16,12 @@ A note is a new node kind, note, with no parent, its body in statement and an op
 
 - derived-from [m18-orchestrator-picks](../source/m18-orchestrator-picks.md)
 
+### In
+
+- decided-by [note-kind](../capability/rhiza/change-sets/change-notes/note-kind.md)
+- decided-by [note-add](../capability/rhiza/change-sets/change-notes/note-add.md)
+- decided-by [notes-shown](../capability/rhiza/change-sets/change-notes/notes-shown.md)
+
 ## History
 
 - `01M6BVT9HNN801JPDD99CM049F` Plan milestone 18: test your hooks, discuss a change, picked by the orchestrator under the owner's standing instruction

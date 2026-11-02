@@ -1,0 +1,69 @@
+# note add writes a note node and its discusses link in one entry of the
+# current change set: about a node, about a change set, and about a change
+# set's operation with --op.
+
+exec rhiza init
+exec rhiza change new Shape
+exec rhiza add capability store --field 'statement=Keeps the log'
+
+# On a node.
+exec rhiza note add store 'Is the log append-only?'
+stdout '^Wrote entry [0-9A-Z]{26} to change set 01M5PWGEF85Y185JZ2ZGCNH40N\.$'
+stdout '^- link [0-9A-Z]{26}$'
+stdout '^- node [0-9A-Z]{26} \(note-[0-9a-z]{14}\)$'
+fold-ok
+exec rhiza render
+exec rhiza check
+
+# On a change set.
+exec rhiza note add 01M5PWGEF85Y185JZ2ZGCNH40N 'Please split this.'
+fold-ok
+exec rhiza render
+exec rhiza check
+
+# On a change set, naming one of its operations.
+exec rhiza note add 01M5PWGEF85Y185JZ2ZGCNH40N 'About this op.' --op 01M5PWGJC82P7YGZTWYFFZ0VJG
+fold-ok
+exec rhiza render
+exec rhiza check
+
+# An unknown target is a usage error.
+! exec rhiza note add nonesuch 'Hello'
+stderr 'no node or change set'
+! exec rhiza note add nonesuch 'Hello' --json
+stdout '"code": "usage"'
+
+# An operation not in the target change set is a usage error.
+! exec rhiza note add 01M5PWGEF85Y185JZ2ZGCNH40N 'Hello' --op 01ZZZZZZZZZZZZZZZZZZZZZZZZ
+stderr 'not an operation of change set'
+fold-ok
+
+# show lists a node's notes, oldest first, with actor and time; change show
+# lists the change set's.
+exec rhiza note add store 'Second thought.'
+exec rhiza show store
+stdout '(?s)## Notes.*Is the log append-only\?.*Second thought\.'
+stdout '(?m)^- [0-9A-Z]{8,} by \S+ at 20[0-9-]+T[0-9:]+Z: Is the log'
+exec rhiza show store --json
+stdout '"notes": \['
+exec rhiza change show
+stdout '(?s)## Notes.*Please split this\.'
+stdout '(?s)Please split this\..*About this op\.'
+stdout 'by \S+ at 20'
+exec rhiza change show --json
+stdout '"text": "Please split this\."'
+
+# A note about a change set written from another, current change set shows
+# in change show of the change set it discusses before the writer's lands,
+# and not in the writer's own Notes.
+exec rhiza change new Review
+exec rhiza note add 01M5PWGEF85Y185JZ2ZGCNH40N 'Review remark.'
+! stdout 'to change set 01M5PWGEF85Y185JZ2ZGCNH40N'
+fold-ok
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '(?s)## Notes.*Please split this\..*Review remark\.'
+stdout '(?m)^- [0-9A-Z]{8,} by \S+ at 20[0-9-]+T[0-9:]+Z: Review remark\.'
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout '"text": "Review remark\."'
+exec rhiza change show
+! stdout '## Notes'

@@ -12,7 +12,7 @@ const ChangeSet End = "change set"
 // NodeEnd is the End of a node of kind k.
 func NodeEnd(k op.Kind) End { return End(k) }
 
-// Ends returns every End: the nine node kinds in op.Kinds() order, then
+// Ends returns every End: the ten node kinds in op.Kinds() order, then
 // ChangeSet.
 func Ends() []End {
 	var out []End
@@ -62,6 +62,7 @@ var rows = map[op.LinkType][]row{
 	op.LinkImplements:     {{nodes(op.KindAnchor), nodes(op.KindCapability)}},
 	op.LinkVerifies:       {{nodes(op.KindEvidence), nodes(op.KindCapability)}},
 	op.LinkObserves:       {{nodes(op.KindEvidence), nodes(op.KindAnchor)}},
+	op.LinkDiscusses:      {{nodes(op.KindNote), anything}},
 }
 
 // sameKind is one row per end in s, from it to itself.

@@ -39,7 +39,7 @@ const lsDescribeNext = "rhiza describe ls"
 
 // LsRequest filters and pages the nodes.
 type LsRequest struct {
-	Kinds   []string `json:"kinds,omitempty" flag:"kind" enum:"intent,capability,constraint,decision,question,evidence,source,actor,anchor" desc:"Keep the nodes of this kind; repeat for several; default every kind"`
+	Kinds   []string `json:"kinds,omitempty" flag:"kind" enum:"intent,capability,constraint,decision,question,evidence,source,actor,anchor,note" desc:"Keep the nodes of this kind; repeat for several; default every kind"`
 	Parent  string   `json:"parent,omitempty" desc:"Keep the nodes directly under this node: an ID, a unique ID prefix of 4+ characters, or a live node's handle"`
 	Retired bool     `json:"retired,omitempty" desc:"Keep retired nodes too"`
 	Limit   int      `json:"limit,omitempty" desc:"The most nodes to return, 1 to 1000; default 100"`

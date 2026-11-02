@@ -973,3 +973,37 @@ func TestRunUnlinkedConstraint(t *testing.T) {
 		t.Errorf("findings = %+v, want only the two", rep.Findings)
 	}
 }
+
+func TestRunNote(t *testing.T) {
+	r := newRepo(t)
+	_, capab := clean(r)
+	note := r.next()
+	noteOp := mkNode(r.next(), note, op.KindNote, "remark")
+	noteOp.Fields["op"] = json.RawMessage(`"` + r.next().String() + `"`)
+	s := r.open(changeset.KindRecord, "Notes")
+	s.then(changeset.Ops{Ops: []op.Op{
+		noteOp,
+		mkLink(r.next(), r.next(), op.LinkDiscusses, note, capab),
+		mkLink(r.next(), r.next(), op.LinkDiscusses, note, s.id),
+	}})
+	s.then(changeset.Land{})
+	t.Run("clean", func(t *testing.T) {
+		rep := Run(r.input())
+		if !rep.OK || len(rep.Findings) != 0 {
+			t.Fatalf("report %+v", rep.Findings)
+		}
+	})
+	t.Run("non-note", func(t *testing.T) {
+		bad := r.next()
+		r.record("Bad", mkLink(r.next(), bad, op.LinkDiscusses, capab, note))
+		rep := Run(r.input())
+		if rep.OK {
+			t.Fatal("OK with a capability discussing a note")
+		}
+		got := ofRule(rep, RuleLink)
+		if len(got) != 1 || got[0].Severity != SeverityFail || got[0].Link != bad.String() ||
+			!strings.Contains(got[0].Message, `"discusses" does not go from capability to note`) {
+			t.Fatalf("link findings %+v", got)
+		}
+	})
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6E1716D3VHXFBQAJD36W5MZ",
+  "after": [
+    "01M6E0H6GGZ6WYYATPHX15TV97"
+  ],
+  "at": "2026-11-02T11:46:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 50167ed1 (attempt 2): go test ./cmd/rhiza -run TestScripts/change-notes -count=1 passes (note add on a node, on a change set and with --op each followed by fold-ok, render and check; unknown target and foreign --op fail). By hand with a scratch build in a fresh repo: note add on a node, a change set and a change set with --op of one of its operations each exit 0 and write node+link in one entry with handle note-<short id> (e.g. note-01m6e18wbm1qs4); rhiza render then rhiza check is ok; note add nonesuch exits 2 (no node or change set); --op 01ZZZZZZZZZZZZZZZZZZZZZZZZ exits 2 (not an operation of change set). Diff read: noteHandle now derives from the drawn node ID via an unexported AddRequest.handleFor hook, matching decision notes-are-note-nodes. make check: go tests pass; self-check fails only on stale .rhiza/rendered actor/index files from the run's own chore writes, unrelated to this leaf."
+        },
+        "handle": "note-add-verified-2",
+        "id": "01M6E1ANN7TV18TKJZ6D3T5W9B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6E1ANN7TV18TKJZ6C4PR7C9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6E1ANN7TV18TKJZ6C4PR7C9",
+        "id": "01M6E1AQ6NXT6Y6KTEVDJAN3RM",
+        "link": "01M6E1AQ6NXT6Y6KTEVBXX18GT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZWDXPERND94DYYXHTQ8WK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6BVTCJCSG1JKEERK7Y3ACYJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6E1ASNPQV51BPSNPDEQV2SP",
+  "type": "ops",
+  "v": 1
+}

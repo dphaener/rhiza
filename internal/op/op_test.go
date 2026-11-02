@@ -236,10 +236,10 @@ func TestEnumerations(t *testing.T) {
 	if got := Types(); !reflect.DeepEqual(got, []Type{"node.create", "node.update", "node.move", "node.retire", "link.create", "link.retire"}) {
 		t.Fatalf("Types = %v", got)
 	}
-	if got := Kinds(); !reflect.DeepEqual(got, []Kind{"intent", "capability", "constraint", "decision", "question", "evidence", "source", "actor", "anchor"}) {
+	if got := Kinds(); !reflect.DeepEqual(got, []Kind{"intent", "capability", "constraint", "decision", "question", "evidence", "source", "actor", "anchor", "note"}) {
 		t.Fatalf("Kinds = %v", got)
 	}
-	if got := LinkTypes(); !reflect.DeepEqual(got, []LinkType{"serves", "constrains", "exempts", "depends-on", "relates-to", "decided-by", "answers", "blocks", "supersedes", "derived-from", "discovered-from", "implements", "verifies", "observes"}) {
+	if got := LinkTypes(); !reflect.DeepEqual(got, []LinkType{"serves", "constrains", "exempts", "depends-on", "relates-to", "decided-by", "answers", "blocks", "supersedes", "derived-from", "discovered-from", "implements", "verifies", "observes", "discusses"}) {
 		t.Fatalf("LinkTypes = %v", got)
 	}
 	for _, k := range Kinds() {
@@ -667,3 +667,42 @@ func benchDecode(b *testing.B, decode func(json.RawMessage) (Op, error)) {
 
 func BenchmarkDecode(b *testing.B)          { benchDecode(b, Decode) }
 func BenchmarkDecodeCanonical(b *testing.B) { benchDecode(b, DecodeCanonical) }
+
+func TestNoteOps(t *testing.T) {
+	note := `{
+  "fields": {
+    "op": "` + sDec + `",
+    "statement": "Watch the retry path"
+  },
+  "handle": "retry-note",
+  "id": "` + sOp + `",
+  "key": null,
+  "kind": "note",
+  "node": "` + sNode + `",
+  "op": "node.create",
+  "parent": null
+}`
+	discusses := `{
+  "decision": null,
+  "from": "` + sNode + `",
+  "id": "` + sOp + `",
+  "link": "` + sLink + `",
+  "note": "",
+  "op": "link.create",
+  "to": "` + sTo + `",
+  "type": "discusses"
+}`
+	for _, doc := range []string{note, discusses} {
+		o, err := Decode(json.RawMessage(doc))
+		if err != nil {
+			t.Fatalf("Decode %s: %v", doc, err)
+		}
+		if err := o.Validate(); err != nil {
+			t.Fatalf("Validate: %v", err)
+		}
+		out, err := Encode(o)
+		if err != nil || string(out) != doc {
+			t.Fatalf("Encode = %s, %v; want %s", out, err, doc)
+		}
+	}
+}
