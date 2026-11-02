@@ -2465,7 +2465,6 @@
 - [claude-code-813c6d2a](actor/claude-code-813c6d2a.md)
 - [claude-code-818d00eb](actor/claude-code-818d00eb.md)
 - [claude-code-81a32e30](actor/claude-code-81a32e30.md)
-- [claude-code-81e20492](actor/claude-code-81e20492.md)
 - [claude-code-821dfb2e](actor/claude-code-821dfb2e.md)
 - [claude-code-82a03ca5](actor/claude-code-82a03ca5.md)
 - [claude-code-82b830c3](actor/claude-code-82b830c3.md)
