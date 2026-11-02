@@ -1,0 +1,40 @@
+{
+  "actor": "01M6D4QATEK761HBXPMSXFAWA9",
+  "after": [
+    "01M6D4PCJRADPEKDK6NKXJRGWT"
+  ],
+  "at": "2026-11-02T03:28:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at 9127ca1a: built go build -o $TMPDIR/rhiza-qa ./cmd/rhiza, ran `rhiza-qa tui app roadmap` in a Rex pane on a fresh scratch repo (rhiza init). Pressed n, typed 'Ship the thing', enter: the app no longer asks y/n and opens no Rex tab (no new window appeared), but the notice line reads 'rhiza: unknown operation \"request\"'. Pressed m, typed 'Big goal', enter: same error. Nothing is queued (no .git/rhiza/requests.json). `rhiza-qa request` is also an unknown command. TestNewWorkFilesPlanRequest passes on its fake runner. So with the real binary the new change set and new milestone keys are broken: they file nothing and no longer start a plan run."
+        },
+        "handle": "roadmap-new-work-requests-qa-1",
+        "id": "01M6D4T4S5S3MF2VKVKD4AEASK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6D4T4S5S3MF2VKVK9KNV1Q5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6D4T4S5S3MF2VKVK9KNV1Q5",
+        "id": "01M6D4T5PME028F8M92FPBHM34",
+        "link": "01M6D4T5PME028F8M92CRNAVDF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS24JZ06XER4X1ZKX4SNPG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CRZQYG5PJV7X2B234DJCV4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6D4T72VC25QJGEHEK7E0F4V",
+  "type": "ops",
+  "v": 1
+}
