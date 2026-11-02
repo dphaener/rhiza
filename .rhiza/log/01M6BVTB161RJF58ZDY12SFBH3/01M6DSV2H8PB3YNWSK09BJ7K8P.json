@@ -1,0 +1,63 @@
+{
+  "actor": "01M6DSA1PCB6G9KZXKDSWT1BYB",
+  "after": [
+    "01M6DS97N9H2WAA7QYK2BFG921"
+  ],
+  "at": "2026-11-02T09:35:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 59869bfc with a scratch build (go build -o $TMPDIR/rhiza-x) in a fresh git repo, fake rex on PATH: hook ls printed 'notify: unset' / 'event: unset' and --json source unset; after git config rhiza.notifyCommand it showed '(git config)'; with a live 'rhiza daemon --permission-mode manual --notify-command \"echo flag-notify\"' and rhiza.eventCommand in config it showed 'notify: echo flag-notify (daemon flag)' and 'event: echo cfg-ev (git config)', and kept the daemon's value after git config changed under it; daemon status showed 'Hook notify: ...' lines and --json hooks with name/command/source; after SIGINT stop hook ls fell back to git config. go test hook-commands and describe-golden passed; make check exited 0."
+        },
+        "handle": "hook-ls-qa-1",
+        "id": "01M6DSTYNRKQSAM265D79SKXKK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DSTYNRKQSAM265D50P5YXW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DSTYNRKQSAM265D50P5YXW",
+        "id": "01M6DSTZGM50A5AQY4W492NWGV",
+        "link": "01M6DSTZGM50A5AQY4W1BCDZ45",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZW3EF9VGT73M6T3FB655T",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 59869bfc with a scratch build in a fresh repo: hook run notify (git config command) got the sample inbox JSON on stdin and RHIZA_INBOX_KIND/ID/CHANGE/TITLE in env, printed its stdout and stderr then 'notify hook: exit status 0', exit 0; hook run event --command got the lifecycle JSON and RHIZA_EVENT=accepted; 'echo boom; exit 7' printed boom and exited 7 (--json code 7); unset event hook and unknown hook both exited 2 with next hints; api call hook.run gave the same response; with a live daemon, hook run notify used the daemon flag command and daemon.state.json was unchanged before and after."
+        },
+        "handle": "hook-run-qa-1",
+        "id": "01M6DSV0BEFK34MRZJDT868FNV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DSV0BEFK34MRZJDSTZE29R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DSV0BEFK34MRZJDSTZE29R",
+        "id": "01M6DSV16CZNE9KANFV3AKG0DT",
+        "link": "01M6DSV16CZNE9KANFV1H3CHJC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZW5XMG33S31H2BKT2JBZG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6BVTB161RJF58ZDY12SFBH3",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DSV2H8PB3YNWSK09BJ7K8P",
+  "type": "ops",
+  "v": 1
+}
