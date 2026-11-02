@@ -163,9 +163,35 @@ func TestStartDaemonWhenNotRunning(t *testing.T) {
 		t.Fatalf("confirming = %q", m.Confirming())
 	}
 	key(m, "y")
-	want := []string{"rex", "window", "new", "-s", "S1", "rhiza daemon", "-c", "/repo", "--json", "--", "/bin/rhiza", "daemon", "--autonomous"}
+	want := []string{"rex", "window", "new", "-s", "S1", "rhiza daemon", "-c", "/repo", "--keep-open", "--json", "--", "/bin/rhiza", "daemon", "--autonomous"}
 	if len(e.calls) != 1 || !slices.Equal(e.calls[0], want) {
 		t.Errorf("exec = %q", e.calls)
+	}
+	if !strings.HasPrefix(m.notice, "Starting the daemon") {
+		t.Errorf("notice = %q", m.notice)
+	}
+	f.running = true
+	m.Update(TickMsg{})
+	if m.notice != "The daemon is running in the Rex tab rhiza daemon" {
+		t.Errorf("notice = %q", m.notice)
+	}
+}
+
+func TestStartReportsDaemonThatNeverRuns(t *testing.T) {
+	f := newFake()
+	e := &execLog{}
+	m := NewModel(f.run)
+	m.SetStarter(Starter{Exec: e.exec, Self: "/bin/rhiza", Root: "/repo"})
+	key(m, "d")
+	key(m, "y") // the first reload after the start
+	for i := 1; i < StartChecks; i++ {
+		if strings.Contains(m.notice, "did not start") {
+			t.Fatalf("failure reported after %d reloads", i)
+		}
+		m.Update(TickMsg{})
+	}
+	if m.notice != "The daemon did not start: its error is in the Rex tab rhiza daemon" {
+		t.Errorf("notice = %q", m.notice)
 	}
 }
 

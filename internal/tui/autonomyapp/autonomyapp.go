@@ -31,6 +31,10 @@ const Interval = 3 * time.Second
 // TabName is the name of the Rex tab the daemon runs in.
 const TabName = "rhiza daemon"
 
+// StartChecks is how many reloads after a start the app waits for the
+// daemon to report running before it says the start failed.
+const StartChecks = 4
+
 func init() {
 	launcher.Register(launcher.App{Name: Name, Key: Key, Summary: "Edit the daemon and autonomy settings, start or stop the daemon"})
 }
@@ -70,6 +74,9 @@ type Model struct {
 	text    []rune
 	// confirm is "start" or "stop" while the owner is asked y/n.
 	confirm string
+	// starting counts the reloads left to see a just-started daemon
+	// running; 0 when no start is pending.
+	starting int
 }
 
 // NewModel returns the model over run, loaded once.
@@ -116,6 +123,25 @@ func (m *Model) Reload() {
 		return
 	}
 	m.status = d
+	m.checkStart()
+}
+
+// checkStart settles a pending start: the daemon running, or, once
+// StartChecks reloads pass without it, a failure pointing at its tab, which
+// stays open with the daemon's error.
+func (m *Model) checkStart() {
+	if m.starting == 0 {
+		return
+	}
+	if m.status.Running {
+		m.starting = 0
+		m.notice = "The daemon is running in the Rex tab " + TabName
+		return
+	}
+	m.starting--
+	if m.starting == 0 {
+		m.notice = "The daemon did not start: its error is in the Rex tab " + TabName
+	}
 }
 
 // Result is the daemon.settings output, byte for byte, or the error met.
@@ -237,13 +263,14 @@ func (m *Model) Answer(yes bool) {
 	m.Reload()
 }
 
-// StartArgs is the rex call that opens the daemon's tab.
+// StartArgs is the rex call that opens the daemon's tab. The tab stays
+// open after the daemon exits, so an error it stops on can be read there.
 func (s Starter) StartArgs() []string {
 	args := []string{"window", "new"}
 	if s.RexSession != "" {
 		args = append(args, "-s", s.RexSession)
 	}
-	return append(args, TabName, "-c", s.Root, "--json", "--", s.Self, "daemon", "--autonomous")
+	return append(args, TabName, "-c", s.Root, "--keep-open", "--json", "--", s.Self, "daemon", "--autonomous")
 }
 
 func (m *Model) startDaemon() {
@@ -255,7 +282,8 @@ func (m *Model) startDaemon() {
 		m.notice = fmt.Sprintf("rex window new failed: %v", err)
 		return
 	}
-	m.notice = "Started the daemon in the Rex tab " + TabName
+	m.notice = "Starting the daemon in the Rex tab " + TabName
+	m.starting = StartChecks
 }
 
 func (m *Model) stopDaemon() {
