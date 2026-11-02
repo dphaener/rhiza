@@ -52,3 +52,18 @@ stdout '(?s)Please split this\..*About this op\.'
 stdout 'by \S+ at 20'
 exec rhiza change show --json
 stdout '"text": "Please split this\."'
+
+# A note about a change set written from another, current change set shows
+# in change show of the change set it discusses before the writer's lands,
+# and not in the writer's own Notes.
+exec rhiza change new Review
+exec rhiza note add 01M5PWGEF85Y185JZ2ZGCNH40N 'Review remark.'
+! stdout 'to change set 01M5PWGEF85Y185JZ2ZGCNH40N'
+fold-ok
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '(?s)## Notes.*Please split this\..*Review remark\.'
+stdout '(?m)^- [0-9A-Z]{8,} by \S+ at 20[0-9-]+T[0-9:]+Z: Review remark\.'
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N --json
+stdout '"text": "Review remark\."'
+exec rhiza change show
+! stdout '## Notes'

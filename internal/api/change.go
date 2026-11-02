@@ -312,7 +312,7 @@ func runChangeShow(ctx *Ctx, req any) (any, error) {
 		History:      []LifecycleEvent{},
 		Problems:     foldProblems(problems),
 		Changes:      buildChangeDiff(cs, changeset.BuildDiff(w.changeSets(), cs)),
-		Notes:        changeNotes(w, m, cs),
+		Notes:        changeNotes(w, cs, current),
 	}
 	for _, m := range c.Lifecycle {
 		resp.History = append(resp.History, LifecycleEvent{Type: m.Type, Entry: m.Entry,

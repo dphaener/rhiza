@@ -117,34 +117,45 @@ func noteWho(actor, e id.ID, es []entry.Entry, handle func(id.ID) string) (strin
 	return who, at
 }
 
-// changeNotes lists the live notes discussing change set cs in the model m,
-// finding each note's author and time among the change sets of w.
-func changeNotes(w *workspace, m Model, cs id.ID) []ShowNote {
+// changeNotes lists the live notes discussing change set cs, finding each
+// note's author and time among the change sets of w. It looks in cs's own
+// view and, when it is another change set, the current one's: a note about
+// cs is written into the writer's current change set, so a reviewer's note
+// shows before their change set lands.
+func changeNotes(w *workspace, cs, current id.ID) []ShowNote {
 	notes := []ShowNote{}
 	sets := w.changeSets()
-	handle := func(a id.ID) string {
-		if n, ok := m.Node(a); ok {
-			return n.Handle
-		}
-		return ""
+	views := []Model{w.model(cs)}
+	if !current.IsZero() && current != cs {
+		views = append(views, w.model(current))
 	}
-	for _, l := range m.LinksTo(cs, op.LinkDiscusses) {
-		nn, ok := m.Node(l.From)
-		if !ok || nn.Kind != op.KindNote || nn.Retired {
-			continue
-		}
-		note := ShowNote{ID: nn.ID, Text: fieldText(nn.Fields["statement"]), Op: noteOp(fieldText(nn.Fields["op"]))}
-	find:
-		for _, s := range sets {
-			for _, rs := range s.History {
-				if len(rs) == 0 || rs[0].Op.Type != op.TypeNodeCreate || rs[0].Op.Node != nn.ID {
-					continue
-				}
-				note.Actor, note.At = noteWho(rs[0].Actor, rs[0].Entry, entriesOf(w.log(), s.ID), handle)
-				break find
+	seen := map[id.ID]bool{}
+	for _, m := range views {
+		handle := func(a id.ID) string {
+			if n, ok := m.Node(a); ok {
+				return n.Handle
 			}
+			return ""
 		}
-		notes = append(notes, note)
+		for _, l := range m.LinksTo(cs, op.LinkDiscusses) {
+			nn, ok := m.Node(l.From)
+			if !ok || nn.Kind != op.KindNote || nn.Retired || seen[nn.ID] {
+				continue
+			}
+			seen[nn.ID] = true
+			note := ShowNote{ID: nn.ID, Text: fieldText(nn.Fields["statement"]), Op: noteOp(fieldText(nn.Fields["op"]))}
+		find:
+			for _, s := range sets {
+				for _, rs := range s.History {
+					if len(rs) == 0 || rs[0].Op.Type != op.TypeNodeCreate || rs[0].Op.Node != nn.ID {
+						continue
+					}
+					note.Actor, note.At = noteWho(rs[0].Actor, rs[0].Entry, entriesOf(w.log(), s.ID), handle)
+					break find
+				}
+			}
+			notes = append(notes, note)
+		}
 	}
 	sortNotes(notes)
 	return notes
