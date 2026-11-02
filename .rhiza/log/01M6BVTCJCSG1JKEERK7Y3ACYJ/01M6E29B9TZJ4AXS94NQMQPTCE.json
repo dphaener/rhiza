@@ -1,0 +1,40 @@
+{
+  "actor": "01M6E1R74WDZ4K5NPKD5X7ZFPJ",
+  "after": [
+    "01M6E1ASNPQV51BPSNPDEQV2SP"
+  ],
+  "at": "2026-11-02T12:03:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c3b2557f ran go test ./cmd/rhiza -run TestScripts/change-notes -count=1: PASS. The script adds two notes on node store, then show store lists 'Is the log append-only?' before 'Second thought.' with '- <id> by <actor> at <RFC3339>Z:' lines and a notes array in --json; change show lists the change set's 'Please split this.' and the --op note with actor and time, in text and --json. The new case writes a note about that change set from a second current change set; it shows in change show of the discussed set (text and --json) and not in the writer's own Notes. Read the diff: changeNotes now reads cs's view plus the current one's, de-duplicating by note ID. make fmt-check vet test all pass. make self-check fails only on stale .rhiza/rendered actor/index files left by the run's own model writes, not on this code."
+        },
+        "handle": "notes-shown-verified-2",
+        "id": "01M6E299349SDCBKRN2EXWTNSG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6E299349SDCBKRN2CP1991H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6E299349SDCBKRN2CP1991H",
+        "id": "01M6E299Y80Z5HZ3NXE7RHATB6",
+        "link": "01M6E299Y80Z5HZ3NXE77PJQFQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZWGV5ZTMWYTG4M3JD7Z4K",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6BVTCJCSG1JKEERK7Y3ACYJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6E29B9TZJ4AXS94NQMQPTCE",
+  "type": "ops",
+  "v": 1
+}
