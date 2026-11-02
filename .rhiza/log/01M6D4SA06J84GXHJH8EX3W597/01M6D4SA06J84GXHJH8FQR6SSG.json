@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-02T03:27:57Z",
+  "body": {
+    "intent": "Fix milestone 22's leaves: the request queue and health report were grouping nodes with children, so runs would never build them",
+    "kind": "record",
+    "sources": [],
+    "title": "Milestone 22 leaves"
+  },
+  "change_set": "01M6D4SA06J84GXHJH8EX3W597",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6D4SA06J84GXHJH8FQR6SSG",
+  "type": "open",
+  "v": 2
+}

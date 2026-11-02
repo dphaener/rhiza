@@ -658,6 +658,7 @@
 - [m2-scope-out](decision/m2-scope-out.md)
 - [m20-picked-by-orchestrator](decision/m20-picked-by-orchestrator.md)
 - [m21-picked-by-orchestrator](decision/m21-picked-by-orchestrator.md)
+- [m22-leaves-split](decision/m22-leaves-split.md)
 - [m22-run-from-rex](decision/m22-run-from-rex.md)
 - [m23-picked-by-orchestrator](decision/m23-picked-by-orchestrator.md)
 - [m2cs2-done-points-count](decision/m2cs2-done-points-count.md)

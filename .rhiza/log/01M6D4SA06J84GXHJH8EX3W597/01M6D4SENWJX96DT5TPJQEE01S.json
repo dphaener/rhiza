@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6D4SA06J84GXHJH8FQR6SSG"
+  ],
+  "at": "2026-11-02T03:28:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A run builds only leaf capabilities, so plan-requests and health-command, which were given children, would never be built: request-queue (in its own change set after plan requests) and health-report (in the health change set) carry their work as leaves",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "m22-leaves-split",
+        "id": "01M6D4SCEZY3S2VD13PBJ2YCQ4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6D4SCEZY3S2VD13P81PQDFS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6D4SCEZY3S2VD13P81PQDFS",
+        "id": "01M6D4SDA1GWZDQZESPQHHKM57",
+        "link": "01M6D4SDA1GWZDQZESPMQ5WK1T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0C444W55N1J1W1N22HFS",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6D4SA06J84GXHJH8EX3W597",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6D4SENWJX96DT5TPJQEE01S",
+  "type": "ops",
+  "v": 1
+}
