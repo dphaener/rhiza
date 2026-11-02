@@ -14,6 +14,10 @@ import (
 // shared by its worktrees, never committed.
 const RequestsFile = "requests.json"
 
+// RequestsLockFile is the lock every writer of the queue holds around its
+// read and write, under Dir, so no writer's update overwrites another's.
+const RequestsLockFile = "requests.lock"
+
 // The kinds of a plan request.
 const (
 	KindFeature   = "feature"
@@ -32,7 +36,9 @@ const (
 // Request is one plan request in the queue. Run is set when the daemon
 // starts its plan run: the run's ID, drawn by the daemon and taken by run
 // start --request. Everything else about it (planning, planned, failed, the
-// change set) is read from that run's journal.
+// change set) is read from that run's journal. RetryAt is set when a start
+// of the daemon's never journaled and the request went back in the queue:
+// the daemon does not start it again before then.
 type Request struct {
 	ID        string    `json:"id"`
 	Kind      string    `json:"kind"`
@@ -40,6 +46,7 @@ type Request struct {
 	At        time.Time `json:"at"`
 	Run       string    `json:"run,omitempty"`
 	StartedAt time.Time `json:"started_at,omitzero"`
+	RetryAt   time.Time `json:"retry_at,omitzero"`
 }
 
 // Intent is the one-line intent the request's plan run opens its change set
@@ -75,7 +82,31 @@ func ReadRequests(common string) ([]Request, error) {
 	return d.Requests, nil
 }
 
-// WriteRequests replaces the queue, whole.
+// UpdateRequests reads the queue, passes it to update and writes back what
+// update returns, holding the queue's lock throughout (waiting for it while
+// another writer holds it). update returning an error writes nothing.
+func UpdateRequests(common string, update func([]Request) ([]Request, error)) error {
+	if err := os.MkdirAll(Dir(common), 0o755); err != nil {
+		return err
+	}
+	unlock, err := openWait(filepath.Join(Dir(common), RequestsLockFile))
+	if err != nil {
+		return err
+	}
+	defer unlock()
+	reqs, err := ReadRequests(common)
+	if err != nil {
+		return err
+	}
+	reqs, err = update(reqs)
+	if err != nil {
+		return err
+	}
+	return WriteRequests(common, reqs)
+}
+
+// WriteRequests replaces the queue, whole. Writers that read the queue
+// first go through UpdateRequests instead.
 func WriteRequests(common string, reqs []Request) error {
 	if err := os.MkdirAll(Dir(common), 0o755); err != nil {
 		return err

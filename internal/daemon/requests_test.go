@@ -52,3 +52,28 @@ func TestRequestState(t *testing.T) {
 		}
 	}
 }
+
+// Writers that update the queue at once each keep their update: none
+// overwrites another's.
+func TestUpdateRequestsConcurrent(t *testing.T) {
+	common := t.TempDir()
+	const n = 20
+	errs := make(chan error, n)
+	for i := range n {
+		go func() {
+			errs <- UpdateRequests(common, func(reqs []Request) ([]Request, error) {
+				time.Sleep(time.Millisecond)
+				return append(reqs, Request{ID: string(rune('a' + i))}), nil
+			})
+		}()
+	}
+	for range n {
+		if err := <-errs; err != nil {
+			t.Fatal(err)
+		}
+	}
+	got, err := ReadRequests(common)
+	if err != nil || len(got) != n {
+		t.Fatalf("got %d requests (%v), want %d", len(got), err, n)
+	}
+}

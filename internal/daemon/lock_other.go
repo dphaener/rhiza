@@ -25,3 +25,13 @@ func open(path string) (*os.File, func(), error) {
 	}
 	return f, func() { f.Close() }, nil
 }
+
+// openWait has no flock to take here: writers of the file it guards are
+// not kept apart.
+func openWait(path string) (func(), error) {
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0o644)
+	if err != nil {
+		return nil, err
+	}
+	return func() { f.Close() }, nil
+}

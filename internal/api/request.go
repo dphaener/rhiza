@@ -111,21 +111,37 @@ func runRequest(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	reqs, err := daemon.ReadRequests(common)
-	if err != nil {
-		return nil, Errorf("read requests: %v", err)
-	}
-	rid, err := newRequestID(ctx, reqs)
-	if err != nil {
-		return nil, err
-	}
-	q := daemon.Request{ID: rid, Kind: kind, Text: text, At: ctx.Now().UTC()}
-	if !ctx.DryRun {
-		if err := daemon.WriteRequests(common, append(reqs, q)); err != nil {
-			return nil, Errorf("write requests: %v", err)
+	var q daemon.Request
+	queue := func(reqs []daemon.Request) ([]daemon.Request, error) {
+		rid, err := newRequestID(ctx, reqs)
+		if err != nil {
+			return nil, err
 		}
+		q = daemon.Request{ID: rid, Kind: kind, Text: text, At: ctx.Now().UTC()}
+		return append(reqs, q), nil
+	}
+	if ctx.DryRun {
+		reqs, err := daemon.ReadRequests(common)
+		if err != nil {
+			return nil, Errorf("read requests: %v", err)
+		}
+		if _, err := queue(reqs); err != nil {
+			return nil, err
+		}
+	} else if err := daemon.UpdateRequests(common, queue); err != nil {
+		return nil, requestsErr(err)
 	}
 	return RequestResponse{Request: requestInfo(q, nil), DryRun: ctx.DryRun}, nil
+}
+
+// requestsErr is an error of daemon.UpdateRequests: an operation's error
+// from the update as it is, any other one an error of the queue's file.
+func requestsErr(err error) error {
+	var e *Error
+	if errors.As(err, &e) {
+		return err
+	}
+	return Errorf("update requests: %v", err)
 }
 
 // newRequestID draws an ID no request of reqs has.
@@ -171,55 +187,101 @@ func requestInfo(q daemon.Request, runs []run.Journal) RequestInfo {
 // oldest queued requests while fewer than max runs run: running counts the
 // running runs and the starts not journaled yet. A request is marked with
 // the run ID it draws before its tab opens, and run start --request takes
-// that ID; a tab that fails to open puts the request back in the queue. The
-// run is autonomous when plan autonomy is auto. It returns the requests
-// started.
+// that ID; a tab that fails to open puts the request back in the queue. A
+// start that has not journaled once daemonStartGrace passed failed before
+// it journaled (a refused permission mode, a usage error): its request goes
+// back in the queue, not started again until daemonUnjournaledHold after
+// that start. The run is autonomous when plan autonomy is auto. Every read
+// and write of the queue holds its lock (daemon.UpdateRequests), the tab's
+// opening does not. It returns the requests started.
 func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, max int, mode string) ([]string, error) {
 	common, err := gitCommonDir(ctx)
 	if err != nil {
 		return nil, err
 	}
-	reqs, err := daemon.ReadRequests(common)
-	if err != nil {
-		return nil, Errorf("read requests: %v", err)
+	journaled := func(rid string) (bool, error) {
+		if slices.ContainsFunc(runs, func(j run.Journal) bool { return j.ID == rid }) {
+			return true, nil
+		}
+		_, err := rs.Read(rid)
+		var nf *run.NotFoundError
+		switch {
+		case err == nil:
+			return true, nil
+		case errors.As(err, &nf):
+			return false, nil
+		}
+		return false, Errorf("read run %s: %v", rid, err)
 	}
-	for _, q := range reqs {
-		// A started request whose run has not journaled yet takes a slot.
-		if q.Run == "" || slices.ContainsFunc(runs, func(j run.Journal) bool { return j.ID == q.Run }) {
-			continue
+	now := ctx.Now()
+	err = daemon.UpdateRequests(common, func(reqs []daemon.Request) ([]daemon.Request, error) {
+		for i, q := range reqs {
+			if q.Run == "" {
+				continue
+			}
+			ok, err := journaled(q.Run)
+			switch {
+			case err != nil:
+				return nil, err
+			case ok:
+				continue
+			case now.Sub(q.StartedAt) < daemonStartGrace:
+				// A started request whose run has not journaled yet takes
+				// a slot.
+				running++
+			default:
+				reqs[i].Run, reqs[i].RetryAt = "", q.StartedAt.Add(daemonUnjournaledHold).UTC()
+				reqs[i].StartedAt = time.Time{}
+			}
 		}
-		if ctx.Now().Sub(q.StartedAt) < daemonStartGrace {
-			running++
-		}
+		return reqs, nil
+	})
+	if err != nil {
+		return nil, requestsErr(err)
 	}
 	planMode, err := autonomyStage(ctx, "plan")
 	if err != nil {
 		return nil, err
 	}
 	var started []string
-	for i := range reqs {
-		if running >= max {
+	for running < max {
+		var q daemon.Request
+		err := daemon.UpdateRequests(common, func(reqs []daemon.Request) ([]daemon.Request, error) {
+			for i := range reqs {
+				if reqs[i].Run != "" || now.Before(reqs[i].RetryAt) {
+					continue
+				}
+				rid, err := newRequestRunID(ctx, rs, reqs)
+				if err != nil {
+					return nil, err
+				}
+				reqs[i].Run, reqs[i].StartedAt, reqs[i].RetryAt = rid, now.UTC(), time.Time{}
+				q = reqs[i]
+				return reqs, nil
+			}
+			return reqs, nil
+		})
+		if err != nil {
+			return started, requestsErr(err)
+		}
+		if q.ID == "" {
 			break
 		}
-		if reqs[i].Run != "" {
-			continue
-		}
-		rid, err := newRequestRunID(ctx, rs, reqs)
-		if err != nil {
-			return started, err
-		}
-		reqs[i].Run, reqs[i].StartedAt = rid, ctx.Now().UTC()
-		if err := daemon.WriteRequests(common, reqs); err != nil {
-			return started, Errorf("write requests: %v", err)
-		}
-		if err := daemonStartPlan(ctx, reqs[i], planMode == AutonomyAuto, mode); err != nil {
-			reqs[i].Run, reqs[i].StartedAt = "", time.Time{}
-			if werr := daemon.WriteRequests(common, reqs); werr != nil {
-				return started, Errorf("write requests: %v", werr)
+		if err := daemonStartPlan(ctx, q, planMode == AutonomyAuto, mode); err != nil {
+			uerr := daemon.UpdateRequests(common, func(reqs []daemon.Request) ([]daemon.Request, error) {
+				for i := range reqs {
+					if reqs[i].ID == q.ID && reqs[i].Run == q.Run {
+						reqs[i].Run, reqs[i].StartedAt = "", time.Time{}
+					}
+				}
+				return reqs, nil
+			})
+			if uerr != nil {
+				return started, requestsErr(uerr)
 			}
 			return started, err
 		}
-		started = append(started, reqs[i].ID)
+		started = append(started, q.ID)
 		running++
 	}
 	return started, nil
