@@ -1,0 +1,86 @@
+{
+  "actor": "01M6DFWMP4X75F04R3K0DQQQD2",
+  "after": [
+    "01M6DFVWFF6X3ZHVPCTDMXH22B"
+  ],
+  "at": "2026-11-02T06:46:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ee31e06b, QA built rhiza from the branch head and ran it by hand. On this repo, rhiza health printed all eight parts and exited 0 (inbox warn for a blocker). health --json and api call health gave the same bytes. In a fresh scratch repo with a bare origin: with no daemon, daemon was warn with 'start it with rhiza daemon', next rhiza daemon --autonomous. A missing rendered folder made check bad with fail render, and health exited 1. With RHIZA_TEST_FREE_BYTES=100 (and RHIZA_TEST_NOW), disk was bad '100 B free, under the minimum of 10.0 GiB', exit 1. A dirty README made main warn 'uncommitted changes', and a push from another clone made main warn '1 behind origin/main'. The inbox-failed case was covered only by health.txtar (passes), not by hand."
+        },
+        "handle": "health-report-qa-1",
+        "id": "01M6DG493Q6A5MBMHTTY8ZG7T6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DG493Q6A5MBMHTTWP3RSW7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DG493Q6A5MBMHTTWP3RSW7",
+        "id": "01M6DG49Z4SYB1T03AAAZ6SE6F",
+        "link": "01M6DG49Z4SYB1T03AAAG1P5FK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6D4RPTDYGEG48RYPD0557BA",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ee31e06b, QA ran the real rhiza ship close-out by hand in a scratch repo with a bare origin, a change set and a ship state recording a merge commit. With README dirty, close-out exited 1 with 'main was not updated: ... has uncommitted changes' and wrote .git/rhiza/main-stale.json. rhiza health showed main warn '...; the last close-out could not pull' with a detail naming the change set, the time and the failure. rhiza inbox listed one main-stale item, and inbox open on it said there is no tab to open, next rhiza health. A second failing close-out kept the same since. After cleaning README and pushing a new commit to origin, close-out printed 'Updated main', pulled the commit and removed main-stale.json. Health main was back to ok and the inbox said 'Nothing waits on you'."
+        },
+        "handle": "close-out-pull-recorded-qa-1",
+        "id": "01M6DG4ATP35RJDNSFEE94YQP4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DG4ATP35RJDNSFECAGR470",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DG4ATP35RJDNSFECAGR470",
+        "id": "01M6DG4BP3QGCRB4YW31V9TDSX",
+        "link": "01M6DG4BP3QGCRB4YW302ZPTZ2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS2CVV2KZ1JBQ89ANTZW1J",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ee31e06b, QA ran the real app. In a scratch repo, rhiza tui app health --once printed the same bytes as rhiza health --json. With free disk under the minimum it printed state bad and exited 0. rhiza rex install into a temp REX_CONFIG wrote rhiza_app_health running tui app health with [\"health\"] = \"t\", and no key letter is used twice. QA launched rhiza tui app health in a real Rex block with a dirty checkout. It showed 'Health: warn' with each part marked [ok]/[warn], the cursor on daemon and the footer 'j/k move · enter open app · r reload · q quit'. After cleaning the checkout, r reloaded it and main became [ok]. j moved the cursor to inbox, and enter opened the inbox app ('Nothing waits on you', inbox footer). The healthapp unit tests and tui-health-app/rex-install scripts pass."
+        },
+        "handle": "health-app-qa-1",
+        "id": "01M6DG4CHCH2A54BA8F334W8W7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DG4CHCH2A54BA8F0BVH9VS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DG4CHCH2A54BA8F0BVH9VS",
+        "id": "01M6DG4DCW23XVGQVC9ATWSNR1",
+        "link": "01M6DG4DCW23XVGQVC981BAZ5Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS2EDTXKNNH3BNJBX81ZZ6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CRZSRFQ94MAJ8CRTEE44P2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DG4ERAAYTF4T1B6RY0WAC6",
+  "type": "ops",
+  "v": 1
+}
