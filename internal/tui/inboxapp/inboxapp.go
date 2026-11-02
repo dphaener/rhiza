@@ -217,6 +217,10 @@ func (m *Model) normalKey(msg tea.KeyPressMsg) tea.Cmd {
 		if has && it.Kind == api.InboxSignoff {
 			m.mode, m.input, m.target = modeChanges, "", it
 		}
+	case "n":
+		if has && it.Kind == api.InboxStalled {
+			m.nudge(it)
+		}
 	case "R":
 		if has && retryable(it) {
 			m.resume(it)
@@ -227,6 +231,31 @@ func (m *Model) normalKey(msg tea.KeyPressMsg) tea.Cmd {
 		}
 	}
 	return nil
+}
+
+// carryOn is the message a nudge sends a stalled session.
+const carryOn = "You have been silent for a while. Please carry on with your task, or say what is blocking you."
+
+// nudge asks a stalled session to carry on. A session parked on a usage-limit
+// prompt (its pane text, as its adapter reads it) gets Escape first.
+func (m *Model) nudge(it api.InboxItem) {
+	out, err := m.run("session.pane", []string{it.Session})
+	if err != nil {
+		m.note = fmt.Sprintf("nudge failed: %v", err)
+		return
+	}
+	var pane api.SessionPaneResponse
+	if err := json.Unmarshal(out, &pane); err != nil {
+		m.note = fmt.Sprintf("nudge failed: %v", err)
+		return
+	}
+	if pane.UsageLimit {
+		if _, err := m.run("session.key", []string{it.Session, "escape"}); err != nil {
+			m.note = fmt.Sprintf("nudge failed: %v", err)
+			return
+		}
+	}
+	m.act("nudge", "session.message", it.Session, carryOn)
 }
 
 // retryable says whether R and x work on the item: a failed, gave-up or
@@ -371,7 +400,7 @@ func (m *Model) View() tea.View {
 		if m.note != "" {
 			b.WriteString("\n" + m.note)
 		}
-		b.WriteString("\n" + Name + " · j/k move · o open · a answer · t take advice · y approve · c changes · R retry · x abandon · r reload · q quit")
+		b.WriteString("\n" + Name + " · j/k move · o open · a answer · t take advice · n nudge · y approve · c changes · R retry · x abandon · r reload · q quit")
 	}
 	return tea.NewView(b.String())
 }

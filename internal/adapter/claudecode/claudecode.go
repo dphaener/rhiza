@@ -523,6 +523,15 @@ func (Adapter) UsageLimit(transcript []byte) (adapter.UsageLimit, bool) {
 	return out, true
 }
 
+// PaneUsageLimit implements adapter.PaneLimiter: the pane's last lines show
+// the usage-limit message the agent prints, "usage limit reached" or "hit
+// your limit". Only the tail counts, so text scrolled far above does not.
+func (Adapter) PaneUsageLimit(pane string) bool {
+	lines := strings.Split(strings.TrimRight(pane, "\n \t"), "\n")
+	tail := strings.ToLower(strings.Join(lines[max(0, len(lines)-15):], "\n"))
+	return strings.Contains(tail, "usage limit reached") || strings.Contains(tail, "hit your limit")
+}
+
 // usageLine is the part of one transcript line that TokenUse reads. Usage
 // is a pointer so that a line without usage can be told apart from one with
 // zero tokens.

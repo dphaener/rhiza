@@ -261,3 +261,63 @@ func TestEscOnBlockerAnswerSendsNothing(t *testing.T) {
 		t.Fatalf("calls: %v", r.calls)
 	}
 }
+
+const nudgeItems = `{"items":[
+{"id":"n1","kind":"stalled","run":"RUNN00000001","change":"C1","step":"build","session":"SESSN1"},
+{"id":"f2","kind":"failed","run":"RUNF00000002","change":"C2","step":"verify"}
+]}`
+
+func newNudgeRig(t *testing.T, pane string) *rig {
+	t.Helper()
+	r := &rig{}
+	m := NewModel(func(op string, args []string) ([]byte, error) {
+		switch op {
+		case Name:
+			return []byte(nudgeItems), nil
+		case "session.pane":
+			r.calls = append(r.calls, call{op, args})
+			return []byte(pane), nil
+		}
+		r.calls = append(r.calls, call{op, args})
+		return []byte(`{}`), nil
+	})
+	r.m = m
+	return r
+}
+
+func opsOf(cs []call) string {
+	var ops []string
+	for _, c := range cs {
+		ops = append(ops, c.op+":"+strings.Join(c.args[1:], ","))
+	}
+	return strings.Join(ops, " ")
+}
+
+func TestNudgeSendsCarryOn(t *testing.T) {
+	r := newNudgeRig(t, `{"session":"SESSN1","text":"working","usage_limit":false}`)
+	r.at(1) // failed runs list before stalled sessions
+	r.press("n")
+	if got, want := opsOf(r.calls), "session.pane: session.message:"+carryOn; got != want {
+		t.Fatalf("calls %q, want %q", got, want)
+	}
+	if r.calls[1].args[0] != "SESSN1" {
+		t.Fatalf("calls: %v", r.calls)
+	}
+}
+
+func TestNudgeEscapesUsageLimitPromptFirst(t *testing.T) {
+	r := newNudgeRig(t, `{"session":"SESSN1","text":"You've hit your limit","usage_limit":true}`)
+	r.at(1)
+	r.press("n")
+	if got, want := opsOf(r.calls), "session.pane: session.key:escape session.message:"+carryOn; got != want {
+		t.Fatalf("calls %q, want %q", got, want)
+	}
+}
+
+func TestNudgeOnlyOnStalled(t *testing.T) {
+	r := newNudgeRig(t, `{}`)
+	r.press("n") // on the failed run
+	if len(r.calls) != 0 {
+		t.Fatalf("calls: %v", r.calls)
+	}
+}

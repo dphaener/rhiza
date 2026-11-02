@@ -17087,6 +17087,51 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "session.key",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "description": "The key: escape or enter",
+            "type": "string"
+          },
+          "session": {
+            "description": "The session: its full ID or a unique prefix of 4+ characters",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "session"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "description": "True if nothing was sent",
+            "type": "boolean"
+          },
+          "key": {
+            "description": "The key pressed",
+            "type": "string"
+          },
+          "session": {
+            "description": "The session's full ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "session"
+        ],
+        "type": "object"
+      },
+      "summary": "Press a key (escape or enter) in a running agent session's terminal",
+      "write": true
+    },
+    {
       "name": "session.ls",
       "request": {
         "additionalProperties": false,
@@ -17281,6 +17326,47 @@ cmp stdout describe.golden.json
       },
       "summary": "Send a running agent session a message: a file in its worktree and a one-line pointer, typed at its prompt or, while it works, handed over at its next tool call",
       "write": true
+    },
+    {
+      "name": "session.pane",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "session": {
+            "description": "The session: its full ID or a unique prefix of 4+ characters",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "session": {
+            "description": "The session's full ID",
+            "type": "string"
+          },
+          "text": {
+            "description": "The text on the session's terminal, screen and scrollback",
+            "type": "string"
+          },
+          "usage_limit": {
+            "description": "True when the session's adapter reads the text as the agent parked at a usage-limit prompt",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "session",
+          "text",
+          "usage_limit"
+        ],
+        "type": "object"
+      },
+      "summary": "Read the text on a session's terminal, and say whether it shows the agent parked at a usage-limit prompt",
+      "write": false
     },
     {
       "name": "session.run",
