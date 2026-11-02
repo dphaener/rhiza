@@ -14,7 +14,7 @@ QA at cafec91c: ran the scratch build's `rhiza tui app roadmap` in a 200x40 pty 
 
 ### Out
 
-- verifies [roadmap-app-new-work](../capability/rhiza/roadmap-app-start-runs/roadmap-app-new-work.md)
+- verifies roadmap-app-new-work (retired)
 
 ## History
 

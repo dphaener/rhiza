@@ -19,7 +19,7 @@ New work starts from the roadmap app with m for a milestone plan and n for a cha
 ### In
 
 - decided-by [run-start-new-intent](../capability/rhiza/roadmap-app-start-runs/run-start-new-intent.md)
-- decided-by [roadmap-app-new-work](../capability/rhiza/roadmap-app-start-runs/roadmap-app-new-work.md)
+- decided-by roadmap-app-new-work (retired)
 - decided-by [plan-guide-new-change-set](../capability/rhiza/roadmap-app-start-runs/plan-guide-new-change-set.md)
 
 ## History

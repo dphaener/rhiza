@@ -14,7 +14,7 @@ At 5933776f ran go test ./internal/tui/roadmapapp -run NewWork -v -count=1: Test
 
 ### Out
 
-- verifies [roadmap-app-new-work](../capability/rhiza/roadmap-app-start-runs/roadmap-app-new-work.md)
+- verifies roadmap-app-new-work (retired)
 
 ## History
 

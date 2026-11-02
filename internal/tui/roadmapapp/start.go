@@ -34,10 +34,6 @@ type pending struct {
 	kind string // "plan", "ship" or "accept"
 	id   id.ID
 	what string // accept only: the what-if the question shows
-	// intent and milestone: a "new" run only, the typed one-line intent and
-	// whether it opens a milestone rather than a change set.
-	intent    string
-	milestone bool
 }
 
 // target is the change set p, s and o act on: the open detail's, else the
@@ -64,13 +60,6 @@ func (p *pending) prompt() string {
 	if p.kind == "accept" {
 		return p.what
 	}
-	if p.kind == "new" {
-		noun := "change set"
-		if p.milestone {
-			noun = "milestone"
-		}
-		return fmt.Sprintf("Start an interactive plan run of a new %s %q in a new Rex tab? y/n", noun, p.intent)
-	}
 	if p.kind == "plan" {
 		return fmt.Sprintf("Start an interactive plan run of %s in a new Rex tab? y/n", short(p.id))
 	}
@@ -79,18 +68,6 @@ func (p *pending) prompt() string {
 
 // args are the arguments of the `rex window new` call that starts p.
 func (p *pending) args(s Starter) []string {
-	if p.kind == "new" {
-		name := "new-change-set"
-		if p.milestone {
-			name = "new-milestone"
-		}
-		args := p.windowArgs(s, name)
-		args = append(args, "--workflow", "plan", "--new", p.intent)
-		if p.milestone {
-			args = append(args, "--milestone")
-		}
-		return args
-	}
 	cs := p.id.String()
 	args := p.windowArgs(s, cs[:min(len(cs), 9)])
 	args = append(args, cs)
@@ -125,8 +102,22 @@ func (i *intentInput) prompt() string {
 	return fmt.Sprintf("Intent of the new %s: %s_  (enter continues, esc cancels)", noun, i.text)
 }
 
+// fileRequest queues a plan request for the typed intent in the clone; the
+// daemon turns it into a plan run. No Rex tab is opened here.
+func (m *Model) fileRequest(text string, milestone bool) {
+	kind := "feature"
+	if milestone {
+		kind = "milestone"
+	}
+	if _, err := m.run("request", "", []string{text, "--kind", kind}); err != nil {
+		m.notice = fmt.Sprintf("rhiza: %v", err)
+		return
+	}
+	m.notice = fmt.Sprintf("Queued a %s request %q for the daemon to plan", kind, text)
+}
+
 // typeIntent handles a key while an intent is being typed. Enter with
-// empty text does nothing; enter with text asks y/n.
+// empty text does nothing; enter with text files the request.
 func (m *Model) typeIntent(msg tea.KeyPressMsg) tea.Cmd {
 	in := m.intent
 	switch msg.String() {
@@ -140,7 +131,7 @@ func (m *Model) typeIntent(msg tea.KeyPressMsg) tea.Cmd {
 			return nil
 		}
 		m.intent = nil
-		m.pending = &pending{kind: "new", intent: text, milestone: in.milestone}
+		m.fileRequest(text, in.milestone)
 	case "backspace":
 		if r := []rune(in.text); len(r) > 0 {
 			in.text = string(r[:len(r)-1])
@@ -165,10 +156,6 @@ func (m *Model) confirm() {
 	}
 	if _, err := m.starter.Exec("rex", p.args(m.starter), m.starter.Root); err != nil {
 		m.notice = fmt.Sprintf("rex window new failed: %v", err)
-		return
-	}
-	if p.kind == "new" {
-		m.notice = fmt.Sprintf("Opened Rex tab running the plan run of a new %q", p.intent)
 		return
 	}
 	cs := p.id.String()

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6D4ATK15W6QX3RZJGDNZSCA",
+  "after": [
+    "01M6CS2SWCNDEZ024V9YY0ZBZR"
+  ],
+  "at": "2026-11-02T03:26:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f9b9b42c ran go test ./internal/tui/roadmapapp -run TestNewWorkFilesPlanRequest -v -count=1: PASS. The test drives the roadmap app on a fake runner and a fake rex Exec: key n, type 'Ship the thing', enter gives exactly one request call with args 'Ship the thing --kind feature'; key m gives 'Ship the thing --kind milestone'; in both cases the rex Exec records zero calls (no rex window new) and the view shows 'Queued'. Read the diff: typeIntent's enter now calls fileRequest (m.run(\"request\", ...)) instead of setting a pending 'new' run, and the 'new' branches of pending.prompt/args/confirm are removed. go test ./internal/tui/... ./cmd/rhiza, go vet and gofmt -l also clean. Note: the request operation itself is not registered in this build; it belongs to the parent plan-requests capability, outside this leaf's acceptance."
+        },
+        "handle": "roadmap-new-work-requests-verified",
+        "id": "01M6D4PAD824WPQMTV19R39V3J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6D4PAD824WPQMTV197PYBP1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6D4PAD824WPQMTV197PYBP1",
+        "id": "01M6D4PB7ZVZY96ZMVB9FGR17X",
+        "link": "01M6D4PB7ZVZY96ZMVB6JA93M1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS24JZ06XER4X1ZKX4SNPG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CRZQYG5PJV7X2B234DJCV4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6D4PCJRADPEKDK6NKXJRGWT",
+  "type": "ops",
+  "v": 1
+}

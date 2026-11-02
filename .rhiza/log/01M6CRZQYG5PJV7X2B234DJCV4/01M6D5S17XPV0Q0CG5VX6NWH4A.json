@@ -1,0 +1,34 @@
+{
+  "actor": "01M6D58WW0EA9RS08AGTETHJH5",
+  "after": [
+    "01M6D4T72VC25QJGEHEK7E0F4V"
+  ],
+  "at": "2026-11-02T03:45:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6CS24JZ06XER4X1ZKX4SNPG",
+        "id": "01M6D5RYY9N99K354KXJPJPD5X",
+        "link": "01M6D5RYY9N99K354KXFACHFNC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M686V49K74FDKG4YV2BDJCSN",
+        "type": "supersedes"
+      },
+      {
+        "base": "01M686V49K74FDKG4YV49EY5EY",
+        "id": "01M6D5RZTE7M4JWNC5DEJMM08R",
+        "node": "01M686V49K74FDKG4YV2BDJCSN",
+        "op": "node.retire",
+        "reason": "Superseded by roadmap-new-work-requests: m and n now file a plan request (rhiza request) for the daemon to plan, and no longer ask y/n or open a Rex tab running run start --workflow plan --new"
+      }
+    ]
+  },
+  "change_set": "01M6CRZQYG5PJV7X2B234DJCV4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6D5S17XPV0Q0CG5VX6NWH4A",
+  "type": "ops",
+  "v": 1
+}
