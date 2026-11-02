@@ -1,0 +1,39 @@
+{
+  "actor": "01M6DCTAEWHVVJ68XZXX83SGAR",
+  "after": [
+    "01M6DCSTVKREYS80YM24QPBWTC"
+  ],
+  "at": "2026-11-02T05:50:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "close-out-pull-recorded's acceptance says health shows the main part warn naming the close-out pull failure, but the health op does not exist: health-report is not built and is not among this run's leaves. The recording, the inbox main-stale item and its clearing are built and tested (TestShipCloseOutRecordsStaleMain, inbox-main-stale.txtar), and daemon.ReadMainStale is ready for health to read. Build health-report first and then add the main part's pull failure, or may this leaf also add the health op?"
+        },
+        "handle": "close-out-pull-needs-health-report",
+        "id": "01M6DCYEGHM3V223W5TTEKMPCC",
+        "key": null,
+        "kind": "question",
+        "node": "01M6DCYEGHM3V223W5TSB483JN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DCYEGHM3V223W5TSB483JN",
+        "id": "01M6DCYFBM2WXD3XZEGWYVFNWA",
+        "link": "01M6DCYFBM2WXD3XZEGSZPQDK2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS2CVV2KZ1JBQ89ANTZW1J",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6CRZSRFQ94MAJ8CRTEE44P2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DCYGP5CNG4T49D1S7NEWYN",
+  "type": "ops",
+  "v": 1
+}

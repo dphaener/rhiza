@@ -626,7 +626,7 @@ func findInboxItem(ctx *Ctx, ref string) (InboxItem, run.State, error) {
 	if err != nil {
 		return InboxItem{}, run.State{}, err
 	}
-	for _, it := range append(append(append(all, blockers...), overlaps...), inboxDiskLow(ctx)...) {
+	for _, it := range append(append(append(append(all, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxMainStale(ctx)...) {
 		if strings.HasPrefix(it.ID, ref) {
 			found = append(found, it)
 		}
