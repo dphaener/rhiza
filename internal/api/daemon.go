@@ -290,6 +290,9 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 	}
 	// This poll's disk-low state, not the one saved after the last poll.
 	items = append(items, diskLowItems(state.DiskLow)...)
+	if common, err := gitCommonDir(ctx); err == nil {
+		items = append(items, mainStaleItems(common)...)
+	}
 	titles := map[string]string{}
 	for _, j := range runs {
 		if st := j.State(); st.Title != "" {
@@ -337,6 +340,8 @@ func inboxNotice(what string, it InboxItem) string {
 		return what + ": an interrupted run was not resumed"
 	case InboxDiskLow:
 		return "disk space is low: the daemon holds new starts and resumes"
+	case InboxMainStale:
+		return what + ": main was not updated after the merge: " + it.Detail
 	case InboxOverlap:
 		return what + ": an overlap with change set " + it.Other + " waits on you"
 	default:

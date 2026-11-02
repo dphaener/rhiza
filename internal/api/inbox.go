@@ -65,17 +65,18 @@ func init() {
 
 // The kinds of an InboxItem.
 const (
-	InboxQuestion = "question"
-	InboxOpen     = "open"
-	InboxSignoff  = "signoff"
-	InboxFailed   = "failed"
-	InboxGaveUp   = "gave-up"
-	InboxSkipped  = "skipped"
-	InboxBlocker  = "blocker"
-	InboxOverlap  = "overlap"
-	InboxStalled  = "stalled"
-	InboxDiskLow  = "disk-low"
-	InboxAccept   = "accept"
+	InboxQuestion  = "question"
+	InboxOpen      = "open"
+	InboxSignoff   = "signoff"
+	InboxFailed    = "failed"
+	InboxGaveUp    = "gave-up"
+	InboxSkipped   = "skipped"
+	InboxBlocker   = "blocker"
+	InboxOverlap   = "overlap"
+	InboxStalled   = "stalled"
+	InboxDiskLow   = "disk-low"
+	InboxMainStale = "main-stale"
+	InboxAccept    = "accept"
 )
 
 // InboxRequest takes nothing.
@@ -84,7 +85,7 @@ type InboxRequest struct{}
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
 	ID             string `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low or accept"`
+	Kind           string `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, main-stale or accept"`
 	At             string `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
 	Run            string `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker and an overlap"`
 	Change         string `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)"`
@@ -131,6 +132,11 @@ func (r InboxResponse) Human(w io.Writer) {
 		}
 		if it.Kind == InboxDiskLow {
 			fmt.Fprintf(w, "%s disk-low\n", it.ID)
+			fmt.Fprintf(w, "  %s\n", it.Detail)
+			continue
+		}
+		if it.Kind == InboxMainStale {
+			fmt.Fprintf(w, "%s main-stale change set %s\n", it.ID, it.Change)
 			fmt.Fprintf(w, "  %s\n", it.Detail)
 			continue
 		}
@@ -367,7 +373,7 @@ func runInbox(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	items = sortInboxItems(append(append(append(items, blockers...), overlaps...), inboxDiskLow(ctx)...))
+	items = sortInboxItems(append(append(append(append(items, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxMainStale(ctx)...))
 	title := changeTitleOf(ctx)
 	for i := range items {
 		items[i].ChangeTitle = title(items[i].Change)
@@ -512,6 +518,30 @@ func diskLowItems(low *daemon.DiskLow) []InboxItem {
 	}}
 }
 
+// inboxMainStale is one main-stale item while the last ship close-out could
+// not fast-forward the main checkout, and none once a later one did.
+func inboxMainStale(ctx *Ctx) []InboxItem {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return nil
+	}
+	return mainStaleItems(common)
+}
+
+// mainStaleItems is the main-stale item the record under common makes.
+func mainStaleItems(common string) []InboxItem {
+	ms, ok := daemon.ReadMainStale(common)
+	if !ok {
+		return nil
+	}
+	at := ms.Since.UTC().Format(time.RFC3339)
+	sum := sha256.Sum256([]byte(strings.Join([]string{InboxMainStale, at}, "\x00")))
+	return []InboxItem{{
+		ID: hex.EncodeToString(sum[:])[:7], Kind: InboxMainStale, At: at, Change: ms.Change,
+		Detail: ms.Detail,
+	}}
+}
+
 // changeTitleOf gives the display title of a change set by ID, empty when
 // the log has none or the ID does not parse.
 func changeTitleOf(ctx *Ctx) func(change string) string {
@@ -629,6 +659,9 @@ func runInboxOpen(ctx *Ctx, req any) (any, error) {
 	}
 	if item.Kind == InboxDiskLow {
 		return nil, Usagef("item %s is the daemon's low disk space: it has no tab to open", item.ID).WithNext("rhiza daemon status")
+	}
+	if item.Kind == InboxMainStale {
+		return nil, Usagef("item %s is the main checkout not being up to date: it has no tab to open", item.ID).WithNext("rhiza health")
 	}
 	if item.Kind == InboxOverlap {
 		return nil, Usagef("item %s is an overlap between change sets %s and %s: it has no tab to open", item.ID, item.Change, item.Other).WithNext(item.Next)

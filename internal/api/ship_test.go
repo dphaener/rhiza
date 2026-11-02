@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/session"
@@ -1406,5 +1407,66 @@ func TestShipCheckNoRunIDNotRerun(t *testing.T) {
 	r := shipCheck(t, f, `{"settled":true}`)
 	if !r.Settled || r.Green || len(r.Reran) != 0 {
 		t.Errorf("no run id: %+v", r)
+	}
+}
+
+func TestShipCloseOutRecordsStaleMain(t *testing.T) {
+	f, _, state := shipFixture(t)
+	if err := writeShipState(state, shipState{PR: 7, Head: "abc1234def", MergeCommit: "fff0000aaa"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.RemoveAll(f.worktree); err != nil {
+		t.Fatal(err)
+	}
+	x := &shipExec{answers: map[string]string{
+		"git rev-parse --verify --quiet refs/heads/cs/ship-it": "!",
+		"git push origin --delete cs/ship-it":                  "!error: unable to delete 'cs/ship-it': remote ref does not exist",
+		"git symbolic-ref --short HEAD":                        "main\n",
+		"git status --porcelain --untracked-files=no":          " M README.md\n",
+		"git pull --ff-only origin main":                       "",
+	}}
+	f.ctx.Exec = x.run
+	items := func() []InboxItem { return inboxMainStale(f.ctx) }
+
+	if got := items(); len(got) != 0 {
+		t.Fatalf("items before = %+v", got)
+	}
+	resp, err := callOp(t, f.ctx, "ship.close-out", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.(ShipCloseOutResponse).MainUpdated {
+		t.Fatal("dirty main was updated")
+	}
+	ms, ok := daemon.ReadMainStale(f.common)
+	if !ok || !strings.Contains(ms.Detail, "has uncommitted changes") {
+		t.Fatalf("record = %+v, %v", ms, ok)
+	}
+	got := items()
+	if len(got) != 1 || got[0].Kind != InboxMainStale || !strings.Contains(got[0].Detail, "has uncommitted changes") {
+		t.Fatalf("items = %+v", got)
+	}
+
+	// A second failure keeps the item's identity.
+	if _, err := callOp(t, f.ctx, "ship.close-out", `{}`); err != nil {
+		t.Fatal(err)
+	}
+	if again := items(); len(again) != 1 || again[0].ID != got[0].ID {
+		t.Errorf("items after a repeat = %+v, want %s", again, got[0].ID)
+	}
+
+	x.answers["git status --porcelain --untracked-files=no"] = ""
+	resp, err = callOp(t, f.ctx, "ship.close-out", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !resp.(ShipCloseOutResponse).MainUpdated {
+		t.Fatalf("clean main not updated: %+v", resp)
+	}
+	if _, ok := daemon.ReadMainStale(f.common); ok {
+		t.Error("record kept after a successful pull")
+	}
+	if left := items(); len(left) != 0 {
+		t.Errorf("items after = %+v", left)
 	}
 }
