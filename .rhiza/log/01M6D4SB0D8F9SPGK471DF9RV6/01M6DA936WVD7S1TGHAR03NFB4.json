@@ -1,0 +1,40 @@
+{
+  "actor": "01M6DA4X6TKR4E6M3D7GJ9RDMB",
+  "after": [
+    "01M6DA42AE2VM04CYAMMQ3TVRE"
+  ],
+  "at": "2026-11-02T05:03:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ca703146 I built the binary outside PATH and used it in a scratch repo with the run's RHIZA_* env unset and a logging-only fake rex (the daemon's tabs are not real agents). rhiza request ls printed 'No plan requests'; an empty text and --kind chore exited 2 with clear errors; a feature, a bug and a milestone were queued into .git/rhiza/requests.json and shown queued. With rhiza.daemon.paused true, daemon --once started nothing and opened no tab. Unpaused, --max-runs 1 --once started only the oldest: rex window new ... run start --workflow plan --new Add CSV export --request <id> --permission-mode manual (no --autonomous), and request ls showed it planning with its run. After daemon set rhiza.autonomy.plan auto, --max-runs 3 --once started the other two with --autonomous: 'Fix: Crash on empty repo' for the bug and --milestone for the milestone. Running the first request's run start by hand (fake claude) succeeded and request ls showed it planned with its run and change set 01M6DA6Q; a second start was refused 'already has run'; starting a still-queued request was refused 'is queued'. In a real Rex window, rhiza tui app roadmap: n then 'Add JSON import' + enter and m then 'Version 3' + enter showed 'Queued a ... request ... for the daemon to plan', request ls listed both queued, and no rex tab was opened. go test plan-requests and describe-golden passed."
+        },
+        "handle": "request-queue-qa-1",
+        "id": "01M6DA9083YDDY00CFXY15AF3G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DA9083YDDY00CFXWKAEEBN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DA9083YDDY00CFXWKAEEBN",
+        "id": "01M6DA91CV599R42V28SD186BK",
+        "link": "01M6DA91CV599R42V28QWS1W8V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6D4SYDB1P7NX7DGKT0D19HM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6D4SB0D8F9SPGK471DF9RV6",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DA936WVD7S1TGHAR03NFB4",
+  "type": "ops",
+  "v": 1
+}
