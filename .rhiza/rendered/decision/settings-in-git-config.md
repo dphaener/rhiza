@@ -16,6 +16,10 @@ Daemon and autonomy settings live in the repo's git config and are re-read every
 
 - derived-from [m22-run-from-rex-ask](../source/m22-run-from-rex-ask.md)
 
+### In
+
+- decided-by [daemon-settings](../capability/rhiza/orchestration/daemon/daemon-settings.md)
+
 ## History
 
 - `01M6CRZP2E8H6EEEPVDAWAKQ6H` Plan milestone 22: run Rhiza from Rex, the owner's ask of 2026-11-01
