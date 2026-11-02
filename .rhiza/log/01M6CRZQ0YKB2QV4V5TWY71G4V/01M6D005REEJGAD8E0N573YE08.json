@@ -1,0 +1,86 @@
+{
+  "actor": "01M6CZXPM3X36SYY79VN2X3SS2",
+  "after": [
+    "01M6CZX6QB2XFND91R08JK8D77"
+  ],
+  "at": "2026-11-02T02:04:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3c66a166 I built go build -o $TMPDIR/rhiza-qa3 ./cmd/rhiza and used it in a scratch repo with a logging fake rex and every RHIZA_* var unset. daemon settings on a fresh repo listed all 8 keys, including rhiza.autonomy.accept = auto (default), and --json gave value auto, source default. daemon set rhiza.autonomy.accept owner then settings showed owner (git config). daemon set rhiza.autonomy.accept maybe exited 2 and left the value at owner. The cycle 1 finding is fixed: with accept unset, an autonomous plan's clean gate accepted its change set, which matches the listed default."
+        },
+        "handle": "daemon-settings-qa-3",
+        "id": "01M6CZZWKV1TPPXZCN3JE9FGY5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6CZZWKV1TPPXZCN3H19QEF7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CZZWKV1TPPXZCN3H19QEF7",
+        "id": "01M6CZZY1QMCZMZATHHDHWB039",
+        "link": "01M6CZZY1QMCZMZATHHA1PG63Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS1WF6WPPJTPC8X1DHYGD8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3c66a166, by hand with the built binary on an autonomous plan run (hold workflow, --no-wait) whose review round was clean: with rhiza.autonomy.accept unset, run gate accepted Serve B one (by the gate: proposed, accepted). After daemon set rhiza.autonomy.accept owner, the same gate left Serve B two proposed, and inbox listed it as waiting for acceptance with next: rhiza accept --rule owner."
+        },
+        "handle": "accept-policy-qa-3",
+        "id": "01M6CZZZDG4S8VGMYJWFA947ZH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6CZZZDG4S8VGMYJWCKX6BG7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CZZZDG4S8VGMYJWCKX6BG7",
+        "id": "01M6D000VPBN44AKFCDHDRS83K",
+        "link": "01M6D000VPBN44AKFCDGM4C330",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWTCJQP64M9ZDHGT7GS7PT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3c66a166, with the built binary and a logging fake rex, after the autonomyStage refactor: with rhiza.autonomy.ship owner, daemon --once started nothing and never called rex, and daemon status said 'Built: ship is set to owner: only the owner starts its run'. With ship auto and signoff owner, daemon --autonomous --once started one run, and rex was called with run start <cs> --permission-mode manual, without --autonomous. accept owner/auto behaved as in accept-policy-qa-3."
+        },
+        "handle": "stage-autonomy-qa-3",
+        "id": "01M6D0024DM260H3V40KVGAPGY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6D0024DM260H3V40JBETQ6X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6D0024DM260H3V40JBETQ6X",
+        "id": "01M6D003BXFTYPXZ4Z3ANPXMZH",
+        "link": "01M6D003BXFTYPXZ4Z3AKRK28G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS1ZKGPVYZ3HAS2EP7Q03Y",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CRZQ0YKB2QV4V5TWY71G4V",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6D005REEJGAD8E0N573YE08",
+  "type": "ops",
+  "v": 1
+}

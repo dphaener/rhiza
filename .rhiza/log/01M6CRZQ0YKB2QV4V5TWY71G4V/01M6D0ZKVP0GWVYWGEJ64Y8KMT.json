@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6D0ACSDE4ECCJBERMCTDGYV"
+  ],
+  "at": "2026-11-02T02:21:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The rebase conflict in runDaemon's start state is resolved by merging origin/main: daemonStartState from main is used with the live settings' max runs, and the settings rows are recorded before the state is first written",
+          "wording": "(arbiter, the orchestrator, under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "live-settings-rebase-resolution",
+        "id": "01M6D0ZHQXWR9XY1KYEGH00X3X",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6D0ZHQXWR9XY1KYEDD56RTD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6D0ZHQXWR9XY1KYEDD56RTD",
+        "id": "01M6D0ZJJ3H7J63Z0FB8JR942S",
+        "link": "01M6D0ZJJ3H7J63Z0FB7CNA7K7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6D0ABE47ZN0RP4KZGW578SE",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6CRZQ0YKB2QV4V5TWY71G4V",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6D0ZKVP0GWVYWGEJ64Y8KMT",
+  "type": "ops",
+  "v": 1
+}

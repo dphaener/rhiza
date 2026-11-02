@@ -76,16 +76,9 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if r.MaxRuns < 0 {
 		return nil, Usagef("--max-runs must be at least 1")
 	}
-	if r.MaxRuns == 0 {
-		r.MaxRuns = daemon.DefaultMaxRuns
-	}
-	minFree := daemon.DefaultMinFree
-	if r.MinFree != "" {
-		v, err := daemon.ParseSize(r.MinFree)
-		if err != nil {
-			return nil, Usagef("--min-free: %v", err)
-		}
-		minFree = v
+	conf, err := daemonConfOf(ctx, r)
+	if err != nil {
+		return nil, err
 	}
 	// Every run the daemon starts is a ship-change run with this mode: one
 	// that run start would refuse is refused here, before any tab opens.
@@ -93,12 +86,20 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := checkAgentSteps(def, r.PermissionMode, "", r.Autonomous, "rhiza describe daemon"); err != nil {
+	if err := checkAgentSteps(def, conf.mode, "", r.Autonomous, "rhiza describe daemon"); err != nil {
 		return nil, err
 	}
 	common, err := gitCommonDir(ctx)
 	if err != nil {
 		return nil, err
+	}
+	// Listen for an interrupt before the lock appears: whoever sees the
+	// lock may signal at once, and that must stop the daemon cleanly.
+	var interrupted <-chan struct{}
+	if !r.Once && ctx.Interrupts != nil {
+		var stop func()
+		interrupted, stop = ctx.Interrupts()
+		defer stop()
 	}
 	lock, err := daemon.TryLock(common, ctx.Now())
 	if err != nil {
@@ -127,7 +128,8 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	rs := run.NewStore(run.Dir(common))
 	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}}
 	pending := map[string]daemonPending{}
-	state, unjournaled := daemonStartState(common, self, ctx.Version, r.MaxRuns, r.Autonomous)
+	state, unjournaled := daemonStartState(common, self, ctx.Version, conf.maxRuns, r.Autonomous)
+	state.Settings = conf.stateRows()
 	// Write it before the first poll, so status matches the lock holder
 	// at once, through a re-exec.
 	daemon.WriteState(common, state)
@@ -145,7 +147,14 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	}()
 	poll := func() error {
 		var skips []daemon.Skip
-		started, resumed, err := daemonPoll1(ctx, rs, pending, unjournaled, r.MaxRuns, minFree, r.Autonomous, r.PermissionMode, &skips)
+		conf, err := daemonConfOf(ctx, r)
+		if err != nil {
+			saveState()
+			return err
+		}
+		minFree := conf.minFree
+		state.MaxRuns, state.Settings = conf.maxRuns, conf.stateRows()
+		started, resumed, err := daemonPoll1(ctx, rs, pending, unjournaled, conf.maxRuns, minFree, r.Autonomous, conf.mode, conf.paused, &skips)
 		if err == nil {
 			state.Skips = skips
 			if low, free := daemonDiskLow(ctx, minFree); !low {
@@ -182,12 +191,6 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		return resp, poll()
 	}
 	reexec := daemonReexec()
-	var interrupted <-chan struct{}
-	if ctx.Interrupts != nil {
-		var stop func()
-		interrupted, stop = ctx.Interrupts()
-		defer stop()
-	}
 	ticks, stopTicks := daemonTicker()
 	defer stopTicks()
 	l, err := daemonLoop(ctx, common, lock, poll, func() int { return len(pending) }, reexec, ticks, interrupted)
@@ -412,7 +415,7 @@ func daemonRunsOf(runs []run.Journal, cs string) int {
 
 // daemonPoll1 picks and starts runs once. pending holds the change sets
 // started; unjournaled those whose start never journaled (see daemonHeld).
-func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, minFree uint64, autonomous bool, mode string, skips *[]daemon.Skip) ([]string, []string, error) {
+func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, minFree uint64, autonomous bool, mode string, paused bool, skips *[]daemon.Skip) ([]string, []string, error) {
 	res, _, _, err := planRead(ctx, "daemon", "")
 	if err != nil {
 		return nil, nil, err
@@ -441,7 +444,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		return ok && c.State == changeset.StateAccepted
 	}
 	var resumable []string
-	if !low {
+	if !low && !paused {
 		resumable = daemon.Resumable(runs, host, nil, rs.Live, accepted, ctx.Now())
 	}
 	for _, id := range resumable {
@@ -480,8 +483,31 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 		return at
 	}}
+	shipMode, err := autonomyStage(ctx, "ship")
+	if err != nil {
+		return nil, resumed, err
+	}
+	signoffMode, err := autonomyStage(ctx, "signoff")
+	if err != nil {
+		return nil, resumed, err
+	}
+	if signoffMode == AutonomyOwner {
+		autonomous = false
+	}
 	var picked []string
-	if low {
+	if paused {
+		var ps []daemon.Skip
+		for _, cs := range cands {
+			ps = append(ps, daemon.Skip{Change: cs, Reason: daemon.SkipPaused})
+		}
+		*skips = append(append(planSkips, unj...), ps...)
+	} else if shipMode == AutonomyOwner {
+		var owner []daemon.Skip
+		for _, cs := range cands {
+			owner = append(owner, daemon.Skip{Change: cs, Reason: daemon.SkipShipOwner})
+		}
+		*skips = append(append(planSkips, unj...), owner...)
+	} else if low {
 		detail := fmt.Sprintf("%s free, under the minimum of %s", daemon.FormatSize(free), daemon.FormatSize(minFree))
 		var low []daemon.Skip
 		for _, cs := range cands {
@@ -644,7 +670,7 @@ type DaemonEvent struct {
 type DaemonSkip struct {
 	Change string   `json:"change" desc:"The change set's ID"`
 	Title  string   `json:"title" desc:"The change set's display title"`
-	Reason string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot or disk-low"`
+	Reason string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low or ship-owner"`
 	Detail []string `json:"detail" desc:"The readiness reasons, when the reason is not-ready; else empty"`
 }
 
@@ -660,6 +686,8 @@ var skipText = map[string]string{
 	daemon.SkipUnjournaled: "its start wrote no journal",
 	daemon.SkipNoSlot:      "waiting for a slot",
 	daemon.SkipDiskLow:     "disk space is low",
+	daemon.SkipPaused:      "paused",
+	daemon.SkipShipOwner:   "ship is set to owner: only the owner starts its run",
 }
 
 // DaemonStatusResponse is the daemon's state. While no daemon holds the
@@ -673,6 +701,7 @@ type DaemonStatusResponse struct {
 	Stopped     string        `json:"stopped,omitempty" desc:"When the last daemon stopped, RFC 3339 UTC; absent while it runs"`
 	MaxRuns     int           `json:"max_runs,omitempty" desc:"How many runs it keeps running at once"`
 	Autonomous  bool          `json:"autonomous" desc:"True when it starts each run with --autonomous"`
+	Settings    []Setting     `json:"settings" desc:"The settings as its last poll read them, each with its source: default, git config or flag"`
 	Runs        []DaemonRun   `json:"runs" desc:"The live runs (running or interrupted) as of its last poll"`
 	LastStarted *DaemonEvent  `json:"last_started,omitempty" desc:"The run it last started; absent if none"`
 	LastResumed *DaemonEvent  `json:"last_resumed,omitempty" desc:"The run it last resumed; absent if none"`
@@ -695,6 +724,17 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 		fmt.Fprintf(w, "Version: %s\n", r.Version)
 	}
 	fmt.Fprintf(w, "Started: %s\nLast poll: %s\nMax runs: %d\nAutonomous: %t\n", r.Started, r.LastPoll, r.MaxRuns, r.Autonomous)
+	for _, s := range r.Settings {
+		if s.Key == "rhiza.daemon.paused" {
+			fmt.Fprintf(w, "Paused: %s\n", map[bool]string{true: "yes", false: "no"}[s.Value == "true"])
+		}
+	}
+	if len(r.Settings) > 0 {
+		fmt.Fprintln(w, "Settings:")
+		for _, s := range r.Settings {
+			fmt.Fprintf(w, "- %s = %s (%s)\n", s.Key, s.Value, s.Source)
+		}
+	}
 	if len(r.Runs) == 0 {
 		fmt.Fprintln(w, "Live runs: none")
 	} else {
@@ -738,7 +778,7 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp := DaemonStatusResponse{Runs: []DaemonRun{}, Skipped: []DaemonSkip{}, Unjournaled: []DaemonEvent{}}
+	resp := DaemonStatusResponse{Settings: []Setting{}, Runs: []DaemonRun{}, Skipped: []DaemonSkip{}, Unjournaled: []DaemonEvent{}}
 	_, resp.Running = daemon.Running(common)
 	st, ok := daemon.ReadState(common)
 	if !ok || (resp.Running && st.Process != daemon.ReadHolder(common)) {
@@ -757,6 +797,9 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 		resp.Stopped = st.Stopped.UTC().Format(time.RFC3339)
 	}
 	resp.MaxRuns, resp.Autonomous = st.MaxRuns, st.Autonomous
+	for _, v := range st.Settings {
+		resp.Settings = append(resp.Settings, Setting{Key: v.Key, Value: v.Value, Source: v.Source, Default: settingDefault(v.Key)})
+	}
 	for _, d := range st.Runs {
 		resp.Runs = append(resp.Runs, DaemonRun{ID: d.ID, Change: d.Change, State: d.State})
 	}

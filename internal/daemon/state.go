@@ -37,14 +37,17 @@ type State struct {
 	Process Holder `json:"process"`
 	// Version is the version of the binary the daemon runs, recorded when
 	// it starts.
-	Version     string    `json:"version,omitempty"`
-	LastPoll    time.Time `json:"last_poll"`
-	Stopped     time.Time `json:"stopped,omitempty"`
-	MaxRuns     int       `json:"max_runs"`
-	Autonomous  bool      `json:"autonomous"`
-	Runs        []LiveRun `json:"runs"`
-	LastStarted *Event    `json:"last_started,omitempty"`
-	LastResumed *Event    `json:"last_resumed,omitempty"`
+	Version  string    `json:"version,omitempty"`
+	LastPoll time.Time `json:"last_poll"`
+	Stopped  time.Time `json:"stopped,omitempty"`
+	MaxRuns  int       `json:"max_runs"`
+	// Settings are the effective settings of the last poll, each with the
+	// source it came from (default, git config or flag).
+	Settings    []SettingValue `json:"settings,omitempty"`
+	Autonomous  bool           `json:"autonomous"`
+	Runs        []LiveRun      `json:"runs"`
+	LastStarted *Event         `json:"last_started,omitempty"`
+	LastResumed *Event         `json:"last_resumed,omitempty"`
 	// Unjournaled are the starts whose run never wrote a journal, by
 	// change set: the daemon does not start them again until the hold
 	// ends, and a daemon that takes over (a re-exec) keeps the holds.
@@ -102,4 +105,11 @@ func ReadState(common string) (State, bool) {
 		return State{}, false
 	}
 	return s, true
+}
+
+// SettingValue is one setting as a poll resolved it.
+type SettingValue struct {
+	Key    string `json:"key"`
+	Value  string `json:"value"`
+	Source string `json:"source"`
 }

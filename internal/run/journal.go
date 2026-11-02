@@ -1089,6 +1089,8 @@ type State struct {
 	// Gated are the plan's change sets the latest gated entry names, by
 	// ID; nil before run gate. They change nothing else in the fold.
 	Gated []string
+	// GatedAt is when the latest gated entry was journalled.
+	GatedAt time.Time
 	// Leaves are the leaves of the leaves steps, in the order their first
 	// entry appears. A new visit of a leaves step starts its leaves anew:
 	// its entered entry drops the step's earlier leaves, except the visit
@@ -1495,7 +1497,7 @@ func (j Journal) State() State {
 				st.Tokens[e.Session] = *e.Tokens
 			}
 		case TypeGated:
-			st.Gated = e.Changes
+			st.Gated, st.GatedAt = e.Changes, e.At
 		case TypeFindings:
 			if e.Check != "" {
 				c := st.check(e)

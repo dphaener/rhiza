@@ -16,6 +16,11 @@ plan auto: the daemon runs a requested plan autonomously; plan owner: it opens t
 
 - derived-from [m22-run-from-rex-ask](../source/m22-run-from-rex-ask.md)
 
+### In
+
+- decided-by [daemon-pause](../capability/rhiza/orchestration/daemon/daemon-pause.md)
+- decided-by [stage-autonomy](../capability/rhiza/orchestration/accept-policy/stage-autonomy.md)
+
 ## History
 
 - `01M6CRZP2E8H6EEEPVDAWAKQ6H` Plan milestone 22: run Rhiza from Rex, the owner's ask of 2026-11-01

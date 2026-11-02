@@ -1,0 +1,81 @@
+# The daemon's settings live in git config, re-read every poll. settings lists
+# each with value and source, set validates and writes one, a flag wins.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+
+exec sh -c 'rhiza change new A --title A --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/a'
+exec rhiza add capability a-leaf
+exec sh -c 'rhiza link $(cat $WORK/a) serves m'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm a
+exec sh -c 'rhiza change new B --title B --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/b'
+exec rhiza add capability b-leaf
+exec sh -c 'rhiza link $(cat $WORK/b) serves m'
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# Every key, default, source default.
+exec rhiza daemon settings
+stdout 'rhiza.daemon.paused = false \(default\)'
+stdout 'rhiza.daemon.maxRuns = 2 \(default\)'
+stdout 'rhiza.daemon.minFree = 10G \(default\)'
+stdout 'rhiza.daemon.permissionMode = "" \(default\)'
+stdout 'rhiza.autonomy.plan = owner \(default\)'
+stdout 'rhiza.autonomy.accept = auto \(default\)'
+stdout 'rhiza.autonomy.ship = auto \(default\)'
+stdout 'rhiza.autonomy.signoff = auto \(default\)'
+
+# set writes git config.
+exec rhiza daemon set rhiza.daemon.maxRuns 1
+exec rhiza daemon settings
+stdout 'rhiza.daemon.maxRuns = 1 \(git config\)'
+exec git config --get rhiza.daemon.maxRuns
+stdout '^1$'
+
+# Unknown key and bad values exit 2 and write nothing.
+! exec rhiza daemon set rhiza.daemon.nope 1
+stderr 'unknown setting'
+! exec rhiza daemon set rhiza.daemon.maxRuns zero
+stderr 'rhiza.daemon.maxRuns'
+! exec rhiza daemon set rhiza.autonomy.ship sometimes
+stderr 'auto or owner'
+! exec rhiza daemon set rhiza.daemon.minFree lots
+exec git config --get rhiza.daemon.maxRuns
+stdout '^1$'
+! exec git config --get rhiza.autonomy.ship
+
+# maxRuns 1 from config: of two ready change sets a poll starts one.
+exec rhiza daemon --permission-mode manual --once
+stdout -count=1 '^Started a run of '
+exec sh -c 'grep -c "run start" $WORK/rex.log'
+stdout '^1$'
+
+# A flag wins over config, and status shows the source.
+exec rhiza daemon --permission-mode manual --max-runs 5 --once
+exec rhiza daemon status
+stdout 'rhiza.daemon.maxRuns = 5 \(flag\)'
+stdout 'rhiza.daemon.permissionMode = manual \(flag\)'
+exec rhiza daemon status --json
+stdout '"source": "flag"'
+
+# Next poll without the flag reads config again.
+exec rhiza daemon --permission-mode manual --once
+exec rhiza daemon status
+stdout 'rhiza.daemon.maxRuns = 1 \(git config\)'
+
+fold-ok
+
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

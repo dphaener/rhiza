@@ -1587,6 +1587,99 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "daemon.set",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "description": "The setting: rhiza.daemon.paused, maxRuns, minFree or permissionMode, or rhiza.autonomy.plan, accept, ship or signoff",
+            "type": "string"
+          },
+          "value": {
+            "description": "The new value: true or false, a whole number, a size, a permission mode, or auto or owner, as the key takes",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "value"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "description": "The setting",
+            "type": "string"
+          },
+          "value": {
+            "description": "The value written",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "value"
+        ],
+        "type": "object"
+      },
+      "summary": "Validate and write one daemon setting to the repo's git config; a running daemon reads it at its next poll",
+      "write": false
+    },
+    {
+      "name": "daemon.settings",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "settings": {
+            "description": "Every setting, in a fixed order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "default": {
+                  "description": "The value when nothing sets it",
+                  "type": "string"
+                },
+                "key": {
+                  "description": "The git config key",
+                  "type": "string"
+                },
+                "source": {
+                  "description": "Where the value comes from: default, git config or flag",
+                  "type": "string"
+                },
+                "value": {
+                  "description": "The effective value",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "default",
+                "key",
+                "source",
+                "value"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "settings"
+        ],
+        "type": "object"
+      },
+      "summary": "List the daemon's settings, each with its value and where it comes from",
+      "write": false
+    },
+    {
       "name": "daemon.status",
       "request": {
         "additionalProperties": false,
@@ -1688,6 +1781,38 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "settings": {
+            "description": "The settings as its last poll read them, each with its source: default, git config or flag",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "default": {
+                  "description": "The value when nothing sets it",
+                  "type": "string"
+                },
+                "key": {
+                  "description": "The git config key",
+                  "type": "string"
+                },
+                "source": {
+                  "description": "Where the value comes from: default, git config or flag",
+                  "type": "string"
+                },
+                "value": {
+                  "description": "The effective value",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "default",
+                "key",
+                "source",
+                "value"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "skipped": {
             "description": "The accepted change sets it did not start at its last poll, each with its reason",
             "items": {
@@ -1705,7 +1830,7 @@ cmp stdout describe.golden.json
                   "type": "array"
                 },
                 "reason": {
-                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot or disk-low",
+                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low or ship-owner",
                   "type": "string"
                 },
                 "title": {
@@ -1765,6 +1890,7 @@ cmp stdout describe.golden.json
           "autonomous",
           "running",
           "runs",
+          "settings",
           "skipped",
           "unjournaled"
         ],
@@ -2128,7 +2254,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap or disk-low",
+                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low or accept",
                   "type": "string"
                 },
                 "next": {

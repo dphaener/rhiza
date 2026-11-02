@@ -1,0 +1,109 @@
+{
+  "actor": "01M6CWY046Z2CZ9F31H3RD4SVM",
+  "after": [
+    "01M6CWX21JAC77NA5G71AR9MAQ"
+  ],
+  "at": "2026-11-02T01:14:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1a7a3961 I built go build -o $TMPDIR/rhiza-x ./cmd/rhiza and used it in a scratch repo with a logging fake rex on PATH and every RHIZA_* var unset. daemon settings listed all 8 keys as default. daemon set with an unknown key, maxRuns 0, ship sometimes, minFree lots, paused maybe or permissionMode 'a b' each exited 2 and wrote no rhiza.* git config key; --dry-run wrote nothing. After daemon set maxRuns 1 and minFree 1G, settings showed both as (git config). With maxRuns 1 in config, daemon --once on two ready change sets started one and skipped the other as waiting for a slot. --max-runs 3 started 3 and status showed maxRuns = 3 (flag). A long-running daemon re-read config every 5s poll: raising maxRuns from 1 to 2 in config started the second run on the next poll. A bad hand-edited value (paused maybe) was logged as 'rhiza: daemon: git config rhiza.daemon.paused is \"maybe\"' and the daemon kept running. daemon --once with a bad value exited 2."
+        },
+        "handle": "daemon-settings-qa-1",
+        "id": "01M6CX4VKARNPFT2JHQK3SYMJQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6CX4VKARNPFT2JHQHWP3MKA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CX4VKARNPFT2JHQHWP3MKA",
+        "id": "01M6CX4WJZCJM7NJK2B2NNR67P",
+        "link": "01M6CX4WJZCJM7NJK2B0J4BSE3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS1WF6WPPJTPC8X1DHYGD8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1a7a3961 I used the built binary in a scratch repo with a fake rex. With rhiza.daemon.paused true, daemon --once on two accepted ready change sets started nothing and never called rex. daemon status printed 'Paused: yes' and skipped both as paused. After daemon set paused false, the next --once started a run. Live: a looping daemon started paused polled with both candidates skipped as paused and no rex call. After daemon set paused false it started a run within one poll, and status showed 'Paused: no'. SIGINT stopped it cleanly, exit 0."
+        },
+        "handle": "daemon-pause-qa-1",
+        "id": "01M6CX4XGZNYRT2ZVD9E9NYQ35",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6CX4XGZNYRT2ZVD9E7RH3Z8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CX4XGZNYRT2ZVD9E7RH3Z8",
+        "id": "01M6CX4YEHN0CW17P08E72SN8K",
+        "link": "01M6CX4YEHN0CW17P08B2AH3VX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS1Y195R6RZEQ6BJEFC1WB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1a7a3961 I used the built binary in a scratch repo with a fake rex. With ship owner, daemon --once started nothing, made no rex call, and status said 'ship is set to owner: only the owner starts its run'. With signoff owner, daemon --autonomous --once sent rex 'run start <cs> --permission-mode manual' without --autonomous; with signoff auto the line ended in --autonomous. On a real autonomous plan run (hold workflow) with clean findings, accept owner made run gate leave the drafted change set proposed with next 'rhiza accept --rule owner'. inbox showed one accept item, 'waiting for acceptance'. Setting accept auto and gating again accepted it, and the accept item was gone."
+        },
+        "handle": "stage-autonomy-qa-1",
+        "id": "01M6CX4ZCVR9PKDM65PCQYGW2R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6CX4ZCVR9PKDM65P9HH1C9C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CX4ZCVR9PKDM65P9HH1C9C",
+        "id": "01M6CX509A6RE145TTVYYH9H6H",
+        "link": "01M6CX509A6RE145TTVWQ6H30A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS1ZKGPVYZ3HAS2EP7Q03Y",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1a7a3961, by hand with the built binary on an autonomous plan run whose review was clean: rhiza.autonomy.accept auto made run gate accept the plan's change set. accept owner left it proposed, and inbox listed it as waiting for acceptance. With accept unset the gate accepted it too, which matches the Decision's default, but daemon settings reports accept = owner (default) (reported as a qa finding)."
+        },
+        "handle": "accept-policy-qa-1",
+        "id": "01M6CX516VDY7ADYRCRE7TSYEQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6CX516VDY7ADYRCRBGQKCFH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CX516VDY7ADYRCRBGQKCFH",
+        "id": "01M6CX5222GEZQ0WPR16AQF7J0",
+        "link": "01M6CX5222GEZQ0WPR14W9B17Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWTCJQP64M9ZDHGT7GS7PT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CRZQ0YKB2QV4V5TWY71G4V",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CX53D8ZTSRH5Y7HDSZZ6RZ",
+  "type": "ops",
+  "v": 1
+}
