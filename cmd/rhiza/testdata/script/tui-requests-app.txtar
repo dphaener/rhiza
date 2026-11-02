@@ -1,0 +1,27 @@
+# The requests app lists the plan requests; --once prints what
+# `rhiza request ls --json` prints, byte for byte, and the app is
+# registered with the launcher.
+
+env REX_SESSION=
+env REX_SERVER=
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza request ls --json
+cp stdout ../want-empty.json
+exec rhiza tui app requests --once
+cmp stdout ../want-empty.json
+
+exec rhiza request 'login fails' --kind bug --json
+exec rhiza request 'dark mode' --json
+exec rhiza request ls --json
+stdout '"kind": "bug"'
+stdout '"kind": "feature"'
+stdout '"state": "queued"'
+cp stdout ../want-two.json
+exec rhiza tui app requests --once
+cmp stdout ../want-two.json
