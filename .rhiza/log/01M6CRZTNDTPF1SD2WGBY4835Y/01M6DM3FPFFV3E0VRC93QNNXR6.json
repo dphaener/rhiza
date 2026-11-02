@@ -1,0 +1,40 @@
+{
+  "actor": "01M6DKR67H6ZDQA2K2Y2ZFJM07",
+  "after": [
+    "01M6CS30APVKG3A6C8MKE553X5"
+  ],
+  "at": "2026-11-02T07:55:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7f3cf020: go test ./cmd/rhiza -run 'TestScripts/(tui-autonomy-app|rex-install)$' passes: --once output cmp-equals `rhiza daemon settings --json` before and after `daemon set rhiza.daemon.maxRuns 3`, and no socket is bound; rex-install greps rhiza_app_autonomy on [\"autonomy\"] = \"y\" with requests q, health t, roadmap b, inbox i unmoved. go test ./internal/tui/autonomyapp passes 9 tests on a fake runner: enter toggles rhiza.autonomy.plan owner->auto via daemon.set -- rhiza.autonomy.plan auto and back, enter toggles paused false->true, maxRuns edit keeps the entry open on a refused 0 and saves 5, d+y when not running execs rex window new -s S1 'rhiza daemon' -c /repo --json -- /bin/rhiza daemon --autonomous, n runs nothing, stop sends kill -TERM to the pid on the same host and refuses another host. A scratch repo with a real build showed daemon set -- rhiza.autonomy.plan auto, then --once reporting value auto from git config. go fmt, vet and test in make check pass; self-check passes with the run env unset (with it set, it only flags render files for this run's live actors)."
+        },
+        "handle": "autonomy-app-verified",
+        "id": "01M6DM3D1PJN35XGEKDR3E02ZN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DM3D1PJN35XGEKDR0JBG3A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DM3D1PJN35XGEKDR0JBG3A",
+        "id": "01M6DM3E2G9QR3DE90BC0SYVQ1",
+        "link": "01M6DM3E2G9QR3DE90B9GRNF4V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS2HRAWMCTPDHFXBHFCX1C",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CRZTNDTPF1SD2WGBY4835Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DM3FPFFV3E0VRC93QNNXR6",
+  "type": "ops",
+  "v": 1
+}
