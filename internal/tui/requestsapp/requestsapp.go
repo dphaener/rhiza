@@ -123,6 +123,12 @@ func (m *Model) Type(s string) {
 	}
 }
 
+// RequestArgs is the argv of a request op for text of kind. The text
+// goes after "--" so text starting with a dash is not read as a flag.
+func RequestArgs(kind, text string) []string {
+	return []string{"--kind", kind, "--", text}
+}
+
 // Submit files the typed text as a request of the chosen kind and closes
 // the entry. Empty text is refused with a notice and the entry stays open.
 func (m *Model) Submit() {
@@ -131,7 +137,7 @@ func (m *Model) Submit() {
 		m.notice = "A request needs its text"
 		return
 	}
-	out, err := m.run("request", []string{text, "--kind", m.kind})
+	out, err := m.run("request", RequestArgs(m.kind, text))
 	if err != nil {
 		m.notice = fmt.Sprintf("rhiza: %v", err)
 		return

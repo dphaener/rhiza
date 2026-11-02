@@ -11,6 +11,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/api"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/tui/requestsapp"
 )
 
 type testRequest struct {
@@ -73,6 +74,21 @@ func TestRequestFromArgs(t *testing.T) {
 				t.Errorf("got %#v, want %#v", got, c.want)
 			}
 		})
+	}
+}
+
+func TestRequestsAppArgsKeepDashLeadingText(t *testing.T) {
+	o, ok := api.Lookup("request")
+	if !ok {
+		t.Fatal("no request op")
+	}
+	got, err := requestFromArgs(o, requestsapp.RequestArgs("bug", "--json output is wrong"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := api.RequestRequest{Text: "--json output is wrong", Kind: "bug"}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %#v, want %#v", got, want)
 	}
 }
 

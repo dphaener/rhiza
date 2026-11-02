@@ -2,6 +2,7 @@ package requestsapp
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -24,11 +25,10 @@ func (f *fake) run(op string, args []string) ([]byte, error) {
 	case "request.ls":
 		return json.Marshal(api.RequestLsResponse{Requests: append([]api.RequestInfo{}, f.reqs...)})
 	case "request":
-		kind := "feature"
-		if len(args) == 3 && args[1] == "--kind" {
-			kind = args[2]
+		if len(args) != 4 || args[0] != "--kind" || args[2] != "--" {
+			return nil, fmt.Errorf("unexpected request args %q", args)
 		}
-		q := api.RequestInfo{ID: "R" + string(rune('1'+len(f.reqs))), Kind: kind, Text: args[0], State: "queued"}
+		q := api.RequestInfo{ID: "R" + string(rune('1'+len(f.reqs))), Kind: args[1], Text: args[3], State: "queued"}
 		f.reqs = append(f.reqs, q)
 		return json.Marshal(api.RequestResponse{Request: q})
 	case "run.open":
@@ -86,6 +86,17 @@ func TestFilesBugAndFeatureFromTypedText(t *testing.T) {
 		if !strings.Contains(v, want) {
 			t.Errorf("view lacks %q:\n%s", want, v)
 		}
+	}
+}
+
+func TestDashLeadingTextIsFiledAsText(t *testing.T) {
+	f := &fake{}
+	m := NewModel(f.run)
+	key(m, "b")
+	typeText(m, "--json output is wrong")
+	key(m, "enter")
+	if m.Typing() || len(f.reqs) != 1 || f.reqs[0].Text != "--json output is wrong" || f.reqs[0].Kind != "bug" {
+		t.Fatalf("dash-leading bug not filed: typing=%v reqs=%+v calls=%q", m.Typing(), f.reqs, f.calls)
 	}
 }
 
