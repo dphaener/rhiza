@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6D136NTSN7HXQZN0Z2KE01C"
+  ],
+  "at": "2026-11-02T02:23:28Z",
+  "body": {
+    "reason": "Picked by the orchestrator for milestone 23, a gap found resolving a conflict by hand; accepted on the owner's behalf",
+    "rule": "owner"
+  },
+  "change_set": "01M6D12NNWQZHEWFBX60JS04AG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6D137QFSHJNBS2QHE12VSSR",
+  "type": "accept",
+  "v": 1
+}
