@@ -197,6 +197,23 @@ exec cmp $WORK/log.before $WORK/log.after
 exec rhiza ls --kind question --json
 stdout '"handle": "rebase-conflict-ship-two"'
 
+# A question raised before it blocked its change set (no blocks link)
+# gains the link when the conflict is raised again; no second question is
+# added.
+exec sh -c 'rhiza unlink $(rhiza show rebase-conflict-ship-two --json | grep -A2 "\"links_out\"" | sed -n "s/.*\"id\": \"\\([0-9A-Z]*\\)\".*/\\1/p") --change 01M5PWGEF85Y185JZ2ZGCNH40N'
+stdout '^- link [0-9A-Z]{26}$'
+exec rhiza show rebase-conflict-ship-two --json
+! stdout '"type": "blocks"'
+! exec rhiza ship rebase
+stdout '^Raised question rebase-conflict-ship-two\.$'
+exec rhiza show rebase-conflict-ship-two --json
+stdout '"type": "blocks"'
+exec rhiza ls --kind question --json
+stdout -count=1 '"handle": "rebase-conflict-ship-two'
+exec rhiza inbox --json
+stdout '"blocks": "this change set"'
+fold-ok
+
 # The owner answers it with --change.
 exec rhiza question answer rebase-conflict-ship-two 'Keep main' --change 01M5PWGEF85Y185JZ2ZGCNH40N
 fold-ok
