@@ -1,0 +1,40 @@
+{
+  "actor": "01M6DM6VWMXM8RXA27DZ0DBZWQ",
+  "after": [
+    "01M6DM3FPFFV3E0VRC93QNNXR6"
+  ],
+  "at": "2026-11-02T08:03:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 2f4d0eb2, go test ./internal/tui/inboxapp -run Nudge -v passes TestNudgeSendsCarryOn (on the stalled item, n calls session.pane then session.message SESSN1 with the carry-on text), TestNudgeEscapesUsageLimitPromptFirst (pane with usage_limit true: session.pane, session.key escape, then session.message) and TestNudgeOnlyOnStalled (n on a failed item makes no calls), all on a fake runner. TestPaneUsageLimit in claudecode passes (only the last 15 pane lines count). gofmt is clean and go test ./... passes. Read the diff: n is handled only for api.InboxStalled, session.pane captures the pane with rex capture and asks the adapter through the optional PaneLimiter, session.key accepts only escape or enter and sends it with rex send-key. make self-check fails on a stale .rhiza/rendered for actor claude-code-daace8aa, the same failure as at parent 5318fc77, so this leaf did not cause it."
+        },
+        "handle": "inbox-nudge-stalled-verified",
+        "id": "01M6DMJ4P62YBA9TDTJKWGFMC7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DMJ4P62YBA9TDTJJ4BYES1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DMJ4P62YBA9TDTJJ4BYES1",
+        "id": "01M6DMJ5GW1N1C1FF6AT15ZGJT",
+        "link": "01M6DMJ5GW1N1C1FF6APCKG6AE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS2KAT7R41TVN9WFDEFBRF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CRZTNDTPF1SD2WGBY4835Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DMJ6VPYQSM1HHR8GR2KFDQ",
+  "type": "ops",
+  "v": 1
+}

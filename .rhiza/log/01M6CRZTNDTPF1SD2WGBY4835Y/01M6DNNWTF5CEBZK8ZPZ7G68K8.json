@@ -1,0 +1,40 @@
+{
+  "actor": "01M6DN3T64E7DEBM5RT97MZB12",
+  "after": [
+    "01M6DMT7HTMSXCPW3T6KKAK4D7"
+  ],
+  "at": "2026-11-02T08:23:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1a5e3269 (fix for QA f1): go test ./internal/tui/autonomyapp -count=1 -v passes all 10 tests, including plan owner->auto via daemon.set -- rhiza.autonomy.plan auto, paused toggle, maxRuns edit, start via rex window new -s S1 'rhiza daemon' -c /repo --keep-open --json -- /bin/rhiza daemon --autonomous with notice 'Starting' then 'The daemon is running' once status shows running, and the new TestStartReportsDaemonThatNeverRuns which reports 'did not start: its error is in the Rex tab' only after StartChecks reloads. go test ./cmd/rhiza -run 'TestScripts/(tui-autonomy-app|rex-install)$' passes (--once prints settings JSON; rhiza_app_autonomy on key y, no key moved). rex window new --help confirms --keep-open exists. make fmt-check vet test exit 0; make self-check fails only on stale .rhiza/rendered files from this run's model writes, no code issue. Diff read: start no longer claims success before daemon.status shows running."
+        },
+        "handle": "autonomy-app-verified-2",
+        "id": "01M6DNNT8WJ5NVEGAXSZQGEAZD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DNNT8WJ5NVEGAXSXZPPPFF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DNNT8WJ5NVEGAXSXZPPPFF",
+        "id": "01M6DNNV80GED2R2BY74CC3WE7",
+        "link": "01M6DNNV80GED2R2BY711HXBXH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS2HRAWMCTPDHFXBHFCX1C",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CRZTNDTPF1SD2WGBY4835Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DNNWTF5CEBZK8ZPZ7G68K8",
+  "type": "ops",
+  "v": 1
+}

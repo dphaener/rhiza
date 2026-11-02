@@ -1,0 +1,53 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6DPJTZGJBN23QHSMCWAX23J"
+  ],
+  "at": "2026-11-02T08:52:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "2a619abb4401e2fedd18be1de1f195f7043d00d9",
+          "pr": "https://github.com/dphaener/rhiza/pull/195",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #195 (https://github.com/dphaener/rhiza/pull/195) passed CI at 2a619ab",
+          "status": "verified"
+        },
+        "handle": "pr-195-autonomy-app",
+        "id": "01M6DQAWJ62EJS3JTACN83WP9M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DQAWJ62EJS3JTACHA6NJV2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DQAWJ62EJS3JTACHA6NJV2",
+        "id": "01M6DQAXCV936WTGVD2FGHYEM8",
+        "link": "01M6DQAXCV936WTGVD2E59A8CE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS2HRAWMCTPDHFXBHFCX1C",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6DQAWJ62EJS3JTACHA6NJV2",
+        "id": "01M6DQAY7P16FNXRS136Q2NYPW",
+        "link": "01M6DQAY7P16FNXRS1356V94EJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS2KAT7R41TVN9WFDEFBRF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CRZTNDTPF1SD2WGBY4835Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DQAZJPJWK2V0ZAD5YPXNVJ",
+  "type": "ops",
+  "v": 1
+}

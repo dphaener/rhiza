@@ -1,0 +1,28 @@
+# The autonomy app lists the daemon settings; --once prints what
+# `rhiza daemon settings --json` prints, byte for byte, and the app is
+# registered with the launcher. It never dials Rex or binds a socket.
+
+env REX_SESSION=
+env REX_SERVER=
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza daemon settings --json
+cp stdout ../want-default.json
+exec rhiza tui app autonomy --once
+cmp stdout ../want-default.json
+stdout '"key": "rhiza.autonomy.plan"'
+
+exec rhiza daemon set rhiza.daemon.maxRuns 3
+exec rhiza daemon settings --json
+cp stdout ../want-set.json
+exec rhiza tui app autonomy --once
+cmp stdout ../want-set.json
+stdout '"source": "git config"'
+
+exec find $WORK -type s
+! stdout .

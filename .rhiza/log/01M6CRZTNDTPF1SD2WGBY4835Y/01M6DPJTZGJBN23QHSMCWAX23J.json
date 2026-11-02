@@ -1,0 +1,63 @@
+{
+  "actor": "01M6DPB1DQFHFH2WCV3V17BDQK",
+  "after": [
+    "01M6DPAEQYBGGEE8B3X2JPKRGZ"
+  ],
+  "at": "2026-11-02T08:39:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7f653b81 (after fix 1a5e3269), built rhiza to a scratch path and ran `rhiza tui app autonomy` live in a Rex window over a fresh scratch repo, driven with rex send-key. With permissionMode unset, d then y said 'Starting the daemon in the Rex tab rhiza daemon', then within one reload 'The daemon did not start: its error is in the Rex tab rhiza daemon'; that tab stayed open showing the daemon's 'no permission mode' error (the cycle-1 QA finding is fixed). Edited permissionMode to acceptEdits in place (source became git config); d y then showed 'The daemon is running in the Rex tab rhiza daemon' with header 'Daemon running, process Mac.localdomain:54983'; d y again sent TERM, the process was gone and the header said 'Daemon not running'. Enter toggled paused false->true and plan owner->auto, both from git config. go test autonomyapp and TestScripts/(tui-autonomy-app|rex-install) pass."
+        },
+        "handle": "autonomy-app-qa-2",
+        "id": "01M6DPJQ2HAJXJ1P4523T6F53A",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DPJQ2HAJXJ1P45205MKRJZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DPJQ2HAJXJ1P45205MKRJZ",
+        "id": "01M6DPJQXK5EFV2GY2EYG7C6D0",
+        "link": "01M6DPJQXK5EFV2GY2EVGRPR2T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS2HRAWMCTPDHFXBHFCX1C",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7f653b81, with the built binary against this live run session in Rex: `rhiza session pane <own session> --json` returned the pane's real text (the Claude Code prompt and status line) with usage_limit false; `rhiza session key <session> escape --dry-run --json` returned dry_run true and sent nothing; key 'tab' was refused ('want escape or enter', exit 2). Escape into a live agent pane and the inbox app's n on a real stalled item were not run (no stalled session to use without disrupting a live agent), so the escape-then-message order rests on go test ./internal/tui/inboxapp, ./internal/api and TestScripts/session-pane-key, all passing."
+        },
+        "handle": "inbox-nudge-stalled-qa-2",
+        "id": "01M6DPJRRNDRFKV2P4SHYTAFS5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DPJRRNDRFKV2P4SFZM81YE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DPJRRNDRFKV2P4SFZM81YE",
+        "id": "01M6DPJSKY9T13W398XYSHXD4J",
+        "link": "01M6DPJSKY9T13W398XXM4JS4R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS2KAT7R41TVN9WFDEFBRF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CRZTNDTPF1SD2WGBY4835Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DPJTZGJBN23QHSMCWAX23J",
+  "type": "ops",
+  "v": 1
+}

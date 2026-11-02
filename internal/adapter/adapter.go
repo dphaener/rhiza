@@ -239,3 +239,10 @@ func Names() []string {
 	sort.Strings(names)
 	return names
 }
+
+// PaneLimiter is the optional part of an adapter that reads the text of the
+// agent's terminal pane: whether it shows the agent parked on a usage-limit
+// prompt that a key press dismisses. It is pure.
+type PaneLimiter interface {
+	PaneUsageLimit(pane string) bool
+}

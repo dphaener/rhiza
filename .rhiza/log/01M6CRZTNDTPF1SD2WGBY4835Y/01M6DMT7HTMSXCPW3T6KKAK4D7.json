@@ -1,0 +1,63 @@
+{
+  "actor": "01M6DMK38SX6PV6ADJV4G0767C",
+  "after": [
+    "01M6DMJ6VPYQSM1HHR8GR2KFDQ"
+  ],
+  "at": "2026-11-02T08:08:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 69611388, built rhiza to a scratch path and ran it in a scratch repo. `rhiza tui app autonomy --once` cmp-equals `rhiza daemon settings --json`. Ran the live app in a Rex window and drove it with rex send-key: enter on rhiza.daemon.paused set it true (source git config); enter on rhiza.autonomy.plan toggled owner->auto and back; editing maxRuns to 0 was refused inline ('must be a whole number of at least 1') with the entry kept open, then 5 saved; permissionMode edited as a word. d then n did nothing; d then y opened a Rex tab named 'rhiza daemon' and, with permissionMode acceptEdits, the header became 'Daemon running, process Mac.localdomain:79345'; d then y again sent TERM and the process was gone, header 'Daemon not running'. With permissionMode unset (the default) or 'default', d y still printed 'Started the daemon' while `rhiza daemon --autonomous` exited at once with a permission-mode error and its tab closed (reported as a finding). go test ./internal/tui/autonomyapp and TestScripts/(tui-autonomy-app|rex-install|describe-golden) pass."
+        },
+        "handle": "autonomy-app-qa-1",
+        "id": "01M6DMT3KRWWVGZ4ZE2B3XNRRG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DMT3KRWWVGZ4ZE28T4T1D0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DMT3KRWWVGZ4ZE28T4T1D0",
+        "id": "01M6DMT4F01QJVV0X2V4Y96SQS",
+        "link": "01M6DMT4F01QJVV0X2V10CNHCZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS2HRAWMCTPDHFXBHFCX1C",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 69611388, with the built binary: `rhiza session key ZZZZ tab` refuses with 'want escape or enter' (exit 2); `rhiza session pane ZZZZ` says no session matches (exit 4); `rhiza describe session.key` documents escape/enter. Reading or pressing keys in a live agent pane was not run (driving a live session's terminal was not permitted in this QA session), so the pane/escape/message order rests on go test ./internal/tui/inboxapp (pass) and TestPaneUsageLimit (pass) plus reading the diff: n acts only on stalled items, calls session.pane, session.key escape when usage_limit, then session.message."
+        },
+        "handle": "inbox-nudge-stalled-qa-1",
+        "id": "01M6DMT5AP9NFMDDQ2MY5D04YW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DMT5AP9NFMDDQ2MTHCGQJ9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DMT5AP9NFMDDQ2MTHCGQJ9",
+        "id": "01M6DMT662YAYZKN58FHDK5XG5",
+        "link": "01M6DMT662YAYZKN58FFMSNYF7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS2KAT7R41TVN9WFDEFBRF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CRZTNDTPF1SD2WGBY4835Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DMT7HTMSXCPW3T6KKAK4D7",
+  "type": "ops",
+  "v": 1
+}

@@ -775,3 +775,17 @@ func TestUsageLimitIgnoresModelTurns(t *testing.T) {
 		}
 	}
 }
+
+func TestPaneUsageLimit(t *testing.T) {
+	a := Adapter{}
+	if !a.PaneUsageLimit("work\nClaude usage limit reached|1700000000\n> ") {
+		t.Fatal("limit prompt not seen")
+	}
+	if !a.PaneUsageLimit("You've hit your limit · resets 3pm\n") {
+		t.Fatal("hit-your-limit not seen")
+	}
+	old := "hit your limit\n" + strings.Repeat("later work\n", 30)
+	if a.PaneUsageLimit(old) || a.PaneUsageLimit("all fine") {
+		t.Fatal("false positive")
+	}
+}

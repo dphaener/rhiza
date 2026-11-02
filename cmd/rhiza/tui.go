@@ -15,6 +15,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/api"
 	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/tui/autonomyapp"
 	"github.com/dphaener/rhiza/internal/tui/changesapp"
 	"github.com/dphaener/rhiza/internal/tui/healthapp"
 	"github.com/dphaener/rhiza/internal/tui/inboxapp"
@@ -57,8 +58,9 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 	isLive := name == liveapp.Name
 	isHealth := name == healthapp.Name
 	isRequests := name == requestsapp.Name
+	isAutonomy := name == autonomyapp.Name
 	write, isWrite := writeapps.Lookup(name)
-	if !isRead && !isWrite && !isInbox && !isRoadmap && !isLive && !isHealth && !isRequests {
+	if !isRead && !isWrite && !isInbox && !isRoadmap && !isLive && !isHealth && !isRequests && !isAutonomy {
 		return writeError(stdout, stderr, api.NotFoundf("unknown app %q", name), false)
 	}
 	once, confirm := false, false
@@ -119,9 +121,26 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 			return call(op, false, false, args)
 		}, nil)
 	}
+	autonomyModel := func() *autonomyapp.Model {
+		am := autonomyapp.NewModel(func(op string, args []string) ([]byte, error) {
+			return call(op, false, false, args)
+		})
+		if ctx, err := newCtx(g, os.Stdin, getenv); err == nil {
+			am.SetStarter(autonomyapp.DefaultStarter(autonomyapp.Starter{
+				Exec: func(name string, args []string, dir string) ([]byte, error) {
+					return ctx.Exec(name, args, dir, nil)
+				},
+				Self: ctx.Self, Root: ctx.Root, RexSession: ctx.RexSession,
+			}))
+		}
+		return am
+	}
 	var m tea.Model
 	var result func() ([]byte, error)
 	switch {
+	case isAutonomy:
+		am := autonomyModel()
+		m, result = am, am.Result
 	case isInbox:
 		im := inboxModel()
 		m, result = im, im.Result
@@ -137,6 +156,8 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 				return inboxModel(), nil
 			case liveapp.Name:
 				return liveModel(), nil
+			case autonomyapp.Name:
+				return autonomyModel(), nil
 			}
 			return nil, api.NotFoundf("unknown app %q", app)
 		})

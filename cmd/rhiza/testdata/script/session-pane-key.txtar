@@ -1,0 +1,87 @@
+# session pane reads a session's terminal with `rex capture` and asks the
+# session's adapter whether it shows the agent parked at a usage-limit
+# prompt; session key presses escape or enter in it with `rex send-key`,
+# and refuses every other key. The fake rex logs its argv, prints a window
+# for `window new` and the contents of $WORK/pane for `capture`.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza change new 'Pick a palette for the dashboard' --title Palette --json
+exec git add -A
+exec git commit -qm init
+
+exec rhiza session start --permission-mode manual --json
+stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+stdout '"block": "block:b1"'
+
+# A pane that ends at the usage-limit message reads as parked there.
+cp $WORK/limited.txt $WORK/pane
+exec rhiza session pane 158fe87f --json
+stdout '"session": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+stdout '"usage_limit": true'
+stdout 'Claude usage limit reached'
+exec grep -c '^capture -b block:b1$' $WORK/rex.log
+stdout '^1$'
+exec rhiza session pane 158fe87f
+stdout '^The session is parked at a usage-limit prompt\.$'
+
+# A pane without it does not.
+cp $WORK/fine.txt $WORK/pane
+exec rhiza session pane 158fe87f --json
+stdout '"usage_limit": false'
+stdout 'all fine'
+exec rhiza session pane 158fe87f
+! stdout 'usage-limit'
+
+# Escape and enter are pressed in the session's block.
+exec rhiza session key 158fe87f escape
+stdout '^Pressed escape in session 158fe87f-5cf3-4ff0-ae50-01a16dc84988$'
+exec rhiza session key 158fe87f ENTER --json
+stdout '"key": "enter"'
+exec grep -c '^send-key -b block:b1 escape$' $WORK/rex.log
+stdout '^1$'
+exec grep -c '^send-key -b block:b1 enter$' $WORK/rex.log
+stdout '^1$'
+
+# A dry run sends nothing.
+exec rhiza session key 158fe87f escape --dry-run
+stdout '^Would press escape in session 158fe87f-5cf3-4ff0-ae50-01a16dc84988$'
+exec grep -c '^send-key' $WORK/rex.log
+stdout '^2$'
+
+# Any other key is a usage error, exit 2, and sends nothing; an unknown
+# session is not_found, exit 4.
+exec sh -c 'rhiza session key 158fe87f tab --json; echo exit=$?'
+stdout '"code": "usage"'
+stdout '^exit=2$'
+exec sh -c 'rhiza session key deadbeef enter --json; echo exit=$?'
+stdout '"code": "not_found"'
+stdout '^exit=4$'
+exec sh -c 'rhiza session pane deadbeef --json; echo exit=$?'
+stdout '"code": "not_found"'
+stdout '^exit=4$'
+exec grep -c '^send-key' $WORK/rex.log
+stdout '^2$'
+
+fold-ok
+
+-- limited.txt --
+working on it
+Claude usage limit reached|1700000000
+>
+-- fine.txt --
+all fine
+>
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+case "$1 $2" in
+"window new") echo '{"window_id":"window:w1","block_ids":["block:b1"]}' ;;
+esac
+case "$1" in
+capture) cat "$WORK/pane" ;;
+esac
