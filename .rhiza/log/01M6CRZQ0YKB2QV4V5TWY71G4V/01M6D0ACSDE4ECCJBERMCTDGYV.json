@@ -1,0 +1,29 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6D005REEJGAD8E0N573YE08"
+  ],
+  "at": "2026-11-02T02:09:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rebasing branch cs/live-daemon-settings onto origin/main conflicts outside the rendered files, so ship-change stopped. How should these conflicts be resolved: internal/api/daemon.go?"
+        },
+        "handle": "rebase-conflict-live-daemon-settings",
+        "id": "01M6D0ABE47ZN0RP4KZKZYTEDT",
+        "key": null,
+        "kind": "question",
+        "node": "01M6D0ABE47ZN0RP4KZGW578SE",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6CRZQ0YKB2QV4V5TWY71G4V",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6D0ACSDE4ECCJBERMCTDGYV",
+  "type": "ops",
+  "v": 1
+}
