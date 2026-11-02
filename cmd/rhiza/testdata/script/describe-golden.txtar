@@ -1702,6 +1702,33 @@ cmp stdout describe.golden.json
             "description": "True when it starts each run with --autonomous",
             "type": "boolean"
           },
+          "hooks": {
+            "description": "The notify and event commands the daemon took at start, each with its source: daemon flag, git config or unset",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "command": {
+                  "description": "The command, run through sh -c; empty when unset",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "The hook: notify or event",
+                  "type": "string"
+                },
+                "source": {
+                  "description": "Where it is set: daemon flag, git config or unset",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "command",
+                "name",
+                "source"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "last_poll": {
             "description": "When it last polled, RFC 3339 UTC",
             "type": "string"
@@ -1896,6 +1923,7 @@ cmp stdout describe.golden.json
         },
         "required": [
           "autonomous",
+          "hooks",
           "running",
           "runs",
           "settings",
@@ -2299,6 +2327,53 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "Report the daemon, autonomy settings, free disk, the main checkout, inbox, queued requests, roadmap and rhiza check, each part ok, warn or bad; exit 1 when any part is bad",
+      "write": false
+    },
+    {
+      "name": "hook.ls",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "hooks": {
+            "description": "The notify hook, then the event hook",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "command": {
+                  "description": "The command, run through sh -c; empty when unset",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "The hook: notify or event",
+                  "type": "string"
+                },
+                "source": {
+                  "description": "Where it is set: daemon flag, git config or unset",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "command",
+                "name",
+                "source"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "hooks"
+        ],
+        "type": "object"
+      },
+      "summary": "List the notify and event hook commands, each with its command and source: daemon flag (from a live daemon), git config or unset",
       "write": false
     },
     {

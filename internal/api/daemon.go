@@ -117,23 +117,14 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if ctx.Stderr != nil {
 		fmt.Fprintf(ctx.Stderr, "rhiza: daemon running, process %s\n", self)
 	}
-	notifyCmd := strings.TrimSpace(r.NotifyCommand)
-	if notifyCmd == "" && ctx.Git != nil {
-		if out, err := ctx.Git("config", "--get", "rhiza.notifyCommand"); err == nil {
-			notifyCmd = strings.TrimSpace(out)
-		}
-	}
-	eventCmd := strings.TrimSpace(r.EventCommand)
-	if eventCmd == "" && ctx.Git != nil {
-		if out, err := ctx.Git("config", "--get", "rhiza.eventCommand"); err == nil {
-			eventCmd = strings.TrimSpace(out)
-		}
-	}
+	hooks := resolveHooks(ctx, r.NotifyCommand, r.EventCommand)
+	notifyCmd, eventCmd := hookCommand(hooks, HookNotify), hookCommand(hooks, HookEvent)
 	rs := run.NewStore(run.Dir(common))
 	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}, Planned: []string{}}
 	pending := map[string]daemonPending{}
 	state, unjournaled := daemonStartState(common, self, ctx.Version, conf.maxRuns, r.Autonomous)
 	state.Settings = conf.stateRows()
+	state.Hooks = hooks
 	// Write it before the first poll, so status matches the lock holder
 	// at once, through a re-exec.
 	daemon.WriteState(common, state)
@@ -224,6 +215,7 @@ func daemonStartState(common string, self daemon.Holder, version string, maxRuns
 		state.Notified = prev.Notified
 		state.Hooked = prev.Hooked
 		state.Events, state.EventsSeeded = prev.Events, prev.EventsSeeded
+		state.Hooks = prev.Hooks
 		state.DiskLow = prev.DiskLow
 		// A re-exec, or a restart, keeps the holds of the daemon before.
 		unjournaled = daemonRestoreUnjournaled(prev.Unjournaled)
@@ -729,6 +721,7 @@ type DaemonStatusResponse struct {
 	LastStarted *DaemonEvent  `json:"last_started,omitempty" desc:"The run it last started; absent if none"`
 	LastResumed *DaemonEvent  `json:"last_resumed,omitempty" desc:"The run it last resumed; absent if none"`
 	Skipped     []DaemonSkip  `json:"skipped" desc:"The accepted change sets it did not start at its last poll, each with its reason"`
+	Hooks       []HookRow     `json:"hooks" desc:"The notify and event commands the daemon took at start, each with its source: daemon flag, git config or unset"`
 	Unjournaled []DaemonEvent `json:"unjournaled" desc:"The runs it started that never wrote a journal, by change set and when; it starts these again 15 minutes after the start, or sooner when a run of the change set journals"`
 }
 
@@ -757,6 +750,9 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 		for _, s := range r.Settings {
 			fmt.Fprintf(w, "- %s = %s (%s)\n", s.Key, s.Value, s.Source)
 		}
+	}
+	for _, h := range r.Hooks {
+		fmt.Fprintf(w, "Hook %s: %s\n", h.Name, h.text())
 	}
 	if len(r.Runs) == 0 {
 		fmt.Fprintln(w, "Live runs: none")
@@ -801,7 +797,7 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp := DaemonStatusResponse{Settings: []Setting{}, Runs: []DaemonRun{}, Skipped: []DaemonSkip{}, Unjournaled: []DaemonEvent{}}
+	resp := DaemonStatusResponse{Settings: []Setting{}, Runs: []DaemonRun{}, Skipped: []DaemonSkip{}, Hooks: []HookRow{}, Unjournaled: []DaemonEvent{}}
 	_, resp.Running = daemon.Running(common)
 	st, ok := daemon.ReadState(common)
 	if !ok || (resp.Running && st.Process != daemon.ReadHolder(common)) {
@@ -822,6 +818,9 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 	resp.MaxRuns, resp.Autonomous = st.MaxRuns, st.Autonomous
 	for _, v := range st.Settings {
 		resp.Settings = append(resp.Settings, Setting{Key: v.Key, Value: v.Value, Source: v.Source, Default: settingDefault(v.Key)})
+	}
+	for _, h := range st.Hooks {
+		resp.Hooks = append(resp.Hooks, HookRow{Name: h.Name, Command: h.Command, Source: h.Source})
 	}
 	for _, d := range st.Runs {
 		resp.Runs = append(resp.Runs, DaemonRun{ID: d.ID, Change: d.Change, State: d.State})
