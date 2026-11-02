@@ -67,6 +67,7 @@ type ShowNode struct {
 	LinksOut []ShowNodeLink             `json:"links_out" desc:"The links from it, live and retired, sorted by ID"`
 	LinksIn  []ShowNodeLink             `json:"links_in" desc:"The links to it, live and retired, sorted by ID"`
 	Children []ShowChild                `json:"children" desc:"The nodes directly under it, live and retired, in tree order"`
+	Notes    []ShowNote                 `json:"notes" desc:"The live notes that discuss it, oldest first"`
 }
 
 // ShowPathStep is one ancestor of a node.
@@ -168,7 +169,7 @@ func showNodeOf(r *reader, e *showEnds, n gmodel.Node) (ShowNode, error) {
 		ID: n.ID, Kind: n.Kind, Handle: n.Handle, Retired: n.Retired, Reason: n.Reason,
 		Version: n.Version, Created: n.Created,
 		Path: []ShowPathStep{}, Fields: map[string]json.RawMessage{},
-		LinksOut: []ShowNodeLink{}, LinksIn: []ShowNodeLink{}, Children: []ShowChild{},
+		LinksOut: []ShowNodeLink{}, LinksIn: []ShowNodeLink{}, Children: []ShowChild{}, Notes: []ShowNote{},
 	}
 	if n.Kind == op.KindEvidence {
 		a, err := showCreator(r, n)
@@ -217,6 +218,9 @@ func showNodeOf(r *reader, e *showEnds, n gmodel.Node) (ShowNode, error) {
 	}
 	for _, c := range cs {
 		sn.Children = append(sn.Children, ShowChild{ID: c.ID, Kind: c.Kind, Handle: c.Handle, Retired: c.Retired})
+	}
+	if sn.Notes, err = showNotes(r, n.ID, sn.LinksIn); err != nil {
+		return ShowNode{}, err
 	}
 	return sn, nil
 }
@@ -388,4 +392,5 @@ func (r ShowResponse) Human(w io.Writer) {
 			fmt.Fprintf(w, "- %s %s (%s)%s\n", c.Kind, c.Handle, shortID(c.ID), showLinkSuffix("", c.Retired))
 		}
 	}
+	writeNotes(w, n.Notes)
 }

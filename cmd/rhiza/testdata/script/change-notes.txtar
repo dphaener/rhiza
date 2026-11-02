@@ -36,3 +36,18 @@ stdout '"code": "usage"'
 ! exec rhiza note add 01M5PWGEF85Y185JZ2ZGCNH40N 'Hello' --op 01ZZZZZZZZZZZZZZZZZZZZZZZZ
 stderr 'not an operation of change set'
 fold-ok
+
+# show lists a node's notes, oldest first, with actor and time; change show
+# lists the change set's.
+exec rhiza note add store 'Second thought.'
+exec rhiza show store
+stdout '(?s)## Notes.*Is the log append-only\?.*Second thought\.'
+stdout '(?m)^- [0-9A-Z]{8,} by \S+ at 20[0-9-]+T[0-9:]+Z: Is the log'
+exec rhiza show store --json
+stdout '"notes": \['
+exec rhiza change show
+stdout '(?s)## Notes.*Please split this\.'
+stdout '(?s)Please split this\..*About this op\.'
+stdout 'by \S+ at 20'
+exec rhiza change show --json
+stdout '"text": "Please split this\."'

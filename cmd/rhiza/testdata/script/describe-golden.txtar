@@ -1267,6 +1267,42 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "notes": {
+            "description": "The live notes that discuss it, oldest first",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "actor": {
+                  "description": "Who wrote it: the actor's handle (its ID when it has none)",
+                  "type": "string"
+                },
+                "at": {
+                  "description": "When it was written (RFC 3339, UTC)",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The note's ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "op": {
+                  "description": "The operation of the change set the note is about, if it names one",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "text": {
+                  "description": "The note",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "text"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "ops": {
             "description": "The current operations, as canonical op JSON, in change set order",
             "items": {},
@@ -1319,6 +1355,7 @@ cmp stdout describe.golden.json
           "intent",
           "kind",
           "leaves",
+          "notes",
           "ops",
           "problems",
           "serves",
@@ -19758,6 +19795,42 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "notes": {
+                "description": "The live notes that discuss it, oldest first",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "actor": {
+                      "description": "Who wrote it: the actor's handle (its ID when it has none)",
+                      "type": "string"
+                    },
+                    "at": {
+                      "description": "When it was written (RFC 3339, UTC)",
+                      "type": "string"
+                    },
+                    "id": {
+                      "description": "The note's ID",
+                      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                      "type": "string"
+                    },
+                    "op": {
+                      "description": "The operation of the change set the note is about, if it names one",
+                      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                      "type": "string"
+                    },
+                    "text": {
+                      "description": "The note",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "text"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "path": {
                 "description": "Its ancestors in the tree, the root first; empty for a root or a kind outside the tree",
                 "items": {
@@ -19804,6 +19877,7 @@ cmp stdout describe.golden.json
               "kind",
               "links_in",
               "links_out",
+              "notes",
               "path",
               "retired",
               "version"

@@ -232,6 +232,7 @@ type ChangeShowResponse struct {
 	History      []LifecycleEvent   `json:"history" desc:"The lifecycle entries that applied, in causal order"`
 	Problems     []string           `json:"problems" desc:"Everything wrong with its entries"`
 	Changes      ChangeDiffResponse `json:"changes" desc:"The change set's field-level diff, as change.diff reports it"`
+	Notes        []ShowNote         `json:"notes" desc:"The live notes that discuss it, oldest first"`
 }
 
 // ChangeLeaf is one leaf of a change set.
@@ -311,6 +312,7 @@ func runChangeShow(ctx *Ctx, req any) (any, error) {
 		History:      []LifecycleEvent{},
 		Problems:     foldProblems(problems),
 		Changes:      buildChangeDiff(cs, changeset.BuildDiff(w.changeSets(), cs)),
+		Notes:        changeNotes(w, m, cs),
 	}
 	for _, m := range c.Lifecycle {
 		resp.History = append(resp.History, LifecycleEvent{Type: m.Type, Entry: m.Entry,
@@ -392,6 +394,7 @@ func (r ChangeShowResponse) Human(w io.Writer) {
 	writeProblems(w, r.Problems)
 	fmt.Fprintf(w, "\n## Changes\n\n")
 	r.Changes.Human(w)
+	writeNotes(w, r.Notes)
 }
 
 // changeLeaves finds the leaves among the capabilities that ops create, as
