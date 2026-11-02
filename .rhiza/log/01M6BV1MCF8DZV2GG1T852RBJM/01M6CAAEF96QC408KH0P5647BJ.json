@@ -1,0 +1,40 @@
+{
+  "actor": "01M6C9QKVX1SHNK28KS6HDAAT3",
+  "after": [
+    "01M6BV30SR1W7AKQW2M0ZEPHVN"
+  ],
+  "at": "2026-11-01T19:45:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 06603574 ran go test ./cmd/rhiza -run 'TestScripts/(daemon-event-hook|describe-golden|daemon-notify-hook|daemon-notify)$' -count=1: all PASS. daemon-event-hook.txtar uses a fake hook.sh appending stdin plus RHIZA_EVENT:RHIZA_EVENT_CHANGE:ENTRY:TITLE to a file and checks: first --once on a log already holding a propose writes nothing; after propose and accept one --once writes two lines, proposed then accepted, and a second --once writes none; a propose committed in a second clone and pulled fires exactly once; git config rhiza.eventCommand is used without the flag; a command exiting 1 is logged once as 'event command for entry <ULID>: exit status 1 ... boom' and the next poll does not rerun it; 'sleep 30' with a 200ms timeout is logged as 'event command for entry ... timed out after 200ms'. Regenerating describe-golden with -update left the tree clean (event_command is in it). Read the diff: daemonEvents sorts lifecycle moves by entry ID, seeds on first run, records each move before running so failures are not retried, and shares runHookCommand with the notify hook. make check exits 0."
+        },
+        "handle": "event-hook-daemon-verified",
+        "id": "01M6CAAC5Y8N9108JFMVRYE46C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6CAAC5Y8N9108JFMRQRT3MB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CAAC5Y8N9108JFMRQRT3MB",
+        "id": "01M6CAAD2BZEK6K9EYEVG6YX69",
+        "link": "01M6CAAD2BZEK6K9EYESHGV74R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BV2VY4YA51SRD25ZF3S09M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6BV1MCF8DZV2GG1T852RBJM",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CAAEF96QC408KH0P5647BJ",
+  "type": "ops",
+  "v": 1
+}
