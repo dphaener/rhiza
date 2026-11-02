@@ -1,0 +1,39 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6DGK1XJBW5FTVDK1KQMDBTH"
+  ],
+  "at": "2026-11-02T07:06:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rebasing branch cs/health-app onto origin/main conflicts outside the rendered files, so ship-change stopped. How should these conflicts be resolved: cmd/rhiza/tui.go?"
+        },
+        "handle": "rebase-conflict-health-app",
+        "id": "01M6DH90V2Q3TR4Y4BWGN2RG25",
+        "key": null,
+        "kind": "question",
+        "node": "01M6DH90V2Q3TR4Y4BWFFECXBE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DH90V2Q3TR4Y4BWFFECXBE",
+        "id": "01M6DH91XETQCNSC8NAW8BYZB7",
+        "link": "01M6DH91XETQCNSC8NARTT057Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CRZSRFQ94MAJ8CRTEE44P2",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6CRZSRFQ94MAJ8CRTEE44P2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DH9380DVGVYR6RTB2HXES5",
+  "type": "ops",
+  "v": 1
+}
