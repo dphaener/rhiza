@@ -122,7 +122,8 @@ cmp stdout describe.golden.json
               "evidence",
               "source",
               "actor",
-              "anchor"
+              "anchor",
+              "note"
             ],
             "type": "string"
           },
@@ -245,7 +246,8 @@ cmp stdout describe.golden.json
                         "evidence",
                         "source",
                         "actor",
-                        "anchor"
+                        "anchor",
+                        "note"
                       ],
                       "type": "string"
                     },
@@ -404,7 +406,8 @@ cmp stdout describe.golden.json
                         "discovered-from",
                         "implements",
                         "verifies",
-                        "observes"
+                        "observes",
+                        "discusses"
                       ],
                       "type": "string"
                     }
@@ -5779,7 +5782,8 @@ cmp stdout describe.golden.json
               "discovered-from",
               "implements",
               "verifies",
-              "observes"
+              "observes",
+              "discusses"
             ],
             "type": "string"
           }
@@ -6071,7 +6075,8 @@ cmp stdout describe.golden.json
                 "evidence",
                 "source",
                 "actor",
-                "anchor"
+                "anchor",
+                "note"
               ],
               "type": "string"
             },
@@ -16917,7 +16922,8 @@ cmp stdout describe.golden.json
                 "evidence",
                 "source",
                 "actor",
-                "anchor"
+                "anchor",
+                "note"
               ],
               "type": "string"
             },

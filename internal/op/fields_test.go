@@ -102,3 +102,14 @@ func TestEveryFieldInRepoLogIsKnown(t *testing.T) {
 		t.Error("walked the log and found no node fields")
 	}
 }
+
+func TestNoteFields(t *testing.T) {
+	for _, f := range []string{"statement", "op"} {
+		if !FieldKnown(KindNote, f) {
+			t.Errorf("note field %s unknown", f)
+		}
+	}
+	if FieldKnown(KindNote, "bogus") {
+		t.Error("bogus known")
+	}
+}

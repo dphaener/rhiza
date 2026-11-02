@@ -48,7 +48,7 @@ func init() {
 // LinkRequest creates a link.
 type LinkRequest struct {
 	From     string `json:"from" arg:"0" desc:"The node or change set the link starts at: an ID, a unique ID prefix of 4+ characters, or a live node's handle"`
-	Type     string `json:"type" arg:"1" enum:"serves,constrains,exempts,depends-on,relates-to,decided-by,answers,blocks,supersedes,derived-from,discovered-from,implements,verifies,observes" desc:"What the link says"`
+	Type     string `json:"type" arg:"1" enum:"serves,constrains,exempts,depends-on,relates-to,decided-by,answers,blocks,supersedes,derived-from,discovered-from,implements,verifies,observes,discusses" desc:"What the link says"`
 	To       string `json:"to" arg:"2" desc:"The node or change set the link ends at"`
 	Note     string `json:"note,omitempty" desc:"Why; required on relates-to and exempts"`
 	Decision string `json:"decision,omitempty" desc:"The decision node behind an exempts link (exempts only, required there)"`

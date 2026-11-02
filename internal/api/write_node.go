@@ -74,7 +74,7 @@ func init() {
 
 // AddRequest adds a node.
 type AddRequest struct {
-	Kind       string   `json:"kind" arg:"0" enum:"intent,capability,constraint,decision,question,evidence,source,actor,anchor" desc:"The node's kind"`
+	Kind       string   `json:"kind" arg:"0" enum:"intent,capability,constraint,decision,question,evidence,source,actor,anchor,note" desc:"The node's kind"`
 	Handle     string   `json:"handle" arg:"1" desc:"The node's handle: lower-case words joined by single dashes, unique among live nodes"`
 	Parent     string   `json:"parent,omitempty" desc:"The parent node (capabilities and intents only, same kind); default a root"`
 	Before     string   `json:"before,omitempty" desc:"Place it just before this sibling"`

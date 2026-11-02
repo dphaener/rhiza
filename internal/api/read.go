@@ -575,6 +575,7 @@ var linkBackNames = map[op.LinkType]string{
 	op.LinkImplements:     "implemented by",
 	op.LinkVerifies:       "verified by",
 	op.LinkObserves:       "observed by",
+	op.LinkDiscusses:      "discussed by",
 }
 
 // backName is link type t read backwards, for a link shown at its To end;

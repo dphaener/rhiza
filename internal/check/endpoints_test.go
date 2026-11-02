@@ -47,6 +47,8 @@ func expect(t op.LinkType, from, to End) bool {
 		return is(from, op.KindEvidence) && is(to, op.KindCapability)
 	case op.LinkObserves:
 		return is(from, op.KindEvidence) && is(to, op.KindAnchor)
+	case op.LinkDiscusses:
+		return is(from, op.KindNote)
 	}
 	return false
 }
@@ -150,5 +152,18 @@ func TestAllowedRows(t *testing.T) {
 				t.Errorf("Allowed(%s, %s, %s) = %v, want %v", c.t, c.from, c.to, got, c.want)
 			}
 		})
+	}
+}
+
+func TestDiscusses(t *testing.T) {
+	for _, to := range Ends() {
+		if !Allowed(op.LinkDiscusses, NodeEnd(op.KindNote), to) {
+			t.Errorf("note discusses %s refused", to)
+		}
+	}
+	for _, from := range Ends() {
+		if from != NodeEnd(op.KindNote) && Allowed(op.LinkDiscusses, from, NodeEnd(op.KindCapability)) {
+			t.Errorf("%s discusses capability allowed", from)
+		}
 	}
 }

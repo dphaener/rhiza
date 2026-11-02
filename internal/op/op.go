@@ -54,7 +54,7 @@ func Types() []Type {
 // Kind is what a node is.
 type Kind string
 
-// The nine node kinds.
+// The ten node kinds.
 const (
 	KindIntent     Kind = "intent"
 	KindCapability Kind = "capability"
@@ -65,11 +65,12 @@ const (
 	KindSource     Kind = "source"
 	KindActor      Kind = "actor"
 	KindAnchor     Kind = "anchor"
+	KindNote       Kind = "note"
 )
 
-// Kinds returns the nine node kinds in their documented order.
+// Kinds returns the ten node kinds in their documented order.
 func Kinds() []Kind {
-	return []Kind{KindIntent, KindCapability, KindConstraint, KindDecision, KindQuestion, KindEvidence, KindSource, KindActor, KindAnchor}
+	return []Kind{KindIntent, KindCapability, KindConstraint, KindDecision, KindQuestion, KindEvidence, KindSource, KindActor, KindAnchor, KindNote}
 }
 
 // HasParent reports whether nodes of kind k sit in a tree, with a parent
@@ -81,7 +82,7 @@ func HasParent(k Kind) bool {
 // LinkType is what a link says about its endpoints.
 type LinkType string
 
-// The fourteen link types.
+// The fifteen link types.
 const (
 	LinkServes         LinkType = "serves"
 	LinkConstrains     LinkType = "constrains"
@@ -97,12 +98,13 @@ const (
 	LinkImplements     LinkType = "implements"
 	LinkVerifies       LinkType = "verifies"
 	LinkObserves       LinkType = "observes"
+	LinkDiscusses      LinkType = "discusses"
 )
 
-// LinkTypes returns the fourteen link types in their documented order.
+// LinkTypes returns the fifteen link types in their documented order.
 func LinkTypes() []LinkType {
 	return []LinkType{LinkServes, LinkConstrains, LinkExempts, LinkDependsOn, LinkRelatesTo, LinkDecidedBy, LinkAnswers,
-		LinkBlocks, LinkSupersedes, LinkDerivedFrom, LinkDiscoveredFrom, LinkImplements, LinkVerifies, LinkObserves}
+		LinkBlocks, LinkSupersedes, LinkDerivedFrom, LinkDiscoveredFrom, LinkImplements, LinkVerifies, LinkObserves, LinkDiscusses}
 }
 
 // Op is one operation. It is a single flat struct: each type uses the fields

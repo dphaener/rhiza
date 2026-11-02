@@ -26,7 +26,7 @@ and landed. Code and model move together: the model says what the code is for an
 | user, team, owner, role | actor |
 | ticket, PR scope, piece of work | change set (its tasks belong to the work layer, not the model) |
 
-Kinds: intent, capability, constraint, decision, question, evidence, source, actor, anchor.
+Kinds: intent, capability, constraint, decision, question, evidence, source, actor, anchor, note.
 Nodes have a handle (lower-case words joined by dashes) and fields (`statement` is the usual one).
 Refer to a node by handle, ID, or a unique ID prefix of 4+ characters.
 

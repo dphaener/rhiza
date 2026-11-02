@@ -16,6 +16,7 @@ var knownFields = map[Kind][]string{
 	KindSource:   {"quotes", "raw_sha256", "session", "summary", "title"},
 	KindActor:    {"agent", "email", "for", "model", "name", "role", "session"},
 	KindAnchor:   {},
+	KindNote:     {"op", "statement"},
 }
 
 // KnownFields returns the sorted field names a node of kind k may carry, or

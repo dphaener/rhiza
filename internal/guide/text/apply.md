@@ -23,11 +23,11 @@ order, and later items may refer to handles added by earlier ones. Unknown keys 
 
 - `fields` is a list of `"name=text"`; `json_fields` a list of `"name=<json>"`. Field names
   are `^[a-z][a-z0-9_]*$`. `statement` is the usual main field.
-- `kind`: intent, capability, constraint, decision, question, evidence, source, actor, anchor.
+- `kind`: intent, capability, constraint, decision, question, evidence, source, actor, anchor, note.
   Only capabilities and intents take a `parent` (of the same kind).
 - A ref is a handle, an ID, or a unique ID prefix of 4+ characters.
 - Link types: serves, constrains, exempts, depends-on, relates-to, decided-by, answers,
-  blocks, supersedes, derived-from, discovered-from, implements, verifies, observes.
+  blocks, supersedes, derived-from, discovered-from, implements, verifies, observes, discusses.
   `relates-to` and `exempts` need a `note`; `exempts` needs a `decision`.
 - Common links: anything `decided-by` a decision; a decision `answers` a question; a question
   `blocks` a capability; a capability `serves` an intent; a constraint `constrains` a

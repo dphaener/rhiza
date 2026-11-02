@@ -52,7 +52,7 @@ const (
 // SearchRequest is the text to find and how to page the hits.
 type SearchRequest struct {
 	Text   string   `json:"text" arg:"0" desc:"The words to find; every word must start a word of the handle or of a field"`
-	Kinds  []string `json:"kinds,omitempty" flag:"kind" enum:"intent,capability,constraint,decision,question,evidence,source,actor,anchor" desc:"Keep the nodes of this kind; repeat for several; default every kind"`
+	Kinds  []string `json:"kinds,omitempty" flag:"kind" enum:"intent,capability,constraint,decision,question,evidence,source,actor,anchor,note" desc:"Keep the nodes of this kind; repeat for several; default every kind"`
 	Limit  int      `json:"limit,omitempty" desc:"The most hits to return, 1 to 200; default 20"`
 	Cursor string   `json:"cursor,omitempty" desc:"Where to go on: the next_cursor of the page before"`
 	View   string   `json:"view,omitempty" desc:"as-is, to-be or what-if:<change set>; default follows the effective change set"`

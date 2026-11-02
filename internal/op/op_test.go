@@ -236,10 +236,10 @@ func TestEnumerations(t *testing.T) {
 	if got := Types(); !reflect.DeepEqual(got, []Type{"node.create", "node.update", "node.move", "node.retire", "link.create", "link.retire"}) {
 		t.Fatalf("Types = %v", got)
 	}
-	if got := Kinds(); !reflect.DeepEqual(got, []Kind{"intent", "capability", "constraint", "decision", "question", "evidence", "source", "actor", "anchor"}) {
+	if got := Kinds(); !reflect.DeepEqual(got, []Kind{"intent", "capability", "constraint", "decision", "question", "evidence", "source", "actor", "anchor", "note"}) {
 		t.Fatalf("Kinds = %v", got)
 	}
-	if got := LinkTypes(); !reflect.DeepEqual(got, []LinkType{"serves", "constrains", "exempts", "depends-on", "relates-to", "decided-by", "answers", "blocks", "supersedes", "derived-from", "discovered-from", "implements", "verifies", "observes"}) {
+	if got := LinkTypes(); !reflect.DeepEqual(got, []LinkType{"serves", "constrains", "exempts", "depends-on", "relates-to", "decided-by", "answers", "blocks", "supersedes", "derived-from", "discovered-from", "implements", "verifies", "observes", "discusses"}) {
 		t.Fatalf("LinkTypes = %v", got)
 	}
 	for _, k := range Kinds() {
