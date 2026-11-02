@@ -461,8 +461,25 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 		return at
 	}}
+	shipMode, err := autonomyStage(ctx, "ship", AutonomyAuto)
+	if err != nil {
+		return nil, resumed, err
+	}
+	signoffMode, err := autonomyStage(ctx, "signoff", AutonomyAuto)
+	if err != nil {
+		return nil, resumed, err
+	}
+	if signoffMode == AutonomyOwner {
+		autonomous = false
+	}
 	var picked []string
-	if low {
+	if shipMode == AutonomyOwner {
+		var owner []daemon.Skip
+		for _, cs := range cands {
+			owner = append(owner, daemon.Skip{Change: cs, Reason: daemon.SkipShipOwner})
+		}
+		*skips = append(append(planSkips, unj...), owner...)
+	} else if low {
 		detail := fmt.Sprintf("%s free, under the minimum of %s", daemon.FormatSize(free), daemon.FormatSize(minFree))
 		var low []daemon.Skip
 		for _, cs := range cands {
@@ -625,7 +642,7 @@ type DaemonEvent struct {
 type DaemonSkip struct {
 	Change string   `json:"change" desc:"The change set's ID"`
 	Title  string   `json:"title" desc:"The change set's display title"`
-	Reason string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot or disk-low"`
+	Reason string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low or ship-owner"`
 	Detail []string `json:"detail" desc:"The readiness reasons, when the reason is not-ready; else empty"`
 }
 
@@ -641,6 +658,7 @@ var skipText = map[string]string{
 	daemon.SkipUnjournaled: "its start wrote no journal",
 	daemon.SkipNoSlot:      "waiting for a slot",
 	daemon.SkipDiskLow:     "disk space is low",
+	daemon.SkipShipOwner:   "ship is set to owner: only the owner starts its run",
 }
 
 // DaemonStatusResponse is the daemon's state. While no daemon holds the

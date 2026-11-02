@@ -75,6 +75,7 @@ const (
 	InboxOverlap  = "overlap"
 	InboxStalled  = "stalled"
 	InboxDiskLow  = "disk-low"
+	InboxAccept   = "accept"
 )
 
 // InboxRequest takes nothing.
@@ -83,7 +84,7 @@ type InboxRequest struct{}
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
 	ID             string `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap or disk-low"`
+	Kind           string `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low or accept"`
 	At             string `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
 	Run            string `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker and an overlap"`
 	Change         string `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)"`
@@ -206,6 +207,16 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 		// A run another process holds is still going: its questions wait on
 		// the owner, but it is neither at sign-off nor interrupted.
 		live := locked(j.ID)
+		// An autonomous plan run's gate left these proposed because the
+		// accept setting is owner: each waits for acceptance.
+		if st.Autonomous && !retried {
+			for _, g := range st.Gated {
+				if state, ok := changeState(g); ok && state == string(changeset.StateProposed) {
+					add(InboxAccept, g, st.GatedAt, InboxItem{Detail: "waiting for acceptance", Next: ownerAcceptNext(g)})
+					items[len(items)-1].Change = g
+				}
+			}
+		}
 		switch {
 		case st.Ended:
 			if st.Result != run.Failed || st.Abandoned() || retried || gone(st.Change) {

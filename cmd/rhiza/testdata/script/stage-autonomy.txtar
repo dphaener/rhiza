@@ -1,0 +1,109 @@
+# The autonomy settings in git config govern the stages. ship owner: the daemon
+# leaves a ready change set unstarted, skip reason ship-owner. signoff owner:
+# it starts run start without --autonomous. accept owner: an autonomous plan's
+# gate leaves the drafts proposed and the inbox lists an accept item for each;
+# accept auto accepts them. Rex is faked and only logs.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+
+exec sh -c 'rhiza change new Built --title Built --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/built'
+exec rhiza add capability built-leaf
+exec sh -c 'rhiza link $(cat $WORK/built) serves m'
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# A value that is neither auto nor owner is refused.
+exec git config rhiza.autonomy.ship sometimes
+! exec rhiza daemon --permission-mode manual --once
+stderr 'rhiza.autonomy.ship'
+stderr 'auto or owner'
+! exists $WORK/rex.log
+
+# ship owner: nothing starts, and status says why.
+exec git config rhiza.autonomy.ship owner
+exec rhiza daemon --permission-mode manual --once
+! stdout 'Started'
+! exists $WORK/rex.log
+exec rhiza daemon status --json
+stdout '"reason": "ship-owner"'
+exec rhiza daemon status
+stdout 'Built: ship is set to owner'
+
+# ship auto again, signoff owner: the run starts without --autonomous.
+exec git config rhiza.autonomy.ship auto
+exec git config rhiza.autonomy.signoff owner
+exec rhiza daemon --permission-mode manual --autonomous --once
+stdout -count=1 '^Started a run of '
+exec sh -c 'grep -c "run start [0-9A-Z]* --permission-mode manual$" $WORK/rex.log'
+stdout '^1$'
+exec sh -c '! grep -e --autonomous $WORK/rex.log'
+
+# signoff auto: --autonomous reaches the run.
+exec rm $WORK/rex.log
+exec rm .git/rhiza/daemon.state.json
+exec git config rhiza.autonomy.signoff auto
+exec rhiza daemon --permission-mode manual --autonomous --once
+stdout -count=1 '^Started a run of '
+exec sh -c 'grep -c -e "--permission-mode manual --autonomous$" $WORK/rex.log'
+stdout '^1$'
+
+# accept owner: an autonomous plan's gate leaves the drafts proposed.
+exec rhiza change new 'Plan B' --kind record --title 'Plan B' --json
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/rb'
+exec rhiza add intent want-b
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/before'
+mkdir .rhiza/workflows
+cp $WORK/hold.toml .rhiza/workflows/hold.toml
+exec rhiza run start --workflow hold --autonomous --no-wait
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runb'
+exec rhiza land
+exec sh -c 'rhiza change new "Serve B one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/b1'
+exec sh -c 'rhiza link $(cat $WORK/b1) serves want-b'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runb) rhiza run findings $WORK/clean.json'
+exec git config rhiza.autonomy.accept owner
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runb) rhiza run gate --json; echo exit=$?'
+stdout '^exit=0$'
+exec sh -c 'rhiza change show $(cat $WORK/b1) --json'
+stdout '"state": "proposed"'
+exec rhiza inbox --json
+stdout -count=1 '"kind": "accept"'
+exec sh -c 'rhiza inbox --json | grep -c "\"change\": \"$(cat $WORK/b1)\""'
+stdout '^1$'
+exec rhiza inbox
+stdout 'waiting for acceptance'
+
+# accept auto: the same gate again accepts.
+exec git config rhiza.autonomy.accept auto
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runb) rhiza run gate --json; echo exit=$?'
+stdout '^exit=0$'
+exec sh -c 'rhiza change show $(cat $WORK/b1) --json'
+stdout '"state": "accepted"'
+exec rhiza inbox --json
+! stdout '"kind": "accept"'
+
+fold-ok
+
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- hold.toml --
+name = "hold"
+
+[step.gate]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
+-- clean.json --
+{"findings":[]}

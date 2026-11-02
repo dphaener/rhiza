@@ -1316,6 +1316,23 @@ func runRunGate(ctx *Ctx, _ any) (any, error) {
 		}
 		return resp, nil
 	}
+	acceptMode, err := autonomyStage(ctx, "accept", AutonomyAuto)
+	if err != nil {
+		return nil, err
+	}
+	if acceptMode == AutonomyOwner {
+		// rhiza.autonomy.accept is owner: the proposals stay for the owner,
+		// and the inbox lists each as waiting for acceptance.
+		for i, g := range resp.ChangeSets {
+			if g.State == changeset.StateProposed {
+				resp.ChangeSets[i].Next = ownerAcceptNext(g.ID)
+			}
+		}
+		if err := gateCommitResp(ctx, &resp, rr.change); err != nil {
+			return nil, err
+		}
+		return resp, nil
+	}
 	accept, _ := Lookup("accept")
 	for i, g := range resp.ChangeSets {
 		if g.State != changeset.StateProposed {

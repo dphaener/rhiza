@@ -1705,7 +1705,7 @@ cmp stdout describe.golden.json
                   "type": "array"
                 },
                 "reason": {
-                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot or disk-low",
+                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low or ship-owner",
                   "type": "string"
                 },
                 "title": {
@@ -2128,7 +2128,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap or disk-low",
+                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low or accept",
                   "type": "string"
                 },
                 "next": {
