@@ -20,6 +20,7 @@ A plan request is a line in a per-clone queue under .git/rhiza (requests.json), 
 
 - decided-by [plan-requests](../capability/rhiza/orchestration/daemon/plan-requests.md)
 - decided-by [roadmap-new-work-requests](../capability/rhiza/orchestration/daemon/plan-requests/roadmap-new-work-requests.md)
+- decided-by [request-queue](../capability/rhiza/orchestration/daemon/plan-requests/request-queue.md)
 
 ## History
 

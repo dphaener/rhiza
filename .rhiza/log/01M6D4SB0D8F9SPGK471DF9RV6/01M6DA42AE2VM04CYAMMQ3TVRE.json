@@ -1,0 +1,40 @@
+{
+  "actor": "01M6D9RPWWKTR052AZEB4A1MQD",
+  "after": [
+    "01M6D4T35443S9HYBCGN81ZB38"
+  ],
+  "at": "2026-11-02T05:01:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ebe38c10 (code landed in #191, the leaf commit records the builder's actor and render) I ran go test ./cmd/rhiza -run 'TestScripts/(plan-requests|describe-golden)$' -count=1: ok. I read plan-requests.txtar: with a fake rex it queues a feature, a bug and a milestone that request ls shows queued; paused, daemon --once starts nothing; unpaused it starts run start --workflow plan --new with the request's text, 'Fix: Login fails' for the bug and --milestone for the milestone, --autonomous only after rhiza.autonomy.plan auto; request ls then shows planning with the run, and once the run's journal names the planned change set request ls shows planned with it. go test ./internal/tui/roadmapapp -run NewWork -v passed: n and m call the request operation with --kind feature or milestone and open no rex tab, and cmd/rhiza/tui.go routes that runner through the same op registry as rhiza request. describe-golden.txtar holds request and request.ls and passes unchanged. make check exited 0."
+        },
+        "handle": "request-queue-verified",
+        "id": "01M6DA406V4DK910SMH5NH3795",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DA406V4DK910SMH4ET3KAB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DA406V4DK910SMH4ET3KAB",
+        "id": "01M6DA4110NR6W2P4BT39A5B89",
+        "link": "01M6DA4110NR6W2P4BT23ZWM0V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6D4SYDB1P7NX7DGKT0D19HM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6D4SB0D8F9SPGK471DF9RV6",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DA42AE2VM04CYAMMQ3TVRE",
+  "type": "ops",
+  "v": 1
+}
