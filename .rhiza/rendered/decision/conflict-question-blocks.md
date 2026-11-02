@@ -16,6 +16,10 @@ ship rebase raises its rebase-conflict question together with a blocks link from
 
 - derived-from [m23-orchestrator-picks](../source/m23-orchestrator-picks.md)
 
+### In
+
+- decided-by [conflict-question-blocks-change](../capability/rhiza/workflows/workflow-runs/rebase-when-behind/conflict-question-blocks-change.md)
+
 ## History
 
 - `01M6D12MQKVB82JNS8JR91K4FC` Plan milestone 23: answer a conflict from the inbox

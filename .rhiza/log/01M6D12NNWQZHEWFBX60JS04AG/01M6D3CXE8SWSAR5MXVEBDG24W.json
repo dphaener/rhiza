@@ -1,0 +1,40 @@
+{
+  "actor": "01M6D2W7Q0Z9SG8Y9B4ER8626D",
+  "after": [
+    "01M6D2D1SC3Z7QRAH4JRMRBH3B"
+  ],
+  "at": "2026-11-02T03:03:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 642735de I read the leaf diffs (9394ffd1: shipRaiseQuestion adds a blocks link from the raised question to the change set, and an existing identical question without the link gains it; 642735de: the test drops the link and re-raises). go test ./cmd/rhiza -run TestScripts/run-ship-change-rebase -count=1 passed. Case 2 of that script has a code conflict on feature.txt and asserts: the question shows a blocks link; rhiza inbox --json lists it as kind blocker with blocks 'this change set'; raising again on the same conflict leaves the .rhiza/log bytes unchanged; after unlinking, raising again restores the link with only one question; rhiza question answer rebase-conflict-ship-two 'Keep main' --change <cs> exits 0 and folds clean. make fmt-check vet test exit 0. make self-check fails only on stale rendered actor files from the review run's chore commits, not on this leaf."
+        },
+        "handle": "conflict-question-blocks-change-verified-2",
+        "id": "01M6D3CVB63BQX9NQ7VQ80H6SD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6D3CVB63BQX9NQ7VKMDE0XW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6D3CVB63BQX9NQ7VKMDE0XW",
+        "id": "01M6D3CW4P2M6M7PARWTBNSZE9",
+        "link": "01M6D3CW4P2M6M7PARWQ5GYBBJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6D133EKJDM0ACMC374VY9PK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6D12NNWQZHEWFBX60JS04AG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6D3CXE8SWSAR5MXVEBDG24W",
+  "type": "ops",
+  "v": 1
+}
