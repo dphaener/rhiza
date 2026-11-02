@@ -1,0 +1,40 @@
+{
+  "actor": "01M6DYPPJN40SDTW2DZXWFYQVQ",
+  "after": [
+    "01M6DZ3ETK3GV0AWY35051CP0T"
+  ],
+  "at": "2026-11-02T11:12:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At commit 363a99f8 I ran go test ./internal/op ./internal/check -run 'TestRunNote|TestNoteOps|TestDiscusses|TestNoteFields' -v -count=1 and all passed. TestRunNote (internal/check) folds a log where a note discusses a capability and its own change set, and Run reports OK with no findings. A capability discussing a note gives one RuleLink fail ('\"discusses\" does not go from capability to note'). TestNoteOps (internal/op) decodes, validates and round-trips a note node.create and a discusses link.create. TestNoteFields covers knownFields[note] = op, statement. Reading the diff of 3727472c: describe-golden.txtar is updated, guide apply.md and rhiza.md list note among the kinds and discusses among the link types, and the op.go counts say ten kinds and fifteen link types. make check exited 0. This fixes attempt-1 finding f1."
+        },
+        "handle": "note-kind-verified",
+        "id": "01M6DZBJ9DB091QYS2MS86Y96J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DZBJ9DB091QYS2MR699RFW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DZBJ9DB091QYS2MR699RFW",
+        "id": "01M6DZBN15RGHKEMAWVZN3Y2FJ",
+        "link": "01M6DZBN15RGHKEMAWVYZDT1R5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZWB6CR3ERK0Z0DSVVVPEP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6BVTCJCSG1JKEERK7Y3ACYJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DZBTEF35RW4SKN466SGH1H",
+  "type": "ops",
+  "v": 1
+}
