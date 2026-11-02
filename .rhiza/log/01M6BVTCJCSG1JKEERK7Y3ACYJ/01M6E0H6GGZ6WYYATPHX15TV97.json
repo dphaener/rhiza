@@ -1,0 +1,86 @@
+{
+  "actor": "01M6DZWGVAEKT2ND52NF8H5HXG",
+  "after": [
+    "01M6DZVKSBMSCMJWKVZCHKGEJK"
+  ],
+  "at": "2026-11-02T11:32:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 071ed6b8, binary built with go build into a scratch dir, run in a fresh git repo with RHIZA_ROOT/CHANGE/RUN/ACTOR unset. rhiza note add store '...' wrote one entry (node note-store plus a link) and exited 0; note add <change set id> wrote a note and exited 0; note add <change set id> --op <its node.create op> exited 0; note add nonesuch exited 2 with 'no node or change set \"nonesuch\"'; --op 01ZZZZZZZZZZZZZZZZZZZZZZZZ exited 2 with 'is not an operation of change set'; render then rhiza check printed ok (exit 0). make check exit 0."
+        },
+        "handle": "note-add-qa-1",
+        "id": "01M6E0H0P7Q0C1WJXS7BTE5ZMS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6E0H0P7Q0C1WJXS7BQ1CSEA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6E0H0P7Q0C1WJXS7BQ1CSEA",
+        "id": "01M6E0H1HA6NWWMJFQRZ3XYYP6",
+        "link": "01M6E0H1HA6NWWMJFQRWHE8GY3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZWDXPERND94DYYXHTQ8WK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 071ed6b8, binary built with go build into a scratch dir, run in a fresh git repo with RHIZA_ROOT/CHANGE/RUN/ACTOR unset. change show --json listed a node.create of kind note with its body in fields.statement and a link of type discusses from the note to the capability; a note on a change set with --op carried op in change show --json; apply of a discusses link from capability store to a note exited 2 with 'link type \"discusses\" does not go from capability to note'; rhiza guide lists note among the kinds; describe --json documents discusses; rhiza check clean. make check exit 0."
+        },
+        "handle": "note-kind-qa-1",
+        "id": "01M6E0H2CEWBPJY4Z70PZT6D4K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6E0H2CEWBPJY4Z70MVB75GW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6E0H2CEWBPJY4Z70MVB75GW",
+        "id": "01M6E0H37M030TY3370FQ6KGRW",
+        "link": "01M6E0H37M030TY3370CKEWJN7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZWB6CR3ERK0Z0DSVVVPEP",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 071ed6b8, binary built with go build into a scratch dir, run in a fresh git repo with RHIZA_ROOT/CHANGE/RUN/ACTOR unset. After two notes on capability store and two on the change set (one with --op), rhiza show store printed a Notes section with 'Is the log append-only?' then 'Second thought.', each as '- <id> by darin-haener at 2026-11-02T11:22:..Z: <text>'; show store --json had node.notes with actor, at, id, text in that order. rhiza change show printed both change-set notes in order, the second marked '(on op 01M6DZXGM8GHA7)'; change show --json notes carried actor, at, id, op, text."
+        },
+        "handle": "notes-shown-qa-1",
+        "id": "01M6E0H44P8AV7EGNM17PWKA34",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6E0H44P8AV7EGNM13RK5PNT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6E0H44P8AV7EGNM13RK5PNT",
+        "id": "01M6E0H51X6RK391W7EG5B1FQS",
+        "link": "01M6E0H51X6RK391W7ECG3HV5Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZWGV5ZTMWYTG4M3JD7Z4K",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6BVTCJCSG1JKEERK7Y3ACYJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6E0H6GGZ6WYYATPHX15TV97",
+  "type": "ops",
+  "v": 1
+}
