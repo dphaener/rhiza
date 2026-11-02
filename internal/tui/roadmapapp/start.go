@@ -34,11 +34,6 @@ type pending struct {
 	kind string // "plan", "ship" or "accept"
 	id   id.ID
 	what string // accept only: the what-if the question shows
-	// intent and milestone: a "new" run only, the typed one-line intent and
-	// whether it opens a milestone rather than a change set. A "new" run is
-	// asked only when this build has no request operation to queue it.
-	intent    string
-	milestone bool
 }
 
 // target is the change set p, s and o act on: the open detail's, else the
@@ -65,13 +60,6 @@ func (p *pending) prompt() string {
 	if p.kind == "accept" {
 		return p.what
 	}
-	if p.kind == "new" {
-		noun := "change set"
-		if p.milestone {
-			noun = "milestone"
-		}
-		return fmt.Sprintf("Start an interactive plan run of a new %s %q in a new Rex tab? y/n", noun, p.intent)
-	}
 	if p.kind == "plan" {
 		return fmt.Sprintf("Start an interactive plan run of %s in a new Rex tab? y/n", short(p.id))
 	}
@@ -80,18 +68,6 @@ func (p *pending) prompt() string {
 
 // args are the arguments of the `rex window new` call that starts p.
 func (p *pending) args(s Starter) []string {
-	if p.kind == "new" {
-		name := "new-change-set"
-		if p.milestone {
-			name = "new-milestone"
-		}
-		args := p.windowArgs(s, name)
-		args = append(args, "--workflow", "plan", "--new", p.intent)
-		if p.milestone {
-			args = append(args, "--milestone")
-		}
-		return args
-	}
 	cs := p.id.String()
 	args := p.windowArgs(s, cs[:min(len(cs), 9)])
 	args = append(args, cs)
@@ -127,19 +103,13 @@ func (i *intentInput) prompt() string {
 }
 
 // fileRequest queues a plan request for the typed intent in the clone; the
-// daemon turns it into a plan run. No Rex tab is opened here. A build with
-// no request operation answers not_found; then the owner is asked y/n for
-// a plan run in a new Rex tab instead, so the key still starts work.
+// daemon turns it into a plan run. No Rex tab is opened here.
 func (m *Model) fileRequest(text string, milestone bool) {
 	kind := "feature"
 	if milestone {
 		kind = "milestone"
 	}
 	if _, err := m.run("request", "", []string{text, "--kind", kind}); err != nil {
-		if api.AsError(err).Code == api.CodeNotFound {
-			m.pending = &pending{kind: "new", intent: text, milestone: milestone}
-			return
-		}
 		m.notice = fmt.Sprintf("rhiza: %v", err)
 		return
 	}
@@ -186,10 +156,6 @@ func (m *Model) confirm() {
 	}
 	if _, err := m.starter.Exec("rex", p.args(m.starter), m.starter.Root); err != nil {
 		m.notice = fmt.Sprintf("rex window new failed: %v", err)
-		return
-	}
-	if p.kind == "new" {
-		m.notice = fmt.Sprintf("Opened Rex tab running the plan run of a new %q", p.intent)
 		return
 	}
 	cs := p.id.String()

@@ -52,6 +52,7 @@ type DaemonResponse struct {
 	Process string   `json:"process" desc:"The daemon's process, as host:pid"`
 	Started []string `json:"started" desc:"The change sets whose runs the daemon started, in order"`
 	Resumed []string `json:"resumed" desc:"The interrupted runs the daemon resumed, in order"`
+	Planned []string `json:"planned" desc:"The plan requests whose plan runs the daemon started, in order"`
 }
 
 // Human writes the response as markdown.
@@ -61,6 +62,9 @@ func (r DaemonResponse) Human(w io.Writer) {
 	}
 	for _, id := range r.Resumed {
 		fmt.Fprintf(w, "Resumed run %s\n", id)
+	}
+	for _, q := range r.Planned {
+		fmt.Fprintf(w, "Started the plan run of request %s\n", q)
 	}
 	fmt.Fprintf(w, "Daemon %s stopped\n", r.Process)
 }
@@ -126,7 +130,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		}
 	}
 	rs := run.NewStore(run.Dir(common))
-	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}}
+	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}, Planned: []string{}}
 	pending := map[string]daemonPending{}
 	state, unjournaled := daemonStartState(common, self, ctx.Version, conf.maxRuns, r.Autonomous)
 	state.Settings = conf.stateRows()
@@ -154,7 +158,8 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		}
 		minFree := conf.minFree
 		state.MaxRuns, state.Settings = conf.maxRuns, conf.stateRows()
-		started, resumed, err := daemonPoll1(ctx, rs, pending, unjournaled, conf.maxRuns, minFree, r.Autonomous, conf.mode, conf.paused, &skips)
+		started, resumed, planned, err := daemonPoll1(ctx, rs, pending, unjournaled, conf.maxRuns, minFree, r.Autonomous, conf.mode, conf.paused, &skips)
+		resp.Planned = append(resp.Planned, planned...)
 		if err == nil {
 			state.Skips = skips
 			if low, free := daemonDiskLow(ctx, minFree); !low {
@@ -413,16 +418,19 @@ func daemonRunsOf(runs []run.Journal, cs string) int {
 	return n
 }
 
-// daemonPoll1 picks and starts runs once. pending holds the change sets
-// started; unjournaled those whose start never journaled (see daemonHeld).
-func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, minFree uint64, autonomous bool, mode string, paused bool, skips *[]daemon.Skip) ([]string, []string, error) {
+// daemonPoll1 picks and starts runs once: resumes, then ship-change runs,
+// then plan runs of queued plan requests in the slots left (see
+// daemonPlanRequests). pending holds the change sets started; unjournaled
+// those whose start never journaled (see daemonHeld). It returns the
+// change sets started, the runs resumed and the requests started.
+func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, minFree uint64, autonomous bool, mode string, paused bool, skips *[]daemon.Skip) (started, resumed, planned []string, err error) {
 	res, _, _, err := planRead(ctx, "daemon", "")
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	ws, err := openCtxWorkspace(ctx)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	cands, planSkips := daemonCandidates(res, func(cs id.ID) bool {
 		c, ok := ws.changeSet(cs)
@@ -430,10 +438,9 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	})
 	runs, err := rs.List()
 	if err != nil {
-		return nil, nil, Errorf("read runs: %v", err)
+		return nil, nil, nil, Errorf("read runs: %v", err)
 	}
 	host, _ := os.Hostname()
-	var resumed []string
 	low, free := daemonDiskLow(ctx, minFree)
 	accepted := func(change string) bool {
 		cs, err := id.Parse(change)
@@ -450,10 +457,10 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	for _, id := range resumable {
 		// Journal the resume before the tab opens: a resume is tried once.
 		if err := rs.Append(id, run.Entry{Type: run.TypeDaemonResumed, At: ctx.Now(), Detail: "resumed by the daemon"}); err != nil {
-			return nil, resumed, Errorf("journal the resume of run %s: %v", id, err)
+			return nil, resumed, nil, Errorf("journal the resume of run %s: %v", id, err)
 		}
 		if err := daemonResume(ctx, id); err != nil {
-			return nil, resumed, err
+			return nil, resumed, nil, err
 		}
 		resumed = append(resumed, id)
 	}
@@ -485,11 +492,11 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	}}
 	shipMode, err := autonomyStage(ctx, "ship")
 	if err != nil {
-		return nil, resumed, err
+		return nil, resumed, nil, err
 	}
 	signoffMode, err := autonomyStage(ctx, "signoff")
 	if err != nil {
-		return nil, resumed, err
+		return nil, resumed, nil, err
 	}
 	if signoffMode == AutonomyOwner {
 		autonomous = false
@@ -525,15 +532,24 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 			}
 		}
 	}
-	var started []string
 	for _, cs := range picked {
 		if err := daemonStart(ctx, cs, autonomous, mode); err != nil {
-			return started, resumed, err
+			return started, resumed, nil, err
 		}
 		pending[cs] = daemonPending{at: ctx.Now(), runs: daemonRunsOf(runs, cs)}
 		started = append(started, cs)
 	}
-	return started, resumed, nil
+	if paused || low {
+		return started, resumed, nil, nil
+	}
+	running := len(held) + len(started)
+	for _, j := range runs {
+		if j.State().Liveness(host, nil) == run.LiveRunning {
+			running++
+		}
+	}
+	planned, err = daemonPlanRequests(ctx, rs, runs, running, max, mode)
+	return started, resumed, planned, err
 }
 
 // daemonDiskLow reports whether free space on the repo's filesystem is under

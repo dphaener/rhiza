@@ -108,6 +108,7 @@ type RunStartRequest struct {
 	Autonomous     bool   `json:"autonomous,omitempty" desc:"Run without the owner: skip the owner's gates and questions, recording each; never changes agent permissions. Resume keeps it"`
 	New            string `json:"new,omitempty" desc:"With --workflow plan and no change set: open a draft change set with this one-line intent and start the plan run on it"`
 	Milestone      bool   `json:"milestone,omitempty" desc:"With --new: open a record change set, to plan a milestone in; without it an intention"`
+	Request        string `json:"request,omitempty" desc:"With --new: the plan request this run plans; the run takes the ID the daemon drew for it. The daemon passes it"`
 }
 
 // RunStatusRequest names a run, or none for the latest.
@@ -526,12 +527,27 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if r.Milestone && strings.TrimSpace(r.New) == "" {
 		return nil, Usagef("--milestone goes with --new").WithNext(runStartNext)
 	}
+	if strings.TrimSpace(r.Request) != "" && strings.TrimSpace(r.New) == "" {
+		return nil, Usagef("--request goes with --new").WithNext(runStartNext)
+	}
 	path, def, data, err := resolveWorkflow(ctx.Root, r.Workflow)
 	if err != nil {
 		return nil, err
 	}
 	if err := checkAgentSteps(def, r.PermissionMode, r.Agent, r.Autonomous, runStartNext); err != nil {
 		return nil, err
+	}
+	// A request's run takes the ID the daemon drew for it: check it before
+	// a draft is opened, so a refused start leaves none.
+	var reqRun string
+	if q := strings.TrimSpace(r.Request); q != "" {
+		common, err := gitCommonDir(ctx)
+		if err != nil {
+			return nil, err
+		}
+		if reqRun, err = requestRun(common, q, run.NewStore(run.Dir(common))); err != nil {
+			return nil, err
+		}
 	}
 	var t changeWorktree
 	if strings.TrimSpace(r.New) != "" {
@@ -548,9 +564,11 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		}
 	}
 	rs := run.NewStore(run.Dir(t.common))
-	rid, err := newRunID(ctx, rs)
-	if err != nil {
-		return nil, err
+	rid := reqRun
+	if rid == "" {
+		if rid, err = newRunID(ctx, rs); err != nil {
+			return nil, err
+		}
 	}
 	started := run.Started{
 		Workflow: def.Name, WorkflowPath: path, Definition: string(data), Includes: def.Includes,

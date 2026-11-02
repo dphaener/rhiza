@@ -1557,6 +1557,13 @@ cmp stdout describe.golden.json
       "response": {
         "additionalProperties": false,
         "properties": {
+          "planned": {
+            "description": "The plan requests whose plan runs the daemon started, in order",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "process": {
             "description": "The daemon's process, as host:pid",
             "type": "string"
@@ -1577,6 +1584,7 @@ cmp stdout describe.golden.json
           }
         },
         "required": [
+          "planned",
           "process",
           "resumed",
           "started"
@@ -6448,6 +6456,153 @@ cmp stdout describe.golden.json
       },
       "summary": "Reopen a change set landed only on its branch, so it takes writes and lands again",
       "write": true
+    },
+    {
+      "name": "request",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "description": "feature, bug or milestone; default feature. A bug's plan run opens its change set with the intent prefixed Fix:, a milestone's a record change set",
+            "enum": [
+              "feature",
+              "bug",
+              "milestone"
+            ],
+            "type": "string"
+          },
+          "text": {
+            "description": "What to plan, in one line",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "request": {
+            "additionalProperties": false,
+            "description": "The request",
+            "properties": {
+              "at": {
+                "description": "When it was queued, RFC 3339 UTC",
+                "type": "string"
+              },
+              "change": {
+                "description": "The change set its plan run plans in; absent until the run's journal names it",
+                "type": "string"
+              },
+              "id": {
+                "description": "The request's ID",
+                "type": "string"
+              },
+              "kind": {
+                "description": "feature, bug or milestone",
+                "type": "string"
+              },
+              "run": {
+                "description": "Its plan run; absent while queued",
+                "type": "string"
+              },
+              "state": {
+                "description": "queued, planning (its plan run started), planned (its run succeeded) or failed (its run failed)",
+                "type": "string"
+              },
+              "text": {
+                "description": "What to plan",
+                "type": "string"
+              }
+            },
+            "required": [
+              "at",
+              "id",
+              "kind",
+              "state",
+              "text"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "request"
+        ],
+        "type": "object"
+      },
+      "summary": "Queue a plan request in this clone: the daemon starts a plan run for it",
+      "write": false
+    },
+    {
+      "name": "request.ls",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "requests": {
+            "description": "The requests, oldest first",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "at": {
+                  "description": "When it was queued, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "change": {
+                  "description": "The change set its plan run plans in; absent until the run's journal names it",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The request's ID",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "feature, bug or milestone",
+                  "type": "string"
+                },
+                "run": {
+                  "description": "Its plan run; absent while queued",
+                  "type": "string"
+                },
+                "state": {
+                  "description": "queued, planning (its plan run started), planned (its run succeeded) or failed (its run failed)",
+                  "type": "string"
+                },
+                "text": {
+                  "description": "What to plan",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "at",
+                "id",
+                "kind",
+                "state",
+                "text"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "requests"
+        ],
+        "type": "object"
+      },
+      "summary": "List this clone's plan requests, oldest first, each with its state, run and planned change set",
+      "write": false
     },
     {
       "name": "retire",
@@ -13595,6 +13750,10 @@ cmp stdout describe.golden.json
           },
           "permission_mode": {
             "description": "The permission mode of agent steps that set none; modes that bypass the agent's permission checks are refused",
+            "type": "string"
+          },
+          "request": {
+            "description": "With --new: the plan request this run plans; the run takes the ID the daemon drew for it. The daemon passes it",
             "type": "string"
           },
           "workflow": {

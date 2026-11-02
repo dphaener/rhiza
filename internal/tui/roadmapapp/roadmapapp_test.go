@@ -5,8 +5,6 @@ import (
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
-
-	"github.com/dphaener/rhiza/internal/api"
 )
 
 const (
@@ -369,51 +367,6 @@ func typeText(m *Model, s string) {
 }
 
 func enter(m *Model) { m.Update(tea.KeyPressMsg{Code: tea.KeyEnter}) }
-
-// With no request operation in the build, n and m fall back to asking y/n
-// for a plan run of the new work in a Rex tab.
-func TestNewWorkWithoutRequestOpStartsPlanRun(t *testing.T) {
-	for _, tc := range []struct {
-		key, want string
-	}{
-		{"m", "window new -s session:1 new-milestone -c /repo --json -- /bin/rhiza run start --workflow plan --new Ship the thing --milestone"},
-		{"n", "window new -s session:1 new-change-set -c /repo --json -- /bin/rhiza run start --workflow plan --new Ship the thing"},
-	} {
-		var calls []call
-		m := NewModel(func(op, ch string, args []string) ([]byte, error) {
-			if op == "request" {
-				return nil, api.NotFoundf("unknown operation %q", op)
-			}
-			return fake(op, ch, args)
-		})
-		m.SetStarter(Starter{
-			Exec: func(name string, args []string, _ string) ([]byte, error) {
-				calls = append(calls, call{name, args})
-				return []byte("{}"), nil
-			},
-			Self: "/bin/rhiza", Root: "/repo", RexSession: "session:1",
-		})
-		key(m, tc.key)
-		typeText(m, "Ship the thing")
-		enter(m)
-		if len(calls) != 0 {
-			t.Fatalf("%s called rex before y: %v", tc.key, calls)
-		}
-		if v := m.View().Content; !strings.Contains(v, "y/n") || strings.Contains(v, "unknown operation") {
-			t.Errorf("no y/n question:\n%s", v)
-		}
-		key(m, "y")
-		if len(calls) != 1 || calls[0].name != "rex" {
-			t.Fatalf("%s calls = %v", tc.key, calls)
-		}
-		if got := strings.Join(calls[0].args, " "); got != tc.want {
-			t.Errorf("%s args = %q, want %q", tc.key, got, tc.want)
-		}
-		if v := m.View().Content; !strings.Contains(v, "Opened Rex tab") {
-			t.Errorf("view does not say a tab opened:\n%s", v)
-		}
-	}
-}
 
 func TestNewWorkFilesPlanRequest(t *testing.T) {
 	for _, tc := range []struct {
