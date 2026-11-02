@@ -1,0 +1,40 @@
+{
+  "actor": "01M6DNRNWMPD39XA5KDCBHC30E",
+  "after": [
+    "01M6DNNWTF5CEBZK8ZPZ7G68K8"
+  ],
+  "at": "2026-11-02T08:34:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 2581003e, go test -count=1 ./internal/tui/inboxapp -run Nudge passed TestNudgeSendsCarryOn (n on a stalled item: session.pane then session.message with the carry-on text to SESSN1), TestNudgeEscapesUsageLimitPromptFirst (usage_limit pane: session.pane, session.key escape, then session.message) and TestNudgeOnlyOnStalled (n on a failed item makes no call), all on a fake runner. The fix for finding f1 also passes: internal/api TestSessionPane*/TestSessionKey* (rex capture/send-key argv and dir, PaneLimiter via the adapter, other keys refused with nothing sent, dry run sends nothing, exited/tabless/unknown refused) and TestScripts/session-pane-key against a fake rex. make fmt-check vet test rc=0; self-check fails only on stale .rhiza/rendered actor files from run model writes. Read the diff of the leaf's commits 2f4d0eb2 and 2581003e."
+        },
+        "handle": "inbox-nudge-stalled-verified-2",
+        "id": "01M6DPACFND8M7V0SN9Q9C7ASF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DPACFND8M7V0SN9PYG3TQ9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DPACFND8M7V0SN9PYG3TQ9",
+        "id": "01M6DPADCDE5Q8KM0HHBH8FZR8",
+        "link": "01M6DPADCDE5Q8KM0HH9GZ99TA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS2KAT7R41TVN9WFDEFBRF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CRZTNDTPF1SD2WGBY4835Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DPAEQYBGGEE8B3X2JPKRGZ",
+  "type": "ops",
+  "v": 1
+}
