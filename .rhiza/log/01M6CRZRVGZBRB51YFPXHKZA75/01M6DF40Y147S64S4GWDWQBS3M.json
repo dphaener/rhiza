@@ -1,0 +1,40 @@
+{
+  "actor": "01M6DF1JF9S0Q0ARH6Z9K9RP0T",
+  "after": [
+    "01M6DEWVM7MSKF060NX3WX2P3E"
+  ],
+  "at": "2026-11-02T06:28:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 99c050d8 (review fixer, quality f1): Submit now builds argv with RequestArgs = [--kind, kind, --, text], so dash-leading text is filed as text. Ran `go test -count=1 ./internal/tui/requestsapp/ -v`: all pass, including TestFilesBugAndFeatureFromTypedText (bug and feature filed from typed text, shown queued on a fake runner) and the new TestDashLeadingTextIsFiledAsText; the fake now rejects any other argv shape. Ran `go test -count=1 ./cmd/rhiza -run 'TestScripts/(tui-requests-app|rex-install|describe-golden)$|TestRequestsAppArgs|TestRequestFromArgs'`: tui-requests-app.txtar (--once JSON equals request ls), rex-install.txtar (rhiza_app_requests on a free key, no key moved) and describe-golden pass, and TestRequestsAppArgsKeepDashLeadingText runs RequestArgs(bug, --json output is wrong) through requestFromArgs for the real request op and gets Text=--json output is wrong, Kind=bug. Read the diff: 3 Go files only, no .rhiza change. `make check`: fmt, vet and all go tests pass; self-check reports the same 8 stale-render failures (actor files for review sessions plus index.md) at this commit as at its parent dcf804b9, coming from the run's own chore(rhiza) record commits, not from this fix."
+        },
+        "handle": "requests-app-verified-fix-1",
+        "id": "01M6DF3YN9V6KVJCX6T1YX2716",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DF3YN9V6KVJCX6SY8DBCW7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DF3YN9V6KVJCX6SY8DBCW7",
+        "id": "01M6DF3ZHBEAMXCX2K788X2AEZ",
+        "link": "01M6DF3ZHBEAMXCX2K77SQGJ5Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS27ZCVXPWK3GXS8B8PQ2C",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CRZRVGZBRB51YFPXHKZA75",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DF40Y147S64S4GWDWQBS3M",
+  "type": "ops",
+  "v": 1
+}

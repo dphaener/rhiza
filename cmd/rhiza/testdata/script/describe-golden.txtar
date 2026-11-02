@@ -10615,18 +10615,20 @@ cmp stdout describe.golden.json
           "change": {
             "description": "The change set: its ID or a unique prefix of it",
             "type": "string"
+          },
+          "run": {
+            "description": "A run's ID instead of a change set: focus that run's tab when it is live (a plan run may not have a change set yet)",
+            "type": "string"
           }
         },
-        "required": [
-          "change"
-        ],
+        "required": [],
         "type": "object"
       },
       "response": {
         "additionalProperties": false,
         "properties": {
           "change": {
-            "description": "The change set's ID",
+            "description": "The change set's ID; empty for a run with none yet",
             "type": "string"
           },
           "live": {

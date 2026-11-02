@@ -1,0 +1,40 @@
+{
+  "actor": "01M6DDKSJGF25MKT6655MJ9N6T",
+  "after": [
+    "01M6CS2W19VKGS48J2THDV9EK0"
+  ],
+  "at": "2026-11-02T06:19:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5201981a (verifier, attempt 2): the fix commit only drops the stray rendered actor page and index line flagged in f1. `env -u RHIZA_ROOT make check` exits 0 (a first run failed once in go test beside the read-budget timings, a re-run of go test ./... and make check both passed). `go test ./cmd/rhiza -run 'TestScripts/(tui-requests-app|rex-install|describe-golden)$'` passes: tui-requests-app shows `rhiza tui app requests --once` byte-equal to `rhiza request ls --json` both empty and after filing a bug and a feature (both queued); rex-install greps the rhiza_app_requests action, [\"requests\"] = \"q\", and roadmap/ready/live/inbox on their old keys. internal/tui/requestsapp unit tests pass on a fake runner: TestFilesBugAndFeatureFromTypedText files 'login fails' as kind bug and 'dark mode' as a feature and the view shows them queued; TestEnterFocusesPlanRunTab covers enter on a planning request. Launcher key q is registered by no other app, and no launcher code changed."
+        },
+        "handle": "requests-app-verified",
+        "id": "01M6DEJ369B8M1GV8KDXZQS1S8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DEJ369B8M1GV8KDX9CNR72",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DEJ369B8M1GV8KDX9CNR72",
+        "id": "01M6DEJ8ESXW9ZG6QV558G7QJ2",
+        "link": "01M6DEJ8ESXW9ZG6QV53K2AJ32",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS27ZCVXPWK3GXS8B8PQ2C",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CRZRVGZBRB51YFPXHKZA75",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DEJGGT4PP3W6NT25FPEAP8",
+  "type": "ops",
+  "v": 1
+}

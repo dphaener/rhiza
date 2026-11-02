@@ -68,6 +68,16 @@ grep 'keys = \{\},' conf/rhiza.lua
 grep '^  \["session-ls"\] = "rhiza_app_session_ls",$' conf/rhiza.lua
 grep 'rex.bind\(MODE .. "/" .. k, APP_ACTIONS\[app\]\)' conf/rhiza.lua
 
+# The requests app has an action on a key no other app had; no existing key
+# moved.
+grep 'name = "rhiza_app_requests"' conf/rhiza.lua
+grep '"tui", "app", "requests"' conf/rhiza.lua
+grep '^  \["requests"\] = "q",$' conf/rhiza.lua
+grep '^  \["roadmap"\] = "b",$' conf/rhiza.lua
+grep '^  \["ready"\] = "r",$' conf/rhiza.lua
+grep '^  \["live"\] = "v",$' conf/rhiza.lua
+grep '^  \["inbox"\] = "i",$' conf/rhiza.lua
+
 # A second install changes neither file, and keeps an edited setting: the
 # owner edits launch_key, and a reinstall leaves that line byte for byte.
 exec sed -e 's/launch_key = "ctrl+a>a"/launch_key = "ctrl+b>x"/' conf/rhiza.lua

@@ -22,12 +22,13 @@ func init() {
 
 // RunOpenRequest names the change set whose live run to open.
 type RunOpenRequest struct {
-	Change string `json:"change" arg:"0" desc:"The change set: its ID or a unique prefix of it"`
+	Change string `json:"change,omitempty" arg:"0" desc:"The change set: its ID or a unique prefix of it"`
+	Run    string `json:"run,omitempty" flag:"run" desc:"A run's ID instead of a change set: focus that run's tab when it is live (a plan run may not have a change set yet)"`
 }
 
 // RunOpenResponse says which tab was focused, or why none was.
 type RunOpenResponse struct {
-	Change  string `json:"change" desc:"The change set's ID"`
+	Change  string `json:"change" desc:"The change set's ID; empty for a run with none yet"`
 	Live    bool   `json:"live" desc:"True when the change set has a live run"`
 	Run     string `json:"run,omitempty" desc:"The live run, when there is one"`
 	Opened  bool   `json:"opened" desc:"True when the tab was focused"`
@@ -40,6 +41,8 @@ func (r RunOpenResponse) Human(w io.Writer) {
 	switch {
 	case r.Opened:
 		fmt.Fprintf(w, "Focused %s, the tab of run %s\n", r.Tab, r.Run)
+	case !r.Live && r.Change == "":
+		fmt.Fprintln(w, "No live run")
 	case !r.Live:
 		fmt.Fprintf(w, "%s has no live run\n", r.Change)
 	default:
@@ -49,16 +52,23 @@ func (r RunOpenResponse) Human(w io.Writer) {
 
 func runRunOpen(ctx *Ctx, req any) (any, error) {
 	r := req.(RunOpenRequest)
-	if r.Change == "" {
-		return nil, Usagef("run open needs a change set")
+	if r.Change == "" && r.Run == "" {
+		return nil, Usagef("run open needs a change set or --run")
 	}
-	w, err := openCtxWorkspace(ctx)
-	if err != nil {
-		return nil, err
+	if r.Change != "" && r.Run != "" {
+		return nil, Usagef("run open takes a change set or --run, not both")
 	}
-	cs, err := w.resolveChangeSet(r.Change)
-	if err != nil {
-		return nil, err
+	var change string
+	if r.Change != "" {
+		w, err := openCtxWorkspace(ctx)
+		if err != nil {
+			return nil, err
+		}
+		cs, err := w.resolveChangeSet(r.Change)
+		if err != nil {
+			return nil, err
+		}
+		change = cs.String()
 	}
 	common, err := gitCommonDir(ctx)
 	if err != nil {
@@ -69,11 +79,19 @@ func runRunOpen(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, Errorf("read runs: %v", err)
 	}
-	resp := RunOpenResponse{Change: cs.String()}
+	resp := RunOpenResponse{Change: change}
 	var st run.State
 	for _, j := range runs {
 		s := j.State()
-		if s.Change != resp.Change || !rs.Live(j.ID) {
+		if r.Run != "" {
+			if j.ID != r.Run {
+				continue
+			}
+			resp.Change = s.Change
+		} else if s.Change != resp.Change {
+			continue
+		}
+		if !rs.Live(j.ID) {
 			continue
 		}
 		if !resp.Live || s.StartedAt.After(st.StartedAt) {
