@@ -463,11 +463,11 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 		return at
 	}}
-	shipMode, err := autonomyStage(ctx, "ship", AutonomyAuto)
+	shipMode, err := autonomyStage(ctx, "ship")
 	if err != nil {
 		return nil, resumed, err
 	}
-	signoffMode, err := autonomyStage(ctx, "signoff", AutonomyAuto)
+	signoffMode, err := autonomyStage(ctx, "signoff")
 	if err != nil {
 		return nil, resumed, err
 	}

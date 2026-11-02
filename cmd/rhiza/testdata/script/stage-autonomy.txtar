@@ -80,8 +80,11 @@ stdout '^1$'
 exec rhiza inbox
 stdout 'waiting for acceptance'
 
-# accept auto: the same gate again accepts.
-exec git config rhiza.autonomy.accept auto
+# accept unset: settings shows the default auto, and the same gate again
+# accepts, as it shows.
+exec git config --unset rhiza.autonomy.accept
+exec rhiza daemon settings
+stdout 'rhiza.autonomy.accept = auto \(default\)'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runb) rhiza run gate --json; echo exit=$?'
 stdout '^exit=0$'
 exec sh -c 'rhiza change show $(cat $WORK/b1) --json'

@@ -22,8 +22,8 @@ const (
 	SettingFlag    = "flag"
 )
 
-// settingDef is one setting: its git config key, its default as shown, and
-// the check of a value.
+// settingDef is one setting: its git config key, its default (the one every
+// reader uses, as shown), and the check of a value.
 type settingDef struct {
 	key      string
 	def      string
@@ -63,7 +63,9 @@ var settingDefs = []settingDef{
 		return nil
 	}},
 	{key: "rhiza.autonomy.plan", def: AutonomyOwner, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
-	{key: "rhiza.autonomy.accept", def: AutonomyOwner, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
+	// accept governs only an autonomous plan's gate, which accepts unless
+	// it is owner; other change sets always wait for the owner.
+	{key: "rhiza.autonomy.accept", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	{key: "rhiza.autonomy.ship", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	{key: "rhiza.autonomy.signoff", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 }

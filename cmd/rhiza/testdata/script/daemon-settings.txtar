@@ -31,7 +31,7 @@ stdout 'rhiza.daemon.maxRuns = 2 \(default\)'
 stdout 'rhiza.daemon.minFree = 10G \(default\)'
 stdout 'rhiza.daemon.permissionMode = "" \(default\)'
 stdout 'rhiza.autonomy.plan = owner \(default\)'
-stdout 'rhiza.autonomy.accept = owner \(default\)'
+stdout 'rhiza.autonomy.accept = auto \(default\)'
 stdout 'rhiza.autonomy.ship = auto \(default\)'
 stdout 'rhiza.autonomy.signoff = auto \(default\)'
 

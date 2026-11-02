@@ -14,13 +14,20 @@ const (
 	AutonomyOwner = "owner"
 )
 
-// autonomyStage reads git config rhiza.autonomy.<stage>: auto or owner, def
-// when unset. Any other value is a usage error naming the key.
-func autonomyStage(ctx *Ctx, stage, def string) (string, error) {
+// autonomyStage reads git config rhiza.autonomy.<stage>: auto or owner, the
+// stage's default in settingDefs when unset, so the gate and the daemon act
+// on the value rhiza daemon settings shows. Any other value is a usage error
+// naming the key.
+func autonomyStage(ctx *Ctx, stage string) (string, error) {
+	key := "rhiza.autonomy." + stage
+	d, ok := findSetting(key)
+	if !ok {
+		panic("autonomyStage: no setting " + key)
+	}
+	def := d.def
 	if ctx.Git == nil {
 		return def, nil
 	}
-	key := "rhiza.autonomy." + stage
 	out, err := ctx.Git("config", "--get", key)
 	if err != nil {
 		return def, nil // unset
