@@ -2218,6 +2218,90 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "health",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "parts": {
+            "description": "Every part, in a fixed order: daemon, autonomy, disk, main, inbox, requests, roadmap, check",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "detail": {
+                  "description": "More lines on the part, such as each setting or each count; empty when none",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "next": {
+                  "description": "A command that would help, when one would",
+                  "type": "string"
+                },
+                "part": {
+                  "description": "The part",
+                  "enum": [
+                    "daemon",
+                    "autonomy",
+                    "disk",
+                    "main",
+                    "inbox",
+                    "requests",
+                    "roadmap",
+                    "check"
+                  ],
+                  "type": "string"
+                },
+                "state": {
+                  "description": "ok, warn (worth a look) or bad (rhiza health exits 1)",
+                  "enum": [
+                    "ok",
+                    "warn",
+                    "bad"
+                  ],
+                  "type": "string"
+                },
+                "summary": {
+                  "description": "One line on the part's state",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "detail",
+                "part",
+                "state",
+                "summary"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "state": {
+            "description": "The worst state of any part",
+            "enum": [
+              "ok",
+              "warn",
+              "bad"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "parts",
+          "state"
+        ],
+        "type": "object"
+      },
+      "summary": "Report the daemon, autonomy settings, free disk, the main checkout, inbox, queued requests, roadmap and rhiza check, each part ok, warn or bad; exit 1 when any part is bad",
+      "write": false
+    },
+    {
       "name": "inbox",
       "request": {
         "additionalProperties": false,

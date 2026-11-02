@@ -1,0 +1,83 @@
+# rhiza health reports each part of the system ok, warn or bad, and exits 1
+# when any part is bad. health --json and api call health print the same
+# bytes. Rex is never dialled and nothing is fetched.
+
+env REX_SESSION=
+env REX_SERVER=
+env RHIZA_TEST_FREE_BYTES=1099511627776
+mkdir repo
+cd repo
+exec git init -q -b main
+exec rhiza init
+exec rhiza render
+cp ../notes.txt notes.txt
+exec git add -A
+exec git commit -qm init
+
+# A clean repo: only the daemon warns, and says how to start it.
+exec rhiza health
+stdout '^warn daemon   not running.*start it with rhiza daemon$'
+stdout '^     next: rhiza daemon --autonomous$'
+stdout '^ok   autonomy plan owner, accept auto, ship auto, signoff auto$'
+stdout '^ok   disk     1.0 TiB free, minimum 10.0 GiB$'
+stdout '^ok   main     on main, clean$'
+stdout '^ok   inbox    nothing waits on you$'
+stdout '^ok   requests no plan requests$'
+stdout '^ok   roadmap  0 milestones, 0 change sets, 0 ready$'
+stdout '^ok   check    ok$'
+exec rhiza health --json
+stdout '"state": "warn"'
+cp stdout ../health.json
+exec rhiza api call health
+cmp stdout ../health.json
+
+# Free space under the minimum makes disk bad, and health exits 1.
+env RHIZA_TEST_FREE_BYTES=100
+! exec rhiza health
+stdout '^bad  disk     100 B free, under the minimum of 10.0 GiB'
+! exec rhiza health --json
+stdout '"state": "bad"'
+cp stdout ../bad.json
+! exec rhiza api call health
+cmp stdout ../bad.json
+env RHIZA_TEST_FREE_BYTES=1099511627776
+
+# A paused daemon warns on autonomy.
+exec git config rhiza.daemon.paused true
+exec rhiza health
+stdout '^warn autonomy daemon paused; plan owner'
+exec git config --unset rhiza.daemon.paused
+
+# A dirty main checkout is warn.
+exec sh -c 'echo more >> notes.txt'
+exec rhiza health
+stdout '^warn main     on main, uncommitted changes$'
+exec git checkout -- notes.txt
+
+# A failed close-out pull is warn on main, naming it.
+mkdir .git/rhiza
+cp ../stale.json .git/rhiza/main-stale.json
+exec rhiza health
+stdout '^warn main     on main, clean; the last close-out could not pull$'
+stdout 'change set 01M6CRZSRFQ94MAJ8CRTEE44P2, since 2026-01-01T00:00:00Z: main was not updated: /m has uncommitted changes'
+rm .git/rhiza/main-stale.json
+
+# A failed run in the inbox is warn.
+mkdir .git/rhiza/runs
+exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWGEF85Y185JZ2ZGCNH40N\"}}" "{\"type\":\"finished\",\"at\":\"2026-01-01T00:00:02Z\",\"end\":\"failed\",\"detail\":\"boom\"}" > .git/rhiza/runs/FAILED00001.jsonl'
+exec rhiza health
+stdout '^warn inbox    1 waiting: 1 failed$'
+stdout '^     next: rhiza inbox$'
+rm .git/rhiza/runs/FAILED00001.jsonl
+
+# A model problem fails rhiza check, which makes check bad.
+rm .rhiza/rendered
+! exec rhiza health
+stdout '^bad  check    1 failing, 0 warnings$'
+stdout 'fail render: '
+
+
+-- notes.txt --
+notes
+-- stale.json --
+{"since":"2026-01-01T00:00:00Z","change":"01M6CRZSRFQ94MAJ8CRTEE44P2","detail":"main was not updated: /m has uncommitted changes"}

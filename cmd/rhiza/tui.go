@@ -16,6 +16,7 @@ import (
 	"github.com/dphaener/rhiza/internal/api"
 	"github.com/dphaener/rhiza/internal/canon"
 	"github.com/dphaener/rhiza/internal/tui/changesapp"
+	"github.com/dphaener/rhiza/internal/tui/healthapp"
 	"github.com/dphaener/rhiza/internal/tui/inboxapp"
 	"github.com/dphaener/rhiza/internal/tui/liveapp"
 	"github.com/dphaener/rhiza/internal/tui/modelapp"
@@ -53,8 +54,9 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 	isInbox := name == inboxapp.Name
 	isRoadmap := name == roadmapapp.Name
 	isLive := name == liveapp.Name
+	isHealth := name == healthapp.Name
 	write, isWrite := writeapps.Lookup(name)
-	if !isRead && !isWrite && !isInbox && !isRoadmap && !isLive {
+	if !isRead && !isWrite && !isInbox && !isRoadmap && !isLive && !isHealth {
 		return writeError(stdout, stderr, api.NotFoundf("unknown app %q", name), false)
 	}
 	once, confirm := false, false
@@ -94,10 +96,7 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 	call := func(op string, record, dry bool, args []string) ([]byte, error) {
 		return callWith(g, op, record, dry, args)
 	}
-	var m tea.Model
-	var result func() ([]byte, error)
-	switch {
-	case isInbox:
+	inboxModel := func() *inboxapp.Model {
 		im := inboxapp.NewModel(func(op string, args []string) ([]byte, error) {
 			if op == "question.answer" && len(args) == 3 {
 				// The app passes question, change set, words; the change set
@@ -111,12 +110,35 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		if ctx, err := newCtx(g, os.Stdin, getenv); err == nil {
 			im.Exec, im.Self, im.Root, im.RexSession = ctx.Exec, ctx.Self, ctx.Root, ctx.RexSession
 		}
-		m, result = im, im.Result
-	case isLive:
-		lm := liveapp.NewModel(func(op string, args []string) ([]byte, error) {
+		return im
+	}
+	liveModel := func() *liveapp.Model {
+		return liveapp.NewModel(func(op string, args []string) ([]byte, error) {
 			return call(op, false, false, args)
 		}, nil)
+	}
+	var m tea.Model
+	var result func() ([]byte, error)
+	switch {
+	case isInbox:
+		im := inboxModel()
+		m, result = im, im.Result
+	case isLive:
+		lm := liveModel()
 		m, result = lm, lm.Result
+	case isHealth:
+		hm := healthapp.NewModel(func(op string, args []string) ([]byte, error) {
+			return call(op, false, false, args)
+		}, func(app string) (tea.Model, error) {
+			switch app {
+			case inboxapp.Name:
+				return inboxModel(), nil
+			case liveapp.Name:
+				return liveModel(), nil
+			}
+			return nil, api.NotFoundf("unknown app %q", app)
+		})
+		m, result = hm, hm.Result
 	case isRoadmap:
 		am := roadmapModel(g, callWith)
 		if ctx, err := newCtx(g, os.Stdin, getenv); err == nil {
