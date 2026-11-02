@@ -1,0 +1,43 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6CRTCA33K0DF3SY266GEEX8"
+  ],
+  "at": "2026-11-02T00:22:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "0cb40be166ec913254459c8948433e61dadc0d16",
+          "pr": "https://github.com/dphaener/rhiza/pull/183",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #183 (https://github.com/dphaener/rhiza/pull/183) passed CI at 0cb40be",
+          "status": "verified"
+        },
+        "handle": "pr-183-an-incremental-what-if-folds",
+        "id": "01M6CT60B22PH861B9E6N0CWQA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6CT60B22PH861B9E32Y5ECD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CT60B22PH861B9E32Y5ECD",
+        "id": "01M6CT61J1QA91FAFBA3V0NYHA",
+        "link": "01M6CT61J1QA91FAFBA30TE4WA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6C8ES8FHJJXHJND4RZJ8DPW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTFB3ZAX4YKX4KA2ZVSZR",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CT63MD77YN9F84ZVBQZKKW",
+  "type": "ops",
+  "v": 1
+}

@@ -14,6 +14,7 @@ Anyone can build quality software with agents, using as little or as much of Gen
 
 ### In
 
+- serves change set `01M5SWTFB3ZAX4YKX4KA2ZVSZR` (An incremental what-if folds one change set over the indexed as-is, so what-if reads meet the 50 ms target too.)
 - serves change set `01M5SWTG70W2JC17JR7VCMT74R` (genesis check warns about a constraint that is linked to nothing.)
 - serves change set `01M5SWTH32C73BQET8E0708F9F` (Each core node kind has a field schema, so its fields are known and checked.)
 - serves change set `01M5SWTJY0AZP9TR3V1QJ54HMY` (planGather (behind roadmap and ready) and the index's fresh read get faster, so CI has headroom under 25 ms again.)

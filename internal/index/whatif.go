@@ -107,24 +107,15 @@ func storedError(msg string, sentinel error) error {
 
 // loadSeed reads the stored as-is view as a model.Seed.
 func loadSeed(q querier) (model.Seed, error) {
-	var seed model.Seed
-	rows, err := q.Query(`SELECT id FROM change_sets ORDER BY id`)
+	seed, err := loadSeedBase(q)
 	if err != nil {
 		return seed, err
 	}
-	for rows.Next() {
-		var s string
-		if err := rows.Scan(&s); err != nil {
-			rows.Close()
-			return seed, err
-		}
-		seed.Known = append(seed.Known, parseID(s))
-	}
-	rows.Close()
-	if err := rows.Err(); err != nil {
-		return seed, err
-	}
+	return loadSeedRows(q, seed)
+}
 
+// loadSeedRows adds every stored as-is node and link to seed.
+func loadSeedRows(q querier, seed model.Seed) (model.Seed, error) {
 	nrows, err := q.Query(nodeSelect[:len(nodeSelect)-len(" FROM nodes")]+`, aspects, placed FROM nodes WHERE view = ?`, viewAsIs)
 	if err != nil {
 		return seed, err
@@ -174,6 +165,29 @@ func loadSeed(q querier) (model.Seed, error) {
 	}
 	lrows.Close()
 	if err := lrows.Err(); err != nil {
+		return seed, err
+	}
+	return seed, nil
+}
+
+// loadSeedBase reads the stored as-is view as a model.Seed without its
+// nodes and links.
+func loadSeedBase(q querier) (model.Seed, error) {
+	var seed model.Seed
+	rows, err := q.Query(`SELECT id FROM change_sets ORDER BY id`)
+	if err != nil {
+		return seed, err
+	}
+	for rows.Next() {
+		var s string
+		if err := rows.Scan(&s); err != nil {
+			rows.Close()
+			return seed, err
+		}
+		seed.Known = append(seed.Known, parseID(s))
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
 		return seed, err
 	}
 
@@ -236,39 +250,52 @@ func (x *Index) WhatIf(cs id.ID) (model.Model, []model.Problem, error) {
 	}
 	defer tx.Rollback()
 
+	sets, err := whatIfSets(tx, cs)
+	if err != nil {
+		return model.Model{}, nil, err
+	}
 	seed, err := loadSeed(tx)
 	if err != nil {
 		return model.Model{}, nil, err
 	}
+	m, ps := model.WhatIfFrom(seed, sets, cs)
+	return m, ps, nil
+}
+
+// whatIfSets returns the change sets a what-if of cs reads: every change
+// set's ID and state, the whole of cs, of the in-flight change sets it
+// depends on and of the landed ones it depends on, and the landed
+// depends-on links, as model.WhatIfFrom wants them.
+func whatIfSets(tx *sql.Tx, cs id.ID) ([]changeset.ChangeSet, error) {
 	var stubs []changeset.ChangeSet
 	rows, err := tx.Query(`SELECT id, state FROM change_sets ORDER BY id`)
 	if err != nil {
-		return model.Model{}, nil, err
+		return nil, err
 	}
 	for rows.Next() {
 		var s, state string
 		if err := rows.Scan(&s, &state); err != nil {
 			rows.Close()
-			return model.Model{}, nil, err
+			return nil, err
 		}
 		stubs = append(stubs, changeset.ChangeSet{ID: parseID(s), State: changeset.State(state)})
 	}
 	rows.Close()
 	if err := rows.Err(); err != nil {
-		return model.Model{}, nil, err
+		return nil, err
 	}
 
 	var landed []op.Op
 	lrows, err := tx.Query(`SELECT retire, link, from_id, to_id FROM landed_links ORDER BY change_set, n`)
 	if err != nil {
-		return model.Model{}, nil, err
+		return nil, err
 	}
 	for lrows.Next() {
 		var retire int
 		var link, from, to string
 		if err := lrows.Scan(&retire, &link, &from, &to); err != nil {
 			lrows.Close()
-			return model.Model{}, nil, err
+			return nil, err
 		}
 		if retire != 0 {
 			landed = append(landed, op.Op{Type: op.TypeLinkRetire, Link: parseID(link)})
@@ -279,7 +306,7 @@ func (x *Index) WhatIf(cs id.ID) (model.Model, []model.Problem, error) {
 	}
 	lrows.Close()
 	if err := lrows.Err(); err != nil {
-		return model.Model{}, nil, err
+		return nil, err
 	}
 
 	full := map[id.ID]changeset.ChangeSet{}
@@ -322,18 +349,17 @@ func (x *Index) WhatIf(cs id.ID) (model.Model, []model.Problem, error) {
 		for _, w := range need {
 			c, err := foldOne(tx, w)
 			if err != nil {
-				return model.Model{}, nil, err
+				return nil, err
 			}
 			full[w] = c
 		}
 		if c, ok := full[cs]; ok && extraCreates == nil {
 			if extraCreates, err = createdByLanded(tx, c.Ops); err != nil {
-				return model.Model{}, nil, err
+				return nil, err
 			}
 		}
 	}
-	m, ps := model.WhatIfFrom(seed, build(), cs)
-	return m, ps, nil
+	return build(), nil
 }
 
 // foldOne folds the stored entries of change set cs.

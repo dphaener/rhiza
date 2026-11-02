@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"slices"
+	"strings"
 	"sync"
 	"syscall"
 	"testing"
@@ -249,9 +250,9 @@ func TestReadBudget(t *testing.T) {
 	timingLog := openTimingLog(t, q.String())
 	g := defaultModel(t)
 	var late string
-	for _, v := range []string{viewAsIs, viewToBe} {
+	for _, v := range []string{viewAsIs, viewToBe, viewWhatIfPref + g.summary.Draft.String()} {
 		for _, rd := range budgetReads(g, v) {
-			label := fmt.Sprintf("%-7s %-5s", rd.name, v)
+			label := fmt.Sprintf("%-7s %-5s", rd.name, strings.TrimSuffix(v, g.summary.Draft.String()))
 			log := func(line string) {
 				t.Log(line)
 				timingLog(line)
@@ -385,7 +386,7 @@ func BenchmarkTreeWhole(b *testing.B) {
 }
 
 // BenchmarkShowWhatIf shows a deep node in the what-if of the draft change
-// set: not budgeted (D14).
+// set.
 func BenchmarkShowWhatIf(b *testing.B) {
 	g := defaultModel(b)
 	s := g.summary

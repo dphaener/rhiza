@@ -90,7 +90,7 @@ func TestReadBackendsAgree(t *testing.T) {
 	ctx, _, accepted := readLog(t)
 	stored := mustReader(t, ctx, "to-be", defaultView)
 	whatIf := mustReader(t, ctx, "what-if:"+accepted.String(), defaultView)
-	if stored.m != nil || whatIf.m == nil {
+	if stored.ov != nil || whatIf.ov == nil {
 		t.Fatal("wrong backends")
 	}
 	if got, want := whatIf.View(), "what-if:"+accepted.String(); got != want {

@@ -33,6 +33,7 @@ agent of milestone-1 task 7 (shipit plan), accepted by the owner
 ### In
 
 - relates-to [model-app-read-budget](model-app-read-budget.md) — applies t7-d14-read-budget's 50 ms tree-read budget to the model app's subtree read
+- relates-to [whatif-overlay-reader](whatif-overlay-reader.md) — lifts t7-d14's what-if exemption: with the overlay reader, every budgeted read (show, ls first page, deep-subtree tree, why, log, roadmap, ready) is budgeted in what-if as well as as-is and to-be, under the same 50 ms median; the whole-tree tree stays benchmarked, not budgeted
 - decided-by [fast-reads](../capability/rhiza/views/fast-reads.md)
 
 ## History

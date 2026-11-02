@@ -1,0 +1,40 @@
+{
+  "actor": "01M6CRE8AADMQBDDC7CQV81JEA",
+  "after": [
+    "01M6CQJNTT26TCPSFWE5QR4D10"
+  ],
+  "at": "2026-11-01T23:58:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c974e89e (attempt 2): go test -count=1 ./internal/api -run TestRead -v passed. TestReadBudget timed every budgetReads read in what-if:<fixture draft> on the 50,000-node model with medians show 5.8ms, ls 6.2ms, tree 7.7ms, why 6.7ms, log 7.4ms, roadmap 10.3ms, ready 10.6ms, all under 50 ms. TestReadBackendsAgree (stored vs what-if over Node, Children, Ancestors, Links, Subtree(Light), List, Resolve, Link, ResolveLink, NodesLight, LinksAt, LinksTo, EntriesOf, ChangeSets, Entries) passed. go test ./internal/index -run TestPropertyOverlayAgrees passed 100 rapid cases (183 nodes, 97 overlays) comparing the overlay with model.WhatIf. BenchmarkShowWhatIf's 'not budgeted (D14)' note is removed in budget_test.go. read.go answers what-if views through index.WhatIfOverlay. make check passed fmt, vet and test; self-check flagged only the render of this verifier's own session actor."
+        },
+        "handle": "whatif-reads-in-budget-verified-2",
+        "id": "01M6CRTA7VMS9PC0PJH9XNYECY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6CRTA7VMS9PC0PJH9NJEZGR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CRTA7VMS9PC0PJH9NJEZGR",
+        "id": "01M6CRTB0V39KWH3JX1HR4TPV7",
+        "link": "01M6CRTB0V39KWH3JX1GZM299A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6C8ES8FHJJXHJND4RZJ8DPW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTFB3ZAX4YKX4KA2ZVSZR",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CRTCA33K0DF3SY266GEEX8",
+  "type": "ops",
+  "v": 1
+}
