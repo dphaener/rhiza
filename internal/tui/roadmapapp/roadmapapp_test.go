@@ -368,33 +368,40 @@ func typeText(m *Model, s string) {
 
 func enter(m *Model) { m.Update(tea.KeyPressMsg{Code: tea.KeyEnter}) }
 
-func TestNewWorkStartsPlanRunWithNoChangeSet(t *testing.T) {
+func TestNewWorkFilesPlanRequest(t *testing.T) {
 	for _, tc := range []struct {
 		key, want string
 	}{
-		{"m", "window new -s session:1 new-milestone -c /repo --json -- /bin/rhiza run start --workflow plan --new Ship the thing --milestone"},
-		{"n", "window new -s session:1 new-change-set -c /repo --json -- /bin/rhiza run start --workflow plan --new Ship the thing"},
+		{"m", "Ship the thing --kind milestone"},
+		{"n", "Ship the thing --kind feature"},
 	} {
 		var calls []call
-		m := startModel("{}", &calls)
+		var reqs []string
+		m := NewModel(func(op, ch string, args []string) ([]byte, error) {
+			if op == "request" {
+				reqs = append(reqs, strings.Join(args, " "))
+				return []byte("{}"), nil
+			}
+			return fake(op, ch, args)
+		})
+		m.SetStarter(Starter{
+			Exec: func(name string, args []string, _ string) ([]byte, error) {
+				calls = append(calls, call{name, args})
+				return []byte("{}"), nil
+			},
+			Self: "/bin/rhiza", Root: "/repo", RexSession: "session:1",
+		})
 		key(m, tc.key)
 		typeText(m, "Ship the thing")
 		enter(m)
+		if len(reqs) != 1 || reqs[0] != tc.want {
+			t.Fatalf("%s request calls = %v, want %q", tc.key, reqs, tc.want)
+		}
 		if len(calls) != 0 {
-			t.Fatalf("%s called rex before y: %v", tc.key, calls)
+			t.Errorf("%s ran rex: %v", tc.key, calls)
 		}
-		if v := m.View().Content; !strings.Contains(v, "y/n") {
-			t.Errorf("no y/n question:\n%s", v)
-		}
-		key(m, "y")
-		if len(calls) != 1 || calls[0].name != "rex" {
-			t.Fatalf("%s calls = %v", tc.key, calls)
-		}
-		if got := strings.Join(calls[0].args, " "); got != tc.want {
-			t.Errorf("%s args = %q, want %q", tc.key, got, tc.want)
-		}
-		if v := m.View().Content; !strings.Contains(v, "Opened Rex tab") {
-			t.Errorf("view does not say a tab opened:\n%s", v)
+		if v := m.View().Content; !strings.Contains(v, "Queued") {
+			t.Errorf("view does not say it queued:\n%s", v)
 		}
 	}
 }
