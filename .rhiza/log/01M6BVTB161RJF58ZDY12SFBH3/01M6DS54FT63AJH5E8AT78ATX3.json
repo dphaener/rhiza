@@ -1,0 +1,40 @@
+{
+  "actor": "01M6DRMKHFNGX5RF0WNGFR4M93",
+  "after": [
+    "01M6BZWQAD9PXFZA7KTRDHTDCR"
+  ],
+  "at": "2026-11-02T09:23:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 2bf7d5e0, ran go test ./cmd/rhiza -run 'TestScripts/(hook-commands|describe-golden)$' -count=1: both PASS. hook-commands.txtar checks hook ls shows notify and event unset (text and --json source unset); after git config rhiza.notifyCommand it shows 'echo cfg (git config)'; with a live daemon started with --notify-command (state recorded in daemon.state.json) it shows 'echo flag (daemon flag)' with event still from git config; daemon status --json shows name/command/source of the recorded hooks and text status shows 'Hook notify: echo flag (daemon flag)'; after the daemon stops, config answers again. Re-ran describe-golden with -update: no diff, so the golden is current. make check (fmt-check, vet, test, self-check) exited 0 with a clean tree. Read the diff: internal/api/hook.go resolves flag > git config > unset, hook ls prefers a live daemon's recorded state.Hooks only when the state's process matches the lock holder; daemon start records hooks in state; daemon status lists them."
+        },
+        "handle": "hook-ls-verified",
+        "id": "01M6DS523QG6YA481Z1K05ESE6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DS523QG6YA481Z1HY9YD2G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DS523QG6YA481Z1HY9YD2G",
+        "id": "01M6DS530WX2AE8KFYKGQGCYQV",
+        "link": "01M6DS530WX2AE8KFYKGANC1Y7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZW3EF9VGT73M6T3FB655T",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6BVTB161RJF58ZDY12SFBH3",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DS54FT63AJH5E8AT78ATX3",
+  "type": "ops",
+  "v": 1
+}
