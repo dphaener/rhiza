@@ -1,0 +1,40 @@
+{
+  "actor": "01M6D2A5BGS6AXW7HYVSDBPVEQ",
+  "after": [
+    "01M6D29AJ41852FAJGS53A0T0H"
+  ],
+  "at": "2026-11-02T02:46:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 817b7c33 with a binary built from the branch (go build ./cmd/rhiza), in scratch repos with a bare origin and no fakes: an accepted change set 'QA ship' on worktree branch cs/qa-ship adding feature.txt, while main gained its own feature.txt. rhiza ship rebase --change <cs> exited 1, reported the feature.txt conflict and 'Raised question rebase-conflict-qa-ship.'; the one log entry held both node.create (question) and link.create type blocks to the change set. rhiza show listed 'blocks change set ... QA ship'; rhiza inbox --json listed it with kind blocker, blocks 'this change set'. Running ship rebase again left the .rhiza/log byte count and branch HEAD unchanged. rhiza question answer rebase-conflict-qa-ship 'Keep main' --change <cs> wrote the answer (show: 'answered by answer-rebase-conflict-qa-ship') and the inbox emptied. Upgrade path: a question raised by the merge-base binary had no blocks link and no inbox item; the new binary's ship rebase added only the blocks link (one new entry, no duplicate question), the inbox then listed it as a blocker, and a further run wrote nothing."
+        },
+        "handle": "conflict-question-blocks-change-qa-1",
+        "id": "01M6D2CZQ337RCC97WK39AZEHG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6D2CZQ337RCC97WK04CFTVK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6D2CZQ337RCC97WK04CFTVK",
+        "id": "01M6D2D0GK9621HFR8Z5JYSM36",
+        "link": "01M6D2D0GK9621HFR8Z3664G8B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6D133EKJDM0ACMC374VY9PK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6D12NNWQZHEWFBX60JS04AG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6D2D1SC3Z7QRAH4JRMRBH3B",
+  "type": "ops",
+  "v": 1
+}
