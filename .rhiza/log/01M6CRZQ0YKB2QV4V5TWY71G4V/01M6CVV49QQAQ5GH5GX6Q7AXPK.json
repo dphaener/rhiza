@@ -1,0 +1,40 @@
+{
+  "actor": "01M6CV9RP2J91711R4TJRTJCGW",
+  "after": [
+    "01M6CTTRWAMCKDCBWEGGKB9QDH"
+  ],
+  "at": "2026-11-02T00:51:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 97fe26e1 ran go test ./cmd/rhiza -run TestScripts/daemon-pause -count=1: PASS. The script sets rhiza.daemon.paused true, runs daemon --once on an accepted ready change set: no Started line and the fake rex is never called; daemon status prints 'Paused: yes' and 'Built: paused', --json has reason paused; after setting it false the next --once prints exactly one 'Started a run of' and status shows 'Paused: no'. Diff read: daemonPoll1 skips Resumable and Pick when paused, recording each candidate as SkipPaused while polling and reporting continue. make check exits 0."
+        },
+        "handle": "daemon-pause-verified",
+        "id": "01M6CVV18ZE10FPGRECBYZFSJ0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6CVV18ZE10FPGREC8VAPMQ6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CVV18ZE10FPGREC8VAPMQ6",
+        "id": "01M6CVV2J3Z7NGXHWN6HM1GP4W",
+        "link": "01M6CVV2J3Z7NGXHWN6G08RW6M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS1Y195R6RZEQ6BJEFC1WB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CRZQ0YKB2QV4V5TWY71G4V",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CVV49QQAQ5GH5GX6Q7AXPK",
+  "type": "ops",
+  "v": 1
+}
