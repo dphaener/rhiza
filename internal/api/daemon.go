@@ -93,6 +93,14 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Listen for an interrupt before the lock appears: whoever sees the
+	// lock may signal at once, and that must stop the daemon cleanly.
+	var interrupted <-chan struct{}
+	if !r.Once && ctx.Interrupts != nil {
+		var stop func()
+		interrupted, stop = ctx.Interrupts()
+		defer stop()
+	}
 	lock, err := daemon.TryLock(common, ctx.Now())
 	if err != nil {
 		if h, ok := err.(*daemon.Held); ok {
@@ -189,12 +197,6 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		return resp, poll()
 	}
 	reexec := daemonReexec()
-	var interrupted <-chan struct{}
-	if ctx.Interrupts != nil {
-		var stop func()
-		interrupted, stop = ctx.Interrupts()
-		defer stop()
-	}
 	ticks, stopTicks := daemonTicker()
 	defer stopTicks()
 	l, err := daemonLoop(ctx, common, lock, poll, func() int { return len(pending) }, reexec, ticks, interrupted)
