@@ -152,7 +152,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		}
 		minFree := conf.minFree
 		state.MaxRuns, state.Settings = conf.maxRuns, conf.stateRows()
-		started, resumed, err := daemonPoll1(ctx, rs, pending, unjournaled, conf.maxRuns, minFree, r.Autonomous, conf.mode, &skips)
+		started, resumed, err := daemonPoll1(ctx, rs, pending, unjournaled, conf.maxRuns, minFree, r.Autonomous, conf.mode, conf.paused, &skips)
 		if err == nil {
 			state.Skips = skips
 			if low, free := daemonDiskLow(ctx, minFree); !low {
@@ -393,7 +393,7 @@ func daemonRunsOf(runs []run.Journal, cs string) int {
 
 // daemonPoll1 picks and starts runs once. pending holds the change sets
 // started; unjournaled those whose start never journaled (see daemonHeld).
-func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, minFree uint64, autonomous bool, mode string, skips *[]daemon.Skip) ([]string, []string, error) {
+func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, minFree uint64, autonomous bool, mode string, paused bool, skips *[]daemon.Skip) ([]string, []string, error) {
 	res, _, _, err := planRead(ctx, "daemon", "")
 	if err != nil {
 		return nil, nil, err
@@ -422,7 +422,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		return ok && c.State == changeset.StateAccepted
 	}
 	var resumable []string
-	if !low {
+	if !low && !paused {
 		resumable = daemon.Resumable(runs, host, nil, rs.Live, accepted, ctx.Now())
 	}
 	for _, id := range resumable {
@@ -473,7 +473,13 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		autonomous = false
 	}
 	var picked []string
-	if shipMode == AutonomyOwner {
+	if paused {
+		var ps []daemon.Skip
+		for _, cs := range cands {
+			ps = append(ps, daemon.Skip{Change: cs, Reason: daemon.SkipPaused})
+		}
+		*skips = append(append(planSkips, unj...), ps...)
+	} else if shipMode == AutonomyOwner {
 		var owner []daemon.Skip
 		for _, cs := range cands {
 			owner = append(owner, daemon.Skip{Change: cs, Reason: daemon.SkipShipOwner})
@@ -658,6 +664,7 @@ var skipText = map[string]string{
 	daemon.SkipUnjournaled: "its start wrote no journal",
 	daemon.SkipNoSlot:      "waiting for a slot",
 	daemon.SkipDiskLow:     "disk space is low",
+	daemon.SkipPaused:      "paused",
 	daemon.SkipShipOwner:   "ship is set to owner: only the owner starts its run",
 }
 
@@ -695,6 +702,11 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 		fmt.Fprintf(w, "Version: %s\n", r.Version)
 	}
 	fmt.Fprintf(w, "Started: %s\nLast poll: %s\nMax runs: %d\nAutonomous: %t\n", r.Started, r.LastPoll, r.MaxRuns, r.Autonomous)
+	for _, s := range r.Settings {
+		if s.Key == "rhiza.daemon.paused" {
+			fmt.Fprintf(w, "Paused: %s\n", map[bool]string{true: "yes", false: "no"}[s.Value == "true"])
+		}
+	}
 	if len(r.Settings) > 0 {
 		fmt.Fprintln(w, "Settings:")
 		for _, s := range r.Settings {

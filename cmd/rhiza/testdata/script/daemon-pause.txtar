@@ -1,0 +1,42 @@
+# With rhiza.daemon.paused true the daemon starts and resumes no runs but
+# keeps polling; daemon status says paused and why each candidate waits.
+# Rex is faked and only logs.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new Built --title Built
+exec rhiza add capability built-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# Paused: nothing starts, status says so and skips the candidate as paused.
+exec rhiza daemon set rhiza.daemon.paused true
+exec rhiza daemon --permission-mode manual --once
+! stdout 'Started'
+! exists $WORK/rex.log
+exec rhiza daemon status
+stdout '^Paused: yes$'
+stdout 'Built: paused'
+exec rhiza daemon status --json
+stdout '"reason": "paused"'
+
+# Unpaused: the next poll starts the run.
+exec rhiza daemon set rhiza.daemon.paused false
+exec rhiza daemon --permission-mode manual --once
+stdout -count=1 '^Started a run of '
+exec rhiza daemon status
+stdout '^Paused: no$'
+
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

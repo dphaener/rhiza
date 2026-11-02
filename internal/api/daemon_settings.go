@@ -124,6 +124,7 @@ type daemonConf struct {
 	maxRuns int
 	minFree uint64
 	mode    string
+	paused  bool
 }
 
 // daemonConfOf resolves the settings for a poll: config, then the request's
@@ -149,6 +150,7 @@ func daemonConfOf(ctx *Ctx, r DaemonRequest) (daemonConf, error) {
 	c := daemonConf{rows: rows}
 	c.maxRuns, _ = strconv.Atoi(settingValue(rows, "rhiza.daemon.maxRuns"))
 	c.minFree, _ = daemon.ParseSize(settingValue(rows, "rhiza.daemon.minFree"))
+	c.paused = settingValue(rows, "rhiza.daemon.paused") == "true"
 	c.mode = settingValue(rows, "rhiza.daemon.permissionMode")
 	return c, nil
 }
