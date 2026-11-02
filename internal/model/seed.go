@@ -156,3 +156,53 @@ func (s Seed) builder() *builder {
 func IsDuplicateHandle(err error) bool {
 	return errors.Is(err, ErrHandle)
 }
+
+// Source gives a delta computation the as-is rows it needs, one at a time,
+// from wherever they are stored.
+type Source interface {
+	// SeedNode returns the as-is node i with its aspects and placement.
+	SeedNode(i id.ID) (SeedNode, bool, error)
+	// SeedLink returns the as-is link i with its aspects.
+	SeedLink(i id.ID) (SeedLink, bool, error)
+}
+
+// Delta is what a what-if changes over the as-is view: every node and link
+// its operations read or wrote, as they stand in the what-if. A node or
+// link the what-if view has that Delta lacks is as the as-is view has it.
+// Nothing is ever removed from a view, only retired, so Delta names every
+// row that differs.
+type Delta struct {
+	Nodes []Node
+	Links []Link
+}
+
+// WhatIfDelta is WhatIfFrom over a seed with no Nodes and no Links, whose
+// as-is rows src gives as the operations reach them: it never holds the
+// whole as-is view. It returns the nodes and links that were read, sorted
+// by ID, and the problems of the change sets' own operations; the
+// duplicate-handle problems are left out, as they need the whole view.
+// The error is src's.
+func WhatIfDelta(seed Seed, src Source, sets []changeset.ChangeSet, cs id.ID) (Delta, []Problem, error) {
+	b := seed.builder()
+	b.src = src
+	whatIfLayer(b, sets, cs)
+	if b.srcErr != nil {
+		return Delta{}, nil, b.srcErr
+	}
+	var d Delta
+	for _, r := range b.m.nodes {
+		d.Nodes = append(d.Nodes, copyNode(r.v))
+	}
+	for _, r := range b.m.links {
+		d.Links = append(d.Links, copyLink(r.v))
+	}
+	slices.SortFunc(d.Nodes, func(a, b Node) int { return id.Compare(a.ID, b.ID) })
+	slices.SortFunc(d.Links, func(a, b Link) int { return id.Compare(a.ID, b.ID) })
+	var ps []Problem
+	for i, p := range b.problems {
+		if _, ok := b.repaired[i]; !ok {
+			ps = append(ps, p)
+		}
+	}
+	return d, sortProblems(ps), nil
+}

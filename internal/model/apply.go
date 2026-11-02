@@ -87,6 +87,11 @@ type builder struct {
 	// and repaired the indexes in problems of those they did.
 	held     map[id.ID][]held
 	repaired map[int]struct{}
+	// src, when set, holds the as-is rows b.m lacks, which node and link
+	// load on first use (see WhatIfDelta). srcErr is the first error it
+	// gave.
+	src    Source
+	srcErr error
 }
 
 // newBuilder returns an empty builder whose links may name the change sets
@@ -232,7 +237,7 @@ func (b *builder) applyOp(cs id.ID, o op.Op) error {
 		return b.createLink(ref, o)
 
 	case op.TypeNodeUpdate, op.TypeNodeMove, op.TypeNodeRetire:
-		r, ok := b.m.nodes[o.Node]
+		r, ok := b.node(o.Node)
 		if !ok {
 			return fmt.Errorf("%w: node %s", ErrMissing, o.Node)
 		}
@@ -256,7 +261,7 @@ func (b *builder) applyOp(cs id.ID, o op.Op) error {
 		return conflict
 
 	case op.TypeLinkRetire:
-		r, ok := b.m.links[o.Link]
+		r, ok := b.link(o.Link)
 		if !ok {
 			return fmt.Errorf("%w: link %s", ErrMissing, o.Link)
 		}
@@ -301,15 +306,15 @@ func checkBase(o op.Op, t id.ID, retired bool, history []Ref, written [][]string
 }
 
 func (b *builder) exists(i id.ID) bool {
-	_, n := b.m.nodes[i]
-	_, l := b.m.links[i]
+	_, n := b.node(i)
+	_, l := b.link(i)
 	return n || l
 }
 
 // checkParent checks that p can take a child: it is a live node of a kind
 // with children.
 func (b *builder) checkParent(p id.ID) error {
-	r, ok := b.m.nodes[p]
+	r, ok := b.node(p)
 	switch {
 	case !ok:
 		return fmt.Errorf("%w: parent %s", ErrMissing, p)
@@ -350,13 +355,13 @@ func (b *builder) createLink(ref Ref, o op.Op) error {
 		name string
 		id   id.ID
 	}{{"from", o.From}, {"to", o.To}} {
-		_, node := b.m.nodes[e.id]
+		_, node := b.node(e.id)
 		_, cs := b.known[e.id]
 		if !node && !cs {
 			return fmt.Errorf("%w: %s %s is neither a node nor a known change set", ErrMissing, e.name, e.id)
 		}
 	}
-	if _, ok := b.m.nodes[o.Decision]; !o.Decision.IsZero() && !ok {
+	if _, ok := b.node(o.Decision); !o.Decision.IsZero() && !ok {
 		return fmt.Errorf("%w: decision %s", ErrMissing, o.Decision)
 	}
 	b.m.links[o.Link] = &record[Link]{
@@ -386,7 +391,7 @@ func (b *builder) checkMove(n Node, o op.Op) error {
 		if p == n.ID {
 			return fmt.Errorf("%w: %s is %s or below it", ErrCycle, o.Parent, n.ID)
 		}
-		r, ok := b.m.nodes[p]
+		r, ok := b.node(p)
 		if !ok {
 			break
 		}
@@ -442,4 +447,52 @@ func (b *builder) removeChild(parent, child id.ID) {
 	if len(b.m.children[parent]) == 0 {
 		delete(b.m.children, parent)
 	}
+}
+
+// node returns the record of node i, loading it from the source on first
+// use when b has one.
+func (b *builder) node(i id.ID) (*record[Node], bool) {
+	if r, ok := b.m.nodes[i]; ok {
+		return r, true
+	}
+	if b.src == nil || b.srcErr != nil || i.IsZero() {
+		return nil, false
+	}
+	sn, ok, err := b.src.SeedNode(i)
+	if err != nil {
+		b.srcErr = err
+		return nil, false
+	}
+	if !ok {
+		return nil, false
+	}
+	r := &record[Node]{v: sn.Node, aspects: sn.Aspects}
+	b.m.nodes[i] = r
+	if op.HasParent(sn.Node.Kind) {
+		b.addChild(sn.Node.Parent, i)
+	}
+	b.placed[i] = mark{seq: sn.Placed.Seq, ref: sn.Placed.Ref}
+	return r, true
+}
+
+// link returns the record of link i, loading it from the source on first
+// use when b has one.
+func (b *builder) link(i id.ID) (*record[Link], bool) {
+	if r, ok := b.m.links[i]; ok {
+		return r, true
+	}
+	if b.src == nil || b.srcErr != nil || i.IsZero() {
+		return nil, false
+	}
+	sl, ok, err := b.src.SeedLink(i)
+	if err != nil {
+		b.srcErr = err
+		return nil, false
+	}
+	if !ok {
+		return nil, false
+	}
+	r := &record[Link]{v: sl.Link, aspects: sl.Aspects}
+	b.m.links[i] = r
+	return r, true
 }

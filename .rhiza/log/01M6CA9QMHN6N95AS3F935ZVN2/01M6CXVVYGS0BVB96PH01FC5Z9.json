@@ -1,0 +1,63 @@
+{
+  "actor": "01M6CXPQ6GEWF4KF82BFHJ2MRB",
+  "after": [
+    "01M6CXNHAR1YCWK0JCTDND7XP2"
+  ],
+  "at": "2026-11-02T01:27:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 423ba9c5, by hand with a scratch build (go build -o outside PATH) in a scratch git repo, RHIZA_*/REX_* unset: accepted a change set, started the real daemon (rhiza daemon --max-runs 3 --min-free 1000T --permission-mode plan; the disk guard kept it from starting any run). daemon status showed running, the skip 'Skip me: serves no milestone' and disk low. Rebuilt the binary in place; the daemon logged 'binary changed, re-executing' and the same pid took the lock again. A watcher saved every version of .git/rhiza/daemon.state.json: the new image's first write had the new start 01:26:16.082 with the old image's last poll 01:26:15.741, the skip, max runs 3 and disk_low, and a zero stopped time; its own first poll then wrote last poll 01:26:16.099. daemon status after the re-exec showed running, Started 01:26:16, the skip, no stopped line; after SIGINT it showed 'Daemon not running' with 'Last daemon ... stopped'. go test ./internal/api -run TestDaemon -count=1 passes."
+        },
+        "handle": "daemon-state-at-start-qa-1",
+        "id": "01M6CXVQN2S6RBZNK4HXR8BATA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6CXVQN2S6RBZNK4HVAQW014",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CXVQN2S6RBZNK4HVAQW014",
+        "id": "01M6CXVRJW5447A8914J9JMCAR",
+        "link": "01M6CXVRJW5447A8914FPBZRDV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CAACNGV26NMDMKTZZ3759E",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 423ba9c5, by hand with a scratch build in a scratch git repo, RHIZA_* unset: created change set A, propose/accept/land, wrote A into .rhiza/local/change. rhiza status showed '(landed): Daemon test cs' and 'next: rhiza change use --none'; rhiza status --hook printed 'The current change set is landed; clear it with `rhiza change use --none`.'; rhiza add capability other exited 3 with 'next: rhiza change use --none', and --json gave code conflict with the same next; the current file still named A afterwards. After rhiza change use --none, status showed 'Change set: none current' with no hint and the hook 'No current change set.' go test ./cmd/rhiza -run TestScripts/status-terminal-current passes."
+        },
+        "handle": "terminal-current-next-qa-1",
+        "id": "01M6CXVSG9FW5PHHESG9QSGT3Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6CXVSG9FW5PHHESG7WQ3NYF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CXVSG9FW5PHHESG7WQ3NYF",
+        "id": "01M6CXVTE1ZPMJPJC586CDWN56",
+        "link": "01M6CXVTE1ZPMJPJC583PFA9PR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CAAEEEEZ1XHKEA811180P7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CA9QMHN6N95AS3F935ZVN2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CXVVYGS0BVB96PH01FC5Z9",
+  "type": "ops",
+  "v": 1
+}

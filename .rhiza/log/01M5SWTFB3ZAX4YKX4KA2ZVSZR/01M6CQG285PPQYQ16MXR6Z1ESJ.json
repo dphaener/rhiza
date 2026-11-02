@@ -1,0 +1,40 @@
+{
+  "actor": "01M6CAJERJ3SFFF1426VQTSEZN",
+  "after": [
+    "01M6CAHQ1P62JGNJ88SA4R01V5"
+  ],
+  "at": "2026-11-01T23:35:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at eaf04bd9 with the built binary (go build ./cmd/rhiza) against the merge-base 3ef3d9c5 binary. (1) Scratch repo: 270 as-is nodes, accepted change set A (add under cap-2, set, link, change-set serves, retire) and draft B depending on A (add under A's node, set over A's set, rename handle, mv to new parent, mv to root, retire node with children, retire constraint, question blocks, decided-by, unlink, intent child). 50 reads (show by handle/ID/prefix/retired/renamed/link, ls with kind/parent/retired/limit, tree incl. --retired/--depth/--kind, why, log, roadmap, ready, search, slice) x what-if:A and what-if:B, --json: all 100 outputs and exit codes byte-identical between old and new; B's view shows its writes (tree has cache-evict and cap-four, not cap-1; cap-12 under cap-9; cap-3 statement from B). (2) 50,000-node model from internal/gen.Default via the CLI: 26 reads in what-if of the draft and of the accepted change set identical between binaries. Wall-clock CLI medians of 7 runs in what-if:<draft>, process start included: show 33.1, ls 33.2, tree 35.3, why 33.8, log 34.4, roadmap 37.1, ready 37.1 ms (old binary 226-290 ms); as-is 27-32 ms. go test ./internal/api -run 'TestReadBudget|TestReadBackendsAgree' and ./internal/index -run TestPropertyOverlayAgrees passed."
+        },
+        "handle": "whatif-reads-in-budget-qa-1",
+        "id": "01M6CQG056PEC18R6JAZGZJ4C5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6CQG056PEC18R6JAYR7CPNV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CQG056PEC18R6JAYR7CPNV",
+        "id": "01M6CQG0Y91TM4YKME8G4QX0F1",
+        "link": "01M6CQG0Y91TM4YKME8FNNWP2E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6C8ES8FHJJXHJND4RZJ8DPW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M5SWTFB3ZAX4YKX4KA2ZVSZR",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CQG285PPQYQ16MXR6Z1ESJ",
+  "type": "ops",
+  "v": 1
+}

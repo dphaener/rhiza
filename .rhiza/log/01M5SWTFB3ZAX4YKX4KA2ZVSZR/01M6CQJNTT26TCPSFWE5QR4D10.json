@@ -1,0 +1,27 @@
+{
+  "actor": "01M6CQJ646D7VYBK484EBP02E4",
+  "after": [
+    "01M6CQG285PPQYQ16MXR6Z1ESJ"
+  ],
+  "at": "2026-11-01T23:37:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6C8EJCQZSCA7RK5SZNP0BRF",
+        "id": "01M6CQJN1WRXG6778W9NFSK703",
+        "link": "01M6CQJN1WRXG6778W9KFD4XFP",
+        "note": "lifts t7-d14's what-if exemption: with the overlay reader, every budgeted read (show, ls first page, deep-subtree tree, why, log, roadmap, ready) is budgeted in what-if as well as as-is and to-be, under the same 50 ms median; the whole-tree tree stays benchmarked, not budgeted",
+        "op": "link.create",
+        "to": "01M5SWSCG2YEVDXH7MTN70MBWJ",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M5SWTFB3ZAX4YKX4KA2ZVSZR",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CQJNTT26TCPSFWE5QR4D10",
+  "type": "ops",
+  "v": 1
+}

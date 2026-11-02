@@ -16,6 +16,10 @@ A starting daemon image writes its state once before its first poll, with its ow
 
 - derived-from [m21-orchestrator-picks](../source/m21-orchestrator-picks.md)
 
+### In
+
+- decided-by [daemon-state-at-start](../capability/rhiza/orchestration/daemon/daemon-reexec-new-binary/daemon-state-at-start.md)
+
 ## History
 
 - `01M6CA9PFRY55ZTXNHWDM95Y9A` Plan milestone 21: status tells the truth, picked by the orchestrator under the owner's standing instruction

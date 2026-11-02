@@ -40,6 +40,12 @@ func WhatIf(sets []changeset.ChangeSet, cs id.ID) (Model, []Problem) {
 // whatIf layers change set cs of sets on b, an as-is builder. clone says
 // whether the result must share nothing with b.
 func whatIf(b *builder, sets []changeset.ChangeSet, cs id.ID, clone bool) (Model, []Problem) {
+	whatIfLayer(b, sets, cs)
+	return b.finishModel(clone)
+}
+
+// whatIfLayer is whatIf but for finishing the builder.
+func whatIfLayer(b *builder, sets []changeset.ChangeSet, cs id.ID) {
 	i := -1
 	for j, s := range sets {
 		if s.ID == cs {
@@ -67,7 +73,6 @@ func whatIf(b *builder, sets []changeset.ChangeSet, cs id.ID, clone bool) (Model
 			b.problems = append(b.problems, Problem{ChangeSet: cs, Op: r.Op, Err: revisedErr(r)})
 		}
 	}
-	return b.finishModel(clone)
 }
 
 // revisedErr is the ErrConflict for r: the dependency's op that was revised

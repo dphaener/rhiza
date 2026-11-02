@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"os"
 	"testing"
 	"time"
 
@@ -216,4 +217,54 @@ func TestDaemonKeepsUnjournaledHolds(t *testing.T) {
 		t.Fatalf("restored hold of B released before 15 minutes")
 	}
 
+}
+
+// A daemon image's start state, written before any poll, shows the new
+// image's start and settings with the last poll, runs and skips the earlier
+// image of the same pid left, and no stopped line.
+func TestDaemonStateAtStart(t *testing.T) {
+	ctx, common := daemonRepo(t)
+	host, _ := os.Hostname()
+	old := daemon.Holder{Host: host, Pid: os.Getpid(), Started: time.Unix(1700000000, 0).UTC()}
+	poll := time.Unix(1700000500, 0).UTC()
+	seed := daemon.State{
+		Process: old, LastPoll: poll, MaxRuns: 3, Autonomous: false,
+		Runs:        []daemon.LiveRun{{ID: "RUN1", Change: "CS1", State: "running"}},
+		Skips:       []daemon.Skip{{Change: "CS2", Reason: daemon.SkipNotReady}},
+		Unjournaled: []daemon.Event{{Change: "CS3", At: poll, Runs: 1}},
+	}
+	os.MkdirAll(daemon.Dir(common), 0o755)
+	if err := daemon.WriteState(common, seed); err != nil {
+		t.Fatal(err)
+	}
+	lock, err := daemon.TryLock(common, time.Unix(1700001000, 0))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer lock.Unlock()
+	self := daemon.ReadHolder(common)
+	state, held := daemonStartState(common, self, "v2", 5, true)
+	if err := daemon.WriteState(common, state); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := held["CS3"]; !ok {
+		t.Fatalf("hold of CS3 not kept: %v", held)
+	}
+	out, err := callOp(t, ctx, "daemon.status", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := out.(DaemonStatusResponse)
+	if !got.Running || got.Started != time.Unix(1700001000, 0).UTC().Format(time.RFC3339) {
+		t.Fatalf("running %v, started %q", got.Running, got.Started)
+	}
+	if got.LastPoll != poll.Format(time.RFC3339) || got.MaxRuns != 5 || !got.Autonomous {
+		t.Fatalf("last poll %q, max runs %d, autonomous %v", got.LastPoll, got.MaxRuns, got.Autonomous)
+	}
+	if len(got.Runs) != 1 || got.Runs[0].ID != "RUN1" || len(got.Skipped) != 1 || got.Skipped[0].Change != "CS2" || len(got.Unjournaled) != 1 {
+		t.Fatalf("runs %+v, skipped %+v, unjournaled %+v", got.Runs, got.Skipped, got.Unjournaled)
+	}
+	if got.Stopped != "" {
+		t.Fatalf("stopped %q on a running daemon", got.Stopped)
+	}
 }
