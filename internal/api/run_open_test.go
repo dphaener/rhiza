@@ -96,3 +96,42 @@ func TestRunOpenFocusesLiveRunTab(t *testing.T) {
 		t.Errorf("gone block: %+v, rex calls %q; want tab gone after one inspect", got, calls)
 	}
 }
+
+// run.open --run focuses a live run by its ID, also one with no change set
+// yet; the change set and --run together, or neither, are usage errors.
+func TestRunOpenByRun(t *testing.T) {
+	f := newSessionFixture(t, "x")
+	rs := run.NewStore(run.Dir(f.common))
+	at := time.Unix(1700000000, 0).UTC()
+	if err := rs.Create("PLANRUN", run.Entry{Type: run.TypeStarted, At: at, Step: "s", Started: &run.Started{Workflow: "plan"}}); err != nil {
+		t.Fatal(err)
+	}
+	if err := rs.Append("PLANRUN", run.Entry{Type: run.TypeProcess, At: at, Process: &run.Process{RexSession: "session:s", RexBlock: "block:3"}}); err != nil {
+		t.Fatal(err)
+	}
+	unlock, ok, err := rs.TryLock("PLANRUN")
+	if err != nil || !ok {
+		t.Fatalf("lock: %v %v", ok, err)
+	}
+	t.Cleanup(unlock)
+	op, _ := Lookup("run.open")
+	f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) { return nil, nil }
+	got, err := op.Run(f.ctx, RunOpenRequest{Run: "PLANRUN"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := got.(RunOpenResponse)
+	if !r.Live || !r.Opened || r.Run != "PLANRUN" || r.Tab != "block:3" {
+		t.Fatalf("response = %+v", r)
+	}
+	got, err = op.Run(f.ctx, RunOpenRequest{Run: "NOPE"})
+	if err != nil || got.(RunOpenResponse).Live {
+		t.Fatalf("unknown run = %+v, %v", got, err)
+	}
+	if _, err := op.Run(f.ctx, RunOpenRequest{}); err == nil {
+		t.Fatal("neither accepted")
+	}
+	if _, err := op.Run(f.ctx, RunOpenRequest{Run: "PLANRUN", Change: "x"}); err == nil {
+		t.Fatal("both accepted")
+	}
+}
