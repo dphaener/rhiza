@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6D12NNWQZHEWFBX63NFCVW4"
+  ],
+  "at": "2026-11-02T02:23:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A ship rebase testscript with a code conflict: the raised question has a blocks link to the change set; rhiza inbox --json lists it as a blocker of that change set; rhiza question answer <q> <words> --change <cs> writes the answer; raising it again on the same conflict writes nothing",
+          "statement": "A rebase-conflict question raised by ship rebase blocks the change set being shipped, so the inbox lists it as a blocker and rhiza question answer accepts it with --change"
+        },
+        "handle": "conflict-question-blocks-change",
+        "id": "01M6D133EKJDM0ACMC3A0CR1YD",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6D133EKJDM0ACMC374VY9PK",
+        "op": "node.create",
+        "parent": "01M5X3GCHZRJ9YPV8BA37J1AN3"
+      },
+      {
+        "decision": null,
+        "from": "01M6D133EKJDM0ACMC374VY9PK",
+        "id": "01M6D1349ET0WKDRVJT17GBNGG",
+        "link": "01M6D1349ET0WKDRVJT0NCH94Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6D12WABYE8HRKCN5RP6SYFA",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6D12NNWQZHEWFBX60JS04AG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6D135M34C3JKBE4C4299QGH",
+  "type": "ops",
+  "v": 1
+}

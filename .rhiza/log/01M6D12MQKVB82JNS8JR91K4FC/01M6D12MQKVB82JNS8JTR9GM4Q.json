@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-02T02:23:09Z",
+  "body": {
+    "intent": "Plan milestone 23: answer a conflict from the inbox",
+    "kind": "record",
+    "sources": [],
+    "title": "Plan milestone 23"
+  },
+  "change_set": "01M6D12MQKVB82JNS8JR91K4FC",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6D12MQKVB82JNS8JTR9GM4Q",
+  "type": "open",
+  "v": 2
+}
