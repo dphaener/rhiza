@@ -81,6 +81,10 @@ const oldFolderNotice = "This repo keeps its model in " + store.OldDir + "/, the
 // guideInstallNext is the command that installs or updates the user guide.
 const guideInstallNext = "rhiza guide install --agent claude"
 
+// clearCurrentNext is the command that clears a current change set that
+// can no longer be written to.
+const clearCurrentNext = "rhiza change use --none"
+
 // hookIntentMax is the most bytes of intent the hook prints.
 const hookIntentMax = 60
 
@@ -154,6 +158,11 @@ func status(ctx *Ctx) (StatusResponse, error) {
 	if resp.ChangeSet == nil {
 		resp.Next = append(resp.Next, newEntryNext)
 	}
+	if cur, err := w.current(); err == nil && !cur.IsZero() && cur == cs && resp.ChangeSet != nil && resp.ChangeSet.State.Terminal() {
+		// The current file, not --change, names a change set nothing can
+		// be written to; nothing clears the file implicitly.
+		resp.Next = append(resp.Next, clearCurrentNext)
+	}
 	return resp, nil
 }
 
@@ -219,6 +228,10 @@ func (r StatusResponse) humanHook(w io.Writer) {
 	fmt.Fprintf(w, "In flight: %s.\n", r.Attention.counts())
 	var updates []string
 	for _, n := range r.Next {
+		if n == clearCurrentNext {
+			fmt.Fprintf(w, "The current change set is %s; clear it with `%s`.\n", r.ChangeSet.State, n)
+			continue
+		}
 		if strings.HasPrefix(n, guideInstallNext) {
 			updates = append(updates, "`"+n+"`")
 		}

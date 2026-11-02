@@ -1,0 +1,43 @@
+# A current change set that has landed is named by status and the hook with
+# the command that clears it, and a refused write carries the same next.
+# Nothing clears the current file implicitly.
+
+exec rhiza init
+exec rhiza change new 'Land me'
+exec rhiza add capability thing
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+! exists .rhiza/local/change
+
+# Write the landed change set into the current file by hand.
+exec sh -c 'echo 01M5PWGEF85Y185JZ2ZGCNH40N > .rhiza/local/change'
+
+exec rhiza status
+stdout '\(landed\): Land me$'
+stdout '^next: rhiza change use --none$'
+exec rhiza status --json
+stdout '"state": "landed"'
+stdout '"rhiza change use --none"'
+exec rhiza status --hook
+stdout '^The current change set is landed; clear it with `rhiza change use --none`\.$'
+
+# --change naming another landed change set gives no hint.
+exec rhiza status --change 01M5PWGEF85Y185JZ2ZAN43Q1G
+! stdout 'change use --none'
+
+# A refused write carries the same next.
+! exec rhiza add capability other
+stderr '^next: rhiza change use --none$'
+! exec rhiza add capability other --json
+stdout '"code": "conflict"'
+stdout '"next": "rhiza change use --none"'
+
+# Nothing cleared the file; clearing it ends the hint.
+exists .rhiza/local/change
+exec rhiza change use --none
+exec rhiza status
+stdout '^- Change set: none current$'
+! stdout 'change use --none'
+exec rhiza status --hook
+stdout '^No current change set\.$'

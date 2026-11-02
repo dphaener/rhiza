@@ -262,8 +262,12 @@ func writeTarget(w *workspace, ctx *Ctx) (id.ID, error) {
 		return id.ID{}, NotFoundf("no change set %s", cs).WithNext(changeLsNext)
 	}
 	if c.State.Terminal() {
+		next := newEntryNext
+		if cur, err := w.current(); err == nil && cur == cs {
+			next = clearCurrentNext
+		}
 		return id.ID{}, Conflictf("change set %s is %s; nothing can be written to it", cs, c.State).
-			WithNext(newEntryNext)
+			WithNext(next)
 	}
 	return cs, nil
 }
