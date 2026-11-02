@@ -2377,6 +2377,70 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "hook.run",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "description": "Run this command instead of the hook's own, through sh -c in the repo root",
+            "type": "string"
+          },
+          "hook": {
+            "description": "The hook to run: notify or event",
+            "type": "string"
+          }
+        },
+        "required": [
+          "hook"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "description": "The command's exit code: 0 when it succeeded, else non-zero (1 when it timed out or did not start)",
+            "type": "integer"
+          },
+          "command": {
+            "description": "The command that ran",
+            "type": "string"
+          },
+          "error": {
+            "description": "Why it failed; absent on success",
+            "type": "string"
+          },
+          "hook": {
+            "description": "The hook that ran",
+            "type": "string"
+          },
+          "output": {
+            "description": "What the command wrote to stdout and stderr",
+            "type": "string"
+          },
+          "payload": {
+            "description": "The sample JSON sent on stdin",
+            "type": "string"
+          },
+          "source": {
+            "description": "Where the command is set: command flag, daemon flag or git config",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "command",
+          "hook",
+          "output",
+          "payload",
+          "source"
+        ],
+        "type": "object"
+      },
+      "summary": "Run the notify or event hook command once with a sample payload, showing its output and exit status; writes nothing",
+      "write": false
+    },
+    {
       "name": "inbox",
       "request": {
         "additionalProperties": false,

@@ -75,6 +75,13 @@ func runNotifyCommand(ctx *Ctx, command string, it InboxItem, notice string) err
 // newline on stdin and env added to the environment, killing it past the
 // hook timeout.
 func runHookCommand(ctx *Ctx, command string, in []byte, env []string) error {
+	_, err := runHookCommandOutput(ctx, command, in, env)
+	return err
+}
+
+// runHookCommandOutput is runHookCommand that also returns the command's
+// combined output. A failing command's error carries that output.
+func runHookCommandOutput(ctx *Ctx, command string, in []byte, env []string) (string, error) {
 	timeout := notifyTimeoutFor(ctx)
 	c, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
@@ -88,14 +95,14 @@ func runHookCommand(ctx *Ctx, command string, in []byte, env []string) error {
 	cmd.WaitDelay = time.Second
 	err := cmd.Run()
 	if c.Err() != nil {
-		return fmt.Errorf("timed out after %s", timeout)
+		return out.String(), fmt.Errorf("timed out after %s", timeout)
 	}
 	if err != nil {
 		msg := strings.TrimSpace(out.String())
 		if msg != "" {
-			return fmt.Errorf("%v: %s", err, msg)
+			return out.String(), fmt.Errorf("%w: %s", err, msg)
 		}
-		return err
+		return out.String(), err
 	}
-	return nil
+	return out.String(), nil
 }

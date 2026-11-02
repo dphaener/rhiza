@@ -44,6 +44,31 @@ wait d
 exec rhiza hook ls
 stdout '^notify: echo cfg \(git config\)$'
 
+# hook run runs a command once with a sample payload and writes nothing.
+exec git config rhiza.notifyCommand 'cat >> $WORK/notify.log; echo "kind=$RHIZA_INBOX_KIND" >> $WORK/notify.log; echo ran'
+cp .git/rhiza/daemon.state.json $WORK/state.before
+exec rhiza hook run notify
+stdout 'ran'
+stdout 'exit status 0'
+exec grep -c 'kind=question' $WORK/notify.log
+stdout '^1$'
+exec grep -q '"kind":"question"' $WORK/notify.log
+
+exec rhiza hook run event --command 'echo "ev=$RHIZA_EVENT"'
+stdout 'ev=accepted'
+
+! exec rhiza hook run event --command 'echo boom; exit 7'
+stdout 'boom'
+stdout 'exit status 7'
+
+exec git config --unset rhiza.eventCommand
+! exec rhiza hook run event
+stderr 'unset'
+exec rhiza hook run event --json --command true
+stdout '"code": 0'
+! exec rhiza hook run nope
+
+cmp .git/rhiza/daemon.state.json $WORK/state.before
 -- bin/rex --
 #!/bin/sh
 echo "rex $*" >> "$WORK/rex.log"
