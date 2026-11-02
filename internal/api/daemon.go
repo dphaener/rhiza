@@ -127,17 +127,10 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	rs := run.NewStore(run.Dir(common))
 	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}}
 	pending := map[string]daemonPending{}
-	unjournaled := map[string]daemonPending{}
-	state := daemon.State{Process: self, Version: ctx.Version, MaxRuns: r.MaxRuns, Autonomous: r.Autonomous, Runs: []daemon.LiveRun{}}
-	if prev, ok := daemon.ReadState(common); ok {
-		state.LastStarted, state.LastResumed = prev.LastStarted, prev.LastResumed
-		state.Notified = prev.Notified
-		state.Hooked = prev.Hooked
-		state.Events, state.EventsSeeded = prev.Events, prev.EventsSeeded
-		state.DiskLow = prev.DiskLow
-		// A re-exec, or a restart, keeps the holds of the daemon before.
-		unjournaled = daemonRestoreUnjournaled(prev.Unjournaled)
-	}
+	state, unjournaled := daemonStartState(common, self, ctx.Version, r.MaxRuns, r.Autonomous)
+	// Write it before the first poll, so status matches the lock holder
+	// at once, through a re-exec.
+	daemon.WriteState(common, state)
 	saveState := func() {
 		state.LastPoll = ctx.Now().UTC()
 		if runs, err := rs.List(); err == nil {
@@ -202,6 +195,32 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		lock = l
 	}
 	return resp, err
+}
+
+// daemonStartState is the state a daemon image writes before its first poll:
+// its own process, start time and settings, and what the daemon before it
+// (an earlier image of a re-exec, or a restart) left: its last poll, live
+// runs, skips, hooks and unjournaled holds. The holds come back as the
+// daemon's unjournaled map.
+func daemonStartState(common string, self daemon.Holder, version string, maxRuns int, autonomous bool) (daemon.State, map[string]daemonPending) {
+	state := daemon.State{Process: self, Version: version, MaxRuns: maxRuns, Autonomous: autonomous, Runs: []daemon.LiveRun{}}
+	unjournaled := map[string]daemonPending{}
+	if prev, ok := daemon.ReadState(common); ok {
+		state.LastPoll = prev.LastPoll
+		if prev.Runs != nil {
+			state.Runs = prev.Runs
+		}
+		state.Skips = prev.Skips
+		state.Unjournaled = prev.Unjournaled
+		state.LastStarted, state.LastResumed = prev.LastStarted, prev.LastResumed
+		state.Notified = prev.Notified
+		state.Hooked = prev.Hooked
+		state.Events, state.EventsSeeded = prev.Events, prev.EventsSeeded
+		state.DiskLow = prev.DiskLow
+		// A re-exec, or a restart, keeps the holds of the daemon before.
+		unjournaled = daemonRestoreUnjournaled(prev.Unjournaled)
+	}
+	return state, unjournaled
 }
 
 // daemonLoop polls now and at each tick until interrupted. At the end of a
