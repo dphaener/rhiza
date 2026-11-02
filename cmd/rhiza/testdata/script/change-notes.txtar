@@ -10,6 +10,7 @@ exec rhiza add capability store --field 'statement=Keeps the log'
 exec rhiza note add store 'Is the log append-only?'
 stdout '^Wrote entry [0-9A-Z]{26} to change set 01M5PWGEF85Y185JZ2ZGCNH40N\.$'
 stdout '^- link [0-9A-Z]{26}$'
+stdout '^- node [0-9A-Z]{26} \(note-[0-9a-z]{14}\)$'
 fold-ok
 exec rhiza render
 exec rhiza check

@@ -34,17 +34,9 @@ type NoteAddRequest struct {
 	Op     string `json:"op,omitempty" flag:"op" desc:"An operation of the target change set the note is about (the ID change show lists, or the operation's own ID; a unique prefix of 4+ characters)"`
 }
 
-// noteHandle is the handle of a note on target name: note-<name>, with a
-// -2, -3 suffix when that is taken.
-func noteHandle(m Model, name string) string {
-	base := "note-" + handleSlug(name)
-	if len(base) > maxHandle-4 {
-		base = strings.TrimRight(base[:maxHandle-4], "-")
-	}
-	return uniqueHandle(base, func(h string) bool {
-		_, taken := m.HandleTaken(h)
-		return taken
-	})
+// noteHandle is the automatic handle of note node n: note-<its short ID>.
+func noteHandle(n id.ID) string {
+	return "note-" + handleSlug(shortID(n))
 }
 
 func runNoteAdd(ctx *Ctx, req any) (any, error) {
@@ -60,19 +52,16 @@ func runNoteAdd(ctx *Ctx, req any) (any, error) {
 	opRef := strings.TrimSpace(r.Op)
 	return runWriteOn(ctx, "note.add", commandLine("note add", ref, text), func(w *workspace, cs id.ID) (edit, error) {
 		m := w.model(cs)
-		var to, name string
+		var to string
 		if n, err := m.Resolve(ref); err == nil {
 			if opRef != "" {
 				return edit{}, Usagef("--op names an operation of a change set, but %s is a node", ref).WithNext(noteAddNext)
 			}
-			to, name = n.ID.String(), n.Handle
-			if name == "" {
-				name = shortID(n.ID)
-			}
+			to = n.ID.String()
 		} else if e := AsError(err); e == nil || e.Code != CodeNotFound {
 			return edit{}, err
 		} else if target, csErr := w.resolveChangeSet(ref); csErr == nil {
-			to, name = target.String(), shortID(target)
+			to = target.String()
 			if opRef != "" {
 				full, err := changeSetOp(w, target, opRef)
 				if err != nil {
@@ -83,14 +72,17 @@ func runNoteAdd(ctx *Ctx, req any) (any, error) {
 		} else {
 			return edit{}, Usagef("no node or change set %q", ref).WithNext("rhiza ls")
 		}
-		handle := noteHandle(m, name)
+		var handle string
 		fields := []string{"statement=" + text}
 		if opRef != "" {
 			fields = append(fields, "op="+opRef)
 		}
 		items := []applyItem{
 			{op: "add", build: func(b writeBase) (edit, error) {
-				return buildAdd(b, AddRequest{Kind: string(op.KindNote), Handle: handle, Fields: fields})
+				return buildAdd(b, AddRequest{Kind: string(op.KindNote), Fields: fields, handleFor: func(n id.ID) string {
+					handle = noteHandle(n)
+					return handle
+				}})
 			}},
 			{op: "link", build: func(b writeBase) (edit, error) {
 				return buildLink(b, LinkRequest{From: handle, Type: string(op.LinkDiscusses), To: to})
