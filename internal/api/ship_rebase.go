@@ -415,15 +415,29 @@ func shipRaiseQuestion(ctx *Ctx, t shipTarget, resp *ShipRebaseResponse) error {
 	statement := shipQuestionStatement(t, resp.Conflicts)
 	m := w.model(t.cs)
 	resp.Question = handleSlug("rebase-conflict-" + t.slug)
+	link := LinkRequest{From: resp.Question, Type: string(op.LinkBlocks), To: t.cs.String()}
+	var items []applyItem
+	addLink := applyItem{op: "link", build: func(b writeBase) (edit, error) { return buildLink(b, link) }}
 	if n, taken := m.HandleTaken(resp.Question); taken {
 		if node, ok := m.Node(n); ok && node.Kind == op.KindQuestion && fieldText(node.Fields["statement"]) == statement {
-			return nil
+			// An earlier call raised it; it gains the blocks link when it
+			// lacks one, else nothing is written.
+			if _, err := m.LinkBetween(n, t.cs, op.LinkBlocks); err == nil {
+				return nil
+			} else if AsError(err).Code != CodeNotFound {
+				return err
+			}
+			items = []applyItem{addLink}
+		} else {
+			resp.Question = uniqueHandle(resp.Question, func(h string) bool { _, ok := m.HandleTaken(h); return ok })
+			link.From = resp.Question
 		}
-		resp.Question = uniqueHandle(resp.Question, func(h string) bool { _, ok := m.HandleTaken(h); return ok })
 	}
-	items := []applyItem{{op: "add", build: func(b writeBase) (edit, error) {
-		return buildAdd(b, AddRequest{Kind: string(op.KindQuestion), Handle: resp.Question, Fields: []string{"statement=" + statement}})
-	}}}
+	if items == nil {
+		items = []applyItem{{op: "add", build: func(b writeBase) (edit, error) {
+			return buildAdd(b, AddRequest{Kind: string(op.KindQuestion), Handle: resp.Question, Fields: []string{"statement=" + statement}})
+		}}, addLink}
+	}
 	wctx := *ctx
 	wctx.ChangeSet, wctx.ChangeRef, wctx.Record = t.cs, "", record
 	intent := fmt.Sprintf("Raise the rebase conflicts of change set %s", t.cs)

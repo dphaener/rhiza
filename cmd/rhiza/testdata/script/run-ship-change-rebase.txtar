@@ -180,6 +180,27 @@ stdout 'feature\.txt'
 stdout 'cs/ship-two onto origin/main'
 fold-ok
 
+# The question blocks the change set: the inbox lists it as a blocker.
+exec rhiza show rebase-conflict-ship-two --json
+stdout '"type": "blocks"'
+exec rhiza inbox --json
+stdout '"kind": "blocker"'
+stdout '"handle": "rebase-conflict-ship-two"'
+stdout '"blocks": "this change set"'
+
+# Raising it again on the same conflict writes nothing.
+exec sh -c 'find .rhiza/log -type f | sort | xargs cat | wc -c > $WORK/log.before'
+! exec rhiza ship rebase
+stdout '^Raised question rebase-conflict-ship-two\.$'
+exec sh -c 'find .rhiza/log -type f | sort | xargs cat | wc -c > $WORK/log.after'
+exec cmp $WORK/log.before $WORK/log.after
+exec rhiza ls --kind question --json
+stdout '"handle": "rebase-conflict-ship-two"'
+
+# The owner answers it with --change.
+exec rhiza question answer rebase-conflict-ship-two 'Keep main' --change 01M5PWGEF85Y185JZ2ZGCNH40N
+fold-ok
+
 rm $WORK/gh.log
 rm $WORK/pr.created
 rm $WORK/other2
