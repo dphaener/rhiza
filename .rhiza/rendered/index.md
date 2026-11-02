@@ -293,6 +293,8 @@
         - [daemon-state-at-start](capability/rhiza/orchestration/daemon/daemon-reexec-new-binary/daemon-state-at-start.md)
       - [daemon-settings](capability/rhiza/orchestration/daemon/daemon-settings.md)
       - [daemon-pause](capability/rhiza/orchestration/daemon/daemon-pause.md)
+      - [plan-requests](capability/rhiza/orchestration/daemon/plan-requests.md)
+        - [roadmap-new-work-requests](capability/rhiza/orchestration/daemon/plan-requests/roadmap-new-work-requests.md)
     - [inbox](capability/rhiza/orchestration/inbox.md)
       - [inbox-list](capability/rhiza/orchestration/inbox/inbox-list.md)
         - [inbox-failed-step-output](capability/rhiza/orchestration/inbox/inbox-list/inbox-failed-step-output.md)
@@ -330,7 +332,6 @@
     - [inbox-app-answer-question](capability/rhiza/inbox-app-actions/inbox-app-answer-question.md)
   - [roadmap-app-start-runs](capability/rhiza/roadmap-app-start-runs.md)
     - [run-start-new-intent](capability/rhiza/roadmap-app-start-runs/run-start-new-intent.md)
-    - [roadmap-app-new-work](capability/rhiza/roadmap-app-start-runs/roadmap-app-new-work.md)
     - [plan-guide-new-change-set](capability/rhiza/roadmap-app-start-runs/plan-guide-new-change-set.md)
   - [roadmap-app-accept-answer](capability/rhiza/roadmap-app-accept-answer.md)
     - [question-answer-op](capability/rhiza/roadmap-app-accept-answer/question-answer-op.md)
@@ -1398,6 +1399,7 @@
 - [plan-guide-new-change-set-verified](evidence/plan-guide-new-change-set-verified.md)
 - [plan-guide-verified](evidence/plan-guide-verified.md)
 - [plan-interview-verified](evidence/plan-interview-verified.md)
+- [plan-requests-qa-2](evidence/plan-requests-qa-2.md)
 - [plan-review-arbitrated-verified](evidence/plan-review-arbitrated-verified.md)
 - [plan-review-checks-overlaps-qa-1](evidence/plan-review-checks-overlaps-qa-1.md)
 - [plan-review-checks-overlaps-verified](evidence/plan-review-checks-overlaps-verified.md)
@@ -1471,6 +1473,7 @@
 - [pr-186-status-tells-the-truth](evidence/pr-186-status-tells-the-truth.md)
 - [pr-187-live-daemon-settings](evidence/pr-187-live-daemon-settings.md)
 - [pr-189-conflict-question-blocks](evidence/pr-189-conflict-question-blocks.md)
+- [pr-191-plan-requests](evidence/pr-191-plan-requests.md)
 - [pr-35-reopening-a-change-set](evidence/pr-35-reopening-a-change-set.md)
 - [pr-36-leaf-dependencies-and](evidence/pr-36-leaf-dependencies-and.md)
 - [pr-38-session-messages-and-token-use](evidence/pr-38-session-messages-and-token-use.md)
@@ -1594,6 +1597,10 @@
 - [roadmap-app-umbrella-row-verified](evidence/roadmap-app-umbrella-row-verified.md)
 - [roadmap-detail-run-tick-qa-1](evidence/roadmap-detail-run-tick-qa-1.md)
 - [roadmap-detail-run-tick-verified](evidence/roadmap-detail-run-tick-verified.md)
+- [roadmap-new-work-requests-qa-1](evidence/roadmap-new-work-requests-qa-1.md)
+- [roadmap-new-work-requests-qa-2](evidence/roadmap-new-work-requests-qa-2.md)
+- [roadmap-new-work-requests-verified](evidence/roadmap-new-work-requests-verified.md)
+- [roadmap-new-work-requests-verified-2](evidence/roadmap-new-work-requests-verified-2.md)
 - [roadmap-umbrella-group-qa-1](evidence/roadmap-umbrella-group-qa-1.md)
 - [roadmap-umbrella-group-verified](evidence/roadmap-umbrella-group-verified.md)
 - [run-abandon-qa-1](evidence/run-abandon-qa-1.md)
@@ -3072,3 +3079,4 @@
 
 - capability shipit-agent-step `01M5TYKPAXPA4NBWNPH5WENFNK` — ship-change no longer has an agent step running shipit: it runs Rhiza's own build and review workflows (answer-cb8bd934-5, Replace it)
 - capability quick-launch-layer `01M62JP7BKA4N9W2HCFTP0CMQ4` — Decision rex-picker-removed: the all-apps picker (rhiza tui launch and the rhiza_launch action) is removed; each app opens from its own action or its key in the rhiza key mode.
+- capability roadmap-app-new-work `01M686V49K74FDKG4YV2BDJCSN` — Superseded by roadmap-new-work-requests: m and n now file a plan request (rhiza request) for the daemon to plan, and no longer ask y/n or open a Rex tab running run start --workflow plan --new

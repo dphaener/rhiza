@@ -27,7 +27,7 @@ verified
 ### Out
 
 - verifies [run-start-new-intent](../capability/rhiza/roadmap-app-start-runs/run-start-new-intent.md)
-- verifies [roadmap-app-new-work](../capability/rhiza/roadmap-app-start-runs/roadmap-app-new-work.md)
+- verifies roadmap-app-new-work (retired)
 - verifies [plan-guide-new-change-set](../capability/rhiza/roadmap-app-start-runs/plan-guide-new-change-set.md)
 
 ## History

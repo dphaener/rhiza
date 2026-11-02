@@ -16,6 +16,11 @@ A plan request is a line in a per-clone queue under .git/rhiza (requests.json), 
 
 - derived-from [m22-run-from-rex-ask](../source/m22-run-from-rex-ask.md)
 
+### In
+
+- decided-by [plan-requests](../capability/rhiza/orchestration/daemon/plan-requests.md)
+- decided-by [roadmap-new-work-requests](../capability/rhiza/orchestration/daemon/plan-requests/roadmap-new-work-requests.md)
+
 ## History
 
 - `01M6CRZP2E8H6EEEPVDAWAKQ6H` Plan milestone 22: run Rhiza from Rex, the owner's ask of 2026-11-01
