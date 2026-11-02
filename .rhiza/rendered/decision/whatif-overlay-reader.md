@@ -14,7 +14,12 @@ A what-if reader answers each query from the index's as-is rows, overriding them
 
 ### Out
 
+- relates-to [t7-d14-read-budget](t7-d14-read-budget.md) — lifts t7-d14's what-if exemption: with the overlay reader, every budgeted read (show, ls first page, deep-subtree tree, why, log, roadmap, ready) is budgeted in what-if as well as as-is and to-be, under the same 50 ms median; the whole-tree tree stays benchmarked, not budgeted
 - derived-from [m20-orchestrator-picks](../source/m20-orchestrator-picks.md)
+
+### In
+
+- decided-by [whatif-reads-in-budget](../capability/rhiza/views/fast-reads/whatif-reads-in-budget.md)
 
 ## History
 
