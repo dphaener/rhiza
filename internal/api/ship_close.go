@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/session"
@@ -500,7 +501,14 @@ func runShipCloseOut(ctx *Ctx, req any) (any, error) {
 	if resp.Detail != "" {
 		resp.Detail = "main was not updated: " + resp.Detail
 		resp.Steps = append(resp.Steps, ShipStep{Step: "update-main", Result: "failed", Detail: resp.Detail})
+		// Record it where rhiza health and the inbox read it, not only here.
+		if err := daemon.WriteMainStale(t.common, daemon.MainStale{Since: ctx.Now(), Change: t.cs.String(), Detail: resp.Detail}); err != nil {
+			return nil, Errorf("record the failed pull: %v", err)
+		}
 		return resp, nil
+	}
+	if err := daemon.ClearMainStale(t.common); err != nil {
+		return nil, Errorf("clear the failed pull: %v", err)
 	}
 	step("update-main", true)
 	resp.MainUpdated = true

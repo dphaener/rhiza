@@ -1,0 +1,32 @@
+# The inbox lists one main-stale item while the last ship close-out could not
+# fast-forward the main checkout, and none once a later one did. The record
+# is a fixture.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza inbox
+stdout '^Nothing waits on you$'
+
+mkdir .git/rhiza
+cp ../stale.json .git/rhiza/main-stale.json
+exec rhiza inbox --json
+stdout -count=1 '"kind": "main-stale"'
+stdout 'main was not updated: /m has uncommitted changes'
+exec rhiza inbox
+stdout -count=1 '^[0-9a-f]+ main-stale change set 01M6CRZSRFQ94MAJ8CRTEE44P2$'
+exec sh -c 'rhiza inbox | head -1 | cut -d" " -f1 > ../id'
+! exec sh -c 'rhiza inbox open $(cat ../id)'
+stderr 'no tab to open'
+
+rm .git/rhiza/main-stale.json
+exec rhiza inbox --json
+! stdout 'main-stale'
+stdout '"items": \[\]'
+
+-- stale.json --
+{"since":"2030-01-01T00:01:00Z","change":"01M6CRZSRFQ94MAJ8CRTEE44P2","detail":"main was not updated: /m has uncommitted changes"}

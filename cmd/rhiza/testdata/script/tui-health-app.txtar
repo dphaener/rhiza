@@ -1,0 +1,30 @@
+# The health app shows what `rhiza health --json` prints: --once prints the
+# result the app holds, byte for byte, and exits 0 even when a part is bad,
+# as it only shows the report. It never dials Rex or binds a socket.
+
+env REX_SESSION=
+env REX_SERVER=
+env RHIZA_TEST_FREE_BYTES=1099511627776
+mkdir repo
+cd repo
+exec git init -q -b main
+exec rhiza init
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+
+exec rhiza health --json
+cp stdout ../want-ok.json
+exec rhiza tui app health --once
+cmp stdout ../want-ok.json
+stdout '"part": "daemon"'
+
+env RHIZA_TEST_FREE_BYTES=100
+! exec rhiza health --json
+stdout '"state": "bad"'
+cp stdout ../want-bad.json
+exec rhiza tui app health --once
+cmp stdout ../want-bad.json
+
+exec find $WORK -type s
+! stdout .

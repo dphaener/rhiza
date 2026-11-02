@@ -1,0 +1,40 @@
+{
+  "actor": "01M6DEGBQH01TYZTGSPSBG1FE5",
+  "after": [
+    "01M6DERFA7E707HHGHX0F20ESW"
+  ],
+  "at": "2026-11-02T06:27:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 82a2fe57 (verifier claude-code-519f11df): `go test ./internal/api -run TestShipCloseOutRecordsStaleMain -count=1 -v` PASS. The test runs ship.close-out with a dirty main checkout (status ' M README.md'). It checks that the inbox lists one main-stale item naming 'has uncommitted changes' and that healthMain is warn, with summary 'the last close-out could not pull' and detail naming the change set and the failure. Then a later close-out pulls, and the test checks that both the inbox item and the health mention are gone. `go test ./cmd/rhiza -run 'TestScripts/(inbox-main-stale|health)$' -count=1` ok, and inbox open now finds the item. In the diff, internal/api/health.go healthMain reads daemon.ReadMainStale, the main part the health op from health-app adds; that op was missing in attempts 1 and 2. `make check` exits 0 with RHIZA_ROOT/CHANGE/RUN unset."
+        },
+        "handle": "close-out-pull-recorded-verified",
+        "id": "01M6DF2AR5NKR7SS8R2P9BJ4DB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DF2AR5NKR7SS8R2NK81H67",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DF2AR5NKR7SS8R2NK81H67",
+        "id": "01M6DF2BR7772654AFA84Z725S",
+        "link": "01M6DF2BR7772654AFA6CJ68C1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS2CVV2KZ1JBQ89ANTZW1J",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CRZSRFQ94MAJ8CRTEE44P2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DF2DNMS48QY3QWV7SBBYG5",
+  "type": "ops",
+  "v": 1
+}

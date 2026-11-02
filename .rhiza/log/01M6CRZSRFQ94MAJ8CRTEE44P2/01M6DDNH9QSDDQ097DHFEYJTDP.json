@@ -1,0 +1,54 @@
+{
+  "actor": "01M6DDAP0C048A3S8HBYAEWT17",
+  "after": [
+    "01M6DCYGP5CNG4T49D1S7NEWYN"
+  ],
+  "at": "2026-11-02T06:03:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "add the health op in the health-app leaf",
+            "build health-report first in another run"
+          ],
+          "statement": "The health-app leaf also adds the health op (rhiza health, api call health): health-report is not among this run's leaves, and the app cannot show a report that does not exist",
+          "wording": "the implementing agent's choice, made in an autonomous run under the owner's standing instruction to decide on their behalf"
+        },
+        "handle": "health-app-builds-health-op",
+        "id": "01M6DDN4DFKSN7W0899VETHKRH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6DDN4DFKSN7W0899TZDKN01",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DDN4DFKSN7W0899TZDKN01",
+        "id": "01M6DDN800MC7MVJ9MQ0VCW951",
+        "link": "01M6DDN800MC7MVJ9MPYT2BJS1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6DCSR5ZKAJ3D3NY56QP6BFJ",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M6CS2EDTXKNNH3BNJBX81ZZ6",
+        "id": "01M6DDNBKZQARY4CTK4Q7D1BP6",
+        "link": "01M6DDNBKZQARY4CTK4ME0KA0Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6DDN4DFKSN7W0899TZDKN01",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6CRZSRFQ94MAJ8CRTEE44P2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DDNH9QSDDQ097DHFEYJTDP",
+  "type": "ops",
+  "v": 1
+}

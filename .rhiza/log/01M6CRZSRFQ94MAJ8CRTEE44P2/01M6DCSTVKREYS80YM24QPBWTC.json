@@ -1,0 +1,39 @@
+{
+  "actor": "01M6DCQXF0A4PAPH232G26JBEY",
+  "after": [
+    "01M6D4RS3TX6KQ7FN3Y8R6V355"
+  ],
+  "at": "2026-11-02T05:48:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The health app shows the report that rhiza health prints (its --once prints the health JSON), but the health op does not exist yet: health-report is not built and is not among this run's leaves. Build health-report first, or may the health app leaf also add the health op?"
+        },
+        "handle": "health-app-needs-health-report",
+        "id": "01M6DCSR5ZKAJ3D3NY58RZ3JZ3",
+        "key": null,
+        "kind": "question",
+        "node": "01M6DCSR5ZKAJ3D3NY56QP6BFJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DCSR5ZKAJ3D3NY56QP6BFJ",
+        "id": "01M6DCSS4NXGNZP8M7Y0BMNMRF",
+        "link": "01M6DCSS4NXGNZP8M7XWVJ191M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS2EDTXKNNH3BNJBX81ZZ6",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6CRZSRFQ94MAJ8CRTEE44P2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DCSTVKREYS80YM24QPBWTC",
+  "type": "ops",
+  "v": 1
+}

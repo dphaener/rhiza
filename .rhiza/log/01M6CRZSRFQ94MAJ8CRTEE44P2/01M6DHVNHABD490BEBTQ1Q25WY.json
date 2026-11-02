@@ -1,0 +1,41 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6DH9380DVGVYR6RTB2HXES5"
+  ],
+  "at": "2026-11-02T07:16:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quote": "Resolved by the orchestrator as arbiter: origin/main merged into the branch, keeping both the requests app and the health app in cmd/rhiza/tui.go; make check passes.",
+          "quote_where": "the owner, answering question rebase-conflict-health-app",
+          "statement": "Resolved by the orchestrator as arbiter: origin/main merged into the branch, keeping both the requests app and the health app in cmd/rhiza/tui.go; make check passes."
+        },
+        "handle": "answer-rebase-conflict-health-app",
+        "id": "01M6DHVK8JNKEFDDNRD51CDR6K",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6DHVK8JNKEFDDNRD2JQQQ1Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DHVK8JNKEFDDNRD2JQQQ1Z",
+        "id": "01M6DHVM4CSBX5QH05D4MVS9CB",
+        "link": "01M6DHVM4CSBX5QH05D2BSKCDK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6DH90V2Q3TR4Y4BWFFECXBE",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6CRZSRFQ94MAJ8CRTEE44P2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DHVNHABD490BEBTQ1Q25WY",
+  "type": "ops",
+  "v": 1
+}

@@ -290,6 +290,9 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 	}
 	// This poll's disk-low state, not the one saved after the last poll.
 	items = append(items, diskLowItems(state.DiskLow)...)
+	if common, err := gitCommonDir(ctx); err == nil {
+		items = append(items, mainStaleItems(common)...)
+	}
 	titles := map[string]string{}
 	for _, j := range runs {
 		if st := j.State(); st.Title != "" {
@@ -337,6 +340,8 @@ func inboxNotice(what string, it InboxItem) string {
 		return what + ": an interrupted run was not resumed"
 	case InboxDiskLow:
 		return "disk space is low: the daemon holds new starts and resumes"
+	case InboxMainStale:
+		return what + ": main was not updated after the merge: " + it.Detail
 	case InboxOverlap:
 		return what + ": an overlap with change set " + it.Other + " waits on you"
 	default:
@@ -561,19 +566,21 @@ func daemonDiskLow(ctx *Ctx, minFree uint64) (bool, uint64) {
 	if minFree == 0 {
 		return false, 0
 	}
-	free, err := daemon.FreeBytes(ctx.Root)
-	getenv := ctxGetenv(ctx)
-	if v := getenv("RHIZA_TEST_FREE_BYTES"); v != "" && getenv("RHIZA_TEST_NOW") != "" {
-		n, perr := strconv.ParseUint(v, 10, 64)
-		if perr != nil {
-			return false, 0
-		}
-		free, err = n, nil
-	}
+	free, err := repoFreeBytes(ctx)
 	if err != nil {
 		return false, 0
 	}
 	return free < minFree, free
+}
+
+// repoFreeBytes is the free space on the repo's filesystem.
+// RHIZA_TEST_FREE_BYTES stands in for it alongside RHIZA_TEST_NOW.
+func repoFreeBytes(ctx *Ctx) (uint64, error) {
+	getenv := ctxGetenv(ctx)
+	if v := getenv("RHIZA_TEST_FREE_BYTES"); v != "" && getenv("RHIZA_TEST_NOW") != "" {
+		return strconv.ParseUint(v, 10, 64)
+	}
+	return daemon.FreeBytes(ctx.Root)
 }
 
 // daemonCandidates are the accepted, ready change sets of the milestone

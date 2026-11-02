@@ -1,0 +1,40 @@
+{
+  "actor": "01M6DGHEGDMX3AXKEEQ7MM63MB",
+  "after": [
+    "01M6DGGQGW6W3X226CM6V8R1SG"
+  ],
+  "at": "2026-11-02T06:54:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At aeed9da6 ran go test ./internal/api -run TestShipCloseOutRecordsStaleMain -count=1: PASS. The test runs ship.close-out with a dirty main checkout (status shows ' M README.md'): MainUpdated is false, main-stale.json records 'has uncommitted changes', inboxMainStale lists one main-stale item, and healthMain is warn with summary 'the last close-out could not pull' and detail naming the change set and failure; a repeat keeps the item ID; with main clean a later close-out pulls, clears the record, the inbox item and the health warning. Read the diff: internal/api/health.go:253 reads daemon.ReadMainStale, internal/api/inbox.go:533 lists it. make check: fmt, vet and all go tests pass; self-check fails only on this verifier session's own unrendered actor file, not on the commit."
+        },
+        "handle": "close-out-pull-recorded-verified-2",
+        "id": "01M6DGJZQ5V26AWAA5X30ZG8P2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DGJZQ5V26AWAA5X2GM46KF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DGJZQ5V26AWAA5X2GM46KF",
+        "id": "01M6DGK0JN9P790W3AKZ8TT2FN",
+        "link": "01M6DGK0JN9P790W3AKXPM4973",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS2CVV2KZ1JBQ89ANTZW1J",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CRZSRFQ94MAJ8CRTEE44P2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DGK1XJBW5FTVDK1KQMDBTH",
+  "type": "ops",
+  "v": 1
+}

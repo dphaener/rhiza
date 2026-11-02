@@ -44,6 +44,26 @@ grep '^  \["changes"\] = "g",$' conf/rhiza.lua
 # The other apps keep the keys they had before the changes app.
 grep '^  \["show"\] = "h",$' conf/rhiza.lua
 grep '^  \["change-show"\] = "c",$' conf/rhiza.lua
+# The health app is on t, which no app had: no other key moved.
+grep 'name = "rhiza_app_health"' conf/rhiza.lua
+grep '"tui", "app", "health"' conf/rhiza.lua
+grep '^  \["health"\] = "t",$' conf/rhiza.lua
+grep '^  \["accept"\] = "a",$' conf/rhiza.lua
+grep '^  \["inbox"\] = "i",$' conf/rhiza.lua
+grep '^  \["land"\] = "l",$' conf/rhiza.lua
+grep '^  \["live"\] = "v",$' conf/rhiza.lua
+grep '^  \["model"\] = "m",$' conf/rhiza.lua
+grep '^  \["propose"\] = "p",$' conf/rhiza.lua
+grep '^  \["ready"\] = "r",$' conf/rhiza.lua
+grep '^  \["record-add"\] = "e",$' conf/rhiza.lua
+grep '^  \["record-link"\] = "o",$' conf/rhiza.lua
+grep '^  \["record-retire"\] = "d",$' conf/rhiza.lua
+grep '^  \["record-set"\] = "s",$' conf/rhiza.lua
+grep '^  \["roadmap"\] = "b",$' conf/rhiza.lua
+grep '^  \["run-status"\] = "u",$' conf/rhiza.lua
+grep '^  \["session-ls"\] = "n",$' conf/rhiza.lua
+grep '^  \["slice"\] = "f",$' conf/rhiza.lua
+grep '^  \["why"\] = "w",$' conf/rhiza.lua
 grep 'keys = \{\},' conf/rhiza.lua
 grep '^  \["session-ls"\] = "rhiza_app_session_ls",$' conf/rhiza.lua
 grep 'rex.bind\(MODE .. "/" .. k, APP_ACTIONS\[app\]\)' conf/rhiza.lua

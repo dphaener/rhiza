@@ -1,0 +1,40 @@
+{
+  "actor": "01M6DFAW6ETXYJTA8XYNJ2VN8P",
+  "after": [
+    "01M6DF2DNMS48QY3QWV7SBBYG5"
+  ],
+  "at": "2026-11-02T06:41:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 0b903288, with RHIZA_ROOT/CHANGE/RUN unset: `go test ./cmd/rhiza -run 'TestScripts/(health|describe-golden)$' -count=1 -v` passes both. health.txtar covers each acceptance point: no daemon is warn with 'start it with rhiza daemon'; RHIZA_TEST_FREE_BYTES=100 makes disk bad and health exits 1; a dirty main is warn; a failed inbox run is warn ('1 waiting: 1 failed'); a model problem makes check bad; health --json and api call health are compared with cmp (ok and bad cases). describe-golden.txtar holds the health op. Attempt 1's finding is fixed: 0b903288 lands the missing actor records and re-renders, and `make check` now exits 0 with a clean tree afterwards."
+        },
+        "handle": "health-report-verified",
+        "id": "01M6DFVTASA1J7J3JX32DP5MFV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DFVTASA1J7J3JX31RJJ1KK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DFVTASA1J7J3JX31RJJ1KK",
+        "id": "01M6DFVV59FDV1V4TW1MC18M97",
+        "link": "01M6DFVV59FDV1V4TW1K3XZ5FK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6D4RPTDYGEG48RYPD0557BA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6CRZSRFQ94MAJ8CRTEE44P2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DFVWFF6X3ZHVPCTDMXH22B",
+  "type": "ops",
+  "v": 1
+}
