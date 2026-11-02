@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6CRZRVGZBRB51YFPZK89X1A"
+  ],
+  "at": "2026-11-02T00:03:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "tui-requests-app.txtar: --once lists the requests as JSON matching request ls; unit tests on a fake runner file a bug (kind bug) and a feature from typed text and show the new request queued; rex-install.txtar shows the rhiza_app_requests action on a free key and no existing key moved",
+          "statement": "A Rex app, requests, files a feature, bug or milestone request from typed text and lists every request with its state, run and planned change set, focusing a planning run's tab on enter"
+        },
+        "handle": "requests-app",
+        "id": "01M6CS27ZCVXPWK3GXSB977TMG",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6CS27ZCVXPWK3GXS8B8PQ2C",
+        "op": "node.create",
+        "parent": "01M6CS230463DT24PWBJCPWD9Q"
+      },
+      {
+        "decision": null,
+        "from": "01M6CS27ZCVXPWK3GXS8B8PQ2C",
+        "id": "01M6CS28RJM18VFM65NGV0V5XJ",
+        "link": "01M6CS28RJM18VFM65NDSKR09G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0MA6ZDN8MQ2GMYPA19ET",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6CRZRVGZBRB51YFPXHKZA75",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CS2A0NZM18EMCEAWG3AGZZ",
+  "type": "ops",
+  "v": 1
+}

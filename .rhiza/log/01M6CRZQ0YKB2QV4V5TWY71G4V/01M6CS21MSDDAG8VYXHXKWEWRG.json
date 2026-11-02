@@ -1,0 +1,98 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6CRZWGWHG67CXQH2V3GBSJR"
+  ],
+  "at": "2026-11-02T00:03:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Acceptance policy decides which change sets are accepted without the owner: with accept auto, change sets an owner-requested plan run proposes are accepted at its gate when its review passes; with accept owner, they wait for the owner"
+        },
+        "handle": "accept-policy",
+        "id": "01M6CRZWGWHG67CXQH2QZRTWWP",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5SWTCJQP64M9ZDHGT7GS7PT",
+        "op": "node.create",
+        "parent": "01M5SWTC58PN8WNJRRM03630JS"
+      },
+      {
+        "fields": {
+          "acceptance": "daemon-settings.txtar: daemon settings lists every key with its default and source default; daemon set rhiza.daemon.maxRuns 1 then settings shows 1 from git config; an unknown key or bad value exits 2 writing nothing; with maxRuns set to 1 between two daemon --once polls, the second starts at most one run; a --max-runs flag wins over config and settings shows source flag in daemon status; describe-golden.txtar is regenerated",
+          "statement": "The daemon reads its settings (paused, max runs, minimum free disk, permission mode, and plan, accept, ship and signoff autonomy) from git config every poll, a command-line flag winning for that run; rhiza daemon settings lists each with value and source and rhiza daemon set validates and writes one"
+        },
+        "handle": "daemon-settings",
+        "id": "01M6CS1WF6WPPJTPC8X4J66CF7",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6CS1WF6WPPJTPC8X1DHYGD8",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6CS1WF6WPPJTPC8X1DHYGD8",
+        "id": "01M6CS1X89YNCJ2DX51ASK31K2",
+        "link": "01M6CS1X89YNCJ2DX5194SG8EP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0H7S57S9433XGAN4T0Y1",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "daemon-pause.txtar: with paused set, daemon --once on a ready change set starts nothing and daemon status shows Paused: yes and each candidate skipped as paused; after setting it false the next --once starts the run",
+          "statement": "With rhiza.daemon.paused true the daemon starts and resumes no runs but keeps polling, reporting and notifying, and daemon status says paused"
+        },
+        "handle": "daemon-pause",
+        "id": "01M6CS1Y195R6RZEQ6BK169A25",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6CS1Y195R6RZEQ6BJEFC1WB",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6CS1Y195R6RZEQ6BJEFC1WB",
+        "id": "01M6CS1YTFQAD2YBB0EDK3BJJ2",
+        "link": "01M6CS1YTFQAD2YBB0ED05TM1D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0JS1SYJR0YGFQG0G2E2D",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Testscripts with a fake rex and agents: ship owner leaves a ready change set unstarted with skip reason ship-owner; signoff owner starts run start without --autonomous; accept owner leaves the plan's drafts proposed after an autonomous plan gate and inbox --json lists an accept item for each, while accept auto accepts them",
+          "statement": "The ship, signoff and accept settings govern the daemon and plan runs: ship owner stops the daemon starting ship runs, signoff owner starts them non-autonomous so they stop at sign-off, accept owner leaves an owner-requested plan's change sets proposed at its gate and the inbox lists each as waiting for acceptance"
+        },
+        "handle": "stage-autonomy",
+        "id": "01M6CS1ZKGPVYZ3HAS2HM15MFQ",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6CS1ZKGPVYZ3HAS2EP7Q03Y",
+        "op": "node.create",
+        "parent": "01M5SWTCJQP64M9ZDHGT7GS7PT"
+      },
+      {
+        "decision": null,
+        "from": "01M6CS1ZKGPVYZ3HAS2EP7Q03Y",
+        "id": "01M6CS20CKFGH4JQGEZCXKMWA6",
+        "link": "01M6CS20CKFGH4JQGEZANMBWN3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0JS1SYJR0YGFQG0G2E2D",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6CRZQ0YKB2QV4V5TWY71G4V",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CS21MSDDAG8VYXHXKWEWRG",
+  "type": "ops",
+  "v": 1
+}

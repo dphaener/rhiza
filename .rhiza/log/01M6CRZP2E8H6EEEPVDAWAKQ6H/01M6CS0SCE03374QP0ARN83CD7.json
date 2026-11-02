@@ -1,0 +1,178 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6CS0CWMM36Y50D38BRAH9SG"
+  ],
+  "at": "2026-11-02T00:02:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "22",
+          "statement": "Run Rhiza from Rex: from the TUI apps alone the owner sees the whole system's health, files bugs and requests features that the daemon plans and ships, and switches each stage (planning, acceptance, shipping, sign-off) and the daemon itself between autonomous and owner-driven, with no orchestrator session"
+        },
+        "handle": "milestone-22",
+        "id": "01M6CS0E57Z80HJ5ZB1D72PW2B",
+        "key": "zzzzz",
+        "kind": "intent",
+        "node": "01M6CS0E57Z80HJ5ZB1CQRE466",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "I should be in fuyll control of which parts of the process are autonomous, that should also be interactive and part of the tui.",
+          "statement": "Milestone 22 is five change sets: live daemon settings with pause and an acceptance policy; plan requests the daemon turns into plan runs; a requests app for features, bugs and milestones; a health op and app; and an autonomy app that edits the settings, starts the daemon and nudges stalled sessions"
+        },
+        "handle": "m22-run-from-rex",
+        "id": "01M6CS0EY3VH4MFZT76YTAJEVH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6CS0EY3VH4MFZT76WB3R6PH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CS0EY3VH4MFZT76WB3R6PH",
+        "id": "01M6CS0FPKPF2R8Y3WQQHCQ1PJ",
+        "link": "01M6CS0FPKPF2R8Y3WQNPRRM5R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0C444W55N1J1W1N22HFS",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6CS0E57Z80HJ5ZB1CQRE466",
+        "id": "01M6CS0GF6CK7TSYKY39J6JZBS",
+        "link": "01M6CS0GF6CK7TSYKY36TDVATK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0EY3VH4MFZT76WB3R6PH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Daemon and autonomy settings live in the repo's git config and are re-read every poll: rhiza.daemon.paused, maxRuns, minFree and permissionMode, and rhiza.autonomy.plan, accept, ship and signoff, each auto or owner; a daemon flag given on the command line wins over config for that run; defaults keep today's behaviour (plan owner, accept owner except an autonomous plan's gate, ship auto, signoff auto when --autonomous); rhiza daemon settings lists every setting with value and source, and rhiza daemon set <key> <value> validates and writes one",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "settings-in-git-config",
+        "id": "01M6CS0H7S57S9433XGBPPE838",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6CS0H7S57S9433XGAN4T0Y1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CS0H7S57S9433XGAN4T0Y1",
+        "id": "01M6CS0J0F9CNCS48NR670F1M8",
+        "link": "01M6CS0J0F9CNCS48NR2CD25RR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0C444W55N1J1W1N22HFS",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "plan auto: the daemon runs a requested plan autonomously; plan owner: it opens the plan run in a tab for the owner to drive. accept auto: change sets an owner-requested plan proposes are accepted at its gate when its review passes; accept owner: they stay proposed and the inbox lists each as waiting for acceptance. ship auto: the daemon starts ship runs for accepted change sets; ship owner: only the owner starts them (roadmap app s). signoff auto: ship runs are autonomous and the arbiter signs off; signoff owner: ship runs stop at sign-off for the owner (inbox approve). paused: the daemon starts and resumes nothing but keeps polling, reporting and notifying",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "stage-autonomy-meanings",
+        "id": "01M6CS0JS1SYJR0YGFQHEE4TA3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6CS0JS1SYJR0YGFQG0G2E2D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CS0JS1SYJR0YGFQG0G2E2D",
+        "id": "01M6CS0KHKRMCW8PG8F38NYXCC",
+        "link": "01M6CS0KHKRMCW8PG8F2ZT1PBM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0C444W55N1J1W1N22HFS",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A plan request is a line in a per-clone queue under .git/rhiza (requests.json), written by rhiza request <text> [--kind feature|bug|milestone]; the daemon, unless paused, takes the oldest queued request when a slot is free and starts a plan run with --new and the request's text (a bug's intent prefixed 'Fix:'), marking the request with its run; rhiza request ls shows each request's state (queued, planning in run R, planned into change set C, failed); the roadmap app's new-work keys file requests instead of opening a run",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "requests-queue-local",
+        "id": "01M6CS0MA6ZDN8MQ2GN27THM17",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6CS0MA6ZDN8MQ2GMYPA19ET",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CS0MA6ZDN8MQ2GMYPA19ET",
+        "id": "01M6CS0N2S8TEG4S9TERR6DDS6",
+        "link": "01M6CS0N2S8TEG4S9TEPAENKGT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0C444W55N1J1W1N22HFS",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "rhiza health gathers one report: the daemon (running or not, version, paused, last poll age, live runs, skips), autonomy settings, free disk against the daemon's minimum, the main checkout (branch, clean, behind origin/main, last close-out pull failure), inbox counts by kind, queued requests, roadmap counts (ready, accepted, in flight) and rhiza check's result; each part reads ok, warn or bad by fixed rules; the health app shows it on key t and jumps to the inbox, live or autonomy app",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "health-one-screen",
+        "id": "01M6CS0NVEDE317KP68W9J8KJV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6CS0NVEDE317KP68VY14GWR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CS0NVEDE317KP68VY14GWR",
+        "id": "01M6CS0PKY50MGWNMDW1TJNPMW",
+        "link": "01M6CS0PKY50MGWNMDW12RB5QW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0C444W55N1J1W1N22HFS",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The autonomy app (key y) lists every setting with its value and source, toggles auto/owner and paused with enter, edits numbers in place, writes through rhiza daemon set, starts the daemon in a Rex tab named rhiza daemon when it is not running, and stops it on request; the inbox app nudges a stalled session with n, sending Escape first when the session is parked on a usage-limit prompt and then a message to carry on",
+          "wording": "(assumed under the owner's standing instruction to decide on their behalf)"
+        },
+        "handle": "autonomy-app-controls",
+        "id": "01M6CS0QCGTVMSE99XP73N8GJB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6CS0QCGTVMSE99XP443PK8E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6CS0QCGTVMSE99XP443PK8E",
+        "id": "01M6CS0R53SJ82QQ0V8C04EQP5",
+        "link": "01M6CS0R53SJ82QQ0V8A49V50Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0C444W55N1J1W1N22HFS",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6CRZP2E8H6EEEPVDAWAKQ6H",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CS0SCE03374QP0ARN83CD7",
+  "type": "ops",
+  "v": 1
+}

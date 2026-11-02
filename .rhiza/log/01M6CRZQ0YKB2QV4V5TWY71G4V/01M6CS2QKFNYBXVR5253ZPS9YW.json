@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6CS2PF7EFQCY04ZMD6J74GX"
+  ],
+  "at": "2026-11-02T00:03:23Z",
+  "body": {
+    "reason": "Planned by the orchestrator for milestone 22, the owner's ask to run Rhiza from Rex ('make it so'); accepted on their behalf",
+    "rule": "owner"
+  },
+  "change_set": "01M6CRZQ0YKB2QV4V5TWY71G4V",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CS2QKFNYBXVR5253ZPS9YW",
+  "type": "accept",
+  "v": 1
+}

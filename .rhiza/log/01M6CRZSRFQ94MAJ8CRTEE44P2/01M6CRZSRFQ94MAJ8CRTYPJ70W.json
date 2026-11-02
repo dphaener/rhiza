@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-02T00:01:47Z",
+  "body": {
+    "intent": "rhiza health and a health app show the whole system's state on one screen",
+    "kind": "intention",
+    "sources": [],
+    "title": "Health app"
+  },
+  "change_set": "01M6CRZSRFQ94MAJ8CRTEE44P2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CRZSRFQ94MAJ8CRTYPJ70W",
+  "type": "open",
+  "v": 2
+}

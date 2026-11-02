@@ -1,0 +1,86 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6CRZSRFQ94MAJ8CRTYPJ70W"
+  ],
+  "at": "2026-11-02T00:03:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "health.txtar: with no daemon the daemon part is warn and the report says how to start it; with RHIZA_TEST_FREE_BYTES under the minimum the disk part is bad and health exits 1; a dirty main checkout is warn; an inbox failed item is warn; a model problem makes check bad; health --json and api call health print the same bytes; describe-golden.txtar is regenerated",
+          "statement": "rhiza health reports the daemon, autonomy settings, free disk, the main checkout (branch, clean, behind origin, last close-out pull failure), inbox counts by kind, queued requests, roadmap counts and rhiza check's result, each part ok, warn or bad, and exits 1 when any part is bad"
+        },
+        "handle": "health-command",
+        "id": "01M6CS2B9S9YVY1WBBVD102AJ7",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6CS2B9S9YVY1WBBVAHWZFR9",
+        "op": "node.create",
+        "parent": "01M61R7NEEK19RP2QEHFRQ6W8S"
+      },
+      {
+        "decision": null,
+        "from": "01M6CS2B9S9YVY1WBBVAHWZFR9",
+        "id": "01M6CS2C2VPBKZMZCTSCF8YH43",
+        "link": "01M6CS2C2VPBKZMZCTSBJHHX6V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0NVEDE317KP68VY14GWR",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A close-out test with a dirty main checkout records the pull failure; health shows the main part warn naming it and the inbox lists a main-stale item; a later successful pull clears both",
+          "statement": "When ship close-out cannot fast-forward the main checkout, it records the failure where rhiza health and the inbox show it, instead of only in its step detail"
+        },
+        "handle": "close-out-pull-recorded",
+        "id": "01M6CS2CVV2KZ1JBQ89CZVJW5G",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6CS2CVV2KZ1JBQ89ANTZW1J",
+        "op": "node.create",
+        "parent": "01M6CS2B9S9YVY1WBBVAHWZFR9"
+      },
+      {
+        "decision": null,
+        "from": "01M6CS2CVV2KZ1JBQ89ANTZW1J",
+        "id": "01M6CS2DMSD6N9D6YHGZAV41B3",
+        "link": "01M6CS2DMSD6N9D6YHGXCMTEP5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0NVEDE317KP68VY14GWR",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "tui-health-app.txtar: --once prints the health JSON; a unit test on a fake runner renders each part's state and enter on the inbox part opens the inbox app; rex-install.txtar shows rhiza_app_health on key t and no existing key moved",
+          "statement": "A Rex app, health, on key t, shows rhiza health's report part by part with ok, warn and bad marked, reloads on r, and opens the inbox, live or autonomy app for the part under the cursor"
+        },
+        "handle": "health-app",
+        "id": "01M6CS2EDTXKNNH3BNJFFK2835",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6CS2EDTXKNNH3BNJBX81ZZ6",
+        "op": "node.create",
+        "parent": "01M6CS2B9S9YVY1WBBVAHWZFR9"
+      },
+      {
+        "decision": null,
+        "from": "01M6CS2EDTXKNNH3BNJBX81ZZ6",
+        "id": "01M6CS2F6XDM3BHKQVT99PXPR6",
+        "link": "01M6CS2F6XDM3BHKQVT8HMPSEQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0NVEDE317KP68VY14GWR",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6CRZSRFQ94MAJ8CRTEE44P2",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CS2GEZMZ3T0YHS2CPHFE0C",
+  "type": "ops",
+  "v": 1
+}
