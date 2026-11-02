@@ -1,0 +1,40 @@
+{
+  "actor": "01M6DZ9PR50360FKRT0AHZKQXM",
+  "after": [
+    "01M6DZBTEF35RW4SKN466SGH1H"
+  ],
+  "at": "2026-11-02T11:21:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6addeb28 (detached checkout, RHIZA_ROOT/CHANGE/RUN unset): go test ./cmd/rhiza -run 'TestScripts/(change-notes|describe-golden)$' -count=1 passes; change-notes.txtar runs note add on a node, on a change set, and on a change set with --op, each followed by fold-ok, render and rhiza check, plus the unknown-target and foreign --op failures. make check exits 0 (self-check clean, so the attempt-1 render finding is fixed). By hand in a scratch repo with every RHIZA_* var unset: note add on a capability wrote one entry (a note node and a link) and exited 0; note add nonesuch exited 2 ('no node or change set'); --op 01ZZZZZZZZZZZZZZZZZZZZZZZZ on the change set exited 2 ('is not an operation of change set'); render then rhiza check printed ok."
+        },
+        "handle": "note-add-verified",
+        "id": "01M6DZVHJ8G7WZ965HC6NA8E2Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6DZVHJ8G7WZ965HC45TRFD0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6DZVHJ8G7WZ965HC45TRFD0",
+        "id": "01M6DZVJDG2878HN6915CMMSRY",
+        "link": "01M6DZVJDG2878HN69142D5G3Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6BZWDXPERND94DYYXHTQ8WK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6BVTCJCSG1JKEERK7Y3ACYJ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6DZVKSBMSCMJWKVZCHKGEJK",
+  "type": "ops",
+  "v": 1
+}
