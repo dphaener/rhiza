@@ -1,0 +1,40 @@
+{
+  "actor": "01M6D26790P9K1JW5CRE6611RJ",
+  "after": [
+    "01M6D137QFSHJNBS2QHE12VSSR"
+  ],
+  "at": "2026-11-02T02:44:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 9394ffd1 ran go test ./cmd/rhiza -run TestScripts/run-ship-change-rebase -count=1 -testwork: PASS. Case 2 (code conflict on feature.txt) asserts rhiza show rebase-conflict-ship-two --json has a blocks link, rhiza inbox --json lists it with kind blocker and blocks 'this change set', a second rhiza ship rebase leaves the .rhiza/log byte count unchanged (cmp) while still reporting the question, and rhiza question answer rebase-conflict-ship-two 'Keep main' --change <cs> succeeds and folds. In the kept work dir, rhiza show on the question listed 'blocks change set 01M5PWGEF85Y18: Ship two' and 'answered by answer-rebase-conflict-ship-two', so the answer was written. Read the diff of internal/api/ship_rebase.go: new questions get add+blocks link; an existing identical question gains the link only when LinkBetween reports not-found, else nothing is written. make check passes (fmt, vet, all tests, self-check run with the RHIZA_* run env unset; with the env set, self-check only flagged this verifier's own unrendered actor record)."
+        },
+        "handle": "conflict-question-blocks-change-verified",
+        "id": "01M6D298FZWP1DZJHDMB6FHZ2R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6D298FZWP1DZJHDM8TSFBTT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6D298FZWP1DZJHDM8TSFBTT",
+        "id": "01M6D2999H5Q4C5JNK488X393Z",
+        "link": "01M6D2999H5Q4C5JNK472BEM3Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6D133EKJDM0ACMC374VY9PK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6D12NNWQZHEWFBX60JS04AG",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6D29AJ41852FAJGS53A0T0H",
+  "type": "ops",
+  "v": 1
+}
