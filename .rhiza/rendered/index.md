@@ -3000,6 +3000,7 @@
 - [claude-code-ecc29875](actor/claude-code-ecc29875.md)
 - [claude-code-ecd7186f](actor/claude-code-ecd7186f.md)
 - [claude-code-ece9f14b](actor/claude-code-ece9f14b.md)
+- [claude-code-ed01284a](actor/claude-code-ed01284a.md)
 - [claude-code-ed53ef40](actor/claude-code-ed53ef40.md)
 - [claude-code-ed59bd32](actor/claude-code-ed59bd32.md)
 - [claude-code-eda892d4](actor/claude-code-eda892d4.md)
