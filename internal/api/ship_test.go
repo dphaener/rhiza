@@ -1427,9 +1427,17 @@ func TestShipCloseOutRecordsStaleMain(t *testing.T) {
 	}}
 	f.ctx.Exec = x.run
 	items := func() []InboxItem { return inboxMainStale(f.ctx) }
+	// health reads the main checkout with real git (ctx.Git); only the
+	// close-out record is asserted, since the fixture's branch and status
+	// are not this test's concern.
+	const stale = "the last close-out could not pull"
+	mainDetail := func(p HealthPart) string { return strings.Join(p.Detail, "\n") }
 
 	if got := items(); len(got) != 0 {
 		t.Fatalf("items before = %+v", got)
+	}
+	if h := healthMain(f.ctx); strings.Contains(h.Summary, stale) {
+		t.Fatalf("health main before = %+v", h)
 	}
 	resp, err := callOp(t, f.ctx, "ship.close-out", `{}`)
 	if err != nil {
@@ -1445,6 +1453,11 @@ func TestShipCloseOutRecordsStaleMain(t *testing.T) {
 	got := items()
 	if len(got) != 1 || got[0].Kind != InboxMainStale || !strings.Contains(got[0].Detail, "has uncommitted changes") {
 		t.Fatalf("items = %+v", got)
+	}
+	h := healthMain(f.ctx)
+	if h.State != HealthWarn || !strings.Contains(h.Summary, stale) ||
+		!strings.Contains(mainDetail(h), "change set "+ms.Change) || !strings.Contains(mainDetail(h), "has uncommitted changes") {
+		t.Fatalf("health main after a failed pull = %+v", h)
 	}
 
 	// A second failure keeps the item's identity.
@@ -1468,5 +1481,8 @@ func TestShipCloseOutRecordsStaleMain(t *testing.T) {
 	}
 	if left := items(); len(left) != 0 {
 		t.Errorf("items after = %+v", left)
+	}
+	if h := healthMain(f.ctx); strings.Contains(h.Summary, stale) || strings.Contains(mainDetail(h), "has uncommitted changes") {
+		t.Errorf("health main after a successful pull = %+v", h)
 	}
 }
