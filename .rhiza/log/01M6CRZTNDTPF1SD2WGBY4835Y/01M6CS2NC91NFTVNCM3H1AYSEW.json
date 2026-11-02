@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6CRZTNDTPF1SD2WGC3ZPMS3"
+  ],
+  "at": "2026-11-02T00:03:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "tui-autonomy-app.txtar: --once prints the settings JSON; unit tests on a fake runner toggle plan from owner to auto (calling daemon set rhiza.autonomy.plan auto), set paused, edit maxRuns, and start the daemon with rex window new rhiza daemon when status says not running; rex-install.txtar shows rhiza_app_autonomy on key y and no existing key moved",
+          "statement": "A Rex app, autonomy, on key y, lists every daemon and autonomy setting with value and source, toggles auto/owner and paused on enter, edits numbers in place through rhiza daemon set, and starts the daemon in a Rex tab named rhiza daemon when none is running or stops a running one on request"
+        },
+        "handle": "autonomy-app",
+        "id": "01M6CS2HRAWMCTPDHFXD4TPDVF",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6CS2HRAWMCTPDHFXBHFCX1C",
+        "op": "node.create",
+        "parent": "01M6CS1WF6WPPJTPC8X1DHYGD8"
+      },
+      {
+        "decision": null,
+        "from": "01M6CS2HRAWMCTPDHFXBHFCX1C",
+        "id": "01M6CS2JHM36S48XF5RC2P3XAP",
+        "link": "01M6CS2JHM36S48XF5R9EJ6S41",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0QCGTVMSE99XP443PK8E",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "An inbox app unit test on a fake runner: n on a stalled item sends the carry-on message to the session; for a session whose last pane text shows a usage-limit prompt it sends Escape before the message; n on other kinds does nothing",
+          "statement": "On a stalled item the inbox app's n nudges the session: when it is parked on a usage-limit prompt it sends Escape first, then a message asking it to carry on, through the session's adapter"
+        },
+        "handle": "inbox-nudge-stalled",
+        "id": "01M6CS2KAT7R41TVN9WGRS1321",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6CS2KAT7R41TVN9WFDEFBRF",
+        "op": "node.create",
+        "parent": "01M6A0NY4FZ07ZQMR23E700DTQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6CS2KAT7R41TVN9WFDEFBRF",
+        "id": "01M6CS2M41ZFG2JJCG9095ZNA2",
+        "link": "01M6CS2M41ZFG2JJCG8ZQ39ACT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0QCGTVMSE99XP443PK8E",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6CRZTNDTPF1SD2WGBY4835Y",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CS2NC91NFTVNCM3H1AYSEW",
+  "type": "ops",
+  "v": 1
+}

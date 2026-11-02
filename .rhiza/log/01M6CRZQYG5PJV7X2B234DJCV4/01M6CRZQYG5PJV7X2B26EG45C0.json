@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-02T00:01:45Z",
+  "body": {
+    "intent": "Feature, bug and milestone requests queue in the clone and the daemon turns each into a plan run",
+    "kind": "intention",
+    "sources": [],
+    "title": "Plan requests"
+  },
+  "change_set": "01M6CRZQYG5PJV7X2B234DJCV4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CRZQYG5PJV7X2B26EG45C0",
+  "type": "open",
+  "v": 2
+}

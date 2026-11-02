@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6CRZQYG5PJV7X2B26EG45C0"
+  ],
+  "at": "2026-11-02T00:03:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "plan-requests.txtar with a fake rex: request queues an item shown queued by request ls; daemon --once starts run start --workflow plan --new with the request's text (a bug's prefixed Fix:, a milestone's with --milestone), --autonomous only with plan auto, and request ls then shows planning with the run; when the run's journal names the planned change set, request ls shows planned with it; paused starts nothing; describe-golden.txtar is regenerated",
+          "statement": "rhiza request <text> [--kind feature|bug|milestone] queues a plan request in the clone, rhiza request ls shows each request's state, and the daemon, when not paused and a slot is free, starts a plan run for the oldest queued request, autonomous when plan autonomy is auto, marking the request with its run and later the change set it planned"
+        },
+        "handle": "plan-requests",
+        "id": "01M6CS230463DT24PWBNWAXMG2",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6CS230463DT24PWBJCPWD9Q",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6CS230463DT24PWBJCPWD9Q",
+        "id": "01M6CS23SAV0FKY6CKHF1EPSPW",
+        "link": "01M6CS23SAV0FKY6CKHEWQYWZN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0MA6ZDN8MQ2GMYPA19ET",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A roadmap app unit test on a fake runner: typing an intent after n calls request with kind feature and after m with kind milestone, and no rex window new is run",
+          "statement": "The roadmap app's new change set and new milestone keys file a plan request instead of opening a plan run themselves"
+        },
+        "handle": "roadmap-new-work-requests",
+        "id": "01M6CS24JZ06XER4X1ZQB1B76P",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6CS24JZ06XER4X1ZKX4SNPG",
+        "op": "node.create",
+        "parent": "01M6CS230463DT24PWBJCPWD9Q"
+      },
+      {
+        "decision": null,
+        "from": "01M6CS24JZ06XER4X1ZKX4SNPG",
+        "id": "01M6CS25CQWJ84VCC8VNYYQ987",
+        "link": "01M6CS25CQWJ84VCC8VJG4D62P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS0MA6ZDN8MQ2GMYPA19ET",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6CRZQYG5PJV7X2B234DJCV4",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CS26MS6VHAP8DCG20AC01R",
+  "type": "ops",
+  "v": 1
+}

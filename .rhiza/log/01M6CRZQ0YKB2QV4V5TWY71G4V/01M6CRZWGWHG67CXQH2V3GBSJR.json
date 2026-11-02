@@ -1,0 +1,33 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6CRZQ0YKB2QV4V5V0G3E9S2"
+  ],
+  "at": "2026-11-02T00:01:53Z",
+  "body": {
+    "carve": {
+      "entry": "01M6CRZWGWHG67CXQH2V212BPC",
+      "from": "01M5SWTC1923N3AB7MWA9D9Z2A"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Acceptance policy decides which change sets are accepted without the owner."
+        },
+        "handle": "accept-policy",
+        "id": "01M6CRZWGWHG67CXQH2QZRTWWP",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5SWTCJQP64M9ZDHGT7GS7PT",
+        "op": "node.create",
+        "parent": "01M5SWTC58PN8WNJRRM03630JS"
+      }
+    ]
+  },
+  "change_set": "01M6CRZQ0YKB2QV4V5TWY71G4V",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6CRZWGWHG67CXQH2V3GBSJR",
+  "type": "ops",
+  "v": 2
+}
