@@ -16,6 +16,10 @@ When the current change set (from the current file, not --change) is landed, wit
 
 - derived-from [m21-orchestrator-picks](../source/m21-orchestrator-picks.md)
 
+### In
+
+- decided-by [terminal-current-next](../capability/rhiza/change-sets/current-change/terminal-current-next.md)
+
 ## History
 
 - `01M6CA9PFRY55ZTXNHWDM95Y9A` Plan milestone 21: status tells the truth, picked by the orchestrator under the owner's standing instruction
