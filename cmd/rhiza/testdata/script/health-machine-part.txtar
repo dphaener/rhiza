@@ -16,18 +16,20 @@ exec git commit -qm init
 exec rhiza health
 stdout '^ok   machine  trust daily \(no machine config\)'
 exec rhiza health --json
-stdout '"part": "machine"'
+stdout '"part": "machine",\n\s*"state": "ok",\n\s*"summary": "trust daily \(no machine config\)"'
 
 mkdir $WORK/xdg/rhiza
 cp ../dedicated.toml $WORK/xdg/rhiza/machine.toml
 exec rhiza health
 stdout '^ok   machine  trust dedicated \(from '${WORK@R}'/xdg/rhiza/machine\.toml\)'
+exec rhiza health --json
+stdout '"part": "machine",\n\s*"state": "ok",\n\s*"summary": "trust dedicated \(from '${WORK@R}'/xdg/rhiza/machine\.toml\)"'
 
 cp ../bad.toml $WORK/xdg/rhiza/machine.toml
 exec rhiza health
 stdout '^warn machine  could not be read: .*'${WORK@R}'/xdg/rhiza/machine\.toml'
 exec rhiza health --json
-stdout '"state": "warn"'
+stdout '"part": "machine",\n\s*"state": "warn",\n\s*"summary": "could not be read: [^"\n]*'${WORK@R}'/xdg/rhiza/machine\.toml'
 
 -- dedicated.toml --
 trust = "dedicated"
