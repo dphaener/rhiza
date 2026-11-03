@@ -1,0 +1,40 @@
+{
+  "actor": "01M6HAZ3T4X8B9ZZ8EZ5N49SV5",
+  "after": [
+    "01M6H7VGHD69YZK75XG7NGT2TJ"
+  ],
+  "at": "2026-11-03T18:57:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At bb59f3b9 I read the diff and ran the test and benchmark. The diff adds internal/api/daemon_fold.go, a fold cache keyed by the stat fingerprint of .rhiza/log (index.LogStamp, which hashes folder names, mtimes and inodes, and is distrusted when racy), git for-each-ref, and the current change set. daemonPoll1, daemonNotify and daemonEvents now read the plan result, candidates, change-set lookups, overlaps and lifecycle moves from the cache. Run journals, liveness, the disk check, autonomy settings, holds, backoff and picks still run on every poll, and the daemon's own starts invalidate the cache. The planReadCount and planFoldCount counters are in planRead and planGather (around FoldCanonical). `go test ./internal/api -run TestDaemonIdlePollSkipsFold -count=1 -v` PASS. The test builds about 105 change sets (6 in flight) with IndexPath set and an event command, and runs the full poll closure. The second poll makes 0 readLog calls, 0 planRead calls and 0 in-flight folds. With the clock moved past daemonUnjournaledHold and no stamp change, the held change set is picked. After a new change set is created and proposed, the next poll reads the log, runs planRead again and writes one more event line, `proposed`. `go test -bench BenchmarkDaemonIdlePoll -benchtime=200x` reported 7935126 ns/op, and no test asserts a wall-clock threshold. go vet and gofmt are clean, and make self-check is ok. In make check, only the wall-clock budget tests failed, with the VM at load average ~9 on 4 cores: TestReadBudget (what-if medians over 50ms) and modelapp TestGeneratedModel. TestGeneratedModel passed when run alone. TestReadBudget fails the same way at the parent commit ebee728a under the same load, so neither failure comes from this leaf."
+        },
+        "handle": "daemon-idle-poll-no-fold-verified",
+        "id": "01M6HCBKKXCN9HGNQ7B2QGWYMQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6HCBKKXCN9HGNQ7B292QYQA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HCBKKXCN9HGNQ7B292QYQA",
+        "id": "01M6HCBPJ7ATXNVSMYNDX5HH99",
+        "link": "01M6HCBPJ7ATXNVSMYNCPNW345",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H72FY8WGHYD44YXB23B2ZA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6H6SGKR1N5GBG7XPECKN9Z3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HCBV5KCB577N2N27C6M406",
+  "type": "ops",
+  "v": 1
+}
