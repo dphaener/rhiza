@@ -1,0 +1,40 @@
+{
+  "actor": "01M6FY0AXB486Y050G6GJS6HY9",
+  "after": [
+    "01M6FY37JJBRHDQM1KY9Q5167Y"
+  ],
+  "at": "2026-11-03T05:50:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f6dc3a5f I ran go test ./cmd/rhiza -run 'TestScripts/(headless-run-agent-tabs|run-agent-step|run-blocked|build-tabs|run-agent-tabs|arbiter-agent-tabs|review-checks-step|daemon-headless-runs)$' and it passed. headless-run-agent-tabs.txtar uses a fake rex and drives a headless run: rhiza daemon --once starts a detached rhiza run start --foreground child with REX_SESSION unset. Its -v log shows 4 rex window new calls, each with -s rhiza-repo and titled 'repo: Built · run <run id> · build · builder|verifier a|b #1'. No call contains split, so none is anchored on a driver block. The closed blocks sort equal to the opened ones (b1-b4), so each session closed only its own tab. A second --foreground run with REX_SESSION=session:mine still opened both tabs in rhiza-repo. In the diff, headlessSession (internal/api/run.go) calls ensureRepoSession on --foreground start and resume, and session.RunTabTitle names the run and step; this answers attempt 1's findings f1-f3. go test ./internal/... passed except TestGeneratedModel (internal/tui/modelapp), a read-timing check (median ~100ms, want <50ms) that fails the same way at the parent commit f2704ea1 under load average ~19. It is unrelated to this leaf."
+        },
+        "handle": "headless-run-agent-tabs-verified",
+        "id": "01M6FZAYAHF4T2PJ6EN77N7R84",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6FZAYAHF4T2PJ6EN747RXKJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FZAYAHF4T2PJ6EN747RXKJ",
+        "id": "01M6FZB5G36NWHQDD8SC68MN8A",
+        "link": "01M6FZB5G36NWHQDD8S8MSKX9N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESHESZGCR78N9DK7ZQJVY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FENEJE4B11EBYXDGP9T052",
+  "for": "01M6FY0AXB486Y050G6GJS6HY9",
+  "id": "01M6FZBG7BES97KT0QP74THZN9",
+  "type": "ops",
+  "v": 1
+}
