@@ -1,0 +1,30 @@
+{
+  "actor": "01M6GCQCXBVMGGZ3WG3X0DV0H9",
+  "after": [
+    "01M6GCPSMFW8G6MXXNW6YZH9AT"
+  ],
+  "at": "2026-11-03T09:48:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "63734d1c-2fd7-4c75-98ce-01a1a0cb9cca",
+          "statement": "Change set 01M6GCP (Fix: plan-run close-out fails on untracked .rhiza/log entries) serves no intent yet. Which landed intent should it serve? Recommendation: m24-on-the-vm, the intent the previous Fix (folder trust) served. This one is also a failure the VM's unattended daemon runs into. / How should close-out stop failing on .rhiza/log entries that sit untracked in the main checkout? Every change set opened in the main checkout (run start --new, change new) leaves its first entries there untracked, and the daemon reads drafts and accepted change sets from that checkout. Recommendation: close-out drops untracked log files that the incoming main has byte for byte, then pulls. This keeps the main checkout's view of in-flight change sets and fixes ship-change close-outs too. / `ship close-out --forget` deletes the ship state before it pulls main. If the pull fails, a retried close-out then fails with no ship state. How should a retry work? Recommendation: delete the ship state only after main is updated, so a retry finds it and finishes."
+        },
+        "handle": "question-63734d1c-1",
+        "id": "01M6GCYES204GENK2QVHKSQ9Z2",
+        "key": null,
+        "kind": "question",
+        "node": "01M6GCYES204GENK2QVG9ETB3D",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6GCPSMFW8G6MXXNW6Y5J0Q6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GCYJQA0Z6BGJNSQH4FM9CG",
+  "type": "ops",
+  "v": 1
+}

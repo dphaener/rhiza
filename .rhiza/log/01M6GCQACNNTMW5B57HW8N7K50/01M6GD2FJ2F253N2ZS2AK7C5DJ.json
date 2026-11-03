@@ -1,0 +1,33 @@
+{
+  "actor": "01M6GCR1SMJB2ZA4TE2S30CQKB",
+  "after": [
+    "01M6GD0C72ANK4E8FJ7E1TC7YK"
+  ],
+  "at": "2026-11-03T09:50:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "8bb6faec213a21030087408af9af42b5dfc17dd4d0e5e736aa6f2b11cb4bb766",
+          "session": "b693317e-dc4d-40eb-b2ec-01a1a0cbe9f7",
+          "summary": "Autonomous plan run of change set 01M6GCQA. The planner read internal/api/run.go: runRunResume refuses any unfinished run whose change set is in a terminal state (changeset.State.Terminal(): landed, rejected, withdrawn, superseded). A plan run lands its record during the interview, so a plan run that the gate stops on open questions (capability plan-run-stops-open) can never resume. The planner raised two questions (which intent to serve; how narrow the exemption is) and the arbiter answered with Decision plan-resume-landed-record-milestone-6: serve milestone-6; let through only plan-workflow runs whose change set is landed, keeping the refusal for rejected, withdrawn and superseded change sets and for every other workflow. One leaf was planned under plan-gate, beside plan-run-stops-open.",
+          "title": "Plan of the Fix: resume a plan run whose record landed (autonomous)"
+        },
+        "handle": "plan-resume-landed-record-interview",
+        "id": "01M6GD2FJ12DMGE6Y348BRV9VY",
+        "key": null,
+        "kind": "source",
+        "node": "01M6GD2FJ12DMGE6Y345CJDJ53",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6GCQACNNTMW5B57HW8N7K50",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GD2FJ2F253N2ZS2AK7C5DJ",
+  "type": "ops",
+  "v": 1
+}

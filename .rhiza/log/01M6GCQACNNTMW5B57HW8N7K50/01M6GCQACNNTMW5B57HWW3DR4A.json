@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-03T09:44:25Z",
+  "body": {
+    "intent": "Fix: rhiza run resume refuses a plan run whose record change set landed (internal/api/run.go ~792, the Terminal() guard). Every plan run lands its record during the interview, so a plan run stopped at the gate on open questions can never resume. Exempt plan-workflow runs from that guard",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6GCQACNNTMW5B57HW8N7K50",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GCQACNNTMW5B57HWW3DR4A",
+  "type": "open",
+  "v": 1
+}
