@@ -11,7 +11,6 @@ import (
 
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/entry"
-	"github.com/dphaener/rhiza/internal/id"
 )
 
 // eventNames are the event names of the lifecycle moves.
@@ -46,29 +45,11 @@ func daemonEvents(ctx *Ctx, state *daemon.State, command string) error {
 	if command == "" {
 		return nil
 	}
-	w, err := openCtxWorkspace(ctx)
+	fold, err := daemonFoldOf(ctx)
 	if err != nil {
 		return err
 	}
-	type move struct {
-		ev lifecycleEvent
-		id id.ID
-	}
-	m0 := w.model(id.ID{})
-	var moves []move
-	for _, c := range w.changeSets() {
-		for _, mv := range c.Lifecycle {
-			name, ok := eventNames[mv.Type]
-			if !ok {
-				continue
-			}
-			moves = append(moves, move{id: mv.Entry, ev: lifecycleEvent{
-				Event: name, Change: c.ID.String(), Entry: mv.Entry.String(),
-				Title: c.Open.DisplayTitle(), At: rfc3339(mv.At), Actor: feedActor(m0, mv.Actor),
-			}})
-		}
-	}
-	slices.SortFunc(moves, func(a, b move) int { return id.Compare(a.id, b.id) })
+	moves := fold.moves
 	seeding := !state.EventsSeeded
 	for _, m := range moves {
 		if slices.Contains(state.Events, m.ev.Entry) {

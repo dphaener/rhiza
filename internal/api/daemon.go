@@ -21,7 +21,6 @@ import (
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
-	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
 )
@@ -311,10 +310,13 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 		return Errorf("read runs: %v", err)
 	}
 	host, _ := os.Hostname()
-	items := inboxItems(runs, host, nil, rs.Live, changeStateOf(ctx), nil)
-	if overlaps, err := inboxOverlaps(ctx); err == nil {
-		items = append(items, overlaps...)
+	stateOf := func(string) (string, bool) { return "", false }
+	var overlaps []InboxItem
+	if fold, err := daemonFoldOf(ctx); err == nil {
+		stateOf, overlaps = fold.stateOf, fold.overlaps
 	}
+	items := inboxItems(runs, host, nil, rs.Live, stateOf, nil)
+	items = append(items, overlaps...)
 	// This poll's disk-low state, not the one saved after the last poll.
 	items = append(items, diskLowItems(state.DiskLow)...)
 	if common, err := gitCommonDir(ctx); err == nil {
@@ -493,18 +495,12 @@ func fetchMainWithin(ctx *Ctx, dir string, timeout time.Duration) error {
 // those whose start never journaled (see daemonHeld). It returns the
 // change sets started, the runs resumed and the requests started.
 func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, minFree uint64, autonomous bool, mode string, paused bool, skips *[]daemon.Skip) (started, resumed, planned []string, err error) {
-	res, _, _, err := planRead(ctx, "daemon", "")
+	fold, err := daemonFoldOf(ctx)
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	ws, err := openCtxWorkspace(ctx)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	cands, planSkips := daemonCandidates(res, func(cs id.ID) bool {
-		c, ok := ws.changeSet(cs)
-		return ok && len(changeLeaves(ws.model(cs), c.Ops)) > 0
-	})
+	// The skips are edited below, and appended to: work on copies.
+	cands, planSkips := slices.Clone(fold.cands), slices.Clone(fold.planSkips)
 	runs, err := rs.List()
 	if err != nil {
 		return nil, nil, nil, Errorf("read runs: %v", err)
@@ -512,12 +508,8 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	host, _ := os.Hostname()
 	low, free := daemonDiskLow(ctx, minFree)
 	accepted := func(change string) bool {
-		cs, err := id.Parse(change)
-		if err != nil {
-			return false
-		}
-		c, ok := ws.changeSet(cs)
-		return ok && c.State == changeset.StateAccepted
+		st, ok := fold.stateOf(change)
+		return ok && st == string(changeset.StateAccepted)
 	}
 	var resumable []string
 	if !low && !paused {
@@ -560,17 +552,11 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		if err != nil {
 			return time.Time{}
 		}
-		c, ok := ws.changeSet(cs)
+		c, ok := fold.changeSet(cs)
 		if !ok {
 			return time.Time{}
 		}
-		var at time.Time
-		for _, m := range c.Lifecycle {
-			if m.Type == entry.TypeAccept || m.Type == entry.TypeReopen {
-				at = m.At
-			}
-		}
-		return at
+		return acceptedSince(c)
 	}}
 	shipMode, err := autonomyStage(ctx, "ship")
 	if err != nil {
@@ -609,7 +595,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	}
 	for i, sk := range *skips {
 		if cs, err := id.Parse(sk.Change); err == nil {
-			if c, ok := ws.changeSet(cs); ok {
+			if c, ok := fold.changeSet(cs); ok {
 				(*skips)[i].Title = c.Open.DisplayTitle()
 			}
 		}
@@ -617,6 +603,9 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	for _, cs := range picked {
 		if err := daemonStart(ctx, cs, autonomous, mode); err != nil {
 			return started, resumed, nil, err
+		}
+		if ctx.daemonFold != nil {
+			ctx.daemonFold.invalidate()
 		}
 		pending[cs] = daemonPending{at: ctx.Now(), runs: daemonRunsOf(runs, cs)}
 		started = append(started, cs)
