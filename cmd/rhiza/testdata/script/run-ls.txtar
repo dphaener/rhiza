@@ -19,11 +19,11 @@ exec rhiza run ls --json
 stdout '"runs": \[\]'
 
 exec rhiza change new 'First' --title 'First run' --json
-exec rhiza run start --workflow ok
+exec rhiza run start --foreground --workflow ok
 exec rhiza change new 'Second' --title 'Second run' --json
-! exec rhiza run start --workflow bad
+! exec rhiza run start --foreground --workflow bad
 exec rhiza change new 'Third' --title 'Third run' --json
-exec rhiza run start --workflow ok
+exec rhiza run start --foreground --workflow ok
 
 # Newest first, with every field.
 exec rhiza run ls --json

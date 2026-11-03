@@ -53,7 +53,7 @@ exec git add -A
 exec git commit -qm 'Start shipping'
 exec git push -q -u origin main
 
-exec sh -c 'rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
 stdout '"state": "stopped"'
 stdout '"signoff_waiting": true'
 stdout '^exit=0$'

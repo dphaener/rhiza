@@ -70,7 +70,6 @@ type Model struct {
 	preview Runner
 	answer  *answer
 
-	starter Starter
 	pending *pending
 	intent  *intentInput
 	notice  string

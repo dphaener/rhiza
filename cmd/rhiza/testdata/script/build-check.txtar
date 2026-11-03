@@ -26,7 +26,7 @@ mkdir .rhiza/workflows
 cp $WORK/hold.toml .rhiza/workflows/hold.toml
 exec git add -A
 exec git commit -qm leaves
-exec rhiza run start --workflow hold --no-wait
+exec rhiza run start --foreground --workflow hold --no-wait
 stdout '^Run (01[0-9A-Z]{24}) stopped$'
 stdout '^- Worktree: .*/repo\.build-check$'
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'

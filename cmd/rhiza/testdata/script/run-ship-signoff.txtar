@@ -38,7 +38,7 @@ exec git commit -qm init
 exec git push -q -u origin main
 
 # The run reaches the sign-off after green CI and waits there.
-exec sh -c 'rhiza run start --workflow shiptest --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow shiptest --permission-mode manual --json; echo exit=$?'
 stdout '"state": "stopped"'
 stdout '"signoff_waiting": true'
 stdout '^exit=0$'
@@ -86,7 +86,7 @@ fold-ok
 # A failing CI check ends a run failed naming the check, before any
 # sign-off.
 exec touch $WORK/ci.fail
-! exec rhiza run start --workflow shiptest --permission-mode manual
+! exec rhiza run start --foreground --workflow shiptest --permission-mode manual
 stdout '^Run \S+ failed$'
 stdout '^- Detail: step "pr-green" ended with outcome "fail"$'
 stderr 'failed: test'
@@ -95,7 +95,7 @@ stdout '^exit=2$'
 rm $WORK/ci.fail
 
 # An autonomous run reaches the end with no wait.
-exec sh -c 'rhiza run start --workflow shiptest --permission-mode manual --autonomous; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow shiptest --permission-mode manual --autonomous; echo exit=$?'
 stdout '^exit=0$'
 stdout '^Run [0-9A-Z]{26} succeeded$'
 exec sh -c 'grep "\"type\":\"signoff\"" $(ls -t .git/rhiza/runs/*.jsonl | head -1)'

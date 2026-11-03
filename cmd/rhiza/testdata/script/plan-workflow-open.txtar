@@ -31,7 +31,7 @@ exec git add -A
 exec git commit -qm 'Plan reports'
 exec git push -q origin main
 
-exec sh -c 'rhiza run start $(cat $WORK/rec) --workflow plan --permission-mode manual > $WORK/out 2> $WORK/err; echo exit=$?'
+exec sh -c 'rhiza run start --foreground $(cat $WORK/rec) --workflow plan --permission-mode manual > $WORK/out 2> $WORK/err; echo exit=$?'
 exec cat $WORK/out
 ! stdout 'succeeded'
 

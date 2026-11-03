@@ -11,7 +11,7 @@ exec rhiza change new 'Resume a run' --title 'Run resume' --json
 mkdir .rhiza/workflows
 cp ../one.toml .rhiza/workflows/one.toml
 
-exec rhiza run start --workflow one --no-wait
+exec rhiza run start --foreground --workflow one --no-wait
 stdout '^Run ([0-9A-Z]{26}) stopped$'
 exec sh -c 'cat .git/rhiza/runs/* > ../before'
 

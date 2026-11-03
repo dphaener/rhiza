@@ -28,7 +28,7 @@ exec rhiza change new 'Approve me' --title 'Approve me'
 exec rhiza add capability thing
 exec git add -A
 exec git commit -qm thing
-exec sh -c 'rhiza run start --workflow review --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 stdout '^exit=0$'
 exec sh -c 'rhiza inbox | grep -E "^[0-9a-f]+ signoff " | cut -d" " -f1'
@@ -59,7 +59,7 @@ exec rhiza change new 'Change me' --title 'Change me'
 exec rhiza add capability other
 exec git add -A
 exec git commit -qm other
-exec sh -c 'rhiza run start --workflow review --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 exec sh -c 'rhiza inbox | grep -E "^[0-9a-f]+ signoff " | cut -d" " -f1'
 cp stdout $WORK/cid

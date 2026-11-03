@@ -21,7 +21,7 @@ stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
 mkdir .rhiza/workflows
 cp $WORK/three.toml .rhiza/workflows/three.toml
 
-exec rhiza run start --workflow three --permission-mode manual
+exec rhiza run start --foreground --workflow three --permission-mode manual
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
 exec sh -c 'f=$(git rev-parse --git-common-dir)/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl; grep -v "\"tokens\"" $f > $f.new; mv $f.new $f'
 exec sh -c 'rm "$HOME"/.claude/projects/p/158fe87f-5cf8-452b-9c62-01a16dc84988.jsonl'

@@ -70,7 +70,7 @@ env RHIZA_TEST_SEED=1
 cd $WORK/repo
 exec touch $WORK/move-main
 
-exec sh -c 'rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 stdout '^exit=0$'
 exec sh -c 'rhiza run approve; echo exit=$?'
@@ -146,7 +146,7 @@ exec git add feature.txt
 exec git commit -qm 'Add a feature on main'
 cd $WORK/repo2
 
-exec rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json
+exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json
 stdout '"signoff_waiting": true'
 ! exec rhiza run approve
 stdout '^Run \S+ failed$'
@@ -259,7 +259,7 @@ cd $WORK/repo3
 exec touch $WORK/merge-in-build
 exec touch $WORK/move-main
 
-exec sh -c 'rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 exec sh -c 'rhiza run approve; echo exit=$?'
 stdout '^exit=0$'
@@ -323,7 +323,7 @@ exec git commit -qam 'Change the feature again'
 cd $WORK/repo4
 exec touch $WORK/move-main
 
-exec rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json
+exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json
 stdout '"signoff_waiting": true'
 ! exec rhiza run approve
 stdout '^Run \S+ failed$'

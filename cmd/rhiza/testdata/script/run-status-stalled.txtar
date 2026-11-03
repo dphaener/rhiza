@@ -19,7 +19,7 @@ mkdir .rhiza/workflows
 cp $WORK/work.toml .rhiza/workflows/work.toml
 env REX_BLOCK=block:root
 env REX_SESSION=session:s1
-! exec rhiza run start --workflow work --permission-mode manual &runner&
+! exec rhiza run start --foreground --workflow work --permission-mode manual &runner&
 
 # Wait (bounded) until the agent has reported working through its hook.
 exec sh -c 'i=0; while [ $i -lt 400 ]; do grep -q "\"hook\"" "$WORK"/repo/.git/rhiza/sessions/*.json && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'

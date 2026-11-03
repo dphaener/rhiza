@@ -143,56 +143,47 @@ type call struct {
 	args []string
 }
 
-// startModel is a model with a fake exec recording every call and a runner
-// answering run.open with runOpen.
+// startModel is a model whose runner records every run.start call and
+// answers run.open with runOpen.
 func startModel(runOpen string, calls *[]call) *Model {
-	m := NewModel(func(op, ch string, args []string) ([]byte, error) {
-		if op == "run.open" {
+	return NewModel(func(op, ch string, args []string) ([]byte, error) {
+		switch op {
+		case "run.open":
 			return []byte(runOpen), nil
+		case "run.start":
+			*calls = append(*calls, call{op, args})
+			return []byte("{}"), nil
 		}
 		return fake(op, ch, args)
 	})
-	m.SetStarter(Starter{
-		Exec: func(name string, args []string, _ string) ([]byte, error) {
-			*calls = append(*calls, call{name, args})
-			return []byte("{}"), nil
-		},
-		Self: "/bin/rhiza", Root: "/repo", RexSession: "session:1",
-	})
-	return m
 }
 
-func TestPlanRunStartsInteractiveInNewTab(t *testing.T) {
+func TestPlanRunIsQueuedForTheDaemon(t *testing.T) {
 	var calls []call
 	m := startModel("{}", &calls)
 	key(m, "p")
 	if len(calls) != 0 {
-		t.Fatalf("p called rex before y: %v", calls)
+		t.Fatalf("p queued before y: %v", calls)
 	}
 	if v := m.View().Content; !strings.Contains(v, "plan run") || !strings.Contains(v, "y/n") {
 		t.Errorf("no y/n question:\n%s", v)
 	}
 	key(m, "y")
-	if len(calls) != 1 || calls[0].name != "rex" {
-		t.Fatalf("calls = %v, want one rex call", calls)
+	if len(calls) != 1 || calls[0].name != "run.start" {
+		t.Fatalf("calls = %v, want one run.start", calls)
 	}
-	got := strings.Join(calls[0].args, " ")
-	want := "window new -s session:1 " + a[:9] + " -c /repo --json -- /bin/rhiza run start " + a + " --workflow plan"
-	if got != want {
+	if got, want := strings.Join(calls[0].args, " "), a+" --workflow plan"; got != want {
 		t.Errorf("args = %q, want %q", got, want)
 	}
-	if strings.Contains(got, "--autonomous") {
-		t.Errorf("plan run is autonomous: %s", got)
-	}
-	if v := m.View().Content; !strings.Contains(v, "Opened Rex tab "+a[:9]) {
-		t.Errorf("view does not say which tab opened:\n%s", v)
+	if v := m.View().Content; !strings.Contains(v, "Queued the plan run") {
+		t.Errorf("view does not say it queued:\n%s", v)
 	}
 	if m.Cursor().String() != a {
 		t.Errorf("app did not stay on the list")
 	}
 }
 
-func TestShipRunIsAutonomousWithAutoMode(t *testing.T) {
+func TestShipRunIsQueuedAutonomousWithAutoMode(t *testing.T) {
 	var calls []call
 	m := startModel("{}", &calls)
 	key(m, "s")
@@ -200,9 +191,8 @@ func TestShipRunIsAutonomousWithAutoMode(t *testing.T) {
 	if len(calls) != 1 {
 		t.Fatalf("calls = %v", calls)
 	}
-	got := strings.Join(calls[0].args, " ")
-	if want := "run start " + a + " --autonomous --permission-mode auto"; !strings.HasSuffix(got, want) {
-		t.Errorf("args = %q, want suffix %q", got, want)
+	if got, want := strings.Join(calls[0].args, " "), a+" --autonomous --permission-mode auto"; got != want {
+		t.Errorf("args = %q, want %q", got, want)
 	}
 }
 
@@ -383,13 +373,6 @@ func TestNewWorkFilesPlanRequest(t *testing.T) {
 				return []byte("{}"), nil
 			}
 			return fake(op, ch, args)
-		})
-		m.SetStarter(Starter{
-			Exec: func(name string, args []string, _ string) ([]byte, error) {
-				calls = append(calls, call{name, args})
-				return []byte("{}"), nil
-			},
-			Self: "/bin/rhiza", Root: "/repo", RexSession: "session:1",
 		})
 		key(m, tc.key)
 		typeText(m, "Ship the thing")

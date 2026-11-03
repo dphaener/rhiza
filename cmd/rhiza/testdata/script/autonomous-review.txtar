@@ -35,7 +35,7 @@ exec git commit -qm 'Reviewed runs'
 env REX_BLOCK=block:root
 env REX_SESSION=session:s1
 
-exec rhiza run start --workflow ask --permission-mode manual --autonomous
+exec rhiza run start --foreground --workflow ask --permission-mode manual --autonomous
 stdout '^Run [0-9A-Z]{26} succeeded$'
 exec cat $WORK/accept.out
 stdout '"rule": "autonomous"'
@@ -68,7 +68,7 @@ stdout '^## Questions put to the arbiter$'
 stdout '^- question-[0-9a-f]{8}-1 \([0-9A-Z]{26}\): Which colour\? — decision assume-blue$'
 
 # A normal run lists neither.
-exec rhiza run start --workflow plain
+exec rhiza run start --foreground --workflow plain
 stdout '^Run ([0-9A-Z]{26}) succeeded$'
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v $(cat $WORK/autorun) > $WORK/plainrun'
 exec sh -c 'rhiza run status $(cat $WORK/plainrun) --json'

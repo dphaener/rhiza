@@ -14,12 +14,12 @@ mkdir .rhiza/workflows
 cp ../gate.toml .rhiza/workflows/gate.toml
 
 # Run A fails at its check.
-! exec rhiza run start --workflow gate
+! exec rhiza run start --foreground --workflow gate
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG failed$'
 
 # Run B starts on the same change set and stops at its wait.
 exec sh -c 'echo > $WORK/pass'
-exec rhiza run start --workflow gate --no-wait
+exec rhiza run start --foreground --workflow gate --no-wait
 stdout '^Run [0-9A-Z]{26} stopped$'
 exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl// > $WORK/second'
 

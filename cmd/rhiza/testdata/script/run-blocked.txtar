@@ -30,7 +30,7 @@ cp $WORK/ask.toml .rhiza/workflows/ask.toml
 # stderr.
 env REX_BLOCK=block:root
 env REX_SESSION=session:s1
-exec rhiza run start --workflow ask --permission-mode manual &
+exec rhiza run start --foreground --workflow ask --permission-mode manual &
 
 # Poll (bounded) until the run reads blocked.
 exec sh -c 'i=0; while [ $i -lt 400 ]; do rhiza run status | grep -q "^Run .* blocked$" && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'

@@ -36,7 +36,7 @@ exec git push -q origin main
 env REX_BLOCK=block:root
 env REX_SESSION=session:s1
 
-exec sh -c 'rhiza run start $(cat $WORK/rec) --workflow plan --permission-mode manual --autonomous > $WORK/out 2> $WORK/err; echo exit=$?'
+exec sh -c 'rhiza run start --foreground $(cat $WORK/rec) --workflow plan --permission-mode manual --autonomous > $WORK/out 2> $WORK/err; echo exit=$?'
 exec cat $WORK/out
 stdout '^Run [0-9A-Z]{26} succeeded$'
 stdout '^- check \(visit 3\): pass, then gate: exit 0$'

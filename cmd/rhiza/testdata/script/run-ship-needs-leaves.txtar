@@ -16,7 +16,7 @@ exec git commit -qm init
 # A change set that adds no capability has no leaves.
 exec rhiza change new 'Nothing to build' --title 'Nothing' --json
 stdout '"change_set": "[0-9A-Z]{26}"'
-! exec rhiza run start --workflow ship-change
+! exec rhiza run start --foreground --workflow ship-change
 stderr 'has no leaves'
 stderr 'rhiza run start --workflow plan'
 ! exists .git/rhiza/runs
@@ -24,14 +24,14 @@ exec git worktree list
 ! stdout 'nothing'
 
 # The same refusal over the API carries the next command.
-! exec rhiza run start --workflow ship-change --json
+! exec rhiza run start --foreground --workflow ship-change --json
 stdout '"next": "rhiza run start --workflow plan"'
 ! exists .git/rhiza/runs
 
 # A change set with a leaf starts the run.
 exec rhiza change new 'Something to build' --title 'Something' --json
 exec rhiza add capability thing --field 'statement=A thing'
-exec rhiza run start --workflow ship-change
+exec rhiza run start --foreground --workflow ship-change
 stdout '^Run [0-9A-Z]{26} succeeded$'
 exists .git/rhiza/runs
 

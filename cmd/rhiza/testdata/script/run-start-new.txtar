@@ -23,29 +23,29 @@ exec sh -c 'rhiza change ls --json | grep -c "\"intent\"" > $WORK/before'
 exec cat $WORK/before
 
 # Refused starts open nothing.
-exec sh -c 'rhiza run start --workflow plan --new "Plan reports" 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual 2>&1; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Plan reports" 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual 2>&1; echo exit=$?'
 stdout 'takes no change set'
 stdout '^exit=2$'
-exec sh -c 'rhiza run start --workflow other --new "Plan reports" --permission-mode manual 2>&1; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow other --new "Plan reports" --permission-mode manual 2>&1; echo exit=$?'
 stdout 'not plan'
 stdout '^exit=2$'
-! exec rhiza run start --workflow plan --milestone --permission-mode manual
+! exec rhiza run start --foreground --workflow plan --milestone --permission-mode manual
 stderr '--milestone goes with --new'
 exec sh -c 'rhiza change ls --json | grep -c "\"intent\""'
 cmp stdout $WORK/before
 ! exists .git/rhiza/runs
 
 # A dry run predicts the ID and writes nothing.
-exec rhiza run start --workflow plan --new 'Plan reports' --permission-mode manual --dry-run --json
+exec rhiza run start --foreground --workflow plan --new 'Plan reports' --permission-mode manual --dry-run --json
 stdout '"dry_run": true'
 stdout '"change": "([0-9A-Z]{26})"'
-exec sh -c 'rhiza run start --workflow plan --new "Plan reports" --permission-mode manual --dry-run --json | sed -n "s/^    \"change\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/predicted'
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Plan reports" --permission-mode manual --dry-run --json | sed -n "s/^    \"change\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/predicted'
 exec sh -c 'rhiza change ls --json | grep -c "\"intent\""'
 cmp stdout $WORK/before
 ! exists .git/rhiza/runs
 
 # An intention without --milestone.
-exec rhiza run start --workflow plan --new 'Plan reports' --permission-mode manual --json
+exec rhiza run start --foreground --workflow plan --new 'Plan reports' --permission-mode manual --json
 stdout '"state": "succeeded"'
 exec sh -c 'rhiza change ls --json | grep -A8 "Plan reports"'
 stdout '"kind": "intention"'
@@ -57,7 +57,7 @@ stdout '"change":"'
 stdout 'Plan reports'
 
 # A record with --milestone.
-exec rhiza run start --workflow plan --new 'Plan the milestone' --milestone --permission-mode manual --json
+exec rhiza run start --foreground --workflow plan --new 'Plan the milestone' --milestone --permission-mode manual --json
 stdout '"state": "succeeded"'
 exec sh -c 'rhiza change ls --json | grep -A8 "Plan the milestone"'
 stdout '"kind": "record"'

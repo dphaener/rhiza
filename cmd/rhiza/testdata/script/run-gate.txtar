@@ -31,7 +31,7 @@ stdout '^exit=2$'
 exec rhiza change new 'Plan A' --kind record --title 'Plan A' --json
 exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/ra'
 exec rhiza add intent want-a
-exec rhiza run start --workflow hold --no-wait
+exec rhiza run start --foreground --workflow hold --no-wait
 stdout '^Run (01[0-9A-Z]{24}) stopped$'
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runa'
 exec rhiza land
@@ -82,7 +82,7 @@ exec rhiza change new 'Plan B' --kind record --title 'Plan B' --json
 exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/rb'
 exec rhiza add intent want-b
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/before'
-exec rhiza run start --workflow hold --autonomous --no-wait
+exec rhiza run start --foreground --workflow hold --autonomous --no-wait
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runb'
 exec rhiza land
 exec sh -c 'rhiza change new "Serve B one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/b1'
@@ -127,7 +127,7 @@ exec rhiza change new 'Plan C' --kind record --title 'Plan C' --json
 exec rhiza add intent want-c
 exec rhiza add decision dec-c --field 'statement=Use C'
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/before'
-exec rhiza run start --workflow hold --autonomous --no-wait
+exec rhiza run start --foreground --workflow hold --autonomous --no-wait
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runc'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run findings $WORK/findings.json'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run findings $WORK/findings.json'
@@ -173,7 +173,7 @@ exec rhiza add intent want-d --record
 exec sh -c 'rhiza change new "Do D" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/d1'
 exec sh -c 'rhiza link $(cat $WORK/d1) serves want-d'
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/before'
-exec rhiza run start --workflow hold --no-wait
+exec rhiza run start --foreground --workflow hold --no-wait
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/rund'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/rund) rhiza run gate --json; echo exit=$?'
 stdout '^exit=0$'
@@ -188,7 +188,7 @@ exec rhiza change new 'Plan E' --kind record --title 'Plan E' --json
 exec rhiza add intent want-e
 exec rhiza add decision dec-e --field 'statement=Use E'
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/before'
-exec rhiza run start --workflow hold --no-wait
+exec rhiza run start --foreground --workflow hold --no-wait
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/rune'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/rune) rhiza run findings $WORK/findings-e.json'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/rune) rhiza run findings $WORK/findings-e.json'
@@ -220,7 +220,7 @@ exec rhiza change new 'Plan F' --kind record --title 'Plan F' --json
 exec rhiza add intent want-f
 exec rhiza add decision dec-f --field 'statement=Use F'
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/before'
-exec rhiza run start --workflow hold --autonomous --no-wait
+exec rhiza run start --foreground --workflow hold --autonomous --no-wait
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runf'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runf) rhiza run findings $WORK/findings-f.json'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runf) rhiza run findings $WORK/findings-f.json'

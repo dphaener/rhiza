@@ -37,7 +37,7 @@ exec git push -q -u origin main
 # Start the run in the background; wait until the agent is idle (the fake
 # rex then returns and the engine starts polling the session every 100ms),
 # then give the engine many polls.
-exec rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --workflow agent-done --permission-mode manual &
+exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --workflow agent-done --permission-mode manual &
 exec sh -c 'i=0; until [ -f "$WORK/claude.idle" ]; do i=$((i+1)); [ $i -gt 800 ] && exit 1; sleep 0.025; done'
 exec sh -c 'i=0; until grep -q window:w1 "$WORK/rex.done" 2>/dev/null; do i=$((i+1)); [ $i -gt 400 ] && exit 1; sleep 0.025; done'
 exec sleep 1

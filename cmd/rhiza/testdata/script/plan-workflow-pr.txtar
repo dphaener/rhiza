@@ -43,7 +43,7 @@ exec git add -A
 exec git commit -qm 'Plan reports'
 exec git push -q origin main
 
-exec sh -c 'rhiza run start $(cat $WORK/rec) --workflow plan --permission-mode manual > $WORK/out 2> $WORK/err; echo exit=$?'
+exec sh -c 'rhiza run start --foreground $(cat $WORK/rec) --workflow plan --permission-mode manual > $WORK/out 2> $WORK/err; echo exit=$?'
 stdout '^exit=0$'
 exec cat $WORK/out
 stdout '^Run [0-9A-Z]{26} succeeded$'
@@ -158,7 +158,7 @@ cp $WORK/ship-change.toml .rhiza/workflows/ship-change.toml
 exec git add -A
 exec git commit -qm 'Ship the PR half'
 exec git push -q origin main
-exec sh -c 'rhiza run start $(cat $WORK/cs) --permission-mode manual --json > $WORK/ship.out 2> $WORK/ship.err; echo exit=$?'
+exec sh -c 'rhiza run start --foreground $(cat $WORK/cs) --permission-mode manual --json > $WORK/ship.out 2> $WORK/ship.err; echo exit=$?'
 stdout '^exit=0$'
 exec cat $WORK/ship.out
 stdout '"workflow": "ship-change"'

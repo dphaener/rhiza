@@ -12709,8 +12709,16 @@ cmp stdout describe.golden.json
       "response": {
         "additionalProperties": false,
         "properties": {
+          "daemon": {
+            "description": "With queued: the daemon's process, as host:pid; empty when no daemon runs and the run waits for one",
+            "type": "string"
+          },
           "dry_run": {
             "description": "True if nothing was written or run",
+            "type": "boolean"
+          },
+          "queued": {
+            "description": "True when run start queued the run for the daemon rather than driving it: the run has no ID yet, and the daemon starts it headless; absent otherwise",
             "type": "boolean"
           },
           "retry": {
@@ -14273,8 +14281,16 @@ cmp stdout describe.golden.json
       "response": {
         "additionalProperties": false,
         "properties": {
+          "daemon": {
+            "description": "With queued: the daemon's process, as host:pid; empty when no daemon runs and the run waits for one",
+            "type": "string"
+          },
           "dry_run": {
             "description": "True if nothing was written or run",
+            "type": "boolean"
+          },
+          "queued": {
+            "description": "True when run start queued the run for the daemon rather than driving it: the run has no ID yet, and the daemon starts it headless; absent otherwise",
             "type": "boolean"
           },
           "retry": {
@@ -15645,7 +15661,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Run a workflow's steps on a change set in its worktree, in the foreground",
+      "summary": "Queue a run of a workflow on a change set for the daemon, which runs its steps in its worktree headless; --foreground drives it in this process",
       "write": true
     },
     {

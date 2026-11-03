@@ -35,7 +35,7 @@ exec sh -c 'rhiza run request-changes $WORK/changes.json; echo exit=$?'
 stdout '^exit=2$'
 
 # A run stopped at a wait step is not waiting for a sign-off.
-exec rhiza run start --workflow other --no-wait --json
+exec rhiza run start --foreground --workflow other --no-wait --json
 stdout '"state": "stopped"'
 exec sh -c 'wc -l < $(ls -t .git/rhiza/runs/*.jsonl | head -1)'
 cp stdout $WORK/other.lines
@@ -52,7 +52,7 @@ exec sh -c 'echo > $WORK/ci-done'
 exec sh -c 'rhiza run resume $(ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl//)'
 
 # The review stops at its sign-off once its check passes.
-exec sh -c 'rhiza run start --workflow review --permission-mode manual --json > $WORK/start.json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json > $WORK/start.json; echo exit=$?'
 stdout '^exit=0$'
 exec cat $WORK/start.json
 stdout '"state": "stopped"'

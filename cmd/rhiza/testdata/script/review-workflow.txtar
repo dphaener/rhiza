@@ -41,7 +41,7 @@ exec git add -A
 exec git commit -qm evidence
 ! exists .rhiza/workflows
 
-exec sh -c 'rhiza run start --workflow review --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json; echo exit=$?'
 stdout '"state": "stopped"'
 stdout '"workflow": "review"'
 stdout '"signoff_waiting": true'

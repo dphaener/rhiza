@@ -11,7 +11,7 @@ exec rhiza change new 'Abandon a dirty run' --title 'Abandon dirty' --json
 mkdir .rhiza/workflows
 cp ../hold.toml .rhiza/workflows/hold.toml
 
-exec rhiza run start --workflow hold --no-wait
+exec rhiza run start --foreground --workflow hold --no-wait
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG stopped$'
 exec sh -c 'echo wip > ../repo.abandon-dirty/scratch.txt'
 

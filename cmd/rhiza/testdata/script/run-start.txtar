@@ -13,7 +13,7 @@ stdout '"change_set": "[0-9A-Z]{26}"'
 mkdir .rhiza/workflows
 cp ../one.toml .rhiza/workflows/one.toml
 
-exec rhiza run start --workflow one
+exec rhiza run start --foreground --workflow one
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
 stdout '^- Workflow: one$'
 stdout '^- a \(visit 1\): pass, then b: exit 0$'

@@ -32,7 +32,7 @@ cp $WORK/build.toml .rhiza/workflows/build.toml
 exec git add -A
 exec git commit -qm leaves
 
-! exec rhiza run start --workflow build --permission-mode manual
+! exec rhiza run start --foreground --workflow build --permission-mode manual
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
 exec cat $WORK/builders.log
 cmp stdout $WORK/want-round1.log

@@ -14,7 +14,7 @@ cp ../out.toml .rhiza/workflows/out.toml
 cp ../long.toml .rhiza/workflows/long.toml
 cp ../ok.toml .rhiza/workflows/ok.toml
 
-! exec rhiza run start --workflow out
+! exec rhiza run start --foreground --workflow out
 exec rhiza run status --json
 stdout '"detail": "exit 3\\nout1\\nboom"'
 
@@ -22,7 +22,7 @@ exec rhiza run status
 stdout '^- b \(visit 1\): fail, then end: exit 3$'
 stdout '^    boom$'
 
-! exec rhiza run start --workflow long
+! exec rhiza run start --foreground --workflow long
 exec rhiza run status --json
 stdout 'line 500'
 ! stdout 'line 1\\n'
@@ -30,7 +30,7 @@ stdout 'line 500'
 ! stdout 'line 480\\n'
 stdout 'line 481'
 
-exec rhiza run start --workflow ok
+exec rhiza run start --foreground --workflow ok
 exec rhiza run status --json
 stdout '"detail": "exit 0"'
 

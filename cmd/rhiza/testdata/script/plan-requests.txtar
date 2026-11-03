@@ -42,7 +42,7 @@ exec sh -c 'rhiza request ls --json | sed -n "s/^      \"id\": \"\(.*\)\",$/\1/p
 exec sh -c 'head -1 $WORK/ids | tr -d "\n" > $WORK/req1'
 
 # A queued request has no run for run start to take.
-exec sh -c 'rhiza run start --workflow plan --new "Add exports" --request $(cat $WORK/req1) --permission-mode manual 2>&1; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Add exports" --request $(cat $WORK/req1) --permission-mode manual 2>&1; echo exit=$?'
 stdout 'is queued'
 stdout '^exit=2$'
 
@@ -79,7 +79,7 @@ stdout -count=3 '"state": "planning"'
 
 # The first request's tab runs its plan run: it takes the request's run ID,
 # and once it succeeds request ls shows the change set it planned.
-exec sh -c 'rhiza run start --workflow plan --new "Add exports" --request $(cat $WORK/req1) --permission-mode manual --json'
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Add exports" --request $(cat $WORK/req1) --permission-mode manual --json'
 stdout '"state": "succeeded"'
 exec sh -c 'rhiza request ls --json | grep -B3 -A6 "$(cat $WORK/req1)"'
 stdout '"state": "planned"'
@@ -91,7 +91,7 @@ exec rhiza request ls
 stdout 'feature planned: Add exports \(run [0-9A-Z]{26}, change set [0-9A-Z]{26}\)$'
 
 # Its run is taken: a second start of it is refused.
-exec sh -c 'rhiza run start --workflow plan --new "Add exports" --request $(cat $WORK/req1) --permission-mode manual 2>&1; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Add exports" --request $(cat $WORK/req1) --permission-mode manual 2>&1; echo exit=$?'
 stdout 'already has run'
 stdout '^exit=2$'
 

@@ -32,7 +32,7 @@ cp $WORK/tokens.toml .rhiza/workflows/tokens.toml
 # own and its helpers' apart, and the journal has a tokens entry for each
 # reading.
 cp $WORK/mode.exit $WORK/claude.mode
-exec rhiza run start --workflow tokens --permission-mode manual --json
+exec rhiza run start --foreground --workflow tokens --permission-mode manual --json
 stdout '"state": "succeeded"'
 ! stderr 'record token use'
 exec cat $WORK/tab.out
@@ -49,7 +49,7 @@ grep '^\{"type":"tokens","at":"[^"]+","step":"build","session":"[0-9a-f-]{36}","
 # the reading at done has the first message only, the readings at exit and
 # at the step's end have both, and the later one wins.
 cp $WORK/mode.done $WORK/claude.mode
-exec rhiza run start --workflow tokens --permission-mode manual --json
+exec rhiza run start --foreground --workflow tokens --permission-mode manual --json
 stdout '"state": "succeeded"'
 exec cat $WORK/done.out
 stdout '"session": "[0-9a-f-]{36}"'
@@ -67,7 +67,7 @@ stdout '"tokens":\{"session":\{"input":110,"output":220,"cache_creation":330,"ca
 # agent's code, the step's end warns, neither the record nor the journal
 # gains token use, and the done response lists no decisions.
 cp $WORK/mode.none $WORK/claude.mode
-exec sh -c 'rhiza run start --workflow tokens --permission-mode manual; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow tokens --permission-mode manual; echo exit=$?'
 stdout '^- build \(visit 1\): fail, then end, session [0-9a-f-]{36}: exit 3$'
 stdout '^exit=0$'
 stderr '^rhiza: step build: record token use: no transcript of session '

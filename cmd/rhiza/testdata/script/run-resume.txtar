@@ -15,7 +15,7 @@ mkdir .rhiza/workflows
 cp ../twostep.toml .rhiza/workflows/twostep.toml
 
 # Step one runs and the run stops at the wait.
-exec rhiza run start --workflow twostep --no-wait
+exec rhiza run start --foreground --workflow twostep --no-wait
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG stopped$'
 stdout '^- Current step: two$'
 stdout '^next: rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG$'

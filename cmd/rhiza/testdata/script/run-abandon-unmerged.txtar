@@ -15,12 +15,12 @@ cp ../build.toml .rhiza/workflows/build.toml
 
 # Run A builds a commit on the branch and succeeds.
 exec sh -c 'echo > $WORK/pass'
-exec rhiza run start --workflow build
+exec rhiza run start --foreground --workflow build
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
 
 # Run B fails at its check.
 rm $WORK/pass
-! exec rhiza run start --workflow build
+! exec rhiza run start --foreground --workflow build
 stdout '^Run [0-9A-Z]{26} failed$'
 exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl// > $WORK/second'
 

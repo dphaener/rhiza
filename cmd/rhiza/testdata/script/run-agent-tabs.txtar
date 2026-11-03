@@ -25,7 +25,7 @@ cp $WORK/review.toml .rhiza/workflows/review.toml
 exec git add -A
 exec git commit -qm review
 
-exec sh -c 'rhiza run start --workflow review --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json; echo exit=$?'
 stdout '^exit=0$'
 
 # A check, a critic, a fixer and a verifier each started a session.

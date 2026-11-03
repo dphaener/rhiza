@@ -63,7 +63,7 @@ exec rhiza add intent want-b
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/before'
 mkdir .rhiza/workflows
 cp $WORK/hold.toml .rhiza/workflows/hold.toml
-exec rhiza run start --workflow hold --autonomous --no-wait
+exec rhiza run start --foreground --workflow hold --autonomous --no-wait
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runb'
 exec rhiza land
 exec sh -c 'rhiza change new "Serve B one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/b1'

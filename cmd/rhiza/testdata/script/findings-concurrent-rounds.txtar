@@ -17,7 +17,7 @@ exec rhiza add capability cap-a --field 'statement=Does A'
 exec rhiza add capability cap-b --field 'statement=Does B'
 mkdir .rhiza/workflows
 cp $WORK/hold.toml .rhiza/workflows/hold.toml
-exec rhiza run start --workflow hold --no-wait
+exec rhiza run start --foreground --workflow hold --no-wait
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
 
 # Four plain findings calls at once, each logging its exit and its round.

@@ -21,13 +21,13 @@ mkdir .rhiza/workflows
 cp $WORK/oneagent.toml .rhiza/workflows/oneagent.toml
 
 # Without the flag.
-exec rhiza run start --workflow oneagent --permission-mode manual --no-wait
+exec rhiza run start --foreground --workflow oneagent --permission-mode manual --no-wait
 stdout 'succeeded$'
 exec cat $WORK/argv.log
 stdout -count=1 '^launch: .* --permission-mode manual( |$)'
 
 # With it: the same mode.
-exec rhiza run start --workflow oneagent --permission-mode manual --autonomous --no-wait
+exec rhiza run start --foreground --workflow oneagent --permission-mode manual --autonomous --no-wait
 stdout 'succeeded$'
 stdout '^- Autonomous: yes$'
 exec cat $WORK/argv.log
@@ -38,9 +38,9 @@ stdout -count=2 '^launch: .* --permission-mode manual( |$)'
 # A bypass mode is refused under --autonomous too, and writes no journal.
 exec sh -c 'ls .git/rhiza/runs | wc -l | tr -d " "'
 stdout '^2$'
-! exec rhiza run start --workflow oneagent --autonomous --permission-mode bypassPermissions --no-wait
+! exec rhiza run start --foreground --workflow oneagent --autonomous --permission-mode bypassPermissions --no-wait
 stderr 'permission mode bypassPermissions bypasses the agent''s permission checks: that needs a machine with trust = "dedicated"'
-! exec rhiza run start --workflow oneagent --autonomous --permission-mode bypassPermissions --no-wait --json
+! exec rhiza run start --foreground --workflow oneagent --autonomous --permission-mode bypassPermissions --no-wait --json
 stdout 'trust = \\"dedicated\\"'
 exec sh -c 'ls .git/rhiza/runs | wc -l | tr -d " "'
 stdout '^2$'

@@ -14,9 +14,9 @@ mkdir .rhiza/workflows
 cp ../hold.toml .rhiza/workflows/hold.toml
 
 # An interrupted run: stopped at its wait.
-exec rhiza run start --workflow hold --no-wait
+exec rhiza run start --foreground --workflow hold --no-wait
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG stopped$'
-exec sh -c 'rhiza run start --workflow hold --no-wait 2>&1; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow hold --no-wait 2>&1; echo exit=$?'
 stdout '^exit=2$'
 
 # Dry run changes nothing.
@@ -53,7 +53,7 @@ stdout 'is finished'
 
 # A new run starts, finishes, and cannot then be abandoned.
 exec sh -c 'echo > $WORK/go'
-exec rhiza run start --workflow hold
+exec rhiza run start --foreground --workflow hold
 stdout '^Run [0-9A-Z]{26} succeeded$'
 exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl// > $WORK/second'
 exec sh -c 'rhiza run abandon $(cat $WORK/second) 2>&1; echo exit=$?'

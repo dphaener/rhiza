@@ -15,7 +15,7 @@ mkdir .rhiza/workflows
 cp ../gate.toml .rhiza/workflows/gate.toml
 
 # Mid-run, stopped: the first step is done and the wait step is current.
-exec rhiza run start --workflow gate --no-wait
+exec rhiza run start --foreground --workflow gate --no-wait
 stdout '^Run [0-9A-Z]{26} stopped$'
 stdout '^- Current step: hold$'
 stdout '^- first \(visit 1\): pass, then hold: exit 0$'
@@ -31,7 +31,7 @@ stdout '"change_set": "[0-9A-Z]{26}"'
 
 # A live run: started in the background, it waits for the flag. Status
 # reports running (bounded retries) until the flag appears.
-exec rhiza run start --workflow gate &
+exec rhiza run start --foreground --workflow gate &
 exec sh -c 'i=0; while [ $i -lt 400 ]; do rhiza run status | grep -q "^Run .* running$" && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
 exec rhiza run status
 stdout '^Run [0-9A-Z]{26} running$'

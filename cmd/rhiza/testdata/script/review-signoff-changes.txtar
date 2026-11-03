@@ -29,7 +29,7 @@ cp $WORK/review.toml .rhiza/workflows/review.toml
 exec git add -A
 exec git commit -qm review
 
-exec sh -c 'rhiza run start --workflow review --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json; echo exit=$?'
 stdout '"state": "stopped"'
 stdout '"signoff_waiting": true'
 stdout '^exit=0$'

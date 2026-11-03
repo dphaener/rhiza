@@ -18,7 +18,7 @@ exec rhiza change new 'Journal messages' --title 'Messages' --json
 stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
 mkdir .rhiza/workflows
 cp ../one.toml .rhiza/workflows/one.toml
-exec rhiza run start --workflow one
+exec rhiza run start --foreground --workflow one
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
 
 # A session in the run, on step talk, and one in no run.

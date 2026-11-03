@@ -28,11 +28,11 @@ exec git add -A
 exec git commit -qm review
 
 # A check with no permission mode is refused before anything runs.
-! exec rhiza run start --workflow review
+! exec rhiza run start --foreground --workflow review
 stderr 'step "review" is a checks step whose check alpha runs with no permission mode'
 ! exists $WORK/rex.log
 
-exec sh -c 'rhiza run start --workflow review --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json; echo exit=$?'
 stdout '"state": "succeeded"'
 stdout '^exit=0$'
 

@@ -7,6 +7,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -615,8 +616,86 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 			running++
 		}
 	}
-	planned, err = daemonPlanRequests(ctx, rs, runs, running, max, mode)
+	queued, err := daemonQueuedStarts(ctx, rs, pending, runs, running, max, mode)
+	started = append(started, queued...)
+	if err != nil {
+		return started, resumed, nil, err
+	}
+	planned, err = daemonPlanRequests(ctx, rs, runs, running+len(queued), max, mode)
 	return started, resumed, planned, err
+}
+
+// daemonQueuedStarts starts the runs the owner queued with rhiza run start,
+// oldest first, while fewer than max runs run: each as a detached rhiza
+// run start --foreground process on its change set, with the workflow,
+// agent and flags it was queued with. They are the owner's starts, not
+// picks: no milestone, state or leaf filter applies. An entry whose change
+// set has a live run, or whose run the daemon just started, is dropped. It
+// returns the change sets started.
+func daemonQueuedStarts(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, runs []run.Journal, running, max int, mode string) ([]string, error) {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var started []string
+	err = daemon.UpdateStarts(common, func(starts []daemon.Start) ([]daemon.Start, error) {
+		var keep []daemon.Start
+		for _, s := range starts {
+			if _, held := pending[s.Change]; held {
+				continue
+			}
+			if _, live, err := rs.LiveOf(s.Change, ""); err != nil {
+				return nil, Errorf("read runs: %v", err)
+			} else if live {
+				continue
+			}
+			if running >= max {
+				keep = append(keep, s)
+				continue
+			}
+			m := s.PermissionMode
+			if m == "" {
+				m = mode
+			}
+			if err := daemonStartQueued(ctx, s, m); err != nil {
+				return nil, err
+			}
+			pending[s.Change] = daemonPending{at: ctx.Now(), runs: daemonRunsOf(runs, s.Change)}
+			started = append(started, s.Change)
+			running++
+		}
+		return keep, nil
+	})
+	if err != nil {
+		var e *Error
+		if errors.As(err, &e) {
+			return started, err
+		}
+		return started, Errorf("read queued starts: %v", err)
+	}
+	return started, nil
+}
+
+// daemonStartQueued starts the queued run s as a detached rhiza run start
+// --foreground process, with permission mode mode.
+func daemonStartQueued(ctx *Ctx, s daemon.Start, mode string) error {
+	args := []string{"run", "start", "--foreground", s.Change}
+	if s.Workflow != "" {
+		args = append(args, "--workflow", s.Workflow)
+	}
+	if mode != "" {
+		args = append(args, "--permission-mode", mode)
+	}
+	if s.Agent != "" {
+		args = append(args, "--agent", s.Agent)
+	}
+	if s.NoWait {
+		args = append(args, "--no-wait")
+	}
+	if s.Autonomous {
+		args = append(args, "--autonomous")
+	}
+	return daemonDetach(ctx, "a run of "+s.Change, s.Change, args)
 }
 
 // daemonDiskLow reports whether free space on the repo's filesystem is under
