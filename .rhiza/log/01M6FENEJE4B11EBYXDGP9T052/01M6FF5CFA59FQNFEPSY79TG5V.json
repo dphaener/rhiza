@@ -1,0 +1,61 @@
+{
+  "actor": "01M6FF2VF1WRMSF2J4VHYGSNZV",
+  "after": [
+    "01M6FESMJ48TV4R9EF9KREY92K"
+  ],
+  "at": "2026-11-03T01:07:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript runs rhiza daemon --once against a fake Rex: the run's driver starts as a rhiza run start --foreground process with the change set's ID (and --autonomous only under rhiza daemon --once --autonomous), with no rex window new for it and no new queue entry, its output lands in the run's log file, and rhiza run ls shows the run live after the daemon has exited",
+          "statement": "The daemon starts each run as a detached rhiza run start --foreground <change set> process and resumes one as a detached rhiza run resume <run> process, in the repo and outside Rex, adding --autonomous only when the daemon was started with --autonomous, with output in the run's log file under .git/rhiza, so no Rex tab holds a run's driver, the child drives the run rather than queueing it again, and a run still outlives the daemon; it replaces daemon-run-tabs, which it retires"
+        },
+        "handle": "daemon-headless-run-drivers",
+        "id": "01M6FESDV933JY79RW9CEFK25W",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M6FESDV933JY79RW9C3YJCCQ",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript: rhiza run start <cs> queues the run and prints that it waits for the daemon; rhiza daemon --once then starts it headless, or leaves it queued while maxRuns runs are live; a run queued on an accepted backlog change set and a plan run queued on a draft change set are both started by rhiza daemon --once; rhiza run start --foreground drives the run in the calling process; a unit test on the roadmap app's fake runner shows its start key queueing the run",
+          "statement": "rhiza run start and the roadmap app's start keys queue the run for the daemon, which starts it headless within maxRuns, instead of driving it in the caller's tab; a queued run is the owner's start, not a daemon pick, so the daemon starts it on whatever change set rhiza run start accepts (backlog change sets and plan runs on drafts included) without daemon-picks' milestone, state and leaf filters; with no daemon running they say the run waits for one; rhiza run start --foreground drives the run in place, for debugging and as the daemon's own child"
+        },
+        "handle": "run-start-through-daemon",
+        "id": "01M6FESFPN50CY4ACP8RYDM8W1",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M6FESFPN50CY4ACP8PEQPKEA",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "base": "01M61R7K5W91SXWWX8AJ8PQHAK",
+        "handle": null,
+        "id": "01M6FF59TD3CH32FQJCZYJJG65",
+        "node": "01M61R7K5W91SXWWX8AGDZ01HC",
+        "op": "node.update",
+        "set": {
+          "statement": "Each poll, the daemon picks the accepted change sets that rhiza ready says can start, that serve a milestone intent, have at least one leaf, have no live run (running or interrupted, as run-one-live counts it) and whose latest run is not a failed run still in the inbox (as inbox-list keeps it: not abandoned, not retried, no newer run), in roadmap order, and starts them until its running runs (live runs whose process is running) reach --max-runs (default 2), so an interrupted run keeps its change set from being picked but takes no slot and a failed run's change set is never started again by the daemon until the owner clears that item; it never picks a backlog, draft, proposed or leafless change set on its own. Runs the owner queued (run-start-through-daemon) are not picks: they skip these filters and only share the --max-runs slots."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M61R7M41QVVEDQ5GWT1TMMSK",
+        "id": "01M6FF5AV2NJRA48Y35M49EZCC",
+        "node": "01M61R7M41QVVEDQ5GWRXE7D7M",
+        "op": "node.retire",
+        "reason": "Replaced by daemon-headless-run-drivers: the daemon no longer opens a Rex tab for a run's driver (m24-only-agent-tabs)."
+      }
+    ]
+  },
+  "change_set": "01M6FENEJE4B11EBYXDGP9T052",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FF5CFA59FQNFEPSY79TG5V",
+  "type": "ops",
+  "v": 1
+}

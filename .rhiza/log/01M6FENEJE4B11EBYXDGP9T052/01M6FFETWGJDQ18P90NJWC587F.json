@@ -1,0 +1,30 @@
+{
+  "actor": "01M6FFCB6ZW8ABKTW3F3V13H3V",
+  "after": [
+    "01M6FFE9E11WDM6NP4DFQG05HF"
+  ],
+  "at": "2026-11-03T01:12:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript runs rhiza daemon --once against a fake Rex: the run's driver starts as a rhiza run start --foreground process with the change set's ID (and --autonomous only under rhiza daemon --once --autonomous), with no rex window new for it and no new queue entry, its output lands in the run's log file, and rhiza run ls shows the run live after the daemon has exited",
+          "statement": "The daemon starts each run as a detached rhiza run start --foreground <change set> process and resumes or continues one as a detached rhiza run resume --foreground <run> process, in the repo and outside Rex, adding --autonomous only when the daemon was started with --autonomous, with output in the run's log file under .git/rhiza, so no Rex tab holds a run's driver, the child drives the run rather than queueing it again, and a run still outlives the daemon; it replaces daemon-run-tabs, which it retires"
+        },
+        "handle": "daemon-headless-run-drivers",
+        "id": "01M6FESDV933JY79RW9CEFK25W",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M6FESDV933JY79RW9C3YJCCQ",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      }
+    ]
+  },
+  "change_set": "01M6FENEJE4B11EBYXDGP9T052",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FFETWGJDQ18P90NJWC587F",
+  "type": "ops",
+  "v": 1
+}

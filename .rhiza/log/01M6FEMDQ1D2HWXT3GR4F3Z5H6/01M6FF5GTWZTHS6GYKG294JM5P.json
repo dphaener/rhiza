@@ -1,0 +1,42 @@
+{
+  "actor": "01M6FF2VF1WRMSF2J4VHYGSNZV",
+  "after": [
+    "01M6FES6SN0R50EQG24NE0DDXX"
+  ],
+  "at": "2026-11-03T01:07:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript runs rhiza daemon --once against a fake Rex with REX_SESSION unset: when rex session ls lacks rhiza-<repo> the daemon creates it once and every rex window new the fake Rex records for the started run carries -s rhiza-<repo>; with the session present it creates none; with REX_SESSION set to another session those tabs still open in rhiza-<repo>",
+          "statement": "Every Rex tab the daemon opens, and every tab a run it starts opens (plan-request tabs, run and agent tabs alike), opens in the Rex session rhiza-<repo>, named after the main checkout's folder, which the daemon creates on its Rex server when missing, so it needs no Rex tab or REX_SESSION of its own"
+        },
+        "handle": "daemon-repo-session",
+        "id": "01M6FES3PKQCSNG9SEED0E58K6",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6FES3PKQCSNG9SEECK4G1R7",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "base": "01M6CS2HRAWMCTPDHFXD4TPDVF",
+        "handle": null,
+        "id": "01M6FF5F759GA3EJ7KV5M4MAYA",
+        "node": "01M6CS2HRAWMCTPDHFXBHFCX1C",
+        "op": "node.update",
+        "set": {
+          "acceptance": "tui-autonomy-app.txtar: --once prints the settings JSON; unit tests on a fake runner toggle plan from owner to auto (calling daemon set rhiza.autonomy.plan auto), set paused, edit maxRuns, and call rhiza daemon start when status says not running and rhiza daemon stop when it says running; rex-install.txtar shows rhiza_app_autonomy on key y and no existing key moved",
+          "statement": "A Rex app, autonomy, on key y, lists every daemon and autonomy setting with value and source, toggles auto/owner and paused on enter, edits numbers in place through rhiza daemon set, and on d starts the daemon with rhiza daemon start when none is running or stops a running one with rhiza daemon stop, so it runs the daemon however its installation does (daemon-start-stop)"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6FEMDQ1D2HWXT3GR4F3Z5H6",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FF5GTWZTHS6GYKG294JM5P",
+  "type": "ops",
+  "v": 1
+}

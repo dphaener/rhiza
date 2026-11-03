@@ -1,0 +1,45 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6FFM7VF1KTYVYPW70A31HFT"
+  ],
+  "at": "2026-11-03T01:32:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "You, from the runbook",
+            "An agent over SSH"
+          ],
+          "question": "Who carries out the VM build and the move: the owner by hand from the runbook, or an agent run given SSH access to Proxmox and the VM?",
+          "quote": "You, from the runbook",
+          "quote_where": "the orchestrator session, 2026-11-03, owner's answer by choice"
+        },
+        "handle": "answer-vm-move-who",
+        "id": "01M6FGJ6TA369DG3NXGGTREKGB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FGJ6TA369DG3NXGFZ4HT7H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FGJ6TA369DG3NXGFZ4HT7H",
+        "id": "01M6FGJ7QDFDH29AGX27G7BPAD",
+        "link": "01M6FGJ7QDFDH29AGX277AB0AD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESQPY5N6DFRB6JX4NX822",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6FENG43982SZMA5Q9VBGEVZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FGJ95B8CRCK21TWZ4TE9DS",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,76 @@
+{
+  "actor": "01M6FDSWAT3PS9A39W8Q0JWNJN",
+  "after": [
+    "01M6FEMDQ1D2HWXT3GR7KZTJW6"
+  ],
+  "at": "2026-11-03T01:01:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript with fake systemctl and loginctl on PATH: install writes $HOME/.config/systemd/user/rhiza-<repo>.service with ExecStart running rhiza daemon, the main checkout as WorkingDirectory, Restart=always and After=rex.service, then calls systemctl --user daemon-reload, systemctl --user enable --now and loginctl enable-linger; a second install changes nothing; uninstall calls systemctl --user disable --now and removes the file; with no systemctl on PATH both exit 2 naming systemd",
+          "statement": "rhiza daemon install writes and enables a systemd user unit that runs this repo's daemon (in the main checkout, Restart=always, after rex.service) and turns on lingering, and rhiza daemon uninstall stops, disables and removes it; where systemd is missing both say so and change nothing"
+        },
+        "handle": "daemon-service-install",
+        "id": "01M6FES1Z3GF9HJGVS502Q1W5Z",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6FES1Z3GF9HJGVS4Y1S687B",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6FES1Z3GF9HJGVS4Y1S687B",
+        "id": "01M6FES2TWR5FFB0XHC9RBBK32",
+        "link": "01M6FES2TWR5FFB0XHC71Z1D78",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEKPB4EF3BN8DEKK48KTHT",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs rhiza daemon --once against a fake Rex with REX_SESSION unset: when rex session ls lacks rhiza-<repo> the daemon creates it once and opens the run's tab with -s rhiza-<repo>; with the session present it creates none; with REX_SESSION set to another session the tab still opens in rhiza-<repo>",
+          "statement": "The daemon opens every tab it starts (run, resume and plan-request tabs) in the Rex session rhiza-<repo>, named after the main checkout's folder, creating that session on its Rex server when missing, so it needs no Rex tab or REX_SESSION of its own"
+        },
+        "handle": "daemon-repo-session",
+        "id": "01M6FES3PKQCSNG9SEED0E58K6",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6FES3PKQCSNG9SEECK4G1R7",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "fields": {
+          "acceptance": "Testscripts with a fake systemctl and a fake Rex: with the unit installed, start calls systemctl --user start and stop calls systemctl --user stop, and daemon status --json reports mode service; with none, start opens a rex window named 'rhiza daemon' running rhiza daemon, stop ends that daemon, and status reports mode tab; a unit test on the autonomy app's fake runner shows d calling daemon start when stopped and daemon stop when running",
+          "statement": "rhiza daemon start and rhiza daemon stop start or stop this repo's daemon the way its installation runs it: through the systemd unit when rhiza daemon install wrote one, else in the Rex tab 'rhiza daemon' in the repo's session; the autonomy app's d key calls them, and daemon status says which mode runs"
+        },
+        "handle": "daemon-start-stop",
+        "id": "01M6FES4J3E8VXG2KW0Z836RHW",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M6FES4J3E8VXG2KW0Y9Z1C96",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6FES4J3E8VXG2KW0Y9Z1C96",
+        "id": "01M6FES5DQ0A64JMKHSKHHV4B7",
+        "link": "01M6FES5DQ0A64JMKHSHCRK3QF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEKR2HP30S21ECT7JG0P1X",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6FEMDQ1D2HWXT3GR4F3Z5H6",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FES6SN0R50EQG24NE0DDXX",
+  "type": "ops",
+  "v": 1
+}

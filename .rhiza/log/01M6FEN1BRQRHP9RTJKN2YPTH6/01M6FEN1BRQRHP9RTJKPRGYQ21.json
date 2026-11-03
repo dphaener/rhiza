@@ -1,0 +1,17 @@
+{
+  "actor": "01M6FDSWAT3PS9A39W8Q0JWNJN",
+  "after": [],
+  "at": "2026-11-03T00:58:52Z",
+  "body": {
+    "intent": "The daemon pulls main and runs make update when main moves, and health shows the version it runs",
+    "kind": "intention",
+    "sources": [
+      "01M6FEF610DN2BRHAMYJX9BSDG"
+    ]
+  },
+  "change_set": "01M6FEN1BRQRHP9RTJKN2YPTH6",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FEN1BRQRHP9RTJKPRGYQ21",
+  "type": "open",
+  "v": 1
+}

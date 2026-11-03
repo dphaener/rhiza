@@ -1,0 +1,17 @@
+{
+  "actor": "01M6FDSWAT3PS9A39W8Q0JWNJN",
+  "after": [],
+  "at": "2026-11-03T00:59:05Z",
+  "body": {
+    "intent": "Run drivers run headless as detached children of the daemon, every run starts through the daemon, and agent steps open their own Rex tabs",
+    "kind": "intention",
+    "sources": [
+      "01M6FEJYGZZC4DKW61YDRW04HB"
+    ]
+  },
+  "change_set": "01M6FENEJE4B11EBYXDGP9T052",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FENEJE4B11EBYXDGTTY1DS",
+  "type": "open",
+  "v": 1
+}

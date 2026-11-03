@@ -1,0 +1,99 @@
+{
+  "actor": "01M6FDSWAT3PS9A39W8Q0JWNJN",
+  "after": [
+    "01M6FENEJE4B11EBYXDGTTY1DS"
+  ],
+  "at": "2026-11-03T01:01:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript runs rhiza daemon --once against a fake Rex: the run's driver starts as a process with no rex window new for it, its output lands in the run's log file, and rhiza run ls shows the run live after the daemon has exited",
+          "statement": "The daemon starts and resumes each run as a detached rhiza run start or rhiza run resume process in the repo, outside Rex, with its output in the run's log file under .git/rhiza, so no Rex tab holds a run's driver and a run still outlives the daemon; this replaces the run tab of daemon-run-tabs"
+        },
+        "handle": "daemon-headless-run-drivers",
+        "id": "01M6FESDV933JY79RW9CEFK25W",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M6FESDV933JY79RW9C3YJCCQ",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6FESDV933JY79RW9C3YJCCQ",
+        "id": "01M6FESES0XTMP0W955FVAE2YV",
+        "link": "01M6FESES0XTMP0W955C8SNMQD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEKVH4X67AT9TMPTQQ0CP0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript: rhiza run start <cs> queues the run and prints that it waits for the daemon; rhiza daemon --once then starts it headless, or leaves it queued while maxRuns runs are live; rhiza run start --foreground drives the run in the calling process; a unit test on the roadmap app's fake runner shows its start key queueing the run",
+          "statement": "rhiza run start and the roadmap app's start keys queue the run for the daemon, which starts it headless within maxRuns, instead of driving it in the caller's tab; with no daemon running they say the run waits for one; rhiza run start --foreground drives the run in place for debugging"
+        },
+        "handle": "run-start-through-daemon",
+        "id": "01M6FESFPN50CY4ACP8RYDM8W1",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M6FESFPN50CY4ACP8PEQPKEA",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6FESFPN50CY4ACP8PEQPKEA",
+        "id": "01M6FESGK0RY42FF0JNWJ2GKZY",
+        "link": "01M6FESGK0RY42FF0JNW6DPV79",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEKVH4X67AT9TMPTQQ0CP0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a fake Rex drives a headless run: each agent session calls rex window new -s rhiza-<repo> with a title naming the run and the step, no rex split is anchored on a driver block, and closing a finished session closes only its own tab",
+          "statement": "Each agent session of a headless run (agent steps, checks, fixers and question sessions) opens its own Rex tab in the repo's session, titled for the run and step, instead of splitting a run window anchored on the driver's pane; the run-window tiling leaves no longer apply to headless runs"
+        },
+        "handle": "headless-run-agent-tabs",
+        "id": "01M6FESHESZGCR78N9DNASVMGD",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6FESHESZGCR78N9DK7ZQJVY",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "decision": null,
+        "from": "01M6FESHESZGCR78N9DK7ZQJVY",
+        "id": "01M6FESJA9Y43SMDKRKYVN465D",
+        "link": "01M6FESJA9Y43SMDKRKXYH3VNG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEKVH4X67AT9TMPTQQ0CP0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript: rhiza run log <run> prints the run's log file a page at a time with the paging flags ls takes, and exits 2 for a run with no log; a unit test on the live app's fake runner shows the key opening a layer running rhiza run log for the selected run",
+          "statement": "rhiza run log <run> pages a headless run's driver log, and a key in the live app opens the selected run's log in a Rex layer"
+        },
+        "handle": "run-log",
+        "id": "01M6FESK5TDQ0J8S077W6WM0AS",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M6FESK5TDQ0J8S077V8BCZ12",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      }
+    ]
+  },
+  "change_set": "01M6FENEJE4B11EBYXDGP9T052",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FESMJ48TV4R9EF9KREY92K",
+  "type": "ops",
+  "v": 1
+}
