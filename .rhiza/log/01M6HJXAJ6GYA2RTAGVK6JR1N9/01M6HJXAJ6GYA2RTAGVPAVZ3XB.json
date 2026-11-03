@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-03T20:51:47Z",
+  "body": {
+    "intent": "Code anchors with fingerprints: an anchor node carries path, optional symbol and a content fingerprint; implements links it to a capability; rhiza check resolves every anchor and warns when the path or symbol is gone or the fingerprint changed (internal/op/fields.go says anchors carry no fields yet). Carve leaves anchors and fingerprints out of umbrella 01M5SWT0K9TV1R (Area integrity) rather than duplicating them",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6HJXAJ6GYA2RTAGVK6JR1N9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HJXAJ6GYA2RTAGVPAVZ3XB",
+  "type": "open",
+  "v": 1
+}

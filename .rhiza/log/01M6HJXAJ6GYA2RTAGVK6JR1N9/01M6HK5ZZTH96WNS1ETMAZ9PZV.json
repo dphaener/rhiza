@@ -1,0 +1,41 @@
+{
+  "actor": "01M6HK3GQHRMPEN3G7KDSN5CPK",
+  "after": [
+    "01M6HK3AR0K90EH90NBYPVZGH9"
+  ],
+  "at": "2026-11-03T20:56:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Intent: the umbrella 01M5SWT0K9TV1R serves anyone-builds and model-tells-truth; anchors and fingerprints exist so the model stays true to the code, which is model-tells-truth's statement, so that landed root fits best and anyone-builds is only served indirectly. Fingerprint: the umbrella's anchors capability says path, optional symbol and content fingerprint; sha256 is what the codebase already uses (Source raw_sha256, index and daemon_fold hashing); hashing the declaration rather than the whole file when a symbol is given keeps unrelated edits in the same file from flagging the capability, and Go-only symbols match a Go-only repo without inventing a multi-language parser. Writing: internal/op/fields.go has KindAnchor with no fields, so the three fields are added there; computing the fingerprint at write time means agents never hand-compute hashes, and an explicit re-fingerprint op keeps the fingerprints capability's meaning (a change flags review until someone re-fingerprints) and fits CLAUDE.md's rule that operations live in internal/api behind one registry. Check: the change set's intent says check warns when path or symbol is gone or the fingerprint changed, and check.go already has warn and fail severities; check's paths are relative to the project root, so the working tree is the natural thing to resolve against. implements already links anchor to capability in internal/check/endpoints.go, so findings can name the capability without new link types.",
+          "statement": "The change set serves the landed root intent model-tells-truth. An anchor carries three fields: path (relative to the project root, slash-separated), optional symbol (a top-level Go declaration name, Type.Method for methods; a symbol is only accepted on a .go file) and fingerprint (\"sha256:<hex>\" of the declaration's source bytes when symbol is set, else of the whole file's bytes, read from the working tree). Writing an anchor (add, or a set of path or symbol) computes the fingerprint when none is given and refuses a path or symbol that does not resolve; one transport-independent operation in internal/api re-fingerprints an existing anchor from the working tree into the current change set, the deliberate step after the code change is reviewed. rhiza check resolves every live anchor in the folded model against the project's working tree, the same checkout CI checks, and reports a missing path, a missing symbol and a changed fingerprint as warn findings, each naming the anchor and the capability it implements; none is a fail, so code changing never breaks make check or CI on its own.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "anchor-fingerprint-shape",
+        "id": "01M6HK5TSPZAT4G3YFQ3P64ZVZ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6HK5TSPZAT4G3YFQ02XQEKK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HK5TSPZAT4G3YFQ02XQEKK",
+        "id": "01M6HK5WRSF02G86KJPEDFYXPX",
+        "link": "01M6HK5WRSF02G86KJPB32FDMQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HK396T4W1X8ZFK1N68973F",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6HJXAJ6GYA2RTAGVK6JR1N9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HK5ZZTH96WNS1ETMAZ9PZV",
+  "type": "ops",
+  "v": 1
+}
