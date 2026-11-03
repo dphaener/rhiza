@@ -1,0 +1,41 @@
+{
+  "actor": "01M6GCYZC5B5Q029QN750WQVMB",
+  "after": [
+    "01M6GCYJQA0Z6BGJNSQH4FM9CG"
+  ],
+  "at": "2026-11-03T09:49:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Intent: m24-on-the-vm is the landed intent the previous Fix (folder trust, 01M6FSQ) serves, and this failure also hits the VM's unattended daemon. Approach: the main checkout must keep drafts' and accepted change sets' first entries, since the daemon reads in-flight change sets there, so writing them only in a worktree would hide them; dropping only files identical to incoming main loses nothing (main has the same bytes) and also fixes ship-change close-outs. Retry: internal/api/ship_close.go removes t.statePath() under r.Forget before shipMainBlocked and git pull --ff-only, so a failed pull leaves no state for a retry; moving the removal after step update-main makes close-out idempotent. All three follow the question's recommendations, which the code and the change set's intent support.",
+          "statement": "Change set 01M6GCP serves m24-on-the-vm. Before pulling main, close-out removes untracked .rhiza/log files in the main checkout that the incoming main has byte for byte, then pulls; untracked files that differ or are absent from main stay, and the pull reports them as it does now. `ship close-out --forget` deletes the ship state only after main is updated, so a close-out whose pull failed can be retried and finishes.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "close-out-untracked-log-and-retry",
+        "id": "01M6GD0DBTN7Y16NT021VXQD97",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6GD0DBQCP1Q8S5K5VKV7Z4V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GD0DBQCP1Q8S5K5VKV7Z4V",
+        "id": "01M6GD0GZZVPNYB4A17MDEEAMM",
+        "link": "01M6GD0GZZVPNYB4A17HC62Z5K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GCYES204GENK2QVG9ETB3D",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6GCPSMFW8G6MXXNW6Y5J0Q6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GD0S4JZ8G4T7TK8KE9484F",
+  "type": "ops",
+  "v": 1
+}
