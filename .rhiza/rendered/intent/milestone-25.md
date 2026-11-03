@@ -23,6 +23,7 @@ The backlog is empty: every change set planned from the owner's queued requests 
 - serves change set `01M6H3A65RDP761HKE82STZSQZ` (log, roadmap and why page their output with a cursor, as ls already does (replaces backlog change set 01M5SWTHZSPBNQ, which has no leaves; link the new change set to it as relates-to and withdraw the old one in the plan))
 - serves change set `01M6HJXAJ6GYA2RTAGVK6JR1N9` (Code anchors with fingerprints: an anchor node carries path, optional symbol and a content fingerprint; implements links it to a capability; rhiza check resolves every anchor and warns when the path or symbol is gone or the fingerprint changed (internal/op/fields.go says anchors carry no fields yet). Carve leaves anchors and fingerprints out of umbrella 01M5SWT0K9TV1R (Area integrity) rather than duplicating them)
 - serves change set `01M6HKRVC93TGX0ZC40QZ2GW9J` (Unclaimed changes: rhiza check warns about commits since a configured cutoff that change files outside .rhiza/ with no Change: trailer (internal/check, internal/api/check.go parseTrailerLog). Relates to leaf commit-trailers in umbrella 01M5SWT0K9TV1R (Area integrity); carve it if it still stands there)
+- serves change set `01M6HSZMD2H2HZVGQQSVZZ4A1D` (Plan requests are not starved by ready change sets: while a plan request waits, the daemon keeps one run slot for it)
 
 ## History
 
