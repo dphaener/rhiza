@@ -1,0 +1,30 @@
+{
+  "actor": "01M6HHN3HYB6616HVP32096HMM",
+  "after": [
+    "01M6HHMTEDFK2AWQKX532CRD1E"
+  ],
+  "at": "2026-11-03T20:32:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "9e004580-c5cb-495c-8f99-01a1a31a84fb",
+          "statement": "Usage governor: when does the daemon hold a new pick? / Usage governor: which tokens count toward a window's use? / Usage governor: what does a usage hold stop?"
+        },
+        "handle": "question-9e004580-1",
+        "id": "01M6HHSVH0RABRX630W37NWYEY",
+        "key": null,
+        "kind": "question",
+        "node": "01M6HHSVH0RABRX630W06KPEZV",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6HHMTEDFK2AWQKX50EB77DD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HHSWM7V2RSKH72H4CZAF5F",
+  "type": "ops",
+  "v": 1
+}

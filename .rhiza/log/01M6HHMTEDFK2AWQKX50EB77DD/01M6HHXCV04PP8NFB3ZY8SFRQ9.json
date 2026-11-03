@@ -1,0 +1,33 @@
+{
+  "actor": "01M6HHN3HYB6616HVP32096HMM",
+  "after": [
+    "01M6HHW4NYGWGY86AF7YCM7FMP"
+  ],
+  "at": "2026-11-03T20:34:28Z",
+  "body": {
+    "carve": {
+      "entry": "01M6HHXCV04PP8NFB3ZX4VPHY2",
+      "from": "01M5SWTC1923N3AB7MWA9D9Z2A"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The usage governor paces agents to keep a reserve of the owner's usage on every window."
+        },
+        "handle": "usage-governor",
+        "id": "01M6HHXCV04PP8NFB3ZTPEDRS0",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M5SWTC9RDZ6PDFHA1M25BGPK",
+        "op": "node.create",
+        "parent": "01M5SWTC58PN8WNJRRM03630JS"
+      }
+    ]
+  },
+  "change_set": "01M6HHMTEDFK2AWQKX50EB77DD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HHXCV04PP8NFB3ZY8SFRQ9",
+  "type": "ops",
+  "v": 2
+}
