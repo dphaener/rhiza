@@ -954,13 +954,16 @@ func trustFolders(ctx *Ctx, a adapter.Adapter, rec session.Record) string {
 	if common, err := gitCommonDir(ctx); err == nil {
 		dirs = append([]string{filepath.Dir(common)}, dirs...)
 	}
+	warn := func(err error) string {
+		return fmt.Sprintf("trust the session's folders in %s: %v", file, err)
+	}
 	cur, err := os.ReadFile(file)
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
-		return fmt.Sprintf("trust the session's folders: %v", err)
+		return warn(err)
 	}
 	out, err := t.Trust(cur, dirs)
 	if err != nil {
-		return fmt.Sprintf("trust the session's folders: %v", err)
+		return warn(err)
 	}
 	if bytes.Equal(cur, out) {
 		return ""
@@ -971,7 +974,7 @@ func trustFolders(ctx *Ctx, a adapter.Adapter, rec session.Record) string {
 	}
 	tmp, err := os.CreateTemp(filepath.Dir(file), ".claude.json.rhiza-*")
 	if err != nil {
-		return fmt.Sprintf("trust the session's folders: %v", err)
+		return warn(err)
 	}
 	defer os.Remove(tmp.Name())
 	_, werr := tmp.Write(out)
@@ -986,7 +989,7 @@ func trustFolders(ctx *Ctx, a adapter.Adapter, rec session.Record) string {
 		werr = os.Rename(tmp.Name(), file)
 	}
 	if werr != nil {
-		return fmt.Sprintf("trust the session's folders: %v", werr)
+		return warn(werr)
 	}
 	return ""
 }

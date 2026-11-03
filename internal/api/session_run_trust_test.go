@@ -130,11 +130,15 @@ func TestSessionRunTrustWarnsOnUnreadableConfig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if w := strings.Join(resp.(SessionRunResponse).Warnings, "\n"); !strings.Contains(w, "trust the session's folders") {
-		t.Errorf("warnings %q", w)
+	cfg := filepath.Join(home, ".claude.json")
+	if w := strings.Join(resp.(SessionRunResponse).Warnings, "\n"); !strings.Contains(w, "trust the session's folders") || !strings.Contains(w, cfg) {
+		t.Errorf("warnings %q: want the trust failure naming %s", w, cfg)
 	}
-	if data, _ := os.ReadFile(filepath.Join(home, ".claude.json")); string(data) != "{nope" {
+	if data, _ := os.ReadFile(cfg); string(data) != "{nope" {
 		t.Errorf("a broken config was rewritten: %q", data)
+	}
+	if ents, _ := os.ReadDir(home); len(ents) != 1 {
+		t.Errorf("a temp file was left behind: %v", ents)
 	}
 }
 
