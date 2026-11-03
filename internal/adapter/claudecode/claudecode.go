@@ -683,3 +683,64 @@ func splitAnswer(answer string, labels []string, multi bool) (picked []string, t
 	keep(prev, len(answer))
 	return picked, strings.Join(rest, answerSep)
 }
+
+// TrustFile implements adapter.Truster. Claude Code keeps its global state
+// at $CLAUDE_CONFIG_DIR/.claude.json when that is set and $HOME/.claude.json
+// otherwise.
+func (Adapter) TrustFile(getenv func(string) string) string {
+	if getenv == nil {
+		return ""
+	}
+	if dir := getenv("CLAUDE_CONFIG_DIR"); dir != "" {
+		return filepath.Join(dir, ".claude.json")
+	}
+	if home := getenv("HOME"); home != "" {
+		return filepath.Join(home, ".claude.json")
+	}
+	return ""
+}
+
+// Trust implements adapter.Truster: it sets
+// projects[<dir>].hasTrustDialogAccepted to true for each dir and keeps
+// every other key, so Claude Code never stops at its folder-trust prompt.
+func (Adapter) Trust(current []byte, dirs []string) ([]byte, error) {
+	top := map[string]json.RawMessage{}
+	if len(bytes.TrimSpace(current)) > 0 {
+		if err := json.Unmarshal(current, &top); err != nil {
+			return nil, fmt.Errorf("read the Claude Code config: %w", err)
+		}
+	}
+	projects := map[string]json.RawMessage{}
+	if raw, ok := top["projects"]; ok && string(bytes.TrimSpace(raw)) != "null" {
+		if err := json.Unmarshal(raw, &projects); err != nil {
+			return nil, fmt.Errorf("read projects of the Claude Code config: %w", err)
+		}
+	}
+	for _, dir := range dirs {
+		if dir == "" {
+			continue
+		}
+		proj := map[string]json.RawMessage{}
+		if raw, ok := projects[dir]; ok && string(bytes.TrimSpace(raw)) != "null" {
+			if err := json.Unmarshal(raw, &proj); err != nil {
+				return nil, fmt.Errorf("read project %s of the Claude Code config: %w", dir, err)
+			}
+		}
+		proj["hasTrustDialogAccepted"] = json.RawMessage("true")
+		raw, err := json.Marshal(proj)
+		if err != nil {
+			return nil, err
+		}
+		projects[dir] = raw
+	}
+	raw, err := json.Marshal(projects)
+	if err != nil {
+		return nil, err
+	}
+	top["projects"] = raw
+	out, err := json.MarshalIndent(top, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	return append(out, '\n'), nil
+}

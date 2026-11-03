@@ -246,3 +246,16 @@ func Names() []string {
 type PaneLimiter interface {
 	PaneUsageLimit(pane string) bool
 }
+
+// Truster is implemented by an adapter whose agent stops at a prompt in a
+// folder its owner has not trusted yet. Callers that start the agent mark
+// the folders trusted first. Like the rest of an adapter it is pure: the
+// caller reads and writes the file.
+type Truster interface {
+	// TrustFile returns the path of the file that records trusted folders,
+	// or "" when getenv gives no place to look for it.
+	TrustFile(getenv func(string) string) string
+	// Trust returns current (the file's bytes, nil when it is missing) with
+	// every folder in dirs trusted and every other setting unchanged.
+	Trust(current []byte, dirs []string) ([]byte, error)
+}
