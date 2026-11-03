@@ -21369,6 +21369,18 @@ cmp stdout describe.golden.json
       "request": {
         "additionalProperties": false,
         "properties": {
+          "all": {
+            "description": "Return every entry, ignoring --limit and --cursor",
+            "type": "boolean"
+          },
+          "cursor": {
+            "description": "Where to go on: the next_cursor of the page before",
+            "type": "string"
+          },
+          "limit": {
+            "description": "The most entries to return across decisions, sources and change sets, 1 to 1000; default 100",
+            "type": "integer"
+          },
           "ref": {
             "description": "The node: an ID, a unique ID prefix of 4+ characters, or a handle",
             "type": "string"
@@ -21520,6 +21532,10 @@ cmp stdout describe.golden.json
               "type": "object"
             },
             "type": "array"
+          },
+          "next_cursor": {
+            "description": "The cursor of the next page; absent when no more remain",
+            "type": "string"
           },
           "node": {
             "additionalProperties": false,

@@ -1,0 +1,69 @@
+# why pages decisions, then sources, then change sets as one sequence.
+
+exec rhiza init
+exec rhiza change new Base
+exec rhiza add capability store
+exec rhiza add capability cache --parent store
+exec rhiza add source talk --field 'summary=The owner said caching is the point.'
+exec rhiza add decision use-ram --field 'statement=RAM.'
+exec rhiza add decision old-way
+exec rhiza link cache decided-by use-ram
+exec rhiza link use-ram derived-from talk
+exec rhiza link use-ram supersedes old-way
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+
+# Four entries: two decisions, a source, a change set.
+exec rhiza why cache --all
+stdout -count=3 '^### '
+stdout -count=1 '^- [0-9A-Z]{26} landed'
+! stdout 'next:'
+exec rhiza why cache --all --json
+cp stdout all.json
+
+# Limit 3 ends inside the sources/change sets boundary.
+exec rhiza why cache --limit 3
+stdout '^# Why cache$'
+stdout '^### use-ram$'
+stdout '^### old-way$'
+stdout '^### talk$'
+! stdout '^- [0-9A-Z]{26} landed'
+stdout '^next: rhiza why cache --limit 3 --cursor [A-Za-z0-9_-]+$'
+exec rhiza why cache --limit 3 --json
+stdout '"node"'
+stdout '"view"'
+stdout '"next_cursor": "[A-Za-z0-9_-]+"'
+cp stdout p1.json
+exec rhiza api call why '{"ref":"cache","limit":3}'
+cmp stdout p1.json
+
+# The next page has the change set only, the node and no next_cursor.
+exec sh -c 'rhiza why cache --limit 3 | sed -n "s/^next: .* --cursor //p" > cursor.txt'
+exec sh -c 'rhiza why cache --limit 3 --cursor "$(cat cursor.txt)"'
+stdout '^# Why cache$'
+stdout -count=1 '^- [0-9A-Z]{26} landed'
+! stdout '^### '
+! stdout 'None\.'
+! stdout 'next:'
+exec sh -c 'rhiza why cache --limit 3 --cursor "$(cat cursor.txt)" --json'
+stdout '"node"'
+stdout '"view"'
+! stdout 'next_cursor'
+
+# One per page walks all four in order.
+exec sh -c 'rhiza why cache --limit 1 --json > q1.json; grep -c use-ram q1.json'
+stdout '^[1-9]'
+exec sh -c 'rhiza why cache --limit 1 | sed -n "s/^next: .* --cursor //p" > c1.txt; rhiza why cache --limit 1 --cursor "$(cat c1.txt)" | sed -n "s/^next: .* --cursor //p" > c2.txt; rhiza why cache --limit 1 --cursor "$(cat c2.txt)" | sed -n "s/^next: .* --cursor //p" > c3.txt; rhiza why cache --limit 1 --cursor "$(cat c3.txt)"'
+stdout -count=1 '^- [0-9A-Z]{26} landed'
+! stdout 'next:'
+
+# Usage errors, exit 2.
+! exec rhiza why cache --limit -1
+! exec rhiza why cache --limit 1001
+! exec rhiza why cache --cursor '!!'
+stderr '^rhiza: bad cursor'
+exec sh -c 'rhiza why cache --limit 1001 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+exec sh -c 'rhiza why cache --cursor "!!" 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
