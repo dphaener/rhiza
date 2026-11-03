@@ -243,7 +243,7 @@ func TestDaemonStateAtStart(t *testing.T) {
 	}
 	defer lock.Unlock()
 	self := daemon.ReadHolder(common)
-	state, held := daemonStartState(common, self, "v2", 5, true)
+	state, held := daemonStartState(common, self, "v2", "", 5, true)
 	if err := daemon.WriteState(common, state); err != nil {
 		t.Fatal(err)
 	}

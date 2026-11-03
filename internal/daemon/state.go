@@ -37,7 +37,10 @@ type State struct {
 	Process Holder `json:"process"`
 	// Version is the version of the binary the daemon runs, recorded when
 	// it starts.
-	Version  string    `json:"version,omitempty"`
+	Version string `json:"version,omitempty"`
+	// Commit is the git commit that binary was built from, recorded when
+	// it starts; health compares it with origin/main.
+	Commit   string    `json:"commit,omitempty"`
 	LastPoll time.Time `json:"last_poll"`
 	Stopped  time.Time `json:"stopped,omitempty"`
 	MaxRuns  int       `json:"max_runs"`

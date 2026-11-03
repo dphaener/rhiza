@@ -146,6 +146,14 @@ func healthDaemon(ctx *Ctx) HealthPart {
 	}
 	p := HealthPart{Part: HealthDaemon, State: HealthOK,
 		Summary: fmt.Sprintf("running, process %s, %d live runs", s.Process, len(s.Runs))}
+	if s.Commit != "" {
+		p.Detail = append(p.Detail, "built from "+s.Commit)
+		if origin := healthOriginAhead(ctx, s.Commit); origin != "" {
+			p.State = HealthWarn
+			p.Summary += fmt.Sprintf("; built from %s, origin/main is at %s", shortSHA(s.Commit), shortSHA(origin))
+			p.Next = "make update"
+		}
+	}
 	if s.LastPoll != "" {
 		p.Detail = append(p.Detail, "last poll "+s.LastPoll)
 	}
@@ -375,4 +383,19 @@ func healthCounts[T any](xs []T, key func(T) string) string {
 		parts[i] = fmt.Sprintf("%d %s", n[k], k)
 	}
 	return strings.Join(parts, ", ")
+}
+
+// healthOriginAhead is origin/main's commit (as last fetched, nothing is
+// fetched) when it is a descendant of commit and not commit itself, else "".
+// A commit this repository does not know, or no origin/main, is "".
+func healthOriginAhead(ctx *Ctx, commit string) string {
+	out, err := ctx.Git("rev-parse", "--verify", "--quiet", "refs/remotes/origin/main")
+	origin := strings.TrimSpace(out)
+	if err != nil || origin == "" || origin == commit {
+		return ""
+	}
+	if _, err := ctx.Git("merge-base", "--is-ancestor", commit, origin); err != nil {
+		return ""
+	}
+	return origin
 }

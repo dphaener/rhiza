@@ -1809,6 +1809,10 @@ cmp stdout describe.golden.json
             "description": "True when it starts each run with --autonomous",
             "type": "boolean"
           },
+          "commit": {
+            "description": "The git commit the daemon's binary was built from, as recorded when it started; absent when the build carried none",
+            "type": "string"
+          },
           "hooks": {
             "description": "The notify and event commands the daemon took at start, each with its source: daemon flag, git config or unset",
             "items": {
