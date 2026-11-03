@@ -1,5 +1,5 @@
 # A checks step starts a fresh session per check, each through
-# session.start's path in a pane of the change set's tab, with its check,
+# session.start's path in a tab of its own, with its check,
 # cycle and role in its environment and a prompt naming only the change
 # set and the check. A check whose session fails re-runs alone in the
 # next cycle. run status shows each check's cycles and outcome, in text
@@ -41,10 +41,10 @@ stdout '^exit=0$'
 exec cat $WORK/claude.log
 stdout '\Arole=check check=alpha cycle=1 leaf= prompt=Review change set [0-9A-Z]{26} as check alpha\nrole=check check=beta cycle=1 leaf= prompt=Review change set [0-9A-Z]{26} as check beta\nrole=check check=gamma cycle=1 leaf= prompt=Review change set [0-9A-Z]{26} as check gamma\nrole=check check=beta cycle=2 leaf= prompt=Review change set [0-9A-Z]{26} as check beta\n\z'
 
-# Each check session opened in a pane: the first opened the tab, each
-# later one split a pane.
-exec grep -c 'split' $WORK/rex.log
-stdout '^3$'
+# Each check session opened its own tab and none split a pane.
+exec grep -c '^window new' $WORK/rex.log
+stdout '^4$'
+! grep 'split' $WORK/rex.log
 
 exec rhiza run status
 stdout '^- review \(visit 1\): pass, then end: 3 of 3 checks passed$'

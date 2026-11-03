@@ -1,9 +1,9 @@
-# An autonomous run's arbiter sessions split panes of the run's window.
+# An autonomous run's arbiter sessions open their own tabs.
 # The planner asks two questions, the way an autonomous agent does (the
 # PreToolUse hook denies its AskUserQuestion and it waits at its prompt);
 # the run's arbiter answers each in its own session. The fake rex logs
-# every call: the run opens one window, for the planner, and the two
-# arbiter sessions only split it.
+# every call: the planner, the two arbiters, the reviewer and the critic
+# each open a window, and nothing splits.
 #
 # Nothing here reaches Rex or Claude Code. The fake rex starts the tab's
 # command in the background and returns once the agent has touched
@@ -44,11 +44,10 @@ exec cat $WORK/err
 stdout 'step interview: arbiter pass on question [0-9A-Z]{26}: answered by assume-1'
 stdout 'step interview: arbiter pass on question [0-9A-Z]{26}: answered by assume-2'
 
-# One window for the whole run, the planner's, then only splits: one per
-# arbiter (two), the reviewer and the critic.
+# One window per session, five in all, and no split.
 exec cat $WORK/rex.log
-stdout -count=1 '^window new '
-stdout -count=4 '^split -s session:s1 -b block:b[0-9] '
+stdout -count=5 '^window new '
+! stdout 'split'
 
 # Both answers reached the planner, and the arbiters were told only their
 # question.

@@ -1587,12 +1587,10 @@ func (r *stepRunner) sh(cmd string, env []string, out io.Writer) (int, error) {
 
 // StartAgent starts the step's session as session.start does, on the
 // run's change set, on model, and returns its ID. An autonomous run's
-// session is recorded autonomous. Its pane splits the pane of the run's
-// latest session with one; only the run's first opens a window.
+// session is recorded autonomous. Its tab is its own.
 func (r *stepRunner) StartAgent(step workflow.Step, model string, _ []string) (string, error) {
 	req := agentStepRequest(step, r.mode, r.agent)
 	req.Change, req.Run, req.autonomous, req.model = r.change, r.run, r.autonomous, model
-	req.split, req.anchor = step.Split, r.paneAnchor("")
 	t, err := resolveChangeWorktree(r.ctx, r.change, "no agent can work on it")
 	if err != nil {
 		return "", err
@@ -1624,7 +1622,6 @@ const arbiterWording = "(assumed, would have escalated)"
 func (r *stepRunner) StartArbiter(step workflow.Step, question string, _ []string) (string, error) {
 	req := agentStepRequest(step, r.mode, r.agent)
 	req.Change, req.Run, req.autonomous = r.change, r.run, r.autonomous
-	req.split, req.anchor = step.Split, r.paneAnchor("")
 	req.Prompt = fmt.Sprintf(arbiterPrompt, question)
 	var err error
 	if req.writes, req.writesRecord, err = r.arbiterWrites(question); err != nil {
@@ -1657,7 +1654,6 @@ const advisorStep = "advisor"
 func (r *stepRunner) StartAdvisor(step workflow.Step, asker, text string, _ []string) (string, error) {
 	req := agentStepRequest(step, r.mode, r.agent)
 	req.Step, req.Change, req.Run, req.advises = advisorStep, r.change, r.run, asker
-	req.split, req.anchor = step.Split, r.paneAnchor("")
 	req.Prompt = fmt.Sprintf(advisorPrompt, text)
 	resp, err := runSessionStart(r.ctx, req)
 	if err != nil {

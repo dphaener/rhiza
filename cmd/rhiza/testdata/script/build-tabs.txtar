@@ -1,11 +1,8 @@
-# A leaves step runs its sessions in one tab of the change set: the first
-# builder opens it, and each later session splits a pane of it, along the
-# anchor pane's longer side in pixels unless the step's split fixes the
-# direction. The first verifier splits its builder's pane; a verifier
-# started while another is live splits that verifier's pane (the verifier
-# half). The next builder splits the passed builder's pane, which then
-# closes. A passed verifier's pane closes; a failed session's pane stays
-# until the step ends.
+# Each session of a leaves step opens its own Rex tab, whatever the pane's
+# shape or the step's split: a's builder, a's verifier, b's builder,
+# verifier and two retry builders are six `rex window new` calls, no split
+# and no size read. A passed session's tab closes, and a failed one's when
+# the step ends, so every tab is closed by the end.
 #
 # The fake rex logs each call to rex.log, numbering new blocks b1, b2, ...
 # in order, answers `block call size` from size.json and runs a pane's
@@ -19,7 +16,6 @@ chmod 755 bin/rex
 chmod 755 bin/claude
 env PATH=$WORK/bin:$PATH
 
-# A landscape pane: every split goes right.
 cp $WORK/landscape.json $WORK/size.json
 mkdir repo
 cd repo
@@ -41,44 +37,18 @@ exec rhiza run status
 stdout '^- a \(step build\): passed: attempt 1: verifier passed$'
 stdout '^- b \(step build\): failed: attempt 3: builder failed: exit 1$'
 
-# b1 is a's builder in a new tab. a's verifier (b2) splits it; b's
-# builder (b3) splits it too and takes its place, so b1 closes. b's
-# verifier (b4) starts while a's verifier is live and splits its pane.
-# b's retry builders split the builder before them: b5 takes passed b3's
-# place, b6 splits failed b5, which stays. a's verifier's pane b2 closes
-# once it passes, at a time that depends on the race with b's retries;
-# the failed sessions' panes b4, b5, b6 close when the step ends, last.
-grep '^close block:b2$' $WORK/rex.log
-exec sh -c 'grep -v "^close block:b2$" $WORK/rex.log'
-cmp stdout $WORK/want-landscape.log
+# Six tabs, no split, no size read.
+exec sh -c 'grep -c "^window new" $WORK/rex.log'
+stdout '^6$'
+! grep 'split|size' $WORK/rex.log
+# Every tab closed.
+exec sh -c 'grep -c "^close" $WORK/rex.log'
+stdout '^6$'
 fold-ok
 
-# A portrait pane: the split goes below. A passed verifier's pane closes
-# as it passes, and the passed builder's when the step ends.
+# The step's split setting changes nothing: still one tab per session.
 cd $WORK
 rm $WORK/rex.log $WORK/rex.n
-cp $WORK/portrait.json $WORK/size.json
-mkdir repo2
-cd repo2
-exec git init -q
-exec rhiza init
-exec git add -A
-exec git commit -qm init
-exec rhiza change new 'Tall' --title 'Tall'
-exec rhiza add capability c
-mkdir .rhiza/workflows
-cp $WORK/build.toml .rhiza/workflows/build.toml
-exec git add -A
-exec git commit -qm leaves
-exec sh -c 'rhiza run start --workflow build --permission-mode manual --json; echo exit=$?'
-stdout '^exit=0$'
-cmp $WORK/rex.log $WORK/want-portrait.log
-
-# The step's split = "below" wins over a landscape pane, and Rex is not
-# asked its size.
-cd $WORK
-rm $WORK/rex.log $WORK/rex.n
-cp $WORK/landscape.json $WORK/size.json
 mkdir repo3
 cd repo3
 exec git init -q
@@ -93,38 +63,13 @@ exec git add -A
 exec git commit -qm leaves
 exec sh -c 'rhiza run start --workflow build --permission-mode manual --json; echo exit=$?'
 stdout '^exit=0$'
-cmp $WORK/rex.log $WORK/want-override.log
+cmp $WORK/rex.log $WORK/want-below.log
 
 -- landscape.json --
 {"columns":200,"rows":50,"cell_width_px":8,"cell_height_px":16}
--- portrait.json --
-{"columns":100,"rows":120,"cell_width_px":8,"cell_height_px":16}
--- want-landscape.log --
+-- want-below.log --
 window new -> block:b1
-size block:b1
-split block:b1 right -> block:b2 verifier a #1
-size block:b1
-split block:b1 right -> block:b3 builder b #1
-close block:b1
-size block:b2
-split block:b2 right -> block:b4 verifier b #1
-size block:b3
-split block:b3 right -> block:b5 builder b #2
-close block:b3
-size block:b5
-split block:b5 right -> block:b6 builder b #3
-close block:b4
-close block:b5
-close block:b6
--- want-portrait.log --
-window new -> block:b1
-size block:b1
-split block:b1 below -> block:b2 verifier c #1
-close block:b2
-close block:b1
--- want-override.log --
-window new -> block:b1
-split block:b1 below -> block:b2 verifier c #1
+window new -> block:b2
 close block:b2
 close block:b1
 -- build.toml --

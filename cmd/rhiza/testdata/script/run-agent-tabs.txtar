@@ -1,7 +1,6 @@
-# A run's sessions open as tiled panes of one window: the run's first
-# session runs rex window new, and every later one, a check, a critic, a
-# fixer, a verifier and a re-run check in cycle 2, splits a pane already
-# in that window.
+# Each of a run's sessions opens its own Rex tab: a check, a critic, a
+# fixer, a verifier and a re-run check in cycle 2 each run rex window new,
+# titled for the run, and none splits a pane.
 #
 # The fake rex logs window new and split calls, numbering blocks b1, b2,
 # ... and runs the pane's command synchronously. The fake claude logs its
@@ -33,10 +32,9 @@ stdout '^exit=0$'
 exec cat $WORK/claude.log
 cmp stdout $WORK/want.log
 
-# Only the first session made a window; the six after it split a pane of
-# that window.
+# Every one of the seven sessions made its own window; nothing split.
 exec cat $WORK/rex.log
-stdout '\Awindow new\n(split block:b[1-6]\n){6}\z'
+stdout '\A(window new\n){7}\z'
 fold-ok
 
 -- want.log --
