@@ -1,0 +1,73 @@
+{
+  "actor": "01M6H6T5K2MP82KRGP1MYK1NYJ",
+  "after": [
+    "01M6H71X5AV7R8ZTAJQ622JWH1"
+  ],
+  "at": "2026-11-03T17:25:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6H6ZC969219DGD2H3FHVX3V",
+        "id": "01M6H72BSSD45ENH4H889NDYMZ",
+        "link": "01M6H72BSSD45ENH4H85QSQGDT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H71GW7QB7VGB1HXMXBV560",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/api builds a repo with a large log (100+ change sets), runs a whole daemon poll (daemonPoll1 and the notify pass) twice with nothing changed and asserts through the ctx.readLog counter that the second poll reads the log zero times; the same test advances the clock past the 15-minute unjournaled hold with no stamp change and asserts the next poll picks the held change set again; a Go benchmark reports ns/op for the unchanged poll, and no test asserts a wall-clock threshold",
+          "statement": "A daemon poll where the log, git refs and daemon settings are unchanged since the last poll reuses that poll's folded workspace, plan result, candidates, change-set lookups and overlaps instead of re-reading and re-folding the log, while run journals, process liveness, clock-based holds, resume backoff, the disk check, picks and queued work are still evaluated every poll"
+        },
+        "handle": "daemon-idle-poll-no-fold",
+        "id": "01M6H72FY8WGHYD44YXDS2F1Q1",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M6H72FY8WGHYD44YXB23B2ZA",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6H72FY8WGHYD44YXB23B2ZA",
+        "id": "01M6H72JNPXAGRSVV1GTXP45PN",
+        "link": "01M6H72JNPXAGRSVV1GTM441DE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H6ZC969219DGD2H3FHVX3V",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/api runs a poll, then for each of a new log entry (a change set accepted), a branch ref moved, a daemon setting changed with daemon set, and a run the daemon started, asserts through the ctx.readLog counter that the next poll reads the log again and acts on the change (the newly accepted change set is picked, the new setting is used)",
+          "statement": "The daemon's poll cache is dropped, and the next poll folds the log again, when a log entry is added, a git ref moves, a daemon setting changes, or the daemon itself starts or resumes a run"
+        },
+        "handle": "daemon-poll-cache-invalidates",
+        "id": "01M6H72NZ2CZJTC8B1VH2N6CED",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M6H72NZ2CZJTC8B1VGB4HAH0",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6H72NZ2CZJTC8B1VGB4HAH0",
+        "id": "01M6H72V845A7125HCRJAC5M5S",
+        "link": "01M6H72V845A7125HCREB4K8RN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H6ZC969219DGD2H3FHVX3V",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6H6SGKR1N5GBG7XPECKN9Z3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6H730QQ9135FMGYXDF3JSC7",
+  "type": "ops",
+  "v": 1
+}

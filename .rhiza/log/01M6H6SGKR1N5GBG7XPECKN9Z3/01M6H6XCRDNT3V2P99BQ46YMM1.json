@@ -1,0 +1,30 @@
+{
+  "actor": "01M6H6T5K2MP82KRGP1MYK1NYJ",
+  "after": [
+    "01M6H6SGKR1N5GBG7XPHBA2KBW"
+  ],
+  "at": "2026-11-03T17:22:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "37d69292-5976-44cc-847c-01a1a26d0332",
+          "statement": "Daemon CPU fix (change set 01M6H6S): what should the daemon skip on a poll where nothing changed? Picks depend on the clock (start grace, 15-minute unjournaled hold, resume backoff) and on process liveness, which change without any stamp moving. / Daemon CPU fix (change set 01M6H6S): how is a poll's cost measured?"
+        },
+        "handle": "question-37d69292-1",
+        "id": "01M6H6X95DZDFPAC0FGEAH4ZGN",
+        "key": null,
+        "kind": "question",
+        "node": "01M6H6X95DZDFPAC0FGD6Y4SV2",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6H6SGKR1N5GBG7XPECKN9Z3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6H6XCRDNT3V2P99BQ46YMM1",
+  "type": "ops",
+  "v": 1
+}
