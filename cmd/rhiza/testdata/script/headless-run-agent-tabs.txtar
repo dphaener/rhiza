@@ -1,0 +1,141 @@
+# A headless run's agent sessions each open their own tab in the repo's
+# Rex session. `rhiza daemon --once` starts the run as a detached
+# `rhiza run start --foreground` child, outside Rex and with no REX_SESSION
+# of its own, which drives a build step of two leaves to the end: each
+# builder and verifier runs `rex window new -s rhiza-repo`, titled for the
+# run, the step and the session's role, leaf and attempt. Nothing splits a
+# pane, so nothing is anchored on a driver's block, and each finished
+# session closes only its own block.
+#
+# The fake rex logs each call to rex.log, numbering new blocks b1, b2, ...
+# and runs the pane's command in the background. The fake claude commits
+# a builder's leaf and records a verifier's Evidence.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+env REX_SESSION=
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+mkdir .rhiza/workflows
+cp $WORK/ship-change.toml .rhiza/workflows/ship-change.toml
+exec git add -A
+exec git commit -qm init
+exec rhiza change new Built --title Built
+exec rhiza add capability a
+exec rhiza add capability b
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+exec rhiza daemon --permission-mode manual --once
+stdout -count=1 '^Started a run of '
+
+# The child drives the run to the end after the daemon has exited.
+exec sh -c 'for i in $(seq 1 600); do if ls .git/rhiza/runs/*.jsonl >/dev/null 2>&1 && ! rhiza run ls --json | grep -q "\"live\": true"; then break; fi; sleep 0.05; done; rhiza run ls --json'
+! stdout '"live": true'
+exec rhiza run status
+stdout '^- a \(step build\): passed: attempt 1: verifier passed$'
+stdout '^- b \(step build\): passed: attempt 1: verifier passed$'
+exec sh -c 'rhiza run ls --json | sed -n "s/.*\"id\": \"\([0-9A-Z]*\)\".*/\1/p" | head -1 > $WORK/run.id; cat $WORK/run.id'
+stdout '^[0-9A-Z]{26}$'
+
+# Four sessions, four tabs, every one in rhiza-repo and titled for the run,
+# the step and its role, leaf and attempt.
+exec sh -c 'grep -c "^window new " $WORK/rex.log'
+stdout '^4$'
+exec sh -c 'grep -c "^window new -s rhiza-repo repo: Built · run $(cat $WORK/run.id) · build · " $WORK/rex.log'
+stdout '^4$'
+exec cat $WORK/rex.log
+stdout '^window new -s rhiza-repo .* · build · builder a #1 -> block:b[0-9]$'
+stdout '^window new -s rhiza-repo .* · build · verifier a #1 -> block:b[0-9]$'
+stdout '^window new -s rhiza-repo .* · build · builder b #1 -> block:b[0-9]$'
+stdout '^window new -s rhiza-repo .* · build · verifier b #1 -> block:b[0-9]$'
+! stdout 'split'
+
+# Each session closed its own block once, and no other.
+exec sh -c 'grep "^window new" $WORK/rex.log | sed "s/.* -> //" | sort'
+cp stdout $WORK/opened
+exec sh -c 'grep "^close " $WORK/rex.log | sed "s/^close //" | sort'
+cmp stdout $WORK/opened
+exists .git/rhiza/logs/01M5PWGMARA1WR6BD0MEF4Y76P.log
+
+# A headless run started in a shell that is in another Rex session still
+# opens its tabs in rhiza-repo, not in the caller's session.
+rm $WORK/rex.log
+env REX_SESSION=session:mine
+exec sh -c 'rhiza change new Other --title Other --json > $WORK/other.json'
+exec rhiza add capability c
+exec git add -A
+exec git commit -qm other
+exec sh -c 'rhiza run start --foreground --permission-mode manual --json > $WORK/other-run.json; echo exit=$?'
+stdout '^exit=0$'
+exec cat $WORK/rex.log
+stdout -count=2 '^window new -s rhiza-repo repo: Other · run [0-9A-Z]{26} · build · '
+! stdout 'session:mine'
+
+-- ship-change.toml --
+name = "ship-change"
+
+[step.build]
+kind = "leaves"
+interval = "50ms"
+on.pass = "done"
+on.fail = "done"
+
+[step.build.builder]
+prompt = "Build {leaf}"
+
+[step.build.verifier]
+prompt = "Verify {leaf}"
+-- bin/rex --
+#!/bin/sh
+log="$WORK/rex.log"
+case "$1 $2" in
+"session ls")
+	echo '{"sessions":[{"session_id":"session:1","label":"rhiza-repo"}]}'
+	exit 0
+	;;
+"block close")
+	shift 2
+	[ "$1" = -s ] && shift 2
+	echo "close $1" >> "$log"
+	exit 0
+	;;
+"window new") ;;
+*)
+	echo "$*" >> "$log"
+	echo '{}'
+	exit 0
+	;;
+esac
+shift 2
+head="window new"
+while [ $# -gt 0 ]; do
+	case "$1" in
+	-c) dir=$2; shift 2 ;;
+	--json) shift ;;
+	--) shift; break ;;
+	*) head="$head $1"; shift ;;
+	esac
+done
+n=$(cat "$WORK/rex.n" 2>/dev/null || echo 0)
+n=$((n + 1))
+echo $n > "$WORK/rex.n"
+echo "$head -> block:b$n" >> "$log"
+(cd "$dir" && exec "$@") >>"$WORK/panes.out" 2>&1 </dev/null &
+echo "{\"window_id\":\"window:w$n\",\"block_ids\":[\"block:b$n\"]}"
+-- bin/claude --
+#!/bin/sh
+if [ "$RHIZA_ROLE" = builder ]; then
+	echo "$RHIZA_LEAF" > "$RHIZA_LEAF.txt"
+	git add "$RHIZA_LEAF.txt"
+	git commit -q -m "build $RHIZA_LEAF" -m "Leaf: $RHIZA_LEAF" -- "$RHIZA_LEAF.txt" || exit 1
+	exit 0
+fi
+rhiza add evidence "$RHIZA_LEAF-ok" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" || exit 1
+rhiza link "$RHIZA_LEAF-ok" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" || exit 1
+exit 0

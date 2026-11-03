@@ -250,7 +250,20 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 	if rexSession == "" {
 		rexSession = ctx.RexSession
 	}
-	tab := session.Tab{Session: rexSession, Title: session.TabTitle(repo, title, step)}
+	label := ""
+	switch {
+	case r.check != "":
+		label = fmt.Sprintf("%s %s #%d", r.role, r.check, r.cycle)
+	case r.role != "" && r.leaf != "":
+		label = fmt.Sprintf("%s %s #%d", r.role, r.leaf, r.attempt)
+	case r.role != "":
+		label = fmt.Sprintf("%s #%d", r.role, r.cycle)
+	}
+	tabTitle := session.TabTitle(repo, title, step)
+	if r.Run != "" {
+		tabTitle = session.RunTabTitle(repo, title, r.Run, step, label)
+	}
+	tab := session.Tab{Session: rexSession, Title: tabTitle}
 	reuse := t.reuse
 	rec := session.Record{
 		ID: sid, Agent: a.Name(), Change: cs.String(), Title: title, Step: step, Run: r.Run, Autonomous: r.autonomous,
@@ -262,13 +275,6 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 	self := ctx.Self
 	if self == "" {
 		self = "rhiza"
-	}
-	label := ""
-	switch {
-	case r.check != "":
-		label = fmt.Sprintf("%s %s #%d", r.role, r.check, r.cycle)
-	case r.role != "":
-		label = fmt.Sprintf("%s %s #%d", r.role, r.leaf, r.attempt)
 	}
 	rexArgs := rexWindowArgs(tab, worktree, self, sid)
 	if r.anchor.Block != "" {

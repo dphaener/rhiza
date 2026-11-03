@@ -46,6 +46,21 @@ func TabTitle(repo, title, step string) string {
 	return t
 }
 
+// RunTabTitle is the tab title of a run's session: "<repo>: <title> · run
+// <run> · <step>", plus " · <label>" when label is set, such as "builder
+// export-csv #2". Unlike TabTitle it keeps a build step's name, so every
+// tab of a run names both the run and the step.
+func RunTabTitle(repo, title, run, step, label string) string {
+	t := repo + ": " + title + " · run " + run
+	if step != "" {
+		t += " · " + step
+	}
+	if label != "" {
+		t += " · " + label
+	}
+	return t
+}
+
 // NewID formats 16 bytes as a version-4, RFC 4122 variant UUID.
 func NewID(entropy [16]byte) string {
 	b := entropy

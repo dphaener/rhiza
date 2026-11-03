@@ -596,6 +596,9 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err := canRun(ctx, def); err != nil {
 		return nil, err
 	}
+	if err := headlessSession(ctx, r.Foreground); err != nil {
+		return nil, err
+	}
 	if _, err := t.open(ctx); err != nil {
 		return nil, err
 	}
@@ -825,6 +828,9 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	if err := canRun(ctx, def); err != nil {
+		return nil, err
+	}
+	if err := headlessSession(ctx, r.Foreground); err != nil {
 		return nil, err
 	}
 	resp, err := runEngineRetry(ctx, rs, common, j.ID, st.Change, st.Worktree, st.PermissionMode, st.Agent, st.Autonomous, r.NoWait, r.Retry, nil)
@@ -1404,6 +1410,21 @@ func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode
 		return RunResponse{}, Errorf("run %s: %v", rid, err).WithNext("rhiza run status " + rid)
 	}
 	return RunResponse{Run: runInfo(ctx, st, false, sessions)}, nil
+}
+
+// headlessSession readies a headless run, one driven with --foreground as
+// the daemon's detached child: its agent sessions open their tabs in the
+// repo's Rex session rhiza-<repo>, whatever REX_SESSION says or when it is
+// unset, since the driver sits in no Rex tab of its own. A run driven in
+// place keeps the caller's session.
+func headlessSession(ctx *Ctx, foreground bool) error {
+	if !foreground {
+		return nil
+	}
+	if ctx.Exec == nil {
+		return Errorf("cannot drive a headless run: this caller runs no programs")
+	}
+	return ensureRepoSession(ctx)
 }
 
 // runProcess is the calling process as a run's process: its host and pid

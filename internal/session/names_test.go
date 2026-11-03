@@ -46,3 +46,16 @@ func TestTabTitle(t *testing.T) {
 		}
 	}
 }
+
+func TestRunTabTitle(t *testing.T) {
+	cases := []struct{ step, label, want string }{
+		{"build", "builder export-csv #2", "rhiza: Readable tabs · run R1 · build · builder export-csv #2"},
+		{"review", "check alpha #1", "rhiza: Readable tabs · run R1 · review · check alpha #1"},
+		{"interview", "", "rhiza: Readable tabs · run R1 · interview"},
+	}
+	for _, c := range cases {
+		if got := RunTabTitle("rhiza", "Readable tabs", "R1", c.step, c.label); got != c.want {
+			t.Errorf("RunTabTitle(%q,%q) = %q, want %q", c.step, c.label, got, c.want)
+		}
+	}
+}

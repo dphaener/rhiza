@@ -74,7 +74,7 @@ cmp stdout $WORK/want.prompt
 exec rhiza session show 158fe87f-5cf4-47e4-a3e9-01a16dc84988 --json
 stdout '"prompt": "Build 01M5PWGEF85Y185JZ2ZGCNH40N \(agent-steps, Agent steps\) in step build of run 01M5PWGJC82P7YGZTWYFFZ0VJG"'
 exec cat $WORK/rex.log
-stdout '^window new repo: Agent steps -c '${WORK@R}'/repo\.agent-steps --json -- '
+stdout '^window new repo: Agent steps · run 01M5PWGJC82P7YGZTWYFFZ0VJG · build -c '${WORK@R}'/repo\.agent-steps --json -- '
 
 # The agent exits 2: the step fails and follows on.fail to a command step.
 cp $WORK/code2 $WORK/claude.exit
