@@ -605,6 +605,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if _, err := t.open(ctx); err != nil {
 		return nil, err
 	}
+	claimStartLog(ctx, t.common, rid)
 	if err := startRun(rs, rid, started, ctx.Now(), def); err != nil {
 		return nil, err
 	}

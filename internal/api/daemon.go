@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -714,7 +715,7 @@ func daemonStartQueued(ctx *Ctx, s daemon.Start, mode string) error {
 	if s.Autonomous {
 		args = append(args, "--autonomous")
 	}
-	return daemonDetach(ctx, "a run of "+s.Change, s.Change, args)
+	return daemonDetachStart(ctx, "a run of "+s.Change, s.Change, args)
 }
 
 // daemonQueuedContinues continues the runs the owner queued with rhiza run
@@ -749,7 +750,7 @@ func daemonQueuedContinues(ctx *Ctx, rs *run.Store, runs []run.Journal, running,
 			if c.NoWait {
 				args = append(args, "--no-wait")
 			}
-			if err := daemonDetach(ctx, "run "+c.Run, c.Run, args); err != nil {
+			if err := daemonDetach(ctx, "run "+c.Run, c.Run, nil, args); err != nil {
 				return nil, err
 			}
 			continued = append(continued, c.Run)
@@ -837,11 +838,12 @@ func daemonCandidates(res planResult, hasLeaves func(id.ID) bool) ([]string, []d
 
 // daemonDetach starts rhiza with args as a detached child in the repo, outside
 // Rex, with its output appended to the log file name under <git common
-// dir>/rhiza/logs. The child's agent steps open their tabs in the repo's Rex
-// session, which the daemon makes sure of first and hands the child as its
-// REX_SESSION; the child has no REX_BLOCK, since it sits in no tab of its
-// own. A run driven with --foreground by hand keeps the caller's session.
-func daemonDetach(ctx *Ctx, what, name string, args []string) error {
+// dir>/rhiza/logs and env added to its environment. The child's agent steps
+// open their tabs in the repo's Rex session, which the daemon makes sure of
+// first and hands the child as its REX_SESSION; the child has no REX_BLOCK,
+// since it sits in no tab of its own. A run driven with --foreground by hand
+// keeps the caller's session.
+func daemonDetach(ctx *Ctx, what, name string, env, args []string) error {
 	if ctx.Detach == nil || ctx.Self == "" {
 		return Errorf("daemon cannot start %s: no rhiza path", what)
 	}
@@ -852,11 +854,58 @@ func daemonDetach(ctx *Ctx, what, name string, args []string) error {
 	if err != nil {
 		return err
 	}
-	p := Program{Name: ctx.Self, Args: args, Dir: ctx.Root, Env: []string{"REX_SESSION=" + ctx.RexSession}, Unset: []string{"REX_BLOCK"}}
-	if err := ctx.Detach(p, filepath.Join(common, "rhiza", "logs", name+".log")); err != nil {
+	p := Program{Name: ctx.Self, Args: args, Dir: ctx.Root, Env: append([]string{"REX_SESSION=" + ctx.RexSession}, env...), Unset: []string{"REX_BLOCK"}}
+	if err := ctx.Detach(p, filepath.Join(runLogDir(common), name+".log")); err != nil {
 		return Errorf("start %s: %v", what, err)
 	}
 	return nil
+}
+
+// envRunLog names, to a run start --foreground the daemon detached, the
+// start log under <git common dir>/rhiza/logs its output goes to. The run
+// has no ID until the child draws one, so each start gets a log of its
+// own, <change set>.start-<n>.log, which the child renames to <run>.log
+// before it journals: a later start of the same change set never appends
+// to an earlier run's log.
+const envRunLog = "RHIZA_RUN_LOG"
+
+// runLogDir is where run drivers' logs live.
+func runLogDir(common string) string {
+	return filepath.Join(common, "rhiza", "logs")
+}
+
+// daemonDetachStart detaches the run start --foreground args of change set
+// cs into a start log of its own, named to the child through envRunLog.
+func daemonDetachStart(ctx *Ctx, what, cs string, args []string) error {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return err
+	}
+	name := ""
+	for n := 1; ; n++ {
+		name = fmt.Sprintf("%s.start-%d", cs, n)
+		if _, err := os.Lstat(filepath.Join(runLogDir(common), name+".log")); errors.Is(err, fs.ErrNotExist) {
+			break
+		} else if err != nil {
+			return Errorf("start %s: %v", what, err)
+		}
+	}
+	return daemonDetach(ctx, what, name, []string{envRunLog + "=" + name + ".log"}, args)
+}
+
+// claimStartLog renames the start log the daemon named in envRunLog, if
+// any, to run rid's log, so the run's output so far and from here on is
+// its own. It is best effort: a run with no log still runs.
+func claimStartLog(ctx *Ctx, common, rid string) {
+	if ctx.Getenv == nil {
+		return
+	}
+	name := filepath.Base(strings.TrimSpace(ctx.Getenv(envRunLog)))
+	if name == "." || name == "/" || !strings.HasSuffix(name, ".log") {
+		return
+	}
+	dir := runLogDir(common)
+	_ = os.Rename(filepath.Join(dir, name), filepath.Join(dir, rid+".log"))
 }
 
 // daemonStart starts the run of change set cs as a detached rhiza run start
@@ -866,13 +915,13 @@ func daemonStart(ctx *Ctx, cs string, autonomous bool, mode string) error {
 	if autonomous {
 		args = append(args, "--autonomous")
 	}
-	return daemonDetach(ctx, "a run of "+cs, cs, args)
+	return daemonDetachStart(ctx, "a run of "+cs, cs, args)
 }
 
 // daemonResume continues run id as a detached rhiza run resume --foreground
 // process, with the permission mode the run started with.
 func daemonResume(ctx *Ctx, id string) error {
-	return daemonDetach(ctx, "run "+id, id, []string{"run", "resume", "--foreground", id})
+	return daemonDetach(ctx, "run "+id, id, nil, []string{"run", "resume", "--foreground", id})
 }
 
 func init() {

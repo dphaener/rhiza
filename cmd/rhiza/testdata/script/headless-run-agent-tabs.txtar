@@ -61,7 +61,8 @@ exec sh -c 'grep "^window new" $WORK/rex.log | sed "s/.* -> //" | sort'
 cp stdout $WORK/opened
 exec sh -c 'grep "^close " $WORK/rex.log | sed "s/^close //" | sort'
 cmp stdout $WORK/opened
-exists .git/rhiza/logs/01M5PWGMARA1WR6BD0MEF4Y76P.log
+exec sh -c 'ls .git/rhiza/logs/$(cat $WORK/run.id).log'
+! exists .git/rhiza/logs/01M5PWGMARA1WR6BD0MEF4Y76P.log
 
 # A run queued and started headless from a shell that is in another Rex
 # session, inside a tab of its own, still opens its tabs in rhiza-repo, not

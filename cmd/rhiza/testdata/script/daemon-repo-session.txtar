@@ -24,7 +24,7 @@ exec rhiza accept --reason ok
 exec rhiza daemon --permission-mode manual --once
 exec sh -c 'grep -c "^rex session new rhiza-repo " $WORK/rex.log'
 stdout '^1$'
-exec sh -c 'grep -c "^REX_SESSION=rhiza-repo rhiza run start " $WORK/detach.log'
+exec sh -c 'grep -Ec "^REX_SESSION=rhiza-repo RHIZA_RUN_LOG=[0-9A-Z]{26}\.start-1\.log rhiza run start " $WORK/detach.log'
 stdout '^1$'
 exec sh -c 'grep -vc "^REX_SESSION=rhiza-repo " $WORK/detach.log || true'
 stdout '^0$'
@@ -35,7 +35,7 @@ rm $WORK/rex.log $WORK/detach.log
 exec rhiza daemon --permission-mode manual --once
 exec sh -c 'grep -c "^rex session new" $WORK/rex.log || true'
 stdout '^0$'
-exec sh -c 'grep -c "^REX_SESSION=rhiza-repo rhiza " $WORK/detach.log'
+exec sh -c 'grep -Ec "^REX_SESSION=rhiza-repo (RHIZA_RUN_LOG=[^ ]* )?rhiza " $WORK/detach.log'
 ! stdout '^0$'
 exec sh -c 'grep -vc "^REX_SESSION=rhiza-repo " $WORK/detach.log || true'
 stdout '^0$'
@@ -44,7 +44,7 @@ stdout '^0$'
 rm $WORK/rex.log $WORK/detach.log
 env REX_SESSION=session:other
 exec rhiza daemon --permission-mode manual --once
-exec sh -c 'grep -c "^REX_SESSION=rhiza-repo rhiza " $WORK/detach.log'
+exec sh -c 'grep -Ec "^REX_SESSION=rhiza-repo (RHIZA_RUN_LOG=[^ ]* )?rhiza " $WORK/detach.log'
 ! stdout '^0$'
 exec sh -c 'grep -c "session:other" $WORK/detach.log || true'
 stdout '^0$'

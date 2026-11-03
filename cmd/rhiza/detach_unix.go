@@ -13,9 +13,16 @@ import (
 // detachProgram is api.Ctx.Detach: it starts p in a session of its own, so
 // it outlives this process and its terminal, with no input and its output
 // appended to logPath. This process reaps it when it exits. In a test run RHIZA_TEST_DETACH_LOG, when set, names
-// a file that receives the environment set and the command line instead and nothing starts.
+// a file that receives the environment set and the command line instead; nothing starts, and logPath is
+// only created, so a script can see which log the child would write.
 func detachProgram(p apiProgram, logPath string) error {
 	if rec := os.Getenv("RHIZA_TEST_DETACH_LOG"); rec != "" && os.Getenv("RHIZA_TEST_NOW") != "" {
+		if err := os.MkdirAll(filepath.Dir(logPath), 0o755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(logPath, nil, 0o644); err != nil {
+			return err
+		}
 		f, err := os.OpenFile(rec, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 		if err != nil {
 			return err

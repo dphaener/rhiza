@@ -305,6 +305,7 @@ func newRequestRunID(ctx *Ctx, rs *run.Store, reqs []daemon.Request) (string, er
 // daemonStartPlan starts the plan run of request q as a detached process:
 // run start --foreground --workflow plan --new with its intent, --milestone
 // for a milestone, and --request so the run takes the ID the request names.
+// Its log is that run's, <run>.log, as run log reads it.
 func daemonStartPlan(ctx *Ctx, q daemon.Request, autonomous bool, mode string) error {
 	args := []string{"run", "start", "--foreground", "--workflow", planWorkflow, "--new", q.Intent(), "--request", q.ID, "--permission-mode", mode}
 	if q.Kind == daemon.KindMilestone {
@@ -313,7 +314,7 @@ func daemonStartPlan(ctx *Ctx, q daemon.Request, autonomous bool, mode string) e
 	if autonomous {
 		args = append(args, "--autonomous")
 	}
-	return daemonDetach(ctx, "the plan run of request "+q.ID, "plan-"+q.ID, args)
+	return daemonDetach(ctx, "the plan run of request "+q.ID, q.Run, nil, args)
 }
 
 // requestRun is the run ID run start --request <id> takes: the one the

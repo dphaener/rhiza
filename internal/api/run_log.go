@@ -2,8 +2,9 @@ package api
 
 // This file holds run.log: a headless run's driver log, paged. The daemon
 // starts a run outside Rex with its output in a file under
-// <git common dir>/rhiza/logs: <change set>.log for the start,
-// <run>.log for a resume. The operation reads those files only.
+// <git common dir>/rhiza/logs: <run>.log, which a start's child takes over
+// from its start log before it journals and a resume appends to. The
+// operation reads that file only.
 
 import (
 	"bufio"
@@ -111,16 +112,9 @@ func runRunLog(ctx *Ctx, req any) (any, error) {
 	} else if j, err = latestRun(ctx, rs); err != nil {
 		return nil, err
 	}
-	st := j.State()
 	var paths []string
-	for _, name := range []string{st.Change, j.ID} {
-		if name == "" {
-			continue
-		}
-		p := filepath.Join(common, "rhiza", "logs", name+".log")
-		if _, err := os.Stat(p); err == nil {
-			paths = append(paths, p)
-		}
+	if p := filepath.Join(runLogDir(common), j.ID+".log"); statOK(p) {
+		paths = append(paths, p)
 	}
 	if len(paths) == 0 {
 		return nil, Usagef("run %s has no log: only a run the daemon started has one", j.ID).WithNext("rhiza run status " + j.ID)
@@ -165,4 +159,10 @@ func runRunLog(ctx *Ctx, req any) (any, error) {
 		}
 	}
 	return resp, nil
+}
+
+// statOK reports whether path can be stat'ed.
+func statOK(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
 }

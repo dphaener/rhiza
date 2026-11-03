@@ -87,6 +87,14 @@ stdout '"change": "[0-9A-Z]{26}"'
 exec sh -c 'rhiza request ls --json | grep -B3 -A6 "$(cat $WORK/req1)" | sed -n "s/^      \"run\": \"\(.*\)\",$/\1/p" > $WORK/run1'
 exec sh -c 'ls .git/rhiza/runs | grep -c "$(cat $WORK/run1)"'
 stdout '^1$'
+
+# The daemon detached the plan run into its run's log, <run>.log, so run log
+# finds it; no plan-<request>.log is left.
+exec sh -c 'ls .git/rhiza/logs/$(cat $WORK/run1).log'
+exec sh -c 'ls .git/rhiza/logs | grep -c "^plan-" || true'
+stdout '^0$'
+exec sh -c 'rhiza run log $(cat $WORK/run1) --all; echo exit=$?'
+stdout '^exit=0$'
 exec rhiza request ls
 stdout 'feature planned: Add exports \(run [0-9A-Z]{26}, change set [0-9A-Z]{26}\)$'
 
