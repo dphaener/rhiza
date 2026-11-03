@@ -1,0 +1,35 @@
+# rhiza health has a machine part: ok with daily and no machine config, ok
+# with dedicated and its file, and warn naming the file when it is bad.
+
+env REX_SESSION=
+env REX_SERVER=
+env RHIZA_TEST_FREE_BYTES=1099511627776
+env XDG_CONFIG_HOME=$WORK/xdg
+mkdir repo
+cd repo
+exec git init -q -b main
+exec rhiza init
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+
+exec rhiza health
+stdout '^ok   machine  trust daily \(no machine config\)'
+exec rhiza health --json
+stdout '"part": "machine"'
+
+mkdir $WORK/xdg/rhiza
+cp ../dedicated.toml $WORK/xdg/rhiza/machine.toml
+exec rhiza health
+stdout '^ok   machine  trust dedicated \(from '${WORK@R}'/xdg/rhiza/machine\.toml\)'
+
+cp ../bad.toml $WORK/xdg/rhiza/machine.toml
+exec rhiza health
+stdout '^warn machine  could not be read: .*'${WORK@R}'/xdg/rhiza/machine\.toml'
+exec rhiza health --json
+stdout '"state": "warn"'
+
+-- dedicated.toml --
+trust = "dedicated"
+-- bad.toml --
+trust = "root"

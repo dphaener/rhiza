@@ -2444,7 +2444,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "parts": {
-            "description": "Every part, in a fixed order: daemon, autonomy, disk, main, inbox, requests, roadmap, check",
+            "description": "Every part, in a fixed order: daemon, autonomy, machine, disk, main, inbox, requests, roadmap, check",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -2464,6 +2464,7 @@ cmp stdout describe.golden.json
                   "enum": [
                     "daemon",
                     "autonomy",
+                    "machine",
                     "disk",
                     "main",
                     "inbox",
@@ -2513,7 +2514,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Report the daemon, autonomy settings, free disk, the main checkout, inbox, queued requests, roadmap and rhiza check, each part ok, warn or bad; exit 1 when any part is bad",
+      "summary": "Report the daemon, autonomy settings, the machine trust, free disk, the main checkout, inbox, queued requests, roadmap and rhiza check, each part ok, warn or bad; exit 1 when any part is bad",
       "write": false
     },
     {
