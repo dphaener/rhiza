@@ -10976,6 +10976,67 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "run.log",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "all": {
+            "description": "Print the whole log, ignoring --limit and --cursor",
+            "type": "boolean"
+          },
+          "cursor": {
+            "description": "Where to go on: the next_cursor of the page before",
+            "type": "string"
+          },
+          "layer": {
+            "description": "Open the log in a Rex layer, in the session the caller runs in, instead of printing it",
+            "type": "boolean"
+          },
+          "limit": {
+            "description": "The most lines to return, 1 to 1000; default 50",
+            "type": "integer"
+          },
+          "run": {
+            "description": "The run: a full ID or a unique prefix of 4+ characters; default the latest run",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "lines": {
+            "description": "The log's lines of this page, oldest first",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "next_cursor": {
+            "description": "The cursor of the next page; absent when no more remain",
+            "type": "string"
+          },
+          "opened": {
+            "description": "True when --layer opened the log in a Rex layer",
+            "type": "boolean"
+          },
+          "run": {
+            "description": "The run ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lines",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Page a headless run's driver log a page of lines at a time, or open it in a Rex layer with --layer; exits 2 for a run with no log",
+      "write": false
+    },
+    {
       "name": "run.ls",
       "request": {
         "additionalProperties": false,

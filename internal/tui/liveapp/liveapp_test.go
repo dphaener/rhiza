@@ -20,6 +20,7 @@ type fakeData struct {
 	calls  int
 	shows  int
 	opens  []string
+	logs   [][]string
 	open   string
 }
 
@@ -33,6 +34,9 @@ func (f *fakeData) run(op string, args []string) ([]byte, error) {
 	case "run.open":
 		f.opens = append(f.opens, args[0])
 		return []byte(f.open), nil
+	case "run.log":
+		f.logs = append(f.logs, args)
+		return []byte(`{"run":"` + args[0] + `","lines":[],"opened":true}`), nil
 	case "run.status":
 		return []byte(f.status[args[0]]), nil
 	case "change.show":
@@ -290,5 +294,18 @@ func TestChecksSummaryCountsOpenCycleRunning(t *testing.T) {
 	cs := []api.RunCheck{{Check: "q", Outcome: "passed"}, {Check: "s", OpenCycle: 2, PriorCycle: 1, PriorOutcome: "failed"}}
 	if got, want := checksSummary(cs), "1 passed, 1 running"; got != want {
 		t.Errorf("checksSummary = %q, want %q", got, want)
+	}
+}
+
+func TestLKeyOpensSelectedRunLogLayer(t *testing.T) {
+	f := newFake()
+	m := NewModel(f.run, nil)
+	m.Update(tea.KeyPressMsg{Code: 'j', Text: "j"})
+	m.Update(tea.KeyPressMsg{Code: 'l', Text: "l"})
+	if len(f.logs) != 1 || strings.Join(f.logs[0], " ") != "R1 --layer" {
+		t.Fatalf("run.log calls: %v", f.logs)
+	}
+	if v := m.View().Content; !strings.Contains(v, "Opened the log of run R1") {
+		t.Errorf("view lacks notice:\n%s", v)
 	}
 }
