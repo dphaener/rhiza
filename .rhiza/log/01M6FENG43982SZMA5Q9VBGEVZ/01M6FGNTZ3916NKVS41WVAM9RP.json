@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6FGJCY2XF3BQFVKD1HDDMXP"
+  ],
+  "at": "2026-11-03T01:34:15Z",
+  "body": {
+    "reason": "Owner accepted the Rex-on-Linux plan in the orchestrator session, 2026-11-03: 'Accept all four'",
+    "rule": "owner"
+  },
+  "change_set": "01M6FENG43982SZMA5Q9VBGEVZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FGNTZ3916NKVS41WVAM9RP",
+  "type": "accept",
+  "v": 1
+}
