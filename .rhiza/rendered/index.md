@@ -439,6 +439,7 @@
   - [m24-headless-runs](intent/milestone-24/m24-headless-runs.md)
   - [m24-self-update](intent/milestone-24/m24-self-update.md)
   - [m24-on-the-vm](intent/milestone-24/m24-on-the-vm.md)
+- [milestone-25](intent/milestone-25.md)
 
 ## Constraints
 
@@ -729,6 +730,7 @@
 - [m24-server-daemon-no-tab](decision/m24-server-daemon-no-tab.md)
 - [m24-service-or-tab](decision/m24-service-or-tab.md)
 - [m24-update-from-main](decision/m24-update-from-main.md)
+- [m25-empty-backlog](decision/m25-empty-backlog.md)
 - [m2cs2-done-points-count](decision/m2cs2-done-points-count.md)
 - [m2cs2-flat-backlog](decision/m2cs2-flat-backlog.md)
 - [m2cs2-milestone-field](decision/m2cs2-milestone-field.md)

@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-03T21:07:42Z",
+  "body": {
+    "intent": "Milestone 25: empty the backlog — every planned change set from tonight's requests serves it so the daemon builds them",
+    "kind": "intention",
+    "sources": [],
+    "title": "Milestone 25 backlog"
+  },
+  "change_set": "01M6HKTEKH6WQTCXRYDM9GSASG",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6HKTEKH6WQTCXRYDNT4M2VH",
+  "type": "open",
+  "v": 2
+}
