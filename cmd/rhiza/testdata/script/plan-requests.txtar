@@ -4,13 +4,14 @@
 # request's text (a bug's prefixed Fix:, a milestone's with --milestone),
 # --autonomous only with plan autonomy auto. Paused, it starts nothing.
 #
-# The fake rex only logs the daemon's tabs; the plan run of the first
+# The fake rex only logs the daemon's start commands; the plan run of the first
 # request is then run by hand, as its tab would, with a fake claude that
 # does nothing.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
 env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
 mkdir repo
 cd repo
 exec git init -q
@@ -49,7 +50,7 @@ stdout '^exit=2$'
 exec rhiza daemon set rhiza.daemon.paused true
 exec rhiza daemon --permission-mode manual --once
 ! stdout 'plan run'
-! exists $WORK/rex.log
+! exists $WORK/detach.log
 exec rhiza request ls --json
 stdout -count=3 '"state": "queued"'
 
@@ -57,9 +58,9 @@ stdout -count=3 '"state": "queued"'
 exec rhiza daemon set rhiza.daemon.paused false
 exec rhiza daemon --permission-mode manual --max-runs 1 --once
 stdout -count=1 '^Started the plan run of request '
-exec cat $WORK/rex.log
-stdout -count=1 '^rex '
-stdout 'run start --workflow plan --new Add exports --request [0-9A-Z]{26} --permission-mode manual$'
+exec cat $WORK/detach.log
+stdout -count=1 '^REX_SESSION=.* rhiza '
+stdout 'run start --foreground --workflow plan --new Add exports --request [0-9A-Z]{26} --permission-mode manual$'
 exec rhiza request ls
 stdout 'feature planning: Add exports \(run [0-9A-Z]{26}\)$'
 stdout 'bug queued: Login fails$'
@@ -69,10 +70,10 @@ stdout 'bug queued: Login fails$'
 exec rhiza daemon set rhiza.autonomy.plan auto
 exec rhiza daemon --permission-mode manual --max-runs 3 --once
 stdout -count=2 '^Started the plan run of request '
-exec cat $WORK/rex.log
-stdout -count=3 '^rex '
-stdout 'run start --workflow plan --new Fix: Login fails --request [0-9A-Z]{26} --permission-mode manual --autonomous$'
-stdout 'run start --workflow plan --new Ship v2 --request [0-9A-Z]{26} --permission-mode manual --milestone --autonomous$'
+exec cat $WORK/detach.log
+stdout -count=3 '^REX_SESSION=.* rhiza '
+stdout 'run start --foreground --workflow plan --new Fix: Login fails --request [0-9A-Z]{26} --permission-mode manual --autonomous$'
+stdout 'run start --foreground --workflow plan --new Ship v2 --request [0-9A-Z]{26} --permission-mode manual --milestone --autonomous$'
 exec rhiza request ls --json
 stdout -count=3 '"state": "planning"'
 

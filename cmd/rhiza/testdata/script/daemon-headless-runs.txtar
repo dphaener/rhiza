@@ -1,0 +1,46 @@
+# The daemon starts a run as a detached `rhiza run start --foreground
+# <change set>` process, outside Rex: no `rex window new` for it, its output
+# in a log file under .git/rhiza/logs, and the run is still live after the
+# daemon has exited. --autonomous reaches the child only under
+# `rhiza daemon --once --autonomous` (daemon-picks checks that). The run waits
+# on its build agent, which the test never answers, so the child stays up
+# until the test kills it.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+exec rhiza change new Built --title Built
+exec rhiza add capability built-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+exec rhiza daemon --permission-mode manual --once
+stdout -count=1 '^Started a run of '
+
+# No Rex tab: Rex was asked for its session and nothing else.
+exec sh -c 'grep -c "window new" $WORK/rex.log || true'
+stdout '^0$'
+
+# The child journals its run, and it outlives the daemon.
+exec sh -c 'for i in $(seq 1 100); do ls .git/rhiza/runs/*.jsonl >/dev/null 2>&1 && break; sleep 0.1; done; ls .git/rhiza/runs'
+exec rhiza run ls --json
+stdout '"live": true'
+exists .git/rhiza/logs/01M5PWGMARA1WR6BD0MEF4Y76P.log
+
+# Stop the child through the pid its journal names.
+exec sh -c 'kill $(sed -n "s/.*\"pid\":\([0-9]*\).*/\1/p" .git/rhiza/runs/*.jsonl | head -1)'
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+if [ "$1 $2" = "session ls" ]; then
+  echo '{"sessions":[{"session_id":"session:1","label":"rhiza-repo"}]}'
+  exit 0
+fi
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

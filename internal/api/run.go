@@ -109,6 +109,7 @@ type RunStartRequest struct {
 	New            string `json:"new,omitempty" desc:"With --workflow plan and no change set: open a draft change set with this one-line intent and start the plan run on it"`
 	Milestone      bool   `json:"milestone,omitempty" desc:"With --new: open a record change set, to plan a milestone in; without it an intention"`
 	Request        string `json:"request,omitempty" desc:"With --new: the plan request this run plans; the run takes the ID the daemon drew for it. The daemon passes it"`
+	Foreground     bool   `json:"foreground,omitempty" desc:"Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts"`
 }
 
 // RunStatusRequest names a run, or none for the latest.
@@ -118,9 +119,10 @@ type RunStatusRequest struct {
 
 // RunResumeRequest names the run to continue.
 type RunResumeRequest struct {
-	Run    string `json:"run" arg:"0" desc:"The run: a full ID or a unique prefix of 4+ characters"`
-	NoWait bool   `json:"no_wait,omitempty" desc:"Stop at a wait step whose condition does not hold yet, instead of waiting"`
-	Retry  bool   `json:"retry,omitempty" flag:"retry" desc:"Restart a failed run at the step that failed, once its cause is fixed; the retry is journalled. A run that succeeded is refused"`
+	Run        string `json:"run" arg:"0" desc:"The run: a full ID or a unique prefix of 4+ characters"`
+	NoWait     bool   `json:"no_wait,omitempty" desc:"Stop at a wait step whose condition does not hold yet, instead of waiting"`
+	Retry      bool   `json:"retry,omitempty" flag:"retry" desc:"Restart a failed run at the step that failed, once its cause is fixed; the retry is journalled. A run that succeeded is refused"`
+	Foreground bool   `json:"foreground,omitempty" desc:"Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts"`
 }
 
 // RunAbandonRequest names the run to give up on.

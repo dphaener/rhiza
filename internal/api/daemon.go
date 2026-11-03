@@ -687,46 +687,42 @@ func daemonCandidates(res planResult, hasLeaves func(id.ID) bool) ([]string, []d
 	return out, skips
 }
 
-// daemonStart starts the run of change set cs in a new Rex tab, with
-// permission mode mode.
-func daemonStart(ctx *Ctx, cs string, autonomous bool, mode string) error {
-	if ctx.Exec == nil || ctx.Self == "" {
-		return Errorf("daemon cannot start a run of %s: no rex or rhiza path", cs)
+// daemonDetach starts rhiza with args as a detached child in the repo, outside
+// Rex, with its output appended to the log file name under <git common
+// dir>/rhiza/logs. The child's agent steps open their tabs in the repo's Rex
+// session, which the daemon makes sure of first.
+func daemonDetach(ctx *Ctx, what, name string, args []string) error {
+	if ctx.Detach == nil || ctx.Self == "" {
+		return Errorf("daemon cannot start %s: no rhiza path", what)
 	}
 	if err := ensureRepoSession(ctx); err != nil {
 		return err
 	}
-	args := []string{"window", "new"}
-	if ctx.RexSession != "" {
-		args = append(args, "-s", ctx.RexSession)
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return err
 	}
-	args = append(args, cs[:min(len(cs), 9)], "-c", ctx.Root, "--json", "--", ctx.Self, "run", "start", cs, "--permission-mode", mode)
-	if autonomous {
-		args = append(args, "--autonomous")
-	}
-	if _, err := ctx.Exec("rex", args, ctx.Root, nil); err != nil {
-		return Errorf("rex window new for %s: %v", cs, err)
+	p := Program{Name: ctx.Self, Args: args, Dir: ctx.Root, Env: []string{"REX_SESSION=" + ctx.RexSession}}
+	if err := ctx.Detach(p, filepath.Join(common, "rhiza", "logs", name+".log")); err != nil {
+		return Errorf("start %s: %v", what, err)
 	}
 	return nil
 }
 
-// daemonResume opens a new Rex tab running rhiza run resume on run id.
+// daemonStart starts the run of change set cs as a detached rhiza run start
+// --foreground process, with permission mode mode.
+func daemonStart(ctx *Ctx, cs string, autonomous bool, mode string) error {
+	args := []string{"run", "start", "--foreground", cs, "--permission-mode", mode}
+	if autonomous {
+		args = append(args, "--autonomous")
+	}
+	return daemonDetach(ctx, "a run of "+cs, cs, args)
+}
+
+// daemonResume continues run id as a detached rhiza run resume --foreground
+// process, with the permission mode the run started with.
 func daemonResume(ctx *Ctx, id string) error {
-	if ctx.Exec == nil || ctx.Self == "" {
-		return Errorf("daemon cannot resume run %s: no rex or rhiza path", id)
-	}
-	if err := ensureRepoSession(ctx); err != nil {
-		return err
-	}
-	args := []string{"window", "new"}
-	if ctx.RexSession != "" {
-		args = append(args, "-s", ctx.RexSession)
-	}
-	args = append(args, id[:min(len(id), 9)], "-c", ctx.Root, "--json", "--", ctx.Self, "run", "resume", id)
-	if _, err := ctx.Exec("rex", args, ctx.Root, nil); err != nil {
-		return Errorf("rex window new for run %s: %v", id, err)
-	}
-	return nil
+	return daemonDetach(ctx, "run "+id, id, []string{"run", "resume", "--foreground", id})
 }
 
 func init() {

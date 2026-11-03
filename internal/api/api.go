@@ -145,6 +145,12 @@ type Ctx struct {
 	// Unlike Exec it can hand the program the caller's terminal, or stream
 	// its output. Nil means no programs can be started: session.run fails.
 	Start func(p Program) (Process, error)
+	// Detach starts p as a child that outlives the caller: in its own
+	// session, with no input, its output appended to the file logPath
+	// (created with its folders). It returns once the child has started and
+	// does not wait for it. Nil means no program can be detached: the
+	// daemon cannot start a run.
+	Detach func(p Program, logPath string) error
 	// RexSession is the Rex session the caller runs in (the CLI's
 	// REX_SESSION), empty if none: session.start opens its tab there
 	// unless the request names another.

@@ -4,6 +4,7 @@
 
 chmod 755 bin/rex
 env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
 mkdir repo
 cd repo
 exec git init -q
@@ -22,7 +23,7 @@ exec rhiza accept --reason ok
 exec rhiza daemon set rhiza.daemon.paused true
 exec rhiza daemon --permission-mode manual --once
 ! stdout 'Started'
-! exists $WORK/rex.log
+! exists $WORK/detach.log
 exec rhiza daemon status
 stdout '^Paused: yes$'
 stdout 'Built: paused'

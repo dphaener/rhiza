@@ -71,6 +71,7 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		LookPath:  exec.LookPath,
 		Self:      selfPath(),
 		Start:     startProgram,
+		Detach:    detachProgram,
 		// REX_SESSION and REX_BLOCK are the Rex session and block this
 		// terminal runs in; Rex sets them in every shell it starts.
 		RexSession: getenv("REX_SESSION"),
@@ -385,3 +386,6 @@ func interrupts() (<-chan struct{}, func()) {
 	}()
 	return done, func() { signal.Stop(sigs) }
 }
+
+// apiProgram is api.Program, for the detach files.
+type apiProgram = api.Program

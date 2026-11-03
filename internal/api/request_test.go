@@ -17,13 +17,19 @@ func TestDaemonPlanRequestsRequeuesUnjournaled(t *testing.T) {
 	now := time.Date(2026, 11, 1, 12, 0, 0, 0, time.UTC)
 	f.ctx.Now = func() time.Time { return now }
 	f.ctx.repoSession = true // the rhiza-<repo> session is daemon-repo-session's concern
+	f.ctx.Self = "/bin/rhiza"
+	var detached [][]string
+	f.ctx.Detach = func(p Program, logPath string) error {
+		detached = append(detached, p.Args)
+		return nil
+	}
 	if _, err := callOp(t, f.ctx, "request", `{"text":"Dark mode"}`); err != nil {
 		t.Fatal(err)
 	}
 	rs := run.NewStore(run.Dir(f.common))
 	poll := func() []string {
 		t.Helper()
-		f.rex.calls = nil
+		detached = nil
 		got, err := daemonPlanRequests(f.ctx, rs, nil, 0, 2, "auto")
 		if err != nil {
 			t.Fatal(err)
@@ -38,8 +44,8 @@ func TestDaemonPlanRequestsRequeuesUnjournaled(t *testing.T) {
 		}
 		return reqs[0]
 	}
-	if got := poll(); len(got) != 1 || len(f.rex.calls) != 1 {
-		t.Fatalf("first poll started %v with rex calls %q, want one start", got, f.rex.calls)
+	if got := poll(); len(got) != 1 || len(detached) != 1 {
+		t.Fatalf("first poll started %v with rex calls %q, want one start", got, detached)
 	}
 	first := request()
 	if first.Run == "" {
@@ -50,7 +56,7 @@ func TestDaemonPlanRequestsRequeuesUnjournaled(t *testing.T) {
 		t.Fatalf("within the grace: started %v, run %q, want none and %q", got, request().Run, first.Run)
 	}
 	now = now.Add(time.Second)
-	if got := poll(); len(got) != 0 || len(f.rex.calls) != 0 {
+	if got := poll(); len(got) != 0 || len(detached) != 0 {
 		t.Fatalf("after the grace: started %v, want none until the hold passed", got)
 	}
 	q := request()
@@ -61,7 +67,7 @@ func TestDaemonPlanRequestsRequeuesUnjournaled(t *testing.T) {
 		t.Errorf("after the grace: state %s, want queued", state)
 	}
 	now = first.StartedAt.Add(daemonUnjournaledHold)
-	if got := poll(); len(got) != 1 || len(f.rex.calls) != 1 {
+	if got := poll(); len(got) != 1 || len(detached) != 1 {
 		t.Fatalf("after the hold: started %v, want the request again", got)
 	}
 	if q := request(); q.Run == "" || q.Run == first.Run || !q.RetryAt.IsZero() {
