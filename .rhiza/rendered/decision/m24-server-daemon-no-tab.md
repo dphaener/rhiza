@@ -19,6 +19,7 @@ On a server installation the daemon runs as a service with no Rex tab of its own
 ### In
 
 - decided-by [milestone-24](../intent/milestone-24.md)
+- decided-by [daemon-service-install](../capability/rhiza/orchestration/daemon/daemon-service-install.md)
 
 ## History
 
