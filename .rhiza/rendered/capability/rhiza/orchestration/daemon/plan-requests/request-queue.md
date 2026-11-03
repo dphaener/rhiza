@@ -4,7 +4,7 @@ capability · `01M6D4SYDB1P7NX7DGKT0D19HM` · parent [plan-requests](../plan-req
 
 ## acceptance
 
-plan-requests.txtar with a fake rex: request queues an item shown queued by request ls; daemon --once starts run start --workflow plan --new with the request's text (a bug's prefixed Fix:, a milestone's with --milestone), --autonomous only with plan auto, and request ls then shows planning with the run; when the run's journal names the planned change set, request ls shows planned with it; paused starts nothing; the roadmap app's n and m keys then reach a working request command; describe-golden.txtar is regenerated
+plan-requests.txtar with a fake rex: request queues an item shown queued by request ls; daemon --once starts run start --workflow plan --new with the request's text (a bug's prefixed "Fix ", so its title names the bug, a milestone's with --milestone), --autonomous only with plan auto, and request ls then shows planning with the run; when the run's journal names the planned change set, request ls shows planned with it; paused starts nothing; the roadmap app's n and m keys then reach a working request command; describe-golden.txtar is regenerated
 
 ## statement
 
@@ -15,6 +15,7 @@ rhiza request <text> [--kind feature|bug|milestone] queues a plan request in the
 ### Out
 
 - decided-by [requests-queue-local](../../../../../decision/requests-queue-local.md)
+- decided-by [bug-intent-fix-no-colon](../../../../../decision/bug-intent-fix-no-colon.md)
 
 ### In
 
@@ -25,3 +26,4 @@ rhiza request <text> [--kind feature|bug|milestone] queues a plan request in the
 ## History
 
 - `01M6D4SB0D8F9SPGK471DF9RV6` The request queue and the daemon turning requests into plan runs, as a leaf of plan requests
+- `01M6GDJW3R8PXW7QBAZVH0QS4W` Bug requests' change sets get distinct titles: a bug's plan run opens its change set with the intent 'Fix <text>' rather than 'Fix: <text>', so its display title, branch and worktree name the bug instead of all being 'Fix'
