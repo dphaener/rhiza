@@ -1,0 +1,43 @@
+{
+  "actor": "01M6HNP5ZMMQPSD5YFCWKNF4D3",
+  "after": [
+    "01M6HNX6M0QD9NS01PSEX7S36G"
+  ],
+  "at": "2026-11-03T21:44:42Z",
+  "body": {
+    "carve": {
+      "entry": "01M6HNXZYQHWQDGX54JWTQFCQE",
+      "from": "01M5SWSWDVB237P01ZQ6P3B788"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "References to other nodes inside text are stored by ID and shown by handle, so a rename never breaks a sentence."
+        },
+        "handle": "text-references",
+        "id": "01M6HNXZYPEQK3E323D1M2BDM0",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5SWSWH9Y4B8S2ADQCGPYQ1E",
+        "op": "node.create",
+        "parent": "01M5SWRGZDB2NV1W7MBBRW2HNX"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWSWH9Y4B8S2ADQCGPYQ1E",
+        "id": "01M6HNXZYQHWQDGX54JVJMBNMA",
+        "link": "01M5SWSWK8J01FX6KN3X2YX1R2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRMXJ8PKYTXYE0VY667X9",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6HNNWFR1J2AHQRNKFTPME46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HNXZYQHWQDGX54JYGRE37F",
+  "type": "ops",
+  "v": 2
+}
