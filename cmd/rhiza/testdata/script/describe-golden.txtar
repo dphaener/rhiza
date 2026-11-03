@@ -6370,6 +6370,44 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "machine.show",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "description": "Whether the machine config file exists; false means trust is daily by default",
+            "type": "boolean"
+          },
+          "path": {
+            "description": "The machine config file, whether or not it exists",
+            "type": "string"
+          },
+          "trust": {
+            "description": "The machine's trust: dedicated when its config says so, else daily",
+            "enum": [
+              "daily",
+              "dedicated"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "file",
+          "path",
+          "trust"
+        ],
+        "type": "object"
+      },
+      "summary": "Show the machine's trust and the machine config file it came from, daily with no machine config; writes nothing",
+      "write": false
+    },
+    {
       "name": "mv",
       "request": {
         "additionalProperties": false,
