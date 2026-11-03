@@ -1,0 +1,40 @@
+{
+  "actor": "01M6G4X42XM68XXQR1YVSD4FG4",
+  "after": [
+    "01M6G41N6W4RJ36679RTTJCPS0"
+  ],
+  "at": "2026-11-03T08:06:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8f17c588 I ran go test ./cmd/rhiza -count=1 with run-start-queue, run-start, run-ship-change, headless-run-agent-tabs, describe-golden, run-continue-queue, all daemon-* scripts, and the scripts named in attempt 2's findings (run-agent-step, run-agent-tabs, build-tabs, plan-workflow, -pr, -open, -autonomous, -autonomous-left, arbiter-agent-tabs, run-agent-done). All of them pass. In run-start-queue, rhiza run start queues the run and says no daemon runs, so it waits for one. daemon --once under --max-runs 1 starts one run headless with no window new and leaves the other queued. With a free slot it starts the plan run queued on the draft, and the first queued run was on a backlog change set. --foreground drives the run in place in run-start and the other in-place scripts. roadmapapp TestPlanRunIsQueuedForTheDaemon and TestShipRunIsQueuedAutonomousWithAutoMode pass. The fix commit drops headlessSession from foreground start and resume and sets daemonDetach to unset REX_BLOCK. headless-run-agent-tabs checks that a run queued from another session and block opens its tabs in rhiza-repo. Rerun uncached, the internal/api TestRunStart|TestRunResume|TestRunAmend|TestDaemon tests pass. go vet and make self-check pass. A full go test ./... had every package pass except the timing budgets TestReadBudget, slice TestBudget and modelapp TestGeneratedModel. The machine's load average was about 20, and this leaf does not change the read path"
+        },
+        "handle": "run-start-through-daemon-verified",
+        "id": "01M6G73E64577DSYZTCN35E2EF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6G73E64577DSYZTCJYB9J5H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G73E64577DSYZTCJYB9J5H",
+        "id": "01M6G73HGM5ZR1HD1X76BSQXKW",
+        "link": "01M6G73HGM5ZR1HD1X75QSK6QB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESFPN50CY4ACP8PEQPKEA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FENEJE4B11EBYXDGP9T052",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6G73RPR183C7RJS9PJH35CW",
+  "type": "ops",
+  "v": 1
+}
