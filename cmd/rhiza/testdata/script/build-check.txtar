@@ -84,7 +84,7 @@ exec sh -c 'grep -c . .git/rhiza/runs/$(cat $WORK/runid).jsonl > $WORK/lines1; R
 cmp $WORK/lines1 $WORK/lines2
 
 # A finished run is checked too.
-exec sh -c 'touch $WORK/go && rhiza run resume $(cat $WORK/runid) --json'
+exec sh -c 'touch $WORK/go && rhiza run resume --foreground $(cat $WORK/runid) --json'
 stdout '"state": "succeeded"'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run build-check; echo exit=$?'
 stdout '^build-check passed: 2 leaves'

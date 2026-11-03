@@ -74,7 +74,7 @@ stdout '^[1-9]$'
 # Once the autonomous run is finished, the rule is refused again, before
 # the move is even checked.
 exec sh -c 'echo > $WORK/go'
-exec sh -c 'rhiza run resume $(cat $WORK/autorun)'
+exec sh -c 'rhiza run resume --foreground $(cat $WORK/autorun)'
 stdout 'succeeded$'
 exec rhiza change new 'Later' --json
 exec rhiza propose

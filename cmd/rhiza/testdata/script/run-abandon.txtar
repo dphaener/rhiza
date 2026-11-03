@@ -41,10 +41,10 @@ exec sh -c 'git branch --list "cs/*" | wc -l'
 stdout '^ *0$'
 
 # Resume, retry and a second abandon are refused with exit 2, naming the run.
-exec sh -c 'rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
+exec sh -c 'rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
 stdout '^exit=2$'
 stdout '01M5PWGJC82P7YGZTWYFFZ0VJG was abandoned'
-exec sh -c 'rhiza run resume --retry 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
+exec sh -c 'rhiza run resume --foreground --retry 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
 stdout '^exit=2$'
 stdout 'was abandoned'
 exec sh -c 'rhiza run abandon 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'

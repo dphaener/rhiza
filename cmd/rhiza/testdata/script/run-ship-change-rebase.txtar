@@ -73,7 +73,7 @@ exec touch $WORK/move-main
 exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 stdout '^exit=0$'
-exec sh -c 'rhiza run approve; echo exit=$?'
+exec sh -c 'rhiza run approve --foreground; echo exit=$?'
 stdout '^exit=0$'
 stdout '^Run \S+ succeeded$'
 # Main had not moved before the land; it had before the merge, and the
@@ -148,7 +148,7 @@ cd $WORK/repo2
 
 exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json
 stdout '"signoff_waiting": true'
-! exec rhiza run approve
+! exec rhiza run approve --foreground
 stdout '^Run \S+ failed$'
 stdout '^- Detail: step "rebase" ended with outcome "fail"$'
 stderr '^Rebasing cs/ship-two onto origin/main at [0-9a-f]{7} conflicts in:$'
@@ -261,7 +261,7 @@ exec touch $WORK/move-main
 
 exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
 stdout '"signoff_waiting": true'
-exec sh -c 'rhiza run approve; echo exit=$?'
+exec sh -c 'rhiza run approve --foreground; echo exit=$?'
 stdout '^exit=0$'
 stdout '^Run \S+ succeeded$'
 stderr '^Rebased cs/ship-it onto origin/main at [0-9a-f]{7}\.$'
@@ -325,7 +325,7 @@ exec touch $WORK/move-main
 
 exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json
 stdout '"signoff_waiting": true'
-! exec rhiza run approve
+! exec rhiza run approve --foreground
 stdout '^Run \S+ failed$'
 stdout '^- Detail: step "rebase-merge" ended with outcome "fail"$'
 stderr '^- feature\.txt$'

@@ -94,7 +94,7 @@ stdout '^exit=0$'
 
 # The owner approves: the run ends done, and the change set is still
 # accepted, not landed.
-exec sh -c 'rhiza run approve --json; echo exit=$?'
+exec sh -c 'rhiza run approve --foreground --json; echo exit=$?'
 stdout '^exit=0$'
 exec rhiza run status --json
 stdout '"state": "succeeded"'

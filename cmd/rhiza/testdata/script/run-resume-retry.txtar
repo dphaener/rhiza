@@ -23,14 +23,14 @@ stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG failed$'
 stdout '^- two \(visit 1\): fail, then end: exit 1$'
 
 # A plain resume refuses the finished run and points at --retry.
-! exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG
+! exec rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG
 stderr 'run 01M5PWGJC82P7YGZTWYFFZ0VJG is finished: it failed'
 stderr 'next: rhiza run resume --retry 01M5PWGJC82P7YGZTWYFFZ0VJG'
-exec sh -c 'rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG 2>/dev/null; echo exit=$?'
+exec sh -c 'rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG 2>/dev/null; echo exit=$?'
 stdout '^exit=3$'
 
 # A dry run of the retry names the step and writes nothing.
-exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG --retry --dry-run
+exec rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG --retry --dry-run
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG would be retried at step two$'
 stdout 'nothing was written or run'
 exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG
@@ -39,7 +39,7 @@ stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG failed$'
 
 # The cause is fixed; the retry reruns step two only, and the run succeeds.
 exec sh -c 'echo > $WORK/input'
-exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG --retry
+exec rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG --retry
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
 exec sh -c 'wc -l < $WORK/count'
 stdout '^ *1$'
@@ -58,11 +58,11 @@ stdout '"step": "two"'
 stdout '"retry": true'
 
 # A run that succeeded cannot be retried, and plain resume still refuses it.
-! exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG --retry
+! exec rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG --retry
 stderr 'run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded: only a failed run can be retried'
-exec sh -c 'rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG --retry 2>/dev/null; echo exit=$?'
+exec sh -c 'rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG --retry 2>/dev/null; echo exit=$?'
 stdout '^exit=3$'
-! exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG
+! exec rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG
 stderr 'run 01M5PWGJC82P7YGZTWYFFZ0VJG is finished: it succeeded'
 exec sh -c 'wc -l < $WORK/count'
 stdout '^ *1$'

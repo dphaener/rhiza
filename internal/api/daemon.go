@@ -522,6 +522,19 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	if !low && !paused {
 		resumable = daemon.Resumable(runs, host, nil, rs.Live, accepted, ctx.Now())
 	}
+	// The owner's queued continuations are started below, within max; the
+	// daemon's own resume of an interrupted run leaves those runs to them.
+	var queuedRuns []string
+	if !low && !paused {
+		if common, err := gitCommonDir(ctx); err == nil {
+			if q, err := daemon.ReadContinues(common); err == nil {
+				for _, c := range q {
+					queuedRuns = append(queuedRuns, c.Run)
+				}
+			}
+		}
+	}
+	resumable = slices.DeleteFunc(resumable, func(id string) bool { return slices.Contains(queuedRuns, id) })
 	for _, id := range resumable {
 		// Journal the resume before the tab opens: a resume is tried once.
 		if err := rs.Append(id, run.Entry{Type: run.TypeDaemonResumed, At: ctx.Now(), Detail: "resumed by the daemon"}); err != nil {
@@ -616,6 +629,12 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 			running++
 		}
 	}
+	continued, err := daemonQueuedContinues(ctx, rs, runs, running, max)
+	resumed = append(resumed, continued...)
+	if err != nil {
+		return started, resumed, nil, err
+	}
+	running += len(continued)
 	queued, err := daemonQueuedStarts(ctx, rs, pending, runs, running, max, mode)
 	started = append(started, queued...)
 	if err != nil {
@@ -696,6 +715,56 @@ func daemonStartQueued(ctx *Ctx, s daemon.Start, mode string) error {
 		args = append(args, "--autonomous")
 	}
 	return daemonDetach(ctx, "a run of "+s.Change, s.Change, args)
+}
+
+// daemonQueuedContinues continues the runs the owner queued with rhiza run
+// resume, approve and request-changes, oldest first, while fewer than max
+// runs run: each as a detached rhiza run resume --foreground process. They
+// are the owner's actions, not picks. An entry whose run is gone, finished
+// (a retry's excepted) or live is dropped. It returns the runs continued.
+func daemonQueuedContinues(ctx *Ctx, rs *run.Store, runs []run.Journal, running, max int) ([]string, error) {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var continued []string
+	err = daemon.UpdateContinues(common, func(queue []daemon.Continue) ([]daemon.Continue, error) {
+		var keep []daemon.Continue
+		for _, c := range queue {
+			i := slices.IndexFunc(runs, func(j run.Journal) bool { return j.ID == c.Run })
+			if i < 0 || rs.Live(c.Run) {
+				continue
+			}
+			if st := runs[i].State(); st.Ended && !c.Retry {
+				continue
+			}
+			if running >= max {
+				keep = append(keep, c)
+				continue
+			}
+			args := []string{"run", "resume", "--foreground", c.Run}
+			if c.Retry {
+				args = append(args, "--retry")
+			}
+			if c.NoWait {
+				args = append(args, "--no-wait")
+			}
+			if err := daemonDetach(ctx, "run "+c.Run, c.Run, args); err != nil {
+				return nil, err
+			}
+			continued = append(continued, c.Run)
+			running++
+		}
+		return keep, nil
+	})
+	if err != nil {
+		var e *Error
+		if errors.As(err, &e) {
+			return continued, err
+		}
+		return continued, Errorf("read queued continuations: %v", err)
+	}
+	return continued, nil
 }
 
 // daemonDiskLow reports whether free space on the repo's filesystem is under

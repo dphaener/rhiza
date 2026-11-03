@@ -52,7 +52,7 @@ stdout '^1$'
 ! exec cat $WORK/order.log
 
 # The owner asks for changes on leaf thing.
-exec sh -c 'rhiza run request-changes $WORK/changes.json; echo exit=$?'
+exec sh -c 'rhiza run request-changes --foreground $WORK/changes.json; echo exit=$?'
 stdout '^exit=0$'
 exec cat $WORK/claude.log
 stdout '\Arole=check check=alpha cycle=1 leaf=\nrole=fixer check= cycle=2 leaf=thing findings=yes\nrole=verifier check= cycle=2 leaf=thing\nrole=check check=alpha cycle=2 leaf=\n\z'
@@ -72,14 +72,14 @@ cd $WORK/pr-clone
 exec rhiza check
 cd $WORK/repo
 
-exec sh -c 'rhiza run approve; echo exit=$?'
+exec sh -c 'rhiza run approve --foreground; echo exit=$?'
 stdout '^exit=0$'
 stdout '^Run [0-9A-Z]{26} succeeded$'
 exec cat $WORK/order.log
 stdout '\Alanded\n\z'
-exec sh -c 'rhiza run approve; echo exit=$?'
+exec sh -c 'rhiza run approve --foreground; echo exit=$?'
 stdout '^exit=2$'
-exec sh -c 'rhiza run request-changes $WORK/changes.json; echo exit=$?'
+exec sh -c 'rhiza run request-changes --foreground $WORK/changes.json; echo exit=$?'
 stdout '^exit=2$'
 fold-ok
 
@@ -90,7 +90,7 @@ exec touch $WORK/ci.fail
 stdout '^Run \S+ failed$'
 stdout '^- Detail: step "pr-green" ended with outcome "fail"$'
 stderr 'failed: test'
-exec sh -c 'rhiza run approve; echo exit=$?'
+exec sh -c 'rhiza run approve --foreground; echo exit=$?'
 stdout '^exit=2$'
 rm $WORK/ci.fail
 

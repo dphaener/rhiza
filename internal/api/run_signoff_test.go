@@ -148,7 +148,7 @@ func TestSignoffUnderLockHeld(t *testing.T) {
 	defer unlock()
 	_, err = sr.signoff(f.ctx, run.Entry{
 		Type: run.TypeSignoff, At: f.ctx.Now(), Step: "signoff", Visit: 1, Actor: "ada", Rule: run.RuleOwner, Outcome: run.SignoffApproved,
-	}, "")
+	}, "", true)
 	wantExit(t, err, 3)
 	if !strings.Contains(AsError(err).Message, "running in another process") {
 		t.Errorf("message %q", AsError(err).Message)
@@ -175,13 +175,13 @@ func TestSignoffRecheckedUnderLock(t *testing.T) {
 	// goes on to its end.
 	if _, err := first.signoff(f.ctx, run.Entry{
 		Type: run.TypeSignoff, At: f.ctx.Now(), Step: "signoff", Visit: 1, Actor: "ada", Rule: run.RuleOwner, Outcome: run.SignoffApproved,
-	}, ""); err != nil {
+	}, "", true); err != nil {
 		t.Fatal(err)
 	}
 	_, err = second.signoff(f.ctx, run.Entry{
 		Type: run.TypeSignoff, At: f.ctx.Now(), Step: "signoff", Visit: 1, Actor: "ada", Rule: run.RuleOwner, Outcome: run.SignoffChanges,
 		Findings: []run.Finding{{ID: "f1", Check: "alpha", Severity: "major", Place: "a.go:1", Reason: "no"}},
-	}, "review")
+	}, "review", true)
 	wantExit(t, err, 2)
 	if !strings.Contains(AsError(err).Message, "is finished") {
 		t.Errorf("message %q", AsError(err).Message)
@@ -208,7 +208,7 @@ func TestSignoffAlreadySignedUnderLock(t *testing.T) {
 	}
 	_, err = sr.signoff(f.ctx, run.Entry{
 		Type: run.TypeSignoff, At: f.ctx.Now(), Step: "signoff", Visit: 1, Actor: "ada", Rule: run.RuleOwner, Outcome: run.SignoffApproved,
-	}, "")
+	}, "", true)
 	wantExit(t, err, 2)
 	if !strings.Contains(AsError(err).Message, "already signed off") {
 		t.Errorf("message %q", AsError(err).Message)
@@ -221,7 +221,7 @@ func TestSignoffAlreadySignedUnderLock(t *testing.T) {
 // A sign-off still waiting when the lock is taken is journalled once.
 func TestSignoffUnderLockJournalsOnce(t *testing.T) {
 	f, rs := signoffRaceFixture(t)
-	resp, err := callOp(t, f.ctx, "run.approve", `{"run":"`+signoffRaceRun+`"}`)
+	resp, err := callOp(t, f.ctx, "run.approve", `{"run":"`+signoffRaceRun+`","foreground":true}`)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -43,7 +43,7 @@ stdout -count=1 '^one autonomous=1$'
 
 # A resume without the flag keeps it: step two's agent has it too.
 exec sh -c 'echo > $WORK/go'
-exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG
+exec rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
 stdout '^- Autonomous: yes$'
 exec cat $WORK/agents.log

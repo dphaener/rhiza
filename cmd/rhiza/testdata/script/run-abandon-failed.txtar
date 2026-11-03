@@ -49,10 +49,10 @@ exec rhiza inbox
 stdout '^Nothing waits on you$'
 
 # Resume, retry and a second abandon exit 2, naming the run.
-exec sh -c 'rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
+exec sh -c 'rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
 stdout '^exit=2$'
 stdout '01M5PWGJC82P7YGZTWYFFZ0VJG was abandoned'
-exec sh -c 'rhiza run resume --retry 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
+exec sh -c 'rhiza run resume --foreground --retry 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
 stdout '^exit=2$'
 stdout '01M5PWGJC82P7YGZTWYFFZ0VJG was abandoned'
 exec sh -c 'rhiza run abandon 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'

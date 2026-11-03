@@ -23,12 +23,12 @@ exec cat $WORK/count
 stdout -count=1 '^one$'
 
 # Resuming before the flag exists stops again, step one still counted once.
-exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG --no-wait
+exec rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG --no-wait
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG stopped$'
 
 # With the flag, the resume finishes the run without re-running step one.
 exec sh -c 'echo > $WORK/go'
-exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG
+exec rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
 stdout '^- one \(visit 1\): pass, then two: exit 0$'
 stdout '^- two \(visit 1\): pass, then end: held after [0-9]+ checks$'
@@ -36,10 +36,10 @@ exec sh -c 'wc -l < $WORK/count'
 stdout '^ *1$'
 
 # A finished run cannot be resumed.
-! exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG
+! exec rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG
 stderr 'run 01M5PWGJC82P7YGZTWYFFZ0VJG is finished: it succeeded'
 stderr 'next: rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG'
-exec sh -c 'rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG 2>/dev/null; echo exit=$?'
+exec sh -c 'rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG 2>/dev/null; echo exit=$?'
 stdout '^exit=3$'
 exec sh -c 'wc -l < $WORK/count'
 stdout '^ *1$'

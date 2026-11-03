@@ -97,7 +97,7 @@ cmp $WORK/lines1 $WORK/lines2
 
 # As the run's command step it passes, so the run succeeds; the journal
 # has the step's code check, and run status shows it.
-exec sh -c 'touch $WORK/go && rhiza run resume $(cat $WORK/runid) --json'
+exec sh -c 'touch $WORK/go && rhiza run resume --foreground $(cat $WORK/runid) --json'
 stdout '"state": "succeeded"'
 exec sh -c 'grep "\"type\":\"code-check\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl | tail -1'
 stdout '"step":"code","outcome":"pass"'

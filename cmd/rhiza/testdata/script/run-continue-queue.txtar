@@ -1,0 +1,141 @@
+# rhiza run resume, run approve and run request-changes record the owner's
+# action and queue the run's continuation in .git/rhiza/continues.json
+# instead of driving the run: they say it waits for the daemon. `rhiza
+# daemon --once` then continues a queued run as a detached `run resume
+# --foreground` process within --max-runs, with no Rex tab; --foreground on
+# each drives the run in place.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
+exec git add -A
+exec git commit -qm review
+
+# Two review runs wait at their sign-offs.
+exec rhiza change new One --title One
+exec rhiza add capability one-thing
+exec git add -A
+exec git commit -qm one
+exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json'
+exec sh -c 'ls .git/rhiza/runs | sed "s/\..*//"'
+cp stdout $WORK/run1
+exec rhiza change new Two --title Two
+exec rhiza add capability two-thing
+exec git add -A
+exec git commit -qm two
+exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json'
+exec sh -c 'ls -t .git/rhiza/runs | sed "s/\..*//" | head -1'
+cp stdout $WORK/run2
+
+# A dry run queues and journals nothing.
+exec sh -c 'rhiza run approve --dry-run --json "$(cat $WORK/run1)"'
+stdout '"dry_run": true'
+! exists .git/rhiza/continues.json
+
+# Approve journals the sign-off and queues; no daemon runs, so it waits.
+exec sh -c 'rhiza run approve "$(cat $WORK/run1)"'
+stdout '^Sign-off: signoff \(visit 1\): approved by test$'
+stdout 'Queued the continuation of run [0-9A-Z]{26} for the daemon: no daemon runs, so it waits for one'
+exec sh -c 'grep -c "\"outcome\":\"approved\"" .git/rhiza/runs/$(cat $WORK/run1).jsonl'
+stdout '^1$'
+exec sh -c 'rhiza run status --json "$(cat $WORK/run1)"'
+! stdout '"state": "succeeded"'
+
+# resume queues too; a run with a continuation queued refuses another and
+# journals nothing.
+exec sh -c 'rhiza run resume "$(cat $WORK/run2)"'
+stdout 'Queued the continuation of run [0-9A-Z]{26} for the daemon: no daemon runs, so it waits for one'
+exec sh -c 'wc -l < .git/rhiza/runs/$(cat $WORK/run2).jsonl'
+cp stdout $WORK/run2.lines
+exec sh -c 'rhiza run request-changes $WORK/changes.json "$(cat $WORK/run2)" 2>&1; echo exit=$?'
+stdout 'already has a continuation queued'
+stdout '^exit=2$'
+exec sh -c 'wc -l < .git/rhiza/runs/$(cat $WORK/run2).jsonl'
+cmp stdout $WORK/run2.lines
+exec sh -c 'grep -c "\"run\"" .git/rhiza/continues.json'
+stdout '^2$'
+
+exec sh -c 'grep -c "window new" $WORK/rex.log || true'
+cp stdout $WORK/windows.before
+
+# Under --max-runs 1 the daemon continues the oldest only: headless, no
+# Rex tab, output in the run's log file.
+exec rhiza daemon --permission-mode manual --max-runs 1 --once
+stdout -count=1 '^Resumed run '
+exec sh -c 'grep -c "window new" $WORK/rex.log || true'
+cmp stdout $WORK/windows.before
+exec sh -c 'grep -c "\"run\"" .git/rhiza/continues.json'
+stdout '^1$'
+exec sh -c 'for i in $(seq 1 100); do rhiza run status --json "$(cat $WORK/run1)" | grep -q "\"state\": \"succeeded\"" && break; sleep 0.1; done; rhiza run status --json "$(cat $WORK/run1)"'
+stdout '"state": "succeeded"'
+exec sh -c 'ls .git/rhiza/logs/"$(cat $WORK/run1)".log'
+
+# --foreground drives in place.
+exec sh -c 'rhiza run resume --foreground "$(cat $WORK/run2)" --dry-run --json'
+stdout '"dry_run": true'
+! stdout '"queued"'
+-- changes.json --
+{"findings":[{"check":"alpha","severity":"major","place":"one.txt:1","reason":"say more"}]}
+-- review.toml --
+[step.review]
+kind = "checks"
+interval = "50ms"
+max_visits = 2
+on.pass = "signoff"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+
+[step.signoff]
+kind = "signoff"
+max_visits = 2
+on.pass = "done"
+on.changes = "review"
+-- empty-round.json --
+{"findings":[]}
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+if [ "$1 $2" = "session ls" ]; then
+  echo '{"sessions":[{"session_id":"session:1","label":"rhiza-repo"}]}'
+  exit 0
+fi
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+case "$RHIZA_ROLE" in
+check)
+	rhiza run findings --check "$RHIZA_CHECK" "$WORK/empty-round.json" >&2 || exit 1
+	;;
+esac
+exit 0

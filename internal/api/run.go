@@ -60,7 +60,7 @@ func init() {
 	})
 	register(Operation{
 		Name:     "run.resume",
-		Summary:  "Continue a stopped or interrupted run where its journal left it, or retry a failed run at its failed step",
+		Summary:  "Queue the continuation of a stopped or interrupted run for the daemon, which drives it headless where its journal left it, or retries a failed run at its failed step; --foreground drives it in this process",
 		Write:    true,
 		Request:  reflect.TypeFor[RunResumeRequest](),
 		Response: reflect.TypeFor[RunResponse](),
@@ -154,7 +154,7 @@ type RunResponse struct {
 	Run    RunInfo `json:"run" desc:"The run as its journal stands; the command exits 1 when the run failed"`
 	DryRun bool    `json:"dry_run,omitempty" desc:"True if nothing was written or run"`
 	Retry  string  `json:"retry,omitempty" desc:"The step a resume --retry restarted the failed run at, or in a dry run would; absent otherwise"`
-	Queued bool    `json:"queued,omitempty" desc:"True when run start queued the run for the daemon rather than driving it: the run has no ID yet, and the daemon starts it headless; absent otherwise"`
+	Queued bool    `json:"queued,omitempty" desc:"True when run start or run resume queued the run for the daemon rather than driving it: a started run has no ID yet, and the daemon drives it headless; absent otherwise"`
 	Daemon string  `json:"daemon,omitempty" desc:"With queued: the daemon's process, as host:pid; empty when no daemon runs and the run waits for one"`
 }
 
@@ -865,13 +865,22 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 			j.Entries = append(j.Entries, run.Entry{Type: run.TypeRetried, At: ctx.Now(), Step: retryStep, Detail: st.Detail})
 			st = j.State()
 		}
-		return RunResponse{Run: runInfo(ctx, st, false, session.NewStore(session.Dir(common))), DryRun: true, Retry: retryStep}, nil
+		return RunResponse{Run: runInfo(ctx, st, false, session.NewStore(session.Dir(common))), DryRun: true, Retry: retryStep, Queued: !r.Foreground}, nil
 	}
 	if err := refuseAgentSession(ctx, "resume"); err != nil {
 		return nil, err
 	}
 	if err := canRun(ctx, def); err != nil {
 		return nil, err
+	}
+	if !r.Foreground {
+		resp, err := queueContinue(ctx, common, j.ID, r.Retry, r.NoWait)
+		if err != nil {
+			return nil, err
+		}
+		resp.Run = runInfo(ctx, st, false, session.NewStore(session.Dir(common)))
+		resp.Retry = retryStep
+		return resp, nil
 	}
 	if err := headlessSession(ctx, r.Foreground); err != nil {
 		return nil, err
@@ -881,6 +890,32 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	resp.Retry = retryStep
+	return resp, nil
+}
+
+// queueContinue queues the continuation of run id for the daemon, which
+// drives it headless within its maxRuns as rhiza run resume --foreground.
+// It is the owner's action, not a pick: no state or milestone filter
+// applies. A run with a continuation already queued is refused. The response
+// holds only Queued and Daemon; the caller adds the run.
+func queueContinue(ctx *Ctx, common, id string, retry, noWait bool) (RunResponse, error) {
+	err := daemon.UpdateContinues(common, func(cs []daemon.Continue) ([]daemon.Continue, error) {
+		if slices.ContainsFunc(cs, func(c daemon.Continue) bool { return c.Run == id }) {
+			return nil, Usagef("run %s already has a continuation queued for the daemon", id).WithNext("rhiza daemon status")
+		}
+		return append(cs, daemon.Continue{Run: id, Retry: retry, NoWait: noWait, At: ctx.Now().UTC()}), nil
+	})
+	if err != nil {
+		var e *Error
+		if errors.As(err, &e) {
+			return RunResponse{}, err
+		}
+		return RunResponse{}, Errorf("queue the continuation: %v", err)
+	}
+	resp := RunResponse{Queued: true}
+	if h, up := daemon.Running(common); up {
+		resp.Daemon = h.String()
+	}
 	return resp, nil
 }
 
@@ -2580,8 +2615,23 @@ func addTokens(sum *SessionTokens, t SessionTokens) {
 	sum.CacheRead += t.CacheRead
 }
 
+// queuedDaemon ends the line of a queued action: which daemon takes it, or
+// that none runs.
+func queuedDaemon(w io.Writer, holder string) {
+	if holder == "" {
+		fmt.Fprintf(w, ": no daemon runs, so it waits for one (rhiza daemon)\n")
+	} else {
+		fmt.Fprintf(w, ": daemon %s continues it headless\n", holder)
+	}
+}
+
 // Human reports the run, or the plan of a dry run.
 func (r RunResponse) Human(w io.Writer) {
+	if r.Queued && !r.DryRun && r.Run.ID != "" {
+		fmt.Fprintf(w, "Queued the continuation of run %s for the daemon", r.Run.ID)
+		queuedDaemon(w, r.Daemon)
+		return
+	}
 	if r.Queued && !r.DryRun {
 		fmt.Fprintf(w, "Queued a %s run of %s for the daemon", r.Run.Workflow, r.Run.Change)
 		if r.Daemon == "" {

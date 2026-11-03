@@ -690,14 +690,16 @@ func runInboxOpen(ctx *Ctx, req any) (any, error) {
 
 // InboxApproveRequest names the sign-off item to approve.
 type InboxApproveRequest struct {
-	Item string `json:"item" arg:"0" desc:"The inbox item: its short ID from rhiza inbox, or a unique prefix of it; it must be a sign-off"`
+	Item       string `json:"item" arg:"0" desc:"The inbox item: its short ID from rhiza inbox, or a unique prefix of it; it must be a sign-off"`
+	Foreground bool   `json:"foreground,omitempty" desc:"Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts"`
 }
 
 // InboxRequestChangesRequest names the sign-off item and the file of the
 // owner's findings.
 type InboxRequestChangesRequest struct {
-	Item string `json:"item" arg:"0" desc:"The inbox item: its short ID from rhiza inbox, or a unique prefix of it; it must be a sign-off"`
-	File string `json:"file" arg:"1" desc:"A JSON file of the owner's findings, or - for stdin (see the input schema)"`
+	Item       string `json:"item" arg:"0" desc:"The inbox item: its short ID from rhiza inbox, or a unique prefix of it; it must be a sign-off"`
+	File       string `json:"file" arg:"1" desc:"A JSON file of the owner's findings, or - for stdin (see the input schema)"`
+	Foreground bool   `json:"foreground,omitempty" desc:"Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts"`
 }
 
 // signoffItemRun is the run of the sign-off item ref names. Any other
@@ -729,7 +731,7 @@ func runInboxApprove(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	return runRunApprove(ctx, RunApproveRequest{Run: id})
+	return runRunApprove(ctx, RunApproveRequest{Run: id, Foreground: r.Foreground})
 }
 
 // runInboxRequestChanges asks for changes on the run an inbox sign-off
@@ -740,5 +742,5 @@ func runInboxRequestChanges(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	return runRunRequestChanges(ctx, RunRequestChangesRequest{File: r.File, Run: id})
+	return runRunRequestChanges(ctx, RunRequestChangesRequest{File: r.File, Run: id, Foreground: r.Foreground})
 }

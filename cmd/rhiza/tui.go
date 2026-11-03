@@ -111,9 +111,6 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 			}
 			return call(op, false, false, args)
 		})
-		if ctx, err := newCtx(g, os.Stdin, getenv); err == nil {
-			im.Exec, im.Self, im.Root, im.RexSession = ctx.Exec, ctx.Self, ctx.Root, ctx.RexSession
-		}
 		return im
 	}
 	liveModel := func() *liveapp.Model {
