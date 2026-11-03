@@ -14,7 +14,7 @@ exec git add -A
 exec git commit -qm init
 exec sh -c 'git rev-parse HEAD > ../built.sha'
 
-exec sh -c 'RHIZA_TEST_COMMIT=$(cat ../built.sha) rhiza daemon --permission-mode manual' &daemon&
+exec sh -c 'RHIZA_TEST_COMMIT=$(cat ../built.sha) exec rhiza daemon --permission-mode manual' &daemon&
 exec sh -c 'for i in $(seq 100); do grep -q commit .git/rhiza/daemon.state.json && exit 0; sleep 0.1; done; exit 1'
 
 # The status carries the commit, in text and --json.
