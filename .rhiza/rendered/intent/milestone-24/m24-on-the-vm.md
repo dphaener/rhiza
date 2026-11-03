@@ -11,6 +11,7 @@ This repo's Rhiza installation runs on a dedicated Ubuntu Server 26 VM on Proxmo
 ### In
 
 - serves change set `01M6FSQG5W0V2D5PFJT8CHK3DV` (Fix: Claude Code sessions stop at the folder-trust prompt in a new git repo: before starting an interactive session, the claudecode adapter should set projects[<main checkout root>].hasTrustDialogAccepted=true in ~/.claude.json (as afk internal/provider/trust.go TrustFolder does), so new projects never need the owner to trust them)
+- serves change set `01M6GCPSMFW8G6MXXNW6Y5J0Q6` (Fix: Request plan runs fail at close-out: the daemon writes the new change set's first .rhiza/log entries untracked into the main checkout, so after the plan PR merges close-out's git pull --ff-only refuses to overwrite them (run 01M6FSQBBJYK). The plan run's log entries should be written only in its worktree, or close-out should drop untracked log files identical to the incoming ones before pulling; and a retried close-out must not fail because the first visit forgot the ship state)
 
 ## History
 

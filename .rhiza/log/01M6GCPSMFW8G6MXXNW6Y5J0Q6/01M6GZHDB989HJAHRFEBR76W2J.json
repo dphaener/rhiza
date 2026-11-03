@@ -1,0 +1,63 @@
+{
+  "actor": "01M6GZB2REZY50EMYQ1SZQ2MTQ",
+  "after": [
+    "01M6GZ8JBE0JV94MY8P2VQH5FE"
+  ],
+  "at": "2026-11-03T15:13:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At bf5b09b2 I built rhiza into a scratch dir and ran it by hand in a scratch repo with a bare origin, RHIZA_* unset. I opened a change set with change new in the main checkout, which left two untracked .rhiza/log dirs. I copied them into a git worktree on branch cs, added a feature commit, pushed it, and squash-merged it into origin/main from a second clone. ship close-out --forget exited 0 with main_updated true and update-main done. Main HEAD equalled origin/main, git status was clean, and the log entries were tracked. Second case: I appended bytes to one untracked log file that origin/main also held. close-out exited 1 with update-main failed, and the detail named that file. The file stayed untracked with its tampered bytes (cmp equal). The matching copies beside it were dropped. Third case: an untracked .rhiza/log/stray.json that origin lacks stayed put, and close-out still updated main. go test ./cmd/rhiza -run TestScripts/ship-close-out -count=1 passes."
+        },
+        "handle": "close-out-drops-log-copies-qa-1",
+        "id": "01M6GZGFB67X0R8GRCXMZGAG9S",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6GZGFB67X0R8GRCXJ6HEMA6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GZGFB67X0R8GRCXJ6HEMA6",
+        "id": "01M6GZGPJCA64T6YY8MRP625ZR",
+        "link": "01M6GZGPJCA64T6YY8MPJ005PJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GD438PP0YPH7YYYZT2HAT4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At bf5b09b2, with a scratch build in a scratch repo: ship close-out --forget failed at update-main (exit 1, main_updated false) because a differing untracked log file blocked the pull, and .git/rhiza/ship/<cs>.json was still there. I removed the blocking file and re-ran the same ship close-out --forget. It exited 0 with main_updated true, main HEAD equal to origin/main, and the state file gone. In the first case, a successful --forget close-out also removed its state file."
+        },
+        "handle": "close-out-retry-after-forget-qa-1",
+        "id": "01M6GZGX7DFRKH9M31JQQDY80N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6GZGX7DFRKH9M31JPAJKS3X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GZGX7DFRKH9M31JPAJKS3X",
+        "id": "01M6GZH5E5AE67TACDZYHRF0Q2",
+        "link": "01M6GZH5E5AE67TACDZX2BM71W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GD4DWDYX2T29SPWWRY2DF6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6GCPSMFW8G6MXXNW6Y5J0Q6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GZHDB989HJAHRFEBR76W2J",
+  "type": "ops",
+  "v": 1
+}

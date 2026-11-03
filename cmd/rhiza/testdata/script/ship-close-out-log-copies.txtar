@@ -1,0 +1,55 @@
+# ship close-out drops the main checkout's untracked .rhiza/log files that
+# origin/main holds byte for byte, so a change set opened in the main
+# checkout updates main once its PR is merged. An untracked log file whose
+# bytes differ stays, and update-main fails.
+
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec git push -q -u origin main
+
+# The change set is opened here: its first entries are untracked.
+exec rhiza change new 'Opened in main' --json
+exec git status --porcelain
+stdout '^\?\? \.rhiza/log/'
+
+# Merged elsewhere: a clone commits the same files and pushes them.
+exec git clone -q $WORK/origin.git $WORK/other
+exec sh -c 'cp -R .rhiza/log/. $WORK/other/.rhiza/log/'
+exec git -C $WORK/other add -A
+exec git -C $WORK/other commit -qm merged
+exec git -C $WORK/other push -q origin main
+
+exec sh -c 'cs=$(ls .rhiza/log | tail -1); mkdir -p .git/rhiza/ship; printf "{\"pr\":7,\"merge_commit\":\"abc\"}" > .git/rhiza/ship/$(rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p").json'
+exec rhiza ship close-out --json
+stdout '"main_updated": true'
+exec git rev-parse HEAD
+cp stdout ../head
+exec git -C $WORK/other rev-parse HEAD
+cmp stdout ../head
+exec git status --porcelain
+! stdout '\.rhiza/log'
+
+# A differing untracked file stays and fails the update.
+exec rhiza change new 'Second' --json
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/id2'
+exec sh -c 'cd $WORK/other && git pull -q && cp -R $WORK/repo/.rhiza/log/. .rhiza/log/ && for f in $(git ls-files -o --exclude-standard .rhiza/log); do echo extra >> $f; done; git add -A; git commit -qm second; git push -q origin main'
+exec sh -c 'mkdir -p .git/rhiza/ship; printf "{\"pr\":8,\"merge_commit\":\"abc\"}" > .git/rhiza/ship/$(cat $WORK/id2).json'
+exec git ls-files -o --exclude-standard .rhiza/log
+cp stdout ../untracked
+stdout '\.rhiza/log/'
+exec sh -c 'mkdir $WORK/before && git ls-files -o --exclude-standard .rhiza/log | while read f; do mkdir -p $WORK/before/$(dirname $f) && cp $f $WORK/before/$f; done'
+! exec rhiza ship close-out --json
+stdout '"main_updated": false'
+stdout '"step": "update-main"'
+stdout '"result": "failed"'
+
+# The differing files are still untracked, with the same bytes.
+exec git ls-files -o --exclude-standard .rhiza/log
+cmp stdout ../untracked
+exec sh -c 'cd $WORK/before && for f in $(find .rhiza -type f); do cmp $f $WORK/repo/$f || exit 1; done'
