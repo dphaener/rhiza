@@ -9,6 +9,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
+	"os"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -743,4 +745,91 @@ func (Adapter) Trust(current []byte, dirs []string) ([]byte, error) {
 		return nil, err
 	}
 	return append(out, '\n'), nil
+}
+
+// configDir returns the agent's config directory: $CLAUDE_CONFIG_DIR when
+// set, else $HOME/.claude; "" when neither is known.
+func configDir(getenv func(string) string) string {
+	if getenv == nil {
+		return ""
+	}
+	if dir := getenv("CLAUDE_CONFIG_DIR"); dir != "" {
+		return dir
+	}
+	if home := getenv("HOME"); home != "" {
+		return filepath.Join(home, ".claude")
+	}
+	return ""
+}
+
+// stampedUsage is a usageLine with its timestamp.
+type stampedUsage struct {
+	usageLine
+	Timestamp string `json:"timestamp"`
+}
+
+// UsageRecords implements adapter.UsageReader. It walks every .jsonl file
+// under <config>/projects, which holds sessions and, deeper, their helpers'
+// transcripts, and reads nothing outside it. Input, output and
+// cache-creation tokens count; cache reads never do. A message repeated
+// across lines or files counts once, at its earliest timestamp, and a line
+// with no id counts on its own.
+func (Adapter) UsageRecords(getenv func(string) string, from, to time.Time) ([]adapter.UsageRecord, error) {
+	config := configDir(getenv)
+	if config == "" {
+		return nil, nil
+	}
+	root := filepath.Join(config, "projects")
+	if _, err := os.Stat(root); err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	var recs []adapter.UsageRecord
+	byID := map[string]int{}
+	_ = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil || !d.Type().IsRegular() || filepath.Ext(path) != ".jsonl" {
+			return nil
+		}
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil
+		}
+		for _, line := range bytes.Split(data, []byte("\n")) {
+			line = bytes.TrimSpace(line)
+			if len(line) == 0 || line[0] != '{' {
+				continue
+			}
+			var l stampedUsage
+			if json.Unmarshal(line, &l) != nil || l.Type != "assistant" || l.Message.Usage == nil {
+				continue
+			}
+			at, err := time.Parse(time.RFC3339Nano, l.Timestamp)
+			if err != nil {
+				continue
+			}
+			u := l.Message.Usage
+			rec := adapter.UsageRecord{At: at, Tokens: u.Input + u.Output + u.CacheCreation}
+			if id := l.Message.ID; id != "" {
+				if i, ok := byID[id]; ok {
+					if at.Before(recs[i].At) {
+						recs[i].At = at
+					}
+					continue
+				}
+				byID[id] = len(recs)
+			}
+			recs = append(recs, rec)
+		}
+		return nil
+	})
+	out := recs[:0]
+	for _, r := range recs {
+		if !r.At.Before(from) && r.At.Before(to) {
+			out = append(out, r)
+		}
+	}
+	sort.SliceStable(out, func(i, j int) bool { return out[i].At.Before(out[j].At) })
+	return out, nil
 }
