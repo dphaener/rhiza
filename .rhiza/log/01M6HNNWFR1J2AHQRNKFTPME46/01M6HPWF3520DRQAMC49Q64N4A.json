@@ -1,0 +1,41 @@
+{
+  "actor": "01M6HPTP8A4J030A430ERYZMH2",
+  "after": [
+    "01M6HPTH4F9V3NADKWMM7EVHJZ"
+  ],
+  "at": "2026-11-03T22:01:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding is right that text-references-shape (3) and text-ref-write disagree about engine writes, and both readings it offers break something. If only the CLI requests resolve, engine-written @handle text is stored literal and shown as @@handle, so the model no longer tells the truth about which nodes a question names, against model-tells-truth and references-by-id ('stored by ID and shown by handle'). If buildAdd refuses strictly everywhere, an ask or a note becomes a way to fail a run: this plan's own question question-ed7e1e54-1 asks about '@handle names no node', and questions, notes and answers carry prose quoting code, emails and hypothetical handles that an agent or the engine cannot be told to escape. Refusing is for writes whose author is shaping model nodes and can fix a handle (add, set, apply); a question or note exists to record something, and raising or answering it must not fail on wording, which is why rhiza ask and the arbiter flow must always succeed. Storing an unresolvable @word as a literal @ loses nothing: it is exactly what @@word would store, it round-trips through display, and rhiza check has nothing dangling to flag. Putting both modes in the one write path keeps one resolver (text-ref-syntax already returns unresolved references with offsets, so lenient mode only escapes them) instead of a second copy per caller. The ship_rebase.go:422 dedupe compares stored text to raw input, which stops matching once a reference is rewritten, so it must compare like with like by resolving the input first.",
+          "statement": "Resolution lives in the shared write path (buildAdd and buildSet), so every node write resolves references the same way and nothing written through it is later shown as @@word. It has two modes. Strict: the generic node writes rhiza add, rhiza set and the add and set items of rhiza apply refuse the whole write on an unresolvable reference, as text-references-shape (3) says. Lenient: every other write of free text, that is a session's question (rhiza ask, run.go), check, leaf and review questions, interview questions, rebase-conflict questions, the Decision written by question.answer and notes, resolves each reference that names a node it may refer to and stores it as @{<full ID>}, and stores each one that does not resolve as a literal @ (as if written @@), never refusing; the same verbatim-field exclusions apply in both modes, so question.answer's quote stays exact while its statement is resolved. The rebase-conflict question's dedupe (ship_rebase.go) compares the stored statement with the input after the same lenient resolution, not with the raw input. text-ref-write's acceptance adds: a run session's question whose text holds an @word naming no node is written, the run goes on, and it is shown as @@word; one holding @<existing handle> stores @{<full ID>}; rhiza note and question answer behave the same; and re-raising the same rebase conflict whose statement holds a resolvable reference writes nothing new.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "text-ref-engine-writes",
+        "id": "01M6HPW625P2Y1J7MZSDSWWFZG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6HPW625P2Y1J7MZSA8YQX4P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HPW625P2Y1J7MZSA8YQX4P",
+        "id": "01M6HPW9AJYY10KC47JWMEANDS",
+        "link": "01M6HPW9AJYY10KC47JW1YHTG0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HPT5MBMN2AP7QDHDZ74HP0",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6HNNWFR1J2AHQRNKFTPME46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HPWF3520DRQAMC49Q64N4A",
+  "type": "ops",
+  "v": 1
+}
