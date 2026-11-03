@@ -1635,6 +1635,40 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "daemon.install",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "description": "The unit file, absolute",
+            "type": "string"
+          },
+          "unit": {
+            "description": "The unit's name, such as rhiza-myrepo.service",
+            "type": "string"
+          },
+          "written": {
+            "description": "Whether the unit file changed; false if it was already current",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "path",
+          "unit",
+          "written"
+        ],
+        "type": "object"
+      },
+      "summary": "Run this repo's daemon as a systemd user service: write and enable the unit and turn on lingering",
+      "write": false
+    },
+    {
       "name": "daemon.set",
       "request": {
         "additionalProperties": false,
@@ -1973,6 +2007,40 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "Show the daemon of this repository: whether it runs, its settings, its live runs and what it last started or resumed",
+      "write": false
+    },
+    {
+      "name": "daemon.uninstall",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "description": "The unit file, absolute",
+            "type": "string"
+          },
+          "removed": {
+            "description": "Whether a unit file was removed; false if there was none",
+            "type": "boolean"
+          },
+          "unit": {
+            "description": "The unit's name, such as rhiza-myrepo.service",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "removed",
+          "unit"
+        ],
+        "type": "object"
+      },
+      "summary": "Stop, disable and remove this repo's systemd user service",
       "write": false
     },
     {

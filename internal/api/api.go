@@ -134,6 +134,9 @@ type Ctx struct {
 	// the program's trimmed standard error. Nil means no programs can be
 	// run: the operations that need one, such as session.start, fail.
 	Exec func(name string, args []string, dir string, env []string) ([]byte, error)
+	// LookPath finds a program on the caller's PATH, as exec.LookPath does.
+	// Nil means every program is missing: daemon.install finds no systemd.
+	LookPath func(file string) (string, error)
 	// Self is the absolute path of the running rhiza, for commands that
 	// must call it back, such as the command a session's terminal tab runs.
 	// Empty if unknown.
