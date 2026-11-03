@@ -1,0 +1,40 @@
+{
+  "actor": "01M6HC959TAAPPWBFERAM359PG",
+  "after": [
+    "01M6HCBV5KCB577N2N27C6M406"
+  ],
+  "at": "2026-11-03T19:33:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8f349a0e I ran go test ./internal/api -run TestDaemonPollCacheInvalidates -count=1: PASS. The test polls once, then for each of an accepted change set, a daemon setting change (rhiza.autonomy.ship owner->auto), a daemonStart, a moved ref and a daemonResume, it asserts through the ctx.readLog counter that the next poll reads the log again. It also asserts the poll acts on the change: the newly accepted change set is skipped under owner, then picked once the setting is auto. The fix for attempt-1 finding f1 holds: the setting step now asserts on pickReads, the reads taken before the start's detach. In scratch worktrees I made three mutations and each failed the test: (1) leaving the rhiza.* git config output out of daemonStamp fails at daemon_fold_test.go:311 (0 reads before the pick); (2) leaving the for-each-ref output out of daemonStamp fails at :327 (ref moved); (3) removing the daemonFold invalidate in the detach path fails at :320 (start) and :336 (resume). make fmt-check and vet pass. self-check fails only on unrendered actor files, which are expected before landing. In the full go test ./..., the only failures were timeouts and timing budgets under VM load around 12 on 4 cores with 35% steal. arbiter-agent-tabs, plan-workflow and index TestBudget pass when rerun alone. api TestReadBudget fails at base ebee728a too under the same load, so it is environmental and not caused by this leaf."
+        },
+        "handle": "daemon-poll-cache-invalidates-verified",
+        "id": "01M6HEDFN8NFMXKTCABSNFRHMG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6HEDFN8NFMXKTCABS193H64",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HEDFN8NFMXKTCABS193H64",
+        "id": "01M6HEDKQ6KVYV5E2QDBAPN3QZ",
+        "link": "01M6HEDKQ6KVYV5E2QDAQ5N527",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H72NZ2CZJTC8B1VGB4HAH0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6H6SGKR1N5GBG7XPECKN9Z3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HEDS2S7TJBAHRTSS6PERHP",
+  "type": "ops",
+  "v": 1
+}
