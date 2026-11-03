@@ -1,0 +1,29 @@
+{
+  "actor": "01M6GFR2NMMZQ24SFZ5QH23BR2",
+  "after": [
+    "01M6GFH68EQS4EKX98H3X79NFB"
+  ],
+  "at": "2026-11-03T10:38:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6734J6ESHFYKFJ09Z2Z5VFT",
+        "handle": null,
+        "id": "01M6GFSEFRZ230DATXNAATT96E",
+        "node": "01M6734J6ESHFYKFJ09YK6TEWT",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A test with fake operations and a fake exec drives each action and asserts the call it makes: o calls inbox.open with the item ID; an answer typed on a question calls session.message to its session with the typed text, and t sends the recommendation; y on a sign-off calls inbox.approve, c with text calls inbox.request-changes with it; R on a failed run calls run.resume with <run> --retry, and on a gave-up or skipped run calls run.resume with <run>, with no rex window new; x then y calls run.abandon, x then n calls nothing; no test runs real Rex or an agent",
+          "statement": "On the selected inbox item: enter or o focuses its Rex tab (inbox open); on a question, typing an answer and enter sends it to the asking session as a message (session message), or t takes the advisor's recommendation; on a sign-off, y approves it and c asks for changes with typed findings; on a failed, gave-up or skipped run, R queues its retry through run.resume for the daemon to drive (a failed run with --retry, restarting at the step that failed) and x abandons it after a y/n; each action reloads the list"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6FENEJE4B11EBYXDGP9T052",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GFSRRM1HAVD90QYP09HQFW",
+  "type": "ops",
+  "v": 1
+}
