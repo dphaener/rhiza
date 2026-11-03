@@ -447,10 +447,12 @@ func startAdapter(ctx *Ctx, r SessionStartRequest) (adapter.Adapter, error) {
 func bypassCheck(ctx *Ctx, mode string) error {
 	getenv := ctxGetenv(ctx)
 	path := machine.Path(getenv, ctx.Home)
+	// An empty path is trust daily; the placeholder names the file in the
+	// message only and is never read, as it would resolve against the cwd.
+	c, err := machine.Read(path)
 	if path == "" {
 		path = "$XDG_CONFIG_HOME/rhiza/machine.toml"
 	}
-	c, err := machine.Read(path)
 	if err != nil {
 		return Errorf("permission mode %s bypasses the agent's permission checks: %v", mode, err).
 			WithNext(sessionStartNext)
