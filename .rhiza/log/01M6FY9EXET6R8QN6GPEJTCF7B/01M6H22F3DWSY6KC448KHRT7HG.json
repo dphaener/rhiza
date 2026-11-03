@@ -1,0 +1,40 @@
+{
+  "actor": "01M6H13EN0EE8RF1VSTHZKN81T",
+  "after": [
+    "01M6GXSJ7KN290JFKA49GCTAA6"
+  ],
+  "at": "2026-11-03T15:57:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2, at be71e7b8. Ran go test ./cmd/rhiza -run 'TestScripts/(machine-trust-bypass|autonomous-permissions)$' -count=1: both PASS. machine-trust-bypass.txtar, with XDG_CONFIG_HOME/rhiza/machine.toml set to trust = \"dedicated\", runs session start --permission-mode bypassPermissions, then session run on the fake claude, and claude.log holds bypassPermissions. With no file, session start refuses with the error naming <xdg>/rhiza/machine.toml and trust = \"dedicated\", and there is no rex.log. After the file is changed to daily between start and run, session run refuses with the same naming and there is no claude.log. autonomous-permissions passes with no machine config. In the fix diff, bypassCheck now calls machine.Read on the real path; machine.Read(\"\") returns daily, and the $XDG_CONFIG_HOME placeholder appears only in the message. This closes the confirmed quality/qa f1 (a file planted under the cwd turned bypass on). The new TestBypassCheckNoConfigPathIsDaily passes. gofmt, go vet and go test ./... pass, except the timing test internal/api TestReadBudget, which failed under load average 6.7 on 4 cores. The diff does not touch any read path."
+        },
+        "handle": "bypass-on-dedicated-verified-2",
+        "id": "01M6H228TDREWZKSZTA0GAY350",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6H228TDREWZKSZT9YSW1S9M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6H228TDREWZKSZT9YSW1S9M",
+        "id": "01M6H22B3W0AYWXCCSR6QEY1FQ",
+        "link": "01M6H22B3W0AYWXCCSR30PEP25",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G0F9H1ZR0W65DV8FZHZK47",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FY9EXET6R8QN6GPEJTCF7B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6H22F3DWSY6KC448KHRT7HG",
+  "type": "ops",
+  "v": 1
+}
