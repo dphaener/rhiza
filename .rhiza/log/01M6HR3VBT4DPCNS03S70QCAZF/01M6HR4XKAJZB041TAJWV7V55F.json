@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6HR4V0XQGM6MRN0JA367XZ8"
+  ],
+  "at": "2026-11-03T22:23:19Z",
+  "body": {
+    "reason": "Orchestrator hotfix as the owner's proxy: timing flakes fail most PRs tonight",
+    "rule": "owner"
+  },
+  "change_set": "01M6HR3VBT4DPCNS03S70QCAZF",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6HR4XKAJZB041TAJWV7V55F",
+  "type": "accept",
+  "v": 1
+}

@@ -1,0 +1,63 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6HR3VBT4DPCNS03SA7JAJF3"
+  ],
+  "at": "2026-11-03T22:23:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "make -n test shows go test ./... with -skip of TestReadBudget|TestBudget|TestGeneratedModel, then those tests alone with -p 1 over internal/api, internal/index, internal/slice and internal/tui/modelapp; the budget phase passes on the loaded VM where it failed beside the suite; CI's make check passes",
+          "statement": "The timing budgets run on their own after the rest of the test suite, one package at a time, so they measure reads rather than their neighbours' load"
+        },
+        "handle": "budgets-measure-in-quiet",
+        "id": "01M6HR4C6TN1MN8FF6CAC5KWE5",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6HR4C6TN1MN8FF6C71MZ3F2",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "fields": {
+          "statement": "Run the timing budgets in a second go test phase after the suite instead of beside it; quiettest's wait gave up after 3 minutes while cmd/rhiza ran 5-11, so every run measured under load (PR #210 failed twice then passed on one SHA; #221 and #224 failed on TestReadBudget alone)",
+          "wording": "the orchestrator's, as the owner's proxy (standing instruction 'act on my behalf', 2026-11-03); assumed"
+        },
+        "handle": "budgets-run-alone",
+        "id": "01M6HR4FE2FYXS6YE0CE5HD840",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6HR4FE2FYXS6YE0CAGNGVR8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HR4C6TN1MN8FF6C71MZ3F2",
+        "id": "01M6HR4JCMN5YQP5FZ17ZC8B7R",
+        "link": "01M6HR4JCMN5YQP5FZ148KCMNS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HR4FE2FYXS6YE0CAGNGVR8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HR3VBT4DPCNS03S70QCAZF",
+        "id": "01M6HR4NBAT60842M2X6H4180R",
+        "link": "01M6HR4NBAT60842M2X4SGGR2G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HKVRE1B7RPP12EN6J2GGXC",
+        "type": "serves"
+      }
+    ]
+  },
+  "change_set": "01M6HR3VBT4DPCNS03S70QCAZF",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6HR4RFPB6MR5ERKH27K7V4M",
+  "type": "ops",
+  "v": 1
+}

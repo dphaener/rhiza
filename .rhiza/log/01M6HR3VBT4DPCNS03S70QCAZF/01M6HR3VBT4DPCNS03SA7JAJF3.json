@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-03T22:22:44Z",
+  "body": {
+    "intent": "Timing budgets measure in quiet: make check runs TestReadBudget, TestBudget and TestGeneratedModel on their own after the rest of the suite, one package at a time, so CI and the VM stop failing them on their neighbours' load",
+    "kind": "intention",
+    "sources": [],
+    "title": "Budgets measure in quiet"
+  },
+  "change_set": "01M6HR3VBT4DPCNS03S70QCAZF",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6HR3VBT4DPCNS03SA7JAJF3",
+  "type": "open",
+  "v": 2
+}

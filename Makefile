@@ -29,13 +29,21 @@ update: install ## Rebuild into $(PREFIX), then rewrite the Rex script and reloa
 	$(PREFIX)/$(BINARY) rex install
 
 .PHONY: test
-test: ## Run the full test suite and print the read-budget timings
+# The timing budgets measure reads against fixed limits, so they run on
+# their own after the rest of the suite: run beside cmd/rhiza's scripts they
+# measured their neighbours (PR #210 failed twice, then passed, on one SHA).
+BUDGET_TESTS = ^(TestReadBudget|TestBudget|TestGeneratedModel)$$
+BUDGET_PKGS = ./internal/api ./internal/index ./internal/slice ./internal/tui/modelapp
+
+test: ## Run the full test suite, then the timing budgets alone, and print the read-budget timings
 # TestReadBudget appends its timings to the file named by RHIZA_BUDGET_LOG.
 # They print after the run whether the tests passed or failed, so CI logs
 # (and local runs) always show the numbers. go test's exit status is make's.
 	@log=$$(mktemp); \
-	RHIZA_BUDGET_LOG=$$log go test -timeout 20m ./...; \
+	go test -timeout 20m -skip '$(BUDGET_TESTS)' ./...; \
 	status=$$?; \
+	echo "Timing budgets, run alone after the suite"; \
+	RHIZA_BUDGET_LOG=$$log go test -timeout 20m -count=1 -p 1 -run '$(BUDGET_TESTS)' $(BUDGET_PKGS) || status=1; \
 	echo "Read-budget timings"; \
 	if [ -s "$$log" ]; then cat "$$log"; else echo "(no timings: $$log is missing or empty)"; fi; \
 	rm -f $$log; exit $$status
