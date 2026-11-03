@@ -38,7 +38,7 @@ func init() {
 // RequestRequest is a plan request to queue.
 type RequestRequest struct {
 	Text string `json:"text" arg:"0" desc:"What to plan, in one line"`
-	Kind string `json:"kind,omitempty" enum:"feature,bug,milestone" desc:"feature, bug or milestone; default feature. A bug's plan run opens its change set with the intent prefixed "Fix " (so its title names the bug), a milestone's a record change set"`
+	Kind string `json:"kind,omitempty" enum:"feature,bug,milestone" desc:"feature, bug or milestone; default feature. A bug's plan run opens its change set with the intent prefixed 'Fix ' (so its title names the bug), a milestone's a record change set"`
 }
 
 // RequestInfo is one plan request.
