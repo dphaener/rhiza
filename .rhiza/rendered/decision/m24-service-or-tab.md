@@ -19,6 +19,7 @@ Each installation chooses how its daemon runs: a systemd service on a server, or
 ### In
 
 - decided-by [m24-daemon-service](../intent/milestone-24/m24-daemon-service.md)
+- decided-by [daemon-start-stop](../capability/rhiza/orchestration/daemon/daemon-start-stop.md)
 
 ## History
 

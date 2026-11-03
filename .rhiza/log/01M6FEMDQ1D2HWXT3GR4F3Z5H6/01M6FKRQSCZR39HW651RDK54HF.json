@@ -1,0 +1,40 @@
+{
+  "actor": "01M6FJTF775W37YC6Y5KN3H2Y1",
+  "after": [
+    "01M6FGNQBHSN5361TNAX5S6CGS"
+  ],
+  "at": "2026-11-03T02:28:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 6f0d4416: go test ./cmd/rhiza -run TestScripts/daemon -count=1 passes all 12 daemon scripts, including daemon-repo-session.txtar, which runs rhiza daemon --once against a fake rex with REX_SESSION unset: with rex session ls empty it logs exactly one 'rex session new rhiza-repo' and the run start tab as 'rex window new -s rhiza-repo', with no window new lacking -s rhiza-repo; with rhiza-repo listed it logs no session new and every window new carries -s rhiza-repo; with REX_SESSION=session:other the tabs still carry -s rhiza-repo and session:other never appears. go test ./internal/api passes, and make check exits 0. Diff read: ensureRepoSession (internal/api/daemon.go) is called before the run, resume and plan-request window new calls, names the session rhiza-<base of the first git worktree>, and overrides ctx.RexSession. A read-only 'rex session ls --json' on the real server shows the sessions[].label shape the code parses, and 'rex session new --help' and 'rex window new --help' confirm the LABEL, -c and -s arguments it passes."
+        },
+        "handle": "daemon-repo-session-verified",
+        "id": "01M6FKR9ZYZDYTBD3X7MNB6ZQ7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6FKR9ZYZDYTBD3X7MMHXKW2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FKR9ZYZDYTBD3X7MMHXKW2",
+        "id": "01M6FKRFVX21WVBZ60R00Q3H09",
+        "link": "01M6FKRFVX21WVBZ60QZDQGSKZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FES3PKQCSNG9SEECK4G1R7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FEMDQ1D2HWXT3GR4F3Z5H6",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FKRQSCZR39HW651RDK54HF",
+  "type": "ops",
+  "v": 1
+}

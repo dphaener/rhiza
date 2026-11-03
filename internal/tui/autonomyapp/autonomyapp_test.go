@@ -20,6 +20,7 @@ type fake struct {
 	running bool
 	process string
 	calls   [][]string
+	stopErr error
 }
 
 func newFake() *fake {
@@ -47,6 +48,10 @@ func (f *fake) run(op string, args []string) ([]byte, error) {
 		return json.Marshal(api.DaemonSettingsResponse{Settings: rows})
 	case "daemon.status":
 		return json.Marshal(api.DaemonStatusResponse{Running: f.running, Process: f.process})
+	case "daemon.start":
+		return []byte("{}"), nil
+	case "daemon.stop":
+		return []byte("{}"), f.stopErr
 	case "daemon.set":
 		if len(args) != 3 || args[0] != "--" {
 			return nil, fmt.Errorf("unexpected set args %q", args)
@@ -82,13 +87,6 @@ func moveTo(m *Model, k string) {
 		}
 		key(m, "j")
 	}
-}
-
-type execLog struct{ calls [][]string }
-
-func (e *execLog) exec(name string, args []string, dir string) ([]byte, error) {
-	e.calls = append(e.calls, append([]string{name}, args...))
-	return nil, nil
 }
 
 func TestRegistered(t *testing.T) {
@@ -153,35 +151,41 @@ func TestEditMaxRuns(t *testing.T) {
 	}
 }
 
+// ops are the operations the fake runner was asked for, in order.
+func (f *fake) ops() []string {
+	var out []string
+	for _, c := range f.calls {
+		if c[0] == "daemon.start" || c[0] == "daemon.stop" {
+			out = append(out, c[0])
+		}
+	}
+	return out
+}
+
 func TestStartDaemonWhenNotRunning(t *testing.T) {
 	f := newFake()
-	e := &execLog{}
 	m := NewModel(f.run)
-	m.SetStarter(Starter{Exec: e.exec, Self: "/bin/rhiza", Root: "/repo", RexSession: "S1", Host: "host1"})
 	key(m, "d")
 	if m.Confirming() != "start" {
 		t.Fatalf("confirming = %q", m.Confirming())
 	}
 	key(m, "y")
-	want := []string{"rex", "window", "new", "-s", "S1", "rhiza daemon", "-c", "/repo", "--keep-open", "--json", "--", "/bin/rhiza", "daemon", "--autonomous"}
-	if len(e.calls) != 1 || !slices.Equal(e.calls[0], want) {
-		t.Errorf("exec = %q", e.calls)
+	if got := f.ops(); !slices.Equal(got, []string{"daemon.start"}) {
+		t.Errorf("ops = %q", got)
 	}
 	if !strings.HasPrefix(m.notice, "Starting the daemon") {
 		t.Errorf("notice = %q", m.notice)
 	}
 	f.running = true
 	m.Update(TickMsg{})
-	if m.notice != "The daemon is running in the Rex tab rhiza daemon" {
+	if !strings.HasPrefix(m.notice, "The daemon is running") {
 		t.Errorf("notice = %q", m.notice)
 	}
 }
 
 func TestStartReportsDaemonThatNeverRuns(t *testing.T) {
 	f := newFake()
-	e := &execLog{}
 	m := NewModel(f.run)
-	m.SetStarter(Starter{Exec: e.exec, Self: "/bin/rhiza", Root: "/repo"})
 	key(m, "d")
 	key(m, "y") // the first reload after the start
 	for i := 1; i < StartChecks; i++ {
@@ -190,49 +194,44 @@ func TestStartReportsDaemonThatNeverRuns(t *testing.T) {
 		}
 		m.Update(TickMsg{})
 	}
-	if m.notice != "The daemon did not start: its error is in the Rex tab rhiza daemon" {
+	if !strings.HasPrefix(m.notice, "The daemon did not start") {
 		t.Errorf("notice = %q", m.notice)
 	}
 }
 
 func TestDeclinedStartRunsNothing(t *testing.T) {
 	f := newFake()
-	e := &execLog{}
 	m := NewModel(f.run)
-	m.SetStarter(Starter{Exec: e.exec, Self: "/bin/rhiza", Root: "/repo"})
 	key(m, "d")
 	key(m, "n")
-	if len(e.calls) != 0 || m.Confirming() != "" {
-		t.Errorf("exec = %q", e.calls)
+	if len(f.ops()) != 0 || m.Confirming() != "" {
+		t.Errorf("ops = %q", f.ops())
 	}
 }
 
 func TestStopRunningDaemon(t *testing.T) {
 	f := newFake()
 	f.running = true
-	e := &execLog{}
 	m := NewModel(f.run)
-	m.SetStarter(Starter{Exec: e.exec, Self: "/bin/rhiza", Root: "/repo", Host: "host1"})
 	key(m, "d")
 	if m.Confirming() != "stop" {
 		t.Fatalf("confirming = %q", m.Confirming())
 	}
 	key(m, "y")
-	if len(e.calls) != 1 || !slices.Equal(e.calls[0], []string{"kill", "-TERM", "42"}) {
-		t.Errorf("exec = %q", e.calls)
+	if got := f.ops(); !slices.Equal(got, []string{"daemon.stop"}) {
+		t.Errorf("ops = %q", got)
 	}
 }
 
-func TestStopRefusedOnOtherHost(t *testing.T) {
+func TestStopRefusalIsShown(t *testing.T) {
 	f := newFake()
 	f.running = true
-	e := &execLog{}
+	f.stopErr = fmt.Errorf("the daemon runs on host1, not this machine")
 	m := NewModel(f.run)
-	m.SetStarter(Starter{Exec: e.exec, Host: "elsewhere"})
 	key(m, "d")
 	key(m, "y")
-	if len(e.calls) != 0 || !strings.Contains(m.Notice(), "host1") {
-		t.Errorf("exec = %q, notice %q", e.calls, m.Notice())
+	if !strings.Contains(m.Notice(), "host1") {
+		t.Errorf("notice %q", m.Notice())
 	}
 }
 

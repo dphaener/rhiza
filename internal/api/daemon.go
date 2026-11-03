@@ -6,9 +6,11 @@ package api
 // refused, naming the first one's process. It binds no socket.
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"reflect"
 	"slices"
 	"strconv"
@@ -623,6 +625,9 @@ func daemonStart(ctx *Ctx, cs string, autonomous bool, mode string) error {
 	if ctx.Exec == nil || ctx.Self == "" {
 		return Errorf("daemon cannot start a run of %s: no rex or rhiza path", cs)
 	}
+	if err := ensureRepoSession(ctx); err != nil {
+		return err
+	}
 	args := []string{"window", "new"}
 	if ctx.RexSession != "" {
 		args = append(args, "-s", ctx.RexSession)
@@ -641,6 +646,9 @@ func daemonStart(ctx *Ctx, cs string, autonomous bool, mode string) error {
 func daemonResume(ctx *Ctx, id string) error {
 	if ctx.Exec == nil || ctx.Self == "" {
 		return Errorf("daemon cannot resume run %s: no rex or rhiza path", id)
+	}
+	if err := ensureRepoSession(ctx); err != nil {
+		return err
 	}
 	args := []string{"window", "new"}
 	if ctx.RexSession != "" {
@@ -708,6 +716,7 @@ var skipText = map[string]string{
 // DaemonStatusResponse is the daemon's state. While no daemon holds the
 // lock, Running is false and the rest, if any, is what the last daemon left.
 type DaemonStatusResponse struct {
+	Mode        string        `json:"mode" enum:"service,tab" desc:"How this installation runs the daemon: service when daemon install wrote a systemd unit, else tab (the Rex tab 'rhiza daemon')"`
 	Running     bool          `json:"running" desc:"True while a live daemon holds the repository's lock"`
 	Process     string        `json:"process,omitempty" desc:"The daemon's process, as host:pid; absent when none ever ran"`
 	Version     string        `json:"version,omitempty" desc:"The version of the binary the daemon runs, as recorded when it started"`
@@ -729,8 +738,10 @@ type DaemonStatusResponse struct {
 func (r DaemonStatusResponse) Human(w io.Writer) {
 	if r.Running {
 		fmt.Fprintf(w, "Daemon running, process %s\n", r.Process)
+		fmt.Fprintf(w, "Mode: %s\n", r.Mode)
 	} else {
 		fmt.Fprintln(w, "Daemon not running")
+		fmt.Fprintf(w, "Mode: %s\n", r.Mode)
 		if r.Process == "" {
 			return
 		}
@@ -798,6 +809,7 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	resp := DaemonStatusResponse{Settings: []Setting{}, Runs: []DaemonRun{}, Skipped: []DaemonSkip{}, Hooks: []HookRow{}, Unjournaled: []DaemonEvent{}}
+	resp.Mode, _ = daemonMode(ctx)
 	_, resp.Running = daemon.Running(common)
 	st, ok := daemon.ReadState(common)
 	if !ok || (resp.Running && st.Process != daemon.ReadHolder(common)) {
@@ -841,4 +853,57 @@ func daemonEvent(e *daemon.Event) *DaemonEvent {
 		return nil
 	}
 	return &DaemonEvent{Change: e.Change, Run: e.Run, At: e.At.UTC().Format(time.RFC3339)}
+}
+
+// repoSessionName is rhiza-<repo>, <repo> being the main checkout's folder
+// name: the Rex session every tab of this repository's daemon opens in.
+func repoSessionName(ctx *Ctx) (string, error) {
+	if ctx.Git == nil {
+		return "", Errorf("daemon needs git: its Rex session is named after the main checkout")
+	}
+	out, err := ctx.Git("worktree", "list", "--porcelain")
+	if err != nil {
+		return "", Errorf("daemon needs a git repository: %v", err)
+	}
+	main, ok := firstWorktree(out)
+	if !ok {
+		return "", Errorf("git worktree list names no main checkout")
+	}
+	return "rhiza-" + filepath.Base(main), nil
+}
+
+// ensureRepoSession makes the Rex session rhiza-<repo> the one the daemon's
+// tabs open in, whatever REX_SESSION says, creating it on the Rex server
+// when `rex session ls` lacks it. It acts once per process.
+func ensureRepoSession(ctx *Ctx) error {
+	if ctx.repoSession {
+		return nil
+	}
+	name, err := repoSessionName(ctx)
+	if err != nil {
+		return err
+	}
+	out, err := ctx.Exec("rex", []string{"session", "ls", "--json"}, ctx.Root, nil)
+	if err != nil {
+		return Errorf("rex session ls: %v", err)
+	}
+	var in struct {
+		Sessions []struct {
+			Label string `json:"label"`
+		} `json:"sessions"`
+	}
+	if err := json.Unmarshal(out, &in); err != nil {
+		return Errorf("rex session ls: unreadable JSON: %v", err)
+	}
+	if !slices.ContainsFunc(in.Sessions, func(s struct {
+		Label string `json:"label"`
+	}) bool {
+		return s.Label == name
+	}) {
+		if _, err := ctx.Exec("rex", []string{"session", "new", name, "-c", ctx.Root, "--json"}, ctx.Root, nil); err != nil {
+			return Errorf("rex session new %s: %v", name, err)
+		}
+	}
+	ctx.RexSession, ctx.repoSession = name, true
+	return nil
 }

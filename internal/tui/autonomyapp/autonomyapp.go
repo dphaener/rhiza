@@ -2,14 +2,14 @@
 // setting with its value and source, and the daemon's own state. Enter
 // toggles a true/false or auto/owner setting and opens the entry for a
 // number or word; each write goes through rhiza daemon set. d starts the
-// daemon in a Rex tab named "rhiza daemon" when none runs, or stops the one
-// that does. --once prints what `rhiza daemon settings --json` prints.
+// daemon when none runs, or stops the one that does, through rhiza daemon
+// start and rhiza daemon stop: the systemd unit or the Rex tab, as the
+// installation runs it. --once prints what `rhiza daemon settings --json` prints.
 package autonomyapp
 
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -28,9 +28,6 @@ const Key = "y"
 // Interval is how often the view reloads.
 const Interval = 3 * time.Second
 
-// TabName is the name of the Rex tab the daemon runs in.
-const TabName = "rhiza daemon"
-
 // StartChecks is how many reloads after a start the app waits for the
 // daemon to report running before it says the start failed.
 const StartChecks = 4
@@ -43,25 +40,12 @@ func init() {
 // `rhiza <op> --json` prints it.
 type Runner func(op string, args []string) ([]byte, error)
 
-// Starter is how the app reaches Rex and the daemon's process: Exec runs a
-// program and returns its output, Self is the rhiza binary the tab runs,
-// Root the project root, RexSession the Rex session (maybe empty) and Host
-// this machine's name, which a daemon must share to be stopped from here.
-type Starter struct {
-	Exec       func(name string, args []string, dir string) ([]byte, error)
-	Self       string
-	Root       string
-	RexSession string
-	Host       string
-}
-
 // TickMsg is the reload timer firing.
 type TickMsg struct{}
 
 // Model is the app's bubbletea program. q or esc quits.
 type Model struct {
 	run      Runner
-	starter  Starter
 	out      []byte
 	settings []api.Setting
 	status   api.DaemonStatusResponse
@@ -84,17 +68,6 @@ func NewModel(run Runner) *Model {
 	m := &Model{run: run}
 	m.Reload()
 	return m
-}
-
-// SetStarter gives the model the means to start and stop the daemon.
-func (m *Model) SetStarter(s Starter) { m.starter = s }
-
-// DefaultStarter fills Host from the machine.
-func DefaultStarter(s Starter) Starter {
-	if s.Host == "" {
-		s.Host, _ = os.Hostname()
-	}
-	return s
 }
 
 // Reload reads the settings and the daemon's state again. The cursor stays
@@ -127,21 +100,36 @@ func (m *Model) Reload() {
 }
 
 // checkStart settles a pending start: the daemon running, or, once
-// StartChecks reloads pass without it, a failure pointing at its tab, which
-// stays open with the daemon's error.
+// StartChecks reloads pass without it, a failure pointing at where its
+// error is.
 func (m *Model) checkStart() {
 	if m.starting == 0 {
 		return
 	}
 	if m.status.Running {
 		m.starting = 0
-		m.notice = "The daemon is running in the Rex tab " + TabName
+		m.notice = "The daemon is running" + m.where()
 		return
 	}
 	m.starting--
 	if m.starting == 0 {
-		m.notice = "The daemon did not start: its error is in the Rex tab " + TabName
+		m.notice = "The daemon did not start: its error is " + m.errorWhere()
 	}
+}
+
+// where says where the daemon runs, for a notice.
+func (m *Model) where() string {
+	if m.status.Mode == api.DaemonModeService {
+		return " as a systemd service"
+	}
+	return " in the Rex tab " + api.DaemonTabName
+}
+
+func (m *Model) errorWhere() string {
+	if m.status.Mode == api.DaemonModeService {
+		return "in the service's journal (journalctl --user)"
+	}
+	return "in the Rex tab " + api.DaemonTabName
 }
 
 // Result is the daemon.settings output, byte for byte, or the error met.
@@ -263,45 +251,18 @@ func (m *Model) Answer(yes bool) {
 	m.Reload()
 }
 
-// StartArgs is the rex call that opens the daemon's tab. The tab stays
-// open after the daemon exits, so an error it stops on can be read there.
-func (s Starter) StartArgs() []string {
-	args := []string{"window", "new"}
-	if s.RexSession != "" {
-		args = append(args, "-s", s.RexSession)
-	}
-	return append(args, TabName, "-c", s.Root, "--keep-open", "--json", "--", s.Self, "daemon", "--autonomous")
-}
-
 func (m *Model) startDaemon() {
-	if m.starter.Exec == nil || m.starter.Self == "" {
-		m.notice = "Cannot start the daemon: no rex or rhiza path"
+	if _, err := m.run("daemon.start", nil); err != nil {
+		m.notice = fmt.Sprintf("Could not start the daemon: %v", err)
 		return
 	}
-	if _, err := m.starter.Exec("rex", m.starter.StartArgs(), m.starter.Root); err != nil {
-		m.notice = fmt.Sprintf("rex window new failed: %v", err)
-		return
-	}
-	m.notice = "Starting the daemon in the Rex tab " + TabName
+	m.notice = "Starting the daemon" + m.where()
 	m.starting = StartChecks
 }
 
 func (m *Model) stopDaemon() {
-	host, pid, ok := strings.Cut(m.status.Process, ":")
-	if !ok || pid == "" {
-		m.notice = "The daemon's process is unknown"
-		return
-	}
-	if m.starter.Exec == nil {
-		m.notice = "Cannot stop the daemon: no way to signal it"
-		return
-	}
-	if m.starter.Host != "" && host != m.starter.Host {
-		m.notice = fmt.Sprintf("The daemon runs on %s, not this machine", host)
-		return
-	}
-	if _, err := m.starter.Exec("kill", []string{"-TERM", pid}, m.starter.Root); err != nil {
-		m.notice = fmt.Sprintf("kill failed: %v", err)
+	if _, err := m.run("daemon.stop", nil); err != nil {
+		m.notice = fmt.Sprintf("Could not stop the daemon: %v", err)
 		return
 	}
 	m.notice = "Asked the daemon " + m.status.Process + " to stop"
@@ -389,7 +350,7 @@ func (m *Model) View() tea.View {
 	}
 	switch m.confirm {
 	case "start":
-		b.WriteString("\nStart the daemon in a new Rex tab? y/n\n")
+		b.WriteString("\nStart the daemon? y/n\n")
 	case "stop":
 		fmt.Fprintf(&b, "\nStop the daemon %s? y/n\n", m.status.Process)
 	}

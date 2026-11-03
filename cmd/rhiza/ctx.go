@@ -67,6 +67,7 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		Home:      getenv("HOME"),
 		Getenv:    getenv,
 		Exec:      execIn,
+		LookPath:  exec.LookPath,
 		Self:      selfPath(),
 		Start:     startProgram,
 		// REX_SESSION and REX_BLOCK are the Rex session and block this

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6FPFRKK4QV6W9V40FSYY6EN",
+  "after": [
+    "01M6FN7EXJ0Q86QG3HQ1YJTYNJ"
+  ],
+  "at": "2026-11-03T03:18:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f01bef3c (attempt 2), go test ./cmd/rhiza -run TestScripts/daemon -count=1 passed. daemon-install.txtar puts fake systemctl and loginctl on PATH. It checks that install, run from a worktree, writes $HOME/.config/systemd/user/rhiza-repo.service with ExecStart=<bin> daemon --autonomous, WorkingDirectory set to the main checkout, Restart=always and After=rex.service. It checks the calls are exactly systemctl --user daemon-reload, systemctl --user enable --now rhiza-repo.service and loginctl enable-linger. A second install prints 'nothing changed', leaves the unit byte-identical and does not reload. Uninstall calls systemctl --user disable --now and daemon-reload, and the file is gone. With only rhiza on PATH, both commands fail with 'needs systemd: systemctl is not on PATH' and write nothing. I also built the binary and ran it by hand with PATH=/usr/bin:/bin: install and uninstall each exited 2 with that message. Diff read: the fix shares daemonArgs={daemon,--autonomous} between the unit's ExecStart and the Rex tab, which resolves the quality finding f1. go vet and gofmt are clean."
+        },
+        "handle": "daemon-service-install-verified-2",
+        "id": "01M6FPMG00EF77TV1R05JQQN91",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6FPMG00EF77TV1R04P9HK73",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FPMG00EF77TV1R04P9HK73",
+        "id": "01M6FPMH1CCAH77F7KHSVQ7JGQ",
+        "link": "01M6FPMH1CCAH77F7KHSCT79NW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FES1Z3GF9HJGVS4Y1S687B",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FEMDQ1D2HWXT3GR4F3Z5H6",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FPMJKXASH3RT583R9XZ4XF",
+  "type": "ops",
+  "v": 1
+}

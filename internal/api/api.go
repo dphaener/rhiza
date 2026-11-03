@@ -134,6 +134,9 @@ type Ctx struct {
 	// the program's trimmed standard error. Nil means no programs can be
 	// run: the operations that need one, such as session.start, fail.
 	Exec func(name string, args []string, dir string, env []string) ([]byte, error)
+	// LookPath finds a program on the caller's PATH, as exec.LookPath does.
+	// Nil means every program is missing: daemon.install finds no systemd.
+	LookPath func(file string) (string, error)
 	// Self is the absolute path of the running rhiza, for commands that
 	// must call it back, such as the command a session's terminal tab runs.
 	// Empty if unknown.
@@ -146,6 +149,9 @@ type Ctx struct {
 	// REX_SESSION), empty if none: session.start opens its tab there
 	// unless the request names another.
 	RexSession string
+	// repoSession is set once the daemon has made sure its Rex session
+	// rhiza-<repo> exists and made it RexSession.
+	repoSession bool
 	// RexBlock is the Rex block the caller runs in (the CLI's REX_BLOCK),
 	// empty if none: session.run copies that block's status reports.
 	RexBlock string

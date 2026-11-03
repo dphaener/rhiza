@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FMYS7RVPTSE1N2GT2J1AW5",
+  "after": [],
+  "at": "2026-11-03T02:50:51Z",
+  "body": {
+    "intent": "The daemon behaves the same however its installation runs it: the systemd unit and the Rex tab start rhiza daemon with the same arguments, so choosing service or tab never changes whether runs go on without the owner",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6FN21KA287NNX0T4KY4WCYK",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FN21KA287NNX0T4NN381M9",
+  "type": "open",
+  "v": 1
+}

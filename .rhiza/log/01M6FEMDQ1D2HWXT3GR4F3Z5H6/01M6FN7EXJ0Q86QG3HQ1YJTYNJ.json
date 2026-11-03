@@ -1,0 +1,109 @@
+{
+  "actor": "01M6FMYDH45TM1F4S08AJB3Y39",
+  "after": [
+    "01M6FMXHG6G9NPSCMD4GM2JNBB"
+  ],
+  "at": "2026-11-03T02:53:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 78a3b478 with a binary built from the branch, in a scratch repo qarepo with an accepted change set serving a milestone. rhiza daemon --once ran against the real Rex server through a proxy rex that passed session ls/new to real rex and only logged window new. With REX_SESSION=session:other and rhiza-qarepo already present: one 'rex session ls --json', no session new, and the run start tab logged as 'rex window new -s rhiza-qarepo ... run start <cs> --permission-mode acceptEdits'. After rex kill rhiza-qarepo and with REX_SESSION unset: 'rex session new rhiza-qarepo -c <root> --json' ran once, the real server listed rhiza-qarepo afterwards, and the run tab again carried -s rhiza-qarepo. rhiza daemon start (tab mode) also created rhiza-qarepo on the real server and reused it on later starts. When the proxy failed on session ls, the daemon reported the error and opened no tab."
+        },
+        "handle": "daemon-repo-session-qa-1",
+        "id": "01M6FN74ZZXXA5T17DQ9D8X72E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6FN74ZZXXA5T17DQ8D1D60K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FN74ZZXXA5T17DQ8D1D60K",
+        "id": "01M6FN761AKAADKYYR5JRDY1EV",
+        "link": "01M6FN761AKAADKYYR5FV05BYD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FES3PKQCSNG9SEECK4G1R7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 78a3b478 with a binary built from the branch on macOS, in a scratch repo qarepo with HOME pointed at a scratch dir. With no systemctl on PATH, daemon install and daemon uninstall each exited 2 with 'needs systemd: systemctl is not on PATH' and wrote nothing. With logging fake systemctl and loginctl on PATH, install wrote ~/.config/systemd/user/rhiza-qarepo.service (marker comment, After=rex.service, WorkingDirectory the main checkout, ExecStart=<binary> daemon, Restart=always, WantedBy=default.target) and called systemctl --user daemon-reload, systemctl --user enable --now rhiza-qarepo.service and loginctl enable-linger. A second install said nothing changed and left the file as it was, with no daemon-reload (it repeated enable --now and enable-linger, which are idempotent). From a linked worktree, daemon status said mode service. Uninstall called systemctl --user disable --now and daemon-reload, removed the file, and status went back to mode tab."
+        },
+        "handle": "daemon-service-install-qa-1",
+        "id": "01M6FN774V4WDJET7SY83K97TC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6FN774V4WDJET7SY66D7C6M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FN774V4WDJET7SY66D7C6M",
+        "id": "01M6FN78EBBJTEKFHZ74DR8WJC",
+        "link": "01M6FN78EBBJTEKFHZ71G3F070",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FES1Z3GF9HJGVS4Y1S687B",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 78a3b478 with a binary built from the branch, in scratch repo qarepo on the real Rex server. Tab mode: daemon status said 'Mode: tab'. daemon start --json returned {changed:true, mode:tab}, opened the Rex tab 'rhiza daemon' in session rhiza-qarepo, and status then said 'Daemon running'. A second start said 'The daemon already runs' and opened no tab. daemon stop said 'Asked the daemon to stop'; the process exited and status said not running. A further stop said 'No daemon runs'. Service mode, after daemon install with fake systemctl/loginctl and a scratch HOME: status said 'Mode: service', and start and stop logged exactly 'systemctl --user start rhiza-qarepo.service' and 'systemctl --user stop rhiza-qarepo.service'. After uninstall the mode was tab again. On a fresh repo with no permission mode set, start reported success, but the tab's daemon --autonomous exited at once ('needs --permission-mode'). See the minor finding."
+        },
+        "handle": "daemon-start-stop-qa-1",
+        "id": "01M6FN79S4J7TT91TXFZHQJH52",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6FN79S4J7TT91TXFXM266A7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FN79S4J7TT91TXFXM266A7",
+        "id": "01M6FN7AW7C89A54ECBW89DDB9",
+        "link": "01M6FN7AW7C89A54ECBTGK05TR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FES4J3E8VXG2KW0Y9Z1C96",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 78a3b478: rhiza tui app autonomy --once in scratch repo qarepo printed the settings JSON (key, value, source, default). The interactive app ran in a real Rex tab and was driven with rex send-key. It showed 'Daemon not running', every daemon and autonomy setting with value and source, and the footer 'd start/stop daemon'. d then y started the daemon in the Rex tab 'rhiza daemon', and after r it showed 'Daemon running, process Mac.localdomain:47359'. d asked 'Stop the daemon Mac.localdomain:47359? y/n', y ended that process, and the app showed 'Daemon not running'. With the cursor on rhiza.autonomy.plan, enter toggled it from owner to auto, and git config rhiza.autonomy.plan then read auto."
+        },
+        "handle": "autonomy-app-daemon-keys-qa-1",
+        "id": "01M6FN7C21FFD8NXW3A4T1Q4BB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6FN7C21FFD8NXW3A1GX4J2F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FN7C21FFD8NXW3A1GX4J2F",
+        "id": "01M6FN7D4N4CYJ81QYDWCKF2ZQ",
+        "link": "01M6FN7D4N4CYJ81QYDRTBCCYB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6CS2HRAWMCTPDHFXBHFCX1C",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FEMDQ1D2HWXT3GR4F3Z5H6",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FN7EXJ0Q86QG3HQ1YJTYNJ",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,85 @@
+# daemon start and stop run the repo's daemon the way its installation does.
+# With the unit daemon install wrote, they call systemctl --user start/stop
+# and status says mode service. With none, start opens the Rex tab 'rhiza
+# daemon' in the repo's session, running rhiza daemon, stop ends that daemon
+# and status says mode tab. systemctl, loginctl and rex are fakes: rex runs
+# the command after -- in the background, as a tab would.
+
+env HOME=$WORK/home
+chmod 755 bin/systemctl
+chmod 755 bin/loginctl
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec git config rhiza.daemon.permissionMode manual
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+# No unit: tab mode. Start opens the tab; the daemon takes the lock.
+exec rhiza daemon status --json
+stdout '"mode": ?"tab"'
+exec rhiza daemon start
+stdout 'Rex tab rhiza daemon'
+exec sh -c 'grep "^rex window new -s rhiza-repo rhiza daemon -c .* --keep-open --json -- .* daemon --autonomous$" $WORK/rex.log'
+exec sh -c 'for i in $(seq 100); do rhiza daemon status --json | grep -q "\"running\": true" && exit 0; sleep 0.1; done; exit 1'
+exec rhiza daemon status --json
+stdout '"mode": ?"tab"'
+stdout '"running": ?true'
+
+# Starting again does nothing.
+rm $WORK/rex.log
+exec rhiza daemon start
+stdout 'already runs'
+! exists $WORK/rex.log
+
+# Stop ends the daemon.
+exec rhiza daemon stop
+exec sh -c 'for i in $(seq 100); do rhiza daemon status --json | grep -q "\"running\": false" && exit 0; sleep 0.1; done; exit 1'
+exec rhiza daemon stop
+stdout 'No daemon runs'
+
+# With the unit: systemctl does both, status says service.
+exec rhiza daemon install
+rm $WORK/calls.log
+exec rhiza daemon start
+stdout 'systemd unit'
+exec rhiza daemon stop
+stdout 'systemd unit'
+cmp $WORK/calls.log $WORK/want-calls.log
+exec rhiza daemon status --json
+stdout '"mode": ?"service"'
+
+# A unit the owner wrote does not count.
+exec rhiza daemon uninstall
+mkdir $WORK/home/.config/systemd/user
+cp $WORK/theirs.service $WORK/home/.config/systemd/user/rhiza-repo.service
+exec rhiza daemon status --json
+stdout '"mode": ?"tab"'
+
+-- bin/systemctl --
+#!/bin/sh
+echo "systemctl $@" >> "$WORK/calls.log"
+-- bin/loginctl --
+#!/bin/sh
+echo "loginctl $@" >> "$WORK/calls.log"
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+if [ "$1 $2" = "session ls" ]; then
+  echo '{"sessions":[{"session_id":"session:1","label":"rhiza-repo"}]}'
+  exit 0
+fi
+if [ "$1 $2" = "window new" ]; then
+  while [ "$1" != "--" ]; do shift; done
+  shift
+  "$@" >"$WORK/daemon.out" 2>&1 </dev/null &
+fi
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- theirs.service --
+theirs
+-- want-calls.log --
+systemctl --user start rhiza-repo.service
+systemctl --user stop rhiza-repo.service
