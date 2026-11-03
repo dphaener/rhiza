@@ -1,0 +1,33 @@
+{
+  "actor": "01M6HKS61F8VY02HHHA1Y7CGE8",
+  "after": [
+    "01M6HM0DCXB9VE6AQKRV59EQTK"
+  ],
+  "at": "2026-11-03T21:11:37Z",
+  "body": {
+    "carve": {
+      "entry": "01M6HM1DJD4NSGXQX9VPC5W4Q8",
+      "from": "01M5SWT0K9TV1RRVFBT28321K9"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Commits carry a Change trailer that links them to their change set, and a missing one flags an unclaimed change."
+        },
+        "handle": "commit-trailers",
+        "id": "01M6HM1DJD4NSGXQX9VKPQ5E7M",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M5SWT0V78KEPDTYECTARQAFS",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      }
+    ]
+  },
+  "change_set": "01M6HKRVC93TGX0ZC40QZ2GW9J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HM1DJD4NSGXQX9VSM2KMP8",
+  "type": "ops",
+  "v": 2
+}

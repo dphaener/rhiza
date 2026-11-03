@@ -1,0 +1,136 @@
+{
+  "actor": "01M6HKS61F8VY02HHHA1Y7CGE8",
+  "after": [
+    "01M6HM24077WAFEEK7W44VEWKH"
+  ],
+  "at": "2026-11-03T21:12:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6HKRVC93TGX0ZC40QZ2GW9J",
+        "id": "01M6HM2PEWJK6HC5XY2HAD5A8N",
+        "link": "01M6HM2PEWJK6HC5XY2GCMFETB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRH47NMASCPTSSF0FH022",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M6HM078ED04YAZ7XD9WRQZ15",
+        "id": "01M6HM2REJ5P9RWGERN22MJJTH",
+        "link": "01M6HM2REJ5P9RWGERN1T1MPQ0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HM21KENHTHSEB4PT1E41VV",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT0V78KEPDTYECTARQAFS",
+        "id": "01M6HM2TGHWT9ZYA72G0KMNGQB",
+        "link": "01M6HM2TGHWT9ZYA72G07FW8A3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HM078ED04YAZ7XD9WRQZ15",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Testscripts run rhiza check with no check.json, with check.json lacking unclaimed_since, and with an unresolvable hash: the first two report no unclaimed finding and exit 0 on an otherwise clean repo with untrailered commits, the third fails with a message naming .rhiza/check.json",
+          "statement": "rhiza check reads the unclaimed-changes cutoff from an optional committed .rhiza/check.json, {\"unclaimed_since\": \"<full commit hash>\"}: no file or no key turns the rule off, and a hash that does not resolve to a commit is a check error naming the file; repo.json is untouched"
+        },
+        "handle": "unclaimed-cutoff",
+        "id": "01M6HM2WJCT93N5GDJ3795NCEQ",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6HM2WJCT93N5GDJ35P10P4B",
+        "op": "node.create",
+        "parent": "01M5SWT0V78KEPDTYECTARQAFS"
+      },
+      {
+        "decision": null,
+        "from": "01M6HM2WJCT93N5GDJ35P10P4B",
+        "id": "01M6HM2YHA2GRGDCVAYJW17T99",
+        "link": "01M6HM2YHA2GRGDCVAYJPFVNK3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HM078ED04YAZ7XD9WRQZ15",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a cutoff commits: one code commit with no trailer, one whose Change: names an unknown ID, one with a known Change: in a paragraph before Co-Authored-By, one touching only .rhiza/, one with only Actor:/Leaf: trailers, a merge commit, and one untrailered commit before the cutoff; check --json lists exactly one warn finding of the unclaimed rule for the first, second and fifth, each naming its commit and saying missing or unknown, and exits 0",
+          "statement": "With a cutoff set, rhiza check warns once on each non-merge commit in <cutoff>..HEAD that changes a file outside .rhiza/ and has no Change: trailer (read by parseTrailerLog) naming a change set in the log, saying whether the trailer is missing or names an unknown change set; Actor:, Leaf: and Review: trailers alone do not claim a commit"
+        },
+        "handle": "unclaimed-commits",
+        "id": "01M6HM30GNXZNEK2YGYFY2P5TX",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6HM30GNXZNEK2YGYEBWFK54",
+        "op": "node.create",
+        "parent": "01M5SWT0V78KEPDTYECTARQAFS"
+      },
+      {
+        "decision": null,
+        "from": "01M6HM30GNXZNEK2YGYEBWFK54",
+        "id": "01M6HM32EVN81Z1Q92316Y2NEX",
+        "link": "01M6HM32EVN81Z1Q922YX0R5C6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HM078ED04YAZ7XD9WRQZ15",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HM30GNXZNEK2YGYEBWFK54",
+        "id": "01M6HM34D4H1SPASAN2FMV80EQ",
+        "link": "01M6HM34D4H1SPASAN2DX8Q18Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HM2WJCT93N5GDJ35P10P4B",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": ".rhiza/check.json in the change set's commit holds the full hash of a commit on origin/main that is an ancestor of the branch, and make self-check runs the rule and passes",
+          "statement": "This repository turns the unclaimed-changes rule on: it commits .rhiza/check.json with unclaimed_since set to the origin/main commit the branch is built on when the file is written"
+        },
+        "handle": "unclaimed-on-here",
+        "id": "01M6HM36F6SPZGNYW6GJNAWVSQ",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6HM36F6SPZGNYW6GEQKAGZW",
+        "op": "node.create",
+        "parent": "01M5SWT0V78KEPDTYECTARQAFS"
+      },
+      {
+        "decision": null,
+        "from": "01M6HM36F6SPZGNYW6GEQKAGZW",
+        "id": "01M6HM38GE6622Z8S75G7HWCF0",
+        "link": "01M6HM38GE6622Z8S75FNA57ZT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HM078ED04YAZ7XD9WRQZ15",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HM36F6SPZGNYW6GEQKAGZW",
+        "id": "01M6HM3AS67SDPEK49EYS5XAPF",
+        "link": "01M6HM3AS67SDPEK49EVB6ES6H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HM30GNXZNEK2YGYEBWFK54",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6HKRVC93TGX0ZC40QZ2GW9J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HM3E12Q9GA757G2SDJGBP7",
+  "type": "ops",
+  "v": 1
+}
