@@ -1,0 +1,41 @@
+{
+  "actor": "01M6HHT1HGGWGVKW7CE4QQYPMZ",
+  "after": [
+    "01M6HHSWM7V2RSKH72H4CZAF5F"
+  ],
+  "at": "2026-11-03T20:33:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "No owner words; read the change set intent, internal/api/daemon.go and internal/adapter/claudecode. The intent asks for per-window use from the adapter's token records, a reserve setting, a skip reason in status/health/inbox, and resuming on reset. The disk-low guard (rhiza.daemon.minFree) is the existing precedent for a resource hold. It stops picks, resumes, queued work and plans, but leaves live runs alone. Copying its scope keeps the daemon consistent, and it protects the reserve, which exists for the owner's own use. Claude Code publishes no token limits, so the limit must be either configured or learned. The adapter already detects usage-limit hits (UsageLimit and PaneUsageLimit) with a reset time, so the use seen at a hit gives a calibration without any setup. No known limit means no hold, so the governor fails open instead of blocking work on a guess. Cache reads dominate the raw totals and are weighted far below fresh tokens, so counting them would swamp the signal. The account is shared, so the owner's interactive sessions eat the same window and must count. Averaging recent runs per live and next run projects whether the next pick fits. Extrapolating to the window's end would hold early in every window.",
+          "statement": "(1) When: at each poll the governor checks two windows, the 5-hour session window and the 7-day weekly window. A window starts at the first token record after the previous window ended, or at the reset time a usage-limit message gave. Each window has a limit: the daemon setting for that window (tokens) if set, else the window use the daemon saw when an adapter last reported a usage limit in that kind of window. A window with no known limit never holds. The reserve is a daemon setting, a percentage of the limit, default 20%. The daemon holds a new pick when the window's use so far, plus the mean tokens of the last 10 finished runs for each live run and for the one it would start, exceeds the limit minus the reserve. With no finished runs to average, only the use so far counts. (2) Tokens: input, output and cache-creation tokens count, for the session and its helpers; cache-read tokens do not. They come from every Claude Code transcript on the machine, the owner's own sessions included, since they share the account. Only records timestamped inside the window count, each message once (deduplicated by message id, as TokenUse already does). (3) Scope: a hold works like the disk-low guard. It stops everything the daemon would launch: picks, its resumes of interrupted runs, queued starts and continues, and plan requests. Each held change set shows as a skip with reason usage-reserve, giving the window, use, limit and reset time in its detail, in daemon status, health and the inbox. It never interrupts live runs, and it does not stop runs the owner starts directly outside the daemon. It clears on its own at the first poll after the window resets.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "usage-governor-hold-rules",
+        "id": "01M6HHVZH70MTTQ6JJ2G1X7J6T",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6HHVZH70MTTQ6JJ2D403TY5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HHVZH70MTTQ6JJ2D403TY5",
+        "id": "01M6HHW1BFGTQ22TR22SB4PE28",
+        "link": "01M6HHW1BFGTQ22TR22NH6F16C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HHSVH0RABRX630W06KPEZV",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6HHMTEDFK2AWQKX50EB77DD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HHW4NYGWGY86AF7YCM7FMP",
+  "type": "ops",
+  "v": 1
+}
