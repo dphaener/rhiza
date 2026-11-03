@@ -309,6 +309,9 @@ func daemonStartPlan(ctx *Ctx, q daemon.Request, autonomous bool, mode string) e
 	if ctx.Exec == nil || ctx.Self == "" {
 		return Errorf("daemon cannot start the plan run of request %s: no rex or rhiza path", q.ID)
 	}
+	if err := ensureRepoSession(ctx); err != nil {
+		return err
+	}
 	args := []string{"window", "new"}
 	if ctx.RexSession != "" {
 		args = append(args, "-s", ctx.RexSession)

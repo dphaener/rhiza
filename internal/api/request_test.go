@@ -16,6 +16,7 @@ func TestDaemonPlanRequestsRequeuesUnjournaled(t *testing.T) {
 	f := newSessionFixture(t, "req")
 	now := time.Date(2026, 11, 1, 12, 0, 0, 0, time.UTC)
 	f.ctx.Now = func() time.Time { return now }
+	f.ctx.repoSession = true // the rhiza-<repo> session is daemon-repo-session's concern
 	if _, err := callOp(t, f.ctx, "request", `{"text":"Dark mode"}`); err != nil {
 		t.Fatal(err)
 	}

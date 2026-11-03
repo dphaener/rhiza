@@ -1,0 +1,59 @@
+# The daemon opens every tab in the Rex session rhiza-<repo>, <repo> being the
+# main checkout's folder: it creates the session when `rex session ls` lacks
+# it, creates none when present, and uses it whatever REX_SESSION says. Rex is
+# faked: `session ls` reads $WORK/sessions.json, everything is logged.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env REX_SESSION=
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+exec rhiza change new Built --title Built
+exec rhiza add capability built-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# Missing: created once, and the started run's tab carries -s rhiza-repo.
+exec rhiza daemon --permission-mode manual --once
+exec sh -c 'grep -c "^rex session new rhiza-repo " $WORK/rex.log'
+stdout '^1$'
+exec sh -c 'grep -c "^rex window new -s rhiza-repo .* run start " $WORK/rex.log'
+stdout '^1$'
+exec sh -c 'grep "window new" $WORK/rex.log | grep -vc -- "-s rhiza-repo " || true'
+stdout '^0$'
+
+# Present: none created, tabs still open in it.
+cp $WORK/present.json $WORK/sessions.json
+rm $WORK/rex.log
+exec rhiza daemon --permission-mode manual --once
+exec sh -c 'grep -c "^rex session new" $WORK/rex.log || true'
+stdout '^0$'
+exec sh -c 'grep -c "^rex window new -s rhiza-repo " $WORK/rex.log'
+! stdout '^0$'
+exec sh -c 'grep "window new" $WORK/rex.log | grep -vc -- "-s rhiza-repo " || true'
+stdout '^0$'
+
+# Another REX_SESSION does not move the tabs.
+rm $WORK/rex.log
+env REX_SESSION=session:other
+exec rhiza daemon --permission-mode manual --once
+exec sh -c 'grep -c "^rex window new -s rhiza-repo " $WORK/rex.log'
+! stdout '^0$'
+exec sh -c 'grep -c "session:other" $WORK/rex.log || true'
+stdout '^0$'
+-- present.json --
+{"sessions":[{"session_id":"session:1","label":"rhiza-repo"}]}
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+if [ "$1 $2" = "session ls" ]; then
+  if [ -f "$WORK/sessions.json" ]; then cat "$WORK/sessions.json"; else echo '{"sessions":[]}'; fi
+  exit 0
+fi
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

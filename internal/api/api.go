@@ -149,6 +149,9 @@ type Ctx struct {
 	// REX_SESSION), empty if none: session.start opens its tab there
 	// unless the request names another.
 	RexSession string
+	// repoSession is set once the daemon has made sure its Rex session
+	// rhiza-<repo> exists and made it RexSession.
+	repoSession bool
 	// RexBlock is the Rex block the caller runs in (the CLI's REX_BLOCK),
 	// empty if none: session.run copies that block's status reports.
 	RexBlock string
