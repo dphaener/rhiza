@@ -14,7 +14,7 @@ At 6f62e29 I read the diff: StartAgent, StartArbiter and StartAdvisor in interna
 
 ### Out
 
-- verifies [agent-steps-tile-run-window](../capability/rhiza/runtime/rex-sessions/agent-steps-tile-run-window.md)
+- verifies agent-steps-tile-run-window (retired)
 
 ## History
 

@@ -14,7 +14,7 @@ At 68bf3aa, built rhiza (go build) and ran rhiza run start against the real Rex 
 
 ### Out
 
-- verifies [anchor-gone-splits-run-window](../capability/rhiza/runtime/rex-sessions/anchor-gone-splits-run-window.md)
+- verifies anchor-gone-splits-run-window (retired)
 
 ## History
 

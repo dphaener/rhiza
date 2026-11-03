@@ -42,7 +42,7 @@ the agent's option, picked by the owner in session 8cd68bc7-9786-4df4-8723-01a18
 - decided-by [daemon](../capability/rhiza/orchestration/daemon.md)
 - decided-by [daemon-lock](../capability/rhiza/orchestration/daemon/daemon-lock.md)
 - decided-by [run-process-record](../capability/rhiza/workflows/workflow-runs/run-process-record.md)
-- decided-by [daemon-run-tabs](../capability/rhiza/orchestration/daemon/daemon-run-tabs.md)
+- decided-by daemon-run-tabs (retired)
 - decided-by [daemon-status](../capability/rhiza/orchestration/daemon/daemon-status.md)
 
 ## History

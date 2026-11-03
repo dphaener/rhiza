@@ -14,7 +14,7 @@ At d421578 ran go test ./internal/api -run 'TestStartCheck|TestStartFix' -count=
 
 ### Out
 
-- verifies [checks-and-fixes-anchored](../capability/rhiza/runtime/rex-sessions/checks-and-fixes-anchored.md)
+- verifies checks-and-fixes-anchored (retired)
 
 ## History
 

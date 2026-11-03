@@ -14,7 +14,7 @@ Same real-Rex autonomous plan run at 6b5628b. The planner asked two questions th
 
 ### Out
 
-- verifies [question-sessions-tile-run-window](../capability/rhiza/runtime/rex-sessions/question-sessions-tile-run-window.md)
+- verifies question-sessions-tile-run-window (retired)
 
 ## History
 

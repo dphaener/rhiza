@@ -19,9 +19,9 @@ A run's sessions run as tiled panes in one Rex window, not a window each
 
 ### In
 
-- decided-by [run-sessions-one-window](../capability/rhiza/runtime/rex-sessions/run-sessions-one-window.md)
-- decided-by [anchor-gone-splits-run-window](../capability/rhiza/runtime/rex-sessions/anchor-gone-splits-run-window.md)
-- decided-by [checks-and-fixes-anchored](../capability/rhiza/runtime/rex-sessions/checks-and-fixes-anchored.md)
+- decided-by run-sessions-one-window (retired)
+- decided-by anchor-gone-splits-run-window (retired)
+- decided-by checks-and-fixes-anchored (retired)
 
 ## History
 

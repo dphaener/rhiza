@@ -14,7 +14,7 @@ At 608fcae, go test ./cmd/rhiza -run TestScripts/daemon -count=1 passed, and go 
 
 ### Out
 
-- verifies [daemon-run-tabs](../capability/rhiza/orchestration/daemon/daemon-run-tabs.md)
+- verifies daemon-run-tabs (retired)
 
 ## History
 

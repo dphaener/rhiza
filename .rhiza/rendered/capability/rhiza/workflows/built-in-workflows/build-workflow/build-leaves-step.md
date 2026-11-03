@@ -26,7 +26,7 @@ Workflow files take a `leaves` step kind with `builder` and `verifier` sub-table
 - depends-on [build-leaf-order](build-leaf-order.md)
 - depends-on [build-leaf-commit](build-leaf-commit.md)
 - depends-on [build-verifier-findings](build-verifier-findings.md)
-- depends-on [build-panes](build-panes.md)
+- depends-on build-panes (retired)
 - depends-on [run-program-status](../../workflow-runs/run-program-status.md)
 - verifies [build-leaves-step-verified](../../../../../evidence/build-leaves-step-verified.md)
 - verifies [pr-44-the-build-workflow](../../../../../evidence/pr-44-the-build-workflow.md)

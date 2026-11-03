@@ -20,6 +20,10 @@ Run drivers move out of Rex into the daemon, so the only Rex tabs a run opens ar
 
 - decided-by [milestone-24](../intent/milestone-24.md)
 - decided-by [m24-headless-runs](../intent/milestone-24/m24-headless-runs.md)
+- decided-by [daemon-headless-run-drivers](../capability/rhiza/orchestration/daemon/daemon-headless-run-drivers.md)
+- decided-by [run-start-through-daemon](../capability/rhiza/orchestration/daemon/run-start-through-daemon.md)
+- decided-by [headless-run-agent-tabs](../capability/rhiza/runtime/rex-sessions/headless-run-agent-tabs.md)
+- decided-by [run-continue-through-daemon](../capability/rhiza/orchestration/daemon/run-continue-through-daemon.md)
 
 ## History
 

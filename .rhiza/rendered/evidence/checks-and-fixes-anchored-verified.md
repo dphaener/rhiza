@@ -14,7 +14,7 @@ At c6c2527 I ran go test ./internal/api -run 'TestStartCheck$|TestStartFix$' -co
 
 ### Out
 
-- verifies [checks-and-fixes-anchored](../capability/rhiza/runtime/rex-sessions/checks-and-fixes-anchored.md)
+- verifies checks-and-fixes-anchored (retired)
 
 ## History
 

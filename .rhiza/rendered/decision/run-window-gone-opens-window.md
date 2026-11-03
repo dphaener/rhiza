@@ -18,7 +18,7 @@ the review fixer's choice from confirmed findings qa f1, qa f2 and model f1, rev
 
 ### In
 
-- decided-by [build-panes](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-panes.md)
+- decided-by build-panes (retired)
 
 ## History
 

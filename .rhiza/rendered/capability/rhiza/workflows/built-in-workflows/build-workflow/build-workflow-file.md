@@ -17,7 +17,7 @@ Rhiza ships a built-in `build` workflow: a leaves step (builder models sonnet, o
 - depends-on [build-leaf-order](build-leaf-order.md)
 - depends-on [build-retries](build-retries.md)
 - depends-on [build-leaf-fails](build-leaf-fails.md)
-- depends-on [build-panes](build-panes.md)
+- depends-on build-panes (retired)
 - depends-on [build-check](build-check.md)
 - depends-on [build-guide](build-guide.md)
 - depends-on [build-evidence-commit](build-evidence-commit.md)

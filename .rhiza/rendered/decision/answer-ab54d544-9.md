@@ -40,7 +40,7 @@ the agent's option, picked by the owner in session ab54d544-8c72-4c39-ab01-01a17
 
 ### In
 
-- decided-by [build-panes](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-panes.md)
+- decided-by build-panes (retired)
 
 ## History
 

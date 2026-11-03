@@ -30,7 +30,7 @@ verified
 - verifies [daemon-lock](../capability/rhiza/orchestration/daemon/daemon-lock.md)
 - verifies [run-process-record](../capability/rhiza/workflows/workflow-runs/run-process-record.md)
 - verifies [daemon-picks](../capability/rhiza/orchestration/daemon/daemon-picks.md)
-- verifies [daemon-run-tabs](../capability/rhiza/orchestration/daemon/daemon-run-tabs.md)
+- verifies daemon-run-tabs (retired)
 - verifies [daemon-resume-once](../capability/rhiza/orchestration/daemon/daemon-resume-once.md)
 - verifies [daemon-status](../capability/rhiza/orchestration/daemon/daemon-status.md)
 

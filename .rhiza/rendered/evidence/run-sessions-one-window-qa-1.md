@@ -14,7 +14,7 @@ Built the branch head (go build -o $TMPDIR/rhiza-x ./cmd/rhiza) and ran rhiza ru
 
 ### Out
 
-- verifies [run-sessions-one-window](../capability/rhiza/runtime/rex-sessions/run-sessions-one-window.md)
+- verifies run-sessions-one-window (retired)
 
 ## History
 

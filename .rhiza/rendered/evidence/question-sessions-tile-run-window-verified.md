@@ -14,7 +14,7 @@ At commit 2588c4b, go test ./internal/api -run 'TestStartArbiterSplits|TestStart
 
 ### Out
 
-- verifies [question-sessions-tile-run-window](../capability/rhiza/runtime/rex-sessions/question-sessions-tile-run-window.md)
+- verifies question-sessions-tile-run-window (retired)
 
 ## History
 
