@@ -1,0 +1,40 @@
+{
+  "actor": "01M6GSTPH5HBWSA5QAKXFKM29Y",
+  "after": [
+    "01M6GQ92X3X4HY916ADZ2XKC69"
+  ],
+  "at": "2026-11-03T13:57:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4a8bb2ef ran go test ./cmd/rhiza -run 'TestScripts/(machine-show|describe-golden)$' -count=1: ok. machine-show.txtar runs rhiza machine show with no file (trust: daily, no machine config, path shown, file false), with trust = \"dedicated\" (trust: dedicated from <xdg>/rhiza/machine.toml, file true), and with trust = \"root\" (non-zero, stderr and --json stdout name the file); --json is cmp-equal to rhiza api call machine.show in both good cases. describe-golden lists machine.show with write false and no other machine op. Read the diff: internal/api/machine.go only reads via machine.Read and stats the path; grep found no code writing machine.toml. go vet and fmt-check pass. Full go test ./... failed only internal/tui/modelapp's read-timing budget (untouched package, runner contention); make check self-check reports only stale .rhiza/rendered files, which landing renders."
+        },
+        "handle": "machine-show-verified",
+        "id": "01M6GV5M1R409CTFCX5Q494C33",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6GV5M1R409CTFCX5MA2WCAQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GV5M1R409CTFCX5MA2WCAQ",
+        "id": "01M6GV61WYEZRRH47S8BYANGNS",
+        "link": "01M6GV61WYEZRRH47S88Z6BM1Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G0FSSB90F7DHTX1VVZQ86N",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FY9EXET6R8QN6GPEJTCF7B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GV6JJVGDFANQQRMA6ZB3X2",
+  "type": "ops",
+  "v": 1
+}
