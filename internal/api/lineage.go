@@ -41,6 +41,7 @@ import (
 	"reflect"
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/changeset"
@@ -601,15 +602,23 @@ func lineageHumanFields(w io.Writer, fs map[string]json.RawMessage) {
 
 // LogRequest names the node or link whose history to list.
 type LogRequest struct {
-	Ref  string `json:"ref" arg:"0" desc:"The node or link: an ID, a unique ID prefix of 4+ characters, or a node's handle"`
-	View string `json:"view,omitempty" desc:"as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is"`
+	Ref    string `json:"ref" arg:"0" desc:"The node or link: an ID, a unique ID prefix of 4+ characters, or a node's handle"`
+	View   string `json:"view,omitempty" desc:"as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is"`
+	Limit  int    `json:"limit,omitempty" desc:"The most change sets to return, 1 to 1000; default 100"`
+	Cursor string `json:"cursor,omitempty" desc:"Where to go on: the next_cursor of the page before"`
+	All    bool   `json:"all,omitempty" flag:"all" desc:"Return every change set, ignoring --limit and --cursor"`
 }
 
 // LogResponse is the target's history, one change set at a time.
 type LogResponse struct {
 	Target     LogTarget      `json:"target" desc:"The node or link"`
-	ChangeSets []LogChangeSet `json:"change_sets" desc:"Every change set that touched it, in apply order"`
+	ChangeSets []LogChangeSet `json:"change_sets" desc:"The change sets that touched it, in apply order; one page"`
+	NextCursor string         `json:"next_cursor,omitempty" desc:"The cursor of the next page; absent when no more remain"`
 	View       string         `json:"view" desc:"The view read"`
+
+	// command is the log command line of this page, without --cursor, for
+	// the next line.
+	command string
 }
 
 // LogTarget names the node or link logged.
@@ -657,6 +666,21 @@ type LogOp struct {
 
 func runLog(ctx *Ctx, req any) (any, error) {
 	q := req.(LogRequest)
+	limit := q.Limit
+	if limit == 0 {
+		limit = lsDefaultLimit
+	}
+	if limit < 0 || limit > lsMaxLimit {
+		return nil, Usagef("limit %d is out of range: give 1 to %d", q.Limit, lsMaxLimit).WithNext(logDescribeNext)
+	}
+	var after id.ID
+	if q.Cursor != "" && !q.All {
+		c, err := lsDecodeCursor(q.Cursor)
+		if err != nil {
+			return nil, Usagef("bad cursor %q: give a next_cursor from log", q.Cursor).WithNext(logDescribeNext)
+		}
+		after = c
+	}
 	r, err := openReader(ctx, "log", q.View, defaultView)
 	if err != nil {
 		return nil, err
@@ -688,7 +712,20 @@ func runLog(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp := LogResponse{Target: target, ChangeSets: []LogChangeSet{}, View: r.View()}
+	resp := LogResponse{Target: target, ChangeSets: []LogChangeSet{}, View: r.View(), command: logCommand(q)}
+	if !q.All {
+		if !after.IsZero() {
+			i := slices.IndexFunc(css, func(c lineageCS) bool { return c.info.ID == after })
+			if i < 0 {
+				return nil, Usagef("bad cursor %q: it names no change set of this log", q.Cursor).WithNext(logDescribeNext)
+			}
+			css = css[i+1:]
+		}
+		if len(css) > limit {
+			css = css[:limit]
+			resp.NextCursor = lsEncodeCursor(css[limit-1].info.ID)
+		}
+	}
 	for _, c := range css {
 		lc := LogChangeSet{ID: c.info.ID, State: c.info.State, Kind: c.info.Kind, Intent: c.info.Intent, Ops: []LogOp{},
 			Carves: carves[c.info.ID]}
@@ -706,6 +743,21 @@ func runLog(ctx *Ctx, req any) (any, error) {
 		resp.ChangeSets = append(resp.ChangeSets, lc)
 	}
 	return resp, nil
+}
+
+// logDescribeNext is the next command for a bad log request.
+const logDescribeNext = "rhiza describe log"
+
+// logCommand is the command line that asks for q again, without its cursor.
+func logCommand(q LogRequest) string {
+	parts := []string{"rhiza", "log", q.Ref}
+	if q.Limit != 0 {
+		parts = append(parts, "--limit", strconv.Itoa(q.Limit))
+	}
+	if q.View != "" {
+		parts = append(parts, "--view", q.View)
+	}
+	return commandLine(parts...)
 }
 
 // logCarveWalk is the state of finding the carves of one log.
@@ -873,5 +925,12 @@ func (r LogResponse) Human(w io.Writer) {
 		for _, o := range c.Ops {
 			fmt.Fprintf(w, "- %s %s\n", o.Type, o.ID)
 		}
+	}
+	if r.NextCursor != "" {
+		cmd := r.command
+		if cmd == "" {
+			cmd = "rhiza log"
+		}
+		fmt.Fprintf(w, "\nnext: %s --cursor %s\n", cmd, r.NextCursor)
 	}
 }

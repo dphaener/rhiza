@@ -6069,6 +6069,18 @@ cmp stdout describe.golden.json
       "request": {
         "additionalProperties": false,
         "properties": {
+          "all": {
+            "description": "Return every change set, ignoring --limit and --cursor",
+            "type": "boolean"
+          },
+          "cursor": {
+            "description": "Where to go on: the next_cursor of the page before",
+            "type": "string"
+          },
+          "limit": {
+            "description": "The most change sets to return, 1 to 1000; default 100",
+            "type": "integer"
+          },
           "ref": {
             "description": "The node or link: an ID, a unique ID prefix of 4+ characters, or a node's handle",
             "type": "string"
@@ -6087,7 +6099,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "change_sets": {
-            "description": "Every change set that touched it, in apply order",
+            "description": "The change sets that touched it, in apply order; one page",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -6219,6 +6231,10 @@ cmp stdout describe.golden.json
               "type": "object"
             },
             "type": "array"
+          },
+          "next_cursor": {
+            "description": "The cursor of the next page; absent when no more remain",
+            "type": "string"
           },
           "target": {
             "additionalProperties": false,
