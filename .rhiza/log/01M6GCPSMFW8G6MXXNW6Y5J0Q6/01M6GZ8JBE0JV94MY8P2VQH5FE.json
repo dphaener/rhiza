@@ -1,0 +1,40 @@
+{
+  "actor": "01M6GWY1QBM6YPGTCABNQZ2CN7",
+  "after": [
+    "01M6GSN9B3X76FAQXNWHP4F9SD"
+  ],
+  "at": "2026-11-03T15:08:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8f2547e4, cmd/rhiza/testdata/script/ship-close-out-forget-retry.txtar dirties a tracked file in main and runs ship close-out --forget: it exits non-zero with main_updated false and update-main failed, and .git/rhiza/ship/<cs>.json still exists. After git checkout -- file.txt the same command reports main_updated true and the state file is gone. go test ./cmd/rhiza -run TestScripts/ship-close-out-forget-retry -count=1 passes. A manual scratch repro with a fresh build gave exit=1 (update-main failed, state file kept), then exit=0 (main_updated true, state file removed). The diff in internal/api/ship_close.go moves the os.Remove of the state path to after update-main succeeds. Attempt 1's finding is fixed: fmt-check, go vet ./... and make self-check (rhiza check) all pass with RHIZA_* unset, and go test ./cmd/rhiza -count=1 passes. The only failures under heavy machine load (load average ~15 on 4 cores) were timing budgets (TestReadBudget, slice TestBudget, modelapp) and command timeouts, which report contention from other packages and do not touch this diff."
+        },
+        "handle": "close-out-retry-after-forget-verified",
+        "id": "01M6GZ8AJ3FZ5HTKZA7XK382X1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6GZ8AJ3FZ5HTKZA7VC5WDPS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GZ8AJ3FZ5HTKZA7VC5WDPS",
+        "id": "01M6GZ8DMEN5ZDM41D188QBQW2",
+        "link": "01M6GZ8DMEN5ZDM41D15DQWT69",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GD4DWDYX2T29SPWWRY2DF6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6GCPSMFW8G6MXXNW6Y5J0Q6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GZ8JBE0JV94MY8P2VQH5FE",
+  "type": "ops",
+  "v": 1
+}
