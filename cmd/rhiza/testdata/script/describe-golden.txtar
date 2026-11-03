@@ -6959,7 +6959,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "kind": {
-            "description": "feature, bug or milestone; default feature. A bug's plan run opens its change set with the intent prefixed Fix:, a milestone's a record change set",
+            "description": "feature, bug or milestone; default feature. A bug's plan run opens its change set with the intent prefixed ",
             "enum": [
               "feature",
               "bug",
