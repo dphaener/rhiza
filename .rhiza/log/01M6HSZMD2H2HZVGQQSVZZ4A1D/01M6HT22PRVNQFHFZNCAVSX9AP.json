@@ -1,0 +1,53 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6HSZMD2H2HZVGQQSWDHCAMZ"
+  ],
+  "at": "2026-11-03T22:56:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "daemon-request-slot.txtar with a fake rex: with max-runs 2, two ready change sets and no request, daemon --once starts both ship runs; with one queued request and max-runs 1 it starts one ship run and the request stays queued; with max-runs 2 it starts one ship run and the request's plan run, and daemon status shows the other change set as no-slot with 'waiting for a slot: one is kept for a queued plan request'",
+          "statement": "While a queued plan request could start (no run, its retry time passed) and max-runs is above 1, the daemon's ship picks take at most max-runs minus 1 slots, so one is left for the request's plan run; a ready change set held back by this shows in daemon status as no-slot with the detail 'waiting for a slot: one is kept for a queued plan request'. With max-runs 1, or no request waiting, picks are unchanged"
+        },
+        "handle": "request-slot-kept",
+        "id": "01M6HT09X2WTT69DN4GQKZPYFJ",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6HT09X1W6W89R5N272GJXMP",
+        "op": "node.create",
+        "parent": "01M6CS230463DT24PWBJCPWD9Q"
+      },
+      {
+        "fields": {
+          "statement": "While a plan request waits, the daemon keeps one run slot for it: ship picks fill at most max-runs minus 1 slots. Owner, 2026-11-03: \"I just filed one that I want moved to the top of the queue\" and \"yes, raise it to 3\"; the request still got no slot because the new slot went to another ship run",
+          "wording": "the owner's words; the slot rule is the orchestrator's, as the owner's proxy"
+        },
+        "handle": "request-slot-kept-owner",
+        "id": "01M6HT0ZNHGD1V36Z7FACJC9CR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6HT0ZNHGD1V36Z7F77EXM52",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HT09X1W6W89R5N272GJXMP",
+        "id": "01M6HT1EWKZD5T68VRY1YGHGZR",
+        "link": "01M6HT1EWKZD5T68VRXYNW0YA7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HT0ZNHGD1V36Z7F77EXM52",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6HSZMD2H2HZVGQQSVZZ4A1D",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6HT22PRVNQFHFZNCAVSX9AP",
+  "type": "ops",
+  "v": 1
+}
