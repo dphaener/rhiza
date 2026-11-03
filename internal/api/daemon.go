@@ -604,9 +604,6 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		if err := daemonStart(ctx, cs, autonomous, mode); err != nil {
 			return started, resumed, nil, err
 		}
-		if ctx.daemonFold != nil {
-			ctx.daemonFold.invalidate()
-		}
 		pending[cs] = daemonPending{at: ctx.Now(), runs: daemonRunsOf(runs, cs)}
 		started = append(started, cs)
 	}
@@ -842,6 +839,10 @@ func daemonDetach(ctx *Ctx, what, name string, env, args []string) error {
 	common, err := gitCommonDir(ctx)
 	if err != nil {
 		return err
+	}
+	// Whatever the child does to the log, the next poll folds it again.
+	if ctx.daemonFold != nil {
+		ctx.daemonFold.invalidate()
 	}
 	p := Program{Name: ctx.Self, Args: args, Dir: ctx.Root, Env: append([]string{"REX_SESSION=" + ctx.RexSession}, env...), Unset: []string{"REX_BLOCK"}}
 	if err := ctx.Detach(p, filepath.Join(runLogDir(common), name+".log")); err != nil {

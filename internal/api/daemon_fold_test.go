@@ -28,6 +28,9 @@ type daemonFoldFix struct {
 	target   string
 	clock    time.Time
 	skips    []daemon.Skip
+	call     func(name, req string) any
+	refs     string
+	config   map[string]string
 }
 
 func newDaemonFoldFix(t testing.TB) *daemonFoldFix {
@@ -47,7 +50,7 @@ func newDaemonFoldFix(t testing.TB) *daemonFoldFix {
 		return resp
 	}
 	call("init", `{}`)
-	f := &daemonFoldFix{ctx: ctx, pending: map[string]daemonPending{}, unj: map[string]daemonPending{}, clock: ctx.Now()}
+	f := &daemonFoldFix{call: call, config: map[string]string{}, ctx: ctx, pending: map[string]daemonPending{}, unj: map[string]daemonPending{}, clock: ctx.Now()}
 	// A milestone, landed.
 	call("change.new", `{"intent":"Milestone"}`)
 	call("add", `{"kind":"intent","handle":"org"}`)
@@ -87,6 +90,21 @@ func newDaemonFoldFix(t testing.TB) *daemonFoldFix {
 	ctx.Git = func(args ...string) (string, error) {
 		if len(args) > 0 && args[0] == "rev-parse" {
 			return common, nil
+		}
+		if len(args) > 0 && args[0] == "for-each-ref" {
+			return f.refs, nil
+		}
+		if len(args) == 3 && args[0] == "config" && args[1] == "--get" {
+			if v, ok := f.config[args[2]]; ok {
+				return v, nil
+			}
+		}
+		if len(args) == 3 && args[0] == "config" && args[1] == "--get-regexp" {
+			var out string
+			for k, v := range f.config {
+				out += k + " " + v + "\n"
+			}
+			return out, nil
 		}
 		return "", fmt.Errorf("no git")
 	}
@@ -226,5 +244,84 @@ func BenchmarkDaemonIdlePoll(b *testing.B) {
 	b.ResetTimer()
 	for range b.N {
 		f.poll(b)
+	}
+}
+
+// Each of a new log entry, a moved ref, a changed daemon setting and a run
+// the daemon starts or resumes drops the cache: the next poll reads the log
+// again and acts on the change.
+func TestDaemonPollCacheInvalidates(t *testing.T) {
+	f := newDaemonFoldFix(t)
+	f.unj[f.target] = daemonPending{at: f.clock}
+	f.config["rhiza.autonomy.ship"] = "owner"
+
+	// readsNext polls and returns the log reads it took.
+	readsNext := func() int {
+		f.logReads = 0
+		f.poll(t)
+		return f.logReads
+	}
+	idle := func(what string) {
+		t.Helper()
+		f.backdate(t, time.Now().Add(-time.Hour))
+		readsNext() // refill
+		if n := readsNext(); n != 0 {
+			t.Fatalf("%s: idle poll read the log %d times", what, n)
+		}
+	}
+	accept := func(i int) string {
+		cs := f.call("change.new", fmt.Sprintf(`{"intent":"Late %d"}`, i)).(ChangeNewResponse).ChangeSet
+		f.call("add", fmt.Sprintf(`{"kind":"capability","handle":"late-%d"}`, i))
+		f.call("link", fmt.Sprintf(`{"from":%q,"type":"serves","to":"m"}`, cs.String()))
+		f.lifecycle(f.call, "propose", "accept")
+		return cs.String()
+	}
+	skipped := func(cs string) bool {
+		for _, s := range f.skips {
+			if s.Change == cs && s.Reason == daemon.SkipShipOwner {
+				return true
+			}
+		}
+		return false
+	}
+	idle("start")
+
+	// A log entry: a change set accepted. The owner gates shipping, so it
+	// is seen and skipped, not picked.
+	late1 := accept(1)
+	if n := readsNext(); n == 0 || !skipped(late1) || len(f.picked) != 0 {
+		t.Fatalf("after an accept: %d log reads, picked %v, skips %+v; want reads and %s skipped", f.logReads, f.picked, f.skips, late1)
+	}
+	idle("accept")
+
+	// A setting: the same cached log, now picked under the new value.
+	f.config["rhiza.autonomy.ship"] = "auto"
+	if n := readsNext(); n == 0 || len(f.picked) != 1 || f.picked[0] != late1 {
+		t.Fatalf("after daemon set: %d log reads, picked %v; want reads and %s picked", f.logReads, f.picked, late1)
+	}
+	idle("pick")
+
+	// The daemon starts a run.
+	if err := daemonStart(f.ctx, late1, false, ""); err != nil {
+		t.Fatal(err)
+	}
+	if n := readsNext(); n == 0 {
+		t.Error("poll after the daemon started a run did not read the log")
+	}
+	idle("start")
+
+	// A moved ref.
+	f.refs = "abc123 refs/heads/main\n"
+	if n := readsNext(); n == 0 {
+		t.Error("poll after a ref moved did not read the log")
+	}
+	idle("ref")
+
+	// The daemon resumes a run.
+	if err := daemonResume(f.ctx, "run1"); err != nil {
+		t.Fatal(err)
+	}
+	if n := readsNext(); n == 0 {
+		t.Error("poll after the daemon resumed a run did not read the log")
 	}
 }

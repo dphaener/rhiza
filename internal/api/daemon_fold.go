@@ -67,8 +67,8 @@ type daemonFoldCache struct {
 // invalidate drops the cached fold, as a write of the daemon's own does.
 func (c *daemonFoldCache) invalidate() { c.folded, c.stamp = nil, "" }
 
-// daemonStamp keys the cache: the log's stat fingerprint, the git refs and
-// the change set the reads default to. It is "" when the log's stamp cannot
+// daemonStamp keys the cache: the log's stat fingerprint, the git refs, the
+// daemon's settings and the change set the reads default to. It is "" when the log's stamp cannot
 // be trusted (a stat failed, or a folder changed in the last clock tick),
 // which never matches a cached one.
 func daemonStamp(ctx *Ctx) string {
@@ -84,6 +84,13 @@ func daemonStamp(ctx *Ctx) string {
 	h.Write([]byte{0})
 	if ctx.Git != nil {
 		if out, err := ctx.Git("for-each-ref", "--format=%(objectname) %(refname)"); err == nil {
+			h.Write([]byte(out))
+		}
+	}
+	h.Write([]byte{0})
+	if ctx.Git != nil {
+		// The daemon's settings live in git config.
+		if out, err := ctx.Git("config", "--get-regexp", `^rhiza\.`); err == nil {
 			h.Write([]byte(out))
 		}
 	}
