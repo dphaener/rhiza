@@ -22,7 +22,7 @@ func TestRequestsRoundTrip(t *testing.T) {
 	if err != nil || len(got) != 2 || got[0] != want[0] || got[1] != want[1] {
 		t.Fatalf("got %v, %v; want %v", got, err, want)
 	}
-	if got[0].Intent() != "Fix: Login fails" || got[1].Intent() != "x" {
+	if got[0].Intent() != "Fix Login fails" || got[1].Intent() != "x" {
 		t.Errorf("intents %q, %q", got[0].Intent(), got[1].Intent())
 	}
 }
