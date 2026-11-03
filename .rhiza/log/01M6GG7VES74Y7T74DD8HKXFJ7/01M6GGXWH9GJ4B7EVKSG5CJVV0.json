@@ -1,0 +1,70 @@
+{
+  "actor": "01M6GG8FBRBDG7Y8GJG7F25HSF",
+  "after": [
+    "01M6GGW6E28ZNMWZBCCNM52WQZ"
+  ],
+  "at": "2026-11-03T10:57:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6GGJXKR6VPWTH7BVJN87SRP",
+        "id": "01M6GGWQM7T4TC7C5CC35M73R3",
+        "link": "01M6GGWQM7T4TC7C5CC2648F7B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GGTYW2E9JCR33JAZVB7YNF",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6GGRTK77A4WVXXV5BBZVYR0",
+        "id": "01M6GGX0RM5CHKCT23BEJ55X1R",
+        "link": "01M6GGX0RM5CHKCT23BDSESTT5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GGTYW2E9JCR33JAZVB7YNF",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "The testscript Setup in cmd/rhiza/main_test.go sets RHIZA_TEST_FREE_BYTES=1099511627776 beside RHIZA_TEST_NOW; a script that sets no RHIZA_TEST_FREE_BYTES runs rhiza health --json and sees the 1 TiB figure for disk, and the scripts that set their own value (health, daemon-notify-disk-low, daemon-picks) still pass unchanged",
+          "statement": "Every test script sees a fixed 1 TiB of free disk unless it sets RHIZA_TEST_FREE_BYTES itself, so the daemon's minFree guard never reads the host's disk and make check passes the same whatever free space TMPDIR has"
+        },
+        "handle": "scripts-free-disk-hermetic",
+        "id": "01M6GGX8QP23PVT25E604J8GFP",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6GGX8QP23PVT25E5XDZ7X49",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6GGX8QP23PVT25E5XDZ7X49",
+        "id": "01M6GGXESV09S8DNW54K2FXFV9",
+        "link": "01M6GGXESV09S8DNW54GA80KE8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GGJXKR6VPWTH7BVJN87SRP",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6GGX8QP23PVT25E5XDZ7X49",
+        "id": "01M6GGXMZEPNR0KA9YMCA9YYDF",
+        "link": "01M6GGXMZEPNR0KA9YM8ZZ9ZSH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GGRTK77A4WVXXV5BBZVYR0",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6GG7VES74Y7T74DD8HKXFJ7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GGXWH9GJ4B7EVKSG5CJVV0",
+  "type": "ops",
+  "v": 1
+}

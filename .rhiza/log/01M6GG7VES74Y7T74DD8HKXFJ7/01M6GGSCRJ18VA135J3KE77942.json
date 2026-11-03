@@ -1,0 +1,41 @@
+{
+  "actor": "01M6GGPQJFPF5TPXPR99RYX36P",
+  "after": [
+    "01M6GGP3NN5AX49EMGGRABADMD"
+  ],
+  "at": "2026-11-03T10:55:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question reports that on the Ubuntu VM (sh is dash) every daemon script already passes. The scripts confirm why: daemon-lock.txtar backgrounds the daemon with testscript's own `exec rhiza daemon ... &name&`, which runs no shell at all; the sh -c lines there are foreground and use only POSIX constructs; the fake rex scripts that background a daemon already use exec \"$@\". So the intent's premise that background daemons need sh -c '... exec rhiza daemon ...' does not hold for the current code, and rewriting passing scripts would be churn with no failing case to check against. The intent's goal is that make check passes the same on macOS and Ubuntu; the free-disk guard is the real host dependency, so the change set's work belongs there.",
+          "statement": "This change set makes no shell-portability rewrite. It fixes only the host free-disk dependency (daemon scripts set RHIZA_TEST_FREE_BYTES or minFree 0). The dash half of the intent is treated as already satisfied: change a script's shell only if one is shown to fail under dash, and then only that script.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "decision-shell-portability",
+        "id": "01M6GGRTK77A4WVXXV5BJBG40A",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6GGRTK77A4WVXXV5BBZVYR0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GGRTK77A4WVXXV5BBZVYR0",
+        "id": "01M6GGS2SJC6DPCRFNXMVMPWVQ",
+        "link": "01M6GGS2SJC6DPCRFNXM9TF7ZW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GGP08H2Z6RCM3PJAXCNG7Y",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6GG7VES74Y7T74DD8HKXFJ7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GGSCRJ18VA135J3KE77942",
+  "type": "ops",
+  "v": 1
+}
