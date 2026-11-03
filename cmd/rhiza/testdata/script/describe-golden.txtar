@@ -1762,6 +1762,39 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "daemon.start",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "changed": {
+            "description": "False when the daemon already ran and nothing was done",
+            "type": "boolean"
+          },
+          "mode": {
+            "description": "How this installation runs the daemon: service (a systemd user unit) or tab (the Rex tab 'rhiza daemon')",
+            "enum": [
+              "service",
+              "tab"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "changed",
+          "mode"
+        ],
+        "type": "object"
+      },
+      "summary": "Start this repo's daemon: through its systemd unit when daemon install wrote one, else in the Rex tab 'rhiza daemon'",
+      "write": false
+    },
+    {
       "name": "daemon.status",
       "request": {
         "additionalProperties": false,
@@ -1854,6 +1887,14 @@ cmp stdout describe.golden.json
           "max_runs": {
             "description": "How many runs it keeps running at once",
             "type": "integer"
+          },
+          "mode": {
+            "description": "How this installation runs the daemon: service when daemon install wrote a systemd unit, else tab (the Rex tab 'rhiza daemon')",
+            "enum": [
+              "service",
+              "tab"
+            ],
+            "type": "string"
           },
           "process": {
             "description": "The daemon's process, as host:pid; absent when none ever ran",
@@ -1998,6 +2039,7 @@ cmp stdout describe.golden.json
         "required": [
           "autonomous",
           "hooks",
+          "mode",
           "running",
           "runs",
           "settings",
@@ -2007,6 +2049,39 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "Show the daemon of this repository: whether it runs, its settings, its live runs and what it last started or resumed",
+      "write": false
+    },
+    {
+      "name": "daemon.stop",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "changed": {
+            "description": "False when no daemon ran and nothing was done",
+            "type": "boolean"
+          },
+          "mode": {
+            "description": "How this installation runs the daemon: service (a systemd user unit) or tab (the Rex tab 'rhiza daemon')",
+            "enum": [
+              "service",
+              "tab"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "changed",
+          "mode"
+        ],
+        "type": "object"
+      },
+      "summary": "Stop this repo's daemon: through its systemd unit when daemon install wrote one, else by ending its process",
       "write": false
     },
     {

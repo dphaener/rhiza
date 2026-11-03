@@ -716,6 +716,7 @@ var skipText = map[string]string{
 // DaemonStatusResponse is the daemon's state. While no daemon holds the
 // lock, Running is false and the rest, if any, is what the last daemon left.
 type DaemonStatusResponse struct {
+	Mode        string        `json:"mode" enum:"service,tab" desc:"How this installation runs the daemon: service when daemon install wrote a systemd unit, else tab (the Rex tab 'rhiza daemon')"`
 	Running     bool          `json:"running" desc:"True while a live daemon holds the repository's lock"`
 	Process     string        `json:"process,omitempty" desc:"The daemon's process, as host:pid; absent when none ever ran"`
 	Version     string        `json:"version,omitempty" desc:"The version of the binary the daemon runs, as recorded when it started"`
@@ -737,8 +738,10 @@ type DaemonStatusResponse struct {
 func (r DaemonStatusResponse) Human(w io.Writer) {
 	if r.Running {
 		fmt.Fprintf(w, "Daemon running, process %s\n", r.Process)
+		fmt.Fprintf(w, "Mode: %s\n", r.Mode)
 	} else {
 		fmt.Fprintln(w, "Daemon not running")
+		fmt.Fprintf(w, "Mode: %s\n", r.Mode)
 		if r.Process == "" {
 			return
 		}
@@ -806,6 +809,7 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	resp := DaemonStatusResponse{Settings: []Setting{}, Runs: []DaemonRun{}, Skipped: []DaemonSkip{}, Hooks: []HookRow{}, Unjournaled: []DaemonEvent{}}
+	resp.Mode, _ = daemonMode(ctx)
 	_, resp.Running = daemon.Running(common)
 	st, ok := daemon.ReadState(common)
 	if !ok || (resp.Running && st.Process != daemon.ReadHolder(common)) {

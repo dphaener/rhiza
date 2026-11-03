@@ -125,14 +125,6 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		am := autonomyapp.NewModel(func(op string, args []string) ([]byte, error) {
 			return call(op, false, false, args)
 		})
-		if ctx, err := newCtx(g, os.Stdin, getenv); err == nil {
-			am.SetStarter(autonomyapp.DefaultStarter(autonomyapp.Starter{
-				Exec: func(name string, args []string, dir string) ([]byte, error) {
-					return ctx.Exec(name, args, dir, nil)
-				},
-				Self: ctx.Self, Root: ctx.Root, RexSession: ctx.RexSession,
-			}))
-		}
 		return am
 	}
 	var m tea.Model
