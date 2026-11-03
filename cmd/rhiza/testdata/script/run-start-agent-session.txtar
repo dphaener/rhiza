@@ -12,13 +12,13 @@ mkdir .rhiza/workflows
 cp ../one.toml .rhiza/workflows/one.toml
 
 env RHIZA_SESSION=01SESSIONFORTESTING
-! exec rhiza run start --workflow one
+! exec rhiza run start --foreground --workflow one
 stderr '01SESSIONFORTESTING'
 ! exists .git/rhiza/runs
 
 # Without RHIZA_SESSION the start is unchanged.
 env RHIZA_SESSION=
-exec rhiza run start --workflow one
+exec rhiza run start --foreground --workflow one
 stdout 'succeeded$'
 
 -- one.toml --

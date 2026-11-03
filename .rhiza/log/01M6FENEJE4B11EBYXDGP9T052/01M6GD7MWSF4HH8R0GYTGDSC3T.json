@@ -1,0 +1,29 @@
+{
+  "actor": "01M6GD5F6K12FDN25FMEWE4BAW",
+  "after": [
+    "01M6GD4C2WF51FPT38HBHYJBMJ"
+  ],
+  "at": "2026-11-03T09:53:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6734CBEZPDTAJBAP279B34P",
+        "handle": null,
+        "id": "01M6GD7BA5848DPG17AE0KD8T4",
+        "node": "01M6734CBEZPDTAJBANZVV5GXC",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A test with a fake runner presses p then y on a ready change set and asserts one run.start call with args <cs> --workflow plan and no --autonomous, and the view says it queued the plan run; s then y gives one run.start with <cs> --autonomous --permission-mode auto; n calls nothing; o on a change set with a live run calls run.open and says which Rex tab it focused, and on one without says no live run; no test runs real Rex",
+          "statement": "On the selected change set, p queues a plan run and s queues a ship run through run.start for the daemon to drive, the plan run interactive and the ship run autonomous with permission mode auto; the app asks y/n first, stays open, and says it queued the run for the daemon; o focuses the Rex tab of the change set's live run, or says there is none"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6FENEJE4B11EBYXDGP9T052",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GD7MWSF4HH8R0GYTGDSC3T",
+  "type": "ops",
+  "v": 1
+}

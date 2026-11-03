@@ -31,7 +31,7 @@ cp $WORK/build.toml .rhiza/workflows/build.toml
 exec git add -A
 exec git commit -qm leaves
 
-exec sh -c 'rhiza run start --workflow build --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow build --permission-mode manual --json; echo exit=$?'
 stdout '"state": "succeeded"'
 stdout '^exit=0$'
 exec rhiza run status

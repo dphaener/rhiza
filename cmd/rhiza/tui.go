@@ -111,9 +111,6 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 			}
 			return call(op, false, false, args)
 		})
-		if ctx, err := newCtx(g, os.Stdin, getenv); err == nil {
-			im.Exec, im.Self, im.Root, im.RexSession = ctx.Exec, ctx.Self, ctx.Root, ctx.RexSession
-		}
 		return im
 	}
 	liveModel := func() *liveapp.Model {
@@ -161,14 +158,6 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		m, result = qm, qm.Result
 	case isRoadmap:
 		am := roadmapModel(g, callWith)
-		if ctx, err := newCtx(g, os.Stdin, getenv); err == nil {
-			am.SetStarter(roadmapapp.Starter{
-				Exec: func(name string, args []string, dir string) ([]byte, error) {
-					return ctx.Exec(name, args, dir, nil)
-				},
-				Self: ctx.Self, Root: ctx.Root, RexSession: ctx.RexSession,
-			})
-		}
 		m, result = am, am.Result
 	case isWrite:
 		wm := writeapps.NewModel(write, func(a writeapps.App, args []string, dry bool) ([]byte, error) {

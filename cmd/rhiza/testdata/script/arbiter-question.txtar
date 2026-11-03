@@ -40,7 +40,7 @@ env REX_SESSION=session:s1
 # (a) Autonomous, and the arbiter answers: the run succeeds. No one is
 # told of the block: the question is the arbiter's.
 exec sh -c 'echo answer > $WORK/mode'
-exec rhiza run start --workflow ask --permission-mode manual --autonomous
+exec rhiza run start --foreground --workflow ask --permission-mode manual --autonomous
 stdout '^Run [0-9A-Z]{26} succeeded$'
 stderr 'step build: blocked on question'
 stderr 'step build: session [0-9a-f-]+ asked question question-[0-9a-f]{8}-1 \([0-9A-Z]{26}\); the arbiter answers it'
@@ -77,7 +77,7 @@ stdout -count=1 '^send-key -b block:b1 enter$'
 exec sh -c 'echo none > $WORK/mode'
 rm $WORK/arbiter.done
 rm $WORK/typed.log
-! exec rhiza run start --workflow ask --permission-mode manual --autonomous
+! exec rhiza run start --foreground --workflow ask --permission-mode manual --autonomous
 stdout '^Run [0-9A-Z]{26} failed$'
 ! stderr 'state=blocked'
 exec rhiza run status
@@ -90,7 +90,7 @@ exec sh -c 'i=0; until [ "$(grep -c exited $WORK/asker.log)" = 2 ]; do i=$((i+1)
 
 # (c) A normal run: blocked on the owner, no question node, no arbiter.
 rm $WORK/arbiter.done
-exec rhiza run start --workflow ask --permission-mode manual &
+exec rhiza run start --foreground --workflow ask --permission-mode manual &
 exec sh -c 'i=0; while [ $i -lt 400 ]; do rhiza run status | grep -q "^Run .* blocked$" && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
 exec rhiza run status
 stdout '^Run [0-9A-Z]{26} blocked$'

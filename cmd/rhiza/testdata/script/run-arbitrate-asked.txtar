@@ -30,7 +30,7 @@ exec git commit -qm 'Asked runs'
 # Autonomous, the arbiter answers: arbiter and arbitrated entries for the
 # question, and the run goes on to its next step.
 exec sh -c 'echo answer > $WORK/mode'
-exec sh -c 'rhiza run start --workflow plan --permission-mode manual --autonomous > $WORK/out 2> $WORK/err; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow plan --permission-mode manual --autonomous > $WORK/out 2> $WORK/err; echo exit=$?'
 stdout '^exit=0$'
 exec cat $WORK/out
 stdout '^Run [0-9A-Z]{26} succeeded$'
@@ -55,7 +55,7 @@ stdout -count=1 '^Decide question [0-9A-Z]{26}: follow rhiza guide arbiter\.$'
 # question, and the next step does not run.
 rm $WORK/next.ran
 exec sh -c 'echo none > $WORK/mode'
-! exec rhiza run start --workflow plan --permission-mode manual --autonomous
+! exec rhiza run start --foreground --workflow plan --permission-mode manual --autonomous
 stdout '^Run [0-9A-Z]{26} failed$'
 stdout 'arbiter failed on question review-[0-9a-z]{8}-r3-f1 \([0-9A-Z]{26}\): no live Decision answers question'
 stderr 'step review: arbiter fail on question [0-9A-Z]{26}'
@@ -67,7 +67,7 @@ exec cat $WORK/arbiter.log
 stdout -count=2 '^Decide question'
 
 # A normal run: no arbiter, the question stays open, the run goes on.
-exec rhiza run start --workflow plan --permission-mode manual
+exec rhiza run start --foreground --workflow plan --permission-mode manual
 stdout '^Run [0-9A-Z]{26} succeeded$'
 exists $WORK/next.ran
 exec cat $WORK/arbiter.log

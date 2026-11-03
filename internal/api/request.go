@@ -302,32 +302,19 @@ func newRequestRunID(ctx *Ctx, rs *run.Store, reqs []daemon.Request) (string, er
 	return "", Errorf("no free run ID after %d draws", maxRunIDDraws)
 }
 
-// daemonStartPlan opens a new Rex tab running the plan run of request q:
-// run start --workflow plan --new with its intent, --milestone for a
-// milestone, and --request so the run takes the ID the request names.
+// daemonStartPlan starts the plan run of request q as a detached process:
+// run start --foreground --workflow plan --new with its intent, --milestone
+// for a milestone, and --request so the run takes the ID the request names.
+// Its log is that run's, <run>.log, as run log reads it.
 func daemonStartPlan(ctx *Ctx, q daemon.Request, autonomous bool, mode string) error {
-	if ctx.Exec == nil || ctx.Self == "" {
-		return Errorf("daemon cannot start the plan run of request %s: no rex or rhiza path", q.ID)
-	}
-	if err := ensureRepoSession(ctx); err != nil {
-		return err
-	}
-	args := []string{"window", "new"}
-	if ctx.RexSession != "" {
-		args = append(args, "-s", ctx.RexSession)
-	}
-	args = append(args, "plan-"+q.ID[:min(len(q.ID), 9)], "-c", ctx.Root, "--json", "--",
-		ctx.Self, "run", "start", "--workflow", planWorkflow, "--new", q.Intent(), "--request", q.ID, "--permission-mode", mode)
+	args := []string{"run", "start", "--foreground", "--workflow", planWorkflow, "--new", q.Intent(), "--request", q.ID, "--permission-mode", mode}
 	if q.Kind == daemon.KindMilestone {
 		args = append(args, "--milestone")
 	}
 	if autonomous {
 		args = append(args, "--autonomous")
 	}
-	if _, err := ctx.Exec("rex", args, ctx.Root, nil); err != nil {
-		return Errorf("rex window new for request %s: %v", q.ID, err)
-	}
-	return nil
+	return daemonDetach(ctx, "the plan run of request "+q.ID, q.Run, nil, args)
 }
 
 // requestRun is the run ID run start --request <id> takes: the one the

@@ -14,7 +14,7 @@ At 161f5f5 (the fix adding daemon --permission-mode), go test ./cmd/rhiza -run '
 
 ### Out
 
-- verifies [daemon-run-tabs](../capability/rhiza/orchestration/daemon/daemon-run-tabs.md)
+- verifies daemon-run-tabs (retired)
 
 ## History
 

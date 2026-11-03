@@ -2,7 +2,7 @@ package inboxapp
 
 import (
 	"encoding/json"
-	"os/exec"
+	"os"
 	"strings"
 	"testing"
 
@@ -24,7 +24,8 @@ type call struct {
 type rig struct {
 	m     *Model
 	calls []call
-	execs [][]string
+	// onCall sees each call but the inbox's own.
+	onCall func(call)
 	// items is what the inbox operation returns.
 	items string
 }
@@ -36,14 +37,13 @@ func newRig(t *testing.T) *rig {
 		if op == Name {
 			return []byte(r.items), nil
 		}
-		r.calls = append(r.calls, call{op, args})
+		c := call{op, args}
+		r.calls = append(r.calls, c)
+		if r.onCall != nil {
+			r.onCall(c)
+		}
 		return []byte(`{}`), nil
 	})
-	m.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
-		r.execs = append(r.execs, append([]string{name}, args...))
-		return nil, nil
-	}
-	m.Self, m.Root = "/bin/rhiza", "/repo"
 	r.m = m
 	return r
 }
@@ -100,41 +100,39 @@ func TestTakeRecommendation(t *testing.T) {
 	}
 }
 
-func TestApproveAndRequestChangesOpenTabs(t *testing.T) {
+func TestApproveAndRequestChangesCallTheOperations(t *testing.T) {
 	r := newRig(t)
 	r.at(1)
 	r.press("y")
-	if len(r.calls) != 0 || len(r.execs) != 1 {
-		t.Fatalf("calls %v execs %v", r.calls, r.execs)
+	if len(r.calls) != 1 || r.calls[0].op != "run.approve" || strings.Join(r.calls[0].args, "|") != "RUNS00000002" {
+		t.Fatalf("calls %v", r.calls)
 	}
-	if got, want := strings.Join(r.execs[0], " "), "rex window new RUNS00000 -c /repo --json -- /bin/rhiza run approve RUNS00000002"; got != want {
-		t.Fatalf("exec %q, want %q", got, want)
+	// run.request-changes reads the findings from the file it is given.
+	var f struct {
+		Findings []map[string]string `json:"findings"`
+	}
+	var file string
+	r.onCall = func(c call) {
+		file = c.args[0]
+		b, err := os.ReadFile(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := json.Unmarshal(b, &f); err != nil {
+			t.Fatal(err)
+		}
 	}
 	r.press("c")
 	r.typeText("add tests")
 	r.press("enter")
-	if len(r.calls) != 0 || len(r.execs) != 2 {
-		t.Fatalf("calls %v execs %v", r.calls, r.execs)
+	if len(r.calls) != 2 || r.calls[1].op != "run.request-changes" || r.calls[1].args[1] != "RUNS00000002" {
+		t.Fatalf("calls %v", r.calls)
 	}
-	e := r.execs[1]
-	if got, want := strings.Join(e[:7], " "), "rex window new RUNS00000 -c /repo --json"; got != want || e[7] != "--" {
-		t.Fatalf("exec %q", e)
+	if len(f.Findings) != 1 || f.Findings[0]["reason"] != "add tests" || f.Findings[0]["check"] != "quality" {
+		t.Fatalf("findings %v", f)
 	}
-	// Run the tab's command with echo for rhiza: the findings go on stdin.
-	cmd := e[8:]
-	cmd[4] = "echo"
-	out, err := exec.Command(cmd[0], cmd[1:]...).Output()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got := strings.TrimSpace(string(out)); got != "run request-changes - RUNS00000002" {
-		t.Fatalf("command printed %q", got)
-	}
-	var f struct {
-		Findings []map[string]string `json:"findings"`
-	}
-	if err := json.Unmarshal([]byte(cmd[5]), &f); err != nil || len(f.Findings) != 1 || f.Findings[0]["reason"] != "add tests" {
-		t.Fatalf("findings %q: %v", cmd[5], err)
+	if _, err := os.Stat(file); err == nil {
+		t.Errorf("findings file %s left behind", file)
 	}
 }
 
@@ -146,8 +144,8 @@ func TestModeActsOnItsItem(t *testing.T) {
 	r.items = strings.Replace(actionItems, `{"id":"f3","kind":"failed","run":"RUNF00000003","change":"C3","step":"verify"},`, "", 1)
 	r.m.Update(TickMsg{})
 	r.press("y")
-	if len(r.calls) != 0 || len(r.execs) != 0 {
-		t.Fatalf("calls %v execs %v", r.calls, r.execs)
+	if len(r.calls) != 0 {
+		t.Fatalf("calls %v", r.calls)
 	}
 	if !strings.Contains(r.m.View().Content, "no longer waits") {
 		t.Fatalf("view:\n%s", r.m.View().Content)
@@ -164,21 +162,17 @@ func TestModeActsOnItsItem(t *testing.T) {
 	}
 }
 
-func TestRetryOpensTab(t *testing.T) {
+func TestRetryCallsResume(t *testing.T) {
 	r := newRig(t)
 	r.at(2)
 	r.press("R")
-	if len(r.execs) != 1 {
-		t.Fatalf("execs: %v", r.execs)
-	}
-	got := strings.Join(r.execs[0], " ")
-	if want := "rex window new RUNF00000 -c /repo --json -- /bin/rhiza run resume RUNF00000003 --retry"; got != want {
-		t.Fatalf("exec %q, want %q", got, want)
+	if len(r.calls) != 1 || r.calls[0].op != "run.resume" || strings.Join(r.calls[0].args, " ") != "RUNF00000003 --retry" {
+		t.Fatalf("calls: %v", r.calls)
 	}
 	r.at(1)
 	r.press("R")
-	if got := strings.Join(r.execs[1], " "); !strings.HasSuffix(got, "run resume RUNG00000004") {
-		t.Fatalf("exec %q", got)
+	if len(r.calls) != 2 || r.calls[1].op != "run.resume" || strings.Join(r.calls[1].args, " ") != "RUNG00000004" {
+		t.Fatalf("calls: %v", r.calls)
 	}
 }
 
@@ -201,8 +195,8 @@ func TestActionsOnlyOnTheirKinds(t *testing.T) {
 	r.at(2)
 	r.press("a", "t", "y", "c") // on a failed run
 	r.press("enter")
-	if len(r.execs) != 0 || len(r.calls) != 1 || r.calls[0].op != "inbox.open" {
-		t.Fatalf("calls %v execs %v", r.calls, r.execs)
+	if len(r.calls) != 1 || r.calls[0].op != "inbox.open" {
+		t.Fatalf("calls %v", r.calls)
 	}
 }
 
@@ -278,7 +272,11 @@ func newNudgeRig(t *testing.T, pane string) *rig {
 			r.calls = append(r.calls, call{op, args})
 			return []byte(pane), nil
 		}
-		r.calls = append(r.calls, call{op, args})
+		c := call{op, args}
+		r.calls = append(r.calls, c)
+		if r.onCall != nil {
+			r.onCall(c)
+		}
 		return []byte(`{}`), nil
 	})
 	r.m = m

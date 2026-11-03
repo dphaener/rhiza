@@ -35,7 +35,7 @@ env REX_SESSION=session:s1
 
 # (a) The advisor recommends.
 exec sh -c 'echo recommend > $WORK/mode'
-exec rhiza run start --workflow ask --permission-mode manual &
+exec rhiza run start --foreground --workflow ask --permission-mode manual &
 exec sh -c 'i=0; until [ -f $WORK/advisor.done ]; do i=$((i+1)); [ $i -gt 800 ] && exit 1; sleep 0.025; done'
 exec cat $WORK/advisor.log
 stdout -count=1 '^Recommend an answer to this question the owner was asked: Which colour\? -- follow rhiza guide advisor\.$'
@@ -76,7 +76,7 @@ stdout '^Nothing waits on you$'
 rm $WORK/answer
 rm $WORK/advisor.done
 exec sh -c 'echo fail > $WORK/mode'
-exec rhiza run start --workflow ask --permission-mode manual &
+exec rhiza run start --foreground --workflow ask --permission-mode manual &
 exec sh -c 'i=0; until [ -f $WORK/advisor.done ]; do i=$((i+1)); [ $i -gt 800 ] && exit 1; sleep 0.025; done'
 exec sh -c 'i=0; while [ $i -lt 400 ]; do rhiza run status | grep -q "^Run .* blocked$" && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
 exec rhiza inbox

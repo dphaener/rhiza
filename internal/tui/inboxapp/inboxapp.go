@@ -7,6 +7,7 @@ package inboxapp
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -29,11 +30,6 @@ func init() {
 // Runner runs the inbox operation and returns its result as
 // `rhiza inbox --json` prints it.
 type Runner func(op string, args []string) ([]byte, error)
-
-// Exec runs a program, as api.Ctx.Exec does: the app opens run tabs
-// through it with rex, so the runs that retry, approve and request changes
-// continue run there and the app stays responsive.
-type Exec func(name string, args []string, dir string, env []string) ([]byte, error)
 
 // The finding an owner's typed changes become: the review step's quality
 // check, at major severity, placed on the owner's own words.
@@ -76,14 +72,6 @@ type Model struct {
 	items  []api.InboxItem // in display order, grouped by kind
 	err    error
 	cursor int
-
-	// Exec, Self, Root and RexSession open a run's tab: rex window new
-	// running Self run resume, approve or request-changes. Without Exec
-	// or Self, R, y and c say they cannot.
-	Exec       Exec
-	Self       string
-	Root       string
-	RexSession string
 
 	mode  string
 	input string
@@ -211,7 +199,7 @@ func (m *Model) normalKey(msg tea.KeyPressMsg) tea.Cmd {
 		}
 	case "y":
 		if has && it.Kind == api.InboxSignoff {
-			m.tab(it, "approve", m.Self, "run", "approve", it.Run)
+			m.act("approve", "run.approve", it.Run)
 		}
 	case "c":
 		if has && it.Kind == api.InboxSignoff {
@@ -316,9 +304,10 @@ func (m *Model) act(what, op string, args ...string) {
 	m.Reload()
 }
 
-// requestChanges asks for changes with the typed text as the one finding,
-// in a new tab: the owner's findings go to rhiza run request-changes on
-// stdin.
+// requestChanges asks for changes with the typed text as the one finding.
+// run.request-changes reads its findings from a file, so they go in a
+// temporary one for the call. Like approve and resume it only records the
+// owner's action and queues the run's continuation for the daemon.
 func (m *Model) requestChanges(it api.InboxItem, text string) {
 	body, err := json.Marshal(map[string]any{"findings": []map[string]string{{
 		"check": changesCheck, "severity": changesSeverity, "place": changesPlace, "reason": text,
@@ -327,39 +316,31 @@ func (m *Model) requestChanges(it api.InboxItem, text string) {
 		m.note = fmt.Sprintf("request changes failed: %v", err)
 		return
 	}
-	m.tab(it, "request changes", "sh", "-c", `printf %s "$2" | "$1" run request-changes - "$3"`, "sh", m.Self, string(body), it.Run)
-}
-
-// resume opens a new Rex tab running rhiza run resume on the item's run. A
-// failed run has ended, so its resume restarts it at the step that failed.
-func (m *Model) resume(it api.InboxItem) {
-	cmd := []string{m.Self, "run", "resume", it.Run}
-	if it.Kind == api.InboxFailed {
-		cmd = append(cmd, "--retry")
-	}
-	m.tab(it, "retry", cmd...)
-}
-
-// tab opens a new Rex tab, named after the item's run, running cmd in the
-// repo, so the run cmd continues runs there and not inside the app, and
-// reloads the list.
-func (m *Model) tab(it api.InboxItem, what string, cmd ...string) {
-	if m.Exec == nil || m.Self == "" {
-		m.note = "cannot open a tab: no rex or rhiza path"
+	f, err := os.CreateTemp("", "rhiza-changes-*.json")
+	if err != nil {
+		m.note = fmt.Sprintf("request changes failed: %v", err)
 		return
 	}
-	args := []string{"window", "new"}
-	if m.RexSession != "" {
-		args = append(args, "-s", m.RexSession)
+	defer os.Remove(f.Name())
+	_, werr := f.Write(body)
+	if cerr := f.Close(); werr == nil {
+		werr = cerr
 	}
-	args = append(args, it.Run[:min(len(it.Run), 9)], "-c", m.Root, "--json", "--")
-	args = append(args, cmd...)
-	if _, err := m.Exec("rex", args, m.Root, nil); err != nil {
-		m.note = fmt.Sprintf("%s failed: %v", what, err)
-	} else {
-		m.note = what + " opened in a new tab"
+	if werr != nil {
+		m.note = fmt.Sprintf("request changes failed: %v", werr)
+		return
 	}
-	m.Reload()
+	m.act("request changes", "run.request-changes", f.Name(), it.Run)
+}
+
+// resume queues the continuation of the item's run for the daemon. A failed
+// run has ended, so its resume restarts it at the step that failed.
+func (m *Model) resume(it api.InboxItem) {
+	args := []string{it.Run}
+	if it.Kind == api.InboxFailed {
+		args = append(args, "--retry")
+	}
+	m.act("retry", "run.resume", args...)
 }
 
 func (m *Model) View() tea.View {

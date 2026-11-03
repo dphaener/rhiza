@@ -32,7 +32,7 @@ cp $WORK/build.toml .rhiza/workflows/build.toml
 exec git add -A
 exec git commit -qm leaves
 
-! exec rhiza run start --workflow build --permission-mode manual
+! exec rhiza run start --foreground --workflow build --permission-mode manual
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
 exec cat $WORK/builders.log
 cmp stdout $WORK/want-round1.log
@@ -53,7 +53,7 @@ stdout '"type": "blocks"'
 stdout '"handle": "alpha"'
 
 # A retry with the question unanswered starts nothing and fails again.
-exec sh -c 'rhiza run resume --retry "$(cat $WORK/runid)" --json; echo exit=$?'
+exec sh -c 'rhiza run resume --foreground --retry "$(cat $WORK/runid)" --json; echo exit=$?'
 stdout '"state": "failed"'
 stdout '^exit=1$'
 exec cat $WORK/builders.log
@@ -62,7 +62,7 @@ cmp stdout $WORK/want-round1.log
 # The owner answers in the build worktree; the retry gives alpha round 2.
 exec sh -c 'cd "$(cat $WORK/build.pwd)" && rhiza add decision use-a-map --field "statement=Use a map, not a list." --change "$(rhiza run status --json | sed -n "s/.*\"change\": \"\([0-9A-Z]*\)\".*/\1/p" | head -1)" && rhiza link use-a-map answers "$(cat $WORK/question)" --change "$(rhiza run status --json | sed -n "s/.*\"change\": \"\([0-9A-Z]*\)\".*/\1/p" | head -1)"'
 exec touch $WORK/answered
-exec sh -c 'rhiza run resume --retry "$(cat $WORK/runid)"'
+exec sh -c 'rhiza run resume --foreground --retry "$(cat $WORK/runid)"'
 exec cat $WORK/builders.log
 cmp stdout $WORK/want-round2.log
 

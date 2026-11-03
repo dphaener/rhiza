@@ -7,8 +7,10 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -521,6 +523,19 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	if !low && !paused {
 		resumable = daemon.Resumable(runs, host, nil, rs.Live, accepted, ctx.Now())
 	}
+	// The owner's queued continuations are started below, within max; the
+	// daemon's own resume of an interrupted run leaves those runs to them.
+	var queuedRuns []string
+	if !low && !paused {
+		if common, err := gitCommonDir(ctx); err == nil {
+			if q, err := daemon.ReadContinues(common); err == nil {
+				for _, c := range q {
+					queuedRuns = append(queuedRuns, c.Run)
+				}
+			}
+		}
+	}
+	resumable = slices.DeleteFunc(resumable, func(id string) bool { return slices.Contains(queuedRuns, id) })
 	for _, id := range resumable {
 		// Journal the resume before the tab opens: a resume is tried once.
 		if err := rs.Append(id, run.Entry{Type: run.TypeDaemonResumed, At: ctx.Now(), Detail: "resumed by the daemon"}); err != nil {
@@ -615,8 +630,142 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 			running++
 		}
 	}
-	planned, err = daemonPlanRequests(ctx, rs, runs, running, max, mode)
+	continued, err := daemonQueuedContinues(ctx, rs, runs, running, max)
+	resumed = append(resumed, continued...)
+	if err != nil {
+		return started, resumed, nil, err
+	}
+	running += len(continued)
+	queued, err := daemonQueuedStarts(ctx, rs, pending, runs, running, max, mode)
+	started = append(started, queued...)
+	if err != nil {
+		return started, resumed, nil, err
+	}
+	planned, err = daemonPlanRequests(ctx, rs, runs, running+len(queued), max, mode)
 	return started, resumed, planned, err
+}
+
+// daemonQueuedStarts starts the runs the owner queued with rhiza run start,
+// oldest first, while fewer than max runs run: each as a detached rhiza
+// run start --foreground process on its change set, with the workflow,
+// agent and flags it was queued with. They are the owner's starts, not
+// picks: no milestone, state or leaf filter applies. An entry whose change
+// set has a live run, or whose run the daemon just started, is dropped. It
+// returns the change sets started.
+func daemonQueuedStarts(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, runs []run.Journal, running, max int, mode string) ([]string, error) {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var started []string
+	err = daemon.UpdateStarts(common, func(starts []daemon.Start) ([]daemon.Start, error) {
+		var keep []daemon.Start
+		for _, s := range starts {
+			if _, held := pending[s.Change]; held {
+				continue
+			}
+			if _, live, err := rs.LiveOf(s.Change, ""); err != nil {
+				return nil, Errorf("read runs: %v", err)
+			} else if live {
+				continue
+			}
+			if running >= max {
+				keep = append(keep, s)
+				continue
+			}
+			m := s.PermissionMode
+			if m == "" {
+				m = mode
+			}
+			if err := daemonStartQueued(ctx, s, m); err != nil {
+				return nil, err
+			}
+			pending[s.Change] = daemonPending{at: ctx.Now(), runs: daemonRunsOf(runs, s.Change)}
+			started = append(started, s.Change)
+			running++
+		}
+		return keep, nil
+	})
+	if err != nil {
+		var e *Error
+		if errors.As(err, &e) {
+			return started, err
+		}
+		return started, Errorf("read queued starts: %v", err)
+	}
+	return started, nil
+}
+
+// daemonStartQueued starts the queued run s as a detached rhiza run start
+// --foreground process, with permission mode mode.
+func daemonStartQueued(ctx *Ctx, s daemon.Start, mode string) error {
+	args := []string{"run", "start", "--foreground", s.Change}
+	if s.Workflow != "" {
+		args = append(args, "--workflow", s.Workflow)
+	}
+	if mode != "" {
+		args = append(args, "--permission-mode", mode)
+	}
+	if s.Agent != "" {
+		args = append(args, "--agent", s.Agent)
+	}
+	if s.NoWait {
+		args = append(args, "--no-wait")
+	}
+	if s.Autonomous {
+		args = append(args, "--autonomous")
+	}
+	return daemonDetachStart(ctx, "a run of "+s.Change, s.Change, args)
+}
+
+// daemonQueuedContinues continues the runs the owner queued with rhiza run
+// resume, approve and request-changes, oldest first, while fewer than max
+// runs run: each as a detached rhiza run resume --foreground process. They
+// are the owner's actions, not picks. An entry whose run is gone, finished
+// (a retry's excepted) or live is dropped. It returns the runs continued.
+func daemonQueuedContinues(ctx *Ctx, rs *run.Store, runs []run.Journal, running, max int) ([]string, error) {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var continued []string
+	err = daemon.UpdateContinues(common, func(queue []daemon.Continue) ([]daemon.Continue, error) {
+		var keep []daemon.Continue
+		for _, c := range queue {
+			i := slices.IndexFunc(runs, func(j run.Journal) bool { return j.ID == c.Run })
+			if i < 0 || rs.Live(c.Run) {
+				continue
+			}
+			if st := runs[i].State(); st.Ended && !c.Retry {
+				continue
+			}
+			if running >= max {
+				keep = append(keep, c)
+				continue
+			}
+			args := []string{"run", "resume", "--foreground", c.Run}
+			if c.Retry {
+				args = append(args, "--retry")
+			}
+			if c.NoWait {
+				args = append(args, "--no-wait")
+			}
+			if err := daemonDetach(ctx, "run "+c.Run, c.Run, nil, args); err != nil {
+				return nil, err
+			}
+			continued = append(continued, c.Run)
+			running++
+		}
+		return keep, nil
+	})
+	if err != nil {
+		var e *Error
+		if errors.As(err, &e) {
+			return continued, err
+		}
+		return continued, Errorf("read queued continuations: %v", err)
+	}
+	return continued, nil
 }
 
 // daemonDiskLow reports whether free space on the repo's filesystem is under
@@ -687,46 +836,92 @@ func daemonCandidates(res planResult, hasLeaves func(id.ID) bool) ([]string, []d
 	return out, skips
 }
 
-// daemonStart starts the run of change set cs in a new Rex tab, with
-// permission mode mode.
-func daemonStart(ctx *Ctx, cs string, autonomous bool, mode string) error {
-	if ctx.Exec == nil || ctx.Self == "" {
-		return Errorf("daemon cannot start a run of %s: no rex or rhiza path", cs)
+// daemonDetach starts rhiza with args as a detached child in the repo, outside
+// Rex, with its output appended to the log file name under <git common
+// dir>/rhiza/logs and env added to its environment. The child's agent steps
+// open their tabs in the repo's Rex session, which the daemon makes sure of
+// first and hands the child as its REX_SESSION; the child has no REX_BLOCK,
+// since it sits in no tab of its own. A run driven with --foreground by hand
+// keeps the caller's session.
+func daemonDetach(ctx *Ctx, what, name string, env, args []string) error {
+	if ctx.Detach == nil || ctx.Self == "" {
+		return Errorf("daemon cannot start %s: no rhiza path", what)
 	}
 	if err := ensureRepoSession(ctx); err != nil {
 		return err
 	}
-	args := []string{"window", "new"}
-	if ctx.RexSession != "" {
-		args = append(args, "-s", ctx.RexSession)
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return err
 	}
-	args = append(args, cs[:min(len(cs), 9)], "-c", ctx.Root, "--json", "--", ctx.Self, "run", "start", cs, "--permission-mode", mode)
-	if autonomous {
-		args = append(args, "--autonomous")
-	}
-	if _, err := ctx.Exec("rex", args, ctx.Root, nil); err != nil {
-		return Errorf("rex window new for %s: %v", cs, err)
+	p := Program{Name: ctx.Self, Args: args, Dir: ctx.Root, Env: append([]string{"REX_SESSION=" + ctx.RexSession}, env...), Unset: []string{"REX_BLOCK"}}
+	if err := ctx.Detach(p, filepath.Join(runLogDir(common), name+".log")); err != nil {
+		return Errorf("start %s: %v", what, err)
 	}
 	return nil
 }
 
-// daemonResume opens a new Rex tab running rhiza run resume on run id.
-func daemonResume(ctx *Ctx, id string) error {
-	if ctx.Exec == nil || ctx.Self == "" {
-		return Errorf("daemon cannot resume run %s: no rex or rhiza path", id)
-	}
-	if err := ensureRepoSession(ctx); err != nil {
+// envRunLog names, to a run start --foreground the daemon detached, the
+// start log under <git common dir>/rhiza/logs its output goes to. The run
+// has no ID until the child draws one, so each start gets a log of its
+// own, <change set>.start-<n>.log, which the child renames to <run>.log
+// before it journals: a later start of the same change set never appends
+// to an earlier run's log.
+const envRunLog = "RHIZA_RUN_LOG"
+
+// runLogDir is where run drivers' logs live.
+func runLogDir(common string) string {
+	return filepath.Join(common, "rhiza", "logs")
+}
+
+// daemonDetachStart detaches the run start --foreground args of change set
+// cs into a start log of its own, named to the child through envRunLog.
+func daemonDetachStart(ctx *Ctx, what, cs string, args []string) error {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
 		return err
 	}
-	args := []string{"window", "new"}
-	if ctx.RexSession != "" {
-		args = append(args, "-s", ctx.RexSession)
+	name := ""
+	for n := 1; ; n++ {
+		name = fmt.Sprintf("%s.start-%d", cs, n)
+		if _, err := os.Lstat(filepath.Join(runLogDir(common), name+".log")); errors.Is(err, fs.ErrNotExist) {
+			break
+		} else if err != nil {
+			return Errorf("start %s: %v", what, err)
+		}
 	}
-	args = append(args, id[:min(len(id), 9)], "-c", ctx.Root, "--json", "--", ctx.Self, "run", "resume", id)
-	if _, err := ctx.Exec("rex", args, ctx.Root, nil); err != nil {
-		return Errorf("rex window new for run %s: %v", id, err)
+	return daemonDetach(ctx, what, name, []string{envRunLog + "=" + name + ".log"}, args)
+}
+
+// claimStartLog renames the start log the daemon named in envRunLog, if
+// any, to run rid's log, so the run's output so far and from here on is
+// its own. It is best effort: a run with no log still runs.
+func claimStartLog(ctx *Ctx, common, rid string) {
+	if ctx.Getenv == nil {
+		return
 	}
-	return nil
+	name := filepath.Base(strings.TrimSpace(ctx.Getenv(envRunLog)))
+	if name == "." || name == "/" || !strings.HasSuffix(name, ".log") {
+		return
+	}
+	dir := runLogDir(common)
+	_ = os.Rename(filepath.Join(dir, name), filepath.Join(dir, rid+".log"))
+}
+
+// daemonStart starts the run of change set cs as a detached rhiza run start
+// --foreground process, with permission mode mode.
+func daemonStart(ctx *Ctx, cs string, autonomous bool, mode string) error {
+	args := []string{"run", "start", "--foreground", cs, "--permission-mode", mode}
+	if autonomous {
+		args = append(args, "--autonomous")
+	}
+	return daemonDetachStart(ctx, "a run of "+cs, cs, args)
+}
+
+// daemonResume continues run id as a detached rhiza run resume --foreground
+// process, with the permission mode the run started with.
+func daemonResume(ctx *Ctx, id string) error {
+	return daemonDetach(ctx, "run "+id, id, nil, []string{"run", "resume", "--foreground", id})
 }
 
 func init() {

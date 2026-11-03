@@ -14,7 +14,7 @@ Built rhiza at f087c0e into $TMPDIR/rhiza-qa and drove it by hand in a scratch r
 
 ### Out
 
-- verifies [daemon-run-tabs](../capability/rhiza/orchestration/daemon/daemon-run-tabs.md)
+- verifies daemon-run-tabs (retired)
 
 ## History
 

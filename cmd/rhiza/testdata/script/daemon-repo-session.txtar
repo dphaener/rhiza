@@ -5,6 +5,7 @@
 
 chmod 755 bin/rex
 env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
 env REX_SESSION=
 mkdir repo
 cd repo
@@ -23,29 +24,29 @@ exec rhiza accept --reason ok
 exec rhiza daemon --permission-mode manual --once
 exec sh -c 'grep -c "^rex session new rhiza-repo " $WORK/rex.log'
 stdout '^1$'
-exec sh -c 'grep -c "^rex window new -s rhiza-repo .* run start " $WORK/rex.log'
+exec sh -c 'grep -Ec "^REX_SESSION=rhiza-repo RHIZA_RUN_LOG=[0-9A-Z]{26}\.start-1\.log rhiza run start " $WORK/detach.log'
 stdout '^1$'
-exec sh -c 'grep "window new" $WORK/rex.log | grep -vc -- "-s rhiza-repo " || true'
+exec sh -c 'grep -vc "^REX_SESSION=rhiza-repo " $WORK/detach.log || true'
 stdout '^0$'
 
 # Present: none created, tabs still open in it.
 cp $WORK/present.json $WORK/sessions.json
-rm $WORK/rex.log
+rm $WORK/rex.log $WORK/detach.log
 exec rhiza daemon --permission-mode manual --once
 exec sh -c 'grep -c "^rex session new" $WORK/rex.log || true'
 stdout '^0$'
-exec sh -c 'grep -c "^rex window new -s rhiza-repo " $WORK/rex.log'
+exec sh -c 'grep -Ec "^REX_SESSION=rhiza-repo (RHIZA_RUN_LOG=[^ ]* )?rhiza " $WORK/detach.log'
 ! stdout '^0$'
-exec sh -c 'grep "window new" $WORK/rex.log | grep -vc -- "-s rhiza-repo " || true'
+exec sh -c 'grep -vc "^REX_SESSION=rhiza-repo " $WORK/detach.log || true'
 stdout '^0$'
 
 # Another REX_SESSION does not move the tabs.
-rm $WORK/rex.log
+rm $WORK/rex.log $WORK/detach.log
 env REX_SESSION=session:other
 exec rhiza daemon --permission-mode manual --once
-exec sh -c 'grep -c "^rex window new -s rhiza-repo " $WORK/rex.log'
+exec sh -c 'grep -Ec "^REX_SESSION=rhiza-repo (RHIZA_RUN_LOG=[^ ]* )?rhiza " $WORK/detach.log'
 ! stdout '^0$'
-exec sh -c 'grep -c "session:other" $WORK/rex.log || true'
+exec sh -c 'grep -c "session:other" $WORK/detach.log || true'
 stdout '^0$'
 -- present.json --
 {"sessions":[{"session_id":"session:1","label":"rhiza-repo"}]}

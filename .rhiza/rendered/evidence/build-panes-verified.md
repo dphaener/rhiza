@@ -18,7 +18,7 @@ go test -count=1 ./internal/session -run TestSplitFor; ./internal/api -run 'Test
 
 ### Out
 
-- verifies [build-panes](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-panes.md)
+- verifies build-panes (retired)
 
 ## History
 

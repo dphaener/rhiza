@@ -1,0 +1,40 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6GPC6JPXD62Q6WNEF90VVHG"
+  ],
+  "at": "2026-11-03T12:35:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Resolve the plan-requests.txtar conflict by keeping this branch's detached-start assertions (detach.log, run start --foreground) with main's bug intent \"Fix Login fails\" (from #207); merge origin/main into the branch rather than rebase, re-render, and keep the rendered index from main before re-rendering",
+          "wording": "the orchestrator's, deciding as the owner's proxy under the owner's standing instruction \"act on my behalf\" (2026-11-03); assumed, not the owner's words"
+        },
+        "handle": "run-drivers-rebase-resolution",
+        "id": "01M6GPFK6QE01DXAJBBCJ33R83",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6GPFK6QE01DXAJBBA7JD6W9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GPFK6QE01DXAJBBA7JD6W9",
+        "id": "01M6GPFYBMMASAWTGJPX6ER3SN",
+        "link": "01M6GPFYBMMASAWTGJPTW39P3P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GPBW8BYF68ZV6T7CWB9297",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6FENEJE4B11EBYXDGP9T052",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6GPG9J2ZZ4FDRDTJACBXA96",
+  "type": "ops",
+  "v": 1
+}

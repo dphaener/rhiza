@@ -14,7 +14,7 @@ In the same real-Rex run (built binary, fake claude only), the critic, the chang
 
 ### Out
 
-- verifies [checks-and-fixes-anchored](../capability/rhiza/runtime/rex-sessions/checks-and-fixes-anchored.md)
+- verifies checks-and-fixes-anchored (retired)
 
 ## History
 

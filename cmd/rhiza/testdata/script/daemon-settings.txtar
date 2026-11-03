@@ -3,6 +3,7 @@
 
 chmod 755 bin/rex
 env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
 mkdir repo
 cd repo
 exec git init -q
@@ -57,7 +58,7 @@ stdout '^1$'
 # maxRuns 1 from config: of two ready change sets a poll starts one.
 exec rhiza daemon --permission-mode manual --once
 stdout -count=1 '^Started a run of '
-exec sh -c 'grep -c "run start" $WORK/rex.log'
+exec sh -c 'grep -c "run start" $WORK/detach.log'
 stdout '^1$'
 
 # A flag wins over config, and status shows the source.

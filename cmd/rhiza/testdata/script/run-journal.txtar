@@ -15,7 +15,7 @@ mkdir .rhiza/workflows
 cp ../three.toml .rhiza/workflows/three.toml
 exec sh -c 'find .rhiza/log -type f | sort | xargs cat > $WORK/before-content; find .rhiza/log -type f | sort > $WORK/before-list'
 
-exec rhiza run start --workflow three
+exec rhiza run start --foreground --workflow three
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
 
 # Every step has an entered and an ended line; the run has a finished line.

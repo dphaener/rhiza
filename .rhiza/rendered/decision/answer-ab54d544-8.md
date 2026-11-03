@@ -40,7 +40,7 @@ How do builder and verifier panes live in the change set's tab? — I like 1, bu
 
 ### In
 
-- decided-by [build-panes](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-panes.md)
+- decided-by build-panes (retired)
 
 ## History
 

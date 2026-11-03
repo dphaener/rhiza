@@ -37,7 +37,7 @@ verified
 - verifies [build-verifier-findings](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-verifier-findings.md)
 - verifies [build-retries](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-retries.md)
 - verifies [build-leaf-fails](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-leaf-fails.md)
-- verifies [build-panes](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-panes.md)
+- verifies build-panes (retired)
 - verifies [build-check](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-check.md)
 - verifies [build-guide](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-guide.md)
 - verifies [build-workflow-file](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-workflow-file.md)

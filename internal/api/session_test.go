@@ -205,10 +205,10 @@ func TestSessionStartStepAndRexSession(t *testing.T) {
 	f.ctx.RexSession = "session:mine"
 	newChange(t, f.ctx, `{"intent":"Carving keeps IDs, always"}`)
 	r := startSession(t, f.ctx, `{"permission_mode":"plan","step":"review","run":"run-1"}`)
-	if r.Session.Tab.Title != "repo: Carving keeps IDs · review" || r.Session.Run != "run-1" {
+	if r.Session.Tab.Title != "repo: Carving keeps IDs · run run-1 · review" || r.Session.Run != "run-1" {
 		t.Errorf("session %+v", r.Session)
 	}
-	if got := f.rex.calls[0][3:6]; !slices.Equal(got, []string{"-s", "session:mine", "repo: Carving keeps IDs · review"}) {
+	if got := f.rex.calls[0][3:6]; !slices.Equal(got, []string{"-s", "session:mine", "repo: Carving keeps IDs · run run-1 · review"}) {
 		t.Errorf("rex args %q", f.rex.calls[0])
 	}
 	if r.Session.Tab.Session != "session:mine" {

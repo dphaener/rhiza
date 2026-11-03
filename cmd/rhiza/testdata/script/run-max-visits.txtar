@@ -16,7 +16,7 @@ stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
 mkdir .rhiza/workflows
 cp $WORK/loop.toml .rhiza/workflows/loop.toml
 
-exec sh -c 'rhiza run start --workflow loop; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow loop; echo exit=$?'
 stdout '^Run \S+ failed$'
 stdout '^- Detail: .*step "b".*max_visits'
 stdout '^exit=1$'

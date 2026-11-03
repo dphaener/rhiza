@@ -80,10 +80,7 @@ func (r *stepRunner) Leaves(ref string) ([]run.Leaf, error) {
 // agent there, with RHIZA_ROOT set to the worktree's Rhiza root so its
 // rhiza writes reach the build worktree's log. Its tab still opens in the
 // worktree: `rhiza session run` writes there too, and the checkout is
-// removed once the session ends while the tab may stay. A spec with an
-// Anchor splits that session's pane, in the direction the step's split
-// gives (auto: along the anchor's longer side); an anchor with no record
-// opens a new tab.
+// removed once the session ends while the tab may stay. The session opens its own tab.
 func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	role := spec.Step.Role(spec.Role)
 	if role == nil {
@@ -100,8 +97,6 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	if spec.Dir != "" {
 		req.dir, req.root = spec.Dir, filepath.Join(t.worktree, t.prefix)
 	}
-	req.split = spec.Step.Split
-	req.anchor = r.paneAnchor(spec.Anchor)
 	req.Prompt = leafPrompt(*role, spec, workflow.PromptVars{
 		Change: t.cs.String(), Slug: session.Slug(t.title), Title: t.title, Run: r.run, Step: spec.Step.Name,
 	})
@@ -110,29 +105,6 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 		return "", err
 	}
 	return resp.(SessionStartResponse).Session.ID, nil
-}
-
-// paneAnchor is the tab a new session of the run splits: the tab of
-// session anchor when that has a record, else the tab of the run's latest
-// session with a pane, so every session of a run sits in the run's one
-// window, the one it opened last when an earlier one closed. The zero
-// tab, for the run's first session, opens a window.
-func (r *stepRunner) paneAnchor(anchor string) session.Tab {
-	if anchor != "" {
-		if a, err := r.sessions.Read(anchor); err == nil {
-			return a.Tab
-		}
-	}
-	recs, err := r.sessions.List()
-	if err != nil {
-		return session.Tab{}
-	}
-	for i := len(recs) - 1; i >= 0; i-- {
-		if rec := recs[i]; rec.Run == r.run && rec.Tab.Block != "" {
-			return rec.Tab
-		}
-	}
-	return session.Tab{}
 }
 
 // ClosePane closes leaf session sid's pane: the block its record names,

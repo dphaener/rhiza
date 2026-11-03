@@ -35,11 +35,11 @@ exec git commit -qm leaves
 
 # A leaves step's role with no permission mode is refused before anything
 # runs.
-! exec rhiza run start --workflow build
+! exec rhiza run start --foreground --workflow build
 stderr 'step "build" is a leaves step whose builder runs with no permission mode'
 ! exists $WORK/rex.log
 
-exec sh -c 'rhiza run start --workflow build --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow build --permission-mode manual --json; echo exit=$?'
 stdout '"state": "succeeded"'
 stdout '^exit=0$'
 

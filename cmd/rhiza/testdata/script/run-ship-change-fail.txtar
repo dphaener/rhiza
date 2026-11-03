@@ -30,7 +30,7 @@ exec git add -A
 exec git commit -qm 'Start shipping'
 exec git push -q -u origin main
 
-! exec rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
+! exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
 stdout '^Run \S+ failed$'
 stdout '^- Detail: step "pr-green" ended with outcome "fail"$'
 # The check names the failed check in the step's output.
@@ -62,7 +62,7 @@ fold-ok
 
 # The repo replaces the built-in by name.
 cp $WORK/ship-change.toml .rhiza/workflows/ship-change.toml
-exec rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
+exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
 stdout '^Run \S+ succeeded$'
 exec rhiza run status --json
 stdout '"workflow": "ship-change"'

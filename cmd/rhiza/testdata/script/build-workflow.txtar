@@ -35,7 +35,7 @@ stdout '"state": "accepted"'
 exec git add -A
 exec git commit -qm leaves
 
-exec sh -c 'rhiza run start --workflow build --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow build --permission-mode manual --json; echo exit=$?'
 stdout '"state": "succeeded"'
 stdout '"workflow": "build"'
 stdout '^exit=0$'

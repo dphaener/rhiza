@@ -29,7 +29,7 @@ cp $WORK/review.toml .rhiza/workflows/review.toml
 exec git add -A
 exec git commit -qm review
 
-exec sh -c 'rhiza run start --workflow review --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json; echo exit=$?'
 stdout '"state": "stopped"'
 stdout '"signoff_waiting": true'
 stdout '^exit=0$'
@@ -39,7 +39,7 @@ stdout '\Arole=check check=alpha cycle=1 leaf=\nrole=check check=alpha cycle=2 l
 # The owner asks for changes on leaf thing: a fixer for it starts though
 # the cap was used, its verifier checks the fix, only alpha re-runs, and
 # the run waits at the sign-off again.
-exec sh -c 'rhiza run request-changes $WORK/changes.json > $WORK/changes.out; echo exit=$?'
+exec sh -c 'rhiza run request-changes --foreground $WORK/changes.json > $WORK/changes.out; echo exit=$?'
 stdout '^exit=0$'
 exec cat $WORK/changes.out
 stdout '^Sign-off: signoff \(visit 1\): changes asked by test$'
@@ -65,7 +65,7 @@ stdout '"outcome": "changes"'
 # Another request would visit review a third time, over its max_visits.
 exec sh -c 'wc -l < $(ls .git/rhiza/runs/*.jsonl)'
 cp stdout $WORK/lines
-exec sh -c 'rhiza run request-changes $WORK/changes.json; echo exit=$?'
+exec sh -c 'rhiza run request-changes --foreground $WORK/changes.json; echo exit=$?'
 stdout '^exit=2$'
 stderr 'another visit of step review of run [0-9A-Z]{26} would go over its max_visits 2'
 exec sh -c 'wc -l < $(ls .git/rhiza/runs/*.jsonl)'

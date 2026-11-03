@@ -11,17 +11,17 @@ exec rhiza change new 'Resume a run' --title 'Run resume' --json
 mkdir .rhiza/workflows
 cp ../one.toml .rhiza/workflows/one.toml
 
-exec rhiza run start --workflow one --no-wait
+exec rhiza run start --foreground --workflow one --no-wait
 stdout '^Run ([0-9A-Z]{26}) stopped$'
 exec sh -c 'cat .git/rhiza/runs/* > ../before'
 
 env RHIZA_SESSION=01SESSIONFORTESTING
-! exec sh -c 'rhiza run resume $(ls .git/rhiza/runs | sed "s/\..*//" | head -1)'
+! exec sh -c 'rhiza run resume --foreground $(ls .git/rhiza/runs | sed "s/\..*//" | head -1)'
 stderr '01SESSIONFORTESTING'
 exec sh -c 'cat .git/rhiza/runs/* > ../after; cmp ../before ../after'
 
 env RHIZA_SESSION=
-exec sh -c 'touch ../go; rhiza run resume $(ls .git/rhiza/runs | sed "s/\..*//" | head -1)'
+exec sh -c 'touch ../go; rhiza run resume --foreground $(ls .git/rhiza/runs | sed "s/\..*//" | head -1)'
 stdout 'succeeded$'
 
 -- one.toml --

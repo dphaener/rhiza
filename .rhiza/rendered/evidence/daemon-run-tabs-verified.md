@@ -14,7 +14,7 @@ At 5a5d694, go test ./cmd/rhiza -run 'TestScripts/daemon-picks$' -testwork passe
 
 ### Out
 
-- verifies [daemon-run-tabs](../capability/rhiza/orchestration/daemon/daemon-run-tabs.md)
+- verifies daemon-run-tabs (retired)
 
 ## History
 

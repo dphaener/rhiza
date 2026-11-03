@@ -25,7 +25,7 @@ exec rhiza change new 'Plan L' --kind record --title 'Plan L' --json
 exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/rl'
 exec rhiza add intent want-l
 exec rhiza add decision dec-l --field 'statement=Use L'
-exec rhiza run start --workflow hold --autonomous --no-wait
+exec rhiza run start --foreground --workflow hold --autonomous --no-wait
 stdout '^Run (01[0-9A-Z]{24}) stopped$'
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
 exec rhiza land

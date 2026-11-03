@@ -29,7 +29,7 @@ exec git commit -qm 'Blocked runs'
 
 # A Decision with reasoning: the arbiter step passes, and the run goes on.
 exec sh -c 'echo answer > $WORK/mode'
-exec rhiza run start --workflow ask --permission-mode manual --autonomous
+exec rhiza run start --foreground --workflow ask --permission-mode manual --autonomous
 stdout '^Run [0-9A-Z]{26} succeeded$'
 stderr 'step build: arbiter pass on question [0-9A-Z]{26}: answered by assume-blue'
 exec sh -c 'grep "\"type\":\"arbitrated\"" .git/rhiza/runs/*.jsonl'
@@ -55,7 +55,7 @@ exec sh -c 'i=0; until [ "$(grep -c exited $WORK/asker.log)" = 1 ]; do i=$((i+1)
 rm $WORK/arbiter.done
 rm $WORK/typed.log
 exec sh -c 'echo none > $WORK/mode'
-! exec rhiza run start --workflow ask --permission-mode manual --autonomous
+! exec rhiza run start --foreground --workflow ask --permission-mode manual --autonomous
 stdout '^Run [0-9A-Z]{26} failed$'
 stderr 'step build: arbiter fail on question [0-9A-Z]{26}: no live Decision answers question [0-9A-Z]{26}'
 stdout 'arbiter failed on question question-[0-9a-f]{8}-1 \([0-9A-Z]{26}\): no live Decision answers question'
@@ -65,7 +65,7 @@ exec sh -c 'i=0; until [ "$(grep -c exited $WORK/asker.log)" = 2 ]; do i=$((i+1)
 # run.
 rm $WORK/arbiter.done
 exec sh -c 'echo noreason > $WORK/mode'
-! exec rhiza run start --workflow ask --permission-mode manual --autonomous
+! exec rhiza run start --foreground --workflow ask --permission-mode manual --autonomous
 stdout '^Run [0-9A-Z]{26} failed$'
 stderr 'step build: arbiter fail on question [0-9A-Z]{26}: decision assume-red answers question [0-9A-Z]{26} but has no reasoning'
 stdout 'arbiter failed on question question-[0-9a-f]{8}-1 \([0-9A-Z]{26}\): decision assume-red answers question [0-9A-Z]{26} but has no reasoning'

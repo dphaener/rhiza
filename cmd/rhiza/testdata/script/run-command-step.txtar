@@ -18,7 +18,7 @@ stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
 mkdir .rhiza/workflows
 cp $WORK/flow.toml .rhiza/workflows/flow.toml
 
-exec sh -c 'rhiza run start --workflow flow --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow flow --json; echo exit=$?'
 stdout '"state": "succeeded"'
 stdout '^exit=0$'
 exec rhiza run status

@@ -35,7 +35,7 @@ the orchestrator's reading, confirmed in session c1b3cd7b-ff97-477d-b892-01a17e9
 
 ### In
 
-- decided-by [build-panes](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-panes.md)
+- decided-by build-panes (retired)
 
 ## History
 

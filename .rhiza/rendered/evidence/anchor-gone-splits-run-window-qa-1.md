@@ -14,7 +14,7 @@ With real Rex: rex split -b <closed block> fails with 'block target ... not foun
 
 ### Out
 
-- verifies [anchor-gone-splits-run-window](../capability/rhiza/runtime/rex-sessions/anchor-gone-splits-run-window.md)
+- verifies anchor-gone-splits-run-window (retired)
 
 ## History
 

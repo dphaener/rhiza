@@ -1,0 +1,68 @@
+# rhiza run start queues the run for the daemon instead of driving it: the
+# queue is .git/rhiza/starts.json, `rhiza daemon --once` starts what it
+# holds as a detached `run start --foreground` process within --max-runs, a
+# queued run is the owner's start so a backlog change set (no milestone) and
+# a plan run on a draft both start, and --foreground drives in place.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new Backlog --title Backlog
+exec rhiza add capability backlog-leaf
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# Queued, not driven: no run exists, and no daemon runs so it waits for one.
+exec rhiza run start --permission-mode manual
+stdout 'Queued a ship-change run of 01'
+stdout 'no daemon runs, so it waits for one'
+exists .git/rhiza/starts.json
+! exists .git/rhiza/runs
+exec rhiza run start --permission-mode manual --dry-run --json
+stdout '"queued": true'
+
+# The change set already has a start queued.
+exec sh -c 'rhiza run start --permission-mode manual 2>&1; echo exit=$?'
+stdout 'already has a run queued'
+
+# Still one entry in the queue.
+exec sh -c 'grep -c "\"change\"" .git/rhiza/starts.json'
+stdout '^1$'
+
+# A plan run queued on a draft change set waits behind it.
+exec rhiza change new Drafted --title Drafted
+exec rhiza run start --workflow plan --permission-mode manual
+stdout 'Queued a plan run'
+
+# Under --max-runs 1 the daemon starts the first only, headless: no Rex tab.
+exec rhiza daemon --permission-mode manual --max-runs 1 --once
+stdout -count=1 '^Started a run of '
+exec sh -c 'grep -c "window new" $WORK/rex.log || true'
+stdout '^0$'
+exec sh -c 'grep -c "\"change\"" .git/rhiza/starts.json'
+stdout '^1$'
+exec sh -c 'for i in $(seq 1 100); do ls .git/rhiza/runs/*.jsonl >/dev/null 2>&1 && break; sleep 0.1; done; ls .git/rhiza/runs'
+exec rhiza run ls --json
+stdout '"live": true'
+
+# With a slot free the plan run starts too, and the queue is drained.
+exec rhiza daemon --permission-mode manual --max-runs 2 --once
+stdout -count=1 '^Started a run of '
+exec sh -c 'grep -c "\"change\"" .git/rhiza/starts.json || true'
+stdout '^0$'
+
+# Stop the child through the pid its journal names.
+exec sh -c 'for f in .git/rhiza/runs/*.jsonl; do kill $(sed -n "s/.*\"pid\":\([0-9]*\).*/\1/p" $f | head -1); done'
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+if [ "$1 $2" = "session ls" ]; then
+  echo '{"sessions":[{"session_id":"session:1","label":"rhiza-repo"}]}'
+  exit 0
+fi
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

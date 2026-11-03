@@ -25,7 +25,7 @@ exec rhiza change new 'Amend runs' --title 'Amend runs' --json
 # Inside Rex, the run starts in the background.
 env REX_BLOCK=block:root
 env REX_SESSION=session:s1
-exec rhiza run start --workflow build --permission-mode manual &
+exec rhiza run start --foreground --workflow build --permission-mode manual &
 
 # Poll (bounded) until the step's session waits at its prompt.
 exec sh -c 'i=0; while [ $i -lt 400 ]; do rhiza session ls | grep -q idle && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'

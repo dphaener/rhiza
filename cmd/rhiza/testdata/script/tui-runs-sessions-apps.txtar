@@ -15,7 +15,7 @@ exec git commit -qm init
 exec rhiza change new 'Agent steps' --title 'Agent steps'
 mkdir .rhiza/workflows
 cp $WORK/passes.toml .rhiza/workflows/passes.toml
-exec rhiza run start --workflow passes --permission-mode manual
+exec rhiza run start --foreground --workflow passes --permission-mode manual
 fold-ok
 
 env REX_SESSION=

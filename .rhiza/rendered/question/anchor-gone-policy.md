@@ -10,7 +10,7 @@ When a session's anchor pane is gone, split another live pane of the run's windo
 
 ### Out
 
-- blocks [anchor-gone-splits-run-window](../capability/rhiza/runtime/rex-sessions/anchor-gone-splits-run-window.md)
+- blocks anchor-gone-splits-run-window (retired)
 
 ### In
 

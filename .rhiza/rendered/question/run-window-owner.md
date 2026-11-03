@@ -10,7 +10,7 @@ Which window does a run's panes live in: the one rhiza run start opens (daemonSt
 
 ### Out
 
-- blocks [run-sessions-one-window](../capability/rhiza/runtime/rex-sessions/run-sessions-one-window.md)
+- blocks run-sessions-one-window (retired)
 
 ### In
 

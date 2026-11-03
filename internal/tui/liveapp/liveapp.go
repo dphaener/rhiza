@@ -225,6 +225,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, m.fetchLeaves()
 		case "enter":
 			m.focus()
+		case "l":
+			m.openLog()
 		}
 		m.follow()
 	}
@@ -262,6 +264,26 @@ func (m *Model) focus() {
 	}
 }
 
+// openLog opens the selected run's driver log in a Rex layer, running
+// rhiza run log for it.
+func (m *Model) openLog() {
+	r, ok := m.Selected()
+	if !ok {
+		return
+	}
+	out, err := m.run("run.log", []string{r.ID, "--layer"})
+	if err != nil {
+		m.notice = fmt.Sprintf("rhiza: %v", err)
+		return
+	}
+	var l api.RunLogResponse
+	if err := json.Unmarshal(out, &l); err != nil {
+		m.notice = fmt.Sprintf("run.log: %v", err)
+		return
+	}
+	m.notice = "Opened the log of run " + r.ID
+}
+
 func (m *Model) View() tea.View {
 	var b strings.Builder
 	if m.err != nil {
@@ -282,7 +304,7 @@ func (m *Model) View() tea.View {
 	if m.notice != "" {
 		b.WriteString("\n" + m.notice)
 	}
-	b.WriteString("\n" + Name + " · j/k move · enter focus tab · r reload · q quit")
+	b.WriteString("\n" + Name + " · j/k move · enter focus tab · l log · r reload · q quit")
 	return tea.NewView(b.String())
 }
 

@@ -14,7 +14,7 @@ At 6b5628b I built rhiza into a scratch dir and ran `rhiza run start <record> --
 
 ### Out
 
-- verifies [agent-steps-tile-run-window](../capability/rhiza/runtime/rex-sessions/agent-steps-tile-run-window.md)
+- verifies agent-steps-tile-run-window (retired)
 
 ## History
 

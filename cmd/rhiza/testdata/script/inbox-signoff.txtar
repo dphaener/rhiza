@@ -28,7 +28,7 @@ exec rhiza change new 'Approve me' --title 'Approve me'
 exec rhiza add capability thing
 exec git add -A
 exec git commit -qm thing
-exec sh -c 'rhiza run start --workflow review --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 stdout '^exit=0$'
 exec sh -c 'rhiza inbox | grep -E "^[0-9a-f]+ signoff " | cut -d" " -f1'
@@ -37,14 +37,14 @@ exec sh -c 'wc -l < $(ls -t .git/rhiza/runs/*.jsonl | head -1)'
 cp stdout $WORK/approve.lines
 
 # A dry run journals nothing.
-exec sh -c 'rhiza inbox approve --dry-run --json "$(cat $WORK/aid)"'
+exec sh -c 'rhiza inbox approve --foreground --dry-run --json "$(cat $WORK/aid)"'
 stdout '"outcome": "approved"'
 stdout '"dry_run": true'
 exec sh -c 'wc -l < $(ls -t .git/rhiza/runs/*.jsonl | head -1)'
 cmp stdout $WORK/approve.lines
 
 # Approving the item ends the run done with an approved entry.
-exec sh -c 'rhiza inbox approve "$(cat $WORK/aid)"; echo exit=$?'
+exec sh -c 'rhiza inbox approve --foreground "$(cat $WORK/aid)"; echo exit=$?'
 stdout '^Sign-off: signoff \(visit 1\): approved by test$'
 stdout '^Run [0-9A-Z]{26} succeeded$'
 stdout '^exit=0$'
@@ -59,11 +59,11 @@ exec rhiza change new 'Change me' --title 'Change me'
 exec rhiza add capability other
 exec git add -A
 exec git commit -qm other
-exec sh -c 'rhiza run start --workflow review --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 exec sh -c 'rhiza inbox | grep -E "^[0-9a-f]+ signoff " | cut -d" " -f1'
 cp stdout $WORK/cid
-exec sh -c 'rhiza inbox request-changes "$(cat $WORK/cid)" $WORK/changes.json; echo exit=$?'
+exec sh -c 'rhiza inbox request-changes --foreground "$(cat $WORK/cid)" $WORK/changes.json; echo exit=$?'
 stdout '^Sign-off: signoff \(visit 1\): changes asked by test$'
 stdout '^- alpha f1 major at other.txt:1 on other: say more$'
 stdout '^Step review fixes them, then the run waits for the sign-off again\.$'
@@ -81,17 +81,17 @@ exec sh -c 'rhiza inbox | grep -E "^[0-9a-f]+ question " | cut -d" " -f1'
 cp stdout $WORK/qid
 exec sh -c 'cat .git/rhiza/runs/QUESTIONRUN.jsonl | wc -l'
 cp stdout $WORK/q.lines
-exec sh -c 'rhiza inbox approve "$(cat $WORK/qid)"; echo exit=$?'
+exec sh -c 'rhiza inbox approve --foreground "$(cat $WORK/qid)"; echo exit=$?'
 stdout '^exit=2$'
 stderr 'inbox approve works on a sign-off item, and item [0-9a-f]+ is a question'
-exec sh -c 'rhiza inbox request-changes "$(cat $WORK/qid)" $WORK/changes.json; echo exit=$?'
+exec sh -c 'rhiza inbox request-changes --foreground "$(cat $WORK/qid)" $WORK/changes.json; echo exit=$?'
 stdout '^exit=2$'
 stderr 'inbox request-changes works on a sign-off item'
 exec sh -c 'cat .git/rhiza/runs/QUESTIONRUN.jsonl | wc -l'
 cmp stdout $WORK/q.lines
 
 # An unknown item exits 2 too.
-exec sh -c 'rhiza inbox approve nope; echo exit=$?'
+exec sh -c 'rhiza inbox approve --foreground nope; echo exit=$?'
 stdout '^exit=2$'
 
 fold-ok

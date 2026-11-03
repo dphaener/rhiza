@@ -14,7 +14,7 @@ At e28b6c7 I ran go test ./cmd/rhiza -run 'TestScripts/run-panes-one-window$' -c
 
 ### Out
 
-- verifies [run-sessions-one-window](../capability/rhiza/runtime/rex-sessions/run-sessions-one-window.md)
+- verifies run-sessions-one-window (retired)
 
 ## History
 

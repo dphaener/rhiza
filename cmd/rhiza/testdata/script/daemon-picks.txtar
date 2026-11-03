@@ -1,10 +1,11 @@
 # One poll of the daemon (--once) starts the accepted, ready change sets that
-# serve a milestone and have a leaf, each in a new Rex tab running
-# `rhiza run start <change set>`. A leafless change set and a backlog one are
+# serve a milestone and have a leaf, each as a detached process running
+# `rhiza run start --foreground <change set>`. A leafless change set and a backlog one are
 # left alone. Rex is faked and only logs.
 
 chmod 755 bin/rex
 env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
 mkdir repo
 cd repo
 exec git init -q
@@ -43,14 +44,14 @@ exec rhiza accept --reason ok
 stderr 'no permission mode: give --permission-mode'
 ! exec rhiza daemon --once --permission-mode bypassPermissions
 stderr 'bypasses the agent''s permission checks'
-! exists $WORK/rex.log
+! exists $WORK/detach.log
 
 # Disk guard: under 10 GiB free the daemon starts nothing and status says
 # why; --min-free 0 turns the guard off; at 20 GiB the run starts.
 env RHIZA_TEST_FREE_BYTES=1073741824
 exec rhiza daemon --permission-mode manual --once
 ! stdout 'Started'
-! exists $WORK/rex.log
+! exists $WORK/detach.log
 exec rhiza daemon status --json
 stdout '"reason": "disk-low"'
 stdout '1.0 GiB free, under the minimum of 10.0 GiB'
@@ -63,28 +64,28 @@ exec rhiza daemon --permission-mode manual --once
 stdout -count=1 '^Started a run of '
 exec rhiza inbox --json
 ! stdout 'disk-low'
-exec rm $WORK/rex.log
+exec rm $WORK/detach.log
 env RHIZA_TEST_FREE_BYTES=1073741824
 exec rhiza daemon --permission-mode manual --once --min-free 0
 stdout -count=1 '^Started a run of '
 ! exec rhiza daemon --permission-mode manual --once --min-free lots
 stderr '--min-free'
-exec rm $WORK/rex.log
+exec rm $WORK/detach.log
 env RHIZA_TEST_FREE_BYTES=
 
 # The mode reaches each started run's command.
 exec rhiza daemon --permission-mode manual --once
 stdout -count=1 '^Started a run of '
-exec sh -c 'grep -c "^rex window new .* run start [0-9A-Z]* --permission-mode manual$" $WORK/rex.log'
+exec sh -c 'grep -c "^REX_SESSION=.* rhiza run start --foreground [0-9A-Z]* --permission-mode manual$" $WORK/detach.log'
 stdout '^1$'
 exec rhiza daemon --permission-mode manual --once --json
 stdout '"started": \['
 
 # --autonomous reaches the started run's command, and only then.
-exec sh -c 'grep -c -- "--autonomous" $WORK/rex.log || true'
+exec sh -c 'grep -c -- "--autonomous" $WORK/detach.log || true'
 stdout '^0$'
 exec rhiza daemon --permission-mode manual --once --autonomous
-exec sh -c 'grep "^rex window new .* run start [0-9A-Z]* --permission-mode manual --autonomous$" $WORK/rex.log | wc -l'
+exec sh -c 'grep "^REX_SESSION=.* rhiza run start --foreground [0-9A-Z]* --permission-mode manual --autonomous$" $WORK/detach.log | wc -l'
 stdout '^ *1$'
 
 # Milestone order: sibling milestones sort by their number, not by ID or
@@ -115,10 +116,10 @@ exec rhiza accept --reason ok
 exec rhiza roadmap --json
 stdout '(?s)"handle": "nine".*"handle": "ten"'
 
-exec rm $WORK/rex.log
+exec rm $WORK/detach.log
 exec rhiza daemon --permission-mode manual --once --max-runs 1
 stdout -count=1 '^Started a run of 01M5PWGW4RMJ580CPWEPP3158J'
-exec sh -c 'grep -c "run start" $WORK/rex.log'
+exec sh -c 'grep -c "run start" $WORK/detach.log'
 stdout '^1$'
 -- bin/rex --
 #!/bin/sh

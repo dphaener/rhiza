@@ -14,7 +14,7 @@ At 68bf3aa, with the built binary, real Rex and a fake claude, a review run (che
 
 ### Out
 
-- verifies [checks-and-fixes-anchored](../capability/rhiza/runtime/rex-sessions/checks-and-fixes-anchored.md)
+- verifies checks-and-fixes-anchored (retired)
 
 ## History
 

@@ -22,7 +22,7 @@ exec git add -A
 exec git commit -qm 'Start shipping'
 exec git push -q -u origin main
 
-! exec rhiza run start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
+! exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
 stdout '^- Detail: step "pr-green" ended with outcome "fail"$'
 exec sh -c 'grep -c -x "run rerun 42 --failed" $WORK/gh.log'
 stdout '^1$'

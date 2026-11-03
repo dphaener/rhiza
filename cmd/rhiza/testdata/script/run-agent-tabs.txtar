@@ -1,0 +1,133 @@
+# Each of a run's sessions opens its own Rex tab: a check, a critic, a
+# fixer, a verifier and a re-run check in cycle 2 each run rex window new,
+# titled for the run, and none splits a pane.
+#
+# The fake rex logs window new and split calls, numbering blocks b1, b2,
+# ... and runs the pane's command synchronously. The fake claude logs its
+# role and acts it: check alpha reports a major on leaf thing in cycle 1,
+# its critic confirms it, and cycle 2 runs thing's fixer and verifier,
+# then alpha again, clean.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new 'Panes' --title 'Panes'
+exec rhiza add capability thing --field 'statement=Does thing'
+mkdir .rhiza/workflows
+cp $WORK/review.toml .rhiza/workflows/review.toml
+exec git add -A
+exec git commit -qm review
+
+exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json; echo exit=$?'
+stdout '^exit=0$'
+
+# A check, a critic, a fixer and a verifier each started a session.
+exec cat $WORK/claude.log
+cmp stdout $WORK/want.log
+
+# Every one of the seven sessions made its own window; nothing split.
+exec cat $WORK/rex.log
+stdout '\A(window new\n){7}\z'
+fold-ok
+
+-- want.log --
+role=check check=alpha cycle=1 leaf=
+role=check check=beta cycle=1 leaf=
+role=check check=gamma cycle=1 leaf=
+role=critic check=alpha cycle=1 leaf=
+role=fixer check= cycle=2 leaf=thing
+role=verifier check= cycle=2 leaf=thing
+role=check check=alpha cycle=2 leaf=
+-- empty.json --
+{"findings":[]}
+-- major.json --
+{"findings":[{"severity":"major","leaf":"thing","place":"thing.txt:1","reason":"too short"}]}
+-- confirm.json --
+{"verdicts":[{"finding":"f1","verdict":"confirmed","reason":"it is"}]}
+-- review.toml --
+[step.review]
+kind = "checks"
+interval = "50ms"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[[step.review.check]]
+name = "beta"
+prompt = "Review change set {change} as check {check}"
+
+[[step.review.check]]
+name = "gamma"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+-- bin/rex --
+#!/bin/sh
+verb=$1
+dir=
+anchor=
+while [ $# -gt 0 ]; do
+	case "$1" in
+	-c) dir=$2 ;;
+	-b) anchor=$2 ;;
+	--) shift; break ;;
+	esac
+	shift
+done
+case "$verb" in
+block) exit 0 ;;
+esac
+n=$(cat "$WORK/rex.n" 2>/dev/null || echo 0)
+n=$((n + 1))
+echo $n > "$WORK/rex.n"
+if [ "$verb" = split ]; then
+	echo "split $anchor" >> "$WORK/rex.log"
+	out="{\"block_id\":\"block:b$n\",\"window_id\":\"window:w1\"}"
+else
+	echo "window new" >> "$WORK/rex.log"
+	out="{\"window_id\":\"window:w1\",\"block_ids\":[\"block:b$n\"]}"
+fi
+(cd "$dir" && "$@") >&2 || true
+echo "$out"
+-- bin/claude --
+#!/bin/sh
+echo "role=$RHIZA_ROLE check=$RHIZA_CHECK cycle=$RHIZA_CYCLE leaf=$RHIZA_LEAF" >> "$WORK/claude.log"
+case "$RHIZA_ROLE" in
+check)
+	round="$WORK/empty.json"
+	if [ "$RHIZA_CHECK" = alpha ] && [ "$RHIZA_CYCLE" = 1 ]; then
+		round="$WORK/major.json"
+	fi
+	rhiza run findings --check "$RHIZA_CHECK" "$round" >&2 || exit 1
+	;;
+critic)
+	rhiza run verdict --check "$RHIZA_CHECK" "$WORK/confirm.json" >&2 || exit 1
+	;;
+fixer)
+	echo more >> "$RHIZA_LEAF.txt"
+	git add "$RHIZA_LEAF.txt"
+	git commit -q -m "fix $RHIZA_LEAF" -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR
+Leaf: $RHIZA_LEAF" -- "$RHIZA_LEAF.txt" || exit 1
+	;;
+verifier)
+	rhiza add evidence "$RHIZA_LEAF-fixed" --field "statement=$RHIZA_LEAF fixed" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link "$RHIZA_LEAF-fixed" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+	;;
+esac
+exit 0

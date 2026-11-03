@@ -14,7 +14,7 @@ At 68bf3aa, with the built binary, real Rex and a fake claude, a review run with
 
 ### Out
 
-- verifies [run-sessions-one-window](../capability/rhiza/runtime/rex-sessions/run-sessions-one-window.md)
+- verifies run-sessions-one-window (retired)
 
 ## History
 

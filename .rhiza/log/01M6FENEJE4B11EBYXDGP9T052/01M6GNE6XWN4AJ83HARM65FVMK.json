@@ -1,0 +1,132 @@
+{
+  "actor": "01M6GMXNDT69N1KQPD8RJNW097",
+  "after": [
+    "01M6GMVCVF7QHK1CJVR23KVS4J"
+  ],
+  "at": "2026-11-03T12:16:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At fdbebe1e I built rhiza with go build into a scratch dir and ran it by hand in a scratch git repo, with RHIZA_* and REX_* unset and a fake rex that logs its calls (no agent ever answers). rhiza daemon --permission-mode manual --once printed 'Started a run of <cs>' and exited. ps showed the driver 'rhiza run start --foreground <cs> --permission-mode manual' with PPID 1 in its own session. rex.log had only 'session ls' and the builder's own window new, no window new for the driver. The log was .git/rhiza/logs/<run>.log (no start-N file left) and held the child's 'step build/build: entered' line, and run ls --json showed the run running and live after the daemon exited. Under a long-lived rhiza daemon I killed a driver it had started: the pid was gone at once (reaped, no zombie), the run turned interrupted, and the daemon resumed it once as a detached 'rhiza run resume --foreground <run>' child of its own. After a second kill it was reaped too and the inbox listed the run as gave-up, with one daemon-resumed entry. rhiza request 'Add a widget' made the daemon start 'rhiza run start --foreground --workflow plan --new Add a widget --request <request>' detached, logging to <plan run>.log."
+        },
+        "handle": "daemon-headless-run-drivers-qa-2",
+        "id": "01M6GNAEQC5SM5FDC7733234F5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6GNAEQC5SM5FDC76ZK697TD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GNAEQC5SM5FDC76ZK697TD",
+        "id": "01M6GNAVT3BR3HQV8YDQ3WG6X7",
+        "link": "01M6GNAVT3BR3HQV8YDNAY4A3Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESDV933JY79RW9C3YJCCQ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At fdbebe1e I built rhiza with go build into a scratch dir and ran it by hand in a scratch git repo, with RHIZA_* and REX_* unset and a fake rex that logs its calls (no agent ever answers). After the first run of the change set was abandoned, rhiza run start <cs> --permission-mode manual printed 'Queued a ship-change run of <cs> for the daemon: no daemon runs, so it waits for one (rhiza daemon)' and wrote starts.json. A long-lived rhiza daemon then started it headless as a detached 'rhiza run start --foreground <cs>' child, drained the queue (starts: null) and opened no Rex tab for the driver."
+        },
+        "handle": "run-start-through-daemon-qa-2",
+        "id": "01M6GNBFVMPYCANWG5AVZH6RT9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6GNBFVMPYCANWG5ARYQ8T8C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GNBFVMPYCANWG5ARYQ8T8C",
+        "id": "01M6GNBW17HZPTRVDQ4GP5QK1V",
+        "link": "01M6GNBW17HZPTRVDQ4EWDP5PY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESFPN50CY4ACP8PEQPKEA",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At fdbebe1e I built rhiza with go build into a scratch dir and ran it by hand in a scratch git repo, with RHIZA_* and REX_* unset and a fake rex that logs its calls (no agent ever answers). On a run the daemon had given up on (interrupted again after its one resume), rhiza run resume <run> with a live daemon printed 'Queued the continuation of run <run> for the daemon: daemon rhiza:<pid> continues it headless'. The daemon then ran a detached 'rhiza run resume --foreground <run>' child in its own session, with no rex window new for it. run ls showed the run running, and its log gained another 'continuing visit 1' line."
+        },
+        "handle": "run-continue-through-daemon-qa-2",
+        "id": "01M6GNC5JTSVGRH5PPRAQ2BYPX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6GNC5JTSVGRH5PPR7TZNB85",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GNC5JTSVGRH5PPR7TZNB85",
+        "id": "01M6GNCD7VAHNMH86B4EBGDMVK",
+        "link": "01M6GNCD7VAHNMH86B4B8VWTWV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FFE7252R1S1V4AQTV2RWVN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At fdbebe1e I built rhiza with go build into a scratch dir and ran it by hand in a scratch git repo, with RHIZA_* and REX_* unset and a fake rex that logs its calls (no agent ever answers). Two daemon starts of the same change set (the first abandoned, the second queued) logged to <run1>.log and <run2>.log. rhiza run log <run1> --all showed only builder session 475ed046 and <run2> only 50641ced, so neither log showed the other's lines (this was the cycle-1 finding). A daemon resume and a queued continuation appended to <run2>.log. A request's plan run logged to <plan run>.log, and rhiza run log <plan run> --all printed its 'step interview: entered' lines. With the log file moved away, rhiza run log <run> said it has no log and exited 2."
+        },
+        "handle": "run-log-qa-2",
+        "id": "01M6GNCMK6WAGHQ2MZB7FND807",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6GNCMK6WAGHQ2MZB72YV70P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GNCMK6WAGHQ2MZB72YV70P",
+        "id": "01M6GNCW6W3HVPNZF1YA2WPGVG",
+        "link": "01M6GNCW6W3HVPNZF1Y8K8TE74",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESK5TDQ0J8S077V8BCZ12",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At fdbebe1e I built rhiza with go build into a scratch dir and ran it by hand in a scratch git repo, with RHIZA_* and REX_* unset and a fake rex that logs its calls (no agent ever answers). Every rex window new in rex.log came from an agent session: 'window new -s rhiza-qa qa: Built · run <run> · build/build · builder built-leaf #1' for each ship run, and 'window new -s rhiza-qa qa: Add a widget · run <run> · interview' for the plan run. Each named the repo session, the run and the step, and rex.log had no split at all."
+        },
+        "handle": "headless-run-agent-tabs-qa-2",
+        "id": "01M6GNDAJ3G74M8EQE8BMGDDVH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6GNDAJ3G74M8EQE8B6DFPKD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GNDAJ3G74M8EQE8B6DFPKD",
+        "id": "01M6GNDKXNSVAT2D4MWCGVE9ZY",
+        "link": "01M6GNDKXNSVAT2D4MWANGBN0W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESHESZGCR78N9DK7ZQJVY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FENEJE4B11EBYXDGP9T052",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GNE6XWN4AJ83HARM65FVMK",
+  "type": "ops",
+  "v": 1
+}

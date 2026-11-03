@@ -1,0 +1,132 @@
+{
+  "actor": "01M6G76KQMFA9SD6JBXG2GQMN6",
+  "after": [
+    "01M6G73RPR183C7RJS9PJH35CW"
+  ],
+  "at": "2026-11-03T08:18:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a5ee2b13 I built rhiza (go build) and ran it by hand in a scratch git repo with RHIZA_* and REX_* unset, a fake rex that logs its calls and runs the agent command, and a fake claude agent (held by a file). rhiza run start <cs> queued the run; rhiza daemon --permission-mode manual --once printed 'Started a run of <cs>' and exited. ps showed the driver as 'rhiza run start --foreground <cs> --permission-mode manual' with PPID 1 in its own session (setsid), cwd the repo. rex.log had only 'session ls' plus the agent's own window new, no window new for the driver. starts.json drained (no new queue entry). .git/rhiza/logs/<cs>.log held the child's output, and rhiza run ls --json showed the run state running, live true, after the daemon had exited. Under rhiza daemon --once --autonomous a picked milestone change set started as 'run start --foreground <cs> --permission-mode manual --autonomous'. A killed driver's run was later resumed by the daemon as a detached 'rhiza run resume --foreground <run>'."
+        },
+        "handle": "daemon-headless-run-drivers-qa-1",
+        "id": "01M6G7Q6Q9JSB1PR3Q577P38CX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6G7Q6Q9JSB1PR3Q55QKFY2C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G7Q6Q9JSB1PR3Q55QKFY2C",
+        "id": "01M6G7QFM0VMZWSS1PM0WWJYGA",
+        "link": "01M6G7QFM0VMZWSS1PKXVF0FV0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESDV933JY79RW9C3YJCCQ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a5ee2b13 I built rhiza (go build) and ran it by hand in a scratch git repo with RHIZA_* and REX_* unset, a fake rex that logs its calls and runs the agent command, and a fake claude agent (held by a file). In the daemon-started headless runs, each agent session (builder, check alpha, fixer) called 'rex window new -s rhiza-repo' titled e.g. 'repo: Built · run <run> · build/build · builder built-leaf #1' and 'repo: One · run <run> · review · fixer #2'. No rex split call appeared. After the held agents were released, rex.log showed 'rex block close -s rhiza-repo block:b5/b6/b7' for exactly the three blocks those window new calls returned, and the journal recorded pane-closed per session. A --foreground run with REX_SESSION=session:mine opened its tab in session:mine (the caller's session) and closed only that block."
+        },
+        "handle": "headless-run-agent-tabs-qa-1",
+        "id": "01M6G7QQ4KAVDS5B5D8630CR6Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6G7QQ4KAVDS5B5D847K0BFX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G7QQ4KAVDS5B5D847K0BFX",
+        "id": "01M6G7R0571HDBTXE010D71S04",
+        "link": "01M6G7R0571HDBTXE00YFD4X2Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESHESZGCR78N9DK7ZQJVY",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a5ee2b13 I built rhiza (go build) and ran it by hand in a scratch git repo with RHIZA_* and REX_* unset, a fake rex that logs its calls and runs the agent command, and a fake claude agent (held by a file). rhiza run start <cs> printed 'Queued a ship-change run of <cs> for the daemon: no daemon runs, so it waits for one (rhiza daemon)', wrote .git/rhiza/starts.json and created no run. A second start of the same change set exited 2 with 'already has a run queued'. The queued change set served no milestone, and rhiza daemon --once still started it headless. rhiza run start --foreground --workflow review drove the run in the calling process to its sign-off, and nothing was queued. go test ./internal/tui/roadmapapp passes (fake runner). I did not drive the TUI itself. Minor: the queued entry's 'at' is the zero time."
+        },
+        "handle": "run-start-through-daemon-qa-1",
+        "id": "01M6G7R991J8QR1NMVWCF7K02K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6G7R991J8QR1NMVWBV4NKQX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G7R991J8QR1NMVWBV4NKQX",
+        "id": "01M6G7RJ81WJT2YNFP1GTS1YF9",
+        "link": "01M6G7RJ81WJT2YNFP1DSD9EHC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESFPN50CY4ACP8PEQPKEA",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a5ee2b13 I built rhiza (go build) and ran it by hand in a scratch git repo with RHIZA_* and REX_* unset, a fake rex that logs its calls and runs the agent command, and a fake claude agent (held by a file). Three review runs waited at sign-off. rhiza run request-changes - <r1> (findings on stdin), rhiza run approve <r2> and rhiza run resume <r3> each journaled their action and printed 'Queued the continuation of run ... waits for one'. A second approve of r3 exited 2 with 'already has a continuation queued'. rhiza daemon --max-runs 1 --once printed 'Resumed run <r1>' and left two entries queued. The child was 'rhiza run resume --foreground <r1>' with PPID 1, and no window new carried 'run resume'. run ls showed r1 running and live after the daemon exited, and its log showed signoff changes leading to review visit 2 with a fixer. The next daemon --once continued r2 to succeeded, with continues.json drained. go test ./internal/tui/inboxapp passes (fake runner). I did not drive the TUI itself."
+        },
+        "handle": "run-continue-through-daemon-qa-1",
+        "id": "01M6G7RSNS21PFYA7RT29AS9AG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6G7RSNS21PFYA7RSYW37RRN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G7RSNS21PFYA7RSYW37RRN",
+        "id": "01M6G7S293D9AK4GTEVBGRM5K7",
+        "link": "01M6G7S293D9AK4GTEV80QFA9D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FFE7252R1S1V4AQTV2RWVN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "At a5ee2b13 I built rhiza (go build) and ran it by hand in a scratch git repo with RHIZA_* and REX_* unset, a fake rex that logs its calls and runs the agent command, and a fake claude agent (held by a file). rhiza run log <run> printed the daemon-started run's driver log. --limit 2 --json returned 2 lines and next_cursor 2. --cursor 2 returned the next page and a 'next: ... --cursor 4' hint. --all printed everything. A foreground-only run exited 2 with 'has no log: only a run the daemon started has one'. --layer with REX_SESSION sent rex do with a new_layer running 'rhiza run log <run> --all | less +G', and without a Rex session it failed with exit 1. go test ./internal/tui/liveapp passes. FAIL: a second daemon start of the same change set appends to the same logs/<change set>.log. rhiza run log <new run> then opened with the earlier run's lines (its builder session 9f66a989), and the earlier run's log took on the new run's lines, so run log does not print that run's own log."
+        },
+        "handle": "run-log-qa-1",
+        "id": "01M6G7SC6R4D0D4XVD2A4Y51GV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6G7SC6R4D0D4XVD28MDFBBJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G7SC6R4D0D4XVD28MDFBBJ",
+        "id": "01M6G7SM45T8388M5N61NT23X3",
+        "link": "01M6G7SM45T8388M5N603Q6QMB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESK5TDQ0J8S077V8BCZ12",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FENEJE4B11EBYXDGP9T052",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6G7STKZKXB920XMGWQ3CPM3",
+  "type": "ops",
+  "v": 1
+}

@@ -26,7 +26,7 @@ mkdir .rhiza/workflows
 cp $WORK/hold.toml .rhiza/workflows/hold.toml
 exec git add -A
 exec git commit -qm leaves
-exec rhiza run start --workflow hold --no-wait
+exec rhiza run start --foreground --workflow hold --no-wait
 stdout '^Run (01[0-9A-Z]{24}) stopped$'
 stdout '^- Worktree: .*/repo\.build-check$'
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
@@ -84,7 +84,7 @@ exec sh -c 'grep -c . .git/rhiza/runs/$(cat $WORK/runid).jsonl > $WORK/lines1; R
 cmp $WORK/lines1 $WORK/lines2
 
 # A finished run is checked too.
-exec sh -c 'touch $WORK/go && rhiza run resume $(cat $WORK/runid) --json'
+exec sh -c 'touch $WORK/go && rhiza run resume --foreground $(cat $WORK/runid) --json'
 stdout '"state": "succeeded"'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run build-check; echo exit=$?'
 stdout '^build-check passed: 2 leaves'

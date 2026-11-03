@@ -2748,6 +2748,10 @@ cmp stdout describe.golden.json
       "request": {
         "additionalProperties": false,
         "properties": {
+          "foreground": {
+            "description": "Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts",
+            "type": "boolean"
+          },
           "item": {
             "description": "The inbox item: its short ID from rhiza inbox, or a unique prefix of it; it must be a sign-off",
             "type": "string"
@@ -2765,13 +2769,21 @@ cmp stdout describe.golden.json
             "description": "With changes: the checks step that fixes them",
             "type": "string"
           },
+          "daemon": {
+            "description": "With queued: the daemon's process, as host:pid; empty when no daemon runs and the run waits for one",
+            "type": "string"
+          },
           "dry_run": {
             "description": "True if nothing was journalled or run",
             "type": "boolean"
           },
+          "queued": {
+            "description": "True when the sign-off was journalled and the run's continuation queued for the daemon, which drives it headless, rather than driven in this process; absent otherwise",
+            "type": "boolean"
+          },
           "run": {
             "additionalProperties": false,
-            "description": "The run after it was continued; in a dry run, as it stands. The command exits 1 when the run failed",
+            "description": "The run after it was continued; in a dry run, or when queued, as it stands. The command exits 1 when the run failed",
             "properties": {
               "accepts": {
                 "description": "The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none",
@@ -4353,6 +4365,10 @@ cmp stdout describe.golden.json
             "description": "A JSON file of the owner's findings, or - for stdin (see the input schema)",
             "type": "string"
           },
+          "foreground": {
+            "description": "Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts",
+            "type": "boolean"
+          },
           "item": {
             "description": "The inbox item: its short ID from rhiza inbox, or a unique prefix of it; it must be a sign-off",
             "type": "string"
@@ -4371,13 +4387,21 @@ cmp stdout describe.golden.json
             "description": "With changes: the checks step that fixes them",
             "type": "string"
           },
+          "daemon": {
+            "description": "With queued: the daemon's process, as host:pid; empty when no daemon runs and the run waits for one",
+            "type": "string"
+          },
           "dry_run": {
             "description": "True if nothing was journalled or run",
             "type": "boolean"
           },
+          "queued": {
+            "description": "True when the sign-off was journalled and the run's continuation queued for the daemon, which drives it headless, rather than driven in this process; absent otherwise",
+            "type": "boolean"
+          },
           "run": {
             "additionalProperties": false,
-            "description": "The run after it was continued; in a dry run, as it stands. The command exits 1 when the run failed",
+            "description": "The run after it was continued; in a dry run, or when queued, as it stands. The command exits 1 when the run failed",
             "properties": {
               "accepts": {
                 "description": "The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none",
@@ -8905,6 +8929,10 @@ cmp stdout describe.golden.json
       "request": {
         "additionalProperties": false,
         "properties": {
+          "foreground": {
+            "description": "Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts",
+            "type": "boolean"
+          },
           "run": {
             "description": "The run: a full ID or a unique prefix of 4+ characters; default the latest run of the current change set, else the latest run",
             "type": "string"
@@ -8920,13 +8948,21 @@ cmp stdout describe.golden.json
             "description": "With changes: the checks step that fixes them",
             "type": "string"
           },
+          "daemon": {
+            "description": "With queued: the daemon's process, as host:pid; empty when no daemon runs and the run waits for one",
+            "type": "string"
+          },
           "dry_run": {
             "description": "True if nothing was journalled or run",
             "type": "boolean"
           },
+          "queued": {
+            "description": "True when the sign-off was journalled and the run's continuation queued for the daemon, which drives it headless, rather than driven in this process; absent otherwise",
+            "type": "boolean"
+          },
           "run": {
             "additionalProperties": false,
-            "description": "The run after it was continued; in a dry run, as it stands. The command exits 1 when the run failed",
+            "description": "The run after it was continued; in a dry run, or when queued, as it stands. The command exits 1 when the run failed",
             "properties": {
               "accepts": {
                 "description": "The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none",
@@ -10389,7 +10425,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Sign off a run waiting at a signoff step as the owner: journal the approval and continue the run, which goes on past the step (a review run ends done, a ship-change run rebases, lands and merges)",
+      "summary": "Sign off a run waiting at a signoff step as the owner: journal the approval and queue the run's continuation for the daemon (--foreground continues it in this process), which goes on past the step (a review run ends done, a ship-change run rebases, lands and merges)",
       "write": true
     },
     {
@@ -10940,6 +10976,67 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "run.log",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "all": {
+            "description": "Print the whole log, ignoring --limit and --cursor",
+            "type": "boolean"
+          },
+          "cursor": {
+            "description": "Where to go on: the next_cursor of the page before",
+            "type": "string"
+          },
+          "layer": {
+            "description": "Open the log in a Rex layer, in the session the caller runs in, instead of printing it",
+            "type": "boolean"
+          },
+          "limit": {
+            "description": "The most lines to return, 1 to 1000; default 50",
+            "type": "integer"
+          },
+          "run": {
+            "description": "The run: a full ID or a unique prefix of 4+ characters; default the latest run",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "lines": {
+            "description": "The log's lines of this page, oldest first",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "next_cursor": {
+            "description": "The cursor of the next page; absent when no more remain",
+            "type": "string"
+          },
+          "opened": {
+            "description": "True when --layer opened the log in a Rex layer",
+            "type": "boolean"
+          },
+          "run": {
+            "description": "The run ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lines",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Page a headless run's driver log a page of lines at a time, or open it in a Rex layer with --layer; exits 2 for a run with no log",
+      "write": false
+    },
+    {
       "name": "run.ls",
       "request": {
         "additionalProperties": false,
@@ -11190,6 +11287,10 @@ cmp stdout describe.golden.json
             "description": "A JSON file of the owner's findings, or - for stdin (see the input schema)",
             "type": "string"
           },
+          "foreground": {
+            "description": "Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts",
+            "type": "boolean"
+          },
           "run": {
             "description": "The run: a full ID or a unique prefix of 4+ characters; default the latest run of the current change set, else the latest run",
             "type": "string"
@@ -11207,13 +11308,21 @@ cmp stdout describe.golden.json
             "description": "With changes: the checks step that fixes them",
             "type": "string"
           },
+          "daemon": {
+            "description": "With queued: the daemon's process, as host:pid; empty when no daemon runs and the run waits for one",
+            "type": "string"
+          },
           "dry_run": {
             "description": "True if nothing was journalled or run",
             "type": "boolean"
           },
+          "queued": {
+            "description": "True when the sign-off was journalled and the run's continuation queued for the daemon, which drives it headless, rather than driven in this process; absent otherwise",
+            "type": "boolean"
+          },
           "run": {
             "additionalProperties": false,
-            "description": "The run after it was continued; in a dry run, as it stands. The command exits 1 when the run failed",
+            "description": "The run after it was continued; in a dry run, or when queued, as it stands. The command exits 1 when the run failed",
             "properties": {
               "accepts": {
                 "description": "The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none",
@@ -12676,7 +12785,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Ask for changes to a run waiting at a signoff step: journal the owner's findings as confirmed and continue the run, which fixes them in one cycle outside the cap, re-runs the checks they name and waits for the sign-off again (a ship-change run first pushes and replaces the PR body, and waits for CI)",
+      "summary": "Ask for changes to a run waiting at a signoff step: journal the owner's findings as confirmed and queue the run's continuation for the daemon (--foreground continues it in this process), which fixes them in one cycle outside the cap, re-runs the checks they name and waits for the sign-off again (a ship-change run first pushes and replaces the PR body, and waits for CI)",
       "write": true
     },
     {
@@ -12684,6 +12793,10 @@ cmp stdout describe.golden.json
       "request": {
         "additionalProperties": false,
         "properties": {
+          "foreground": {
+            "description": "Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts",
+            "type": "boolean"
+          },
           "no_wait": {
             "description": "Stop at a wait step whose condition does not hold yet, instead of waiting",
             "type": "boolean"
@@ -12705,8 +12818,16 @@ cmp stdout describe.golden.json
       "response": {
         "additionalProperties": false,
         "properties": {
+          "daemon": {
+            "description": "With queued: the daemon's process, as host:pid; empty when no daemon runs and the run waits for one",
+            "type": "string"
+          },
           "dry_run": {
             "description": "True if nothing was written or run",
+            "type": "boolean"
+          },
+          "queued": {
+            "description": "True when run start or run resume queued the run for the daemon rather than driving it: a started run has no ID yet, and the daemon drives it headless; absent otherwise",
             "type": "boolean"
           },
           "retry": {
@@ -14077,7 +14198,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Continue a stopped or interrupted run where its journal left it, or retry a failed run at its failed step",
+      "summary": "Queue the continuation of a stopped or interrupted run for the daemon, which drives it headless where its journal left it, or retries a failed run at its failed step; --foreground drives it in this process",
       "write": true
     },
     {
@@ -14234,6 +14355,10 @@ cmp stdout describe.golden.json
             "description": "The change set: a full ID or a unique prefix of 4+ characters; default --change, else the current one",
             "type": "string"
           },
+          "foreground": {
+            "description": "Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts",
+            "type": "boolean"
+          },
           "milestone": {
             "description": "With --new: open a record change set, to plan a milestone in; without it an intention",
             "type": "boolean"
@@ -14265,8 +14390,16 @@ cmp stdout describe.golden.json
       "response": {
         "additionalProperties": false,
         "properties": {
+          "daemon": {
+            "description": "With queued: the daemon's process, as host:pid; empty when no daemon runs and the run waits for one",
+            "type": "string"
+          },
           "dry_run": {
             "description": "True if nothing was written or run",
+            "type": "boolean"
+          },
+          "queued": {
+            "description": "True when run start or run resume queued the run for the daemon rather than driving it: a started run has no ID yet, and the daemon drives it headless; absent otherwise",
             "type": "boolean"
           },
           "retry": {
@@ -15637,7 +15770,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Run a workflow's steps on a change set in its worktree, in the foreground",
+      "summary": "Queue a run of a workflow on a change set for the daemon, which runs its steps in its worktree headless; --foreground drives it in this process",
       "write": true
     },
     {

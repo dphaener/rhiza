@@ -33,9 +33,7 @@ var _ run.CheckRunner = (*stepRunner)(nil)
 // role, which its agent gets as RHIZA_CHECK, RHIZA_CYCLE and RHIZA_ROLE,
 // and the model spec names. It works in the run's worktree unless spec
 // names a Dir, where it then runs with RHIZA_ROOT set to the worktree's
-// Rhiza root. A spec with an Anchor splits that session's pane, in the
-// direction the step's split gives; an anchor with no record opens a new
-// tab.
+// Rhiza root. The session opens its own tab.
 func (r *stepRunner) StartCheck(spec run.CheckSpec) (string, error) {
 	role := spec.Check.Role
 	if spec.Role != workflow.RoleCheck {
@@ -55,8 +53,6 @@ func (r *stepRunner) StartCheck(spec run.CheckSpec) (string, error) {
 	if spec.Dir != "" {
 		req.dir, req.root = spec.Dir, filepath.Join(t.worktree, t.prefix)
 	}
-	req.split = spec.Step.Split
-	req.anchor = r.paneAnchor(spec.Anchor)
 	req.Prompt = role.RenderCheckPrompt(workflow.CheckVars{
 		PromptVars: workflow.PromptVars{
 			Change: t.cs.String(), Slug: session.Slug(t.title), Title: t.title, Run: r.run, Step: spec.Step.Name,
@@ -75,7 +71,7 @@ func (r *stepRunner) StartCheck(spec run.CheckSpec) (string, error) {
 // the fixer's adapter and mode, else the run's, its prompt
 // changeSetFixerPrompt's. Its record carries the cycle and role fixer,
 // which its agent gets as RHIZA_CYCLE and RHIZA_ROLE, and no leaf or
-// check. A spec with an Anchor splits that session's pane.
+// check. The session opens its own tab.
 func (r *stepRunner) StartFix(spec run.FixSpec) (string, error) {
 	role := spec.Step.Role(workflow.RoleFixer)
 	if role == nil {
@@ -88,8 +84,6 @@ func (r *stepRunner) StartFix(spec run.FixSpec) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	req.split = spec.Step.Split
-	req.anchor = r.paneAnchor(spec.Anchor)
 	req.Prompt = changeSetFixerPrompt(*role, spec, workflow.PromptVars{
 		Change: t.cs.String(), Slug: session.Slug(t.title), Title: t.title, Run: r.run, Step: spec.Step.Name,
 	})

@@ -82,7 +82,8 @@ func runAmendFixture(t *testing.T, during func(f *amendFixture)) *amendFixture {
 			}
 		},
 	}})
-	resp, err := callOp(t, sf.ctx, "run.start", `{"workflow":"w","permission_mode":"manual"}`)
+	sf.ctx.repoSession = true // rhiza-<repo> is open in the fake Rex
+	resp, err := callOp(t, sf.ctx, "run.start", `{"foreground":true,"workflow":"w","permission_mode":"manual"}`)
 	if err != nil {
 		t.Fatal(err)
 	}

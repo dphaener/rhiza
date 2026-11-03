@@ -44,7 +44,7 @@ The build workflow's leaves, planned with the owner
 - derived-from [build-verifier-findings](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-verifier-findings.md)
 - derived-from [build-retries](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-retries.md)
 - derived-from [build-leaf-fails](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-leaf-fails.md)
-- derived-from [build-panes](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-panes.md)
+- derived-from build-panes (retired)
 - derived-from [build-check](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-check.md)
 - derived-from [build-guide](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-guide.md)
 - derived-from [build-workflow-file](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-workflow-file.md)

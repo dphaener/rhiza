@@ -3,8 +3,8 @@ package api
 // This file holds the owner's sign-off of a review: run.approve and
 // run.request-changes. A review's signoff step stops the run, waiting for
 // the owner; these ops take the run by ref or the latest (the owner has
-// no RHIZA_RUN), journal the sign-off and continue the run in-process, as
-// run.resume does. approve ends the step pass, so the run goes on to its
+// no RHIZA_RUN), journal the sign-off and queue the run's continuation for
+// the daemon, as run.resume does; --foreground continues it in-process. approve ends the step pass, so the run goes on to its
 // end; it never lands the change set. request-changes journals the
 // owner's findings, each naming a check of the checks step the signoff
 // step's on.changes names, as already confirmed: the step ends changes,
@@ -15,9 +15,11 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 
+	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
@@ -27,7 +29,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "run.approve",
-		Summary:  "Sign off a run waiting at a signoff step as the owner: journal the approval and continue the run, which goes on past the step (a review run ends done, a ship-change run rebases, lands and merges)",
+		Summary:  "Sign off a run waiting at a signoff step as the owner: journal the approval and queue the run's continuation for the daemon (--foreground continues it in this process), which goes on past the step (a review run ends done, a ship-change run rebases, lands and merges)",
 		Write:    true,
 		Request:  reflect.TypeFor[RunApproveRequest](),
 		Response: reflect.TypeFor[RunSignoffResponse](),
@@ -35,7 +37,7 @@ func init() {
 	})
 	register(Operation{
 		Name:     "run.request-changes",
-		Summary:  "Ask for changes to a run waiting at a signoff step: journal the owner's findings as confirmed and continue the run, which fixes them in one cycle outside the cap, re-runs the checks they name and waits for the sign-off again (a ship-change run first pushes and replaces the PR body, and waits for CI)",
+		Summary:  "Ask for changes to a run waiting at a signoff step: journal the owner's findings as confirmed and queue the run's continuation for the daemon (--foreground continues it in this process), which fixes them in one cycle outside the cap, re-runs the checks they name and waits for the sign-off again (a ship-change run first pushes and replaces the PR body, and waits for CI)",
 		Write:    true,
 		Request:  reflect.TypeFor[RunRequestChangesRequest](),
 		Response: reflect.TypeFor[RunSignoffResponse](),
@@ -52,14 +54,16 @@ const runRequestChangesNext = "rhiza describe run.request-changes"
 
 // RunApproveRequest names the run to approve.
 type RunApproveRequest struct {
-	Run string `json:"run,omitempty" arg:"0" desc:"The run: a full ID or a unique prefix of 4+ characters; default the latest run of the current change set, else the latest run"`
+	Run        string `json:"run,omitempty" arg:"0" desc:"The run: a full ID or a unique prefix of 4+ characters; default the latest run of the current change set, else the latest run"`
+	Foreground bool   `json:"foreground,omitempty" desc:"Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts"`
 }
 
 // RunRequestChangesRequest names the file of the owner's findings and the
 // run.
 type RunRequestChangesRequest struct {
-	File string `json:"file" arg:"0" desc:"A JSON file of the owner's findings, or - for stdin (see the input schema)"`
-	Run  string `json:"run,omitempty" arg:"1" desc:"The run: a full ID or a unique prefix of 4+ characters; default the latest run of the current change set, else the latest run"`
+	File       string `json:"file" arg:"0" desc:"A JSON file of the owner's findings, or - for stdin (see the input schema)"`
+	Run        string `json:"run,omitempty" arg:"1" desc:"The run: a full ID or a unique prefix of 4+ characters; default the latest run of the current change set, else the latest run"`
+	Foreground bool   `json:"foreground,omitempty" desc:"Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts"`
 }
 
 // RunSignoff is one sign-off of a review's signoff step.
@@ -78,8 +82,10 @@ type RunSignoff struct {
 type RunSignoffResponse struct {
 	Signoff RunSignoff `json:"signoff" desc:"The sign-off journalled, or in a dry run the one that would be"`
 	Changes string     `json:"changes,omitempty" desc:"With changes: the checks step that fixes them"`
-	Run     RunInfo    `json:"run" desc:"The run after it was continued; in a dry run, as it stands. The command exits 1 when the run failed"`
+	Run     RunInfo    `json:"run" desc:"The run after it was continued; in a dry run, or when queued, as it stands. The command exits 1 when the run failed"`
 	DryRun  bool       `json:"dry_run,omitempty" desc:"True if nothing was journalled or run"`
+	Queued  bool       `json:"queued,omitempty" desc:"True when the sign-off was journalled and the run's continuation queued for the daemon, which drives it headless, rather than driven in this process; absent otherwise"`
+	Daemon  string     `json:"daemon,omitempty" desc:"With queued: the daemon's process, as host:pid; empty when no daemon runs and the run waits for one"`
 }
 
 // ExitCode is 1 when the run failed, else 0.
@@ -176,7 +182,7 @@ func runWhere(st run.State) string {
 // again on the journal read under it: a sign-off that lost a race to
 // another process exits 3 (the run is running) or 2 (it was signed off
 // or moved on) and journals nothing.
-func (sr signoffRun) signoff(ctx *Ctx, e run.Entry, changes string) (RunSignoffResponse, error) {
+func (sr signoffRun) signoff(ctx *Ctx, e run.Entry, changes string, foreground bool) (RunSignoffResponse, error) {
 	resp := RunSignoffResponse{Signoff: runSignoff(run.Signoff{
 		Step: e.Step, Visit: e.Visit, Actor: e.Actor, Rule: e.Rule, Outcome: e.Outcome, Findings: e.Findings, At: e.At,
 	}), Changes: changes, DryRun: ctx.DryRun}
@@ -203,11 +209,53 @@ func (sr signoffRun) signoff(ctx *Ctx, e run.Entry, changes string) (RunSignoffR
 		}
 		return []run.Entry{e}, nil
 	}
+	if !foreground {
+		return sr.journalAndQueue(ctx, resp, before)
+	}
 	r, err := runEngineRetry(ctx, sr.store, sr.common, sr.j.ID, st.Change, st.Worktree, st.PermissionMode, st.Agent, st.Autonomous, false, false, before)
 	if err != nil {
 		return RunSignoffResponse{}, err
 	}
 	resp.Run = r.Run
+	return resp, nil
+}
+
+// journalAndQueue journals the sign-off that before returns under the run's
+// lock, as the engine does before it continues the run, then queues the
+// run's continuation for the daemon instead of driving it here. The queue
+// is checked first, so a refused queueing journals nothing; before is
+// checked against the journal read under the lock.
+func (sr signoffRun) journalAndQueue(ctx *Ctx, resp RunSignoffResponse, before func(run.State) ([]run.Entry, error)) (RunSignoffResponse, error) {
+	if q, err := daemon.ReadContinues(sr.common); err == nil && slices.ContainsFunc(q, func(c daemon.Continue) bool { return c.Run == sr.j.ID }) {
+		return RunSignoffResponse{}, Usagef("run %s already has a continuation queued for the daemon", sr.j.ID).WithNext("rhiza daemon status")
+	}
+	unlock, ok, err := sr.store.TryLock(sr.j.ID)
+	if err != nil {
+		return RunSignoffResponse{}, Errorf("lock run %s: %v", sr.j.ID, err)
+	}
+	if !ok {
+		return RunSignoffResponse{}, Conflictf("run %s is running in another process", sr.j.ID).WithNext("rhiza run status " + sr.j.ID)
+	}
+	defer unlock()
+	j, err := sr.store.Read(sr.j.ID)
+	if err != nil {
+		return RunSignoffResponse{}, err
+	}
+	entries, err := before(j.State())
+	if err != nil {
+		return RunSignoffResponse{}, err
+	}
+	for _, e := range entries {
+		if err := sr.store.Append(sr.j.ID, e); err != nil {
+			return RunSignoffResponse{}, Errorf("journal the sign-off of run %s: %v", sr.j.ID, err).WithNext("rhiza run status " + sr.j.ID)
+		}
+	}
+	q, err := queueContinue(ctx, sr.common, sr.j.ID, false, false)
+	if err != nil {
+		return RunSignoffResponse{}, err
+	}
+	resp.Queued, resp.Daemon = true, q.Daemon
+	resp.Run = runInfo(ctx, sr.state, false, session.NewStore(session.Dir(sr.common)))
 	return resp, nil
 }
 
@@ -227,7 +275,7 @@ func runRunApprove(ctx *Ctx, req any) (any, error) {
 	return sr.signoff(ctx, run.Entry{
 		Type: run.TypeSignoff, At: ctx.Now(), Step: sr.step.Name, Visit: sr.state.CurrentVisit,
 		Actor: from.Handle, Rule: run.RuleOwner, Outcome: run.SignoffApproved,
-	}, "")
+	}, "", r.Foreground)
 }
 
 // changesFile is run.request-changes' input.
@@ -319,7 +367,7 @@ func runRunRequestChanges(ctx *Ctx, req any) (any, error) {
 	return sr.signoff(ctx, run.Entry{
 		Type: run.TypeSignoff, At: ctx.Now(), Step: sr.step.Name, Visit: sr.state.CurrentVisit,
 		Actor: from.Handle, Rule: run.RuleOwner, Outcome: run.SignoffChanges, Findings: found,
-	}, checks.Name)
+	}, checks.Name, r.Foreground)
 }
 
 // runSignoff is the response form of sign-off s.
@@ -353,6 +401,11 @@ func (r RunSignoffResponse) Human(w io.Writer) {
 		fmt.Fprintf(w, "Step %s fixes them, then the run waits for the sign-off again.\n", r.Changes)
 	}
 	fmt.Fprintf(w, "\n")
+	if r.Queued {
+		fmt.Fprintf(w, "Queued the continuation of run %s for the daemon", r.Run.ID)
+		queuedDaemon(w, r.Daemon)
+		return
+	}
 	if r.DryRun {
 		r.Run.Human(w)
 		fmt.Fprintf(w, "\nThis was a dry run: nothing was journalled or run.\n")

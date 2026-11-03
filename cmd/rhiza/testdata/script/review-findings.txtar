@@ -37,7 +37,7 @@ cp $WORK/review.toml .rhiza/workflows/review.toml
 exec git add -A
 exec git commit -qm review
 
-exec rhiza run start --workflow review --permission-mode manual
+exec rhiza run start --foreground --workflow review --permission-mode manual
 exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
 
 # Every refusal exited 2 and left the journal as it was; each real call

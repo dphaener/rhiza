@@ -14,7 +14,7 @@ At ac1817d ran go test ./internal/api -run TestOpenSessionPane -v -count=1: PASS
 
 ### Out
 
-- verifies [anchor-gone-splits-run-window](../capability/rhiza/runtime/rex-sessions/anchor-gone-splits-run-window.md)
+- verifies anchor-gone-splits-run-window (retired)
 
 ## History
 

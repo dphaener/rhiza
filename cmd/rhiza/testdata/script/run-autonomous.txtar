@@ -24,12 +24,12 @@ mkdir .rhiza/workflows
 cp $WORK/twoagents.toml .rhiza/workflows/twoagents.toml
 
 # A dry run shows it, and writes nothing.
-exec rhiza run start --workflow twoagents --permission-mode manual --autonomous --dry-run --json
+exec rhiza run start --foreground --workflow twoagents --permission-mode manual --autonomous --dry-run --json
 stdout '"autonomous": true'
 ! exists $WORK/agents.log
 
 # The autonomous run launches step one's agent, then stops at the wait.
-exec rhiza run start --workflow twoagents --permission-mode manual --autonomous --no-wait
+exec rhiza run start --foreground --workflow twoagents --permission-mode manual --autonomous --no-wait
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG stopped$'
 stdout '^- Autonomous: yes$'
 stdout '^- Current step: gate$'
@@ -43,7 +43,7 @@ stdout -count=1 '^one autonomous=1$'
 
 # A resume without the flag keeps it: step two's agent has it too.
 exec sh -c 'echo > $WORK/go'
-exec rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG
+exec rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
 stdout '^- Autonomous: yes$'
 exec cat $WORK/agents.log
@@ -55,7 +55,7 @@ stdout '^two autonomous=1$'
 rm $WORK/go
 rm $WORK/agents.log
 env RHIZA_AUTONOMOUS=1
-exec rhiza run start --workflow twoagents --permission-mode manual --no-wait --json
+exec rhiza run start --foreground --workflow twoagents --permission-mode manual --no-wait --json
 ! stdout '"autonomous":'
 exec rhiza run status
 ! stdout '^- Autonomous:'

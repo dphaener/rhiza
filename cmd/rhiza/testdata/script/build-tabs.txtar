@@ -1,0 +1,179 @@
+# Each session of a leaves step opens its own Rex tab, whatever the pane's
+# shape or the step's split: a's builder, a's verifier, b's builder,
+# verifier and two retry builders are six `rex window new` calls, no split
+# and no size read. A passed session's tab closes, and a failed one's when
+# the step ends, so every tab is closed by the end.
+#
+# The fake rex logs each call to rex.log, numbering new blocks b1, b2, ...
+# in order, answers `block call size` from size.json and runs a pane's
+# command in the background in its -c directory. The fake claude, as a
+# builder, commits its leaf's file with a Leaf: trailer on attempt 1 and
+# exits 1 on a retry. Verifier a waits until verifier b has started, then
+# writes its Evidence and passes; verifier b exits 1. Leaves a and b are
+# independent.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+
+cp $WORK/landscape.json $WORK/size.json
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Panes' --title 'Panes'
+exec rhiza add capability a
+exec rhiza add capability b
+mkdir .rhiza/workflows
+cp $WORK/build.toml .rhiza/workflows/build.toml
+exec git add -A
+exec git commit -qm leaves
+
+exec sh -c 'rhiza run start --foreground --workflow build --permission-mode manual --json; echo exit=$?'
+stdout '^exit=0$'
+exec rhiza run status
+stdout '^- a \(step build\): passed: attempt 1: verifier passed$'
+stdout '^- b \(step build\): failed: attempt 3: builder failed: exit 1$'
+
+# Six tabs, no split, no size read.
+exec sh -c 'grep -c "^window new" $WORK/rex.log'
+stdout '^6$'
+! grep 'split|size' $WORK/rex.log
+# Every tab closed.
+exec sh -c 'grep -c "^close" $WORK/rex.log'
+stdout '^6$'
+fold-ok
+
+# The step's split setting changes nothing: still one tab per session.
+cd $WORK
+rm $WORK/rex.log $WORK/rex.n
+mkdir repo3
+cd repo3
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Fixed' --title 'Fixed'
+exec rhiza add capability c
+mkdir .rhiza/workflows
+cp $WORK/build-below.toml .rhiza/workflows/build.toml
+exec git add -A
+exec git commit -qm leaves
+exec sh -c 'rhiza run start --foreground --workflow build --permission-mode manual --json; echo exit=$?'
+stdout '^exit=0$'
+cmp $WORK/rex.log $WORK/want-below.log
+
+-- landscape.json --
+{"columns":200,"rows":50,"cell_width_px":8,"cell_height_px":16}
+-- want-below.log --
+window new -> block:b1
+window new -> block:b2
+close block:b2
+close block:b1
+-- build.toml --
+name = "build"
+
+[step.build]
+kind = "leaves"
+interval = "50ms"
+on.pass = "done"
+on.fail = "done"
+
+[step.build.builder]
+prompt = "Build {leaf}"
+
+[step.build.verifier]
+prompt = "Verify {leaf}"
+-- build-below.toml --
+name = "build"
+
+[step.build]
+kind = "leaves"
+interval = "50ms"
+split = "below"
+on.pass = "done"
+on.fail = "done"
+
+[step.build.builder]
+prompt = "Build {leaf}"
+
+[step.build.verifier]
+prompt = "Verify {leaf}"
+-- bin/rex --
+#!/bin/sh
+log="$WORK/rex.log"
+case "$1 $2" in
+"block call")
+	b=
+	while [ $# -gt 0 ]; do
+		[ "$1" = -b ] && b=$2
+		shift
+	done
+	echo "size $b" >> "$log"
+	cat "$WORK/size.json"
+	exit 0
+	;;
+"block close")
+	shift 2
+	[ "$1" = -s ] && shift 2
+	echo "close $1" >> "$log"
+	exit 0
+	;;
+"window close")
+	echo "$@" >> "$log"
+	exit 0
+	;;
+esac
+verb=$1
+dir=
+anchor=
+split=
+label=
+while [ $# -gt 0 ]; do
+	case "$1" in
+	-c) dir=$2; shift ;;
+	-b) anchor=$2; shift ;;
+	--split) split=$2; shift ;;
+	--label) label=$2; shift ;;
+	--) shift; break ;;
+	esac
+	shift
+done
+n=$(cat "$WORK/rex.n" 2>/dev/null || echo 0)
+n=$((n + 1))
+echo $n > "$WORK/rex.n"
+if [ "$verb" = split ]; then
+	echo "split $anchor $split -> block:b$n $label" >> "$log"
+	out="{\"block_id\":\"block:b$n\",\"window_id\":\"window:w1\"}"
+else
+	echo "window new -> block:b$n" >> "$log"
+	out="{\"window_id\":\"window:w1\",\"block_ids\":[\"block:b$n\"]}"
+fi
+(cd "$dir" && exec "$@") >>"$WORK/panes.out" 2>&1 </dev/null &
+echo "$out"
+-- bin/claude --
+#!/bin/sh
+if [ "$RHIZA_ROLE" = builder ]; then
+	[ "$RHIZA_ATTEMPT" != 1 ] && exit 1
+	echo "$RHIZA_LEAF" > "$RHIZA_LEAF.txt"
+	git add "$RHIZA_LEAF.txt"
+	git commit -q -m "build $RHIZA_LEAF" -m "Leaf: $RHIZA_LEAF" -- "$RHIZA_LEAF.txt" || exit 1
+	exit 0
+fi
+if [ "$RHIZA_LEAF" = b ]; then
+	touch "$WORK/b.verifier"
+	exit 1
+fi
+if [ "$RHIZA_LEAF" = a ]; then
+	i=0
+	until [ -f "$WORK/b.verifier" ]; do
+		i=$((i + 1))
+		[ $i -gt 800 ] && exit 1
+		sleep 0.025
+	done
+fi
+rhiza add evidence "$RHIZA_LEAF-ok" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" || exit 1
+rhiza link "$RHIZA_LEAF-ok" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" || exit 1
+exit 0

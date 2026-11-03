@@ -202,9 +202,8 @@ func holdPane(t *testing.T, f *sessionFixture, r *stepRunner) {
 	f.rex.calls = nil
 }
 
-// An arbiter's session splits the pane of the run's latest session and
-// opens no window.
-func TestStartArbiterSplits(t *testing.T) {
+// An arbiter's session opens its own tab and splits nothing.
+func TestStartArbiterOwnTab(t *testing.T) {
 	f, r, wctx := arbiterFixture(t)
 	q := mustWrite(t, wctx, "add", `{"kind":"question","handle":"which-store","fields":["statement=Which store?"]}`).Nodes[0]
 	holdPane(t, f, r)
@@ -212,19 +211,18 @@ func TestStartArbiterSplits(t *testing.T) {
 	if _, err := r.StartArbiter(step, q.String(), nil); err != nil {
 		t.Fatal(err)
 	}
-	wantSplitOf(t, f, "block:a1")
+	wantOwnTab(t, f)
 }
 
-// An advisor's session splits the pane of the run's latest session and
-// opens no window.
-func TestStartAdvisorSplits(t *testing.T) {
+// An advisor's session opens its own tab and splits nothing.
+func TestStartAdvisorOwnTab(t *testing.T) {
 	f, r, _ := arbiterFixture(t)
 	holdPane(t, f, r)
 	step := workflow.Step{Name: workflow.ArbiterName, Kind: workflow.KindArbiter, Interval: workflow.DefaultInterval}
 	if _, err := r.StartAdvisor(step, "S-first", "Which store?", nil); err != nil {
 		t.Fatal(err)
 	}
-	wantSplitOf(t, f, "block:a1")
+	wantOwnTab(t, f)
 }
 
 // run recommend closes the advisor's pane once the recommendation is

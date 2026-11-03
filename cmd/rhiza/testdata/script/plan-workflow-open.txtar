@@ -31,7 +31,7 @@ exec git add -A
 exec git commit -qm 'Plan reports'
 exec git push -q origin main
 
-exec sh -c 'rhiza run start $(cat $WORK/rec) --workflow plan --permission-mode manual > $WORK/out 2> $WORK/err; echo exit=$?'
+exec sh -c 'rhiza run start --foreground $(cat $WORK/rec) --workflow plan --permission-mode manual > $WORK/out 2> $WORK/err; echo exit=$?'
 exec cat $WORK/out
 ! stdout 'succeeded'
 
@@ -57,7 +57,7 @@ stdout '"state": "proposed"'
 exec sh -c 'rhiza add decision disk-ssd --field "statement=Exports go on the ssd" --change $(cat $WORK/cs)'
 exec sh -c 'rhiza link disk-ssd answers park-disk --change $(cat $WORK/cs)'
 cd $WORK/repo
-exec sh -c 'rhiza run resume $(rhiza run status --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" | head -1) > $WORK/out2 2> $WORK/err2; echo exit=$?'
+exec sh -c 'rhiza run resume --foreground $(rhiza run status --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" | head -1) > $WORK/out2 2> $WORK/err2; echo exit=$?'
 stdout '^exit=0$'
 exec cat $WORK/out2
 stdout 'succeeded'

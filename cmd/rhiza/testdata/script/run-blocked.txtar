@@ -30,19 +30,19 @@ cp $WORK/ask.toml .rhiza/workflows/ask.toml
 # stderr.
 env REX_BLOCK=block:root
 env REX_SESSION=session:s1
-exec rhiza run start --workflow ask --permission-mode manual &
+exec rhiza run start --foreground --workflow ask --permission-mode manual &
 
 # Poll (bounded) until the run reads blocked.
 exec sh -c 'i=0; while [ $i -lt 400 ]; do rhiza run status | grep -q "^Run .* blocked$" && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
 exec rhiza run status
 stdout '^Run [0-9A-Z]{26} blocked$'
-stdout '^- Blocked: build waits on the owner in tab repo: Blocked runs \(window window:w1\)$'
+stdout '^- Blocked: build waits on the owner in tab repo: Blocked runs · run 01M5PWGJC82P7YGZTWYFFZ0VJG · build \(window window:w1\)$'
 stdout '^- Question: Which colour\?$'
 stdout '^next: rex focus -b block:b1$'
 exec rhiza run status --json
 stdout '"state": "blocked"'
 stdout '"question": "Which colour\?"'
-stdout '"title": "repo: Blocked runs"'
+stdout '"title": "repo: Blocked runs · run 01M5PWGJC82P7YGZTWYFFZ0VJG · build"'
 stdout '"window": "window:w1"'
 stdout '"block": "block:b1"'
 stdout '"kind": "question"'
@@ -62,8 +62,8 @@ stderr -count=1 'state=blocked'
 stderr -count=2 'state=working'
 stderr -count=1 ']7501;state=blocked:kind=question:app=rhiza:'
 # The message ends with the question (decoded: "Blocked runs: build waits on
-# you in tab repo: Blocked runs: Which colour?"), never a permission.
-stderr -count=1 ':msg=QmxvY2tlZCBydW5zOiBidWlsZCB3YWl0cyBvbiB5b3UgaW4gdGFiIHJlcG86IEJsb2NrZWQgcnVuczogV2hpY2ggY29sb3VyPw=='
+# you in tab repo: Blocked runs · run 01M5PWGJC82P7YGZTWYFFZ0VJG · build: Which colour?"), never a permission.
+stderr -count=1 ':msg=QmxvY2tlZCBydW5zOiBidWlsZCB3YWl0cyBvbiB5b3UgaW4gdGFiIHJlcG86IEJsb2NrZWQgcnVucyDCtyBydW4gMDFNNVBXR0pDODJQN1lHWlRXWUZGWjBWSkcgwrcgYnVpbGQ6IFdoaWNoIGNvbG91cj8='
 ! stderr 'kind=permission'
 stderr -count=2 ']7501;state=working:app=rhiza:title='
 stderr -count=1 ']7501;state=done:app=rhiza:'

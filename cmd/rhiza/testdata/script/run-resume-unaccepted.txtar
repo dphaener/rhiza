@@ -21,9 +21,9 @@ mkdir .git/rhiza/runs
 exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWGEF85Y185JZ2ZGCNH40N\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}" > .git/rhiza/runs/WITHDRAWN01.jsonl'
 exec cp .git/rhiza/runs/WITHDRAWN01.jsonl $WORK/before.jsonl
 
-! exec rhiza run resume WITHDRAWN01
+! exec rhiza run resume --foreground WITHDRAWN01
 stderr 'is withdrawn, no longer accepted'
 stderr 'next: rhiza run abandon WITHDRAWN01'
-exec sh -c 'rhiza run resume WITHDRAWN01 2>/dev/null; echo exit=$?'
+exec sh -c 'rhiza run resume --foreground WITHDRAWN01 2>/dev/null; echo exit=$?'
 stdout '^exit=3$'
 exec cmp .git/rhiza/runs/WITHDRAWN01.jsonl $WORK/before.jsonl

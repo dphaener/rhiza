@@ -36,7 +36,7 @@ env RHIZA_ACTOR=
 exec git add -A
 exec git commit -qm evidence
 
-exec sh -c 'rhiza run start --workflow review --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json; echo exit=$?'
 stdout '"state": "succeeded"'
 stdout '^exit=0$'
 

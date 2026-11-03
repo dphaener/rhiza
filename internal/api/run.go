@@ -33,6 +33,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
@@ -44,7 +45,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "run.start",
-		Summary:  "Run a workflow's steps on a change set in its worktree, in the foreground",
+		Summary:  "Queue a run of a workflow on a change set for the daemon, which runs its steps in its worktree headless; --foreground drives it in this process",
 		Write:    true,
 		Request:  reflect.TypeFor[RunStartRequest](),
 		Response: reflect.TypeFor[RunResponse](),
@@ -59,7 +60,7 @@ func init() {
 	})
 	register(Operation{
 		Name:     "run.resume",
-		Summary:  "Continue a stopped or interrupted run where its journal left it, or retry a failed run at its failed step",
+		Summary:  "Queue the continuation of a stopped or interrupted run for the daemon, which drives it headless where its journal left it, or retries a failed run at its failed step; --foreground drives it in this process",
 		Write:    true,
 		Request:  reflect.TypeFor[RunResumeRequest](),
 		Response: reflect.TypeFor[RunResponse](),
@@ -109,6 +110,7 @@ type RunStartRequest struct {
 	New            string `json:"new,omitempty" desc:"With --workflow plan and no change set: open a draft change set with this one-line intent and start the plan run on it"`
 	Milestone      bool   `json:"milestone,omitempty" desc:"With --new: open a record change set, to plan a milestone in; without it an intention"`
 	Request        string `json:"request,omitempty" desc:"With --new: the plan request this run plans; the run takes the ID the daemon drew for it. The daemon passes it"`
+	Foreground     bool   `json:"foreground,omitempty" desc:"Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts"`
 }
 
 // RunStatusRequest names a run, or none for the latest.
@@ -118,9 +120,10 @@ type RunStatusRequest struct {
 
 // RunResumeRequest names the run to continue.
 type RunResumeRequest struct {
-	Run    string `json:"run" arg:"0" desc:"The run: a full ID or a unique prefix of 4+ characters"`
-	NoWait bool   `json:"no_wait,omitempty" desc:"Stop at a wait step whose condition does not hold yet, instead of waiting"`
-	Retry  bool   `json:"retry,omitempty" flag:"retry" desc:"Restart a failed run at the step that failed, once its cause is fixed; the retry is journalled. A run that succeeded is refused"`
+	Run        string `json:"run" arg:"0" desc:"The run: a full ID or a unique prefix of 4+ characters"`
+	NoWait     bool   `json:"no_wait,omitempty" desc:"Stop at a wait step whose condition does not hold yet, instead of waiting"`
+	Retry      bool   `json:"retry,omitempty" flag:"retry" desc:"Restart a failed run at the step that failed, once its cause is fixed; the retry is journalled. A run that succeeded is refused"`
+	Foreground bool   `json:"foreground,omitempty" desc:"Drive the run in this process, rather than hand it to the daemon. The daemon passes it to the detached process it starts"`
 }
 
 // RunAbandonRequest names the run to give up on.
@@ -151,6 +154,8 @@ type RunResponse struct {
 	Run    RunInfo `json:"run" desc:"The run as its journal stands; the command exits 1 when the run failed"`
 	DryRun bool    `json:"dry_run,omitempty" desc:"True if nothing was written or run"`
 	Retry  string  `json:"retry,omitempty" desc:"The step a resume --retry restarted the failed run at, or in a dry run would; absent otherwise"`
+	Queued bool    `json:"queued,omitempty" desc:"True when run start or run resume queued the run for the daemon rather than driving it: a started run has no ID yet, and the daemon drives it headless; absent otherwise"`
+	Daemon string  `json:"daemon,omitempty" desc:"With queued: the daemon's process, as host:pid; empty when no daemon runs and the run waits for one"`
 }
 
 // RunInfo is a run folded from its journal.
@@ -583,7 +588,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 			ID: rid, Workflow: def.Name, Change: started.Change, Title: t.title, Worktree: t.worktree,
 			Autonomous: r.Autonomous, Current: def.Start, Steps: []RunStep{}, StartedAt: rfc3339(ctx.Now()), Amendments: []RunAmendment{},
 			Messages: []RunMessage{}, Sessions: []RunSession{},
-		}, DryRun: true}, nil
+		}, DryRun: true, Queued: !r.Foreground}, nil
 	}
 	if ctx.Getenv != nil {
 		if sid := strings.TrimSpace(ctx.Getenv(envSession)); sid != "" {
@@ -594,13 +599,54 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err := canRun(ctx, def); err != nil {
 		return nil, err
 	}
+	if !r.Foreground {
+		return queueRunStart(rs, t, def, r, started)
+	}
 	if _, err := t.open(ctx); err != nil {
 		return nil, err
 	}
+	claimStartLog(ctx, t.common, rid)
 	if err := startRun(rs, rid, started, ctx.Now(), def); err != nil {
 		return nil, err
 	}
 	return runEngine(ctx, rs, t.common, rid, started.Change, t.worktree, r.PermissionMode, r.Agent, started.Autonomous, r.NoWait)
+}
+
+// queueRunStart queues the run for the daemon, which starts it headless
+// within its maxRuns as rhiza run start --foreground. The start is the
+// owner's: whatever change set run start accepts is queued, with no
+// milestone, state or leaf filter of the daemon's picks. A change set
+// with a live run or a queued start is refused.
+func queueRunStart(rs *run.Store, t changeWorktree, def *workflow.Definition, r RunStartRequest, started run.Started) (any, error) {
+	change := started.Change
+	if err := refuseLiveRun(rs, change, ""); err != nil {
+		return nil, err
+	}
+	err := daemon.UpdateStarts(t.common, func(starts []daemon.Start) ([]daemon.Start, error) {
+		if slices.ContainsFunc(starts, func(s daemon.Start) bool { return s.Change == change }) {
+			return nil, Usagef("change set %s already has a run queued for the daemon", change).WithNext("rhiza daemon status")
+		}
+		return append(starts, daemon.Start{
+			Change: change, Workflow: r.Workflow, PermissionMode: r.PermissionMode, Agent: r.Agent,
+			NoWait: r.NoWait, Autonomous: r.Autonomous,
+		}), nil
+	})
+	if err != nil {
+		var e *Error
+		if errors.As(err, &e) {
+			return nil, err
+		}
+		return nil, Errorf("queue the run: %v", err)
+	}
+	h, up := daemon.Running(t.common)
+	resp := RunResponse{Run: RunInfo{
+		Workflow: def.Name, Change: change, Title: t.title, Worktree: t.worktree, Autonomous: r.Autonomous,
+		Steps: []RunStep{}, Amendments: []RunAmendment{}, Messages: []RunMessage{}, Sessions: []RunSession{},
+	}, Queued: true}
+	if up {
+		resp.Daemon = h.String()
+	}
+	return resp, nil
 }
 
 // newPlanChange opens the draft change set run start --new plans in (a
@@ -817,7 +863,7 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 			j.Entries = append(j.Entries, run.Entry{Type: run.TypeRetried, At: ctx.Now(), Step: retryStep, Detail: st.Detail})
 			st = j.State()
 		}
-		return RunResponse{Run: runInfo(ctx, st, false, session.NewStore(session.Dir(common))), DryRun: true, Retry: retryStep}, nil
+		return RunResponse{Run: runInfo(ctx, st, false, session.NewStore(session.Dir(common))), DryRun: true, Retry: retryStep, Queued: !r.Foreground}, nil
 	}
 	if err := refuseAgentSession(ctx, "resume"); err != nil {
 		return nil, err
@@ -825,11 +871,46 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 	if err := canRun(ctx, def); err != nil {
 		return nil, err
 	}
+	if !r.Foreground {
+		resp, err := queueContinue(ctx, common, j.ID, r.Retry, r.NoWait)
+		if err != nil {
+			return nil, err
+		}
+		resp.Run = runInfo(ctx, st, false, session.NewStore(session.Dir(common)))
+		resp.Retry = retryStep
+		return resp, nil
+	}
 	resp, err := runEngineRetry(ctx, rs, common, j.ID, st.Change, st.Worktree, st.PermissionMode, st.Agent, st.Autonomous, r.NoWait, r.Retry, nil)
 	if err != nil {
 		return nil, err
 	}
 	resp.Retry = retryStep
+	return resp, nil
+}
+
+// queueContinue queues the continuation of run id for the daemon, which
+// drives it headless within its maxRuns as rhiza run resume --foreground.
+// It is the owner's action, not a pick: no state or milestone filter
+// applies. A run with a continuation already queued is refused. The response
+// holds only Queued and Daemon; the caller adds the run.
+func queueContinue(ctx *Ctx, common, id string, retry, noWait bool) (RunResponse, error) {
+	err := daemon.UpdateContinues(common, func(cs []daemon.Continue) ([]daemon.Continue, error) {
+		if slices.ContainsFunc(cs, func(c daemon.Continue) bool { return c.Run == id }) {
+			return nil, Usagef("run %s already has a continuation queued for the daemon", id).WithNext("rhiza daemon status")
+		}
+		return append(cs, daemon.Continue{Run: id, Retry: retry, NoWait: noWait, At: ctx.Now().UTC()}), nil
+	})
+	if err != nil {
+		var e *Error
+		if errors.As(err, &e) {
+			return RunResponse{}, err
+		}
+		return RunResponse{}, Errorf("queue the continuation: %v", err)
+	}
+	resp := RunResponse{Queued: true}
+	if h, up := daemon.Running(common); up {
+		resp.Daemon = h.String()
+	}
 	return resp, nil
 }
 
@@ -1587,12 +1668,10 @@ func (r *stepRunner) sh(cmd string, env []string, out io.Writer) (int, error) {
 
 // StartAgent starts the step's session as session.start does, on the
 // run's change set, on model, and returns its ID. An autonomous run's
-// session is recorded autonomous. Its pane splits the pane of the run's
-// latest session with one; only the run's first opens a window.
+// session is recorded autonomous. Its tab is its own.
 func (r *stepRunner) StartAgent(step workflow.Step, model string, _ []string) (string, error) {
 	req := agentStepRequest(step, r.mode, r.agent)
 	req.Change, req.Run, req.autonomous, req.model = r.change, r.run, r.autonomous, model
-	req.split, req.anchor = step.Split, r.paneAnchor("")
 	t, err := resolveChangeWorktree(r.ctx, r.change, "no agent can work on it")
 	if err != nil {
 		return "", err
@@ -1624,7 +1703,6 @@ const arbiterWording = "(assumed, would have escalated)"
 func (r *stepRunner) StartArbiter(step workflow.Step, question string, _ []string) (string, error) {
 	req := agentStepRequest(step, r.mode, r.agent)
 	req.Change, req.Run, req.autonomous = r.change, r.run, r.autonomous
-	req.split, req.anchor = step.Split, r.paneAnchor("")
 	req.Prompt = fmt.Sprintf(arbiterPrompt, question)
 	var err error
 	if req.writes, req.writesRecord, err = r.arbiterWrites(question); err != nil {
@@ -1657,7 +1735,6 @@ const advisorStep = "advisor"
 func (r *stepRunner) StartAdvisor(step workflow.Step, asker, text string, _ []string) (string, error) {
 	req := agentStepRequest(step, r.mode, r.agent)
 	req.Step, req.Change, req.Run, req.advises = advisorStep, r.change, r.run, asker
-	req.split, req.anchor = step.Split, r.paneAnchor("")
 	req.Prompt = fmt.Sprintf(advisorPrompt, text)
 	resp, err := runSessionStart(r.ctx, req)
 	if err != nil {
@@ -2518,8 +2595,32 @@ func addTokens(sum *SessionTokens, t SessionTokens) {
 	sum.CacheRead += t.CacheRead
 }
 
+// queuedDaemon ends the line of a queued action: which daemon takes it, or
+// that none runs.
+func queuedDaemon(w io.Writer, holder string) {
+	if holder == "" {
+		fmt.Fprintf(w, ": no daemon runs, so it waits for one (rhiza daemon)\n")
+	} else {
+		fmt.Fprintf(w, ": daemon %s continues it headless\n", holder)
+	}
+}
+
 // Human reports the run, or the plan of a dry run.
 func (r RunResponse) Human(w io.Writer) {
+	if r.Queued && !r.DryRun && r.Run.ID != "" {
+		fmt.Fprintf(w, "Queued the continuation of run %s for the daemon", r.Run.ID)
+		queuedDaemon(w, r.Daemon)
+		return
+	}
+	if r.Queued && !r.DryRun {
+		fmt.Fprintf(w, "Queued a %s run of %s for the daemon", r.Run.Workflow, r.Run.Change)
+		if r.Daemon == "" {
+			fmt.Fprintf(w, ": no daemon runs, so it waits for one (rhiza daemon)\n")
+		} else {
+			fmt.Fprintf(w, ": daemon %s starts it headless\n", r.Daemon)
+		}
+		return
+	}
 	if r.DryRun && r.Retry != "" {
 		fmt.Fprintf(w, "Run %s would be retried at step %s\n\n", r.Run.ID, r.Retry)
 		runLines(w, r.Run)

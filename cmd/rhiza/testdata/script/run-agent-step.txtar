@@ -23,22 +23,22 @@ cp $WORK/passes.toml .rhiza/workflows/passes.toml
 cp $WORK/fails.toml .rhiza/workflows/fails.toml
 
 # A dry run starts nothing.
-exec rhiza run start --workflow passes --permission-mode manual --dry-run
+exec rhiza run start --foreground --workflow passes --permission-mode manual --dry-run
 stdout '^Run \S+ would start$'
 ! exists $WORK/rex.log
 
 # A workflow whose agent step has no prompt, or an unknown placeholder, is
 # refused before anything runs.
 cp $WORK/noprompt.toml .rhiza/workflows/noprompt.toml
-! exec rhiza run start --workflow noprompt --permission-mode manual
+! exec rhiza run start --foreground --workflow noprompt --permission-mode manual
 stderr 'step "build": an agent step needs prompt = '
 cp $WORK/badplaceholder.toml .rhiza/workflows/badplaceholder.toml
-! exec rhiza run start --workflow badplaceholder --permission-mode manual
+! exec rhiza run start --foreground --workflow badplaceholder --permission-mode manual
 stderr 'step "build": prompt uses unknown placeholder \{branch\}'
 ! exists $WORK/rex.log
 
 # The agent exits 0: the step passes and the run succeeds.
-exec sh -c 'rhiza run start --workflow passes --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow passes --permission-mode manual --json; echo exit=$?'
 stdout '"state": "succeeded"'
 stdout '"outcome": "pass"'
 stdout '"step": "build"'
@@ -74,11 +74,11 @@ cmp stdout $WORK/want.prompt
 exec rhiza session show 158fe87f-5cf4-47e4-a3e9-01a16dc84988 --json
 stdout '"prompt": "Build 01M5PWGEF85Y185JZ2ZGCNH40N \(agent-steps, Agent steps\) in step build of run 01M5PWGJC82P7YGZTWYFFZ0VJG"'
 exec cat $WORK/rex.log
-stdout '^window new repo: Agent steps -c '${WORK@R}'/repo\.agent-steps --json -- '
+stdout '^window new repo: Agent steps · run 01M5PWGJC82P7YGZTWYFFZ0VJG · build -c '${WORK@R}'/repo\.agent-steps --json -- '
 
 # The agent exits 2: the step fails and follows on.fail to a command step.
 cp $WORK/code2 $WORK/claude.exit
-exec sh -c 'rhiza run start --workflow fails --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow fails --permission-mode manual --json; echo exit=$?'
 stdout '"state": "succeeded"'
 stdout '^exit=0$'
 exec rhiza run status

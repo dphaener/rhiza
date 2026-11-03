@@ -14,7 +14,7 @@ mkdir .rhiza/workflows
 cp ../flaky.toml .rhiza/workflows/flaky.toml
 
 # A failed run is in the inbox.
-! exec rhiza run start --workflow flaky
+! exec rhiza run start --foreground --workflow flaky
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG failed$'
 exec rhiza inbox
 stdout '01M5PWGJC82P7YGZTWYFFZ0VJG'
@@ -37,7 +37,7 @@ exec rhiza inbox --json
 # A run failing at a command step that prints boom lists that output
 # under its inbox item, and inbox --json's detail holds it.
 cp ../loud.toml .rhiza/workflows/loud.toml
-! exec rhiza run start --workflow loud
+! exec rhiza run start --foreground --workflow loud
 exec rhiza inbox
 stdout '^    exit 3$'
 stdout '^    boom$'
@@ -49,10 +49,10 @@ exec rhiza inbox
 stdout '^Nothing waits on you$'
 
 # Resume, retry and a second abandon exit 2, naming the run.
-exec sh -c 'rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
+exec sh -c 'rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
 stdout '^exit=2$'
 stdout '01M5PWGJC82P7YGZTWYFFZ0VJG was abandoned'
-exec sh -c 'rhiza run resume --retry 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
+exec sh -c 'rhiza run resume --foreground --retry 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
 stdout '^exit=2$'
 stdout '01M5PWGJC82P7YGZTWYFFZ0VJG was abandoned'
 exec sh -c 'rhiza run abandon 01M5PWGJC82P7YGZTWYFFZ0VJG 2>&1; echo exit=$?'
@@ -61,7 +61,7 @@ stdout 'is finished'
 
 # A succeeded run cannot be abandoned.
 exec sh -c 'echo > $WORK/input'
-exec rhiza run start --workflow flaky
+exec rhiza run start --foreground --workflow flaky
 stdout '^Run [0-9A-Z]{26} succeeded$'
 exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl// > $WORK/second'
 exec sh -c 'rhiza run abandon $(cat $WORK/second) 2>&1; echo exit=$?'

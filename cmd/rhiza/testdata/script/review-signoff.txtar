@@ -29,30 +29,30 @@ exec git add -A
 exec git commit -qm review
 
 # No run yet: both commands exit 2.
-exec sh -c 'rhiza run approve; echo exit=$?'
+exec sh -c 'rhiza run approve --foreground; echo exit=$?'
 stdout '^exit=2$'
-exec sh -c 'rhiza run request-changes $WORK/changes.json; echo exit=$?'
+exec sh -c 'rhiza run request-changes --foreground $WORK/changes.json; echo exit=$?'
 stdout '^exit=2$'
 
 # A run stopped at a wait step is not waiting for a sign-off.
-exec rhiza run start --workflow other --no-wait --json
+exec rhiza run start --foreground --workflow other --no-wait --json
 stdout '"state": "stopped"'
 exec sh -c 'wc -l < $(ls -t .git/rhiza/runs/*.jsonl | head -1)'
 cp stdout $WORK/other.lines
-exec sh -c 'rhiza run approve; echo exit=$?'
+exec sh -c 'rhiza run approve --foreground; echo exit=$?'
 stdout '^exit=2$'
 stderr 'run approve works on a run waiting at a sign-off step, and run [0-9A-Z]{26} is not: it is stopped at step ci'
-exec sh -c 'rhiza run request-changes $WORK/changes.json; echo exit=$?'
+exec sh -c 'rhiza run request-changes --foreground $WORK/changes.json; echo exit=$?'
 stdout '^exit=2$'
 exec sh -c 'wc -l < $(ls -t .git/rhiza/runs/*.jsonl | head -1)'
 cmp stdout $WORK/other.lines
 
 # A change set has one live run: finish the stopped one before the review.
 exec sh -c 'echo > $WORK/ci-done'
-exec sh -c 'rhiza run resume $(ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl//)'
+exec sh -c 'rhiza run resume --foreground $(ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl//)'
 
 # The review stops at its sign-off once its check passes.
-exec sh -c 'rhiza run start --workflow review --permission-mode manual --json > $WORK/start.json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json > $WORK/start.json; echo exit=$?'
 stdout '^exit=0$'
 exec cat $WORK/start.json
 stdout '"state": "stopped"'
@@ -70,22 +70,22 @@ cp stdout $WORK/review.lines
 
 # A request for changes naming no check of the checks step, or no
 # finding at all, is refused, and nothing is journalled.
-exec sh -c 'rhiza run request-changes $WORK/nocheck.json; echo exit=$?'
+exec sh -c 'rhiza run request-changes --foreground $WORK/nocheck.json; echo exit=$?'
 stdout '^exit=2$'
 stderr 'finding 1: check "nope" is not a check of step review: its checks are alpha'
-exec sh -c 'rhiza run request-changes $WORK/empty.json; echo exit=$?'
+exec sh -c 'rhiza run request-changes --foreground $WORK/empty.json; echo exit=$?'
 stdout '^exit=2$'
-exec sh -c 'rhiza run request-changes $WORK/badleaf.json; echo exit=$?'
+exec sh -c 'rhiza run request-changes --foreground $WORK/badleaf.json; echo exit=$?'
 stdout '^exit=2$'
 stderr 'finding 1: leaf "nope"'
-exec sh -c 'rhiza run request-changes $WORK/nosev.json; echo exit=$?'
+exec sh -c 'rhiza run request-changes --foreground $WORK/nosev.json; echo exit=$?'
 stdout '^exit=2$'
 stderr 'finding 1: severity "huge"'
 exec sh -c 'wc -l < $(ls -t .git/rhiza/runs/*.jsonl | head -1)'
 cmp stdout $WORK/review.lines
 
 # A dry run journals nothing.
-exec rhiza run approve --dry-run --json
+exec rhiza run approve --foreground --dry-run --json
 stdout '"outcome": "approved"'
 stdout '"dry_run": true'
 exec sh -c 'wc -l < $(ls -t .git/rhiza/runs/*.jsonl | head -1)'
@@ -93,7 +93,7 @@ cmp stdout $WORK/review.lines
 
 # The owner approves: the run ends done, with a sign-off naming the
 # actor, and the change set is not landed.
-exec rhiza run approve
+exec rhiza run approve --foreground
 stdout '^Sign-off: signoff \(visit 1\): approved by [a-z0-9-]+$'
 stdout '^Run [0-9A-Z]{26} succeeded$'
 exec rhiza run status --json
@@ -107,10 +107,10 @@ exec rhiza change show --json
 stdout '"state": "draft"'
 
 # A finished run is not waiting either.
-exec sh -c 'rhiza run approve; echo exit=$?'
+exec sh -c 'rhiza run approve --foreground; echo exit=$?'
 stdout '^exit=2$'
 stderr 'is finished: it succeeded'
-exec sh -c 'rhiza run request-changes $WORK/changes.json; echo exit=$?'
+exec sh -c 'rhiza run request-changes --foreground $WORK/changes.json; echo exit=$?'
 stdout '^exit=2$'
 
 fold-ok

@@ -1,0 +1,72 @@
+{
+  "actor": "01M6G9RK59QR38385NXBTT96NX",
+  "after": [
+    "01M6G7STKZKXB920XMGWQ3CPM3"
+  ],
+  "at": "2026-11-03T08:54:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript with a fake Rex drives a headless run: each agent session calls rex window new -s rhiza-<repo> with a title naming the run and the step, no rex split is anchored on a driver block, and closing a finished session closes only its own tab",
+          "statement": "Each agent session of a run (agent steps, checks, fixers and question sessions) opens its own Rex tab in the repo's session, titled for the run and step, instead of splitting a run window anchored on the driver's pane; every run is headless, so it replaces and retires the run-window tiling leaves run-sessions-one-window, agent-steps-tile-run-window, question-sessions-tile-run-window, checks-and-fixes-anchored, anchor-gone-splits-run-window and build-panes"
+        },
+        "handle": "headless-run-agent-tabs",
+        "id": "01M6FESHESZGCR78N9DNASVMGD",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6FESHESZGCR78N9DK7ZQJVY",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "base": "01M651M8TNJKY76E8G6MK19C6R",
+        "id": "01M6G9VMGQB1FECZBJZMY8EJZK",
+        "node": "01M651M8TNJKY76E8G6KMV3V3Y",
+        "op": "node.retire",
+        "reason": "Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs)."
+      },
+      {
+        "base": "01M6857JXB8B7WXBN5VHZV2EAV",
+        "id": "01M6G9VPSQAJW7BRS6K4NBS49E",
+        "node": "01M6857JXB8B7WXBN5VHE7MV1K",
+        "op": "node.retire",
+        "reason": "Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs)."
+      },
+      {
+        "base": "01M6857KVT0NRCTAY6F201C9CY",
+        "id": "01M6G9VS2K0XZ4PGNXEF4V3X4B",
+        "node": "01M6857KVT0NRCTAY6EZ2DH209",
+        "op": "node.retire",
+        "reason": "Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs)."
+      },
+      {
+        "base": "01M651ME1N3KVWZ1D6MC7Q58JH",
+        "id": "01M6G9VVJ45VFFV92VE6SKXJ0D",
+        "node": "01M651ME1N3KVWZ1D6M8BYFHBQ",
+        "op": "node.retire",
+        "reason": "Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs)."
+      },
+      {
+        "base": "01M651MBGX79H2AV7NA1Z1REB7",
+        "id": "01M6G9VXZCSTF3YR0R7651QREM",
+        "node": "01M651MBGX79H2AV7N9YA0EC9X",
+        "op": "node.retire",
+        "reason": "Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs)."
+      },
+      {
+        "base": "01M5YX3GT71M5KWXZYCZZSTF7Y",
+        "id": "01M6G9W0QDRN6ZBHN7E3R1VJCD",
+        "node": "01M5YX3GT71M5KWXZYCZA684DF",
+        "op": "node.retire",
+        "reason": "Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs)."
+      }
+    ]
+  },
+  "change_set": "01M6FENEJE4B11EBYXDGP9T052",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6G9W7B5PNR0D1WA2W0QP17B",
+  "type": "ops",
+  "v": 1
+}

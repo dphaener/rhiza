@@ -33,7 +33,7 @@ exec git commit -qm 'Answered runs'
 env REX_BLOCK=block:root
 env REX_SESSION=session:s1
 
-exec rhiza run start --workflow ask --permission-mode manual --autonomous
+exec rhiza run start --foreground --workflow ask --permission-mode manual --autonomous
 stdout '^Run [0-9A-Z]{26} succeeded$'
 stderr 'step build: arbiter pass on question [0-9A-Z]{26}: answered by assume-blue'
 stderr 'step build: session [0-9a-f-]+ has the answer to question question-[0-9a-f]{8}-1: decision assume-blue'
