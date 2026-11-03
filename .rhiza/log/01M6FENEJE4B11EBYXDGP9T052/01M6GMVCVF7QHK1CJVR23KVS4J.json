@@ -1,0 +1,40 @@
+{
+  "actor": "01M6GMNKD2KN5T16ZGYAZ6T57Q",
+  "after": [
+    "01M6GJ3JKWKQ9C6W1B1XW3EJX8"
+  ],
+  "at": "2026-11-03T12:06:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at e12d4afc (attempt 2, the review fix commit). I read the diff: a daemon start now detaches into <cs>.start-<n>.log named to the child in RHIZA_RUN_LOG, and run start --foreground renames it to <run>.log before it journals. A request's plan run logs to <run>.log under q.Run. run log reads <run>.log only. This addresses the confirmed qa f1 (shared per-change-set log) and quality f2 (plan-<request>.log never found). I ran go test ./cmd/rhiza -count=1 -run TestScripts/(run-log|daemon-headless-runs|plan-requests|daemon-repo-session|headless-run-agent-tabs|run-start-queue|run-continue-queue): ok. In run-log.txtar, rhiza run log pages with --limit/--cursor/--all and exits 2 with no log. A second daemon start of the same change set logs only its own lines ('step build/build: entered'), and the first run keeps only its own. plan-requests shows run log <plan run> --all exits 0 with no plan-*.log left. go test ./internal/tui/liveapp -run Log: TestLKeyOpensSelectedRunLogLayer PASS (fake runner, l key opens a layer running rhiza run log for the selected run). In make check, fmt, vet and all go tests pass. Only self-check fails, on a stale .rhiza/rendered (actor claude-code-4d7b2408, index.md). The stale render comes from the earlier evidence commit 56a61765, not from this leaf's diff."
+        },
+        "handle": "run-log-verified-2",
+        "id": "01M6GMV31KZNA8HBQ41XN2MRG7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6GMV31KZNA8HBQ41TSEC7DZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GMV31KZNA8HBQ41TSEC7DZ",
+        "id": "01M6GMV6J7S616E5VM9XZ0GM5M",
+        "link": "01M6GMV6J7S616E5VM9VJ9CFHX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESK5TDQ0J8S077V8BCZ12",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FENEJE4B11EBYXDGP9T052",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GMVCVF7QHK1CJVR23KVS4J",
+  "type": "ops",
+  "v": 1
+}
