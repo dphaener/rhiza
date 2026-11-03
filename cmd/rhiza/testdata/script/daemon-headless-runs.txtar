@@ -34,6 +34,10 @@ exec rhiza run ls --json
 stdout '"live": true'
 exists .git/rhiza/logs/01M5PWGMARA1WR6BD0MEF4Y76P.log
 
+# The child's own output lands in that log, not just the file the daemon opened.
+exec sh -c 'for i in $(seq 1 100); do grep -q "step build/build: entered" .git/rhiza/logs/01M5PWGMARA1WR6BD0MEF4Y76P.log && break; sleep 0.1; done; cat .git/rhiza/logs/01M5PWGMARA1WR6BD0MEF4Y76P.log'
+stdout '^rhiza: step build/build: entered'
+
 # Stop the child through the pid its journal names.
 exec sh -c 'kill $(sed -n "s/.*\"pid\":\([0-9]*\).*/\1/p" .git/rhiza/runs/*.jsonl | head -1)'
 -- bin/rex --

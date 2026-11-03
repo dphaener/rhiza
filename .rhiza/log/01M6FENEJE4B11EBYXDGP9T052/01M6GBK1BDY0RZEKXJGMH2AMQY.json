@@ -1,0 +1,54 @@
+{
+  "actor": "01M6GBF82R1XN2GEYD03RXJ1AX",
+  "after": [
+    "01M6G9W7B5PNR0D1WA2W0QP17B"
+  ],
+  "at": "2026-11-03T09:24:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript runs rhiza daemon --once against a fake Rex: the run's driver starts as a rhiza run start --foreground process with the change set's ID (and --autonomous only under rhiza daemon --once --autonomous), with no rex window new for it and no new queue entry, a line the child itself prints (step build/build: entered) lands in the run's log file, and rhiza run ls shows the run live after the daemon has exited; testscripts for plan requests and for resume see the daemon start a request's plan run as a detached rhiza run start --foreground --workflow plan --new ... --request <request> and an interrupted run's driver as a detached rhiza run resume --foreground <run>, with no rex window new for either",
+          "statement": "The daemon starts each run as a detached rhiza run start --foreground <change set> process, starts a request's plan run as a detached rhiza run start --foreground --workflow plan --new <intent> --request <request> process (with --milestone for a milestone request), and resumes or continues one as a detached rhiza run resume --foreground <run> process, in the repo and outside Rex, adding --autonomous only when the daemon was started with --autonomous, with output in the run's log file under .git/rhiza, so no Rex tab holds a run's driver, the child drives the run rather than queueing it again, and a run still outlives the daemon; the daemon reaps each such child when it exits, so a driver that dies shows as interrupted, not live; it replaces daemon-run-tabs, which it retires"
+        },
+        "handle": "daemon-headless-run-drivers",
+        "id": "01M6FESDV933JY79RW9CEFK25W",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M6FESDV933JY79RW9C3YJCCQ",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "base": "01M6FES3PKQCSNG9SEED0E58K6",
+        "handle": null,
+        "id": "01M6GBJTY543QVR43VSZP992DE",
+        "node": "01M6FES3PKQCSNG9SEECK4G1R7",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A testscript runs rhiza daemon --once against a fake Rex with REX_SESSION unset: when rex session ls lacks rhiza-<repo> the daemon creates it once and every detached run driver it starts carries REX_SESSION=rhiza-<repo>; with the session present it creates none; with REX_SESSION set to another session those drivers still carry rhiza-<repo>",
+          "statement": "Every Rex tab the daemon's runs open (agent tabs; plan-request runs and run drivers start headless, outside Rex, by daemon-headless-run-drivers) opens in the Rex session rhiza-<repo>, named after the main checkout's folder, which the daemon creates on its Rex server when missing and passes as REX_SESSION to every run driver it starts, so it needs no Rex tab or REX_SESSION of its own"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M63085369SFCDV994SE3ZJR4",
+        "handle": null,
+        "id": "01M6GBJXJVFCW07D4KWAJP6TDQ",
+        "node": "01M61R7MP3HGEB60GJV4M3CWQA",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A testscript with a fixture journal that is unfinished and names a dead process runs rhiza daemon --once twice with a fake Rex: the first starts one detached rhiza run resume --foreground on that run and journals it, the second (with the run interrupted again) starts none; a failed run's journal gets no resume.",
+          "statement": "The daemon resumes an interrupted run whose change set is accepted once, as a detached rhiza run resume --foreground <run> process outside Rex (daemon-headless-run-drivers), and journals that resume in the run's journal; it leaves alone an interrupted run whose change set is not accepted, a run interrupted again after that resume, which the inbox lists as a run the daemon gave up on, and every failed run, which the inbox lists as failed."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6FENEJE4B11EBYXDGP9T052",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GBK1BDY0RZEKXJGMH2AMQY",
+  "type": "ops",
+  "v": 1
+}

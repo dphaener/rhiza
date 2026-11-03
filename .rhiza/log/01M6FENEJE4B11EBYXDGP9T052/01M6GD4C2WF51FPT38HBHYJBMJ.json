@@ -1,0 +1,40 @@
+{
+  "actor": "01M6GBEYKSE06NSSTP5X9E4SBA",
+  "after": [
+    "01M6GBKGWBZZX6S6WT8CGGAQNW"
+  ],
+  "at": "2026-11-03T09:51:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b0c22e78 (review cycle 2: model-only commit retiring the tiling leaves). Ran go test ./cmd/rhiza -count=1 -run 'TestScripts/(headless-run-agent-tabs|run-agent-tabs|build-tabs|arbiter-agent-tabs|daemon-headless-runs)$': ok. headless-run-agent-tabs.txtar has a fake rex and starts the run with rhiza daemon --once as a detached child with no REX_SESSION. It asserts 4 'window new -s rhiza-repo repo: Built · run <id> · build · <role> <leaf> #1' calls, no 'split' in the rex log, and close calls that equal the opened blocks one for one. A second run queued from REX_SESSION=session:mine still opens its tabs in rhiza-repo and never touches block:mine. In the change set view, rhiza show --change confirms run-sessions-one-window, agent-steps-tile-run-window, question-sessions-tile-run-window, checks-and-fixes-anchored, anchor-gone-splits-run-window and build-panes are retired, and the leaf statement names them. make fmt-check vet self-check: exit 0. make test fails only on wall-clock budget tests (internal/api TestReadBudget, internal/slice TestBudget, internal/tui/modelapp TestGeneratedModel; medians 60-90ms against 50ms) under load average 15 on 4 cores with other rhiza runs active. Those tests read generated models that this commit does not touch, and build/check passed at 08:06."
+        },
+        "handle": "headless-run-agent-tabs-reverified",
+        "id": "01M6GD3X5HG0TB5G98TV78J1TB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6GD3X5HG0TB5G98TT8KZ61C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GD3X5HG0TB5G98TT8KZ61C",
+        "id": "01M6GD4495FX7BGW4A506PY8JR",
+        "link": "01M6GD4495FX7BGW4A4YH5WVSS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESHESZGCR78N9DK7ZQJVY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FENEJE4B11EBYXDGP9T052",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GD4C2WF51FPT38HBHYJBMJ",
+  "type": "ops",
+  "v": 1
+}
