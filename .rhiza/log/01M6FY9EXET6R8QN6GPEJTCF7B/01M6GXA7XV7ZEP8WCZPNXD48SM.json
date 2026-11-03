@@ -1,0 +1,40 @@
+{
+  "actor": "01M6GWGCH5DA24Z5VTYKA26S0K",
+  "after": [
+    "01M6GVDDFEKQ29WQ4WY4CX3HDJ"
+  ],
+  "at": "2026-11-03T14:34:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 0d70f9d2 ran go test ./cmd/rhiza -run 'TestScripts/(health|describe-golden)' -count=1: health-machine-part, health, tui-health-app, daemon-version-in-health and describe-golden pass. Read health-machine-part.txtar: it runs rhiza health --json with no machine config, with trust = \"dedicated\" and with a bad file (trust = \"root\"), and each --json check pins the machine part's own adjacent part/state/summary lines: ok with 'trust daily (no machine config)', ok with 'trust dedicated (from <file>)', and warn with 'could not be read: ...<file>'. This fixes both attempt-1 findings. Read the diff of internal/api/health.go: healthMachine sits between autonomy and disk, and the part enum and describe golden are updated. gofmt -l is clean and go vet passes. go test ./... passes in every package except internal/slice's read-budget timing medians, which come from runner contention in a package this leaf does not touch."
+        },
+        "handle": "health-machine-part-verified",
+        "id": "01M6GX9Y2JD9AYWDAZ11291NA3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6GX9Y2JD9AYWDAZ0XPQ7C0H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GX9Y2JD9AYWDAZ0XPQ7C0H",
+        "id": "01M6GXA2EAPEBKZH5G26S8E353",
+        "link": "01M6GXA2EAPEBKZH5G24VM9YGA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G0G7HP57PFFNW4WHZQJAA5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FY9EXET6R8QN6GPEJTCF7B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GXA7XV7ZEP8WCZPNXD48SM",
+  "type": "ops",
+  "v": 1
+}
