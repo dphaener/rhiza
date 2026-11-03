@@ -7341,6 +7341,18 @@ cmp stdout describe.golden.json
       "request": {
         "additionalProperties": false,
         "properties": {
+          "all": {
+            "description": "Return every change set, ignoring --limit and --cursor",
+            "type": "boolean"
+          },
+          "cursor": {
+            "description": "Where to go on: the next_cursor of the page before",
+            "type": "string"
+          },
+          "limit": {
+            "description": "The most change sets to return, 1 to 1000; default 100",
+            "type": "integer"
+          },
           "view": {
             "description": "The view: as-is, to-be or what-if:<change set>; default to-be, whatever the current change set",
             "type": "string"
@@ -7353,7 +7365,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "groups": {
-            "description": "One group per milestone served, in intent-tree order, then the backlog, then one per umbrella",
+            "description": "One group per milestone served, in intent-tree order, then the backlog, then one per umbrella; one page of change sets, and only the groups with change sets on it",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -7453,6 +7465,10 @@ cmp stdout describe.golden.json
               "type": "object"
             },
             "type": "array"
+          },
+          "next_cursor": {
+            "description": "The cursor of the next page; absent when no more remain",
+            "type": "string"
           },
           "view": {
             "description": "The view read: as-is, to-be or what-if:<ID>",

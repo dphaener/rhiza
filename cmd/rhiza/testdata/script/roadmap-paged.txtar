@@ -1,0 +1,70 @@
+# roadmap pages its change sets in group order: a group split across pages
+# repeats its heading, every (group, change set) entry appears once, and a
+# change set serving two milestones appears in each.
+
+exec rhiza init
+exec rhiza add intent m1 --field milestone=1 --record
+exec rhiza add intent m2 --field milestone=2 --record
+
+exec sh -c 'rhiza change new A | sed -n "s/^Opened change set \([0-9A-Z]*\) .*/\1/p" > $WORK/a'
+exec sh -c 'rhiza link $(cat $WORK/a) serves m1 && rhiza link $(cat $WORK/a) serves m2'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec sh -c 'rhiza change new B | sed -n "s/^Opened change set \([0-9A-Z]*\) .*/\1/p" > $WORK/b'
+exec sh -c 'rhiza link $(cat $WORK/b) serves m1'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec sh -c 'rhiza change new C | sed -n "s/^Opened change set \([0-9A-Z]*\) .*/\1/p" > $WORK/c'
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# Four entries: m1 {A, B}, m2 {A}, backlog {C}.
+exec rhiza roadmap --all
+stdout -count=4 '^- \['
+exec rhiza roadmap --all --json
+cp stdout all.json
+
+# One per page: each page holds one group with one change set.
+exec rhiza roadmap --limit 1
+stdout -count=1 '^- \['
+stdout -count=1 '^## '
+stdout '^next: rhiza roadmap --limit 1 --cursor [A-Za-z0-9_-]+$'
+exec rhiza roadmap --limit 1 --json
+stdout '"next_cursor": "[A-Za-z0-9_-]+"'
+stdout '"kind": "milestone"'
+stdout '"intent": \{'
+cp stdout page1.json
+
+# roadmap --json and api call roadmap print the same bytes.
+exec rhiza api call roadmap '{"limit":1}'
+cmp stdout page1.json
+
+# The second page repeats the split group's heading.
+exec sh -c 'rhiza roadmap --limit 1 | sed -n "s/^next: .* --cursor //p" > cursor1.txt'
+exec sh -c 'rhiza roadmap --limit 1 --cursor "$(cat cursor1.txt)"'
+stdout -count=1 '^- \['
+stdout -count=1 '^## '
+exec sh -c 'rhiza roadmap --limit 1 > p1.txt; rhiza roadmap --limit 1 --cursor "$(cat cursor1.txt)" > p2.txt; head -3 p1.txt | tail -1 > h1; sed -n 3p p2.txt > h2; cmp h1 h2'
+
+# Walk all pages: the concatenated entries are the whole roadmap, once each.
+exec sh -c 'c=; : > walk.txt; while :; do if [ -z "$c" ]; then rhiza roadmap --limit 1 --json; else rhiza roadmap --limit 1 --cursor "$c" --json; fi > pg.json; grep -c "\"ready\"" pg.json >> walk.txt; c=$(sed -n "s/.*\"next_cursor\": \"\(.*\)\".*/\1/p" pg.json); [ -z "$c" ] && break; done; wc -l < walk.txt > n.txt'
+exec sh -c 'test "$(tr -d " " < n.txt)" = 4'
+
+# A page of three then one.
+exec rhiza roadmap --limit 3 --json
+stdout '"next_cursor"'
+
+# --limit 0 is the default page.
+exec rhiza roadmap --limit 0
+! stdout 'next:'
+stdout -count=4 '^- \['
+
+# Usage errors, exit 2.
+! exec rhiza roadmap --limit -1
+! exec rhiza roadmap --limit 1001
+! exec rhiza roadmap --cursor '!!'
+stderr '^rhiza: bad cursor'
+exec sh -c 'rhiza roadmap --limit 1001 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+exec sh -c 'rhiza roadmap --cursor "!!" 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
