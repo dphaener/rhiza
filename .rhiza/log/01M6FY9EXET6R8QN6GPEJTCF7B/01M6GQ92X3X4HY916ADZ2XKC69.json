@@ -1,0 +1,40 @@
+{
+  "actor": "01M6GPG3NG96MJAXENRNJTWMCB",
+  "after": [
+    "01M6GJDK3BHYYM9BMSEB8BNQK2"
+  ],
+  "at": "2026-11-03T12:48:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 95a41720 ran go test -count=1 -v ./internal/machine: TestAbsentIsDaily, TestTrustValues, TestHomeDefault, TestBadFilesNameThePath, TestPathUnknown all PASS. Read the diff: Path uses $XDG_CONFIG_HOME/rhiza/machine.toml when set, else ~/.config/rhiza/machine.toml; Read returns daily for an absent file, accepts trust = \"dedicated\" and \"daily\", and errors naming the path for non-TOML input and for trust = \"root\". The tests cover no file -> daily, both trust values via XDG_CONFIG_HOME, dedicated via the ~/.config default, and both bad files with the path in the error. make check passed fmt-check, vet and go test ./...; self-check failed only on stale .rhiza/rendered actor/index files, which is expected before render on landing."
+        },
+        "handle": "machine-config-verified",
+        "id": "01M6GQ7B8GCWEQY57G2D60FFKD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6GQ7B8GCWEQY57G29N71172",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GQ7B8GCWEQY57G29N71172",
+        "id": "01M6GQ85F1BMZQWMS3PJWGNH5J",
+        "link": "01M6GQ85F1BMZQWMS3PG75TTXN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G0E9J86Z2AE53V9R82JXD9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FY9EXET6R8QN6GPEJTCF7B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GQ92X3X4HY916ADZ2XKC69",
+  "type": "ops",
+  "v": 1
+}
