@@ -71,8 +71,15 @@ func TestMakeTestTimeout(t *testing.T) {
 	if err != nil {
 		t.Fatalf("make -n test: %v\n%s", err, out)
 	}
-	if !strings.Contains(string(out), "go test -timeout 20m ./...") {
-		t.Errorf("make -n test has no go test -timeout 20m ./... line:\n%s", out)
+	// The suite runs with the timing budgets skipped, then the budgets run
+	// alone, one package at a time; both phases keep the 20m timeout.
+	for _, want := range []string{
+		"go test -timeout 20m -skip '^(TestReadBudget|TestBudget|TestGeneratedModel)$' ./...",
+		"go test -timeout 20m -count=1 -p 1 -run '^(TestReadBudget|TestBudget|TestGeneratedModel)$' ./internal/api ./internal/index ./internal/slice ./internal/tui/modelapp",
+	} {
+		if !strings.Contains(string(out), want) {
+			t.Errorf("make -n test has no %s line:\n%s", want, out)
+		}
 	}
 }
 
