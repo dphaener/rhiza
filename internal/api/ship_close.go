@@ -494,6 +494,7 @@ func runShipCloseOut(ctx *Ctx, req any) (any, error) {
 
 	resp.Detail = shipMainBlocked(ctx, t.main)
 	if resp.Detail == "" {
+		dropIncomingLogCopies(ctx, t.main)
 		if _, err := gitAt(ctx, t.main, "pull", "--ff-only", "origin", "main"); err != nil {
 			resp.Detail = err.Error()
 		}
@@ -513,6 +514,35 @@ func runShipCloseOut(ctx *Ctx, req any) (any, error) {
 	step("update-main", true)
 	resp.MainUpdated = true
 	return resp, nil
+}
+
+// dropIncomingLogCopies removes the untracked .rhiza/log files in main that
+// origin/main holds byte for byte, so the fast-forward may write them as
+// tracked files. A change set opened in the main checkout leaves its first
+// entries there. Files that differ, or that origin/main lacks, stay; the
+// pull then fails and names them. Best effort: any git failure drops nothing.
+func dropIncomingLogCopies(ctx *Ctx, main string) {
+	if _, err := gitAt(ctx, main, "fetch", "origin", "main"); err != nil {
+		return
+	}
+	out, err := gitAt(ctx, main, "ls-files", "--others", "--exclude-standard", "-z", "--", ".rhiza/log")
+	if err != nil {
+		return
+	}
+	for _, f := range strings.Split(out, "\x00") {
+		if f == "" {
+			continue
+		}
+		ours, err := gitAt(ctx, main, "hash-object", "--", f)
+		if err != nil {
+			continue
+		}
+		theirs, err := gitAt(ctx, main, "rev-parse", "--verify", "--quiet", "origin/main:"+f)
+		if err != nil || strings.TrimSpace(ours) != strings.TrimSpace(theirs) {
+			continue
+		}
+		_ = os.Remove(filepath.Join(main, f))
+	}
 }
 
 // shipMainBlocked says why the main checkout cannot be fast-forwarded, or
