@@ -1,0 +1,45 @@
+{
+  "actor": "01M6HJXKRYZ1YQA1KG349QVM4D",
+  "after": [
+    "01M6HK7WX2BC9Q2ZEMF882RYBZ"
+  ],
+  "at": "2026-11-03T20:57:49Z",
+  "body": {
+    "carve": {
+      "entry": "01M6HK83VNDCJP6ZR2QE9QT7QD",
+      "from": "01M5SWT0K9TV1RRVFBT28321K9"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A capability is anchored to code by a path, an optional symbol and a content fingerprint, and check resolves every anchor."
+        },
+        "handle": "anchors",
+        "id": "01M6HK83VHJ4H5M78G5G92GJ7Z",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5SWT0Q3DHFNA33D1XP094VN",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "fields": {
+          "statement": "A changed content fingerprint on an anchor flags the capability for review."
+        },
+        "handle": "fingerprints",
+        "id": "01M6HK83VMN8DWD8CX935G0WJM",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5SWT0S5PN1WS8HSXEDY111W",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      }
+    ]
+  },
+  "change_set": "01M6HJXAJ6GYA2RTAGVK6JR1N9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HK83VNDCJP6ZR2QJ7C3EYB",
+  "type": "ops",
+  "v": 2
+}
