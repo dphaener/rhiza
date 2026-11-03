@@ -1,0 +1,350 @@
+{
+  "actor": "01M6FYAJP35C75N6C0AAAWM9G4",
+  "after": [
+    "01M6G069QF34NDYY1AMWVVBNFP"
+  ],
+  "at": "2026-11-03T06:11:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Machine trust serves milestone-24, the dedicated-VM milestone",
+          "wording": "(assumed for the owner by the orchestrator acting as their proxy, the agent's option picked by the orchestrator)"
+        },
+        "handle": "mt-serves-m24",
+        "id": "01M6G0B9NMRT9QY5V1STK6GH36",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6G0B9NMRT9QY5V1SPTX1H7K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G0B9NMRT9QY5V1SPTX1H7K",
+        "id": "01M6G0BEGHNYQEYNX39SXDS93Y",
+        "link": "01M6G0BEGHNYQEYNX39SH7W6SM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G04YCB7DCPA75XAMJB0DKE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A machine's trust lives in a machine config file, $XDG_CONFIG_HOME/rhiza/machine.toml (default ~/.config/rhiza/machine.toml), as trust = \"dedicated\" or \"daily\"; it is outside every repo, so no clone carries it",
+          "wording": "(assumed for the owner by the orchestrator acting as their proxy, the agent's option picked by the orchestrator)"
+        },
+        "handle": "machine-config-file",
+        "id": "01M6G0BMCXN7C1SCFGZY70A2TF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6G0BMCXN7C1SCFGZWAWV5RW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G0BMCXN7C1SCFGZWAWV5RW",
+        "id": "01M6G0BS0X3M4DDX1DBRXMW37T",
+        "link": "01M6G0BS0X3M4DDX1DBPCGS7FT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G04YCB7DCPA75XAMJB0DKE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Trust is set only by hand-editing the machine config: rhiza has no command or API operation that writes it, so no agent raises trust through rhiza",
+          "wording": "(assumed for the owner by the orchestrator acting as their proxy, the agent's option picked by the orchestrator)"
+        },
+        "handle": "trust-hand-edited",
+        "id": "01M6G0BXZ346G3WKP359EAKBKZ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6G0BXZ346G3WKP358VWH6AB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G0BXZ346G3WKP358VWH6AB",
+        "id": "01M6G0C32BV7JR5QNXVESN45T6",
+        "link": "01M6G0C32BV7JR5QNXVE3EHMD9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G04YCB7DCPA75XAMJB0DKE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "No machine config means trust = daily; a malformed file or an unknown trust value is an error naming the file, and bypass stays refused",
+          "wording": "(assumed for the owner by the orchestrator acting as their proxy, the agent's option picked by the orchestrator)"
+        },
+        "handle": "trust-missing-or-bad",
+        "id": "01M6G0CADH4TRB0T2ZN53SK8CR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6G0CADH4TRB0T2ZN4DB8J7F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G0CADH4TRB0T2ZN4DB8J7F",
+        "id": "01M6G0CHGZ8NS6KTRD2JPXASZZ",
+        "link": "01M6G0CHGZ8NS6KTRD2FF4V3HS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G04YCB7DCPA75XAMJB0DKE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Trust changes no default permission mode: on a dedicated machine it only stops refusing a mode that bypasses the agent's checks, and the mode stays explicit",
+          "wording": "(assumed for the owner by the orchestrator acting as their proxy, the agent's option picked by the orchestrator)"
+        },
+        "handle": "trust-lifts-refusal-only",
+        "id": "01M6G0CREKTXG4ZVZHTQWPQ9EX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6G0CREKTXG4ZVZHTP1VVRW8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G0CREKTXG4ZVZHTP1VVRW8",
+        "id": "01M6G0D43C3K0T9XA2E7WCJQBW",
+        "link": "01M6G0D43C3K0T9XA2E623RNYA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G04YCB7DCPA75XAMJB0DKE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Trust shows in a read-only rhiza machine show and in a machine part of rhiza health",
+          "wording": "(assumed for the owner by the orchestrator acting as their proxy, the agent's option picked by the orchestrator)"
+        },
+        "handle": "trust-shown",
+        "id": "01M6G0DB1FW12E0A2WQW733C0E",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6G0DB1FW12E0A2WQRX7BC4R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G0DB1FW12E0A2WQRX7BC4R",
+        "id": "01M6G0DHDWSW2MZCAYX2YAPTHV",
+        "link": "01M6G0DHDWSW2MZCAYX0V14MH7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G04YCB7DCPA75XAMJB0DKE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Trust is read fresh from the machine config at every check (session start, session run, run start and resume, daemon start), and no session record or journal carries it",
+          "wording": "(assumed for the owner by the orchestrator acting as their proxy, the agent's option picked by the orchestrator)"
+        },
+        "handle": "trust-read-live",
+        "id": "01M6G0DRSM17ATXZV5ASTRKKPQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6G0DRSM17ATXZV5AQV959V4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G0DRSM17ATXZV5AQV959V4",
+        "id": "01M6G0E0PVQFVBSP7EB5N7VXXQ",
+        "link": "01M6G0E0PVQFVBSP7EB3J6QCQ1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G04YCB7DCPA75XAMJB0DKE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests over the machine config reader: no file gives daily; trust = \"dedicated\" and trust = \"daily\" read as such, from XDG_CONFIG_HOME when set and ~/.config otherwise; a file that is not TOML, or trust = \"root\", is an error naming the file's path",
+          "statement": "Rhiza reads a per-machine config at $XDG_CONFIG_HOME/rhiza/machine.toml (default ~/.config/rhiza/machine.toml) whose trust is \"dedicated\" or \"daily\", daily when the file is absent, and a malformed file or unknown trust is an error naming the file"
+        },
+        "handle": "machine-config",
+        "id": "01M6G0E9J86Z2AE53V9VRK91JJ",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6G0E9J86Z2AE53V9R82JXD9",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "decision": null,
+        "from": "01M6G0E9J86Z2AE53V9R82JXD9",
+        "id": "01M6G0EJB4TPJ23J1QSMJDKDHF",
+        "link": "01M6G0EJB4TPJ23J1QSJ8JRWV3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G0BMCXN7C1SCFGZWAWV5RW",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6G0E9J86Z2AE53V9R82JXD9",
+        "id": "01M6G0ESDFT6TJS6CYVG2NBEBA",
+        "link": "01M6G0ESDFT6TJS6CYVEKG3W9T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G0CADH4TRB0T2ZN4DB8J7F",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6G0E9J86Z2AE53V9R82JXD9",
+        "id": "01M6G0F2Y4ZT43Q9KWQYAF0VNK",
+        "link": "01M6G0F2Y4ZT43Q9KWQWTN1HDM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G04YCB7DCPA75XAMJB0DKE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with trust = \"dedicated\" in $XDG_CONFIG_HOME/rhiza/machine.toml starts a session and a run with --permission-mode bypassPermissions on a fake adapter and the launch logs bypassPermissions; with no file, and again after the file is changed to trust = \"daily\" between session start and session run, both refuse with the error naming the file and nothing is launched; the existing autonomous-permissions refusal still passes with no machine config",
+          "statement": "On a machine whose config has trust = \"dedicated\", session start, session run, run start and resume, and the daemon accept a permission mode that bypasses the agent's checks; on any other machine they refuse it, the error naming the machine config file and the line trust = \"dedicated\", and trust is read fresh at each check"
+        },
+        "handle": "bypass-on-dedicated",
+        "id": "01M6G0F9H1ZR0W65DV8HE6E753",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6G0F9H1ZR0W65DV8FZHZK47",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "decision": null,
+        "from": "01M6G0F9H1ZR0W65DV8FZHZK47",
+        "id": "01M6G0FFAAYC2P7PYVSG1ZZEGR",
+        "link": "01M6G0FFAAYC2P7PYVSFHNRFXD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G0CREKTXG4ZVZHTP1VVRW8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6G0F9H1ZR0W65DV8FZHZK47",
+        "id": "01M6G0FKAFR2RA7641ZRE1ZT63",
+        "link": "01M6G0FKAFR2RA7641ZN550CK0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G0DRSM17ATXZV5AQV959V4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6G0F9H1ZR0W65DV8FZHZK47",
+        "id": "01M6G0FQ5058HM506JNSAPX7PP",
+        "link": "01M6G0FQ5058HM506JNQWABA8R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G04YCB7DCPA75XAMJB0DKE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs rhiza machine show with no file (daily, no machine config), with trust = \"dedicated\" (dedicated and the path) and with a bad file (exit non-zero naming the file), and --json matches rhiza api call; describe --json lists no operation that writes the machine config",
+          "statement": "rhiza machine show (and its API op) prints the machine's trust and the config file it came from, or daily with no machine config, and writes nothing; rhiza has no operation that writes trust"
+        },
+        "handle": "machine-show",
+        "id": "01M6G0FSSB90F7DHTX1ZGD51AC",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6G0FSSB90F7DHTX1VVZQ86N",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "decision": null,
+        "from": "01M6G0FSSB90F7DHTX1VVZQ86N",
+        "id": "01M6G0FW3G5M1M648SDMBPR26K",
+        "link": "01M6G0FW3G5M1M648SDM201SCS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G0DB1FW12E0A2WQRX7BC4R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6G0FSSB90F7DHTX1VVZQ86N",
+        "id": "01M6G0FYPQA013HTQ9DEM45G8J",
+        "link": "01M6G0FYPQA013HTQ9DCVPGXYF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G0BXZ346G3WKP358VWH6AB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6G0FSSB90F7DHTX1VVZQ86N",
+        "id": "01M6G0G3NNKA2JWGF212GF38ST",
+        "link": "01M6G0G3NNKA2JWGF210QWX34D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G04YCB7DCPA75XAMJB0DKE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs rhiza health --json with no machine config, with trust = \"dedicated\" and with a bad file, and finds a machine part that is ok with daily, ok with dedicated, and warn naming the file",
+          "statement": "rhiza health and the Health app show a machine part: ok with the trust and its file, or daily with no machine config, and warn naming the file when the machine config cannot be read"
+        },
+        "handle": "health-machine-part",
+        "id": "01M6G0G7HP57PFFNW4WJK5BR59",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M6G0G7HP57PFFNW4WHZQJAA5",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "decision": null,
+        "from": "01M6G0G7HP57PFFNW4WHZQJAA5",
+        "id": "01M6G0GCNPSX7MRSJYZH53NGZ5",
+        "link": "01M6G0GCNPSX7MRSJYZD6ZB50A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G0DB1FW12E0A2WQRX7BC4R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6G0G7HP57PFFNW4WHZQJAA5",
+        "id": "01M6G0GH00RT5QFDQN6B7WQ3BR",
+        "link": "01M6G0GH00RT5QFDQN69S0FK8J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G0CADH4TRB0T2ZN4DB8J7F",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6G0G7HP57PFFNW4WHZQJAA5",
+        "id": "01M6G0GQH2KRA6CHQKEAS5KW3J",
+        "link": "01M6G0GQH2KRA6CHQKEA801WN2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G04YCB7DCPA75XAMJB0DKE",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6FY9EXET6R8QN6GPEJTCF7B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6G0GWBAZVVV6BN10SN2T03N",
+  "type": "ops",
+  "v": 1
+}
