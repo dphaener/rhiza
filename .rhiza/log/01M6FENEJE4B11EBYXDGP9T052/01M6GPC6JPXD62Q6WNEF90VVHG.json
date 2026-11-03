@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6GNE6XWN4AJ83HARM65FVMK"
+  ],
+  "at": "2026-11-03T12:33:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rebasing branch cs/run-drivers-run-headless-as onto origin/main conflicts outside the rendered files, so ship-change stopped. How should these conflicts be resolved: cmd/rhiza/testdata/script/plan-requests.txtar?"
+        },
+        "handle": "rebase-conflict-run-drivers-run-headless-as",
+        "id": "01M6GPBW8BYF68ZV6T7D670MRE",
+        "key": null,
+        "kind": "question",
+        "node": "01M6GPBW8BYF68ZV6T7CWB9297",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GPBW8BYF68ZV6T7CWB9297",
+        "id": "01M6GPBZN4T2XK3N72PMRZSJTN",
+        "link": "01M6GPBZN4T2XK3N72PJ1W2RA5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FENEJE4B11EBYXDGP9T052",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6FENEJE4B11EBYXDGP9T052",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GPC6JPXD62Q6WNEF90VVHG",
+  "type": "ops",
+  "v": 1
+}
