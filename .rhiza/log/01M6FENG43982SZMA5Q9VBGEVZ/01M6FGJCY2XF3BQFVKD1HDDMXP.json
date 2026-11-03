@@ -1,0 +1,45 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6FGJ95B8CRCK21TWZ4TE9DS"
+  ],
+  "at": "2026-11-03T01:32:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "In this repo (Recommended)",
+            "~/code, outside git"
+          ],
+          "question": "Should the runbook live in this repo (docs/vm-runbook.html), or in ~/code outside git with its leaf built outside the run and Evidence only?",
+          "quote": "~/code, outside git",
+          "quote_where": "the orchestrator session, 2026-11-03, owner's answer by choice"
+        },
+        "handle": "answer-vm-runbook-commit",
+        "id": "01M6FGJAM4YJET54VBP84H1MG4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FGJAM4YJET54VBP79ZG026",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FGJAM4YJET54VBP79ZG026",
+        "id": "01M6FGJBGJZNQDCRP3T534VQ6F",
+        "link": "01M6FGJBGJZNQDCRP3T28480TM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESTCHXKVB6B3CCNF0ZG4C",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6FENG43982SZMA5Q9VBGEVZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FGJCY2XF3BQFVKD1HDDMXP",
+  "type": "ops",
+  "v": 1
+}
