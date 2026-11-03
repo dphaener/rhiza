@@ -23,14 +23,17 @@ type daemonFoldFix struct {
 	state    daemon.State
 	picked   []string
 	logReads int
-	events   string
-	cmd      string
-	target   string
-	clock    time.Time
-	skips    []daemon.Skip
-	call     func(name, req string) any
-	refs     string
-	config   map[string]string
+	// pickReads is logReads when the last detach ran: the reads the poll
+	// took before the start dropped the cache.
+	pickReads int
+	events    string
+	cmd       string
+	target    string
+	clock     time.Time
+	skips     []daemon.Skip
+	call      func(name, req string) any
+	refs      string
+	config    map[string]string
 }
 
 func newDaemonFoldFix(t testing.TB) *daemonFoldFix {
@@ -110,6 +113,7 @@ func newDaemonFoldFix(t testing.TB) *daemonFoldFix {
 	}
 	ctx.Detach = func(p Program, _ string) error {
 		f.picked = append(f.picked, p.Args[3])
+		f.pickReads = f.logReads
 		return nil
 	}
 	ctx.Self = "rhiza"
@@ -294,10 +298,17 @@ func TestDaemonPollCacheInvalidates(t *testing.T) {
 	}
 	idle("accept")
 
-	// A setting: the same cached log, now picked under the new value.
+	// A setting: the same cached log, now picked under the new value. The
+	// pick itself drops the cache, so count only the reads taken before it:
+	// those come from the setting changing the stamp.
 	f.config["rhiza.autonomy.ship"] = "auto"
-	if n := readsNext(); n == 0 || len(f.picked) != 1 || f.picked[0] != late1 {
-		t.Fatalf("after daemon set: %d log reads, picked %v; want reads and %s picked", f.logReads, f.picked, late1)
+	f.pickReads = -1
+	readsNext()
+	if len(f.picked) != 1 || f.picked[0] != late1 {
+		t.Fatalf("after daemon set: picked %v; want %s picked", f.picked, late1)
+	}
+	if f.pickReads <= 0 {
+		t.Fatalf("after daemon set: the poll read the log %d times before the pick; want reads", f.pickReads)
 	}
 	idle("pick")
 
