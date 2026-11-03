@@ -1,0 +1,43 @@
+{
+  "actor": "01M6H3WPBDEWYHPS1C24JH30NN",
+  "after": [
+    "01M6H3MWYVD4N56FT7EKTD9AD4"
+  ],
+  "at": "2026-11-03T16:30:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript logs a node touched by three change sets: --limit 2 gives two change sets, a next_cursor and a 'next: rhiza log <ref> --limit 2 --cursor <c>' line, and that cursor's page holds the third with no next_cursor; --all gives all three; --limit 0 gives the default page as ls does; --limit -1, --limit 1001 and a bad cursor exit 2; log --json and api call log print the same bytes; describe-golden.txtar is regenerated",
+          "statement": "rhiza log pages its change sets in apply order with --limit (1 to 1000, default 100) and an opaque --cursor, returns next_cursor while more remain and ends its text with a next: line, and --all returns every change set; target and view come on every page"
+        },
+        "handle": "log-paged",
+        "id": "01M6H3M6MXZQMD7EMF9K82P677",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6H3M6MXZQMD7EMF9FPNGPE0",
+        "op": "node.create",
+        "parent": "01M5SWS9MPCFK73B1XBW9BQXDM"
+      },
+      {
+        "fields": {
+          "acceptance": "A test pages a roadmap whose group is split by --limit and sees the group's kind and intent repeated on the next page, with every (group, change set) entry appearing exactly once across the pages, so a change set that serves two milestones appears once in each of its two groups; --all matches the concatenated pages; a bad cursor and an out-of-range limit exit 2; a roadmap of more than 100 change sets is read whole by health's roadmap check and the roadmap app; roadmap --json and api call roadmap print the same bytes; describe-golden.txtar is regenerated",
+          "statement": "rhiza roadmap pages its change sets in group order (milestones, then backlog, then umbrellas; depends-on order within a group) with --limit, --cursor and --all; a page holds only the groups with change sets on it, a group split across pages repeats its kind and intent, and health's roadmap check, the roadmap TUI app and the model app's roadmap tab read it with all"
+        },
+        "handle": "roadmap-paged",
+        "id": "01M6H3MCPWZBAV528M4KWQW4R4",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6H3MCPWZBAV528M4JYX6AA8",
+        "op": "node.create",
+        "parent": "01M5SWS9MPCFK73B1XBW9BQXDM"
+      }
+    ]
+  },
+  "change_set": "01M6H3A65RDP761HKE82STZSQZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6H3YEQ53SE246RN8CE9BVFG",
+  "type": "ops",
+  "v": 1
+}

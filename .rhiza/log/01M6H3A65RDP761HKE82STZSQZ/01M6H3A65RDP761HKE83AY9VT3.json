@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-03T16:19:11Z",
+  "body": {
+    "intent": "log, roadmap and why page their output with a cursor, as ls already does (replaces backlog change set 01M5SWTHZSPBNQ, which has no leaves; link the new change set to it as relates-to and withdraw the old one in the plan)",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6H3A65RDP761HKE82STZSQZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6H3A65RDP761HKE83AY9VT3",
+  "type": "open",
+  "v": 1
+}

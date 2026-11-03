@@ -1,0 +1,30 @@
+{
+  "actor": "01M6H3AH4YEVGNF8Q9RBB0S1PR",
+  "after": [
+    "01M6H3A65RDP761HKE83AY9VT3"
+  ],
+  "at": "2026-11-03T16:21:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "af1aebc5-0e9d-4d99-8461-01a1a2353954",
+          "statement": "How should `rhiza roadmap` page? Its output is groups (milestone, backlog, umbrella) of change sets. / How should `rhiza why` page? It returns three lists: decisions, sources and change sets, in walk order. / What limits and escape hatch should log, roadmap and why share? / In-repo callers want the whole roadmap: rhiza health (roadmap check), the roadmap TUI app and the model app's roadmap tab. How should they read it once roadmap pages?"
+        },
+        "handle": "question-af1aebc5-1",
+        "id": "01M6H3DJABRP3Z865V3CJT6W6G",
+        "key": null,
+        "kind": "question",
+        "node": "01M6H3DJABRP3Z865V3CGPVNPB",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6H3A65RDP761HKE82STZSQZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6H3DNZ6BXWVJZZCY07CWJR8",
+  "type": "ops",
+  "v": 1
+}
