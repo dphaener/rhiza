@@ -27,6 +27,7 @@ import (
 	"github.com/dphaener/rhiza/internal/adapter"
 	_ "github.com/dphaener/rhiza/internal/adapter/claudecode"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/machine"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/store"
@@ -229,7 +230,7 @@ type SessionReport struct {
 // and writes and runs nothing.
 func runSessionStart(ctx *Ctx, req any) (any, error) {
 	r := req.(SessionStartRequest)
-	a, err := startAdapter(r)
+	a, err := startAdapter(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -412,7 +413,7 @@ func (t changeWorktree) open(ctx *Ctx) (*workspace, error) {
 // startAdapter returns the request's adapter after checking its permission
 // mode: one is required, it must be the adapter's, and a mode that bypasses
 // permission checks is refused, since no machine is trusted for it yet.
-func startAdapter(r SessionStartRequest) (adapter.Adapter, error) {
+func startAdapter(ctx *Ctx, r SessionStartRequest) (adapter.Adapter, error) {
 	if r.PermissionMode == "" {
 		return nil, Usagef("session start needs --permission-mode: an agent never starts without an explicit one").
 			WithNext(sessionStartNext)
@@ -433,16 +434,32 @@ func startAdapter(r SessionStartRequest) (adapter.Adapter, error) {
 		return nil, Usagef("%s: %v", a.Name(), err).WithNext(sessionStartNext)
 	}
 	if a.Bypass(r.PermissionMode) {
-		return nil, bypassRefused(r.PermissionMode)
+		if err := bypassCheck(ctx, r.PermissionMode); err != nil {
+			return nil, err
+		}
 	}
 	return a, nil
 }
 
-// bypassRefused is the error for a permission mode that bypasses the
-// agent's permission checks: no machine is trusted for one yet.
-func bypassRefused(mode string) *Error {
-	return Errorf("permission mode %s bypasses the agent's permission checks: that needs a machine with trust = \"dedicated\", and no machine config declares one yet", mode).
-		WithNext(sessionStartNext)
+// bypassCheck lets a permission mode that bypasses the agent's checks
+// through only on a machine whose config says trust = "dedicated". The
+// config is read fresh at each call.
+func bypassCheck(ctx *Ctx, mode string) error {
+	getenv := ctxGetenv(ctx)
+	path := machine.Path(getenv, ctx.Home)
+	if path == "" {
+		path = "$XDG_CONFIG_HOME/rhiza/machine.toml"
+	}
+	c, err := machine.Read(path)
+	if err != nil {
+		return Errorf("permission mode %s bypasses the agent's permission checks: %v", mode, err).
+			WithNext(sessionStartNext)
+	}
+	if c.Trust != machine.Dedicated {
+		return Errorf("permission mode %s bypasses the agent's permission checks: that needs a machine with trust = \"dedicated\" in %s", mode, path).
+			WithNext(sessionStartNext)
+	}
+	return nil
 }
 
 // startStep returns the request's step, default build, after checking it

@@ -94,7 +94,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := checkAgentSteps(def, conf.mode, "", r.Autonomous, "rhiza describe daemon"); err != nil {
+	if err := checkAgentSteps(ctx, def, conf.mode, "", r.Autonomous, "rhiza describe daemon"); err != nil {
 		return nil, err
 	}
 	common, err := gitCommonDir(ctx)
