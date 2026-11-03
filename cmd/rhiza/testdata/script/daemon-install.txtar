@@ -30,7 +30,7 @@ cd ../wt
 exec rhiza daemon install
 stdout 'rhiza-repo.service'
 cd ../repo
-grep '^ExecStart=.* daemon$' $WORK/home/.config/systemd/user/rhiza-repo.service
+grep '^ExecStart=.* daemon --autonomous$' $WORK/home/.config/systemd/user/rhiza-repo.service
 grep '^WorkingDirectory=.*/repo$' $WORK/home/.config/systemd/user/rhiza-repo.service
 grep '^Restart=always$' $WORK/home/.config/systemd/user/rhiza-repo.service
 grep '^After=rex.service$' $WORK/home/.config/systemd/user/rhiza-repo.service

@@ -4,7 +4,7 @@ package api
 // run the repository's daemon as a systemd user service, so a server
 // installation needs no Rex tab for it. The unit lives in
 // $HOME/.config/systemd/user, named for the repository, and runs
-// `rhiza daemon` in the main checkout.
+// `rhiza daemon --autonomous` in the main checkout, as the Rex tab does.
 
 import (
 	"bytes"
@@ -88,7 +88,7 @@ func serviceUnit(main, bin string) []byte {
 		"After=rex.service\n\n" +
 		"[Service]\n" +
 		"WorkingDirectory=" + main + "\n" +
-		"ExecStart=" + serviceQuote(bin) + " daemon\n" +
+		"ExecStart=" + serviceQuote(bin) + " " + strings.Join(daemonArgs, " ") + "\n" +
 		"Restart=always\n\n" +
 		"[Install]\n" +
 		"WantedBy=default.target\n")

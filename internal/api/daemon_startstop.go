@@ -21,6 +21,10 @@ import (
 // DaemonTabName is the name of the Rex tab the daemon runs in.
 const DaemonTabName = "rhiza daemon"
 
+// daemonArgs are the arguments after the rhiza binary that start the daemon,
+// the same in both modes: the systemd unit's ExecStart and the Rex tab.
+var daemonArgs = []string{"daemon", "--autonomous"}
+
 // The modes a daemon runs in.
 const (
 	DaemonModeService = "service"
@@ -125,7 +129,8 @@ func runDaemonStart(ctx *Ctx, _ any) (any, error) {
 	if err := ensureRepoSession(ctx); err != nil {
 		return nil, err
 	}
-	args := []string{"window", "new", "-s", ctx.RexSession, DaemonTabName, "-c", ctx.Root, "--keep-open", "--json", "--", ctx.Self, "daemon", "--autonomous"}
+	args := []string{"window", "new", "-s", ctx.RexSession, DaemonTabName, "-c", ctx.Root, "--keep-open", "--json", "--", ctx.Self}
+	args = append(args, daemonArgs...)
 	if _, err := ctx.Exec("rex", args, ctx.Root, nil); err != nil {
 		return nil, Errorf("rex window new for the daemon: %v", err)
 	}
