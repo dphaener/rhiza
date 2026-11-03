@@ -1,0 +1,73 @@
+{
+  "actor": "01M6GCQCXBVMGGZ3WG3X0DV0H9",
+  "after": [
+    "01M6GD2QQ1N4GPQ8RHEPXJ3G3B"
+  ],
+  "at": "2026-11-03T09:51:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6GD0DBQCP1Q8S5K5VKV7Z4V",
+        "id": "01M6GD3WXS0F5WA1E13D07RCWF",
+        "link": "01M6GD3WXS0F5WA1E13AN2T2ET",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GD23FCTWMAV5Q932HZ3RE5",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript ships a change set opened in the main checkout (run start --new or change new) and merges its PR. ship close-out exits 0 with main_updated true, the main checkout's HEAD is origin/main, and its log entries are tracked. A second case gives the main checkout an untracked .rhiza/log file whose bytes differ from the merged one: close-out exits 1, update-main is failed, and the file is unchanged",
+          "statement": "Before ship close-out fast-forwards the main checkout, it removes the untracked .rhiza/log files there that the incoming origin/main holds byte for byte, so a merged change set whose first entries were opened in the main checkout updates main. Untracked files that differ or that main lacks stay, and update-main fails and names them as it does now"
+        },
+        "handle": "close-out-drops-log-copies",
+        "id": "01M6GD438PP0YPH7YYZ3MVHRT5",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6GD438PP0YPH7YYYZT2HAT4",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M6GD438PP0YPH7YYYZT2HAT4",
+        "id": "01M6GD48J92FV849CBE88QHM7N",
+        "link": "01M6GD48J92FV849CBE7RZ0G18",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GD0DBQCP1Q8S5K5VKV7Z4V",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs ship close-out --forget while the main checkout has uncommitted tracked changes: it exits 1, update-main is failed, and .git/rhiza/ship/<cs>.json still exists. After the changes are discarded, the same close-out --forget exits 0 with main_updated true and the ship state file is gone",
+          "statement": "ship close-out --forget deletes the change set's ship state only after update-main succeeds, so a close-out whose pull failed keeps its state and finishes when retried"
+        },
+        "handle": "close-out-retry-after-forget",
+        "id": "01M6GD4DWDYX2T29SPWXBP0V7B",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6GD4DWDYX2T29SPWWRY2DF6",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M6GD4DWDYX2T29SPWWRY2DF6",
+        "id": "01M6GD4J2WW6BQR5ADZ2R7WPG1",
+        "link": "01M6GD4J2WW6BQR5ADYZ8R6HKC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GD0DBQCP1Q8S5K5VKV7Z4V",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6GCPSMFW8G6MXXNW6Y5J0Q6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GD4RA9J7XEQB4F3QM43RY0",
+  "type": "ops",
+  "v": 1
+}

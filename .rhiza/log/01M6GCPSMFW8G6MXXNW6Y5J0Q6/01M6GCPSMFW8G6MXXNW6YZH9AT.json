@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-03T09:44:08Z",
+  "body": {
+    "intent": "Fix: Request plan runs fail at close-out: the daemon writes the new change set's first .rhiza/log entries untracked into the main checkout, so after the plan PR merges close-out's git pull --ff-only refuses to overwrite them (run 01M6FSQBBJYK). The plan run's log entries should be written only in its worktree, or close-out should drop untracked log files identical to the incoming ones before pulling; and a retried close-out must not fail because the first visit forgot the ship state",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6GCPSMFW8G6MXXNW6Y5J0Q6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GCPSMFW8G6MXXNW6YZH9AT",
+  "type": "open",
+  "v": 1
+}
