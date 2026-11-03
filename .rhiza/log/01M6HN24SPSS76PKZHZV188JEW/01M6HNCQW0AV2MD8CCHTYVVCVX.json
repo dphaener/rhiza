@@ -1,0 +1,245 @@
+{
+  "actor": "01M6HN2DRD20SEE2RFBV86ZC3R",
+  "after": [
+    "01M6HNABEQA490PTT2K5ZRYX4E"
+  ],
+  "at": "2026-11-03T21:35:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Tests with a hermetic HOME/XDG_CONFIG_HOME show a personal file shadowing a repo file and a built-in of the same name, a repo file shadowing a built-in, and XDG_CONFIG_HOME unset falling back to ~/.config; run start and a workflow step naming the shadowed workflow both pick the personal file, and the run journal records that file's path (builtin:<name> for a built-in)",
+          "statement": "A bare workflow name resolves to the personal file $XDG_CONFIG_HOME/rhiza/workflows/<name>.toml (~/.config/rhiza/workflows when XDG_CONFIG_HOME is unset), else the repo's .rhiza/workflows/<name>.toml, else the built-in, through one resolver that run start, workflow steps naming another workflow, and every workflow command share"
+        },
+        "handle": "workflow-overrides",
+        "id": "01M6HN9M75SAHBX9W1WDRNK3BA",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5SWT9GPK3F87HZRV8V9XY8D",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "decision": null,
+        "from": "01M6HN89Y3S27AFDWTASSPBAAJ",
+        "id": "01M6HNB7CRNX8JH1X7K5V11PPD",
+        "link": "01M6HNB7CRNX8JH1X7K1XB4K4C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNA9EN2M1MN4JYNX0Q3GB6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9GPK3F87HZRV8V9XY8D",
+        "id": "01M6HNBBG13YHVW9G4TQ3AH0TG",
+        "link": "01M6HNBBG13YHVW9G4TNKTEKYF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HN89Y3S27AFDWTASSPBAAJ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript with a personal file, a repo file and the built-ins shows each name once with its winning layer and path, marks the shadowed layers, and --json prints the same bytes as rhiza api call workflow.ls",
+          "statement": "rhiza workflow ls lists every workflow a bare name can reach: personal, repo and built-in, each with the layer and path it comes from and which ones it shadows"
+        },
+        "handle": "workflow-ls",
+        "id": "01M6HNBDN6QV991BT9C2YCQABC",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6HNBDN6QV991BT9C284SA3H",
+        "op": "node.create",
+        "parent": "01M5SWT9JXJVYF0CXW2QWBP2JY"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript describes a built-in (source builtin:<name>), a repo override that shadows it, and a file that includes another workflow (its steps shown as <workflow>/<step>); --json prints the same bytes as rhiza api call workflow.describe; no journal or run is written",
+          "statement": "rhiza workflow describe <name|path> resolves the workflow as run start does and shows, without starting anything, where it resolved from and the layers it shadows, its start step and each step in order with its kind, on.<outcome> targets, roles with their model ladders and prompts, and the workflows it includes"
+        },
+        "handle": "workflow-describe",
+        "id": "01M6HNBFTE249W98NA927AN4TF",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6HNBFTE249W98NA8YV0PKCP",
+        "op": "node.create",
+        "parent": "01M5SWT9JXJVYF0CXW2QWBP2JY"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript forks the built-in ship-change with --from (the file differs from the built-in only in name and passes workflow check), writes a skeleton that passes workflow check and runs under run start --dry-run, exits 3 leaving an existing file byte-for-byte unchanged, exits 2 on a name with a / or .toml, and --dry-run writes nothing",
+          "statement": "rhiza workflow new <name> [--from <workflow>] writes .rhiza/workflows/<name>.toml: a copy of the resolved workflow's source with its name set to <name>, or without --from a minimal commented skeleton; it takes a bare name only, refuses an existing file with a conflict, validates the result as workflow check does and prints the path it wrote"
+        },
+        "handle": "workflow-new",
+        "id": "01M6HNBHR1P4N0M34NBTWGB90T",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6HNBHR1P4N0M34NBQD7V10H",
+        "op": "node.create",
+        "parent": "01M5SWT9JXJVYF0CXW2QWBP2JY"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs workflow check on each built-in and on the internal/workflow testdata files: valid ones exit 0, bad-outcome, missing-target and unknown-kind each exit non-zero naming the step and problem, a missing include is reported, and --json prints the same bytes as rhiza api call workflow.check",
+          "statement": "rhiza workflow check <name|path> parses and validates a workflow with includes expanded, as run start would, and reports every problem it finds with the step it is in, or that the workflow is valid"
+        },
+        "handle": "workflow-check",
+        "id": "01M6HNBKTRQ2H5SNEPN0X4T613",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6HNBKTRQ2H5SNEPMXYSQVNX",
+        "op": "node.create",
+        "parent": "01M5SWT9JXJVYF0CXW2QWBP2JY"
+      },
+      {
+        "fields": {
+          "acceptance": "rhiza guide ls lists the workflows topic; a guide test checks that every rhiza command the topic names resolves and that it names every step kind the workflow package defines",
+          "statement": "rhiza guide workflows is a guide topic that tells an agent how to write a custom workflow: the resolution layers, the step kinds and their keys, outcomes and reserved targets, includes, and the loop of workflow new, describe, check and run start --dry-run"
+        },
+        "handle": "workflow-guide-topic",
+        "id": "01M6HNBNSSMC77JWXF4SZZ9PDN",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6HNBNSSMC77JWXF4Q21GM0G",
+        "op": "node.create",
+        "parent": "01M5SWT9JXJVYF0CXW2QWBP2JY"
+      },
+      {
+        "decision": null,
+        "from": "01M6HNBDN6QV991BT9C284SA3H",
+        "id": "01M6HNBQT1S2AC26QBQ23306XM",
+        "link": "01M6HNBQT1S2AC26QBQ1G5R7FE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HN89Y3S27AFDWTASSPBAAJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HNBFTE249W98NA8YV0PKCP",
+        "id": "01M6HNBST6DRHSDR7AQB0H8GET",
+        "link": "01M6HNBST6DRHSDR7AQ89W8C4P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HN89Y3S27AFDWTASSPBAAJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HNBHR1P4N0M34NBQD7V10H",
+        "id": "01M6HNBVSEHJNKKF391ZK0YZ9Q",
+        "link": "01M6HNBVSEHJNKKF391X6CFGYF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HN89Y3S27AFDWTASSPBAAJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HNBKTRQ2H5SNEPMXYSQVNX",
+        "id": "01M6HNBXW1PMJDFNH2RWJGF21T",
+        "link": "01M6HNBXW1PMJDFNH2RRK3C9JJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKS81P97A3DJ2C5B2T5S",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HNBNSSMC77JWXF4Q21GM0G",
+        "id": "01M6HNBZW459AP8D0H3Z9YE7RT",
+        "link": "01M6HNBZW459AP8D0H3W994H5E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKQYRSW4EHEH7BH0APFD",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HNBDN6QV991BT9C284SA3H",
+        "id": "01M6HNC20QVBCAF7VMT0EMX5B2",
+        "link": "01M6HNC20QVBCAF7VMSY8SSCSJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWT9GPK3F87HZRV8V9XY8D",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6HNBFTE249W98NA8YV0PKCP",
+        "id": "01M6HNC43R4D2XPZFHA2C2PW9T",
+        "link": "01M6HNC43R4D2XPZFHA1WZ76SA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWT9GPK3F87HZRV8V9XY8D",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6HNBKTRQ2H5SNEPMXYSQVNX",
+        "id": "01M6HNC6206HZ35JXKW2J97YNB",
+        "link": "01M6HNC6206HZ35JXKW18SC52D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWT9GPK3F87HZRV8V9XY8D",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6HNBHR1P4N0M34NBQD7V10H",
+        "id": "01M6HNC80J72CHTANFBB17VRCR",
+        "link": "01M6HNC80J72CHTANFB77STR0B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNBKTRQ2H5SNEPMXYSQVNX",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6HNBNSSMC77JWXF4Q21GM0G",
+        "id": "01M6HNC9ZKD0Y6YAXBHHC5Y70H",
+        "link": "01M6HNC9ZKD0Y6YAXBHGYWXN0F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNBDN6QV991BT9C284SA3H",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6HNBNSSMC77JWXF4Q21GM0G",
+        "id": "01M6HNCC62F7F3H4KA1C57ZVQK",
+        "link": "01M6HNCC62F7F3H4KA18CAB235",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNBFTE249W98NA8YV0PKCP",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6HNBNSSMC77JWXF4Q21GM0G",
+        "id": "01M6HNCF4D8BY1971PDK1D86WT",
+        "link": "01M6HNCF4D8BY1971PDJHE1RDZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNBHR1P4N0M34NBQD7V10H",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6HNBNSSMC77JWXF4Q21GM0G",
+        "id": "01M6HNCKPY0GM6R4RCMB46X5RT",
+        "link": "01M6HNCKPY0GM6R4RCM96REKN6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNBKTRQ2H5SNEPMXYSQVNX",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6HN24SPSS76PKZHZV188JEW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HNCQW0AV2MD8CCHTYVVCVX",
+  "type": "ops",
+  "v": 1
+}

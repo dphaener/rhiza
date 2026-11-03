@@ -1,0 +1,30 @@
+{
+  "actor": "01M6HN2DRD20SEE2RFBV86ZC3R",
+  "after": [
+    "01M6HN24SPSS76PKZHZXH57VKF"
+  ],
+  "at": "2026-11-03T21:31:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "8992bae3-4669-468a-a617-01a1a3512e5a",
+          "statement": "Change set 'Workflow authoring' serves no intent yet. Its umbrella (Area workflows) serves anyone-builds and power-users-first. Which landed intent should it serve? / workflow-overrides says a built-in is replaced by name 'from the user's or the repo's own file'. The repo's .rhiza/workflows/<name>.toml already replaces a built-in. Should this change set add a user-level layer ($XDG_CONFIG_HOME/rhiza/workflows/<name>.toml, between the repo's file and the built-in)? / What does `rhiza workflow describe <name>` show? / How does `rhiza workflow new <name>` behave?"
+        },
+        "handle": "question-8992bae3-1",
+        "id": "01M6HN5D1F86QBKE6AA356CYV2",
+        "key": null,
+        "kind": "question",
+        "node": "01M6HN5D1F86QBKE6AA2JH5ND3",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6HN24SPSS76PKZHZV188JEW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HN5EDAT6E81MAR58V0M92C",
+  "type": "ops",
+  "v": 1
+}
