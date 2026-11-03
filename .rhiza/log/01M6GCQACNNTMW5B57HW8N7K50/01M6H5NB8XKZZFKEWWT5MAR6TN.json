@@ -1,0 +1,40 @@
+{
+  "actor": "01M6H4ZGHGDG6KJTMKW2FT6WQC",
+  "after": [
+    "01M6GDEJJGF3TKKACAD6G8MFKS"
+  ],
+  "at": "2026-11-03T17:00:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 92222406, go test ./cmd/rhiza -run 'TestScripts/(run-resume-landed-plan|run-resume-unaccepted)$' passes: run-resume-landed-plan.txtar starts a plan run that stops at its wait step, lands its record change set (state landed), then rhiza run resume continues it to succeeded; in the same script resume of a ship-change run whose change set is landed and of a plan run whose change set is withdrawn each exits non-zero naming the state and 'next: rhiza run abandon <id>', with the journal cmp-identical; run-resume-unaccepted.txtar still passes. Negative check: with HEAD~1's internal/api/run.go in a scratch copy the new script fails at the resume with 'is landed, no longer accepted'. Diff read: only landed is exempted and only for workflow plan; rejected/withdrawn/superseded still refused. fmt-check, vet and go test ./... pass except TestReadBudget/TestBudget timing tests under full-suite load, which pass rerun alone; self-check fails only on this verifier's own unrendered actor record."
+        },
+        "handle": "plan-run-resumes-landed-record-verified",
+        "id": "01M6H5N4TFS4GNX14ZGF2N6WP7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6H5N4TFS4GNX14ZGCY7CBK9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6H5N4TFS4GNX14ZGCY7CBK9",
+        "id": "01M6H5N7H3RVX5K1S0F377RYM8",
+        "link": "01M6H5N7H3RVX5K1S0F2X18EA4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GD3GB66TDYWWHF23GMTFZE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6GCQACNNTMW5B57HW8N7K50",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6H5NB8XKZZFKEWWT5MAR6TN",
+  "type": "ops",
+  "v": 1
+}
