@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-03T11:21:44Z",
+  "body": {
+    "intent": "Serialize the three bug change sets titled Fix, so their ship runs never share cs/fix and rhiza.fix: the test-scripts fix waits for the resume fix",
+    "kind": "intention",
+    "sources": [],
+    "title": "Serialize Fix change sets"
+  },
+  "change_set": "01M6GJ9GBCQD9GFCDSNR4BB13Q",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6GJ9GBCQD9GFCDSNT4CWD6D",
+  "type": "open",
+  "v": 2
+}
