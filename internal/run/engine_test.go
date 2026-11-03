@@ -1029,8 +1029,8 @@ interval = "2s"
 on.pass = "done"
 `
 
-// An idle session whose until holds passes the step and is left open: the
-// engine never waits for its exit.
+// An idle session whose until holds passes the step, and its pane is
+// closed at once: the engine never waits for its exit.
 func TestAgentUntilHoldsWhenIdle(t *testing.T) {
 	e, r, _, _ := setup(t, agentUntilWF)
 	r.agentSeq["S-build"] = []AgentStatus{{}, {Idle: true}}
@@ -1043,8 +1043,11 @@ func TestAgentUntilHoldsWhenIdle(t *testing.T) {
 	if st.Result != Succeeded || r.polls["S-build"] != 2 || r.polls["build"] != 1 {
 		t.Fatalf("result %q detail %q polls %v", st.Result, st.Detail, r.polls)
 	}
-	if got := st.Steps[0].Detail; got != "idle and until held; session left open" {
+	if got := st.Steps[0].Detail; got != "idle and until held" {
 		t.Errorf("detail = %q", got)
+	}
+	if want := []string{"S-build"}; !reflect.DeepEqual(r.closed, want) {
+		t.Errorf("closed %v, want %v", r.closed, want)
 	}
 }
 
@@ -1125,8 +1128,11 @@ func TestAgentUntilDoneIgnoresIdle(t *testing.T) {
 	if st.Result != Succeeded || r.polls["S-build"] != 4 || r.polls["build"] != 1 || len(c.sleeps) != 3 {
 		t.Fatalf("result %q detail %q polls %v sleeps %v", st.Result, st.Detail, r.polls, c.sleeps)
 	}
-	if got := st.Steps[0].Detail; got != "said done and until held; session left open" {
+	if got := st.Steps[0].Detail; got != "said done and until held" {
 		t.Errorf("detail = %q", got)
+	}
+	if want := []string{"S-build"}; !reflect.DeepEqual(r.closed, want) {
+		t.Errorf("closed %v, want %v", r.closed, want)
 	}
 }
 
@@ -1408,8 +1414,9 @@ func TestArbitratePasses(t *testing.T) {
 	}
 }
 
-// TestArbitratePaneClosesAfterVerdict closes a passing arbiter's pane once
-// its verdict is journalled; a failed arbiter's pane stays open to be read.
+// TestArbitratePaneClosesAfterVerdict closes an arbiter's pane once its
+// verdict is journalled, pass or fail: it said done and waits on no one.
+// A blocked arbiter, still waiting, keeps its pane.
 func TestArbitratePaneClosesAfterVerdict(t *testing.T) {
 	e, r, _, def := setup(t, arbiterWF)
 	r.answers["Q1"] = Answer{OK: true, Decision: "assume-sqlite"}
@@ -1427,8 +1434,17 @@ func TestArbitratePaneClosesAfterVerdict(t *testing.T) {
 	if res := arbitrateOn(t, e, def); res.outcome != workflow.OutcomeFail {
 		t.Fatalf("result %+v", res)
 	}
+	if want := []string{"S-decide-Q1"}; !reflect.DeepEqual(r.closed, want) {
+		t.Errorf("closed %v, want %v: a failed arbiter that said done", r.closed, want)
+	}
+
+	e, r, _, def = setup(t, arbiterWF)
+	r.agentSeq["S-decide-Q1"] = []AgentStatus{{Blocked: &Block{Kind: "question", Question: "Which?"}}}
+	if res := arbitrateOn(t, e, def); res.outcome != workflow.OutcomeFail {
+		t.Fatalf("result %+v", res)
+	}
 	if len(r.closed) != 0 {
-		t.Errorf("a failed arbiter's pane was closed: %v", r.closed)
+		t.Errorf("a blocked arbiter's pane was closed: %v", r.closed)
 	}
 }
 

@@ -1,9 +1,11 @@
 # Each of a run's sessions opens its own Rex tab: a check, a critic, a
 # fixer, a verifier and a re-run check in cycle 2 each run rex window new,
-# titled for the run, and none splits a pane.
+# titled for the run, and none splits a pane. Each session's pane closes
+# as soon as the step judges it, before the next session starts: no check,
+# critic, fixer or verifier pane waits for the step's end or close-out.
 #
-# The fake rex logs window new and split calls, numbering blocks b1, b2,
-# ... and runs the pane's command synchronously. The fake claude logs its
+# The fake rex logs window new, split and block close calls, numbering
+# blocks b1, b2, ... and runs the pane's command synchronously. The fake claude logs its
 # role and acts it: check alpha reports a major on leaf thing in cycle 1,
 # its critic confirms it, and cycle 2 runs thing's fixer and verifier,
 # then alpha again, clean.
@@ -33,8 +35,11 @@ exec cat $WORK/claude.log
 cmp stdout $WORK/want.log
 
 # Every one of the seven sessions made its own window; nothing split.
+# Each pane closed once its session was judged: cycle 1's three checks as
+# they finished, then the critic's before the fixer started, the fixer's
+# before its verifier, and so on.
 exec cat $WORK/rex.log
-stdout '\A(window new\n){7}\z'
+cmp stdout $WORK/want-rex.log
 fold-ok
 
 -- want.log --
@@ -45,6 +50,21 @@ role=critic check=alpha cycle=1 leaf=
 role=fixer check= cycle=2 leaf=thing
 role=verifier check= cycle=2 leaf=thing
 role=check check=alpha cycle=2 leaf=
+-- want-rex.log --
+window new -> block:b1
+window new -> block:b2
+window new -> block:b3
+close block:b1
+close block:b2
+close block:b3
+window new -> block:b4
+close block:b4
+window new -> block:b5
+close block:b5
+window new -> block:b6
+close block:b6
+window new -> block:b7
+close block:b7
 -- empty.json --
 {"findings":[]}
 -- major.json --
@@ -78,6 +98,13 @@ prompt = "Fix {leaf}"
 prompt = "Verify {leaf}"
 -- bin/rex --
 #!/bin/sh
+if [ "$1 $2" = "block close" ]; then
+	shift 2
+	[ "$1" = -s ] && shift 2
+	echo "close $1" >> "$WORK/rex.log"
+	exit 0
+fi
+[ "$1" = block ] && exit 0
 verb=$1
 dir=
 anchor=
@@ -89,9 +116,6 @@ while [ $# -gt 0 ]; do
 	esac
 	shift
 done
-case "$verb" in
-block) exit 0 ;;
-esac
 n=$(cat "$WORK/rex.n" 2>/dev/null || echo 0)
 n=$((n + 1))
 echo $n > "$WORK/rex.n"
@@ -99,7 +123,7 @@ if [ "$verb" = split ]; then
 	echo "split $anchor" >> "$WORK/rex.log"
 	out="{\"block_id\":\"block:b$n\",\"window_id\":\"window:w1\"}"
 else
-	echo "window new" >> "$WORK/rex.log"
+	echo "window new -> block:b$n" >> "$WORK/rex.log"
 	out="{\"window_id\":\"window:w1\",\"block_ids\":[\"block:b$n\"]}"
 fi
 (cd "$dir" && "$@") >&2 || true

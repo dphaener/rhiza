@@ -2,7 +2,8 @@
 # done (`rhiza session done`), never for idle alone: the agent goes idle at
 # its prompt and opens the PR, the step still does not pass and its until
 # is never even checked; once the agent says done, until (the PR is open)
-# is checked and the step passes, leaving the session open.
+# is checked and the step passes, and the engine closes the session's pane
+# at once (`rex block close`): a finished session waits on no one.
 #
 # Nothing here reaches GitHub, Rex or Claude Code. origin is a bare repo
 # in $WORK. The fake rex starts the tab's command in the background and
@@ -10,7 +11,9 @@
 # branch (which opens the PR: the fake gh answers open for any branch on
 # origin), reports idle through the Stop hook, waits for $WORK/say.done,
 # then runs `rhiza session done` with no argument (RHIZA_SESSION names its
-# session), and stays open until $WORK/tab.closed. The fake gh logs every
+# session), and stays open until $WORK/tab.closed. The fake rex logs every
+# call and only logs a block close, so the session lives on to be told
+# done again. The fake gh logs every
 # call to gh.log, so an until that was checked leaves a line there.
 
 chmod 755 bin/rex
@@ -69,14 +72,17 @@ exec cat $WORK/done.out
 stdout '^Session [0-9a-f-]{36} is done\.$'
 exec rhiza run status
 stdout '^Run \S+ succeeded$'
-stdout '^- build \(visit 1\): pass, then end, session [0-9a-f-]{36}: said done and until held; session left open$'
+stdout '^- build \(visit 1\): pass, then end, session [0-9a-f-]{36}: said done and until held$'
 grep '^pr view cs/say-done --json ' $WORK/gh.log
+# The step closed the finished session's pane as it passed: the run has no
+# close-out step, so nothing else would.
+grep '^block close block:b1$' $WORK/rex.log
 
 # Saying done again keeps the first mark.
 exec sh -c 'rhiza session done $(cat $WORK/claude.sid)'
 stdout '^Session [0-9a-f-]{36} already said done at \S+\.$'
 
-# The session was left open; close its tab and it exits. Once it has
+# The fake pane outlived its close; close its tab and the session exits. Once it has
 # exited it can no longer say done.
 exec touch $WORK/tab.closed
 exec sh -c 'i=0; until [ -f "$WORK/claude.done" ]; do i=$((i+1)); [ $i -gt 400 ] && exit 1; sleep 0.025; done; cat "$WORK/claude.done"'
@@ -102,6 +108,9 @@ on.pass = "done"
 echo "$@" >> "$WORK/rex.log"
 if [ "$1 $2" = "window close" ]; then
 	touch "$WORK/tab.closed"
+	exit 0
+fi
+if [ "$1 $2" = "block close" ]; then
 	exit 0
 fi
 dir=

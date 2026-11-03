@@ -9,7 +9,8 @@
 # Nothing here reaches Rex or Claude Code. The fake rex starts the tab's
 # command in the background and returns once the agent has touched
 # $WORK/ready (the planner does once it waits for its answer); it logs
-# what is typed into a tab. One fake claude plays every role, by its
+# what is typed into a tab, and every pane opened or closed, in order, to
+# panes.log. One fake claude plays every role, by its
 # prompt. The planner's interval is the built-in's, so the run sees it
 # finish one poll after the answer.
 
@@ -103,7 +104,25 @@ stdout '^0$'
 exec git log -1 --format=%B
 stdout '^Render the plan$'
 fold-ok
+# Each session's pane closed as it finished, before the next session
+# opened: the arbiter's once its verdict was in, the planner's once its
+# step passed, then the reviewer's and the critic's. Close-out only sweeps
+# the tabs after.
+cmp $WORK/panes.log $WORK/want-panes.log
 
+-- want-panes.log --
+window new
+window new
+block close
+block close
+window new
+block close
+window new
+block close
+window close
+window close
+window close
+window close
 -- source.json --
 {"title":"Planning interview","summary":"An autonomous planner planned the exports milestone; the arbiter settled its one question.","quotes":[]}
 -- record.json --
@@ -134,6 +153,7 @@ send | send-key)
 esac
 case "$1 $2" in
 "window close" | "block close")
+	echo "$1 $2" >> "$WORK/panes.log"
 	exit 0
 	;;
 "block call")
@@ -164,6 +184,7 @@ until [ -f "$WORK/ready" ]; do
 	sleep 0.025
 done
 rm -f "$WORK/ready"
+echo "$verb new" >> "$WORK/panes.log"
 if [ "$verb" = split ]; then
 	echo '{"block_id":"block:b2","window_id":"window:w1"}'
 else

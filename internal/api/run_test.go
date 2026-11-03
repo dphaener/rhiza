@@ -322,9 +322,13 @@ func TestRunAgentStepEndsWithTheSessionExit(t *testing.T) {
 		f.ctx.Start = (&shStart{}).start
 		sessions := session.NewStore(session.Dir(f.common))
 		// The fake rex runs the tab's command at once: the agent exits
-		// with c.code before the tab is reported open.
+		// with c.code before the tab is reported open. A block close (the
+		// finished session's pane) is only recorded.
 		f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
 			f.rex.run(name, args, dir, env)
+			if len(args) > 1 && args[0] == "block" && args[1] == "close" {
+				return nil, nil
+			}
 			sid := args[len(args)-1]
 			code := c.code
 			if _, err := sessions.Update(sid, func(r *session.Record) {
@@ -348,8 +352,10 @@ func TestRunAgentStepEndsWithTheSessionExit(t *testing.T) {
 			rec.Prompt != "build "+info.Change {
 			t.Errorf("session = %+v, %v", rec, err)
 		}
-		if len(f.rex.calls) != 1 {
-			t.Errorf("rex ran %d times, want 1", len(f.rex.calls))
+		// The tab opened once, and the step closed the exited session's
+		// pane as it ended.
+		if len(f.rex.calls) != 2 || !slices.Equal(f.rex.calls[1][:3], []string{"rex", "block", "close"}) {
+			t.Errorf("rex calls %q, want the tab, then a block close", f.rex.calls)
 		}
 	}
 }

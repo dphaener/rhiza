@@ -280,8 +280,9 @@ func TestChecksStepResumeRejoins(t *testing.T) {
 }
 
 // Check sessions open in panes of the change set's tab: the first opens
-// it, each later one splits the latest open check pane; once the step
-// ends every judged session's pane is closed, journalled.
+// it, each later one splits the latest open check pane. Each judged
+// session's pane closes as it is judged, journalled, so cycle 2's check,
+// starting once all of cycle 1's are judged, opens the tab anew.
 func TestChecksStepPanes(t *testing.T) {
 	e, r, _, _ := setup(t, checksWF)
 	passChecks(r, 1, "alpha", "gamma")
@@ -295,7 +296,7 @@ func TestChecksStepPanes(t *testing.T) {
 		anchors = append(anchors, s.Anchor)
 	}
 	a1, b1, g1, b2 := checkSID("alpha", "check", 1), checkSID("beta", "check", 1), checkSID("gamma", "check", 1), checkSID("beta", "check", 2)
-	if want := []string{"", a1, b1, g1}; !reflect.DeepEqual(anchors, want) {
+	if want := []string{"", a1, b1, ""}; !reflect.DeepEqual(anchors, want) {
 		t.Errorf("anchors = %q, want %q", anchors, want)
 	}
 	if want := []string{a1, b1, g1, b2}; !reflect.DeepEqual(r.closed, want) {
