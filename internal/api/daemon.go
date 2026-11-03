@@ -142,6 +142,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		state.Stopped = ctx.Now().UTC()
 		daemon.WriteState(common, state)
 	}()
+	selfUpdateOn := false
 	poll := func() error {
 		var skips []daemon.Skip
 		conf, err := daemonConfOf(ctx, r)
@@ -150,6 +151,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			return err
 		}
 		minFree := conf.minFree
+		selfUpdateOn = conf.selfUpdate
 		state.MaxRuns, state.Settings = conf.maxRuns, conf.stateRows()
 		started, resumed, planned, err := daemonPoll1(ctx, rs, pending, unjournaled, conf.maxRuns, minFree, r.Autonomous, conf.mode, conf.paused, &skips)
 		resp.Planned = append(resp.Planned, planned...)
@@ -189,9 +191,34 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		return resp, poll()
 	}
 	reexec := daemonReexec()
+	update := &daemon.SelfUpdate{}
+	selfUpdate := func() {
+		if !selfUpdateOn || ctx.Exec == nil || ctx.Git == nil {
+			return
+		}
+		out, err := ctx.Git("worktree", "list", "--porcelain")
+		if err != nil {
+			return
+		}
+		main, ok := firstWorktree(out)
+		if !ok {
+			return
+		}
+		update.Git = func(args ...string) (string, error) { return gitAt(ctx, main, args...) }
+		update.Make = func(args ...string) error {
+			_, err := ctx.Exec("make", args, main, nil)
+			return err
+		}
+		update.Log = func(format string, a ...any) {
+			if ctx.Stderr != nil {
+				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: "+format+"\n", a...)
+			}
+		}
+		update.Run()
+	}
 	ticks, stopTicks := daemonTicker()
 	defer stopTicks()
-	l, err := daemonLoop(ctx, common, lock, poll, func() int { return len(pending) }, reexec, ticks, interrupted)
+	l, err := daemonLoop(ctx, common, lock, poll, func() int { return len(pending) }, reexec, selfUpdate, ticks, interrupted)
 	if l != nil {
 		lock = l
 	}
@@ -230,10 +257,13 @@ func daemonStartState(common string, self daemon.Holder, version string, maxRuns
 // (reexec): live runs are separate processes and carry on. An exec that
 // returns is not tried again. It returns the lock it holds at the end, nil
 // with the error when it could not take the lock back after an exec.
-func daemonLoop(ctx *Ctx, common string, lock *daemon.Lock, poll func() error, pending func() int, reexec *daemon.Reexec, ticks <-chan time.Time, interrupted <-chan struct{}) (*daemon.Lock, error) {
+func daemonLoop(ctx *Ctx, common string, lock *daemon.Lock, poll func() error, pending func() int, reexec *daemon.Reexec, selfUpdate func(), ticks <-chan time.Time, interrupted <-chan struct{}) (*daemon.Lock, error) {
 	for {
 		if err := poll(); err != nil && ctx.Stderr != nil {
 			fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %v\n", err)
+		}
+		if selfUpdate != nil && pending() == 0 {
+			selfUpdate()
 		}
 		if reexec.Due(pending()) {
 			if ctx.Stderr != nil {

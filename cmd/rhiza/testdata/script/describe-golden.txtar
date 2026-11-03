@@ -1674,7 +1674,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "The setting: rhiza.daemon.paused, maxRuns, minFree or permissionMode, or rhiza.autonomy.plan, accept, ship or signoff",
+            "description": "The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree or permissionMode, or rhiza.autonomy.plan, accept, ship or signoff",
             "type": "string"
           },
           "value": {
