@@ -834,7 +834,14 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 	// A draft or proposed change set (a plan run's) and one the log does
 	// not have are let through.
 	if !st.Ended {
-		if state, ok := changeStateOf(ctx)(st.Change); ok && changeset.State(state).Terminal() {
+		// A plan run lands its record during the interview, so a landed
+		// change set does not stop a plan run; rejected, withdrawn and
+		// superseded ones still do.
+		state, ok := changeStateOf(ctx)(st.Change)
+		if ok && st.Workflow == planWorkflow && changeset.State(state) == changeset.StateLanded {
+			ok = false
+		}
+		if ok && changeset.State(state).Terminal() {
 			return nil, Conflictf("run %s is not resumed: its change set %s is %s, no longer accepted", j.ID, st.Change, state).
 				WithNext("rhiza run abandon " + j.ID)
 		}

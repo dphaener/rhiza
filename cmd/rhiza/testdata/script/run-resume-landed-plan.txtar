@@ -1,0 +1,63 @@
+# run resume continues a plan run whose record change set has landed (a plan
+# run lands its record during the interview) past its stopped step, while it
+# still refuses a plan run whose change set is withdrawn and a build run
+# (ship-change) whose change set has landed, each journal unchanged.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+mkdir .rhiza/workflows
+cp $WORK/plan.toml .rhiza/workflows/plan.toml
+
+# A plan run stops at its wait; its record then lands.
+exec rhiza change new 'Plan P' --kind record --title 'Plan P' --json
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/cs'
+exec rhiza add intent want-p
+exec rhiza run start --foreground --workflow plan --no-wait
+stdout '^Run (01[0-9A-Z]{24}) stopped$'
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec rhiza land
+exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
+stdout '"state": "landed"'
+
+# The landed record does not stop the plan run: it goes on past its wait.
+exec sh -c 'echo > $WORK/go'
+exec sh -c 'rhiza run resume --foreground $(cat $WORK/runid)'
+stdout 'succeeded$'
+
+# A build run whose change set has landed is still refused.
+mkdir .git/rhiza/runs
+exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"$(cat $WORK/cs)\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}" > .git/rhiza/runs/BUILDLAND01.jsonl'
+exec cp .git/rhiza/runs/BUILDLAND01.jsonl $WORK/before.jsonl
+! exec rhiza run resume --foreground BUILDLAND01
+stderr 'is landed, no longer accepted'
+stderr 'next: rhiza run abandon BUILDLAND01'
+exec cmp .git/rhiza/runs/BUILDLAND01.jsonl $WORK/before.jsonl
+
+# A plan run whose change set is withdrawn is refused too.
+exec rhiza change new Gone --title Gone --json
+exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/gone'
+exec rhiza add intent gone-thing
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza withdraw
+exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"plan\",\"definition\":\"\",\"change\":\"$(cat $WORK/gone)\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}" > .git/rhiza/runs/PLANGONE01.jsonl'
+exec cp .git/rhiza/runs/PLANGONE01.jsonl $WORK/before2.jsonl
+! exec rhiza run resume --foreground PLANGONE01
+stderr 'is withdrawn, no longer accepted'
+stderr 'next: rhiza run abandon PLANGONE01'
+exec cmp .git/rhiza/runs/PLANGONE01.jsonl $WORK/before2.jsonl
+
+-- plan.toml --
+name = "plan"
+
+[step.one]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
