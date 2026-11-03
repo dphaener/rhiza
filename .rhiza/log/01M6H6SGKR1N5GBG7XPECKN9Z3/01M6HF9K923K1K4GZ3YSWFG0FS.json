@@ -1,0 +1,63 @@
+{
+  "actor": "01M6HEFWYG6Z58NAH765VRYVCP",
+  "after": [
+    "01M6HEDS2S7TJBAHRTSS6PERHP"
+  ],
+  "at": "2026-11-03T19:48:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At dd9192ca I built the branch binary and the merge-base ebee728a binary outside PATH. I cloned this repo (1746 log entries) to a scratch dir, set rhiza.daemon.paused=true, selfUpdate=false, minFree=0 and an eventCommand, and ran each binary's real `rhiza daemon --permission-mode auto` in the foreground. I read the process's utime+stime from /proc over a 60 s idle window after a 20 s warm-up. Base binary: 5912 ticks, about 59 CPU-s in 60 s (~98% of a core), which reproduces the fault. Branch binary: 108 ticks, about 1.1 CPU-s in 60 s (~2%). Its first fold took about 3.5 CPU-s and later polls stayed at about 1-2 ticks/s. `rhiza daemon status` showed Last poll advancing, Paused: yes, and the full Skipped list, so the picks and skips were still worked out every poll from the cached fold. The VM load average was 8-20 on 4 cores."
+        },
+        "handle": "daemon-idle-poll-no-fold-qa-1",
+        "id": "01M6HF857940T40BCKP9JAP5C1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6HF857940T40BCKP95PKSXY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HF857940T40BCKP95PKSXY",
+        "id": "01M6HF8G2CAJW8P34CR9WHQ2DR",
+        "link": "01M6HF8G2CAJW8P34CR72757F9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H72FY8WGHYD44YXB23B2ZA",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At dd9192ca, with the branch binary's real `rhiza daemon` running paused on a scratch clone of this repo, I sampled its CPU every 5 s while changing things from another process. `git branch qa-scratch-ref` (a ref move) cost 361 ticks in the next window, which is one re-fold, and then it went back to idle. `rhiza daemon set rhiza.daemon.maxRuns 3` (a setting) cost 346 ticks, then idle. `rhiza change new` (a log entry) caused re-folds over the next polls, then idle. `rhiza propose` caused re-folds, and the event command ran exactly once, writing one line {\"event\":\"proposed\",\"change\":\"01M6HF4SM0QW...\"}. No moves already in the log were replayed. Before each change the daemon sat at idle CPU, so the cached fold was in use. I did not exercise daemon start/resume invalidation hands-on, because that would launch real agents. The daemon logs had no errors."
+        },
+        "handle": "daemon-poll-cache-invalidates-qa-1",
+        "id": "01M6HF8ZEQRQ23MNFQMH9V1R3Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6HF8ZEQRQ23MNFQMDAMG6PZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HF8ZEQRQ23MNFQMDAMG6PZ",
+        "id": "01M6HF9A393R1NS9Q5JZV9SMT9",
+        "link": "01M6HF9A393R1NS9Q5JYMYZWPS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H72NZ2CZJTC8B1VGB4HAH0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6H6SGKR1N5GBG7XPECKN9Z3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HF9K923K1K4GZ3YSWFG0FS",
+  "type": "ops",
+  "v": 1
+}

@@ -739,6 +739,7 @@ func planGather(r *reader) (planInputs, error) {
 			// to be canonical at catch-up, and fold problems are reported by check's
 			// fold rule and change show/ls (and stored by the index at catch-up),
 			// not by plan reads.
+			planFoldCount.Add(1)
 			s, _ := changeset.FoldCanonical(c, es)
 			w.add(planStarts(c, s.Ops, nil))
 			mu.Lock()
@@ -1464,6 +1465,7 @@ func planCreatedNode(i id.ID, in planInputs) {
 // planRead opens a reader for opName in view (to-be by default, D17),
 // gathers the inputs and runs the core.
 func planRead(ctx *Ctx, opName, view string) (planResult, planInputs, string, error) {
+	planReadCount.Add(1)
 	r, err := openReader(ctx, opName, view, toBeView)
 	if err != nil {
 		return planResult{}, planInputs{}, "", err

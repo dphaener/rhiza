@@ -122,6 +122,8 @@ type Ctx struct {
 	// readLog, when set, replaces the store's log read; tests count folds
 	// with it.
 	readLog func() store.Log
+	// daemonFold is the daemon's fold cache; the first poll creates it.
+	daemonFold *daemonFoldCache
 	// GitConfig returns the value of a git config key such as
 	// "user.email", or an error if it is unset.
 	GitConfig func(key string) (string, error)

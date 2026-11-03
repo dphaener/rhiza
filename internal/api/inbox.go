@@ -471,7 +471,11 @@ func inboxOverlaps(ctx *Ctx) ([]InboxItem, error) {
 	if len(ovs) == 0 {
 		return []InboxItem{}, nil
 	}
-	m := ws.model(id.ID{})
+	return overlapItems(ovs, ws.model(id.ID{})), nil
+}
+
+// overlapItems are the overlap items of ovs, targets named by m.
+func overlapItems(ovs []gmodel.Overlap, m Model) []InboxItem {
 	items := make([]InboxItem, 0, len(ovs))
 	for _, ov := range ovs {
 		target := ov.Target.String()
@@ -488,7 +492,7 @@ func inboxOverlaps(ctx *Ctx) ([]InboxItem, error) {
 			Next:   "rhiza slice --change " + ov.A.String() + " --view what-if",
 		})
 	}
-	return items, nil
+	return items
 }
 
 // inboxDiskLow is one disk-low item while the daemon's last poll found free
