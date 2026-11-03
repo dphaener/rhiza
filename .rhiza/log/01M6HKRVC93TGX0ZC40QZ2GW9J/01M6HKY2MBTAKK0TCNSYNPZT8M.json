@@ -1,0 +1,30 @@
+{
+  "actor": "01M6HKS61F8VY02HHHA1Y7CGE8",
+  "after": [
+    "01M6HKRVC93TGX0ZC40RGR3Z93"
+  ],
+  "at": "2026-11-03T21:09:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "ab09ebc9-684c-463f-93b2-01a1a33c8d88",
+          "statement": "Unclaimed changes: where does the cutoff (commits after which rhiza check warns on a missing Change: trailer) live? It must be committed so CI sees it; repo.json is currently a strict canonical format-1 file with format/id/remotes. / Unclaimed changes: which commits after the cutoff count as claimed? (Only commits that change a file outside .rhiza/ are considered, as the evidence-actor rule already does.) / Unclaimed changes: should this repo turn the rule on as part of this change set, with the cutoff set to the main commit it lands on?"
+        },
+        "handle": "question-ab09ebc9-1",
+        "id": "01M6HKY1F0HDWE1BP7DTN259F6",
+        "key": null,
+        "kind": "question",
+        "node": "01M6HKY1F0HDWE1BP7DSZVM3MF",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6HKRVC93TGX0ZC40QZ2GW9J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HKY2MBTAKK0TCNSYNPZT8M",
+  "type": "ops",
+  "v": 1
+}
