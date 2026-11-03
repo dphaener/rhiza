@@ -1,0 +1,40 @@
+{
+  "actor": "01M6FVCZ7EASD7GF4NPRTV9GEJ",
+  "after": [
+    "01M6FGNSRQ2RBBF6BEN9V4DWQ7"
+  ],
+  "at": "2026-11-03T05:28:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f2704ea1 I ran go test ./cmd/rhiza -run 'TestScripts/(daemon-headless-runs|daemon-picks|daemon-resume|daemon-repo-session|plan-requests|stage-autonomy|daemon-pause|daemon-settings|daemon-status|daemon-notify|describe-golden)$' (all pass) and read the diff. daemon-headless-runs runs rhiza daemon --once against a fake rex with no detach stub: the fake rex.log has 0 'window new' lines after the daemon exits, rhiza run ls --json then shows the run of the change set with \"live\": true, and .git/rhiza/logs/<change set>.log exists. With -testwork I read that log: it holds the child's own output ('step build/build: entered', 'builder session ...'), and the only window new in rex.log came later, from the agent session (rhiza session run), never from the driver. daemon-picks and stage-autonomy check the recorded detach command is 'rhiza run start --foreground <CS> --permission-mode manual', with --autonomous only under daemon --once --autonomous (and signoff auto); daemon-resume checks 'run resume --foreground <run>'. In the code, daemonStart/daemonResume/daemonStartPlan now go through daemonDetach -> ctx.Detach (Setsid, no stdin, output appended to the log, Release) with Dir=repo root and REX_SESSION set to the repo session, and no rex call for the driver. run start has no queue path at this commit, so the child drives the run and adds no queue entry (--foreground is accepted and is currently a marker). go test ./internal/api -skip TestReadBudget passes. Under heavy concurrent load from other sessions, the timing-only TestReadBudget, slice TestBudget and modelapp TestGeneratedModel failed. They are in code this commit doesn't touch. make check's self-check reported stale rendered actors for this session (8a2beea2) and a concurrent builder (d496b13b); neither record comes from this commit."
+        },
+        "handle": "daemon-headless-run-drivers-verified",
+        "id": "01M6FY311Z8ZAWD9MNY7440WZH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6FY311Z8ZAWD9MNY3CPA56A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FY311Z8ZAWD9MNY3CPA56A",
+        "id": "01M6FY33Z4ZSG1J33DCM805YJY",
+        "link": "01M6FY33Z4ZSG1J33DCHBV24YM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESDV933JY79RW9C3YJCCQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FENEJE4B11EBYXDGP9T052",
+  "for": "01M6FVCZ7EASD7GF4NPRTV9GEJ",
+  "id": "01M6FY37JJBRHDQM1KY9Q5167Y",
+  "type": "ops",
+  "v": 1
+}
