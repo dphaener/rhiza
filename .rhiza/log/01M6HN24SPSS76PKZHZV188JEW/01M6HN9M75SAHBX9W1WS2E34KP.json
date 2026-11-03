@@ -1,0 +1,75 @@
+{
+  "actor": "01M6HN2DRD20SEE2RFBV86ZC3R",
+  "after": [
+    "01M6HN9FKGW00K2PZMWCEHGETT"
+  ],
+  "at": "2026-11-03T21:33:35Z",
+  "body": {
+    "carve": {
+      "entry": "01M6HN9M75SAHBX9W1WQYRTZT9",
+      "from": "01M5SWT91P766X04ESJABB0Q44"
+    },
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A built-in workflow is replaced by name from the user's or the repo's own file, or forked to edit."
+        },
+        "handle": "workflow-overrides",
+        "id": "01M6HN9M75SAHBX9W1WDRNK3BA",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M5SWT9GPK3F87HZRV8V9XY8D",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "fields": {
+          "statement": "Genesis tells an agent how to write a custom workflow: a guide topic, workflow describe, new and check."
+        },
+        "handle": "workflow-authoring",
+        "id": "01M6HN9M75SAHBX9W1WFM8TGNM",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M5SWT9JXJVYF0CXW2QWBP2JY",
+        "op": "node.create",
+        "parent": "01M5SWT95KQCW65MYWN9S7K9P3"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9GPK3F87HZRV8V9XY8D",
+        "id": "01M6HN9M75SAHBX9W1WGR4S8R6",
+        "link": "01M5SWTABACQMB7SD3MA8PVV3Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKPMCMB090S9BSRDWYPE",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9JXJVYF0CXW2QWBP2JY",
+        "id": "01M6HN9M75SAHBX9W1WMDEE92S",
+        "link": "01M5SWTADJF3CE9CM2SZP86847",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKQYRSW4EHEH7BH0APFD",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M5SWT9JXJVYF0CXW2QWBP2JY",
+        "id": "01M6HN9M75SAHBX9W1WQW49YQ6",
+        "link": "01M5SWTAFTMT5NB5QACNB38QW1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWRKS81P97A3DJ2C5B2T5S",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6HN24SPSS76PKZHZV188JEW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HN9M75SAHBX9W1WS2E34KP",
+  "type": "ops",
+  "v": 2
+}
