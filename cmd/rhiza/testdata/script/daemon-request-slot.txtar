@@ -1,0 +1,80 @@
+# While a plan request waits, ship picks leave it one slot: with --max-runs
+# 2, two ready change sets and a queued request, one poll starts one ship run
+# and the request's plan run, and status says why the other change set
+# waits. With no request waiting, both ship runs start. With --max-runs 1
+# the ship pick keeps the one slot, as before. Rex is faked and only logs.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+env RHIZA_TEST_FREE_BYTES=1099511627776
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+mkdir .rhiza/workflows
+cp $WORK/plan.toml .rhiza/workflows/plan.toml
+exec git add -A
+exec git commit -qm init
+
+exec rhiza change new One --title One
+exec rhiza add capability one-leaf
+exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+exec rhiza change new Two --title Two
+exec rhiza add capability two-leaf
+exec rhiza link 01M5PWGS702G3VYA781BNZ0K7Q serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# No request waits: both ship runs start.
+exec rhiza daemon --permission-mode manual --once --max-runs 2
+stdout -count=2 '^Started a run of '
+exec rhiza daemon status --json
+! stdout 'no-slot'
+exec rm $WORK/detach.log
+
+# One slot: the ship pick takes it, as before; the request waits.
+exec rhiza request 'Add exports'
+exec rhiza daemon --permission-mode manual --once --max-runs 1
+stdout -count=1 '^Started a run of '
+! stdout 'plan run'
+exec rhiza request ls
+stdout 'feature queued: Add exports$'
+exec rhiza daemon status --json
+stdout '"reason": "no-slot"'
+! stdout 'kept for a queued plan request'
+exec rm $WORK/detach.log
+
+# Two slots and a request waiting: one ship run, and the request's plan run.
+exec rhiza daemon --permission-mode manual --once --max-runs 2
+stdout -count=1 '^Started a run of 01M5PWGMARA1WR6BD0MEF4Y76P'
+stdout -count=1 '^Started the plan run of request '
+exec sh -c 'grep -c "run start --foreground 01M5PWG" $WORK/detach.log'
+stdout '^1$'
+exec sh -c 'grep -c "run start --foreground --workflow plan --new Add exports" $WORK/detach.log'
+stdout '^1$'
+exec rhiza request ls
+stdout 'feature planning: Add exports'
+exec rhiza daemon status --json
+stdout '"reason": "no-slot"'
+stdout 'waiting for a slot: one is kept for a queued plan request'
+exec rhiza daemon status
+stdout 'Two: .*\(waiting for a slot: one is kept for a queued plan request\)'
+
+fold-ok
+
+-- plan.toml --
+name = "plan"
+
+[step.interview]
+kind = "agent"
+prompt = "Plan {change}"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

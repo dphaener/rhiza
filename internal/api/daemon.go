@@ -489,9 +489,32 @@ func fetchMainWithin(ctx *Ctx, dir string, timeout time.Duration) error {
 	return nil
 }
 
+// daemonSlotKept details a no-slot skip whose slot is kept for a queued
+// plan request.
+const daemonSlotKept = "waiting for a slot: one is kept for a queued plan request"
+
+// daemonRequestWaits reports whether a queued plan request could start now:
+// one with no run whose retry time has passed, as daemonPlanRequests picks
+// them. An unreadable queue reports false.
+func daemonRequestWaits(ctx *Ctx) bool {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return false
+	}
+	reqs, err := daemon.ReadRequests(common)
+	if err != nil {
+		return false
+	}
+	now := ctx.Now()
+	return slices.ContainsFunc(reqs, func(q daemon.Request) bool {
+		return q.Run == "" && !now.Before(q.RetryAt)
+	})
+}
+
 // daemonPoll1 picks and starts runs once: resumes, then ship-change runs,
 // then plan runs of queued plan requests in the slots left (see
-// daemonPlanRequests). pending holds the change sets started; unjournaled
+// daemonPlanRequests). While a queued request could start, ship picks take
+// at most max-1 slots (when max > 1), so one is left for it. pending holds the change sets started; unjournaled
 // those whose start never journaled (see daemonHeld). It returns the
 // change sets started, the runs resumed and the requests started.
 func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, minFree uint64, autonomous bool, mode string, paused bool, skips *[]daemon.Skip) (started, resumed, planned []string, err error) {
@@ -590,8 +613,24 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 		*skips = append(append(planSkips, unj...), low...)
 	} else {
-		picked = daemon.Pick(cands, runs, held, host, nil, max, ship)
-		*skips = append(append(planSkips, unj...), daemon.Skips(cands, runs, held, host, nil, max, ship)...)
+		// A queued plan request keeps one slot from the ship picks: plan
+		// runs are short and make the work ship runs build, so a waiting
+		// request must not wait behind every ready change set.
+		shipMax := max
+		if max > 1 && daemonRequestWaits(ctx) {
+			shipMax = max - 1
+		}
+		picked = daemon.Pick(cands, runs, held, host, nil, shipMax, ship)
+		shipSkips := daemon.Skips(cands, runs, held, host, nil, shipMax, ship)
+		if shipMax < max {
+			full := daemon.Pick(cands, runs, held, host, nil, max, ship)
+			for i, sk := range shipSkips {
+				if sk.Reason == daemon.SkipNoSlot && slices.Contains(full, sk.Change) {
+					shipSkips[i].Detail = []string{daemonSlotKept}
+				}
+			}
+		}
+		*skips = append(append(planSkips, unj...), shipSkips...)
 	}
 	for i, sk := range *skips {
 		if cs, err := id.Parse(sk.Change); err == nil {
@@ -947,7 +986,7 @@ type DaemonSkip struct {
 	Change string   `json:"change" desc:"The change set's ID"`
 	Title  string   `json:"title" desc:"The change set's display title"`
 	Reason string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low or ship-owner"`
-	Detail []string `json:"detail" desc:"The readiness reasons, when the reason is not-ready; else empty"`
+	Detail []string `json:"detail" desc:"The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; else empty"`
 }
 
 // skipText is the words for a skip reason in the text status.
