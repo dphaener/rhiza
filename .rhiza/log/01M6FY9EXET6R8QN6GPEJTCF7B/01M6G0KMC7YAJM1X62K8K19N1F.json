@@ -1,0 +1,231 @@
+{
+  "actor": "01M6FYAJP35C75N6C0AAAWM9G4",
+  "after": [
+    "01M6G0GWBAZVVV6BN10SN2T03N"
+  ],
+  "at": "2026-11-03T06:12:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "milestone-24 (Recommended)",
+            "New intent under m-24",
+            "New root intent"
+          ],
+          "picked": "milestone-24 (Recommended)",
+          "question": "Machine trust serves no intent yet. Which intent should it serve? (I recommend milestone-24: it's the dedicated-VM milestone, and bypass on that VM is what trust unlocks.)",
+          "session": "5a563475-f1ff-4b44-9c5f-01a19fe520aa",
+          "statement": "Machine trust serves no intent yet. Which intent should it serve? (I recommend milestone-24: it's the dedicated-VM milestone, and bypass on that VM is what trust unlocks.) — milestone-24 (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 5a563475-f1ff-4b44-9c5f-01a19fe520aa"
+        },
+        "handle": "answer-5a563475-1",
+        "id": "01M6G0HMCWZ51V8789Q9VMJ1RA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6G0HMCWZ51V8789Q6Z7KXF9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G0HMCWZ51V8789Q6Z7KXF9",
+        "id": "01M6G0HQN1RMQQTPH6HKWZ2A5M",
+        "link": "01M6G0HQN1RMQQTPH6HJWRNM3M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G04YCB7DCPA75XAMJB0DKE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "~/.config/rhiza/machine.toml (Recommended)",
+            "Global git config",
+            "Env var"
+          ],
+          "picked": "~/.config/rhiza/machine.toml (Recommended)",
+          "question": "Where does a machine's trust live? It must be per machine and must not come along with a clone of the repo.",
+          "session": "5a563475-f1ff-4b44-9c5f-01a19fe520aa",
+          "statement": "Where does a machine's trust live? It must be per machine and must not come along with a clone of the repo. — ~/.config/rhiza/machine.toml (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 5a563475-f1ff-4b44-9c5f-01a19fe520aa"
+        },
+        "handle": "answer-5a563475-2",
+        "id": "01M6G0HV33V1C7ACCRZ1DJ6DZ5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6G0HV33V1C7ACCRYZVPDBSX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G0HV33V1C7ACCRYZVPDBSX",
+        "id": "01M6G0HYPGHZZQNZMSQ992ZPEB",
+        "link": "01M6G0HYPGHZZQNZMSQ9249FGW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G04YCB7DCPA75XAMJB0DKE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Hand-edit only (Recommended)",
+            "Command, terminal only",
+            "Plain command"
+          ],
+          "picked": "Hand-edit only (Recommended)",
+          "question": "How is trust set? Remember an agent that can run rhiza could then raise its own trust.",
+          "session": "5a563475-f1ff-4b44-9c5f-01a19fe520aa",
+          "statement": "How is trust set? Remember an agent that can run rhiza could then raise its own trust. — Hand-edit only (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 5a563475-f1ff-4b44-9c5f-01a19fe520aa"
+        },
+        "handle": "answer-5a563475-3",
+        "id": "01M6G0J2BXX1JPFBB2VN7CKXEY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6G0J2BXX1JPFBB2VKBWX4TP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G0J2BXX1JPFBB2VKBWX4TP",
+        "id": "01M6G0J5X23927B5FFE3ZESCSR",
+        "link": "01M6G0J5X23927B5FFE049VCQ6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G04YCB7DCPA75XAMJB0DKE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Missing = daily, bad = error (Recommended)",
+            "Missing = daily, bad = daily"
+          ],
+          "picked": "Missing = daily, bad = error (Recommended)",
+          "question": "What happens with no machine config, or with an unknown trust value?",
+          "session": "5a563475-f1ff-4b44-9c5f-01a19fe520aa",
+          "statement": "What happens with no machine config, or with an unknown trust value? — Missing = daily, bad = error (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 5a563475-f1ff-4b44-9c5f-01a19fe520aa"
+        },
+        "handle": "answer-5a563475-4",
+        "id": "01M6G0J921N4WH9CJSHX50933G",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6G0J921N4WH9CJSHWQ37WG8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G0J921N4WH9CJSHWQ37WG8",
+        "id": "01M6G0JCJJ2A2ARW0179TS5EQD",
+        "link": "01M6G0JCJJ2A2ARW0177C93X63",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G04YCB7DCPA75XAMJB0DKE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "No, only lifts the refusal (Recommended)",
+            "Dedicated defaults to bypass"
+          ],
+          "picked": "No, only lifts the refusal (Recommended)",
+          "question": "On a dedicated machine, does trust change any default permission mode?",
+          "session": "5a563475-f1ff-4b44-9c5f-01a19fe520aa",
+          "statement": "On a dedicated machine, does trust change any default permission mode? — No, only lifts the refusal (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 5a563475-f1ff-4b44-9c5f-01a19fe520aa"
+        },
+        "handle": "answer-5a563475-5",
+        "id": "01M6G0JM1CRS15Z4EKCR2YM4V6",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6G0JM1CRS15Z4EKCN03WYVT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G0JM1CRS15Z4EKCN03WYVT",
+        "id": "01M6G0JTS7509N841BF66B971W",
+        "link": "01M6G0JTS7509N841BF3MCCCSW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G04YCB7DCPA75XAMJB0DKE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "rhiza machine show (Recommended)",
+            "Health part (Recommended)",
+            "In the refusal only"
+          ],
+          "picked": "rhiza machine show (Recommended), Health part (Recommended)",
+          "question": "Where does the owner see a machine's trust?",
+          "session": "5a563475-f1ff-4b44-9c5f-01a19fe520aa",
+          "statement": "Where does the owner see a machine's trust? — rhiza machine show (Recommended), Health part (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 5a563475-f1ff-4b44-9c5f-01a19fe520aa"
+        },
+        "handle": "answer-5a563475-6",
+        "id": "01M6G0K2A6RNK860TYFAKQBKHC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6G0K2A6RNK860TYF9RM3PNZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G0K2A6RNK860TYF9RM3PNZ",
+        "id": "01M6G0K82SCPX323NS423B562E",
+        "link": "01M6G0K82SCPX323NS40GKTKWE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G04YCB7DCPA75XAMJB0DKE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "At each check, read live (Recommended)",
+            "Once at daemon start"
+          ],
+          "picked": "At each check, read live (Recommended)",
+          "question": "When is trust checked?",
+          "session": "5a563475-f1ff-4b44-9c5f-01a19fe520aa",
+          "statement": "When is trust checked? — At each check, read live (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 5a563475-f1ff-4b44-9c5f-01a19fe520aa"
+        },
+        "handle": "answer-5a563475-7",
+        "id": "01M6G0KCRJ6VQXCVMN0SK6P1FM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6G0KCRJ6VQXCVMN0PTTCXDK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G0KCRJ6VQXCVMN0PTTCXDK",
+        "id": "01M6G0KHSSCZ1J9C9Q9H160S3B",
+        "link": "01M6G0KHSSCZ1J9C9Q9GEZT716",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G04YCB7DCPA75XAMJB0DKE",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6FY9EXET6R8QN6GPEJTCF7B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6G0KMC7YAJM1X62K8K19N1F",
+  "type": "ops",
+  "v": 1
+}
