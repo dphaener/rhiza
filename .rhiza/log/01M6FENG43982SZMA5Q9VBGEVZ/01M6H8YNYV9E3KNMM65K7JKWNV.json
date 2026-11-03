@@ -1,0 +1,39 @@
+{
+  "actor": "01M6H8WFPWV2STF9MV1WZQP84P",
+  "after": [
+    "01M6H8QNMNQZYD9AFR41H2RXXN"
+  ],
+  "at": "2026-11-03T17:57:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Re-checked on attempt 3 at 2026-11-03T17:57Z: the Mac (darins-macbook-pro, 100.70.128.115) shows active in tailscale status, but ssh to it on port 22 is still refused, so neither Mac-side check can be read from the VM. The question still blocks rhiza-on-vm until the owner answers it."
+        },
+        "handle": "note-01m6h8ya0f8vwn",
+        "id": "01M6H8YA0KMBXM9HSECHKZPVZT",
+        "key": null,
+        "kind": "note",
+        "node": "01M6H8YA0F8VWNMNA3YVJ6CR69",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6H8YA0F8VWNMNA3YVJ6CR69",
+        "id": "01M6H8YF0A82NBN9GTX8J5G53P",
+        "link": "01M6H8YF0A82NBN9GTX53R09F4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H8Q8CWMEZXV640MZ8VEP4E",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M6FENG43982SZMA5Q9VBGEVZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6H8YNYV9E3KNMM65K7JKWNV",
+  "type": "ops",
+  "v": 1
+}
