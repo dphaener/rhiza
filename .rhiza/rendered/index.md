@@ -2018,6 +2018,7 @@
 - [claude-code-12006766](actor/claude-code-12006766.md)
 - [claude-code-12352af8](actor/claude-code-12352af8.md)
 - [claude-code-1275fa8d](actor/claude-code-1275fa8d.md)
+- [claude-code-12950cc2](actor/claude-code-12950cc2.md)
 - [claude-code-12e10317](actor/claude-code-12e10317.md)
 - [claude-code-12fc4e0f](actor/claude-code-12fc4e0f.md)
 - [claude-code-1367ec2a](actor/claude-code-1367ec2a.md)
@@ -2922,6 +2923,7 @@
 - [claude-code-b6a3df15](actor/claude-code-b6a3df15.md)
 - [claude-code-b6a47921](actor/claude-code-b6a47921.md)
 - [claude-code-b6d8571b](actor/claude-code-b6d8571b.md)
+- [claude-code-b71b37a5](actor/claude-code-b71b37a5.md)
 - [claude-code-b723a662](actor/claude-code-b723a662.md)
 - [claude-code-b72a0480](actor/claude-code-b72a0480.md)
 - [claude-code-b75d8bbf](actor/claude-code-b75d8bbf.md)
@@ -2974,8 +2976,10 @@
 - [claude-code-c2af7fd2](actor/claude-code-c2af7fd2.md)
 - [claude-code-c2bc2d80](actor/claude-code-c2bc2d80.md)
 - [claude-code-c2c33fbd](actor/claude-code-c2c33fbd.md)
+- [claude-code-c2d1ae03](actor/claude-code-c2d1ae03.md)
 - [claude-code-c315a867](actor/claude-code-c315a867.md)
 - [claude-code-c3331453](actor/claude-code-c3331453.md)
+- [claude-code-c37c12b9](actor/claude-code-c37c12b9.md)
 - [claude-code-c3801098](actor/claude-code-c3801098.md)
 - [claude-code-c3b383c8](actor/claude-code-c3b383c8.md)
 - [claude-code-c3d71038](actor/claude-code-c3d71038.md)
@@ -3179,6 +3183,7 @@
 - [claude-code-e885070a](actor/claude-code-e885070a.md)
 - [claude-code-e8b0da0f](actor/claude-code-e8b0da0f.md)
 - [claude-code-e8f87e90](actor/claude-code-e8f87e90.md)
+- [claude-code-e8ff5b4c](actor/claude-code-e8ff5b4c.md)
 - [claude-code-e93bbef4](actor/claude-code-e93bbef4.md)
 - [claude-code-e9617dae](actor/claude-code-e9617dae.md)
 - [claude-code-e9666ef2](actor/claude-code-e9666ef2.md)
@@ -3328,6 +3333,7 @@
 - [claude-code-orchestrator](actor/claude-code-orchestrator.md)
 - [claude-code-task-11](actor/claude-code-task-11.md)
 - [darin-haener](actor/darin-haener.md)
+- [dphaener](actor/dphaener.md)
 
 ## Retired
 
