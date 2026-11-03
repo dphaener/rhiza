@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -43,6 +44,12 @@ const (
 func setup(env *testscript.Env) error {
 	env.Setenv("RHIZA_TEST_NOW", testNow)
 	env.Setenv("RHIZA_TEST_SEED", testSeed)
+	// RHIZA_TEST_BIN is the directory holding the in-process rhiza, so a
+	// script can set PATH to it alone and hide the host's programs (e.g.
+	// systemctl) from rhiza.
+	if bin, err := exec.LookPath("rhiza"); err == nil {
+		env.Setenv("RHIZA_TEST_BIN", filepath.Dir(bin))
+	}
 	return hermeticGit(env)
 }
 

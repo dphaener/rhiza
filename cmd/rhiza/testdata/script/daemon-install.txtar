@@ -4,17 +4,21 @@
 # uninstall disables and removes it. systemctl and loginctl are fakes that
 # only log; with neither on PATH both commands exit 2 naming systemd.
 
-# No systemctl on PATH: exit 2, nothing written.
+# No systemctl on PATH: exit 2, nothing written. PATH holds only rhiza, so
+# the host's own systemctl and loginctl are never found or run.
 env HOME=$WORK/home
 mkdir repo
 cd repo
 exec git init -q
 exec rhiza init
+env HOSTPATH=$PATH
+env PATH=$RHIZA_TEST_BIN
 ! exec rhiza daemon install
-stderr 'systemd'
+stderr 'needs systemd: systemctl is not on PATH'
 ! exists $WORK/home/.config
 ! exec rhiza daemon uninstall
-stderr 'systemd'
+stderr 'needs systemd: systemctl is not on PATH'
+env PATH=$HOSTPATH
 
 # A worktree installs the unit of the main checkout.
 exec git commit -q --allow-empty -m init
