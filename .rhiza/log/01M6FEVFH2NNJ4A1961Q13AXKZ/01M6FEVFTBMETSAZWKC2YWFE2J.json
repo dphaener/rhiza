@@ -1,0 +1,541 @@
+{
+  "actor": "01M6FDSWAT3PS9A39W8Q0JWNJN",
+  "after": [
+    "01M6FEVFH2NNJ4A1961TP8WS5P"
+  ],
+  "at": "2026-11-03T01:02:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "Headless daemon + VM move (Recommended)",
+            "Headless daemon only",
+            "VM move only"
+          ],
+          "picked": "Headless daemon + VM move (Recommended)",
+          "question": "What does 'done' mean for this milestone? Rex's Linux server already runs under systemd (rex.service/rex.socket) and keeps sessions across restarts. Today `rhiza daemon` only works inside a Rex tab, because it reads REX_SESSION from that tab to know where to open run tabs.",
+          "session": "841f57a3-6242-4b77-8c1f-01a19edced79",
+          "statement": "What does 'done' mean for this milestone? Rex's Linux server already runs under systemd (rex.service/rex.socket) and keeps sessions across restarts. Today `rhiza daemon` only works inside a Rex tab, because it reads REX_SESSION from that tab to know where to open run tabs. — Headless daemon + VM move (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 841f57a3-6242-4b77-8c1f-01a19edced79"
+        },
+        "handle": "answer-841f57a3-1",
+        "id": "01M6FETDDNQNZC64FZHAQDF5HT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FETDDNQNZC64FZHAN642JC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FETDDNQNZC64FZHAN642JC",
+        "id": "01M6FETE9ESJYG2WF3B4E5D9DY",
+        "link": "01M6FETE9ESJYG2WF3B1F1YH01",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEF610DN2BRHAMYJX9BSDG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6FETDDNQNZC64FZHAN642JC",
+        "id": "01M6FETF5DW6JTB9QAXAMR52W2",
+        "link": "01M6FETF5DW6JTB9QAX75QS56Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEJYGZZC4DKW61YDRW04HB",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Named session setting (Recommended)",
+            "One session per repo",
+            "Require a tab"
+          ],
+          "question": "When the daemon has no Rex tab of its own, where should it open run tabs?",
+          "quote": "It shouldn't run inside a tab",
+          "quote_where": "session 841f57a3-6242-4b77-8c1f-01a19edced79, answering \"When the daemon has no Rex tab of its own, where should it open run tabs?\"",
+          "session": "841f57a3-6242-4b77-8c1f-01a19edced79",
+          "statement": "When the daemon has no Rex tab of its own, where should it open run tabs? — It shouldn't run inside a tab"
+        },
+        "handle": "answer-841f57a3-2",
+        "id": "01M6FETG1662GJQ2HE9ZBK0TZV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FETG1662GJQ2HE9Z4DT7KW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FETG1662GJQ2HE9Z4DT7KW",
+        "id": "01M6FETGWW5ZP9QCQ2C010454X",
+        "link": "01M6FETGWW5ZP9QCQ2BX9ZRRJS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEF610DN2BRHAMYJX9BSDG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6FETG1662GJQ2HE9Z4DT7KW",
+        "id": "01M6FETHRDA1DSFBT3YB7PMYVE",
+        "link": "01M6FETHRDA1DSFBT3Y8X8FF99",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEJYGZZC4DKW61YDRW04HB",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "rhiza daemon install (Recommended)",
+            "Hand-written unit in a runbook"
+          ],
+          "picked": "rhiza daemon install (Recommended)",
+          "question": "How should the daemon be installed as a service on the VM?",
+          "session": "841f57a3-6242-4b77-8c1f-01a19edced79",
+          "statement": "How should the daemon be installed as a service on the VM? — rhiza daemon install (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 841f57a3-6242-4b77-8c1f-01a19edced79"
+        },
+        "handle": "answer-841f57a3-3",
+        "id": "01M6FETJM4YMX1B8CG4ZZAARPR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FETJM4YMX1B8CG4WA08RN1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FETJM4YMX1B8CG4WA08RN1",
+        "id": "01M6FETKFVQ5XA0D50DWGF1BBN",
+        "link": "01M6FETKFVQ5XA0D50DTCJWN6Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEF610DN2BRHAMYJX9BSDG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6FETJM4YMX1B8CG4WA08RN1",
+        "id": "01M6FETMBQVPRVJ7RT07XH0BWB",
+        "link": "01M6FETMBQVPRVJ7RT065B3FBJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEJYGZZC4DKW61YDRW04HB",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Setting, default 'rhiza' (Recommended)",
+            "Fixed name per repo"
+          ],
+          "picked": "Fixed name per repo",
+          "question": "With no tab of its own, the daemon still has to open run tabs in some Rex session on the VM. Which one?",
+          "session": "841f57a3-6242-4b77-8c1f-01a19edced79",
+          "statement": "With no tab of its own, the daemon still has to open run tabs in some Rex session on the VM. Which one? — Fixed name per repo",
+          "wording": "the agent's option, picked by the owner in session 841f57a3-6242-4b77-8c1f-01a19edced79"
+        },
+        "handle": "answer-841f57a3-4",
+        "id": "01M6FETN7DN2ERHJZTNGVH3KSH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FETN7DN2ERHJZTNFQRDNA8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FETN7DN2ERHJZTNFQRDNA8",
+        "id": "01M6FETP30H7M1YY1C0F6ZAA03",
+        "link": "01M6FETP30H7M1YY1C0DFZQ09H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEF610DN2BRHAMYJX9BSDG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6FETN7DN2ERHJZTNFQRDNA8",
+        "id": "01M6FETPZJN7AASDCB9NC7BWFX",
+        "link": "01M6FETPZJN7AASDCB9J6820KK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEJYGZZC4DKW61YDRW04HB",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "systemd only, tab mode removed (Recommended)",
+            "systemd on Linux, launchd on macOS"
+          ],
+          "question": "The autonomy app's `d` key starts the daemon in a Rex tab named 'rhiza daemon', or stops it. What should start and stop it now?",
+          "quote": "The user can choose. Is this a server only installation, or do I want to just run the daemon in a tab on my mac (when Rex for Linux is available - the UI - we can expand to that as well). It needs to be flexible.",
+          "quote_where": "session 841f57a3-6242-4b77-8c1f-01a19edced79, answering \"The autonomy app's `d` key starts the daemon in a Rex tab named 'rhiza daemon', or stops it. What should start and stop it now?\"",
+          "session": "841f57a3-6242-4b77-8c1f-01a19edced79",
+          "statement": "The autonomy app's `d` key starts the daemon in a Rex tab named 'rhiza daemon', or stops it. What should start and stop it now? — The user can choose. Is this a server only installation, or do I want to just run the daemon in a tab on my mac (when Rex for Linux is available - the UI - we can expand to that as well). It needs to be flexible."
+        },
+        "handle": "answer-841f57a3-5",
+        "id": "01M6FETQW2FNC75VR2QJMZGT0H",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FETQW2FNC75VR2QJ9SS1XK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FETQW2FNC75VR2QJ9SS1XK",
+        "id": "01M6FETRQWY6E87RW39JCNFQ90",
+        "link": "01M6FETRQWY6E87RW39J8R3E15",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEF610DN2BRHAMYJX9BSDG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6FETQW2FNC75VR2QJ9SS1XK",
+        "id": "01M6FETSKRASHZESM2VA1XN6AN",
+        "link": "01M6FETSKRASHZESM2V8PCRZ7N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEJYGZZC4DKW61YDRW04HB",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Daemon self-updates (Recommended)",
+            "Manual for now"
+          ],
+          "question": "On the Mac, `make update` installs the binary and reloads Rex. Who updates the VM's rhiza binary and Rex script after a change merges to main?",
+          "quote": "#1 is fine for now but I think the future should be it checks for an actual new release. Since we don't have that yet we can just check main.",
+          "quote_where": "session 841f57a3-6242-4b77-8c1f-01a19edced79, answering \"On the Mac, `make update` installs the binary and reloads Rex. Who updates the VM's rhiza binary and Rex script after a change merges to main?\"",
+          "session": "841f57a3-6242-4b77-8c1f-01a19edced79",
+          "statement": "On the Mac, `make update` installs the binary and reloads Rex. Who updates the VM's rhiza binary and Rex script after a change merges to main? — #1 is fine for now but I think the future should be it checks for an actual new release. Since we don't have that yet we can just check main."
+        },
+        "handle": "answer-841f57a3-6",
+        "id": "01M6FETTFVCJPHD9162FSFKVVA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FETTFVCJPHD9162CMVFF17",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FETTFVCJPHD9162CMVFF17",
+        "id": "01M6FETVD83T49CPKECRGP77V4",
+        "link": "01M6FETVD83T49CPKECPZAN515",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEF610DN2BRHAMYJX9BSDG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6FETTFVCJPHD9162CMVFF17",
+        "id": "01M6FETW91JAWS4NYM2S1VMT38",
+        "link": "01M6FETW91JAWS4NYM2N2HRK5B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEJYGZZC4DKW61YDRW04HB",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Prove it, ntfy fallback (Recommended)",
+            "ntfy from the start",
+            "Rex only"
+          ],
+          "picked": "Rex only",
+          "question": "Rex raises its notifications from a run tab's program status. Nothing in the docs says a Mac client gets those from a remote Linux server. What if it doesn't?",
+          "session": "841f57a3-6242-4b77-8c1f-01a19edced79",
+          "statement": "Rex raises its notifications from a run tab's program status. Nothing in the docs says a Mac client gets those from a remote Linux server. What if it doesn't? — Rex only",
+          "wording": "the agent's option, picked by the owner in session 841f57a3-6242-4b77-8c1f-01a19edced79"
+        },
+        "handle": "answer-841f57a3-7",
+        "id": "01M6FETX589GSXKPXD07SW6E4A",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FETX589GSXKPXD073QSS32",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FETX589GSXKPXD073QSS32",
+        "id": "01M6FETY3J19EZM7KJ9R585NAF",
+        "link": "01M6FETY3J19EZM7KJ9NZE7PGR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEF610DN2BRHAMYJX9BSDG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6FETX589GSXKPXD073QSS32",
+        "id": "01M6FETZ1BJHAC4Y9M0V0B3YCS",
+        "link": "01M6FETZ1BJHAC4Y9M0QWJJFVG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEJYGZZC4DKW61YDRW04HB",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "New Ubuntu 26 VM on Proxmox (Recommended)",
+            "Reuse the afk VM"
+          ],
+          "picked": "New Ubuntu 26 VM on Proxmox (Recommended)",
+          "question": "Your afk runbook builds an Ubuntu Server 26 VM on Proxmox that never sleeps. Where should Rhiza's VM run?",
+          "session": "841f57a3-6242-4b77-8c1f-01a19edced79",
+          "statement": "Your afk runbook builds an Ubuntu Server 26 VM on Proxmox that never sleeps. Where should Rhiza's VM run? — New Ubuntu 26 VM on Proxmox (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 841f57a3-6242-4b77-8c1f-01a19edced79"
+        },
+        "handle": "answer-841f57a3-8",
+        "id": "01M6FETZYZZSWRY35R1ZMKM634",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FETZYZZSWRY35R1WH89MPT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FETZYZZSWRY35R1WH89MPT",
+        "id": "01M6FEV0WP10G12RZRM1AP584X",
+        "link": "01M6FEV0WP10G12RZRKYFBBC4H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEF610DN2BRHAMYJX9BSDG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6FETZYZZSWRY35R1WH89MPT",
+        "id": "01M6FEV1SH566J2Z49NVR07TVT",
+        "link": "01M6FEV1SH566J2Z49NS0VJPX4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEJYGZZC4DKW61YDRW04HB",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Runbook in repo + Evidence (Recommended)",
+            "HTML runbook like afk's"
+          ],
+          "picked": "HTML runbook like afk's",
+          "question": "How should the VM move itself be captured?",
+          "session": "841f57a3-6242-4b77-8c1f-01a19edced79",
+          "statement": "How should the VM move itself be captured? — HTML runbook like afk's",
+          "wording": "the agent's option, picked by the owner in session 841f57a3-6242-4b77-8c1f-01a19edced79"
+        },
+        "handle": "answer-841f57a3-9",
+        "id": "01M6FEV2NCYXM90BVM5Q1G7QR7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FEV2NCYXM90BVM5KKAGEFH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FEV2NCYXM90BVM5KKAGEFH",
+        "id": "01M6FEV3H3A3CKJM1DYKSZ4T84",
+        "link": "01M6FEV3H3A3CKJM1DYG0958EP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEF610DN2BRHAMYJX9BSDG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6FEV2NCYXM90BVM5KKAGEFH",
+        "id": "01M6FEV4D2Q17JXGKJXRZ5F71K",
+        "link": "01M6FEV4D2Q17JXGKJXN8GWVPB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEJYGZZC4DKW61YDRW04HB",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "1 Daemon as a service",
+            "2 Self-update from main",
+            "3 Move to the VM"
+          ],
+          "picked": "1 Daemon as a service, 2 Self-update from main, 3 Move to the VM",
+          "question": "This milestone splits into three change sets: (1) daemon as a service: install/uninstall, a fixed per-repo session, start/stop through systemd or a tab; (2) self-update from main; (3) move this installation to the VM. Which should I plan leaves for now?",
+          "session": "841f57a3-6242-4b77-8c1f-01a19edced79",
+          "statement": "This milestone splits into three change sets: (1) daemon as a service: install/uninstall, a fixed per-repo session, start/stop through systemd or a tab; (2) self-update from main; (3) move this installation to the VM. Which should I plan leaves for now? — 1 Daemon as a service, 2 Self-update from main, 3 Move to the VM",
+          "wording": "the agent's option, picked by the owner in session 841f57a3-6242-4b77-8c1f-01a19edced79"
+        },
+        "handle": "answer-841f57a3-10",
+        "id": "01M6FEV58VXDJ88ENAVDTS5R2F",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FEV58VXDJ88ENAVDGXXXQE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FEV58VXDJ88ENAVDGXXXQE",
+        "id": "01M6FEV64M2DB02VMH1QFNRD7C",
+        "link": "01M6FEV64M2DB02VMH1M1185AM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEF610DN2BRHAMYJX9BSDG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6FEV58VXDJ88ENAVDGXXXQE",
+        "id": "01M6FEV70DYAYCW2AJSTPWMAGP",
+        "link": "01M6FEV70DYAYCW2AJSR9SYQ7Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEJYGZZC4DKW61YDRW04HB",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Detached child of the daemon (Recommended)",
+            "Inside the daemon process"
+          ],
+          "picked": "Detached child of the daemon (Recommended)",
+          "question": "Where should a run's driver (the step machine, now `rhiza run start` in a tab) live once it leaves Rex?",
+          "session": "841f57a3-6242-4b77-8c1f-01a19edced79",
+          "statement": "Where should a run's driver (the step machine, now `rhiza run start` in a tab) live once it leaves Rex? — Detached child of the daemon (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 841f57a3-6242-4b77-8c1f-01a19edced79"
+        },
+        "handle": "answer-841f57a3-11",
+        "id": "01M6FEV7W4X2WBGDATV87C04M7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FEV7W4X2WBGDATV72EF7HH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FEV7W4X2WBGDATV72EF7HH",
+        "id": "01M6FEV8QX7E9V4JS7WV8AFXWJ",
+        "link": "01M6FEV8QX7E9V4JS7WSGZSJXM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEF610DN2BRHAMYJX9BSDG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6FEV7W4X2WBGDATV72EF7HH",
+        "id": "01M6FEV9MSMTT879BP30YGE5Y6",
+        "link": "01M6FEV9MR44TC9WW3V8KM6PYY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEJYGZZC4DKW61YDRW04HB",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "All go through the daemon (Recommended)",
+            "Only daemon-started runs"
+          ],
+          "picked": "All go through the daemon (Recommended)",
+          "question": "Runs started outside the daemon (the roadmap app's start keys, `rhiza run start` by hand): headless too?",
+          "session": "841f57a3-6242-4b77-8c1f-01a19edced79",
+          "statement": "Runs started outside the daemon (the roadmap app's start keys, `rhiza run start` by hand): headless too? — All go through the daemon (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 841f57a3-6242-4b77-8c1f-01a19edced79"
+        },
+        "handle": "answer-841f57a3-12",
+        "id": "01M6FEVAH3PABCE2R03AEXRD76",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FEVAH3PABCE2R037QSE1S1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FEVAH3PABCE2R037QSE1S1",
+        "id": "01M6FEVBE6VRPKNHN2T1NA7H13",
+        "link": "01M6FEVBE6VRPKNHN2SZ0T8MS6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEF610DN2BRHAMYJX9BSDG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6FEVAH3PABCE2R037QSE1S1",
+        "id": "01M6FEVCB404K9ENV4SGCW5X4Z",
+        "link": "01M6FEVCB404K9ENV4SESAT0Q5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEJYGZZC4DKW61YDRW04HB",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Existing apps + log (Recommended)",
+            "Apps only"
+          ],
+          "picked": "Existing apps + log (Recommended)",
+          "question": "Where do you see a headless run's progress?",
+          "session": "841f57a3-6242-4b77-8c1f-01a19edced79",
+          "statement": "Where do you see a headless run's progress? — Existing apps + log (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 841f57a3-6242-4b77-8c1f-01a19edced79"
+        },
+        "handle": "answer-841f57a3-13",
+        "id": "01M6FEVD6V7ZFKC3KEGNS33PG4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FEVD6V7ZFKC3KEGJCKR87J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FEVD6V7ZFKC3KEGJCKR87J",
+        "id": "01M6FEVE388AMDH41ETBQ5TKBD",
+        "link": "01M6FEVE388AMDH41ET90J8Q2R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEF610DN2BRHAMYJX9BSDG",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6FEVD6V7ZFKC3KEGJCKR87J",
+        "id": "01M6FEVEZMVP2GZDCCASWPA6F8",
+        "link": "01M6FEVEZMVP2GZDCCASC8X6VM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEJYGZZC4DKW61YDRW04HB",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6FEVFH2NNJ4A1961Q13AXKZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FEVFTBMETSAZWKC2YWFE2J",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [],
+  "at": "2026-11-03T00:43:57Z",
+  "body": {
+    "intent": "Make Rex run as a background daemon on Linux and move this installation to a dedicated VM",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6FDSQH550AN63HK4MK00T6V",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FDSQH550AN63HK4RFE8CT9",
+  "type": "open",
+  "v": 1
+}

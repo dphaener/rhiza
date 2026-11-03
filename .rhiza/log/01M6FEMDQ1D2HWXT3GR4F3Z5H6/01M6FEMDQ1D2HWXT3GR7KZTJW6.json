@@ -1,0 +1,17 @@
+{
+  "actor": "01M6FDSWAT3PS9A39W8Q0JWNJN",
+  "after": [],
+  "at": "2026-11-03T00:58:32Z",
+  "body": {
+    "intent": "The daemon runs as a systemd service or in a Rex tab, as each installation chooses, and opens its runs in a fixed per-repo Rex session",
+    "kind": "intention",
+    "sources": [
+      "01M6FEF610DN2BRHAMYJX9BSDG"
+    ]
+  },
+  "change_set": "01M6FEMDQ1D2HWXT3GR4F3Z5H6",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FEMDQ1D2HWXT3GR7KZTJW6",
+  "type": "open",
+  "v": 1
+}

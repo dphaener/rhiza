@@ -1,0 +1,220 @@
+{
+  "actor": "01M6FDSWAT3PS9A39W8Q0JWNJN",
+  "after": [
+    "01M6FEJZCTCC03853MN6GRVJ9C"
+  ],
+  "at": "2026-11-03T00:58:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quote": "It shouldn't run inside a tab",
+          "statement": "On a server installation the daemon runs as a service with no Rex tab of its own"
+        },
+        "handle": "m24-server-daemon-no-tab",
+        "id": "01M6FEKPB4EF3BN8DEKPMHS14W",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FEKPB4EF3BN8DEKK48KTHT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FEKPB4EF3BN8DEKK48KTHT",
+        "id": "01M6FEKQ6NKCP8SWF9GW14K1A9",
+        "link": "01M6FEKQ6NKCP8SWF9GTFGF2ZQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEF610DN2BRHAMYJX9BSDG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "The user can choose. Is this a server only installation, or do I want to just run the daemon in a tab on my mac (when Rex for Linux is available - the UI - we can expand to that as well). It needs to be flexible.",
+          "statement": "Each installation chooses how its daemon runs: a systemd service on a server, or a Rex tab on the Mac; starting and stopping the daemon works for both, leaving room for Rex's Linux UI later"
+        },
+        "handle": "m24-service-or-tab",
+        "id": "01M6FEKR2HP30S21ECTAM581TS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FEKR2HP30S21ECT7JG0P1X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FEKR2HP30S21ECT7JG0P1X",
+        "id": "01M6FEKRY5QH4X7HF3NHDJ0DXY",
+        "link": "01M6FEKRY5QH4X7HF3NGK6EGCB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEF610DN2BRHAMYJX9BSDG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "#1 is fine for now but I think the future should be it checks for an actual new release. Since we don't have that yet we can just check main.",
+          "statement": "The daemon updates its installation when main moves, with no hand make update; once Rhiza has releases it checks for a new release instead"
+        },
+        "handle": "m24-update-from-main",
+        "id": "01M6FEKSSSFX7B1DX4REP7MYNW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FEKSSSFX7B1DX4RE94MWVK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FEKSSSFX7B1DX4RE94MWVK",
+        "id": "01M6FEKTNPMV64FGT2WWHFY861",
+        "link": "01M6FEKTNPMV64FGT2WVKR380W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEF610DN2BRHAMYJX9BSDG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "quote": "All these tabs that are open right now, whatever is watching the plan, that should also be swallowed up by the daemon. No need to see anything in a Rex tab that isn't doing agent work.",
+          "statement": "Run drivers move out of Rex into the daemon, so the only Rex tabs a run opens are its agent sessions"
+        },
+        "handle": "m24-only-agent-tabs",
+        "id": "01M6FEKVH4X67AT9TMPVYBBW19",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FEKVH4X67AT9TMPTQQ0CP0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FEKVH4X67AT9TMPTQQ0CP0",
+        "id": "01M6FEKWDZ03W65SWN188XJB38",
+        "link": "01M6FEKWDZ03W65SWN171EGHMH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEJYGZZC4DKW61YDRW04HB",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "milestone": "24",
+          "statement": "Rhiza runs headless on a dedicated Linux VM: its daemon runs as a service beside Rex's Linux server, drives runs with no tabs of its own, keeps itself current with main, and the owner works it from the Mac's Rex app, where only agent work shows"
+        },
+        "handle": "milestone-24",
+        "id": "01M6FEKX9J8ARG7JGDYVY0S4W4",
+        "key": "zzzzzr",
+        "kind": "intent",
+        "node": "01M6FEKX9J8ARG7JGDYSZEA2YW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FEKX9J8ARG7JGDYSZEA2YW",
+        "id": "01M6FEKY55QVMVHWWVPXNAE4G9",
+        "link": "01M6FEKY55QVMVHWWVPWMD2H3A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEKPB4EF3BN8DEKK48KTHT",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6FEKX9J8ARG7JGDYSZEA2YW",
+        "id": "01M6FEKZ0MDSGRTMB4XG2BA7ZT",
+        "link": "01M6FEKZ0MDSGRTMB4XFTFT4C4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEKVH4X67AT9TMPTQQ0CP0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "The daemon runs as a systemd service on a Linux server or in a Rex tab on the Mac, as each installation chooses, and opens its runs in a fixed per-repo Rex session"
+        },
+        "handle": "m24-daemon-service",
+        "id": "01M6FEKZWAVX4JTPR43AQ6S9WQ",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M6FEKZWAVX4JTPR439NMJ6YT",
+        "op": "node.create",
+        "parent": "01M6FEKX9J8ARG7JGDYSZEA2YW"
+      },
+      {
+        "decision": null,
+        "from": "01M6FEKZWAVX4JTPR439NMJ6YT",
+        "id": "01M6FEM0QV4FERE95709BRFE8Z",
+        "link": "01M6FEM0QV4FERE95706HZ43ZD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEKR2HP30S21ECT7JG0P1X",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "Every run's driver runs headless under the daemon, so the only Rex tabs are agent sessions, and the owner follows a run in the apps and its log"
+        },
+        "handle": "m24-headless-runs",
+        "id": "01M6FEM1KE8VTCP787AWJGDG7T",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M6FEM1KE8VTCP787ARW6G6EY",
+        "op": "node.create",
+        "parent": "01M6FEKX9J8ARG7JGDYSZEA2YW"
+      },
+      {
+        "decision": null,
+        "from": "01M6FEM1KE8VTCP787ARW6G6EY",
+        "id": "01M6FEM2EXVGVCCEVWX7DKZAMZ",
+        "link": "01M6FEM2EXVGVCCEVWX6KV23NA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEKVH4X67AT9TMPTQQ0CP0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "The daemon keeps its installation current with main, with no hand make update"
+        },
+        "handle": "m24-self-update",
+        "id": "01M6FEM3AK8WY15465VTMW7MZ7",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M6FEM3AK8WY15465VQ4SP3V3",
+        "op": "node.create",
+        "parent": "01M6FEKX9J8ARG7JGDYSZEA2YW"
+      },
+      {
+        "decision": null,
+        "from": "01M6FEM3AK8WY15465VQ4SP3V3",
+        "id": "01M6FEM4651YS1Y0TSHZYVQDRD",
+        "link": "01M6FEM4651YS1Y0TSHXMHBA1P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEKSSSFX7B1DX4RE94MWVK",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "statement": "This repo's Rhiza installation runs on a dedicated Ubuntu Server 26 VM on Proxmox, and the owner works it from the Mac's Rex app with the Mac's daemon stopped"
+        },
+        "handle": "m24-on-the-vm",
+        "id": "01M6FEM51ZKB5VM5YCYB8WV3M1",
+        "key": "y",
+        "kind": "intent",
+        "node": "01M6FEM51ZKB5VM5YCY867AR0A",
+        "op": "node.create",
+        "parent": "01M6FEKX9J8ARG7JGDYSZEA2YW"
+      }
+    ]
+  },
+  "change_set": "01M6FDSQH550AN63HK4MK00T6V",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FEM6E594Y90SNXRW4R8JAT",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,63 @@
+{
+  "actor": "01M6FDSWAT3PS9A39W8Q0JWNJN",
+  "after": [
+    "01M6FEN1BRQRHP9RTJKPRGYQ21"
+  ],
+  "at": "2026-11-03T01:01:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A Go test with injected git and make: a moved origin/main fetches, fast-forwards and runs make update once; an unmoved one runs nothing; a pending start delays it to a later poll; a dirty checkout or a failing make update is logged and not retried until origin/main moves again; with selfUpdate off nothing runs; rhiza daemon settings lists rhiza.daemon.selfUpdate = false (default)",
+          "statement": "With the setting rhiza.daemon.selfUpdate on (off by default, shown and edited in the autonomy app), when origin/main has moved past the main checkout the daemon, at the end of a poll with no start pending, fast-forwards the main checkout and runs make update there, so its re-exec on a changed binary takes over; a dirty or diverged checkout or a failing make update is logged and skipped until main moves again"
+        },
+        "handle": "daemon-self-update",
+        "id": "01M6FES89JR3Z5XA751BMMA8T4",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6FES89JR3Z5XA751AGCD3RV",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6FES89JR3Z5XA751AGCD3RV",
+        "id": "01M6FES957Z2341F31CZNHWMZE",
+        "link": "01M6FES957Z2341F31CYV300GS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEKSSSFX7B1DX4RE94MWVK",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript: daemon status --json carries the running daemon's version; health --json reports the daemon part warn naming both commits when origin/main is ahead of it, and ok when they match",
+          "statement": "rhiza daemon status shows the commit the running daemon was built from, and rhiza health warns on its daemon part when origin/main is ahead of that commit"
+        },
+        "handle": "daemon-version-in-health",
+        "id": "01M6FESA0V3RCW576YB3BPYNR7",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6FESA0V3RCW576YB1TKM3VP",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6FESA0V3RCW576YB1TKM3VP",
+        "id": "01M6FESAWQ99ZJZ37D3CY5XG1X",
+        "link": "01M6FESAWQ99ZJZ37D3A9NG0BB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEKSSSFX7B1DX4RE94MWVK",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6FEN1BRQRHP9RTJKN2YPTH6",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FESCANCA56RNHVY2EPTGRX",
+  "type": "ops",
+  "v": 1
+}

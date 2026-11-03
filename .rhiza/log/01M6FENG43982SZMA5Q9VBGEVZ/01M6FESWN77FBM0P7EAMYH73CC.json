@@ -1,0 +1,97 @@
+{
+  "actor": "01M6FDSWAT3PS9A39W8Q0JWNJN",
+  "after": [
+    "01M6FENG43982SZMA5QBV8BB2Q"
+  ],
+  "at": "2026-11-03T01:01:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "The VM is built on Proxmox by following the runbook with no step outside it, recorded as Evidence naming the runbook's version",
+          "statement": "An HTML runbook, ~/code/rhiza-vm-runbook.html, in the style of the afk VM runbook, takes the owner from Proxmox to a working Rhiza VM: an Ubuntu Server 26 VM that never sleeps, Tailscale, the Rex Linux server package with rex.service enabled, Go, git, gh and Claude Code with their logins, this repo cloned, make update, rhiza daemon install with selfUpdate on, and the VM added as a host in the Mac's Rex app"
+        },
+        "handle": "rhiza-vm-runbook",
+        "id": "01M6FESNZDDY8HFF6YRH1AV7XE",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M6FESNZDDY8HFF6YRFTVVHW0",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "fields": {
+          "acceptance": "Evidence from the VM: rhiza daemon status --json shows mode service; rhiza run ls shows a ship-change run the VM's daemon started ending done with its PR merged; a question asked in an agent tab on the VM raised a Rex notification on the Mac, or a report was filed with Rex upstream; rhiza daemon status on the Mac shows no daemon running",
+          "statement": "This repo's daemon runs as a service on the VM and ships a change set end to end with no orchestrator session, worked from the Mac's Rex app connected to the VM host, while the Mac runs no daemon"
+        },
+        "handle": "rhiza-on-vm",
+        "id": "01M6FESPV5PW1DHSM7HR15SF9W",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M6FESPV5PW1DHSM7HQC0F4CP",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "fields": {
+          "statement": "Who carries out the VM build and the move: the owner by hand from the runbook, or an agent run given SSH access to Proxmox and the VM?"
+        },
+        "handle": "vm-move-who",
+        "id": "01M6FESQPY5N6DFRB6K0HMHCTQ",
+        "key": null,
+        "kind": "question",
+        "node": "01M6FESQPY5N6DFRB6JX4NX822",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FESQPY5N6DFRB6JX4NX822",
+        "id": "01M6FESRMZFP9G8QW9F8HGAMN1",
+        "link": "01M6FESRMZFP9G8QW9F70XZSYK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESPV5PW1DHSM7HQC0F4CP",
+        "type": "blocks"
+      },
+      {
+        "decision": null,
+        "from": "01M6FESQPY5N6DFRB6JX4NX822",
+        "id": "01M6FESSGVZAVMWJB6JDFY34GX",
+        "link": "01M6FESSGVZAVMWJB6JAQ0350A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESNZDDY8HFF6YRFTVVHW0",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "The runbook lives in ~/code, outside this repo's git, but a builder lands a leaf as a commit with a Leaf: trailer: should the runbook live in this repo instead (for example docs/vm-runbook.html), or is its leaf built outside the run with Evidence only?"
+        },
+        "handle": "vm-runbook-commit",
+        "id": "01M6FESTCHXKVB6B3CCPWA6H7E",
+        "key": null,
+        "kind": "question",
+        "node": "01M6FESTCHXKVB6B3CCNF0ZG4C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FESTCHXKVB6B3CCNF0ZG4C",
+        "id": "01M6FESV84YZX8H8R8GA0HBAR7",
+        "link": "01M6FESV84YZX8H8R8G96AM5BN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESNZDDY8HFF6YRFTVVHW0",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6FENG43982SZMA5Q9VBGEVZ",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FESWN77FBM0P7EAMYH73CC",
+  "type": "ops",
+  "v": 1
+}
