@@ -1,0 +1,40 @@
+{
+  "actor": "01M6GSFCMWTC9YWC4ZW4C9AFJ6",
+  "after": [
+    "01M6GDE3KSGZCGH7SYTBSF2ADH"
+  ],
+  "at": "2026-11-03T13:30:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7cf32ec6 I read the diff of cfe2054e and 7cf32ec6. Before the ff-only pull, dropIncomingLogCopies in internal/api/ship_close.go fetches origin/main, lists the untracked .rhiza/log files and removes only those whose hash-object equals origin/main:<path>. I ran go test ./cmd/rhiza -run TestScripts/ship-close-out -count=1 and it passed. In ship-close-out-log-copies.txtar, case 1 opens a change set with change new in the main checkout and merges it through a clone. close-out exits 0 with main_updated true, HEAD equals the pushed origin/main, and git status shows no untracked .rhiza/log. Case 2 gives the main checkout differing untracked log files. close-out exits non-zero with main_updated false, step update-main and result failed. The untracked list is unchanged, and cmp shows each file's bytes are the same. This answers attempt 1's finding. Mutation check: in a scratch copy with the dropIncomingLogCopies call removed, the script fails at case 1 (main_updated false). In make check, fmt-check, vet and test pass. self-check fails only on a stale .rhiza/rendered/actor/claude-code-f7650bc4.md and index.md. That file came from 3d6fd44c on the other leaf, close-out-retry-after-forget, not from this leaf's diff."
+        },
+        "handle": "close-out-drops-log-copies-verified",
+        "id": "01M6GSMQNQE1GZ8X9ANNRRPJ5E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6GSMQNNQB35HKZQS2V6GY82",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GSMQNNQB35HKZQS2V6GY82",
+        "id": "01M6GSMYDEW3SE8YHE4T130A6H",
+        "link": "01M6GSMYDEW3SE8YHE4SW7SY4A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GD438PP0YPH7YYYZT2HAT4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6GCPSMFW8G6MXXNW6Y5J0Q6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GSN9B3X76FAQXNWHP4F9SD",
+  "type": "ops",
+  "v": 1
+}
