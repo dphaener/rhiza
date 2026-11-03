@@ -1,0 +1,30 @@
+# ship close-out --forget keeps the ship state while update-main fails, so
+# the same command finishes once the blocking changes are gone.
+
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+exec sh -c 'echo base > file.txt'
+exec git add -A
+exec git commit -qm init
+exec git push -q -u origin main
+
+exec rhiza change new 'Forget retry' --json
+exec sh -c 'id=$(rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p"); echo $id > $WORK/id; mkdir -p .git/rhiza/ship; printf "{\"pr\":7,\"merge_commit\":\"abc\"}" > .git/rhiza/ship/$id.json'
+
+# A tracked change in main blocks the pull.
+exec sh -c 'echo dirty >> file.txt'
+! exec rhiza ship close-out --forget --json
+stdout '"main_updated": false'
+stdout '"step": "update-main"'
+stdout '"result": "failed"'
+exec sh -c 'test -f .git/rhiza/ship/$(cat $WORK/id).json'
+
+# Discarded, the same command finishes and forgets the state.
+exec git checkout -- file.txt
+exec rhiza ship close-out --forget --json
+stdout '"main_updated": true'
+exec sh -c '! test -e .git/rhiza/ship/$(cat $WORK/id).json'

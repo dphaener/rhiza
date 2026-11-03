@@ -486,12 +486,6 @@ func runShipCloseOut(ctx *Ctx, req any) (any, error) {
 		return nil, Errorf("%v", err)
 	}
 
-	if r.Forget {
-		if err := os.Remove(t.statePath()); err != nil && !errors.Is(err, fs.ErrNotExist) {
-			return nil, Errorf("forget ship state: %v", err)
-		}
-	}
-
 	resp.Detail = shipMainBlocked(ctx, t.main)
 	if resp.Detail == "" {
 		dropIncomingLogCopies(ctx, t.main)
@@ -513,6 +507,13 @@ func runShipCloseOut(ctx *Ctx, req any) (any, error) {
 	}
 	step("update-main", true)
 	resp.MainUpdated = true
+	// Forget only now: a close-out whose pull failed keeps its state, so a
+	// retry finds the merge commit and finishes.
+	if r.Forget {
+		if err := os.Remove(t.statePath()); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return nil, Errorf("forget ship state: %v", err)
+		}
+	}
 	return resp, nil
 }
 
