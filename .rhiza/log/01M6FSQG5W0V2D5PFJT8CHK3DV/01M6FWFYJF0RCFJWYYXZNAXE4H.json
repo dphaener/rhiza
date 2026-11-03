@@ -1,0 +1,63 @@
+{
+  "actor": "01M6FSQTV87DC0Y3DRCY09R0EW",
+  "after": [
+    "01M6FWE3WZ597R8HA3VTWGCYBX"
+  ],
+  "at": "2026-11-03T05:00:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Tests with a hermetic HOME show that session run, before it starts the agent, leaves both paths with hasTrustDialogAccepted=true and every other key in .claude.json unchanged; that it honours CLAUDE_CONFIG_DIR and creates the file when it is missing; that a resumed start trusts the paths again; that --dry-run writes nothing; and that Adapter.Command still writes no file",
+          "statement": "Before every Claude Code start, the claudecode adapter marks the main checkout root and the session's working directory as trusted (hasTrustDialogAccepted=true) in ~/.claude.json, or $CLAUDE_CONFIG_DIR/.claude.json when set, through an optional adapter interface that session run calls, so a session in a new repo never stops at the folder-trust prompt"
+        },
+        "handle": "claude-folder-trust",
+        "id": "01M6FWF2YX1F6WAGBT9M2N50DN",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6FWF2YX1F6WAGBT9JDYEZT5",
+        "op": "node.create",
+        "parent": "01M5SWT6SV13QH6EDSH7HDJFCB"
+      },
+      {
+        "decision": null,
+        "from": "01M6FWF2YX1F6WAGBT9JDYEZT5",
+        "id": "01M6FWF8Q7SE1CJ1ERBPDW5CW5",
+        "link": "01M6FWF8Q7SE1CJ1ERBJRCMX1B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FWDTQ4VASTE7MD19JV886K",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A test with a malformed .claude.json shows that session run starts the agent, reports a warning naming the file, and leaves the file byte-for-byte unchanged; the write goes through a temp file and a rename",
+          "statement": "When .claude.json can't be read, parsed or written, the session still starts, the failure appears in session run's warnings, and the file is never overwritten or left half-written"
+        },
+        "handle": "claude-trust-failure-warns",
+        "id": "01M6FWFF8A7KTJAS9GXT7TCX61",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6FWFF8A7KTJAS9GXSK8CSHK",
+        "op": "node.create",
+        "parent": "01M5SWT6SV13QH6EDSH7HDJFCB"
+      },
+      {
+        "decision": null,
+        "from": "01M6FWFF8A7KTJAS9GXSK8CSHK",
+        "id": "01M6FWFNB54XT66QVYD3ASY28B",
+        "link": "01M6FWFNB54XT66QVYD2CZ33G0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FWDTQ4VASTE7MD19JV886K",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6FSQG5W0V2D5PFJT8CHK3DV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6FWFYJF0RCFJWYYXZNAXE4H",
+  "type": "ops",
+  "v": 1
+}
