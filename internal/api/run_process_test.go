@@ -48,7 +48,8 @@ timeout = "1m"
 	}
 
 	f.ctx.RexSession, f.ctx.RexBlock = "session:s", "block:start"
-	resp, err := callOp(t, f.ctx, "run.start", `{"workflow":"w","no_wait":true}`)
+	f.ctx.repoSession = true // keep the caller's session: this checks the process record
+	resp, err := callOp(t, f.ctx, "run.start", `{"foreground":true,"workflow":"w","no_wait":true}`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -62,7 +63,7 @@ timeout = "1m"
 	}
 
 	f.ctx.RexBlock = "block:resume"
-	if _, err := callOp(t, f.ctx, "run.resume", `{"run":"`+id+`","no_wait":true}`); err != nil {
+	if _, err := callOp(t, f.ctx, "run.resume", `{"foreground":true,"run":"`+id+`","no_wait":true}`); err != nil {
 		t.Fatal(err)
 	}
 	resumed := run.Process{Host: host, Pid: os.Getpid(), RexSession: "session:s", RexWindow: "window:wr", RexBlock: "block:resume"}
@@ -81,7 +82,7 @@ timeout = "1m"
 	// Outside Rex: host and pid alone, and Rex is never asked.
 	f.ctx.RexSession, f.ctx.RexBlock = "", ""
 	inspected = nil
-	if _, err := callOp(t, f.ctx, "run.resume", `{"run":"`+id+`","no_wait":true}`); err != nil {
+	if _, err := callOp(t, f.ctx, "run.resume", `{"foreground":true,"run":"`+id+`","no_wait":true}`); err != nil {
 		t.Fatal(err)
 	}
 	bare := run.Process{Host: host, Pid: os.Getpid()}

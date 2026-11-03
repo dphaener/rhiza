@@ -13,6 +13,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 )
@@ -108,7 +109,7 @@ func TestRunStartWorkflowRefusals(t *testing.T) {
 			if c.body != "" {
 				writeWorkflow(t, f.ctx.Root, c.workflow, c.body)
 			}
-			_, err := callOp(t, f.ctx, "run.start", `{"workflow":"`+c.workflow+`"}`)
+			_, err := callOp(t, f.ctx, "run.start", `{"foreground":true,"workflow":"`+c.workflow+`"}`)
 			wantExit(t, err, 2)
 			if e := AsError(err); !strings.Contains(e.Message, c.message) || e.Next != runStartNext {
 				t.Errorf("error %q next %q; want %q and %q", e.Message, e.Next, c.message, runStartNext)
@@ -160,7 +161,7 @@ func TestRunStartCommandSteps(t *testing.T) {
 	sh := &shStart{}
 	f.ctx.Start = sh.start
 
-	resp, err := callOp(t, f.ctx, "run.start", `{"workflow":"hello"}`)
+	resp, err := callOp(t, f.ctx, "run.start", `{"foreground":true,"workflow":"hello"}`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -200,7 +201,7 @@ func TestRunStartCommandSteps(t *testing.T) {
 	if s := st.(RunInfo); s.ID != info.ID || s.State != run.Succeeded || len(s.Steps) != 2 {
 		t.Errorf("status = %+v", s)
 	}
-	_, err = callOp(t, f.ctx, "run.resume", `{"run":"`+info.ID+`"}`)
+	_, err = callOp(t, f.ctx, "run.resume", `{"foreground":true,"run":"`+info.ID+`"}`)
 	wantExit(t, err, 3)
 	if e := AsError(err); e.Next != "rhiza run status "+info.ID {
 		t.Errorf("next = %q", e.Next)
@@ -213,7 +214,7 @@ func TestRunStartFailedExitsNonZero(t *testing.T) {
 	writeWorkflow(t, f.ctx.Root, "hello", twoCommands)
 	f.ctx.Start = (&shStart{codes: map[string]int{"test -f step1.txt": 1}}).start
 
-	resp, err := callOp(t, f.ctx, "run.start", `{"workflow":"hello"}`)
+	resp, err := callOp(t, f.ctx, "run.start", `{"foreground":true,"workflow":"hello"}`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -240,7 +241,7 @@ timeout = "1m"
 	sh := &shStart{codes: map[string]int{"ready": 1}}
 	f.ctx.Start = sh.start
 
-	resp, err := callOp(t, f.ctx, "run.start", `{"workflow":"w","no_wait":true}`)
+	resp, err := callOp(t, f.ctx, "run.start", `{"foreground":true,"workflow":"w","no_wait":true}`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -257,7 +258,7 @@ timeout = "1m"
 	}
 
 	sh.codes["ready"] = 0
-	resp, err = callOp(t, f.ctx, "run.resume", `{"run":"`+info.ID+`"}`)
+	resp, err = callOp(t, f.ctx, "run.resume", `{"foreground":true,"run":"`+info.ID+`"}`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -282,7 +283,7 @@ func TestRunStatusAndResumeRefusals(t *testing.T) {
 	wantExit(t, err, 4)
 	_, err = callOp(t, f.ctx, "run.status", `{"run":"ZZZZZZ"}`)
 	wantExit(t, err, 4)
-	_, err = callOp(t, f.ctx, "run.resume", `{"run":""}`)
+	_, err = callOp(t, f.ctx, "run.resume", `{"foreground":true,"run":""}`)
 	wantExit(t, err, 2)
 }
 
@@ -293,7 +294,7 @@ func TestRunStartDryRunWritesNothing(t *testing.T) {
 	sh := &shStart{}
 	f.ctx.Start = sh.start
 	f.ctx.DryRun = true
-	resp, err := callOp(t, f.ctx, "run.start", `{"workflow":"hello"}`)
+	resp, err := callOp(t, f.ctx, "run.start", `{"foreground":true,"workflow":"hello"}`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -333,7 +334,8 @@ func TestRunAgentStepEndsWithTheSessionExit(t *testing.T) {
 			}
 			return []byte(rexWindowJSON), nil
 		}
-		resp, err := callOp(t, f.ctx, "run.start", `{"workflow":"w","permission_mode":"manual"}`)
+		f.ctx.repoSession = true // rhiza-<repo> is open in the fake Rex
+		resp, err := callOp(t, f.ctx, "run.start", `{"foreground":true,"workflow":"w","permission_mode":"manual"}`)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -500,7 +502,8 @@ func TestRunBlockedStatusAndRexReports(t *testing.T) {
 	}
 	useClock(t, clock)
 
-	resp, err := callOp(t, f.ctx, "run.start", `{"workflow":"w","permission_mode":"manual"}`)
+	f.ctx.repoSession = true // rhiza-<repo> is open in the fake Rex
+	resp, err := callOp(t, f.ctx, "run.start", `{"foreground":true,"workflow":"w","permission_mode":"manual"}`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -575,7 +578,8 @@ func TestRunBlockedWithoutRexWritesNothing(t *testing.T) {
 			t.Fatal(err)
 		}
 	}}})
-	resp, err := callOp(t, f.ctx, "run.start", `{"workflow":"w","permission_mode":"manual"}`)
+	f.ctx.repoSession = true // rhiza-<repo> is open in the fake Rex
+	resp, err := callOp(t, f.ctx, "run.start", `{"foreground":true,"workflow":"w","permission_mode":"manual"}`)
 	if err != nil || resp.(RunResponse).Run.State != run.Succeeded {
 		t.Fatalf("run = %+v, %v", resp, err)
 	}
@@ -747,19 +751,19 @@ func TestRunResumeRetry(t *testing.T) {
 	sh := &shStart{codes: map[string]int{"test -f step1.txt": 1}}
 	f.ctx.Start = sh.start
 
-	resp, err := callOp(t, f.ctx, "run.start", `{"workflow":"hello"}`)
+	resp, err := callOp(t, f.ctx, "run.start", `{"foreground":true,"workflow":"hello"}`)
 	if err != nil {
 		t.Fatal(err)
 	}
 	id := resp.(RunResponse).Run.ID
-	_, err = callOp(t, f.ctx, "run.resume", `{"run":"`+id+`"}`)
+	_, err = callOp(t, f.ctx, "run.resume", `{"foreground":true,"run":"`+id+`"}`)
 	wantExit(t, err, 3)
 	if e := AsError(err); e.Next != "rhiza run resume --retry "+id || !strings.Contains(e.Message, "is finished: it failed") {
 		t.Errorf("refusal = %q, next %q", e.Message, e.Next)
 	}
 
 	f.ctx.DryRun = true
-	resp, err = callOp(t, f.ctx, "run.resume", `{"run":"`+id+`","retry":true}`)
+	resp, err = callOp(t, f.ctx, "run.resume", `{"foreground":true,"run":"`+id+`","retry":true}`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -777,7 +781,7 @@ func TestRunResumeRetry(t *testing.T) {
 
 	sh.codes["test -f step1.txt"] = 0
 	ran := len(sh.programs)
-	resp, err = callOp(t, f.ctx, "run.resume", `{"run":"`+id+`","retry":true}`)
+	resp, err = callOp(t, f.ctx, "run.resume", `{"foreground":true,"run":"`+id+`","retry":true}`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -802,12 +806,12 @@ func TestRunResumeRetry(t *testing.T) {
 		}
 	}
 
-	_, err = callOp(t, f.ctx, "run.resume", `{"run":"`+id+`","retry":true}`)
+	_, err = callOp(t, f.ctx, "run.resume", `{"foreground":true,"run":"`+id+`","retry":true}`)
 	wantExit(t, err, 3)
 	if e := AsError(err); !strings.Contains(e.Message, "only a failed run can be retried") {
 		t.Errorf("refusal = %q", e.Message)
 	}
-	_, err = callOp(t, f.ctx, "run.resume", `{"run":"`+id+`"}`)
+	_, err = callOp(t, f.ctx, "run.resume", `{"foreground":true,"run":"`+id+`"}`)
 	wantExit(t, err, 3)
 	if e := AsError(err); e.Next != "rhiza run status "+id {
 		t.Errorf("next = %q", e.Next)
@@ -887,5 +891,54 @@ func TestRunStalledNow(t *testing.T) {
 	}
 	if all := runStalledAll(parallel, false, sessions, now); len(all) != 0 {
 		t.Errorf("stopped run, all stalled = %v", all)
+	}
+}
+
+// Without foreground, run start queues the run for the daemon: nothing is
+// opened, journaled or run, the start lands in the daemon's queue with the
+// request's options, the response says it waits for a daemon, and a second
+// start of the same change set is refused while the first is queued.
+func TestRunStartQueuesForTheDaemon(t *testing.T) {
+	f := newSessionFixture(t, "try-runs")
+	cs := newChange(t, f.ctx, `{"intent":"Try runs","title":"Try runs"}`).ChangeSet
+	writeWorkflow(t, f.ctx.Root, "hello", twoCommands)
+	sh := &shStart{}
+	f.ctx.Start = sh.start
+
+	resp, err := callOp(t, f.ctx, "run.start", `{"workflow":"hello","no_wait":true,"autonomous":true}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := resp.(RunResponse)
+	if !r.Queued || r.Daemon != "" || r.Run.ID != "" || r.Run.Change != cs.String() || r.Run.Workflow != "hello" {
+		t.Errorf("response %+v", r)
+	}
+	if out := human(t, r); !strings.Contains(out, "Queued a hello run of "+cs.String()+" for the daemon") {
+		t.Errorf("markdown:\n%s", out)
+	}
+	if len(sh.programs) != 0 || len(f.rex.calls) != 0 {
+		t.Errorf("a queued start ran %d programs or rex %v", len(sh.programs), f.rex.calls)
+	}
+	if _, err := os.Stat(run.Dir(f.common)); !os.IsNotExist(err) {
+		t.Errorf("a queued start journaled a run: %v", err)
+	}
+	starts, err := daemon.ReadStarts(f.common)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := range starts {
+		starts[i].At = time.Time{}
+	}
+	if want := []daemon.Start{{Change: cs.String(), Workflow: "hello", NoWait: true, Autonomous: true}}; !slices.Equal(starts, want) {
+		t.Errorf("starts %+v, want %+v", starts, want)
+	}
+
+	_, err = callOp(t, f.ctx, "run.start", `{"workflow":"hello"}`)
+	wantExit(t, err, 2)
+	if e := AsError(err); !strings.Contains(e.Message, "already has a run queued") || e.Next != "rhiza daemon status" {
+		t.Errorf("error %q next %q", e.Message, e.Next)
+	}
+	if starts, _ := daemon.ReadStarts(f.common); len(starts) != 1 {
+		t.Errorf("starts after a refused second start: %+v", starts)
 	}
 }
