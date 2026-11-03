@@ -69,6 +69,8 @@ stdout -count=4 '^- \['
 ! exec rhiza roadmap --limit 1001
 ! exec rhiza roadmap --cursor '!!'
 stderr '^rhiza: bad cursor'
+exec sh -c 'rhiza roadmap --limit -1 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
 exec sh -c 'rhiza roadmap --limit 1001 2>/dev/null; echo exit $?'
 stdout '^exit 2$'
 exec sh -c 'rhiza roadmap --cursor "!!" 2>/dev/null; echo exit $?'
