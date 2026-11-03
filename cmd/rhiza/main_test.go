@@ -39,11 +39,16 @@ func TestScripts(t *testing.T) {
 const (
 	testNow  = "2026-10-24T12:00:00Z"
 	testSeed = "1"
+	// testFreeBytes is the free disk every script sees (1 TiB), so the
+	// daemon's minFree guard never reads the host's disk. A script that
+	// wants another figure sets RHIZA_TEST_FREE_BYTES itself.
+	testFreeBytes = "1099511627776"
 )
 
 func setup(env *testscript.Env) error {
 	env.Setenv("RHIZA_TEST_NOW", testNow)
 	env.Setenv("RHIZA_TEST_SEED", testSeed)
+	env.Setenv("RHIZA_TEST_FREE_BYTES", testFreeBytes)
 	// RHIZA_TEST_BIN is the directory holding the in-process rhiza, so a
 	// script can set PATH to it alone and hide the host's programs (e.g.
 	// systemctl) from rhiza.

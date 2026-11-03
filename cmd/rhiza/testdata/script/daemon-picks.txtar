@@ -71,7 +71,7 @@ stdout -count=1 '^Started a run of '
 ! exec rhiza daemon --permission-mode manual --once --min-free lots
 stderr '--min-free'
 exec rm $WORK/detach.log
-env RHIZA_TEST_FREE_BYTES=
+env RHIZA_TEST_FREE_BYTES=1099511627776
 
 # The mode reaches each started run's command.
 exec rhiza daemon --permission-mode manual --once
