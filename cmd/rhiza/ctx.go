@@ -63,6 +63,7 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		IDs:       id.Default(),
 		GitConfig: gitConfig,
 		Version:   versionString(),
+		Commit:    commitString(getenv),
 		Stdin:     stdin,
 		Home:      getenv("HOME"),
 		Getenv:    getenv,

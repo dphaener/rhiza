@@ -19,6 +19,8 @@ The daemon updates its installation when main moves, with no hand make update; o
 ### In
 
 - decided-by [m24-self-update](../intent/milestone-24/m24-self-update.md)
+- decided-by [daemon-self-update](../capability/rhiza/orchestration/daemon/daemon-self-update.md)
+- decided-by [daemon-version-in-health](../capability/rhiza/orchestration/daemon/daemon-version-in-health.md)
 
 ## History
 

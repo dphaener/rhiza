@@ -124,7 +124,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	rs := run.NewStore(run.Dir(common))
 	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}, Planned: []string{}}
 	pending := map[string]daemonPending{}
-	state, unjournaled := daemonStartState(common, self, ctx.Version, conf.maxRuns, r.Autonomous)
+	state, unjournaled := daemonStartState(common, self, ctx.Version, ctx.Commit, conf.maxRuns, r.Autonomous)
 	state.Settings = conf.stateRows()
 	state.Hooks = hooks
 	// Write it before the first poll, so status matches the lock holder
@@ -142,6 +142,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		state.Stopped = ctx.Now().UTC()
 		daemon.WriteState(common, state)
 	}()
+	selfUpdateOn := false
 	poll := func() error {
 		var skips []daemon.Skip
 		conf, err := daemonConfOf(ctx, r)
@@ -150,6 +151,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			return err
 		}
 		minFree := conf.minFree
+		selfUpdateOn = conf.selfUpdate
 		state.MaxRuns, state.Settings = conf.maxRuns, conf.stateRows()
 		started, resumed, planned, err := daemonPoll1(ctx, rs, pending, unjournaled, conf.maxRuns, minFree, r.Autonomous, conf.mode, conf.paused, &skips)
 		resp.Planned = append(resp.Planned, planned...)
@@ -189,9 +191,35 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		return resp, poll()
 	}
 	reexec := daemonReexec()
+	update := &daemon.SelfUpdate{Now: ctx.Now, Every: daemon.SelfUpdateEvery}
+	selfUpdate := func() {
+		if !selfUpdateOn || ctx.Exec == nil || ctx.Git == nil {
+			return
+		}
+		out, err := ctx.Git("worktree", "list", "--porcelain")
+		if err != nil {
+			return
+		}
+		main, ok := firstWorktree(out)
+		if !ok {
+			return
+		}
+		update.Git = func(args ...string) (string, error) { return gitAt(ctx, main, args...) }
+		update.Fetch = func() error { return fetchMainWithin(ctx, main, selfUpdateFetchTimeout) }
+		update.Make = func(args ...string) error {
+			_, err := ctx.Exec("make", args, main, nil)
+			return err
+		}
+		update.Log = func(format string, a ...any) {
+			if ctx.Stderr != nil {
+				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: "+format+"\n", a...)
+			}
+		}
+		update.Run()
+	}
 	ticks, stopTicks := daemonTicker()
 	defer stopTicks()
-	l, err := daemonLoop(ctx, common, lock, poll, func() int { return len(pending) }, reexec, ticks, interrupted)
+	l, err := daemonLoop(ctx, common, lock, poll, func() int { return len(pending) }, reexec, selfUpdate, ticks, interrupted)
 	if l != nil {
 		lock = l
 	}
@@ -203,8 +231,8 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 // (an earlier image of a re-exec, or a restart) left: its last poll, live
 // runs, skips, hooks and unjournaled holds. The holds come back as the
 // daemon's unjournaled map.
-func daemonStartState(common string, self daemon.Holder, version string, maxRuns int, autonomous bool) (daemon.State, map[string]daemonPending) {
-	state := daemon.State{Process: self, Version: version, MaxRuns: maxRuns, Autonomous: autonomous, Runs: []daemon.LiveRun{}}
+func daemonStartState(common string, self daemon.Holder, version, commit string, maxRuns int, autonomous bool) (daemon.State, map[string]daemonPending) {
+	state := daemon.State{Process: self, Version: version, Commit: commit, MaxRuns: maxRuns, Autonomous: autonomous, Runs: []daemon.LiveRun{}}
 	unjournaled := map[string]daemonPending{}
 	if prev, ok := daemon.ReadState(common); ok {
 		state.LastPoll = prev.LastPoll
@@ -230,10 +258,13 @@ func daemonStartState(common string, self daemon.Holder, version string, maxRuns
 // (reexec): live runs are separate processes and carry on. An exec that
 // returns is not tried again. It returns the lock it holds at the end, nil
 // with the error when it could not take the lock back after an exec.
-func daemonLoop(ctx *Ctx, common string, lock *daemon.Lock, poll func() error, pending func() int, reexec *daemon.Reexec, ticks <-chan time.Time, interrupted <-chan struct{}) (*daemon.Lock, error) {
+func daemonLoop(ctx *Ctx, common string, lock *daemon.Lock, poll func() error, pending func() int, reexec *daemon.Reexec, selfUpdate func(), ticks <-chan time.Time, interrupted <-chan struct{}) (*daemon.Lock, error) {
 	for {
 		if err := poll(); err != nil && ctx.Stderr != nil {
 			fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %v\n", err)
+		}
+		if selfUpdate != nil && pending() == 0 {
+			selfUpdate()
 		}
 		if reexec.Due(pending()) {
 			if ctx.Stderr != nil {
@@ -415,6 +446,43 @@ func daemonRunsOf(runs []run.Journal, cs string) int {
 		}
 	}
 	return n
+}
+
+// selfUpdateFetchTimeout bounds the self-update's git fetch, so a stalled
+// network cannot hold up the daemon's polls.
+const selfUpdateFetchTimeout = 30 * time.Second
+
+// fetchMainWithin runs git fetch origin main in dir, killing it after
+// timeout. Git never prompts for credentials: it reads nothing and has
+// GIT_TERMINAL_PROMPT=0. Without ctx.Start it runs untimed through ctx.Exec.
+func fetchMainWithin(ctx *Ctx, dir string, timeout time.Duration) error {
+	args := []string{"fetch", "origin", "main"}
+	if ctx.Start == nil {
+		_, err := gitAt(ctx, dir, args...)
+		return err
+	}
+	p, err := ctx.Start(Program{Name: "git", Args: args, Dir: dir, Env: []string{"GIT_TERMINAL_PROMPT=0"}})
+	if err != nil {
+		return err
+	}
+	timedOut := make(chan struct{})
+	timer := time.AfterFunc(timeout, func() {
+		close(timedOut)
+		p.Kill()
+	})
+	_, _ = io.Copy(io.Discard, p.Output())
+	code, err := p.Wait()
+	if !timer.Stop() {
+		<-timedOut
+		return fmt.Errorf("git fetch origin main: timed out after %s", timeout)
+	}
+	if err != nil {
+		return err
+	}
+	if code != 0 {
+		return fmt.Errorf("git fetch origin main: exit %d", code)
+	}
+	return nil
 }
 
 // daemonPoll1 picks and starts runs once: resumes, then ship-change runs,
@@ -720,6 +788,7 @@ type DaemonStatusResponse struct {
 	Running     bool          `json:"running" desc:"True while a live daemon holds the repository's lock"`
 	Process     string        `json:"process,omitempty" desc:"The daemon's process, as host:pid; absent when none ever ran"`
 	Version     string        `json:"version,omitempty" desc:"The version of the binary the daemon runs, as recorded when it started"`
+	Commit      string        `json:"commit,omitempty" desc:"The git commit the daemon's binary was built from, as recorded when it started; absent when the build carried none"`
 	Started     string        `json:"started,omitempty" desc:"When the daemon started, RFC 3339 UTC"`
 	LastPoll    string        `json:"last_poll,omitempty" desc:"When it last polled, RFC 3339 UTC"`
 	Stopped     string        `json:"stopped,omitempty" desc:"When the last daemon stopped, RFC 3339 UTC; absent while it runs"`
@@ -749,6 +818,9 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 	}
 	if r.Version != "" {
 		fmt.Fprintf(w, "Version: %s\n", r.Version)
+	}
+	if r.Commit != "" {
+		fmt.Fprintf(w, "Commit: %s\n", r.Commit)
 	}
 	fmt.Fprintf(w, "Started: %s\nLast poll: %s\nMax runs: %d\nAutonomous: %t\n", r.Started, r.LastPoll, r.MaxRuns, r.Autonomous)
 	for _, s := range r.Settings {
@@ -822,6 +894,7 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 	}
 	resp.Process = st.Process.String()
 	resp.Version = st.Version
+	resp.Commit = st.Commit
 	resp.Started = st.Process.Started.UTC().Format(time.RFC3339)
 	resp.LastPoll = st.LastPoll.UTC().Format(time.RFC3339)
 	if !st.Stopped.IsZero() && !resp.Running {

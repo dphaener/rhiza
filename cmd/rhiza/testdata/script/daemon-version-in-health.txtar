@@ -1,0 +1,44 @@
+# daemon status shows the commit the running daemon was built from, and
+# health warns on its daemon part, naming both commits, when origin/main is
+# ahead of that commit; ok when they match. Rex is faked and never called.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_FREE_BYTES=1099511627776
+mkdir repo
+cd repo
+exec git init -q -b main
+exec rhiza init
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+exec sh -c 'git rev-parse HEAD > ../built.sha'
+
+exec sh -c 'RHIZA_TEST_COMMIT=$(cat ../built.sha) exec rhiza daemon --permission-mode manual' &daemon&
+exec sh -c 'for i in $(seq 100); do grep -q commit .git/rhiza/daemon.state.json && exit 0; sleep 0.1; done; exit 1'
+
+# The status carries the commit, in text and --json.
+exec rhiza daemon status
+stdout '^Commit: [0-9a-f]{40}$'
+exec rhiza daemon status --json
+stdout '"commit": "[0-9a-f]{40}"'
+
+# origin/main equal to the daemon's commit: ok.
+exec git update-ref refs/remotes/origin/main HEAD
+exec rhiza health
+stdout '^ok   daemon   running'
+
+# origin/main ahead of it: warn, naming both commits.
+exec git commit -q --allow-empty -m next
+exec git update-ref refs/remotes/origin/main HEAD
+exec sh -c 'rhiza health > ../health.txt; head=$(git rev-parse HEAD | cut -c1-7); built=$(cut -c1-7 ../built.sha); grep "^warn daemon" ../health.txt | grep "built from $built, origin/main is at $head"'
+exec sh -c 'rhiza health --json | grep -c "make update"'
+stdout '^1$'
+
+kill -INT daemon
+wait daemon
+
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+exit 0

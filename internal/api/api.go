@@ -166,6 +166,8 @@ type Ctx struct {
 	// Version is the running rhiza's version, such as "v0.3.0" or
 	// "dev".
 	Version string
+	// Commit is the git commit the running rhiza was built from, or "".
+	Commit string
 	// Stdin is read by operations that accept "-" for a file.
 	Stdin io.Reader
 	// Interrupts starts listening for the caller being asked to stop (the

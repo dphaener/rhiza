@@ -179,7 +179,7 @@ func TestDaemonLoopReexecWaitsForPending(t *testing.T) {
 			l, err := daemonLoop(ctx, common, lock,
 				func() error { polls++; return nil },
 				func() int { return pendingAt[polls] },
-				f.reexec(start), ticks, stop)
+				f.reexec(start), nil, ticks, stop)
 			done <- result{l, err}
 		}()
 		for range 4 {
@@ -243,7 +243,7 @@ func TestDaemonStateAtStart(t *testing.T) {
 	}
 	defer lock.Unlock()
 	self := daemon.ReadHolder(common)
-	state, held := daemonStartState(common, self, "v2", 5, true)
+	state, held := daemonStartState(common, self, "v2", "", 5, true)
 	if err := daemon.WriteState(common, state); err != nil {
 		t.Fatal(err)
 	}

@@ -45,6 +45,7 @@ func validateChoice(opts ...string) func(string) error {
 
 var settingDefs = []settingDef{
 	{key: "rhiza.daemon.paused", def: "false", validate: validateChoice("true", "false")},
+	{key: "rhiza.daemon.selfUpdate", def: "false", validate: validateChoice("true", "false")},
 	{key: "rhiza.daemon.maxRuns", def: strconv.Itoa(daemon.DefaultMaxRuns), flag: "--max-runs", validate: func(v string) error {
 		n, err := strconv.Atoi(v)
 		if err != nil || n < 1 {
@@ -122,11 +123,12 @@ func settingValue(rows []Setting, key string) string {
 
 // daemonConf is the daemon's effective settings for one poll.
 type daemonConf struct {
-	rows    []Setting
-	maxRuns int
-	minFree uint64
-	mode    string
-	paused  bool
+	rows       []Setting
+	maxRuns    int
+	minFree    uint64
+	mode       string
+	paused     bool
+	selfUpdate bool
 }
 
 // daemonConfOf resolves the settings for a poll: config, then the request's
@@ -153,6 +155,7 @@ func daemonConfOf(ctx *Ctx, r DaemonRequest) (daemonConf, error) {
 	c.maxRuns, _ = strconv.Atoi(settingValue(rows, "rhiza.daemon.maxRuns"))
 	c.minFree, _ = daemon.ParseSize(settingValue(rows, "rhiza.daemon.minFree"))
 	c.paused = settingValue(rows, "rhiza.daemon.paused") == "true"
+	c.selfUpdate = settingValue(rows, "rhiza.daemon.selfUpdate") == "true"
 	c.mode = settingValue(rows, "rhiza.daemon.permissionMode")
 	return c, nil
 }
@@ -207,7 +210,7 @@ func runDaemonSettings(ctx *Ctx, req any) (any, error) {
 
 // DaemonSetRequest names a setting and its new value.
 type DaemonSetRequest struct {
-	Key   string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, maxRuns, minFree or permissionMode, or rhiza.autonomy.plan, accept, ship or signoff"`
+	Key   string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree or permissionMode, or rhiza.autonomy.plan, accept, ship or signoff"`
 	Value string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a size, a permission mode, or auto or owner, as the key takes"`
 }
 

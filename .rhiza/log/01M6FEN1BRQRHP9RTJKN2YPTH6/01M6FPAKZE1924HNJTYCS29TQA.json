@@ -1,0 +1,40 @@
+{
+  "actor": "01M6FNP5EDAZ8MMJXZAP7NVEKW",
+  "after": [
+    "01M6FMT42H926X9QHXRGY9QKH1"
+  ],
+  "at": "2026-11-03T03:12:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 08293d6a (attempt 2). Read the diff: SelfUpdate now fetches at most once per Every (5m via SelfUpdateEvery and ctx.Now), and the daemon's fetch runs through ctx.Start with GIT_TERMINAL_PROMPT=0 and is killed after 30s (fetchMainWithin), with Kill closing the output pipe after the grace period so a lingering child cannot block. Ran go test -count=1 -run 'SelfUpdate|FetchMainWithin' on ./internal/daemon and ./internal/api: TestSelfUpdateMovedMainRunsOnce, UnmovedRunsNothing, SkipsAndWaitsForMove (dirty and failing make update not retried until origin/main moves), FetchesAtMostEvery, UsesFetch, TestDaemonLoopSelfUpdateWaitsForPending (pending start delays to a later poll), TestDaemonSelfUpdateSetting (off runs nothing, on runs make update once over 3 polls), FetchMainWithinTimesOut and ExitCode all PASS. make fmt-check vet test pass with no FAIL. A scratch build's rhiza daemon settings prints rhiza.daemon.selfUpdate = false (default). make self-check fails only on stale .rhiza/rendered actor files from this run's records, not on the code."
+        },
+        "handle": "daemon-self-update-verified-2",
+        "id": "01M6FPAHEGYZGGZ55MG3D160CV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6FPAHEGYZGGZ55MG1HA1488",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FPAHEGYZGGZ55MG1HA1488",
+        "id": "01M6FPAJDR801FH568NNENK3CW",
+        "link": "01M6FPAJDR801FH568NKY2WGP9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FES89JR3Z5XA751AGCD3RV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FEN1BRQRHP9RTJKN2YPTH6",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FPAKZE1924HNJTYCS29TQA",
+  "type": "ops",
+  "v": 1
+}

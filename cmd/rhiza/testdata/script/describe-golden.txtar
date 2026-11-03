@@ -1674,7 +1674,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "The setting: rhiza.daemon.paused, maxRuns, minFree or permissionMode, or rhiza.autonomy.plan, accept, ship or signoff",
+            "description": "The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree or permissionMode, or rhiza.autonomy.plan, accept, ship or signoff",
             "type": "string"
           },
           "value": {
@@ -1808,6 +1808,10 @@ cmp stdout describe.golden.json
           "autonomous": {
             "description": "True when it starts each run with --autonomous",
             "type": "boolean"
+          },
+          "commit": {
+            "description": "The git commit the daemon's binary was built from, as recorded when it started; absent when the build carried none",
+            "type": "string"
           },
           "hooks": {
             "description": "The notify and event commands the daemon took at start, each with its source: daemon flag, git config or unset",

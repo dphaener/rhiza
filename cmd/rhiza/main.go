@@ -32,6 +32,23 @@ func versionString() string {
 	return "dev"
 }
 
+// commitString is the git commit the binary was built from (the build
+// info's vcs.revision), or "". RHIZA_TEST_COMMIT stands in for it
+// alongside RHIZA_TEST_NOW, since a test binary carries none.
+func commitString(getenv func(string) string) string {
+	if v := getenv("RHIZA_TEST_COMMIT"); v != "" && getenv("RHIZA_TEST_NOW") != "" {
+		return v
+	}
+	if info, ok := debug.ReadBuildInfo(); ok {
+		for _, s := range info.Settings {
+			if s.Key == "vcs.revision" {
+				return s.Value
+			}
+		}
+	}
+	return ""
+}
+
 const globalFlags = `Global flags:
   --json          Print JSON instead of markdown
   --dry-run       Build a write and print it; write nothing

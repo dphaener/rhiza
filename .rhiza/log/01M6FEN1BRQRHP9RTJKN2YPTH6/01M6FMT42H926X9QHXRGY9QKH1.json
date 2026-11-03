@@ -1,0 +1,63 @@
+{
+  "actor": "01M6FMH0RQ740H7ZB38T5JB237",
+  "after": [
+    "01M6FMFX3427GH8N5V9BTATAW1"
+  ],
+  "at": "2026-11-03T02:46:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f5fda44d I built rhiza with go build from a plain clone (vcs.revision=f5fda44d embedded, no RHIZA_TEST_COMMIT) and ran a real daemon (paused, fake rex) in that clone. rhiza daemon status printed 'Commit: f5fda44df4dfe5683910da14c1a72b9b5aa4328d' and --json carried \"commit\". With refs/remotes/origin/main at that commit, rhiza health's daemon part was 'ok'. After moving origin/main to a child commit, it was 'warn ... ; built from f5fda44, origin/main is at fdb2362' with next 'make update' (also in --json). A diverged origin/main and no origin/main both gave 'ok'."
+        },
+        "handle": "daemon-version-in-health-qa-1",
+        "id": "01M6FMSZ9KC7MS0KX2BXA881H9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6FMSZ9KC7MS0KX2BX4C5E40",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FMSZ9KC7MS0KX2BX4C5E40",
+        "id": "01M6FMT0AKHN4PC0DJFMTHKD2T",
+        "link": "01M6FMT0AKHN4PC0DJFHVAHWKC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESA0V3RCW576YB1TKM3VP",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f5fda44d I ran the built binary as a real daemon (paused, selfUpdate set with rhiza daemon set; fake rex) in a clone of a scratch bare origin whose Makefile's update target logs and touches the daemon's binary. rhiza daemon settings first listed 'rhiza.daemon.selfUpdate = false (default)', and 'maybe' was refused. Pushing v2 to origin: on its first poll the daemon fetched, fast-forwarded main to 7f19db9, ran make update once, logged 'self-update: updated to 7f19db900', then 'binary changed, re-executing'; two unmoved polls ran nothing. A dirty checkout with origin moved logged 'skipped ... uncommitted changes' once and was not retried after cleaning until origin moved again, when it updated. A failing make update (exit 2) logged once and was not retried. A checkout on topic and a diverged main were each logged and skipped. The pending-start gate was not exercised by hand."
+        },
+        "handle": "daemon-self-update-qa-1",
+        "id": "01M6FMT1BMA5TGHGNW8YRFY1JD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6FMT1BMA5TGHGNW8Y857DCH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FMT1BMA5TGHGNW8Y857DCH",
+        "id": "01M6FMT2D14830QDK5HQ92MHN7",
+        "link": "01M6FMT2D14830QDK5HKVJNDYD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FES89JR3Z5XA751AGCD3RV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FEN1BRQRHP9RTJKN2YPTH6",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FMT42H926X9QHXRGY9QKH1",
+  "type": "ops",
+  "v": 1
+}
