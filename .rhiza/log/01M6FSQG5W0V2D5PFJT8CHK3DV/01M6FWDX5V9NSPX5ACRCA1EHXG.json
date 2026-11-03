@@ -1,0 +1,33 @@
+{
+  "actor": "01M6FSQTV87DC0Y3DRCY09R0EW",
+  "after": [
+    "01M6FSQG5W0V2D5PFJTA9R1YXZ"
+  ],
+  "at": "2026-11-03T04:59:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "7d70d7aed3ae9ba11c83a364e4096cd019848d909ecafc5c640180ab78c97995",
+          "session": "6cd5e83f-56e1-4870-995e-01a19f9be0a3",
+          "summary": "Planned the Fix for Claude Code sessions stalling at the folder-trust prompt in a new repo. The owner picked the agent's recommended options throughout. The Fix serves m24-on-the-vm. The trust write goes in a new optional adapter interface that claudecode implements. session run calls it before every agent start and skips it on --dry-run, so Adapter.Command stays pure. It marks the main checkout root and the session's working dir as trusted (hasTrustDialogAccepted=true) in ~/.claude.json, or in $CLAUDE_CONFIG_DIR/.claude.json when that is set. The write keeps every other key and is atomic (temp file and rename). It never overwrites a malformed file. When the file can't be read or written, the session starts anyway and the failure is reported as a warning.",
+          "title": "Planning the folder-trust fix, with the owner"
+        },
+        "handle": "trust-fix-plan",
+        "id": "01M6FWDTQ4VASTE7MD1BMTW50F",
+        "key": null,
+        "kind": "source",
+        "node": "01M6FWDTQ4VASTE7MD19JV886K",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6FSQG5W0V2D5PFJT8CHK3DV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6FWDX5V9NSPX5ACRCA1EHXG",
+  "type": "ops",
+  "v": 1
+}

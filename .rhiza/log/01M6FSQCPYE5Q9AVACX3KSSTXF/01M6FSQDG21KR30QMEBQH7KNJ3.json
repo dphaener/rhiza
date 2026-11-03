@@ -1,0 +1,30 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6FSQCPYE5Q9AVACX5XNVZ60"
+  ],
+  "at": "2026-11-03T04:12:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "email": "dphaener@gmail.com",
+          "name": "Darin Haener"
+        },
+        "handle": "dphaener",
+        "id": "01M6FSQCPYE5Q9AVACX33YAHSB",
+        "key": null,
+        "kind": "actor",
+        "node": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6FSQCPYE5Q9AVACX3KSSTXF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6FSQDG21KR30QMEBQH7KNJ3",
+  "type": "ops",
+  "v": 1
+}

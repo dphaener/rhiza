@@ -2301,6 +2301,7 @@
 - [claude-code-444747ad](actor/claude-code-444747ad.md)
 - [claude-code-444d2da7](actor/claude-code-444d2da7.md)
 - [claude-code-44875865](actor/claude-code-44875865.md)
+- [claude-code-44a4bbde](actor/claude-code-44a4bbde.md)
 - [claude-code-44c82c88](actor/claude-code-44c82c88.md)
 - [claude-code-45122f9d](actor/claude-code-45122f9d.md)
 - [claude-code-452aeeb0](actor/claude-code-452aeeb0.md)
@@ -2527,6 +2528,7 @@
 - [claude-code-6ca8ded8](actor/claude-code-6ca8ded8.md)
 - [claude-code-6cafd9f5](actor/claude-code-6cafd9f5.md)
 - [claude-code-6cbe1f78](actor/claude-code-6cbe1f78.md)
+- [claude-code-6cd5e83f](actor/claude-code-6cd5e83f.md)
 - [claude-code-6cec01c3](actor/claude-code-6cec01c3.md)
 - [claude-code-6cf0be7d](actor/claude-code-6cf0be7d.md)
 - [claude-code-6d32ca0b](actor/claude-code-6d32ca0b.md)
@@ -3024,6 +3026,7 @@
 - [claude-code-ceac0af8](actor/claude-code-ceac0af8.md)
 - [claude-code-ceb39fac](actor/claude-code-ceb39fac.md)
 - [claude-code-cec4c5b5](actor/claude-code-cec4c5b5.md)
+- [claude-code-cedfc2a8](actor/claude-code-cedfc2a8.md)
 - [claude-code-ceffbbf2](actor/claude-code-ceffbbf2.md)
 - [claude-code-cf7d59bc](actor/claude-code-cf7d59bc.md)
 - [claude-code-cfad59fb](actor/claude-code-cfad59fb.md)
@@ -3216,6 +3219,7 @@
 - [claude-code-eea0e42d](actor/claude-code-eea0e42d.md)
 - [claude-code-eeeb19b0](actor/claude-code-eeeb19b0.md)
 - [claude-code-eef230e5](actor/claude-code-eef230e5.md)
+- [claude-code-eeffb9f4](actor/claude-code-eeffb9f4.md)
 - [claude-code-ef272d68](actor/claude-code-ef272d68.md)
 - [claude-code-ef797ba0](actor/claude-code-ef797ba0.md)
 - [claude-code-ef8faf9d](actor/claude-code-ef8faf9d.md)
@@ -3315,6 +3319,7 @@
 - [claude-code-orchestrator](actor/claude-code-orchestrator.md)
 - [claude-code-task-11](actor/claude-code-task-11.md)
 - [darin-haener](actor/darin-haener.md)
+- [dphaener](actor/dphaener.md)
 
 ## Retired
 

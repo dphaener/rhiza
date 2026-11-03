@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-03T04:12:27Z",
+  "body": {
+    "intent": "Fix: Claude Code sessions stop at the folder-trust prompt in a new git repo: before starting an interactive session, the claudecode adapter should set projects[<main checkout root>].hasTrustDialogAccepted=true in ~/.claude.json (as afk internal/provider/trust.go TrustFolder does), so new projects never need the owner to trust them",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6FSQG5W0V2D5PFJT8CHK3DV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6FSQG5W0V2D5PFJTA9R1YXZ",
+  "type": "open",
+  "v": 1
+}
