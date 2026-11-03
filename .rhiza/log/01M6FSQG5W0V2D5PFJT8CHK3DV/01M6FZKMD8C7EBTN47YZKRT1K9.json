@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "after": [
+    "01M6FWW1F90B7T7DS1XC4H3SMF"
+  ],
+  "at": "2026-11-03T05:55:12Z",
+  "body": {
+    "reason": "Owner accepted the folder-trust fix in the orchestrator session, 2026-11-03: 'Accept it'",
+    "rule": "owner"
+  },
+  "change_set": "01M6FSQG5W0V2D5PFJT8CHK3DV",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FZKMD8C7EBTN47YZKRT1K9",
+  "type": "accept",
+  "v": 1
+}
