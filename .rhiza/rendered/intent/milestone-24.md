@@ -25,6 +25,7 @@ Rhiza runs headless on a dedicated Linux VM: its daemon runs as a service beside
 - serves change set `01M6FENG43982SZMA5Q9VBGEVZ` (Move this repo's Rhiza installation to a dedicated Ubuntu VM on Proxmox, by an HTML runbook)
 - serves change set `01M6GDJW3R8PXW7QBAZVH0QS4W` (Bug requests' change sets get distinct titles: a bug's plan run opens its change set with the intent 'Fix <text>' rather than 'Fix: <text>', so its display title, branch and worktree name the bug instead of all being 'Fix')
 - serves change set `01M6GJ9GBCQD9GFCDSNR4BB13Q` (Serialize the three bug change sets titled Fix, so their ship runs never share cs/fix and rhiza.fix: the test-scripts fix waits for the resume fix)
+- serves change set `01M6H3TC786A6WVKRXC0WQ1N3K` (Agent panes close when their session finishes: every driver closes a finished session's pane at once (review checks, critic, fixers, plan steps), not at close-out)
 
 ## History
 
