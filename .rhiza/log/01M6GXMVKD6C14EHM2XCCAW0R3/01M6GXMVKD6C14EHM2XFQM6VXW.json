@@ -1,0 +1,15 @@
+{
+  "actor": "01M6GXH1K64MBDCGVQHFDE0TAK",
+  "after": [],
+  "at": "2026-11-03T14:40:13Z",
+  "body": {
+    "intent": "Constraint: Rhiza never writes or raises a machine's trust; the machine config ($XDG_CONFIG_HOME/rhiza/machine.toml) is changed only by hand, so no agent, run or daemon can lift the bypass refusal through rhiza (today only the trust-hand-edited decision and machine-show's acceptance guard this)",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6GXMVKD6C14EHM2XCCAW0R3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GXMVKD6C14EHM2XFQM6VXW",
+  "type": "open",
+  "v": 1
+}

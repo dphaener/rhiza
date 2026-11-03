@@ -1,0 +1,66 @@
+# A permission mode that bypasses the agent's checks needs trust = "dedicated"
+# in the machine config, $XDG_CONFIG_HOME/rhiza/machine.toml, read fresh at
+# each check: session start and session run (and so run start) accept it on a
+# dedicated machine, and refuse it with no file or a daily one, the error
+# naming the file. A refusal launches nothing.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+env XDG_CONFIG_HOME=$WORK/xdg
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Trust the machine' --title 'Trust' --json
+exec git add -A
+exec git commit -qm change
+
+# No machine config: refused, naming the file and the line.
+! exec rhiza session start --permission-mode bypassPermissions
+stderr 'bypasses the agent''s permission checks'
+stderr 'trust = "dedicated" in '${WORK@R}'/xdg/rhiza/machine\.toml'
+! exists $WORK/rex.log
+
+# Dedicated: a session starts and its run launches with the mode.
+mkdir $WORK/xdg/rhiza
+cp $WORK/dedicated.toml $WORK/xdg/rhiza/machine.toml
+exec rhiza session start --permission-mode bypassPermissions --json
+stdout '"permission_mode": "bypassPermissions"'
+exists $WORK/rex.log
+exec rhiza session ls --json
+stdout '"id": "([0-9a-f-]{36})"'
+exec sh -c 'rhiza session ls --json | sed -n "s/.*\"id\": \"\\([0-9a-f-]*\\)\".*/\\1/p" | head -1 > $WORK/sid'
+exec sh -c 'rhiza session run $(cat $WORK/sid)'
+exec cat $WORK/claude.log
+stdout 'bypassPermissions'
+rm $WORK/claude.log
+
+# The file changes to daily between start and run: run refuses, launches
+# nothing.
+cp $WORK/daily.toml $WORK/xdg/rhiza/machine.toml
+! exec sh -c 'rhiza session run $(cat $WORK/sid)'
+stderr 'trust = "dedicated" in '${WORK@R}'/xdg/rhiza/machine\.toml'
+! exists $WORK/claude.log
+
+# A file that cannot be read is refused too, naming the file.
+cp $WORK/bad.toml $WORK/xdg/rhiza/machine.toml
+! exec rhiza session start --permission-mode bypassPermissions
+stderr 'machine config '${WORK@R}'/xdg/rhiza/machine\.toml'
+
+-- bin/rex --
+#!/bin/sh
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+echo "$@" >> "$WORK/rex.log"
+-- bin/claude --
+#!/bin/sh
+echo "$@" >> "$WORK/claude.log"
+exit 0
+-- dedicated.toml --
+trust = "dedicated"
+-- daily.toml --
+trust = "daily"
+-- bad.toml --
+trust = "root"

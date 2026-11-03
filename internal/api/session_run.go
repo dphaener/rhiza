@@ -153,7 +153,9 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 			WithNext(sessionStartNext)
 	}
 	if a.Bypass(rec.PermissionMode) {
-		return nil, bypassRefused(rec.PermissionMode)
+		if err := bypassCheck(ctx, rec.PermissionMode); err != nil {
+			return nil, err
+		}
 	}
 	self := ctx.Self
 	if self == "" {

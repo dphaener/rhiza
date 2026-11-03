@@ -14,12 +14,13 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/machine"
 )
 
 func init() {
 	register(Operation{
 		Name:     "health",
-		Summary:  "Report the daemon, autonomy settings, free disk, the main checkout, inbox, queued requests, roadmap and rhiza check, each part ok, warn or bad; exit 1 when any part is bad",
+		Summary:  "Report the daemon, autonomy settings, the machine trust, free disk, the main checkout, inbox, queued requests, roadmap and rhiza check, each part ok, warn or bad; exit 1 when any part is bad",
 		Request:  reflect.TypeFor[HealthRequest](),
 		Response: reflect.TypeFor[HealthResponse](),
 		Run:      runHealth,
@@ -37,6 +38,7 @@ const (
 const (
 	HealthDaemon   = "daemon"
 	HealthAutonomy = "autonomy"
+	HealthMachine  = "machine"
 	HealthDisk     = "disk"
 	HealthMain     = "main"
 	HealthInbox    = "inbox"
@@ -50,7 +52,7 @@ type HealthRequest struct{}
 
 // HealthPart is one part of the system and its state.
 type HealthPart struct {
-	Part    string   `json:"part" enum:"daemon,autonomy,disk,main,inbox,requests,roadmap,check" desc:"The part"`
+	Part    string   `json:"part" enum:"daemon,autonomy,machine,disk,main,inbox,requests,roadmap,check" desc:"The part"`
 	State   string   `json:"state" enum:"ok,warn,bad" desc:"ok, warn (worth a look) or bad (rhiza health exits 1)"`
 	Summary string   `json:"summary" desc:"One line on the part's state"`
 	Detail  []string `json:"detail" desc:"More lines on the part, such as each setting or each count; empty when none"`
@@ -60,7 +62,7 @@ type HealthPart struct {
 // HealthResponse is the report.
 type HealthResponse struct {
 	State string       `json:"state" enum:"ok,warn,bad" desc:"The worst state of any part"`
-	Parts []HealthPart `json:"parts" desc:"Every part, in a fixed order: daemon, autonomy, disk, main, inbox, requests, roadmap, check"`
+	Parts []HealthPart `json:"parts" desc:"Every part, in a fixed order: daemon, autonomy, machine, disk, main, inbox, requests, roadmap, check"`
 }
 
 // ExitCode is 1 when a part is bad, else 0.
@@ -104,6 +106,7 @@ func runHealth(ctx *Ctx, _ any) (any, error) {
 	parts := []HealthPart{
 		healthDaemon(ctx),
 		healthAutonomy(settings, serr),
+		healthMachine(ctx),
 		healthDisk(ctx, settings, serr),
 		healthMain(ctx),
 		healthInbox(ctx),
@@ -181,6 +184,26 @@ func healthAutonomy(settings []Setting, err error) HealthPart {
 		p.Next = "rhiza daemon set rhiza.daemon.paused false"
 	}
 	return p
+}
+
+// healthMachine is ok with the machine's trust and its file, daily when
+// there is no machine config, and warn naming the file when it cannot be
+// read.
+func healthMachine(ctx *Ctx) HealthPart {
+	path := machine.Path(ctxGetenv(ctx), ctx.Home)
+	c, err := machine.Read(path)
+	if err != nil {
+		p := HealthPart{Part: HealthMachine, State: HealthWarn, Summary: "could not be read: " + err.Error()}
+		if path != "" {
+			p.Detail = append(p.Detail, "machine config "+path)
+		}
+		return p
+	}
+	if !machineFileExists(path) {
+		return HealthPart{Part: HealthMachine, State: HealthOK, Summary: "trust daily (no machine config)",
+			Detail: []string{"it would be " + path}}
+	}
+	return HealthPart{Part: HealthMachine, State: HealthOK, Summary: "trust " + c.Trust + " (from " + path + ")"}
 }
 
 // healthDisk is bad when free space is under the daemon's minimum, so the

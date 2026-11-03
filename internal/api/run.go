@@ -539,7 +539,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := checkAgentSteps(def, r.PermissionMode, r.Agent, r.Autonomous, runStartNext); err != nil {
+	if err := checkAgentSteps(ctx, def, r.PermissionMode, r.Agent, r.Autonomous, runStartNext); err != nil {
 		return nil, err
 	}
 	// A request's run takes the ID the daemon drew for it: check it before
@@ -845,7 +845,7 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 	}
 	// Start checked the agent steps; check again, since the journal is a
 	// file anyone can edit.
-	if err := checkAgentSteps(def, st.PermissionMode, st.Agent, st.Autonomous, "rhiza run status "+j.ID); err != nil {
+	if err := checkAgentSteps(ctx, def, st.PermissionMode, st.Agent, st.Autonomous, "rhiza run status "+j.ID); err != nil {
 		return nil, err
 	}
 	if retryStep != "" {
@@ -1300,14 +1300,14 @@ func loadWorkflow(root, path, ref string) (*workflow.Definition, []byte, error) 
 // launches it, and only on an agent session's question. A leaves step's
 // builder and verifier, and a checks step's checks, critic, fixer and
 // verifier, are checked as agent steps are.
-func checkAgentSteps(def *workflow.Definition, mode, agent string, autonomous bool, next string) error {
+func checkAgentSteps(ctx *Ctx, def *workflow.Definition, mode, agent string, autonomous bool, next string) error {
 	agents := false
 	for _, name := range def.Order {
 		s := def.Steps[name]
 		switch s.Kind {
 		case workflow.KindAgent:
 			agents = true
-			if err := checkAgentStep(s, "an agent step", mode, agent, next); err != nil {
+			if err := checkAgentStep(ctx, s, "an agent step", mode, agent, next); err != nil {
 				return err
 			}
 		case workflow.KindLeaves:
@@ -1315,7 +1315,7 @@ func checkAgentSteps(def *workflow.Definition, mode, agent string, autonomous bo
 			for _, role := range []string{workflow.RoleBuilder, workflow.RoleVerifier} {
 				r := s.Role(role)
 				rs := workflow.Step{Name: s.Name, Agent: r.Agent, PermissionMode: r.PermissionMode}
-				if err := checkAgentStep(rs, "a leaves step whose "+role+" runs", mode, agent, next); err != nil {
+				if err := checkAgentStep(ctx, rs, "a leaves step whose "+role+" runs", mode, agent, next); err != nil {
 					return err
 				}
 			}
@@ -1323,34 +1323,34 @@ func checkAgentSteps(def *workflow.Definition, mode, agent string, autonomous bo
 			agents = true
 			for _, c := range s.Checks {
 				rs := workflow.Step{Name: s.Name, Agent: c.Agent, PermissionMode: c.PermissionMode}
-				if err := checkAgentStep(rs, "a checks step whose check "+c.Name+" runs", mode, agent, next); err != nil {
+				if err := checkAgentStep(ctx, rs, "a checks step whose check "+c.Name+" runs", mode, agent, next); err != nil {
 					return err
 				}
 			}
 			for _, role := range []string{workflow.RoleCritic, workflow.RoleFixer, workflow.RoleVerifier} {
 				r := s.Role(role)
 				rs := workflow.Step{Name: s.Name, Agent: r.Agent, PermissionMode: r.PermissionMode}
-				if err := checkAgentStep(rs, "a checks step whose "+role+" runs", mode, agent, next); err != nil {
+				if err := checkAgentStep(ctx, rs, "a checks step whose "+role+" runs", mode, agent, next); err != nil {
 					return err
 				}
 			}
 		}
 	}
 	if autonomous && agents {
-		return checkAgentStep(def.Arbiter(), "the arbiter step", mode, agent, next)
+		return checkAgentStep(ctx, def.Arbiter(), "the arbiter step", mode, agent, next)
 	}
 	return nil
 }
 
 // checkAgentStep checks one step's effective adapter and permission mode
 // for checkAgentSteps; what names the step's role in the message.
-func checkAgentStep(s workflow.Step, what, mode, agent, next string) error {
+func checkAgentStep(ctx *Ctx, s workflow.Step, what, mode, agent, next string) error {
 	req := agentStepRequest(s, mode, agent)
 	if req.PermissionMode == "" {
 		return Usagef("step %q is %s with no permission mode: give --permission-mode or set permission_mode on the step", s.Name, what).
 			WithNext(next)
 	}
-	if _, err := startAdapter(req); err != nil {
+	if _, err := startAdapter(ctx, req); err != nil {
 		e := AsError(err)
 		return &Error{Code: e.Code, Message: fmt.Sprintf("step %q: %s", s.Name, e.Message), Next: next}
 	}

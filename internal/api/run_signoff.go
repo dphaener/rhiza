@@ -192,7 +192,7 @@ func (sr signoffRun) signoff(ctx *Ctx, e run.Entry, changes string, foreground b
 		return resp, nil
 	}
 	st := sr.state
-	if err := checkAgentSteps(sr.def, st.PermissionMode, st.Agent, st.Autonomous, "rhiza run status "+sr.j.ID); err != nil {
+	if err := checkAgentSteps(ctx, sr.def, st.PermissionMode, st.Agent, st.Autonomous, "rhiza run status "+sr.j.ID); err != nil {
 		return RunSignoffResponse{}, err
 	}
 	if err := canRun(ctx, sr.def); err != nil {

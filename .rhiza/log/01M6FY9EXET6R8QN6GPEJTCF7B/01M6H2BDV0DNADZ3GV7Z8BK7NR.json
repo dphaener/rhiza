@@ -1,0 +1,86 @@
+{
+  "actor": "01M6H23S7YZPDNS46N2H6NB950",
+  "after": [
+    "01M6H22F3DWSY6KC448KHRT7HG"
+  ],
+  "at": "2026-11-03T16:02:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b03a5a16, built with go build -o $TMPDIR/rhiza-x ./cmd/rhiza and run by hand in scratch repos with fake rex and claude on PATH and HOME/XDG_CONFIG_HOME pointed at scratch dirs: with no file and with trust = \"daily\", session start --permission-mode bypassPermissions and run start --workflow (one agent step) --permission-mode bypassPermissions (with and without --autonomous) exit 1 with 'needs a machine with trust = \"dedicated\" in <xdg>/rhiza/machine.toml', and neither rex nor claude is invoked. With trust = \"dedicated\", session start succeeds, session run launches claude with --permission-mode bypassPermissions, and run start runs its agent step to succeeded with claude launched with bypassPermissions. After the file is switched to daily between session start and session run, session run is refused naming the file and claude is not launched. trust = \"root\" refuses bypass naming the file; acceptEdits still starts. The cycle-1 finding is closed: with HOME and XDG_CONFIG_HOME both unset and trust = \"dedicated\" planted at both ./$XDG_CONFIG_HOME/rhiza/machine.toml and ./.config/rhiza/machine.toml in the cwd, session start and session run both refuse bypass and nothing is launched. go test for machine-trust-bypass, autonomous-permissions and TestBypassCheckNoConfigPathIsDaily passes."
+        },
+        "handle": "bypass-on-dedicated-qa-2",
+        "id": "01M6H29QZ7K5C5MS4TT99756J7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6H29QZ7K5C5MS4TT67EHVPE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6H29QZ7K5C5MS4TT67EHVPE",
+        "id": "01M6H29YRVPAEPRB45FY0SEX7C",
+        "link": "01M6H29YRVPAEPRB45FX6GNXGZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G0F9H1ZR0W65DV8FZHZK47",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b03a5a16, built with go build -o $TMPDIR/rhiza-x ./cmd/rhiza and run by hand in scratch repos with fake rex and claude on PATH and HOME/XDG_CONFIG_HOME pointed at scratch dirs: rhiza machine show with no file prints 'trust: daily (no machine config; it would be <xdg>/rhiza/machine.toml)', and machine show --json is byte-identical to rhiza api call machine.show; with trust = \"dedicated\" it prints 'trust: dedicated (from <path>)'; with trust = \"root\" it exits 1 naming the file. With XDG_CONFIG_HOME empty it falls back to <home>/.config/rhiza/machine.toml. With HOME and XDG_CONFIG_HOME both unset it prints daily but an empty path ('it would be )')."
+        },
+        "handle": "machine-show-qa-2",
+        "id": "01M6H2A4CCSAVH2S5986GW1X69",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6H2A4CCSAVH2S59848XS9ZD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6H2A4CCSAVH2S59848XS9ZD",
+        "id": "01M6H2ACF1WP5CT48AZCAYBBX3",
+        "link": "01M6H2ACF1WP5CT48AZAPBWMZR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G0FSSB90F7DHTX1VVZQ86N",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b03a5a16, built with go build -o $TMPDIR/rhiza-x ./cmd/rhiza and run by hand in scratch repos with fake rex and claude on PATH and HOME/XDG_CONFIG_HOME pointed at scratch dirs: rhiza health --json shows the machine part ok 'trust daily (no machine config)' with no file and with HOME and XDG_CONFIG_HOME unset, human health shows 'ok machine trust dedicated (from <path>)' with trust = \"dedicated\", and with trust = \"root\" the part is warn 'could not be read: machine config <path>: trust = \"root\": want \"dedicated\" or \"daily\"'."
+        },
+        "handle": "health-machine-part-qa-2",
+        "id": "01M6H2AMW9NF3C16V6GBHWRTSY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6H2AMW9NF3C16V6G7QPEVGG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6H2AMW9NF3C16V6G7QPEVGG",
+        "id": "01M6H2AZV7XMB7CJM0Z7JHBQB7",
+        "link": "01M6H2AZV7XMB7CJM0Z6HK7WVW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G0G7HP57PFFNW4WHZQJAA5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FY9EXET6R8QN6GPEJTCF7B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6H2BDV0DNADZ3GV7Z8BK7NR",
+  "type": "ops",
+  "v": 1
+}

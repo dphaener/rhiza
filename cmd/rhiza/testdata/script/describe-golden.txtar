@@ -2444,7 +2444,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "parts": {
-            "description": "Every part, in a fixed order: daemon, autonomy, disk, main, inbox, requests, roadmap, check",
+            "description": "Every part, in a fixed order: daemon, autonomy, machine, disk, main, inbox, requests, roadmap, check",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -2464,6 +2464,7 @@ cmp stdout describe.golden.json
                   "enum": [
                     "daemon",
                     "autonomy",
+                    "machine",
                     "disk",
                     "main",
                     "inbox",
@@ -2513,7 +2514,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Report the daemon, autonomy settings, free disk, the main checkout, inbox, queued requests, roadmap and rhiza check, each part ok, warn or bad; exit 1 when any part is bad",
+      "summary": "Report the daemon, autonomy settings, the machine trust, free disk, the main checkout, inbox, queued requests, roadmap and rhiza check, each part ok, warn or bad; exit 1 when any part is bad",
       "write": false
     },
     {
@@ -6367,6 +6368,44 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "List nodes, filtered by kind and parent, a page at a time",
+      "write": false
+    },
+    {
+      "name": "machine.show",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "description": "Whether the machine config file exists; false means trust is daily by default",
+            "type": "boolean"
+          },
+          "path": {
+            "description": "The machine config file, whether or not it exists",
+            "type": "string"
+          },
+          "trust": {
+            "description": "The machine's trust: dedicated when its config says so, else daily",
+            "enum": [
+              "daily",
+              "dedicated"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "file",
+          "path",
+          "trust"
+        ],
+        "type": "object"
+      },
+      "summary": "Show the machine's trust and the machine config file it came from, daily with no machine config; writes nothing",
       "write": false
     },
     {
