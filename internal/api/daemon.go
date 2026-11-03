@@ -838,7 +838,9 @@ func daemonCandidates(res planResult, hasLeaves func(id.ID) bool) ([]string, []d
 // daemonDetach starts rhiza with args as a detached child in the repo, outside
 // Rex, with its output appended to the log file name under <git common
 // dir>/rhiza/logs. The child's agent steps open their tabs in the repo's Rex
-// session, which the daemon makes sure of first.
+// session, which the daemon makes sure of first and hands the child as its
+// REX_SESSION; the child has no REX_BLOCK, since it sits in no tab of its
+// own. A run driven with --foreground by hand keeps the caller's session.
 func daemonDetach(ctx *Ctx, what, name string, args []string) error {
 	if ctx.Detach == nil || ctx.Self == "" {
 		return Errorf("daemon cannot start %s: no rhiza path", what)
@@ -850,7 +852,7 @@ func daemonDetach(ctx *Ctx, what, name string, args []string) error {
 	if err != nil {
 		return err
 	}
-	p := Program{Name: ctx.Self, Args: args, Dir: ctx.Root, Env: []string{"REX_SESSION=" + ctx.RexSession}}
+	p := Program{Name: ctx.Self, Args: args, Dir: ctx.Root, Env: []string{"REX_SESSION=" + ctx.RexSession}, Unset: []string{"REX_BLOCK"}}
 	if err := ctx.Detach(p, filepath.Join(common, "rhiza", "logs", name+".log")); err != nil {
 		return Errorf("start %s: %v", what, err)
 	}

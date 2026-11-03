@@ -63,16 +63,22 @@ exec sh -c 'grep "^close " $WORK/rex.log | sed "s/^close //" | sort'
 cmp stdout $WORK/opened
 exists .git/rhiza/logs/01M5PWGMARA1WR6BD0MEF4Y76P.log
 
-# A headless run started in a shell that is in another Rex session still
-# opens its tabs in rhiza-repo, not in the caller's session.
+# A run queued and started headless from a shell that is in another Rex
+# session, inside a tab of its own, still opens its tabs in rhiza-repo, not
+# in the caller's session, and its child sits in no block of the caller's.
 rm $WORK/rex.log
 env REX_SESSION=session:mine
+env REX_BLOCK=block:mine
 exec sh -c 'rhiza change new Other --title Other --json > $WORK/other.json'
 exec rhiza add capability c
 exec git add -A
 exec git commit -qm other
-exec sh -c 'rhiza run start --foreground --permission-mode manual --json > $WORK/other-run.json; echo exit=$?'
-stdout '^exit=0$'
+exec rhiza run start --permission-mode manual
+stdout 'no daemon runs, so it waits for one'
+exec rhiza daemon --permission-mode manual --once
+stdout -count=1 '^Started a run of '
+exec sh -c 'for i in $(seq 1 600); do if [ "$(grep "^close " $WORK/rex.log 2>/dev/null | wc -l)" -ge 2 ] && ! rhiza run ls --json | grep -q "\"live\": true"; then break; fi; sleep 0.05; done; cat $WORK/rex.log'
+! stdout 'block:mine'
 exec cat $WORK/rex.log
 stdout -count=2 '^window new -s rhiza-repo repo: Other · run [0-9A-Z]{26} · build · '
 ! stdout 'session:mine'
