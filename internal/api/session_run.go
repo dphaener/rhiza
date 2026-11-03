@@ -11,11 +11,14 @@ package api
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"io/fs"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
@@ -184,6 +187,11 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 	var code int
 	var paused []string
 	for pause := 0; ; pause++ {
+		// A new folder makes the agent stop at its trust prompt: trust
+		// the folders before every start, a resumed one too.
+		if warn := trustFolders(ctx, a, rec); warn != "" {
+			paused = append(paused, warn)
+		}
 		base := transcriptLen(ctx, a, rec.ID)
 		p, err := ctx.Start(Program{Name: argv[0], Args: argv[1:], Dir: agentDir(rec), Env: env, Unset: unset, Terminal: true})
 		if err != nil {
@@ -928,4 +936,60 @@ func (r SessionHookResponse) Human(w io.Writer) {
 		w.Write(r.reply)
 		io.WriteString(w, "\n")
 	}
+}
+
+// trustFolders marks the main checkout root and the session's working
+// directory trusted by a's agent, when a can. A failure is a warning: the
+// agent then asks the owner itself.
+func trustFolders(ctx *Ctx, a adapter.Adapter, rec session.Record) string {
+	t, ok := a.(adapter.Truster)
+	if !ok {
+		return ""
+	}
+	file := t.TrustFile(ctxGetenv(ctx))
+	if file == "" {
+		return ""
+	}
+	dirs := []string{agentDir(rec)}
+	if common, err := gitCommonDir(ctx); err == nil {
+		dirs = append([]string{filepath.Dir(common)}, dirs...)
+	}
+	warn := func(err error) string {
+		return fmt.Sprintf("trust the session's folders in %s: %v", file, err)
+	}
+	cur, err := os.ReadFile(file)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return warn(err)
+	}
+	out, err := t.Trust(cur, dirs)
+	if err != nil {
+		return warn(err)
+	}
+	if bytes.Equal(cur, out) {
+		return ""
+	}
+	mode := os.FileMode(0o600)
+	if fi, err := os.Stat(file); err == nil {
+		mode = fi.Mode().Perm()
+	}
+	tmp, err := os.CreateTemp(filepath.Dir(file), ".claude.json.rhiza-*")
+	if err != nil {
+		return warn(err)
+	}
+	defer os.Remove(tmp.Name())
+	_, werr := tmp.Write(out)
+	cerr := tmp.Close()
+	if werr == nil {
+		werr = cerr
+	}
+	if werr == nil {
+		werr = os.Chmod(tmp.Name(), mode)
+	}
+	if werr == nil {
+		werr = os.Rename(tmp.Name(), file)
+	}
+	if werr != nil {
+		return warn(werr)
+	}
+	return ""
 }

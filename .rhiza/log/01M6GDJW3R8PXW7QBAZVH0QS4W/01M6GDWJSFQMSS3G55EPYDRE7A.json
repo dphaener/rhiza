@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6GDWBRXX5PAZPYYVRJ8KEAV"
+  ],
+  "at": "2026-11-03T10:04:46Z",
+  "body": {
+    "reason": "Orchestrator hotfix as the owner's proxy (standing instruction 'act on my behalf', 2026-11-03): concurrent bug plan runs collide on cs/fix",
+    "rule": "owner"
+  },
+  "change_set": "01M6GDJW3R8PXW7QBAZVH0QS4W",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6GDWJSFQMSS3G55EPYDRE7A",
+  "type": "accept",
+  "v": 1
+}

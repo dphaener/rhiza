@@ -50,10 +50,12 @@ type Request struct {
 }
 
 // Intent is the one-line intent the request's plan run opens its change set
-// with: a bug's text prefixed "Fix: ".
+// with: a bug's text prefixed "Fix " (no colon, so the change set's display
+// title, its first clause, names the bug rather than being "Fix" for every
+// bug, and two bugs planned at once get distinct branches and worktrees).
 func (r Request) Intent() string {
 	if r.Kind == KindBug {
-		return "Fix: " + r.Text
+		return "Fix " + r.Text
 	}
 	return r.Text
 }

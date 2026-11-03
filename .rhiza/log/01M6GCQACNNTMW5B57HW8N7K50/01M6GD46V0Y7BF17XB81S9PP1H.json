@@ -1,0 +1,60 @@
+{
+  "actor": "01M6GCR1SMJB2ZA4TE2S30CQKB",
+  "after": [
+    "01M6GD354QC239P5YDMKEEE0VD"
+  ],
+  "at": "2026-11-03T09:51:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6GCZW3NH9ZBYN4389ZGDWCB",
+        "id": "01M6GD3B3BJHX4ACZGP304X0K1",
+        "link": "01M6GD3B3BJHX4ACZGP161NXBT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GD2FJ12DMGE6Y345CJDJ53",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript resumes an interrupted plan run whose record change set has landed and the run goes on past its stopped step; in the same suite rhiza run resume still exits non-zero naming the state and rhiza run abandon for a plan run whose change set is withdrawn and for a build run whose change set has landed (run-resume-unaccepted.txtar keeps passing), each journal unchanged",
+          "statement": "rhiza run resume continues an unfinished plan-workflow run whose change set has landed (a plan run lands its record during the interview), while it still refuses a plan run whose change set is rejected, withdrawn or superseded, and any other workflow's run whose change set is no longer in flight"
+        },
+        "handle": "plan-run-resumes-landed-record",
+        "id": "01M6GD3GB66TDYWWHF26HPR3PP",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6GD3GB66TDYWWHF23GMTFZE",
+        "op": "node.create",
+        "parent": "01M5WSGDEE854PFE4BXJM13CWS"
+      },
+      {
+        "decision": null,
+        "from": "01M6GD3GB66TDYWWHF23GMTFZE",
+        "id": "01M6GD3R1MPWJQ4VSNDDG1PW4N",
+        "link": "01M6GD3R1MPWJQ4VSNDDFWY28X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GCZW3NH9ZBYN4389ZGDWCB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6GD3GB66TDYWWHF23GMTFZE",
+        "id": "01M6GD3XF9C9SP66BXW90FVTKF",
+        "link": "01M6GD3XF9C9SP66BXW6XG3QVY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6857YNN8RZG1ZHVPBF9YP4J",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6GCQACNNTMW5B57HW8N7K50",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GD46V0Y7BF17XB81S9PP1H",
+  "type": "ops",
+  "v": 1
+}

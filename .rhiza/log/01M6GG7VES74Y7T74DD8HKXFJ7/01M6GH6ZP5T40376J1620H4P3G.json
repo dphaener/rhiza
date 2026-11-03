@@ -1,0 +1,44 @@
+{
+  "actor": "01M6GH4QHH8H46Y3E8DJ5806H6",
+  "after": [
+    "01M6GGXWH9GJ4B7EVKSG5CJVV0"
+  ],
+  "at": "2026-11-03T11:02:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question reports that on the Ubuntu VM (sh is dash) every daemon script already passes. The scripts confirm why: daemon-lock.txtar backgrounds the daemon with testscript's own `exec rhiza daemon ... &name&`, which runs no shell at all; the sh -c lines there are foreground and use only POSIX constructs; the fake rex scripts that background a daemon already use exec \"$@\". So the intent's premise that background daemons need sh -c '... exec rhiza daemon ...' does not hold for the current code, and rewriting passing scripts would be churn with no failing case to check against. The intent's goal is that make check passes the same on macOS and Ubuntu; the free-disk guard is the real host dependency, so the change set's work belongs there.",
+          "statement": "This change set makes no shell-portability rewrite. It fixes only the host free-disk dependency, through the testscript Setup default decided in test-setup-default-free-bytes. The dash half of the intent is treated as already satisfied: change a script's shell only if one is shown to fail under dash, and then only that script.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "decision-shell-portability",
+        "id": "01M6GGRTK77A4WVXXV5BJBG40A",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6GGRTK77A4WVXXV5BBZVYR0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "The testscript Setup in cmd/rhiza/main_test.go sets RHIZA_TEST_FREE_BYTES=1099511627776 beside RHIZA_TEST_NOW; a script that sets no RHIZA_TEST_FREE_BYTES runs rhiza health --json and sees the 1 TiB figure for disk; no script clears the variable to empty: daemon-picks.txtar, which ran `env RHIZA_TEST_FREE_BYTES=` after its disk-guard block, resets it to 1099511627776 instead, so its later runs never read the host's disk; health, daemon-notify-disk-low and daemon-picks pass, and with that reset line pointed at a value below 10G daemon-picks fails, showing the rest of the script uses the variable rather than the host's disk",
+          "statement": "Every test script sees a fixed 1 TiB of free disk unless it sets RHIZA_TEST_FREE_BYTES itself, so the daemon's minFree guard never reads the host's disk and make check passes the same whatever free space TMPDIR has"
+        },
+        "handle": "scripts-free-disk-hermetic",
+        "id": "01M6GGX8QP23PVT25E604J8GFP",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6GGX8QP23PVT25E5XDZ7X49",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      }
+    ]
+  },
+  "change_set": "01M6GG7VES74Y7T74DD8HKXFJ7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GH6ZP5T40376J1620H4P3G",
+  "type": "ops",
+  "v": 1
+}

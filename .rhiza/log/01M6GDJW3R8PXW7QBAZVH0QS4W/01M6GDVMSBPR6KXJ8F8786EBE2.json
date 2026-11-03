@@ -1,0 +1,90 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6GDJW3R8PXW7QBAZZ75W0NX"
+  ],
+  "at": "2026-11-03T10:04:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6CS230463DT24PWBNWAXMG2",
+        "handle": null,
+        "id": "01M6GDT2C7CCT830D82QSFWSAN",
+        "node": "01M6CS230463DT24PWBJCPWD9Q",
+        "op": "node.update",
+        "set": {
+          "acceptance": "plan-requests.txtar with a fake rex: request queues an item shown queued by request ls; daemon --once starts run start --workflow plan --new with the request's text (a bug's prefixed \"Fix \", so its title names the bug, a milestone's with --milestone), --autonomous only with plan auto, and request ls then shows planning with the run; when the run's journal names the planned change set, request ls shows planned with it; paused starts nothing; describe-golden.txtar is regenerated"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6D4SYDB1P7NX7DGKVK1JJHQ",
+        "handle": null,
+        "id": "01M6GDT9VK53AY69FGK8KV8PR3",
+        "node": "01M6D4SYDB1P7NX7DGKT0D19HM",
+        "op": "node.update",
+        "set": {
+          "acceptance": "plan-requests.txtar with a fake rex: request queues an item shown queued by request ls; daemon --once starts run start --workflow plan --new with the request's text (a bug's prefixed \"Fix \", so its title names the bug, a milestone's with --milestone), --autonomous only with plan auto, and request ls then shows planning with the run; when the run's journal names the planned change set, request ls shows planned with it; paused starts nothing; the roadmap app's n and m keys then reach a working request command; describe-golden.txtar is regenerated"
+        },
+        "unset": []
+      },
+      {
+        "fields": {
+          "options": [
+            "Fix <text> (no colon)",
+            "explicit title per request",
+            "slug with a change-set ID suffix"
+          ],
+          "statement": "A bug request's plan run opens its change set with the intent \"Fix <text>\", not \"Fix: <text>\": the display title is the intent's first clause, so the colon made every bug's title \"Fix\", and two bug plan runs at once shared the branch cs/fix and worktree rhiza.fix (plan runs 01M6GCPN0H and 01M6GCQ7NJ collided on 2026-11-03; one failed at its gate)",
+          "wording": "the orchestrator's, deciding as the owner's proxy under the owner's standing instruction \"act on my behalf\" (2026-11-03); assumed, not the owner's words"
+        },
+        "handle": "bug-intent-fix-no-colon",
+        "id": "01M6GDTGZ5BC6QNNN01CCET2T7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6GDTGZ5BC6QNNN01956K5T0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6D4SYDB1P7NX7DGKT0D19HM",
+        "id": "01M6GDTRAS966JEWRXWM6HT1PM",
+        "link": "01M6GDTRAS966JEWRXWHRSP3R8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GDTGZ5BC6QNNN01956K5T0",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6GDTGZ5BC6QNNN01956K5T0",
+        "id": "01M6GDTY8JVJGBCQAWGQX50FGT",
+        "link": "01M6GDTY8JVJGBCQAWGQQZ2GC0",
+        "note": "changes requests-queue-local's 'Fix:' prefix to 'Fix '",
+        "op": "link.create",
+        "to": "01M6CS0MA6ZDN8MQ2GMYPA19ET",
+        "type": "relates-to"
+      },
+      {
+        "fields": {
+          "acceptance": "TestBugRequestTitlesAreDistinct (internal/api): two bug requests' intents give display titles that are not \"Fix\" and have distinct slugs; plan-requests.txtar shows the daemon starting run start --new \"Fix Login fails\"; describe-golden.txtar regenerated",
+          "statement": "Each bug request's change set has its own title, so bug plan runs at once never share a branch or worktree"
+        },
+        "handle": "bug-request-titles",
+        "id": "01M6GDV6ERT7J1R6WGN8BHYZJD",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6GDV6ERT7J1R6WGN7VH2SC1",
+        "op": "node.create",
+        "parent": "01M6D4SYDB1P7NX7DGKT0D19HM"
+      }
+    ]
+  },
+  "change_set": "01M6GDJW3R8PXW7QBAZVH0QS4W",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6GDVMSBPR6KXJ8F8786EBE2",
+  "type": "ops",
+  "v": 1
+}

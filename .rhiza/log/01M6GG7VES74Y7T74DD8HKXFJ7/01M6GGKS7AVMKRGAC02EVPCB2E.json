@@ -1,0 +1,41 @@
+{
+  "actor": "01M6GGGMA0ANV7213VCWMREWZT",
+  "after": [
+    "01M6GGG9JDHKBCJ0KTNWFP8Z2Z"
+  ],
+  "at": "2026-11-03T10:52:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "repoFreeBytes already honours RHIZA_TEST_FREE_BYTES only alongside RHIZA_TEST_NOW, which Setup always sets, so a Setup default makes every daemon script hermetic in one place instead of patching ~12 scripts and relying on future scripts to remember. This matches how Setup already makes HOME, git config, time and IDs hermetic (CLAUDE.md: deterministic scripts). Setting minFree 0 per script was rejected: it is again per-script, and it would skip the guard's code path rather than feed it a known figure. The scripts that test low disk already set the variable explicitly, so they keep working unchanged.",
+          "statement": "The testscript Setup in cmd/rhiza/main_test.go sets RHIZA_TEST_FREE_BYTES to a large default (1 TiB) for every script, next to RHIZA_TEST_NOW and RHIZA_TEST_SEED; scripts that exercise the low-disk guard (health, daemon-notify-disk-low) override it with env, and no script reads the host's real free disk",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "test-setup-default-free-bytes",
+        "id": "01M6GGJXKR6VPWTH7BVPFW3GPS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6GGJXKR6VPWTH7BVJN87SRP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GGJXKR6VPWTH7BVJN87SRP",
+        "id": "01M6GGKBJFH13DCVXR4N6M2VGW",
+        "link": "01M6GGKBJFH13DCVXR4KWS9G6M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GGG628MZGQBJ0FREHQQCVK",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6GG7VES74Y7T74DD8HKXFJ7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GGKS7AVMKRGAC02EVPCB2E",
+  "type": "ops",
+  "v": 1
+}

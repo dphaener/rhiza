@@ -1,0 +1,41 @@
+{
+  "actor": "01M6GCWS9WC7Y17BCYY7AH1C0V",
+  "after": [
+    "01M6GCWDG0E5XB4RMT97TTQKAT"
+  ],
+  "at": "2026-11-03T09:49:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Intent: plan-run-stops-open's change set served both milestone-4 and milestone-6; milestone-6 is the open milestone about the daemon running and planning its own PRs unattended, and a plan run that can never resume after the gate stops it is exactly what breaks unattended operation, so milestone-6 is the better single home. Narrowness: internal/api/run.go guards with changeset.State.Terminal(), which covers landed, rejected, withdrawn and superseded. Only landing is expected for a plan run (its record lands during the interview); a rejected, withdrawn or superseded change set still means the owner or the model abandoned the work, and resuming then would ship a dead plan. Keying on the workflow name, which run start --new already checks via planWorkflow, keeps build and review runs protected by the guard as before.",
+          "statement": "Change set 01M6GCQA serves milestone-6 (Rhiza runs unattended overnight). The exemption in run resume's change-set guard is narrow: a run of the plan workflow (def.Name == planWorkflow) whose change set is landed is let through; every other terminal state (rejected, withdrawn, superseded) still refuses a plan run, and runs of every other workflow keep the guard unchanged",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "plan-resume-landed-record-milestone-6",
+        "id": "01M6GCZW3NH9ZBYN438AKX2G4R",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6GCZW3NH9ZBYN4389ZGDWCB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GCZW3NH9ZBYN4389ZGDWCB",
+        "id": "01M6GD03HKZ4A08BYQ36KMS28C",
+        "link": "01M6GD03HKZ4A08BYQ32MRZSN1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6GCWANVBSDT4Y051JSJJWXP",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6GCQACNNTMW5B57HW8N7K50",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GD0C72ANK4E8FJ7E1TC7YK",
+  "type": "ops",
+  "v": 1
+}

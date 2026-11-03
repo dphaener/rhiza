@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-03T09:59:30Z",
+  "body": {
+    "intent": "Bug requests' change sets get distinct titles: a bug's plan run opens its change set with the intent 'Fix <text>' rather than 'Fix: <text>', so its display title, branch and worktree name the bug instead of all being 'Fix'",
+    "kind": "intention",
+    "sources": [],
+    "title": "Distinct bug request titles"
+  },
+  "change_set": "01M6GDJW3R8PXW7QBAZVH0QS4W",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6GDJW3R8PXW7QBAZZ75W0NX",
+  "type": "open",
+  "v": 2
+}

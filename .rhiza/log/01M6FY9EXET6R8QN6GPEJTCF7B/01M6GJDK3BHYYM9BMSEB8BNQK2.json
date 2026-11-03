@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6G0XJP0MY0XKFQ0N22JBD59"
+  ],
+  "at": "2026-11-03T11:23:58Z",
+  "body": {
+    "reason": "Orchestrator as the owner's proxy: the owner asked tonight for every session on this dedicated VM to run in bypass and to 'act on my behalf'; the plan (4 leaves) passed plan review",
+    "rule": "owner"
+  },
+  "change_set": "01M6FY9EXET6R8QN6GPEJTCF7B",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6GJDK3BHYYM9BMSEB8BNQK2",
+  "type": "accept",
+  "v": 1
+}

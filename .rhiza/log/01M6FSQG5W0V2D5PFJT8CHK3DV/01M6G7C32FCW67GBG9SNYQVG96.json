@@ -1,0 +1,40 @@
+{
+  "actor": "01M6G787E5S6J2PWH2JVVNDJWQ",
+  "after": [
+    "01M6FZKMD8C7EBTN47YZKRT1K9"
+  ],
+  "at": "2026-11-03T08:10:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 4bd51c50: read the diff (adapter.Truster; claudecode TrustFile/Trust; session run calls trustFolders before every ctx.Start inside the pause loop, after the --dry-run early return; atomic temp-file rename keeping the file mode). Ran go test -count=1 -run 'Trust|CommandWritesNoFile' -v ./internal/api ./internal/adapter/claudecode: all PASS. With a hermetic temp HOME and fake adapters these show: TestSessionRunTrustsFolders, the main checkout root and the worktree set to hasTrustDialogAccepted=true, while numStartups, theme, /other's allowedTools and the worktree's lastCost stay unchanged and mode stays 0600; TestSessionRunTrustHonoursConfigDirAndCreatesFile, CLAUDE_CONFIG_DIR/.claude.json is created when missing and HOME's file is left alone; TestSessionRunResumeTrustsAgain, after the config is removed during a usage-limit pause, the resumed start trusts both paths again; TestSessionRunTrustDryRunWritesNothing, HOME stays empty; TestCommandWritesNoFile, Adapter.Command writes nothing; plus TestTrust/TestTrustFile (idempotent, big numbers kept, broken JSON is a warning and is not rewritten). make fmt-check, vet and self-check pass. In go test ./..., only the wall-clock read-budget tests failed (api TestReadBudget, slice TestBudget, modelapp TestGeneratedModel): this 4-core host ran at load average 10-15 with other worktrees' checks running, and the diff touches no read path."
+        },
+        "handle": "claude-folder-trust-verified",
+        "id": "01M6G7AD5JS530APVVGGB47HHV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6G7AD4BCG45GR4558FW5C4V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6G7AD4BCG45GR4558FW5C4V",
+        "id": "01M6G7B3F9NJ3F51AXPS5ST1D8",
+        "link": "01M6G7B3F9NJ3F51AXPQ8SQ5RJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FWF2YX1F6WAGBT9JDYEZT5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FSQG5W0V2D5PFJT8CHK3DV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6G7C32FCW67GBG9SNYQVG96",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,137 @@
+{
+  "actor": "01M6FSQTV87DC0Y3DRCY09R0EW",
+  "after": [
+    "01M6FWFYJF0RCFJWYYXZNAXE4H"
+  ],
+  "at": "2026-11-03T05:01:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "m24-on-the-vm (Recommended)",
+            "m24-headless-runs"
+          ],
+          "picked": "m24-on-the-vm (Recommended)",
+          "question": "Which intent should the trust-prompt Fix serve? It serves none yet. m24-on-the-vm (Rhiza runs on the new VM, where each repo is new to Claude) fits best.",
+          "session": "6cd5e83f-56e1-4870-995e-01a19f9be0a3",
+          "statement": "Which intent should the trust-prompt Fix serve? It serves none yet. m24-on-the-vm (Rhiza runs on the new VM, where each repo is new to Claude) fits best. — m24-on-the-vm (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 6cd5e83f-56e1-4870-995e-01a19f9be0a3"
+        },
+        "handle": "answer-6cd5e83f-1",
+        "id": "01M6FWGTK9845FBB0PXGATN3JP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FWGTK66ESQJCG9Q4310ESN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FWGTK66ESQJCG9Q4310ESN",
+        "id": "01M6FWH0AAANSGNKGDHAWP719C",
+        "link": "01M6FWH0AAANSGNKGDH81P6DSD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FWDTQ4VASTE7MD19JV886K",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Optional adapter method (Recommended)",
+            "Inside Command"
+          ],
+          "picked": "Optional adapter method (Recommended)",
+          "question": "Where should the trust write go? Today Adapter.Command is pure (it only builds argv), and session run calls ctx.Start right after it.",
+          "session": "6cd5e83f-56e1-4870-995e-01a19f9be0a3",
+          "statement": "Where should the trust write go? Today Adapter.Command is pure (it only builds argv), and session run calls ctx.Start right after it. — Optional adapter method (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 6cd5e83f-56e1-4870-995e-01a19f9be0a3"
+        },
+        "handle": "answer-6cd5e83f-2",
+        "id": "01M6FWH59C2EPHHMB0KF9E4777",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FWH59C2EPHHMB0KC18AD4X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FWH59C2EPHHMB0KC18AD4X",
+        "id": "01M6FWHAPK2M15CG18DKRZ1P5Y",
+        "link": "01M6FWHAPK2M15CG18DK52DYWH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FWDTQ4VASTE7MD19JV886K",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Main root + session dir (Recommended)",
+            "Main checkout root only"
+          ],
+          "picked": "Main root + session dir (Recommended)",
+          "question": "Which paths should be marked trusted in ~/.claude.json (or $CLAUDE_CONFIG_DIR/.claude.json)?",
+          "session": "6cd5e83f-56e1-4870-995e-01a19f9be0a3",
+          "statement": "Which paths should be marked trusted in ~/.claude.json (or $CLAUDE_CONFIG_DIR/.claude.json)? — Main root + session dir (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 6cd5e83f-56e1-4870-995e-01a19f9be0a3"
+        },
+        "handle": "answer-6cd5e83f-3",
+        "id": "01M6FWHFCNF02N323EY0V5B2DX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FWHFCNF02N323EY0DY5AAK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FWHFCNF02N323EY0DY5AAK",
+        "id": "01M6FWHMJ8Q87T10E04CPGHGEK",
+        "link": "01M6FWHMJ8Q87T10E04CB7WJ96",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FWDTQ4VASTE7MD19JV886K",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "options": [
+            "Warn and start anyway (Recommended)",
+            "Fail the session start"
+          ],
+          "picked": "Warn and start anyway (Recommended)",
+          "question": "If ~/.claude.json can't be read or written (malformed JSON, permissions), what should happen?",
+          "session": "6cd5e83f-56e1-4870-995e-01a19f9be0a3",
+          "statement": "If ~/.claude.json can't be read or written (malformed JSON, permissions), what should happen? — Warn and start anyway (Recommended)",
+          "wording": "the agent's option, picked by the owner in session 6cd5e83f-56e1-4870-995e-01a19f9be0a3"
+        },
+        "handle": "answer-6cd5e83f-4",
+        "id": "01M6FWHT9B1KK91A0DRJ4P624R",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6FWHT9B1KK91A0DRFS2V2X1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FWHT9B1KK91A0DRFS2V2X1",
+        "id": "01M6FWHZ3NF4DDBFAHTV67Y629",
+        "link": "01M6FWHZ3NF4DDBFAHTR06N8DY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FWDTQ4VASTE7MD19JV886K",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6FSQG5W0V2D5PFJT8CHK3DV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6FWJ1V7A73DQ85MB1FKDPSX",
+  "type": "ops",
+  "v": 1
+}

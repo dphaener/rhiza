@@ -1,0 +1,30 @@
+{
+  "actor": "01M6GG8FBRBDG7Y8GJG7F25HSF",
+  "after": [
+    "01M6GGKS7AVMKRGAC02EVPCB2E"
+  ],
+  "at": "2026-11-03T10:53:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "9e9e2812-e28f-4033-a5ee-01a1a10429d2",
+          "statement": "The intent's second half says background daemons on Linux need sh -c '... exec rhiza daemon ...' because sh is dash. On this Ubuntu VM (sh -> dash) every daemon script already passes, and the fake rex scripts that background a daemon already use exec \"$@\". What should this change set do about shell portability?"
+        },
+        "handle": "question-9e9e2812-2",
+        "id": "01M6GGP08H2Z6RCM3PJCYH00EV",
+        "key": null,
+        "kind": "question",
+        "node": "01M6GGP08H2Z6RCM3PJAXCNG7Y",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6GG7VES74Y7T74DD8HKXFJ7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GGP3NN5AX49EMGGRABADMD",
+  "type": "ops",
+  "v": 1
+}

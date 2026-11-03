@@ -1,7 +1,7 @@
 # rhiza request queues a plan request in the clone, request ls shows each
 # request's state, and the daemon starts a plan run for the oldest queued
 # request while a slot is free: run start --workflow plan --new with the
-# request's text (a bug's prefixed Fix:, a milestone's with --milestone),
+# request's text (a bug's prefixed Fix, a milestone's with --milestone),
 # --autonomous only with plan autonomy auto. Paused, it starts nothing.
 #
 # The fake rex only logs the daemon's start commands; the plan run of the first
@@ -72,7 +72,7 @@ exec rhiza daemon --permission-mode manual --max-runs 3 --once
 stdout -count=2 '^Started the plan run of request '
 exec cat $WORK/detach.log
 stdout -count=3 '^REX_SESSION=.* rhiza '
-stdout 'run start --foreground --workflow plan --new Fix: Login fails --request [0-9A-Z]{26} --permission-mode manual --autonomous$'
+stdout 'run start --foreground --workflow plan --new Fix Login fails --request [0-9A-Z]{26} --permission-mode manual --autonomous$'
 stdout 'run start --foreground --workflow plan --new Ship v2 --request [0-9A-Z]{26} --permission-mode manual --milestone --autonomous$'
 exec rhiza request ls --json
 stdout -count=3 '"state": "planning"'

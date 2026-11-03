@@ -1,0 +1,30 @@
+{
+  "actor": "01M6GG8FBRBDG7Y8GJG7F25HSF",
+  "after": [
+    "01M6GG7VES74Y7T74DDC3W6CG1"
+  ],
+  "at": "2026-11-03T10:50:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "9e9e2812-e28f-4033-a5ee-01a1a10429d2",
+          "statement": "Daemon test scripts read the host's real free disk unless they set RHIZA_TEST_FREE_BYTES (only 5 of ~17 daemon scripts do), so on a host whose TMPDIR has <10G free the daemon starts nothing. How should scripts stop depending on the host's disk?"
+        },
+        "handle": "question-9e9e2812-1",
+        "id": "01M6GGG628MZGQBJ0FRFN71TEZ",
+        "key": null,
+        "kind": "question",
+        "node": "01M6GGG628MZGQBJ0FREHQQCVK",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6GG7VES74Y7T74DD8HKXFJ7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GGG9JDHKBCJ0KTNWFP8Z2Z",
+  "type": "ops",
+  "v": 1
+}
