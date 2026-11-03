@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 	"testing"
+	"time"
 )
 
 // fakeRepo is a main checkout whose git and make are scripted.
@@ -115,5 +116,33 @@ func TestSelfUpdateSkipsAndWaitsForMove(t *testing.T) {
 		if f.makes != makes+1 {
 			t.Errorf("%s: not retried after main moved", name)
 		}
+	}
+}
+
+func TestSelfUpdateFetchesAtMostEvery(t *testing.T) {
+	f := &fakeRepo{head: "aaa", remote: "aaa", branch: "main"}
+	u := f.su()
+	now := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	u.Now = func() time.Time { return now }
+	u.Every = time.Minute
+	u.Run()
+	now = now.Add(30 * time.Second)
+	u.Run()
+	if f.fetches != 1 {
+		t.Fatalf("fetches %d within Every", f.fetches)
+	}
+	now = now.Add(30 * time.Second)
+	u.Run()
+	if f.fetches != 2 {
+		t.Fatalf("fetches %d after Every", f.fetches)
+	}
+}
+
+func TestSelfUpdateUsesFetch(t *testing.T) {
+	f := &fakeRepo{head: "aaa", remote: "bbb", branch: "main"}
+	u := f.su()
+	u.Fetch = func() error { return errors.New("timed out") }
+	if u.Run() || f.fetches != 0 || f.makes != 0 || len(f.logs) != 1 {
+		t.Fatalf("fetches %d makes %d logs %v", f.fetches, f.makes, f.logs)
 	}
 }

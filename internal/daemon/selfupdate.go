@@ -3,7 +3,11 @@ package daemon
 import (
 	"fmt"
 	"strings"
+	"time"
 )
+
+// SelfUpdateEvery is the least time between two fetches of origin/main.
+const SelfUpdateEvery = 5 * time.Minute
 
 // SelfUpdate brings the daemon's own build up to date with main: when
 // origin/main has moved past the main checkout it fast-forwards the checkout
@@ -15,8 +19,18 @@ type SelfUpdate struct {
 	Git func(args ...string) (string, error)
 	// Make runs make with args in the main checkout.
 	Make func(args ...string) error
+	// Fetch fetches origin/main, bounded by a timeout; nil fetches through
+	// Git.
+	Fetch func() error
 	// Log reports what was done or skipped.
 	Log func(format string, args ...any)
+	// Now is the clock; nil fetches on every Run.
+	Now func() time.Time
+	// Every is the least time between two fetches.
+	Every time.Duration
+
+	// fetched is when origin/main was last fetched, or tried to be.
+	fetched time.Time
 
 	// tried is the origin/main commit an update was last attempted for, so a
 	// failed one is not retried until main moves again.
@@ -38,12 +52,19 @@ func (u *SelfUpdate) rev(ref string) (string, error) {
 // it at the end of a poll with no start pending. A checkout that is dirty,
 // off main or diverged, and a failing fetch, fast-forward or make update,
 // are logged and skipped; once origin/main was tried, it is not tried again
-// until it moves.
+// until it moves. A Run within Every of the last fetch does nothing.
 func (u *SelfUpdate) Run() bool {
 	if u == nil || u.Git == nil || u.Make == nil {
 		return false
 	}
-	if _, err := u.Git("fetch", "origin", "main"); err != nil {
+	if u.Now != nil {
+		now := u.Now()
+		if !u.fetched.IsZero() && now.Sub(u.fetched) < u.Every {
+			return false
+		}
+		u.fetched = now
+	}
+	if err := u.fetch(); err != nil {
 		u.logf("self-update: fetch: %v", err)
 		return false
 	}
@@ -82,6 +103,14 @@ func (u *SelfUpdate) Run() bool {
 	}
 	u.logf("self-update: updated to %s", short(remote))
 	return true
+}
+
+func (u *SelfUpdate) fetch() error {
+	if u.Fetch != nil {
+		return u.Fetch()
+	}
+	_, err := u.Git("fetch", "origin", "main")
+	return err
 }
 
 // blocked says why the checkout cannot be fast-forwarded, or "".

@@ -191,7 +191,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		return resp, poll()
 	}
 	reexec := daemonReexec()
-	update := &daemon.SelfUpdate{}
+	update := &daemon.SelfUpdate{Now: ctx.Now, Every: daemon.SelfUpdateEvery}
 	selfUpdate := func() {
 		if !selfUpdateOn || ctx.Exec == nil || ctx.Git == nil {
 			return
@@ -205,6 +205,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			return
 		}
 		update.Git = func(args ...string) (string, error) { return gitAt(ctx, main, args...) }
+		update.Fetch = func() error { return fetchMainWithin(ctx, main, selfUpdateFetchTimeout) }
 		update.Make = func(args ...string) error {
 			_, err := ctx.Exec("make", args, main, nil)
 			return err
@@ -445,6 +446,43 @@ func daemonRunsOf(runs []run.Journal, cs string) int {
 		}
 	}
 	return n
+}
+
+// selfUpdateFetchTimeout bounds the self-update's git fetch, so a stalled
+// network cannot hold up the daemon's polls.
+const selfUpdateFetchTimeout = 30 * time.Second
+
+// fetchMainWithin runs git fetch origin main in dir, killing it after
+// timeout. Git never prompts for credentials: it reads nothing and has
+// GIT_TERMINAL_PROMPT=0. Without ctx.Start it runs untimed through ctx.Exec.
+func fetchMainWithin(ctx *Ctx, dir string, timeout time.Duration) error {
+	args := []string{"fetch", "origin", "main"}
+	if ctx.Start == nil {
+		_, err := gitAt(ctx, dir, args...)
+		return err
+	}
+	p, err := ctx.Start(Program{Name: "git", Args: args, Dir: dir, Env: []string{"GIT_TERMINAL_PROMPT=0"}})
+	if err != nil {
+		return err
+	}
+	timedOut := make(chan struct{})
+	timer := time.AfterFunc(timeout, func() {
+		close(timedOut)
+		p.Kill()
+	})
+	_, _ = io.Copy(io.Discard, p.Output())
+	code, err := p.Wait()
+	if !timer.Stop() {
+		<-timedOut
+		return fmt.Errorf("git fetch origin main: timed out after %s", timeout)
+	}
+	if err != nil {
+		return err
+	}
+	if code != 0 {
+		return fmt.Errorf("git fetch origin main: exit %d", code)
+	}
+	return nil
 }
 
 // daemonPoll1 picks and starts runs once: resumes, then ship-change runs,

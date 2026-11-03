@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"io"
 	"strings"
 	"sync"
 	"testing"
@@ -132,5 +133,52 @@ func TestDaemonSelfUpdateSetting(t *testing.T) {
 	}
 	if n := strings.Count(got, "make update"); n != 1 {
 		t.Fatalf("selfUpdate true: make update ran %d times over 3 polls, want 1", n)
+	}
+}
+
+// hangProcess is a program whose output never ends until it is killed.
+type hangProcess struct {
+	r      *io.PipeReader
+	w      *io.PipeWriter
+	killed chan struct{}
+	once   sync.Once
+}
+
+func (h *hangProcess) Output() io.Reader { return h.r }
+func (h *hangProcess) Wait() (int, error) {
+	<-h.killed
+	return 137, nil
+}
+func (h *hangProcess) Kill() {
+	h.once.Do(func() { close(h.killed); h.w.Close() })
+}
+
+// A self-update fetch that hangs is killed after its timeout, without a
+// terminal prompt, and reported as failed.
+func TestFetchMainWithinTimesOut(t *testing.T) {
+	ctx := testCtx(t.TempDir())
+	var got Program
+	h := &hangProcess{killed: make(chan struct{})}
+	h.r, h.w = io.Pipe()
+	ctx.Start = func(p Program) (Process, error) { got = p; return h, nil }
+	err := fetchMainWithin(ctx, "/main", 10*time.Millisecond)
+	if err == nil || !strings.Contains(err.Error(), "timed out") {
+		t.Fatalf("err %v", err)
+	}
+	if got.Name != "git" || strings.Join(got.Args, " ") != "fetch origin main" || got.Dir != "/main" ||
+		strings.Join(got.Env, " ") != "GIT_TERMINAL_PROMPT=0" {
+		t.Fatalf("program %+v", got)
+	}
+}
+
+func TestFetchMainWithinExitCode(t *testing.T) {
+	ctx := testCtx(t.TempDir())
+	ctx.Start = (&shStart{codes: map[string]int{}}).start
+	if err := fetchMainWithin(ctx, "/main", time.Second); err != nil {
+		t.Fatalf("err %v", err)
+	}
+	ctx.Start = func(Program) (Process, error) { return &fakeProcess{out: strings.NewReader(""), code: 128}, nil }
+	if err := fetchMainWithin(ctx, "/main", time.Second); err == nil {
+		t.Fatal("exit 128 not an error")
 	}
 }
