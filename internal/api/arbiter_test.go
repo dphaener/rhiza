@@ -347,8 +347,8 @@ func blockCloses(f *fakeExec) [][]string {
 
 // An autonomous run's arbiter, driven through the engine to its verdict,
 // has its pane closed with `rex block close` once the verdict is
-// journalled, never while it is still running; a failed arbiter's pane
-// stays open, as does one whose session is lost while still running.
+// journalled, pass or fail, never while it is still running; one whose
+// session is lost while still running keeps its pane.
 func TestArbiterPaneClosesAfterVerdict(t *testing.T) {
 	const wf = "[step.build]\nkind = \"agent\"\nprompt = \"build\"\non.pass = \"done\"\n"
 	running := run.AgentStatus{}
@@ -360,7 +360,7 @@ func TestArbiterPaneClosesAfterVerdict(t *testing.T) {
 		outcome string
 	}{
 		{"verdict", run.Answer{OK: true, Decision: "use-sqlite", Statement: "Use SQLite"}, false, true, "succeeded"},
-		{"failed", run.Answer{Why: "no live Decision answers question Q1"}, false, false, "failed"},
+		{"failed", run.Answer{Why: "no live Decision answers question Q1"}, false, true, "failed"},
 		{"still running", run.Answer{OK: true, Decision: "use-sqlite"}, true, false, "failed"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {

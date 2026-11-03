@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-03T16:28:04Z",
+  "body": {
+    "intent": "Agent panes close when their session finishes: every driver closes a finished session's pane at once (review checks, critic, fixers, plan steps), not at close-out",
+    "kind": "intention",
+    "sources": [],
+    "title": "Close finished agent panes"
+  },
+  "change_set": "01M6H3TC786A6WVKRXC0WQ1N3K",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6H3TC7E3HARR4JKMK4FAW2D",
+  "type": "open",
+  "v": 2
+}

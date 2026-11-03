@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6H4EQW1MWDR3JJPZWC96113"
+  ],
+  "at": "2026-11-03T16:39:12Z",
+  "body": {
+    "reason": "Owner asked for it directly in the orchestrator session, 2026-11-03",
+    "rule": "owner"
+  },
+  "change_set": "01M6H3TC786A6WVKRXC0WQ1N3K",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6H4ETZ1KTMEGAHX5AG87RZX",
+  "type": "accept",
+  "v": 1
+}

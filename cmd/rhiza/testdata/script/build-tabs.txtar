@@ -1,8 +1,9 @@
 # Each session of a leaves step opens its own Rex tab, whatever the pane's
 # shape or the step's split: a's builder, a's verifier, b's builder,
 # verifier and two retry builders are six `rex window new` calls, no split
-# and no size read. A passed session's tab closes, and a failed one's when
-# the step ends, so every tab is closed by the end.
+# and no size read. Every session's tab closes as soon as it is judged,
+# passed or failed, before the next session opens, so every tab is closed
+# by the end and none waits for it.
 #
 # The fake rex logs each call to rex.log, numbering new blocks b1, b2, ...
 # in order, answers `block call size` from size.json and runs a pane's
@@ -63,15 +64,16 @@ exec git add -A
 exec git commit -qm leaves
 exec sh -c 'rhiza run start --foreground --workflow build --permission-mode manual --json; echo exit=$?'
 stdout '^exit=0$'
+# The builder's tab closed as it was judged, before its verifier's opened.
 cmp $WORK/rex.log $WORK/want-below.log
 
 -- landscape.json --
 {"columns":200,"rows":50,"cell_width_px":8,"cell_height_px":16}
 -- want-below.log --
 window new -> block:b1
+close block:b1
 window new -> block:b2
 close block:b2
-close block:b1
 -- build.toml --
 name = "build"
 

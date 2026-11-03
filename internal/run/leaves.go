@@ -331,11 +331,10 @@ func (r *running) leafStates(step string) map[string]LeafState {
 // run the arbiter answers a leaf's first failure's question at once.
 //
 // Each session runs in a pane of the change set's tab, placed by leafPane.
-// A verifier's pane closes once it passes; a builder's once the next
-// builder takes its place. When the step ends, whatever its outcome, the
-// pane of every judged session still open is closed, so a failed
-// session's pane stays until then, and the checkout of a verifier that
-// exited unjudged is removed. A live session's pane and checkout stay: a
+// Every session's pane closes as soon as it is judged, passed or failed
+// (pollLeaf). When the step ends, whatever its outcome, the pane of every
+// judged session still open (a close that failed) is closed again, and
+// the checkout of a verifier that exited unjudged is removed. A live session's pane and checkout stay: a
 // resume rejoins it.
 func (r *running) leaves(step workflow.Step, env []string) (result, error) {
 	lr, ok := r.e.Runner.(LeafRunner)
@@ -520,7 +519,8 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 // passes only with a new commit since its start naming its leaf (LeafCommit), journalled on
 // the attempt; without one its attempt fails with LeafCommit's detail. A
 // verifier judged pass passes only as judgeVerifier finds, its Evidence
-// commit journalled on the attempt. A live session's block is journalled and
+// commit journalled on the attempt. A judged session's pane closes at
+// once (closePane), whatever its role and outcome. A live session's block is journalled and
 // notified as an agent step's, and in an autonomous run its question goes
 // to the arbiter; a failed verdict ends the step (ended true) with res.
 func (r *running) pollLeaf(lr LeafRunner, step workflow.Step, a leafAction) (judged bool, res result, ended bool, err error) {
@@ -570,13 +570,14 @@ func (r *running) pollLeaf(lr LeafRunner, step workflow.Step, a leafAction) (jud
 		if s, ok := r.leafStates(step.Name)[a.leaf.ID].Session(a.role, a.attempt); ok && a.role == workflow.RoleVerifier && s.Detail != "" {
 			r.removeCheckout(lr, step, s.Detail)
 		}
-		if a.role == workflow.RoleVerifier && outcome == workflow.OutcomePass {
-			if err := r.closePane(lr, step, a.session); err != nil {
-				return false, result{}, false, err
-			}
-		}
 		if err := r.e.Runner.AgentEnded(step, a.session); err != nil {
 			r.log("step %s: %v", step.Name, err)
+		}
+		// The judged session waits on no one, and a retry or the next
+		// role starts a fresh one: its pane closes now, whatever the
+		// outcome (its findings and judgement are in the journal).
+		if err := r.closePane(lr, step, a.session); err != nil {
+			return false, result{}, false, err
 		}
 		return true, result{}, false, nil
 	}

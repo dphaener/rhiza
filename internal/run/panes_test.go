@@ -76,9 +76,9 @@ func TestLeafPaneAnchor(t *testing.T) {
 }
 
 // A leaves step's panes over a run: each session's spec names its anchor,
-// a passed verifier's pane closes as it passes, a passed builder's when
-// the next builder takes its place, and a failed session's stays until
-// the step ends.
+// and every session's pane closes as soon as it is judged, passed or
+// failed, before any other session starts: no finished pane waits for the
+// next builder or the step's end.
 func TestLeavesStepPanes(t *testing.T) {
 	e, r, _, _ := setup(t, leavesWF)
 	r.leaves = []Leaf{{ID: "LA", Handle: "a"}, {ID: "LB", Handle: "b"}}
@@ -95,12 +95,15 @@ func TestLeavesStepPanes(t *testing.T) {
 	if got := outcomes(st); !reflect.DeepEqual(got, []string{"build:fail"}) {
 		t.Fatalf("outcomes = %v", got)
 	}
+	// Only live panes anchor: A's builder's closed before its verifier
+	// opened, so that opens the tab anew, and every later session splits
+	// A's verifier, the one pane still live.
 	anchors := map[string]string{}
 	for _, s := range r.leafSpecs {
 		anchors[leafSID(s.Leaf.Handle, s.Role, s.Attempt)] = s.Anchor
 	}
 	b2, b3 := leafSID("b", "builder", 2), leafSID("b", "builder", 3)
-	want := map[string]string{ab: "", av: ab, bb: ab, bv: av, b2: bb, b3: b2}
+	want := map[string]string{ab: "", av: "", bb: av, bv: av, b2: av, b3: av}
 	if !reflect.DeepEqual(anchors, want) {
 		t.Errorf("anchors = %v\nwant %v", anchors, want)
 	}
@@ -131,23 +134,17 @@ func TestLeavesStepPanes(t *testing.T) {
 		}
 		return i
 	}
-	if at("closed "+av) != at("judged verifier a 1 pass")+1 {
-		t.Errorf("A's verifier's pane did not close as it passed:\n%v", seq)
-	}
-	if at("closed "+ab) != at("start "+bb)+1 {
-		t.Errorf("A's builder's pane did not close as B's builder took it:\n%v", seq)
-	}
-	if at("closed "+bb) != at("start "+b2)+1 {
-		t.Errorf("B's passed builder's pane did not close as its retry took it:\n%v", seq)
-	}
-	failedAt := at("leaf b failed")
-	for _, s := range []string{bv, b2, b3} {
-		if i := at("closed " + s); i < failedAt || i > at("ended") {
-			t.Errorf("failed session %s's pane closed before the step ended:\n%v", s, seq)
+	for _, c := range []struct{ sid, judged string }{
+		{ab, "judged builder a 1 pass"}, {av, "judged verifier a 1 pass"},
+		{bb, "judged builder b 1 pass"}, {bv, "judged verifier b 1 fail"},
+		{b2, "judged builder b 2 fail"}, {b3, "judged builder b 3 fail"},
+	} {
+		if at("closed "+c.sid) != at(c.judged)+1 {
+			t.Errorf("session %s's pane did not close as it was judged:\n%v", c.sid, seq)
 		}
 	}
-	if !reflect.DeepEqual(r.closed, []string{ab, bb, av, bv, b2, b3}) && !reflect.DeepEqual(r.closed, []string{ab, av, bb, bv, b2, b3}) {
-		t.Errorf("closed = %v", r.closed)
+	if len(r.closed) != 6 {
+		t.Errorf("closed = %v, want each of the six sessions once", r.closed)
 	}
 	for _, l := range st.Leaves {
 		for _, s := range l.Sessions {

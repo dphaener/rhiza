@@ -503,6 +503,10 @@ type result struct {
 	outcome string
 	detail  string
 	stopped string
+	// finished says the step's agent session itself ended (exited, or
+	// said done with the step's until holding): nothing waits on it, so
+	// its pane closes at once.
+	finished bool
 }
 
 func errResult(err error) result { return result{outcome: OutcomeError, detail: err.Error()} }
@@ -697,13 +701,17 @@ func (r *running) wait(step workflow.Step, env []string) result {
 // agent launches the step's session, unless the journal already has one
 // for this visit (a resume), and polls it until it ends. A step with an
 // `until` also passes when a poll finds the session ready and the
-// condition holds; the session is left open. Ready is idle at its prompt,
+// condition holds. Ready is idle at its prompt,
 // or, for a step that waits for done (until_when = "done"), that the agent
 // has said its work is done: idle alone is then not enough. The condition
 // is never checked while the session is blocked on the owner. A step that
 // waits for done also checks it when the session exits 0, and passes only
 // if it holds; any other exit fails, as on every agent step. Once the step
-// ends with an outcome, the Runner hears of it (Runner.AgentEnded).
+// ends with an outcome, the Runner hears of it (Runner.AgentEnded), and
+// once the session itself has finished (exited, or ready with until
+// held) its pane is closed at once (closeSessionPane): a finished session
+// waits on no one, and each visit starts a fresh one. A session the step
+// ended on while it still waits (a failed arbitration) keeps its pane.
 func (r *running) agent(step workflow.Step, env []string) (result, error) {
 	session := r.j.State().Session[step.Name]
 	if session == "" {
@@ -725,6 +733,9 @@ func (r *running) agent(step workflow.Step, env []string) (result, error) {
 	}
 	if err := r.e.Runner.AgentEnded(step, session); err != nil {
 		r.log("step %s: %v", step.Name, err)
+	}
+	if res.finished {
+		r.closeSessionPane(step.Name, session)
 	}
 	return res, nil
 }
@@ -754,9 +765,11 @@ func (r *running) pollAgent(step workflow.Step, env []string, session string) (r
 				outcome = workflow.OutcomeFail
 			}
 			if outcome == workflow.OutcomePass && step.Until != "" && step.WaitsForDone() {
-				return r.exitedUntil(step, env, status.Detail), nil
+				res := r.exitedUntil(step, env, status.Detail)
+				res.finished = true
+				return res, nil
 			}
-			return result{outcome: outcome, detail: status.Detail}, nil
+			return result{outcome: outcome, detail: status.Detail, finished: true}, nil
 		}
 		if status.Blocked != nil {
 			err = r.block(step.Name, session, status.Blocked)
@@ -778,7 +791,7 @@ func (r *running) pollAgent(step workflow.Step, env []string, session string) (r
 				return errResult(err), nil
 			}
 			if held {
-				return result{outcome: workflow.OutcomePass, detail: why + " and until held; session left open"}, nil
+				return result{outcome: workflow.OutcomePass, detail: why + " and until held", finished: true}, nil
 			}
 		}
 		c.Sleep(interval)
@@ -999,10 +1012,11 @@ func (r *running) notify(st State, step, session string, blocked bool, b *Block)
 // the arbiter's interval until the agent says done or the session exits,
 // then asks the Runner for the answer: a valid one passes, anything else
 // fails with why. A session that blocks, on a question above all, fails at
-// once: an arbiter never asks (it would recurse). Once a passing verdict is
-// journalled the session's pane is closed (closeQuestionPane); a failed or
-// errored arbiter's is left open to be read. Runner failures are an error outcome; the error return is
-// for journal failures. The arbitrated entry records the verdict.
+// once: an arbiter never asks (it would recurse). Once the verdict of an
+// arbiter that said done or exited is journalled, pass or fail, the
+// session's pane is closed (closeSessionPane); a blocked arbiter's, or
+// one whose status cannot be read, is left open. Runner failures are an
+// error outcome; the error return is for journal failures. The arbitrated entry records the verdict.
 func (r *running) arbitrate(asking workflow.Step, question string) (result, error) {
 	arb := r.def.Arbiter()
 	st := r.j.State()
@@ -1038,32 +1052,35 @@ func (r *running) arbitrate(asking workflow.Step, question string) (result, erro
 		}
 		r.clock().Sleep(interval)
 	}
+	var res result
 	ans, err := r.e.Runner.Answer(question, session)
-	if err != nil {
-		return r.arbitrated(asking, question, errResult(err), "")
+	switch {
+	case err != nil:
+		res, err = r.arbitrated(asking, question, errResult(err), "")
+	case !ans.OK:
+		res, err = r.arbitrated(asking, question, result{outcome: workflow.OutcomeFail, detail: ans.Why}, "")
+	default:
+		res, err = r.arbitrated(asking, question, result{outcome: workflow.OutcomePass, detail: "answered by " + ans.Decision}, ans.Decision)
 	}
-	if !ans.OK {
-		return r.arbitrated(asking, question, result{outcome: workflow.OutcomeFail, detail: ans.Why}, "")
-	}
-	res, err := r.arbitrated(asking, question, result{outcome: workflow.OutcomePass, detail: "answered by " + ans.Decision}, ans.Decision)
 	if err != nil {
 		return res, err
 	}
-	r.closeQuestionPane(session)
+	r.closeSessionPane(asking.Name, session)
 	return res, nil
 }
 
-// closeQuestionPane closes the pane of arbiter session session, after its
-// passing verdict is journalled, so the run's window keeps only live panes.
-// A failed arbiter's pane stays open to be read. A Runner that cannot
-// close panes, or a close that fails, is only logged: nothing hangs on it.
-func (r *running) closeQuestionPane(session string) {
+// closeSessionPane closes the pane of session, of step, once it has
+// finished and its end is journalled, so the run's tabs keep only live
+// sessions; the last pane of a tab closing closes the tab. A Runner that
+// cannot close panes, or a close that fails, is only logged: nothing
+// hangs on it, and close-out sweeps whatever is left.
+func (r *running) closeSessionPane(step, session string) {
 	cp, ok := r.e.Runner.(interface{ ClosePane(session string) error })
 	if !ok || session == "" {
 		return
 	}
 	if err := cp.ClosePane(session); err != nil {
-		r.log("close the pane of arbiter session %s: %v", session, err)
+		r.log("step %s: close the pane of session %s: %v", step, session, err)
 	}
 }
 

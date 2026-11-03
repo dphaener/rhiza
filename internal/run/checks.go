@@ -624,9 +624,10 @@ func (r *running) stepCycles(step string) []CheckCycle {
 // error outcome; the error return is for journal failures.
 //
 // Each session runs in a pane of the change set's tab, placed by
-// checkPane. When the step ends, whatever its outcome, the pane of every
-// judged session still open is closed; a live session's pane stays, as a
-// resume rejoins it.
+// checkPane. A session's pane closes as soon as it is judged; when the
+// step ends, whatever its outcome, the pane of every judged session still
+// open (a close that failed, or a resume) is closed again. A live
+// session's pane stays, as a resume rejoins it.
 func (r *running) checks(step workflow.Step, env []string) (result, error) {
 	cr, ok := r.e.Runner.(CheckRunner)
 	if !ok {
@@ -857,7 +858,8 @@ func (r *running) startReviewFix(cr CheckRunner, step workflow.Step, env []strin
 // and reports its end to the Runner: judged pass, it passes only with a
 // new commit since its start whose Review: trailer names the run
 // (ReviewCommit), journalled on the judgement; without one it fails with
-// ReviewCommit's detail. A live session's block is journalled and
+// ReviewCommit's detail. Its pane then closes at once
+// (closeEndedFixPanes): a later cycle starts a fresh fixer. A live session's block is journalled and
 // notified as an agent step's, and in an autonomous run its question goes
 // to the arbiter; a failed verdict ends the step (ended true) with res.
 func (r *running) pollReviewFix(cr CheckRunner, step workflow.Step, a checkAction) (judged bool, res result, ended bool, err error) {
@@ -905,6 +907,9 @@ func (r *running) pollReviewFix(cr CheckRunner, step workflow.Step, a checkActio
 		r.log("step %s: cycle %d: change set's fixer %s", step.Name, a.cycle, outcome)
 		if err := r.e.Runner.AgentEnded(step, a.session); err != nil {
 			r.log("step %s: %v", step.Name, err)
+		}
+		if err := r.closeEndedFixPanes(cr, step); err != nil {
+			return false, result{}, false, err
 		}
 		return true, result{}, false, nil
 	}
@@ -1000,7 +1005,9 @@ func sessionWord(role string) string {
 // done, it reads the journal again (the session's `rhiza run findings`
 // appended to it without the run's lock), journals the session's
 // judgement (judged true), removes its checkout whatever the judgement,
-// and reports its end to the Runner. A live session's block is journalled and
+// reports its end to the Runner and closes its pane at once
+// (closeEndedCheckPanes): a later cycle or critic starts a fresh session,
+// so none is reused. A live session's block is journalled and
 // notified as an agent step's, and in an autonomous run its question goes
 // to the arbiter; a failed verdict ends the step (ended true) with res.
 func (r *running) pollCheck(cr CheckRunner, step workflow.Step, a checkAction) (judged bool, res result, ended bool, err error) {
@@ -1045,6 +1052,9 @@ func (r *running) pollCheck(cr CheckRunner, step workflow.Step, a checkAction) (
 		r.removeCheckCheckout(cr, step, a.check, a.role, a.cycle)
 		if err := r.e.Runner.AgentEnded(step, a.session); err != nil {
 			r.log("step %s: %v", step.Name, err)
+		}
+		if err := r.closeEndedCheckPanes(cr, step); err != nil {
+			return false, result{}, false, err
 		}
 		return true, result{}, false, nil
 	}

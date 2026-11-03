@@ -1,0 +1,64 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6H3TC7E3HARR4JKMK4FAW2D"
+  ],
+  "at": "2026-11-03T16:28:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Testscripts with the fake rex show a rex block close of each finished session's block at the moment its step judges it, before the next session or step starts, not only at close-out: for a review checks step (checks, critic, fixer, verifier), a build step (failed and passed builder, verifier), and an agent step that said done with until held (plan steps); a Go test shows a failed arbiter that said done has its pane closed while a blocked one keeps it",
+          "statement": "Every run session's pane closes as soon as its driver records the session finished, whatever the step kind (leaf builder or verifier, review check, critic, change-set or leaf fixer, plan interview, review, critic or reviser, arbiter), so a run's tabs hold only sessions still working or waiting on someone, and a tab goes once its last pane closes"
+        },
+        "handle": "finished-session-panes-close",
+        "id": "01M6H3V1Z1MTKF0685QJ5FGF1B",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M6H3V1Z1MTKF0685QFDQJZAZ",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "fields": {
+          "quote": "\"There's still one active pane, but many of them are finished. Once they're done they should be closed immediately, by whichever driver is responsible for them.\" and earlier \"It's just noise. There's nothing actionable for me, the user, to do or see. It's just taking up space.\"",
+          "statement": "A finished agent session's pane is closed at once by the driver responsible for it, for every step kind; no finished pane waits for close-out",
+          "wording": "the owner's, in the orchestrator session, 2026-11-03"
+        },
+        "handle": "finished-panes-close-at-once",
+        "id": "01M6H3V4NH0M4R27YRK1FY2W62",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6H3V4NH0M4R27YRK0JYANTJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6H3V1Z1MTKF0685QFDQJZAZ",
+        "id": "01M6H3V7M55ZDRJGZQ49JCE421",
+        "link": "01M6H3V7M55ZDRJGZQ46BJC1QT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H3V4NH0M4R27YRK0JYANTJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6H3TC786A6WVKRXC0WQ1N3K",
+        "id": "01M6H3VCBJTQQD26XMMJ30HAZ0",
+        "link": "01M6H3VCBJTQQD26XMMGSMRN31",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FEKX9J8ARG7JGDYSZEA2YW",
+        "type": "serves"
+      }
+    ]
+  },
+  "change_set": "01M6H3TC786A6WVKRXC0WQ1N3K",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6H3VJJ8T4XJ3FS1E5WRVGPF",
+  "type": "ops",
+  "v": 1
+}
