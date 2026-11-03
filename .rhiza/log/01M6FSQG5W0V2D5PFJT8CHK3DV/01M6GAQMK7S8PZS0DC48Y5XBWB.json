@@ -1,0 +1,63 @@
+{
+  "actor": "01M6GAH66X31PXV2YQEKWZMSN0",
+  "after": [
+    "01M6GAEHGD6XXYG1HQB2PZDNWX"
+  ],
+  "at": "2026-11-03T09:09:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1f3f071f with the built binary (go build ./cmd/rhiza) in a scratch git repo, hermetic HOME, fake claude (dumps .claude.json at start) and fake rex: rhiza session start --permission-mode manual, then session run --dry-run left ~/.claude.json (numStartups, theme, projects./other.allowedTools) unchanged; the real session run set hasTrustDialogAccepted=true for the main checkout root (repo) and the session worktree (repo.qa-trust) before the agent started (the fake claude saw both), kept numStartups, theme and /other.allowedTools and the file mode 0640, left no temp file. With CLAUDE_CONFIG_DIR set to an empty dir, session run created $CLAUDE_CONFIG_DIR/.claude.json (0600) with both paths trusted and left HOME's file byte-identical. go test -run 'Trust|CommandWritesNoFile' for internal/api and claudecode passes (resume re-trust and Command writing no file are covered there). The owner's real ~/.claude.json uses the same hasTrustDialogAccepted key under projects."
+        },
+        "handle": "claude-folder-trust-qa-1",
+        "id": "01M6GAQ795W66JYYEZXZ92X0X4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6GAQ795W66JYYEZXVV8VPXP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GAQ795W66JYYEZXVV8VPXP",
+        "id": "01M6GAQA2RZFKHA95178M8EAVW",
+        "link": "01M6GAQA2RZFKHA95175H866V1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FWF2YX1F6WAGBT9JDYEZT5",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1f3f071f with the built binary, hermetic HOME and fake claude: with ~/.claude.json set to '{nope', rhiza session run still started the agent (fake claude ran in the worktree, exit 0) and printed 'Warning: trust the session's folders in <HOME>/.claude.json: read the Claude Code config: invalid character ...'; the file stayed byte-for-byte '{nope' and no .claude.json.rhiza-* temp file was left in HOME."
+        },
+        "handle": "claude-trust-failure-warns-qa-1",
+        "id": "01M6GAQD0QGT6W8P0K6NKV49FF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6GAQD0QGT6W8P0K6KXCD3XB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GAQD0QGT6W8P0K6KXCD3XB",
+        "id": "01M6GAQG2Z5C1MMYW029FZ29J9",
+        "link": "01M6GAQG2Z5C1MMYW025WYYCPX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FWFF8A7KTJAS9GXSK8CSHK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FSQG5W0V2D5PFJT8CHK3DV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GAQMK7S8PZS0DC48Y5XBWB",
+  "type": "ops",
+  "v": 1
+}
