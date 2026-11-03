@@ -1,0 +1,40 @@
+{
+  "actor": "01M6FKPGXFRRHPV7G5X7BHCDZG",
+  "after": [
+    "01M6FKWKDGK8SY42R6500SHCDN"
+  ],
+  "at": "2026-11-03T02:40:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c0f1981c I ran go test -count=1 ./internal/daemon ./internal/api -run 'SelfUpdate|DaemonLoop' -v. Every test passed. TestSelfUpdateMovedMainRunsOnce: a moved origin/main is fetched and fast-forwarded, and make update runs once, again only after main moves. TestSelfUpdateUnmovedRunsNothing: equal and ahead run nothing. TestSelfUpdateSkipsAndWaitsForMove: dirty, off main, diverged and a failing make update are logged and not retried until origin/main moves. TestDaemonLoopSelfUpdateWaitsForPending: pending starts at polls 1 and 2 delay the self-update to polls 3 and 4. TestDaemonSelfUpdateSetting: runDaemon with injected git and make, with rhiza.daemon.selfUpdate unset or false, runs no git or make in the main checkout; set to true, it fetches, runs merge --ff-only and runs make update exactly once over 3 polls. A scratch build's rhiza daemon settings in a fresh repo printed 'rhiza.daemon.selfUpdate = false (default)'. make fmt-check test: all 34 packages ok, no FAIL. I read the diff for internal/daemon/selfupdate.go, the daemonLoop gate selfUpdate != nil && pending() == 0, and the settings def; they match the statement. make check's only failure was a stale render for this verifier's own actor record."
+        },
+        "handle": "daemon-self-update-verified",
+        "id": "01M6FMFSAWEZPYDMB4TVM63NPQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6FMFSAWEZPYDMB4TV9WG2FT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6FMFSAWEZPYDMB4TV9WG2FT",
+        "id": "01M6FMFTFRBC4G4ZB62PBDKNH6",
+        "link": "01M6FMFTFRBC4G4ZB62M85AG12",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FES89JR3Z5XA751AGCD3RV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FEN1BRQRHP9RTJKN2YPTH6",
+  "for": "01M5SWRGEM7Z4C61JMG4H61JD7",
+  "id": "01M6FMFX3427GH8N5V9BTATAW1",
+  "type": "ops",
+  "v": 1
+}
