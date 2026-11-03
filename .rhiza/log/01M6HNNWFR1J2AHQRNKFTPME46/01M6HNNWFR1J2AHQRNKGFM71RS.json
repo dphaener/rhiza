@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-03T21:40:09Z",
+  "body": {
+    "intent": "Text references: references to other nodes inside statement and other text fields are written as @handle, resolved at write time and stored by ID, and shown by current handle in render, show, why and the read apps; rhiza check flags dangling references (internal/op, internal/render, internal/api/write_node.go). Carve leaf text-references out of umbrella 01M5SWSWDVB237 (Area model)",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6HNNWFR1J2AHQRNKFTPME46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HNNWFR1J2AHQRNKGFM71RS",
+  "type": "open",
+  "v": 1
+}

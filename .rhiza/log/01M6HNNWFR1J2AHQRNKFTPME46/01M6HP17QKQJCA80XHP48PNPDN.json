@@ -1,0 +1,139 @@
+{
+  "actor": "01M6HNP5ZMMQPSD5YFCWKNF4D3",
+  "after": [
+    "01M6HNYR7DYQWJ5N5NTXTDT7H7"
+  ],
+  "at": "2026-11-03T21:46:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Unit tests in internal/textref: a reference starts with @ at the start of the text or after whitespace or an opening ( or [ and is followed by a handle (lower-case words joined by single dashes) or an ID or 4+ character ID prefix; darin@hey.com, checkout@v7 and '@key' contain no reference; @@ yields a literal @ and is never a reference; a resolver given a lookup rewrites every reference to @{<full ID>} and returns each unresolved one with its offset; a formatter shows @{ID} as @<handle> from a lookup and as @{<full ID>} when the lookup has none; a fuzz test checks that formatting resolved text and resolving it again yields the same stored text",
+          "statement": "One pure package, internal/textref, finds the references in a text and turns them both ways: @handle, @<ID or 4+ character ID prefix> to stored @{<full ID>}, and stored @{<ID>} back to @<current handle>, with @@ for a literal @"
+        },
+        "handle": "text-ref-syntax",
+        "id": "01M6HP0CQSFBFRQVFHJRVDGM62",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M6HP0CQRJFFH7Q40JCV9H2DG",
+        "op": "node.create",
+        "parent": "01M5SWSWH9Y4B8S2ADQCGPYQ1E"
+      },
+      {
+        "decision": null,
+        "from": "01M6HP0CQRJFFH7Q40JCV9H2DG",
+        "id": "01M6HP0EPM691T0YFZGYCN9TMW",
+        "link": "01M6HP0EPM691T0YFZGW7FVZT9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNWYK46P72FBJBHC3HAT23",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "text-refs-write.txtar: rhiza add capability with statement 'Builds on @other' stores @{<other's full ID>} in the log entry; an ID prefix reference stores the full ID; a reference to a node of the write's own change set resolves, one to a node of another unlanded change set or a retired node does not; quote, quote_where, wording and a source's fields are stored verbatim; '@@' stores a literal @; an unresolvable reference exits 4 with code not_found naming each bad reference and its field, with a next saying to fix the handle or write @@, and writes nothing; --dry-run reports the same refusal; the same file through rhiza apply behaves the same; describe-golden.txtar is regenerated if a request or response type changes; the rhiza guide's skill text tells agents to write @handle to refer to a node",
+          "statement": "rhiza add and set, and add and set items of rhiza apply, resolve the references in every string-valued field of a node (except quote, quote_where, wording and every field of a source node) at write time and store each as @{<full ID>}, refusing the whole write when one names no node it may refer to"
+        },
+        "handle": "text-ref-write",
+        "id": "01M6HP0GQ76PY04WKDATBEP03T",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6HP0GQ76PY04WKDAPVY30Q6",
+        "op": "node.create",
+        "parent": "01M5SWSWH9Y4B8S2ADQCGPYQ1E"
+      },
+      {
+        "decision": null,
+        "from": "01M6HP0GQ76PY04WKDAPVY30Q6",
+        "id": "01M6HP0JNRTVF9QA4JBJYV3T85",
+        "link": "01M6HP0JNRTVF9QA4JBJJ88059",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNWYK46P72FBJBHC3HAT23",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HP0GQ76PY04WKDAPVY30Q6",
+        "id": "01M6HP0NCN4XGRTHDWXSFGGVQ1",
+        "link": "01M6HP0NCN4XGRTHDWXPG01MBN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HP0CQRJFFH7Q40JCV9H2DG",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "text-refs-display.txtar: after a node's statement refers to @other and other is renamed to renamed, rhiza show, rhiza why and rhiza slice print @renamed in markdown and in --json fields; rhiza render writes @renamed into the rendered page; a read app's --once JSON (rhiza tui app <read app> --once) shows @renamed; a reference to a node not in the view shows @{<full ID>}; copying the shown text into rhiza set resolves to the same stored IDs",
+          "statement": "render, show, why, slice and the read apps, in text and --json alike, show each stored @{ID} as @<the node's current handle> in that view, and as @{<full ID>} when it does not resolve there"
+        },
+        "handle": "text-ref-display",
+        "id": "01M6HP0SAAHDCRXKDTXSZBZB1A",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6HP0SAAHDCRXKDTXRXZF7BT",
+        "op": "node.create",
+        "parent": "01M5SWSWH9Y4B8S2ADQCGPYQ1E"
+      },
+      {
+        "decision": null,
+        "from": "01M6HP0SAAHDCRXKDTXRXZF7BT",
+        "id": "01M6HP0VPN7ZV8EJ01WXGK31QE",
+        "link": "01M6HP0VPN7ZV8EJ01WTKA29SP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNWYK46P72FBJBHC3HAT23",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HP0SAAHDCRXKDTXRXZF7BT",
+        "id": "01M6HP0Y3ZKV6W0DP6RZZWQPN6",
+        "link": "01M6HP0Y3ZKV6W0DP6RYG18THK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HP0CQRJFFH7Q40JCV9H2DG",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Unit tests in internal/check: a stored @{ID} naming no node gives one fail finding under a new rule text-ref, naming the node, the field and the ID, and sets Report.OK false; one naming a retired node gives a warn and keeps OK true; resolving references and text with no @{ give nothing; check-text-refs.txtar: a log entry written by hand with a dangling @{ID} makes rhiza check exit non-zero with that finding; the new rule appears in check.Rules() and in describe output; rhiza check on this repo stays clean",
+          "statement": "rhiza check scans the folded model's stored references, each in the view of the change set that wrote it, and fails on one naming no node and warns on one naming a retired node"
+        },
+        "handle": "text-ref-check",
+        "id": "01M6HP108NW407PT5CRBHB0VVF",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6HP108NW407PT5CRA556JBA",
+        "op": "node.create",
+        "parent": "01M5SWSWH9Y4B8S2ADQCGPYQ1E"
+      },
+      {
+        "decision": null,
+        "from": "01M6HP108NW407PT5CRA556JBA",
+        "id": "01M6HP12EYZTW03ZT14PCF850X",
+        "link": "01M6HP12EYZTW03ZT14MZTMJV9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNWYK46P72FBJBHC3HAT23",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HP108NW407PT5CRA556JBA",
+        "id": "01M6HP14FGWKJVT8XDC4QJY35K",
+        "link": "01M6HP14FGWKJVT8XDC12XNNWS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HP0CQRJFFH7Q40JCV9H2DG",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6HNNWFR1J2AHQRNKFTPME46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HP17QKQJCA80XHP48PNPDN",
+  "type": "ops",
+  "v": 1
+}
