@@ -1,0 +1,40 @@
+{
+  "actor": "01M6G8GJ1Z4ZH78PCBJDJXJ2X7",
+  "after": [
+    "01M6G7C32FCW67GBG9SNYQVG96"
+  ],
+  "at": "2026-11-03T09:04:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at a8ca6d47 (diff 4bd51c50..HEAD: internal/api/session_run.go, session_run_trust_test.go). go test ./internal/api -run Trust -count=1: all 5 trust tests pass. TestSessionRunTrustWarnsOnUnreadableConfig writes a malformed ~/.claude.json ('{nope'), calls session.run, and asserts the warnings name the config path, the file stays byte-for-byte '{nope', and no temp file is left. The diff shows every read, parse, CreateTemp, write, chmod and rename failure returning a warning that names the file; trustFolders runs before ctx.Start in session_run.go:192 and its warning is only appended, so the agent still starts. The write goes through os.CreateTemp in the config's directory plus os.Rename, with the temp file removed on any failure. The attempt-1 finding (stale rendered file for an untracked actor) is fixed: rhiza check on a clean git archive of HEAD passes. make check: fmt, vet and every non-timing test pass. The timing budgets (slice TestBudget, api TestReadBudget) miss under load avg 10-12 on 4 cores; slice TestBudget fails the same way on base commit 4bd51c50, and internal/slice does not import internal/api, so these failures are contention, not this leaf. modelapp TestGeneratedModel and script arbiter-panes-one-window pass when re-run alone."
+        },
+        "handle": "claude-trust-failure-warns-verified",
+        "id": "01M6GAE988A95GP0DD92WHTXR7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6GAE988A95GP0DD91CQ8W76",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6GAE988A95GP0DD91CQ8W76",
+        "id": "01M6GAECC2XPBFPCE1FT9FET28",
+        "link": "01M6GAECC2XPBFPCE1FSX3HHHY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FWFF8A7KTJAS9GXSK8CSHK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6FSQG5W0V2D5PFJT8CHK3DV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6GAEHGD6XXYG1HQB2PZDNWX",
+  "type": "ops",
+  "v": 1
+}

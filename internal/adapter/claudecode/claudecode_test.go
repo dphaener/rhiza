@@ -789,3 +789,63 @@ func TestPaneUsageLimit(t *testing.T) {
 		t.Fatal("false positive")
 	}
 }
+
+func TestTrust(t *testing.T) {
+	a := Adapter{}
+	out, err := a.Trust(nil, []string{"/r", "/r/wt", ""})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got struct {
+		Projects map[string]map[string]any `json:"projects"`
+	}
+	if err := json.Unmarshal(out, &got); err != nil {
+		t.Fatal(err)
+	}
+	if len(got.Projects) != 2 || got.Projects["/r"]["hasTrustDialogAccepted"] != true || got.Projects["/r/wt"]["hasTrustDialogAccepted"] != true {
+		t.Errorf("created %s", out)
+	}
+	again, err := a.Trust(out, []string{"/r", "/r/wt"})
+	if err != nil || string(again) != string(out) {
+		t.Errorf("not idempotent: %v\n%s\n%s", err, out, again)
+	}
+	if _, err := a.Trust([]byte("{nope"), []string{"/r"}); err == nil {
+		t.Error("broken JSON was accepted")
+	}
+	in := `{"big": 12345678901234567890, "projects": {"/r": {"x": [1, 2], "hasTrustDialogAccepted": false}}}`
+	out, err = a.Trust([]byte(in), []string{"/r"})
+	if err != nil || !strings.Contains(string(out), "12345678901234567890") || !strings.Contains(string(out), `"x": [`) {
+		t.Errorf("other keys lost: %v %s", err, out)
+	}
+}
+
+func TestTrustFile(t *testing.T) {
+	a := Adapter{}
+	env := map[string]string{"HOME": "/h"}
+	get := func(k string) string { return env[k] }
+	if got := a.TrustFile(get); got != "/h/.claude.json" {
+		t.Errorf("got %q", got)
+	}
+	env["CLAUDE_CONFIG_DIR"] = "/c"
+	if got := a.TrustFile(get); got != "/c/.claude.json" {
+		t.Errorf("got %q", got)
+	}
+	if a.TrustFile(nil) != "" || a.TrustFile(func(string) string { return "" }) != "" {
+		t.Error("a place was invented")
+	}
+}
+
+// Command only builds argv: it writes no file, trust included.
+func TestCommandWritesNoFile(t *testing.T) {
+	home, conf := t.TempDir(), t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("CLAUDE_CONFIG_DIR", conf)
+	if _, err := (Adapter{}).Command(launch("manual")); err != nil {
+		t.Fatal(err)
+	}
+	for _, d := range []string{home, conf} {
+		if ents, _ := os.ReadDir(d); len(ents) != 0 {
+			t.Errorf("Command wrote %v in %s", ents, d)
+		}
+	}
+}
