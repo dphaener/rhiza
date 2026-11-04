@@ -251,10 +251,12 @@ func gitCommits(git func(...string) (string, error)) []check.Commit {
 }
 
 // gitUnclaimed lists the non-merge commits of since..HEAD that change a file
-// outside the store folder, with their claims, for the unclaimed rule. When
-// git log fails there are none.
+// outside the store folder, with their claims, for the unclaimed rule.
+// --full-history keeps such commits on a merged branch whose net change
+// outside the store folder is none, which history simplification would
+// drop. When git log fails there are none.
 func gitUnclaimed(git func(...string) (string, error), since string) []check.Commit {
-	out, err := git("log", "--no-merges", "--format="+trailerLogFormat, since+"..HEAD",
+	out, err := git("log", "--no-merges", "--full-history", "--format="+trailerLogFormat, since+"..HEAD",
 		"--", ":/", ":(exclude)"+store.Dir)
 	if err != nil {
 		return nil
