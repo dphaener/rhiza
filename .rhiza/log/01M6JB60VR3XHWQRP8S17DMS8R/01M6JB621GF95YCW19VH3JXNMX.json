@@ -1,0 +1,24 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6JB60VR3XHWQRP8S2RXPSH5"
+  ],
+  "at": "2026-11-04T03:56:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6HYXRR6ZXYF68BAC96VGKRX",
+        "id": "01M6JB5WAYKPTTY8ERACM8BV99",
+        "node": "01M6HYXRR6ZXYF68BAC8X0KEEQ",
+        "op": "node.retire",
+        "reason": "Duplicate of actor claude-code-a463ece8 (node 01M6HV8Y05D3EMPSARA4H5VJ15) that landed on main from another branch while this run was building; the same session recorded itself twice"
+      }
+    ]
+  },
+  "change_set": "01M6JB60VR3XHWQRP8S17DMS8R",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6JB621GF95YCW19VH3JXNMX",
+  "type": "ops",
+  "v": 1
+}

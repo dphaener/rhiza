@@ -23,6 +23,7 @@ import (
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
+	"github.com/dphaener/rhiza/internal/usage"
 )
 
 func init() {
@@ -154,10 +155,19 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		minFree := conf.minFree
 		selfUpdateOn = conf.selfUpdate
 		state.MaxRuns, state.Settings = conf.maxRuns, conf.stateRows()
-		started, resumed, planned, err := daemonPoll1(ctx, rs, pending, unjournaled, conf.maxRuns, minFree, r.Autonomous, conf.mode, conf.paused, &skips)
+		learnLimits(ctx, common, &state)
+		var hold *usageHold
+		if runs, lerr := rs.List(); lerr == nil {
+			host, _ := os.Hostname()
+			var windows map[usage.Kind]usage.Window
+			windows, state.UsageWindows = usageWindowsNow(ctx, common, state.UsageWindows)
+			hold = usageHoldOf(conf.rows, state.Learned, runs, host, windows)
+		}
+		started, resumed, planned, err := daemonPoll1(ctx, rs, pending, unjournaled, conf.maxRuns, minFree, r.Autonomous, conf.mode, conf.paused, hold, &skips)
 		resp.Planned = append(resp.Planned, planned...)
 		if err == nil {
 			state.Skips = skips
+			state.UsageHold = usageHoldState(hold, state.UsageHold, ctx.Now())
 			if low, free := daemonDiskLow(ctx, minFree); !low {
 				state.DiskLow = nil
 			} else if state.DiskLow == nil {
@@ -248,6 +258,9 @@ func daemonStartState(common string, self daemon.Holder, version, commit string,
 		state.Events, state.EventsSeeded = prev.Events, prev.EventsSeeded
 		state.Hooks = prev.Hooks
 		state.DiskLow = prev.DiskLow
+		state.UsageHold = prev.UsageHold
+		state.UsageWindows = prev.UsageWindows
+		state.Learned = prev.Learned
 		// A re-exec, or a restart, keeps the holds of the daemon before.
 		unjournaled = daemonRestoreUnjournaled(prev.Unjournaled)
 	}
@@ -319,6 +332,7 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 	items = append(items, overlaps...)
 	// This poll's disk-low state, not the one saved after the last poll.
 	items = append(items, diskLowItems(state.DiskLow)...)
+	items = append(items, usageHoldItems(state.UsageHold)...)
 	if common, err := gitCommonDir(ctx); err == nil {
 		items = append(items, mainStaleItems(common)...)
 	}
@@ -369,6 +383,8 @@ func inboxNotice(what string, it InboxItem) string {
 		return what + ": an interrupted run was not resumed"
 	case InboxDiskLow:
 		return "disk space is low: the daemon holds new starts and resumes"
+	case InboxUsageReserve:
+		return "usage reserve: the daemon holds new launches until the window resets"
 	case InboxMainStale:
 		return what + ": main was not updated after the merge: " + it.Detail
 	case InboxOverlap:
@@ -517,7 +533,7 @@ func daemonRequestWaits(ctx *Ctx) bool {
 // at most max-1 slots (when max > 1), so one is left for it. pending holds the change sets started; unjournaled
 // those whose start never journaled (see daemonHeld). It returns the
 // change sets started, the runs resumed and the requests started.
-func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, minFree uint64, autonomous bool, mode string, paused bool, skips *[]daemon.Skip) (started, resumed, planned []string, err error) {
+func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjournaled map[string]daemonPending, max int, minFree uint64, autonomous bool, mode string, paused bool, hold *usageHold, skips *[]daemon.Skip) (started, resumed, planned []string, err error) {
 	fold, err := daemonFoldOf(ctx)
 	if err != nil {
 		return nil, nil, nil, err
@@ -530,18 +546,20 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	}
 	host, _ := os.Hostname()
 	low, free := daemonDiskLow(ctx, minFree)
+	// A usage hold stops everything the daemon would launch, as low disk does.
+	stopped := low || hold != nil
 	accepted := func(change string) bool {
 		st, ok := fold.stateOf(change)
 		return ok && st == string(changeset.StateAccepted)
 	}
 	var resumable []string
-	if !low && !paused {
+	if !stopped && !paused {
 		resumable = daemon.Resumable(runs, host, nil, rs.Live, accepted, ctx.Now())
 	}
 	// The owner's queued continuations are started below, within max; the
 	// daemon's own resume of an interrupted run leaves those runs to them.
 	var queuedRuns []string
-	if !low && !paused {
+	if !stopped && !paused {
 		if common, err := gitCommonDir(ctx); err == nil {
 			if q, err := daemon.ReadContinues(common); err == nil {
 				for _, c := range q {
@@ -612,6 +630,12 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 			low = append(low, daemon.Skip{Change: cs, Reason: daemon.SkipDiskLow, Detail: []string{detail}})
 		}
 		*skips = append(append(planSkips, unj...), low...)
+	} else if hold != nil {
+		var held []daemon.Skip
+		for _, cs := range cands {
+			held = append(held, daemon.Skip{Change: cs, Reason: daemon.SkipUsageReserve, Detail: []string{hold.Detail()}})
+		}
+		*skips = append(append(planSkips, unj...), held...)
 	} else {
 		// A queued plan request keeps one slot from the ship picks: plan
 		// runs are short and make the work ship runs build, so a waiting
@@ -646,7 +670,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		pending[cs] = daemonPending{at: ctx.Now(), runs: daemonRunsOf(runs, cs)}
 		started = append(started, cs)
 	}
-	if paused || low {
+	if paused || stopped {
 		return started, resumed, nil, nil
 	}
 	running := len(held) + len(started)
@@ -985,24 +1009,25 @@ type DaemonEvent struct {
 type DaemonSkip struct {
 	Change string   `json:"change" desc:"The change set's ID"`
 	Title  string   `json:"title" desc:"The change set's display title"`
-	Reason string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low or ship-owner"`
-	Detail []string `json:"detail" desc:"The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; else empty"`
+	Reason string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, usage-reserve or ship-owner"`
+	Detail []string `json:"detail" desc:"The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; else empty"`
 }
 
 // skipText is the words for a skip reason in the text status.
 var skipText = map[string]string{
-	daemon.SkipNoMilestone: "serves no milestone",
-	daemon.SkipNoLeaves:    "has no leaves",
-	daemon.SkipNotReady:    "not ready",
-	daemon.SkipLive:        "has a live run",
-	daemon.SkipFailed:      "its latest run failed and waits in the inbox",
-	daemon.SkipShipped:     "its latest run shipped it",
-	daemon.SkipHeld:        "started, its run not journaled yet",
-	daemon.SkipUnjournaled: "its start wrote no journal",
-	daemon.SkipNoSlot:      "waiting for a slot",
-	daemon.SkipDiskLow:     "disk space is low",
-	daemon.SkipPaused:      "paused",
-	daemon.SkipShipOwner:   "ship is set to owner: only the owner starts its run",
+	daemon.SkipNoMilestone:  "serves no milestone",
+	daemon.SkipNoLeaves:     "has no leaves",
+	daemon.SkipNotReady:     "not ready",
+	daemon.SkipLive:         "has a live run",
+	daemon.SkipFailed:       "its latest run failed and waits in the inbox",
+	daemon.SkipShipped:      "its latest run shipped it",
+	daemon.SkipHeld:         "started, its run not journaled yet",
+	daemon.SkipUnjournaled:  "its start wrote no journal",
+	daemon.SkipNoSlot:       "waiting for a slot",
+	daemon.SkipDiskLow:      "disk space is low",
+	daemon.SkipUsageReserve: "usage reserve: held until the window resets",
+	daemon.SkipPaused:       "paused",
+	daemon.SkipShipOwner:    "ship is set to owner: only the owner starts its run",
 }
 
 // DaemonStatusResponse is the daemon's state. While no daemon holds the

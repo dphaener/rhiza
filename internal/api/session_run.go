@@ -207,10 +207,11 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 			resp.Warnings = follow.stop()
 			return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("wait for %s: %v", a.Name(), err))
 		}
-		wait, limited := limitWait(ctx, a, rec.ID)
+		wait, hit, limited := limitWait(ctx, a, rec.ID)
 		if !limited {
 			break
 		}
+		recordLimitHit(ctx, a, hit)
 		if pause >= maxUsageLimitPauses {
 			resp.Warnings = follow.stop()
 			return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("%s is still stopped at its usage limit after %d pauses: gave up instead of pausing again", a.Name(), maxUsageLimitPauses))
@@ -329,22 +330,22 @@ func watchLimit(ctx *Ctx, a adapter.Adapter, sid string, base int, p Process) (s
 // limit and how long to wait before resuming it: until the reset time the
 // agent gave, else usageLimitWait. A transcript that cannot be read is no
 // limit.
-func limitWait(ctx *Ctx, a adapter.Adapter, sid string) (time.Duration, bool) {
+func limitWait(ctx *Ctx, a adapter.Adapter, sid string) (time.Duration, adapter.UsageLimit, bool) {
 	if ctx.Home == "" && ctx.Getenv == nil {
-		return 0, false
+		return 0, adapter.UsageLimit{}, false
 	}
 	transcript, err := readTranscript(ctx, a, sid)
 	if err != nil {
-		return 0, false
+		return 0, adapter.UsageLimit{}, false
 	}
 	l, ok := a.UsageLimit(transcript)
 	if !ok {
-		return 0, false
+		return 0, adapter.UsageLimit{}, false
 	}
 	if l.ResetAt.IsZero() {
-		return usageLimitWait, true
+		return usageLimitWait, l, true
 	}
-	return max(0, l.ResetAt.Sub(ctx.Now())), true
+	return max(0, l.ResetAt.Sub(ctx.Now())), l, true
 }
 
 // recordLimitPause records a working report with detail as the session's
@@ -768,7 +769,7 @@ func recordHook(ctx *Ctx, st *session.Store, rec session.Record, a adapter.Adapt
 	// An agent stopped at its usage limit goes idle at its prompt and stays
 	// there; it is paused, not ready, until session.run stops and resumes it.
 	if report.State == session.StateIdle {
-		if _, limited := limitWait(ctx, a, rec.ID); limited {
+		if _, _, limited := limitWait(ctx, a, rec.ID); limited {
 			report.State, report.Detail = session.StateWorking, limitPausedDetail
 		}
 	}

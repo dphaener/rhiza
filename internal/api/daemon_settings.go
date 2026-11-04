@@ -63,12 +63,31 @@ var settingDefs = []settingDef{
 		}
 		return nil
 	}},
+	// The usage governor's windows: a limit is a token count, unset by
+	// default (a window with no known limit never holds); the reserve is the
+	// percent of a limit kept back.
+	{key: "rhiza.daemon.usage.session", def: "", validate: validateTokenLimit},
+	{key: "rhiza.daemon.usage.weekly", def: "", validate: validateTokenLimit},
+	{key: "rhiza.daemon.usage.reserve", def: "20", validate: func(v string) error {
+		n, err := strconv.Atoi(v)
+		if err != nil || n < 0 || n > 100 {
+			return fmt.Errorf("must be a whole number from 0 to 100")
+		}
+		return nil
+	}},
 	{key: "rhiza.autonomy.plan", def: AutonomyOwner, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	// accept governs only an autonomous plan's gate, which accepts unless
 	// it is owner; other change sets always wait for the owner.
 	{key: "rhiza.autonomy.accept", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	{key: "rhiza.autonomy.ship", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	{key: "rhiza.autonomy.signoff", def: AutonomyAuto, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
+}
+
+func validateTokenLimit(v string) error {
+	if n, err := strconv.ParseUint(v, 10, 64); err != nil || n < 1 {
+		return fmt.Errorf("must be a whole number of tokens, at least 1")
+	}
+	return nil
 }
 
 func findSetting(key string) (settingDef, bool) {
@@ -210,8 +229,8 @@ func runDaemonSettings(ctx *Ctx, req any) (any, error) {
 
 // DaemonSetRequest names a setting and its new value.
 type DaemonSetRequest struct {
-	Key   string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree or permissionMode, or rhiza.autonomy.plan, accept, ship or signoff"`
-	Value string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a size, a permission mode, or auto or owner, as the key takes"`
+	Key   string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, or rhiza.autonomy.plan, accept, ship or signoff"`
+	Value string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, or auto or owner, as the key takes"`
 }
 
 // DaemonSetResponse is the setting written.

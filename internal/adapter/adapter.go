@@ -259,3 +259,25 @@ type Truster interface {
 	// every folder in dirs trusted and every other setting unchanged.
 	Trust(current []byte, dirs []string) ([]byte, error)
 }
+
+// UsageRecord is one agent message's counted tokens and when it was logged.
+type UsageRecord struct {
+	// At is the message's timestamp.
+	At time.Time
+	// Tokens is the message's input, output and cache-creation tokens;
+	// cache reads are never counted.
+	Tokens int64
+}
+
+// UsageReader is the optional part of an adapter that reports the agent's
+// token use on the whole machine, the owner's own sessions included. Unlike
+// the rest of an adapter it reads files, and only those the agent keeps under
+// its own config directory.
+type UsageReader interface {
+	// UsageRecords returns the token records of every transcript the agent
+	// keeps on the machine, helpers' included, that are timestamped in
+	// [from, to), in time order. Each message counts once, by its id.
+	// getenv looks up an environment variable. Unreadable files and lines
+	// are skipped, not fatal.
+	UsageRecords(getenv func(string) string, from, to time.Time) ([]UsageRecord, error)
+}

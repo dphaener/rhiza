@@ -65,18 +65,19 @@ func init() {
 
 // The kinds of an InboxItem.
 const (
-	InboxQuestion  = "question"
-	InboxOpen      = "open"
-	InboxSignoff   = "signoff"
-	InboxFailed    = "failed"
-	InboxGaveUp    = "gave-up"
-	InboxSkipped   = "skipped"
-	InboxBlocker   = "blocker"
-	InboxOverlap   = "overlap"
-	InboxStalled   = "stalled"
-	InboxDiskLow   = "disk-low"
-	InboxMainStale = "main-stale"
-	InboxAccept    = "accept"
+	InboxQuestion     = "question"
+	InboxOpen         = "open"
+	InboxSignoff      = "signoff"
+	InboxFailed       = "failed"
+	InboxGaveUp       = "gave-up"
+	InboxSkipped      = "skipped"
+	InboxBlocker      = "blocker"
+	InboxOverlap      = "overlap"
+	InboxStalled      = "stalled"
+	InboxDiskLow      = "disk-low"
+	InboxUsageReserve = "usage-reserve"
+	InboxMainStale    = "main-stale"
+	InboxAccept       = "accept"
 )
 
 // InboxRequest takes nothing.
@@ -85,7 +86,7 @@ type InboxRequest struct{}
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
 	ID             string `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, main-stale or accept"`
+	Kind           string `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, usage-reserve, main-stale or accept"`
 	At             string `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
 	Run            string `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker and an overlap"`
 	Change         string `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)"`
@@ -132,6 +133,11 @@ func (r InboxResponse) Human(w io.Writer) {
 		}
 		if it.Kind == InboxDiskLow {
 			fmt.Fprintf(w, "%s disk-low\n", it.ID)
+			fmt.Fprintf(w, "  %s\n", it.Detail)
+			continue
+		}
+		if it.Kind == InboxUsageReserve {
+			fmt.Fprintf(w, "%s usage-reserve\n", it.ID)
 			fmt.Fprintf(w, "  %s\n", it.Detail)
 			continue
 		}
@@ -373,7 +379,7 @@ func runInbox(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	items = sortInboxItems(append(append(append(append(items, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxMainStale(ctx)...))
+	items = sortInboxItems(append(append(append(append(append(items, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMainStale(ctx)...))
 	title := changeTitleOf(ctx)
 	for i := range items {
 		items[i].ChangeTitle = title(items[i].Change)
@@ -522,6 +528,33 @@ func diskLowItems(low *daemon.DiskLow) []InboxItem {
 	}}
 }
 
+// inboxUsageHold is one usage-reserve item while the daemon's last poll held
+// its launches for usage, and none once a later poll did not.
+func inboxUsageHold(ctx *Ctx) []InboxItem {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return nil
+	}
+	st, ok := daemon.ReadState(common)
+	if !ok {
+		return nil
+	}
+	return usageHoldItems(st.UsageHold)
+}
+
+// usageHoldItems is one usage-reserve item for h, none when h is nil.
+func usageHoldItems(h *daemon.UsageHold) []InboxItem {
+	if h == nil {
+		return nil
+	}
+	at := h.Since.UTC().Format(time.RFC3339)
+	sum := sha256.Sum256([]byte(strings.Join([]string{InboxUsageReserve, at}, "\x00")))
+	return []InboxItem{{
+		ID: hex.EncodeToString(sum[:])[:7], Kind: InboxUsageReserve, At: at,
+		Detail: usageHoldDetail(*h),
+	}}
+}
+
 // inboxMainStale is one main-stale item while the last ship close-out could
 // not fast-forward the main checkout, and none once a later one did.
 func inboxMainStale(ctx *Ctx) []InboxItem {
@@ -630,7 +663,7 @@ func findInboxItem(ctx *Ctx, ref string) (InboxItem, run.State, error) {
 	if err != nil {
 		return InboxItem{}, run.State{}, err
 	}
-	for _, it := range append(append(append(append(all, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxMainStale(ctx)...) {
+	for _, it := range append(append(append(append(append(all, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMainStale(ctx)...) {
 		if strings.HasPrefix(it.ID, ref) {
 			found = append(found, it)
 		}
@@ -663,6 +696,9 @@ func runInboxOpen(ctx *Ctx, req any) (any, error) {
 	}
 	if item.Kind == InboxDiskLow {
 		return nil, Usagef("item %s is the daemon's low disk space: it has no tab to open", item.ID).WithNext("rhiza daemon status")
+	}
+	if item.Kind == InboxUsageReserve {
+		return nil, Usagef("item %s is the daemon's usage hold: it has no tab to open", item.ID).WithNext("rhiza daemon status")
 	}
 	if item.Kind == InboxMainStale {
 		return nil, Usagef("item %s is the main checkout not being up to date: it has no tab to open", item.ID).WithNext("rhiza health")

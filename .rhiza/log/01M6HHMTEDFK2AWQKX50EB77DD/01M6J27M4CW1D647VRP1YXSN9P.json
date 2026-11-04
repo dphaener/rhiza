@@ -1,0 +1,40 @@
+{
+  "actor": "01M6HZXCQMRGRQ1DZMCGQS93FX",
+  "after": [
+    "01M6J1H85PQ87HWV78YYQR41RR"
+  ],
+  "at": "2026-11-04T01:19:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 86877c2f: go test ./cmd/rhiza -run 'TestScripts/(usage-settings|describe-golden|daemon)' passes; usage-settings.txtar covers the three keys' defaults, rhiza daemon set for each, and exit 2 with nothing written for reserve 101, -1 and lots and for session many and weekly 1.5. By hand with a scratch build in a fresh repo: daemon settings --json shows usage.session and usage.weekly at default \"\" and usage.reserve at default 20; reserve 101 and lots, and weekly many, 1.5 and 0, each exit 2 and leave git config unset. describe-golden.txtar carries the updated daemon.set desc. make fmt-check, vet and self-check pass, so attempt 1's finding (stale rendered actor files) is fixed. make check's test step failed only TestReadBudget (internal/api read-timing medians over 50ms) on a 4-core VM at load 11 to 22; the same test fails the same way at the leaf's base b67b44b7, and the leaf touches no read path. Every other package passes."
+        },
+        "handle": "usage-settings-verified",
+        "id": "01M6J27B7BHBFNKZC78JBN8SZ3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6J27B7BHBFNKZC78J3PV7JB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6J27B7BHBFNKZC78J3PV7JB",
+        "id": "01M6J27F8V15SEQ6TJW8HNEDF9",
+        "link": "01M6J27F8V15SEQ6TJW7K1HHRP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ0R8X5Q00XXMB8CRVN89Q",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HHMTEDFK2AWQKX50EB77DD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J27M4CW1D647VRP1YXSN9P",
+  "type": "ops",
+  "v": 1
+}

@@ -159,7 +159,7 @@ func (f *daemonFoldFix) poll(t testing.TB) {
 	t.Helper()
 	var skips []daemon.Skip
 	defer func() { f.skips = skips }()
-	if _, _, _, err := daemonPoll1(f.ctx, f.rs, f.pending, f.unj, 4, 0, false, "", false, &skips); err != nil {
+	if _, _, _, err := daemonPoll1(f.ctx, f.rs, f.pending, f.unj, 4, 0, false, "", false, nil, &skips); err != nil {
 		t.Fatal(err)
 	}
 	if err := daemonNotify(f.ctx, f.rs, &f.state, ""); err != nil {

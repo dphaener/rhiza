@@ -1735,11 +1735,11 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree or permissionMode, or rhiza.autonomy.plan, accept, ship or signoff",
+            "description": "The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, or rhiza.autonomy.plan, accept, ship or signoff",
             "type": "string"
           },
           "value": {
-            "description": "The new value: true or false, a whole number, a size, a permission mode, or auto or owner, as the key takes",
+            "description": "The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, or auto or owner, as the key takes",
             "type": "string"
           }
         },
@@ -2038,14 +2038,14 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "detail": {
-                  "description": "The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; else empty",
+                  "description": "The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; else empty",
                   "items": {
                     "type": "string"
                   },
                   "type": "array"
                 },
                 "reason": {
-                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low or ship-owner",
+                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, usage-reserve or ship-owner",
                   "type": "string"
                 },
                 "title": {
@@ -2505,7 +2505,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "parts": {
-            "description": "Every part, in a fixed order: daemon, autonomy, machine, disk, main, inbox, requests, roadmap, check",
+            "description": "Every part, in a fixed order: daemon, autonomy, machine, disk, usage, main, inbox, requests, roadmap, check",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -2527,6 +2527,7 @@ cmp stdout describe.golden.json
                     "autonomy",
                     "machine",
                     "disk",
+                    "usage",
                     "main",
                     "inbox",
                     "requests",
@@ -2575,7 +2576,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Report the daemon, autonomy settings, the machine trust, free disk, the main checkout, inbox, queued requests, roadmap and rhiza check, each part ok, warn or bad; exit 1 when any part is bad",
+      "summary": "Report the daemon, autonomy settings, the machine trust, free disk, the usage hold, the main checkout, inbox, queued requests, roadmap and rhiza check, each part ok, warn or bad; exit 1 when any part is bad",
       "write": false
     },
     {
@@ -2734,7 +2735,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, main-stale or accept",
+                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, usage-reserve, main-stale or accept",
                   "type": "string"
                 },
                 "next": {
