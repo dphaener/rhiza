@@ -25,6 +25,7 @@ Anyone can build quality software with agents, using as little or as much of Gen
 - serves change set `01M5SWTV1D5DNN6E2B7HB1XA9Q` (genesis link checks endpoint kinds when the link is written, not only in genesis check.)
 - serves change set `01M5SWTW02ZB4590CKA09AFSQJ` (`genesis why` on a decision shows only the quotes that decision cites, not every quote of its Source, so a decision's lineage stays short.)
 - serves change set `01M620GA5ZK6Z854D07NH0R8WX` (The inbox: rhiza inbox lists every run's questions, sign-offs, failed runs and runs the daemon gave up on, with a recommendation for each question, opens each in its tab, takes sign-offs, and the daemon sends one Rex notification per new item.)
+- serves change set `01M6H3A65RDP761HKE82STZSQZ` (log, roadmap and why page their output with a cursor, as ls already does (replaces backlog change set 01M5SWTHZSPBNQ, which has no leaves; link the new change set to it as relates-to and withdraw the old one in the plan))
 
 ## History
 
