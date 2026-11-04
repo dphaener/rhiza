@@ -1,0 +1,27 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6K06K196QG4JJHHZ4HKH5TN"
+  ],
+  "at": "2026-11-04T10:03:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6K05ZW2H5WPK3SYCBMQGV3E",
+        "id": "01M6K06S0M6A1TRQQQZNJCX0G4",
+        "link": "01M6K06S0M6A1TRQQQZNJ10DCY",
+        "note": "Generalises the plan request's kept slot to queued continuations",
+        "op": "link.create",
+        "to": "01M6HT0ZNHGD1V36Z7F77EXM52",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M6K044DTSK7PT604NHPNGD17",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6K06YSYQPE855RHF486SR6W",
+  "type": "ops",
+  "v": 1
+}
