@@ -1,0 +1,40 @@
+{
+  "actor": "01M6KQWN2PHBNQR0NW7NQ086YC",
+  "after": [
+    "01M6KQM0EREXDGHV24X52B0F63"
+  ],
+  "at": "2026-11-04T17:04:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e4375da1 (attempt 2, review cycle 2): go test -count=1 ./internal/api -run TestAddQuestionLenientRefs passes (a run session's question 'Use @@store, not @@ghost?' is written, stored as @@{<full ID>} for store and literal @@ghost, shown as 'Use @@store, not @@@@ghost?'). go test -count=1 ./cmd/rhiza -run TestScripts/(text-refs-write|text-refs-engine-writes|run-ship-change-rebase|describe-golden) passes: text-refs-write.txtar now writes a 20-char ID prefix and greps the full ID stored, and shows a note's @@nowhere as @@@@nowhere; text-refs-engine-writes.txtar shows question answer's Decision as 'Use @@other, not @@@@ghost' with the quote verbatim; run-ship-change-rebase.txtar conflicts on a file named @@shipping, stores the question statement with @@{<ID>}, and re-raising writes nothing (log bytes cmp equal). Mutation check in a scratch worktree: dropping the resolved-statement comparison in ship_rebase.go makes run-ship-change-rebase.txtar fail at line 203, so the dedupe test is sensitive. Scratch-build probe (clean env): rhiza add capability bad --field statement=@@nosuch exits 4 naming '@@nosuch in field statement' with next 'fix the handle, or write @@@@ for a literal @@', also with --dry-run, and writes nothing. guide text internal/guide/text/rhiza.md:82 tells agents to write @@handle. make check: fmt-check, vet and test pass; self-check fails only on text-ref-check-verified (evidence for leaf text-ref-check, commit efb07bd4, not this leaf) holding a literal @@{01ZZZZZZZZZZZZZZZZZZZZZZZZ}."
+        },
+        "handle": "text-ref-write-verified-2",
+        "id": "01M6KR94CGPZKMCXT15J4EJ3WM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KR94CGPZKMCXT15H9PYP3Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KR94CGPZKMCXT15H9PYP3Y",
+        "id": "01M6KR9C412ZF47WVF6NW9Q33Y",
+        "link": "01M6KR9C412ZF47WVF6JA0M07V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HP0GQ76PY04WKDAPVY30Q6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HNNWFR1J2AHQRNKFTPME46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KR9Q7MFEPASQJAMZHNMDVA",
+  "type": "ops",
+  "v": 1
+}
