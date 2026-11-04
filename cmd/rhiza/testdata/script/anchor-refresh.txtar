@@ -1,0 +1,81 @@
+# rhiza anchor refresh re-fingerprints an anchor from the working tree into
+# the current change set. Unchanged anchors write nothing; a gone path or
+# symbol is refused.
+
+exec rhiza init
+exec rhiza add capability thing --field 'statement=Does the thing' --record
+exec rhiza add anchor pin --field path=pkg/p.go --field symbol=Keep --record
+exec rhiza link pin implements thing --record
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+
+# Unchanged: nothing is written, and it says so.
+exec rhiza change new Refresh
+exec rhiza anchor refresh pin
+stdout 'unchanged'
+exec rhiza anchor refresh pin --json
+stdout '"unchanged": true'
+exec rhiza change show
+! stdout 'pin'
+
+# The anchored function changes: refresh writes a set of the fingerprint.
+cp pkg/p2.go pkg/p.go
+exec rhiza anchor refresh pin --dry-run
+stdout 'Dry run'
+exec rhiza change show
+! stdout 'pin'
+exec rhiza anchor refresh pin --json
+stdout '"unchanged": false'
+stdout '"fingerprint": "sha256:'
+exec rhiza change show
+stdout 'pin'
+
+# --json and api call print the same bytes (a dry run, so it is repeatable).
+exec rhiza anchor refresh pin --json --dry-run
+cp stdout cli.json
+exec rhiza api call anchor.refresh '{"anchor":"pin"}' --dry-run
+cmp stdout cli.json
+
+# Once it lands, the fingerprint matches and check has no anchor finding.
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+! stdout 'anchor'
+exec rhiza change new Again
+exec rhiza anchor refresh pin
+stdout 'unchanged'
+
+# Refusals, each with a Next.
+exec rhiza add anchor whole --field path=pkg/other.go
+cp pkg/other.go pkg/other.go.bak
+rm pkg/other.go
+! exec rhiza anchor refresh whole
+stderr 'path not found'
+stderr 'next: rhiza'
+cp pkg/other.go.bak pkg/other.go
+exec rhiza add anchor gone --field path=pkg/p.go --field symbol=Keep
+cp pkg/p.go pkg/p.go.bak
+cp pkg/other.go pkg/p.go
+! exec rhiza anchor refresh gone
+stderr 'symbol not found'
+stderr 'next: rhiza'
+cp pkg/p.go.bak pkg/p.go
+! exec rhiza anchor refresh thing
+stderr 'not an anchor'
+stderr 'next: rhiza'
+-- pkg/p.go --
+package p
+
+func Keep() int { return 1 }
+-- pkg/p2.go --
+package p
+
+func Keep() int { return 2 }
+-- pkg/other.go --
+package p
+
+func Other() int { return 2 }

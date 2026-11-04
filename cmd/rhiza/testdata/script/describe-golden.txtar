@@ -199,6 +199,66 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "anchor.refresh",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "anchor": {
+            "description": "The anchor: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
+            "type": "string"
+          }
+        },
+        "required": [
+          "anchor"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "anchor": {
+            "description": "The anchor",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "change_set": {
+            "description": "The change set written to; absent when unchanged",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "entry": {
+            "description": "The ops entry written; absent when unchanged and in a dry run",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "fingerprint": {
+            "description": "The fingerprint of the working tree",
+            "type": "string"
+          },
+          "previous": {
+            "description": "The fingerprint the anchor held; absent if it had none",
+            "type": "string"
+          },
+          "unchanged": {
+            "description": "True if the fingerprint already matched the working tree, so nothing was written",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "anchor",
+          "fingerprint",
+          "unchanged"
+        ],
+        "type": "object"
+      },
+      "summary": "Re-fingerprint an anchor from the working tree into the current change set",
+      "write": true
+    },
+    {
       "input": {
         "additionalProperties": false,
         "properties": {
