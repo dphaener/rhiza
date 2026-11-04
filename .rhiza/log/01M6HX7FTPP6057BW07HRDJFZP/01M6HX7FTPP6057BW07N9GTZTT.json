@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-03T23:52:07Z",
+  "body": {
+    "intent": "Record agent actor claude-code-efe21df3 for session efe21df3-1122-4015-a51e-01a1a3d39fb5",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6HX7FTPP6057BW07HRDJFZP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HX7FTPP6057BW07N9GTZTT",
+  "type": "open",
+  "v": 1
+}
