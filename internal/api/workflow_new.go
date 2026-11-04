@@ -61,11 +61,10 @@ const workflowSkeleton = `name = "%[1]s"
 start = "build"
 
 # An agent step runs an agent session with this prompt. {change}, {title},
-# {step} and {run} are filled in.
+# {step} and {run} are filled in. The agent and its permission mode come
+# from run start's --agent and --permission-mode.
 [step.build]
 kind = "agent"
-permission_mode = "manual"
-agent = "claude-code"
 prompt = "Build change set {change} ({title}) in step {step} of run {run}"
 on.pass = "test"
 
