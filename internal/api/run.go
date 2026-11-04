@@ -2124,6 +2124,11 @@ func rexNotice(n run.Notice) []byte {
 	if !n.Blocked || n.Block == nil {
 		return rexReport("working", "", "", "")
 	}
+	return rexReport("blocked", n.Block.Kind, n.Block.TabTitle, rexNoticeMsg(n))
+}
+
+// rexNoticeMsg is the message of a blocked notice.
+func rexNoticeMsg(n run.Notice) string {
 	b := n.Block
 	what := n.Title
 	if what == "" {
@@ -2137,7 +2142,7 @@ func rexNotice(n run.Notice) []byte {
 	if q := strings.TrimSpace(b.Question); q != "" {
 		msg += ": " + q
 	}
-	return rexReport("blocked", b.Kind, b.TabTitle, msg)
+	return msg
 }
 
 // rexReport encodes one OSC 7501 root-record report from app rhiza (see
