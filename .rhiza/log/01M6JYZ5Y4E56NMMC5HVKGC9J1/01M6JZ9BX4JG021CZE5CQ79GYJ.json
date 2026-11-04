@@ -1,0 +1,123 @@
+{
+  "actor": "01M6JYZS49BCGQEWVJG8NZJHDD",
+  "after": [
+    "01M6JZ769DJ5XDS6KXWCCG6HD6"
+  ],
+  "at": "2026-11-04T09:47:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6JZ5FER8SFM76M7DQWEJB92",
+        "id": "01M6JZ8C9955425999WYFE7TFC",
+        "link": "01M6JZ8C988754DEWRJ3J16W5W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JZ73TB639GE6J5WA410669",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "make check runs a Go source scan that pins machine.toml to internal/machine, which only reads it, and a testscript showing the ops that read trust leave machine.toml byte-identical and never create it",
+          "statement": "Rhiza never writes or raises a machine's trust: the machine config is changed only by hand, so no agent, run or daemon can lift the bypass refusal through rhiza."
+        },
+        "handle": "machine-trust-never-written",
+        "id": "01M6JZ8F9AG1R89JSP0KMG8G6X",
+        "key": null,
+        "kind": "constraint",
+        "node": "01M6JZ8F9AG1R89JSP0HGGR7TQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JZ8F9AG1R89JSP0HGGR7TQ",
+        "id": "01M6JZ8JRZS6H82F0PT6DYRW4E",
+        "link": "01M6JZ8JRZS6H82F0PT6569XJQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JZ73TB639GE6J5WA410669",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6JZ8F9AG1R89JSP0HGGR7TQ",
+        "id": "01M6JZ8N9TDV779Z0KRA9TBFJH",
+        "link": "01M6JZ8N9TDV779Z0KR7ADGG3C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G0FSSB90F7DHTX1VVZQ86N",
+        "type": "constrains"
+      },
+      {
+        "decision": null,
+        "from": "01M6JZ8F9AG1R89JSP0HGGR7TQ",
+        "id": "01M6JZ8QN7W8617SRY06WE385V",
+        "link": "01M6JZ8QN7W8617SRY06Q12XMG",
+        "note": "Never writing trust keeps the dedicated-only bypass rule from being lifted by rhiza itself",
+        "op": "link.create",
+        "to": "01M5SWRHD34WXSYX7AW8JN9RE9",
+        "type": "relates-to"
+      },
+      {
+        "fields": {
+          "acceptance": "(1) A Go test parses the module's non-test Go source (go/parser) and fails if internal/machine calls any file-writing or file-changing function (os.WriteFile, os.Create, os.OpenFile with write flags, os.Mkdir/MkdirAll, os.Rename, os.Remove/RemoveAll, os.Chmod, os.Symlink/Link, os.Truncate), if internal/machine exports anything but Path, Read, Load, Config and the trust constants, or if any file outside internal/machine names the machine config file other than as a display string (no filepath.Join or open of \"machine.toml\"). (2) A testscript sets XDG_CONFIG_HOME, writes machine.toml with trust = \"daily\" and keeps a copy, runs rhiza machine show, rhiza api call machine.show, rhiza health and the refused rhiza session start --permission-mode bypassPermissions, then cmp shows the file byte-identical and trust still daily; a second pass with no machine config runs the same ops and the file still does not exist.",
+          "statement": "make check proves no rhiza code path writes the machine config: the file is reached only through internal/machine, which can only read it, and the ops that read trust leave it unchanged"
+        },
+        "handle": "machine-trust-unwritten",
+        "id": "01M6JZ8TSXBYMDF1G4PFNXY1AE",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M6JZ8TSXBYMDF1G4PBXH3MRB",
+        "op": "node.create",
+        "parent": "01M5SWT6NGS1S2AS5PZN74E68P"
+      },
+      {
+        "decision": null,
+        "from": "01M6JZ8TSXBYMDF1G4PBXH3MRB",
+        "id": "01M6JZ902N7SCYXQC7QJ1MDKM5",
+        "link": "01M6JZ902N7SCYXQC7QHYEDW2A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JZ5FER8SFM76M7DQWEJB92",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6JZ8TSXBYMDF1G4PBXH3MRB",
+        "id": "01M6JZ92PTK3PYM2R8GGQB10XQ",
+        "link": "01M6JZ92PTK3PYM2R8GDC3XB6J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G0BXZ346G3WKP358VWH6AB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6JZ8TSXBYMDF1G4PBXH3MRB",
+        "id": "01M6JZ950W9QZGCPS3BC9754Y2",
+        "link": "01M6JZ950W9QZGCPS3B8YZVGKV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JZ73TB639GE6J5WA410669",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6JZ8F9AG1R89JSP0HGGR7TQ",
+        "id": "01M6JZ979SN6N0BE0JWGWXG8JY",
+        "link": "01M6JZ979SN6N0BE0JWFWJPN0B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JZ8TSXBYMDF1G4PBXH3MRB",
+        "type": "constrains"
+      }
+    ]
+  },
+  "change_set": "01M6JYZ5Y4E56NMMC5HVKGC9J1",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JZ9BX4JG021CZE5CQ79GYJ",
+  "type": "ops",
+  "v": 1
+}
