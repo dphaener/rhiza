@@ -122,9 +122,11 @@ max_visits = 3
 on.pass = "wait-main"
 on.fail = "rebase-merge"
 
-# Main is confirmed locally with git, not by waiting for CI on it: the
-# merge commit's tree must equal the tested head's tree, else the step
-# fails with a stop: line. The wait passes at its first check.
+# Main is confirmed locally with git, not by waiting for CI on it, when the
+# merge commit's tree equals the tested head's: the wait passes at its first
+# check. When main moved between the checks and the merge the trees differ,
+# and the wait dispatches CI on the merge commit (once) and waits for it;
+# main-green then stops, with a stop: line, if it failed after a rerun.
 [step.wait-main]
 kind = "wait"
 until = "rhiza ship check --main --settled"

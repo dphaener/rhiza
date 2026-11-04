@@ -63,7 +63,7 @@ const shipDir = "rhiza/ship"
 // merge commit on main.
 type ShipCheckRequest struct {
 	Settled bool `json:"settled,omitempty" flag:"settled" desc:"Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it rebases the branch onto main as ship rebase does, then reports not settled, and exits 75 with a stop: line on a conflict in code"`
-	Main    bool `json:"main,omitempty" flag:"main" desc:"Check, locally with git and no wait on CI, that the merge commit rhiza ship merge recorded has the tree of the head whose checks passed, instead of checking the pull request; a differing tree exits 75 with a stop: line"`
+	Main    bool `json:"main,omitempty" flag:"main" desc:"Check that the merge commit rhiza ship merge recorded has the tree of the head whose checks passed, locally with git and no wait on CI, instead of checking the pull request; a differing tree dispatches CI on the merge commit (once) and checks its runs as it does a pull request's, and a stop that cannot be waited out exits 75 with a stop: line"`
 	PROpen  bool `json:"pr_open,omitempty" flag:"pr-open" desc:"Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)"`
 }
 
@@ -86,7 +86,7 @@ type ShipCheckResponse struct {
 	Rebased   string      `json:"rebased,omitempty" desc:"With --settled on a conflicting pull request: the head pushed after rebasing the branch onto main"`
 	Conflicts []string    `json:"conflicts,omitempty" desc:"With --settled on a conflicting pull request: the files whose conflict outside the rendered files stopped the rebase; the command exits 75"`
 	Question  string      `json:"question,omitempty" desc:"The handle of the question raised about those conflicts"`
-	Stop      string      `json:"stop,omitempty" desc:"With --main: why the merge commit's tree differs from the tested head's; the command exits 75"`
+	Stop      string      `json:"stop,omitempty" desc:"With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75"`
 	Reran     []string    `json:"reran,omitempty" desc:"The GitHub Actions run IDs whose failed jobs this check reran, once per head, instead of failing; the check then reports not settled"`
 }
 
@@ -231,6 +231,10 @@ type shipState struct {
 	// once, so a second failure on it fails.
 	RerunHead string   `json:"rerun_head,omitempty"`
 	Reruns    []string `json:"reruns,omitempty"`
+	// DispatchCommit is the merge commit CI was dispatched on, and
+	// Dispatched the workflow files dispatched for it, once each.
+	DispatchCommit string   `json:"dispatch_commit,omitempty"`
+	Dispatched     []string `json:"dispatched,omitempty"`
 }
 
 // readShipState reads the state file at path; a missing file is the zero
@@ -413,7 +417,7 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 				WithNext(shipMergeNext)
 		}
 		resp.PR, resp.URL, resp.Commit = st.PR, st.URL, st.MergeCommit
-		return shipCheckMainTree(ctx, t, st, resp)
+		return shipCheckMainTree(ctx, t, st, resp, path, r.Settled)
 	} else {
 		out, err := gh(ctx, t.dir(), "pr", "view", t.branch, "--json", "number,url,state,headRefOid,mergeable,statusCheckRollup")
 		if noPR(err) {
@@ -491,8 +495,9 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 // merge commit's tree must equal the tree of the PR head whose checks
 // passed. ship.merge only merges a head that holds origin/main, so a squash
 // of it has the head's tree; a differing tree means main changed between
-// that check and the merge, and the step stops with a stop: line.
-func shipCheckMainTree(ctx *Ctx, t shipTarget, st shipState, resp ShipCheckResponse) (any, error) {
+// that check and the merge. Then main is not what the checks passed on, and
+// shipCheckMainDispatch runs CI on the merge commit instead.
+func shipCheckMainTree(ctx *Ctx, t shipTarget, st shipState, resp ShipCheckResponse, path string, settled bool) (any, error) {
 	if st.Head == "" {
 		return nil, Usagef("change set %s has no checked pull request head recorded: run rhiza ship check first", t.cs).
 			WithNext(shipCheckNext)
@@ -517,9 +522,7 @@ func shipCheckMainTree(ctx *Ctx, t shipTarget, st shipState, resp ShipCheckRespo
 		return nil, err
 	}
 	if mt != ht {
-		resp.Stop = fmt.Sprintf("merge commit %s has tree %s, but the tested head %s has tree %s; main is not what the checks passed on", shortSHA(st.MergeCommit), shortSHA(mt), shortSHA(st.Head), shortSHA(ht))
-		resp.Detail = resp.Stop
-		return resp, nil
+		return shipCheckMainDispatch(ctx, t, st, resp, path, settled)
 	}
 	resp.Settled, resp.Green, resp.Passed = true, true, true
 	return resp, nil
@@ -703,7 +706,7 @@ func (r ShipCheckResponse) Human(w io.Writer) {
 	case r.Passed && !r.Settled:
 		// Only --pr-open passes without settled checks.
 		fmt.Fprintf(w, "%s: open from %s\n", what, r.Branch)
-	case r.Green && r.Main:
+	case r.Green && r.Main && len(r.Checks) == 0:
 		fmt.Fprintf(w, "%s: the merge commit's tree is the tested head's\n", what)
 	case r.Green:
 		fmt.Fprintf(w, "%s: %d %s passed\n", what, len(r.Checks), shipPlural(len(r.Checks), "check", "checks"))
