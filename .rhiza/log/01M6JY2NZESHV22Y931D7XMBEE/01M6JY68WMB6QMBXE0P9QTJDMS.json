@@ -1,0 +1,30 @@
+{
+  "actor": "01M6JY34SB930YFP5R27NBMVDJ",
+  "after": [
+    "01M6JY2NZESHV22Y931GKHYHF4"
+  ],
+  "at": "2026-11-04T09:28:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "db198e1f-2e16-40ae-8f4b-01a1a5e18368",
+          "statement": "Change set 'The daemon behaves the same' (01M6JY2): the code already does what its title says. internal/api/daemon_startstop.go has one daemonArgs = [daemon --autonomous], and both the systemd unit's ExecStart and the Rex tab use it, since #200. daemon-install.txtar and daemon-start-stop.txtar each grep for 'daemon --autonomous'. The one real difference between service and tab is the environment. On the VM, PATH and TMPDIR come from a drop-in written by hand (~/.config/systemd/user/rhiza-rhiza.service.d/env.conf), and daemon install doesn't write it. So a fresh install would run agents with systemd's bare PATH, unlike the tab. What should this change set's leaves cover?"
+        },
+        "handle": "question-db198e1f-1",
+        "id": "01M6JY66RRW4DKBTT4X321Q62Y",
+        "key": null,
+        "kind": "question",
+        "node": "01M6JY66RRW4DKBTT4X2AFA68A",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6JY2NZESHV22Y931D7XMBEE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JY68WMB6QMBXE0P9QTJDMS",
+  "type": "ops",
+  "v": 1
+}

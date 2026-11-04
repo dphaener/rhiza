@@ -1,0 +1,50 @@
+{
+  "actor": "01M6JY34SB930YFP5R27NBMVDJ",
+  "after": [
+    "01M6JYB0FHR8XXTPCYCZH4VRHV"
+  ],
+  "at": "2026-11-04T09:31:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6JY7KFRW3AH998GN8GP7AEF",
+        "id": "01M6JYB8Y1ERTQVZCD2WDJ2MGY",
+        "link": "01M6JYB8Y1ERTQVZCD2T1DC9W2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JY9CRQHY97RAHDCSHRS9V1",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "daemon-install.txtar runs install with a known PATH and TMPDIR (one holding a space) and checks the unit carries Environment=PATH=... and Environment=TMPDIR=... with those values, quoted the way systemd reads them, next to ExecStart ending in daemon --autonomous; a second install with the same environment writes nothing, and one with a changed PATH rewrites the unit and reloads systemd",
+          "statement": "rhiza daemon install writes the PATH and TMPDIR of the shell that runs it into the systemd unit as Environment= lines, quoted like ExecStart, so the service starts agents with the same tools on PATH and the same temp dir as the Rex tab, with no hand-written drop-in"
+        },
+        "handle": "daemon-service-env",
+        "id": "01M6JYBE226RWZVG1N6FZK30C1",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M6JYBE226RWZVG1N6CCTS81F",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6JYBE226RWZVG1N6CCTS81F",
+        "id": "01M6JYBMHFRJR131Q44MN8Z85T",
+        "link": "01M6JYBMHFRJR131Q44M6EZC1F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JY7KFRW3AH998GN8GP7AEF",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6JY2NZESHV22Y931D7XMBEE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JYBWGEJQSC8VG0WP0VBDQC",
+  "type": "ops",
+  "v": 1
+}

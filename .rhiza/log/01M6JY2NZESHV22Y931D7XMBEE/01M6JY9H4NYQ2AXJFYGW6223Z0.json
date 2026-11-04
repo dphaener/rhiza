@@ -1,0 +1,33 @@
+{
+  "actor": "01M6JY34SB930YFP5R27NBMVDJ",
+  "after": [
+    "01M6JY800CMP5VQFYYKDFRF2F1"
+  ],
+  "at": "2026-11-04T09:29:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "fc8cd946077b7cc3621202d13f00886458cce7172502a8ac303463d11bb40240",
+          "session": "db198e1f-2e16-40ae-8f4b-01a1a5e18368",
+          "summary": "Autonomous plan run, so no owner took part. The planner found that the systemd unit's ExecStart and the Rex tab already start rhiza with the same daemonArgs (daemon --autonomous) since #200, and both scripts check it. The one real difference between service and tab is the environment: daemon install writes no PATH or TMPDIR, and the VM works only because of a hand-written drop-in. The planner asked the arbiter for the scope. The arbiter ruled (Decision daemon-service-env-matches-tab, assumed) that the leaves cover the environment: daemon install writes the installing shell's PATH and TMPDIR into the unit as Environment= lines. The shared args get no leaf of their own. The change set serves milestone-25, relates to the leafless draft 01M6FN21KA287N, and that draft is withdrawn.",
+          "title": "Plan of 'The daemon behaves the same' (autonomous, arbiter)"
+        },
+        "handle": "plan-daemon-service-env",
+        "id": "01M6JY9CRQHY97RAHDCW99ZAFD",
+        "key": null,
+        "kind": "source",
+        "node": "01M6JY9CRQHY97RAHDCSHRS9V1",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6JY2NZESHV22Y931D7XMBEE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JY9H4NYQ2AXJFYGW6223Z0",
+  "type": "ops",
+  "v": 1
+}
