@@ -137,8 +137,8 @@ stdout '^1$'
 ! grep '[-]-admin|[-]-auto|[-]-delete-branch' $WORK/gh.log
 grep '^pr view cs/ship-it --json number,url,state,headRefOid,mergeable,statusCheckRollup$' $WORK/gh.log
 grep '^pr view 7 --json mergeCommit,state$' $WORK/gh.log
-exec sh -c 'grep -c -x "run list --commit $(cat $WORK/merge.sha) --json databaseId,name,status,conclusion" $WORK/gh.log'
-! stdout '^0$'
+# Main was confirmed by git alone: no step asked gh for CI runs.
+! grep '^run ' $WORK/gh.log
 
 # The land commit is the PR head's last commit, with the Change trailer
 # and an Actor trailer naming the run's actor (git's user.email here), in
@@ -164,7 +164,7 @@ stdout '^same$'
 exists first.txt
 exists second.txt
 
-# The repo's ship command ran once, after main's CI was green.
+# The repo's ship command ran once, after main was confirmed.
 exec cat $WORK/ship.log
 stdout -count=1 '^shipped$'
 cmp $WORK/order.log $WORK/want.order
@@ -225,8 +225,6 @@ role=verifier leaf=first
 role=builder leaf=second
 role=verifier leaf=second
 -- want.order --
-main-green
-main-green
 shipped
 -- ship.sh --
 #!/bin/sh
@@ -309,10 +307,6 @@ case "$1 $2" in
 	sha=$(git -C "$o" commit-tree "$head^{tree}" -p refs/heads/main -m 'Ship it (#7)')
 	git -C "$o" update-ref refs/heads/main "$sha"
 	echo "$sha" > "$WORK/merge.sha"
-	;;
-"run list")
-	echo main-green >> "$WORK/order.log"
-	echo '[{"name":"ci","status":"completed","conclusion":"success"}]'
 	;;
 *)
 	echo "fake gh: unexpected: $*" >&2
