@@ -233,7 +233,9 @@ func healthDisk(ctx *Ctx, settings []Setting, err error) HealthPart {
 }
 
 // healthUsage is warn while the daemon holds its launches for usage, else ok
-// with each window's use and limit.
+// with each window's use and limit. The use is what the daemon's last poll
+// counted and saved, not a fresh read of every transcript, which takes
+// seconds; a saved window whose reset has passed is used 0.
 func healthUsage(ctx *Ctx, settings []Setting, err error) HealthPart {
 	if err != nil {
 		return healthFailed(HealthUsage, err)
@@ -249,10 +251,16 @@ func healthUsage(ctx *Ctx, settings []Setting, err error) HealthPart {
 			Detail:  []string{usageHoldDetail(*h)},
 			Next:    "rhiza daemon set rhiza.daemon.usage.reserve <percent>"}
 	}
-	windows, _ := usageWindowsNow(ctx, common, st.UsageWindows)
+	used := map[usage.Kind]int64{}
+	now := ctx.Now()
+	for _, w := range st.UsageWindows {
+		if now.Before(w.Reset) {
+			used[usage.Kind(w.Kind)] = w.Used
+		}
+	}
 	var parts []string
 	for _, kind := range usage.Kinds {
-		used := windows[kind].Used
+		used := used[kind]
 		if limit, ok := usageLimit(settings, st.Learned, kind); ok {
 			parts = append(parts, fmt.Sprintf("%s %d of %d", kind, used, limit))
 		} else {

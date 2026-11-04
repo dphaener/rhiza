@@ -172,7 +172,7 @@ func usageWindowsNow(ctx *Ctx, common string, saved []daemon.UsageWindow) (map[u
 		}
 		if w, ok := usage.Current(kind, kr, kh, now); ok {
 			windows[kind] = w
-			next = append(next, daemon.UsageWindow{Kind: string(kind), Start: w.Start.UTC(), Reset: w.Reset.UTC()})
+			next = append(next, daemon.UsageWindow{Kind: string(kind), Start: w.Start.UTC(), Reset: w.Reset.UTC(), Used: w.Used})
 		} else if p := prev[kind]; p != nil {
 			// No window holds now; the next one starts at or after this reset.
 			next = append(next, *p)

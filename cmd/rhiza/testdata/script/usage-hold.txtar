@@ -1,8 +1,9 @@
 # While the daemon holds for usage, daemon status lists each held change set
 # as a usage-reserve skip with the window, use, limit and reset time; health
 # has a warn usage part and the inbox one usage-reserve item. With the hold
-# cleared none of them shows and health's usage part is ok. The daemon state
-# is a fixture.
+# cleared none of them shows and health's usage part is ok, with each
+# window's use as the last poll saved it (a window past its reset is 0), no
+# transcript read. The daemon state is a fixture.
 
 env REX_SESSION=
 env REX_SERVER=
@@ -43,7 +44,7 @@ exec rhiza health --json
 stdout '"part": "usage",\n\s*"state": "ok"'
 ! stdout '"state": "warn",\n\s*"summary": "the daemon holds'
 exec rhiza health
-stdout '^ok   usage '
+stdout '^ok   usage +session 300, no limit known; weekly 0, no limit known$'
 exec rhiza inbox --json
 ! stdout 'usage-reserve'
 stdout '"items": \[\]'
@@ -51,4 +52,4 @@ stdout '"items": \[\]'
 -- held.json --
 {"process":{"host":"h","pid":1,"started":"2030-01-01T00:00:00Z"},"last_poll":"2030-01-01T00:05:00Z","max_runs":2,"autonomous":false,"runs":[],"skips":[{"change":"CSX","title":"Held","reason":"usage-reserve","detail":["5h window: 900 tokens used, 950 projected, over the limit of 1000 less a 20% reserve; resets 2030-01-01T05:00:00Z"]}],"usage_hold":{"since":"2030-01-01T00:01:00Z","window":"5h","used":900,"projected":950,"limit":1000,"reserve":20,"reset":"2030-01-01T05:00:00Z"}}
 -- ok.json --
-{"process":{"host":"h","pid":1,"started":"2030-01-01T00:00:00Z"},"last_poll":"2030-01-01T00:10:00Z","max_runs":2,"autonomous":false,"runs":[]}
+{"process":{"host":"h","pid":1,"started":"2030-01-01T00:00:00Z"},"last_poll":"2030-01-01T00:10:00Z","max_runs":2,"autonomous":false,"runs":[],"usage_windows":[{"kind":"session","start":"2026-10-24T10:00:00Z","reset":"2099-01-01T00:00:00Z","used":300},{"kind":"weekly","start":"2020-01-01T00:00:00Z","reset":"2020-01-08T00:00:00Z","used":700}]}

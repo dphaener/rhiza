@@ -124,6 +124,9 @@ type UsageWindow struct {
 	Kind  string    `json:"kind"`
 	Start time.Time `json:"start"`
 	Reset time.Time `json:"reset"`
+	// Used is the window's tokens as that poll counted them; health reports
+	// it rather than reading every transcript again.
+	Used int64 `json:"used,omitempty"`
 }
 
 // WriteState replaces the state file, whole.

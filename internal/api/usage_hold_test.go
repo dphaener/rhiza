@@ -209,6 +209,11 @@ func TestUsageWindowsAnchored(t *testing.T) {
 	if s := w[usage.Session]; s.Used != 400 || !s.Start.Equal(b.Add(8*time.Hour)) {
 		t.Fatalf("first poll session window %+v", s)
 	}
+	for _, s := range saved {
+		if s.Kind == "session" && s.Used != 400 {
+			t.Fatalf("saved session window %+v: want its use, 400, kept for health", s)
+		}
+	}
 	// At b+10h30m a fresh 10h lookback starts after b, so its chain would run
 	// [b+4h30m, b+9h30m) and find no window now; the saved start keeps it.
 	if w, _ := poll(b.Add(630*time.Minute), nil); w[usage.Session].Used == 400 {
