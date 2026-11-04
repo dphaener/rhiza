@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MBV55KAPR0GGN9FEA4HVW8",
+  "after": [
+    "01M6MB4AS6V9P1YDB6EKZEQZAF"
+  ],
+  "at": "2026-11-04T22:47:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6c7b06c5 I read the diff: .github/workflows/ci.yml adds workflow_dispatch with a required sha input, run-name 'CI ${{ inputs.sha || github.event.pull_request.title }}', concurrency group ci-${{ github.event.pull_request.number || inputs.sha }}, and checkout ref ${{ inputs.sha || github.sha }}. Ran go test -trimpath -count=1 -v ./internal/ciworkflow/...: TestCIRunsOnPullRequestsAndDispatch, TestCICheckoutAndRunName and TestCICancelsStaleRuns all PASS. In a scratch copy I mutated ci.yml six ways (workflow_dispatch renamed, required: false, ref without inputs.sha, run-name without inputs.sha, group without the inputs.sha fallback, pull_request replaced by push) and each made the test fail. The package sits under go test ./..., which make test and so make check run."
+        },
+        "handle": "ci-yml-dispatchable-verified",
+        "id": "01M6MBWTE2FF6WA2WBTJ3VTPJJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MBWTE2FF6WA2WBTFDHZ9PH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MBWTE2FF6WA2WBTFDHZ9PH",
+        "id": "01M6MBX0KR9H0E2KFZYGNTQK1F",
+        "link": "01M6MBX0KR9H0E2KFZYG36K4GD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MAKD15PZYXSTNV3FX2SQCN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MA6P7KKMQPFBM6ZD6EMDM3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MBXCC6DWKCZMDG43R1TWVR",
+  "type": "ops",
+  "v": 1
+}
