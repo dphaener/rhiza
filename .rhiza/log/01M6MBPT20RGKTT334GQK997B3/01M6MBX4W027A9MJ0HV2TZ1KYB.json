@@ -1,0 +1,30 @@
+{
+  "actor": "01M6MBQ8TZMND06Y7H3E1WJXS5",
+  "after": [
+    "01M6MBPT20RGKTT334GVGW1SXJ"
+  ],
+  "at": "2026-11-04T22:47:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "5bc7fdce-fa6a-4b9d-9294-01a1a8bb94c3",
+          "statement": "Which intent should change set 01M6MBPT (Ship-change fixes red PR CI) serve? It follows up #259 (agents run only scoped tests, so CI runs the full suite), and #259's change set served milestone-25 (the daemon empties the backlog on its own) and milestone-24. / How should a red PR CI become a fix in ship-change? Today pr-green/rebased-green/landed-green/rebased-merge-green run `rhiza ship check`, which reruns failed jobs once per head and then fails the run. / Which failing ship-check stages get a CI-fix cycle, and where does the run go after the fix? / What cap should CI-fix cycles have before the run fails?"
+        },
+        "handle": "question-5bc7fdce-1",
+        "id": "01M6MBX19VWABE6S2R6GT10M1B",
+        "key": null,
+        "kind": "question",
+        "node": "01M6MBX19VWABE6S2R6FSNR46Q",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6MBPT20RGKTT334GQK997B3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MBX4W027A9MJ0HV2TZ1KYB",
+  "type": "ops",
+  "v": 1
+}
