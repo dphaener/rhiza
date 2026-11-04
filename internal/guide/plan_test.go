@@ -97,3 +97,24 @@ func TestPlanReviewText(t *testing.T) {
 		},
 	})
 }
+
+func TestPlanAcceptanceScoped(t *testing.T) {
+	checkPhrases(t, "plan", map[string][]string{
+		"plan-acceptance-scoped": {
+			"the tests covering that leaf, never the repo's full suite",
+		},
+	})
+	checkPhrases(t, "plan-review", map[string][]string{
+		"plan-review-acceptance-scoped": {
+			"runs the repo's full suite", "tests covering that leaf",
+		},
+	})
+	for _, name := range []string{"plan", "plan-review"} {
+		tx, _ := Lookup(name)
+		for _, bad := range []string{"go test", "make check", "make test", "testscript"} {
+			if strings.Contains(tx.Body, bad) {
+				t.Errorf("%s names %q", name, bad)
+			}
+		}
+	}
+}

@@ -70,6 +70,10 @@ A question parked during the interview:
 ]}
 ```
 
+Write each leaf's acceptance as the tests covering that leaf, never the repo's full suite:
+the whole suite runs in CI before merge, so an acceptance check that runs all of it is
+wrong.
+
 A write can only refer to landed nodes and nodes of its own change set. Pass `--change <id>`
 to write into a change set other than `RHIZA_CHANGE`.
 
