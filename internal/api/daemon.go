@@ -536,7 +536,10 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	}
 	var resumable []string
 	if !low && !paused {
-		resumable = daemon.Resumable(runs, host, nil, rs.Live, accepted, ctx.Now())
+		resumable = daemon.Resumable(runs, host, nil, rs.Live, func(change string) string {
+			st, _ := fold.stateOf(change)
+			return st
+		}, planWorkflow, ctx.Now())
 	}
 	// The owner's queued continuations are started below, within max; the
 	// daemon's own resume of an interrupted run leaves those runs to them.
