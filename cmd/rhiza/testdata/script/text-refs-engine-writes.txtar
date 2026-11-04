@@ -1,0 +1,25 @@
+# Engine writes of free text never refuse on an unresolvable @word: question
+# answer resolves what it can, stores the rest as a literal @, and keeps the
+# quote verbatim.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza add capability store --record
+exec rhiza add capability other --record
+exec rhiza change new Accepted
+exec rhiza set store --field statement=Kept
+exec rhiza set other --field statement=Other
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza add question store-q --field statement=Which-store --record
+exec rhiza link store-q blocks store --record
+
+exec rhiza question answer store-q 'Use @other, not @ghost'
+exec sh -c 'cat .rhiza/log/*/*.json'
+stdout '"statement": "Use @\{[0-9A-Z]{26}\}, not @ghost"'
+stdout '"quote": "Use @other, not @ghost"'

@@ -314,7 +314,7 @@ func shipRecordEvidence(ctx *Ctx, t shipTarget, st shipState, resp *ShipLandResp
 		resp.Evidence = uniqueHandle(resp.Evidence, func(h string) bool { _, ok := m.HandleTaken(h); return ok })
 	}
 	items := []applyItem{{op: "add", build: func(b writeBase) (edit, error) {
-		return buildAdd(b, AddRequest{Kind: string(op.KindEvidence), Handle: resp.Evidence, Fields: shipEvidenceFields(st)})
+		return buildAdd(b, AddRequest{Kind: string(op.KindEvidence), Handle: resp.Evidence, Fields: shipEvidenceFields(st), lenient: true})
 	}}}
 	for _, capID := range resp.Verifies {
 		req := LinkRequest{From: resp.Evidence, Type: string(op.LinkVerifies), To: capID.String()}

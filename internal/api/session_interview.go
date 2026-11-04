@@ -392,7 +392,7 @@ func answerWrites(sid string, answers []adapter.Answer) ([]answerWrite, error) {
 			jsonFields = append(jsonFields, "options="+string(raw))
 		}
 		out = append(out, answerWrite{answer: a, add: AddRequest{
-			Kind: string(op.KindDecision), Handle: prefix + strconv.Itoa(i+1), Fields: fields, JSONFields: jsonFields,
+			Kind: string(op.KindDecision), Handle: prefix + strconv.Itoa(i+1), Fields: fields, JSONFields: jsonFields, lenient: true,
 		}})
 	}
 	return out, nil

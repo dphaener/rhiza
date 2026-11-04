@@ -1937,7 +1937,7 @@ func (r *stepRunner) AddQuestion(sid, text string) (run.Question, error) {
 	}
 	items := []applyItem{{op: "add", build: func(b writeBase) (edit, error) {
 		return buildAdd(b, AddRequest{Kind: string(op.KindQuestion), Handle: handle,
-			Fields: []string{"statement=" + text, "session=" + rec.ID}})
+			Fields: []string{"statement=" + text, "session=" + rec.ID}, lenient: true})
 	}}}
 	e, err := buildApply(ww, cs, r.ctx.IDs, items)
 	if err == nil {
