@@ -1,0 +1,40 @@
+{
+  "actor": "01M6HZ01JV1RPP9JY0SB6KHFA8",
+  "after": [
+    "01M6HKWNXR2VCDABV6KGEAPVZ5"
+  ],
+  "at": "2026-11-04T01:41:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 041cee52 (RHIZA_* env unset): go test ./internal/anchor passes; it covers a func, a value-receiver and a pointer-receiver method (T.V, T.P, generic G.M), a type, a var and a const inside grouped declarations, each hashed as exactly the go/ast node span without its doc comment, and reports a missing path, a missing symbol and a symbol on a .md file. TestScripts/anchor-fields, field-schema and describe-golden pass; describe-golden -update leaves no diff, so no schema changed. The whole cmd/rhiza script suite passes with -timeout 60m, and make fmt-check, vet and self-check pass. By hand, rhiza apply adding an anchor with path=a.txt stored sha256:98ea6e4f..., which matches sha256sum. Read the diff: anchor.Fingerprint, anchorFingerprint wired into buildAdd and buildSet, and the knownFields anchor entry. Timing budgets were flaky under load (4 cores, load 6-27): TestReadBudget also fails at base 5e327e0e, and modelapp TestGeneratedModel missed 50ms by 2.7ms run alone. The leaf touches only the write path."
+        },
+        "handle": "anchor-fields-verified",
+        "id": "01M6J3FK4CSMDGZ9X8RPAJ9EK2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6J3FK45J8A5SJ6Q0YNGBPRW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6J3FK45J8A5SJ6Q0YNGBPRW",
+        "id": "01M6J3FREZ80M2XM8NMEZQ80XV",
+        "link": "01M6J3FREZ80M2XM8NMD0MY2HX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HK9V1F5ZZNXE9RW11CZD1A",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HJXAJ6GYA2RTAGVK6JR1N9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J3G16P69YGQW6EBPMJSYAQ",
+  "type": "ops",
+  "v": 1
+}
