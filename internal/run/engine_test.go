@@ -2334,3 +2334,53 @@ func TestAgentLostSession(t *testing.T) {
 }
 
 func withDone(s AgentStatus) AgentStatus { s.SaidDone = true; return s }
+
+// failingRejoinRunner is a rejoinRunner whose Rejoin fails the way a Rex
+// that cannot be reached does.
+type failingRejoinRunner struct{ *rejoinRunner }
+
+func (r *failingRejoinRunner) Rejoin(session string) error {
+	_ = r.rejoinRunner.Rejoin(session)
+	return errors.New("ask Rex whether block b1 of session " + session + " exists: connection refused")
+}
+
+// A rejoin whose block check Rex cannot answer is logged and judges
+// nothing: the session is polled as before, and when a later poll finds it
+// lost the step fails on that, not on Rex being down.
+func TestAgentRejoinRexUnreachable(t *testing.T) {
+	e, r, _, _ := setup(t, agentWF)
+	rr := &failingRejoinRunner{&rejoinRunner{fakeRunner: r}}
+	e.Runner = rr
+	var lines []string
+	e.Log = func(l string) { lines = append(lines, l) }
+	for _, en := range []Entry{
+		{Type: TypeEntered, At: at(1), Step: "build", Visit: 1},
+		{Type: TypeSession, At: at(1), Step: "build", Session: "S-earlier"},
+	} {
+		if err := e.Store.Append(runID, en); err != nil {
+			t.Fatal(err)
+		}
+	}
+	lost := AgentStatus{Done: true, Lost: true, Outcome: "fail", Detail: "lost: Rex block not found"}
+	r.agentSeq["S-earlier"] = []AgentStatus{{}, {}, lost}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r.polls["S-earlier"] != 3 {
+		t.Errorf("polled %d times, want 3", r.polls["S-earlier"])
+	}
+	if want := []string{"S-earlier"}; !reflect.DeepEqual(rr.rejoined, want) {
+		t.Errorf("rejoined %v, want one rejoin", rr.rejoined)
+	}
+	if st.Result != Failed || !strings.Contains(st.Steps[0].Detail, "lost: Rex block not found") {
+		t.Errorf("result %q detail %q", st.Result, st.Steps[0].Detail)
+	}
+	var logged bool
+	for _, l := range lines {
+		logged = logged || strings.Contains(l, "rejoin session S-earlier") && strings.Contains(l, "connection refused")
+	}
+	if !logged {
+		t.Errorf("rejoin failure not logged: %q", lines)
+	}
+}
