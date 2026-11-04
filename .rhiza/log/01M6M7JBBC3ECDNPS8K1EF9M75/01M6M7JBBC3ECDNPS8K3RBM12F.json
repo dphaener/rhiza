@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-04T21:31:17Z",
+  "body": {
+    "intent": "Record agent actor claude-code-fed4723b for session fed4723b-e408-4102-bbd4-01a1a87920d8",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6M7JBBC3ECDNPS8K1EF9M75",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M7JBBC3ECDNPS8K3RBM12F",
+  "type": "open",
+  "v": 1
+}
