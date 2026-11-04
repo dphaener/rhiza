@@ -1489,7 +1489,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "findings": {
-            "description": "Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, anchor, render, append-only), then path and IDs",
+            "description": "Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, unclaimed, anchor, render, append-only), then path and IDs",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -1531,6 +1531,7 @@ cmp stdout describe.golden.json
                     "link",
                     "depends-on",
                     "evidence-actor",
+                    "unclaimed",
                     "anchor",
                     "render",
                     "append-only"
@@ -10666,7 +10667,7 @@ cmp stdout describe.golden.json
                 "type": "string"
               },
               "findings": {
-                "description": "Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, anchor, render, append-only), then path and IDs",
+                "description": "Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, unclaimed, anchor, render, append-only), then path and IDs",
                 "items": {
                   "additionalProperties": false,
                   "properties": {
@@ -10708,6 +10709,7 @@ cmp stdout describe.golden.json
                         "link",
                         "depends-on",
                         "evidence-actor",
+                        "unclaimed",
                         "anchor",
                         "render",
                         "append-only"

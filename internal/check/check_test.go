@@ -445,6 +445,8 @@ func TestRunOrder(t *testing.T) {
 	in.Rendered = nil
 	in.Skipped = "no git"
 	in.Commits = []Commit{{Hash: "abc", Changes: []string{leafSet.id.String()}, Actors: []string{actor.String()}}}
+	in.UnclaimedSince = "cutoff"
+	in.Unclaimed = []Commit{{Hash: "def", Subject: "Unclaimed"}}
 	a := r.next()
 	r.record("Anchor", anchorOp(r, a, "gone", "gone.go", ""))
 	in.Log = store.ReadLog(r.files)
@@ -457,7 +459,7 @@ func TestRunOrder(t *testing.T) {
 	}
 	rules = slices.Compact(rules)
 	want := []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleEvidenceActor,
-		RuleAnchor, RuleRender, RuleAppendOnly}
+		RuleUnclaimed, RuleAnchor, RuleRender, RuleAppendOnly}
 	if !reflect.DeepEqual(rules, want) {
 		t.Fatalf("rules %q, want %q\n%+v", rules, want, rep.Findings)
 	}

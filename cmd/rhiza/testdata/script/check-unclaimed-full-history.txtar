@@ -1,0 +1,34 @@
+# check's unclaimed rule walks <cutoff>..HEAD with --full-history: a merged
+# side branch whose net code change is zero (add, then revert) is still
+# checked commit by commit, not pruned by history simplification.
+
+exec git init -q
+exec rhiza init
+exec rhiza add capability thing --field 'statement=Does the thing' --record --json
+exec rhiza render
+exec sh -c 'echo package base > base.go'
+exec git add -A
+exec git commit -qm 'before the cutoff, untrailered'
+exec sh -c 'echo "{\"unclaimed_since\": \"$(git rev-parse HEAD)\"}" > .rhiza/check.json'
+exec git add -A
+exec git commit -qm 'set the cutoff'
+
+exec git checkout -q -b side
+exec sh -c 'echo package y > y.go'
+exec git add y.go
+exec git commit -qm 'add y.go'
+exec git rm -q y.go
+exec git commit -qm 'revert y.go'
+exec git checkout -q -
+exec sh -c 'echo package z > z.go'
+exec git add z.go
+exec git commit -qm 'add z.go'
+exec git merge -q --no-ff -m 'merge side' side
+
+exec rhiza check --json
+stdout '"ok": true'
+stdout -count=3 '"rule": "unclaimed"'
+stdout 'add y\.go'
+stdout 'revert y\.go'
+stdout 'add z\.go'
+! stdout 'merge side'
