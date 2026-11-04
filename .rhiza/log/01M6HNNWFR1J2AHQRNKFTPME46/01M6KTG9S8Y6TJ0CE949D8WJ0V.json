@@ -1,0 +1,40 @@
+{
+  "actor": "01M6KS3ZS4KBYVF7W0ZF7RKFJ9",
+  "after": [
+    "01M6KSC24M60C943WPT9AFFH73"
+  ],
+  "at": "2026-11-04T17:42:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier attempt 2 at a2992808 (fix for review finding f3). Read the diff: text-refs-display.txtar now hand-writes a pre-feature log entry holding '@word and @{ID}', asserts show/show --json print '@@word and @@{ID}', writes that back with rhiza set and asserts the log stores 'Uses @word and @{ID}' again (2 entries) and still shows @@; hand-writes a reference to a node only an unlanded change set has and asserts show prints @{<26-char ID>}, not @elsewhere; asserts the retired node shows exactly @{<gone's ID>}; asserts inbox and inbox --json print 'Is @renamed ready?' from a blocking question; asserts ls, tree, feed and roadmap (text and --json) carry no @{ (they print no node statements); show, why, slice, search '@renamed', change show/diff (text and --json), render and tui app show/slice/why --once print @renamed; shown text written back keeps the same IDs and literal @@. Ran go test -trimpath ./cmd/rhiza -run TestScripts/text-refs -count=1: ok. make fmt-check vet pass; make test passes (one earlier run failed with the output lost to tail, then a full rerun passed: EXIT 0). make self-check fails only on text-ref-check-verified holding @{01ZZ...} (qa finding f2 on text-ref-syntax, another leaf) and on stale .rhiza/rendered from run bookkeeping, not on this leaf's diff."
+        },
+        "handle": "text-ref-display-verified-2",
+        "id": "01M6KTG417F7HV1V2MQDNC5GR9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KTG417F7HV1V2MQBBS058X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KTG417F7HV1V2MQBBS058X",
+        "id": "01M6KTG64CWR30EXCVQNA3XTXK",
+        "link": "01M6KTG64CWR30EXCVQKJ44J9V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HP0SAAHDCRXKDTXRXZF7BT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HNNWFR1J2AHQRNKFTPME46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KTG9S8Y6TJ0CE949D8WJ0V",
+  "type": "ops",
+  "v": 1
+}
