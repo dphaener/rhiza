@@ -36,6 +36,14 @@ make update     # make install, then rewrite the Rex script and reload Rex
 
 Run `make check` before calling any change done.
 
+Run the full suite through `make test` (or `make check`), not a bare
+`go test ./...`: it builds with `-trimpath`, so packages another worktree
+already tested at the same code are cache hits, and it runs cmd/rhiza's
+scripts (and the timing budgets) under a machine-wide lock (`flock`,
+Linux), so parallel runs' suites queue for the CPU-heavy part instead of
+thrashing. "Waiting for another make test" means yours is queued. Scope
+ad-hoc runs to the package you changed.
+
 Rhiza keeps its own `.rhiza/` here, and `make check` runs `rhiza check`
 on it. After landing a change set, run `rhiza render` and commit
 `.rhiza/rendered/`, or `make check` fails on stale rendered files.

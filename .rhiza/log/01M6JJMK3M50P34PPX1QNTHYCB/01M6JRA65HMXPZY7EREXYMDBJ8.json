@@ -1,0 +1,59 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6JJMK3M50P34PPX1SXJXSDF"
+  ],
+  "at": "2026-11-04T07:45:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "TestMakeTestTimeout runs make -n test and asserts: every go test line carries -trimpath, -timeout 20m and 9>&-; the packages other than cmd/rhiza start in the background before the lock; cmd/rhiza's scripts and then the timing budgets each run under a flock on a lock file beside GOCACHE, with a 'Waiting for another make test' line when it is held. Measured on the loaded 4-core VM: a fresh worktree of the same commit builds all 36 test binaries in 5 s with -trimpath against 143 s without (0 reused), and 22 of 35 internal packages are (cached) there; a second make test started while one holds the lock prints the waiting line and runs once it is free; where flock(1) is missing the suite runs unlocked; plan-workflow.txtar's fake rex answers block close, so the script takes 23 s instead of 509 s",
+          "statement": "make test is cheap to run from many worktrees on one machine: a second worktree at the same code reuses the first one's test builds and cached results, and only one worktree at a time runs cmd/rhiza's CPU-heavy scripts or the timing budgets, while the rest of the suite runs beside them"
+        },
+        "handle": "test-suite-shared",
+        "id": "01M6JR8K2246PR31MHKW8Y6KK3",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6JR8K1R9N64RNNZJD09GKMS",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "options": [
+            "lock cmd/rhiza's scripts and the timing budgets, the rest unlocked beside them",
+            "lock the whole suite and the budget phase",
+            "no lock, -trimpath only"
+          ],
+          "quote": "\"i think you should monitor the daemon and adjust accordingly. we likely have some performance issues to tackle.\" (owner, 2026-11-03/04)",
+          "statement": "make test builds with -trimpath and takes one machine-wide flock (beside GOCACHE) around cmd/rhiza's scripts and, separately, around the timing budgets; the other packages run unlocked in the background beside the scripts. Measured on the loaded 4-core VM (load 15-30): the non-script packages are latency-bound, not CPU-bound (internal/index, slice, gen and op three at once took 235 s against 407 s one after another, at the same 86 CPU-s each; internal/api spends 500-590 s of wall on far less CPU), so locking them would only queue waits; cmd/rhiza's scripts use about 430 CPU-s per run in parallel, so they are what thrashes",
+          "wording": "the owner's words; the design is the orchestrator's, as the owner's proxy"
+        },
+        "handle": "test-suite-locks-scripts-only",
+        "id": "01M6JR8Z53XKKT41D3537MCAN9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6JR8Z53XKKT41D34ZQY90B8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JR8K1R9N64RNNZJD09GKMS",
+        "id": "01M6JR9BV53A9H4TMA9P813Y7Z",
+        "link": "01M6JR9BV53A9H4TMA9KA2ZSDW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JR8Z53XKKT41D34ZQY90B8",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6JJMK3M50P34PPX1QNTHYCB",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6JRA65HMXPZY7EREXYMDBJ8",
+  "type": "ops",
+  "v": 1
+}
