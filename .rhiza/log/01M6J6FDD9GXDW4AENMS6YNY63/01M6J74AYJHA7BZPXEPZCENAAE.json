@@ -1,0 +1,30 @@
+{
+  "actor": "01M6J6G8QG3PH8D900KHBX2KWW",
+  "after": [
+    "01M6J72HKC71NQ9X6VJ0NTXFC6"
+  ],
+  "at": "2026-11-04T02:45:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "384d6bb0-11b5-42bf-a242-01a1a467f521",
+          "statement": "The change set's intent also mentions that each rhiza apply write takes ~6 s on the VM (31 writes > 3 min) and points to 'the daemon CPU bug'. No open change set for that bug exists, and the fix (write-path or daemon CPU performance) has nothing to do with interview capture or m2-interviews-recorded. I recommend keeping it out of this change set: park it as a question in this change set, linked to nothing it blocks, so the gate raises it and the owner opens its own change set for it. Planning it here would mix a performance investigation into a small capture fix."
+        },
+        "handle": "question-384d6bb0-4",
+        "id": "01M6J747QE3NSH03CFKZ52BWBB",
+        "key": null,
+        "kind": "question",
+        "node": "01M6J747QE3NSH03CFKXV23JC8",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6J6FDD9GXDW4AENMS6YNY63",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J74AYJHA7BZPXEPZCENAAE",
+  "type": "ops",
+  "v": 1
+}

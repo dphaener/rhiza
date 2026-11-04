@@ -1,0 +1,30 @@
+{
+  "actor": "01M6J6G8QG3PH8D900KHBX2KWW",
+  "after": [
+    "01M6J6YZE08MQPHB4SCXQZM4XR"
+  ],
+  "at": "2026-11-04T02:43:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "384d6bb0-11b5-42bf-a242-01a1a467f521",
+          "statement": "Which side records an answer, and how is a proxy answer worded? Rhiza cannot tell who answered an AskUserQuestion in the pane (the session record has no answered-by field), so captured picks always get 'picked by the owner' wording. I recommend: the guide keeps the run's capture as the default recorder of picks (the planner writes no Decision for a plain owner pick); a planner writes the Decision itself only when the capture's wording would be wrong: the answer came from a proxy (an orchestrator or arbiter answering for the owner) or it carries a ruling the capture can't word, using the proxy's wording (e.g. the arbiter wording) and the verbatim question field, so the capture skips it. No new answered-by field in the session record now."
+        },
+        "handle": "question-384d6bb0-3",
+        "id": "01M6J70FXQVNJRPEEEPF5CRFRW",
+        "key": null,
+        "kind": "question",
+        "node": "01M6J70FXQVNJRPEEEPF2JF6QS",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6J6FDD9GXDW4AENMS6YNY63",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J70KRYTVEBAHVSHD5ED46Q",
+  "type": "ops",
+  "v": 1
+}
