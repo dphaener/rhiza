@@ -1,0 +1,40 @@
+{
+  "actor": "01M6J45BSF12THKJK16ND5Y824",
+  "after": [
+    "01M6J3G16P69YGQW6EBPMJSYAQ"
+  ],
+  "at": "2026-11-04T02:26:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 8c477d25 by reading the diff and re-running the acceptance. check.Run stays pure: internal/check imports io/fs only (no os), Input.Tree fs.FS is filled with os.DirFS(ctx.Root) in internal/api/check.go, and anchor.FingerprintFS backs the resolution. go test ./internal/check -run 'TestAnchor|TestRunOrder' -v passes: fstest.MapFS cases give one fail finding for a missing path ('path gone.go is gone') and one for a missing symbol ('symbol Gone of p.go is gone'), each naming 'anchor pin' and 'implements thing', with Report.OK false; a resolving anchor, a file-only anchor and a retired anchor give no finding; with no Tree the rule is skipped; TestRunOrder puts anchor between evidence-actor and render. go test ./cmd/rhiza -run TestScripts/check-anchors passes: after Keep is removed rhiza check exits non-zero with 'fail anchor pkg/p.go: anchor pin (implements thing): symbol Keep of pkg/p.go is gone', after rm a 'path pkg/p.go is gone' finding, and once restored it is clean. The check package doc lists anchor in report order, and Rules() matches. make fmt-check vet self-check pass. A full go test ./... failed only the timing budgets TestReadBudget (api), TestBudget (slice) and TestGeneratedModel (modelapp) at load average ~15 beside other test binaries; these read paths are untouched by the diff, and TestBudget passes when run alone."
+        },
+        "handle": "check-anchors-resolve-verified",
+        "id": "01M6J616DF4R6BG0T18BQGMTNP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6J616DF4R6BG0T1893ZDK73",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6J616DF4R6BG0T1893ZDK73",
+        "id": "01M6J61C3EB557NHXZ3BS7WYQ1",
+        "link": "01M6J61C3EB557NHXZ38NVD05B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HK9YY5HRN9EVKGV95EXMK1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HJXAJ6GYA2RTAGVK6JR1N9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J61NS4B1M9ATGWZ2W9KV8X",
+  "type": "ops",
+  "v": 1
+}

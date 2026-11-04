@@ -1,0 +1,159 @@
+{
+  "actor": "01M6J96T4S91A0FYKNZJ7K775W",
+  "after": [
+    "01M6J9K0PXJTHWMZ2FSJ1WZWJ1"
+  ],
+  "at": "2026-11-04T03:30:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6J9GAVT8PG9PXD2VN09EEQV",
+        "id": "01M6J9NQ22W0KKRDH2DC2ZCWWV",
+        "link": "01M6J9NQ22W0KKRDH2D9DNEQ2V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J9JS9HF8E155BWW7KFSAWE",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript resumes a ship-change-shaped run interrupted after its land step on a landed change set and it goes on past its stopped step to succeed; in the same suite run-resume-unaccepted.txtar keeps passing (a build run on a landed change set and runs on withdrawn or rejected change sets are refused with exit 3 naming rhiza run abandon, each journal unchanged)",
+          "statement": "rhiza run resume continues an unfinished non-plan run whose change set has landed when its journal shows the run reached its land step (land entered or passed), going on from where the journal left it; a non-plan run on a landed change set that never reached land is still refused as no longer accepted, naming rhiza run abandon"
+        },
+        "handle": "run-resume-landed-past-land",
+        "id": "01M6J9NTD1SF9Z8B72JJZJJXGB",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M6J9NTD1SF9Z8B72JJ0MV1HG",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M6J9NTD1SF9Z8B72JJ0MV1HG",
+        "id": "01M6J9NZ01G44YH32V55ZNYAYN",
+        "link": "01M6J9NZ01G44YH32V55EN6806",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J9GAVT8PG9PXD2VN09EEQV",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J9NTD1SF9Z8B72JJ0MV1HG",
+        "id": "01M6J9P2WG7S5J80WH296CMNZB",
+        "link": "01M6J9P2WG7S5J80WH26ANSB3B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5TYGK7EFHKPB9JG3A2MH2G2",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A unit test of daemon.Resumable returns an interrupted run on a landed change set whose journal entered land, and not one on a landed change set whose journal never reached land, nor runs on rejected, withdrawn, proposed or draft change sets; daemon-resume.txtar gains a run interrupted after land on a landed change set that gets one daemon-resumed entry",
+          "statement": "The daemon resumes, once and headless, an interrupted non-plan run whose change set has landed when its journal shows the run reached its land step, as it resumes a run on an accepted change set"
+        },
+        "handle": "daemon-resumes-landed-past-land",
+        "id": "01M6J9P6J78MZ74PAM0XN0357J",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M6J9P6J78MZ74PAM0VB6ZD5W",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6J9P6J78MZ74PAM0VB6ZD5W",
+        "id": "01M6J9PA5HZ5W93MD6KFQ9DCNH",
+        "link": "01M6J9PA5HZ5W93MD6KCB0CJ9C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J9GAVT8PG9PXD2VN09EEQV",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J9P6J78MZ74PAM0VB6ZD5W",
+        "id": "01M6J9PDFZFTGJZ234ATNRAV0Q",
+        "link": "01M6J9PDFZFTGJZ234ARCHD4R1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7MP3HGEB60GJV4M3CWQA",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A test with an interrupted run on a landed change set that reached land shows no skipped item for it in rhiza inbox --json, while an interrupted build run on a landed change set that never reached land is still listed as skipped with rhiza run abandon",
+          "statement": "rhiza inbox does not list as skipped an interrupted non-plan run on a landed change set whose journal reached its land step, since the daemon resumes it; such a run interrupted again after the daemon's resume is listed as gave-up as any other"
+        },
+        "handle": "inbox-omits-resumable-landed-run",
+        "id": "01M6J9PJ6WZ9XMS1KV07VMWHH6",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6J9PJ6WZ9XMS1KV06HYRK4Q",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "decision": null,
+        "from": "01M6J9PJ6WZ9XMS1KV06HYRK4Q",
+        "id": "01M6J9PQHGHGQ5R292JVZW3WBB",
+        "link": "01M6J9PQHGHGQ5R292JV2WXMRA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J9GAVT8PG9PXD2VN09EEQV",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J9PJ6WZ9XMS1KV06HYRK4Q",
+        "id": "01M6J9PTM295DJZRHWWFH5PTM6",
+        "link": "01M6J9PTM295DJZRHWWEBRYBP9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J9P6J78MZ74PAM0VB6ZD5W",
+        "type": "depends-on"
+      },
+      {
+        "base": "01M62RH3705M0GA17WVX9JX38R",
+        "handle": null,
+        "id": "01M6J9PXJQ88TK790C0PW640ST",
+        "node": "01M62RH3705M0GA17WVVXKBGM8",
+        "op": "node.update",
+        "set": {
+          "statement": "The daemon resumes an interrupted run only while its change set is accepted, or, for a non-plan run that reached its land step, landed (daemon-resumes-landed-past-land)"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6H754MQM6TSH1PJX13RGTH9",
+        "handle": null,
+        "id": "01M6J9Q08HYXQDSK779RM4CXDZ",
+        "node": "01M62RH4605WT6153H4AZSRG87",
+        "op": "node.update",
+        "set": {
+          "statement": "rhiza run resume refuses an interrupted run whose change set is no longer accepted, naming the state and rhiza run abandon; a plan-workflow run whose change set has landed (plan-run-resumes-landed-record) and a non-plan run on a landed change set that reached its land step (run-resume-landed-past-land) are the exceptions"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6H7517SHAN1QQRB8GA70S06",
+        "handle": null,
+        "id": "01M6J9Q2M2GBZ0EV6SJMHQ6V62",
+        "node": "01M5TYGK7EFHKPB9JG3A2MH2G2",
+        "op": "node.update",
+        "set": {
+          "statement": "`genesis run resume <run>` continues a stopped run from its journal without a daemon, never redoing a finished step; it refuses an interrupted run whose change set has landed, been rejected, withdrawn or superseded, except that a run whose change set has landed is resumed when it is a plan-workflow run (plan-run-resumes-landed-record) or reached its land step (run-resume-landed-past-land)."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6J965BRJ2ZTDT7Y311PM96G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J9Q7F4TXPYPC0R8H5ST7XZ",
+  "type": "ops",
+  "v": 1
+}

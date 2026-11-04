@@ -1,0 +1,30 @@
+{
+  "actor": "01M6JDNC8YSFC67MGP1NW7BRHT",
+  "after": [
+    "01M6JDMJTSMFWS7FC80617TTN2"
+  ],
+  "at": "2026-11-04T04:42:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "6b593167-fb44-4178-8462-01a1a4da96c7",
+          "statement": "Change set 01M6JDM (fix: request plans serve no milestone) serves no intent yet. It fits milestone-25 (01M6HKVRE1B7: 'every change set planned from the owner's queued requests ... is built and shipped by the daemon'). Serving it also lets the daemon build this fix. Which intent should it serve? / How does a request's plan reach a milestone? Today `rhiza request` takes only text and kind, and the planner picks any landed intent, often one under no milestone (e.g. the 'areas' umbrella), so the daemon skips it. / What stops a plan from ending with a change set that serves no milestone again (the failure here was silent: planned, accepted, then skipped)? / Should the requests TUI app (q) let the owner name the milestone when filing a request?"
+        },
+        "handle": "question-6b593167-1",
+        "id": "01M6JDV92Y0SKYFFNNNPGFGDZH",
+        "key": null,
+        "kind": "question",
+        "node": "01M6JDV92Y0SKYFFNNNMHWTRC5",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6JDMJTSMFWS7FC804Z9FT76",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JDVAYXS49TJYR3JVRW8GDQ",
+  "type": "ops",
+  "v": 1
+}

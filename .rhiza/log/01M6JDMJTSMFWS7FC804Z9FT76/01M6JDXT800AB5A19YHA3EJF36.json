@@ -1,0 +1,41 @@
+{
+  "actor": "01M6JDVMPFNP1FB8W85YXF40SB",
+  "after": [
+    "01M6JDVAYXS49TJYR3JVRW8GDQ"
+  ],
+  "at": "2026-11-04T04:43:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's own intention says a request's plan should link to 'the open milestone it fits, or a backlog milestone the request names', and milestone-25's statement is exactly that every change set planned from queued requests is built and shipped by the daemon, so this fix serves it, which also lets the daemon build it. RequestRequest (internal/api/request.go) today has only text and kind, so naming a milestone needs a new optional flag; leaving it optional keeps plan=auto with accept=auto working without owner input. The daemon already skips with daemon.SkipNoMilestone (internal/daemon/pick.go, internal/api/daemon.go), but only reports it in status after the fact; the failure that prompted this (paging 01M6H3A65RDP, usage governor 01M6HHMTEDFK) was silent, so the check belongs where the plan is made, failing the plan step before acceptance. The owner files requests from the Rex TUI apps (owner goal: run Rhiza from TUI apps), so the requests app needs the same optional milestone field the CLI gets; defaulting it to auto keeps filing a one-line act.",
+          "statement": "Change set 01M6JDM serves milestone-25 (01M6HKVRE1B7). A request's plan reaches a milestone in two ways: `rhiza request` (and the request op) gains an optional --milestone flag naming a milestone intent by handle or ID, stored on the request and handed to the planner; with none named, the planner links the change set serves to the open milestone it fits (a milestone intent, never an umbrella or area intent under no milestone). The guard is in the plan step: its completion check fails the step, loudly, when a planned change set serves no milestone directly or through an intent under one, so a plan can no longer be accepted and then silently skipped. The requests TUI app (q) gets an optional milestone field when filing a request, defaulting to auto (planner picks the open milestone it fits).",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "request-plans-serve-a-milestone",
+        "id": "01M6JDXH6A7W60623XNBQZH4A7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6JDXH6A7W60623XN96ZV9JV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JDXH6A7W60623XN96ZV9JV",
+        "id": "01M6JDXMFXF2WWZF45GGXR32V3",
+        "link": "01M6JDXMFXF2WWZF45GE9HFVDK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JDV92Y0SKYFFNNNMHWTRC5",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6JDMJTSMFWS7FC804Z9FT76",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JDXT800AB5A19YHA3EJF36",
+  "type": "ops",
+  "v": 1
+}

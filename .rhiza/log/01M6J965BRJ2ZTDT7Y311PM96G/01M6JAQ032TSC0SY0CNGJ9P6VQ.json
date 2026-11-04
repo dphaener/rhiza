@@ -1,0 +1,95 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6JADGH6HNG66EBGEWMPH2EX"
+  ],
+  "at": "2026-11-04T03:47:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on unaccepted-run-in-inbox): This verified capability says an interrupted run on a change set no longer accepted waits in the inbox, and its acceptance tests that an interrupted run on a landed change set is listed with rhiza run abandon and that the daemon does not resume it. The plan's inbox-omits-resumable-landed-run and daemon-resumes-landed-past-land do the opposite for a non-plan run that reached land. The plan narrows run-resume, manual-resume-refuses-unaccepted and daemon-resumes-accepted-only, but leaves this capability's statement and acceptance as they are, so the model contradicts itself and the existing test's claim gets weaker without anyone noting it. The critic confirmed it: unaccepted-run-in-inbox's statement says any interrupted run on a change set no longer accepted waits in the inbox. The plan's inbox-omits-resumable-landed-run removes the skipped item for a non-plan run on a landed change set that reached land, and the plan does not touch this node, while it did narrow the sibling nodes run-resume, manual-resume-refuses-unaccepted and daemon-resumes-accepted-only. Its existing test (daemon-resume.txtar LANDED00001/LANDEDAUTO1, journals with no step entries) still passes, so only the statement and acceptance need narrowing to runs that never reached land, but as the model stands it contradicts itself. How should it be settled?"
+        },
+        "handle": "review-01m6j962-r3-f1",
+        "id": "01M6JAP2N6S98FWFP4C0B5RT3S",
+        "key": null,
+        "kind": "question",
+        "node": "01M6JAP2M7P69YCNC18EB7XT3Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JAP2M7P69YCNC18EB7XT3Y",
+        "id": "01M6JAP6J95PNN04KXD5M1K3S8",
+        "link": "01M6JAP6J95PNN04KXD1P8VVPM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RH3PBJ12H0CYSMCMV7KAS",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (contradiction on daemon-resume-once): Its statement still says the daemon 'leaves alone an interrupted run whose change set is not accepted'. daemon-resumes-landed-past-land has the daemon resume an interrupted run on a landed change set. The plan should narrow this statement as it did for daemon-resumes-accepted-only, with the same exception. The critic confirmed it: daemon-resume-once (version 01M6GBJX, not changed by this change set) still says the daemon 'leaves alone an interrupted run whose change set is not accepted'. daemon-resumes-landed-past-land has the daemon resume such a run on a landed change set. The statement needs the same exception the plan gave daemon-resumes-accepted-only. How should it be settled?"
+        },
+        "handle": "review-01m6j962-r3-f2",
+        "id": "01M6JAPAZQ4ME30QT480K1G5CK",
+        "key": null,
+        "kind": "question",
+        "node": "01M6JAPAZQ4ME30QT47YRE8CZ7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JAPAZQ4ME30QT47YRE8CZ7",
+        "id": "01M6JAPESF2HH418GTF8RK10AD",
+        "link": "01M6JAPESF2HH418GTF8HSMMY6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R7MP3HGEB60GJV4M3CWQA",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f3 (contradiction on daemon-resumes-accepted-only): The plan rewrites the statement to add the landed-past-land exception, but the acceptance still reads 'leaves interrupted runs on landed, rejected, withdrawn, proposed and draft change sets unresumed'. Unqualified, that contradicts the new statement. The acceptance needs the same split: landed and never reached land means unresumed, landed and reached land means resumed. The critic confirmed it: The plan rewrote daemon-resumes-accepted-only's statement to add the landed-past-land exception but left its acceptance unqualified: 'leaves interrupted runs on landed ... change sets unresumed'. The existing fixtures never reach land, so the test still passes, but the acceptance and statement of the same node now disagree on landed runs, and a builder reading the acceptance could take it as requiring every landed run to stay unresumed. It should say landed runs that never reached land. How should it be settled?"
+        },
+        "handle": "review-01m6j962-r3-f3",
+        "id": "01M6JAPK0HXVDH2NVD6J02S6TP",
+        "key": null,
+        "kind": "question",
+        "node": "01M6JAPK0HXVDH2NVD6H2G15B8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JAPK0HXVDH2NVD6H2G15B8",
+        "id": "01M6JAPPS1JMEPXXF3V1ANZT54",
+        "link": "01M6JAPPS1JMEPXXF3V03TQH51",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RH3705M0GA17WVVXKBGM8",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f4 (contradiction on landed-run-resume-scope): The owner's decision skipped-run-in-inbox ('Show in inbox, the agent's option, picked by the owner') says an interrupted run whose change set is no longer accepted is not resumed and waits in the inbox. This assumed arbiter decision carves an exception out of that owner ruling but neither links to it nor says it refines it. The exception should name skipped-run-in-inbox and narrow it explicitly, or go to the owner as a question, so a reader can see the owner's ruling was knowingly changed. The critic confirmed it: skipped-run-in-inbox is an owner decision (wording 'Show in inbox, the agent's option, picked by the owner') stating that an interrupted run whose change set is no longer accepted is not resumed and waits in the inbox. landed-run-resume-scope, worded '(assumed, would have escalated)', resumes a subset of those runs and drops them from the inbox, yet neither its statement nor its reasoning names skipped-run-in-inbox, and it has no link to it. An arbiter decision that narrows an owner ruling without saying so contradicts it silently; it should name and narrow it explicitly (or raise it with the owner). How should it be settled?"
+        },
+        "handle": "review-01m6j962-r3-f4",
+        "id": "01M6JAPTEFBWESB96GAD0JD40C",
+        "key": null,
+        "kind": "question",
+        "node": "01M6JAPTEFBWESB96GAADP6AK8",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6J965BRJ2ZTDT7Y311PM96G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JAQ032TSC0SY0CNGJ9P6VQ",
+  "type": "ops",
+  "v": 1
+}

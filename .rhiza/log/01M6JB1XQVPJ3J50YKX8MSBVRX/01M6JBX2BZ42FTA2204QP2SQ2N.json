@@ -1,0 +1,57 @@
+{
+  "actor": "01M6JBTZ7T16E0W2K5R4KVCP8H",
+  "after": [
+    "01M6JBHJCEKMG4JKWFZWAKVCR2"
+  ],
+  "at": "2026-11-04T04:08:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Rex makes notifications only from bytes written to a terminal, for that terminal's main program's root record (memory rex-notifications-from-program-status; decision rex-notice-by-program-status), and no API sets another block's status. Since #210 daemonDetach unsets REX_BLOCK for drivers (internal/api/daemon.go:886), so runRex has no terminal to write to and the rich notice is lost. The owner ruled out watcher or driver tabs (\"There's nothing actionable for me, the user, to do or see\", 2026-11-03), so the only terminal left that the owner should look at is the agent tab itself, which already runs rhiza session run as a wrapper that follows its own block's rex events (followRex in internal/api/session_run.go) and so already knows when the session blocks and what its question is. Writing there puts the notice exactly where the action is and reuses rexNotice/rexRecord. Whether Rex shows a banner for it is unknown; Claude Code's own report only chimes, and the change set's intent says to fix ours and report what is not. Filing with an outside vendor is outward-facing and touches the network, which an autonomous run must not do, so the run drafts the report and the owner files it.",
+          "statement": "A headless run's blocked notice is written by the agent tab's own wrapper (rhiza session run), to its own terminal: when its session blocks on something the owner must answer, it writes the same root-record OSC 7501 blocked report rexNotice builds (kind, tab as title, a message naming the change set, step and question), and a working report once the block ends. Like the driver's notice it skips blocks the run's arbiter answers (a question in an autonomous run), so the owner is not bannered for questions they need not answer; a permission block still notifies. The driver keeps writing its notice to its own block only when it has one (a --foreground run in Rex); no driver, daemon or watcher tab is opened for it. The Rex upstream report is drafted, not sent: the builder, on the VM, writes the report from what the VM can capture (Rex server version, the exact OSC 7501 bytes, remote VM host, chime but no banner) into the repo with the Mac-side fields (Mac app version, whether a banner now shows, focus and notification-permission state) left for the owner, and that leaf is done when the draft is committed and the owner is pointed at it in the inbox; the owner checks the Mac, fills those fields and files it only if the banner is still missing.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "headless-blocked-notice-in-agent-tab",
+        "id": "01M6JBBD0R8CNZZ5FQ3NER258N",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6JBBD0R8CNZZ5FQ3KA1DNPZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript drives a headless run (driver with no REX_BLOCK) whose agent session, under a fake rex, blocks on a permission request and then resumes: the session wrapper's terminal output holds exactly one root-record blocked report with app=rhiza, title the tab and msg naming the change set, step and block, then one working report; the same for a question block in a non-autonomous run (kind=question); in an autonomous run a question block (answered by the arbiter) makes the wrapper write no blocked report; the driver writes no report; a --foreground run with REX_BLOCK set still writes its notice to its own block as run-blocked.txtar checks",
+          "statement": "When a run's agent session blocks on something the owner must answer, its own tab's wrapper (rhiza session run) writes rhiza's root-record OSC 7501 blocked report to its terminal, with the kind, the tab as title and a message naming the change set, the step and the question, and a working report once the block ends, so a headless run's block reaches Rex with no driver, daemon or watcher tab. Like the driver's notice (internal/run/engine.go notifies only when !r.arbitrates(b)), it writes nothing for a block the run's arbiter answers: in an autonomous run (the session record's Autonomous, already read in internal/api/session_run.go) a question block writes no notice, while a permission block still does"
+        },
+        "handle": "agent-tab-blocked-notice",
+        "id": "01M6JBG2WB3SDJJE4R113RXSHJ",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6JBG2WB3SDJJE4R0YFTWTV1",
+        "op": "node.create",
+        "parent": "01M5SWTCGG54JMNZNRSYQ2WAHH"
+      },
+      {
+        "fields": {
+          "acceptance": "docs/rex-upstream/notification-banner.md is committed holding the Rex server version on the VM, the exact OSC 7501 bytes rhiza and Claude Code wrote for a blocked report as captured on the VM by rex events --json, the remote VM host setup and the reported symptom (chime, no banner), with clearly marked blank fields for the owner to fill on the Mac (Mac app version, whether a banner now shows, focus and notification-permission state); and an inbox item points the owner at it to check the Mac, fill those fields and file it with Rex if the banner is still missing",
+          "statement": "Once agent-tab-blocked-notice is installed on the VM, the builder drafts a report for Rex upstream in the repo from what the VM can capture, leaving the Mac-side observations for the owner: the owner checks on the Mac whether a question in a VM agent tab now gets a banner, fills in the Mac fields and files the report only if it still only chimes"
+        },
+        "handle": "rex-banner-upstream-draft",
+        "id": "01M6JBGRYGYVYDZ0VC03FF35M6",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6JBGRYGYVYDZ0VC01N3941H",
+        "op": "node.create",
+        "parent": "01M5SWTCGG54JMNZNRSYQ2WAHH"
+      }
+    ]
+  },
+  "change_set": "01M6JB1XQVPJ3J50YKX8MSBVRX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JBX2BZ42FTA2204QP2SQ2N",
+  "type": "ops",
+  "v": 1
+}

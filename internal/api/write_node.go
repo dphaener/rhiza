@@ -126,6 +126,11 @@ func buildAdd(b writeBase, r AddRequest) (edit, error) {
 	if err := knownFieldsOnly("add", kind, fields); err != nil {
 		return edit{}, err
 	}
+	if kind == op.KindAnchor {
+		if fields, _, err = anchorFingerprint(b.root, fields, fields, nil, false); err != nil {
+			return edit{}, err
+		}
+	}
 	var parent id.ID
 	var k string
 	if op.HasParent(kind) {
@@ -202,6 +207,16 @@ func buildSet(b writeBase, r SetRequest) (edit, error) {
 	handle := n.Handle
 	if r.Handle != "" {
 		handle = r.Handle
+	}
+
+	if n.Kind == op.KindAnchor {
+		var drop bool
+		if set, drop, err = anchorFingerprint(b.root, mergeFields(n.Fields, set, unset), set, unset, true); err != nil {
+			return edit{}, err
+		}
+		if drop && !slices.Contains(unset, "fingerprint") {
+			unset = slices.Sorted(slices.Values(append(unset, "fingerprint")))
+		}
 	}
 
 	var o op.Op

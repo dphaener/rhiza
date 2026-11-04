@@ -1,0 +1,30 @@
+{
+  "actor": "01M6J96T4S91A0FYKNZJ7K775W",
+  "after": [
+    "01M6J965BRJ2ZTDT7Y348ZMZS1"
+  ],
+  "at": "2026-11-04T03:25:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "0a9726dd-c836-4069-833f-01a1a4935119",
+          "statement": "Change set 01M6J965 (resume runs stranded after their change set landed) serves no intent yet. Which landed intent should it serve? m4-runs-hold-up says 'A build, review or ship-change run finishes without hand repair', which is what this fixes. / Draft change set 01M6H5VQ already covers the plan-run half: inbox and daemon treat an interrupted plan run whose record landed as resumable (rhiza run resume already continues one, plan-run-resumes-landed-record). Should 01M6J965 leave plan runs to it and cover only non-plan (ship-change) runs? / What makes a ship-change run on a landed change set resumable? `rhiza ship land` already skips a change set that has landed, so re-running it is safe."
+        },
+        "handle": "question-0a9726dd-1",
+        "id": "01M6J9DNGBYAM8STCPMCRG6AKG",
+        "key": null,
+        "kind": "question",
+        "node": "01M6J9DNGAX992WSTAEVHN2HPY",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6J965BRJ2ZTDT7Y311PM96G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J9DR0WW3EEPAFKZN6F5E14",
+  "type": "ops",
+  "v": 1
+}

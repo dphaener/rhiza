@@ -1,0 +1,44 @@
+{
+  "actor": "01M6JC1DM1NCZTAXGF3PEKGD25",
+  "after": [
+    "01M6JBX7CJ4DDVHJP96YDZMK8J"
+  ],
+  "at": "2026-11-04T04:11:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent, quoting the owner's failure on 2026-11-03, already says the actions should run rhiza from the executing host's PATH (or resolve it there), not a path fixed at install time, and calls the VM symlink only a stopgap. A Rex app runs on its pane's host, so no path the installer knows is right in general; only the executing host can resolve it. The failure text (rex-run: line 1: ...) shows the command goes through a shell on that host, so a bare name is resolved from its PATH. Resolving in Lua at runtime (probing paths) adds code with no gain over PATH lookup. Because a pane's environment may lack ~/bin on PATH, an escape hatch is needed; the settings block (rexSettingsBegin/End in internal/api/rex_install.go) is already the part a reinstall preserves, so a bin setting there is the smallest fit and keeps per-host overrides across make update. Tests in internal/api/rex_install_test.go that assert local BIN = <ctx.Self> change to assert the PATH default and a kept bin override.",
+          "statement": "rhiza rex install no longer writes the installing host's absolute path into rhiza.lua. The generated app actions run the bare command \"rhiza\", resolved on the PATH of the host that runs the pane, unless the owner sets an optional bin entry in the settings block (e.g. bin = \"/home/me/bin/rhiza\"), which a reinstall keeps like launch_key and keys. So the script reads local BIN = (type(settings.bin) == \"string\" and settings.bin ~= \"\") and settings.bin or \"rhiza\" (a missing, empty or non-string bin falls back to \"rhiza\", the same guard launch_key uses), and ctx.Self no longer feeds rhiza.lua.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "rex-actions-run-rhiza-from-path",
+        "id": "01M6JBT72RR7K9DS2FDHT1EKPF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6JBT72RR7K9DS2FDF6J2DAG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "A test installs with ctx.Self set to an absolute path and finds that path nowhere in rhiza.lua; rhiza.lua takes BIN from settings.bin only when it is a non-empty string (type(settings.bin) == \"string\" and settings.bin ~= \"\", as launch_key is read) and otherwise uses \"rhiza\", so a missing, empty or non-string bin yields \"rhiza\"; a reinstall keeps a bin the owner set in the settings block byte for byte, and a second install is byte-identical",
+          "statement": "The app actions rhiza rex install writes run rhiza from the PATH of the host running the pane, or from an optional bin entry in rhiza.lua's settings block, never from a path fixed at install time"
+        },
+        "handle": "rex-actions-rhiza-from-path",
+        "id": "01M6JBWYEG2NS37GRDPPYGS2Y4",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6JBWYEG2NS37GRDPKMSWJ7D",
+        "op": "node.create",
+        "parent": "01M62JP4KDNBZKH1YT5NZRB347"
+      }
+    ]
+  },
+  "change_set": "01M6JBKYEAHHCRYTMGBWTBZBBK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JC2Z8W9X4KC0Y3EYJNDJZD",
+  "type": "ops",
+  "v": 1
+}

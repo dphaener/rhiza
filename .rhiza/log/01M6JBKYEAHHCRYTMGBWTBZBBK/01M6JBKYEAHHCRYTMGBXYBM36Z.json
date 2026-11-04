@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-04T04:03:35Z",
+  "body": {
+    "intent": "Fix rhiza rex install bakes the installing machine's absolute rhiza path into rhiza.lua (local BIN = \"/Users/darinhaener/bin/rhiza\"), but a Rex app runs on the host of its pane: with the Mac's Rex client working sessions on the VM's Rex server, the roadmap app failed with \"rex-run: line 1: /Users/darinhaener/bin/rhiza: No such file or directory\" (owner, 2026-11-03). The generated actions should run rhiza from the executing host's PATH (or resolve it there), not a path fixed at install time; a symlink at that path on the VM is the stopgap",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6JBKYEAHHCRYTMGBWTBZBBK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JBKYEAHHCRYTMGBXYBM36Z",
+  "type": "open",
+  "v": 1
+}
