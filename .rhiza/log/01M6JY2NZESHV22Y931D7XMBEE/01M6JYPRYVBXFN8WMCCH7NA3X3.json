@@ -1,0 +1,44 @@
+{
+  "actor": "01M6JYMEE3AWF1EF3EAS9CYN0Q",
+  "after": [
+    "01M6JYBWGEJQSC8VG0WP0VBDQC"
+  ],
+  "at": "2026-11-04T09:37:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "I read the question, the change set's slice and intent, and internal/api/daemon_service.go and daemon_startstop.go. daemonArgs [daemon --autonomous] already feeds both ExecStart and the tab (since #200), and both scripts grep for it, so building the title as worded would be an empty change. The intent is that choosing service or tab never changes whether runs go on without the owner. serviceUnit writes only WorkingDirectory, ExecStart and Restart, so a fresh install runs under systemd's bare PATH, where agents cannot find claude, go, gh or make, and runs then fail without the owner. That is the one real way service and tab differ today, and the VM only works because of a hand-written env.conf drop-in. Capturing the installing shell's PATH and TMPDIR is the smallest change that closes it, matches what the tab inherits, and is testable in testscript without systemd. Leaving the existing drop-in alone is safe: systemd drop-ins override the unit's Environment= lines.",
+          "statement": "The change set's leaves cover the environment, not the arguments, which already match. rhiza daemon install writes the PATH and TMPDIR of the shell that runs it into the unit as Environment= lines, quoted the way systemd reads Environment= (the whole NAME=value in double quotes, with \\\\ and \\\" escaped and % doubled, and $ left as is, unlike ExecStart's word quoting), so the systemd service starts agents with the same tools on PATH and the same temp dir as the Rex tab and a fresh install needs no hand-written drop-in. daemon-install.txtar checks the unit carries both lines next to ExecStart with 'daemon --autonomous'. The shared daemonArgs and its existing greps stay as they are and get no leaf of their own.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "daemon-service-env-matches-tab",
+        "id": "01M6JY7KFRW3AH998GNASYDHGB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6JY7KFRW3AH998GN8GP7AEF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "daemon-install.txtar runs install with a known PATH and TMPDIR (one holding a space) and checks the unit carries Environment=PATH=... and Environment=TMPDIR=... with those values, quoted the way systemd reads them, next to ExecStart ending in daemon --autonomous; a second install with the same environment writes nothing, and one with a changed PATH rewrites the unit and reloads systemd",
+          "statement": "rhiza daemon install writes the PATH and TMPDIR of the shell that runs it into the systemd unit as Environment= lines, quoted the way systemd reads Environment= (the whole NAME=value in double quotes, with \\\\ and \\\" escaped and % doubled, and $ left as is, unlike ExecStart's word quoting), so the service starts agents with the same tools on PATH and the same temp dir as the Rex tab, with no hand-written drop-in"
+        },
+        "handle": "daemon-service-env",
+        "id": "01M6JYBE226RWZVG1N6FZK30C1",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M6JYBE226RWZVG1N6CCTS81F",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      }
+    ]
+  },
+  "change_set": "01M6JY2NZESHV22Y931D7XMBEE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JYPRYVBXFN8WMCCH7NA3X3",
+  "type": "ops",
+  "v": 1
+}
