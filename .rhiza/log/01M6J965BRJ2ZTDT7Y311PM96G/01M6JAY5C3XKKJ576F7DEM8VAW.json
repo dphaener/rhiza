@@ -1,0 +1,41 @@
+{
+  "actor": "01M6JAWDE0XA6Z6QVJK58F11WR",
+  "after": [
+    "01M6JAVWK5DVRQQPVXG35BXE37"
+  ],
+  "at": "2026-11-04T03:51:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The node's statement now carries the landed-past-land exception (daemon-resumes-landed-past-land) but its acceptance still says landed runs stay unresumed, so the two fields of one node disagree. The change set's intent is exactly to let the daemon resume landed runs whose remaining steps are post-land, so the statement is right and the acceptance is stale. The existing fixtures never reach land, so qualifying the landed case keeps them passing while removing the reading that every landed run must stay unresumed; the resumed landed case is the new behaviour the plan adds and belongs in the acceptance too.",
+          "statement": "Qualify daemon-resumes-accepted-only's acceptance to match its statement: a test resumes an interrupted run on an accepted change set, and one on a landed change set whose non-plan run reached its land step; it leaves interrupted runs unresumed on landed change sets that never reached land, and on rejected, withdrawn, proposed and draft change sets",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "daemon-resumes-accepted-only-acceptance-split",
+        "id": "01M6JAXW1MCBKSCB2K33DRN6DG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6JAXW1MCBKSCB2K325PYJ2J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JAXW1MCBKSCB2K325PYJ2J",
+        "id": "01M6JAXZKBNRK3PBSXA25AKTG9",
+        "link": "01M6JAXZKBNRK3PBSXA1FZ1SW9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JAPK0HXVDH2NVD6H2G15B8",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6J965BRJ2ZTDT7Y311PM96G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JAY5C3XKKJ576F7DEM8VAW",
+  "type": "ops",
+  "v": 1
+}
