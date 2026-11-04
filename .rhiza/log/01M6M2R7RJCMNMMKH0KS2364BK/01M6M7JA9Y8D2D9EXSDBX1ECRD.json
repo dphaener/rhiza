@@ -1,0 +1,40 @@
+{
+  "actor": "01M6M64V7FWWHHVH01QHANAZWN",
+  "after": [
+    "01M6M35MGM20EMR6CXRADN4EM8"
+  ],
+  "at": "2026-11-04T21:31:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 920738fb by claude-code-2524aa23. Read the diff: runSessionStart now copies the session's actor record change set (copyChangeSetLog, the same files and IDs) from the run worktree into the session's own checkout when r.dir is set. Ran go test ./cmd/rhiza -run TestScripts/build-verifier-checkout -count=1: PASS. In it the verifier in its detached checkout finds the record change set, diff -r against the run worktree's copy shows no difference, rhiza show <actor> resolves, and rhiza add actor <actor> --record exits non-zero. A scratch copy of that scenario (outside the repo, nothing committed) showed the refusal message 'handle \"claude-code-f3ff4d45-2\" is taken by node ...'. It then committed the record in the checkout on a branch and the same record in the run worktree, merged them with no conflict, ran rhiza render and rhiza check (check=0, ok), and the merged log held one file with that actor handle, which rhiza show resolved. gofmt and go vet are clean on internal/api and cmd/rhiza. go test ./internal/api -short passes (ok, 433s); the full run under load average 17.8 failed only the TestReadBudget timing budget and the test timeout, both load-bound and not touched by this diff."
+        },
+        "handle": "actor-record-in-checkout-verified",
+        "id": "01M6M7J2SF1X6X53MJE26NXQSM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M7J2SF1X6X53MJDY94Z8H6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M7J2SF1X6X53MJDY94Z8H6",
+        "id": "01M6M7J5M1HMA5Z0G0N0M34ZPG",
+        "link": "01M6M7J5M1HMA5Z0G0MWQVJ1DB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M2ZMM64QSSKQTP1FKH76NJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6M2R7RJCMNMMKH0KS2364BK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M7JA9Y8D2D9EXSDBX1ECRD",
+  "type": "ops",
+  "v": 1
+}
