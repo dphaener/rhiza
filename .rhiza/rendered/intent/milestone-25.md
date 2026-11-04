@@ -29,6 +29,7 @@ The backlog is empty: every change set planned from the owner's queued requests 
 - serves change set `01M6HSZMD2H2HZVGQQSVZZ4A1D` (Plan requests are not starved by ready change sets: while a plan request waits, the daemon keeps one run slot for it)
 - serves change set `01M6JJMK3M50P34PPX1QNTHYCB` (The test suite is cheap to run in many worktrees at once: unchanged packages hit the shared test cache across worktrees, and concurrent full suites on one machine queue instead of thrashing)
 - serves change set `01M6K044DTSK7PT604NHPNGD17` (Queued continuations are not starved by ready change sets: the daemon keeps a slot for each queued resume or retry)
+- serves change set `01M6K3QFYNKE35DZJG5HPHPJT3` (Order the inbox fix after the resume-after-land fix: both rewrite the same resume and inbox nodes)
 
 ## History
 
