@@ -1,0 +1,63 @@
+{
+  "actor": "01M6JTY47A91SYQ6D5N0Q1WRGR",
+  "after": [
+    "01M6JTVPWD1VTA6HGJGV24YR7C"
+  ],
+  "at": "2026-11-04T08:36:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e2cbef27 against real Rex on the VM (rex 0.0.1793645657-gd018d2), with the branch's built rhiza. In a scratch repo and a scratch Rex session, rhiza session start --run run-1 made the session record (tab opening stubbed); then rex window new ran the built `rhiza session run <sid>` in a real Rex tab with a fake claude on PATH that writes OSC 7501 working, then blocked (kind permission or question), then working on a resume file. rex events --json for the tab's block showed, for a permission block: claude-code working, claude-code blocked permission 'approve Bash: touch x', then app=rhiza blocked kind=permission with title 'repo: Agent runs · run run-1 · build' and msg 'Agent runs: build waits on you in tab repo: Agent runs · run run-1 · build: approve Bash: touch x', then claude-code working; no rhiza working report. rhiza session show gave 'rex: blocked permission: approve Bash: touch x' while blocked (the agent's message, not the echoed one) and 'rex: working: Back to work' after. Non-autonomous question block: rhiza blocked kind=question record written. Autonomous record (autonomous=true) question block: no app=rhiza record at all. Autonomous permission block: app=rhiza blocked kind=permission written. Wrapper exit 0 every time. go test ./cmd/rhiza -run 'TestScripts/(session-run-blocked-notice|run-blocked)$' -count=1: ok. Not exercised by hand: a full headless run driver, or the Mac-side banner."
+        },
+        "handle": "agent-tab-blocked-notice-qa-1",
+        "id": "01M6JV7HGQ78TF5KY664XYTTQN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JV7HGQ78TF5KY6612HW6Z8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JV7HGQ78TF5KY6612HW6Z8",
+        "id": "01M6JV7MCP157Q3JRR5W6HPE0F",
+        "link": "01M6JV7MCP157Q3JRR5VWTVY1T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JBG2WB3SDJJE4R0YFTWTV1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e2cbef27: docs/rex-upstream/notification-banner.md holds the VM's rex version (matches `rex version` on the VM now: 0.0.1793645657-gd018d2, commit d018d2de), rhiza's exact blocked bytes ending in ST, Claude Code's captured blocked record (state, kind, msg, no title), the VM host setup, the chime-no-banner symptom and blank OWNER fields for the Mac. Its Claude Code record shape matches what real Rex on the VM gave me today for a claude-code blocked report, and rhiza's report as I captured it from real Rex (app=rhiza, title, msg) matches the doc's decoded title and msg format. rhiza show rex-banner-report-ready --json gives a question naming docs/rex-upstream/notification-banner.md and asking the owner to check the Mac, fill the fields and file it if the banner is still missing; it was written by a record-kind change set (01M6JPC8F), so it outlives this one, and has no answer."
+        },
+        "handle": "rex-banner-upstream-draft-qa-1",
+        "id": "01M6JV7PP42WNXJFK2HC0HJ7Y5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JV7PP42WNXJFK2H8REF79R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JV7PP42WNXJFK2H8REF79R",
+        "id": "01M6JV7S78KNYYWZ3KVDQ06T2W",
+        "link": "01M6JV7S78KNYYWZ3KVC18V3XP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JBGRYGYVYDZ0VC01N3941H",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6JB1XQVPJ3J50YKX8MSBVRX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JV7WX05WV8BTREWAH1MBY6",
+  "type": "ops",
+  "v": 1
+}
