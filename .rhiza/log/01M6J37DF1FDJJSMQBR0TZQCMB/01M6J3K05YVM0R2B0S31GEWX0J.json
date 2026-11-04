@@ -1,0 +1,95 @@
+{
+  "actor": "01M6J2R99PPTZJZPNF0XNS1JV1",
+  "after": [
+    "01M6J37DF1FDJJSMQBR3X0E680"
+  ],
+  "at": "2026-11-04T01:43:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript on a fixture repo without .rhiza gets a .rhiza folder and a journalled run of the import workflow; a second rhiza import exits with a conflict whose next names that run.",
+          "statement": "rhiza import, run in a git repo, runs rhiza init when the repo has no model and starts a run of the built-in import workflow on it, and refuses a repo that has already been imported with a next naming its import run."
+        },
+        "handle": "import-command",
+        "id": "01M6J3J1KQJJ9MB6P0JC2H6QZV",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6J3J1KQJJ9MB6P0J9CCWM2E",
+        "op": "node.create",
+        "parent": "01M5SWRGZDB2NV1W7MBBRW2HNX"
+      },
+      {
+        "fields": {
+          "acceptance": "A workflow test with stub agents runs the steps in order, visits the record step once per surveyed area, and fails the run when the verify step's rhiza check or test command exits non-zero.",
+          "statement": "The built-in import workflow runs the import procedure as steps: a survey that names the areas, a record step for each area, decisions, Sources and retired documents, unbuilt work as drafts, and a verify step that runs rhiza check and the repo's own test command, failing the run when either fails."
+        },
+        "handle": "import-workflow",
+        "id": "01M6J3J4K0HGG5GDK4J7N587Y5",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6J3J4K0HGG5GDK4J5J3E5W2",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "fields": {
+          "statement": "What did the Nebari import teach the import workflow: which steps of the procedure Nebari's importing agents could not follow or had to work around, as recorded in the questions in Nebari's model?"
+        },
+        "handle": "nebari-import-lessons",
+        "id": "01M6J3J7E1JQ67X065ZX8T14HQ",
+        "key": null,
+        "kind": "question",
+        "node": "01M6J3J7E1JQ67X065ZV26RPXY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6J3J7E1JQ67X065ZV26RPXY",
+        "id": "01M6J3JBRQ1F0DJRMNGY4R0QMX",
+        "link": "01M6J3JBRQ1F0DJRMNGTTW5CXQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J3J4K0HGG5GDK4J5J3E5W2",
+        "type": "blocks"
+      },
+      {
+        "decision": null,
+        "from": "01M6J3J1KQJJ9MB6P0J9CCWM2E",
+        "id": "01M6J3JGXXNJ3GWZZGXHCFVT7G",
+        "link": "01M6J3JGXXNJ3GWZZGXEQJBP3M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J31RRCX75M5596X156W6BR",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J3J4K0HGG5GDK4J5J3E5W2",
+        "id": "01M6J3JR5DQMGZWHENSNTNQ9GP",
+        "link": "01M6J3JR5DQMGZWHENSKMRVNB9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J31RRCX75M5596X156W6BR",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J3J4K0HGG5GDK4J5J3E5W2",
+        "id": "01M6J3JVQ7RDJ7H320B9ETK84F",
+        "link": "01M6J3JVQ7RDJ7H320B696TZ8C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J30XK1P7QE7W4VDSX3YEK1",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6J37DF1FDJJSMQBR0TZQCMB",
+  "for": "01M6J2R99PPTZJZPNF0XNS1JV1",
+  "id": "01M6J3K05YVM0R2B0S31GEWX0J",
+  "type": "ops",
+  "v": 1
+}
