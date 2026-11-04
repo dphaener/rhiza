@@ -66,7 +66,7 @@ test: ## Run the full test suite, then the timing budgets alone, and print the r
 		if [ -n "$$lockfile" ] && command -v flock >/dev/null 2>&1 && (: >>"$$lockfile") 2>/dev/null; then \
 			exec 9>>"$$lockfile"; \
 			if ! flock -n 9; then \
-				echo "Waiting for another make test on this machine to finish $$1 (lock: $$lockfile)"; \
+				echo "Waiting for another make test on this machine before running $$1 (lock: $$lockfile)"; \
 				start=$$(date +%s); flock 9; \
 				echo "Got the test lock after $$(( $$(date +%s) - start ))s"; \
 			fi; \
@@ -76,14 +76,14 @@ test: ## Run the full test suite, then the timing budgets alone, and print the r
 	log=$$(mktemp); rest=$$(mktemp); \
 	go test $(TEST_FLAGS) -skip '$(BUDGET_TESTS)' $$(go list ./... | grep -v '/cmd/rhiza$$') >$$rest 2>&1 9>&- & \
 	pid=$$!; \
-	lock "its cmd/rhiza scripts"; \
+	lock "the cmd/rhiza scripts"; \
 	go test $(TEST_FLAGS) -skip '$(BUDGET_TESTS)' ./cmd/rhiza 9>&-; \
 	status=$$?; \
 	unlock; \
 	wait $$pid || status=1; \
 	cat $$rest; \
 	echo "Timing budgets, run alone after the suite"; \
-	lock "its timing budgets"; \
+	lock "the timing budgets"; \
 	RHIZA_BUDGET_LOG=$$log go test $(TEST_FLAGS) -count=1 -p 1 -run '$(BUDGET_TESTS)' $(BUDGET_PKGS) 9>&- || status=1; \
 	unlock; \
 	echo "Read-budget timings"; \

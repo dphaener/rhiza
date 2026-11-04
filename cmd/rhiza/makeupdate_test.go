@@ -84,8 +84,8 @@ func TestMakeTestTimeout(t *testing.T) {
 	rest := skip + "$(go list ./... | grep -v '/cmd/rhiza$') >$rest 2>&1 9>&- &"
 	scripts := skip + "./cmd/rhiza 9>&-"
 	budgets := "go test -trimpath -timeout 20m -count=1 -p 1 -run '^(TestReadBudget|TestBudget|TestGeneratedModel)$' ./internal/api ./internal/index ./internal/slice ./internal/tui/modelapp 9>&-"
-	lockScripts := `lock "its cmd/rhiza scripts"`
-	lockBudgets := `lock "its timing budgets"`
+	lockScripts := `lock "the cmd/rhiza scripts"`
+	lockBudgets := `lock "the timing budgets"`
 	for _, want := range []string{
 		rest, scripts, budgets, lockScripts, lockBudgets,
 		"lockfile='/locks/rhiza-test.lock'", "flock -n 9", "Waiting for another make test",
