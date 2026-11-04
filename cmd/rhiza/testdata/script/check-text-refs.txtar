@@ -1,0 +1,37 @@
+# check's text-ref rule fails on a stored @{ID} naming no node and warns on
+# one naming a retired node; other @{...} text is literal. Writes refuse a
+# dangling reference, so one in the log is forged by hand.
+
+exec rhiza init
+exec rhiza add capability store --field 'statement=Stores things' --record
+exec rhiza add decision pick --field 'statement=Pick @store for storage' --record
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+! stdout 'text-ref'
+
+# Literal look-alikes give nothing.
+exec rhiza add decision lit --field 'statement=Write @@{BOGUS} or @@{ID} and @@{<full ID>} literally' --record
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+! stdout 'text-ref'
+
+# A retired target warns, and check still exits 0.
+exec rhiza retire store --reason 'gone' --record
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+stdout -count=1 '^warn text-ref change set [0-9A-Z]{26}: pick field statement holds @\{[0-9A-Z]{26}\}, which names a retired node$'
+
+# A reference naming nothing fails.
+exec sh -c 'for f in $(grep -l "Pick @{" .rhiza/log/*/*.json); do sed "s/@{[0-9A-Z]\{26\}}/@{01ZZZZZZZZZZZZZZZZZZZZZZZZ}/" $f > $f.new && mv $f.new $f; done'
+exec rhiza render
+! exec rhiza check
+stdout '^failed$'
+stdout -count=1 '^fail text-ref change set [0-9A-Z]{26}: pick field statement holds @\{01ZZZZZZZZZZZZZZZZZZZZZZZZ\}, which names no node$'
+! exec rhiza check --json
+stdout '"rule": "text-ref"'
+stdout '"ok": false'
+exec rhiza describe --json
+stdout 'anchor, text-ref, render'

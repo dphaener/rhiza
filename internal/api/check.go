@@ -72,13 +72,13 @@ type CheckResponse struct {
 	Base        string         `json:"base" desc:"The git revision the append-only rule compared against; empty when it was skipped"`
 	MergeBaseOf string         `json:"merge_base_of,omitempty" desc:"The ref whose merge-base with HEAD is the default base; absent with --base"`
 	Skipped     string         `json:"skipped,omitempty" desc:"Why the append-only rule was skipped, if it was"`
-	Findings    []CheckFinding `json:"findings" desc:"Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, anchor, render, append-only), then path and IDs"`
+	Findings    []CheckFinding `json:"findings" desc:"Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, anchor, text-ref, render, append-only), then path and IDs"`
 }
 
 // CheckFinding is one thing check found.
 type CheckFinding struct {
 	Severity  string `json:"severity" enum:"fail,warn" desc:"fail makes the check fail; warn does not"`
-	Rule      string `json:"rule" enum:"log,fold,model,in-flight,link,depends-on,evidence-actor,anchor,render,append-only" desc:"The rule that found it"`
+	Rule      string `json:"rule" enum:"log,fold,model,in-flight,link,depends-on,evidence-actor,anchor,text-ref,render,append-only" desc:"The rule that found it"`
 	Path      string `json:"path,omitempty" desc:"The file, relative to the project root"`
 	ChangeSet string `json:"change_set,omitempty" desc:"The change set's ID"`
 	Entry     string `json:"entry,omitempty" desc:"The entry's ID"`

@@ -441,6 +441,7 @@ func TestRunOrder(t *testing.T) {
 	leaf, ev := r.next(), r.next()
 	leafSet := r.record("Leaf", mkNode(r.next(), leaf, op.KindCapability, "leaf"))
 	r.record("Verify", mkNode(r.next(), ev, op.KindEvidence, "seen"), mkLink(r.next(), r.next(), op.LinkVerifies, ev, leaf))
+	r.record("Dangling", textNode(r, r.next(), "dangler", "see @{01ZZZZZZZZZZZZZZZZZZZZZZZZ}"))
 	in := r.input()
 	in.Rendered = nil
 	in.Skipped = "no git"
@@ -457,7 +458,7 @@ func TestRunOrder(t *testing.T) {
 	}
 	rules = slices.Compact(rules)
 	want := []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleEvidenceActor,
-		RuleAnchor, RuleRender, RuleAppendOnly}
+		RuleAnchor, RuleTextRef, RuleRender, RuleAppendOnly}
 	if !reflect.DeepEqual(rules, want) {
 		t.Fatalf("rules %q, want %q\n%+v", rules, want, rep.Findings)
 	}

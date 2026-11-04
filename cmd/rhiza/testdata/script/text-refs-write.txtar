@@ -70,7 +70,7 @@ cp ../apply-bad.json apply-bad.json
 stderr 'no node to refer to'
 ! exec rhiza show viabad
 exec rhiza show viaok --json
-stdout '"statement": "Apply sees @\{[0-9A-Z]{26}\}"'
+stdout '"statement": "Apply sees @other"'
 
 # Engine writes never refuse: a note keeps an unresolvable word as a literal @.
 exec rhiza note add local 'Maybe @nowhere and @other'
