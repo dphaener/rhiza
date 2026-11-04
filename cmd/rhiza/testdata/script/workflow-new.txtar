@@ -45,7 +45,12 @@ cp .rhiza/workflows/skel.toml $WORK/skel.before
 ! exec rhiza workflow new skel
 stderr 'already exists'
 cmp .rhiza/workflows/skel.toml $WORK/skel.before
-! exec rhiza workflow new skel --from ship-change
+exec sh -c 'rhiza workflow new skel 2>/dev/null; echo exit $?'
+stdout '^exit 3$'
+exec sh -c 'rhiza workflow new skel --from ship-change 2>/dev/null; echo exit $?'
+stdout '^exit 3$'
+! exec rhiza workflow new skel --json
+stdout '"code": "conflict"'
 cmp .rhiza/workflows/skel.toml $WORK/skel.before
 
 # a name with a / or .toml is a usage error, exit 2
@@ -53,6 +58,10 @@ cmp .rhiza/workflows/skel.toml $WORK/skel.before
 stderr 'not a workflow name'
 ! exec rhiza workflow new x.toml
 stderr 'not a workflow name'
+exec sh -c 'rhiza workflow new sub/x 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+exec sh -c 'rhiza workflow new x.toml 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
 ! exists .rhiza/workflows/x.toml
 
 # an unknown source is a usage error
