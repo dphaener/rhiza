@@ -21,8 +21,12 @@ exec sh -c 'cat .rhiza/log/*/*.json'
 stdout 'Builds on @\{[0-9A-Z]{26}\}, mail me@x.org, @lit'
 
 # An ID prefix reference stores the full ID; so does a node of this change set.
-exec rhiza show other --json
-stdout '"id": "([0-9A-Z]{26})"'
+exec sh -c 'rhiza show other --json | grep "\"id\"" | head -1 | cut -d\" -f4 > id.txt'
+exec sh -c 'rhiza add capability pre --field "statement=Prefix @$(cut -c1-20 id.txt) here"'
+exec sh -c 'cat .rhiza/log/*/*.json | grep -c "Prefix @{$(cat id.txt)} here"'
+stdout '^1$'
+exec rhiza show pre
+stdout 'Prefix @other here'
 exec rhiza add capability two --field 'statement=See @local and (@other)'
 exec sh -c 'cat .rhiza/log/*/*.json'
 stdout 'See @\{[0-9A-Z]{26}\} and \(@\{[0-9A-Z]{26}\}\)'
@@ -85,6 +89,8 @@ stdout '"statement": "Apply sees @other"'
 exec rhiza note add local 'Maybe @nowhere and @other'
 exec sh -c 'cat .rhiza/log/*/*.json'
 stdout 'Maybe @nowhere and @\{[0-9A-Z]{26}\}'
+exec rhiza show local
+stdout 'Maybe @@nowhere and @other'
 # ... and an unresolvable @{<full ID>} or @@{<full ID>} without braces, so it
 # never reads back as a reference.
 exec rhiza note add local 'Ghost @{01ZZZZZZZZZZZZZZZZZZZZZZZZ} and @@{01YYYYYYYYYYYYYYYYYYYYYYYY}'

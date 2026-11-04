@@ -1,6 +1,8 @@
 # Engine writes of free text never refuse on an unresolvable @word: question
-# answer resolves what it can, stores the rest as a literal @, and keeps the
-# quote verbatim.
+# answer resolves what it can, stores the rest as a literal @ (shown as @@),
+# and keeps the quote verbatim. A run session's question is covered by
+# TestAddQuestionLenientRefs, a rebase-conflict question by
+# run-ship-change-rebase.txtar.
 
 mkdir repo
 cd repo
@@ -23,3 +25,5 @@ exec rhiza question answer store-q 'Use @other, not @ghost'
 exec sh -c 'cat .rhiza/log/*/*.json'
 stdout '"statement": "Use @\{[0-9A-Z]{26}\}, not @ghost"'
 stdout '"quote": "Use @other, not @ghost"'
+exec sh -c 'rhiza show $(rhiza ls --kind decision --json | sed -n "s/.*\"handle\": \"\([a-z0-9-]*\)\".*/\1/p" | head -1)'
+stdout 'Use @other, not @@ghost'

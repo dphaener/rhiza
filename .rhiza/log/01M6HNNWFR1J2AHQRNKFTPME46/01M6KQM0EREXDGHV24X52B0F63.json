@@ -1,0 +1,40 @@
+{
+  "actor": "01M6KQ4WWF635YF321NMK181TJ",
+  "after": [
+    "01M6KP2ET7RJD0QAQKFZQH2SQP"
+  ],
+  "at": "2026-11-04T16:52:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "text-refs-write.txtar: rhiza add capability with statement 'Builds on @other' stores @{<other's full ID>} in the log entry; an ID prefix reference stores the full ID; a reference to a node of the write's own change set resolves, one to a node of another unlanded change set or a newly referenced retired node does not; after other is retired, rhiza set of a field that already stores @{<other's ID>} with input @{<other's full ID>} keeps it, and adding that reference to a different field or node is refused; quote, quote_where, wording and a source's fields are stored verbatim; '@@' stores a literal @; an input @{<other's full ID>} stores the same ID, and an input @{BOGUS} is refused like any unresolvable reference; an unresolvable reference exits 4 with code not_found naming each bad reference and its field, with a next saying to fix the handle or write @@, and writes nothing; --dry-run reports the same refusal; the same file through rhiza apply behaves the same; rhiza note add with an @word naming no node is written and shown as @@word; describe-golden.txtar is regenerated if a request or response type changes; the rhiza guide's skill text tells agents to write @handle to refer to a node. Engine writes (decision text-ref-engine-writes): a run session's question (TestAddQuestionLenientRefs) whose text holds an @word naming no node is written, the run goes on, and it is shown as @@word, while one holding @<existing handle> stores @{<full ID>}; text-refs-engine-writes.txtar: question answer behaves the same, its quote kept verbatim; run-ship-change-rebase.txtar: re-raising the same rebase conflict whose statement holds a resolvable reference writes nothing new",
+          "statement": "rhiza add and set, and add and set items of rhiza apply, resolve the references in every string-valued field of a node (except quote, quote_where, wording and every field of a source node) at write time and store each as @{<full ID>}, refusing the whole write when one names no node it may refer to (strict); a reference to a retired node is refused unless the field's current stored value already holds that same ID, in which case it is kept. Engine writes of free text (a run session's question from rhiza ask, check, leaf and review questions, interview questions, rebase-conflict questions, the Decision written by question answer, notes and ship evidence) resolve the same way but never refuse (lenient): a reference that names no node it may refer to is stored as a literal @, as if written @@, and shown as @@word"
+        },
+        "handle": "text-ref-write",
+        "id": "01M6HP0GQ76PY04WKDATBEP03T",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6HP0GQ76PY04WKDAPVY30Q6",
+        "op": "node.create",
+        "parent": "01M5SWSWH9Y4B8S2ADQCGPYQ1E"
+      },
+      {
+        "decision": null,
+        "from": "01M6HP0GQ76PY04WKDAPVY30Q6",
+        "id": "01M6KQKEEZXNJFYQZFN03MR5CW",
+        "link": "01M6KQKEEZXNJFYQZFMZ1TKXRE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HPW625P2Y1J7MZSA8YQX4P",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6HNNWFR1J2AHQRNKFTPME46",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KQM0EREXDGHV24X52B0F63",
+  "type": "ops",
+  "v": 1
+}
