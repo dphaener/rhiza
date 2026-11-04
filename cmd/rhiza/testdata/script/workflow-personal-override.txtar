@@ -1,0 +1,123 @@
+# A bare workflow name resolves to the personal file first, then the
+# repo's .rhiza/workflows/<name>.toml, then the built-in, and run start
+# records the file it picked as the journal's workflow_path. With
+# XDG_CONFIG_HOME unset the personal file is ~/.config/rhiza/workflows;
+# with it set, $XDG_CONFIG_HOME/rhiza/workflows. A workflow step naming
+# the shadowed workflow takes the personal file too. A name no file has
+# runs the built-in and records builtin:<name>.
+#
+# Each workflow's one command step appends its layer to $WORK/ran.
+
+env XDG_CONFIG_HOME=
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Overrides' --title 'Overrides'
+mkdir .rhiza/workflows
+cp $WORK/repo-mine.toml .rhiza/workflows/mine.toml
+cp $WORK/outer.toml .rhiza/workflows/outer.toml
+exec git add -A
+exec git commit -qm workflows
+
+# No personal file: the repo's file runs and is recorded.
+exec rhiza run start --foreground --workflow mine --json
+stdout '"state": "succeeded"'
+exec sh -c 'cat .git/rhiza/runs/*.jsonl | grep -c "\"workflow_path\":\"$WORK/repo/.rhiza/workflows/mine.toml\""'
+stdout '^1$'
+exec cat $WORK/ran
+stdout '^repo$'
+
+# XDG_CONFIG_HOME unset: ~/.config/rhiza/workflows/mine.toml shadows the
+# repo's file.
+mkdir $HOME/.config/rhiza/workflows
+cp $WORK/home-mine.toml $HOME/.config/rhiza/workflows/mine.toml
+rm $WORK/ran
+exec rhiza run start --foreground --workflow mine --json
+stdout '"state": "succeeded"'
+exec sh -c 'cat .git/rhiza/runs/*.jsonl | grep -c "\"workflow_path\":\"$HOME/.config/rhiza/workflows/mine.toml\""'
+stdout '^1$'
+exec cat $WORK/ran
+stdout '^home$'
+
+# XDG_CONFIG_HOME set: its file shadows both the repo's and ~/.config's.
+env XDG_CONFIG_HOME=$WORK/xdg
+mkdir $WORK/xdg/rhiza/workflows
+cp $WORK/xdg-mine.toml $WORK/xdg/rhiza/workflows/mine.toml
+rm $WORK/ran
+exec rhiza run start --foreground --workflow mine --json
+stdout '"state": "succeeded"'
+exec sh -c 'cat .git/rhiza/runs/*.jsonl | grep -c "\"workflow_path\":\"$WORK/xdg/rhiza/workflows/mine.toml\""'
+stdout '^1$'
+exec cat $WORK/ran
+stdout '^xdg$'
+
+# A workflow step naming mine runs the personal file's step; the journal
+# records the outer workflow's own file.
+rm $WORK/ran
+exec rhiza run start --foreground --workflow outer --json
+stdout '"state": "succeeded"'
+exec sh -c 'cat .git/rhiza/runs/*.jsonl | grep -c "\"workflow_path\":\"$WORK/repo/.rhiza/workflows/outer.toml\""'
+stdout '^1$'
+exec cat $WORK/ran
+stdout '^xdg$'
+
+# A repo file shadows a built-in of the same name.
+cp $WORK/repo-mine.toml .rhiza/workflows/build.toml
+exec git add -A
+exec git commit -qm build
+rm $WORK/ran
+exec rhiza run start --foreground --workflow build --json
+stdout '"state": "succeeded"'
+exec sh -c 'cat .git/rhiza/runs/*.jsonl | grep -c "\"workflow_path\":\"$WORK/repo/.rhiza/workflows/build.toml\""'
+stdout '^1$'
+exec cat $WORK/ran
+stdout '^repo$'
+
+# A personal file shadows the repo's file and the built-in.
+cp $WORK/xdg-mine.toml $WORK/xdg/rhiza/workflows/build.toml
+rm $WORK/ran
+exec rhiza run start --foreground --workflow build --json
+stdout '"state": "succeeded"'
+exec sh -c 'cat .git/rhiza/runs/*.jsonl | grep -c "\"workflow_path\":\"$WORK/xdg/rhiza/workflows/build.toml\""'
+stdout '^1$'
+exec cat $WORK/ran
+stdout '^xdg$'
+
+# With no file anywhere, the built-in runs and is recorded builtin:<name>.
+rm $WORK/xdg/rhiza/workflows/build.toml
+rm .rhiza/workflows/build.toml
+exec git add -A
+exec git commit -qm 'no build'
+exec sh -c 'rhiza run start --foreground --workflow build --permission-mode manual --json; echo exit=$?'
+stdout '"state": "succeeded"'
+stdout '^exit=0$'
+exec sh -c 'cat .git/rhiza/runs/*.jsonl | grep -c "\"workflow_path\":\"builtin:build\""'
+stdout '^1$'
+
+-- repo-mine.toml --
+name = "mine"
+
+[step.mine]
+kind = "command"
+run = "echo repo >> $WORK/ran"
+-- home-mine.toml --
+name = "mine"
+
+[step.mine]
+kind = "command"
+run = "echo home >> $WORK/ran"
+-- xdg-mine.toml --
+name = "mine"
+
+[step.mine]
+kind = "command"
+run = "echo xdg >> $WORK/ran"
+-- outer.toml --
+name = "outer"
+
+[step.w]
+kind = "workflow"
+workflow = "mine"
