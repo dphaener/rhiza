@@ -1,0 +1,30 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6KVB8WP2KZ4DB1BZMS9EWY0"
+  ],
+  "at": "2026-11-04T18:11:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Go tests: TestInboxReadsChangeSetsOnce (internal/api) gives an inbox over 100+ change sets, an overlap and a failed run per change set with zero log reads when an index is set, and without one the fold reads the log exactly once and gives the same states, titles and overlaps as the index; TestStoreCachesUnchangedJournals (internal/run) parses an unchanged journal once over three lists and again after an append; TestUsageRecordsReadsOnlyAppended (internal/adapter/claudecode) reads only the appended bytes of a grown transcript, with the same records as a whole read, and reads a rewritten or truncated one whole. Measured on the rhiza repo (4-core VM, 2069 change sets, 7849 entries, 40 runs): rhiza inbox before 12.9 s wall (17.6 s under load), after 0.22-0.44 s with byte-identical output; an idle, paused daemon on a copy of the repo before 3.4-4.5 CPU-s per minute, after 1.2; a daemon fold after a model change before 5.5 s, after 1.8 s.",
+          "statement": "rhiza inbox and the daemon's polls stay cheap on a large repo: one inbox call reads the change sets once (from the index when there is one, else one log read) for every state, title and overlap lookup, and an idle daemon poll re-parses neither unchanged run journals nor the already-read part of a growing agent transcript"
+        },
+        "handle": "inbox-cheap",
+        "id": "01M6KVA76HM3KXBBGQJZDDHMWD",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6KVA76HM3KXBBGQJWP3NPGV",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      }
+    ]
+  },
+  "change_set": "01M6KV89S5MKWG2DHA762F8WTZ",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6KW55PX0P37J4AWKTZQD8W7",
+  "type": "ops",
+  "v": 1
+}

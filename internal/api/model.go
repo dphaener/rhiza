@@ -131,8 +131,16 @@ type model struct {
 // Log and fold problems are ignored here: a node with no create, or an entry
 // that does not decode, is simply left out. The check command reports them.
 func newModel(l store.Log, current id.ID) Model {
-	m := &model{nodes: map[id.ID]*Node{}, links: map[id.ID]*Link{}}
 	sets, _ := changeset.FoldLog(l)
+	return newModelSets(sets, current)
+}
+
+// newModelSets is newModel over the log already folded: sets are
+// changeset.FoldLog's change sets, which it only reads. A caller that builds
+// several models of one log (the daemon's, one per candidate) folds it
+// once instead of once per model.
+func newModelSets(sets []changeset.ChangeSet, current id.ID) Model {
+	m := &model{nodes: map[id.ID]*Node{}, links: map[id.ID]*Link{}}
 	var cur *changeset.ChangeSet
 	for i, cs := range sets {
 		if cs.ID == current && !current.IsZero() && cs.State != "" && !cs.State.Terminal() {

@@ -14,10 +14,12 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 	"unicode"
 
@@ -770,11 +772,80 @@ type stampedUsage struct {
 }
 
 // fileUsage is one transcript's parsed records, keyed to the size and
-// modification time they were read at.
+// modification time they were read at. A transcript only grows, so a
+// changed one is read on from done, the end of its last complete line,
+// rather than parsed again from the start: recs[:full] are the records of
+// the lines before done, the rest those of the unterminated line after it.
+// mark is the bytes just before done; a file whose bytes there differ, or
+// that is now shorter than done, was rewritten and is parsed whole.
 type fileUsage struct {
 	size  int64
 	mtime time.Time
 	recs  []fileRecord
+	done  int64
+	full  int
+	mark  []byte
+}
+
+// usageMark is how many bytes before done a transcript read checks.
+const usageMark = 64
+
+// readUsage reads the transcript at path, of size size, on from prev when
+// prev's complete lines are still its start, else whole.
+func readUsage(path string, size int64, prev fileUsage, havePrev bool) (fileUsage, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return fileUsage{}, err
+	}
+	defer f.Close()
+	if havePrev && prev.done > 0 && size >= prev.done {
+		start := prev.done - int64(len(prev.mark))
+		if data, err := readFrom(f, start); err == nil && bytes.HasPrefix(data, prev.mark) {
+			fu := fileUsage{recs: slices.Clone(prev.recs[:prev.full]), done: prev.done}
+			fu.add(prev.mark, data[len(prev.mark):])
+			return fu, nil
+		}
+	}
+	data, err := readFrom(f, 0)
+	if err != nil {
+		return fileUsage{}, err
+	}
+	var fu fileUsage
+	fu.add(nil, data)
+	return fu, nil
+}
+
+// usageBytesRead counts the transcript bytes UsageRecords read,
+// process-wide; tests read it to see that a grown transcript is read on
+// from where the last read ended.
+var usageBytesRead atomic.Int64
+
+// readFrom reads f from offset off to its end.
+func readFrom(f *os.File, off int64) ([]byte, error) {
+	if _, err := f.Seek(off, io.SeekStart); err != nil {
+		return nil, err
+	}
+	data, err := io.ReadAll(f)
+	usageBytesRead.Add(int64(len(data)))
+	return data, err
+}
+
+// add parses data, the bytes of the transcript from fu.done on, which
+// prev (the bytes just before fu.done) precede: its complete lines join
+// recs[:full] and move done, and the records of the unterminated rest
+// follow them.
+func (fu *fileUsage) add(prev, data []byte) {
+	end := bytes.LastIndexByte(data, '\n') + 1
+	fu.recs = append(fu.recs, parseUsage(data[:end])...)
+	fu.full = len(fu.recs)
+	fu.recs = append(fu.recs, parseUsage(data[end:])...)
+	fu.done += int64(end)
+	if end >= usageMark {
+		fu.mark = slices.Clone(data[end-usageMark : end])
+		return
+	}
+	seen := append(slices.Clone(prev), data[:end]...)
+	fu.mark = seen[max(0, len(seen)-usageMark):]
 }
 
 // fileRecord is one assistant line's usage, with its message id ("" when
@@ -830,12 +901,13 @@ func (Adapter) UsageRecords(getenv func(string) string, from, to time.Time) ([]a
 		}
 		fu, ok := usageCache.files[path]
 		if !ok || fu.size != info.Size() || !fu.mtime.Equal(info.ModTime()) {
-			data, err := os.ReadFile(path)
+			next, err := readUsage(path, info.Size(), fu, ok)
 			if err != nil {
 				delete(usageCache.files, path)
 				return nil
 			}
-			fu = fileUsage{size: info.Size(), mtime: info.ModTime(), recs: parseUsage(data)}
+			next.size, next.mtime = info.Size(), info.ModTime()
+			fu = next
 			usageCache.files[path] = fu
 		}
 		for _, fr := range fu.recs {
