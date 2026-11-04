@@ -1,0 +1,40 @@
+{
+  "actor": "01M6J01KSH7VN2XSYSVQ0SA5XS",
+  "after": [
+    "01M6HYZ6SMK1B1K4YH71M51JN8"
+  ],
+  "at": "2026-11-04T01:07:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-affa7d7b at db286c40 read the diff and ran go test -count=1 -v ./internal/usage. internal/usage is a pure package: no clock, file or adapter reads. Windows(kind, []adapter.UsageRecord, []Limit) takes the same record type that usage-window-tokens' UsageRecords returns, and Current gives the live window. All 6 tests PASS, each looping over Kinds (Session 5h, Weekly 7d) with fixed times from t0=2026-11-02T08:00Z. TestFirstWindow: start at the first record, reset at start+length, Used=15. TestRecordAfterEndStartsNext: a record at exactly start+length starts window 2, while a record one second earlier, given out of order, stays in window 1 (Used 11/7). TestGapStartsAtNextRecord: after a 3x-length gap the next window starts at the next record, and Current reports no window after reset. TestLimitResetMovesStart: a limit hit moves window 1 to end at the limit's reset and start one length earlier, and the next record starts window 2 at that reset. Also tested: a limit whose reset is not after its hit is ignored, and an empty input or unknown kind gives no windows. In make check, fmt-check, vet and go test ./... pass. self-check, run with RHIZA_ROOT/CHANGE/RUN/ACTOR unset, fails only on stale .rhiza/rendered files (actor/claude-code-5548f8eb.md and index.md) left by the builder's committed actor record. That is outside this leaf's acceptance and is fixed by running rhiza render at close-out."
+        },
+        "handle": "usage-windows-verified",
+        "id": "01M6J1GQ704YXYBSMV9DWBXRGF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6J1GQ704YXYBSMV9CXTGTH5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6J1GQ704YXYBSMV9CXTGTH5",
+        "id": "01M6J1H02QMK6X0DX0DNEG8E21",
+        "link": "01M6J1H02QMK6X0DX0DJMBWM77",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ0KXZCA4KV63M0R3FN1BW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HHMTEDFK2AWQKX50EB77DD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J1H85PQ87HWV78YYQR41RR",
+  "type": "ops",
+  "v": 1
+}
