@@ -53,7 +53,8 @@ stdout 'step interview: session [0-9a-f-]+ has the answer to question question-[
 # The planner's step carried on to the review: one clean round, then the
 # gate.
 exec rhiza run status
-stdout '^- interview \(visit 1\): pass, then review, '
+stdout '^- interview \(visit 1\): pass, then milestone-check, '
+stdout '^- milestone-check \(visit 1\): pass, then review: exit 0$'
 stdout '^- review \(visit 1\): pass, then critic, '
 stdout '^- critic \(visit 1\): pass, then check, '
 stdout '^- check \(visit 1\): pass, then gate: exit 0$'
@@ -127,7 +128,7 @@ window close
 {"title":"Planning interview","summary":"An autonomous planner planned the exports milestone; the arbiter settled its one question.","quotes":[]}
 -- record.json --
 {"writes":[
-  {"op":"add","kind":"intent","handle":"exports","fields":["statement=Users take their reports out of the product"]}
+  {"op":"add","kind":"intent","handle":"exports","fields":["statement=Users take their reports out of the product","milestone=1"]}
 ]}
 -- leaf.json --
 {"writes":[

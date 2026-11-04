@@ -7,6 +7,15 @@ kind = "agent"
 prompt = "/rhiza-plan Plan change set {change} ({title}) with the owner, straight into the model, following the rhiza-plan skill (`rhiza guide plan`). Your very last action, once the plan is written, is to run `rhiza session done`: this run moves on to a fresh review only then, never because you sit idle."
 until = "true"
 until_when = "done"
+on.pass = "milestone-check"
+
+# Every change set the plan makes must serve a milestone, directly or
+# through an intent under one. With no on.fail, a failure ends the run
+# failed with the command's output as the detail, whether or not the
+# interview session exited.
+[step.milestone-check]
+kind = "command"
+run = "rhiza run milestone-check"
 on.pass = "review"
 
 # Each review round: a fresh reviewer told only the change set's ID, a

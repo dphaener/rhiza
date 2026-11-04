@@ -11269,6 +11269,38 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "run.milestone-check",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_sets": {
+            "description": "The plan's change sets checked, by ID, each serving a milestone",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change_sets",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Check that each change set the plan of the run RHIZA_RUN names makes serves a milestone, directly or through an intent under one: pass, or fail naming each that does not",
+      "write": false
+    },
+    {
       "name": "run.open",
       "request": {
         "additionalProperties": false,
