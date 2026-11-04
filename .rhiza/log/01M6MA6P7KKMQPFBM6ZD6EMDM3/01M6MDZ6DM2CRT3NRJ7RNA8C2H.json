@@ -1,0 +1,86 @@
+{
+  "actor": "01M6MDPEJMTFYCK00VEYWCF78D",
+  "after": [
+    "01M6MDN0DTZ21E51HBM5YAVXPM"
+  ],
+  "at": "2026-11-04T23:23:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 5188b19f with a scratch build (go build ./cmd/rhiza), a scratch repo, a local bare origin and a fake gh, run by hand. Tested head on cs/ship-it; main advanced by another commit, then a squash commit, so the trees differ; state file in the pre-#256 shape (pr, url, branch, head, checks, merge_commit). Origin/main held this repo's real .github/workflows/ci.yml, the rhiza.yml that rhiza ci install writes, and a push-only push.yml. ship check --main --settled: poll 1 'not settled: no run of ci.yml, rhiza.yml on 54c422b yet' (exit 1); poll 2 in_progress (exit 1); poll 3 '4 checks passed' (exit 0); then ship check --main wrote main checks (written true). gh.log: exactly one 'workflow run ci.yml --ref main -f sha=<merge commit>' and one for rhiza.yml across 4 polls, push.yml never; a run titled with another sha was ignored. With the run failed: one 'run rerun 42 --failed', then --settled exits 0 with 'failed: CI', and ship check --main exits 75 with 'stop: merge commit 54c422b: CI failed on main'. When main's ci.yml lost its sha input: exit 75 'workflow ci.yml lacks the sha input', no workflow run. With no dispatchable workflow: exit 75 'no dispatchable workflow was found at origin/main', no workflow run. Trees equal: 'the merge commit's tree is the tested head's', exit 0, no gh call. Real gh against GitHub accepted the same 'run list --workflow ci.yml --event workflow_dispatch --json databaseId,name,displayTitle,status,conclusion' call. The ci-install and four run-ship-main-dispatch/ship-main-dispatch-select testscripts passed."
+        },
+        "handle": "ship-main-dispatches-ci-qa-1",
+        "id": "01M6MDYMTMHQP1XS1WXVHHH9EX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MDYMTMHQP1XS1WXV88EBJH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MDYMTMHQP1XS1WXV88EBJH",
+        "id": "01M6MDYQ7VPT84DE2A80WDWB5G",
+        "link": "01M6MDYQ7VPT84DE2A7XS52FD0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MAKAEANQJBCM1WFMTKWJ7P",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 5188b19f: a scratch build ran rhiza ci install in a fresh repo, and PyYAML parsed the .github/workflows/rhiza.yml it wrote. Triggers: pull_request, push (branches [main]), workflow_dispatch with inputs.sha required: true. run-name 'Rhiza ${{ inputs.sha || github.event.pull_request.title || github.sha }}'. Concurrency group rhiza-${{ github.event.pull_request.number || inputs.sha || github.sha }}, cancel-in-progress ${{ github.event_name == 'pull_request' }}. Checkout ref ${{ inputs.sha || github.sha }}, fetch-depth 0. The base-branch, before-push and first-push steps are unchanged, plus a step gated on workflow_dispatch running rhiza check --base HEAD~1. That command, run by the scratch build on this repo, exits 0. Ship selected this installed file as dispatchable and dispatched it on the merge commit by hand. go test -trimpath ./cmd/rhiza -run TestScripts/ci-install$ passed."
+        },
+        "handle": "ci-install-dispatchable-qa-1",
+        "id": "01M6MDYSKAKMTRWRPAYNQ2KBFG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MDYSKAKMTRWRPAYJRGT840",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MDYSKAKMTRWRPAYJRGT840",
+        "id": "01M6MDYW2H40EDPT92T72R5B6Z",
+        "link": "01M6MDYW2H40EDPT92T42Q582Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MAKF848SVSTKWG667GY87T",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 5188b19f: read .github/workflows/ci.yml. Triggers are pull_request (branches [main]) and workflow_dispatch with a required sha input. run-name is 'CI ${{ inputs.sha || github.event.pull_request.title }}', the group is ci-${{ github.event.pull_request.number || inputs.sha }}, and checkout ref is ${{ inputs.sha || github.sha }}. A copy of this file on a scratch origin/main was selected and dispatched by the scratch build's ship check --main ('workflow run ci.yml --ref main -f sha=<merge commit>'), and found by the sha in its run title. go test -trimpath ./internal/ciworkflow/... passed. GitHub's real gh run list shows displayTitle and name fields for this repo's CI runs, the fields ship matches on. Not dispatched on GitHub itself, because this branch is not pushed yet."
+        },
+        "handle": "ci-yml-dispatchable-qa-1",
+        "id": "01M6MDYYJ0NRTPQXJ00WZTPWAK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MDYYJ0NRTPQXJ00STNJH0B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MDYYJ0NRTPQXJ00STNJH0B",
+        "id": "01M6MDZ29NW32YNWMF5W0VV8QB",
+        "link": "01M6MDZ29NW32YNWMF5VAZ3QE2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MAKD15PZYXSTNV3FX2SQCN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MA6P7KKMQPFBM6ZD6EMDM3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MDZ6DM2CRT3NRJ7RNA8C2H",
+  "type": "ops",
+  "v": 1
+}
