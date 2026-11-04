@@ -74,6 +74,9 @@ type State struct {
 	// DiskLow is set while the last poll found free space under the
 	// daemon's minimum, and absent once a poll finds enough.
 	DiskLow *DiskLow `json:"disk_low,omitempty"`
+	// Learned are the window limits the daemon learned from usage-limit
+	// hits, one per window kind, the latest hit's.
+	Learned []LearnedLimit `json:"learned,omitempty"`
 	// Hooks are the notify and event commands the daemon took at start,
 	// each with where it came from (flag, git config or unset).
 	Hooks []HookValue `json:"hooks,omitempty"`

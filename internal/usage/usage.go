@@ -112,3 +112,33 @@ func Current(kind Kind, records []adapter.UsageRecord, limits []Limit, now time.
 	}
 	return Window{}, false
 }
+
+// KindOf says which window a limit hit belongs to, from its reset time: a
+// reset 5 hours or less after the hit is the session window, a later one the
+// weekly window. A hit with no reset time, or one that resets before it was
+// seen, teaches nothing.
+func KindOf(l Limit) (Kind, bool) {
+	d := l.ResetAt.Sub(l.HitAt)
+	if l.ResetAt.IsZero() || d <= 0 {
+		return "", false
+	}
+	if d <= Session.Length() {
+		return Session, true
+	}
+	return Weekly, true
+}
+
+// UsedAt is the tokens the kind's window held at the hit: those of its
+// records inside the window the hit falls in, up to the hit. Records should
+// reach back at least two window lengths before the hit. It is false when no
+// window holds the hit.
+func UsedAt(kind Kind, records []adapter.UsageRecord, l Limit) (int64, bool) {
+	var upto []adapter.UsageRecord
+	for _, r := range records {
+		if !r.At.After(l.HitAt) {
+			upto = append(upto, r)
+		}
+	}
+	w, ok := Current(kind, upto, []Limit{l}, l.HitAt)
+	return w.Used, ok
+}

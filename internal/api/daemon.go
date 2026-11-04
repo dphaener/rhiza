@@ -154,6 +154,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		minFree := conf.minFree
 		selfUpdateOn = conf.selfUpdate
 		state.MaxRuns, state.Settings = conf.maxRuns, conf.stateRows()
+		learnLimits(ctx, common, &state)
 		started, resumed, planned, err := daemonPoll1(ctx, rs, pending, unjournaled, conf.maxRuns, minFree, r.Autonomous, conf.mode, conf.paused, &skips)
 		resp.Planned = append(resp.Planned, planned...)
 		if err == nil {
@@ -248,6 +249,7 @@ func daemonStartState(common string, self daemon.Holder, version, commit string,
 		state.Events, state.EventsSeeded = prev.Events, prev.EventsSeeded
 		state.Hooks = prev.Hooks
 		state.DiskLow = prev.DiskLow
+		state.Learned = prev.Learned
 		// A re-exec, or a restart, keeps the holds of the daemon before.
 		unjournaled = daemonRestoreUnjournaled(prev.Unjournaled)
 	}
