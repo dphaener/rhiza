@@ -21763,6 +21763,76 @@ cmp stdout describe.golden.json
       },
       "summary": "Withdraw a change set that has not landed",
       "write": true
+    },
+    {
+      "name": "workflow.ls",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "workflows": {
+            "description": "Every reachable workflow, sorted by name",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "layer": {
+                  "description": "The layer a bare name resolves to: personal, repo or builtin",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "The workflow's bare name",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "The winning file, or builtin:<name>",
+                  "type": "string"
+                },
+                "shadows": {
+                  "description": "The lower layers the winner hides, highest first; empty when none",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "layer": {
+                        "description": "personal, repo or builtin",
+                        "type": "string"
+                      },
+                      "path": {
+                        "description": "The file, or builtin:<name> for a built-in",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "layer",
+                      "path"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "layer",
+                "name",
+                "path",
+                "shadows"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "workflows"
+        ],
+        "type": "object"
+      },
+      "summary": "List every workflow a bare name can reach (personal, repo, built-in), each with the layer and path it comes from and the layers it shadows",
+      "write": false
     }
   ]
 }
