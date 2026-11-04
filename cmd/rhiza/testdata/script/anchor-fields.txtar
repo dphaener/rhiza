@@ -1,0 +1,56 @@
+# An anchor carries path, symbol and fingerprint. The fingerprint is computed
+# from the working tree when none is given, and a path or symbol that does not
+# resolve is refused.
+
+exec rhiza init
+exec rhiza change new Anchors
+
+# With a symbol: the hash of the declaration's bytes.
+exec rhiza add anchor sym --field path=pkg/p.go --field symbol=T.Run
+exec sh -c 'printf "func (t *T) Run() int { return 1 }" | sha256sum | cut -d" " -f1 > want-sym'
+exec sh -c 'rhiza show sym --json | grep fingerprint | grep -q "sha256:$(cat want-sym)"'
+
+# Without: the hash of the file, as sha256sum prints it.
+exec rhiza add anchor whole --field path=notes/a.md
+exec sh -c 'sha256sum notes/a.md | cut -d" " -f1 > want-file'
+exec sh -c 'rhiza show whole --json | grep fingerprint | grep -q "sha256:$(cat want-file)"'
+
+# An explicit fingerprint is kept as given.
+exec rhiza add anchor given --field path=notes/a.md --field fingerprint=sha256:abc
+exec sh -c 'rhiza show given --json | grep -q "sha256:abc"'
+
+# Setting the path or the symbol recomputes it.
+exec rhiza set whole --field path=pkg/p.go
+exec sh -c 'sha256sum pkg/p.go | cut -d" " -f1 > want-p'
+exec sh -c 'rhiza show whole --json | grep fingerprint | grep -q "sha256:$(cat want-p)"'
+exec rhiza set whole --field symbol=T.Run
+exec sh -c 'rhiza show whole --json | grep fingerprint | grep -q "sha256:$(cat want-sym)"'
+exec rhiza set whole --unset symbol
+exec sh -c 'rhiza show whole --json | grep fingerprint | grep -q "sha256:$(cat want-p)"'
+
+# Refusals, each with a Next.
+! exec rhiza add anchor bad1 --field path=missing.go
+stderr 'path not found'
+stderr 'next: rhiza'
+! exec rhiza add anchor bad2 --field path=pkg/p.go --field symbol=Nope
+stderr 'symbol not found'
+stderr 'next: rhiza'
+! exec rhiza add anchor bad3 --field path=notes/a.md --field symbol=T
+stderr 'not a .go file'
+stderr 'next: rhiza'
+! exec rhiza set sym --field symbol=Nope
+stderr 'symbol not found'
+! exec rhiza set sym --field path=../x.go
+stderr 'bad path'
+
+exec rhiza change show
+! stdout '\(bad1\)'
+
+-- pkg/p.go --
+package pkg
+
+type T struct{}
+
+func (t *T) Run() int { return 1 }
+-- notes/a.md --
+hello

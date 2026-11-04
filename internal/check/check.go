@@ -55,6 +55,14 @@
 //     only commits that change a file outside .rhiza/ (Input.Commits). The
 //     finding names the oldest such commit. Without git (Input.Commits nil)
 //     the rule is skipped silently.
+//   - anchor fails once on each live as-is anchor whose path is gone from
+//     Input.Tree or whose symbol is gone from its file (a path that is not
+//     a clean relative one, a symbol on a non-Go file and a Go file that
+//     does not parse count as gone). Each finding names the anchor and the
+//     capabilities it implements by live implements links. It warns, with
+//     Next rhiza anchor refresh <anchor>, on each anchor that resolves but
+//     whose stored fingerprint differs from that of its declaration (or
+//     file). Without a Tree the rule is skipped silently.
 //   - render fails on each rendered file that differs from what
 //     render.Render writes, is missing or is extra, and on a missing
 //     rendered folder.
@@ -103,14 +111,15 @@ const (
 	RuleLink          = "link"
 	RuleDependsOn     = "depends-on"
 	RuleEvidenceActor = "evidence-actor"
+	RuleAnchor        = "anchor"
 	RuleRender        = "render"
 	RuleAppendOnly    = "append-only"
 )
 
 // Rules returns the rules in report order.
 func Rules() []string {
-	return []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleEvidenceActor, RuleRender,
-		RuleAppendOnly}
+	return []string{RuleLog, RuleFold, RuleModel, RuleInFlight, RuleLink, RuleDependsOn, RuleEvidenceActor, RuleAnchor,
+		RuleRender, RuleAppendOnly}
 }
 
 // Paths in findings are relative to the project root.
@@ -133,6 +142,9 @@ type Input struct {
 	Skipped string
 	// Base are the log entries at Rev, Current those in the work tree.
 	Base, Current []Entry
+	// Tree is the working tree rooted at the project; nil means the anchor
+	// rule is skipped.
+	Tree fs.FS
 	// Commits are the commits of HEAD's history that change a file outside
 	// .rhiza/, newest first as git log lists them; a commit of model writes
 	// alone is not listed. Nil means no git, and the evidence-actor rule is
@@ -196,6 +208,7 @@ func Run(in Input) Report {
 	c.dependsOn(sets)
 	c.capabilityLoops(asIs)
 	c.evidenceActor(asIs, sets)
+	c.anchors(asIs)
 	c.render(asIs, sets)
 	c.appendOnly()
 
