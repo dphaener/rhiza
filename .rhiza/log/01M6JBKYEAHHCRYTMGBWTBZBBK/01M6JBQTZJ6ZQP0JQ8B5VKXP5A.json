@@ -1,0 +1,30 @@
+{
+  "actor": "01M6JBMJD43S4X88WH799W357A",
+  "after": [
+    "01M6JBKYEAHHCRYTMGBXYBM36Z"
+  ],
+  "at": "2026-11-04T04:05:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "a5ad3bd3-86c2-4367-9548-01a1a4ba3593",
+          "statement": "rhiza rex install bakes the installing host's absolute rhiza path into rhiza.lua (local BIN = \"/Users/.../bin/rhiza\"), which breaks when the Rex pane runs on the VM. How should the generated app actions find rhiza?"
+        },
+        "handle": "question-a5ad3bd3-1",
+        "id": "01M6JBQQWRD69ZHZKC7ZV89W01",
+        "key": null,
+        "kind": "question",
+        "node": "01M6JBQQWRD69ZHZKC7Y7VAZPN",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6JBKYEAHHCRYTMGBWTBZBBK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JBQTZJ6ZQP0JQ8B5VKXP5A",
+  "type": "ops",
+  "v": 1
+}
