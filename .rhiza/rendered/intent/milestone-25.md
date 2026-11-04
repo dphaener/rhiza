@@ -27,6 +27,8 @@ The backlog is empty: every change set planned from the owner's queued requests 
 - serves change set `01M6HN24SPSS76PKZHZV188JEW` (Workflow authoring: rhiza workflow ls / describe / new <name> [--from <builtin>] (forks a built-in into .rhiza/workflows/<name>.toml) / check <file>, plus a guide topic; no workflow ops exist in the registry today (internal/workflow, internal/api run.go workflowResolver). Carve leaves workflow-authoring and workflow-overrides out of umbrella 01M5SWT91P766X (Area workflows))
 - serves change set `01M6HNNWFR1J2AHQRNKFTPME46` (Text references: references to other nodes inside statement and other text fields are written as @handle, resolved at write time and stored by ID, and shown by current handle in render, show, why and the read apps; rhiza check flags dangling references (internal/op, internal/render, internal/api/write_node.go). Carve leaf text-references out of umbrella 01M5SWSWDVB237 (Area model))
 - serves change set `01M6HSZMD2H2HZVGQQSVZZ4A1D` (Plan requests are not starved by ready change sets: while a plan request waits, the daemon keeps one run slot for it)
+- serves change set `01M6JJMK3M50P34PPX1QNTHYCB` (The test suite is cheap to run in many worktrees at once: unchanged packages hit the shared test cache across worktrees, and concurrent full suites on one machine queue instead of thrashing)
+- serves change set `01M6K044DTSK7PT604NHPNGD17` (Queued continuations are not starved by ready change sets: the daemon keeps a slot for each queued resume or retry)
 
 ## History
 

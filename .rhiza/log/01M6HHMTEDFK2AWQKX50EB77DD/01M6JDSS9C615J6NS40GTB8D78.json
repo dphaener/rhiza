@@ -1,0 +1,132 @@
+{
+  "actor": "01M6JD95R8697BGQ7YCMAY1H56",
+  "after": [
+    "01M6JB0H9JPRM8TPN0JP28TEZ7"
+  ],
+  "at": "2026-11-04T04:41:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a binary built from 0d62831c in a scratch repo: rhiza daemon settings lists rhiza.daemon.usage.session and .weekly unset and .reserve 20 by default; daemon set took reserve 25 and session/weekly token counts; reserve 101, session 1.5 and weekly abc each exited 2 with a clear message; settings --json shows the git config source."
+        },
+        "handle": "usage-settings-qa-1",
+        "id": "01M6JDRT41DMZF4E8E6J9TSQNV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JDRT41DMZF4E8E6GTRZFF4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JDRT41DMZF4E8E6GTRZFF4",
+        "id": "01M6JDRX1V9NG3TG1E8N2QMMZR",
+        "link": "01M6JDRX1V9NG3TG1E8HED4W2C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ0R8X5Q00XXMB8CRVN89Q",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA against this machine's real ~/.claude/projects (335 transcripts, 215MB): UsageRecords read 5897 records in about 6 s; rhiza health's usage part showed non-zero session and weekly use, and with HOME pointed at a missing dir it showed 0 for both. Correct but slow: every call re-reads and parses every transcript (see the qa finding)."
+        },
+        "handle": "usage-window-tokens-qa-1",
+        "id": "01M6JDS024BBSD2X37WX8HXNJQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JDS024BBSD2X37WWMA68Z7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JDS024BBSD2X37WWMA68Z7",
+        "id": "01M6JDS2SSE5NXTBQDZGQE5N43",
+        "link": "01M6JDS2SSE5NXTBQDZGMTA0X7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ0DA7EGP43KHWDZZA0ZP8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: seeded .git/rhiza/usage.limits.jsonl with a hit resetting 2h later, one resetting 4 days later, one with no reset and a garbage line, then ran rhiza daemon --once with no limit settings over real transcripts. The state's learned list had session 2772142 and weekly 16403273 tokens at those hits; the no-reset hit and the bad line taught nothing. The learned session limit held (reset moved to the hit's 06:39:21Z). Setting rhiza.daemon.usage.session and .weekly to 1e9 won over the learned limits and cleared the hold."
+        },
+        "handle": "usage-learned-limit-qa-1",
+        "id": "01M6JDS5MGHVWW03HGQRZS4KPB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JDS5MGHVWW03HGQQVDCT2Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JDS5MGHVWW03HGQQVDCT2Y",
+        "id": "01M6JDS8PZHZGXM3Z4AK7RHCSE",
+        "link": "01M6JDS8PZHZGXM3Z4AHK9ATHG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ0WFSJ9JEM9JEBHND0VX9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with real daemon --once polls (no seeded state): with session limit 1000 the state saved usage_hold; daemon status showed the settings, health showed warn usage with the window/use/limit/reserve/reset detail and inbox listed one usage-reserve item. After raising the limit, the next --once cleared usage_hold, health's usage part was ok (session N of limit; weekly N, no limit known) and the inbox was empty. The per-change-set skip was not exercised by hand (no accepted change set in the scratch repo)."
+        },
+        "handle": "usage-hold-reported-qa-1",
+        "id": "01M6JDSBK07XJMSZGW80KE58CB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JDSBK07XJMSZGW7XMFR802",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JDSBK07XJMSZGW7XMFR802",
+        "id": "01M6JDSEJ272Q0P5FN8RBEJ8RK",
+        "link": "01M6JDSEJ272Q0P5FN8Q2NZTEE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ14J13C9N67W124QEQME1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA: rhiza daemon --once with a tiny session limit held (started/resumed/planned empty, usage_hold saved), and with a large limit it did not. Over real transcripts, though, the current session window depends on the 2x-window lookback: at the same instant usage.Current gave start 23:38:27Z, 4564260 used, reset 04:38:27Z with a 10h lookback but start 03:48:10Z, 1280338 used, reset 08:48:10Z with a 30h one. Consecutive health calls showed session use drop with no reset, and the reported reset moved from 04:38:27Z to about 04:45Z ten seconds later. Live-run projection was not exercised by hand."
+        },
+        "handle": "usage-hold-qa-1",
+        "id": "01M6JDSHE8AW1GAQ7X6YNVWT0G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JDSHE8AW1GAQ7X6TSDPGG5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JDSHE8AW1GAQ7X6TSDPGG5",
+        "id": "01M6JDSM9WMJD2HSGJRYZCA1CX",
+        "link": "01M6JDSM9WMJD2HSGJRXMSM6N6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ10G74HCGZ37HH47P4ABP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HHMTEDFK2AWQKX50EB77DD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JDSS9C615J6NS40GTB8D78",
+  "type": "ops",
+  "v": 1
+}

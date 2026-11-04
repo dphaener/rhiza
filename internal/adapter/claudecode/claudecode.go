@@ -9,12 +9,15 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
+	"os"
 	"path/filepath"
 	"regexp"
 	"runtime"
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 	"unicode"
 
@@ -743,4 +746,151 @@ func (Adapter) Trust(current []byte, dirs []string) ([]byte, error) {
 		return nil, err
 	}
 	return append(out, '\n'), nil
+}
+
+// configDir returns the agent's config directory: $CLAUDE_CONFIG_DIR when
+// set, else $HOME/.claude; "" when neither is known.
+func configDir(getenv func(string) string) string {
+	if getenv == nil {
+		return ""
+	}
+	if dir := getenv("CLAUDE_CONFIG_DIR"); dir != "" {
+		return dir
+	}
+	if home := getenv("HOME"); home != "" {
+		return filepath.Join(home, ".claude")
+	}
+	return ""
+}
+
+// stampedUsage is a usageLine with its timestamp.
+type stampedUsage struct {
+	usageLine
+	Timestamp string `json:"timestamp"`
+}
+
+// fileUsage is one transcript's parsed records, keyed to the size and
+// modification time they were read at.
+type fileUsage struct {
+	size  int64
+	mtime time.Time
+	recs  []fileRecord
+}
+
+// fileRecord is one assistant line's usage, with its message id ("" when
+// the line has none).
+type fileRecord struct {
+	id string
+	adapter.UsageRecord
+}
+
+// usageCache holds each transcript's parsed records by path, so a poll
+// reparses only the files that changed since the last call.
+var usageCache = struct {
+	sync.Mutex
+	files map[string]fileUsage
+}{files: map[string]fileUsage{}}
+
+// UsageRecords implements adapter.UsageReader. It walks every .jsonl file
+// under <config>/projects, which holds sessions and, deeper, their helpers'
+// transcripts, and reads nothing outside it. Input, output and
+// cache-creation tokens count; cache reads never do. A message repeated
+// across lines or files counts once, at its earliest timestamp, and a line
+// with no id counts on its own. A file last written before from holds no
+// line in the span and is not read; the others are parsed once per size and
+// modification time and kept in memory for the next call.
+func (Adapter) UsageRecords(getenv func(string) string, from, to time.Time) ([]adapter.UsageRecord, error) {
+	config := configDir(getenv)
+	if config == "" {
+		return nil, nil
+	}
+	root := filepath.Join(config, "projects")
+	if _, err := os.Stat(root); err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	var recs []adapter.UsageRecord
+	byID := map[string]int{}
+	usageCache.Lock()
+	defer usageCache.Unlock()
+	seen := map[string]bool{}
+	_ = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil || !d.Type().IsRegular() || filepath.Ext(path) != ".jsonl" {
+			return nil
+		}
+		info, err := d.Info()
+		if err != nil {
+			return nil
+		}
+		seen[path] = true
+		if info.ModTime().Before(from) {
+			return nil
+		}
+		fu, ok := usageCache.files[path]
+		if !ok || fu.size != info.Size() || !fu.mtime.Equal(info.ModTime()) {
+			data, err := os.ReadFile(path)
+			if err != nil {
+				delete(usageCache.files, path)
+				return nil
+			}
+			fu = fileUsage{size: info.Size(), mtime: info.ModTime(), recs: parseUsage(data)}
+			usageCache.files[path] = fu
+		}
+		for _, fr := range fu.recs {
+			if fr.id != "" {
+				if i, ok := byID[fr.id]; ok {
+					if fr.At.Before(recs[i].At) {
+						recs[i].At = fr.At
+					}
+					continue
+				}
+				byID[fr.id] = len(recs)
+			}
+			recs = append(recs, fr.UsageRecord)
+		}
+		return nil
+	})
+	for path := range usageCache.files {
+		if !seen[path] && isUnder(path, root) {
+			delete(usageCache.files, path)
+		}
+	}
+	out := recs[:0]
+	for _, r := range recs {
+		if !r.At.Before(from) && r.At.Before(to) {
+			out = append(out, r)
+		}
+	}
+	sort.SliceStable(out, func(i, j int) bool { return out[i].At.Before(out[j].At) })
+	return out, nil
+}
+
+// parseUsage returns the usage of each assistant line in a transcript.
+func parseUsage(data []byte) []fileRecord {
+	var recs []fileRecord
+	for _, line := range bytes.Split(data, []byte("\n")) {
+		line = bytes.TrimSpace(line)
+		if len(line) == 0 || line[0] != '{' {
+			continue
+		}
+		var l stampedUsage
+		if json.Unmarshal(line, &l) != nil || l.Type != "assistant" || l.Message.Usage == nil {
+			continue
+		}
+		at, err := time.Parse(time.RFC3339Nano, l.Timestamp)
+		if err != nil {
+			continue
+		}
+		u := l.Message.Usage
+		recs = append(recs, fileRecord{id: l.Message.ID, UsageRecord: adapter.UsageRecord{At: at, Tokens: u.Input + u.Output + u.CacheCreation}})
+	}
+	return recs
+}
+
+// isUnder reports whether path lies inside dir.
+func isUnder(path, dir string) bool {
+	rel, err := filepath.Rel(dir, path)
+	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
 }

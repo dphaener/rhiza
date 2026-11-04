@@ -1,0 +1,104 @@
+{
+  "actor": "01M6JZYQDPNTWQK2VEK3ADHBDN",
+  "after": [
+    "01M6JZP3Q9HC5P1K1AW0KQHRZQ"
+  ],
+  "at": "2026-11-04T10:01:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M62RH3705M0GA17WVX9JX38R",
+        "handle": null,
+        "id": "01M6K023FV19QQXYGYE0HY422J",
+        "node": "01M62RH3705M0GA17WVVXKBGM8",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A test resumes an interrupted run on an accepted change set and an interrupted plan run on a landed change set, and leaves interrupted non-plan runs on landed change sets and runs on rejected, withdrawn, proposed and draft change sets unresumed",
+          "statement": "The daemon resumes an interrupted run only while its change set is accepted, except a plan-workflow run whose change set has landed, which it resumes as in flight (daemon-resumes-landed-plan-run)"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6GBJXJVFCW07D4KWAJP6TDQ",
+        "handle": null,
+        "id": "01M6K029XNRAA8N3YK86273Y9A",
+        "node": "01M61R7MP3HGEB60GJV4M3CWQA",
+        "op": "node.update",
+        "set": {
+          "statement": "The daemon resumes an interrupted run whose change set is accepted, or a plan-workflow run whose change set has landed (daemon-resumes-landed-plan-run), once, as a detached rhiza run resume --foreground <run> process outside Rex (daemon-headless-run-drivers), and journals that resume in the run's journal; it leaves alone every other interrupted run whose change set is not accepted, a run interrupted again after that resume, which the inbox lists as a run the daemon gave up on, and every failed run, which the inbox lists as failed."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M62RH3PBJ12H0CYSMFJ8FBKB",
+        "handle": null,
+        "id": "01M6K02JQV6WTFADHVXD77NVXT",
+        "node": "01M62RH3PBJ12H0CYSMCMV7KAS",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A test with an interrupted build run on a landed change set lists it in rhiza inbox with the state and the abandon command, and the daemon does not resume it; an interrupted plan run on a landed change set is not listed as skipped",
+          "statement": "An interrupted run on a change set no longer accepted waits in the inbox, naming the change set's state and rhiza run abandon as the next step, except a plan-workflow run whose change set has landed, which counts as in flight (inbox-landed-plan-run-in-flight)"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M62S5BN8M65JXT16755FDJC3",
+        "handle": null,
+        "id": "01M6K02TH01SVYR742ZT7214Z0",
+        "node": "01M62S5BN8M65JXT1672T8GVEF",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A testscript with fixture journals and change sets: a failed run and a gave-up run each on a landed, a withdrawn, a rejected and a superseded change set, and one of each on an accepted change set, lists exactly the accepted-change-set items in text and --json; a failed and a gave-up plan run on a landed change set stay listed; a run on a change set the log does not know stays listed; a question and a sign-off on a landed change set stay listed",
+          "statement": "rhiza inbox leaves out a failed run or a run the daemon gave up on whose change set has landed, been withdrawn, rejected or superseded, so every item it lists names a next command that can succeed on its change set; a plan-workflow run whose change set has landed is not left out, since rhiza run resume works on it (inbox-landed-plan-run-in-flight); questions and sign-offs stay listed"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M62RH3705M0GA17WVVXKBGM8",
+        "id": "01M6K0324RH4F9XTQW93VP6JBP",
+        "link": "01M6K0324RH4F9XTQW91JGPPQ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JZJYNR0W6K12FR5VKYQW0X",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M61R7MP3HGEB60GJV4M3CWQA",
+        "id": "01M6K039AD1S7PJFQ31HTQCKCE",
+        "link": "01M6K039AD1S7PJFQ31HAWP801",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JZJYNR0W6K12FR5VKYQW0X",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M62RH3PBJ12H0CYSMCMV7KAS",
+        "id": "01M6K03DGCZ60WB6YZ48BW3VPE",
+        "link": "01M6K03DGCZ60WB6YZ47CYJ9EZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JZJYNR0W6K12FR5VKYQW0X",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M62S5BN8M65JXT1672T8GVEF",
+        "id": "01M6K03HEJ1KM3EDVYMQDH7D30",
+        "link": "01M6K03HEJ1KM3EDVYMMDDDBKN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JZJYNR0W6K12FR5VKYQW0X",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6JZDKFVH14G853J0T0BPAKG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6K03RC3V2MW17WXGV5H6XXX",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,142 @@
+{
+  "actor": "01M6JDNC8YSFC67MGP1NW7BRHT",
+  "after": [
+    "01M6JE0AMYH4PBRJWZZM1TJWK8"
+  ],
+  "at": "2026-11-04T04:47:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6JDXH6A7W60623XN96ZV9JV",
+        "id": "01M6JE2Z5D85CNCSMQJ5BCF4YA",
+        "link": "01M6JE2Z5D85CNCSMQJ53CENRZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JDZZPKS97TCJ3ZYA7H0QZP",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript queues a request with --milestone <handle> and sees the milestone's ID in request ls --json; --milestone naming an intent with no milestone field, or an unknown node, exits with a usage error and queues nothing",
+          "statement": "rhiza request (and the request op) takes an optional --milestone naming a milestone intent by handle or ID, refuses with a usage error one that is not a live milestone intent, stores its ID on the request and shows it in request ls"
+        },
+        "handle": "request-names-milestone",
+        "id": "01M6JE32Q9Y16GT0CG63P7YJG4",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6JE32Q9Y16GT0CG6254C38Y",
+        "op": "node.create",
+        "parent": "01M6CS230463DT24PWBJCPWD9Q"
+      },
+      {
+        "decision": null,
+        "from": "01M6JE32Q9Y16GT0CG6254C38Y",
+        "id": "01M6JE3643CFFT353MMD32BJ1Z",
+        "link": "01M6JE3643CFFT353MMBPV9W01",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JDXH6A7W60623XN96ZV9JV",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript starts the plan run of a request queued with --milestone (run start --request, with a fake agent that prints its environment) and sees RHIZA_MILESTONE set to the milestone's ID; for a request without --milestone it is unset",
+          "statement": "The plan run of a request that names a milestone hands that milestone to the planner: its interview step's environment carries RHIZA_MILESTONE with the milestone's ID, absent when the request names none"
+        },
+        "handle": "plan-run-hands-milestone",
+        "id": "01M6JE39K3W6P0FZ3AN0JW0Z0A",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6JE39K3W6P0FZ3AMZV7W550",
+        "op": "node.create",
+        "parent": "01M6CS230463DT24PWBJCPWD9Q"
+      },
+      {
+        "decision": null,
+        "from": "01M6JE39K3W6P0FZ3AMZV7W550",
+        "id": "01M6JE3CRRY4HE534Z2KEJVDVD",
+        "link": "01M6JE3CRRY4HE534Z2H60V2NJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JDXH6A7W60623XN96ZV9JV",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/guide plan_test asserts the plan guide names RHIZA_MILESTONE, says the serves link must reach a milestone directly or through an intent under one, and rules out umbrella and area intents under no milestone; make check passes with the skill copy in step",
+          "statement": "The plan guide (rhiza guide plan and the rhiza-plan skill) tells the planner that an intention change set must serve a milestone, directly or through an intent under one: the milestone in RHIZA_MILESTONE when set, else the open milestone it fits, never an umbrella or area intent under no milestone"
+        },
+        "handle": "planner-serves-milestone",
+        "id": "01M6JE3KEGWGBYW35XHSPVQCT5",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6JE3KEGWGBYW35XHSH0JJK1",
+        "op": "node.create",
+        "parent": "01M6CS230463DT24PWBJCPWD9Q"
+      },
+      {
+        "decision": null,
+        "from": "01M6JE3KEGWGBYW35XHSH0JJK1",
+        "id": "01M6JE3Q7D5D1W99YE5STTKE6J",
+        "link": "01M6JE3Q7D5D1W99YE5PKRCB61",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JDXH6A7W60623XN96ZV9JV",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript runs a plan run whose interview (fake agent) links the change set serves to an intent under no milestone: the interview step fails with a message naming the change set and the run does not reach review; the same run serving an intent under a milestone passes the step",
+          "statement": "The plan workflow's interview step fails, loudly, when its completion check finds a planned change set (the intention itself, or each change set serving an intent a record adds) that serves no milestone directly or through an intent under one, naming each such change set and the fix, so the plan never reaches review or the gate"
+        },
+        "handle": "plan-step-milestone-check",
+        "id": "01M6JE3T47QE8E8YPMBMNF0ZTH",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6JE3T47QE8E8YPMBHR38MAE",
+        "op": "node.create",
+        "parent": "01M6CS230463DT24PWBJCPWD9Q"
+      },
+      {
+        "decision": null,
+        "from": "01M6JE3T47QE8E8YPMBHR38MAE",
+        "id": "01M6JE3XSQYS53CM8R8R0A2SJE",
+        "link": "01M6JE3XSQYS53CM8R8QVEQSCK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JDXH6A7W60623XN96ZV9JV",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A requestsapp unit test files a request with the milestone left at auto and gets argv with no --milestone, then one with a milestone chosen and gets --milestone <id> in the request argv; the entry view shows the milestone field",
+          "statement": "The requests Rex app's entry has an optional milestone field, defaulting to auto (the planner picks the open milestone it fits); a milestone chosen there is filed as the request's --milestone"
+        },
+        "handle": "requests-app-milestone",
+        "id": "01M6JE40PG6Z1ZG27N7EV789EK",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6JE40PG6Z1ZG27N7DMFH3FF",
+        "op": "node.create",
+        "parent": "01M6CS230463DT24PWBJCPWD9Q"
+      },
+      {
+        "decision": null,
+        "from": "01M6JE40PG6Z1ZG27N7DMFH3FF",
+        "id": "01M6JE439F134PCD67BS4EBYRR",
+        "link": "01M6JE439F134PCD67BQ4XR40Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JDXH6A7W60623XN96ZV9JV",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6JDMJTSMFWS7FC804Z9FT76",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JE48X0NDSTVANFC8VNQDZZ",
+  "type": "ops",
+  "v": 1
+}

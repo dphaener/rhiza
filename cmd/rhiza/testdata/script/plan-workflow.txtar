@@ -129,7 +129,7 @@ fold-ok
 -- bin/rex --
 #!/bin/sh
 case "$1 $2" in
-window\ close)
+window\ close | block\ close)
 	echo "$*" >> "$WORK/rex.log"
 	exit 0
 	;;

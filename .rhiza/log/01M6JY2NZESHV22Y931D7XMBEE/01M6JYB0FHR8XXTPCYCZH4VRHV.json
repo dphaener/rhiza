@@ -1,0 +1,27 @@
+{
+  "actor": "01M6JY34SB930YFP5R27NBMVDJ",
+  "after": [
+    "01M6JYAFTQBY7E47F3N5HYT2MG"
+  ],
+  "at": "2026-11-04T09:30:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6JY2NZESHV22Y931D7XMBEE",
+        "id": "01M6JYAVMEAFZYAB45TZZDS37E",
+        "link": "01M6JYAVMEAFZYAB45TYWHVE5B",
+        "note": "Replaces this leafless draft with the same intent; it is withdrawn",
+        "op": "link.create",
+        "to": "01M6FN21KA287NNX0T4KY4WCYK",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M6JY2NZESHV22Y931D7XMBEE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JYB0FHR8XXTPCYCZH4VRHV",
+  "type": "ops",
+  "v": 1
+}

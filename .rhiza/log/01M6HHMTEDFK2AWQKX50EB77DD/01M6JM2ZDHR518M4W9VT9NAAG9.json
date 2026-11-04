@@ -1,0 +1,155 @@
+{
+  "actor": "01M6JK4W7ERVMD5E9CMJCQKY36",
+  "after": [
+    "01M6JK2KHFN09245Q06P7F96FF"
+  ],
+  "at": "2026-11-04T06:31:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, built binary at 46cc1d58 in a scratch repo on the VM with the real ~/.claude transcripts (Rex faked, starts captured by RHIZA_TEST_DETACH_LOG with RHIZA_TEST_NOW set to the wall clock): rhiza daemon settings showed usage.session and usage.weekly unset and usage.reserve 20 (default); rhiza daemon set wrote session 1000, 5000000 and 1000000000000 and weekly 1000000000000, and daemon status listed them as git config."
+        },
+        "handle": "usage-settings-qa-2",
+        "id": "01M6JM1FRRFZ9RCGW86PBPN2SM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JM1FRRFZ9RCGW86M4CNQW9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JM1FRRFZ9RCGW86M4CNQW9",
+        "id": "01M6JM1KK7GGK3NMQKT26ZTXC3",
+        "link": "01M6JM1KK7GGK3NMQKT155WSQR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ0R8X5Q00XXMB8CRVN89Q",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, built binary at 46cc1d58 in a scratch repo on the VM with the real ~/.claude transcripts (Rex faked, starts captured by RHIZA_TEST_DETACH_LOG with RHIZA_TEST_NOW set to the wall clock): the daemon's session window use, 4798557 tokens for [2026-11-04T01:29:50.689Z, 06:25:58Z), matched exactly an independent Python count over every .jsonl under ~/.claude/projects (assistant lines, each message id once at its earliest timestamp, input+output+cache_creation, no cache reads)."
+        },
+        "handle": "usage-window-tokens-qa-2",
+        "id": "01M6JM1QBM5AP5Y9JH4G8FYJ1M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JM1QBM5AP5Y9JH4E1C0F7Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JM1QBM5AP5Y9JH4E1C0F7Q",
+        "id": "01M6JM1TRN3CE1GF037PFRWH1T",
+        "link": "01M6JM1TRN3CE1GF037MRHRH3A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ0DA7EGP43KHWDZZA0ZP8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, built binary at 46cc1d58 in a scratch repo on the VM with the real ~/.claude transcripts (Rex faked, starts captured by RHIZA_TEST_DETACH_LOG with RHIZA_TEST_NOW set to the wall clock): daemon state saved a session window 01:29:50.689Z-06:29:50.689Z and a weekly window; a second poll kept both unchanged (no re-anchoring); the first poll after the 06:29:50 reset opened a new session window at 06:30:01.758Z (the first record after the reset) with 4736 tokens used, weekly unchanged; limit hits with resets 3h and 4d out set the session window to end at the 3h reset and the weekly at the 4d reset."
+        },
+        "handle": "usage-windows-qa-2",
+        "id": "01M6JM1Z56QT2D4M2MY5H2BQ9Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JM1Z56QT2D4M2MY4P17C6T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JM1Z56QT2D4M2MY4P17C6T",
+        "id": "01M6JM2329PPXJYQF80562ZDEE",
+        "link": "01M6JM2329PPXJYQF802675ZNP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ0KXZCA4KV63M0R3FN1BW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, built binary at 46cc1d58 in a scratch repo on the VM with the real ~/.claude transcripts (Rex faked, starts captured by RHIZA_TEST_DETACH_LOG with RHIZA_TEST_NOW set to the wall clock): with usage.session unset, .git/rhiza/usage.limits.jsonl hits with a reset 3h out, a reset 4d out and no reset taught exactly two learned limits (session 1872595, weekly 18273795, the window use at the hit), and daemon --once held on the learned session limit; setting usage.session 1000000000000 then held on the learned weekly limit instead, so the setting won."
+        },
+        "handle": "usage-learned-limit-qa-2",
+        "id": "01M6JM26KS1X32C8GWWA02CR3C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JM26KS1X32C8GWW80Z07QE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JM26KS1X32C8GWW80Z07QE",
+        "id": "01M6JM2A0FQQB5GEXQ5XAH1SFW",
+        "link": "01M6JM2A0FQQB5GEXQ5SZWYVP7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ0WFSJ9JEM9JEBHND0VX9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, built binary at 46cc1d58 in a scratch repo on the VM with the real ~/.claude transcripts (Rex faked, starts captured by RHIZA_TEST_DETACH_LOG with RHIZA_TEST_NOW set to the wall clock): daemon --once with usage.session 1000 (and 5000000) while the session window had ~4.8M used held the ready change set as a usage-reserve skip and started nothing; a repeat poll kept the hold's since; with both limits set high the hold cleared and the same poll started the change set (rhiza run start --foreground captured); after the window reset at 06:29:50 the next poll started the held change set."
+        },
+        "handle": "usage-hold-qa-2",
+        "id": "01M6JM2DDQV2YE9HHWH67GWNJ9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JM2DDQV2YE9HHWH5QXNRWS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JM2DDQV2YE9HHWH5QXNRWS",
+        "id": "01M6JM2H2PXJYM353DQWTGF1B3",
+        "link": "01M6JM2H2PXJYM353DQV9FRQCN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ10G74HCGZ37HH47P4ABP",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, built binary at 46cc1d58 in a scratch repo on the VM with the real ~/.claude transcripts (Rex faked, starts captured by RHIZA_TEST_DETACH_LOG with RHIZA_TEST_NOW set to the wall clock): while held, rhiza daemon status listed 'usage reserve: held until the window resets (session window: 4765656 tokens used, ... over the limit of 1000 less a 20% reserve; resets 2026-11-04T06:29:50Z)', rhiza inbox (text and --json) one usage-reserve item, rhiza health (text and --json) a warn usage part with the same detail; after the hold cleared inbox said Nothing waits on you and health showed 'ok usage session 4736 of 5000000; weekly 18338538, no limit known'."
+        },
+        "handle": "usage-hold-reported-qa-2",
+        "id": "01M6JM2MZ85JNPFZYCFTWMM6DC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JM2MZ85JNPFZYCFRJ83EJJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JM2MZ85JNPFZYCFRJ83EJJ",
+        "id": "01M6JM2RY4N8MYA3N0NMGC8V10",
+        "link": "01M6JM2RY4N8MYA3N0NKW0VJS7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ14J13C9N67W124QEQME1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HHMTEDFK2AWQKX50EB77DD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JM2ZDHR518M4W9VT9NAAG9",
+  "type": "ops",
+  "v": 1
+}

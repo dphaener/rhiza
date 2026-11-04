@@ -1,0 +1,40 @@
+{
+  "actor": "01M6JES3088RFQNY6M4J8M4X4R",
+  "after": [
+    "01M6JDSS9C615J6NS40GTB8D78"
+  ],
+  "at": "2026-11-04T05:19:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7e926bfa (attempt 2), I ran go test -race -run Usage ./internal/adapter/claudecode and it passed. TestUsageRecords builds a fake CLAUDE_CONFIG_DIR with transcripts in two project dirs (-a, -b), message m1 repeated across lines, a helper transcript under s1/subagents, cache-read tokens, records before and after the span, a file outside the config dir and a symlink to it. It gets exactly 4 records in time order with the expected timestamps and tokens (7, 60, 300, 3): cache reads are not counted, the outside file is not read, and nothing outside the span is returned. TestUsageRecordsSkipsOldAndRereadsChanged also passes. I read the diff: files last written before from are skipped, and parsed records are cached by path, size and mtime. On this VM's real ~/.claude/projects (225 MB, 351 .jsonl files), I ran the reader through a go test overlay without editing the repo. The first call takes 2.4-4 s and later calls take 16-32 ms, so the QA finding f2 (a poll taking longer than the 5 s interval) is fixed. With an overlay of the pre-fix claudecode.go, the 5h and 7d spans ending 2026-11-04T04:00Z return identical records (same counts, same sha256). make fmt-check, vet and test all pass. make self-check fails only on stale rendered actor files from this run's records, not on code."
+        },
+        "handle": "usage-window-tokens-verified-2",
+        "id": "01M6JFXYJMST1T13M2Y01DQ92D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JFXYJMST1T13M2XW1MSNB9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JFXYJMST1T13M2XW1MSNB9",
+        "id": "01M6JFY1D6TSWZN0CSP7N6V19V",
+        "link": "01M6JFY1D6TSWZN0CSP626SM05",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ0DA7EGP43KHWDZZA0ZP8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HHMTEDFK2AWQKX50EB77DD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JFY8Q2D5ZSSDZXZKPBANTK",
+  "type": "ops",
+  "v": 1
+}

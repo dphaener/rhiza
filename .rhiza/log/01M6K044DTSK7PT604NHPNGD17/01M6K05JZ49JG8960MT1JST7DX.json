@@ -1,0 +1,29 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6K04VRH195NT1JHBP4W30AS"
+  ],
+  "at": "2026-11-04T10:02:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6HT09X2WTT69DN4GQKZPYFJ",
+        "handle": null,
+        "id": "01M6K0598PW4BG6ZFNK6RNXZ9W",
+        "node": "01M6HT09X1W6W89R5N272GJXMP",
+        "op": "node.update",
+        "set": {
+          "acceptance": "daemon-request-slot.txtar with a fake rex: with max-runs 2, two ready change sets and no request, daemon --once starts both ship runs; with one queued request and max-runs 1 it starts one ship run and the request stays queued; with max-runs 2 it starts one ship run and the request's plan run, and daemon status shows the other change set as no-slot with 'waiting for a slot: kept for queued continuations or a plan request'",
+          "statement": "While a queued plan request could start (no run, its retry time passed) and max-runs is above 1, the daemon's ship picks leave one slot for the request's plan run (besides any kept for queued continuations); a ready change set held back by this shows in daemon status as no-slot with the detail 'waiting for a slot: kept for queued continuations or a plan request'. With max-runs 1, or no request waiting, picks are unchanged"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6K044DTSK7PT604NHPNGD17",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6K05JZ49JG8960MT1JST7DX",
+  "type": "ops",
+  "v": 1
+}

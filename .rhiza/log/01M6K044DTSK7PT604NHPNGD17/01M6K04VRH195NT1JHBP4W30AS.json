@@ -1,0 +1,30 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6K044DTSK7PT604NKVS1GDV"
+  ],
+  "at": "2026-11-04T10:02:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "daemon-continue-slot.txtar with a fake rex: with max-runs 2, two ready change sets and no continuation, daemon --once starts both ship runs; with a failed run's retry queued it starts one ship run and resumes the run with --retry, and daemon status shows the other change set as no-slot with 'waiting for a slot: kept for queued continuations or a plan request'; daemon-request-slot.txtar still passes with that wording",
+          "statement": "While queued continuations (rhiza run resume, approve, request-changes or resume --retry) could start now — their run exists, is not live, and has not ended unless the continuation is a retry, as the daemon continues them — the daemon's ship picks leave a slot for each, plus the one kept for a waiting plan request, never fewer than 0 picks; a ready change set held back by this shows in daemon status as no-slot with the detail 'waiting for a slot: kept for queued continuations or a plan request'. With nothing queued, picks are unchanged"
+        },
+        "handle": "continue-slot-kept",
+        "id": "01M6K04J5BCWYYP6PPKPF7PEQB",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6K04J5BCWYYP6PPKN7G267Y",
+        "op": "node.create",
+        "parent": "01M61R7K5W91SXWWX8AGDZ01HC"
+      }
+    ]
+  },
+  "change_set": "01M6K044DTSK7PT604NHPNGD17",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6K04VRH195NT1JHBP4W30AS",
+  "type": "ops",
+  "v": 1
+}

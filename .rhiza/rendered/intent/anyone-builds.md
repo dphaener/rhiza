@@ -26,6 +26,7 @@ Anyone can build quality software with agents, using as little or as much of Gen
 - serves change set `01M5SWTW02ZB4590CKA09AFSQJ` (`genesis why` on a decision shows only the quotes that decision cites, not every quote of its Source, so a decision's lineage stays short.)
 - serves change set `01M620GA5ZK6Z854D07NH0R8WX` (The inbox: rhiza inbox lists every run's questions, sign-offs, failed runs and runs the daemon gave up on, with a recommendation for each question, opens each in its tab, takes sign-offs, and the daemon sends one Rex notification per new item.)
 - serves change set `01M6H3A65RDP761HKE82STZSQZ` (log, roadmap and why page their output with a cursor, as ls already does (replaces backlog change set 01M5SWTHZSPBNQ, which has no leaves; link the new change set to it as relates-to and withdraw the old one in the plan))
+- serves change set `01M6HHMTEDFK2AWQKX50EB77DD` (Usage governor: the daemon paces itself to a usage reserve. It reads usage per window from the Claude Code adapter's token records, holds new picks (with a skip reason in daemon status, health and inbox) when projected use would eat into a configured reserve (a daemon setting), and resumes when the window resets (internal/api/daemon.go, internal/adapter/claudecode). Carve the existing leaf capability usage-governor out of umbrella 01M5SWTC1923N3 (Area orchestration) into this change set rather than adding a duplicate)
 
 ## History
 

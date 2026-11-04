@@ -1,0 +1,77 @@
+# While a queued continuation could start, ship picks leave it a slot: with
+# --max-runs 2, two ready change sets and a queued retry of a failed run,
+# one poll starts one ship run and the retry, and status says why the other
+# change set waits. With no continuation queued, both ship runs start. Rex
+# is faked and only logs; detached starts are logged, not run.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+env RHIZA_TEST_FREE_BYTES=1099511627776
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza add intent m --field milestone=1 --record
+mkdir .rhiza/workflows
+cp $WORK/flaky.toml .rhiza/workflows/flaky.toml
+exec git add -A
+exec git commit -qm init
+
+# A run of an unaccepted change set fails.
+exec rhiza change new Three --title Three
+! exec rhiza run start --foreground --workflow flaky
+stdout '^Run [0-9A-Z]{26} failed$'
+exec sh -c 'ls .git/rhiza/runs | sed "s/\..*//"'
+cp stdout $WORK/run
+
+exec rhiza change new One --title One
+exec rhiza add capability one-leaf
+exec rhiza link 01M5PWGNA0MVZ1H5AXG5VQ0BY9 serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+exec rhiza change new Two --title Two
+exec rhiza add capability two-leaf
+exec rhiza link 01M5PWGT68X5XKB54XFQMHKA0A serves m
+exec rhiza propose
+exec rhiza accept --reason ok
+
+# No continuation queued: both ship runs start.
+exec rhiza daemon --permission-mode manual --once --max-runs 2
+stdout -count=2 '^Started a run of '
+exec rhiza daemon status --json
+! stdout 'no-slot'
+exec rm $WORK/detach.log
+
+# The failed run's retry is queued for the daemon; the run is still failed,
+# so the command exits 1.
+! exec sh -c 'rhiza run resume --retry "$(cat $WORK/run)"'
+stdout 'Queued the continuation of run [0-9A-Z]{26} for the daemon'
+
+# Two slots and a retry queued: one ship run, and the retry.
+exec rhiza daemon --permission-mode manual --once --max-runs 2
+stdout -count=1 '^Started a run of '
+stdout -count=1 '^Resumed run '
+exec sh -c 'grep -c "run start --foreground 01" $WORK/detach.log'
+stdout '^1$'
+exec sh -c 'grep -c "run resume --foreground $(cat $WORK/run) --retry" $WORK/detach.log'
+stdout '^1$'
+exec rhiza daemon status --json
+stdout '"reason": "no-slot"'
+stdout 'waiting for a slot: kept for queued continuations or a plan request'
+
+fold-ok
+
+-- flaky.toml --
+name = "flaky"
+
+[step.one]
+kind = "command"
+run = "false"
+on.pass = "done"
+on.fail = "failed"
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

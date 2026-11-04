@@ -1,0 +1,40 @@
+{
+  "actor": "01M6HYXRR6ZXYF68BAC8X0KEEQ",
+  "after": [
+    "01M6HJP5FEZA3HDGDXE0RF7XDK"
+  ],
+  "at": "2026-11-04T00:22:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b67b44b7 ran go test ./internal/adapter/claudecode -run TestUsageRecords -count=1 -v: TestUsageRecords and TestUsageRecordsNoConfig PASS. Read the test: a fake CLAUDE_CONFIG_DIR with transcripts in two project dirs (-a, -b); message m1 repeated on two content-block lines (counted once, 60 = input+output+cache-creation, its 5000 cache reads excluded); a helper transcript under s1/subagents with sidechain lines and 9000 cache reads (counted 300); records at 09:59:59 and 12:00 outside [10:00,11:00) dropped; a user line and a non-JSON line skipped; m3 written out of order. reflect.DeepEqual checks the exact four records {10:05,7},{10:10,60},{10:20,300},{10:40,3} in time order. A file outside the config dir, plus a symlink to it inside projects, would add a 999-token record at 10:30 if read, so the exact match shows nothing outside is read (WalkDir with d.Type().IsRegular() skips symlinks). Read the diff: an adapter.UsageReader interface with UsageRecord{At,Tokens}; claudecode.UsageRecords walks <config>/projects ($CLAUDE_CONFIG_DIR, else $HOME/.claude), dedupes by message id at the earliest timestamp, and filters to [from,to). make fmt-check vet self-check exit 0. Full go test ./...: every package passed except internal/api (read-timing budget test) and internal/slice and cmd/rhiza TestScripts, which hit the 10m package timeout at load average about 28 from parallel agents; internal/slice then passed with -timeout 40m. Nothing outside internal/adapter references the new code, so those failures are from machine load, not this leaf."
+        },
+        "handle": "usage-window-tokens-verified",
+        "id": "01M6HYYPBDBYWJNMTASDD9YWEZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6HYYPBCGZ8F7J2R7BFK27P4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HYYPBCGZ8F7J2R7BFK27P4",
+        "id": "01M6HYYXA9HXBJQKM8DNYEWMB7",
+        "link": "01M6HYYXA9HXBJQKM8DMND2H8Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ0DA7EGP43KHWDZZA0ZP8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HHMTEDFK2AWQKX50EB77DD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HYZ6SMK1B1K4YH71M51JN8",
+  "type": "ops",
+  "v": 1
+}
