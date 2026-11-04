@@ -1031,5 +1031,12 @@ func (b *blockedNotice) notify(ctx *Ctx, rec session.Record, rep session.Report)
 		Block: &run.Block{Kind: rep.Kind, Question: rep.Detail, TabTitle: rec.Tab.Title},
 	}
 	ctx.Rex.Write(rexNotice(n))
-	b.state, b.kind, b.msg, b.set = rep.State, rep.Kind, rexNoticeMsg(n), true
+	// The echo carries the report as rexRecord encodes it: the kind only
+	// when Rex knows it, the message sanitized and capped by rexField.
+	kind := ""
+	switch rep.Kind {
+	case session.KindPermission, session.KindQuestion, session.KindAuth:
+		kind = rep.Kind
+	}
+	b.state, b.kind, b.msg, b.set = session.StateBlocked, kind, rexField(rexNoticeMsg(n), rexMsgMax), true
 }

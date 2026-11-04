@@ -53,6 +53,24 @@ exec cat $WORK/err
 stdout -count=1 'state=blocked:kind=question:app=rhiza:'
 ! stdout 'state=working'
 
+# A multi-line question: the echo carries the message as the report
+# encoded it, control characters as spaces, and is still skipped, so the
+# wrapper writes one report and the record keeps the agent's question.
+exec rhiza session start --permission-mode manual --run run-1 --json
+exec sh -c 'rhiza session ls --json | grep -o "\"id\": \"[0-9a-f-]*\"" | tail -1 | cut -d\" -f4 > $WORK/sid'
+env Q='Which colour?\nRed or blue'
+env ECHOQ='Which colour? Red or blue'
+env WAIT='Red or blue'
+exec sh -c 'scenario $(cat $WORK/sid)'
+! stdout 'waits on you'
+stdout '- rex: working: Back to work at '
+exec cat $WORK/err
+stdout -count=1 'state=blocked:kind=question:app=rhiza:'
+! stdout 'state=working'
+env Q='Which colour?'
+env ECHOQ=
+env WAIT=
+
 # An autonomous run's question is answered by the arbiter: no report.
 exec rhiza session start --permission-mode manual --run run-1 --json
 exec sh -c 'rhiza session ls --json | grep -o "\"id\": \"[0-9a-f-]*\"" | tail -1 | cut -d\" -f4 > $WORK/sid'
@@ -93,7 +111,7 @@ wait_for() { # pattern
 }
 rhiza session run "$sid" >"$WORK/out" 2>"$WORK/err" &
 pid=$!
-wait_for "$Q"
+wait_for "${WAIT:-$Q}"
 sleep 1
 echo "== blocked"
 rhiza session show "$sid" | grep '^- rex:'
@@ -109,12 +127,12 @@ echo "$@" >> "$WORK/rex.log"
 ev() { # state kind msg
 	k=
 	[ -n "$2" ] && k=',"kind":"'"$2"'"'
-	echo '{"type":"session_event","payload":{"session_id":"session:s1","event":{"type":"block_event","payload":{"block_id":"block:b1","creator_name":"com.superlogical.terminal","name":"program_status_changed","payload":{"id":"","record":{"state":"'"$1"'"'"$k"',"msg":"'"$3"'","updated_at":"2026-10-24T12:00:01Z"},"reason":"report"}}}}}'
+	printf '%s\n' '{"type":"session_event","payload":{"session_id":"session:s1","event":{"type":"block_event","payload":{"block_id":"block:b1","creator_name":"com.superlogical.terminal","name":"program_status_changed","payload":{"id":"","record":{"state":"'"$1"'"'"$k"',"msg":"'"$3"'","updated_at":"2026-10-24T12:00:01Z"},"reason":"report"}}}}}'
 }
 if [ "$1" = events ]; then
 	ev blocked "$KIND" "$Q"
 	sleep 0.5
-	[ -n "$NOECHO" ] || ev blocked "$KIND" "Agent runs: build waits on you in tab repo: Agent runs · run run-1 · build: $Q"
+	[ -n "$NOECHO" ] || ev blocked "$KIND" "Agent runs: build waits on you in tab repo: Agent runs · run run-1 · build: ${ECHOQ:-$Q}"
 	i=0
 	until [ -e "$WORK/resume" ] || [ $i -gt 400 ]; do i=$((i + 1)); sleep 0.025; done
 	ev working "" "Back to work"
