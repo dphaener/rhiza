@@ -1,0 +1,33 @@
+{
+  "actor": "01M6JBMJD43S4X88WH799W357A",
+  "after": [
+    "01M6JBTHYEXEDP6SN2CFHK2D0W"
+  ],
+  "at": "2026-11-04T04:08:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "9cf3e667ac3b1c474fa6494c3d5ad6e68b3a38110b907502d936c9de42d0ace6",
+          "session": "a5ad3bd3-86c2-4367-9548-01a1a4ba3593",
+          "summary": "Autonomous plan run for change set 01M6JBK. rhiza rex install wrote the installing host's absolute rhiza path into rhiza.lua, so app actions failed on a Rex pane hosted on the VM. One question was raised (how the actions find rhiza); the arbiter answered with Decision rex-actions-run-rhiza-from-path: run bare \"rhiza\" from the executing host's PATH, with an optional settings.bin override kept across reinstalls. One leaf planned under rex-install-command. No owner words: the run had no owner.",
+          "title": "Plan of rex install's rhiza path, autonomous run"
+        },
+        "handle": "rex-install-path-plan",
+        "id": "01M6JBW2RZ1MW47W4GCHDCR97S",
+        "key": null,
+        "kind": "source",
+        "node": "01M6JBW2RZ1MW47W4GCFCMTNMP",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6JBKYEAHHCRYTMGBWTBZBBK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JBW9CSGPQ07HZ9PR7ZZEHX",
+  "type": "ops",
+  "v": 1
+}
