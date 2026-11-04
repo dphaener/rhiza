@@ -1,0 +1,52 @@
+{
+  "actor": "01M6JXE7XSE1YBH1GG4PM6CXK1",
+  "after": [
+    "01M6JWF485K6XVRYJ347TC1ZFG"
+  ],
+  "at": "2026-11-04T09:15:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M62RH3705M0GA17WVX9JX38R",
+        "handle": null,
+        "id": "01M6J9PXJQ88TK790C0PW640ST",
+        "node": "01M62RH3705M0GA17WVVXKBGM8",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A test resumes an interrupted run on an accepted change set, and one on a landed change set whose non-plan run reached its land step; it leaves interrupted runs unresumed on landed change sets that never reached land, and on rejected, withdrawn, proposed and draft change sets",
+          "statement": "The daemon resumes an interrupted run only while its change set is accepted, or, for a non-plan run that reached its land step, landed (daemon-resumes-landed-past-land)"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M62RH3PBJ12H0CYSMFJ8FBKB",
+        "handle": null,
+        "id": "01M6JXFCRNQYDTQX0GVKK9PM0X",
+        "node": "01M62RH3PBJ12H0CYSMCMV7KAS",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A test with an interrupted run on a landed change set whose journal never reached land lists it in rhiza inbox with the state and the abandon command, and the daemon does not resume it",
+          "statement": "An interrupted run on a change set no longer accepted waits in the inbox, naming the change set's state and rhiza run abandon as the next step, except a non-plan run on a landed change set whose journal reached its land step, which the daemon resumes (inbox-omits-resumable-landed-run, daemon-resumes-landed-past-land)"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6GBJXJVFCW07D4KWAJP6TDQ",
+        "handle": null,
+        "id": "01M6JXFFKEAZH4B206TJ4TYQJW",
+        "node": "01M61R7MP3HGEB60GJV4M3CWQA",
+        "op": "node.update",
+        "set": {
+          "statement": "The daemon resumes an interrupted run whose change set is accepted, or a non-plan run on a landed change set whose journal reached its land step (daemon-resumes-landed-past-land), once, as a detached rhiza run resume --foreground <run> process outside Rex (daemon-headless-run-drivers), and journals that resume in the run's journal; it leaves alone an interrupted run whose change set is not accepted (outside that exception), a run interrupted again after that resume, which the inbox lists as a run the daemon gave up on, and every failed run, which the inbox lists as failed."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6J965BRJ2ZTDT7Y311PM96G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JXFPRB0EFMDFDAH7EX00JJ",
+  "type": "ops",
+  "v": 1
+}

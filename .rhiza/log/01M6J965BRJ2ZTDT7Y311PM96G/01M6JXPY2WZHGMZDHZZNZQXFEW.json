@@ -1,0 +1,29 @@
+{
+  "actor": "01M6JXNGPB7KEWY6GCX0S5APWB",
+  "after": [
+    "01M6JXFPRB0EFMDFDAH7EX00JJ"
+  ],
+  "at": "2026-11-04T09:19:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M62S5BN8M65JXT16755FDJC3",
+        "handle": null,
+        "id": "01M6JXPVAZAXBA95R19RQ0KH3N",
+        "node": "01M62S5BN8M65JXT1672T8GVEF",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A testscript with fixture journals and change sets: a failed run and a gave-up run each on a landed change set whose journal never reached its land step, a withdrawn, a rejected and a superseded change set, and one of each on an accepted change set, lists exactly the accepted-change-set items in text and --json; a run on a change set the log does not know stays listed; a question and a sign-off on a landed change set stay listed",
+          "statement": "rhiza inbox leaves out a failed run or a run the daemon gave up on whose change set has landed, been withdrawn, rejected or superseded, so every item it lists names a next command that can succeed on its change set, except a non-plan run on a landed change set whose journal reached its land step, which the daemon resumes and so is listed as failed or gave-up (inbox-omits-resumable-landed-run); questions and sign-offs stay listed"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6J965BRJ2ZTDT7Y311PM96G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JXPY2WZHGMZDHZZNZQXFEW",
+  "type": "ops",
+  "v": 1
+}

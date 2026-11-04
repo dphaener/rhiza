@@ -15,6 +15,7 @@ A build, review or ship-change run finishes without hand repair: no hand-made re
 ### In
 
 - serves change set `01M61GW7K1PDG7HMFXMN3YNA7B` (Plain build and review runs leave their branch rendered: each renders and commits .rhiza/rendered and the uncommitted .rhiza/log entries before it ends, so rhiza check passes on the branch without a hand-made render commit.)
+- serves change set `01M6J965BRJ2ZTDT7Y311PM96G` (Fix A run interrupted after its change set landed can never be resumed: rhiza run resume and the daemon's resume both require the change set to be accepted (run.go resume guard, daemon Resumable's accepted check), so a ship-change run stopped at wait-main or close-out (or a plan run after its record landed) is stranded and must be abandoned and closed out by hand. Allow resuming a run whose change set landed when its remaining steps are post-land ones (wait-main, close-out and later), and let the daemon resume those headless)
 
 ## History
 
