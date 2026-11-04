@@ -1,0 +1,40 @@
+{
+  "actor": "01M6KE5WJGV8PPYVWBQS571XZ2",
+  "after": [
+    "01M6KA1DG09RKB2WFBNV1GFW2Q"
+  ],
+  "at": "2026-11-04T14:10:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-3e50350b at leaf commit f60fd4ba (attempt 2). .rhiza/check.json holds unclaimed_since=18e33781c268cf557f5309e13d2402706ac67881: a full 40-char hash, git cat-file says commit, merge-base --is-ancestor confirms it is an ancestor of HEAD and of origin/main, and it equals merge-base HEAD origin/main. With RHIZA_ROOT/RHIZA_CHANGE/RHIZA_RUN unset, make self-check exits 0 (ok, base 18e33781); the attempt-1 finding (rendered/actor/claude-code-d222929a.md with no tracked record) is fixed: that file and its index line are removed, and the newly rendered claude-code-9fe165a9 has tracked log records at HEAD. The rule is on: internal/api/check.go unclaimedCutoff reads .rhiza/check.json, rhiza check --json at HEAD has no findings, and in a scratch clone at f60fd4ba with one extra commit lacking a Change: trailer, rhiza check --json reports rule=unclaimed severity=warn for that commit."
+        },
+        "handle": "unclaimed-on-here-verified",
+        "id": "01M6KEA3NCVH4DJZ5K9RH8F6T1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KEA3NCVH4DJZ5K9MTNVMHD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KEA3NCVH4DJZ5K9MTNVMHD",
+        "id": "01M6KEA9BA639WY71VHT6HT70H",
+        "link": "01M6KEA9BA639WY71VHS22TFFF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HM36F6SPZGNYW6GEQKAGZW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HKRVC93TGX0ZC40QZ2GW9J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KEAPC7KZ64QM13HC7S9TS2",
+  "type": "ops",
+  "v": 1
+}
