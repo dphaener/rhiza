@@ -1,0 +1,105 @@
+{
+  "actor": "01M6HW8B35F5P99KA1SYZP06MV",
+  "after": [
+    "01M6HWPBP2T4QCMJKA75XR2VAH"
+  ],
+  "at": "2026-11-03T23:48:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Testscripts with a local bare origin: a ship-change run merges and passes the main step straight to close-out with no gh run list call for the merge commit; a run whose merge commit's tree differs from the recorded tested head fails that step with a stop: line naming both commits; no step waits on CI for main.",
+          "statement": "After merging, ship-change confirms main by checking locally with git that the merge commit's tree equals the tree of the PR head whose checks passed, instead of waiting for CI runs on main; a differing tree fails the step with a stop: line."
+        },
+        "handle": "ship-main-tree-check",
+        "id": "01M6HWX807SBGNFEPCEE7KVWJ2",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M6HWX807SBGNFEPCEAHVK0QM",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M6HWX807SBGNFEPCEAHVK0QM",
+        "id": "01M6HWXQFTECE8TGX22N2CXW22",
+        "link": "01M6HWXQFTECE8TGX22MT34FAY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HWFGAPK603YSDHDPB4BHAK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HWX807SBGNFEPCEAHVK0QM",
+        "id": "01M6HWYFDC3S18YS71ZH015JW9",
+        "link": "01M6HWYFDC3S18YS71ZFK09B7J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HWK1AWW9CKCY5PB01YDASY",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "The ci-install testscript's expected workflow holds a concurrency group keyed on the pull request (falling back to the ref) with cancel-in-progress: true, and keeps the push-to-main trigger and its check steps.",
+          "statement": "The workflow rhiza ci install writes cancels a pull request's in-progress run when a newer push to it starts one, through a per-pull-request concurrency group with cancel-in-progress, and still checks pushes to main."
+        },
+        "handle": "ci-install-cancels-stale",
+        "id": "01M6HWZ4ZMHV1Q7BYEZJE8KQVG",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6HWZ4ZMHV1Q7BYEZF4MPFP7",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "decision": null,
+        "from": "01M6HWZ4ZMHV1Q7BYEZF4MPFP7",
+        "id": "01M6HWZHVDJNEBKGC3BJPTCXBE",
+        "link": "01M6HWZHVDJNEBKGC3BH6CE42T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HWFGAPK603YSDHDPB4BHAK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HWZ4ZMHV1Q7BYEZF4MPFP7",
+        "id": "01M6HWZWBVCB7HGBFFS46HYZ5Q",
+        "link": "01M6HWZWBVCB7HGBFFS21JYGXR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HWK1AWW9CKCY5PB01YDASY",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "For the owner, once ship-main-tree-check has landed: commit and push by hand (a token with the workflow scope) the edit to .github/workflows/ci.yml that drops the push-to-main trigger and adds a per-pull-request concurrency group with cancel-in-progress: true. Agents cannot push workflow files. Has it been pushed?"
+        },
+        "handle": "owner-ci-yml-edit",
+        "id": "01M6HX09ZGY40GG4VXQG8EFXF4",
+        "key": null,
+        "kind": "question",
+        "node": "01M6HX09ZGY40GG4VXQE5Q8BZ1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HX09ZGY40GG4VXQE5Q8BZ1",
+        "id": "01M6HX0Q71CPGJSXSVX60NECNE",
+        "link": "01M6HX0Q71CPGJSXSVX2Z0M6H8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HWK1AWW9CKCY5PB01YDASY",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6HW7MG0ZVWWHYP903FXV9YF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HX1GVFXWHX3Y9KFTNFYV17",
+  "type": "ops",
+  "v": 1
+}
