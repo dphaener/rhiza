@@ -1,0 +1,57 @@
+# workflow describe resolves as run start does and starts nothing. --json is
+# the bytes of api call workflow.describe.
+
+env XDG_CONFIG_HOME=$WORK/xdg
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+fold-ok
+
+# a built-in
+exec rhiza workflow describe build
+stdout '^build \(builtin\) builtin:build$'
+stdout '^start '
+stdout 'on\.pass ->'
+stdout 'role builder models'
+
+# the same bytes as the api
+exec rhiza workflow describe build --json
+cp stdout build.json
+exec rhiza api call workflow.describe '{"workflow":"build"}'
+cmp stdout build.json
+stdout '"path": "builtin:build"'
+
+# a repo override that shadows the built-in
+mkdir .rhiza/workflows
+cp $WORK/w.toml .rhiza/workflows/build.toml
+exec rhiza workflow describe build
+stdout '^build \(repo\) .*/repo/.rhiza/workflows/build.toml$'
+stdout '^  shadows builtin builtin:build$'
+stdout '^start only$'
+stdout '^only command$'
+
+# a file that includes another workflow
+cp $WORK/inc.toml inc.toml
+exec rhiza workflow describe inc.toml
+stdout '^inc \(file\) '
+stdout '^includes build$'
+stdout '^build/only command$'
+exec rhiza workflow describe inc.toml --json
+cp stdout inc.json
+exec rhiza api call workflow.describe '{"workflow":"inc.toml"}'
+cmp stdout inc.json
+
+# nothing was written: no runs, and the model still folds
+exec rhiza run ls
+! stdout 'inc|build'
+fold-ok
+
+-- w.toml --
+[step.only]
+kind = "command"
+run = "true"
+-- inc.toml --
+[step.go]
+kind = "workflow"
+workflow = "build"
