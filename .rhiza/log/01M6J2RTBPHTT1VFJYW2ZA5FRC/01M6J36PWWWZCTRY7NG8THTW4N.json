@@ -1,0 +1,447 @@
+{
+  "actor": "01M6J2R99PPTZJZPNF0XNS1JV1",
+  "after": [
+    "01M6J2SMTF9N527ZSTHB4T8DBY"
+  ],
+  "at": "2026-11-04T01:36:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "26",
+          "statement": "An existing repo with built code comes into Rhiza: Nebari is imported first, by a written procedure, its work then runs on Rhiza workflows, and what the Nebari import teaches becomes rhiza import."
+        },
+        "handle": "milestone-26",
+        "id": "01M6J2ZX06VD6WG8FTQS69KVA7",
+        "key": "zzzzzy",
+        "kind": "intent",
+        "node": "01M6J2ZX06VD6WG8FTQRQ6Q78G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "Nebari has its own Rhiza model: its built capabilities recorded area by area, its load-bearing decisions marked as the agent's made autonomously, PLAN.md, decisions.md, todo.md, .shipit/plans, afk.toml and .zap retired into Sources and deleted, its unbuilt work as draft change sets, and rhiza check and its specs green on Nebari's main; Rhiza holds Evidence of it."
+        },
+        "handle": "m26-nebari-imported",
+        "id": "01M6J3002BS70XYBPYWHR2253C",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M6J3002BS70XYBPYWH0K2G2C",
+        "op": "node.create",
+        "parent": "01M6J2ZX06VD6WG8FTQRQ6Q78G"
+      },
+      {
+        "fields": {
+          "statement": "Nebari's daemon builds and ships a Nebari change set on its own with Rhiza's workflows, the ship waiting on Nebari's deploy health check, with no afk or shipit left."
+        },
+        "handle": "m26-nebari-on-rhiza",
+        "id": "01M6J303FW4PYT5E5CE4T07WY9",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M6J303FW4PYT5E5CE39QNHJ8",
+        "op": "node.create",
+        "parent": "01M6J2ZX06VD6WG8FTQRQ6Q78G"
+      },
+      {
+        "fields": {
+          "statement": "rhiza import brings an existing repo with built code into Rhiza through the built-in import workflow, shaped by what the Nebari import taught."
+        },
+        "handle": "m26-import-repeatable",
+        "id": "01M6J30701CYWB5SN4WFTR8EH9",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M6J30701CYWB5SN4WEJ82KTA",
+        "op": "node.create",
+        "parent": "01M6J2ZX06VD6WG8FTQRQ6Q78G"
+      },
+      {
+        "fields": {
+          "statement": "make check is green, rhiza check included, read commands stay within their budget, and the default test run binds no socket."
+        },
+        "handle": "m26-still-healthy",
+        "id": "01M6J30EPBBKNJFCZY2VG8NP0R",
+        "key": "y",
+        "kind": "intent",
+        "node": "01M6J30EPBBKNJFCZY2RF320G5",
+        "op": "node.create",
+        "parent": "01M6J2ZX06VD6WG8FTQRQ6Q78G"
+      },
+      {
+        "fields": {
+          "quote": "this will be the first import into rhiza so we may want to coordinate and help to model an import functionality",
+          "quote_where": "milestone-26-interview, after confirming that Nebari comes into Rhiza next",
+          "statement": "The import of an existing repo is Rhiza functionality, modelled and planned in Rhiza, with Nebari as the first import."
+        },
+        "handle": "import-modelled-in-rhiza",
+        "id": "01M6J30KFCA77WR6C6GM8W4M2M",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6J30KFCA77WR6C6GGKE96V4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "it's all agent written, it was done autonomously.",
+          "quote_where": "milestone-26-interview, answer on how much of decisions.md is the owner's",
+          "statement": "Nebari's docs/decisions.md holds no owner words: every entry was written by an agent, autonomously."
+        },
+        "handle": "nebari-decisions-autonomous",
+        "id": "01M6J30Q0BW2SHJKTT8MJBC3QR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6J30Q0BW2SHJKTT8M1BM50J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "the existing tooling can all go away we'll use rhiza workflows but the shipit and afk folders have written plans that may be valuable during import, as well as zap.",
+          "quote_where": "milestone-26-interview, answer on what happens to afk, shipit and zap",
+          "statement": "Nebari's own tooling (afk, shipit, zap) goes away in favour of Rhiza workflows, and its written plans are material for the import."
+        },
+        "handle": "nebari-tooling-retired",
+        "id": "01M6J30T54H6FVS39BVC5HKWXD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6J30T54H6FVS39BV9YVH9YF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "Plan the import as a milestone with Nebari first: import Nebari by following a written import procedure, record every friction point, then build rhiza import from what was learned.",
+          "wording": "Milestone, Nebari first: import Nebari by hand with agents following a written import procedure, record every friction point, then build rhiza import from what we learned. The assistant's option, picked by the owner."
+        },
+        "handle": "import-nebari-first",
+        "id": "01M6J30XK1P7QE7W4VDXMQ47XG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6J30XK1P7QE7W4VDSX3YEK1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "An import records built capabilities with statements and acceptance backed by the repo's existing tests now, and anchors them to code in a follow-up once anchors land.",
+          "wording": "Capabilities now, anchors later: record built capabilities with statements and acceptance (backed by existing specs); add anchors when the anchors capability lands, as a follow-up change set. The assistant's option, picked by the owner."
+        },
+        "handle": "import-anchors-later",
+        "id": "01M6J310ZNAFZHCA7KYWMEGYRS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6J310ZNAFZHCA7KYVWMW4DV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "An import brings in as Decision nodes only the decisions that shape a capability or constraint, each worded as the agent's and marked as made autonomously and not confirmed by the owner; the rest are summarised in the Source of the decisions document.",
+          "wording": "Load-bearing ones only: import as Decision nodes only the decisions that shape a capability or constraint, each worded as the agent's and marked as made autonomously and not confirmed by the owner; the rest are summarised in the decisions.md Source. The assistant's option, picked by the owner."
+        },
+        "handle": "import-load-bearing-decisions",
+        "id": "01M6J313V9MH773WZ8KMW5KF9K",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6J313V9MH773WZ8KJJWH7AJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "An import retires planning documents into Sources and deletes them, and keeps reference, design-system, ops and deploy documents as working docs that capabilities link to; unbuilt planned work becomes change sets.",
+          "wording": "Retire planning, keep reference: retire PLAN.md, decisions.md, todo.md, .shipit/plans, afk.toml and .zap into Sources, then delete them; keep docs/reference, design-system.md, ops and deploy docs as working docs that capabilities link to; unbuilt PLAN/todo items become change sets. The assistant's option, picked by the owner."
+        },
+        "handle": "import-retires-planning-docs",
+        "id": "01M6J316N7Z84DPDEJWKSJH904",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6J316N7Z84DPDEJWJ7VXT84",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "All four pieces of milestone 26 are planned now: the import procedure, importing Nebari, the deploy check on ship and the rhiza import command.",
+          "wording": "A. Import procedure, B. Import Nebari, C. Deploy check on ship, D. rhiza import command, picked by the owner from the assistant's options (the assistant had recommended D as intent only)."
+        },
+        "handle": "m26-plan-all-now",
+        "id": "01M6J319A2DE5A4V53WBECC5FG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6J319A2DE5A4V53W8RA2N9T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "The Nebari import is carried out autonomously by a daemon, as any accepted change set is, with builders following the import procedure and questions going to the arbiter or the owner's inbox.",
+          "wording": "Daemon, autonomously: queue it like any accepted change set; builders follow the import procedure; questions go to the arbiter or your inbox. The assistant's option, picked by the owner."
+        },
+        "handle": "nebari-import-by-daemon",
+        "id": "01M6J31DNHDQS8XMEKHMC8B97R",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6J31DNHDQS8XMEKHM6FV68E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "The Nebari import lives in Nebari's own model and is run by Nebari's own daemon; Rhiza's milestone tracks it by Evidence recorded in Rhiza.",
+          "wording": "In Nebari's own model: rhiza init in Nebari, open the import change set there, and Nebari's own daemon runs it; Rhiza's milestone tracks it with acceptance by Evidence recorded in Rhiza (Nebari's rhiza check and specs green on main). The assistant's option, picked by the owner."
+        },
+        "handle": "nebari-import-in-nebari-model",
+        "id": "01M6J31MV6MDPKAFRX490KNSP8",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6J31MV6MDPKAFRX48WD7AFN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "rhiza import runs rhiza init when needed and starts a built-in import workflow whose agent steps do the judgment; the command is only the entry point.",
+          "wording": "Command starts an import workflow: rhiza import runs init if needed and starts a built-in import workflow: survey, record areas (foreach), decisions, Sources and retire docs, planned work as drafts, verify (rhiza check plus the repo's own tests). Judgment stays with agents; the command is the entry point. The assistant's option, picked by the owner."
+        },
+        "handle": "import-command-starts-workflow",
+        "id": "01M6J31RRCX75M5596X29XK3VD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6J31RRCX75M5596X156W6BR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "The ship deploy check reads its health URL and timeout from per-repo daemon settings; unset means no deploy check.",
+          "wording": "Daemon setting: per-repo settings via rhiza daemon set (git config), for example ship.health-url and ship.deploy-timeout; unset means no deploy check. The assistant's option, picked by the owner."
+        },
+        "handle": "deploy-check-daemon-setting",
+        "id": "01M6J31W2SVSV4GWA64W0J4G39",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6J31W2SVSV4GWA64TZR8JPE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6J30KFCA77WR6C6GGKE96V4",
+        "id": "01M6J31ZAYM426XFM1JTYK71SY",
+        "link": "01M6J31ZAYM426XFM1JS5S9MWV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J2SH85C5EBP2AVCB1V85YN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6J30Q0BW2SHJKTT8M1BM50J",
+        "id": "01M6J322KD993PZYJ24Q5PVH0A",
+        "link": "01M6J322KD993PZYJ24MPWG1PA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J2SH85C5EBP2AVCB1V85YN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6J30T54H6FVS39BV9YVH9YF",
+        "id": "01M6J329PDS37HRQMFXEA6N8XW",
+        "link": "01M6J329PDS37HRQMFXDD8K5FH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J2SH85C5EBP2AVCB1V85YN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6J30XK1P7QE7W4VDSX3YEK1",
+        "id": "01M6J32E7E60V3WX621649GD0C",
+        "link": "01M6J32E7E60V3WX6215CHVKXQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J2SH85C5EBP2AVCB1V85YN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6J310ZNAFZHCA7KYVWMW4DV",
+        "id": "01M6J32K13BA2CN3P9R72E2S9J",
+        "link": "01M6J32K13BA2CN3P9R5ATJHAZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J2SH85C5EBP2AVCB1V85YN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6J313V9MH773WZ8KJJWH7AJ",
+        "id": "01M6J32QB1PCZ44AEYTRYZA7B3",
+        "link": "01M6J32QB1PCZ44AEYTRK98TDG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J2SH85C5EBP2AVCB1V85YN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6J316N7Z84DPDEJWJ7VXT84",
+        "id": "01M6J32W0DY2BFA2CYMAHG6YSS",
+        "link": "01M6J32W0DY2BFA2CYM9392V14",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J2SH85C5EBP2AVCB1V85YN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6J319A2DE5A4V53W8RA2N9T",
+        "id": "01M6J330PNHPWRB8NZRV076TQF",
+        "link": "01M6J330PNHPWRB8NZRQMQQ2ZR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J2SH85C5EBP2AVCB1V85YN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6J31DNHDQS8XMEKHM6FV68E",
+        "id": "01M6J3353QRSEFPMAV0ZXA9QFE",
+        "link": "01M6J3353QRSEFPMAV0ZM2MDJN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J2SH85C5EBP2AVCB1V85YN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6J31MV6MDPKAFRX48WD7AFN",
+        "id": "01M6J339JX5YWEZD2ZPVMGCV34",
+        "link": "01M6J339JX5YWEZD2ZPSK1P8GN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J2SH85C5EBP2AVCB1V85YN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6J31RRCX75M5596X156W6BR",
+        "id": "01M6J33DEWSY6QV3XP975BDRDG",
+        "link": "01M6J33DEWSY6QV3XP95ZYPADM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J2SH85C5EBP2AVCB1V85YN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6J31W2SVSV4GWA64TZR8JPE",
+        "id": "01M6J33KCAWWEC6TGX98YMVC17",
+        "link": "01M6J33KCAWWEC6TGX987WN5PH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J2SH85C5EBP2AVCB1V85YN",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6J2ZX06VD6WG8FTQRQ6Q78G",
+        "id": "01M6J33RJRGW59R11BVMPPTHCA",
+        "link": "01M6J33RJRGW59R11BVH49MEEG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J30KFCA77WR6C6GGKE96V4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J2ZX06VD6WG8FTQRQ6Q78G",
+        "id": "01M6J33WB418AXAX1YWCG07WCY",
+        "link": "01M6J33WB418AXAX1YW8KAFA8A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J30XK1P7QE7W4VDSX3YEK1",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J2ZX06VD6WG8FTQRQ6Q78G",
+        "id": "01M6J3472H0NM1RR39H0396AHY",
+        "link": "01M6J3472H0NM1RR39GZ772E3X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J319A2DE5A4V53W8RA2N9T",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J3002BS70XYBPYWH0K2G2C",
+        "id": "01M6J34H3XQ882YS5DQ7P9RPDY",
+        "link": "01M6J34H3XQ882YS5DQ3RYY0DW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J30Q0BW2SHJKTT8M1BM50J",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J3002BS70XYBPYWH0K2G2C",
+        "id": "01M6J34YT6SV9Y645B7RFBS64C",
+        "link": "01M6J34YT6SV9Y645B7PW9C2ZG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J31DNHDQS8XMEKHM6FV68E",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J3002BS70XYBPYWH0K2G2C",
+        "id": "01M6J357XWBRP8WW1539GYA3CM",
+        "link": "01M6J357XWBRP8WW15361AZYWE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J31MV6MDPKAFRX48WD7AFN",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J3002BS70XYBPYWH0K2G2C",
+        "id": "01M6J35HX3HYPB8KATXBRV3NFD",
+        "link": "01M6J35HX3HYPB8KATX819VGN6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J316N7Z84DPDEJWJ7VXT84",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J303FW4PYT5E5CE39QNHJ8",
+        "id": "01M6J35TA624QMFNF2F2VR39TM",
+        "link": "01M6J35TA624QMFNF2EZ82203F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J30T54H6FVS39BV9YVH9YF",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J30701CYWB5SN4WEJ82KTA",
+        "id": "01M6J364VQ6JA8GJ03GDRR5FFT",
+        "link": "01M6J364VQ6JA8GJ03GAK6KY0F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J31RRCX75M5596X156W6BR",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6J2RTBPHTT1VFJYW2ZA5FRC",
+  "for": "01M6J2R99PPTZJZPNF0XNS1JV1",
+  "id": "01M6J36PWWWZCTRY7NG8THTW4N",
+  "type": "ops",
+  "v": 1
+}

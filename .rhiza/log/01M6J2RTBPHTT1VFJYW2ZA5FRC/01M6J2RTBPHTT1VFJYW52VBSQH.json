@@ -1,0 +1,16 @@
+{
+  "actor": "01M6J2R99PPTZJZPNF0XNS1JV1",
+  "after": [],
+  "at": "2026-11-04T01:28:57Z",
+  "body": {
+    "intent": "Milestone 26: an existing repo with built code comes into Rhiza, Nebari first, and its work then runs on Rhiza workflows",
+    "kind": "record",
+    "sources": [],
+    "title": "Open milestone 26: import"
+  },
+  "change_set": "01M6J2RTBPHTT1VFJYW2ZA5FRC",
+  "for": "01M6J2R99PPTZJZPNF0XNS1JV1",
+  "id": "01M6J2RTBPHTT1VFJYW52VBSQH",
+  "type": "open",
+  "v": 2
+}
