@@ -1,0 +1,29 @@
+{
+  "actor": "01M6JP3Y2GHYVXJ4Y4MQ9MVA9M",
+  "after": [
+    "01M6JPC8FZPYG3X64YZ8Q36KHH"
+  ],
+  "at": "2026-11-04T07:11:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "docs/rex-upstream/notification-banner.md drafts a report for Rex upstream (VM chimes, no banner on the Mac). Please check on the Mac whether a question in a VM agent tab now gets a banner, fill in the Mac fields in that file, and file it with Rex if the banner is still missing."
+        },
+        "handle": "rex-banner-report-ready",
+        "id": "01M6JPC1WXTKVT6YKGX5DVT00Z",
+        "key": null,
+        "kind": "question",
+        "node": "01M6JPC1WXTKVT6YKGX38ZTFEX",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6JPC8FZPYG3X64YZ6RF05EW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JPC9XB5MK4PANSW263BFHY",
+  "type": "ops",
+  "v": 1
+}
