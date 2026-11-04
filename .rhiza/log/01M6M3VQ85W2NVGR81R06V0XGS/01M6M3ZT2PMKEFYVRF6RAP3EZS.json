@@ -1,0 +1,30 @@
+{
+  "actor": "01M6M3VZ807Y6ZNG9SN80CT6EC",
+  "after": [
+    "01M6M3VQ85W2NVGR81R1K901CN"
+  ],
+  "at": "2026-11-04T20:28:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "62e3cc37-a9a9-440e-a34d-01a1a83df551",
+          "statement": "The plan-review runs on 2026-11-04 were owner-queued starts (rhiza run start --workflow plan-review.toml, started by daemonQueuedStarts), which run after ship picks but before daemonPlanRequests and ignore the slot kept for a waiting plan request. How should the daemon fix it? / This change set serves no intent yet. Recent request-planned fixes (e.g. 01M6M1M1 'Fix Test temp folders leak') serve milestone-25 ('The backlog is empty…'). Which intent should it serve?"
+        },
+        "handle": "question-62e3cc37-1",
+        "id": "01M6M3ZS1WHXPTCRBWMXBDWVKV",
+        "key": null,
+        "kind": "question",
+        "node": "01M6M3ZS1WHXPTCRBWMWD168EH",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6M3VQ85W2NVGR81R06V0XGS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M3ZT2PMKEFYVRF6RAP3EZS",
+  "type": "ops",
+  "v": 1
+}
