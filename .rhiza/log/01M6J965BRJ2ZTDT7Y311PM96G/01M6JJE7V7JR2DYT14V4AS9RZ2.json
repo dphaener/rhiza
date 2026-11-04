@@ -1,0 +1,40 @@
+{
+  "actor": "01M6JHNCV886CH2RVN0GCNTBX7",
+  "after": [
+    "01M6JB1GD3WAQQTHZ95QJ4CS76"
+  ],
+  "at": "2026-11-04T06:02:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c092ae36 ran go test ./cmd/rhiza -run 'TestScripts/(run-resume-landed-past-land|run-resume-landed-plan|run-resume-unaccepted)$' -count=1: all three PASS. run-resume-landed-past-land.txtar runs a ship-change-shaped run (journal workflow rewritten to ship-change) that enters land and stops at its wait-main, lands the change set, then rhiza run resume goes on past the wait and prints succeeded. With internal/api/run.go reverted to HEAD~1 in a scratch worktree the new script fails: resume refused with exit 3, 'is landed, no longer accepted'. run-resume-landed-plan.txtar (BUILDLAND01 ship-change, journal never entered land: refused, names rhiza run abandon, cmp journal unchanged) and run-resume-unaccepted.txtar (withdrawn: refused same way, journal unchanged) are unmodified and pass. Diff read: the gate lets a non-plan run on a landed change set through only when st.Visits[land] > 0 (counted on entered events, so land entered or passed). make check: fmt-check, vet and go test ./... passed; self-check failed only on rendering this verifier's own untracked actor record, not on the leaf's commit."
+        },
+        "handle": "run-resume-landed-past-land-verified",
+        "id": "01M6JJDEPVWWAS8K4FV259526F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JJDEPVWWAS8K4FTYWT1YZE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JJDEPVWWAS8K4FTYWT1YZE",
+        "id": "01M6JJDR03SJ229BCRNDDVHDZE",
+        "link": "01M6JJDR03SJ229BCRNCKRJT4M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J9NTD1SF9Z8B72JJ0MV1HG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6J965BRJ2ZTDT7Y311PM96G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JJE7V7JR2DYT14V4AS9RZ2",
+  "type": "ops",
+  "v": 1
+}
