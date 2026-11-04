@@ -1,0 +1,40 @@
+{
+  "actor": "01M6M6GZMEHFBHR6AGHDB7PQG3",
+  "after": [
+    "01M6M6H0RM1DBG0JSAXV6JYY0A"
+  ],
+  "at": "2026-11-04T21:14:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 2f56cfa3, ran go test -trimpath -count=1 ./internal/guide/... (ok) and -run TestPlanAcceptanceScoped -v (PASS). The new test asserts plan.md says to write each leaf's acceptance as 'the tests covering that leaf, never the repo's full suite', asserts plan-review.md's missing-acceptance kind covers one that 'runs the repo's full suite' rather than the 'tests covering that leaf', and fails if either body contains go test, make check, make test or testscript; grep of both texts finds none of those. plan.md is the rhiza-plan skill body (Lookup(plan).Skill), so the skill carries the rule. Diff read: only the two guide texts, the test and the builder's actor record."
+        },
+        "handle": "plan-acceptance-scoped-verified",
+        "id": "01M6M6JWPQFXM40AB6CQ6X106J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M6JWPQFXM40AB6CKHR6705",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M6JWPQFXM40AB6CKHR6705",
+        "id": "01M6M6K4JTYJ88J9MRNZC0GPGD",
+        "link": "01M6M6K4JTYJ88J9MRNWVQ28G3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0F1732EDCT2C312MBA43A",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6M01GYQHR9VMCZ54W5THARK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M6KCFTX7D3VGN8JH42GFAP",
+  "type": "ops",
+  "v": 1
+}

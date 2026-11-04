@@ -1,0 +1,40 @@
+{
+  "actor": "01M6M6EWRJT38PY1VJZ89SP6HR",
+  "after": [
+    "01M6M6AE6XFXMHEDMBQSWVXNTA"
+  ],
+  "at": "2026-11-04T21:13:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a2bd07c4, read the diff: build.md gains a Tests section telling builders and verifiers to run only the tests covering what the change touches, with the repo's own scoped commands, never the full suite, because the PR's CI runs it before merge; review.md's Checks section says the same for checks, critics and fixers. TestBuildText and TestReviewText assert those phrases and that neither body contains go test, make check, make test or testscript; grep of both texts finds none of the four. go test -trimpath -count=1 ./internal/guide passes (TestBuildText and TestReviewText PASS under -v); go vet and gofmt -l on internal/guide are clean."
+        },
+        "handle": "guides-scoped-tests-verified",
+        "id": "01M6M6GK1SY4DBW0VNWK1KY7SP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M6GK1SY4DBW0VNWG35PAJ4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M6GK1SY4DBW0VNWG35PAJ4",
+        "id": "01M6M6GPT3V53J23W2RX4P75RY",
+        "link": "01M6M6GPT3V53J23W2RVJ7E4TK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0EPMPD72KB5AZWBB9MRGM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6M01GYQHR9VMCZ54W5THARK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M6H0RM1DBG0JSAXV6JYY0A",
+  "type": "ops",
+  "v": 1
+}

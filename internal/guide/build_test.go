@@ -32,7 +32,17 @@ func TestBuildText(t *testing.T) {
 		},
 		"fakes-only": {"with fakes only, never real Rex,\nagents or `gh`"},
 		"done":       {"rhiza session done"},
+		"scoped-tests": {
+			"Builders and verifiers run only the tests covering what the change touches",
+			"scoped commands", "never the repo's full\nsuite",
+			"the PR's CI runs it before merge",
+		},
 	})
+	for _, banned := range []string{"go test", "make check", "make test", "testscript"} {
+		if strings.Contains(build.Body, banned) {
+			t.Errorf("build names %q", banned)
+		}
+	}
 	// Constraint agents-named-only-in-adapters: no agent product by name.
 	if strings.Contains(build.Body+build.Description, "Claude") {
 		t.Errorf("build names an agent product")
