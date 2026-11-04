@@ -16,6 +16,7 @@ the agent's choice, not the owner's
 
 - decided-by [blocked-run-notice](../capability/rhiza/orchestration/notifications/blocked-run-notice.md)
 - decided-by [ask-status-is-question](../capability/ask-status-is-question.md)
+- decided-by [agent-tab-blocked-notice](../capability/rhiza/orchestration/notifications/agent-tab-blocked-notice.md)
 
 ## History
 
