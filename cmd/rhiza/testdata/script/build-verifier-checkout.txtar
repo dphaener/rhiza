@@ -57,6 +57,7 @@ exec sh -c 'for l in good bad; do test -e "$(cat $WORK/$l.pwd)" && echo "$l left
 exec sh -c 'grep -rl "good-ok" "$(cat $WORK/build.pwd)/.rhiza/log"'
 stdout '\.json$'
 grep '^good clean$' $WORK/checkout-status.log
+grep '^good actor-in-checkout$' $WORK/actor.log
 
 # The builder's staged, unstaged and untracked edits are untouched.
 exec sh -c 'cd "$(cat $WORK/build.pwd)" && git diff > $WORK/after.diff && git diff --cached > $WORK/after.cached && git status --porcelain --untracked-files=all -- notes.txt scratch.txt > $WORK/after.status'
@@ -135,5 +136,11 @@ if [ "$RHIZA_LEAF" = bad ]; then
 fi
 rhiza add evidence "$RHIZA_LEAF-ok" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
 rhiza link "$RHIZA_LEAF-ok" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
-[ -z "$(git status --porcelain)" ] && echo "$RHIZA_LEAF clean" >> "$WORK/checkout-status.log"
+# The session's actor record is in the checkout too: the same files as the
+# build worktree's, the actor resolves, and adding it again is refused.
+cs=$(grep -l "Record agent actor $RHIZA_ACTOR " .rhiza/log/*/*.json | head -n1 | xargs dirname | xargs basename)
+if diff -r "$RHIZA_ROOT/.rhiza/log/$cs" ".rhiza/log/$cs" >&2 && env -u RHIZA_ROOT -u RHIZA_CHANGE -u RHIZA_RUN rhiza show "$RHIZA_ACTOR" >&2 && ! env -u RHIZA_ROOT -u RHIZA_CHANGE -u RHIZA_RUN rhiza add actor "$RHIZA_ACTOR" --record >&2; then
+	echo "$RHIZA_LEAF actor-in-checkout" >> "$WORK/actor.log"
+fi
+[ -z "$(git status --porcelain -- . ':!.rhiza')" ] && echo "$RHIZA_LEAF clean" >> "$WORK/checkout-status.log"
 exit 0
