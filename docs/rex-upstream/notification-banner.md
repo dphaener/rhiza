@@ -31,10 +31,11 @@ chime on the Mac, but no macOS notification banner appears. Owner, 2026-11-03:
 
 From the built binary of this branch (testscript `session-run-blocked-notice`,
 head be648824), for a permission block in run `run-1`, step `build`. Exact bytes
-(`ESC` = 0x1b, terminated by BEL or ST as the writer emits):
+(`ESC` = 0x1b; the report ends with ST, `ESC \` = 0x1b 0x5c, as `rexRecord`
+in `internal/api/run.go` always writes it):
 
 ```
-ESC ]7501;state=blocked:kind=permission:app=rhiza:title=cmVwbzogQWdlbnQgcnVucyDCtyBydW4gcnVuLTEgwrcgYnVpbGQ=:msg=QWdlbnQgcnVuczogYnVpbGQgd2FpdHMgb24geW91IGluIHRhYiByZXBvOiBBZ2VudCBydW5zIMK3IHJ1biBydW4tMSDCtyBidWlsZDogQ2xhdWRlIG5lZWRzIHlvdXIgcGVybWlzc2lvbiB0byB1c2UgQmFzaA==
+ESC ]7501;state=blocked:kind=permission:app=rhiza:title=cmVwbzogQWdlbnQgcnVucyDCtyBydW4gcnVuLTEgwrcgYnVpbGQ=:msg=QWdlbnQgcnVuczogYnVpbGQgd2FpdHMgb24geW91IGluIHRhYiByZXBvOiBBZ2VudCBydW5zIMK3IHJ1biBydW4tMSDCtyBidWlsZDogQ2xhdWRlIG5lZWRzIHlvdXIgcGVybWlzc2lvbiB0byB1c2UgQmFzaA==ESC \
 ```
 
 Decoded: title = `repo: Agent runs · run run-1 · build`; msg =
@@ -43,23 +44,19 @@ A question block is the same with `kind=question`.
 
 ### Claude Code's own blocked report
 
-NOT CAPTURED on the VM: a blocked state needs a live interactive Claude Code
-permission or question prompt, which a headless build run cannot raise without
-opening a real agent window. To capture it, ask a question in a VM agent tab
-and run on the VM:
+Captured on the VM on 2026-11-04 with Claude Code 2.1.316: a scratch Rex session
+on the VM ran interactive `claude --permission-mode default "Run the bash
+command: touch captured.txt"` while `rex events -s <session> --json` streamed
+its events. Claude Code reported idle, then working, then this line when its
+Bash permission prompt came up:
 
 ```
-rex events -s <session> --json | grep '"state":"blocked"'
+{"type":"session_event","payload":{"session_id":"session:01a1a568-f1d5-79f4-8ce7-dcc1a3815925","event":{"type":"block_event","payload":{"block_id":"block:01a1a568-f1d5-7bef-89b6-e7063ca1311d","creator_name":"com.superlogical.terminal","name":"program_status_changed","payload":{"id":"","record":{"state":"blocked","kind":"permission","app":"claude-code","effective_app":"claude-code","msg":"approve Bash: touch captured.txt","updated_at":"2026-11-04T07:16:43.632990895Z","owner":{"pid":1329432,"name":"claude"}},"reason":"report"}}}}}
 ```
 
-Rex delivers it nested as
-`{"type":"session_event","payload":{"session_id":...,"event":{"type":"block_event","payload":{"block_id":"block:...","creator_name":"com.superlogical.terminal","name":"program_status_changed","payload":{"id":"","record":{"state":"blocked","kind":...,"msg":...,"updated_at":...},"reason":"report"}}}}}`
-(the shape rhiza's own reports come back in, captured live earlier). Paste the
-record for Claude Code's blocked report here:
-
-```
-<PASTE rex events --json LINE>
-```
+Note: Claude Code's record carries `state`, `kind` and `msg` but no `title`;
+rhiza's report carries a `title`. If Rex needs a title to post a banner, that
+alone may explain a chime with no banner for Claude Code's own report.
 
 ## Mac observations (OWNER fills in)
 
