@@ -223,7 +223,8 @@ func validHandle(h string) bool {
 // Format turns stored text into shown text. handleOf gives the current handle
 // of a live node by full ID; it reports false for a retired or missing node,
 // which is shown as @{<full ID>}. Any other literal @ that would start a
-// reference is shown as @@, so Resolve of the shown text stores the same text.
+// reference, and any other @{ such as '@{<full ID>}' or '@{...}', is shown as
+// @@, so Resolve of the shown text stores the same text.
 func Format(text string, handleOf func(id string) (string, bool)) string {
 	var b strings.Builder
 	for i := 0; i < len(text); {
@@ -248,7 +249,9 @@ func Format(text string, handleOf func(id string) (string, bool)) string {
 			i = end
 			continue
 		}
-		if _, ok := parseAt(text, i); ok {
+		// Any other @{ is literal text: escape it whether or not parseAt would
+		// take it, so stored '@{<full ID>}' is shown as '@@{<full ID>}'.
+		if _, ok := parseAt(text, i); ok || strings.HasPrefix(text[i:], "@{") {
 			b.WriteString("@@")
 		} else {
 			b.WriteByte('@')

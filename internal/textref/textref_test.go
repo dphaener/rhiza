@@ -78,15 +78,17 @@ func TestResolve(t *testing.T) {
 
 func TestFormat(t *testing.T) {
 	for stored, want := range map[string]string{
-		"see @{" + idA + "}.":                "see @alpha.",
-		"@{" + idA + "}x":                    "@{" + idA + "}x",
-		"@{" + idR + "} gone":                "@{" + idR + "} gone",
-		"@{ID} @{BOGUS} @{" + idA[:25] + "}": "@@{ID} @@{BOGUS} @@{" + idA[:25] + "}",
-		"@word":                              "@@word",
-		"@@word":                             "@@@word",
-		"darin@hey.com checkout@v7 '@key'":   "darin@hey.com checkout@v7 '@key'",
-		"@ alone @":                          "@ alone @",
-		"no refs":                            "no refs",
+		"see @{" + idA + "}.":                 "see @alpha.",
+		"@{" + idA + "}x":                     "@{" + idA + "}x",
+		"@{" + idR + "} gone":                 "@{" + idR + "} gone",
+		"@{ID} @{BOGUS} @{" + idA[:25] + "}":  "@@{ID} @@{BOGUS} @@{" + idA[:25] + "}",
+		"@{<full ID>} @{<ID>} @{...} @{ } @{": "@@{<full ID>} @@{<ID>} @@{...} @@{ } @@{",
+		"(@{<26-character ID>})":              "(@@{<26-character ID>})",
+		"@word":                               "@@word",
+		"@@word":                              "@@@word",
+		"darin@hey.com checkout@v7 '@key'":    "darin@hey.com checkout@v7 '@key'",
+		"@ alone @":                           "@ alone @",
+		"no refs":                             "no refs",
 	} {
 		if got := Format(stored, handleOf); got != want {
 			t.Errorf("Format(%q) = %q, want %q", stored, got, want)
