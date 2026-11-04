@@ -1,0 +1,40 @@
+{
+  "actor": "01M6JA13MJ0ZMC1FYEWZ9RB3JA",
+  "after": [
+    "01M6J9RKNSVETGR8E1PX696481"
+  ],
+  "at": "2026-11-04T03:52:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f9b2784e, go test ./cmd/rhiza -run 'TestScripts/(usage-hold|describe-golden)$' -count=1 passes. The new usage-hold.txtar seeds a daemon state that holds and shows a usage-reserve skip with the window/use/limit/reset detail in daemon status --json and text, a warn usage part in health --json and text, and exactly one usage-reserve inbox item (inbox open refuses it, as there is no tab to open). With ok.json (no hold), none of these shows: health's usage part is ok and the inbox is empty. describe-golden.txtar is regenerated (usage-reserve skip/inbox kinds, usage health part). Read the diff: State.UsageHold is saved per poll and keeps Since while the same window/reset holds, carried across restarts, and fed into daemon notifications. make check passed fmt-check, vet and test before self-check failed only on stale .rhiza/rendered files (run actor records, rendered when the change set lands). A second, loaded test run failed only the read-timing benchmark, which was contending for the machine."
+        },
+        "handle": "usage-hold-reported-verified",
+        "id": "01M6JB087V50C7HTECCTK8WM6T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JB087V50C7HTECCQZQWR54",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JB087V50C7HTECCQZQWR54",
+        "id": "01M6JB0BWFZQV65YT2VH56GA0M",
+        "link": "01M6JB0BWFZQV65YT2VDKW8ZN6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HJ14J13C9N67W124QEQME1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HHMTEDFK2AWQKX50EB77DD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JB0H9JPRM8TPN0JP28TEZ7",
+  "type": "ops",
+  "v": 1
+}
