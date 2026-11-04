@@ -1,0 +1,56 @@
+# rhiza run abandon keeps the local branch when it holds commits merged
+# into neither its upstream nor HEAD, with an upstream set: the branch is
+# pushed to a bare origin, a later run commits again without pushing, and
+# abandoning a failed run after that keeps the branch and the new commit.
+
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Abandon after a build' --title 'Abandon built' --json
+mkdir .rhiza/workflows
+cp ../build.toml .rhiza/workflows/build.toml
+exec git remote add origin ../origin.git
+
+# Run A builds a commit on the branch and succeeds; the branch is pushed.
+exec sh -c 'echo > $WORK/pass'
+exec rhiza run start --foreground --workflow build
+stdout '^Run [0-9A-Z]{26} succeeded$'
+exec git push -q -u origin cs/abandon-built
+
+# Run B builds a second commit that is never pushed.
+exec rhiza run start --foreground --workflow build
+stdout '^Run [0-9A-Z]{26} succeeded$'
+
+# Run C fails at its check.
+rm $WORK/pass
+! exec rhiza run start --foreground --workflow build
+stdout '^Run [0-9A-Z]{26} failed$'
+exec sh -c 'ls -t .git/rhiza/runs/*.jsonl | head -1 | xargs basename | sed s/.jsonl// > $WORK/third'
+
+# Abandoning C keeps the branch: its second commit is on no upstream.
+exec sh -c 'rhiza run abandon $(cat $WORK/third)'
+stdout 'delete-branch kept: it has commits merged into neither its upstream nor HEAD'
+exec git log --format=%s cs/abandon-built
+stdout -count=2 '^built$'
+exec git rev-parse --verify origin/cs/abandon-built
+exec git rev-list --count origin/cs/abandon-built..cs/abandon-built
+stdout '^1$'
+
+-- build.toml --
+name = "build"
+
+[step.check]
+kind = "command"
+run = "test -f ../pass"
+on.pass = "build"
+on.fail = "failed"
+
+[step.build]
+kind = "command"
+run = "git commit -q --allow-empty -m built"
+on.pass = "done"
+on.fail = "failed"
