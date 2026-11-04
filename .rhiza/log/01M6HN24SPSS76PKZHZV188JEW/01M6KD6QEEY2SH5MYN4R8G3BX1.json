@@ -1,0 +1,40 @@
+{
+  "actor": "01M6K9QAT1VK812YA9634Z64YN",
+  "after": [
+    "01M6K6JD1W2MR5KS6KY075T1Q9"
+  ],
+  "at": "2026-11-04T13:50:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 95ae54b2 ran go test ./cmd/rhiza -run 'TestScripts/(workflow-describe|describe-golden)$' -count=1: ok. The workflow-describe script describes the built-in build (build (builtin) builtin:build, start, on.pass ->, role builder models), a repo .rhiza/workflows/build.toml that shadows it (shadows builtin builtin:build, start only), and inc.toml whose workflow step includes build (includes build, step build/only command); for both build and inc.toml, --json is cmp-equal to rhiza api call workflow.describe; afterwards run ls lists no run and fold-ok passes. Read the diff: workflow.describe goes through the same resolveWorkflow/workflowResolver as run start, and its handler only reads files. Checked by hand with a scratch build in a scratch repo: a personal XDG build.toml wins and shows that it shadows repo and builtin, steps come out in order with on targets and verifier/critic/fixer roles with model ladders and prompts (review), and an md5 of every file in the repo (including .git) and the config dir was unchanged after describing. make test: every package ok; TestReadBudget failed with uniform slowdowns across all reads (show included) at load average 8.6 on 4 cores. Those are contention timings: the leaf adds no read-path code. make check's self-check failed only on rendered files for live sessions' untracked actor records (including this verifier's), none in the commit."
+        },
+        "handle": "workflow-describe-verified",
+        "id": "01M6KD6DPBX7CQNT4N1QMEESRJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KD6DPA4XBGQKJX4JTYP2ZP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KD6DPA4XBGQKJX4JTYP2ZP",
+        "id": "01M6KD6HRPYRP2KKZHF83GFQKF",
+        "link": "01M6KD6HRPYRP2KKZHF78NZRG9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNBFTE249W98NA8YV0PKCP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HN24SPSS76PKZHZV188JEW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KD6QEEY2SH5MYN4R8G3BX1",
+  "type": "ops",
+  "v": 1
+}
