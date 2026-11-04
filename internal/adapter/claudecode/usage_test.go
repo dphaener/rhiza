@@ -87,3 +87,42 @@ func TestUsageRecordsNoConfig(t *testing.T) {
 }
 
 var _ adapter.UsageReader = Adapter{}
+
+// A file last written before the span is not read, and a changed file is
+// read again rather than served from the cache.
+func TestUsageRecordsSkipsOldAndRereadsChanged(t *testing.T) {
+	config := t.TempDir()
+	getenv := func(k string) string {
+		if k == "CLAUDE_CONFIG_DIR" {
+			return config
+		}
+		return ""
+	}
+	from := time.Date(2026, 11, 3, 10, 0, 0, 0, time.UTC)
+	to := time.Date(2026, 11, 3, 11, 0, 0, 0, time.UTC)
+	old := filepath.Join(config, "projects", "-a", "old.jsonl")
+	writeLines(t, old, usageJSON("2026-11-03T10:30:00Z", "o1", false, 5, 0, 0, 0))
+	if err := os.Chtimes(old, from.Add(-time.Hour), from.Add(-time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	live := filepath.Join(config, "projects", "-a", "live.jsonl")
+	writeLines(t, live, usageJSON("2026-11-03T10:10:00Z", "l1", false, 1, 0, 0, 0))
+	got, err := Adapter{}.UsageRecords(getenv, from, to)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := []adapter.UsageRecord{{At: from.Add(10 * time.Minute), Tokens: 1}}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	writeLines(t, live,
+		usageJSON("2026-11-03T10:10:00Z", "l1", false, 1, 0, 0, 0),
+		usageJSON("2026-11-03T10:20:00Z", "l2", false, 2, 0, 0, 0))
+	got, err = Adapter{}.UsageRecords(getenv, from, to)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []adapter.UsageRecord{{At: from.Add(10 * time.Minute), Tokens: 1}, {At: from.Add(20 * time.Minute), Tokens: 2}}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+}
