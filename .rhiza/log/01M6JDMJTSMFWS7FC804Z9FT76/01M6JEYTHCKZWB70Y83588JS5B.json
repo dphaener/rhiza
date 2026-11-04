@@ -1,0 +1,29 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6JEQYQH9H9NP5Q6VYT2KSHX"
+  ],
+  "at": "2026-11-04T05:01:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on plan-request-plans-serve-milestone): The Source's summary says the guard is 'the plan step's completion check fails the step when a planned change set serves no milestone', but Decision request-plans-serve-a-milestone (and leaf plan-step-milestone-check) rule the guard is a separate command step, milestone-check, between interview and review, and explicitly 'Not the interview's until check'. The Source records the earlier wording and now contradicts the Decision it backs; its summary should describe the milestone-check command step. The critic confirmed it: Source plan-request-plans-serve-milestone's summary still says 'the plan step's completion check fails the step when a planned change set serves no milestone', while the Decision it backs (request-plans-serve-a-milestone, via derived-from) now rules the guard is a command step right after the interview and explicitly 'Not the interview's until check'. The Source is the Decision's only provenance (wording is assumed), so its summary describes the mechanism the Decision rejects; it should describe the command step (or note the round-2 revision). How should it be settled?"
+        },
+        "handle": "review-01m6jdmg-r3-f1",
+        "id": "01M6JEYNH0TXDW0AEPG9B6E0QR",
+        "key": null,
+        "kind": "question",
+        "node": "01M6JEYNH0TXDW0AEPG7TEXZ7F",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6JDMJTSMFWS7FC804Z9FT76",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JEYTHCKZWB70Y83588JS5B",
+  "type": "ops",
+  "v": 1
+}
