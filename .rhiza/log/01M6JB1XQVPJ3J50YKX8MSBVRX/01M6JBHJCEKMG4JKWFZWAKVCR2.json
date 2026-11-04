@@ -1,0 +1,83 @@
+{
+  "actor": "01M6JB2BA91XQKMXEFXVMD500X",
+  "after": [
+    "01M6JBF07CDV5WF3YTJ9SH0KNY"
+  ],
+  "at": "2026-11-04T04:02:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6JBBD0R8CNZZ5FQ3KA1DNPZ",
+        "id": "01M6JBFVZAA9YGBFNMB09A993F",
+        "link": "01M6JBFVZAA9YGBFNMAZF1CXGC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JBEQH0K54X88TA8DRXGQZ8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript drives a headless run (driver with no REX_BLOCK) whose agent session, under a fake rex, blocks on a question and then resumes: the session wrapper's terminal output holds exactly one root-record blocked report with kind=question, app=rhiza, title the tab and msg naming the change set, step and question, then one working report; the driver writes no report; a --foreground run with REX_BLOCK set still writes its notice to its own block as run-blocked.txtar checks",
+          "statement": "When a run's agent session blocks, its own tab's wrapper (rhiza session run) writes rhiza's root-record OSC 7501 blocked report to its terminal, with the kind, the tab as title and a message naming the change set, the step and the question, and a working report once the block ends, so a headless run's block reaches Rex with no driver, daemon or watcher tab"
+        },
+        "handle": "agent-tab-blocked-notice",
+        "id": "01M6JBG2WB3SDJJE4R113RXSHJ",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6JBG2WB3SDJJE4R0YFTWTV1",
+        "op": "node.create",
+        "parent": "01M5SWTCGG54JMNZNRSYQ2WAHH"
+      },
+      {
+        "decision": null,
+        "from": "01M6JBG2WB3SDJJE4R0YFTWTV1",
+        "id": "01M6JBG9T4JNCWWPBTX7M4E6B9",
+        "link": "01M6JBG9T4JNCWWPBTX4386WY7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JBBD0R8CNZZ5FQ3KA1DNPZ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6JBG2WB3SDJJE4R0YFTWTV1",
+        "id": "01M6JBGHRACSBWXSCE96R19PB9",
+        "link": "01M6JBGHRACSBWXSCE95DC8PNY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WGZJF80R73FMQNV8M80R65",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Evidence from the VM after installing the fix: either the owner saw a macOS banner for a question in a VM agent tab, or docs/rex-upstream/notification-banner.md is committed with the Rex versions (Mac app and VM server), the exact OSC 7501 bytes rhiza and Claude Code wrote as captured by rex events --json, the remote VM host setup, the Mac's focus and notification-permission state, and the symptom (chime, no banner), and an inbox item points the owner at it to file with Rex",
+          "statement": "Once agent-tab-blocked-notice is installed on the VM, a question asked in a VM agent tab is checked on the Mac for a banner, and if it still only chimes a report for Rex upstream is drafted in the repo for the owner to file"
+        },
+        "handle": "rex-banner-upstream-draft",
+        "id": "01M6JBGRYGYVYDZ0VC03FF35M6",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6JBGRYGYVYDZ0VC01N3941H",
+        "op": "node.create",
+        "parent": "01M5SWTCGG54JMNZNRSYQ2WAHH"
+      },
+      {
+        "decision": null,
+        "from": "01M6JBGRYGYVYDZ0VC01N3941H",
+        "id": "01M6JBH0BQCJ3WEVRCXT27ZDQV",
+        "link": "01M6JBH0BQCJ3WEVRCXQ9HHYYP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JBBD0R8CNZZ5FQ3KA1DNPZ",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6JB1XQVPJ3J50YKX8MSBVRX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JBHJCEKMG4JKWFZWAKVCR2",
+  "type": "ops",
+  "v": 1
+}
