@@ -11,6 +11,9 @@ Review the diff from the merge-base with the default branch
 ## Checks
 
 Every check except `qa` tests runs with fakes only, never real Rex, agents or `gh`.
+Checks, critics and fixers run only the tests covering what the change touches, with the
+repo's own scoped commands (its contributor guide names them), never the repo's full
+suite: the PR's CI runs it before merge.
 
 - `compliance`: each leaf's `acceptance`, met as written.
 - `quality`: correctness, tests, the repo's conventions.
