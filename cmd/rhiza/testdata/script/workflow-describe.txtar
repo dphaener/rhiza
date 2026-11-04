@@ -31,6 +31,19 @@ stdout '^  shadows builtin builtin:build$'
 stdout '^start only$'
 stdout '^only command$'
 
+# the layer and shadows follow the resolved name, not the file's name =
+cp $WORK/named.toml .rhiza/workflows/mine.toml
+exec rhiza workflow describe mine
+stdout '^custom \(repo\) .*/repo/.rhiza/workflows/mine.toml$'
+! stdout 'shadows'
+mkdir $WORK/xdg/rhiza/workflows
+cp $WORK/named.toml $WORK/xdg/rhiza/workflows/mine.toml
+exec rhiza workflow describe mine
+stdout '^custom \(personal\) .*/xdg/rhiza/workflows/mine.toml$'
+stdout '^  shadows repo .*/repo/.rhiza/workflows/mine.toml$'
+rm $WORK/xdg/rhiza/workflows/mine.toml
+rm .rhiza/workflows/mine.toml
+
 # a file that includes another workflow
 cp $WORK/inc.toml inc.toml
 exec rhiza workflow describe inc.toml
@@ -48,6 +61,11 @@ exec rhiza run ls
 fold-ok
 
 -- w.toml --
+[step.only]
+kind = "command"
+run = "true"
+-- named.toml --
+name = "custom"
 [step.only]
 kind = "command"
 run = "true"

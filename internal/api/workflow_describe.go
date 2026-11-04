@@ -140,6 +140,9 @@ func lowerLayers(root, name, winner string) []WorkflowLayer {
 func runWorkflowDescribe(ctx *Ctx, req any) (any, error) {
 	r := req.(WorkflowDescribeRequest)
 	ref := strings.TrimSpace(r.Workflow)
+	if ref == "" {
+		ref = defaultWorkflow
+	}
 	path, def, _, err := resolveWorkflow(ctx.Root, ref)
 	if err != nil {
 		return nil, err
@@ -150,13 +153,13 @@ func runWorkflowDescribe(ctx *Ctx, req any) (any, error) {
 		out.Layer = "file"
 	case strings.HasPrefix(path, builtinPrefix):
 		out.Layer = layerBuiltin
-	case path == filepath.Join(ctx.Root, filepath.FromSlash(workflowsDir), def.Name+".toml"):
+	case path == filepath.Join(ctx.Root, filepath.FromSlash(workflowsDir), ref+".toml"):
 		out.Layer = layerRepo
 	default:
 		out.Layer = layerPersonal
 	}
 	if out.Layer != "file" {
-		out.Shadows = lowerLayers(ctx.Root, def.Name, path)
+		out.Shadows = lowerLayers(ctx.Root, ref, path)
 	}
 	for _, n := range def.Order {
 		out.Steps = append(out.Steps, stepView(def.Steps[n]))
