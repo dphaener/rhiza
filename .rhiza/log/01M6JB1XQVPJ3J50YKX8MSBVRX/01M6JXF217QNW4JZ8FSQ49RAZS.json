@@ -1,0 +1,40 @@
+{
+  "actor": "01M6JW2987MGT63MT897MEFV4X",
+  "after": [
+    "01M6JW3ZSGKKXA8CW62R2KCWEK"
+  ],
+  "at": "2026-11-04T09:15:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-3458be59 at bd4bc087 (attempt 2, after review cycle 1). Read the diff: blockedNotice.notify now remembers state=blocked, the kind only when rexRecord writes it (permission/question/auth), and rexField(rexNoticeMsg(n), rexMsgMax), the same msg rexRecord encodes, so a multi-line or over-long question's echo matches and is skipped (quality f1). Ran go test ./cmd/rhiza -count=1 -run TestScripts/(headless-run-blocked-notice|session-run-blocked-notice|run-blocked|headless-run-agent-tabs)$: all PASS. headless-run-blocked-notice drives rhiza run start --foreground with REX_BLOCK empty under a fake rex and claude: each agent pane holds exactly one state=blocked:kind=permission:app=rhiza:title= report and the driver's output holds no 7501 or state= report (compliance f1). session-run-blocked-notice covers, with the agent's blocked report, the wrapper's echo and the agent's working report: one root-record blocked report with app=rhiza and kind/title/msg naming change set, step and tab, no working report; the record's Rex status is the agent's blocked report and message while blocked and working: Back to work after; the same for a question in a non-autonomous run and a new multi-line question case; an autonomous question writes no report while a permission block does. run-blocked still passes for --foreground with REX_BLOCK. Full go test ./cmd/rhiza -count=1: ok. go vet ./...: ok; gofmt -l: clean. go test ./internal/api fails only TestReadBudget (timing medians ~50-60ms under load average ~9); the diff does not touch the read path. Gaps: the session record is checked through session show's '- rex:' text lines, not --json (compliance f2, minor); the headless script's events stream gives no echo, the echo being exercised in session-run-blocked-notice instead."
+        },
+        "handle": "agent-tab-blocked-notice-verified-2",
+        "id": "01M6JXES9C7ZCCEPT949Y74J05",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JXES9C7ZCCEPT94867PH9P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JXES9C7ZCCEPT94867PH9P",
+        "id": "01M6JXEWEMR73Q8RHWBHR2NVMB",
+        "link": "01M6JXEWEMR73Q8RHWBEM6FZ99",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JBG2WB3SDJJE4R0YFTWTV1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6JB1XQVPJ3J50YKX8MSBVRX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JXF217QNW4JZ8FSQ49RAZS",
+  "type": "ops",
+  "v": 1
+}
