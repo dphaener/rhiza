@@ -1,0 +1,40 @@
+{
+  "actor": "01M6M6MVVHP0H3E23KZJ7CV2DZ",
+  "after": [
+    "01M6M6KCFTX7D3VGN8JH42GFAP"
+  ],
+  "at": "2026-11-04T21:16:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-4dda77b1 at 4d79c2be read the diff: build.toml (builder, verifier) and review.toml (5 checks, critic, fixer, verifier) prompts each append 'Run only the tests covering what your change touches, never the repo's full suite: the PR's CI runs it before merge.' and name no go test, make check, make test or testscript. New TestBuiltinRolePromptsScopeTests in internal/workflow parses both built-ins via Builtin/Parse, collects every builder/verifier/critic/fixer/check prompt, and asserts the rule is present and none of the four commands appear. go test -trimpath -count=1 ./internal/workflow: ok (test PASS under -v). No cmd/rhiza testscript golden prints these prompts (grep for their text finds none); as a smoke check go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/(build-evidence-commit|run-ship-signoff|review-signoff-changes|inbox-signoff|autonomous-review|run-ship-change|guide-install|describe-golden)$': ok. The commit's only .rhiza/log files are the builder's own actor record."
+        },
+        "handle": "role-prompts-scoped-tests-verified",
+        "id": "01M6M6Q2FF2VPS4N8GY3K5637G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M6Q2FE636WNWGN3GX1PAYP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M6Q2FE636WNWGN3GX1PAYP",
+        "id": "01M6M6Q5RZ7K3XYZ54WV5TA1N5",
+        "link": "01M6M6Q5RZ7K3XYZ54WQRZK1GA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0F9J7KPR4WJWBDMZ4X2WP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6M01GYQHR9VMCZ54W5THARK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M6QC0BEJKXZ5B3C83ARZCN",
+  "type": "ops",
+  "v": 1
+}
