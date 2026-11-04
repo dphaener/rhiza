@@ -1,0 +1,95 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6K0QJ16CWYK946HMFFBHB83"
+  ],
+  "at": "2026-11-04T10:21:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on daemon-resumes-landed-plan-run): Its acceptance says the existing daemon-resumes-landed-past-land tests keep passing, but that leaf's test (TestResumableOnlyAcceptedOrLandedPastLand in internal/daemon/pick_test.go on branch cs/fix-a-run-interrupted-after, change set 01M6J965) adds a 'landed-plan' run and asserts Resumable leaves it out, and Resumable there skips landed runs with st.Workflow == plan on purpose. This leaf has to change that assertion, so the acceptance contradicts the code it relies on. It should say the landed-plan case in that test flips to resumed. The critic confirmed it: On branch cs/fix-a-run-interrupted-after (01M6J965, not on main), TestResumableOnlyAcceptedOrLandedPastLand in internal/daemon/pick_test.go adds add(\"landed-plan\", \"landed\", \"plan\", true) and wants exactly [run-accepted run-landed-past]. Resumable in pick.go skips landed runs when st.Workflow == plan. So this leaf has to change that assertion, and an acceptance that says the daemon-resumes-landed-past-land tests 'keep passing' contradicts the code. It should say the landed-plan case flips to resumed. How should it be settled?"
+        },
+        "handle": "review-01m6jzdh-r3-f1",
+        "id": "01M6K16EYDVGEGPKMHZ98Y76X8",
+        "key": null,
+        "kind": "question",
+        "node": "01M6K16EYDVGEGPKMHZ6VWSPPB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6K16EYDVGEGPKMHZ6VWSPPB",
+        "id": "01M6K16JYMHC8GJQ9N7WJ10T73",
+        "link": "01M6K16JYMHC8GJQ9N7VVR7Z6E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JZNFW03AN8AXVQSKVJ00RG",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (contradiction on daemon-resumes-accepted-only): Overlap with accepted change set 01M6J965 (in review on cs/fix-a-run-interrupted-after, not yet on main). rhiza overlaps sees only daemon-resumes-accepted-only, but 01M6J965's branch also rewrites the statement and acceptance of unaccepted-run-in-inbox and inbox-clears-stale and the statement of daemon-resume-once, the same fields this plan rewrites, from older bases. This plan's statements also name daemon-resumes-landed-past-land and inbox-omits-resumable-landed-run, which exist only in 01M6J965, and its acceptances cite their tests. The plan has no depends-on link to 01M6J965, so it can be built or landed first, and then its nodes would name missing nodes and tests, with conflicting writes to four nodes. It needs a depends-on 01M6J965, with its updates rebased on 01M6J965's versions of those nodes. The critic confirmed it: The log ops of 01M6J965 on its branch include node.update on daemon-resumes-accepted-only (statement, acceptance), unaccepted-run-in-inbox (statement, acceptance), daemon-resume-once (statement) and inbox-clears-stale (statement, acceptance). This plan updates those same fields. Those ops are not in this worktree's log, so rhiza overlaps reports only daemon-resumes-accepted-only. daemon-resumes-landed-past-land and inbox-omits-resumable-landed-run return not_found here, yet the plan's statements name them. The plan has no depends-on link, so a depends-on 01M6J965 and a rebase onto its versions are needed. How should it be settled?"
+        },
+        "handle": "review-01m6jzdh-r3-f2",
+        "id": "01M6K16PWTXB9T9KWBZSCCQCKR",
+        "key": null,
+        "kind": "question",
+        "node": "01M6K16PWTXB9T9KWBZQ1E4K9Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6K16PWTXB9T9KWBZQ1E4K9Y",
+        "id": "01M6K16VNZ7WC2DC995GF07V17",
+        "link": "01M6K16VNZ7WC2DC995G8053M2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62RH3705M0GA17WVVXKBGM8",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f3 (contradiction on decision-plan-landed-resumable): The owner decision skipped-run-in-inbox ('Show in inbox, the agent's option, picked by the owner') says an interrupted run whose change set is no longer accepted is not resumed and waits in the inbox. This assumed arbiter decision makes an exception for plan runs on a landed change set and is linked as decided-by to unaccepted-run-in-inbox and daemon-resumes-accepted-only, both of which skipped-run-in-inbox also decides. But it never names or links skipped-run-in-inbox. That is the same silent narrowing of an owner ruling that 01M6J965's review flagged (review-01m6j962-r3-f4) and settled with landed-run-resume-narrows-skipped-run-in-inbox, which covers only non-plan runs. The decision should name skipped-run-in-inbox and narrow it explicitly. The critic confirmed it: skipped-run-in-inbox carries the owner's wording ('Show in inbox, the agent's option, picked by the owner'): an interrupted run on a change set no longer accepted is not resumed and waits in the inbox. decision-plan-landed-resumable (wording '(assumed, would have escalated)') makes plan runs on landed change sets an exception to that rule. Yet no op in this change set's log names or links skipped-run-in-inbox; it links only answers and derived-from. The owner ruling is narrowed without saying so. It should be named and narrowed explicitly, as 01M6J965 did for non-plan runs. How should it be settled?"
+        },
+        "handle": "review-01m6jzdh-r3-f3",
+        "id": "01M6K1707S7Z6354MXBAVFW0DY",
+        "key": null,
+        "kind": "question",
+        "node": "01M6K1707S7Z6354MXB7R18GYF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f4 (contradiction on inbox-clears-stale): The new acceptance still reads 'a failed run and a gave-up run each on a landed ... change set ... lists exactly the accepted-change-set items', then adds that failed and gave-up plan runs on a landed change set stay listed. The first clause doesn't say which runs it means, so it contradicts the exceptions that follow. It should say the landed fixtures are non-plan runs whose journal never reached land, as 01M6J965's version of this acceptance does. The critic confirmed it: inbox-clears-stale's acceptance in this plan reads: a failed and a gave-up run on a landed (and withdrawn, rejected, superseded) change set 'lists exactly the accepted-change-set items'. It then says failed and gave-up plan runs on a landed change set, and non-plan runs that reached land, stay listed. The first clause doesn't say which kind of landed fixtures it means, so 'exactly' contradicts the exceptions after it. It should say those landed fixtures are non-plan runs whose journal never reached land. How should it be settled?"
+        },
+        "handle": "review-01m6jzdh-r3-f4",
+        "id": "01M6K1767YD1SEHPSD4PBN6V0Z",
+        "key": null,
+        "kind": "question",
+        "node": "01M6K1767YD1SEHPSD4MM23BKT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6K1767YD1SEHPSD4MM23BKT",
+        "id": "01M6K17AKSHDP5WPGD7Y3PQS9V",
+        "link": "01M6K17AKSHDP5WPGD7WQR1JNH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M62S5BN8M65JXT1672T8GVEF",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6JZDKFVH14G853J0T0BPAKG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6K17K68J59NMC9F4TPNRPRW",
+  "type": "ops",
+  "v": 1
+}
