@@ -1,0 +1,33 @@
+{
+  "actor": "01M6MA6ZEKHCJCVCYYB9RYKGCS",
+  "after": [
+    "01M6MAC8X6BZS272H64S8CAAFV"
+  ],
+  "at": "2026-11-04T22:21:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "2c805e8fcd965bff3ecf157a59cde6a381a25be16e0310e0951b51db4581bd74",
+          "session": "ec5a304e-29cc-4f00-9ede-01a1a8a374d3",
+          "summary": "Autonomous plan run, no owner. The planner read ship-main-tree-check, shipCheckMainTree/runShipMerge/shipRerunFailed in internal/api/ship.go, ship-change.toml's wait-main and main-green steps, .github/workflows/ci.yml, the ci install template and the stopped run's error (merge commit b9229f0 tree 6b107af vs tested head ab3969c tree 0e2c59e). It found that GitHub's workflow_dispatch takes only a branch or tag ref, so `--ref <sha>` cannot pin the merge commit, that ship-change is generic across repos, and that ci.yml's concurrency group keys on the PR number (empty on a dispatch). It raised four choices to the arbiter: the intent served, which commit a dispatched run tests, which workflows to dispatch, and what a failed dispatched run does. The arbiter ruled (Decision ship-main-dispatch-ci): serve milestone-25; dispatch with --ref main and a required sha input the workflow checks out, its run-name carrying the sha so ship finds its run; dispatch every workflow declaring both pull_request and workflow_dispatch, stopping when none exists; rerun failed jobs once, then stop for a person. The planner then revised the three capabilities #256 built (ship-main-tree-check, ci-yml-cancels-stale, ci-install-cancels-stale) to carry the dispatch path, including runs resumed from before #256.",
+          "title": "Plan of Fix Ship's new main-tree check (autonomous, arbiter)"
+        },
+        "handle": "plan-ship-main-dispatch",
+        "id": "01M6MAEGNV4GZK5WJC2SH1EAFY",
+        "key": null,
+        "kind": "source",
+        "node": "01M6MAEGNV4GZK5WJC2RP1VMRT",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6MA6P7KKMQPFBM6ZD6EMDM3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MAEKPFT5584Z083XT3WWN1",
+  "type": "ops",
+  "v": 1
+}
