@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6MCDRWK53KD9SRBSHDGBGGP"
+  ],
+  "at": "2026-11-04T23:22:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "e8d6afa30ffcb0e43b6e0b677cdf0a5452597be4",
+          "pr": "https://github.com/dphaener/rhiza/pull/262",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #262 (https://github.com/dphaener/rhiza/pull/262) passed CI at e8d6afa",
+          "status": "verified"
+        },
+        "handle": "pr-262-rhiza-feed-follow-streams",
+        "id": "01M6MDXMYAQSS5PH3Y0TBF0TE1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MDXMYAQSS5PH3Y0QX04N9E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MDXMYAQSS5PH3Y0QX04N9E",
+        "id": "01M6MDXQBVJPAV0S9X8QJ171AB",
+        "link": "01M6MDXQBVJPAV0S9X8QE70ZSA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6B3PPF7X8K68YEWCN80ZXKB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6J48HBGRJ04GMXM1CFWF3B3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MDXVBGQSG0A6YAJQM02MM5",
+  "type": "ops",
+  "v": 1
+}

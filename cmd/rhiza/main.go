@@ -188,7 +188,11 @@ func call(g globals, o api.Operation, req any, stdin io.Reader, stdout, stderr i
 	if err != nil {
 		return writeError(stdout, stderr, err, g.json)
 	}
+	ctx.Out, ctx.JSON = stdout, g.json
 	resp, err := o.Run(ctx, req)
+	if s, ok := resp.(api.Streamer); ok && err == nil && s.Streamed() {
+		return 0
+	}
 	if err == nil {
 		err = writeResponse(stdout, resp, g.json)
 	}

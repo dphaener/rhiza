@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MBEX8QX6JKJS6QDFFZ45ZD",
+  "after": [
+    "01M6J5A7XG5T4T7TQGVN1AR0Z7"
+  ],
+  "at": "2026-11-04T22:49:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3937eb3a I read the diff (feed.go runFeedFollow, Ctx.Out/JSON sink, Streamer in cmd/rhiza call) and ran: go test -trimpath -count=1 ./internal/api (ok, incl. TestFeedFollowTicks: replaced ticker, a land between ticks emitted once as one NDJSON line, stops on interrupt; TestFeedFollowLimit), -race -count=5 on TestFeedFollow (ok), and go test ./cmd/rhiza -run TestScripts/(feed-follow|feed|describe-golden) (pass; feed-follow -count=3 pass). feed-follow.txtar covers each acceptance point: background --follow --json with no cursor emits only delta, the relanded Store things at its 2026-11-01 land, and epsilon, never alpha/beta/gamma nor the actor-only record; kill -INT then wait exits 0; --since --limit 3 prints three '- ' lines oldest first and nothing else; --cursor from a limit-2 page picks up gamma; --all adds the actor record; api call feed {follow,since,limit} cmp-equal to feed --follow --json. Limit is unlimited by default in follow (q.Limit used, not the page default). go vet and gofmt clean."
+        },
+        "handle": "change-feed-follow-verified",
+        "id": "01M6MC1QEGZ27VRE618P1H6J78",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MC1QEGZ27VRE618NY486ZM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MC1QEGZ27VRE618NY486ZM",
+        "id": "01M6MC1VVZS2YCMQ48XX4EJ170",
+        "link": "01M6MC1VVZS2YCMQ48XWHPKY8B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6B3PPF7X8K68YEWCN80ZXKB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6J48HBGRJ04GMXM1CFWF3B3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MC220AVXBAVWBZFYDPQHSX",
+  "type": "ops",
+  "v": 1
+}

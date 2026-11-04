@@ -2260,6 +2260,10 @@ cmp stdout describe.golden.json
             "description": "Where to go on: the next_cursor of the page before",
             "type": "string"
           },
+          "follow": {
+            "description": "Stream each change set as it lands until interrupted: with neither cursor nor since only those landing after the start, else the backlog after that point first; one FeedItem per line with --json; limit then stops after that many, default unlimited",
+            "type": "boolean"
+          },
           "limit": {
             "description": "The most change sets to return, 1 to 1000; default 100",
             "type": "integer"
