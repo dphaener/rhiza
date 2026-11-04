@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-04T10:01:58Z",
+  "body": {
+    "intent": "Queued continuations are not starved by ready change sets: the daemon keeps a slot for each queued resume or retry",
+    "kind": "intention",
+    "sources": [],
+    "title": "Continuations not starved"
+  },
+  "change_set": "01M6K044DTSK7PT604NHPNGD17",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6K044DTSK7PT604NKVS1GDV",
+  "type": "open",
+  "v": 2
+}

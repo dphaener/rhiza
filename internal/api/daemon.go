@@ -506,8 +506,39 @@ func fetchMainWithin(ctx *Ctx, dir string, timeout time.Duration) error {
 }
 
 // daemonSlotKept details a no-slot skip whose slot is kept for a queued
-// plan request.
-const daemonSlotKept = "waiting for a slot: one is kept for a queued plan request"
+// continuation or plan request.
+const daemonSlotKept = "waiting for a slot: kept for queued continuations or a plan request"
+
+// daemonContinueCanStart reports whether a queued continuation could start
+// now, as daemonQueuedContinues picks them: its run exists, is not live, and
+// has not ended unless the continuation is a retry.
+func daemonContinueCanStart(rs *run.Store, runs []run.Journal, c daemon.Continue) bool {
+	i := slices.IndexFunc(runs, func(j run.Journal) bool { return j.ID == c.Run })
+	if i < 0 || rs.Live(c.Run) {
+		return false
+	}
+	return !runs[i].State().Ended || c.Retry
+}
+
+// daemonContinuesWaiting counts the queued continuations that could start
+// now. An unreadable queue counts none.
+func daemonContinuesWaiting(ctx *Ctx, rs *run.Store, runs []run.Journal) int {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return 0
+	}
+	q, err := daemon.ReadContinues(common)
+	if err != nil {
+		return 0
+	}
+	n := 0
+	for _, c := range q {
+		if daemonContinueCanStart(rs, runs, c) {
+			n++
+		}
+	}
+	return n
+}
 
 // daemonRequestWaits reports whether a queued plan request could start now:
 // one with no run whose retry time has passed, as daemonPlanRequests picks
@@ -637,12 +668,17 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 		*skips = append(append(planSkips, unj...), held...)
 	} else {
-		// A queued plan request keeps one slot from the ship picks: plan
-		// runs are short and make the work ship runs build, so a waiting
-		// request must not wait behind every ready change set.
-		shipMax := max
+		// Ship picks leave a slot for each queued continuation that could
+		// start now and one for a waiting plan request: continuations
+		// (open-pr, a resume after a wait, a retry) and plan runs are short,
+		// and must not wait behind every ready change set.
+		kept := daemonContinuesWaiting(ctx, rs, runs)
 		if max > 1 && daemonRequestWaits(ctx) {
-			shipMax = max - 1
+			kept++
+		}
+		shipMax := max - kept
+		if shipMax < 0 {
+			shipMax = 0
 		}
 		picked = daemon.Pick(cands, runs, held, host, nil, shipMax, ship)
 		shipSkips := daemon.Skips(cands, runs, held, host, nil, shipMax, ship)
@@ -781,11 +817,7 @@ func daemonQueuedContinues(ctx *Ctx, rs *run.Store, runs []run.Journal, running,
 	err = daemon.UpdateContinues(common, func(queue []daemon.Continue) ([]daemon.Continue, error) {
 		var keep []daemon.Continue
 		for _, c := range queue {
-			i := slices.IndexFunc(runs, func(j run.Journal) bool { return j.ID == c.Run })
-			if i < 0 || rs.Live(c.Run) {
-				continue
-			}
-			if st := runs[i].State(); st.Ended && !c.Retry {
+			if !daemonContinueCanStart(rs, runs, c) {
 				continue
 			}
 			if running >= max {

@@ -14,6 +14,7 @@ the owner's words; the slot rule is the orchestrator's, as the owner's proxy
 
 ### In
 
+- relates-to [continue-slot-kept-owner](continue-slot-kept-owner.md) — Generalises the plan request's kept slot to queued continuations
 - decided-by [request-slot-kept](../capability/rhiza/orchestration/daemon/plan-requests/request-slot-kept.md)
 
 ## History
