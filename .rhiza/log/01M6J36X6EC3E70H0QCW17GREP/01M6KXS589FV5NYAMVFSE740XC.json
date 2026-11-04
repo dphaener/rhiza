@@ -1,0 +1,30 @@
+{
+  "actor": "01M6KXQBFVWFPA4S0A1RZB4KCP",
+  "after": [
+    "01M6J3EYFFYPCS99CFQHCVEQFV"
+  ],
+  "at": "2026-11-04T18:40:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "The import topic states the one-record-per-area rule, the statement and acceptance rules and the follow-up anchoring step; a testscript follows those steps on a small fixture repo with tests and gets one landed record change set per area, every capability with a statement and an acceptance naming a test file, then a follow-up change set whose anchors are linked implements to those capabilities, and rhiza check passes.",
+          "statement": "The import procedure records what a repo already does as record change sets, one per area, whose capabilities each state one user-visible behaviour and give as acceptance the repo's existing tests that prove it, then anchors each area's capabilities to the code that implements them in a follow-up change set with rhiza add anchor."
+        },
+        "handle": "import-records-built",
+        "id": "01M6J3C5Q7TJ7HR8GP6SEZT42K",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6J3C5Q7TJ7HR8GP6PD4JW1B",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      }
+    ]
+  },
+  "change_set": "01M6J36X6EC3E70H0QCW17GREP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KXS589FV5NYAMVFSE740XC",
+  "type": "ops",
+  "v": 1
+}
