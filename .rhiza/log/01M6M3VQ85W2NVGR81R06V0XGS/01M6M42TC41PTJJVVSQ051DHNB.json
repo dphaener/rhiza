@@ -1,0 +1,33 @@
+{
+  "actor": "01M6M3VZ807Y6ZNG9SN80CT6EC",
+  "after": [
+    "01M6M42CXWVZGCD89YVP20EA7R"
+  ],
+  "at": "2026-11-04T20:30:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "b9c68f956a3e96593b2d7934892637187b51d18294d767ee7f2dc65778a76ac2",
+          "session": "62e3cc37-a9a9-440e-a34d-01a1a83df551",
+          "summary": "Autonomous plan run, no owner. The planner traced the bug: the plan-review runs of milestone 26's drafts (runs 01M6KYKJ on 01M6J375 and 01M6KZ9E on 01M6J37D, 2026-11-04) were owner-queued starts (rhiza run start with a plan-review workflow file), which daemonQueuedStarts starts up to max-runs after ship picks and continuations but before daemonPlanRequests; only ship picks honoured the slot kept for a waiting plan request (#226), so request 01M6KTAZ (queued 17:40) waited until 19:19. Two questions went to the arbiter: the fix (queued starts keep the slot, or plan requests before queued starts) and the intent. The arbiter decided queued-starts-keep-request-slot: while a queued plan request could start and max > 1, queued starts start only while running < max-1; poll order unchanged; the change set serves milestone-25. The planner wrote one leaf under plan-requests.",
+          "title": "Plan of Fix Plan-review runs of drafts (autonomous)"
+        },
+        "handle": "plan-review-runs-slot-interview",
+        "id": "01M6M42RFTNGGRFNT2CFT0QQXX",
+        "key": null,
+        "kind": "source",
+        "node": "01M6M42RFTNGGRFNT2CF6Y1DCC",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6M3VQ85W2NVGR81R06V0XGS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M42TC41PTJJVVSQ051DHNB",
+  "type": "ops",
+  "v": 1
+}
