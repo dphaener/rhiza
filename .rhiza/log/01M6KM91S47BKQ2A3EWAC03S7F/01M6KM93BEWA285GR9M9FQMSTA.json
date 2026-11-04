@@ -1,0 +1,24 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6KM91S47BKQ2A3EWD3QWMTF"
+  ],
+  "at": "2026-11-04T15:54:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6KFM58RDZ5KSG59GSW7FV87",
+        "id": "01M6KM8XPKD6B9K3QTT9YQG7XP",
+        "node": "01M6KFM58RDZ5KSG59GP1005QZ",
+        "op": "node.retire",
+        "reason": "Duplicate actor record: session claude-code-83858632 recorded itself in a verifier checkout (change set 01M6KFMJ) after already recording in the run worktree (01M6KE23); keep the first"
+      }
+    ]
+  },
+  "change_set": "01M6KM91S47BKQ2A3EWAC03S7F",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6KM93BEWA285GR9M9FQMSTA",
+  "type": "ops",
+  "v": 1
+}

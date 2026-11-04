@@ -3017,7 +3017,6 @@
 - [claude-code-8359d73e](actor/claude-code-8359d73e.md)
 - [claude-code-835e04f6](actor/claude-code-835e04f6.md)
 - [claude-code-83858632](actor/claude-code-83858632.md)
-- [claude-code-83858632](actor/claude-code-83858632.01M6KFM58RDZ5KSG59GP1005QZ.md)
 - [claude-code-83f54e95](actor/claude-code-83f54e95.md)
 - [claude-code-8407f723](actor/claude-code-8407f723.md)
 - [claude-code-841f57a3](actor/claude-code-841f57a3.md)
@@ -3907,3 +3906,4 @@
 - capability question-sessions-tile-run-window `01M6857KVT0NRCTAY6EZ2DH209` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
 - capability roadmap-app-new-work `01M686V49K74FDKG4YV2BDJCSN` — Superseded by roadmap-new-work-requests: m and n now file a plan request (rhiza request) for the daemon to plan, and no longer ask y/n or open a Rex tab running run start --workflow plan --new
 - actor claude-code-a463ece8 `01M6HYXRR6ZXYF68BAC8X0KEEQ` — Duplicate of actor claude-code-a463ece8 (node 01M6HV8Y05D3EMPSARA4H5VJ15) that landed on main from another branch while this run was building; the same session recorded itself twice
+- actor claude-code-83858632 `01M6KFM58RDZ5KSG59GP1005QZ` — Duplicate actor record: session claude-code-83858632 recorded itself in a verifier checkout (change set 01M6KFMJ) after already recording in the run worktree (01M6KE23); keep the first
