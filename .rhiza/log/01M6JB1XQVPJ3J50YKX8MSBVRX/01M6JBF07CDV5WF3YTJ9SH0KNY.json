@@ -1,0 +1,44 @@
+{
+  "actor": "01M6JB2BA91XQKMXEFXVMD500X",
+  "after": [
+    "01M6JBDYCRY205A8Q4W2DMNKX2"
+  ],
+  "at": "2026-11-04T04:00:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "I have seen no notification on my mac. But I have heard chimes",
+              "where": "2026-11-03, change set intent"
+            },
+            {
+              "by": "owner",
+              "text": "Keep it open, bug first",
+              "where": "2026-11-03, change set intent"
+            }
+          ],
+          "raw_sha256": "31882d3e692dd728fa12fc7c5b540ee931e7dfc0ba529b489b498a57fc8e3cae",
+          "session": "b5fe1d11-4e23-4674-ae5d-01a1a4b11ff3",
+          "summary": "Autonomous plan run with no owner present. Investigation found that since the headless-run change (#210) run drivers start with no REX_BLOCK, so ctx.Rex is nil and rhiza's own blocked-run notice (root-record OSC 7501 with kind, title and msg) is never written anywhere; the only status Rex sees for a blocked agent tab is Claude Code's native report, which chimes on the Mac but shows no banner. Rex's program-status docs leave sounds and banners to the terminal and document no banner rules. Two questions went to the arbiter, who decided: the agent tab's own wrapper (rhiza session run) writes rhiza's blocked notice to its own terminal and a working report when the block ends, the driver writes to its own block only when it has one, and no driver, daemon or watcher tab is opened; after the fix the Mac is checked for a banner, and if it still only chimes a report for Rex upstream is drafted in the repo for the owner to file, done once drafted and pointed at in the inbox.",
+          "title": "Plan of the missing Mac banner for VM agent questions (autonomous)"
+        },
+        "handle": "mac-banner-plan",
+        "id": "01M6JBEQH0K54X88TA8HGXDHB5",
+        "key": null,
+        "kind": "source",
+        "node": "01M6JBEQH0K54X88TA8DRXGQZ8",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6JB1XQVPJ3J50YKX8MSBVRX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JBF07CDV5WF3YTJ9SH0KNY",
+  "type": "ops",
+  "v": 1
+}
