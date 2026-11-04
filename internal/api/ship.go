@@ -35,7 +35,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "ship.check",
-		Summary:  "Check that a change set's pull request, or main after its merge, has every CI check passed; with --settled, rebase a pull request GitHub reports conflicting",
+		Summary:  "Check that a change set's pull request has every CI check passed, or that main after its merge has the tested head's tree; with --settled, rebase a pull request GitHub reports conflicting",
 		Write:    true,
 		Request:  reflect.TypeFor[ShipCheckRequest](),
 		Response: reflect.TypeFor[ShipCheckResponse](),
@@ -43,7 +43,7 @@ func init() {
 	})
 	register(Operation{
 		Name:     "ship.merge",
-		Summary:  "Squash merge a change set's pull request, pinned to the head whose checks passed",
+		Summary:  "Squash merge a change set's pull request, pinned to the head whose checks passed; merges nothing if origin/main is not in that head",
 		Request:  reflect.TypeFor[ShipMergeRequest](),
 		Response: reflect.TypeFor[ShipMergeResponse](),
 		Run:      runShipMerge,
@@ -63,7 +63,7 @@ const shipDir = "rhiza/ship"
 // merge commit on main.
 type ShipCheckRequest struct {
 	Settled bool `json:"settled,omitempty" flag:"settled" desc:"Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it rebases the branch onto main as ship rebase does, then reports not settled, and exits 75 with a stop: line on a conflict in code"`
-	Main    bool `json:"main,omitempty" flag:"main" desc:"Check the CI runs on the merge commit that rhiza ship merge recorded, instead of the pull request"`
+	Main    bool `json:"main,omitempty" flag:"main" desc:"Check, locally with git and no wait on CI, that the merge commit rhiza ship merge recorded has the tree of the head whose checks passed, instead of checking the pull request; a differing tree exits 75 with a stop: line"`
 	PROpen  bool `json:"pr_open,omitempty" flag:"pr-open" desc:"Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)"`
 }
 
@@ -86,6 +86,7 @@ type ShipCheckResponse struct {
 	Rebased   string      `json:"rebased,omitempty" desc:"With --settled on a conflicting pull request: the head pushed after rebasing the branch onto main"`
 	Conflicts []string    `json:"conflicts,omitempty" desc:"With --settled on a conflicting pull request: the files whose conflict outside the rendered files stopped the rebase; the command exits 75"`
 	Question  string      `json:"question,omitempty" desc:"The handle of the question raised about those conflicts"`
+	Stop      string      `json:"stop,omitempty" desc:"With --main: why the merge commit's tree differs from the tested head's; the command exits 75"`
 	Reran     []string    `json:"reran,omitempty" desc:"The GitHub Actions run IDs whose failed jobs this check reran, once per head, instead of failing; the check then reports not settled"`
 }
 
@@ -105,18 +106,28 @@ type ShipCheck struct {
 // file ship.check wrote.
 type ShipMergeRequest struct{}
 
-// ShipMergeResponse is the merged PR.
+// ShipMergeResponse is the merged PR, or the refusal to merge a head that
+// lacks origin/main.
 type ShipMergeResponse struct {
 	Change        string `json:"change" desc:"The change set"`
+	Moved         bool   `json:"moved,omitempty" desc:"True if nothing was merged because origin/main is not in the checked head: another change set merged after its checks; the command exits 1 and the run goes back to rebase and check again"`
 	PR            int    `json:"pr" desc:"The pull request merged"`
 	Head          string `json:"head" desc:"The head commit the merge was pinned to"`
 	MergeCommit   string `json:"merge_commit" desc:"The squash commit on main"`
 	AlreadyMerged bool   `json:"already_merged,omitempty" desc:"True if an earlier ship merge had merged it and recorded the merge commit"`
 }
 
+// ExitCode is 1 when ship merge merged nothing because main moved.
+func (r ShipMergeResponse) ExitCode() int {
+	if r.Moved {
+		return 1
+	}
+	return 0
+}
+
 // ExitCode is 0 when the check asked for holds, else 1.
 func (r ShipCheckResponse) ExitCode() int {
-	if len(r.Conflicts) > 0 {
+	if len(r.Conflicts) > 0 || r.Stop != "" {
 		return run.StopExit
 	}
 	if r.Passed {
@@ -402,13 +413,7 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 				WithNext(shipMergeNext)
 		}
 		resp.PR, resp.URL, resp.Commit = st.PR, st.URL, st.MergeCommit
-		out, err := gh(ctx, t.dir(), "run", "list", "--commit", st.MergeCommit, "--json", "databaseId,name,status,conclusion")
-		if err != nil {
-			return nil, Errorf("%v", err)
-		}
-		if resp.Checks, err = parseRunList(out); err != nil {
-			return nil, Errorf("%v", err)
-		}
+		return shipCheckMainTree(ctx, t, st, resp)
 	} else {
 		out, err := gh(ctx, t.dir(), "pr", "view", t.branch, "--json", "number,url,state,headRefOid,mergeable,statusCheckRollup")
 		if noPR(err) {
@@ -479,6 +484,44 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	resp.Written = true
+	return resp, nil
+}
+
+// shipCheckMainTree confirms main locally, with git and no wait on CI: the
+// merge commit's tree must equal the tree of the PR head whose checks
+// passed. ship.merge only merges a head that holds origin/main, so a squash
+// of it has the head's tree; a differing tree means main changed between
+// that check and the merge, and the step stops with a stop: line.
+func shipCheckMainTree(ctx *Ctx, t shipTarget, st shipState, resp ShipCheckResponse) (any, error) {
+	if st.Head == "" {
+		return nil, Usagef("change set %s has no checked pull request head recorded: run rhiza ship check first", t.cs).
+			WithNext(shipCheckNext)
+	}
+	dir := t.dir()
+	if _, err := gitAt(ctx, dir, "fetch", "-q", "origin"); err != nil {
+		return nil, Errorf("%v", err)
+	}
+	tree := func(commit string) (string, error) {
+		out, err := gitAt(ctx, dir, "rev-parse", "--verify", "--quiet", commit+"^{tree}")
+		if err != nil {
+			return "", Errorf("tree of %s: %v", shortSHA(commit), err)
+		}
+		return strings.TrimSpace(out), nil
+	}
+	mt, err := tree(st.MergeCommit)
+	if err != nil {
+		return nil, err
+	}
+	ht, err := tree(st.Head)
+	if err != nil {
+		return nil, err
+	}
+	if mt != ht {
+		resp.Stop = fmt.Sprintf("merge commit %s has tree %s, but the tested head %s has tree %s; main is not what the checks passed on", shortSHA(st.MergeCommit), shortSHA(mt), shortSHA(st.Head), shortSHA(ht))
+		resp.Detail = resp.Stop
+		return resp, nil
+	}
+	resp.Settled, resp.Green, resp.Passed = true, true, true
 	return resp, nil
 }
 
@@ -594,6 +637,18 @@ func runShipMerge(ctx *Ctx, _ any) (any, error) {
 	}
 	pr := fmt.Sprint(st.PR)
 	dir := t.dir()
+	// A head that lacks origin/main would squash to a tree nobody tested:
+	// merge nothing and let the run rebase and wait on the new head.
+	if _, err := gitAt(ctx, dir, "fetch", "-q", "origin"); err != nil {
+		return nil, Errorf("%v", err)
+	}
+	if _, err := gitAt(ctx, dir, "rev-parse", "--verify", "--quiet", "refs/remotes/origin/"+shipMain); err != nil {
+		return nil, Errorf("ship merge: origin has no %s branch: %v", shipMain, err)
+	}
+	if _, err := gitAt(ctx, dir, "merge-base", "--is-ancestor", "refs/remotes/origin/"+shipMain, st.Head); err != nil {
+		resp.Moved = true
+		return resp, nil
+	}
 	if _, err := gh(ctx, dir, "pr", "merge", pr, "--squash", "--match-head-commit", st.Head); err != nil {
 		return nil, Errorf("%v", err)
 	}
@@ -636,6 +691,8 @@ func (r ShipCheckResponse) Human(w io.Writer) {
 		what = fmt.Sprintf("main at %s", shortSHA(r.Commit))
 	}
 	switch {
+	case r.Stop != "":
+		fmt.Fprintf(w, "stop: %s\n", r.Stop)
 	case len(r.Conflicts) > 0:
 		fmt.Fprintf(w, "%s: %s\n", what, r.Detail)
 		fmt.Fprintf(w, "stop: %s; answer question %s, then resume the run\n", r.Detail, r.Question)
@@ -646,6 +703,8 @@ func (r ShipCheckResponse) Human(w io.Writer) {
 	case r.Passed && !r.Settled:
 		// Only --pr-open passes without settled checks.
 		fmt.Fprintf(w, "%s: open from %s\n", what, r.Branch)
+	case r.Green && r.Main:
+		fmt.Fprintf(w, "%s: the merge commit's tree is the tested head's\n", what)
 	case r.Green:
 		fmt.Fprintf(w, "%s: %d %s passed\n", what, len(r.Checks), shipPlural(len(r.Checks), "check", "checks"))
 	default:
@@ -663,6 +722,10 @@ func shipPlural(n int, one, many string) string {
 
 // Human is one line naming the PR, its head and the merge commit.
 func (r ShipMergeResponse) Human(w io.Writer) {
+	if r.Moved {
+		fmt.Fprintf(w, "Not merged: origin/%s has moved past PR #%d's checked head %s; rebase and check again.\n", shipMain, r.PR, shortSHA(r.Head))
+		return
+	}
 	verb := "Merged"
 	if r.AlreadyMerged {
 		verb = "Already merged"

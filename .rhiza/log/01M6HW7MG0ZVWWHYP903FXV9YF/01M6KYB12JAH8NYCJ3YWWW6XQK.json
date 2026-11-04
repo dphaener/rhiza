@@ -1,0 +1,40 @@
+{
+  "actor": "01M6KY20PKP4YF5KJQQ2P8QP26",
+  "after": [
+    "01M6HZATRMXJMH0JE2M5MAWPXE"
+  ],
+  "at": "2026-11-04T18:49:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e3704f67 I read the diff (internal/api/ci.go template and cmd/rhiza/testdata/script/ci-install.txtar expected rhiza.yml, identical additions) and ran go test -trimpath ./cmd/rhiza -run TestScripts/ci-install -count=1 (ok) and go test -trimpath ./internal/api -count=1 (ok). The expected workflow, parsed as YAML, holds concurrency group 'rhiza-${{ github.event.pull_request.number || github.ref }}' (keyed on the PR, falling back to the ref) with cancel-in-progress '${{ github.event_name == 'pull_request' }}', so only pull_request events cancel and pushes to main never do; on still has push branches [main] and pull_request, and the base-branch, before-push and first-push check steps are unchanged. The testscript cmps the installed file byte-for-byte against this expected workflow. gofmt -l reports nothing."
+        },
+        "handle": "ci-install-cancels-stale-verified",
+        "id": "01M6KYAW2VWT87C8EV9J38BV0Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KYAW2VWT87C8EV9HZGX42V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KYAW2VWT87C8EV9HZGX42V",
+        "id": "01M6KYAXZ98SN5KCTNX2B8MNWP",
+        "link": "01M6KYAXZ98SN5KCTNX0J9MGHC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HWZ4ZMHV1Q7BYEZF4MPFP7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HW7MG0ZVWWHYP903FXV9YF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KYB12JAH8NYCJ3YWWW6XQK",
+  "type": "ops",
+  "v": 1
+}

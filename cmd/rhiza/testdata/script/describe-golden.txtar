@@ -19363,7 +19363,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "main": {
-            "description": "Check the CI runs on the merge commit that rhiza ship merge recorded, instead of the pull request",
+            "description": "Check, locally with git and no wait on CI, that the merge commit rhiza ship merge recorded has the tree of the head whose checks passed, instead of checking the pull request; a differing tree exits 75 with a stop: line",
             "type": "boolean"
           },
           "pr_open": {
@@ -19476,6 +19476,10 @@ cmp stdout describe.golden.json
             "description": "The pull request's state, such as OPEN or MERGED",
             "type": "string"
           },
+          "stop": {
+            "description": "With --main: why the merge commit's tree differs from the tested head's; the command exits 75",
+            "type": "string"
+          },
           "url": {
             "description": "The pull request's URL",
             "type": "string"
@@ -19495,7 +19499,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Check that a change set's pull request, or main after its merge, has every CI check passed; with --settled, rebase a pull request GitHub reports conflicting",
+      "summary": "Check that a change set's pull request has every CI check passed, or that main after its merge has the tested head's tree; with --settled, rebase a pull request GitHub reports conflicting",
       "write": true
     },
     {
@@ -19721,6 +19725,10 @@ cmp stdout describe.golden.json
             "description": "The squash commit on main",
             "type": "string"
           },
+          "moved": {
+            "description": "True if nothing was merged because origin/main is not in the checked head: another change set merged after its checks; the command exits 1 and the run goes back to rebase and check again",
+            "type": "boolean"
+          },
           "pr": {
             "description": "The pull request merged",
             "type": "integer"
@@ -19734,7 +19742,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Squash merge a change set's pull request, pinned to the head whose checks passed",
+      "summary": "Squash merge a change set's pull request, pinned to the head whose checks passed; merges nothing if origin/main is not in that head",
       "write": false
     },
     {

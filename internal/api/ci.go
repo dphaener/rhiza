@@ -44,6 +44,15 @@ on:
     branches: [ main ]
   pull_request:
 
+# A newer push to a pull request cancels its in-progress run. A push to main
+# never cancels: its check is incremental from github.event.before, so a
+# cancelled run would leave that push's changes unchecked. Each push to main
+# gets its own group (its commit), since GitHub cancels a group's pending run
+# when a newer one queues.
+concurrency:
+  group: rhiza-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   check:
     runs-on: ubuntu-26.04
