@@ -1475,3 +1475,44 @@ func TestRenderStepAddsNoCommitWhenClean(t *testing.T) {
 		})
 	}
 }
+
+// TestBuiltinRolePromptsScopeTests: every builder, verifier, check, critic
+// and fixer prompt of the build and review workflows tells the agent to
+// run only the tests its change touches, and names no test command.
+func TestBuiltinRolePromptsScopeTests(t *testing.T) {
+	rule := "Run only the tests covering what your change touches, never the repo's full suite"
+	var prompts = map[string]string{}
+	for _, name := range []string{"build", "review"} {
+		data, ok := Builtin(name)
+		if !ok {
+			t.Fatalf("no %s built-in", name)
+		}
+		def, err := Parse(name, data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for sn, st := range def.Steps {
+			for rn, r := range map[string]*Role{"builder": st.Builder, "verifier": st.Verifier, "critic": st.Critic, "fixer": st.Fixer} {
+				if r != nil {
+					prompts[name+"/"+sn+"/"+rn] = r.Prompt
+				}
+			}
+			for _, c := range st.Checks {
+				prompts[name+"/"+sn+"/check "+c.Name] = c.Prompt
+			}
+		}
+	}
+	if len(prompts) < 10 {
+		t.Fatalf("found %d role prompts; want builder, verifiers, 5 checks, critic, fixer", len(prompts))
+	}
+	for where, p := range prompts {
+		if !strings.Contains(p, rule) {
+			t.Errorf("%s prompt lacks the rule: %q", where, p)
+		}
+		for _, bad := range []string{"go test", "make check", "make test", "testscript"} {
+			if strings.Contains(p, bad) {
+				t.Errorf("%s prompt names %q", where, bad)
+			}
+		}
+	}
+}
