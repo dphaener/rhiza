@@ -55,6 +55,12 @@ type Operation struct {
 	Run func(ctx *Ctx, req any) (any, error)
 }
 
+// Streamer is implemented by a response that went to Ctx.Out as it
+// happened: when Streamed reports true, callers print nothing for it.
+type Streamer interface {
+	Streamed() bool
+}
+
 // Exiter is implemented by a response that sets the process exit code, such
 // as a check that failed. Callers print the response in full, as markdown or
 // JSON as usual, and then exit with ExitCode.
@@ -178,6 +184,11 @@ type Ctx struct {
 	Commit string
 	// Stdin is read by operations that accept "-" for a file.
 	Stdin io.Reader
+	// Out is the sink an operation that streams (feed --follow) writes its
+	// lines to as they happen; nil means no streaming. JSON asks such an
+	// operation for NDJSON instead of text lines.
+	Out  io.Writer
+	JSON bool
 	// Interrupts starts listening for the caller being asked to stop (the
 	// CLI's interrupt and terminate signals): the channel it returns gets
 	// the first one, and stop ends the listening. An operation that runs
