@@ -966,3 +966,38 @@ func TestSessionDoneReportsProposed(t *testing.T) {
 		}
 	}
 }
+
+func TestRecordAgentActorReusesSession(t *testing.T) {
+	ww := testWorkspace(t, false)
+	launcher, err := ww.ids.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	const sid = "0123abcd-0000-4000-8000-000000000000"
+	cs, err := ww.ids.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	h1, cs1, err := recordAgentActor(ww, "claude-code", sid, cs, launcher, launcher)
+	if err != nil {
+		t.Fatal(err)
+	}
+	before := len(ww.changeSets())
+	h2, cs2, err := recordAgentActor(ww, "claude-code", sid, cs, launcher, launcher)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if h1 != h2 || cs1 != cs2 {
+		t.Errorf("second call = %s %s, want %s %s", h2, cs2, h1, cs1)
+	}
+	if n := len(ww.changeSets()); n != before {
+		t.Errorf("second call wrote change sets: %d -> %d", before, n)
+	}
+	h3, _, err := recordAgentActor(ww, "claude-code", "4567abcd-0000-4000-8000-000000000000", cs, launcher, launcher)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if h3 == h1 || len(ww.changeSets()) != before+1 {
+		t.Errorf("a different session got %s, change sets %d", h3, len(ww.changeSets()))
+	}
+}

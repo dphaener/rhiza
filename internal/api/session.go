@@ -682,8 +682,26 @@ func copyNewFile(src, dst string) error {
 // recordAgentActor records the agent's actor node in the worktree's model,
 // in a landed record change set written by the launcher, and returns its
 // handle: <agent>-<first 8 hex of the session ID>, made unique.
+//
+// A live actor node already carrying this session ID is reused: its handle
+// and the change set that recorded it come back and nothing is written, so
+// stamping a session twice never adds a second record.
 func recordAgentActor(ww *workspace, agent, sid string, cs, launcher, forID id.ID) (string, id.ID, error) {
 	m := ww.model(id.ID{})
+	for _, n := range m.Children(op.KindActor, id.ID{}) {
+		var got string
+		raw, ok := n.Fields["session"]
+		if !ok || json.Unmarshal(raw, &got) != nil || got != sid {
+			continue
+		}
+		for _, c := range ww.changeSets() {
+			for _, o := range c.Ops {
+				if o.Type == op.TypeNodeCreate && o.Node == n.ID {
+					return n.Handle, c.ID, nil
+				}
+			}
+		}
+	}
 	handle := uniqueHandle(handleSlug(agent+"-"+sid[:8]), func(h string) bool {
 		_, taken := m.HandleTaken(h)
 		return taken
