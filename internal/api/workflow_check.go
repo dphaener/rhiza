@@ -12,6 +12,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/workflow"
 )
 
@@ -106,6 +107,62 @@ func runWorkflowCheck(ctx *Ctx, req any) (any, error) {
 	for _, p := range problems {
 		out.Problems = append(out.Problems, WorkflowProblem{Step: p.Step, Message: p.Message})
 	}
+	if len(out.Problems) == 0 {
+		def, err := workflow.ParseWith(name, data, workflowResolver(ctx.Root))
+		if err != nil {
+			return nil, err
+		}
+		out.Problems = append(out.Problems, agentProblems(ctx, def)...)
+	}
 	out.Valid = len(out.Problems) == 0
 	return out, nil
+}
+
+// agentProblems runs run start's adapter and permission mode checks
+// (checkAgentSteps) on every agent and permission_mode the file sets
+// explicitly, reporting each one that fails. A key left unset takes the
+// run's --agent or --permission-mode, which only run start knows.
+func agentProblems(ctx *Ctx, def *workflow.Definition) []WorkflowProblem {
+	var out []WorkflowProblem
+	check := func(step, what, agent, mode string) {
+		if agent == "" && mode == "" {
+			return
+		}
+		if mode == "" {
+			if _, ok := adapter.Lookup(agent); !ok {
+				out = append(out, WorkflowProblem{Step: step, Message: fmt.Sprintf("%s: unknown agent %q: want one of %s",
+					what, agent, strings.Join(adapter.Names(), ", "))})
+			}
+			return
+		}
+		if _, err := startAdapter(ctx, SessionStartRequest{Agent: agent, PermissionMode: mode, Step: step}); err != nil {
+			out = append(out, WorkflowProblem{Step: step, Message: what + ": " + AsError(err).Message})
+		}
+	}
+	role := func(s workflow.Step, name, what string) {
+		if r := s.Role(name); r != nil {
+			check(s.Name, what+" "+name, r.Agent, r.PermissionMode)
+		}
+	}
+	for _, n := range def.Order {
+		s := def.Steps[n]
+		switch s.Kind {
+		case workflow.KindAgent:
+			check(s.Name, "the agent step", s.Agent, s.PermissionMode)
+		case workflow.KindArbiter:
+			check(s.Name, "the arbiter step", s.Agent, s.PermissionMode)
+		case workflow.KindLeaves:
+			for _, r := range []string{workflow.RoleBuilder, workflow.RoleVerifier} {
+				role(s, r, "the leaves step's")
+			}
+		case workflow.KindChecks:
+			for _, c := range s.Checks {
+				check(s.Name, "check "+c.Name, c.Agent, c.PermissionMode)
+			}
+			for _, r := range []string{workflow.RoleCritic, workflow.RoleFixer, workflow.RoleVerifier} {
+				role(s, r, "the checks step's")
+			}
+		}
+	}
+	return out
 }

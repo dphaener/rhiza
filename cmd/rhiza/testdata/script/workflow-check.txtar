@@ -35,6 +35,14 @@ stdout 'step a: .*on.pass names "nope"'
 stdout 'step b: .*unknown kind "loop"'
 stdout 'step c: .*on.sucess'
 
+# an agent or permission mode the file sets is checked as run start does
+! exec rhiza workflow check $WORK/bad-agent.toml
+stdout '^workflow bad-agent has 2 problem\(s\)'
+stdout 'step build: the agent step: unknown agent "nope"'
+stdout 'step review: the checks step''s critic: claude-code: .*'
+! exec rhiza workflow check $WORK/bypass.toml
+stdout 'step build: the agent step: permission mode bypassPermissions bypasses the agent''s permission checks: that needs a machine with trust = "dedicated"'
+
 # a missing include is reported, with the step that includes it
 ! exec rhiza workflow check $WORK/inc-missing.toml
 stdout 'step go: .*workflow "nothing-here"'
@@ -137,3 +145,37 @@ workflow = "nothing-here"
 [step.only]
 kind = "command"
 run = "true"
+-- bad-agent.toml --
+name = "bad-agent"
+start = "build"
+
+[step.build]
+kind = "agent"
+agent = "nope"
+prompt = "Build {change}"
+on.pass = "review"
+
+[step.review]
+kind = "checks"
+
+[[step.review.check]]
+name = "quality"
+prompt = "Check {change}"
+
+[step.review.critic]
+permission_mode = "no-such-mode"
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {change}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"
+-- bypass.toml --
+name = "bypass"
+start = "build"
+
+[step.build]
+kind = "agent"
+permission_mode = "bypassPermissions"
+prompt = "Build {change}"
