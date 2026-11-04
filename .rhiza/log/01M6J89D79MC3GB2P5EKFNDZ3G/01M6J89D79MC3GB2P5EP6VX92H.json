@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-04T03:05:23Z",
+  "body": {
+    "intent": "Timing budgets measure in quiet: TestReadBudget, TestBudget (internal/slice) and modelapp's TestGeneratedModel time reads against fixed ~50ms limits while rhiza.test's scripts still run beside them (quiettest.Wait gives up after 3 minutes, cmd/rhiza takes 5-11), so CI fails them on noisy runners (PR #210 failed twice on the same SHA that passed a third time) and a loaded VM fails them every time. Run the budget tests on their own after go test ./... in make check (or make quiettest wait for rhiza.test to finish), so the budgets measure reads, not neighbours",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6J89D79MC3GB2P5EKFNDZ3G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J89D79MC3GB2P5EP6VX92H",
+  "type": "open",
+  "v": 1
+}
