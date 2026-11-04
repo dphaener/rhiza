@@ -27,6 +27,7 @@ the assistant's summary in the founding conversation
 
 ### In
 
+- decided-by [workflow-overrides](../capability/rhiza/workflows/workflow-overrides.md)
 - decided-by [ship-change-workflow](../capability/rhiza/workflows/built-in-workflows/ship-change-workflow.md)
 
 ## History
