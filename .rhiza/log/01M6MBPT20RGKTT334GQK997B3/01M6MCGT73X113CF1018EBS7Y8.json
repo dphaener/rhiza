@@ -1,0 +1,44 @@
+{
+  "actor": "01M6MCDTT9V0NS1NWJ0Z6DBT24",
+  "after": [
+    "01M6MC6F1CSMZF96S953D61XE9"
+  ],
+  "at": "2026-11-04T22:57:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read the change set's intent, milestone-25 and milestone-24, internal/workflow/builtin/ship-change.toml and review.toml, and the ship-check-reruns-failed-once evidence. The intent is about the daemon finishing runs without the owner after #259 moved the full suite to CI, which is milestone-25's done state; milestone-24 is about the VM host, not run outcomes. Reusing review's fixer prompt, Review: trailer and 2-cycle cap keeps one fix vocabulary across the run, and keeping the existing once-per-head rerun first means flakes never reach a fixer. Only test failures parsed from --log-failed become findings, so infra failures are not 'fixed' by an agent guessing. Routing the fix through render-pr reuses the existing push/edit/wait/check path, which already handles re-entry (open-pr edits instead of creating). pr-green and rebased-green are before land, so that path is safe; landed-green and rebased-merge-green come after rhiza ship land, and sending them back through render-pr would re-run land and touch a landed change set, so they stay failing and are left to a follow-up rather than widened here. The PR #260 case (pr-green failing on TestScripts/review-check-worktree) is covered.",
+          "statement": "(1) Intent: change set 01M6MBPT serves milestone-25 (the daemon empties the backlog on its own); a run that dies on a red PR CI needs the owner, which is what milestone-25 removes. (2) Mechanism: rhiza ship check keeps its one rerun of failed jobs per head for flakes. When the head's checks still fail and the failed Actions job's log (gh run view <run> --log-failed) names failing tests (Go '--- FAIL: TestX[/sub]' lines, testscript names included), ship check reports them as test failures and turns each failing test or script into a finding with no leaf; a failure with no Actions run id, no parsable failing test, or an infra/setup error stays a plain failure that ends the run as today. Because a command step has only pass and fail, the split is a step: pr-green and rebased-green fail to ci-triage (rhiza ship check --test-failures), which passes only when test failures were recorded and otherwise fails the run. ci-fix is an agent step: one fixer session on the run worktree with the review fixer's prompt, told to read the failing tests from rhiza ship check --json and re-run only the failing tests/scripts and their packages, making one new commit with a Review: <run> trailer (Change:/Actor: as usual). (3) Stages: ci-fix goes on pass to render-pr, so the fix is rendered, pushed by open-pr (gh pr edit, no second PR), waited on by wait-pr and checked by pr-green, then signoff again (the autonomous rule passes it; an owner sees the new commit), and from there rebase, wait-rebased and rebased-green again. landed-green and rebased-merge-green keep failing the run as today: they run after rhiza ship land, and re-entering render-pr would land twice; a post-land fix path is a separate change set, not this one. (4) Cap: at most 2 CI-fix cycles per run, counted across pr-green and rebased-green (ci-fix max_visits = 2, matching review's 2 fix cycles); a red CI with test failures after the second fix fails the run, with the parsed failing tests in the step output. Raise max_visits to 5 on render-pr, open-pr, wait-pr, pr-green and signoff so 2 CI fixes plus the owner's request-changes still fit, and to 3 on rebase, wait-rebased and rebased-green (1 today) so the rebased-green fix path re-enters them; ci-triage gets 3.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "ship-change-ci-fix-cycle",
+        "id": "01M6MBZWS89JM6422AY5R1E10H",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6MBZWS89JM6422AY2D9Z5CP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/workflow loads the built-in ship-change workflow and asserts pr-green and rebased-green fail to ci-triage, ci-triage is a command step running rhiza ship check --test-failures with on.pass ci-fix and no on.fail, ci-fix is an agent step passing to render-pr with max_visits 2, ci-triage max_visits 3, max_visits 5 on render-pr, open-pr, wait-pr, pr-green and signoff, max_visits 3 on rebase, wait-rebased and rebased-green, and no on.fail on landed-green or rebased-merge-green; a Go test in internal/api shows ship check --test-failures passing with a recorded test failure and failing with none or an infra-only failure; a testscript run-ship-ci-fix with a fake gh and a fake fixer agent goes red with a parsed test failure, through ci-triage and one ci-fix commit carrying a Review: trailer, back to green and signoff, a case red at rebased-green goes through ci-fix, signoff and rebase again to land, a case red after two fixes fails the run with the failing tests in the step output, and an infra-only failure fails at ci-triage with no ci-fix visit; run with go test -trimpath ./internal/workflow/... ./internal/api/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/run-ship' only",
+          "statement": "The built-in ship-change workflow sends a failure at pr-green or rebased-green (on.fail) to a new command step ci-triage, which runs `rhiza ship check --test-failures`: it passes only when the head's latest ship check recorded at least one parsed test failure, and fails otherwise, and ci-triage has no on.fail, so an infra-only or unparsable failure ends the run there as today. ci-triage passes to ci-fix, an agent step (kind = \"agent\", one fixer session on the run worktree) whose prompt is the review fixer's prompt told to read the failing tests from `rhiza ship check --json` (its test failures and their no-leaf findings), re-run only those tests/scripts and their packages, and make one new commit with a Review: <run> trailer before `rhiza session done`; ci-fix passes to render-pr, then open-pr, wait-pr, pr-green and signoff. ci-fix runs at most twice per run (max_visits 2, so a third red head with test failures goes over the cap and fails the run, pr-green's or rebased-green's output naming the failing tests); ci-triage has max_visits 3; render-pr, open-pr, wait-pr, pr-green and signoff are raised to max_visits 5 so two CI fixes plus the owner's two request-changes fit; rebase, wait-rebased and rebased-green are raised to max_visits 3 so a run re-enters them after each of two CI fixes routed from rebased-green; landed-green and rebased-merge-green still fail the run as today"
+        },
+        "handle": "ship-change-ci-fix-step",
+        "id": "01M6MC56XH2VTXCYDT1GB8RKKB",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6MC56XH2VTXCYDT1G5WD55E",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      }
+    ]
+  },
+  "change_set": "01M6MBPT20RGKTT334GQK997B3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MCGT73X113CF1018EBS7Y8",
+  "type": "ops",
+  "v": 1
+}
