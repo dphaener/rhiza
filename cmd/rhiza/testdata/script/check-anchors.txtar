@@ -1,0 +1,40 @@
+# check resolves every live anchor against the working tree: it fails when
+# the anchored function or file is gone, naming the anchor and the
+# capability it implements.
+
+exec rhiza init
+exec rhiza add capability thing --field 'statement=Does the thing' --record
+exec rhiza add anchor pin --field path=pkg/p.go --field symbol=Keep --record
+exec rhiza link pin implements thing --record
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+! stdout 'anchor'
+
+# The anchored function goes: a symbol finding.
+cp pkg/p.go keep.go.txt
+cp pkg/other.go pkg/p.go
+! exec rhiza check
+stdout '^fail anchor pkg/p.go: anchor pin \(implements thing\): symbol Keep of pkg/p.go is gone'
+stdout '^failed$'
+! exec rhiza check --json
+! stdout '"ok": true'
+
+# The file goes: a path finding.
+rm pkg/p.go
+! exec rhiza check
+stdout '^fail anchor pkg/p.go: anchor pin \(implements thing\): path pkg/p.go is gone'
+
+# Restored, it is clean again.
+cp keep.go.txt pkg/p.go
+exec rhiza check
+stdout '^ok$'
+
+-- pkg/p.go --
+package p
+
+func Keep() int { return 1 }
+-- pkg/other.go --
+package p
+
+func Other() int { return 2 }

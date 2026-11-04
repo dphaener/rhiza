@@ -14,7 +14,6 @@ import (
 	"io/fs"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 )
 
@@ -39,18 +38,22 @@ var (
 // root: sha256 of the declaration's source bytes when symbol is set, else of
 // the whole file's bytes. The error wraps one of the Err values.
 func Fingerprint(root, p, symbol string) (string, error) {
+	return FingerprintFS(os.DirFS(root), p, symbol)
+}
+
+// FingerprintFS is Fingerprint over a file system rooted at the project.
+func FingerprintFS(fsys fs.FS, p, symbol string) (string, error) {
 	if err := checkPath(p); err != nil {
 		return "", err
 	}
-	full := filepath.Join(root, filepath.FromSlash(p))
-	info, err := os.Stat(full)
+	info, err := fs.Stat(fsys, p)
 	if err != nil || !info.Mode().IsRegular() {
 		if err == nil || errors.Is(err, fs.ErrNotExist) || errors.Is(err, fs.ErrInvalid) {
 			return "", fmt.Errorf("%w: %s", ErrNoPath, p)
 		}
 		return "", fmt.Errorf("%w: %s: %v", ErrNoPath, p, err)
 	}
-	src, err := os.ReadFile(full)
+	src, err := fs.ReadFile(fsys, p)
 	if err != nil {
 		return "", fmt.Errorf("%w: %s: %v", ErrNoPath, p, err)
 	}

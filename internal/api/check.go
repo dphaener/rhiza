@@ -127,6 +127,7 @@ func runCheck(ctx *Ctx, req any) (any, error) {
 			return nil, Errorf("read the log: %v", err)
 		}
 	}
+	in.Tree = os.DirFS(ctx.Root)
 	in.Commits = gitCommits(ctx.Git)
 	rep := check.Run(in)
 	resp := CheckResponse{OK: rep.OK, Base: rep.Base, MergeBaseOf: from, Skipped: skipped,
