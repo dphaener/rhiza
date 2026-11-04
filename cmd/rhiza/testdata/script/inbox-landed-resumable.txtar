@@ -1,0 +1,62 @@
+# An interrupted non-plan run on a landed change set that reached its land
+# step is not listed as skipped: the daemon resumes it. Resumed and
+# interrupted again it is gave-up, and one that failed a later step is
+# failed. An interrupted run that never reached land stays skipped. The
+# journals are fixtures.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec sh ../mkchanges.sh
+fold-ok
+mkdir .git/rhiza/runs
+exec sh ../mkruns.sh
+
+exec rhiza inbox --json
+! stdout '"run": "R-LAND"'
+stdout '"run": "G-LAND"'
+stdout '"kind": "gave-up"'
+stdout '"run": "F-LAND"'
+stdout '"kind": "failed"'
+stdout '"run": "N-LAND"'
+stdout '"kind": "skipped"'
+exec sh -c 'rhiza inbox --json | grep -c "\"kind\""'
+stdout '^3$'
+exec rhiza inbox
+! stdout 'R-LAND'
+stdout 'skipped run N-LAND'
+-- mkchanges.sh --
+set -e
+for k in r g f n; do
+  rhiza change new "c$k" --json | sed -n 's/.*"change_set": "\([0-9A-Z]*\)".*/\1/p' | head -1 > "id.$k"
+  rhiza add capability "cap-$k" >/dev/null
+  rhiza propose >/dev/null
+  rhiza accept --reason ok >/dev/null
+  rhiza land >/dev/null
+done
+-- mkruns.sh --
+set -e
+host=$(hostname)
+head() {
+  cat <<J
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"$(cat id.$1)"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"$2","visit":1}
+{"type":"process","at":"2026-01-01T00:00:02Z","process":{"host":"$host","pid":999999}}
+J
+}
+head r land > .git/rhiza/runs/R-LAND.jsonl
+head g land > .git/rhiza/runs/G-LAND.jsonl
+cat >> .git/rhiza/runs/G-LAND.jsonl <<J
+{"type":"daemon-resumed","at":"2026-01-01T04:00:00Z","detail":"resumed by the daemon"}
+{"type":"process","at":"2026-01-01T04:00:30Z","process":{"host":"$host","pid":999999}}
+J
+head n build > .git/rhiza/runs/N-LAND.jsonl
+cat > .git/rhiza/runs/F-LAND.jsonl <<J
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"$(cat id.f)"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"land","visit":1}
+{"type":"entered","at":"2026-01-01T00:00:02Z","step":"main-green","visit":1}
+{"type":"finished","at":"2026-01-01T03:00:00Z","step":"main-green","end":"failed","detail":"boom"}
+J
