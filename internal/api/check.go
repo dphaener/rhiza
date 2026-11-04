@@ -73,13 +73,13 @@ type CheckResponse struct {
 	Base        string         `json:"base" desc:"The git revision the append-only rule compared against; empty when it was skipped"`
 	MergeBaseOf string         `json:"merge_base_of,omitempty" desc:"The ref whose merge-base with HEAD is the default base; absent with --base"`
 	Skipped     string         `json:"skipped,omitempty" desc:"Why the append-only rule was skipped, if it was"`
-	Findings    []CheckFinding `json:"findings" desc:"Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, anchor, render, append-only), then path and IDs"`
+	Findings    []CheckFinding `json:"findings" desc:"Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, unclaimed, anchor, render, append-only), then path and IDs"`
 }
 
 // CheckFinding is one thing check found.
 type CheckFinding struct {
 	Severity  string `json:"severity" enum:"fail,warn" desc:"fail makes the check fail; warn does not"`
-	Rule      string `json:"rule" enum:"log,fold,model,in-flight,link,depends-on,evidence-actor,anchor,render,append-only" desc:"The rule that found it"`
+	Rule      string `json:"rule" enum:"log,fold,model,in-flight,link,depends-on,evidence-actor,unclaimed,anchor,render,append-only" desc:"The rule that found it"`
 	Path      string `json:"path,omitempty" desc:"The file, relative to the project root"`
 	ChangeSet string `json:"change_set,omitempty" desc:"The change set's ID"`
 	Entry     string `json:"entry,omitempty" desc:"The entry's ID"`
@@ -132,6 +132,9 @@ func runCheck(ctx *Ctx, req any) (any, error) {
 	in.Commits = gitCommits(ctx.Git)
 	if in.UnclaimedSince, err = unclaimedCutoff(ctx); err != nil {
 		return nil, err
+	}
+	if in.UnclaimedSince != "" && inWorkTree(ctx.Git) {
+		in.Unclaimed = gitUnclaimed(ctx.Git, in.UnclaimedSince)
 	}
 	rep := check.Run(in)
 	resp := CheckResponse{OK: rep.OK, Base: rep.Base, MergeBaseOf: from, Skipped: skipped,
@@ -247,6 +250,18 @@ func gitCommits(git func(...string) (string, error)) []check.Commit {
 	return parseTrailerLog(out)
 }
 
+// gitUnclaimed lists the non-merge commits of since..HEAD that change a file
+// outside the store folder, with their claims, for the unclaimed rule. When
+// git log fails there are none.
+func gitUnclaimed(git func(...string) (string, error), since string) []check.Commit {
+	out, err := git("log", "--no-merges", "--format="+trailerLogFormat, since+"..HEAD",
+		"--", ":/", ":(exclude)"+store.Dir)
+	if err != nil {
+		return nil
+	}
+	return parseTrailerLog(out)
+}
+
 // parseTrailerLog parses git log output in trailerLogFormat. The Change:,
 // Actor:, Leaf: and Review: trailers are read from the message's trailing
 // run of trailer paragraphs (see trailerRun), so a Co-Authored-By in a later
@@ -262,6 +277,19 @@ func parseTrailerLog(out string) []check.Commit {
 			continue
 		}
 		c := check.Commit{Hash: hash}
+		c.Subject, _, _ = strings.Cut(strings.TrimSpace(msg), "\n")
+		c.Subject = strings.TrimSpace(c.Subject)
+		for _, p := range blankLines.Split(strings.TrimSpace(msg), -1)[1:] {
+			ts, ok := trailerParagraph(p)
+			if !ok {
+				continue
+			}
+			for _, t := range ts {
+				if k, v, _ := strings.Cut(t, ":"); strings.EqualFold(k, "change") && strings.TrimSpace(v) != "" {
+					c.Claims = append(c.Claims, strings.TrimSpace(v))
+				}
+			}
+		}
 		for _, t := range trailerRun(msg) {
 			k, v, _ := strings.Cut(t, ":")
 			if v = strings.TrimSpace(v); v == "" {

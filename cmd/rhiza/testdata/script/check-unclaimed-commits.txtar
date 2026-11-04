@@ -1,0 +1,111 @@
+# check's unclaimed rule warns once on each non-merge commit of
+# <cutoff>..HEAD that changes a file outside .rhiza/ and whose message has no
+# Change: trailer naming a change set in the log. A Change: counts from any
+# wholly-trailer paragraph after the subject (so a GitHub squash body is
+# claimed by its branch commits' paragraphs); one inside prose, or an Actor:
+# or Leaf: alone, does not. It only warns: check exits 0.
+
+exec git init -q
+exec rhiza init
+exec rhiza add capability thing --field 'statement=Does the thing' --record --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZNP53DGX"'
+exec rhiza render
+exec sh -c 'echo package base > base.go'
+exec git add -A
+exec git commit -qm 'before the cutoff, untrailered'
+exec sh -c 'echo "{\"unclaimed_since\": \"$(git rev-parse HEAD)\"}" > .rhiza/check.json'
+exec git add -A
+exec git commit -qm 'set the cutoff'
+
+# 1. No trailer.
+exec sh -c 'echo package a > a.go'
+exec git add a.go
+exec git commit -qm 'no trailer'
+# 2. An unknown change set.
+exec sh -c 'echo package b > b.go'
+exec git add b.go
+exec git commit -qF $WORK/msg-unknown.txt
+# 3. A known Change: in a paragraph before Co-Authored-By.
+exec sh -c 'echo package c > c.go'
+exec git add c.go
+exec git commit -qF $WORK/msg-para.txt
+# 4. A GitHub squash body.
+exec sh -c 'echo package d > d.go'
+exec git add d.go
+exec git commit -qF $WORK/msg-squash.txt
+# 5. A known ID only inside prose.
+exec sh -c 'echo package e > e.go'
+exec git add e.go
+exec git commit -qF $WORK/msg-prose.txt
+# 6. Only .rhiza/ changes.
+cp $WORK/note.md .rhiza/note.md
+exec git add -A
+exec git commit -qm 'rhiza file only, no trailer'
+# 7. Only Actor:/Leaf: trailers.
+exec sh -c 'echo package g > g.go'
+exec git add g.go
+exec git commit -qF $WORK/msg-actor.txt
+# 8. A merge commit.
+exec git checkout -q -b side
+exec sh -c 'echo package h > h.go'
+exec git add h.go
+exec git commit -qF $WORK/msg-para.txt
+exec git checkout -q -
+exec sh -c 'echo package i > i.go'
+exec git add i.go
+exec git commit -qF $WORK/msg-para.txt
+exec git merge -q --no-ff -m 'merge side' side
+
+exec rhiza check --json
+stdout '"ok": true'
+stdout -count=4 '"rule": "unclaimed"'
+stdout -count=4 '"severity": "warn"'
+stdout 'no trailer.*missing'
+stdout 'unknown change set 01M5ZZZZZZZZZZZZZZZZZZZZZZ'
+stdout 'known only in prose'
+stdout 'actor only'
+! stdout 'before the cutoff'
+! stdout 'squash'
+
+exec rhiza check
+stdout -count=4 '(?m)^warn unclaimed: '
+
+-- note.md --
+a note
+-- msg-unknown.txt --
+unknown change
+
+Change: 01M5ZZZZZZZZZZZZZZZZZZZZZZ
+-- msg-para.txt --
+known change
+
+Change: 01M5PWGEF85Y185JZ2ZNP53DGX
+
+Co-Authored-By: A <a@example.com>
+-- msg-squash.txt --
+squash (#1)
+
+* First
+
+Why.
+
+Change: 01M5PWGEF85Y185JZ2ZNP53DGX
+Actor: first
+
+* Second
+
+Change: 01M5PWGEF85Y185JZ2ZNP53DGX
+Actor: second
+
+---------
+
+Co-authored-by: A <a@example.com>
+-- msg-prose.txt --
+known only in prose
+
+Fixes the thing, see Change: 01M5PWGEF85Y185JZ2ZNP53DGX for why.
+-- msg-actor.txt --
+actor only
+
+Actor: someone
+Leaf: thing

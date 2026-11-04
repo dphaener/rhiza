@@ -397,6 +397,16 @@ func TestParseTrailerLog(t *testing.T) {
 		// A folded trailer is unfolded; blank lines may hold spaces.
 		"jjj\x1fSubject\n\nprose\n \t\nChange: CS9\nLeaf: long\n  name\x1e\n"
 	got := parseTrailerLog(out)
+	claims := map[string][]string{}
+	for i := range got {
+		claims[got[i].Hash] = got[i].Claims
+		got[i].Subject, got[i].Claims = "", nil
+	}
+	// Claims are the Change: values of every wholly-trailer paragraph after
+	// the subject, where Changes are those of the trailing run only.
+	if c := claims["iii"]; !reflect.DeepEqual(c, []string{"CS8", "CS8"}) {
+		t.Errorf("squash claims = %v", c)
+	}
 	want := []check.Commit{
 		{Hash: "aaa", Changes: []string{"CS1"}, Actors: []string{"builder"}, Leaves: []string{"leaf", "other"}},
 		{Hash: "bbb"},
