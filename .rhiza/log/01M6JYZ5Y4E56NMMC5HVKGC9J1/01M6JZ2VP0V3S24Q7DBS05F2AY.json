@@ -1,0 +1,30 @@
+{
+  "actor": "01M6JYZS49BCGQEWVJG8NZJHDD",
+  "after": [
+    "01M6JYZ5Y4E56NMMC5HXE30453"
+  ],
+  "at": "2026-11-04T09:43:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "e4fa4f07-184f-4fd1-9134-01a1a5efce4d",
+          "statement": "The constraint 'Rhiza never writes or raises a machine's trust' needs a buildable check (only capabilities are build leaves, so I add one leaf under runtime, beside machine-show). Which check proves no op writes machine.toml?"
+        },
+        "handle": "question-e4fa4f07-1",
+        "id": "01M6JZ2SJ8GNDPS2TA3BSENKK3",
+        "key": null,
+        "kind": "question",
+        "node": "01M6JZ2SJ8GNDPS2TA38ERNZG6",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6JYZ5Y4E56NMMC5HVKGC9J1",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JZ2VP0V3S24Q7DBS05F2AY",
+  "type": "ops",
+  "v": 1
+}
