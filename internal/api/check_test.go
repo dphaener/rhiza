@@ -442,7 +442,7 @@ func TestGitCommits(t *testing.T) {
 		t.Errorf("no commits: %#v", got)
 	}
 	g := &fakeGit{out: map[string]string{gitWorkTree: "true\n", logArgs: "abc\x1fSubject\n\nActor: x\x1e\n"}}
-	want := []check.Commit{{Hash: "abc", Actors: []string{"x"}}}
+	want := []check.Commit{{Hash: "abc", Actors: []string{"x"}, Subject: "Subject"}}
 	if got := gitCommits(g.run); !reflect.DeepEqual(got, want) {
 		t.Errorf("gitCommits = %+v, want %+v (calls %q)", got, want, g.calls)
 	}
