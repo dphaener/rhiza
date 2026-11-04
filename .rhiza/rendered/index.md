@@ -3111,7 +3111,6 @@
 - [claude-code-a438ae1c](actor/claude-code-a438ae1c.md)
 - [claude-code-a43c1d6f](actor/claude-code-a43c1d6f.md)
 - [claude-code-a463ece8](actor/claude-code-a463ece8.md)
-- [claude-code-a463ece8](actor/claude-code-a463ece8.01M6HYXRR6ZXYF68BAC8X0KEEQ.md)
 - [claude-code-a4ba5b6f](actor/claude-code-a4ba5b6f.md)
 - [claude-code-a4d57722](actor/claude-code-a4d57722.md)
 - [claude-code-a4f0ac9d](actor/claude-code-a4f0ac9d.md)
@@ -3726,3 +3725,4 @@
 - capability agent-steps-tile-run-window `01M6857JXB8B7WXBN5VHE7MV1K` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
 - capability question-sessions-tile-run-window `01M6857KVT0NRCTAY6EZ2DH209` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
 - capability roadmap-app-new-work `01M686V49K74FDKG4YV2BDJCSN` — Superseded by roadmap-new-work-requests: m and n now file a plan request (rhiza request) for the daemon to plan, and no longer ask y/n or open a Rex tab running run start --workflow plan --new
+- actor claude-code-a463ece8 `01M6HYXRR6ZXYF68BAC8X0KEEQ` — Duplicate of actor claude-code-a463ece8 (node 01M6HV8Y05D3EMPSARA4H5VJ15) that landed on main from another branch while this run was building; the same session recorded itself twice

@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-04T03:55:58Z",
+  "body": {
+    "intent": "retire 01M6HYXRR6ZXYF68BAC8X0KEEQ",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6JB60VR3XHWQRP8S17DMS8R",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6JB60VR3XHWQRP8S2RXPSH5",
+  "type": "open",
+  "v": 1
+}
