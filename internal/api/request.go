@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
 )
 
@@ -37,19 +38,21 @@ func init() {
 
 // RequestRequest is a plan request to queue.
 type RequestRequest struct {
-	Text string `json:"text" arg:"0" desc:"What to plan, in one line"`
-	Kind string `json:"kind,omitempty" enum:"feature,bug,milestone" desc:"feature, bug or milestone; default feature. A bug's plan run opens its change set with the intent prefixed 'Fix ' (so its title names the bug), a milestone's a record change set"`
+	Text      string `json:"text" arg:"0" desc:"What to plan, in one line"`
+	Kind      string `json:"kind,omitempty" enum:"feature,bug,milestone" desc:"feature, bug or milestone; default feature. A bug's plan run opens its change set with the intent prefixed 'Fix ' (so its title names the bug), a milestone's a record change set"`
+	Milestone string `json:"milestone,omitempty" flag:"milestone" desc:"A milestone intent, by handle or ID, the request's plan should serve; default none (the planner serves the open milestone it fits)"`
 }
 
 // RequestInfo is one plan request.
 type RequestInfo struct {
-	ID     string `json:"id" desc:"The request's ID"`
-	Kind   string `json:"kind" desc:"feature, bug or milestone"`
-	Text   string `json:"text" desc:"What to plan"`
-	At     string `json:"at" desc:"When it was queued, RFC 3339 UTC"`
-	State  string `json:"state" desc:"queued, planning (its plan run started), planned (its run succeeded) or failed (its run failed)"`
-	Run    string `json:"run,omitempty" desc:"Its plan run; absent while queued"`
-	Change string `json:"change,omitempty" desc:"The change set its plan run plans in; absent until the run's journal names it"`
+	ID        string `json:"id" desc:"The request's ID"`
+	Kind      string `json:"kind" desc:"feature, bug or milestone"`
+	Text      string `json:"text" desc:"What to plan"`
+	Milestone string `json:"milestone,omitempty" desc:"The ID of the milestone intent the request names; absent if none"`
+	At        string `json:"at" desc:"When it was queued, RFC 3339 UTC"`
+	State     string `json:"state" desc:"queued, planning (its plan run started), planned (its run succeeded) or failed (its run failed)"`
+	Run       string `json:"run,omitempty" desc:"Its plan run; absent while queued"`
+	Change    string `json:"change,omitempty" desc:"The change set its plan run plans in; absent until the run's journal names it"`
 }
 
 // RequestResponse is the request queued, or in a dry run the one that
@@ -107,6 +110,10 @@ func runRequest(ctx *Ctx, req any) (any, error) {
 	if !slices.Contains(requestKinds, kind) {
 		return nil, Usagef("--kind %q: one of %s", r.Kind, strings.Join(requestKinds, ", "))
 	}
+	milestone, err := requestMilestone(ctx, r.Milestone)
+	if err != nil {
+		return nil, err
+	}
 	common, err := gitCommonDir(ctx)
 	if err != nil {
 		return nil, err
@@ -117,7 +124,7 @@ func runRequest(ctx *Ctx, req any) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		q = daemon.Request{ID: rid, Kind: kind, Text: text, At: ctx.Now().UTC()}
+		q = daemon.Request{ID: rid, Kind: kind, Text: text, Milestone: milestone, At: ctx.Now().UTC()}
 		return append(reqs, q), nil
 	}
 	if ctx.DryRun {
@@ -132,6 +139,33 @@ func runRequest(ctx *Ctx, req any) (any, error) {
 		return nil, requestsErr(err)
 	}
 	return RequestResponse{Request: requestInfo(q, nil), DryRun: ctx.DryRun}, nil
+}
+
+// requestMilestone resolves ref, a milestone intent's handle or ID, to the
+// intent's ID; empty ref gives "". A node that is unknown, retired, not an
+// intent or an intent with no milestone field is a usage error.
+func requestMilestone(ctx *Ctx, ref string) (string, error) {
+	ref = strings.TrimSpace(ref)
+	if ref == "" {
+		return "", nil
+	}
+	r, err := openReader(ctx, "request", "", toBeView)
+	if err != nil {
+		return "", err
+	}
+	defer r.Close()
+	n, err := r.Resolve(ref)
+	var e *Error
+	if errors.As(err, &e) && e.Code == CodeNotFound {
+		return "", Usagef("--milestone %q: no such node", ref).WithNext("rhiza roadmap")
+	}
+	if err != nil {
+		return "", err
+	}
+	if n.Retired || n.Kind != op.KindIntent || !planMilestoneField(n.Fields) {
+		return "", Usagef("--milestone %q is not a live milestone intent", ref).WithNext("rhiza roadmap")
+	}
+	return n.ID.String(), nil
 }
 
 // requestsErr is an error of daemon.UpdateRequests: an operation's error
@@ -180,7 +214,7 @@ func runRequestLs(ctx *Ctx, req any) (any, error) {
 
 func requestInfo(q daemon.Request, runs []run.Journal) RequestInfo {
 	state, change := daemon.RequestState(q, runs)
-	return RequestInfo{ID: q.ID, Kind: q.Kind, Text: q.Text, At: q.At.UTC().Format(time.RFC3339), State: state, Run: q.Run, Change: change}
+	return RequestInfo{ID: q.ID, Kind: q.Kind, Text: q.Text, Milestone: q.Milestone, At: q.At.UTC().Format(time.RFC3339), State: state, Run: q.Run, Change: change}
 }
 
 // daemonPlanRequests starts a plan run, in a new Rex tab, for each of the
