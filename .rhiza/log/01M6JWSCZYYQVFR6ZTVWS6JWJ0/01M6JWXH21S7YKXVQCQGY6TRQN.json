@@ -1,0 +1,27 @@
+{
+  "actor": "01M6JWSXGBWPDXN3JMHQTT8G7W",
+  "after": [
+    "01M6JWWS49X3AG283KPJ1P2BY4"
+  ],
+  "at": "2026-11-04T09:05:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6JWSCZYYQVFR6ZTVWS6JWJ0",
+        "id": "01M6JWXE5JK2WVTPDYXBRJKQ5H",
+        "link": "01M6JWXE5JK2WVTPDYXAZJVQEE",
+        "note": "Replaces this leafless draft, which is withdrawn",
+        "op": "link.create",
+        "to": "01M6B9FCNTTH65W2HKY3SCPC1H",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M6JWSCZYYQVFR6ZTVWS6JWJ0",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JWXH21S7YKXVQCQGY6TRQN",
+  "type": "ops",
+  "v": 1
+}

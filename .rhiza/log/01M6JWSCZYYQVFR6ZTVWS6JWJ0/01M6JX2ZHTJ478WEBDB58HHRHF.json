@@ -1,0 +1,33 @@
+{
+  "actor": "01M6JWSXGBWPDXN3JMHQTT8G7W",
+  "after": [
+    "01M6JX1JBRX50MS8PJ9V80EEA8"
+  ],
+  "at": "2026-11-04T09:08:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "dbe1852ab716065f1de183a237fdf75cb7782d55f449571ea15afeb46c694d9b",
+          "session": "b947d57e-7bee-4636-b577-01a1a5cce3e1",
+          "summary": "Autonomous plan run, no owner. Found that PR #164 already switched rhiza run abandon to git branch -d, and run-abandon-unmerged.txtar covers a never-pushed branch with no upstream. The model had no leaf for it, and nothing tested a branch with an upstream plus local commits never pushed to it. Linked the change set serves milestone-25 and relates-to the leafless draft 01M6B9FCNTTH65, then withdrew that draft. Raised the scope question; the arbiter ruled (Decision abandon-unpushed-branch-scope): one childless leaf under run-abandon, a test for the upstream case beside the no-upstream one, and a code change only if that test shows the branch deleted.",
+          "title": "Plan: abandon keeps an unpushed branch (autonomous)"
+        },
+        "handle": "abandon-unpushed-plan",
+        "id": "01M6JX2TS2RMRND0XD3MV6W7A8",
+        "key": null,
+        "kind": "source",
+        "node": "01M6JX2TS2RMRND0XD3JTHR6Q9",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6JWSCZYYQVFR6ZTVWS6JWJ0",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JX2ZHTJ478WEBDB58HHRHF",
+  "type": "ops",
+  "v": 1
+}

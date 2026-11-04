@@ -1,0 +1,30 @@
+{
+  "actor": "01M6JWSXGBWPDXN3JMHQTT8G7W",
+  "after": [
+    "01M6JWXH21S7YKXVQCQGY6TRQN"
+  ],
+  "at": "2026-11-04T09:06:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "b947d57e-7bee-4636-b577-01a1a5cce3e1",
+          "statement": "PR #164 already switched rhiza run abandon to `git branch -d`, and run-abandon-unmerged.txtar shows it keeping a never-pushed branch with no upstream. The model has no leaf for this, and nothing tests a branch that has an upstream plus local commits never pushed to it. What should change set 01M6JWSC build?"
+        },
+        "handle": "question-b947d57e-1",
+        "id": "01M6JWYSPB5EGQSMT7B8F7F871",
+        "key": null,
+        "kind": "question",
+        "node": "01M6JWYSPB5EGQSMT7B69C5NW8",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6JWSCZYYQVFR6ZTVWS6JWJ0",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JWYVZTTZJN2GX02TMW5RF4",
+  "type": "ops",
+  "v": 1
+}
