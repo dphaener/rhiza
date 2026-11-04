@@ -1,0 +1,41 @@
+{
+  "actor": "01M6M06Z1RDKPNSY779DX3MQJC",
+  "after": [
+    "01M6M06PWV4VPNM8S1RZ3JBRD1"
+  ],
+  "at": "2026-11-04T19:25:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Intent: milestone-25 is the daemon emptying the backlog on its own, and the landed change sets about the cost of tests and runs on the VM (01M6JJMK3M50 test suite cheap in many worktrees, 01M6HR3VBT4D timing budgets in quiet, 01M6KV89S5MK cheap inbox, 01M6HW7MG0ZV github runner) all serve it; this one removes the same CPU contention (~35% steal) that slows the daemon's runs, so it fits there, not m24 (VM setup, done) or m26 (Nebari import). Specificity: internal/guide/text/build.md and review.md are generic today and mention no make or go commands, and the question itself notes they ship to every repo including Nebari, which is not a Go/make repo; a Go-specific rule there would be wrong advice elsewhere. The owner's reason ('we're going to run full CI anyway on GitHub before merge') is repo-independent, so the generic rule carries it, while the repo-specific commands belong where repo specifics already live: CLAUDE.md and the acceptance checks, which the change set's intent already lists.",
+          "statement": "The change set serves milestone-25 (01M6HKVRE1B7RPP12EN6J2GGXC). The build/review/plan guide topics and the built-in workflows' role prompts state the scoped-test rule repo-agnostically: run only the tests covering what your change touches, using the repo's own scoped commands, and never the repo's full suite, because the PR's CI runs it before merge. They name no Go, make or testscript commands; this repo's concrete commands (go test -trimpath on the touched packages, the affected testscripts, make self-check, never make check/make test/bare go test ./...) go in its CLAUDE.md and in the leaves' acceptance checks.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "scoped-tests-serve-m25-generic-rule",
+        "id": "01M6M0BQGFN47ZDN4APXZZMAFD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6M0BQGFN47ZDN4APT1K9BZ0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M0BQGFN47ZDN4APT1K9BZ0",
+        "id": "01M6M0BTBK86KVN2RRW0ZTRF06",
+        "link": "01M6M0BTBK86KVN2RRVY6EM0XJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M06NCT2Z31K6CF81ASAW2T",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6M01GYQHR9VMCZ54W5THARK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M0BYRXCN1KDA8AW3SYYJM6",
+  "type": "ops",
+  "v": 1
+}

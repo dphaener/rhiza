@@ -1,0 +1,182 @@
+{
+  "actor": "01M6M01VN00V21JZA7QZXS3CKW",
+  "after": [
+    "01M6M0E790J9E5B7SSB6ZJ1TER"
+  ],
+  "at": "2026-11-04T19:27:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quote": "Yes the test suites make sense, since we're going to run full CI anyway on GitHub before merge.",
+          "statement": "Agents in runs run only the tests covering what their change touches and never the repo's full suite; the PR's GitHub CI runs the full suite before every merge"
+        },
+        "handle": "ci-runs-full-suite",
+        "id": "01M6M0ECQ2TXFF5Y2V9MWWPYKW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6M0ECQ2TXFF5Y2V9J59HNX8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M0ECQ2TXFF5Y2V9J59HNX8",
+        "id": "01M6M0EGXJTPT3RDKXEPTTECN0",
+        "link": "01M6M0EGXJTPT3RDKXEP11MKAW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0DB1S00W14FAP15T97J8T",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6M0BQGFN47ZDN4APT1K9BZ0",
+        "id": "01M6M0EKYEBR3QP155RD4X1EA2",
+        "link": "01M6M0EKYEBR3QP155RBR00RRE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0DB1S00W14FAP15T97J8T",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "TestBuildText and TestReviewText in internal/guide assert that build.md states the rule for builders and verifiers and review.md for checks, critics and fixers, and that neither text contains go test, make check, make test or testscript; go test -trimpath ./internal/guide passes",
+          "statement": "The build and review guide topics, and so the rhiza-build and rhiza-review skills, tell builders, verifiers, checks, critics and fixers to run only the tests covering what their change touches, with the repo's own scoped commands, and never the repo's full suite, because the PR's CI runs it before merge; the rule names no Go, make or testscript command"
+        },
+        "handle": "guides-scoped-tests",
+        "id": "01M6M0EPMPD72KB5AZWCC513DP",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6M0EPMPD72KB5AZWBB9MRGM",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "decision": null,
+        "from": "01M6M0EPMPD72KB5AZWBB9MRGM",
+        "id": "01M6M0ESB14D4058QB86FA77TB",
+        "link": "01M6M0ESB14D4058QB84HME7DY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0ECQ2TXFF5Y2V9J59HNX8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6M0EPMPD72KB5AZWBB9MRGM",
+        "id": "01M6M0EXHDSQ9BSYMR2WWRT885",
+        "link": "01M6M0EXHDSQ9BSYMR2TGH445F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0BQGFN47ZDN4APT1K9BZ0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in internal/guide asserts plan.md states the scoped-acceptance rule and plan-review.md's missing-acceptance kind covers an acceptance check that runs the repo's full suite, and that neither text contains go test, make check, make test or testscript; go test -trimpath ./internal/guide passes",
+          "statement": "The plan and plan-review guide topics, and so the rhiza-plan skill, tell planners to write each leaf's acceptance check as the tests covering that leaf, never the repo's full suite, and plan-review counts an acceptance check that runs the full suite as a missing-acceptance finding; the wording names no Go, make or testscript command"
+        },
+        "handle": "plan-acceptance-scoped",
+        "id": "01M6M0F1732EDCT2C313BVQCFB",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6M0F1732EDCT2C312MBA43A",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "decision": null,
+        "from": "01M6M0F1732EDCT2C312MBA43A",
+        "id": "01M6M0F406CBX13DMP5YVKCTS7",
+        "link": "01M6M0F406CBX13DMP5TVVQBDB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0ECQ2TXFF5Y2V9J59HNX8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6M0F1732EDCT2C312MBA43A",
+        "id": "01M6M0F6YA17D4MH93YAMMR465",
+        "link": "01M6M0F6YA17D4MH93Y6ZKZ4RT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0BQGFN47ZDN4APT1K9BZ0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in internal/workflow loads the built-in build and review workflows and asserts each builder, verifier, check, critic and fixer prompt carries the rule and contains none of go test, make check, make test or testscript; go test -trimpath ./internal/workflow passes, and so does each cmd/rhiza testscript whose golden output prints these prompts, run by name with go test -trimpath ./cmd/rhiza -run 'TestScripts/<name>'",
+          "statement": "Every builder, verifier, check, critic and fixer prompt of the built-in build and review workflows tells the agent to run only the tests covering what its change touches and never the repo's full suite, which the PR's CI runs; the prompts name no Go, make or testscript command"
+        },
+        "handle": "role-prompts-scoped-tests",
+        "id": "01M6M0F9J7KPR4WJWBDNEQAQJ7",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6M0F9J7KPR4WJWBDMZ4X2WP",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "decision": null,
+        "from": "01M6M0F9J7KPR4WJWBDMZ4X2WP",
+        "id": "01M6M0FCNK5S9765FJ710S5WSP",
+        "link": "01M6M0FCNK5S9765FJ7038H9B7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0ECQ2TXFF5Y2V9J59HNX8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6M0F9J7KPR4WJWBDMZ4X2WP",
+        "id": "01M6M0FFRCHKRFVE9S9J62A8SY",
+        "link": "01M6M0FFRCHKRFVE9S9EMFSRKZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0BQGFN47ZDN4APT1K9BZ0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test reads CLAUDE.md and finds go test -trimpath, a TestScripts/<name> run and make self-check as the agents' scoped commands, and the rule that agents in runs never run make check, make test or a bare go test ./...; it no longer finds the unqualified line 'Run `make check` before calling any change done.'; that test passes with go test -trimpath on its package",
+          "statement": "This repo's CLAUDE.md tells agents in runs to test only what their change touches, with go test -trimpath on the touched packages, the affected cmd/rhiza testscripts run by name, and make self-check, and never make check, make test or a bare go test ./..., since the PR's GitHub CI runs make check before every merge"
+        },
+        "handle": "claude-md-scoped-tests",
+        "id": "01M6M0FK7XV5HMP0A70F4V4BS2",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6M0FK7XV5HMP0A70DZFF188",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6M0FK7XV5HMP0A70DZFF188",
+        "id": "01M6M0FP9ENWD8PTSTQYYQ5391",
+        "link": "01M6M0FP9ENWD8PTSTQY74EWTC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0ECQ2TXFF5Y2V9J59HNX8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6M0FK7XV5HMP0A70DZFF188",
+        "id": "01M6M0FS7PQS5AS1NWFNAB73P5",
+        "link": "01M6M0FS7PQS5AS1NWFJWFZBZT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0BQGFN47ZDN4APT1K9BZ0",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6M01GYQHR9VMCZ54W5THARK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M0FXV4SR0T87XZD489J9GD",
+  "type": "ops",
+  "v": 1
+}
