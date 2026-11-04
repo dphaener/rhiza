@@ -2080,7 +2080,7 @@ func (r *stepRunner) AgentStatus(sid string) (run.AgentStatus, error) {
 		return run.AgentStatus{}, err
 	}
 	if !rec.Status.Exited() {
-		if rec, err = r.markLostIfEnded(rec); err != nil {
+		if rec, err = r.markLostIfEnded(rec, hookEndGrace); err != nil {
 			return run.AgentStatus{}, err
 		}
 		rec = r.retryBlock(rec)

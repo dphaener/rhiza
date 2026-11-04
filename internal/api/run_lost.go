@@ -3,13 +3,15 @@ package api
 // This file holds how a run finds a session that ended while no run
 // watched it (a reboot killed its wrapper, so no exit was ever recorded):
 // on a rejoin (Rejoin), the session's record and its Rex block; on every
-// poll (AgentStatus), the record alone. Such a session gets an exit of
+// poll (AgentStatus), the record alone, once its SessionEnd mark is older
+// than hookEndGrace. Such a session gets an exit of
 // state "lost" written into its record, so exit-is-final holds and every
 // reader agrees.
 
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/session"
 )
@@ -19,6 +21,15 @@ const (
 	lostHookEnded = "SessionEnd without an exit report"
 	lostNoBlock   = "Rex block not found"
 )
+
+// hookEndGrace is how long a poll leaves a SessionEnd mark with no exit
+// unjudged. Claude's SessionEnd hook runs before its process exits, and the
+// wrapper records the exit only after it has waited on the process and
+// stopped following it, so a live session that ends normally has the mark
+// without an exit for a moment; a poll in that window must not call it
+// lost. A rejoin judges the mark at once: it follows a resume, when no
+// wrapper the run started is expected to be alive.
+const hookEndGrace = time.Minute
 
 // Rejoin is run.Rejoiner: the run rejoins session sid as a resume, before
 // its first poll. It reads the record, then asks Rex whether the session's
@@ -30,7 +41,7 @@ func (r *stepRunner) Rejoin(sid string) error {
 	if err != nil {
 		return err
 	}
-	rec, err = r.markLostIfEnded(rec)
+	rec, err = r.markLostIfEnded(rec, 0)
 	if err != nil || rec.Status.Exited() {
 		return err
 	}
@@ -39,9 +50,13 @@ func (r *stepRunner) Rejoin(sid string) error {
 }
 
 // markLostIfEnded writes a lost exit into rec's record when it has the
-// SessionEnd mark and no exit, and returns the record as it stands.
-func (r *stepRunner) markLostIfEnded(rec session.Record) (session.Record, error) {
+// SessionEnd mark, at least grace old, and no exit, and returns the record
+// as it stands.
+func (r *stepRunner) markLostIfEnded(rec session.Record, grace time.Duration) (session.Record, error) {
 	if rec.Status.Exited() || !rec.Status.HookEnded() {
+		return rec, nil
+	}
+	if grace > 0 && r.ctx.Now().Sub(rec.Status.Hook.At) < grace {
 		return rec, nil
 	}
 	return r.markLost(rec.ID, lostHookEnded)

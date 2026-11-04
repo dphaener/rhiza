@@ -20,6 +20,16 @@ func hookEnd(t *testing.T, f *messageFixture) {
 	f.setHook(t, session.StateDone, "")
 }
 
+// hookEndAt records the SessionEnd mark at age before the run's clock.
+func hookEndAt(t *testing.T, f *messageFixture, r *stepRunner, age time.Duration) {
+	t.Helper()
+	if _, err := f.st.Update(f.sid, func(x *session.Record) {
+		x.Status.Hook = &session.Report{State: session.StateDone, At: r.ctx.Now().UTC().Add(-age)}
+	}); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func wantLost(t *testing.T, f *messageFixture, detail string) {
 	t.Helper()
 	rec, err := f.st.Read(f.sid)
@@ -105,21 +115,46 @@ func TestRejoinRexUnreachableRetried(t *testing.T) {
 	wantLost(t, f, lostNoBlock)
 }
 
-// Mid-run, a record that gains the SessionEnd mark with no exit is lost on
-// the next poll, with no Rex call.
+// Mid-run, a record whose SessionEnd mark has stood past the grace with
+// no exit is lost on the next poll, with no Rex call.
 func TestPollHookEndedIsLostWithoutRex(t *testing.T) {
 	f, r := lostFixture(t)
 	f.setHook(t, session.StateWorking, "")
 	if s, _ := r.AgentStatus(f.sid); s.Done {
 		t.Fatalf("done too early: %+v", s)
 	}
-	hookEnd(t, f)
+	hookEndAt(t, f, r, hookEndGrace)
 	s, err := r.AgentStatus(f.sid)
 	if err != nil || !s.Done || !s.Lost || s.Outcome != "fail" {
 		t.Fatalf("status %+v %v", s, err)
 	}
 	f.noRex(t, "per-poll check")
 	wantLost(t, f, lostHookEnded)
+}
+
+// A fresh SessionEnd mark is not judged on a poll: a session ending
+// normally has it before its wrapper records the exit. The exit that
+// follows is what the poll then reads.
+func TestPollFreshHookEndNotJudged(t *testing.T) {
+	f, r := lostFixture(t)
+	hookEndAt(t, f, r, hookEndGrace-time.Second)
+	s, err := r.AgentStatus(f.sid)
+	if err != nil || s.Done {
+		t.Fatalf("status %+v %v", s, err)
+	}
+	if rec, _ := f.st.Read(f.sid); rec.Status.Exit != nil {
+		t.Fatalf("exit written: %+v", rec.Status.Exit)
+	}
+	code := 0
+	if _, err := f.st.Update(f.sid, func(x *session.Record) {
+		x.Status.Exit = &session.Report{State: session.StateExited, Code: &code, At: time.Now()}
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if s, _ := r.AgentStatus(f.sid); !s.Done || s.Lost || s.Outcome != "pass" {
+		t.Errorf("status %+v", s)
+	}
+	f.noRex(t, "per-poll check")
 }
 
 // An exit already on the record is final: the lost check never replaces it.
@@ -135,5 +170,34 @@ func TestLostNeverReplacesExit(t *testing.T) {
 	}
 	if s, _ := r.AgentStatus(f.sid); !s.Done || s.Lost || s.Outcome != "pass" {
 		t.Errorf("status %+v", s)
+	}
+}
+
+// A wrapper whose session a run judged lost while it ran keeps that lost
+// exit: it does not overwrite it with its own, so the record and the run
+// agree.
+func TestSessionRunKeepsLostExit(t *testing.T) {
+	f, s, fs := runFixture(t, `{"permission_mode":"manual"}`)
+	fs.agent.code = 0
+	st := session.NewStore(session.Dir(f.common))
+	f.ctx.Start = func(p Program) (Process, error) {
+		if p.Terminal {
+			if _, err := st.Update(s.ID, func(x *session.Record) {
+				x.Status.Exit = &session.Report{State: session.StateLost, Detail: lostHookEnded, At: time.Now()}
+			}); err != nil {
+				t.Fatal(err)
+			}
+		}
+		return fs.start(p)
+	}
+	if _, err := callOp(t, f.ctx, "session.run", `{"id":"`+s.ID+`"}`); err != nil {
+		t.Fatal(err)
+	}
+	rec, err := st.Read(s.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if x := rec.Status.Exit; x == nil || x.State != session.StateLost || x.Code != nil {
+		t.Errorf("exit %+v, want the lost exit kept", x)
 	}
 }
