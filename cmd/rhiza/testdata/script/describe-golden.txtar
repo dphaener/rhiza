@@ -14516,7 +14516,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "workflow": {
-            "description": "The workflow: a .toml file (a path with a / or ending in .toml), else a name: .rhiza/workflows/<name>.toml, else a built-in; default ship-change",
+            "description": "The workflow: a .toml file (a path with a / or ending in .toml), else a name: your personal $XDG_CONFIG_HOME/rhiza/workflows/<name>.toml, else .rhiza/workflows/<name>.toml, else a built-in; default ship-change",
             "type": "string"
           }
         },
@@ -21763,6 +21763,327 @@ cmp stdout describe.golden.json
       },
       "summary": "Withdraw a change set that has not landed",
       "write": true
+    },
+    {
+      "name": "workflow.check",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "workflow": {
+            "description": "A workflow name (personal, repo, then built-in) or a .toml file path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workflow"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "description": "The workflow's name",
+            "type": "string"
+          },
+          "path": {
+            "description": "The file it resolved from, or builtin:<name>",
+            "type": "string"
+          },
+          "problems": {
+            "description": "Every problem found; empty when valid",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "message": {
+                  "description": "What is wrong and what is wanted",
+                  "type": "string"
+                },
+                "step": {
+                  "description": "The step the problem is in; empty for a problem of the whole file",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "message",
+                "step"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "valid": {
+            "description": "True when run start would accept the workflow",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "path",
+          "problems",
+          "valid"
+        ],
+        "type": "object"
+      },
+      "summary": "Validate a workflow as run start would, with includes expanded, and report every problem with the step it is in; starts nothing",
+      "write": false
+    },
+    {
+      "name": "workflow.describe",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "workflow": {
+            "description": "A workflow name (personal, repo, then built-in) or a .toml file path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workflow"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "includes": {
+            "description": "The workflows it includes, directly or through another, sorted",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "layer": {
+            "description": "personal, repo, builtin or file",
+            "type": "string"
+          },
+          "name": {
+            "description": "The workflow's name",
+            "type": "string"
+          },
+          "path": {
+            "description": "The file it resolved from, or builtin:<name>",
+            "type": "string"
+          },
+          "shadows": {
+            "description": "The lower layers the winner hides, highest first; empty when none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "layer": {
+                  "description": "personal, repo or builtin",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "The file, or builtin:<name> for a built-in",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "layer",
+                "path"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "start": {
+            "description": "The step a run enters first",
+            "type": "string"
+          },
+          "steps": {
+            "description": "Every step in order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "description": "agent, wait, command, arbiter, leaves, checks or signoff",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "The step's name; <workflow>/<step> for a step of an included workflow",
+                  "type": "string"
+                },
+                "on": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "The next step (or done or failed) by outcome",
+                  "type": "object"
+                },
+                "roles": {
+                  "description": "The step's sessions, with their model ladders and prompts",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "models": {
+                        "description": "The model ladder by attempt or cycle; empty means the agent's default",
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "prompt": {
+                        "description": "The role's first prompt template",
+                        "type": "string"
+                      },
+                      "role": {
+                        "description": "The role: agent, builder, verifier, critic, fixer or a check's name",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "models",
+                      "prompt",
+                      "role"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "kind",
+                "name",
+                "on",
+                "roles"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "includes",
+          "layer",
+          "name",
+          "path",
+          "shadows",
+          "start",
+          "steps"
+        ],
+        "type": "object"
+      },
+      "summary": "Show a workflow as run start resolves it: where it comes from, the layers it shadows, its start step, each step with its targets and roles, and the workflows it includes; starts nothing",
+      "write": false
+    },
+    {
+      "name": "workflow.ls",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "workflows": {
+            "description": "Every reachable workflow, sorted by name",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "layer": {
+                  "description": "The layer a bare name resolves to: personal, repo or builtin",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "The workflow's bare name",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "The winning file, or builtin:<name>",
+                  "type": "string"
+                },
+                "shadows": {
+                  "description": "The lower layers the winner hides, highest first; empty when none",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "layer": {
+                        "description": "personal, repo or builtin",
+                        "type": "string"
+                      },
+                      "path": {
+                        "description": "The file, or builtin:<name> for a built-in",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "layer",
+                      "path"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "layer",
+                "name",
+                "path",
+                "shadows"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "workflows"
+        ],
+        "type": "object"
+      },
+      "summary": "List every workflow a bare name can reach (personal, repo, built-in), each with the layer and path it comes from and the layers it shadows",
+      "write": false
+    },
+    {
+      "name": "workflow.new",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "description": "A workflow name to fork (personal, repo, then built-in) or a .toml file path; without it a skeleton is written",
+            "type": "string"
+          },
+          "name": {
+            "description": "The new workflow's bare name (no / and no .toml)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "from": {
+            "description": "Where the copy came from; empty for a skeleton",
+            "type": "string"
+          },
+          "name": {
+            "description": "The new workflow's name",
+            "type": "string"
+          },
+          "path": {
+            "description": "The file written",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "path"
+        ],
+        "type": "object"
+      },
+      "summary": "Write .rhiza/workflows/<name>.toml: a copy of a resolved workflow with its name set (--from), else a minimal commented skeleton; refuses an existing file and validates the result as workflow check does",
+      "write": false
     }
   ]
 }

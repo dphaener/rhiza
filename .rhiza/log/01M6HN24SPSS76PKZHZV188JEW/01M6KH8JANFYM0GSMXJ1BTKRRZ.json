@@ -1,0 +1,40 @@
+{
+  "actor": "01M6KEAATNH5YJE0YVJEN37CQF",
+  "after": [
+    "01M6KEPZJSG2CX1ZT4ZB308MWB"
+  ],
+  "at": "2026-11-04T15:01:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-27a34381 at e1de2772 (attempt 2). Ran make test: cmd/rhiza scripts pass, including testdata/script/workflow-ls.txtar. The script sets up a personal file (XDG_CONFIG_HOME), a repo file and the built-ins, and checks that `build personal <xdg path>` is followed by `shadows repo <repo path>` and `shadows builtin builtin:build`, that mine/plan/solo/ship-change show their own layers, and that `workflow ls --json` is cmp-identical to `api call workflow.ls`. Repeated by hand with a scratch binary in a scratch repo with personal and repo build.toml, repo-only mine.toml and personal-only solo.toml: each name appears once (uniq -d empty), the winning layer and path are right, the shadowed layers are listed, and the --json and api call outputs are byte-identical. The attempt-1 finding is fixed: e1de2772 drops the rendered actor pages that came from untracked records and adds the builder's tracked actor record. `make fmt-check vet self-check`, with RHIZA_ROOT/CHANGE/RUN unset, passes (rhiza check ok). One unrelated failure: TestReadBudget (internal/api) ran roadmap/ready what-if at 61-63ms against a 50ms budget on a 4-CPU host at load average 8. It reads a generated model (gen.Default), not the repo's .rhiza, and e1de2772 changes only .rhiza files, so this is machine contention, not this leaf."
+        },
+        "handle": "workflow-ls-verified",
+        "id": "01M6KH85HV5SDTT280G661PBCD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KH85HV5SDTT280G2J36EEK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KH85HV5SDTT280G2J36EEK",
+        "id": "01M6KH8AJ9RG105NYNMXN7M8NK",
+        "link": "01M6KH8AJ9RG105NYNMT1EWCZC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNBDN6QV991BT9C284SA3H",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HN24SPSS76PKZHZV188JEW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KH8JANFYM0GSMXJ1BTKRRZ",
+  "type": "ops",
+  "v": 1
+}

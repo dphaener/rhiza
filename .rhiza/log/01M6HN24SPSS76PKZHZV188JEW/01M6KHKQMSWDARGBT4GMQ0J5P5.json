@@ -1,0 +1,40 @@
+{
+  "actor": "01M6KFGWE0Y3Q9V7VB84ECHDZJ",
+  "after": [
+    "01M6KH8JANFYM0GSMXJ1BTKRRZ"
+  ],
+  "at": "2026-11-04T15:07:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 98a46ce3, cmd/rhiza/testdata/script/workflow-new.txtar forks ship-change with --from and checks it (only the name line differs, a fork of the fork is the same bytes, workflow check passes). It writes a skeleton that passes workflow check and run start --dry-run. It now asserts exit 3 on an existing file (with and without --from, plus code conflict under --json) with the file left byte-for-byte unchanged, asserts exit 2 for sub/x and x.toml, and checks --dry-run writes nothing. `go test ./cmd/rhiza -run 'TestScripts/(workflow-new|describe-golden)$'` and `go test ./internal/api -run WithName` pass. By hand, with a scratch binary in a scratch repo (HOME/XDG in the scratchpad, RHIZA_* unset): the fork diffs from internal/workflow/builtin/ship-change.toml only in name and is valid. The skeleton is commented and valid. Repeating new skel exits 3 (also with --from mine) and the sha1 is unchanged. a/b and a.toml exit 2. --dry-run d prints 'would write' and creates no file. With RHIZA_ROOT/CHANGE/RUN/ACTOR unset, fmt-check, vet, self-check and make test pass. One earlier make test run failed under machine-wide lock contention; its output was truncated and a full rerun passed."
+        },
+        "handle": "workflow-new-verified",
+        "id": "01M6KHKF60GFWGKGN82EW4ZHZS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KHKF60GFWGKGN82BPKW8FW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KHKF60GFWGKGN82BPKW8FW",
+        "id": "01M6KHKJJ0AD7VQ1XNCMXBYPBX",
+        "link": "01M6KHKJJ0AD7VQ1XNCM5J5RS8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNBHR1P4N0M34NBQD7V10H",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HN24SPSS76PKZHZV188JEW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KHKQMSWDARGBT4GMQ0J5P5",
+  "type": "ops",
+  "v": 1
+}

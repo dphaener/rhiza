@@ -1,0 +1,155 @@
+{
+  "actor": "01M6KJRQPCJ97N48BWEE9HMVPA",
+  "after": [
+    "01M6KJNSC47TC56C2X1V9BCZNC"
+  ],
+  "at": "2026-11-04T15:34:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build of this branch in a scratch git repo, hermetic HOME: a personal myflow.toml under ~/.config/rhiza/workflows (XDG_CONFIG_HOME unset) shadowed the repo's .rhiza/workflows/myflow.toml in workflow ls; with XDG_CONFIG_HOME set, the $XDG_CONFIG_HOME/rhiza/workflows file won. Gave cmdonly a personal and a repo file, each a command step writing its layer name. run start --workflow cmdonly --foreground and a repo workflow 'outer' (a workflow step naming cmdonly) both ran the personal file (said.txt = layer-personal). Each run journal recorded workflow_path as the personal file's path (outer.toml for outer)"
+        },
+        "handle": "workflow-overrides-qa-1",
+        "id": "01M6KK1A8E31D0Y67Q22W0T8QT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KK1A8DJWSDNXVM5P77JGEA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KK1A8DJWSDNXVM5P77JGEA",
+        "id": "01M6KK1M6G0HM9DD1AR450P3Z6",
+        "link": "01M6KK1M6G0HM9DD1AR080PZQ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5SWT9GPK3F87HZRV8V9XY8D",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build: workflow ls in a scratch repo listed the 4 built-ins as builtin:<name>. After adding repo and personal files it showed each name once with its winning layer and path, plus 'shadows repo <path>' and 'shadows builtin builtin:review' lines for review (personal > repo > builtin). workflow ls --json printed the same bytes as rhiza api call workflow.ls '{}' (cmp)"
+        },
+        "handle": "workflow-ls-qa-1",
+        "id": "01M6KK1WRXMNMDEE4K712GER7T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KK1WRXMNMDEE4K6XTC67MC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KK1WRXMNMDEE4K6XTC67MC",
+        "id": "01M6KK25N397C378YKGXCXMNX2",
+        "link": "01M6KK25N397C378YKGSM5FC94",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNBDN6QV991BT9C284SA3H",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build: workflow describe ship-change showed source builtin:ship-change, start build/build, includes build, review, and steps as <workflow>/<step> with kinds, on.* targets and roles with model ladders and prompts. A personal review shadowing repo and builtin showed both shadows lines. Editing the repo review.toml changed what ship-change's included review resolved to (shared resolver). describe left the file count under .git/rhiza and .rhiza unchanged (18 -> 18). --json was byte-identical to api call workflow.describe '{\"workflow\":\"ship-change\"}'"
+        },
+        "handle": "workflow-describe-qa-1",
+        "id": "01M6KK2F5VB8Q8566WB8KR8BVD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KK2F5VB8Q8566WB5YKKD9T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KK2F5VB8Q8566WB5YKKD9T",
+        "id": "01M6KK2RDC1X2EA837MKBG50QT",
+        "link": "01M6KK2RDC1X2EA837MFNCC6DS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNBFTE249W98NA8YV0PKCP",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build: workflow check on build, plan, review and ship-change and on testdata/valid.toml exited 0 ('is valid'). bad-outcome, missing-target and unknown-kind each exited 1 naming the step and the problem. A file with two bad steps reported both, in the same bytes across 8 runs. A workflow step naming a missing workflow 'ghost' was reported. --json was byte-identical to api call workflow.check"
+        },
+        "handle": "workflow-check-qa-1",
+        "id": "01M6KK379M4TKYNH0NQNYXD6JY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KK379M4TKYNH0NQMZ3DQFT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KK379M4TKYNH0NQMZ3DQFT",
+        "id": "01M6KK3G74NMZV8GTR1JDZ8DBE",
+        "link": "01M6KK3G74NMZV8GTR1JBYQVFB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNBKTRQ2H5SNEPMXYSQVNX",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build: workflow new sc --from ship-change wrote .rhiza/workflows/sc.toml, which diffs from internal/workflow/builtin/ship-change.toml only in the name line and passes workflow check. workflow new myflow wrote a commented skeleton that passes check and runs under run start --workflow myflow --dry-run ('would start', nothing written). Re-running new on an existing name exited 3 with the file unchanged; a/b and x.toml exited 2; --dry-run printed 'would write' and created no file"
+        },
+        "handle": "workflow-new-qa-1",
+        "id": "01M6KK3RV9XQ5TM5QJ3XR9TX07",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KK3RV9XQ5TM5QJ3T1WDHN5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KK3RV9XQ5TM5QJ3T1WDHN5",
+        "id": "01M6KK41MG2EV260XKMMDMPKZF",
+        "link": "01M6KK41MG2EV260XKMK1A6VFQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNBHR1P4N0M34NBQD7V10H",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build: rhiza guide ls lists the workflows topic. rhiza guide workflows covers the personal/repo/built-in layers, every step kind and its keys (agent, wait, command, leaves, checks, signoff, arbiter, workflow), outcomes, the reserved targets done/failed, includes as <workflow>/<step>, and the ls/new/describe/check/run start --dry-run loop. I followed that loop by hand in a scratch repo and it worked as written"
+        },
+        "handle": "workflow-guide-topic-qa-1",
+        "id": "01M6KK4AT87AEA1T9RA4CXJAKW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KK4AT87AEA1T9RA2S5PPN5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KK4AT87AEA1T9RA2S5PPN5",
+        "id": "01M6KK4J3M518R65BPZTBQFSTG",
+        "link": "01M6KK4J3M518R65BPZSWJ5GWB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNBNSSMC77JWXF4Q21GM0G",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HN24SPSS76PKZHZV188JEW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KK4Z9NVQ11XER7Z4KZ99JR",
+  "type": "ops",
+  "v": 1
+}
