@@ -1977,7 +1977,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "detail": {
-                  "description": "The readiness reasons, when the reason is not-ready; else empty",
+                  "description": "The readiness reasons, when the reason is not-ready; the free space, when disk-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; else empty",
                   "items": {
                     "type": "string"
                   },
@@ -6070,6 +6070,18 @@ cmp stdout describe.golden.json
       "request": {
         "additionalProperties": false,
         "properties": {
+          "all": {
+            "description": "Return every change set, ignoring --limit and --cursor",
+            "type": "boolean"
+          },
+          "cursor": {
+            "description": "Where to go on: the next_cursor of the page before",
+            "type": "string"
+          },
+          "limit": {
+            "description": "The most change sets to return, 1 to 1000; default 100",
+            "type": "integer"
+          },
           "ref": {
             "description": "The node or link: an ID, a unique ID prefix of 4+ characters, or a node's handle",
             "type": "string"
@@ -6088,7 +6100,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "change_sets": {
-            "description": "Every change set that touched it, in apply order",
+            "description": "The change sets that touched it, in apply order; one page",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -6220,6 +6232,10 @@ cmp stdout describe.golden.json
               "type": "object"
             },
             "type": "array"
+          },
+          "next_cursor": {
+            "description": "The cursor of the next page; absent when no more remain",
+            "type": "string"
           },
           "target": {
             "additionalProperties": false,
@@ -7326,6 +7342,18 @@ cmp stdout describe.golden.json
       "request": {
         "additionalProperties": false,
         "properties": {
+          "all": {
+            "description": "Return every change set, ignoring --limit and --cursor",
+            "type": "boolean"
+          },
+          "cursor": {
+            "description": "Where to go on: the next_cursor of the page before",
+            "type": "string"
+          },
+          "limit": {
+            "description": "The most change sets to return, 1 to 1000; default 100",
+            "type": "integer"
+          },
           "view": {
             "description": "The view: as-is, to-be or what-if:<change set>; default to-be, whatever the current change set",
             "type": "string"
@@ -7338,7 +7366,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "groups": {
-            "description": "One group per milestone served, in intent-tree order, then the backlog, then one per umbrella",
+            "description": "One group per milestone served, in intent-tree order, then the backlog, then one per umbrella; one page of change sets, and only the groups with change sets on it",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -7438,6 +7466,10 @@ cmp stdout describe.golden.json
               "type": "object"
             },
             "type": "array"
+          },
+          "next_cursor": {
+            "description": "The cursor of the next page; absent when no more remain",
+            "type": "string"
           },
           "view": {
             "description": "The view read: as-is, to-be or what-if:<ID>",
@@ -21338,6 +21370,18 @@ cmp stdout describe.golden.json
       "request": {
         "additionalProperties": false,
         "properties": {
+          "all": {
+            "description": "Return every entry, ignoring --limit and --cursor",
+            "type": "boolean"
+          },
+          "cursor": {
+            "description": "Where to go on: the next_cursor of the page before",
+            "type": "string"
+          },
+          "limit": {
+            "description": "The most entries to return across decisions, sources and change sets, 1 to 1000; default 100",
+            "type": "integer"
+          },
           "ref": {
             "description": "The node: an ID, a unique ID prefix of 4+ characters, or a handle",
             "type": "string"
@@ -21489,6 +21533,10 @@ cmp stdout describe.golden.json
               "type": "object"
             },
             "type": "array"
+          },
+          "next_cursor": {
+            "description": "The cursor of the next page; absent when no more remain",
+            "type": "string"
           },
           "node": {
             "additionalProperties": false,

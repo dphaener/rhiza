@@ -1,0 +1,40 @@
+{
+  "actor": "01M6HRB3P4EN6NMT78KYZ30YPY",
+  "after": [
+    "01M6H457HQPHWD8NR6G96CYFY2"
+  ],
+  "at": "2026-11-03T23:13:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a34e86f3 I read the diff (internal/api/lineage.go, log-paged.txtar, describe-golden.txtar) and ran go test ./cmd/rhiza -run 'TestScripts/(log-paged|describe-golden|log)': ok. log-paged.txtar logs a node touched by three change sets: --limit 2 gives two, a next_cursor and a 'next: rhiza log store --limit 2 --cursor <c>' line; that cursor's page holds the third with no next_cursor; --all gives three; --limit 0 gives the default page; --limit -1, --limit 1001 and a bad cursor exit 2; log --json and api call log cmp equal. Regenerating describe-golden with -update left git status clean. By hand with a scratch build on this repo: log rhiza --limit 1 printed the next: line and next_cursor; --limit 1001 and --cursor zz exited 2 with 'next: rhiza describe log'. fmt-check, vet and self-check pass. Under load average 14-22 on 4 cores, go test ./... failed only run-command-step-output (passes 3/3 alone; the leaf touches no run code) and the modelapp tree/roadmap read-timing budget (log is not read there): runner contention, not this leaf."
+        },
+        "handle": "log-paged-verified",
+        "id": "01M6HV04Z3XE6NXZF5KVPB0SV3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6HV04Z3XE6NXZF5KSVFGVWZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HV04Z3XE6NXZF5KSVFGVWZ",
+        "id": "01M6HV0BNSTBCBNSVKFHFAE01Z",
+        "link": "01M6HV0BNSTBCBNSVKFH5VPDD8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H3M6MXZQMD7EMF9FPNGPE0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6H3A65RDP761HKE82STZSQZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HV0R423GGTK7NXYMRNH6S7",
+  "type": "ops",
+  "v": 1
+}

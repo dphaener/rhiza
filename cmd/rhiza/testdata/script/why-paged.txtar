@@ -1,0 +1,153 @@
+# why pages decisions, then sources, then change sets as one sequence.
+
+exec rhiza init
+exec rhiza change new Base
+exec rhiza add capability store
+exec rhiza add capability cache --parent store
+exec rhiza add source talk --field 'summary=The owner said caching is the point.'
+exec rhiza add decision use-ram --field 'statement=RAM.'
+exec rhiza add decision old-way
+exec rhiza link cache decided-by use-ram
+exec rhiza link use-ram derived-from talk
+exec rhiza link use-ram supersedes old-way
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+
+# Four entries: two decisions, a source, a change set.
+exec rhiza why cache --all
+stdout -count=3 '^### '
+stdout -count=1 '^- [0-9A-Z]{26} landed'
+! stdout 'next:'
+exec rhiza why cache --all --json
+cp stdout all.json
+
+# Limit 3 ends inside the sources/change sets boundary.
+exec rhiza why cache --limit 3
+stdout '^# Why cache$'
+stdout '^### use-ram$'
+stdout '^### old-way$'
+stdout '^### talk$'
+! stdout '^- [0-9A-Z]{26} landed'
+stdout '^next: rhiza why cache --limit 3 --cursor [A-Za-z0-9_-]+$'
+exec rhiza why cache --limit 3 --json
+stdout '"node"'
+stdout '"view"'
+stdout '"next_cursor": "[A-Za-z0-9_-]+"'
+cp stdout p1.json
+exec rhiza api call why '{"ref":"cache","limit":3}'
+cmp stdout p1.json
+
+# The next page has the change set only, the node and no next_cursor.
+exec sh -c 'rhiza why cache --limit 3 | sed -n "s/^next: .* --cursor //p" > cursor.txt'
+exec sh -c 'rhiza why cache --limit 3 --cursor "$(cat cursor.txt)"'
+stdout '^# Why cache$'
+stdout -count=1 '^- [0-9A-Z]{26} landed'
+! stdout '^### '
+! stdout 'None\.'
+! stdout 'next:'
+exec sh -c 'rhiza why cache --limit 3 --cursor "$(cat cursor.txt)" --json'
+stdout '"node"'
+stdout '"view"'
+! stdout 'next_cursor'
+
+# One per page: the first page holds use-ram, the fourth ends on the
+# change set with no next:. The walks below check every entry in order.
+exec sh -c 'rhiza why cache --limit 1 --json > q1.json; grep -c use-ram q1.json'
+stdout '^[1-9]'
+exec sh -c 'rhiza why cache --limit 1 | sed -n "s/^next: .* --cursor //p" > c1.txt; rhiza why cache --limit 1 --cursor "$(cat c1.txt)" | sed -n "s/^next: .* --cursor //p" > c2.txt; rhiza why cache --limit 1 --cursor "$(cat c2.txt)" | sed -n "s/^next: .* --cursor //p" > c3.txt; rhiza why cache --limit 1 --cursor "$(cat c3.txt)"'
+stdout -count=1 '^- [0-9A-Z]{26} landed'
+! stdout 'next:'
+
+# A second change set edits cache and adds a third decision and a second
+# source, so --limit 2 splits decisions, sources and change sets across
+# pages.
+exec rhiza change new More
+exec rhiza set cache --field 'statement=Keep hot data in RAM.'
+exec rhiza add decision fast-path --field 'statement=Fast.'
+exec rhiza add source memo --field 'summary=A memo.'
+exec rhiza link cache decided-by fast-path
+exec rhiza link fast-path derived-from memo
+exec rhiza propose
+exec rhiza accept --reason ok
+exec rhiza land
+
+# Each --json page's entries, as list and ID, in order: walk every page
+# of 1, 2 and 3, and each walk equals --all entry for entry. Every page
+# carries node and view, only the last has no next_cursor, and pages of
+# two split decisions/sources and sources/change sets.
+exec sh -c 'rhiza why cache --all --json | awk "$(cat entries.awk)"'
+cp stdout all-entries.txt
+exec sh -c 'grep -c . all-entries.txt; cut -d" " -f1 all-entries.txt | uniq'
+cmp stdout want-lists.txt
+exec sh walk.sh 1
+cmp stdout all-entries.txt
+cmp pages.txt want-pages-1.txt
+exec sh walk.sh 2
+cmp stdout all-entries.txt
+cmp pages.txt want-pages-2.txt
+exec sh walk.sh 3
+cmp stdout all-entries.txt
+cmp pages.txt want-pages-3.txt
+
+# Usage errors, exit 2.
+! exec rhiza why cache --limit -1
+! exec rhiza why cache --limit 1001
+! exec rhiza why cache --cursor '!!'
+stderr '^rhiza: bad cursor'
+exec sh -c 'rhiza why cache --limit 1001 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+exec sh -c 'rhiza why cache --cursor "!!" 2>/dev/null; echo exit $?'
+stdout '^exit 2$'
+
+-- entries.awk --
+# Each entry of a why --json answer as its list and ID, decisions then
+# sources then change sets: the order why pages them in.
+/^  "[a-z_]+": \[/ { list = $1; gsub(/[":]/, "", list) }
+/^      "id": / { id = $2; gsub(/[",]/, "", id); got[list] = got[list] list " " id "\n" }
+END { printf "%s%s%s", got["decisions"], got["sources"], got["change_sets"] }
+-- walk.sh --
+# walk.sh N walks every --json page of N, printing each page's entries
+# and writing one line per page to pages.txt: its entry count, how many
+# of node and view it carries, whether a next_cursor follows, and the
+# lists its entries come from.
+n=$1
+c=
+: > pages.txt
+: > walked.txt
+while :; do
+	if [ -z "$c" ]; then set --; else set -- --cursor "$c"; fi
+	rhiza why cache --limit "$n" "$@" --json > page.json || exit 1
+	awk "$(cat entries.awk)" page.json > entries.txt
+	cat entries.txt >> walked.txt
+	k=$(grep -c . entries.txt)
+	nv=$(grep -c -E '^  "(node|view)": ' page.json)
+	lists=$(cut -d" " -f1 entries.txt | uniq | paste -sd, -)
+	c=$(sed -n 's/.*"next_cursor": "\(.*\)".*/\1/p' page.json)
+	if [ -n "$c" ]; then more=next; else more=last; fi
+	echo "$k $nv $more $lists" >> pages.txt
+	[ -z "$c" ] && break
+done
+cat walked.txt
+-- want-lists.txt --
+7
+decisions
+sources
+change_sets
+-- want-pages-1.txt --
+1 2 next decisions
+1 2 next decisions
+1 2 next decisions
+1 2 next sources
+1 2 next sources
+1 2 next change_sets
+1 2 last change_sets
+-- want-pages-2.txt --
+2 2 next decisions
+2 2 next decisions,sources
+2 2 next sources,change_sets
+1 2 last change_sets
+-- want-pages-3.txt --
+3 2 next decisions
+3 2 next sources,change_sets
+1 2 last change_sets

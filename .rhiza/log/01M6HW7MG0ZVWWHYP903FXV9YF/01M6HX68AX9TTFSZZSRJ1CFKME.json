@@ -1,0 +1,86 @@
+{
+  "actor": "01M6HW8B35F5P99KA1SYZP06MV",
+  "after": [
+    "01M6HX1GVFXWHX3Y9KFTNFYV17"
+  ],
+  "at": "2026-11-03T23:51:30Z",
+  "body": {
+    "drop": [
+      "01M6HX09ZGY40GG4VXQG8EFXF4",
+      "01M6HX0Q71CPGJSXSVX60NECNE"
+    ],
+    "ops": [
+      {
+        "fields": {
+          "quote": "In the past this was because the remote origin was https and not ssh.",
+          "statement": "The .github/workflows/ci.yml edit is an agent-built leaf of this change set, replacing part (4) of ci-main-and-cancel: origin now uses SSH with the VM's key, which the token's missing workflow scope does not limit. It ships in the same PR as ship-main-tree-check, so main stops running CI only together with ship-change no longer waiting for it."
+        },
+        "handle": "ci-yml-agent-built",
+        "id": "01M6HX39EBGJBJJS89P7FHERE0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6HX39EBGJBJJS89P3N86CGX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HX39EBGJBJJS89P3N86CGX",
+        "id": "01M6HX3T4JY86D6GSBVN1M9BNF",
+        "link": "01M6HX3T4JY86D6GSBVH50F7C9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HWK1AWW9CKCY5PB01YDASY",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": ".github/workflows/ci.yml has pull_request as its only trigger and a concurrency group keyed on the pull request number with cancel-in-progress: true; on this change set's PR, a second push while a run is in progress leaves the earlier run cancelled, and the merge to main starts no CI run.",
+          "statement": "Rhiza's own CI runs only on pull requests, not on pushes to main, and a newer push to a pull request cancels that pull request's in-progress run."
+        },
+        "handle": "ci-yml-cancels-stale",
+        "id": "01M6HX48DQR5E1PQ4JM8NYSZ5Z",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6HX48DQR5E1PQ4JM4QN5H0C",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "decision": null,
+        "from": "01M6HX48DQR5E1PQ4JM4QN5H0C",
+        "id": "01M6HX4N22AWS0MMN47BARQ8FN",
+        "link": "01M6HX4N22AWS0MMN47AGVDJCH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HWFGAPK603YSDHDPB4BHAK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HX48DQR5E1PQ4JM4QN5H0C",
+        "id": "01M6HX509SWYRB8JJ0HJPN5WCC",
+        "link": "01M6HX509SWYRB8JJ0HF25R4FY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HX39EBGJBJJS89P3N86CGX",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HX48DQR5E1PQ4JM4QN5H0C",
+        "id": "01M6HX5C3JQD2R929B2P49TTB3",
+        "link": "01M6HX5C3JQD2R929B2MBVNEXR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HWK1AWW9CKCY5PB01YDASY",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6HW7MG0ZVWWHYP903FXV9YF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HX68AX9TTFSZZSRJ1CFKME",
+  "type": "ops",
+  "v": 1
+}

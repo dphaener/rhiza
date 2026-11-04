@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-04T01:55:02Z",
+  "body": {
+    "intent": "rhiza feed --follow streams each change set as it lands (NDJSON with --json), reusing the feed cursor (internal/api/feed.go). Carve leaf change-feed-follow out of umbrella 01M5SWSZED0AS0 (Area views)",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6J48HBGRJ04GMXM1CFWF3B3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J48HBGRJ04GMXM1F1T60H6",
+  "type": "open",
+  "v": 1
+}

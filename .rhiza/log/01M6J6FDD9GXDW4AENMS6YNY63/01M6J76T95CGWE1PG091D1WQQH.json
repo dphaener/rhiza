@@ -1,0 +1,41 @@
+{
+  "actor": "01M6J74M5F5KDQGR8JG3S9799A",
+  "after": [
+    "01M6J74AYJHA7BZPXEPZCENAAE"
+  ],
+  "at": "2026-11-04T02:46:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set serves m2-interviews-recorded (decision fix-plan-dup-serves-interviews-recorded) and its other decisions (skip-recorded-answer-by-question, capture-records-picks-planner-records-proxies) are all about answer capture in session done and the planner guide. Apply latency is a write-path or daemon CPU problem with different code, a different investigation and no link to interview capture; the intention text itself only points to it as 'see the daemon CPU bug'. No open change set covers it, but mixing a performance investigation into a small capture fix would widen review and delay the fix, so it belongs in its own change set rather than as leaves here.",
+          "statement": "The ~6 s per rhiza apply write on the VM is out of scope for change set 'Fix Plan interviews duplicate': no leaf here addresses apply latency or the daemon CPU bug. It stays recorded only as this answered question, and the owner opens its own change set for the write-path/daemon CPU performance work.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "apply-latency-out-of-scope",
+        "id": "01M6J760JG6SAFYCVBBB606262",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6J760JG6SAFYCVBB7HZQD0G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6J760JG6SAFYCVBB7HZQD0G",
+        "id": "01M6J76D62Q4DCBMRP93R0HW6A",
+        "link": "01M6J76D62Q4DCBMRP928TH4P6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J747QE3NSH03CFKXV23JC8",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6J6FDD9GXDW4AENMS6YNY63",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J76T95CGWE1PG091D1WQQH",
+  "type": "ops",
+  "v": 1
+}

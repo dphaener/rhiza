@@ -1,0 +1,40 @@
+{
+  "actor": "01M6HWA07FEEEDYNZNKPXVD4MS",
+  "after": [
+    "01M6J08X9CJNRY4TXM0B1VTTTJ"
+  ],
+  "at": "2026-11-04T00:46:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-e9b145b3 at b0414782 (diff ef89d415..b0414782 read). go test ./cmd/rhiza -run TestScripts/(roadmap-paged|describe-golden) passes: roadmap-paged.txtar builds m1{A,B}, m2{A}, backlog{C}, walks --limit 1 pages and cmps each page's group and change set against m1 A / m1 B / m2 A / Backlog C (so A appears once under each milestone, every entry once) and the kinds milestone x3 then backlog; the second page repeats the split m1 heading; the walked entries cmp equal to --all; roadmap --limit 1 --json and api call roadmap {\"limit\":1} cmp equal; --limit -1, --limit 1001 and --cursor !! each exit 2. describe-golden passes with limit/cursor/all and next_cursor. TestRoadmapOverAPageIsReadWhole (api: 104 change sets; default page short with cursor, --all whole, healthRoadmap counts all), roadmapapp TestReadsARoadmapOverAPageWhole and modelapp TestRoadmapTabReadsARoadmapOverAPageWhole all pass. All three attempt-1 findings are covered. fmt-check ok; rhiza check on a clean checkout of the commit ok; go test ./cmd/rhiza with RHIZA_* unset and -timeout 30m ok. Only wall-clock budget tests failed (modelapp TestGeneratedModel, api TestReadBudget, slice TestBudget) under load average 24-29 on 4 cores; TestGeneratedModel misses its 50ms budget the same way at the pre-leaf base (112-147ms vs 85-162ms at HEAD), so the failures come from load, not this leaf."
+        },
+        "handle": "roadmap-paged-verified",
+        "id": "01M6J0A23K3C1DSJBNWCT3ZQKC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6J0A23JR389EM5T2489WTAF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6J0A23JR389EM5T2489WTAF",
+        "id": "01M6J0AFKTP00CCCZKD0Z2V39B",
+        "link": "01M6J0AFKTP00CCCZKCYC3QQPX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6H3MCPWZBAV528M4JYX6AA8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6H3A65RDP761HKE82STZSQZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J0B1HK1BKDZ17J6C0B0H40",
+  "type": "ops",
+  "v": 1
+}

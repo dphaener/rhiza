@@ -1,0 +1,41 @@
+{
+  "actor": "01M6J6WJ6BGM50X848MPYJNCYJ",
+  "after": [
+    "01M6J6W9F4W415RWB3C100FA36"
+  ],
+  "at": "2026-11-04T02:42:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent asks session done to skip picks a Decision in the change set already answers. Decisions already have a question field (internal/op/fields.go) and session interview already holds each question verbatim (internal/api/session_interview.go), so an exact match needs no new link type or schema and is deterministic. Skipping all capture whenever the planner wrote any Source-linked Decision is coarser and would drop picks the planner did not record, losing owner answers, which is worse than an occasional duplicate. Covering the landed case through derived-from the session's Source keeps it correct when the change set lands early. Requiring planners to copy the question verbatim is a cheap guide rule that makes the match reliable.",
+          "statement": "session interview/session done skips an AskUserQuestion answer when a live Decision the change set created (or, once the change set has landed, a landed Decision derived-from this session's Source) has a question field equal to the asked question verbatim; only answers with no such Decision become answer-<sid8>-N Decisions. The planner guide tells planners who record an answer themselves to copy the asked question text verbatim into the Decision's question field.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "skip-recorded-answer-by-question",
+        "id": "01M6J6YC25BNHF4K7J7YT0SV00",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6J6YC25BNHF4K7J7X3SHNG8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6J6YC25BNHF4K7J7X3SHNG8",
+        "id": "01M6J6YKWF5PYJEQHF17BKTBJH",
+        "link": "01M6J6YKWF5PYJEQHF167FP9SG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J6W6Z5N8B4CH9QVPHPYGFV",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6J6FDD9GXDW4AENMS6YNY63",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J6YZE08MQPHB4SCXQZM4XR",
+  "type": "ops",
+  "v": 1
+}

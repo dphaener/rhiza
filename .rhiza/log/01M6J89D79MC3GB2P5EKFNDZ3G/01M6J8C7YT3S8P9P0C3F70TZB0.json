@@ -1,0 +1,33 @@
+{
+  "actor": "01M6J89WP4PBMX28X7G9338AE2",
+  "after": [
+    "01M6J8BQSFJN5GRXSNYAP2XN1K"
+  ],
+  "at": "2026-11-04T03:06:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "2b9821da48bc7b624e70b140a37b53858f842b31fc224773012123446d1a5741",
+          "session": "89b23951-e5f9-4ffb-a6b5-01a1a484dffc",
+          "summary": "Autonomous plan run. The orchestrator reported the request already done: PR #225 (change set 01M6HR3VBT4D, landed) makes make test skip TestReadBudget|TestBudget|TestGeneratedModel in go test ./... and run them afterwards alone with -p 1 (capability budgets-measure-in-quiet, Decision budgets-run-alone). The Makefile on this branch confirms it. The orchestrator ruled: plan no new code; plan this change set as a no-op related to 01M6HR3VBT4D. No leaves were written.",
+          "title": "Plan of Timing budgets measure in: already done"
+        },
+        "handle": "timing-budgets-already-done",
+        "id": "01M6J8C2YT50CPNYCY026SKC1V",
+        "key": null,
+        "kind": "source",
+        "node": "01M6J8C2YT50CPNYCXZYHMH1C0",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6J89D79MC3GB2P5EKFNDZ3G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J8C7YT3S8P9P0C3F70TZB0",
+  "type": "ops",
+  "v": 1
+}

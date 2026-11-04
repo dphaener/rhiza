@@ -1,0 +1,41 @@
+{
+  "actor": "01M6HWCSV6WM6DGA96VEWW3DQ4",
+  "after": [
+    "01M6HWCFCZD95GSBR1H1VAXY2K"
+  ],
+  "at": "2026-11-03T23:39:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Milestone 25 is the open milestone and its intent is building and shipping the queued owner requests; this change set's intent is one of those requests, so it serves milestone-25. On main: the question states ship-change rebases a PR that main has moved past and merges only a head whose checks passed, so with squash merges the merge commit's tree equals the tested head's tree; comparing trees keeps the guarantee wait-main gave (main is what was tested) without the CI run the change set removes, and failing loudly on a mismatch keeps a real gap visible instead of silently passing. On the template: cancelling superseded PR runs is safe for any repo, but dropping the main check is only safe where a merge tool guarantees the merged tree was tested, which ci install cannot assume about other repos. On landing: memory and the question both say the agents' gh token lacks the `workflow` scope, so any agent push touching .github/workflows/ is rejected and would stall the run; keeping the workflow edit out of agent leaves lets the Go work ship through ship-change, and ordering the hand edit after it means main never stops testing while ship still waits on main runs.",
+          "statement": "(1) The change set serves milestone-25 (empty the backlog): it is an owner request from the queue, and cheaper, non-redundant CI helps the daemon ship the backlog on its own. (2) Main stops running CI on push, and ship-change stops waiting for CI on main: the wait-main step (`rhiza ship check --main --settled`) instead passes when the merge commit's tree equals the tree of the PR head whose checks passed, checked locally with git and no wait on GitHub; if the trees differ it fails with a stop: line for a look, and never waits an hour for runs that will not come. (3) Both change: this repo's .github/workflows/ci.yml drops the push-to-main trigger and gains a concurrency group per pull request with cancel-in-progress; the `rhiza ci install` template in internal/api/ci.go gains the same cancel-stale concurrency group, but keeps its push-to-main check, since other repos may merge by hand without ship-change's tested-tree guarantee. (4) The agents' leaves change only Go code (ship check, the ci.go template, tests, golden files) and never touch .github/workflows/. The ci.yml edit is left to the owner to commit and push by hand with a token that has the `workflow` scope, after the ship-check change has landed; the change set records it as a question or note for the owner rather than a leaf an agent builds.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "ci-main-and-cancel",
+        "id": "01M6HWFGAPK603YSDHDPTF5WFS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6HWFGAPK603YSDHDPB4BHAK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HWFGAPK603YSDHDPB4BHAK",
+        "id": "01M6HWFYYM88J545V03PPF3QNQ",
+        "link": "01M6HWFYYM88J545V03NJGFBT3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HWCD54ZEEPYXMAZN20DVZK",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6HW7MG0ZVWWHYP903FXV9YF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HWGGG6RET6C0NXXK93QQ00",
+  "type": "ops",
+  "v": 1
+}

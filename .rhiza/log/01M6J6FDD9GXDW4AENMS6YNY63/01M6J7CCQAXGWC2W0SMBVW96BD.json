@@ -1,0 +1,123 @@
+{
+  "actor": "01M6J6G8QG3PH8D900KHBX2KWW",
+  "after": [
+    "01M6J79A91G9BMYS7EG1EAE1BC"
+  ],
+  "at": "2026-11-04T02:49:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6J6SHEQ39H4W35RB4HEB1RD",
+        "id": "01M6J7A2CC7T8ANJA58XZ7Z16E",
+        "link": "01M6J7A2CC7T8ANJA58T0CBC5S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J7934ZA6AEM4FHWD9ZA2M6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6J6YC25BNHF4K7J7X3SHNG8",
+        "id": "01M6J7A9SCBTPRJGB5Y0RJNEYS",
+        "link": "01M6J7A9SCBTPRJGB5XXQE540B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J7934ZA6AEM4FHWD9ZA2M6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6J7218QNN4EP1B088PYQKTT",
+        "id": "01M6J7AHKPVYQ1S2FN631MQ4KH",
+        "link": "01M6J7AHKPVYQ1S2FN60DD4RA0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J7934ZA6AEM4FHWD9ZA2M6",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6J760JG6SAFYCVBB7HZQD0G",
+        "id": "01M6J7ASTVTR2XQMHA33EDDV0R",
+        "link": "01M6J7ASTVTR2XQMHA33991900",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J7934ZA6AEM4FHWD9ZA2M6",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript whose fake agent leaves a transcript with two picked answers, in a change set that already holds a Decision whose question field is the first question verbatim: session done proposes only answer-<sid8>-2 and reports answer-<sid8>-1 as skipped; a Decision whose question differs by one character does not stop the proposal; and with the change set landed and a landed Decision derived-from the session's Source carrying the first question, the record capture writes only the second answer",
+          "statement": "rhiza session interview and session done skip an answered question when a live Decision the session's change set created (or, once that change set has landed, a live landed Decision derived-from the session's Source) has a question field equal to the asked question verbatim, and report it as skipped; only answers with no such Decision become answer-<sid8>-N Decisions"
+        },
+        "handle": "capture-skips-recorded-answers",
+        "id": "01M6J7B10MH74CTH61H8SFTVDS",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6J7B10MH74CTH61H69ETSDW",
+        "op": "node.create",
+        "parent": "01M5SZJ2G1C136TPR73S2C93QG"
+      },
+      {
+        "decision": null,
+        "from": "01M6J7B10MH74CTH61H69ETSDW",
+        "id": "01M6J7B6BAF3JN3200HJDABWQ0",
+        "link": "01M6J7B6BAF3JN3200HHYN6NES",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J6YC25BNHF4K7J7X3SHNG8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J7B10MH74CTH61H69ETSDW",
+        "id": "01M6J7BC687B1QX7RG7RCXH58S",
+        "link": "01M6J7BC687B1QX7RG7QZEX8F2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J7218QNN4EP1B088PYQKTT",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go guide test finds in rhiza guide plan the rule that capture records plain owner picks with no planner Decision, the proxy exception with its wording, and the rule to copy the asked question verbatim into the question field; the guide text has no line telling the planner to write Decisions for plain picks",
+          "statement": "rhiza guide plan says the run's capture records the owner's AskUserQuestion picks and the planner writes no Decision for a plain owner pick; the planner writes one itself only when the capture's wording would be wrong (a proxy such as an orchestrator or arbiter answered, or the answer carries a ruling the capture cannot word), with the proxy's wording and the asked question verbatim in its question field so the capture skips that pick"
+        },
+        "handle": "plan-guide-who-records",
+        "id": "01M6J7BMWSJXFQXYYDNRVJVS2G",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M6J7BMWSJXFQXYYDNRV7XD66",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M6J7BMWSJXFQXYYDNRV7XD66",
+        "id": "01M6J7BWW0YFY7ACF28G0P7EZR",
+        "link": "01M6J7BWW0YFY7ACF28FF58ETT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J7218QNN4EP1B088PYQKTT",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J7BMWSJXFQXYYDNRV7XD66",
+        "id": "01M6J7C2FTSKM2VQ9CSKH8NQ5X",
+        "link": "01M6J7C2FTSKM2VQ9CSGC9K66Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J6YC25BNHF4K7J7X3SHNG8",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6J6FDD9GXDW4AENMS6YNY63",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J7CCQAXGWC2W0SMBVW96BD",
+  "type": "ops",
+  "v": 1
+}

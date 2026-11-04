@@ -66,7 +66,7 @@ func NewModel(read Reader, ref string) *Model {
 	}
 	m := &Model{rows: 24, read: read, panes: []*pane{
 		{title: "tree", op: "tree", args: treeArgs},
-		{title: "roadmap", op: "roadmap"},
+		{title: "roadmap", op: "roadmap", args: []string{"--all"}},
 	}}
 	for _, p := range m.panes {
 		out, err := read(p.op, p.args)

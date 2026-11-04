@@ -68,7 +68,9 @@ type Skip struct {
 	Title string `json:"title,omitempty"`
 	// Reason is one of the Skip constants.
 	Reason string `json:"reason"`
-	// Detail holds the readiness reasons of a not-ready change set.
+	// Detail holds the readiness reasons of a not-ready change set, the free
+	// space of a disk-low one, or why a no-slot one waits when a slot is kept
+	// for a queued plan request.
 	Detail []string `json:"detail,omitempty"`
 }
 

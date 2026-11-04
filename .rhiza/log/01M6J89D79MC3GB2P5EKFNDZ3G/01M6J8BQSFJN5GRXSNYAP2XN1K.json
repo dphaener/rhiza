@@ -1,0 +1,27 @@
+{
+  "actor": "01M6J89WP4PBMX28X7G9338AE2",
+  "after": [
+    "01M6J89D79MC3GB2P5EP6VX92H"
+  ],
+  "at": "2026-11-04T03:06:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6J89D79MC3GB2P5EKFNDZ3G",
+        "id": "01M6J8BM9YSN6HN1FGM3ZVV2JV",
+        "link": "01M6J8BM9YSN6HN1FGM0J87F1H",
+        "note": "Already done: change set 01M6HR3VBT4D (PR #225, landed) runs the timing budgets alone after go test ./... in make test (capability budgets-measure-in-quiet, Decision budgets-run-alone); this change set adds no leaves",
+        "op": "link.create",
+        "to": "01M6HR3VBT4DPCNS03S70QCAZF",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M6J89D79MC3GB2P5EKFNDZ3G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J8BQSFJN5GRXSNYAP2XN1K",
+  "type": "ops",
+  "v": 1
+}

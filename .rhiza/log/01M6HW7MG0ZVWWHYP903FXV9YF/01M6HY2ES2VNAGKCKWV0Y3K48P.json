@@ -1,0 +1,145 @@
+{
+  "actor": "01M6HXQ779AHQB39C1A1W37TXX",
+  "after": [
+    "01M6HX68AX9TTFSZZSRJ1CFKME"
+  ],
+  "at": "2026-11-04T00:06:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Milestone 25 is the open milestone and its intent is building and shipping the queued owner requests; this change set's intent is one of those requests, so it serves milestone-25. On main: the question states ship-change rebases a PR that main has moved past and merges only a head whose checks passed, so with squash merges the merge commit's tree equals the tested head's tree; comparing trees keeps the guarantee wait-main gave (main is what was tested) without the CI run the change set removes, and failing loudly on a mismatch keeps a real gap visible instead of silently passing. On the template: cancelling superseded PR runs is safe for any repo, but dropping the main check is only safe where a merge tool guarantees the merged tree was tested, which ci install cannot assume about other repos. On landing: memory and the question both say the agents' gh token lacks the `workflow` scope, so any agent push touching .github/workflows/ is rejected and would stall the run; keeping the workflow edit out of agent leaves lets the Go work ship through ship-change, and ordering the hand edit after it means main never stops testing while ship still waits on main runs.",
+          "statement": "(1) The change set serves milestone-25 (empty the backlog): it is an owner request from the queue, and cheaper, non-redundant CI helps the daemon ship the backlog on its own. (2) Main stops running CI on push, and ship-change stops waiting for CI on main: the wait-main step (`rhiza ship check --main --settled`) instead passes when the merge commit's tree equals the tree of the PR head whose checks passed, checked locally with git and no wait on GitHub; if the trees differ it fails with a stop: line for a look, and never waits an hour for runs that will not come. (3) Both change: this repo's .github/workflows/ci.yml drops the push-to-main trigger and gains a concurrency group per pull request with cancel-in-progress; the `rhiza ci install` template in internal/api/ci.go gains the same cancel-stale concurrency group, but keeps its push-to-main check, since other repos may merge by hand without ship-change's tested-tree guarantee. (4) Superseded by Decision ci-yml-agent-built, which holds instead: this part had kept the ci.yml edit out of agent leaves for the owner to push by hand, because the agents' gh token lacks the `workflow` scope; origin now pushes over SSH, so the ci.yml edit is an agent-built leaf.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "ci-main-and-cancel",
+        "id": "01M6HWFGAPK603YSDHDPTF5WFS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6HWFGAPK603YSDHDPB4BHAK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "In the past this was because the remote origin was https and not ssh.",
+              "where": "relayed by the orchestrator in a run message during the interview (2026-11-03T23:47:10Z), answering question 4 (how the workflow edit lands)"
+            }
+          ],
+          "raw_sha256": "0e5cfab25c835127a9e23b2cabe41b704d73ffc84907231abfbd87dbb7c093a6",
+          "session": "226cf21d-db5d-4a1f-82be-01a1a3c4134c",
+          "summary": "Autonomous plan run for change set 'Update github runner to'. No owner was present; the planner raised one question (serves, main CI, ci install template, workflow push access) and the arbiter answered with Decision ci-main-and-cancel. Settled: the change set serves milestone-25; ship-change's wait-main stops waiting on GitHub and instead compares the merge commit's tree with the tested PR head's tree locally, failing with a stop: line on a mismatch; the rhiza ci install template gains a per-PR concurrency group with cancel-in-progress but keeps its push-to-main check. The arbiter first ruled (part 4 of ci-main-and-cancel) that agent leaves touch only Go code and the .github/workflows/ci.yml edit is left to the owner to push by hand, because the agents' gh token lacks the workflow scope. During the interview the orchestrator relayed that push access is fixed: origin now uses SSH with the VM's key, and the owner said \"In the past this was because the remote origin was https and not ssh.\" Decision ci-yml-agent-built supersedes part 4: the ci.yml edit is an agent-built leaf of this change set.",
+          "title": "Plan: cancel stale CI runs, stop re-testing on main"
+        },
+        "handle": "plan-ci-runner",
+        "id": "01M6HWK1D2A6GE7ZX1SSV6YRGQ",
+        "key": null,
+        "kind": "source",
+        "node": "01M6HWK1AWW9CKCY5PB01YDASY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "Testscripts with a local bare origin and a fake gh: a ship-change run merges and passes the main step straight to close-out with no gh run list call for the merge commit; when origin/main moves after the PR head's checks pass, ship merge makes no gh pr merge call and the run goes back to rebase-merge, rebases, waits on the new head's checks and then merges it; a run whose recorded merge commit's tree differs from the recorded tested head fails the main step with a stop: line naming both commits; no step waits on CI for main.",
+          "statement": "After merging, ship-change confirms main by checking locally with git that the merge commit's tree equals the tree of the PR head whose checks passed, instead of waiting for CI runs on main; a differing tree fails the step with a stop: line. So that a base that moved after the checks never yields an untested main: `rhiza ship merge` first fetches origin and, when origin/main is not an ancestor of the tested head (another change set merged after the head's checks), merges nothing and fails with an outcome that sends ship-change back to its rebase-merge step, which rebases onto the new main and waits on the PR's checks again. A head that holds origin/main squashes to a merge commit whose tree is the tested head's tree."
+        },
+        "handle": "ship-main-tree-check",
+        "id": "01M6HWX807SBGNFEPCEE7KVWJ2",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M6HWX807SBGNFEPCEAHVK0QM",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "fields": {
+          "quote": "In the past this was because the remote origin was https and not ssh.",
+          "statement": "The .github/workflows/ci.yml edit is an agent-built leaf of this change set, replacing part (4) of ci-main-and-cancel: origin now uses SSH with the VM's key, which the token's missing workflow scope does not limit. It ships in the same PR as ship-main-tree-check; Decision ci-main-landing-order says how this change set's own ship gets past wait-main, which the installed binary still runs on CI for main until the daemon's self-update replaces it."
+        },
+        "handle": "ci-yml-agent-built",
+        "id": "01M6HX39EBGJBJJS89P7FHERE0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6HX39EBGJBJJS89P3N86CGX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in the build parses .github/workflows/ci.yml and asserts that pull_request is its only trigger (no push), and that it has a concurrency group keyed on the pull request number (github.event.pull_request.number) with cancel-in-progress: true; make check runs it.",
+          "statement": "Rhiza's own CI runs only on pull requests, not on pushes to main, and a newer push to a pull request cancels that pull request's in-progress run."
+        },
+        "handle": "ci-yml-cancels-stale",
+        "id": "01M6HX48DQR5E1PQ4JM8NYSZ5Z",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6HX48DQR5E1PQ4JM4QN5H0C",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "decision": null,
+        "from": "01M6HX39EBGJBJJS89P3N86CGX",
+        "id": "01M6HXZGEYN94PTM0G38NCA6M4",
+        "link": "01M6HXZGEYN94PTM0G366R5MNE",
+        "note": "Supersedes part (4) only: the ci.yml edit is an agent-built leaf, not a hand push by the owner. Parts (1) to (3) stand.",
+        "op": "link.create",
+        "to": "01M6HWFGAPK603YSDHDPB4BHAK",
+        "type": "supersedes"
+      },
+      {
+        "fields": {
+          "statement": "This change set's own ship lands safely with the push-to-main trigger dropped in the same PR, because the wait-main step keeps its command `rhiza ship check --main --settled` unchanged and needs only ship state the old `rhiza ship merge` already records (the PR, the tested head, the merge commit). Its own ship runs the old installed binary, which sees no CI runs on the merge commit and keeps waiting (no checks is not settled, never a failure). The wait step re-runs `rhiza` from PATH every 30s, and the daemon's self-update (internal/daemon/selfupdate.go) fetches origin/main at most every 5 minutes and runs make update when main moves, so within minutes the new binary answers wait-main by the tree check and the step passes well inside its 1h timeout. If wait-main is still waiting 15 minutes after the merge, the orchestrator runs make update on the VM's main checkout by hand; it never edits the run's state to pass the step.",
+          "wording": "(reviser, derived from the code: internal/workflow/builtin/ship-change.toml wait-main polls `rhiza ship check --main --settled` every 30s with a 1h timeout; internal/api/ship.go checksVerdict treats no checks as not settled; internal/daemon/selfupdate.go rebuilds the installed binary when origin/main moves)"
+        },
+        "handle": "ci-main-landing-order",
+        "id": "01M6HY0KT6ZKQZRRTG5PVWDTV1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6HY0KT6ZKQZRRTG5PHA0ZZN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HY0KT6ZKQZRRTG5PHA0ZZN",
+        "id": "01M6HY11GXWDRW55MZFF6YXXAC",
+        "link": "01M6HY11GXWDRW55MZFD793PC1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HWK1AWW9CKCY5PB01YDASY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6HWX807SBGNFEPCEAHVK0QM",
+        "id": "01M6HY1J6EESMBHJ0XXXMHQ7SH",
+        "link": "01M6HY1J6D3HEVJT2D5VG5FC0M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HY0KT6ZKQZRRTG5PHA0ZZN",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6HX48DQR5E1PQ4JM4QN5H0C",
+        "id": "01M6HY1SPQ2WN032A832KDKYG3",
+        "link": "01M6HY1SPQ2WN032A830SV1AG4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HY0KT6ZKQZRRTG5PHA0ZZN",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6HW7MG0ZVWWHYP903FXV9YF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HY2ES2VNAGKCKWV0Y3K48P",
+  "type": "ops",
+  "v": 1
+}

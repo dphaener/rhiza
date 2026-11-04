@@ -1,0 +1,73 @@
+{
+  "actor": "01M6J2R99PPTZJZPNF0XNS1JV1",
+  "after": [
+    "01M6J375CJSFGDC1V9DHGRGW5A"
+  ],
+  "at": "2026-11-04T01:41:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript sets both, sees them in rhiza daemon settings --json with source git config, and gets exit 2 with a next for a URL that is not http or https and for a timeout that is not a duration.",
+          "statement": "rhiza daemon set takes two per-repo ship settings, a deploy health URL (http or https) and a deploy timeout (a duration, default 15m), and rhiza daemon settings lists both with their value and source; an unset health URL means no deploy check."
+        },
+        "handle": "ship-deploy-settings",
+        "id": "01M6J3F8SSE7GHCRS47N7ZXYGK",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6J3F8SSE7GHCRS47KVY29CZ",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "fields": {
+          "acceptance": "Workflow tests against a local fake health server with no real network: 503, 503, then 200 ends the run done; 503 until the timeout fails the run with the last status in its journal and in rhiza inbox; with no URL set the run ends done without polling.",
+          "statement": "After a ship-change run merges, when the repo has a deploy health URL it polls the URL until it answers 200 or the deploy timeout passes, and on timeout fails the run with the last status it saw, which the inbox shows; with no URL the step is skipped."
+        },
+        "handle": "ship-deploy-check",
+        "id": "01M6J3FFWKR8A3D1ZRM8H1HBP8",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6J3FFWKR8A3D1ZRM6APR30A",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M6J3F8SSE7GHCRS47KVY29CZ",
+        "id": "01M6J3FPEB1R8W68G82JH7525M",
+        "link": "01M6J3FPEB1R8W68G82GY1YJR2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J31W2SVSV4GWA64TZR8JPE",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J3FFWKR8A3D1ZRM6APR30A",
+        "id": "01M6J3FY2H6K3SQMPDD70P5EZY",
+        "link": "01M6J3FY2H6K3SQMPDD461A9HP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J31W2SVSV4GWA64TZR8JPE",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J3FFWKR8A3D1ZRM6APR30A",
+        "id": "01M6J3G6491TH14N7BNG2GAE0F",
+        "link": "01M6J3G6491TH14N7BNDJ2DC9Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J30T54H6FVS39BV9YVH9YF",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6J375CH04RMRS4NN372NCN2",
+  "for": "01M6J2R99PPTZJZPNF0XNS1JV1",
+  "id": "01M6J3GCP5VX86J2BMN8HQ6CD0",
+  "type": "ops",
+  "v": 1
+}

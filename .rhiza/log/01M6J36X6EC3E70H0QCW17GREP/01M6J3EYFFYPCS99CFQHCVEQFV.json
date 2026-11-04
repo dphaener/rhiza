@@ -1,0 +1,165 @@
+{
+  "actor": "01M6J2R99PPTZJZPNF0XNS1JV1",
+  "after": [
+    "01M6J36X6EC3E70H0QCYTBDTNN"
+  ],
+  "at": "2026-11-04T01:41:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "rhiza guide ls lists import as a topic; a testscript checks that rhiza guide import names each of the seven steps in order; the guide size-cap test passes with the new topic.",
+          "statement": "rhiza guide import prints the procedure for bringing an existing repo with built code into Rhiza: init, survey the repo's code, tests and documents, record built capabilities area by area, bring in load-bearing decisions, retire planning documents into Sources, write unbuilt work as draft change sets, and verify."
+        },
+        "handle": "import-guide-topic",
+        "id": "01M6J3C0FB34V314WHDYAEE9C3",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6J3C0FB34V314WHDWESKQ1Q",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "fields": {
+          "acceptance": "The import topic states the one-record-per-area rule, the statement and acceptance rules and that anchors come later; a testscript follows those steps on a small fixture repo with tests and gets one landed record change set per area, every capability with a statement and an acceptance naming a test file.",
+          "statement": "The import procedure records what a repo already does as record change sets, one per area, whose capabilities each state one user-visible behaviour and give as acceptance the repo's existing tests that prove it, without anchors until anchors exist."
+        },
+        "handle": "import-records-built",
+        "id": "01M6J3C5Q7TJ7HR8GP6SEZT42K",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6J3C5Q7TJ7HR8GP6PD4JW1B",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "fields": {
+          "acceptance": "The import topic states the load-bearing rule and the exact wording form; in a testscript a decision written by that form shows the wording and the Source in rhiza why, and has no quote field.",
+          "statement": "The import procedure brings in only decisions that shape a capability or constraint, and an imported decision with no owner words has no quote, a wording naming it as the agent's made autonomously and not confirmed by the owner, and a derived-from link to the Source of the document it came from."
+        },
+        "handle": "import-autonomous-decisions",
+        "id": "01M6J3CF3E8B054GW137R8PPMT",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6J3CF3E8B054GW1370AQN2G",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "fields": {
+          "acceptance": "The import topic names which documents are retired and which are kept; a testscript retires a fixture PLAN.md: rhiza source add with --raw succeeds, the file is deleted in the same commit, and rhiza check passes.",
+          "statement": "The import procedure retires a planning document by adding it as a Source (a scrubbed summary, the owner's typed words found in it quoted verbatim, the document hashed with --raw) and deleting it in the same change set, and keeps reference, design and operations documents that capabilities link to."
+        },
+        "handle": "import-retires-docs",
+        "id": "01M6J3CQTM8JJ1FG394KSQ1ARV",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6J3CQTM8JJ1FG394JB40RHN",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "fields": {
+          "acceptance": "The import topic states the rule; a testscript importing a fixture with one unbuilt task and one open question ends with one draft change set naming that Source and one open question, and accepts nothing.",
+          "statement": "The import procedure writes each unbuilt piece of planned work it finds as a draft intention change set with its intent and the Source it came from, and each open question it finds as a question node, and leaves accepting them to the owner."
+        },
+        "handle": "import-unbuilt-as-drafts",
+        "id": "01M6J3CYX8HF2YW4P6GAG9KCXQ",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6J3CYX8HF2YW4P6G75KEQ3J",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "fields": {
+          "acceptance": "The import topic states the rule and the question form; a testscript checks the form's example appears in the topic.",
+          "statement": "The import procedure has the importing agent record every step it could not follow, or had to work around, as a question in the importing repo's model naming the step, so the import can be improved from what it found."
+        },
+        "handle": "import-friction-recorded",
+        "id": "01M6J3DADVWGVDPK1M6F3R69XV",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6J3DADVWGVDPK1M6E7PFZ1X",
+        "op": "node.create",
+        "parent": "01M5SWRH2T1D9HHQ2X71NNVZJ9"
+      },
+      {
+        "decision": null,
+        "from": "01M6J3C0FB34V314WHDWESKQ1Q",
+        "id": "01M6J3DG8X5QV9HWBEXRHZ8MTZ",
+        "link": "01M6J3DG8X5QV9HWBEXQKN5HCM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J30XK1P7QE7W4VDSX3YEK1",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J3C5Q7TJ7HR8GP6PD4JW1B",
+        "id": "01M6J3DQ27KNGGB9HNY1F661E0",
+        "link": "01M6J3DQ27KNGGB9HNXXRY72BP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J310ZNAFZHCA7KYVWMW4DV",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J3CF3E8B054GW1370AQN2G",
+        "id": "01M6J3DXMB8XJVHN7SSXSX4E1X",
+        "link": "01M6J3DXMB8XJVHN7SSTWDWDB8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J313V9MH773WZ8KJJWH7AJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J3CF3E8B054GW1370AQN2G",
+        "id": "01M6J3E356NDEZ39YMKJ6DHGC5",
+        "link": "01M6J3E356NDEZ39YMKHX1SV23",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J30Q0BW2SHJKTT8M1BM50J",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J3CQTM8JJ1FG394JB40RHN",
+        "id": "01M6J3EB2XAG4YQTDZZXTJ99JP",
+        "link": "01M6J3EB2XAG4YQTDZZVCQZB4P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J316N7Z84DPDEJWJ7VXT84",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J3CYX8HF2YW4P6G75KEQ3J",
+        "id": "01M6J3EHEPGSS6666H3EQEN4GN",
+        "link": "01M6J3EHEPGSS6666H3E9VW9N9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J316N7Z84DPDEJWJ7VXT84",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6J3DADVWGVDPK1M6E7PFZ1X",
+        "id": "01M6J3EPN6WARJGVBPZXSTZN55",
+        "link": "01M6J3EPN6WARJGVBPZW0TYE5C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J30XK1P7QE7W4VDSX3YEK1",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6J36X6EC3E70H0QCW17GREP",
+  "for": "01M6J2R99PPTZJZPNF0XNS1JV1",
+  "id": "01M6J3EYFFYPCS99CFQHCVEQFV",
+  "type": "ops",
+  "v": 1
+}
