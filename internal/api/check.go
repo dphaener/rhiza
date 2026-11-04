@@ -36,6 +36,7 @@ package api
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -129,6 +130,9 @@ func runCheck(ctx *Ctx, req any) (any, error) {
 	}
 	in.Tree = os.DirFS(ctx.Root)
 	in.Commits = gitCommits(ctx.Git)
+	if in.UnclaimedSince, err = unclaimedCutoff(ctx); err != nil {
+		return nil, err
+	}
 	rep := check.Run(in)
 	resp := CheckResponse{OK: rep.OK, Base: rep.Base, MergeBaseOf: from, Skipped: skipped,
 		Findings: make([]CheckFinding, 0, len(rep.Findings))}
@@ -136,6 +140,46 @@ func runCheck(ctx *Ctx, req any) (any, error) {
 		resp.Findings = append(resp.Findings, CheckFinding(f))
 	}
 	return resp, nil
+}
+
+// checkFile is the optional committed check configuration inside the store
+// folder.
+const checkFile = "check.json"
+
+// unclaimedCutoff reads the unclaimed-changes cutoff from the store's
+// check.json, {"unclaimed_since": "<full commit hash>"}. No file or no key
+// is "" (the rule is off); unknown keys are ignored. Unreadable JSON, or a
+// hash that does not resolve to a commit, is an error naming the file.
+// Outside a git work tree the hash cannot be resolved and is taken as is.
+func unclaimedCutoff(ctx *Ctx) (string, error) {
+	path := store.Dir + "/" + checkFile
+	b, err := os.ReadFile(filepath.Join(ctx.Root, filepath.FromSlash(path)))
+	if errors.Is(err, fs.ErrNotExist) {
+		return "", nil
+	}
+	if err != nil {
+		return "", Errorf("read %s: %v", path, err)
+	}
+	var cfg struct {
+		UnclaimedSince *string `json:"unclaimed_since"`
+	}
+	if err := json.Unmarshal(b, &cfg); err != nil {
+		return "", Errorf("%s: %v", path, err)
+	}
+	if cfg.UnclaimedSince == nil {
+		return "", nil
+	}
+	h := *cfg.UnclaimedSince
+	if !inWorkTree(ctx.Git) {
+		return h, nil
+	}
+	if h == "" || strings.HasPrefix(h, "-") {
+		return "", Errorf("%s: unclaimed_since %q is not a commit in this git repository", path, h)
+	}
+	if _, err := ctx.Git("rev-parse", "--verify", "--quiet", h+"^{commit}"); err != nil {
+		return "", Errorf("%s: unclaimed_since %q is not a commit in this git repository", path, h)
+	}
+	return h, nil
 }
 
 // checkBase picks the base revision with git (nil for none): base as given

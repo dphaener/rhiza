@@ -150,6 +150,9 @@ type Input struct {
 	// alone is not listed. Nil means no git, and the evidence-actor rule is
 	// skipped.
 	Commits []Commit
+	// UnclaimedSince is the full hash of the unclaimed-changes cutoff from
+	// .rhiza/check.json, "" when the rule is off.
+	UnclaimedSince string
 }
 
 // Commit is one git commit and the values of its trailers: Changes of its
