@@ -1,0 +1,40 @@
+{
+  "actor": "01M6KYMYMWHNZTSC940GC0PJDE",
+  "after": [
+    "01M6KYB12JAH8NYCJ3YWWW6XQK"
+  ],
+  "at": "2026-11-04T19:15:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6a7e233b: .github/workflows/ci.yml has only the pull_request trigger (push removed) and concurrency group ci-${{ github.event.pull_request.number }} with cancel-in-progress: true. New internal/ciworkflow/ciworkflow_test.go reads ci.yml and asserts pull_request is the only trigger, the group contains github.event.pull_request.number, and cancel-in-progress is true. go test -count=1 -v ./internal/ciworkflow: both tests PASS. Negative check in a scratch copy: adding a push trigger, setting cancel-in-progress false, or keying the group on github.ref each fails the matching test. The package is in go list ./..., and make test ran it (ok internal/ciworkflow). fmt-check and vet pass. The rest of make check was red for reasons outside this leaf: timing budgets (modelapp TestGeneratedModel, then api TestReadBudget) flaked under machine load ~7-8 on 4 CPUs, and self-check flagged stale .rhiza/rendered for actor records the run committed."
+        },
+        "handle": "ci-yml-cancels-stale-verified",
+        "id": "01M6KZSATNESPK1ZQHHR2EKJG1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KZSATNESPK1ZQHHM658XKB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KZSATNESPK1ZQHHM658XKB",
+        "id": "01M6KZSDHYYQBHMHS6FCRE5S6W",
+        "link": "01M6KZSDHYYQBHMHS6FAQPZ5MP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HX48DQR5E1PQ4JM4QN5H0C",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HW7MG0ZVWWHYP903FXV9YF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KZSHM9ZF932V3KM7S97W5T",
+  "type": "ops",
+  "v": 1
+}
