@@ -60,6 +60,10 @@ func TestPlanText(t *testing.T) {
 			`rhiza link "$RHIZA_CHANGE" serves <intent>`, "before any leaf",
 			"`\"serves\": []` in `rhiza change show --json`", "own serves links",
 		},
+		"plan-serves-milestone": {
+			"RHIZA_MILESTONE", "reach one, directly or through an intent under one",
+			"umbrella or area intent under no", "milestone",
+		},
 		"plan-interview": {
 			"rhiza slice", "rhiza why", "Never ask a fact", "One topic per message",
 			"recommendation", "AskUserQuestion", "Only typed words are quoted",
