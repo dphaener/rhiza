@@ -1,0 +1,73 @@
+{
+  "actor": "01M6M2RHZ7G19XR0CYFVKVG9WM",
+  "after": [
+    "01M6M2Z8TBGAYM9RMYJVH5QXQ4"
+  ],
+  "at": "2026-11-04T20:11:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript starts a build run's verifier session with its own checkout: the checkout's .rhiza/log holds the session's actor record change set with files byte-identical to the run worktree's, rhiza show <actor handle> resolves in the checkout, rhiza add actor <that handle> --record there is refused as a taken handle, and after both copies are committed and merged rhiza check passes with one actor node for the handle",
+          "statement": "When an agent session has its own checkout (a verifier's dir), session start copies the session's actor record change set, the same log entries with the same IDs, from the run worktree into that checkout, so the actor resolves there and committing it from both places yields one record"
+        },
+        "handle": "actor-record-in-checkout",
+        "id": "01M6M2ZMM64QSSKQTP1K0N6CYG",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M6M2ZMM64QSSKQTP1FKH76NJ",
+        "op": "node.create",
+        "parent": "01M5SWT74MW73RE94XQVNWFJEQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6M2ZMM64QSSKQTP1FKH76NJ",
+        "id": "01M6M2ZPVW539RM1DVB39NQWQ6",
+        "link": "01M6M2ZPVW539RM1DVAZHT72H6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M2XXMPAABRE5CHJTTA4F0R",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test calls recordAgentActor twice for one session ID on one workspace: the second call returns the first call's handle and writes no new change set; a different session ID still gets its own new actor",
+          "statement": "Recording an agent session's actor reuses an existing, unretired actor whose session field matches that session instead of adding a new one, so a repeated stamp writes nothing and returns the same handle"
+        },
+        "handle": "actor-stamp-reuses-session",
+        "id": "01M6M2ZS1VT4ZWAMBM16S0XPVM",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6M2ZS1VT4ZWAMBM148Z3RG6",
+        "op": "node.create",
+        "parent": "01M5SWT74MW73RE94XQVNWFJEQ"
+      },
+      {
+        "decision": null,
+        "from": "01M6M2ZS1VT4ZWAMBM148Z3RG6",
+        "id": "01M6M2ZVY08PWEQWRVSJ2SDGKB",
+        "link": "01M6M2ZVY08PWEQWRVSFSSRAS8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M2XXMPAABRE5CHJTTA4F0R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6M2XXMPAABRE5CHJTTA4F0R",
+        "id": "01M6M2ZXV9S1KHA9F9259SD7SH",
+        "link": "01M6M2ZXV9S1KHA9F923ZFYJVS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M2Z6M2VESQQ0T25NT0YTYF",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6M2R7RJCMNMMKH0KS2364BK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M30174GWG91BSX6PY0XT2H",
+  "type": "ops",
+  "v": 1
+}
