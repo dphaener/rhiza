@@ -22036,6 +22036,54 @@ cmp stdout describe.golden.json
       },
       "summary": "List every workflow a bare name can reach (personal, repo, built-in), each with the layer and path it comes from and the layers it shadows",
       "write": false
+    },
+    {
+      "name": "workflow.new",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "description": "A workflow name to fork (personal, repo, then built-in) or a .toml file path; without it a skeleton is written",
+            "type": "string"
+          },
+          "name": {
+            "description": "The new workflow's bare name (no / and no .toml)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "from": {
+            "description": "Where the copy came from; empty for a skeleton",
+            "type": "string"
+          },
+          "name": {
+            "description": "The new workflow's name",
+            "type": "string"
+          },
+          "path": {
+            "description": "The file written",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "path"
+        ],
+        "type": "object"
+      },
+      "summary": "Write .rhiza/workflows/<name>.toml: a copy of a resolved workflow with its name set (--from), else a minimal commented skeleton; refuses an existing file and validates the result as workflow check does",
+      "write": false
     }
   ]
 }

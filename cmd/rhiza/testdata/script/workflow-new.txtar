@@ -1,0 +1,68 @@
+# workflow new forks a workflow into .rhiza/workflows/<name>.toml, or writes
+# a skeleton; it never overwrites, takes a bare name and writes nothing in a
+# dry run.
+
+env XDG_CONFIG_HOME=$WORK/xdg
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new Backlog --title Backlog
+exec rhiza add capability backlog-leaf
+exec rhiza propose
+exec rhiza accept --reason ok
+fold-ok
+
+# --dry-run writes nothing
+exec rhiza workflow new mine --from ship-change --dry-run
+stdout 'would write'
+! exists .rhiza/workflows/mine.toml
+
+# a fork differs from the built-in only in name (the name line aside, a
+# fork of the fork is the same bytes), and passes check
+exec rhiza workflow new mine --from ship-change
+stdout 'workflows/mine.toml'
+exists .rhiza/workflows/mine.toml
+grep '^name = "mine"$' .rhiza/workflows/mine.toml
+exec rhiza workflow check mine
+stdout 'is valid'
+exec rhiza workflow new again --from mine
+exec sh -c 'sed 1d .rhiza/workflows/mine.toml > $WORK/a; sed 1d .rhiza/workflows/again.toml > $WORK/b'
+cmp $WORK/a $WORK/b
+exec sh -c 'rhiza workflow describe ship-change --json | grep -c "\"kind\"" > $WORK/n1; rhiza workflow describe mine --json | grep -c "\"kind\"" > $WORK/n2'
+cmp $WORK/n1 $WORK/n2
+
+# a skeleton passes check and runs under run start --dry-run
+exec rhiza workflow new skel
+exec rhiza workflow check skel
+stdout 'is valid'
+exec rhiza run start --workflow skel --permission-mode manual --dry-run
+
+# an existing file is left byte for byte, exit 3
+cp .rhiza/workflows/skel.toml $WORK/skel.before
+! exec rhiza workflow new skel
+stderr 'already exists'
+cmp .rhiza/workflows/skel.toml $WORK/skel.before
+! exec rhiza workflow new skel --from ship-change
+cmp .rhiza/workflows/skel.toml $WORK/skel.before
+
+# a name with a / or .toml is a usage error, exit 2
+! exec rhiza workflow new sub/x
+stderr 'not a workflow name'
+! exec rhiza workflow new x.toml
+stderr 'not a workflow name'
+! exists .rhiza/workflows/x.toml
+
+# an unknown source is a usage error
+! exec rhiza workflow new y --from nothing-here
+stderr 'no workflow "nothing-here"'
+
+# --json is the api's bytes
+exec rhiza workflow new viajson --json --dry-run
+cp stdout a.json
+exec rhiza api call workflow.new '{"name":"viajson"}' --dry-run
+cmp stdout a.json
+
+fold-ok
