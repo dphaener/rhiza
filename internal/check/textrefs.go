@@ -1,6 +1,7 @@
 package check
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"slices"
@@ -14,28 +15,29 @@ import (
 )
 
 // textRefs fails, under the text-ref rule, on each stored reference
-// (@{<full 26-character ID>}) in a text field written by a change set that
-// names no node in that change set's view, and warns on each that names a
-// retired node. A landed change set is read in the as-is view, a draft,
-// proposed or accepted one in its what-if view; other change sets are not
-// read. Verbatim fields (an owner's words, a source) are not scanned, and
-// any other @{...} is literal text.
+// (@{<full 26-character ID>}) in a text field's current value that names no
+// node in the view of the change set that last wrote that field, and warns
+// on each that names a retired node. A landed change set is read in the
+// as-is view, a draft, proposed or accepted one in its what-if view; other
+// change sets are not read. Only the folded nodes' current fields are
+// scanned, so a value a later write superseded is never read. Verbatim
+// fields (an owner's words, a source) are not scanned, and any other @{...}
+// is literal text.
 func (c *checker) textRefs(asIs model.Model, sets []changeset.ChangeSet) {
+	ops := map[id.ID]op.Op{}
 	for _, s := range sets {
-		var uses []textUse
 		for _, o := range s.Ops {
-			switch o.Type {
-			case op.TypeNodeCreate:
-				for name, raw := range o.Fields {
-					uses = appendTextUses(uses, o.Node, o.Kind, name, raw)
-				}
-			case op.TypeNodeUpdate:
-				for name, raw := range o.Set {
-					uses = appendTextUses(uses, o.Node, "", name, raw)
-				}
+			ops[o.ID] = o
+		}
+	}
+	for _, s := range sets {
+		touched := map[id.ID]bool{}
+		for _, o := range s.Ops {
+			if o.Type == op.TypeNodeCreate || o.Type == op.TypeNodeUpdate {
+				touched[o.Node] = true
 			}
 		}
-		if len(uses) == 0 {
+		if len(touched) == 0 {
 			continue
 		}
 		var view model.Model
@@ -47,14 +49,23 @@ func (c *checker) textRefs(asIs model.Model, sets []changeset.ChangeSet) {
 		default:
 			continue
 		}
-		for _, u := range uses {
-			kind := u.kind
-			if n, ok := view.Node(u.node); ok && kind == "" {
-				kind = n.Kind
-			}
-			if kind != "" && model.TextVerbatim(kind, u.field) {
+		var uses []textUse
+		for node := range touched {
+			n, ok := view.Node(node)
+			if !ok {
 				continue
 			}
+			for name, raw := range n.Fields {
+				if model.TextVerbatim(n.Kind, name) || lastWriter(n, name, ops) != s.ID {
+					continue
+				}
+				uses = appendTextUses(uses, node, n.Kind, name, raw)
+			}
+		}
+		slices.SortFunc(uses, func(a, b textUse) int {
+			return cmp.Or(id.Compare(a.node, b.node), strings.Compare(a.field, b.field), strings.Compare(a.ref, b.ref))
+		})
+		for _, u := range uses {
 			name := u.node.String()
 			if n, ok := view.Node(u.node); ok && n.Handle != "" {
 				name = n.Handle
@@ -78,6 +89,29 @@ func (c *checker) textRefs(asIs model.Model, sets []changeset.ChangeSet) {
 			c.add(f)
 		}
 	}
+}
+
+// lastWriter is the change set of the last operation in n's history that
+// wrote field name, zero when none of ops did.
+func lastWriter(n model.Node, name string, ops map[id.ID]op.Op) id.ID {
+	for i := len(n.History) - 1; i >= 0; i-- {
+		h := n.History[i]
+		o, ok := ops[h.Op]
+		if !ok {
+			continue
+		}
+		switch o.Type {
+		case op.TypeNodeCreate:
+			if _, ok := o.Fields[name]; ok {
+				return h.ChangeSet
+			}
+		case op.TypeNodeUpdate:
+			if _, ok := o.Set[name]; ok {
+				return h.ChangeSet
+			}
+		}
+	}
+	return id.ID{}
 }
 
 // textUse is one stored reference in a field of a node.

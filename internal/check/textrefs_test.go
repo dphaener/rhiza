@@ -78,3 +78,36 @@ func TestTextRefs(t *testing.T) {
 }
 
 func hasFail(r Report) bool { return !r.OK }
+
+// TestTextRefsCurrentValue reads each field's current value only: a
+// reference a later write dropped is never read, and one a later write adds
+// is.
+func TestTextRefsCurrentValue(t *testing.T) {
+	const bogus = "01ZZZZZZZZZZZZZZZZZZZZZZZZ"
+	for _, c := range []struct {
+		name, first, then string
+		want              []string
+	}{
+		{"dropped", "see @{" + bogus + "}", "no reference now", nil},
+		{"added", "no reference yet", "see @{" + bogus + "}", []string{"fail"}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			r := newRepo(t)
+			clean(r)
+			n, create := r.next(), r.next()
+			o := textNode(r, n, "holder", c.first)
+			o.ID = create
+			r.record("Holder", o)
+			r.record("Rewrite", setField(r.next(), n, create, c.then))
+			got := textRefFindings(Run(r.input()))
+			if len(got) != len(c.want) {
+				t.Fatalf("findings %+v, want %v", got, c.want)
+			}
+			for i, f := range got {
+				if f.Severity != c.want[i] {
+					t.Errorf("severity %q, want %q", f.Severity, c.want[i])
+				}
+			}
+		})
+	}
+}
