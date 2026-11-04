@@ -841,6 +841,11 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 		if ok && st.Workflow == planWorkflow && changeset.State(state) == changeset.StateLanded {
 			ok = false
 		}
+		// A non-plan run that reached its land step goes on past it: what
+		// is left (wait-main, close-out) happens after the landing.
+		if ok && st.Workflow != planWorkflow && changeset.State(state) == changeset.StateLanded && st.Visits["land"] > 0 {
+			ok = false
+		}
 		if ok && changeset.State(state).Terminal() {
 			return nil, Conflictf("run %s is not resumed: its change set %s is %s, no longer accepted", j.ID, st.Change, state).
 				WithNext("rhiza run abandon " + j.ID)
