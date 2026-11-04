@@ -1,0 +1,109 @@
+{
+  "actor": "01M6JA5GWQ9FGACGZN023T6HS9",
+  "after": [
+    "01M6JA2Q1FVH33N9EQQWDNXFC7"
+  ],
+  "at": "2026-11-04T03:43:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built the branch head (9a4dfa5d) into a scratch binary and drove it by hand in a scratch git repo with RHIZA_ROOT/CHANGE/RUN unset. add anchor with symbol=Keep (func), T.M (pointer-receiver method) and B (const in a grouped block) stored sha256 values that match sha256sum of exactly the declaration bytes, doc comment excluded; without symbol, notes.md got sha256sum of the file; an explicit fingerprint=sha256:abc was kept as given; set cb --field symbol=A recomputed it to sha256 of 'A = 1'. A missing path, a missing symbol and a symbol on a .md file were each refused with exit 2 and a next line."
+        },
+        "handle": "anchor-fields-qa-1",
+        "id": "01M6JAE2EMCFY62SRTK8F57H4D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JAE2EMCFY62SRTK5M25MVJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JAE2EMCFY62SRTK5M25MVJ",
+        "id": "01M6JAE7QQV66EPPCT6SZW6SBX",
+        "link": "01M6JAE7QQV66EPPCT6PXA04EZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HK9V1F5ZZNXE9RW11CZD1A",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built the branch head (9a4dfa5d) into a scratch binary and drove it by hand in a scratch git repo with RHIZA_ROOT/CHANGE/RUN unset. With a valid anchor, check printed ok. After renaming the anchored func Keep, check exited 1 with 'fail anchor pkg/p.go: anchor pin (implements thing): symbol Keep of pkg/p.go is gone'. After moving the file away, it printed a 'path pkg/p.go is gone' fail for each of the three anchors on that file, naming the capability, or 'implements nothing' when unlinked. Once the file was restored, check was clean again."
+        },
+        "handle": "check-anchors-resolve-qa-1",
+        "id": "01M6JAEHDG1C5YQS3N158CRKWG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JAEHDG1C5YQS3N11DQW47A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JAEHDG1C5YQS3N11DQW47A",
+        "id": "01M6JAERHN187NF8557BPMC547",
+        "link": "01M6JAERHN187NF8557BK9CKNH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HK9YY5HRN9EVKGV95EXMK1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built the branch head (9a4dfa5d) into a scratch binary and drove it by hand in a scratch git repo with RHIZA_ROOT/CHANGE/RUN unset. After the anchored function's body changed, check exited 0 with one warn naming anchor pin and capability thing, and with next 'rhiza anchor refresh pin'. Editing only the doc comment above the declaration added no finding. Appending to a whole-file-anchored notes.md gave a 'file notes.md changed' warn. go test ./internal/check passes."
+        },
+        "handle": "check-fingerprint-changed-qa-1",
+        "id": "01M6JAEZQMDJ1WK8WBTYNY91M6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JAEZQMDJ1WK8WBTVF90VG9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JAEZQMDJ1WK8WBTVF90VG9",
+        "id": "01M6JAF57S8J2C0V46V23RPSS0",
+        "link": "01M6JAF57S8J2C0V46V1VVBMKF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HKA5CCG3S9EABTJVXVBKHS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built the branch head (9a4dfa5d) into a scratch binary and drove it by hand in a scratch git repo with RHIZA_ROOT/CHANGE/RUN unset. In a change set, anchor refresh pin --dry-run --json and api call anchor.refresh --dry-run printed identical bytes, and the dry runs left the .rhiza file count unchanged. A real refresh wrote the new fingerprint (previous to new), and a second refresh said it was unchanged and wrote nothing. A gone symbol and a gone path were each refused with exit 2 and a next line. After propose, accept, land and render, check had no finding for pin. The anchor-refresh, describe-golden and other anchor scripts pass."
+        },
+        "handle": "anchor-refresh-qa-1",
+        "id": "01M6JAFA2A7N2F82S09WT9H5CJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JAFA2A7N2F82S09V5BZM73",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JAFA2A7N2F82S09V5BZM73",
+        "id": "01M6JAFG6D6M83BK7QV93KVRQS",
+        "link": "01M6JAFG6D6M83BK7QV5XWF89N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HKABFN71SDK6SXZAMPSXVF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HJXAJ6GYA2RTAGVK6JR1N9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JAFR46SS2DPS3G4WSAR78C",
+  "type": "ops",
+  "v": 1
+}
