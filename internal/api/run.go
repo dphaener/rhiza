@@ -102,7 +102,7 @@ const maxRunIDDraws = 100
 // RunStartRequest starts a run of a workflow on a change set.
 type RunStartRequest struct {
 	Change         string `json:"change,omitempty" arg:"0" desc:"The change set: a full ID or a unique prefix of 4+ characters; default --change, else the current one"`
-	Workflow       string `json:"workflow,omitempty" desc:"The workflow: a .toml file (a path with a / or ending in .toml), else a name: .rhiza/workflows/<name>.toml, else a built-in; default ship-change"`
+	Workflow       string `json:"workflow,omitempty" desc:"The workflow: a .toml file (a path with a / or ending in .toml), else a name: your personal $XDG_CONFIG_HOME/rhiza/workflows/<name>.toml, else .rhiza/workflows/<name>.toml, else a built-in; default ship-change"`
 	PermissionMode string `json:"permission_mode,omitempty" desc:"The permission mode of agent steps that set none; modes that bypass the agent's permission checks are refused"`
 	Agent          string `json:"agent,omitempty" desc:"The agent adapter of agent steps that name none; default the built-in default adapter"`
 	NoWait         bool   `json:"no_wait,omitempty" desc:"Stop at a wait step whose condition does not hold yet, instead of waiting; resume the run later"`
@@ -1231,11 +1231,49 @@ func isWorkflowPath(ref string) bool {
 	return strings.ContainsRune(ref, '/') || strings.ContainsRune(ref, filepath.Separator) || strings.HasSuffix(ref, ".toml")
 }
 
+// personalWorkflowsDir is the user's own workflows directory:
+// $XDG_CONFIG_HOME/rhiza/workflows, else ~/.config/rhiza/workflows. It is
+// empty when neither can be known.
+func personalWorkflowsDir() string {
+	if x := os.Getenv("XDG_CONFIG_HOME"); x != "" {
+		return filepath.Join(x, "rhiza", "workflows")
+	}
+	if h, err := os.UserHomeDir(); err == nil && h != "" {
+		return filepath.Join(h, ".config", "rhiza", "workflows")
+	}
+	return ""
+}
+
+// lookupWorkflow is the one resolver of a bare workflow name, shared by run
+// start, workflow steps naming another workflow and the workflow commands:
+// the personal file, else the repo's .rhiza/workflows/<name>.toml, else the
+// built-in. It returns the path to record (the file, or builtin:<name>) and
+// the source; found is false when no layer has the name.
+func lookupWorkflow(root, name string) (path string, data []byte, found bool, err error) {
+	var files []string
+	if d := personalWorkflowsDir(); d != "" {
+		files = append(files, filepath.Join(d, name+".toml"))
+	}
+	files = append(files, filepath.Join(root, filepath.FromSlash(workflowsDir), name+".toml"))
+	for _, f := range files {
+		data, err := os.ReadFile(f)
+		if err == nil {
+			return f, data, true, nil
+		}
+		if !errors.Is(err, fs.ErrNotExist) {
+			return f, nil, false, err
+		}
+	}
+	if data, ok := workflow.Builtin(name); ok {
+		return builtinPrefix + name, data, true, nil
+	}
+	return "", nil, false, nil
+}
+
 // resolveWorkflow finds the workflow ref names and returns the path to
 // record in the journal (the file, or builtin:<name> for an embedded
-// one), its definition and its source. A bare name resolves to the repo's
-// .rhiza/workflows/<name>.toml when that exists, so a repo replaces a
-// built-in by name, else to the built-in of that name.
+// one), its definition and its source. A bare name goes through
+// lookupWorkflow: personal file, repo file, built-in.
 func resolveWorkflow(root, ref string) (string, *workflow.Definition, []byte, error) {
 	ref = strings.TrimSpace(ref)
 	if ref == "" {
@@ -1246,18 +1284,22 @@ func resolveWorkflow(root, ref string) (string, *workflow.Definition, []byte, er
 		return "", nil, nil, err
 	}
 	if !isWorkflowPath(ref) {
-		if _, statErr := os.Stat(path); errors.Is(statErr, fs.ErrNotExist) {
-			data, ok := workflow.Builtin(ref)
-			if !ok {
-				return "", nil, nil, Usagef("no workflow %q: %s does not exist and there is no built-in of that name (built-in: %s)",
-					ref, path, strings.Join(workflow.BuiltinNames(), ", ")).WithNext(runStartNext)
-			}
-			def, err := workflow.ParseWith(ref, data, workflowResolver(root))
-			if err != nil {
-				return "", nil, nil, Errorf("built-in workflow %s: %v", ref, err)
-			}
-			return builtinPrefix + ref, def, data, nil
+		found, data, ok, lerr := lookupWorkflow(root, ref)
+		if lerr != nil {
+			return "", nil, nil, Usagef("workflow %q: %v", ref, lerr).WithNext(runStartNext)
 		}
+		if !ok {
+			return "", nil, nil, Usagef("no workflow %q: %s does not exist and there is no built-in of that name (built-in: %s)",
+				ref, path, strings.Join(workflow.BuiltinNames(), ", ")).WithNext(runStartNext)
+		}
+		def, perr := workflow.ParseWith(ref, data, workflowResolver(root))
+		if perr != nil {
+			if strings.HasPrefix(found, builtinPrefix) {
+				return "", nil, nil, Errorf("built-in workflow %s: %v", ref, perr)
+			}
+			return "", nil, nil, Usagef("workflow %s: %v", found, perr).WithNext(runStartNext)
+		}
+		return found, def, data, nil
 	}
 	def, data, err := loadWorkflow(root, path, ref)
 	if err != nil {
@@ -1267,21 +1309,17 @@ func resolveWorkflow(root, ref string) (string, *workflow.Definition, []byte, er
 }
 
 // workflowResolver resolves the workflow a workflow step names as run
-// start resolves a bare name: the repo's .rhiza/workflows/<name>.toml
-// when that exists, else the built-in of that name.
+// start resolves a bare name, through lookupWorkflow.
 func workflowResolver(root string) workflow.Resolver {
 	return func(name string) ([]byte, error) {
-		data, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(workflowsDir), name+".toml"))
-		if err == nil {
-			return data, nil
-		}
-		if !errors.Is(err, fs.ErrNotExist) {
+		_, data, ok, err := lookupWorkflow(root, name)
+		if err != nil {
 			return nil, err
 		}
-		if data, ok := workflow.Builtin(name); ok {
-			return data, nil
+		if !ok {
+			return nil, fmt.Errorf("there is no such workflow in %s, your personal workflows or built in", workflowsDir)
 		}
-		return nil, fmt.Errorf("there is no such workflow in %s or built in", workflowsDir)
+		return data, nil
 	}
 }
 

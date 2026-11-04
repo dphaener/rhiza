@@ -14516,7 +14516,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "workflow": {
-            "description": "The workflow: a .toml file (a path with a / or ending in .toml), else a name: .rhiza/workflows/<name>.toml, else a built-in; default ship-change",
+            "description": "The workflow: a .toml file (a path with a / or ending in .toml), else a name: your personal $XDG_CONFIG_HOME/rhiza/workflows/<name>.toml, else .rhiza/workflows/<name>.toml, else a built-in; default ship-change",
             "type": "string"
           }
         },

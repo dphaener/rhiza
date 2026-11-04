@@ -712,6 +712,7 @@ func TestRexReportEncoder(t *testing.T) {
 
 func TestResolveWorkflow(t *testing.T) {
 	root := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	for _, ref := range []string{"", "ship-change"} {
 		path, def, data, err := resolveWorkflow(root, ref)
 		if err != nil || path != "builtin:ship-change" || def.Name != "ship-change" || len(data) == 0 {
@@ -946,5 +947,79 @@ func TestRunStartQueuesForTheDaemon(t *testing.T) {
 	}
 	if starts, _ := daemon.ReadStarts(f.common); len(starts) != 1 {
 		t.Errorf("starts after a refused second start: %+v", starts)
+	}
+}
+
+const personalWorkflow = `
+[step.mine]
+kind = "command"
+run = "true"
+`
+
+func writePersonal(t *testing.T, dir, name, body string) string {
+	t.Helper()
+	d := filepath.Join(dir, "rhiza", "workflows")
+	if err := os.MkdirAll(d, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	p := filepath.Join(d, name+".toml")
+	if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	return p
+}
+
+func TestResolveWorkflowPersonalShadows(t *testing.T) {
+	root, xdg := t.TempDir(), t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", xdg)
+	writeWorkflow(t, root, "mine", twoCommands)
+	writeWorkflow(t, root, "ship-change", twoCommands)
+
+	// A repo file shadows a built-in.
+	path, _, _, err := resolveWorkflow(root, "ship-change")
+	if err != nil || path != filepath.Join(root, ".rhiza", "workflows", "ship-change.toml") {
+		t.Fatalf("repo over built-in: %q, %v", path, err)
+	}
+	// A personal file shadows the repo's file and the built-in.
+	pm := writePersonal(t, xdg, "mine", personalWorkflow)
+	ps := writePersonal(t, xdg, "ship-change", personalWorkflow)
+	for ref, want := range map[string]string{"mine": pm, "ship-change": ps, "": ps} {
+		path, def, _, err := resolveWorkflow(root, ref)
+		if err != nil || path != want || def.Start != "mine" {
+			t.Errorf("resolveWorkflow(%q) = %q, %v, %v; want %q", ref, path, def, err, want)
+		}
+	}
+
+	// A workflow step naming it picks the personal file too.
+	writeWorkflow(t, root, "outer", `
+[step.w]
+kind = "workflow"
+workflow = "mine"
+`)
+	_, def, _, err := resolveWorkflow(root, "outer")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := def.Steps["mine/mine"]; !ok {
+		t.Errorf("included steps %v do not come from the personal file", def.Order)
+	}
+	// A built-in with no file anywhere still resolves to builtin:<name>.
+	os.Remove(ps)
+	os.Remove(filepath.Join(root, ".rhiza", "workflows", "ship-change.toml"))
+	if path, _, _, err := resolveWorkflow(root, "ship-change"); err != nil || path != "builtin:ship-change" {
+		t.Errorf("fell back to %q, %v", path, err)
+	}
+}
+
+func TestPersonalWorkflowsDirFallsBackToHome(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", "")
+	t.Setenv("HOME", home)
+	if got, want := personalWorkflowsDir(), filepath.Join(home, ".config", "rhiza", "workflows"); got != want {
+		t.Errorf("personalWorkflowsDir() = %q, want %q", got, want)
+	}
+	t.Setenv("XDG_CONFIG_HOME", "/x")
+	if got := personalWorkflowsDir(); got != "/x/rhiza/workflows" {
+		t.Errorf("with XDG_CONFIG_HOME: %q", got)
 	}
 }
