@@ -1,0 +1,15 @@
+{
+  "actor": "01M6KJST0HH9D002ZPE9AWGNF2",
+  "after": [],
+  "at": "2026-11-04T15:30:45Z",
+  "body": {
+    "intent": "Bring workflow-definitions' statement in line with the step kinds internal/workflow defines (agent, wait, command, arbiter, leaves, checks, signoff, workflow; no foreach), as the workflows guide topic now lists them",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6KJY5AYJ4YSVE5Q6KYV0XFQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KJY5B2KHXDCC3QTHRX81K5",
+  "type": "open",
+  "v": 1
+}
