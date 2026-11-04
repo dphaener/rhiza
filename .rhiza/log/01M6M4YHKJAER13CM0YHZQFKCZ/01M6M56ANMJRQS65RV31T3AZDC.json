@@ -1,0 +1,33 @@
+{
+  "actor": "01M6M4YSTTBTW4XAZQGFP0BBC0",
+  "after": [
+    "01M6M5569P5R0WPCXAYKMCZDYY"
+  ],
+  "at": "2026-11-04T20:49:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "ea01bccfdd7706cce221ad35957d6fe2c7274c11314751fdc678f9ed7b7f413d",
+          "session": "61e610c5-678e-4359-9e22-01a1a84f5f74",
+          "summary": "Autonomous plan of change set 01M6M4YH; no owner present, so no owner words are quoted. Investigation: run 01M6K32AED9M0G432791PNBS8B was resumed by the daemon at 18:35 after the VM reboot and logged 'continuing visit 1', then nothing. Its review fixer session b0eafd65 had a SessionEnd hook report (hook state 'done', 18:27:25) but no exit report and no done mark: the session wrapper that writes the exit died in the reboot, and its Rex block is gone. stepRunner.AgentStatus (internal/api/run.go) judges a session only once its record has an exit report, and the engine rejoins a journalled session (engine.go agent, checks.go pollReviewFix, leaves.go pollLeaf) with no liveness check, so it polls forever. The planner raised one question (when to check, how to judge, what if Rex is unreachable); the arbiter answered with Decision judge-sessions-ended-unseen: check on rejoin (record and Rex block) and on each poll (record's SessionEnd mark with no exit only); write a 'lost' exit into the record naming why; never treat it as exit 0, except a done-waiting step with the done mark and its until holding passes; close the pane; a Rex error that is not 'not found' judges nothing and the block check retries. The change set serves m4-runs-hold-up, as the earlier landed-run resume fix did. Planned as three leaves under workflow-runs: detection, judgement, and Rex unreachable.",
+          "title": "Plan interview: a resumed run waits forever on a session that ended unseen"
+        },
+        "handle": "resume-ended-unseen-plan",
+        "id": "01M6M568QNCQ3EJAG6XH9SZP4A",
+        "key": null,
+        "kind": "source",
+        "node": "01M6M568QNCQ3EJAG6XH8HJ73Z",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6M4YHKJAER13CM0YHZQFKCZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M56ANMJRQS65RV31T3AZDC",
+  "type": "ops",
+  "v": 1
+}

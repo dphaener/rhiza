@@ -1,0 +1,30 @@
+{
+  "actor": "01M6M4YSTTBTW4XAZQGFP0BBC0",
+  "after": [
+    "01M6M4YHKJAER13CM0YKW6FYW7"
+  ],
+  "at": "2026-11-04T20:48:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "61e610c5-678e-4359-9e22-01a1a84f5f74",
+          "statement": "Run 01M6K32A hung because its fixer session's record has a SessionEnd hook ('done') but no exit report (the wrapper died in the reboot) and its Rex block is gone. When should a run check an in-flight session for having ended unseen? / How is a session found ended unseen judged? / If Rex cannot be reached on rejoin (not a 'not found' answer), what happens?"
+        },
+        "handle": "question-61e610c5-1",
+        "id": "01M6M53H0WNY6MB88RFG0Y9DJM",
+        "key": null,
+        "kind": "question",
+        "node": "01M6M53H0WNY6MB88RFDBAYRPE",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6M4YHKJAER13CM0YHZQFKCZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M53J2B81MQRF1SKTT92CWX",
+  "type": "ops",
+  "v": 1
+}
