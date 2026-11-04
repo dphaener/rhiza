@@ -100,7 +100,7 @@ stdout '^## Stored fields$'
 
 # guide ls lists all thirteen texts with their kinds and sizes.
 exec rhiza guide ls
-stdout -count=13 '^- '
+stdout -count=14 '^- '
 stdout '^- rhiza +skill +[0-9]+ tokens  Work with the product model'
 stdout '^- scrub +skill +[0-9]+ tokens  '
 stdout '^- plan +skill +[0-9]+ tokens  Plan with the owner'
@@ -114,6 +114,7 @@ stdout '^- plan-review +topic +[0-9]+ tokens  Plan review'
 stdout '^- reopening +topic +[0-9]+ tokens  '
 stdout '^- review +topic +[0-9]+ tokens  Reviewing a built change set'
 stdout '^- sources +topic +[0-9]+ tokens  '
+stdout '^- workflows +topic +[0-9]+ tokens  Writing a custom workflow'
 exec rhiza guide ls --json
 stdout '"texts": \['
 stdout '"kind": "skill"'
