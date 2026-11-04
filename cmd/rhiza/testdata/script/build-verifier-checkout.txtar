@@ -68,6 +68,20 @@ grep 'unstaged' $WORK/after.diff
 grep 'staged' $WORK/after.cached
 grep '^\?\? scratch.txt$' $WORK/after.status
 
+# Committed from both places and merged, the actor record is one node and
+# rhiza check passes.
+exec sh -c 'cd "$(cat $WORK/build.pwd)" && git add .rhiza && git commit -q -m "build worktree log" -- .rhiza && git worktree add -q --detach $WORK/merged HEAD'
+cd $WORK/merged
+exec git merge -q --no-edit checkout-copy
+exec git status --porcelain
+! stdout .
+exec rhiza render
+exec rhiza check
+exec sh -c 'rhiza ls --kind actor --json | grep -c "\"handle\": \"$(cat $WORK/actor.handle)\""'
+stdout '^1$'
+fold-ok
+cd $WORK/repo
+
 fold-ok
 
 -- want.log --
@@ -142,5 +156,9 @@ cs=$(grep -l "Record agent actor $RHIZA_ACTOR " .rhiza/log/*/*.json | head -n1 |
 if diff -r "$RHIZA_ROOT/.rhiza/log/$cs" ".rhiza/log/$cs" >&2 && env -u RHIZA_ROOT -u RHIZA_CHANGE -u RHIZA_RUN rhiza show "$RHIZA_ACTOR" >&2 && ! env -u RHIZA_ROOT -u RHIZA_CHANGE -u RHIZA_RUN rhiza add actor "$RHIZA_ACTOR" --record >&2; then
 	echo "$RHIZA_LEAF actor-in-checkout" >> "$WORK/actor.log"
 fi
+# Commit the checkout's copy on a branch that outlives the checkout, so the
+# script can merge it with the build worktree's.
+echo "$RHIZA_ACTOR" > "$WORK/actor.handle"
+git add ".rhiza/log/$cs" && git commit -q -m "actor record from checkout" -- ".rhiza/log/$cs" && git branch checkout-copy || exit 1
 [ -z "$(git status --porcelain -- . ':!.rhiza')" ] && echo "$RHIZA_LEAF clean" >> "$WORK/checkout-status.log"
 exit 0
