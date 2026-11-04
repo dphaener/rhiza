@@ -27,6 +27,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -1581,6 +1582,10 @@ type stepRunner struct {
 	// environment tells it the owner is not there.
 	autonomous bool
 	sessions   *session.Store
+	// blockPending holds the rejoined sessions whose Rex block check Rex
+	// has not answered yet (see run_lost.go).
+	lostMu       sync.Mutex
+	blockPending map[string]bool
 }
 
 // Command runs the step's command, its standard output and error
@@ -2075,6 +2080,12 @@ func (r *stepRunner) AgentStatus(sid string) (run.AgentStatus, error) {
 		return run.AgentStatus{}, err
 	}
 	if !rec.Status.Exited() {
+		if rec, err = r.markLostIfEnded(rec); err != nil {
+			return run.AgentStatus{}, err
+		}
+		rec = r.retryBlock(rec)
+	}
+	if !rec.Status.Exited() {
 		rep, _ := session.Resolve(rec)
 		return run.AgentStatus{
 			Blocked: recordBlock(rec), Idle: rep.State == session.StateIdle, SaidDone: rec.Status.SaidDone(),
@@ -2091,7 +2102,10 @@ func (r *stepRunner) AgentStatus(sid string) (run.AgentStatus, error) {
 	if x.Detail != "" {
 		detail += ": " + x.Detail
 	}
-	return run.AgentStatus{Done: true, Outcome: workflow.OutcomeFail, Detail: detail}, nil
+	return run.AgentStatus{
+		Done: true, Outcome: workflow.OutcomeFail, Detail: detail,
+		Lost: x.State == session.StateLost, SaidDone: rec.Status.SaidDone(),
+	}, nil
 }
 
 // AgentEnded records the session's token use as its step ends (see

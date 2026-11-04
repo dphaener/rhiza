@@ -2243,3 +2243,94 @@ func TestWaitStopExitStopsRun(t *testing.T) {
 		t.Fatalf("result %q steps %v polls %d", st.Result, outcomes(st), r.polls["ci"])
 	}
 }
+
+// rejoinRunner is a fakeRunner that counts Rejoin calls.
+type rejoinRunner struct {
+	*fakeRunner
+	rejoined []string
+}
+
+func (r *rejoinRunner) Rejoin(session string) error {
+	r.rejoined = append(r.rejoined, session)
+	return nil
+}
+
+// A resumed agent step rejoins its journalled session once, before its
+// first poll; a session the run starts itself is never rejoined.
+func TestAgentRejoinOnResumeOnly(t *testing.T) {
+	e, r, _, _ := setup(t, agentWF)
+	rr := &rejoinRunner{fakeRunner: r}
+	e.Runner = rr
+	for _, en := range []Entry{
+		{Type: TypeEntered, At: at(1), Step: "build", Visit: 1},
+		{Type: TypeSession, At: at(1), Step: "build", Session: "S-earlier"},
+	} {
+		if err := e.Store.Append(runID, en); err != nil {
+			t.Fatal(err)
+		}
+	}
+	r.agentSeq["S-earlier"] = []AgentStatus{{}, {}, {Done: true, Outcome: "pass"}}
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	if want := []string{"S-earlier"}; !reflect.DeepEqual(rr.rejoined, want) {
+		t.Errorf("rejoined %v, want %v", rr.rejoined, want)
+	}
+
+	e2, r2, _, _ := setup(t, agentWF)
+	rr2 := &rejoinRunner{fakeRunner: r2}
+	e2.Runner = rr2
+	if _, err := e2.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	if len(rr2.rejoined) != 0 {
+		t.Errorf("a fresh session was rejoined: %v", rr2.rejoined)
+	}
+}
+
+// A lost session fails its step, and closes its pane; on a step that waits
+// for done it passes only with the done mark and until holding now.
+func TestAgentLostSession(t *testing.T) {
+	lost := AgentStatus{Done: true, Lost: true, Outcome: "fail", Detail: "lost: SessionEnd without an exit report"}
+	cases := []struct {
+		name   string
+		wf     string
+		status AgentStatus
+		holds  bool
+		result string
+		detail string
+		holdsN int
+	}{
+		{"plain", agentWF, lost, false, Failed, "lost: SessionEnd", 0},
+		{"done and until holds", agentDoneWF, withDone(lost), true, Succeeded, "until held", 1},
+		{"done, until fails", agentDoneWF, withDone(lost), false, Failed, "until did not hold", 1},
+		{"until step without done mark", agentDoneWF, lost, true, Failed, "lost: SessionEnd", 0},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			e, r, _, _ := setup(t, c.wf)
+			for _, en := range []Entry{
+				{Type: TypeEntered, At: at(1), Step: "build", Visit: 1},
+				{Type: TypeSession, At: at(1), Step: "build", Session: "S-earlier"},
+			} {
+				if err := e.Store.Append(runID, en); err != nil {
+					t.Fatal(err)
+				}
+			}
+			r.agentSeq["S-earlier"] = []AgentStatus{c.status}
+			r.holds["build"] = []bool{c.holds}
+			st, err := e.Run(runID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if st.Result != c.result || !strings.Contains(st.Steps[0].Detail, c.detail) || r.polls["build"] != c.holdsN {
+				t.Fatalf("result %q detail %q holds %d", st.Result, st.Steps[0].Detail, r.polls["build"])
+			}
+			if want := []string{"S-earlier"}; !reflect.DeepEqual(r.closed, want) {
+				t.Errorf("closed %v, want %v", r.closed, want)
+			}
+		})
+	}
+}
+
+func withDone(s AgentStatus) AgentStatus { s.SaidDone = true; return s }
