@@ -1,0 +1,30 @@
+{
+  "actor": "01M6M2RHZ7G19XR0CYFVKVG9WM",
+  "after": [
+    "01M6M2R7RJCMNMMKH0KW8Q2K21"
+  ],
+  "at": "2026-11-04T20:09:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "7346bd67-434f-4dba-9398-01a1a82c3dce",
+          "statement": "Which intent should change set 01M6M2R7 (duplicate agent actor records) serve? m4-runs-hold-up says runs finish 'with no swept-up actor records', and the earlier actor-record fix 01M602TH serves milestone-4. / How should a session's actor record stop being duplicated? Cause found in the code: session start (recordAgentActor, internal/api/session.go:668) writes the record only in the run worktree. A verifier works in its own checkout (dir), which lacks the record, so the agent hand-adds `add actor <handle> --record` there, and both get committed."
+        },
+        "handle": "question-7346bd67-1",
+        "id": "01M6M2WCPY1DWW4GKJ8XJ67ZPG",
+        "key": null,
+        "kind": "question",
+        "node": "01M6M2WCPY1DWW4GKJ8V8KAP0V",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6M2R7RJCMNMMKH0KS2364BK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M2WDT9Q9BMA6TK4HNRB7ZV",
+  "type": "ops",
+  "v": 1
+}
