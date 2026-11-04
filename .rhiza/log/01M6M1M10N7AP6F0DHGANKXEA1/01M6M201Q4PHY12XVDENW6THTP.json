@@ -1,0 +1,30 @@
+{
+  "actor": "01M6M1Y63ZWSZ7QPBNSFVVY0AM",
+  "after": [
+    "01M6M1SF5E1RGX6H8SRV2XDGFD"
+  ],
+  "at": "2026-11-04T19:53:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A unit test of the shared helper creates, under a temp root, a folder with the prefix back-dated over an hour (os.Chtimes), a fresh one with the prefix and an old one with another prefix, runs the sweep and asserts only the stale prefixed folder is gone; each of internal/api, internal/index and internal/slice TestMain and internal/quiettest's turn-taking call it for their own prefix before making a folder; make check passes",
+          "statement": "A test run that is killed before its cleanup (a go test timeout) leaves none of the four fixed-prefix temp folders behind for good: each package that makes one (internal/api rhiza-api-budget-*, internal/index rhiza-index-budget-*, internal/slice rhiza-slice-budget-*, internal/quiettest rhiza-quiet-*) removes, when it starts, the folders under os.TempDir() with its prefix whose modification time is older than an hour, through one shared helper. Folders made by t.TempDir() (such as internal/tui/modelapp TestGeneratedModel's) are outside this leaf"
+        },
+        "handle": "test-temp-folders-swept",
+        "id": "01M6M1S9S4QNBMCMDWPF83GPNP",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6M1S9S4QNBMCMDWPDM62T6M",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      }
+    ]
+  },
+  "change_set": "01M6M1M10N7AP6F0DHGANKXEA1",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M201Q4PHY12XVDENW6THTP",
+  "type": "ops",
+  "v": 1
+}

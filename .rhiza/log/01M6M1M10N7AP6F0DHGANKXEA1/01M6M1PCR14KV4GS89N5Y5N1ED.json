@@ -1,0 +1,30 @@
+{
+  "actor": "01M6M1MB3B1PST86H70HXXYCH5",
+  "after": [
+    "01M6M1M10N7AP6F0DHGBKVBE8Z"
+  ],
+  "at": "2026-11-04T19:48:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "45b188d1-8ca7-4482-a8d3-01a1a81a2270",
+          "statement": "Change set 'Fix Test temp folders leak' serves no intent yet. Which intent should it serve? (The earlier test-suite fix, test-suite-shared, served milestone-25, the backlog intent.) / How should the leaked test temp folders (rhiza-api/index/slice-budget-*, rhiza-quiet-<ppid>) be cleaned up?"
+        },
+        "handle": "question-45b188d1-1",
+        "id": "01M6M1PBF4M7FV5WG305KX4HXY",
+        "key": null,
+        "kind": "question",
+        "node": "01M6M1PBF4M7FV5WG305ASD8D4",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6M1M10N7AP6F0DHGANKXEA1",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M1PCR14KV4GS89N5Y5N1ED",
+  "type": "ops",
+  "v": 1
+}
