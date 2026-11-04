@@ -28,18 +28,19 @@ func Pick(candidates []string, runs []run.Journal, pending []string, host string
 
 // Skip reasons, fixed: the state file and its readers match on them.
 const (
-	SkipNoMilestone = "no-milestone"
-	SkipNoLeaves    = "no-leaves"
-	SkipNotReady    = "not-ready"
-	SkipLive        = "live"
-	SkipFailed      = "failed"
-	SkipShipped     = "shipped"
-	SkipHeld        = "held"
-	SkipUnjournaled = "unjournaled"
-	SkipNoSlot      = "no-slot"
-	SkipDiskLow     = "disk-low"
-	SkipShipOwner   = "ship-owner"
-	SkipPaused      = "paused"
+	SkipNoMilestone  = "no-milestone"
+	SkipNoLeaves     = "no-leaves"
+	SkipNotReady     = "not-ready"
+	SkipLive         = "live"
+	SkipFailed       = "failed"
+	SkipShipped      = "shipped"
+	SkipHeld         = "held"
+	SkipUnjournaled  = "unjournaled"
+	SkipNoSlot       = "no-slot"
+	SkipDiskLow      = "disk-low"
+	SkipUsageReserve = "usage-reserve"
+	SkipShipOwner    = "ship-owner"
+	SkipPaused       = "paused"
 )
 
 // Ship says which succeeded runs mean a change set has shipped: those of
