@@ -1,6 +1,8 @@
 # Reads show a stored reference by the node's current handle: @renamed after a
 # rename, @{<full ID>} for a retired node or one not in the view, and a literal
 # @ that would start a reference as @@. Shown text written back stores the same.
+# ls, tree, feed and roadmap print handles, change set titles and intents, never
+# a node's statement, so they must never show a stored @{<full ID>}.
 
 mkdir repo
 cd repo
@@ -12,6 +14,21 @@ exec git commit -qm init
 exec rhiza add capability other --field statement=Other --record
 exec rhiza add capability gone --field statement=Gone --record
 exec rhiza add capability ref --field 'statement=Sees @other' --record
+exec rhiza add capability legacy --field statement=LEGACY --record
+
+# A question that refers to @other blocks a proposed change set, so inbox
+# prints its statement.
+exec rhiza add question ask --field 'statement=Is @other ready?' --record
+exec rhiza link ask blocks ref --record
+exec rhiza change new Blocked
+exec rhiza set ref --field 'statement=Sees @other still'
+exec rhiza propose
+
+# A node only another change set's view has.
+exec rhiza change new Elsewhere
+exec rhiza add capability elsewhere --field statement=Elsewhere
+exec sh -c 'rhiza show elsewhere --json | grep "\"id\"" | head -1 | cut -d\" -f4 > elsewhere.txt'
+
 exec rhiza set other --handle renamed --record
 exec rhiza change new Refs
 exec rhiza add capability mine --field 'statement=Builds on @renamed and @gone, @@lit and @@{LITERAL}'
@@ -28,7 +45,23 @@ stdout '@renamed'
 exec rhiza slice mine
 stdout '@renamed'
 exec rhiza ls --json
+stdout '"handle": "mine"'
+! stdout '@\{'
 exec rhiza tree --json
+stdout '"handle": "mine"'
+! stdout '@\{'
+exec rhiza inbox
+stdout 'Is @renamed ready\?'
+exec rhiza inbox --json
+stdout '"question": "Is @renamed ready\?"'
+exec rhiza feed
+! stdout '@\{'
+exec rhiza feed --json
+! stdout '@\{'
+exec rhiza roadmap
+! stdout '@\{'
+exec rhiza roadmap --json
+! stdout '@\{'
 exec rhiza search '@renamed'
 stdout 'mine'
 stdout 'Builds on @renamed'
@@ -49,12 +82,39 @@ stdout '@renamed'
 exec rhiza tui app why mine --once
 stdout '@renamed'
 
-# A node that is not in the view shows @{<full ID>}; retiring shows it too.
+# A reference to a node not in the view shows @{<full ID>}. Writes refuse
+# one, so this one is written into the log by hand.
+exec rhiza add capability away --field statement=AWAY
+exec sh -c 'for f in $(grep -l "\"statement\": \"AWAY\"" .rhiza/log/*/*.json); do sed "s/\"AWAY\"/\"Sees @{$(cat elsewhere.txt)}\"/" $f > $f.new && mv $f.new $f; done'
+exec sh -c 'rhiza show away --json | grep -c "\"statement\": \"Sees @{$(cat elsewhere.txt)}\""'
+stdout '^1$'
+exec rhiza show away
+stdout 'Sees @\{[0-9A-Z]{26}\}'
+! stdout '@elsewhere'
+
+# After a node is retired, the reference shows @{<its full ID>}.
 exec sh -c 'rhiza show gone --json | grep "\"id\"" | head -1 | cut -d\" -f4 > gone.txt'
 exec rhiza retire gone --reason Done
+exec sh -c 'rhiza show mine --json | grep -c "and @{$(cat gone.txt)}, @@lit"'
+stdout '^1$'
 exec rhiza show mine --json
-stdout '@\{[0-9A-Z]{26}\}'
 ! stdout '@gone'
+
+# A log entry written by hand before the feature holds a literal @word and
+# @{ID}: it shows as @@word and @@{ID}, and writing that back stores the
+# same literal text.
+exec sh -c 'for f in $(grep -l "\"statement\": \"LEGACY\"" .rhiza/log/*/*.json); do sed "s/\"LEGACY\"/\"Uses @word and @{ID}\"/" $f > $f.new && mv $f.new $f; done'
+[darwin] rm $HOME/Library/Caches/rhiza/index
+[linux] rm $HOME/.cache/rhiza/index
+exec rhiza show legacy --json
+stdout '"statement": "Uses @@word and @@\{ID\}"'
+exec rhiza show legacy
+stdout 'Uses @@word and @@\{ID\}'
+exec rhiza set legacy --field 'statement=Uses @@word and @@{ID}'
+exec sh -c 'cat .rhiza/log/*/*.json'
+stdout -count=2 '"statement": "Uses @word and @\{ID\}"'
+exec rhiza show legacy --json
+stdout '"statement": "Uses @@word and @@\{ID\}"'
 
 # Shown text written back stores the same text.
 exec rhiza show mine --json
