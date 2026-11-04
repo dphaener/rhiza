@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-04T06:06:16Z",
+  "body": {
+    "intent": "The test suite is cheap to run in many worktrees at once: unchanged packages hit the shared test cache across worktrees, and concurrent full suites on one machine queue instead of thrashing",
+    "kind": "intention",
+    "sources": [],
+    "title": "Cheap shared test suite"
+  },
+  "change_set": "01M6JJMK3M50P34PPX1QNTHYCB",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6JJMK3M50P34PPX1SXJXSDF",
+  "type": "open",
+  "v": 2
+}
