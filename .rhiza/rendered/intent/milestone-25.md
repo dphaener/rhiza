@@ -33,6 +33,7 @@ The backlog is empty: every change set planned from the owner's queued requests 
 - serves change set `01M6K044DTSK7PT604NHPNGD17` (Queued continuations are not starved by ready change sets: the daemon keeps a slot for each queued resume or retry)
 - serves change set `01M6K3QFYNKE35DZJG5HPHPJT3` (Order the inbox fix after the resume-after-land fix: both rewrite the same resume and inbox nodes)
 - serves change set `01M6KV89S5MKWG2DHA762F8WTZ` (Inbox and daemon notify are cheap: overlaps and inbox items are computed once per model change, not per call or poll)
+- serves change set `01M6M01GYQHR9VMCZ54W5THARK` (Agents in runs stop running the full test suite locally: builders, verifiers, review checks, critics and fixers run only the tests of the packages and scripts their change touches (scoped go test with -trimpath, the affected testscripts, make self-check), and no step runs make check/make test or a bare go test ./... — the PR's GitHub CI runs the full suite before every merge and the ship workflow already waits for it. Owner, 2026-11-04: "Yes the test suites make sense, since we're going to run full CI anyway on GitHub before merge." (context: the VM's host CPU is over-committed, ~35% steal; every agent ran a full suite). Update the built-in workflows' role prompts, the rhiza-build/rhiza-review skills and guide topics, and CLAUDE.md's guidance, and keep the leaf acceptance checks scoped)
 
 ## History
 
