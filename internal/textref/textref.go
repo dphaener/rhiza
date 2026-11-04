@@ -40,6 +40,9 @@ type Ref struct {
 	Token      string // the handle, or the ID or prefix, without @ or braces
 	Kind       Kind
 	Braced     bool
+	// Escaped marks an @@{<full ID>} escape Resolve returns: its literal @
+	// would be stored as @{<full ID>}, which reads back as a reference.
+	Escaped bool
 }
 
 // IDLen is the length of a full ID.
@@ -165,6 +168,12 @@ func Find(text string) []Ref {
 // lookup maps a reference to the full ID of the node it names. A reference
 // lookup cannot map is left as written and returned, with its offset in
 // Ref.Start, so the caller can refuse the write.
+//
+// Stored text cannot hold a literal @{<full ID>}: it would read back as a
+// reference. So an @@{<full ID>} escape is returned too, with Ref.Escaped
+// set, and both it and an unmapped @{<full ID>} are written as @<full ID>,
+// without braces, so the text Resolve returns never holds a stored reference
+// that lookup did not give.
 func Resolve(text string, lookup func(Ref) (string, bool)) (string, []Ref) {
 	var (
 		b          strings.Builder
@@ -176,14 +185,25 @@ func Resolve(text string, lookup func(Ref) (string, bool)) (string, []Ref) {
 		last = it.End
 		switch {
 		case it.escape:
+			if id, ok := storedRef(text, it.Start+1); ok {
+				end := it.Start + 1 + 2 + IDLen + 1
+				b.WriteString("@" + id)
+				unresolved = append(unresolved, Ref{Start: it.Start, End: end, Token: id, Kind: KindID, Braced: true, Escaped: true})
+				last = end
+				continue
+			}
 			b.WriteByte('@')
 		default:
 			if full, ok := lookup(it.Ref); ok {
 				b.WriteString("@{" + full + "}")
+				continue
+			}
+			if id, ok := storedRef(text, it.Start); ok {
+				b.WriteString("@" + id)
 			} else {
 				b.WriteString(text[it.Start:it.End])
-				unresolved = append(unresolved, it.Ref)
 			}
+			unresolved = append(unresolved, it.Ref)
 		}
 	}
 	b.WriteString(text[last:])

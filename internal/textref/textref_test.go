@@ -76,6 +76,26 @@ func TestResolve(t *testing.T) {
 	}
 }
 
+// A literal @{<full ID>} cannot be stored: it would read back as a
+// reference. The @@ escape of one, and an unmapped one, are returned and
+// stored without braces.
+func TestResolveLiteralFullID(t *testing.T) {
+	const ghost = "01ZZZZZZZZZZZZZZZZZZZZZZZZ"
+	in := "a @@{" + ghost + "} b @{" + ghost + "} c @@{" + idA + "} d @@{ID}"
+	got, un := Resolve(in, lookup)
+	want := "a @" + ghost + " b @" + ghost + " c @" + idA + " d @{ID}"
+	if got != want {
+		t.Errorf("got %q\nwant %q", got, want)
+	}
+	if len(un) != 3 || !un[0].Escaped || un[0].Token != ghost || un[0].Start != 2 || un[0].End != 2+len("@@{")+IDLen+1 ||
+		un[1].Escaped || un[1].Token != ghost || !un[2].Escaped || un[2].Token != idA {
+		t.Errorf("unresolved = %+v", un)
+	}
+	if shown := Format(got, handleOf); strings.Contains(shown, "@{"+ghost) || strings.Contains(shown, "@alpha") {
+		t.Errorf("stored %q is shown as %q, with a reference", got, shown)
+	}
+}
+
 func TestFormat(t *testing.T) {
 	for stored, want := range map[string]string{
 		"see @{" + idA + "}.":                 "see @alpha.",
@@ -100,8 +120,20 @@ func FuzzRoundTrip(f *testing.F) {
 	for _, s := range []string{"@alpha", "@@x", "(@beta-two)@{" + idA + "}", "@{" + idR + "}-", "@@@alpha @{ID}", "a @01M6 b @", "@{" + idA + "}@{" + idB + "}"} {
 		f.Add(s)
 	}
+	f.Add("@@{01ZZZZZZZZZZZZZZZZZZZZZZZZ} @{01ZZZZZZZZZZZZZZZZZZZZZZZZ}")
 	f.Fuzz(func(t *testing.T, in string) {
-		stored, un := Resolve(in, lookup)
+		gave := map[string]bool{}
+		stored, un := Resolve(in, func(r Ref) (string, bool) {
+			id, ok := lookup(r)
+			gave[id] = gave[id] || ok
+			return id, ok
+		})
+		// Every stored reference is one lookup gave, unresolved input or not.
+		for i := 0; i < len(stored); i++ {
+			if id, ok := storedRef(stored, i); ok && startOK(stored, i) && !gave[id] {
+				t.Fatalf("in %q stored %q holds @{%s}, which lookup did not give", in, stored, id)
+			}
+		}
 		if len(un) > 0 {
 			return
 		}

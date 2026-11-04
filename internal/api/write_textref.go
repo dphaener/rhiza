@@ -19,14 +19,17 @@ import (
 // the view of b. current holds the node's stored fields (nil for a new node):
 // a reference to a retired node is kept only when the field's current value
 // already holds that ID. Strict, an unresolvable reference refuses the whole
-// write; lenient, it is stored as a literal @ and the write goes on. A source
+// write; lenient, it is stored as a literal @ and the write goes on. An
+// @@{<full ID>} escape, or an unresolvable @{<full ID>}, is stored as
+// @<full ID> (see textref.Resolve), as stored text cannot hold a literal
+// @{<full ID>}: strict, it refuses the write too. A source
 // node's fields and the verbatim fields are returned as given.
 func resolveFieldTexts(b writeBase, kind op.Kind, fields []string, current map[string]json.RawMessage, lenient bool) ([]string, error) {
 	if kind == op.KindSource || len(fields) == 0 {
 		return fields, nil
 	}
 	out := make([]string, len(fields))
-	var bad []string
+	var bad, literal []string
 	for i, kv := range fields {
 		name, text, ok := strings.Cut(kv, "=")
 		if !ok || gmodel.TextVerbatim(kind, name) {
@@ -45,9 +48,17 @@ func resolveFieldTexts(b writeBase, kind op.Kind, fields []string, current map[s
 			return n.ID.String(), true
 		})
 		for _, u := range unresolved {
+			if u.Escaped {
+				literal = append(literal, "@@{"+u.Token+"} in field "+name)
+				continue
+			}
 			bad = append(bad, "@"+u.Token+" in field "+name)
 		}
 		out[i] = name + "=" + resolved
+	}
+	if len(literal) > 0 && !lenient {
+		return nil, Usagef("a literal @{<full ID>} cannot be stored, as it reads back as a reference: %s", strings.Join(literal, ", ")).
+			WithNext("refer to the node with @{<full ID>}, or write the ID without braces")
 	}
 	if len(bad) > 0 && !lenient {
 		return nil, NotFoundf("no node to refer to for: %s (a write may refer to landed nodes and nodes of its own change set, not retired ones)", strings.Join(bad, ", ")).
