@@ -1,0 +1,33 @@
+{
+  "actor": "01M6J6G8QG3PH8D900KHBX2KWW",
+  "after": [
+    "01M6J76T95CGWE1PG091D1WQQH"
+  ],
+  "at": "2026-11-04T02:47:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "958130c6b24413daade65a83cf1c7c40d372e75bba34b914f7fc10c330e484cd",
+          "session": "384d6bb0-11b5-42bf-a242-01a1a467f521",
+          "summary": "Autonomous plan run of change set 01M6J6FDD9GXDW4AENMS6YNY63; no owner present, every question went to the arbiter. Settled: the change set serves the landed done point m2-interviews-recorded; session interview/session done skip an answer when a Decision the change set created (or, once landed, a landed Decision derived-from the session's Source) has a question field equal to the asked question verbatim; the run's capture stays the default recorder of plain owner picks and the planner writes a Decision itself only for proxy answers or rulings the capture can't word, with proxy wording and the verbatim question; no answered-by session field now. The ~6 s per rhiza apply write on the VM is out of scope here and gets its own change set. Leaves planned: capture-skips-recorded-answers and plan-guide-who-records.",
+          "title": "Plan of 'Fix Plan interviews duplicate', autonomous with the arbiter"
+        },
+        "handle": "fix-plan-dup-interview",
+        "id": "01M6J7934ZA6AEM4FHWEPRP4JC",
+        "key": null,
+        "kind": "source",
+        "node": "01M6J7934ZA6AEM4FHWD9ZA2M6",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6J6FDD9GXDW4AENMS6YNY63",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J79A91G9BMYS7EG1EAE1BC",
+  "type": "ops",
+  "v": 1
+}
