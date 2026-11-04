@@ -1,0 +1,40 @@
+{
+  "actor": "01M6KJH8WQ27R3FQ6TGZHWMEH6",
+  "after": [
+    "01M6KHKQMSWDARGBT4GMQ0J5P5"
+  ],
+  "at": "2026-11-04T15:26:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At cf16bd57, built rhiza and ran `rhiza guide ls`: it lists `workflows  topic  623 tokens  Writing a custom workflow...`. go test -count=1 ./internal/guide ./internal/api passed: TestWorkflowsText asserts the topic names, as list items, all eight step kinds the workflow package defines (KindAgent, Wait, Command, Arbiter, Leaves, Checks, Signoff, Workflow — the full const block in internal/workflow/workflow.go), plus layers, done/failed targets, includes and the ls/new/describe/check/run start --dry-run loop; TestGuideCommandsExist checks every `rhiza ...` reference in every guide text, workflows included, resolves to a registered operation (pendingCommands is empty). TestScripts/guide passed with guide ls counting 14 texts. Read the diff: topic text, registry entry, rhiza.md topic list, tests only."
+        },
+        "handle": "workflow-guide-topic-verified",
+        "id": "01M6KJN0WVMQGFSZYNAW0MCC4V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KJN0WVMQGFSZYNASSFHH5F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KJN0WVMQGFSZYNASSFHH5F",
+        "id": "01M6KJN8D55BKM31ZMGT9PTW24",
+        "link": "01M6KJN8D55BKM31ZMGRR71FAK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNBNSSMC77JWXF4Q21GM0G",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HN24SPSS76PKZHZV188JEW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KJNSC47TC56C2X1V9BCZNC",
+  "type": "ops",
+  "v": 1
+}
