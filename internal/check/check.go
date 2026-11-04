@@ -59,8 +59,10 @@
 //     Input.Tree or whose symbol is gone from its file (a path that is not
 //     a clean relative one, a symbol on a non-Go file and a Go file that
 //     does not parse count as gone). Each finding names the anchor and the
-//     capabilities it implements by live implements links. Without a Tree
-//     the rule is skipped silently.
+//     capabilities it implements by live implements links. It warns, with
+//     Next rhiza anchor refresh <anchor>, on each anchor that resolves but
+//     whose stored fingerprint differs from that of its declaration (or
+//     file). Without a Tree the rule is skipped silently.
 //   - render fails on each rendered file that differs from what
 //     render.Render writes, is missing or is extra, and on a missing
 //     rendered folder.

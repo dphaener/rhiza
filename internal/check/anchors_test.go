@@ -6,6 +6,7 @@ import (
 	"testing"
 	"testing/fstest"
 
+	"github.com/dphaener/rhiza/internal/anchor"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
 )
@@ -79,5 +80,53 @@ func TestAnchorRuleRetiredAndSkipped(t *testing.T) {
 	in.Tree = fstest.MapFS{}
 	if rep := Run(in); len(ofRule(rep, RuleAnchor)) != 0 {
 		t.Errorf("retired anchor found: %+v", rep.Findings)
+	}
+}
+
+func TestAnchorFingerprintChanged(t *testing.T) {
+	const other = "package p\n\nfunc Keep() { println() }\n"
+	cases := []struct {
+		name         string
+		symbol, path string
+		src          string // working tree p.go
+		changed      bool
+	}{
+		{"declaration changed", "Keep", "p.go", other, true},
+		{"outside declaration", "Keep", "p.go", anchorSrc + "\nfunc More() {}\n", false},
+		{"file changed", "", "p.go", other, true},
+		{"file unchanged", "", "p.go", anchorSrc, false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			r := newRepo(t)
+			_, capab := clean(r)
+			a := r.next()
+			fp, err := anchor.FingerprintFS(fstest.MapFS{"p.go": {Data: []byte(anchorSrc)}}, tc.path, tc.symbol)
+			if err != nil {
+				t.Fatal(err)
+			}
+			create := anchorOp(r, a, "pin", tc.path, tc.symbol)
+			create.Fields["fingerprint"], _ = json.Marshal(fp)
+			r.record("Anchor", create, mkLink(r.next(), r.next(), op.LinkImplements, a, capab))
+			in := r.input()
+			in.Tree = fstest.MapFS{"p.go": {Data: []byte(tc.src)}}
+			rep := Run(in)
+			fs := ofRule(rep, RuleAnchor)
+			if !tc.changed {
+				if len(fs) != 0 {
+					t.Fatalf("findings %+v", fs)
+				}
+				return
+			}
+			if len(fs) != 1 || fs[0].Severity != SeverityWarn || !rep.OK {
+				t.Fatalf("OK %v, findings %+v", rep.OK, rep.Findings)
+			}
+			if m := fs[0].Message; !strings.Contains(m, "anchor pin") || !strings.Contains(m, "implements thing") {
+				t.Errorf("message %q", m)
+			}
+			if fs[0].Next != "rhiza anchor refresh pin" {
+				t.Errorf("next %q", fs[0].Next)
+			}
+		})
 	}
 }
