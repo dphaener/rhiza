@@ -23,11 +23,13 @@ stdout '"run": "F-LAND"'
 stdout '"kind": "failed"'
 stdout '"run": "N-LAND"'
 stdout '"kind": "skipped"'
+stdout '"next": "rhiza run abandon N-LAND"'
 exec sh -c 'rhiza inbox --json | grep -c "\"kind\""'
 stdout '^3$'
 exec rhiza inbox
 ! stdout 'R-LAND'
 stdout 'skipped run N-LAND'
+stdout 'next: rhiza run abandon N-LAND'
 -- mkchanges.sh --
 set -e
 for k in r g f n; do
