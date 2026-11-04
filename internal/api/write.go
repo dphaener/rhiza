@@ -27,9 +27,11 @@ import (
 // ops of the change set being written (nil for a new record change set),
 // and the ID generator.
 type writeBase struct {
-	m   Model
-	ops []op.Op
-	ids *id.Generator
+	// root is the project root anchors resolve against.
+	root string
+	m    Model
+	ops  []op.Op
+	ids  *id.Generator
 	// changeSet resolves a change set ref over the log, for links whose
 	// end is a change set; nil where there is none.
 	changeSet func(ref string) (id.ID, error)
@@ -167,7 +169,7 @@ func (r WriteResponse) Human(w io.Writer) {
 // built again over the new log.
 func runWrite(ctx *Ctx, opName, intent string, build func(writeBase) (edit, error)) (any, error) {
 	return runWriteOn(ctx, opName, intent, func(w *workspace, cs id.ID) (edit, error) {
-		b := writeBase{m: w.model(cs), ids: ctx.IDs, changeSet: w.resolveChangeSet, changeSets: w.changeSets}
+		b := writeBase{root: w.root, m: w.model(cs), ids: ctx.IDs, changeSet: w.resolveChangeSet, changeSets: w.changeSets}
 		if !cs.IsZero() {
 			c, _ := w.changeSet(cs)
 			b.ops = c.Ops

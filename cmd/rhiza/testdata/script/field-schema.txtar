@@ -12,9 +12,9 @@ stderr '^rhiza: an evidence has no field "bogus" \(known fields: command, head, 
 stdout '"code": "usage"'
 stdout 'known fields: command, head'
 
-# A kind without fields says so.
+# An anchor has path, symbol and fingerprint.
 ! exec rhiza add anchor a1 --field statement=x
-stderr 'an anchor has no field "statement" \(it has no fields\)'
+stderr 'an anchor has no field "statement" \(known fields: fingerprint, path, symbol\)'
 
 # Nothing was written by the refusals.
 exec rhiza change show
