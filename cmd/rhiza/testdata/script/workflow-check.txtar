@@ -1,0 +1,139 @@
+# workflow check validates as run start would, reports every problem with
+# its step, and exits non-zero for a bad one. --json is the bytes of
+# api call workflow.check. The files are the internal/workflow testdata.
+
+env XDG_CONFIG_HOME=$WORK/xdg
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+fold-ok
+
+# every built-in is valid
+exec rhiza workflow check build
+stdout '^workflow build is valid \(builtin:build\)$'
+exec rhiza workflow check plan
+exec rhiza workflow check review
+exec rhiza workflow check ship-change
+
+# the valid testdata file
+exec rhiza workflow check $WORK/valid.toml
+stdout '^workflow example is valid'
+
+# bad files exit non-zero naming the step and the problem
+! exec rhiza workflow check $WORK/bad-outcome.toml
+stdout 'step build: step "build": on.sucess: a command step has no outcome "sucess"'
+! exec rhiza workflow check $WORK/missing-target.toml
+stdout 'step build: step "build": on.pass names "nope", which is not a step'
+! exec rhiza workflow check $WORK/unknown-kind.toml
+stdout 'step repeat: step "repeat": unknown kind "loop"'
+
+# every problem is reported, not the first
+! exec rhiza workflow check $WORK/many.toml
+stdout '^workflow many has 3 problem\(s\)'
+stdout 'step a: .*on.pass names "nope"'
+stdout 'step b: .*unknown kind "loop"'
+stdout 'step c: .*on.sucess'
+
+# a missing include is reported, with the step that includes it
+! exec rhiza workflow check $WORK/inc-missing.toml
+stdout 'step go: .*workflow "nothing-here"'
+
+# an include found in the repo layer is expanded
+mkdir .rhiza/workflows
+cp $WORK/inc-ok-target.toml .rhiza/workflows/nothing-here.toml
+exec rhiza workflow check $WORK/inc-missing.toml
+stdout 'is valid'
+
+# a name that is nowhere is a usage error
+! exec rhiza workflow check no-such-workflow
+stderr 'no workflow "no-such-workflow"'
+
+# --json is the api's bytes, for a bad one and a good one
+cp $WORK/bad-outcome.toml .
+! exec rhiza workflow check bad-outcome.toml --json
+cp stdout bad.json
+! exec rhiza api call workflow.check '{"workflow":"bad-outcome.toml"}'
+cmp stdout bad.json
+stdout '"valid": false'
+stdout '"step": "build"'
+exec rhiza workflow check build --json
+cp stdout ok.json
+exec rhiza api call workflow.check '{"workflow":"build"}'
+cmp stdout ok.json
+stdout '"valid": true'
+
+# nothing was written
+fold-ok
+
+-- valid.toml --
+name = "example"
+start = "build"
+
+[step.build]
+kind = "agent"
+permission_mode = "manual"
+agent = "claude-code"
+prompt = "Build change set {change} ({title}) in step {step} of run {run}"
+on.pass = "test"
+
+[step.test]
+kind = "command"
+run = "make test"
+max_visits = 3
+on.pass = "ci"
+on.fail = "build"
+
+[step.ci]
+kind = "wait"
+until = "gh pr checks"
+timeout = "30m"
+interval = "30s"
+on.pass = "done"
+on.timeout = "failed"
+-- bad-outcome.toml --
+name = "bad-outcome"
+
+[step.build]
+kind = "command"
+run = "make"
+on.sucess = "done"
+-- missing-target.toml --
+name = "missing-target"
+
+[step.build]
+kind = "command"
+run = "make"
+on.pass = "nope"
+-- unknown-kind.toml --
+name = "unknown-kind"
+
+[step.build]
+kind = "command"
+run = "make"
+on.pass = "repeat"
+
+[step.repeat]
+kind = "loop"
+on.pass = "done"
+-- many.toml --
+[step.a]
+kind = "command"
+run = "make"
+on.pass = "nope"
+
+[step.b]
+kind = "loop"
+
+[step.c]
+kind = "command"
+run = "make"
+on.sucess = "done"
+-- inc-missing.toml --
+[step.go]
+kind = "workflow"
+workflow = "nothing-here"
+-- inc-ok-target.toml --
+[step.only]
+kind = "command"
+run = "true"

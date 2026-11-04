@@ -21765,6 +21765,70 @@ cmp stdout describe.golden.json
       "write": true
     },
     {
+      "name": "workflow.check",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "workflow": {
+            "description": "A workflow name (personal, repo, then built-in) or a .toml file path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workflow"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "description": "The workflow's name",
+            "type": "string"
+          },
+          "path": {
+            "description": "The file it resolved from, or builtin:<name>",
+            "type": "string"
+          },
+          "problems": {
+            "description": "Every problem found; empty when valid",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "message": {
+                  "description": "What is wrong and what is wanted",
+                  "type": "string"
+                },
+                "step": {
+                  "description": "The step the problem is in; empty for a problem of the whole file",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "message",
+                "step"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "valid": {
+            "description": "True when run start would accept the workflow",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "path",
+          "problems",
+          "valid"
+        ],
+        "type": "object"
+      },
+      "summary": "Validate a workflow as run start would, with includes expanded, and report every problem with the step it is in; starts nothing",
+      "write": false
+    },
+    {
       "name": "workflow.describe",
       "request": {
         "additionalProperties": false,
