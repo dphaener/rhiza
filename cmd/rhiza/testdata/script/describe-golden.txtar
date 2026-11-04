@@ -1984,7 +1984,7 @@ cmp stdout describe.golden.json
                   "type": "array"
                 },
                 "reason": {
-                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low or ship-owner",
+                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, usage-reserve or ship-owner",
                   "type": "string"
                 },
                 "title": {
@@ -2444,7 +2444,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "parts": {
-            "description": "Every part, in a fixed order: daemon, autonomy, machine, disk, main, inbox, requests, roadmap, check",
+            "description": "Every part, in a fixed order: daemon, autonomy, machine, disk, usage, main, inbox, requests, roadmap, check",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -2466,6 +2466,7 @@ cmp stdout describe.golden.json
                     "autonomy",
                     "machine",
                     "disk",
+                    "usage",
                     "main",
                     "inbox",
                     "requests",
@@ -2514,7 +2515,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Report the daemon, autonomy settings, the machine trust, free disk, the main checkout, inbox, queued requests, roadmap and rhiza check, each part ok, warn or bad; exit 1 when any part is bad",
+      "summary": "Report the daemon, autonomy settings, the machine trust, free disk, the usage hold, the main checkout, inbox, queued requests, roadmap and rhiza check, each part ok, warn or bad; exit 1 when any part is bad",
       "write": false
     },
     {
@@ -2673,7 +2674,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, main-stale or accept",
+                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, usage-reserve, main-stale or accept",
                   "type": "string"
                 },
                 "next": {

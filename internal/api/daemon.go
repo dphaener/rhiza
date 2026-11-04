@@ -164,6 +164,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		resp.Planned = append(resp.Planned, planned...)
 		if err == nil {
 			state.Skips = skips
+			state.UsageHold = usageHoldState(hold, state.UsageHold, ctx.Now())
 			if low, free := daemonDiskLow(ctx, minFree); !low {
 				state.DiskLow = nil
 			} else if state.DiskLow == nil {
@@ -254,6 +255,7 @@ func daemonStartState(common string, self daemon.Holder, version, commit string,
 		state.Events, state.EventsSeeded = prev.Events, prev.EventsSeeded
 		state.Hooks = prev.Hooks
 		state.DiskLow = prev.DiskLow
+		state.UsageHold = prev.UsageHold
 		state.Learned = prev.Learned
 		// A re-exec, or a restart, keeps the holds of the daemon before.
 		unjournaled = daemonRestoreUnjournaled(prev.Unjournaled)
@@ -326,6 +328,7 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 	items = append(items, overlaps...)
 	// This poll's disk-low state, not the one saved after the last poll.
 	items = append(items, diskLowItems(state.DiskLow)...)
+	items = append(items, usageHoldItems(state.UsageHold)...)
 	if common, err := gitCommonDir(ctx); err == nil {
 		items = append(items, mainStaleItems(common)...)
 	}
@@ -376,6 +379,8 @@ func inboxNotice(what string, it InboxItem) string {
 		return what + ": an interrupted run was not resumed"
 	case InboxDiskLow:
 		return "disk space is low: the daemon holds new starts and resumes"
+	case InboxUsageReserve:
+		return "usage reserve: the daemon holds new launches until the window resets"
 	case InboxMainStale:
 		return what + ": main was not updated after the merge: " + it.Detail
 	case InboxOverlap:
@@ -961,7 +966,7 @@ type DaemonEvent struct {
 type DaemonSkip struct {
 	Change string   `json:"change" desc:"The change set's ID"`
 	Title  string   `json:"title" desc:"The change set's display title"`
-	Reason string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low or ship-owner"`
+	Reason string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, usage-reserve or ship-owner"`
 	Detail []string `json:"detail" desc:"The readiness reasons, when the reason is not-ready; else empty"`
 }
 

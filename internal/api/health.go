@@ -12,15 +12,17 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/machine"
+	"github.com/dphaener/rhiza/internal/usage"
 )
 
 func init() {
 	register(Operation{
 		Name:     "health",
-		Summary:  "Report the daemon, autonomy settings, the machine trust, free disk, the main checkout, inbox, queued requests, roadmap and rhiza check, each part ok, warn or bad; exit 1 when any part is bad",
+		Summary:  "Report the daemon, autonomy settings, the machine trust, free disk, the usage hold, the main checkout, inbox, queued requests, roadmap and rhiza check, each part ok, warn or bad; exit 1 when any part is bad",
 		Request:  reflect.TypeFor[HealthRequest](),
 		Response: reflect.TypeFor[HealthResponse](),
 		Run:      runHealth,
@@ -40,6 +42,7 @@ const (
 	HealthAutonomy = "autonomy"
 	HealthMachine  = "machine"
 	HealthDisk     = "disk"
+	HealthUsage    = "usage"
 	HealthMain     = "main"
 	HealthInbox    = "inbox"
 	HealthRequests = "requests"
@@ -52,7 +55,7 @@ type HealthRequest struct{}
 
 // HealthPart is one part of the system and its state.
 type HealthPart struct {
-	Part    string   `json:"part" enum:"daemon,autonomy,machine,disk,main,inbox,requests,roadmap,check" desc:"The part"`
+	Part    string   `json:"part" enum:"daemon,autonomy,machine,disk,usage,main,inbox,requests,roadmap,check" desc:"The part"`
 	State   string   `json:"state" enum:"ok,warn,bad" desc:"ok, warn (worth a look) or bad (rhiza health exits 1)"`
 	Summary string   `json:"summary" desc:"One line on the part's state"`
 	Detail  []string `json:"detail" desc:"More lines on the part, such as each setting or each count; empty when none"`
@@ -62,7 +65,7 @@ type HealthPart struct {
 // HealthResponse is the report.
 type HealthResponse struct {
 	State string       `json:"state" enum:"ok,warn,bad" desc:"The worst state of any part"`
-	Parts []HealthPart `json:"parts" desc:"Every part, in a fixed order: daemon, autonomy, machine, disk, main, inbox, requests, roadmap, check"`
+	Parts []HealthPart `json:"parts" desc:"Every part, in a fixed order: daemon, autonomy, machine, disk, usage, main, inbox, requests, roadmap, check"`
 }
 
 // ExitCode is 1 when a part is bad, else 0.
@@ -108,6 +111,7 @@ func runHealth(ctx *Ctx, _ any) (any, error) {
 		healthAutonomy(settings, serr),
 		healthMachine(ctx),
 		healthDisk(ctx, settings, serr),
+		healthUsage(ctx, settings, serr),
 		healthMain(ctx),
 		healthInbox(ctx),
 		healthRequests(ctx),
@@ -227,6 +231,44 @@ func healthDisk(ctx *Ctx, settings []Setting, err error) HealthPart {
 	}
 	return HealthPart{Part: HealthDisk, State: HealthOK,
 		Summary: fmt.Sprintf("%s free, minimum %s", daemon.FormatSize(free), daemon.FormatSize(min))}
+}
+
+// healthUsage is warn while the daemon holds its launches for usage, else ok
+// with each window's use and limit.
+func healthUsage(ctx *Ctx, settings []Setting, err error) HealthPart {
+	if err != nil {
+		return healthFailed(HealthUsage, err)
+	}
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return healthFailed(HealthUsage, err)
+	}
+	st, _ := daemon.ReadState(common)
+	if h := st.UsageHold; h != nil {
+		return HealthPart{Part: HealthUsage, State: HealthWarn,
+			Summary: "the daemon holds new launches for usage until the window resets",
+			Detail:  []string{usageHoldDetail(*h)},
+			Next:    "rhiza daemon set rhiza.daemon.usage.reserve <percent>"}
+	}
+	now := ctx.Now()
+	var hits []usage.Limit
+	for _, h := range daemon.ReadLimitHits(common) {
+		hits = append(hits, usage.Limit{HitAt: h.HitAt, ResetAt: h.ResetAt})
+	}
+	var parts []string
+	for _, kind := range usage.Kinds {
+		recs := usageRecordsFor(ctx, now.Add(-2*kind.Length()), now.Add(time.Nanosecond))
+		used := int64(0)
+		if w, ok := usage.Current(kind, recs, hits, now); ok {
+			used = w.Used
+		}
+		if limit, ok := usageLimit(settings, st.Learned, kind); ok {
+			parts = append(parts, fmt.Sprintf("%s %d of %d", kind, used, limit))
+		} else {
+			parts = append(parts, fmt.Sprintf("%s %d, no limit known", kind, used))
+		}
+	}
+	return HealthPart{Part: HealthUsage, State: HealthOK, Summary: strings.Join(parts, "; ")}
 }
 
 // healthMain reads the main checkout: its branch, whether tracked files

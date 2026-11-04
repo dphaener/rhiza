@@ -35,8 +35,26 @@ type usageHold struct {
 
 // Detail is the hold in words, for a skip.
 func (h usageHold) Detail() string {
+	return usageHoldDetail(daemon.UsageHold{Window: string(h.Kind), Used: h.Used, Projected: h.Projected, Limit: h.Limit, Reserve: h.Reserve, Reset: h.Reset})
+}
+
+// usageHoldDetail is a saved hold in words.
+func usageHoldDetail(h daemon.UsageHold) string {
 	return fmt.Sprintf("%s window: %d tokens used, %d projected, over the limit of %d less a %d%% reserve; resets %s",
-		h.Kind, h.Used, h.Projected, h.Limit, h.Reserve, h.Reset.UTC().Format(time.RFC3339))
+		h.Window, h.Used, h.Projected, h.Limit, h.Reserve, h.Reset.UTC().Format(time.RFC3339))
+}
+
+// usageHoldState is the hold to save after a poll: nil when none holds, else
+// prev with the poll's numbers, keeping its Since while the hold goes on.
+func usageHoldState(h *usageHold, prev *daemon.UsageHold, now time.Time) *daemon.UsageHold {
+	if h == nil {
+		return nil
+	}
+	s := &daemon.UsageHold{Since: now.UTC(), Window: string(h.Kind), Used: h.Used, Projected: h.Projected, Limit: h.Limit, Reserve: h.Reserve, Reset: h.Reset}
+	if prev != nil && prev.Window == s.Window && prev.Reset.Equal(s.Reset) {
+		s.Since = prev.Since
+	}
+	return s
 }
 
 // usageReserve is the reserve setting, a percent of a limit.

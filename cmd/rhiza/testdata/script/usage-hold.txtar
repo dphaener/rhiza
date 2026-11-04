@@ -1,0 +1,54 @@
+# While the daemon holds for usage, daemon status lists each held change set
+# as a usage-reserve skip with the window, use, limit and reset time; health
+# has a warn usage part and the inbox one usage-reserve item. With the hold
+# cleared none of them shows and health's usage part is ok. The daemon state
+# is a fixture.
+
+env REX_SESSION=
+env REX_SERVER=
+env RHIZA_TEST_FREE_BYTES=1099511627776
+mkdir repo
+cd repo
+exec git init -q -b main
+exec rhiza init
+exec rhiza render
+exec git add -A
+exec git commit -qm init
+mkdir .git/rhiza
+
+cp ../held.json .git/rhiza/daemon.state.json
+exec rhiza daemon status --json
+stdout '"reason": "usage-reserve"'
+stdout '5h window: 900 tokens used, 950 projected, over the limit of 1000 less a 20% reserve; resets 2030-01-01T05:00:00Z'
+exec rhiza daemon status
+stdout 'Skipped: CSX .*usage reserve: held until the window resets \(5h window: 900 tokens used, 950 projected, over the limit of 1000 less a 20% reserve; resets 2030-01-01T05:00:00Z\)'
+exec rhiza health --json
+stdout '"part": "usage",\n\s*"state": "warn"'
+stdout '5h window: 900 tokens used'
+exec rhiza health
+stdout '^warn usage '
+exec rhiza inbox --json
+stdout -count=1 '"kind": "usage-reserve"'
+stdout '5h window: 900 tokens used'
+exec rhiza inbox
+stdout -count=1 '^[0-9a-f]+ usage-reserve$'
+exec sh -c 'rhiza inbox | head -1 | cut -d" " -f1 > ../id'
+! exec sh -c 'rhiza inbox open $(cat ../id)'
+stderr 'no tab to open'
+
+cp ../ok.json .git/rhiza/daemon.state.json
+exec rhiza daemon status --json
+! stdout 'usage-reserve'
+exec rhiza health --json
+stdout '"part": "usage",\n\s*"state": "ok"'
+! stdout '"state": "warn",\n\s*"summary": "the daemon holds'
+exec rhiza health
+stdout '^ok   usage '
+exec rhiza inbox --json
+! stdout 'usage-reserve'
+stdout '"items": \[\]'
+
+-- held.json --
+{"process":{"host":"h","pid":1,"started":"2030-01-01T00:00:00Z"},"last_poll":"2030-01-01T00:05:00Z","max_runs":2,"autonomous":false,"runs":[],"skips":[{"change":"CSX","title":"Held","reason":"usage-reserve","detail":["5h window: 900 tokens used, 950 projected, over the limit of 1000 less a 20% reserve; resets 2030-01-01T05:00:00Z"]}],"usage_hold":{"since":"2030-01-01T00:01:00Z","window":"5h","used":900,"projected":950,"limit":1000,"reserve":20,"reset":"2030-01-01T05:00:00Z"}}
+-- ok.json --
+{"process":{"host":"h","pid":1,"started":"2030-01-01T00:00:00Z"},"last_poll":"2030-01-01T00:10:00Z","max_runs":2,"autonomous":false,"runs":[]}

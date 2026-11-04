@@ -74,6 +74,9 @@ type State struct {
 	// DiskLow is set while the last poll found free space under the
 	// daemon's minimum, and absent once a poll finds enough.
 	DiskLow *DiskLow `json:"disk_low,omitempty"`
+	// UsageHold is set while the last poll held the daemon's launches for
+	// usage, and absent once a poll no longer does.
+	UsageHold *UsageHold `json:"usage_hold,omitempty"`
 	// Learned are the window limits the daemon learned from usage-limit
 	// hits, one per window kind, the latest hit's.
 	Learned []LearnedLimit `json:"learned,omitempty"`
@@ -96,6 +99,19 @@ type DiskLow struct {
 	// Free and Min are the free bytes and the minimum, as the last poll saw.
 	Free uint64 `json:"free"`
 	Min  uint64 `json:"min"`
+}
+
+// UsageHold is a usage-reserve hold found by a poll.
+type UsageHold struct {
+	// Since is the first of the polls in a row that held.
+	Since time.Time `json:"since"`
+	// Window is the held window's kind (5h or 7d).
+	Window    string    `json:"window"`
+	Used      int64     `json:"used"`
+	Projected int64     `json:"projected"`
+	Limit     int64     `json:"limit"`
+	Reserve   int       `json:"reserve"`
+	Reset     time.Time `json:"reset"`
 }
 
 // WriteState replaces the state file, whole.
