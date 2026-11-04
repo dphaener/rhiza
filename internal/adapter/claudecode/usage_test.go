@@ -126,3 +126,83 @@ func TestUsageRecordsSkipsOldAndRereadsChanged(t *testing.T) {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 }
+
+// A transcript that grows is read on from the end of its last complete
+// line, with the same records a whole read gives: an unterminated last
+// line counts until it is finished, and a rewritten file is read whole.
+func TestUsageRecordsReadsOnlyAppended(t *testing.T) {
+	config := t.TempDir()
+	getenv := func(k string) string {
+		if k == "CLAUDE_CONFIG_DIR" {
+			return config
+		}
+		return ""
+	}
+	from := time.Date(2026, 11, 3, 10, 0, 0, 0, time.UTC)
+	to := time.Date(2026, 11, 3, 11, 0, 0, 0, time.UTC)
+	path := filepath.Join(config, "projects", "-a", "grow.jsonl")
+	var lines []string
+	for i := range 50 {
+		lines = append(lines, usageJSON(fmt.Sprintf("2026-11-03T10:%02d:00Z", i), fmt.Sprintf("g%d", i), false, 1, 0, 0, 0))
+	}
+	write := func(s string) {
+		t.Helper()
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(s), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	whole := func() []adapter.UsageRecord {
+		t.Helper()
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var out []adapter.UsageRecord
+		for _, r := range parseUsage(data) {
+			out = append(out, r.UsageRecord)
+		}
+		return out
+	}
+	check := func(maxRead int64) {
+		t.Helper()
+		before := usageBytesRead.Load()
+		got, err := Adapter{}.UsageRecords(getenv, from, to)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := whole(); !reflect.DeepEqual(got, want) {
+			t.Fatalf("got %d records %v, want %d %v", len(got), got, len(want), want)
+		}
+		if read := usageBytesRead.Load() - before; maxRead >= 0 && read > maxRead {
+			t.Fatalf("read %d bytes, want at most %d", read, maxRead)
+		}
+	}
+	body := ""
+	for _, l := range lines[:40] {
+		body += l + "\n"
+	}
+	write(body)
+	check(-1)
+	// An appended line and an unterminated one: only the new bytes and the
+	// mark before them are read.
+	grown := body + lines[40] + "\n" + lines[41][:20]
+	write(grown)
+	check(int64(len(grown)-len(body)) + usageMark)
+	// The unterminated line is finished.
+	done := body + lines[40] + "\n" + lines[41] + "\n"
+	write(done)
+	check(int64(len(done)-len(body)-len(lines[40])-1) + usageMark)
+	// A rewrite that keeps growing but changes what was read is read whole.
+	rewritten := ""
+	for _, l := range lines[1:45] {
+		rewritten += l + "\n"
+	}
+	write(rewritten)
+	check(-1)
+	// A file cut shorter is read whole.
+	write(lines[2] + "\n")
+	check(-1)
+}

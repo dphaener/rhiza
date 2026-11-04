@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M6KVB427W9KCXEE8PNKZ8JCT"
+  ],
+  "at": "2026-11-04T17:57:42Z",
+  "body": {
+    "reason": "Owner asked for a CPU diagnosis",
+    "rule": "owner"
+  },
+  "change_set": "01M6KV89S5MKWG2DHA762F8WTZ",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M6KVB8WP2KZ4DB1BZMS9EWY0",
+  "type": "accept",
+  "v": 1
+}
