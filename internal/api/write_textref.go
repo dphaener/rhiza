@@ -9,12 +9,11 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/dphaener/rhiza/internal/id"
+	gmodel "github.com/dphaener/rhiza/internal/model"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/textref"
 )
-
-// verbatimFields are stored exactly as given: an owner's words.
-var verbatimFields = map[string]bool{"quote": true, "quote_where": true, "wording": true}
 
 // resolveFieldTexts resolves the references in each name=text of fields, in
 // the view of b. current holds the node's stored fields (nil for a new node):
@@ -30,7 +29,7 @@ func resolveFieldTexts(b writeBase, kind op.Kind, fields []string, current map[s
 	var bad []string
 	for i, kv := range fields {
 		name, text, ok := strings.Cut(kv, "=")
-		if !ok || verbatimFields[name] {
+		if !ok || gmodel.TextVerbatim(kind, name) {
 			out[i] = kv
 			continue
 		}
@@ -69,4 +68,25 @@ func storedIDs(text string) map[string]bool {
 		}
 	}
 	return out
+}
+
+// modelHandleOf gives the current handle of a live node of m, for showing the
+// references in texts.
+func modelHandleOf(m Model) gmodel.HandleOf {
+	return func(i id.ID) (string, bool) {
+		n, ok := m.Node(i)
+		return n.Handle, ok && !n.Retired
+	}
+}
+
+// showOp is o with the texts of its fields shown by current handle in m.
+func showOp(m Model, o op.Op) op.Op {
+	kind := o.Kind
+	if n, ok := m.Node(o.Node); ok {
+		kind = n.Kind
+	}
+	h := modelHandleOf(m)
+	o.Fields = gmodel.ShowFields(kind, o.Fields, h)
+	o.Set = gmodel.ShowFields(kind, o.Set, h)
+	return o
 }

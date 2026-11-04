@@ -13,6 +13,7 @@ import (
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
+	gmodel "github.com/dphaener/rhiza/internal/model"
 	"github.com/dphaener/rhiza/internal/op"
 )
 
@@ -143,7 +144,7 @@ func changeNotes(w *workspace, cs, current id.ID) []ShowNote {
 				continue
 			}
 			seen[nn.ID] = true
-			note := ShowNote{ID: nn.ID, Text: fieldText(nn.Fields["statement"]), Op: noteOp(fieldText(nn.Fields["op"]))}
+			note := ShowNote{ID: nn.ID, Text: gmodel.ShowText(fieldText(nn.Fields["statement"]), modelHandleOf(m)), Op: noteOp(fieldText(nn.Fields["op"]))}
 		find:
 			for _, s := range sets {
 				for _, rs := range s.History {

@@ -1,0 +1,69 @@
+# Reads show a stored reference by the node's current handle: @renamed after a
+# rename, @{<full ID>} for a retired node or one not in the view, and a literal
+# @ that would start a reference as @@. Shown text written back stores the same.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+
+exec rhiza add capability other --field statement=Other --record
+exec rhiza add capability gone --field statement=Gone --record
+exec rhiza add capability ref --field 'statement=Sees @other' --record
+exec rhiza set other --handle renamed --record
+exec rhiza change new Refs
+exec rhiza add capability mine --field 'statement=Builds on @renamed and @gone, @@lit and @@{LITERAL}'
+
+exec rhiza show mine --json
+stdout '"statement": "Builds on @renamed and @gone, @@lit and @@\{LITERAL\}"'
+exec rhiza show mine
+stdout 'Builds on @renamed and @gone, @@lit'
+! stdout '@\{0'
+exec rhiza why mine --json
+stdout '@renamed'
+exec rhiza slice mine --json
+stdout '@renamed'
+exec rhiza slice mine
+stdout '@renamed'
+exec rhiza ls --json
+exec rhiza tree --json
+exec rhiza search '@renamed'
+stdout 'mine'
+stdout 'Builds on @renamed'
+exec rhiza search 'renamed' --json
+stdout '"handle": "mine"'
+exec rhiza change show
+stdout '@renamed'
+exec rhiza change show --json
+stdout '@renamed'
+exec rhiza change diff
+stdout 'statement: Builds on @renamed'
+exec rhiza change diff --json
+stdout 'Builds on @renamed'
+exec rhiza tui app show mine --once
+stdout '@renamed'
+exec rhiza tui app slice --once
+stdout '@renamed'
+exec rhiza tui app why mine --once
+stdout '@renamed'
+
+# A node that is not in the view shows @{<full ID>}; retiring shows it too.
+exec sh -c 'rhiza show gone --json | grep "\"id\"" | head -1 | cut -d\" -f4 > gone.txt'
+exec rhiza retire gone --reason Done
+exec rhiza show mine --json
+stdout '@\{[0-9A-Z]{26}\}'
+! stdout '@gone'
+
+# Shown text written back stores the same text.
+exec rhiza show mine --json
+exec sh -c 'rhiza show mine --json | grep "\"statement\"" | head -1 | sed "s/^ *\"statement\": \"//; s/\",\{0,1\}$//" > shown.txt'
+exec sh -c 'cat .rhiza/log/*/*.json > before.txt'
+exec sh -c 'rhiza set mine --field "statement=$(cat shown.txt)"'
+exec rhiza show mine --json
+stdout 'Builds on @renamed and @\{[0-9A-Z]{26}\}, @@lit and @@\{LITERAL\}'
+
+# render writes the shown form.
+exec rhiza render
+exec grep -r 'Sees @renamed' .rhiza/rendered
