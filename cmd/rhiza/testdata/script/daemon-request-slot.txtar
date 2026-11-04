@@ -61,9 +61,9 @@ exec rhiza request ls
 stdout 'feature planning: Add exports'
 exec rhiza daemon status --json
 stdout '"reason": "no-slot"'
-stdout 'waiting for a slot: one is kept for a queued plan request'
+stdout 'waiting for a slot: kept for queued continuations or a plan request'
 exec rhiza daemon status
-stdout 'Two: .*\(waiting for a slot: one is kept for a queued plan request\)'
+stdout 'Two: .*\(waiting for a slot: kept for queued continuations or a plan request\)'
 
 fold-ok
 
