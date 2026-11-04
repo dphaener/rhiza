@@ -90,7 +90,7 @@ func (m *Model) load() {
 	if haveKeep {
 		keep = m.rows[m.cursor]
 	}
-	out, err := m.run("roadmap", "", nil)
+	out, err := m.run("roadmap", "", []string{"--all"})
 	m.out, m.err = out, err
 	if err != nil {
 		return

@@ -35,12 +35,14 @@ package api
 // the change sets in the target's history only.
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"reflect"
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/changeset"
@@ -80,8 +82,11 @@ const lineageAtLayout = "2006-01-02T15:04:05Z"
 
 // WhyRequest names the node to explain.
 type WhyRequest struct {
-	Ref  string `json:"ref" arg:"0" desc:"The node: an ID, a unique ID prefix of 4+ characters, or a handle"`
-	View string `json:"view,omitempty" desc:"as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is"`
+	Ref    string `json:"ref" arg:"0" desc:"The node: an ID, a unique ID prefix of 4+ characters, or a handle"`
+	View   string `json:"view,omitempty" desc:"as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is"`
+	Limit  int    `json:"limit,omitempty" desc:"The most entries to return across decisions, sources and change sets, 1 to 1000; default 100"`
+	Cursor string `json:"cursor,omitempty" desc:"Where to go on: the next_cursor of the page before"`
+	All    bool   `json:"all,omitempty" flag:"all" desc:"Return every entry, ignoring --limit and --cursor"`
 }
 
 // WhyResponse is the node's reasons, sources and change sets, in walk order.
@@ -90,7 +95,14 @@ type WhyResponse struct {
 	Decisions  []WhyDecision  `json:"decisions" desc:"The decisions reached, in walk order"`
 	Sources    []WhySource    `json:"sources" desc:"The sources reached, in walk order"`
 	ChangeSets []WhyChangeSet `json:"change_sets" desc:"The change sets of the node's history, in apply order"`
+	NextCursor string         `json:"next_cursor,omitempty" desc:"The cursor of the next page; absent when no more remain"`
 	View       string         `json:"view" desc:"The view read"`
+
+	// command is the why command line of this page, without --cursor, for
+	// the next line.
+	command string
+	// empty holds, per list, whether the whole walk had none of it (paged only).
+	empty [3]bool
 }
 
 // WhyNode is the node explained, with every field: asked about a decision,
@@ -166,6 +178,21 @@ type whyCite struct {
 
 func runWhy(ctx *Ctx, req any) (any, error) {
 	q := req.(WhyRequest)
+	limit := q.Limit
+	if limit == 0 {
+		limit = lsDefaultLimit
+	}
+	if limit < 0 || limit > lsMaxLimit {
+		return nil, Usagef("limit %d is out of range: give 1 to %d", q.Limit, lsMaxLimit).WithNext(whyDescribeNext)
+	}
+	var from whyPos
+	if q.Cursor != "" && !q.All {
+		c, err := whyDecodeCursor(q.Cursor)
+		if err != nil {
+			return nil, err
+		}
+		from = c
+	}
 	r, err := openReader(ctx, "why", q.View, defaultView)
 	if err != nil {
 		return nil, err
@@ -205,7 +232,101 @@ func runWhy(ctx *Ctx, req any) (any, error) {
 		resp.ChangeSets = append(resp.ChangeSets, WhyChangeSet{ID: c.info.ID, State: c.info.State,
 			Kind: c.info.Kind, Intent: c.info.Intent, Sources: srcs})
 	}
+	resp.empty = [3]bool{len(resp.Decisions) == 0, len(resp.Sources) == 0, len(resp.ChangeSets) == 0}
+	if !q.All {
+		resp.page(from, limit)
+	}
+	resp.command = whyCommand(q)
 	return *resp, nil
+}
+
+// The lists why pages through, in order.
+const (
+	whyListDecisions  = "decisions"
+	whyListSources    = "sources"
+	whyListChangeSets = "change_sets"
+)
+
+var whyLists = []string{whyListDecisions, whyListSources, whyListChangeSets}
+
+// whyPos is where a page starts: an offset into one list.
+type whyPos struct {
+	list int
+	off  int
+}
+
+// page cuts the walk to the limit entries from pos, counting across the
+// three lists as one sequence, and sets the cursor of the next page.
+func (resp *WhyResponse) page(pos whyPos, limit int) {
+	lens := [3]int{len(resp.Decisions), len(resp.Sources), len(resp.ChangeSets)}
+	// Entries before pos are skipped; the limit then keeps the next ones.
+	var keep [3][2]int
+	left := limit
+	endList, endOff := 3, 0
+	for l := 0; l < 3; l++ {
+		lo := 0
+		if l < pos.list {
+			lo = lens[l]
+		} else if l == pos.list {
+			lo = min(pos.off, lens[l])
+		}
+		n := min(left, lens[l]-lo)
+		keep[l] = [2]int{lo, lo + n}
+		left -= n
+		if lo+n < lens[l] {
+			endList, endOff = l, lo+n
+			for m := l + 1; m < 3; m++ {
+				keep[m] = [2]int{lens[m], lens[m]}
+			}
+			break
+		}
+	}
+	resp.Decisions = resp.Decisions[keep[0][0]:keep[0][1]:keep[0][1]]
+	resp.Sources = resp.Sources[keep[1][0]:keep[1][1]:keep[1][1]]
+	resp.ChangeSets = resp.ChangeSets[keep[2][0]:keep[2][1]:keep[2][1]]
+	if endList < 3 {
+		resp.NextCursor = whyEncodeCursor(whyPos{endList, endOff})
+	}
+}
+
+// whyDescribeNext is the next command for a bad why request.
+const whyDescribeNext = "rhiza describe why"
+
+// whyEncodeCursor is the cursor that starts at pos.
+func whyEncodeCursor(p whyPos) string {
+	return base64.RawURLEncoding.EncodeToString([]byte(whyLists[p.list] + " " + strconv.Itoa(p.off)))
+}
+
+// whyDecodeCursor is the position cursor c starts at; anything that is not
+// a cursor is a usage error.
+func whyDecodeCursor(c string) (whyPos, error) {
+	bad := Usagef("bad cursor %q: give a next_cursor from why", c).WithNext(whyDescribeNext)
+	b, err := base64.RawURLEncoding.DecodeString(c)
+	if err != nil {
+		return whyPos{}, bad
+	}
+	f := strings.Split(string(b), " ")
+	if len(f) != 2 {
+		return whyPos{}, bad
+	}
+	l := slices.Index(whyLists, f[0])
+	off, err := strconv.Atoi(f[1])
+	if l < 0 || err != nil || off < 0 || strconv.Itoa(off) != f[1] {
+		return whyPos{}, bad
+	}
+	return whyPos{l, off}, nil
+}
+
+// whyCommand is the command line that asks for q again, without its cursor.
+func whyCommand(q WhyRequest) string {
+	parts := []string{"rhiza", "why", q.Ref}
+	if q.Limit != 0 {
+		parts = append(parts, "--limit", strconv.Itoa(q.Limit))
+	}
+	if q.View != "" {
+		parts = append(parts, "--view", q.View)
+	}
+	return commandLine(parts...)
 }
 
 // start walks the node's own links and its ancestors' decided-by links.
@@ -540,7 +661,7 @@ func (r WhyResponse) Human(w io.Writer) {
 		lineageHumanFields(w, r.Node.Fields)
 	}
 	fmt.Fprintf(w, "## Decisions\n\n")
-	if len(r.Decisions) == 0 {
+	if len(r.Decisions) == 0 && r.empty[0] {
 		fmt.Fprintf(w, "None.\n\n")
 	}
 	for _, d := range r.Decisions {
@@ -559,7 +680,7 @@ func (r WhyResponse) Human(w io.Writer) {
 		lineageHumanFields(w, d.Fields)
 	}
 	fmt.Fprintf(w, "## Sources\n\n")
-	if len(r.Sources) == 0 {
+	if len(r.Sources) == 0 && r.empty[1] {
 		fmt.Fprintf(w, "None.\n\n")
 	}
 	for _, s := range r.Sources {
@@ -573,7 +694,7 @@ func (r WhyResponse) Human(w io.Writer) {
 		lineageHumanFields(w, s.Fields)
 	}
 	fmt.Fprintf(w, "## Change sets\n\n")
-	if len(r.ChangeSets) == 0 {
+	if len(r.ChangeSets) == 0 && r.empty[2] {
 		fmt.Fprintln(w, "None.")
 	}
 	for _, c := range r.ChangeSets {
@@ -582,6 +703,13 @@ func (r WhyResponse) Human(w io.Writer) {
 			line += " (sources: " + joinIDs(c.Sources) + ")"
 		}
 		fmt.Fprintln(w, line)
+	}
+	if r.NextCursor != "" {
+		cmd := r.command
+		if cmd == "" {
+			cmd = "rhiza why"
+		}
+		fmt.Fprintf(w, "\nnext: %s --cursor %s\n", cmd, r.NextCursor)
 	}
 }
 
@@ -601,15 +729,23 @@ func lineageHumanFields(w io.Writer, fs map[string]json.RawMessage) {
 
 // LogRequest names the node or link whose history to list.
 type LogRequest struct {
-	Ref  string `json:"ref" arg:"0" desc:"The node or link: an ID, a unique ID prefix of 4+ characters, or a node's handle"`
-	View string `json:"view,omitempty" desc:"as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is"`
+	Ref    string `json:"ref" arg:"0" desc:"The node or link: an ID, a unique ID prefix of 4+ characters, or a node's handle"`
+	View   string `json:"view,omitempty" desc:"as-is, to-be or what-if:<change set>; default what-if of a draft or proposed effective change set, to-be of an accepted one, else as-is"`
+	Limit  int    `json:"limit,omitempty" desc:"The most change sets to return, 1 to 1000; default 100"`
+	Cursor string `json:"cursor,omitempty" desc:"Where to go on: the next_cursor of the page before"`
+	All    bool   `json:"all,omitempty" flag:"all" desc:"Return every change set, ignoring --limit and --cursor"`
 }
 
 // LogResponse is the target's history, one change set at a time.
 type LogResponse struct {
 	Target     LogTarget      `json:"target" desc:"The node or link"`
-	ChangeSets []LogChangeSet `json:"change_sets" desc:"Every change set that touched it, in apply order"`
+	ChangeSets []LogChangeSet `json:"change_sets" desc:"The change sets that touched it, in apply order; one page"`
+	NextCursor string         `json:"next_cursor,omitempty" desc:"The cursor of the next page; absent when no more remain"`
 	View       string         `json:"view" desc:"The view read"`
+
+	// command is the log command line of this page, without --cursor, for
+	// the next line.
+	command string
 }
 
 // LogTarget names the node or link logged.
@@ -657,6 +793,21 @@ type LogOp struct {
 
 func runLog(ctx *Ctx, req any) (any, error) {
 	q := req.(LogRequest)
+	limit := q.Limit
+	if limit == 0 {
+		limit = lsDefaultLimit
+	}
+	if limit < 0 || limit > lsMaxLimit {
+		return nil, Usagef("limit %d is out of range: give 1 to %d", q.Limit, lsMaxLimit).WithNext(logDescribeNext)
+	}
+	var after id.ID
+	if q.Cursor != "" && !q.All {
+		c, err := lsDecodeCursor(q.Cursor)
+		if err != nil {
+			return nil, Usagef("bad cursor %q: give a next_cursor from log", q.Cursor).WithNext(logDescribeNext)
+		}
+		after = c
+	}
 	r, err := openReader(ctx, "log", q.View, defaultView)
 	if err != nil {
 		return nil, err
@@ -688,7 +839,20 @@ func runLog(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp := LogResponse{Target: target, ChangeSets: []LogChangeSet{}, View: r.View()}
+	resp := LogResponse{Target: target, ChangeSets: []LogChangeSet{}, View: r.View(), command: logCommand(q)}
+	if !q.All {
+		if !after.IsZero() {
+			i := slices.IndexFunc(css, func(c lineageCS) bool { return c.info.ID == after })
+			if i < 0 {
+				return nil, Usagef("bad cursor %q: it names no change set of this log", q.Cursor).WithNext(logDescribeNext)
+			}
+			css = css[i+1:]
+		}
+		if len(css) > limit {
+			css = css[:limit]
+			resp.NextCursor = lsEncodeCursor(css[limit-1].info.ID)
+		}
+	}
 	for _, c := range css {
 		lc := LogChangeSet{ID: c.info.ID, State: c.info.State, Kind: c.info.Kind, Intent: c.info.Intent, Ops: []LogOp{},
 			Carves: carves[c.info.ID]}
@@ -706,6 +870,21 @@ func runLog(ctx *Ctx, req any) (any, error) {
 		resp.ChangeSets = append(resp.ChangeSets, lc)
 	}
 	return resp, nil
+}
+
+// logDescribeNext is the next command for a bad log request.
+const logDescribeNext = "rhiza describe log"
+
+// logCommand is the command line that asks for q again, without its cursor.
+func logCommand(q LogRequest) string {
+	parts := []string{"rhiza", "log", q.Ref}
+	if q.Limit != 0 {
+		parts = append(parts, "--limit", strconv.Itoa(q.Limit))
+	}
+	if q.View != "" {
+		parts = append(parts, "--view", q.View)
+	}
+	return commandLine(parts...)
 }
 
 // logCarveWalk is the state of finding the carves of one log.
@@ -873,5 +1052,12 @@ func (r LogResponse) Human(w io.Writer) {
 		for _, o := range c.Ops {
 			fmt.Fprintf(w, "- %s %s\n", o.Type, o.ID)
 		}
+	}
+	if r.NextCursor != "" {
+		cmd := r.command
+		if cmd == "" {
+			cmd = "rhiza log"
+		}
+		fmt.Fprintf(w, "\nnext: %s --cursor %s\n", cmd, r.NextCursor)
 	}
 }

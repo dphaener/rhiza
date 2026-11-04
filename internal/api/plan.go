@@ -69,6 +69,7 @@ package api
 import (
 	"bytes"
 	"cmp"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -111,13 +112,21 @@ const planNewNext = `rhiza change new "<intent>"`
 
 // RoadmapRequest asks for the roadmap.
 type RoadmapRequest struct {
-	View string `json:"view,omitempty" desc:"The view: as-is, to-be or what-if:<change set>; default to-be, whatever the current change set"`
+	View   string `json:"view,omitempty" desc:"The view: as-is, to-be or what-if:<change set>; default to-be, whatever the current change set"`
+	Limit  int    `json:"limit,omitempty" desc:"The most change sets to return, 1 to 1000; default 100"`
+	Cursor string `json:"cursor,omitempty" desc:"Where to go on: the next_cursor of the page before"`
+	All    bool   `json:"all,omitempty" flag:"all" desc:"Return every change set, ignoring --limit and --cursor"`
 }
 
 // RoadmapResponse is the roadmap: its groups in order, and the view.
 type RoadmapResponse struct {
-	Groups []RoadmapGroup `json:"groups" desc:"One group per milestone served, in intent-tree order, then the backlog, then one per umbrella"`
-	View   string         `json:"view" desc:"The view read: as-is, to-be or what-if:<ID>"`
+	Groups     []RoadmapGroup `json:"groups" desc:"One group per milestone served, in intent-tree order, then the backlog, then one per umbrella; one page of change sets, and only the groups with change sets on it"`
+	NextCursor string         `json:"next_cursor,omitempty" desc:"The cursor of the next page; absent when no more remain"`
+	View       string         `json:"view" desc:"The view read: as-is, to-be or what-if:<ID>"`
+
+	// command is the roadmap command line of this page, without --cursor,
+	// for the next line.
+	command string
 }
 
 // RoadmapGroup is the change sets of one milestone, or of the backlog, in
@@ -1480,11 +1489,32 @@ func planRead(ctx *Ctx, opName, view string) (planResult, planInputs, string, er
 
 // runRoadmap answers roadmap.
 func runRoadmap(ctx *Ctx, req any) (any, error) {
-	res, in, v, err := planRead(ctx, "roadmap", req.(RoadmapRequest).View)
+	q := req.(RoadmapRequest)
+	limit := q.Limit
+	if limit == 0 {
+		limit = lsDefaultLimit
+	}
+	if limit < 0 || limit > lsMaxLimit {
+		return nil, Usagef("limit %d is out of range: give 1 to %d", q.Limit, lsMaxLimit).WithNext(roadmapDescribeNext)
+	}
+	var after roadmapPos
+	if q.Cursor != "" && !q.All {
+		c, err := roadmapDecodeCursor(q.Cursor)
+		if err != nil {
+			return nil, err
+		}
+		after = c
+	}
+	res, in, v, err := planRead(ctx, "roadmap", q.View)
 	if err != nil {
 		return nil, err
 	}
-	resp := RoadmapResponse{Groups: []RoadmapGroup{}, View: v}
+	resp := RoadmapResponse{Groups: []RoadmapGroup{}, View: v, command: roadmapCommand(q)}
+	var last roadmapPos
+	// Entries before the cursor are skipped, and those past the limit end
+	// the page; a group only shows when one of its entries does.
+	skipping := after.kind != ""
+	taken := 0
 	// A milestone may be only an ancestor of the intents served.
 	paths := planAncestorPaths(in.intentPath)
 	for _, g := range res.groups {
@@ -1499,14 +1529,99 @@ func runRoadmap(ctx *Ctx, req any) (any, error) {
 				rg.Intent.Path = append(rg.Intent.Path, planHandle(a, in.nodes))
 			}
 		}
+		pos := roadmapPos{kind: rg.Kind, intent: rg.Intent.ID}
+		if !g.backlog {
+			pos.intent = g.intent
+		}
 		for _, p := range g.members {
+			if skipping {
+				if pos == after.group() && p.info.ID == after.cs {
+					skipping = false
+				}
+				continue
+			}
+			if !q.All && taken == limit {
+				resp.NextCursor = roadmapEncodeCursor(last)
+				if len(rg.ChangeSets) > 0 {
+					resp.Groups = append(resp.Groups, rg)
+				}
+				return resp, nil
+			}
+			taken++
+			pos.cs = p.info.ID
+			last = pos
 			rg.ChangeSets = append(rg.ChangeSets, RoadmapChangeSet{ID: p.info.ID, State: p.info.State,
 				Kind: p.info.Kind, Intent: p.info.Intent, Ready: p.ready, DependsOn: orEmpty(p.dependsOn),
 				Serves: orEmpty(slices.Clone(p.serves))})
 		}
-		resp.Groups = append(resp.Groups, rg)
+		if len(rg.ChangeSets) > 0 {
+			resp.Groups = append(resp.Groups, rg)
+		}
+	}
+	if skipping {
+		return nil, Usagef("bad cursor %q: it names no entry of this roadmap", q.Cursor).WithNext(roadmapDescribeNext)
 	}
 	return resp, nil
+}
+
+// roadmapPos is one entry of the roadmap: a change set in a group. A change
+// set that serves two milestones has two entries.
+type roadmapPos struct {
+	kind   string
+	intent id.ID
+	cs     id.ID
+}
+
+// group is the position without its change set.
+func (p roadmapPos) group() roadmapPos { p.cs = id.ID{}; return p }
+
+// roadmapDescribeNext is the next command for a bad roadmap request.
+const roadmapDescribeNext = "rhiza describe roadmap"
+
+// roadmapEncodeCursor is the cursor that goes on after entry p.
+func roadmapEncodeCursor(p roadmapPos) string {
+	in := ""
+	if !p.intent.IsZero() {
+		in = p.intent.String()
+	}
+	return base64.RawURLEncoding.EncodeToString([]byte(p.kind + " " + in + " " + p.cs.String()))
+}
+
+// roadmapDecodeCursor is the entry cursor c goes on after; anything that is
+// not a cursor is a usage error.
+func roadmapDecodeCursor(c string) (roadmapPos, error) {
+	bad := Usagef("bad cursor %q: give a next_cursor from roadmap", c).WithNext(roadmapDescribeNext)
+	b, err := base64.RawURLEncoding.DecodeString(c)
+	if err != nil {
+		return roadmapPos{}, bad
+	}
+	f := strings.Split(string(b), " ")
+	if len(f) != 3 || (f[0] != "milestone" && f[0] != "backlog" && f[0] != "umbrella") {
+		return roadmapPos{}, bad
+	}
+	p := roadmapPos{kind: f[0]}
+	if f[1] != "" {
+		if p.intent, err = id.Parse(f[1]); err != nil {
+			return roadmapPos{}, bad
+		}
+	}
+	if p.cs, err = id.Parse(f[2]); err != nil {
+		return roadmapPos{}, bad
+	}
+	return p, nil
+}
+
+// roadmapCommand is the command line that asks for q again, without its
+// cursor.
+func roadmapCommand(q RoadmapRequest) string {
+	parts := []string{"rhiza", "roadmap"}
+	if q.Limit != 0 {
+		parts = append(parts, "--limit", strconv.Itoa(q.Limit))
+	}
+	if q.View != "" {
+		parts = append(parts, "--view", q.View)
+	}
+	return commandLine(parts...)
 }
 
 // Human shows the roadmap: a heading per group, a line per change set with
@@ -1530,6 +1645,13 @@ func (r RoadmapResponse) Human(w io.Writer) {
 			}
 			fmt.Fprintf(w, "- [%s] %s %s\n", mark, shortID(c.ID), c.Intent)
 		}
+	}
+	if r.NextCursor != "" {
+		cmd := r.command
+		if cmd == "" {
+			cmd = "rhiza roadmap"
+		}
+		fmt.Fprintf(w, "\nnext: %s --cursor %s\n", cmd, r.NextCursor)
 	}
 }
 

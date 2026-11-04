@@ -208,7 +208,7 @@ func TestGeneratedModel(t *testing.T) {
 		case "tree":
 			req = api.TreeRequest{Ref: subtree, View: "as-is"}
 		default:
-			req = api.RoadmapRequest{}
+			req = api.RoadmapRequest{All: true}
 		}
 		resp, err := o.Run(&api.Ctx{Root: root, IndexPath: indexPath, Now: time.Now, IDs: id.Default()}, req)
 		if err != nil {
