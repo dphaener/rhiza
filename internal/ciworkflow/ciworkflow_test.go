@@ -60,8 +60,9 @@ func parse(t *testing.T) []line {
 	return out
 }
 
-func TestCIRunsOnPullRequestsOnly(t *testing.T) {
-	on := block(parse(t), 0, "on")
+func TestCIRunsOnPullRequestsAndDispatch(t *testing.T) {
+	lines := parse(t)
+	on := block(lines, 0, "on")
 	if on == nil {
 		t.Fatal("ci.yml has no on: block")
 	}
@@ -71,8 +72,33 @@ func TestCIRunsOnPullRequestsOnly(t *testing.T) {
 			triggers = append(triggers, strings.TrimSuffix(strings.SplitN(l.text, ":", 2)[0], ":"))
 		}
 	}
-	if len(triggers) != 1 || triggers[0] != "pull_request" {
-		t.Errorf("ci.yml triggers = %v; want only pull_request", triggers)
+	if len(triggers) != 2 || triggers[0] != "pull_request" || triggers[1] != "workflow_dispatch" {
+		t.Errorf("ci.yml triggers = %v; want exactly pull_request and workflow_dispatch", triggers)
+	}
+	wd := block(on, on[0].indent, "workflow_dispatch")
+	sha := block(block(wd, wd[0].indent, "inputs"), wd[0].indent+2, "sha")
+	if sha == nil {
+		t.Fatal("workflow_dispatch declares no input sha")
+	}
+	if v, _ := value(sha, sha[0].indent, "required"); v != "true" {
+		t.Errorf("input sha required = %q; want true", v)
+	}
+}
+
+func TestCICheckoutAndRunName(t *testing.T) {
+	lines := parse(t)
+	found := false
+	for _, l := range lines {
+		if l.text == "ref: ${{ inputs.sha || github.sha }}" {
+			found = true
+		}
+	}
+	if !found {
+		t.Error("checkout ref is not ${{ inputs.sha || github.sha }}")
+	}
+	name, _ := value(lines, 0, "run-name")
+	if !strings.Contains(name, "inputs.sha") {
+		t.Errorf("run-name = %q; want it to include inputs.sha", name)
 	}
 }
 
@@ -84,6 +110,9 @@ func TestCICancelsStaleRuns(t *testing.T) {
 	group, _ := value(c, c[0].indent, "group")
 	if !strings.Contains(group, "github.event.pull_request.number") {
 		t.Errorf("concurrency group = %q; want it keyed on github.event.pull_request.number", group)
+	}
+	if !strings.Contains(group, "|| inputs.sha") {
+		t.Errorf("concurrency group = %q; want it falling back to inputs.sha", group)
 	}
 	if v, _ := value(c, c[0].indent, "cancel-in-progress"); v != "true" {
 		t.Errorf("cancel-in-progress = %q; want true", v)
