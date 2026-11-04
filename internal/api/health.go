@@ -12,7 +12,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/machine"
@@ -250,18 +249,10 @@ func healthUsage(ctx *Ctx, settings []Setting, err error) HealthPart {
 			Detail:  []string{usageHoldDetail(*h)},
 			Next:    "rhiza daemon set rhiza.daemon.usage.reserve <percent>"}
 	}
-	now := ctx.Now()
-	var hits []usage.Limit
-	for _, h := range daemon.ReadLimitHits(common) {
-		hits = append(hits, usage.Limit{HitAt: h.HitAt, ResetAt: h.ResetAt})
-	}
+	windows, _ := usageWindowsNow(ctx, common, st.UsageWindows)
 	var parts []string
 	for _, kind := range usage.Kinds {
-		recs := usageRecordsFor(ctx, now.Add(-2*kind.Length()), now.Add(time.Nanosecond))
-		used := int64(0)
-		if w, ok := usage.Current(kind, recs, hits, now); ok {
-			used = w.Used
-		}
+		used := windows[kind].Used
 		if limit, ok := usageLimit(settings, st.Learned, kind); ok {
 			parts = append(parts, fmt.Sprintf("%s %d of %d", kind, used, limit))
 		} else {

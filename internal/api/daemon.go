@@ -23,6 +23,7 @@ import (
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
+	"github.com/dphaener/rhiza/internal/usage"
 )
 
 func init() {
@@ -158,7 +159,9 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		var hold *usageHold
 		if runs, lerr := rs.List(); lerr == nil {
 			host, _ := os.Hostname()
-			hold = usageHoldOf(ctx, common, conf.rows, state.Learned, runs, host)
+			var windows map[usage.Kind]usage.Window
+			windows, state.UsageWindows = usageWindowsNow(ctx, common, state.UsageWindows)
+			hold = usageHoldOf(conf.rows, state.Learned, runs, host, windows)
 		}
 		started, resumed, planned, err := daemonPoll1(ctx, rs, pending, unjournaled, conf.maxRuns, minFree, r.Autonomous, conf.mode, conf.paused, hold, &skips)
 		resp.Planned = append(resp.Planned, planned...)
@@ -256,6 +259,7 @@ func daemonStartState(common string, self daemon.Holder, version, commit string,
 		state.Hooks = prev.Hooks
 		state.DiskLow = prev.DiskLow
 		state.UsageHold = prev.UsageHold
+		state.UsageWindows = prev.UsageWindows
 		state.Learned = prev.Learned
 		// A re-exec, or a restart, keeps the holds of the daemon before.
 		unjournaled = daemonRestoreUnjournaled(prev.Unjournaled)

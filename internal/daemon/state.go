@@ -77,6 +77,11 @@ type State struct {
 	// UsageHold is set while the last poll held the daemon's launches for
 	// usage, and absent once a poll no longer does.
 	UsageHold *UsageHold `json:"usage_hold,omitempty"`
+	// UsageWindows are the usage windows the last poll found, one per kind:
+	// the next poll, and health, build each window from its saved start (or
+	// from its reset once it has passed), not from wherever a lookback
+	// happens to fall, so a window does not re-anchor as time goes on.
+	UsageWindows []UsageWindow `json:"usage_windows,omitempty"`
 	// Learned are the window limits the daemon learned from usage-limit
 	// hits, one per window kind, the latest hit's.
 	Learned []LearnedLimit `json:"learned,omitempty"`
@@ -112,6 +117,13 @@ type UsageHold struct {
 	Limit     int64     `json:"limit"`
 	Reserve   int       `json:"reserve"`
 	Reset     time.Time `json:"reset"`
+}
+
+// UsageWindow is the span of one usage window a poll found.
+type UsageWindow struct {
+	Kind  string    `json:"kind"`
+	Start time.Time `json:"start"`
+	Reset time.Time `json:"reset"`
 }
 
 // WriteState replaces the state file, whole.

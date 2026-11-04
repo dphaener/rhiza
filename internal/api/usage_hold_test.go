@@ -8,6 +8,7 @@ import (
 	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/run"
+	"github.com/dphaener/rhiza/internal/usage"
 )
 
 // holdFake reports token records from a package variable.
@@ -68,7 +69,8 @@ func TestUsageHoldProjection(t *testing.T) {
 	}
 	var runs []run.Journal
 	hold := func(learned ...daemon.LearnedLimit) *usageHold {
-		return usageHoldOf(f.ctx, common, conf(), learned, runs, "h")
+		windows, _ := usageWindowsNow(f.ctx, common, nil)
+		return usageHoldOf(conf(), learned, runs, "h", windows)
 	}
 
 	// A window with no limit never holds.
@@ -108,8 +110,10 @@ func TestUsageHoldProjection(t *testing.T) {
 		t.Fatalf("a live run plus the next should project 900: %+v", h)
 	}
 	runs = runs[:12]
-	set("rhiza.daemon.usage.session", "700")
-	if h := hold(); h == nil || h.Projected != 750 {
+	// Limit 900 puts the line at 720: the use so far (600) is under it, and
+	// the one projected run (600+150=750) is what goes over.
+	set("rhiza.daemon.usage.session", "900")
+	if h := hold(); h == nil || h.Projected != 750 || h.Used != 600 {
 		t.Fatalf("one projected run over the line: %+v", h)
 	}
 
@@ -133,6 +137,99 @@ func TestUsageHoldProjection(t *testing.T) {
 	now = now.Add(6 * time.Hour)
 	if h := hold(daemon.LearnedLimit{Kind: "session", Tokens: 700}); h != nil {
 		t.Fatalf("held after the reset: %+v", h)
+	}
+}
+
+// Only a hit of a window's kind moves that window: a session hit leaves the
+// weekly window alone, and a weekly hit leaves the session window alone.
+func TestUsageWindowsHitKinds(t *testing.T) {
+	holdFakeOnce()
+	f := newDaemonFoldFix(t)
+	f.ctx.Getenv = func(string) string { return "" }
+	t0 := f.clock
+	common, err := gitCommonDir(f.ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	holdFakeRecords = []adapter.UsageRecord{{At: t0, Tokens: 1000}, {At: t0.Add(time.Hour), Tokens: 500}}
+	defer func() { holdFakeRecords = nil }()
+	for _, h := range []daemon.LimitHit{
+		{HitAt: t0.Add(time.Hour), ResetAt: t0.Add(3 * time.Hour)},      // session
+		{HitAt: t0.Add(time.Hour), ResetAt: t0.Add(6 * 24 * time.Hour)}, // weekly
+	} {
+		if err := daemon.RecordLimitHit(common, h); err != nil {
+			t.Fatal(err)
+		}
+	}
+	at := func(now time.Time) map[usage.Kind]usage.Window {
+		f.ctx.Now = func() time.Time { return now }
+		w, _ := usageWindowsNow(f.ctx, common, nil)
+		return w
+	}
+	// Before the session reset: the session window ends at its hit's reset,
+	// and the weekly window at its own, each holding both records.
+	w := at(t0.Add(2 * time.Hour))
+	if s := w[usage.Session]; s.Used != 1500 || !s.Reset.Equal(t0.Add(3*time.Hour)) {
+		t.Fatalf("session window %+v: want 1500 used, reset at the session hit's", s)
+	}
+	if wk := w[usage.Weekly]; wk.Used != 1500 || !wk.Reset.Equal(t0.Add(6*24*time.Hour)) {
+		t.Fatalf("weekly window %+v: want 1500 used, reset at the weekly hit's", wk)
+	}
+	// After the session reset the weekly window still counts both records.
+	w = at(t0.Add(4 * time.Hour))
+	if _, ok := w[usage.Session]; ok {
+		t.Fatalf("session window after its reset: %+v", w[usage.Session])
+	}
+	if wk := w[usage.Weekly]; wk.Used != 1500 {
+		t.Fatalf("weekly window after a session hit %+v: want 1500 used", wk)
+	}
+}
+
+// A saved window keeps its start from poll to poll: the chain is built from
+// it, not from wherever the lookback falls.
+func TestUsageWindowsAnchored(t *testing.T) {
+	holdFakeOnce()
+	f := newDaemonFoldFix(t)
+	f.ctx.Getenv = func(string) string { return "" }
+	b := f.clock
+	common, err := gitCommonDir(f.ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	holdFakeRecords = []adapter.UsageRecord{
+		{At: b, Tokens: 100}, {At: b.Add(270 * time.Minute), Tokens: 200}, {At: b.Add(8 * time.Hour), Tokens: 400},
+	}
+	defer func() { holdFakeRecords = nil }()
+	poll := func(now time.Time, saved []daemon.UsageWindow) (map[usage.Kind]usage.Window, []daemon.UsageWindow) {
+		f.ctx.Now = func() time.Time { return now }
+		return usageWindowsNow(f.ctx, common, saved)
+	}
+	// At b+9h the session chain is [b, b+5h) then [b+8h, b+13h).
+	w, saved := poll(b.Add(9*time.Hour), nil)
+	if s := w[usage.Session]; s.Used != 400 || !s.Start.Equal(b.Add(8*time.Hour)) {
+		t.Fatalf("first poll session window %+v", s)
+	}
+	// At b+10h30m a fresh 10h lookback starts after b, so its chain would run
+	// [b+4h30m, b+9h30m) and find no window now; the saved start keeps it.
+	if w, _ := poll(b.Add(630*time.Minute), nil); w[usage.Session].Used == 400 {
+		t.Fatalf("the unanchored lookback should drift: %+v", w[usage.Session])
+	}
+	w, saved = poll(b.Add(630*time.Minute), saved)
+	if s := w[usage.Session]; s.Used != 400 || !s.Start.Equal(b.Add(8*time.Hour)) || !s.Reset.Equal(b.Add(13*time.Hour)) {
+		t.Fatalf("anchored session window %+v: want [b+8h, b+13h) with 400", s)
+	}
+	// Past the reset with no new record there is no window, and the saved
+	// one stays so the next window starts at or after its reset.
+	w, saved = poll(b.Add(14*time.Hour), saved)
+	if _, ok := w[usage.Session]; ok {
+		t.Fatalf("session window after the reset: %+v", w[usage.Session])
+	}
+	var kept bool
+	for _, s := range saved {
+		kept = kept || (s.Kind == "session" && s.Reset.Equal(b.Add(13*time.Hour)))
+	}
+	if !kept {
+		t.Fatalf("saved %+v: want the reset session window kept", saved)
 	}
 }
 

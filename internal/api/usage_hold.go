@@ -123,15 +123,68 @@ func usageRecordsFor(ctx *Ctx, from, to time.Time) []adapter.UsageRecord {
 	return recs
 }
 
-// usageHoldOf returns the first window whose projected use passes its limit
-// less the reserve, nil when none does. A window with no known limit, or no
-// current window (the last one has reset), never holds.
-func usageHoldOf(ctx *Ctx, common string, rows []Setting, learned []daemon.LearnedLimit, runs []run.Journal, host string) *usageHold {
+// usageWindowsNow returns the current window of each kind that has one, and
+// the windows to save for the next poll. A kind with a saved window builds
+// its chain from that window's start while it holds, else from its reset, so
+// the window stays where it was found; one with none looks back two window
+// lengths. Only the limit hits of a kind move its windows. The records are
+// read once, for the widest span any kind needs.
+func usageWindowsNow(ctx *Ctx, common string, saved []daemon.UsageWindow) (map[usage.Kind]usage.Window, []daemon.UsageWindow) {
 	now := ctx.Now()
 	var hits []usage.Limit
 	for _, h := range daemon.ReadLimitHits(common) {
 		hits = append(hits, usage.Limit{HitAt: h.HitAt, ResetAt: h.ResetAt})
 	}
+	prev := map[usage.Kind]*daemon.UsageWindow{}
+	for i := range saved {
+		prev[usage.Kind(saved[i].Kind)] = &saved[i]
+	}
+	from := map[usage.Kind]time.Time{}
+	widest := now
+	for _, kind := range usage.Kinds {
+		f := now.Add(-2 * kind.Length())
+		if p := prev[kind]; p != nil {
+			f = p.Reset
+			if now.Before(p.Reset) {
+				f = p.Start
+			}
+		}
+		from[kind] = f
+		if f.Before(widest) {
+			widest = f
+		}
+	}
+	recs := usageRecordsFor(ctx, widest, now.Add(time.Nanosecond))
+	windows := map[usage.Kind]usage.Window{}
+	var next []daemon.UsageWindow
+	for _, kind := range usage.Kinds {
+		var kr []adapter.UsageRecord
+		for _, r := range recs {
+			if !r.At.Before(from[kind]) {
+				kr = append(kr, r)
+			}
+		}
+		var kh []usage.Limit
+		for _, h := range hits {
+			if k, ok := usage.KindOf(h); ok && k == kind {
+				kh = append(kh, h)
+			}
+		}
+		if w, ok := usage.Current(kind, kr, kh, now); ok {
+			windows[kind] = w
+			next = append(next, daemon.UsageWindow{Kind: string(kind), Start: w.Start.UTC(), Reset: w.Reset.UTC()})
+		} else if p := prev[kind]; p != nil {
+			// No window holds now; the next one starts at or after this reset.
+			next = append(next, *p)
+		}
+	}
+	return windows, next
+}
+
+// usageHoldOf returns the first window whose projected use passes its limit
+// less the reserve, nil when none does. A window with no known limit, or no
+// current window (the last one has reset), never holds.
+func usageHoldOf(rows []Setting, learned []daemon.LearnedLimit, runs []run.Journal, host string, windows map[usage.Kind]usage.Window) *usageHold {
 	reserve := usageReserve(rows)
 	live := int64(0)
 	for _, j := range runs {
@@ -145,8 +198,7 @@ func usageHoldOf(ctx *Ctx, common string, rows []Setting, learned []daemon.Learn
 		if !ok {
 			continue
 		}
-		recs := usageRecordsFor(ctx, now.Add(-2*kind.Length()), now.Add(time.Nanosecond))
-		w, ok := usage.Current(kind, recs, hits, now)
+		w, ok := windows[kind]
 		if !ok {
 			continue
 		}
