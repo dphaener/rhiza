@@ -1,0 +1,30 @@
+{
+  "actor": "01M6JAADV3XTJ307VRRXDFZ5S2",
+  "after": [
+    "01M6JA1JG3ZY4FA2DEKWXKNAP5"
+  ],
+  "at": "2026-11-04T03:42:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A test in cmd/rhiza/testdata/script covers three cases with rhiza inbox --json. (1) An interrupted run on a landed change set that reached land has no skipped item. (2) The same kind of run, resumed by the daemon and then interrupted again, has a gave-up item, and one that failed a step after land has a failed item. (3) An interrupted build run on a landed change set that never reached land is still listed as skipped with rhiza run abandon",
+          "statement": "rhiza inbox does not list as skipped an interrupted non-plan run on a landed change set whose journal reached its land step, since the daemon resumes it; and it does not treat such a run's change set as gone, so if that run is interrupted again after the daemon's resume it is listed as gave-up, and if it fails a later step (such as main-green) it is listed as failed, as any other run"
+        },
+        "handle": "inbox-omits-resumable-landed-run",
+        "id": "01M6J9PJ6WZ9XMS1KV07VMWHH6",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6J9PJ6WZ9XMS1KV06HYRK4Q",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      }
+    ]
+  },
+  "change_set": "01M6J965BRJ2ZTDT7Y311PM96G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JADGH6HNG66EBGEWMPH2EX",
+  "type": "ops",
+  "v": 1
+}

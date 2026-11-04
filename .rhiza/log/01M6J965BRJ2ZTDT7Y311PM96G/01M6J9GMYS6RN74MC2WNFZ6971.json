@@ -1,0 +1,41 @@
+{
+  "actor": "01M6J9E1BTQJWFVR1M0HJP6HGZ",
+  "after": [
+    "01M6J9DR0WW3EEPAFKZN6F5E14"
+  ],
+  "at": "2026-11-04T03:26:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "m4-runs-hold-up says 'A build, review or ship-change run finishes without hand repair', and a stranded ship-change run that has to be abandoned and closed out by hand is exactly that kind of hand repair. It is the only landed intent the fix serves. The question says 01M6H5VQ already covers the plan-run half (inbox and daemon), and internal/api/run.go already exempts planWorkflow from the landed refusal in run resume. Covering plan runs here too would put two drafts on the same code. For what counts as resumable: ship-change.toml runs land, then wait-landed, landed-green, rebase-merge, merge, wait-main, main-green, close-out and ship. A change set can only have landed through a run once that run reached land. rhiza ship land reports landed=false and does nothing when the change set already landed (ShipLandResponse.Landed), so re-running land is safe, and the steps after it are idempotent waits, checks or merges. 'The run reached land' is a test anyone can read off the journal. It also keeps run-resume-unaccepted.txtar valid, since that script expects a build run whose change set landed to be refused. The daemon side is the same test, swapped in for the bare accepted(st.Change) check in internal/daemon/pick.go Resumable",
+          "statement": "Change set 01M6J965 serves intent m4-runs-hold-up. It covers non-plan runs only, ship-change in practice, and leaves plan runs to draft change set 01M6H5VQ (rhiza run resume already continues a plan run whose record landed, per plan-run-resumes-landed-record). A non-plan run whose change set has landed can be resumed, by rhiza run resume and by the daemon's Resumable without a pane, when its journal shows it reached the land step (land started or passed). Its remaining steps are then land and the steps after it in ship-change.toml (wait-landed through rebase-merge, merge, wait-main, main-green, close-out, ship), and each one either skips work already done or only checks state. A landed change set whose run never reached land, such as a plain build or review run, is still refused with the existing 'no longer accepted' conflict and next: rhiza run abandon. Rejected, withdrawn and superseded change sets are refused as before",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "landed-run-resume-scope",
+        "id": "01M6J9GAVT8PG9PXD2VP7THQNA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6J9GAVT8PG9PXD2VN09EEQV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6J9GAVT8PG9PXD2VN09EEQV",
+        "id": "01M6J9GF6G55VTPXGTXP0RTCMF",
+        "link": "01M6J9GF6G55VTPXGTXJKAT6KT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J9DNGAX992WSTAEVHN2HPY",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6J965BRJ2ZTDT7Y311PM96G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6J9GMYS6RN74MC2WNFZ6971",
+  "type": "ops",
+  "v": 1
+}
