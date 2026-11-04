@@ -1,0 +1,63 @@
+{
+  "actor": "01M6M80PNXT0Q6YGFHFVQE6ZZN",
+  "after": [
+    "01M6M7Z25E1KHBNXVW8J5DFF8V"
+  ],
+  "at": "2026-11-04T21:41:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at ca2af093 by claude-code-7e6aebbb with the built binary (go build ./cmd/rhiza) on a scratch repo, fake rex/claude only standing in for the terminal and agent: rhiza run start --foreground --workflow build ran a builder and a verifier for leaf good (state succeeded). In the verifier's own checkout (.git/rhiza/checkouts/<run>-good-1) the log held its actor record change set 01M6M8339X..., diff -r against the run worktree's copy showed no difference, rhiza show claude-code-687aa7ac resolved, and rhiza add actor claude-code-687aa7ac --record was refused (exit 3, 'handle ... is taken by node'). I then committed the checkout's copy on a branch from the leaf commit and merged it into the run branch, which also committed the record: the merge was clean, rhiza render + rhiza check printed ok (exit 0), and the log held one record change set for that handle."
+        },
+        "handle": "actor-record-in-checkout-qa-1",
+        "id": "01M6M84SQSGJKGKBVWWRMJZQSS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M84SQSGJKGKBVWWR1B38RX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M84SQSGJKGKBVWWR1B38RX",
+        "id": "01M6M84X074TQ48PCS1GJJ2C4N",
+        "link": "01M6M84X074TQ48PCS1G14KRXB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M2ZMM64QSSKQTP1FKH76NJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at ca2af093 by claude-code-7e6aebbb: the CLI gives each session a fresh ID, so the same-session repeat is only reachable in-process; go test ./internal/api -run TestRecordAgentActorReusesSession -count=1 passed (second call returns the same handle and change set and writes nothing, a different session gets a new actor). In the hands-on build run with the built binary, the run worktree's log held exactly one 'Record agent actor' change set per session (builder and verifier), with no duplicates after the verifier's checkout copy merged."
+        },
+        "handle": "actor-stamp-reuses-session-qa-1",
+        "id": "01M6M851NMHM3XRM1H403BQBVM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M851NMHM3XRM1H3Z233WT6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M851NMHM3XRM1H3Z233WT6",
+        "id": "01M6M854MT35MMFRRZHP03738D",
+        "link": "01M6M854MT35MMFRRZHMB40QM8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M2ZS1VT4ZWAMBM148Z3RG6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6M2R7RJCMNMMKH0KS2364BK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M858809DTFQ0ZZABMJ3907",
+  "type": "ops",
+  "v": 1
+}
