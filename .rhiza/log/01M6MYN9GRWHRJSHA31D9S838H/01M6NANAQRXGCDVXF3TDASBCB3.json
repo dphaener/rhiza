@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NACS1R12FN032B3JDBZXFQ",
+  "after": [
+    "01M6NAG3F3JXRW10VK8D0GMEPQ"
+  ],
+  "at": "2026-11-05T07:44:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7bfe3f64 ran go test -trimpath -count=1 -v ./internal/tui/inboxapp/...: all 12 tests pass, plus go vet and gofmt clean. With the fake runner, TestAnswerQuestionSendsSessionMessage shows Enter on a question opens a Form with one TextArea (\"Your answer\"); submitting \"Use sqlite\" calls session.message [S1, Use sqlite] and returns tea.Quit. TestAnswerBlockerCallsQuestionAnswer shows a blocker submits question.answer [which-db, C5, sqlite] and quits. TestAnswerEscAndEmptyCallNothing shows an empty submit neither quits nor calls anything, and cancelling quits with only the initial inbox load call. Read the diff: Update quits on FormCancelledMsg and on an esc key while the form shows, before any run call; send trims the text and returns nil when it is empty; cmd/rhiza/tui.go maps the three-arg question.answer call to --change plus question and text, matching QuestionAnswerRequest."
+        },
+        "handle": "inbox-app-answer-verified",
+        "id": "01M6NAKDSXFD7XQQGJE6QMJQT7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NAKDSXFD7XQQGJE4K9QGCG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NAKDSXFD7XQQGJE4K9QGCG",
+        "id": "01M6NAMQ2ETDBA0RWF0RPD82XH",
+        "link": "01M6NAMQ2ETDBA0RWF0QA2TKT7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZA0N04GRKJ6486V5XRAX9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYN9GRWHRJSHA31D9S838H",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NANAQRXGCDVXF3TDASBCB3",
+  "type": "ops",
+  "v": 1
+}
