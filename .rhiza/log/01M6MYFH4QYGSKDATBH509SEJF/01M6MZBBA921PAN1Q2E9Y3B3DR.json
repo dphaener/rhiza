@@ -1,0 +1,81 @@
+{
+  "actor": "01M6MZ95YNR6MAB4CWAQP3N5NF",
+  "after": [
+    "01M6MZ2AXKBJYFW8T7VW1JA86A"
+  ],
+  "at": "2026-11-05T04:26:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6GDT9VK53AY69FGK8KV8PR3",
+        "handle": null,
+        "id": "01M6MZAT3AKM2689MJCSKWEB14",
+        "node": "01M6D4SYDB1P7NX7DGKT0D19HM",
+        "op": "node.update",
+        "set": {
+          "statement": "rhiza request <text> [--kind feature|bug|milestone] queues a plan request in the clone's .git/rhiza/requests.json, rhiza request ls shows each request's state, and the daemon, when not paused and a slot is free, starts a plan run for the oldest queued feature or bug request, autonomous when rhiza.autonomy.plan is auto, marking the request with its run and later the change set it planned; a queued milestone request instead starts at the next poll, first and without a free slot (milestone-request-starts-at-once)"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6D4SYDB1P7NX7DGKT0D19HM",
+        "id": "01M6MZAWKY49XQ9DD61X4ZD08P",
+        "link": "01M6MZAWKY49XQ9DD61V90CVS7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYP9D5XEFXQ5DHFXZQ8JDZ",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M6K0598PW4BG6ZFNK6RNXZ9W",
+        "handle": null,
+        "id": "01M6MZAZD28WGRG2PYTR2Z2RQJ",
+        "node": "01M6HT09X1W6W89R5N272GJXMP",
+        "op": "node.update",
+        "set": {
+          "acceptance": "daemon-request-slot.txtar with a fake rex: with max-runs 2, two ready change sets and no request, daemon --once starts both ship runs; with one queued request and max-runs 1 it starts one ship run and the request stays queued; with max-runs 2 it starts one ship run and the request's plan run, and daemon status shows the other change set as no-slot with 'waiting for a slot: kept for queued continuations or a plan request'; with max-runs 2, two ready change sets and only a queued milestone request, daemon --once starts both ship runs and the milestone request's plan run, and daemon status shows no no-slot change set; go test -trimpath ./cmd/rhiza -run TestScripts/daemon-request-slot passes",
+          "statement": "While a queued feature or bug plan request could start (no run, its retry time passed) and max-runs is above 1, the daemon's ship picks leave one slot for the request's plan run (besides any kept for queued continuations); a ready change set held back by this shows in daemon status as no-slot with the detail 'waiting for a slot: kept for queued continuations or a plan request'. A queued milestone request keeps no slot, since it starts without one. With max-runs 1, or no feature or bug request waiting, picks are unchanged"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6HT09X1W6W89R5N272GJXMP",
+        "id": "01M6MZB1REXGX0M3WJYSFN59NS",
+        "link": "01M6MZB1REXGX0M3WJYP9QZ70Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYP9D5XEFXQ5DHFXZQ8JDZ",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M6HJ10G74HCGZ37HH810HG46",
+        "handle": null,
+        "id": "01M6MZB4PBMM55M7GD27848410",
+        "node": "01M6HJ10G74HCGZ37HH47P4ABP",
+        "op": "node.update",
+        "set": {
+          "statement": "At each poll the daemon holds everything it would launch (picks, resumes of interrupted runs, queued starts and continues, feature and bug plan requests) while a window's use so far plus the mean tokens of the last 10 finished runs, once for each live run and once for the next, exceeds its limit minus the reserve. A window's limit is its setting when set, else its learned limit, and a window with neither never holds. Live runs, runs the owner starts directly and milestone requests' plan runs (milestone-request-past-usage-hold) are untouched, and the hold clears at the first poll after the window resets"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6HJ10G74HCGZ37HH47P4ABP",
+        "id": "01M6MZB7CYA6122RPCFSXXMQKS",
+        "link": "01M6MZB7CYA6122RPCFSJW0MMD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYP9D5XEFXQ5DHFXZQ8JDZ",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6MYFH4QYGSKDATBH509SEJF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MZBBA921PAN1Q2E9Y3B3DR",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,119 @@
+{
+  "actor": "01M6MYG8QZHBZZ5SZGEHCG38T2",
+  "after": [
+    "01M6MYS59DRJ2S70DSREJD0DME"
+  ],
+  "at": "2026-11-05T04:17:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6MYP9D5XEFXQ5DHFXZQ8JDZ",
+        "id": "01M6MYSAY0QGK6CFPAXGYQHEXZ",
+        "link": "01M6MYSAXZ255VY1KAB655C763",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYRT7GAXXCPJZZAWQN5FAW",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A new testscript cmd/rhiza/testdata/script/daemon-milestone-request.txtar (fake rex, rhiza.autonomy.plan owner, --max-runs 1 with one run already live) queues a feature then a milestone request: daemon --once starts only the milestone request (run start --workflow plan --new ... --request <id> --milestone) and request ls shows the feature still queued; a second milestone request queued while the first's run is live is not started by the next --once; go test -trimpath ./cmd/rhiza -run TestScripts/daemon-milestone-request and TestScripts/plan-requests pass",
+          "statement": "The daemon starts the oldest queued milestone request's plan run at its next poll, ahead of every other queued request and whether or not a run slot is free; once started it counts as a running run for later picks, and while one milestone request's plan run is live a second milestone request stays queued"
+        },
+        "handle": "milestone-request-starts-at-once",
+        "id": "01M6MYSEB8N545M8M9AR38NG0M",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6MYSEB8N545M8M9APZTBXYS",
+        "op": "node.create",
+        "parent": "01M6CS230463DT24PWBJCPWD9Q"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYSEB8N545M8M9APZTBXYS",
+        "id": "01M6MYSHA3GTN6TPCYTW9B3VS3",
+        "link": "01M6MYSHA3GTN6TPCYTTNAKC1S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYP9D5XEFXQ5DHFXZQ8JDZ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "daemon-milestone-request.txtar also covers: with a usage-reserve hold in effect daemon --once starts the queued milestone request and not the queued feature; with rhiza.daemon.paused true, and with the disk-low guard tripped (as the existing disk-low script sets it up), it starts neither; go test -trimpath ./cmd/rhiza -run TestScripts/daemon-milestone-request and go test -trimpath ./internal/api -run Usage pass",
+          "statement": "A usage-reserve hold does not hold a milestone request's plan run start, while it still holds feature and bug requests, build, review and other launches; daemon pause and the disk-low guard still hold it"
+        },
+        "handle": "milestone-request-past-usage-hold",
+        "id": "01M6MYSMGQFQDM84ANE5JMBAV7",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6MYSMGQFQDM84ANE2GRY4M9",
+        "op": "node.create",
+        "parent": "01M5SWTC9RDZ6PDFHA1M25BGPK"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYSMGQFQDM84ANE2GRY4M9",
+        "id": "01M6MYSQSJJAQCMGZ29HQ9HZ8F",
+        "link": "01M6MYSQSJJAQCMGZ29EX0P3RN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYP9D5XEFXQ5DHFXZQ8JDZ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript (new or extending plan-workflow) runs a non-autonomous milestone plan run with fake rex and fake claude: the interview tab's output carries a blocked OSC 7501 report naming the milestone interview before the agent asks anything, and a feature plan run's interview tab carries none at launch; go test -trimpath ./cmd/rhiza -run TestScripts/<that script> and the internal/api unit test of the launch report pass",
+          "statement": "When a milestone plan run's interview session launches in its Rex tab, rhiza reports that tab's status as blocked, waiting on the owner (OSC 7501), at launch rather than at the agent's first question, so Rex notifies the owner that the interview waits on them; other plan runs and autonomous runs report as before"
+        },
+        "handle": "milestone-interview-waiting-at-launch",
+        "id": "01M6MYSV344P11Y2K056J0DZ2J",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M6MYSV344P11Y2K0555WP96J",
+        "op": "node.create",
+        "parent": "01M5SWTCGG54JMNZNRSYQ2WAHH"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYSV344P11Y2K0555WP96J",
+        "id": "01M6MYSYJ5X68WSQ3SPJB8GZ0M",
+        "link": "01M6MYSYJ5X68WSQ3SPG6098QT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYP9D5XEFXQ5DHFXZQ8JDZ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'Inbox|DaemonNotify' passes with tests that a live non-autonomous milestone plan run gives one interview item with its tab from launch, before any question block, that it is gone once the run ended, that a feature plan run gives none, and that daemonNotify notifies it once with that text; describe-golden.txtar is regenerated for the InboxItem kind list and TestScripts/describe-golden passes",
+          "statement": "rhiza inbox lists a live milestone plan run as an item of a new kind, interview, naming its change set and the interview's Rex tab, from the interview's launch until the run ends, and the daemon sends one Rex notification for it (<title>: a milestone interview waits on you)"
+        },
+        "handle": "inbox-milestone-interview",
+        "id": "01M6MYT17VS6C6MX8YRERZCHGY",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M6MYT17VS6C6MX8YRDZ6PMKD",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "decision": null,
+        "from": "01M6MYT17VS6C6MX8YRDZ6PMKD",
+        "id": "01M6MYT40PYP39XZNRPMJMQ46N",
+        "link": "01M6MYT40PYP39XZNRPJVR0647",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYP9D5XEFXQ5DHFXZQ8JDZ",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6MYFH4QYGSKDATBH509SEJF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MYT969YCFCBHBW7VK91BPJ",
+  "type": "ops",
+  "v": 1
+}

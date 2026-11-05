@@ -1,0 +1,30 @@
+{
+  "actor": "01M6MYG8QZHBZZ5SZGEHCG38T2",
+  "after": [
+    "01M6MYFH4QYGSKDATBH6QZQAWD"
+  ],
+  "at": "2026-11-05T04:14:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "a7e31117-48f2-4f83-8965-01a1a9e80a6a",
+          "statement": "When does the daemon start a queued milestone request's plan run? Today every request waits for a free run slot (max runs), oldest first, so a milestone interview can sit behind build runs. / How is the owner told a milestone interview waits on them? Today a notification goes out only when the agent's first AskUserQuestion blocks, which can be minutes after the tab opens, and the inbox lists nothing before that. / Does a usage-reserve hold (the governor holding new launches) also hold a milestone interview's start?"
+        },
+        "handle": "question-a7e31117-1",
+        "id": "01M6MYM641F6JEE2SKH6EX0XCY",
+        "key": null,
+        "kind": "question",
+        "node": "01M6MYM641F6JEE2SKH35DXQGH",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6MYFH4QYGSKDATBH509SEJF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MYM7MKZ1ENMC5PXX4SP325",
+  "type": "ops",
+  "v": 1
+}
