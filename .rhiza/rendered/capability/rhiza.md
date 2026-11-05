@@ -34,6 +34,7 @@ Rhiza keeps the model of a product, what it is, why it is that way and what is p
 - constrains [rex-required-from-runtime](../constraint/rex-required-from-runtime.md)
 - constrains [no-prompts-without-tty](../constraint/no-prompts-without-tty.md)
 - constrains [bypass-only-on-dedicated](../constraint/bypass-only-on-dedicated.md)
+- constrains [owner-surfaces-no-ids](../constraint/owner-surfaces-no-ids.md)
 
 ## History
 
