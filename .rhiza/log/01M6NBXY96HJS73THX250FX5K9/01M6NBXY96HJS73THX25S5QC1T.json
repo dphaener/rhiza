@@ -1,0 +1,15 @@
+{
+  "actor": "01M6NBWBK62DFEKFDTT9DSRJAE",
+  "after": [],
+  "at": "2026-11-05T08:06:45Z",
+  "body": {
+    "intent": "Clear the old live app from the model: name the runs app in health-app, drop the live-app clause from run-status-open-cycle, and retire live-app-name-and-op under tui-five-apps",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6NBXY96HJS73THX250FX5K9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NBXY96HJS73THX25S5QC1T",
+  "type": "open",
+  "v": 1
+}

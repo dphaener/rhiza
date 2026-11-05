@@ -1,0 +1,63 @@
+{
+  "actor": "01M6NBVK5SFX35WKJ0ZZSGWZ1W",
+  "after": [
+    "01M6NBTV82Z9NK1R7N5G894TSE"
+  ],
+  "at": "2026-11-05T08:09:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built HEAD (519eba52) to a scratch binary and ran it in the live repo: `rhiza tui app runs --once` and `rhiza run ls --json` gave identical bytes (cmp); in a pty, `rhiza tui app runs` listed exactly the 6 live runs of 20 (none finished) as title · current step · elapsed, elapsed ticked on refresh, q closed it with exit 0; `rhiza tui app health` → enter on the daemon row opened the same Runs panel and q closed it; `rhiza tui app live --once` exits 4 unknown app \"live\"; live-app-runs and live-app-focus are proposed retired in the slice. go test ./internal/tui/runsapp and the tui-runs-app and run-log testscripts pass."
+        },
+        "handle": "runs-app-glance-qa-2",
+        "id": "01M6NC2355AHXYM5ZCZXYN6CCM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NC2354PNAV17NPZ9J8SYDS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NC2354PNAV17NPZ9J8SYDS",
+        "id": "01M6NC26SKN85BMAGPZHB98F9K",
+        "link": "01M6NC26SKN85BMAGPZG433VNH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZBJWTAMCNY0T5ZBANQJNN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built HEAD (519eba52) and ran `rhiza run log 01M6NA07P221KN3WS9E47T94G3 --limit 3` in the live repo: it printed the first 3 driver-log lines and a `next: ... --cursor 3` line, exit 0; the run-log testscript (incl. exit 2 for a run with no log) passes."
+        },
+        "handle": "run-log-runs-app-qa-2",
+        "id": "01M6NC29FENXQ80B7REXG6SGER",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NC29FENXQ80B7REWHAV0S9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NC29FENXQ80B7REWHAV0S9",
+        "id": "01M6NC2CBH9QMSNZ830FD1A3ZT",
+        "link": "01M6NC2CBH9QMSNZ830DZ98WF1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESK5TDQ0J8S077V8BCZ12",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYNJGY6Q735KB2ERT3V4R5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NC2HHJ5NC305BED5PGEKCA",
+  "type": "ops",
+  "v": 1
+}

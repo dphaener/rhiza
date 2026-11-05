@@ -14,7 +14,7 @@ QA at 0f0c797: rhiza tui app live --once printed bytes identical to rhiza run ls
 
 ### Out
 
-- verifies [live-app-runs](../capability/rhiza/live-app-runs.md)
+- verifies live-app-runs (retired)
 
 ## History
 

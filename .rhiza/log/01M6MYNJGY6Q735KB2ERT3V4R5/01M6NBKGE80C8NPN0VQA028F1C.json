@@ -1,0 +1,24 @@
+{
+  "actor": "01M6NBG6XAXRBWD3F8HR0P7QM7",
+  "after": [
+    "01M6NBJS8370GS8S0H9GMT10ED"
+  ],
+  "at": "2026-11-05T08:01:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M686VAPN2NBZCGV4TARRV25J",
+        "id": "01M6NBK7J177EFVA20QFK3XBHX",
+        "node": "01M686VAPN2NBZCGV4T968DYTD",
+        "op": "node.retire",
+        "reason": "internal/tui/liveapp and its enter-to-focus are deleted; the read-only runs app replaces it"
+      }
+    ]
+  },
+  "change_set": "01M6MYNJGY6Q735KB2ERT3V4R5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NBKGE80C8NPN0VQA028F1C",
+  "type": "ops",
+  "v": 1
+}

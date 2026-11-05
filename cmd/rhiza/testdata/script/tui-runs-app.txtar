@@ -1,4 +1,4 @@
-# The live app shows runs; --once prints what `rhiza run ls --json` prints,
+# The runs app shows runs; --once prints what `rhiza run ls --json` prints,
 # byte for byte, and the app is registered with the launcher.
 
 env REX_SESSION=
@@ -12,7 +12,7 @@ exec git commit -qm init
 
 exec rhiza run ls --json
 cp stdout ../want-empty.json
-exec rhiza tui app live --once
+exec rhiza tui app runs --once
 cmp stdout ../want-empty.json
 
 mkdir .git/rhiza/runs
@@ -20,5 +20,5 @@ exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:0
 exec rhiza run ls --json
 stdout '"id": "FAILED00001"'
 cp stdout ../want-run.json
-exec rhiza tui app live --once
+exec rhiza tui app runs --once
 cmp stdout ../want-run.json

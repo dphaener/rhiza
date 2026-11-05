@@ -118,7 +118,7 @@ func TestEnterOnInboxOpensInboxApp(t *testing.T) {
 	}
 }
 
-func TestEnterOnDaemonOpensLiveApp(t *testing.T) {
+func TestEnterOnDaemonOpensRunsApp(t *testing.T) {
 	var calls int
 	r := report
 	var opened string
@@ -127,7 +127,7 @@ func TestEnterOnDaemonOpensLiveApp(t *testing.T) {
 		return child{app}, nil
 	})
 	key(m, "enter")
-	if opened != "live" || m.Child() == nil {
+	if opened != "runs" || m.Child() == nil {
 		t.Fatalf("opened %q", opened)
 	}
 }
