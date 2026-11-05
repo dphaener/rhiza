@@ -2,8 +2,8 @@
 # holds a live Decision whose question field is the asked question verbatim,
 # and reports it skipped; a question that differs by one character does not
 # stop the proposal. Once the change set has landed, a landed Decision
-# derived-from the session's Source does the same. The fake rex opens a
-# window and runs nothing.
+# derived-from the session's Source does the same. session done skips and
+# reports the same way. The fake rex opens a window and runs nothing.
 
 chmod 755 bin/rex
 env PATH=$WORK/bin:$PATH
@@ -61,6 +61,20 @@ stdout -count=1 '"question": "Which store\?"'
 ! stdout '"question": "Which colour\?"'
 exec sh -c 'rhiza session interview $(cat $WORK/sid2) --json'
 stdout '"proposed": \[\]'
+
+# session done proposes only the second answer and reports the first,
+# already recorded, as skipped.
+exec rhiza change new 'Capture on done' --title 'Done' --json
+stdout '"change_set": "(01[0-9A-Z]{24})"'
+exec rhiza session start --permission-mode manual --json
+exec sh -c 'rhiza session ls --json | sed -n "s/.*\"id\": \"\([0-9a-f-]\{36\}\)\".*/\1/p" | tail -1 > $WORK/sid3'
+exec sh -c 'cp $WORK/transcript.jsonl $HOME/.claude/projects/p/$(cat $WORK/sid3).jsonl'
+cd $WORK/repo.done
+exec rhiza add decision done-colour --field 'statement=Blue' --field 'question=Which colour?'
+cd $WORK/repo
+exec sh -c 'rhiza session done $(cat $WORK/sid3) --json'
+stdout '"decisions": \[\s+"answer-[0-9a-f]{8}-2"\s+\]'
+stdout '"skipped": \[\s+"answer-[0-9a-f]{8}-1"\s+\]'
 
 -- s.json --
 {"title":"Planning interview","summary":"The owner answered.","quotes":[]}
