@@ -66,6 +66,10 @@ type State struct {
 	// that still wait. It is apart from Notified so the hook runs with or
 	// without Rex.
 	Hooked []string `json:"hooked,omitempty"`
+	// Nudged are the stalls the daemon sent a message for and that still
+	// last, each as session@report-time, so a session still stalled at the
+	// same report is nudged once; a new report is a new stall.
+	Nudged []string `json:"nudged,omitempty"`
 	// Events are the IDs of the lifecycle moves the event command has been
 	// handled for, run or seeded; EventsSeeded says the first run recorded
 	// every move then in the log, so history is not replayed.

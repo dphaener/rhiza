@@ -192,6 +192,9 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		if nerr := daemonNotify(ctx, rs, &state, notifyCmd); err == nil {
 			err = nerr
 		}
+		if nerr := daemonNudge(ctx, rs, &state); err == nil {
+			err = nerr
+		}
 		if eerr := daemonEvents(ctx, &state, eventCmd); err == nil {
 			err = eerr
 		}
@@ -254,6 +257,7 @@ func daemonStartState(common string, self daemon.Holder, version, commit string,
 		state.Unjournaled = prev.Unjournaled
 		state.LastStarted, state.LastResumed = prev.LastStarted, prev.LastResumed
 		state.Notified = prev.Notified
+		state.Nudged = prev.Nudged
 		state.Hooked = prev.Hooked
 		state.Events, state.EventsSeeded = prev.Events, prev.EventsSeeded
 		state.Hooks = prev.Hooks
