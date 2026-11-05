@@ -1,0 +1,51 @@
+# rhiza inbox lists each change set an owner-run (non-autonomous) plan run's
+# gate left proposed, under rhiza.autonomy.accept owner, as an accept item
+# with next rhiza accept --rule owner --change <id>. Once accepted the item
+# is gone.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+mkdir .rhiza/workflows
+cp $WORK/hold.toml .rhiza/workflows/hold.toml
+exec git config rhiza.autonomy.accept owner
+
+exec rhiza change new 'Plan A' --kind record --title 'Plan A' --json
+exec rhiza add intent want-a
+exec sh -c 'ls .git/rhiza/runs 2>/dev/null | sed "s/\.jsonl$//" > $WORK/before; true'
+exec rhiza run start --foreground --workflow hold --no-wait
+exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runa'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runa) rhiza run findings $WORK/clean.json'
+exec rhiza land
+exec sh -c 'rhiza change new "Serve A one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/a1'
+exec sh -c 'rhiza link $(cat $WORK/a1) serves want-a'
+exec sh -c 'RHIZA_RUN=$(cat $WORK/runa) rhiza run gate --json; echo exit=$?'
+stdout '^exit=0$'
+stdout '"autonomous": false'
+
+exec rhiza inbox --json
+stdout '"kind": "accept"'
+stdout 'rhiza accept --rule owner --change '
+stdout 'waiting for acceptance'
+
+exec sh -c 'rhiza accept --rule owner --change $(cat $WORK/a1)'
+exec rhiza inbox --json
+! stdout '"kind": "accept"'
+
+fold-ok
+
+-- hold.toml --
+name = "hold"
+
+[step.gate]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
+-- clean.json --
+{"findings":[]}

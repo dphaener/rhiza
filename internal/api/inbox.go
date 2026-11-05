@@ -238,9 +238,10 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 		// A run another process holds is still going: its questions wait on
 		// the owner, but it is neither at sign-off nor interrupted.
 		live := locked(j.ID)
-		// An autonomous plan run's gate left these proposed because the
-		// accept setting is owner: each waits for acceptance.
-		if st.Autonomous && !retried {
+		// A plan run's gate, owner-run or autonomous, left these proposed
+		// (the accept setting is owner, or the review did not pass): each
+		// waits for acceptance.
+		if !retried {
 			for _, g := range st.Gated {
 				if state, ok := changeState(g); ok && state == string(changeset.StateProposed) {
 					add(InboxAccept, g, st.GatedAt, InboxItem{Detail: "waiting for acceptance", Next: ownerAcceptNext(g)})
