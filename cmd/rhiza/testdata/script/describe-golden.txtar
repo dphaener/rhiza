@@ -15729,7 +15729,7 @@ cmp stdout describe.golden.json
               },
               "stalled": {
                 "additionalProperties": false,
-                "description": "A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working but silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
+                "description": "A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working, or idle in an autonomous run, without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
                 "properties": {
                   "session": {
                     "description": "The stalled session",
