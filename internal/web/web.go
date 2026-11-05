@@ -51,9 +51,14 @@ var assets embed.FS
 
 // Handler serves the UI's embedded assets, read-only: GET and HEAD only.
 // api, if not nil, serves /api/ (see api.ReadOnlyHandler); without it
-// /api/ is not found.
-func Handler(api http.Handler) http.Handler {
+// /api/ is not found. events, if given, serves /events (see Events).
+func Handler(api http.Handler, events ...http.Handler) http.Handler {
 	mux := http.NewServeMux()
+	for _, e := range events {
+		if e != nil {
+			mux.Handle("/events", e)
+		}
+	}
 	if api != nil {
 		mux.Handle("/api/", api)
 	}
