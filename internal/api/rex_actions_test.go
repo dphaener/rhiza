@@ -237,8 +237,11 @@ func TestRexInstallActionsOpenALayerPerApp(t *testing.T) {
 			}
 		}
 	}
-	check(runRexActions(t, script, "/bin/zsh"), []string{"/bin/zsh", "-lc", `exec "$0" "$@"`, "rhiza"})
-	check(runRexActions(t, script, ""), []string{"/bin/sh", "-lc", `exec "$0" "$@"`, "rhiza"})
+	// The login shell is the one $SHELL names where the layer runs, so the
+	// command is the same whatever SHELL the Lua side has.
+	login := []string{"/bin/sh", "-c", `exec "${SHELL:-/bin/sh}" -lc 'exec "$0" "$@"' "$@"`, "sh", "rhiza"}
+	check(runRexActions(t, script, "/bin/zsh"), login)
+	check(runRexActions(t, script, ""), login)
 
 	// settings.bin names the binary: it runs as given, with no shell.
 	pinned := strings.Replace(script, `  -- bin = "rhiza",`, `  bin = "/opt/rhiza/bin/rhiza",`, 1)

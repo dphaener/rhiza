@@ -62,12 +62,15 @@ local function block_cwd(block_id)
 end
 
 -- app_command returns the command an app's layer runs: BIN as given when
--- settings.bin names it, else BIN found by the owner's login shell, since
--- the Rex server's PATH can lack the owner's.
+-- settings.bin names it, else BIN found by the login shell of the host the
+-- layer runs on, since the Rex server's PATH can lack the owner's. That
+-- shell is read from $SHELL where the command runs, not here: a client's
+-- action can open a layer in another host's session (a Mac opening a VM
+-- tab), and this Lua's SHELL (/bin/zsh) may not exist there.
+local LOGIN_SHELL = [[exec "${SHELL:-/bin/sh}" -lc 'exec "$0" "$@"' "$@"]]
 local function app_command(app)
   if BIN_SET then return { BIN, "tui", "app", app } end
-  local sh = (os and os.getenv and os.getenv("SHELL")) or "/bin/sh"
-  return { sh, "-lc", 'exec "$0" "$@"', BIN, "tui", "app", app }
+  return { "/bin/sh", "-c", LOGIN_SHELL, "sh", BIN, "tui", "app", app }
 end
 `
 
