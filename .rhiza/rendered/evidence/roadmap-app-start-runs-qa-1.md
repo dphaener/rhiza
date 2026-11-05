@@ -14,7 +14,7 @@ Built binary in a real Rex tab, with a logging rex shim on PATH that records 'wi
 
 ### Out
 
-- verifies [roadmap-app-start-runs](../capability/rhiza/roadmap-app-start-runs.md)
+- verifies roadmap-app-start-runs (retired)
 
 ## History
 

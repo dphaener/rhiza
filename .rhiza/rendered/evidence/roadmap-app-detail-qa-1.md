@@ -14,7 +14,7 @@ With the built binary in a real Rex tab, enter on a change set row opened its de
 
 ### Out
 
-- verifies [roadmap-app-detail](../capability/rhiza/roadmap-app-detail.md)
+- verifies roadmap-app-detail (retired)
 
 ## History
 

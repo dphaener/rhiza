@@ -18,7 +18,7 @@ The Rex app is named changes (key g, so no existing key moves); it shows landed 
 
 ### In
 
-- decided-by [changes-app](../capability/rhiza/views/change-feed/changes-app.md)
+- decided-by changes-app (retired)
 
 ## History
 

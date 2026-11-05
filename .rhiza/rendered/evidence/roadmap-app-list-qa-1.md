@@ -14,7 +14,7 @@ Built this branch's rhiza (go build -o $TMPDIR/rhiza-qa ./cmd/rhiza) and, in a s
 
 ### Out
 
-- verifies [roadmap-app-list](../capability/rhiza/roadmap-app-list.md)
+- verifies roadmap-app-list (retired)
 
 ## History
 

@@ -14,7 +14,7 @@ At d60260b0: the diff moves TestReadBudget's quiet wait from internal/api/budget
 
 ### Out
 
-- verifies [modelapp-timing-alone](../capability/rhiza/model-tree-app/modelapp-timing-alone.md)
+- verifies modelapp-timing-alone (retired)
 
 ## History
 

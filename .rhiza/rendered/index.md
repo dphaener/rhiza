@@ -58,6 +58,8 @@
       - [reopen-views](capability/rhiza/change-sets/reopen/reopen-views.md)
       - [reopen-format](capability/rhiza/change-sets/reopen/reopen-format.md)
       - [reopen-guide](capability/rhiza/change-sets/reopen/reopen-guide.md)
+    - [question-answer-op](capability/rhiza/change-sets/question-answer-op.md)
+      - [answer-refuses-closed-or-unblocking](capability/rhiza/change-sets/question-answer-op/answer-refuses-closed-or-unblocking.md)
   - [lineage](capability/rhiza/lineage.md)
     - [why-walk](capability/rhiza/lineage/why-walk.md)
       - [why-cited-quotes](capability/rhiza/lineage/why-walk/why-cited-quotes.md)
@@ -77,7 +79,6 @@
     - [node-list](capability/rhiza/views/node-list.md)
     - [text-search](capability/rhiza/views/text-search.md)
       - [search-command](capability/rhiza/views/text-search/search-command.md)
-      - [model-app-search](capability/rhiza/views/text-search/model-app-search.md)
     - [slice](capability/rhiza/views/slice.md)
     - [overlays](capability/rhiza/views/overlays.md)
     - [roadmap](capability/rhiza/views/roadmap.md)
@@ -101,7 +102,6 @@
     - [change-feed](capability/rhiza/views/change-feed.md)
       - [feed-command](capability/rhiza/views/change-feed/feed-command.md)
         - [feed-hides-actor-records](capability/rhiza/views/change-feed/feed-command/feed-hides-actor-records.md)
-      - [changes-app](capability/rhiza/views/change-feed/changes-app.md)
     - [overlaps-command](capability/rhiza/views/overlaps-command.md)
     - [change-feed-follow](capability/rhiza/views/change-feed-follow.md)
   - [integrity](capability/rhiza/integrity.md)
@@ -201,6 +201,7 @@
     - [workflow-runs](capability/rhiza/workflows/workflow-runs.md)
       - [run-start](capability/rhiza/workflows/workflow-runs/run-start.md)
         - [run-start-refuses-agent-session](capability/rhiza/workflows/workflow-runs/run-start/run-start-refuses-agent-session.md)
+        - [run-start-new-intent](capability/rhiza/workflows/workflow-runs/run-start/run-start-new-intent.md)
       - [run-journal-file](capability/rhiza/workflows/workflow-runs/run-journal-file.md)
       - [run-status](capability/rhiza/workflows/workflow-runs/run-status.md)
         - [failed-step-detail-shown](capability/rhiza/workflows/workflow-runs/run-status/failed-step-detail-shown.md)
@@ -260,6 +261,7 @@
         - [plan-run-merges-closes-out](capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-run-merges-closes-out.md)
         - [plan-guide-who-records](capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-guide-who-records.md)
         - [plan-run-merge-rebases](capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-run-merge-rebases.md)
+        - [plan-guide-new-change-set](capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-guide-new-change-set.md)
       - [build-workflow](capability/rhiza/workflows/built-in-workflows/build-workflow.md)
         - [build-leaves-step](capability/rhiza/workflows/built-in-workflows/build-workflow/build-leaves-step.md)
         - [build-model-ladder](capability/rhiza/workflows/built-in-workflows/build-workflow/build-model-ladder.md)
@@ -370,14 +372,12 @@
         - [daemon-status-version](capability/rhiza/orchestration/daemon/daemon-status/daemon-status-version.md)
         - [health-command](capability/rhiza/orchestration/daemon/daemon-status/health-command.md)
           - [close-out-pull-recorded](capability/rhiza/orchestration/daemon/daemon-status/health-command/close-out-pull-recorded.md)
-          - [health-app](capability/rhiza/orchestration/daemon/daemon-status/health-command/health-app.md)
           - [health-report](capability/rhiza/orchestration/daemon/daemon-status/health-command/health-report.md)
       - [daemon-reexec-new-binary](capability/rhiza/orchestration/daemon/daemon-reexec-new-binary.md)
         - [daemon-state-at-start](capability/rhiza/orchestration/daemon/daemon-reexec-new-binary/daemon-state-at-start.md)
       - [daemon-settings](capability/rhiza/orchestration/daemon/daemon-settings.md)
       - [daemon-pause](capability/rhiza/orchestration/daemon/daemon-pause.md)
       - [plan-requests](capability/rhiza/orchestration/daemon/plan-requests.md)
-        - [roadmap-new-work-requests](capability/rhiza/orchestration/daemon/plan-requests/roadmap-new-work-requests.md)
         - [request-queue](capability/rhiza/orchestration/daemon/plan-requests/request-queue.md)
           - [bug-request-titles](capability/rhiza/orchestration/daemon/plan-requests/request-queue/bug-request-titles.md)
           - [milestone-request-owner-plan](capability/rhiza/orchestration/daemon/plan-requests/request-queue/milestone-request-owner-plan.md)
@@ -426,27 +426,12 @@
     - [update-target-documented](capability/rhiza/rex-install-command/update-target-documented.md)
     - [rex-actions-rhiza-from-path](capability/rhiza/rex-install-command/rex-actions-rhiza-from-path.md)
   - [ship-command-after-close-out](capability/rhiza/ship-command-after-close-out.md)
-  - [read-apps-match-cli](capability/rhiza/read-apps-match-cli.md)
-  - [model-tree-app](capability/rhiza/model-tree-app.md)
-    - [modelapp-timing-alone](capability/rhiza/model-tree-app/modelapp-timing-alone.md)
-  - [write-apps-previewed](capability/rhiza/write-apps-previewed.md)
-  - [runs-sessions-apps](capability/rhiza/runs-sessions-apps.md)
   - [rex-app-actions](capability/rhiza/rex-app-actions.md)
     - [tui-launch-usage](capability/rhiza/rex-app-actions/tui-launch-usage.md)
   - [rex-app-layer-sized](capability/rhiza/rex-app-layer-sized.md)
   - [rex-key-mode](capability/rhiza/rex-key-mode.md)
   - [rex-launch-key-setting](capability/rhiza/rex-launch-key-setting.md)
   - [builder-actor-in-leaf-commit](capability/rhiza/builder-actor-in-leaf-commit.md)
-  - [roadmap-app-list](capability/rhiza/roadmap-app-list.md)
-    - [roadmap-app-umbrella-row](capability/rhiza/roadmap-app-list/roadmap-app-umbrella-row.md)
-  - [roadmap-app-detail](capability/rhiza/roadmap-app-detail.md)
-  - [roadmap-app-start-runs](capability/rhiza/roadmap-app-start-runs.md)
-    - [run-start-new-intent](capability/rhiza/roadmap-app-start-runs/run-start-new-intent.md)
-    - [plan-guide-new-change-set](capability/rhiza/roadmap-app-start-runs/plan-guide-new-change-set.md)
-  - [roadmap-app-accept-answer](capability/rhiza/roadmap-app-accept-answer.md)
-    - [question-answer-op](capability/rhiza/roadmap-app-accept-answer/question-answer-op.md)
-      - [answer-refuses-closed-or-unblocking](capability/rhiza/roadmap-app-accept-answer/question-answer-op/answer-refuses-closed-or-unblocking.md)
-  - [roadmap-detail-run-tick](capability/rhiza/roadmap-detail-run-tick.md)
   - [modal-shell-hosts-component](capability/rhiza/modal-shell-hosts-component.md)
   - [modal-shell-closes](capability/rhiza/modal-shell-closes.md)
   - [modal-sized-to-content](capability/rhiza/modal-sized-to-content.md)
@@ -459,7 +444,9 @@
   - [daemon-app-run-limit](capability/rhiza/daemon-app-run-limit.md)
   - [inbox-app-signoff](capability/rhiza/inbox-app-signoff.md)
   - [inbox-app-retry-abandon](capability/rhiza/inbox-app-retry-abandon.md)
+  - [old-apps-deleted](capability/rhiza/old-apps-deleted.md)
   - [run-send-back](capability/rhiza/run-send-back.md)
+  - [rex-install-five-apps](capability/rhiza/rex-install-five-apps.md)
 - [ship-through-rhiza](capability/ship-through-rhiza.md)
   - [workflow-step](capability/ship-through-rhiza/workflow-step.md)
   - [ship-open-pr](capability/ship-through-rhiza/ship-open-pr.md)
@@ -923,6 +910,7 @@
 - [notes-are-discussion](decision/notes-are-discussion.md)
 - [notes-are-note-nodes](decision/notes-are-note-nodes.md)
 - [notify-command-flag-or-git-config](decision/notify-command-flag-or-git-config.md)
+- [old-apps-model-clauses-dropped](decision/old-apps-model-clauses-dropped.md)
 - [one-capability-tree](decision/one-capability-tree.md)
 - [one-change-set-one-pr](decision/one-change-set-one-pr.md)
 - [one-model-per-repo](decision/one-model-per-repo.md)
@@ -1033,6 +1021,7 @@
 - [rex-notice-by-program-status](decision/rex-notice-by-program-status.md)
 - [rex-picker-removed](decision/rex-picker-removed.md)
 - [rex-required](decision/rex-required.md)
+- [roadmap-paged-drop-deleted-app-readers](decision/roadmap-paged-drop-deleted-app-readers.md)
 - [root-intents-and-constraints](decision/root-intents-and-constraints.md)
 - [run-drivers-rebase-resolution](decision/run-drivers-rebase-resolution.md)
 - [run-ends-blocked-on-review-question](decision/run-ends-blocked-on-review-question.md)
@@ -1331,6 +1320,8 @@
 - [leaf-failed-01m60atz-2](question/leaf-failed-01m60atz-2.md)
 - [leaf-failed-01m60atz-3](question/leaf-failed-01m60atz-3.md)
 - [leaf-failed-01m60atz-4](question/leaf-failed-01m60atz-4.md)
+- [leaf-failed-01m6njpm-1](question/leaf-failed-01m6njpm-1.md)
+- [leaf-failed-01m6njpm-2](question/leaf-failed-01m6njpm-2.md)
 - [message-recipient-session](question/message-recipient-session.md)
 - [modal-open-mechanism](question/modal-open-mechanism.md)
 - [native-intent-served](question/native-intent-served.md)
@@ -1884,6 +1875,12 @@
 - [notes-shown-qa-1](evidence/notes-shown-qa-1.md)
 - [notes-shown-verified](evidence/notes-shown-verified.md)
 - [notes-shown-verified-2](evidence/notes-shown-verified-2.md)
+- [old-apps-deleted-qa-1](evidence/old-apps-deleted-qa-1.md)
+- [old-apps-deleted-qa-2](evidence/old-apps-deleted-qa-2.md)
+- [old-apps-deleted-verified](evidence/old-apps-deleted-verified.md)
+- [old-apps-deleted-verified-3](evidence/old-apps-deleted-verified-3.md)
+- [old-apps-deleted-verified-6](evidence/old-apps-deleted-verified-6.md)
+- [old-apps-deleted-verified-8](evidence/old-apps-deleted-verified-8.md)
 - [old-folder-verified](evidence/old-folder-verified.md)
 - [ordered-landing-tests](evidence/ordered-landing-tests.md)
 - [overlap-retire-link-verified](evidence/overlap-retire-link-verified.md)
@@ -2043,6 +2040,7 @@
 - [pr-296-runs-app-on-the-modal-shell](evidence/pr-296-runs-app-on-the-modal-shell.md)
 - [pr-299-inbox-app-on-the-modal-shell](evidence/pr-299-inbox-app-on-the-modal-shell.md)
 - [pr-300-fix-a-run-s-agent-session-that](evidence/pr-300-fix-a-run-s-agent-session-that.md)
+- [pr-301-delete-the-old-rex-apps](evidence/pr-301-delete-the-old-rex-apps.md)
 - [pr-35-reopening-a-change-set](evidence/pr-35-reopening-a-change-set.md)
 - [pr-36-leaf-dependencies-and](evidence/pr-36-leaf-dependencies-and.md)
 - [pr-38-session-messages-and-token-use](evidence/pr-38-session-messages-and-token-use.md)
@@ -2162,6 +2160,10 @@
 - [rex-install-command-qa-2](evidence/rex-install-command-qa-2.md)
 - [rex-install-command-qa-3](evidence/rex-install-command-qa-3.md)
 - [rex-install-command-verified](evidence/rex-install-command-verified.md)
+- [rex-install-five-apps-qa-1](evidence/rex-install-five-apps-qa-1.md)
+- [rex-install-five-apps-qa-2](evidence/rex-install-five-apps-qa-2.md)
+- [rex-install-five-apps-verified](evidence/rex-install-five-apps-verified.md)
+- [rex-install-five-apps-verified-2](evidence/rex-install-five-apps-verified-2.md)
 - [rex-key-mode-qa-1](evidence/rex-key-mode-qa-1.md)
 - [rex-key-mode-qa-2](evidence/rex-key-mode-qa-2.md)
 - [rex-key-mode-verified](evidence/rex-key-mode-verified.md)
@@ -4982,18 +4984,33 @@
 - capability build-panes `01M5YX3GT71M5KWXZYCZA684DF` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
 - capability daemon-run-tabs `01M61R7M41QVVEDQ5GWRXE7D7M` — Replaced by daemon-headless-run-drivers: the daemon no longer opens a Rex tab for a run's driver (m24-only-agent-tabs).
 - capability quick-launch-layer `01M62JP7BKA4N9W2HCFTP0CMQ4` — Decision rex-picker-removed: the all-apps picker (rhiza tui launch and the rhiza_launch action) is removed; each app opens from its own action or its key in the rhiza key mode.
+- capability read-apps-match-cli `01M62JP9RTA2QHK5B6A53852M8` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
+- capability model-tree-app `01M62JPK2HTYRZW2PD8ZFV1JVK` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
+- capability write-apps-previewed `01M62JPNH7XH3E5F28FER1MW8E` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
+- capability runs-sessions-apps `01M62JPRMZ7XZ5RGATP7N7P0A5` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
 - capability run-sessions-one-window `01M651M8TNJKY76E8G6KMV3V3Y` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
 - capability anchor-gone-splits-run-window `01M651MBGX79H2AV7N9YA0EC9X` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
 - capability checks-and-fixes-anchored `01M651ME1N3KVWZ1D6M8BYFHBQ` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
+- capability roadmap-app-list `01M67349MAEY43NAK3P9PG0H74` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
+- capability roadmap-app-detail `01M6734AZGT872HRJ9ZRBWAABE` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
+- capability roadmap-app-start-runs `01M6734CBEZPDTAJBANZVV5GXC` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
+- capability roadmap-app-accept-answer `01M6734EA3V7228YH8DGYVYDQA` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
 - capability inbox-app-list `01M6734GPG3SZCY93EBRDS1CA8` — Replaced by inbox-app-pick-list: the rebuilt app is one rexuikit List of items, with no kind grouping, advisor recommendation or periodic and r reload
 - capability inbox-app-actions `01M6734J6ESHFYKFJ09YK6TEWT` — Replaced by inbox-app-pick-list, inbox-app-answer, inbox-app-signoff and inbox-app-retry-abandon: the rebuilt app picks one item and does its one action, with no o/t/y/c/R/x keys
 - capability agent-steps-tile-run-window `01M6857JXB8B7WXBN5VHE7MV1K` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
 - capability question-sessions-tile-run-window `01M6857KVT0NRCTAY6EZ2DH209` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
 - capability inbox-app-answer-question `01M686TSHQQ5XJ0YAZ3Z538821` — Replaced by inbox-app-answer: the rebuilt inbox app answers a blocker through question.answer from a one-TextArea form
+- capability roadmap-app-umbrella-row `01M686TZYQZXDVR5B3880M6C21` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
 - capability roadmap-app-new-work `01M686V49K74FDKG4YV2BDJCSN` — Superseded by roadmap-new-work-requests: m and n now file a plan request (rhiza request) for the daemon to plan, and no longer ask y/n or open a Rex tab running run start --workflow plan --new
 - capability live-app-runs `01M686V969FDV2SVYM7P244E86` — internal/tui/liveapp is deleted; the runs app (runs-app-glance) replaces the live app's glance
 - capability live-app-focus `01M686VAPN2NBZCGV4T968DYTD` — internal/tui/liveapp and its enter-to-focus are deleted; the read-only runs app replaces it
+- capability roadmap-detail-run-tick `01M686VBX481BWSM5W1YT6N1PQ` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
+- capability modelapp-timing-alone `01M696Q30C6Z9DX0WGCSNDSGHQ` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
+- capability changes-app `01M6B3PG5BQ496EZCTRDFMH0T2` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
+- capability model-app-search `01M6BDAHCGWVSDN2MXQKK63CXJ` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
+- capability roadmap-new-work-requests `01M6CS24JZ06XER4X1ZKX4SNPG` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
 - capability requests-app `01M6CS27ZCVXPWK3GXS8B8PQ2C` — Replaced by the request app on the modal shell (change set 01M6MYNDJ4HAJF028CEAE7SYQN): internal/tui/requestsapp and tui-requests-app.txtar are deleted, the requests app and its listing are gone
+- capability health-app `01M6CS2EDTXKNNH3BNJBX81ZZ6` — Its app was deleted in this change set (decision tui-delete-old-apps); the CLI commands it wrapped stay
 - capability autonomy-app `01M6CS2HRAWMCTPDHFXBHFCX1C` — Replaced by autonomy-app-toggles: the autonomy app is now one form of the plan, accept, ship and sign-off toggles; it no longer lists daemon settings, toggles paused, edits numbers or starts/stops the daemon
 - capability inbox-nudge-stalled `01M6CS2KAT7R41TVN9WFDEFBRF` — The rebuilt inbox app has no n nudge: a stalled item shows its detail and opens its run's tab (inbox-app-pick-list)
 - capability requests-app-milestone `01M6JE40PG6Z1ZG27N7DMFH3FF` — Replaced by the request app on the modal shell (change set 01M6MYNDJ4HAJF028CEAE7SYQN): the old requests app and its milestone field are deleted; the new request form has no milestone field

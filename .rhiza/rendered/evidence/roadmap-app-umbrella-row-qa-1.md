@@ -14,7 +14,7 @@ Ran the scratch binary's rhiza tui app roadmap in a real Rex terminal pane over 
 
 ### Out
 
-- verifies [roadmap-app-umbrella-row](../capability/rhiza/roadmap-app-list/roadmap-app-umbrella-row.md)
+- verifies roadmap-app-umbrella-row (retired)
 
 ## History
 

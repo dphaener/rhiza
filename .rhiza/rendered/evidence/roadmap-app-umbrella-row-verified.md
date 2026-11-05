@@ -14,7 +14,7 @@ At 90d02941 ran go test -count=1 -run TestUmbrella -v ./internal/tui/roadmapapp:
 
 ### Out
 
-- verifies [roadmap-app-umbrella-row](../capability/rhiza/roadmap-app-list/roadmap-app-umbrella-row.md)
+- verifies roadmap-app-umbrella-row (retired)
 
 ## History
 

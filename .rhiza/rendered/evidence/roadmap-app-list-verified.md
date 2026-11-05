@@ -14,7 +14,7 @@ At 4444bfc, go test ./internal/tui/roadmapapp -count=1 -v passed: TestViewIsALis
 
 ### Out
 
-- verifies [roadmap-app-list](../capability/rhiza/roadmap-app-list.md)
+- verifies roadmap-app-list (retired)
 
 ## History
 

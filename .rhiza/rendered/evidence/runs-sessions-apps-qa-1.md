@@ -14,7 +14,7 @@ QA at 087eefc with a scratch build ($TMPDIR/rhiza-qa) on this repo's real .rhiza
 
 ### Out
 
-- verifies [runs-sessions-apps](../capability/rhiza/runs-sessions-apps.md)
+- verifies runs-sessions-apps (retired)
 
 ## History
 

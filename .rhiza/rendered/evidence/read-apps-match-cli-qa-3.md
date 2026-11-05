@@ -14,7 +14,7 @@ QA at d02d9ce (cycle 3) with a built rhiza on this repo's real model (RHIZA_ROOT
 
 ### Out
 
-- verifies [read-apps-match-cli](../capability/rhiza/read-apps-match-cli.md)
+- verifies read-apps-match-cli (retired)
 
 ## History
 

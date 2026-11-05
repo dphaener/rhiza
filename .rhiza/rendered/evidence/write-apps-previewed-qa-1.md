@@ -14,7 +14,7 @@ QA at e74bb78 with a binary built from the branch (go build -o $TMPDIR/rhiza-qa 
 
 ### Out
 
-- verifies [write-apps-previewed](../capability/rhiza/write-apps-previewed.md)
+- verifies write-apps-previewed (retired)
 
 ## History
 

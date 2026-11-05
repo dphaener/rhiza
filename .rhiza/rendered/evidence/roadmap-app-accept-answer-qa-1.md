@@ -14,7 +14,7 @@ Built binary in a real Rex tab over a scratch repo. On the proposed change set, 
 
 ### Out
 
-- verifies [roadmap-app-accept-answer](../capability/rhiza/roadmap-app-accept-answer.md)
+- verifies roadmap-app-accept-answer (retired)
 
 ## History
 

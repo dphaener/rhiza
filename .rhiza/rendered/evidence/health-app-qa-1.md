@@ -14,7 +14,7 @@ At ee31e06b, QA ran the real app. In a scratch repo, rhiza tui app health --once
 
 ### Out
 
-- verifies [health-app](../capability/rhiza/orchestration/daemon/daemon-status/health-command/health-app.md)
+- verifies health-app (retired)
 
 ## History
 

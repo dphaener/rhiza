@@ -14,7 +14,7 @@ QA at f270de1a: built go build -o $TMPDIR/rhiza-x ./cmd/rhiza and used it in a c
 
 ### Out
 
-- verifies [answer-refuses-closed-or-unblocking](../capability/rhiza/roadmap-app-accept-answer/question-answer-op/answer-refuses-closed-or-unblocking.md)
+- verifies [answer-refuses-closed-or-unblocking](../capability/rhiza/change-sets/question-answer-op/answer-refuses-closed-or-unblocking.md)
 
 ## History
 

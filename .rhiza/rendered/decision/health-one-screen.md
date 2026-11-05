@@ -20,7 +20,7 @@ rhiza health gathers one report: the daemon (running or not, version, paused, la
 
 - decided-by [health-command](../capability/rhiza/orchestration/daemon/daemon-status/health-command.md)
 - decided-by [close-out-pull-recorded](../capability/rhiza/orchestration/daemon/daemon-status/health-command/close-out-pull-recorded.md)
-- decided-by [health-app](../capability/rhiza/orchestration/daemon/daemon-status/health-command/health-app.md)
+- decided-by health-app (retired)
 - decided-by [health-report](../capability/rhiza/orchestration/daemon/daemon-status/health-command/health-report.md)
 
 ## History

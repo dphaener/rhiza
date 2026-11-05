@@ -18,7 +18,7 @@ fixer of review cycle 2 on leaf model-tree-app, recording the reading of the bud
 
 ### In
 
-- decided-by [model-tree-app](../capability/rhiza/model-tree-app.md)
+- decided-by model-tree-app (retired)
 
 ## History
 

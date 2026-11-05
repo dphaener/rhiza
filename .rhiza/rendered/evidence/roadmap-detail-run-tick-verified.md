@@ -14,7 +14,7 @@ At 628be46, go test ./internal/tui/roadmapapp -run Tick -v -count=1 passes TestT
 
 ### Out
 
-- verifies [roadmap-detail-run-tick](../capability/rhiza/roadmap-detail-run-tick.md)
+- verifies roadmap-detail-run-tick (retired)
 
 ## History
 

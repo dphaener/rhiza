@@ -19,6 +19,8 @@ Delete them: remove the code and Rex actions of every app not in the new set; th
 ### In
 
 - decided-by [m26-old-apps-gone](../intent/milestone-26/m26-old-apps-gone.md)
+- decided-by [old-apps-deleted](../capability/rhiza/old-apps-deleted.md)
+- decided-by [rex-install-five-apps](../capability/rhiza/rex-install-five-apps.md)
 
 ## History
 

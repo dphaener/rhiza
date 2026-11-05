@@ -26,10 +26,10 @@ verified
 
 ### Out
 
-- verifies [roadmap-app-list](../capability/rhiza/roadmap-app-list.md)
-- verifies [roadmap-app-detail](../capability/rhiza/roadmap-app-detail.md)
-- verifies [roadmap-app-start-runs](../capability/rhiza/roadmap-app-start-runs.md)
-- verifies [roadmap-app-accept-answer](../capability/rhiza/roadmap-app-accept-answer.md)
+- verifies roadmap-app-list (retired)
+- verifies roadmap-app-detail (retired)
+- verifies roadmap-app-start-runs (retired)
+- verifies roadmap-app-accept-answer (retired)
 
 ## History
 

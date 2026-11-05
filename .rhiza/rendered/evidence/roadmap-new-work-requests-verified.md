@@ -14,7 +14,7 @@ At f9b9b42c ran go test ./internal/tui/roadmapapp -run TestNewWorkFilesPlanReque
 
 ### Out
 
-- verifies [roadmap-new-work-requests](../capability/rhiza/orchestration/daemon/plan-requests/roadmap-new-work-requests.md)
+- verifies roadmap-new-work-requests (retired)
 
 ## History
 

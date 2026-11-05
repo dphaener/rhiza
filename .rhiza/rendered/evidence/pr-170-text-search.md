@@ -28,7 +28,7 @@ verified
 
 - verifies [text-search](../capability/rhiza/views/text-search.md)
 - verifies [search-command](../capability/rhiza/views/text-search/search-command.md)
-- verifies [model-app-search](../capability/rhiza/views/text-search/model-app-search.md)
+- verifies model-app-search (retired)
 
 ## History
 

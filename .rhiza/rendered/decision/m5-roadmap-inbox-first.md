@@ -20,9 +20,9 @@ Roadmap + Inbox (Recommended): the roadmap becomes a cursor list where you plan,
 
 - decided-by [m5-roadmap-actionable](../intent/milestone-5/m5-roadmap-actionable.md)
 - decided-by [m5-inbox-app](../intent/milestone-5/m5-inbox-app.md)
-- decided-by [roadmap-app-list](../capability/rhiza/roadmap-app-list.md)
-- decided-by [roadmap-app-detail](../capability/rhiza/roadmap-app-detail.md)
-- decided-by [roadmap-app-accept-answer](../capability/rhiza/roadmap-app-accept-answer.md)
+- decided-by roadmap-app-list (retired)
+- decided-by roadmap-app-detail (retired)
+- decided-by roadmap-app-accept-answer (retired)
 - decided-by inbox-app-list (retired)
 
 ## History

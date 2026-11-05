@@ -28,7 +28,7 @@ verified
 
 - verifies [change-feed](../capability/rhiza/views/change-feed.md)
 - verifies [feed-command](../capability/rhiza/views/change-feed/feed-command.md)
-- verifies [changes-app](../capability/rhiza/views/change-feed/changes-app.md)
+- verifies changes-app (retired)
 
 ## History
 

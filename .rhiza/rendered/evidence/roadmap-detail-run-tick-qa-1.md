@@ -14,7 +14,7 @@ QA at 0f0c797 in a real Rex pane: in rhiza tui app roadmap, opening change set 0
 
 ### Out
 
-- verifies [roadmap-detail-run-tick](../capability/rhiza/roadmap-detail-run-tick.md)
+- verifies roadmap-detail-run-tick (retired)
 
 ## History
 

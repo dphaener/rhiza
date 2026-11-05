@@ -14,7 +14,7 @@ QA at bcec030 with a scratch build of this branch: wrote gen.Default() (50,000-n
 
 ### Out
 
-- verifies [model-tree-app](../capability/rhiza/model-tree-app.md)
+- verifies model-tree-app (retired)
 
 ## History
 

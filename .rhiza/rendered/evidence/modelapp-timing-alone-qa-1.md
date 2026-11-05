@@ -14,7 +14,7 @@ At 4df26617, built go build ./cmd/rhiza (rhiza version ran), then go test -count
 
 ### Out
 
-- verifies [modelapp-timing-alone](../capability/rhiza/model-tree-app/modelapp-timing-alone.md)
+- verifies modelapp-timing-alone (retired)
 
 ## History
 
