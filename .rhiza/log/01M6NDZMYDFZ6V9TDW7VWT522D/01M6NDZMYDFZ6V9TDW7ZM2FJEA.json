@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-05T08:42:38Z",
+  "body": {
+    "intent": "Record agent actor claude-code-caba7722 for session caba7722-1324-465c-9fb5-01a1aadfca5b",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6NDZMYDFZ6V9TDW7VWT522D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NDZMYDFZ6V9TDW7ZM2FJEA",
+  "type": "open",
+  "v": 1
+}
