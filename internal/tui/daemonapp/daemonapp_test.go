@@ -21,7 +21,7 @@ type fake struct {
 func (f *fake) run(op string, args []string) ([]byte, error) {
 	f.calls = append(f.calls, append([]string{op}, args...))
 	if op == "daemon.settings" {
-		return []byte(fmt.Sprintf(`{"settings":[{"key":"rhiza.daemon.paused","value":%q,"default":"false","source":"default"}]}`, f.paused)), nil
+		return []byte(fmt.Sprintf(`{"settings":[{"key":"rhiza.daemon.paused","value":%q,"default":"false","source":"default"},{"key":"rhiza.daemon.maxRuns","value":"3","default":"4","source":"git config"}]}`, f.paused)), nil
 	}
 	return []byte(`{"ok":true}`), nil
 }
@@ -73,6 +73,8 @@ func key(k string) tea.KeyPressMsg {
 	switch k {
 	case "enter":
 		return tea.KeyPressMsg{Code: tea.KeyEnter}
+	case "backspace":
+		return tea.KeyPressMsg{Code: tea.KeyBackspace}
 	case "esc":
 		return tea.KeyPressMsg{Code: tea.KeyEscape}
 	}
@@ -108,7 +110,7 @@ func TestFlipAndSubmitSetsAndQuits(t *testing.T) {
 		if paused == "true" {
 			flip = "n"
 		}
-		drive(t, s, flip, "enter")
+		drive(t, s, flip, "enter", "enter")
 		sets := f.sets()
 		if len(sets) != 1 || strings.Join(sets[0], " ") != "daemon.set -- rhiza.daemon.paused "+want {
 			t.Errorf("paused %s: sets = %v", paused, sets)
@@ -124,7 +126,7 @@ func TestFlipAndSubmitSetsAndQuits(t *testing.T) {
 
 func TestUnchangedSubmitSetsNothing(t *testing.T) {
 	f, s := open(t, "false")
-	drive(t, s, "enter")
+	drive(t, s, "enter", "enter")
 	if len(f.sets()) != 0 {
 		t.Errorf("sets = %v", f.sets())
 	}
@@ -141,5 +143,49 @@ func TestEscSetsNothing(t *testing.T) {
 	}
 	if !s.Closed() {
 		t.Error("app did not quit")
+	}
+}
+
+func TestRunLimitStartsFromSettings(t *testing.T) {
+	_, s := open(t, "false")
+	if got := s.Component().(*App).MaxRuns(); got != "3" {
+		t.Errorf("MaxRuns() = %q", got)
+	}
+}
+
+// typeLimit moves to the run-limit field, clears it and types v.
+func typeLimit(t *testing.T, s *modalshell.Shell, v string) {
+	t.Helper()
+	keys := []string{"enter", "backspace"}
+	for _, r := range v {
+		keys = append(keys, string(r))
+	}
+	drive(t, s, keys...)
+}
+
+func TestValidLimitSetsAndQuits(t *testing.T) {
+	f, s := open(t, "false")
+	typeLimit(t, s, "8")
+	drive(t, s, "enter")
+	sets := f.sets()
+	if len(sets) != 1 || strings.Join(sets[0], " ") != "daemon.set -- rhiza.daemon.maxRuns 8" {
+		t.Errorf("sets = %v", sets)
+	}
+	if !s.Closed() {
+		t.Error("app did not quit")
+	}
+}
+
+func TestInvalidLimitCallsNothing(t *testing.T) {
+	for _, v := range []string{"0", "x", ""} {
+		f, s := open(t, "false")
+		typeLimit(t, s, v)
+		drive(t, s, "enter")
+		if len(f.sets()) != 0 {
+			t.Errorf("limit %q: sets = %v", v, f.sets())
+		}
+		if s.Closed() {
+			t.Errorf("limit %q: app quit", v)
+		}
 	}
 }

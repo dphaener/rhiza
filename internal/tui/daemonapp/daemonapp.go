@@ -2,13 +2,17 @@
 // over the daemon's settings. It shows whether the daemon is paused as a
 // Confirm, prefilled from daemon.settings; submitting a change writes
 // rhiza.daemon.paused through daemon.set and closes the app. Submitting
-// unchanged, or Esc, writes nothing.
+// unchanged, or Esc, writes nothing. A Text field below it holds the run
+// limit, prefilled from rhiza.daemon.maxRuns; a valid new limit is written
+// through daemon.set the same way, and a non-number or 0 is refused by the
+// field's validator, so nothing is called.
 package daemonapp
 
 import (
 	"encoding/json"
 	"fmt"
 	"image/color"
+	"strconv"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/colorprofile"
@@ -26,7 +30,13 @@ const Name = "daemon"
 // PausedKey is the setting the pause Confirm writes.
 const PausedKey = "rhiza.daemon.paused"
 
-const pausedField = "paused"
+// MaxRunsKey is the setting the run-limit field writes.
+const MaxRunsKey = "rhiza.daemon.maxRuns"
+
+const (
+	pausedField  = "paused"
+	maxRunsField = "maxRuns"
+)
 
 // Runner runs an api operation and returns its result as
 // `rhiza <op> --json` prints it.
@@ -35,8 +45,18 @@ type Runner func(op string, args []string) ([]byte, error)
 // App is the Daemon app's component, hosted by the modal shell.
 type App struct {
 	modalshell.Component
-	run    Runner
-	paused bool
+	run     Runner
+	paused  bool
+	maxRuns string
+}
+
+// validateMaxRuns accepts a whole number of at least 1.
+func validateMaxRuns(v string) error {
+	n, err := strconv.Atoi(v)
+	if err != nil || n < 1 {
+		return fmt.Errorf("must be a whole number of at least 1")
+	}
+	return nil
 }
 
 // New reads daemon.settings through run and returns the app with the
@@ -51,20 +71,28 @@ func New(run Runner, t theme.Theme, profile colorprofile.Profile) (*App, error) 
 		return nil, err
 	}
 	paused := false
+	maxRuns := ""
 	for _, row := range s.Settings {
-		if row.Key == PausedKey {
+		switch row.Key {
+		case PausedKey:
 			paused = row.Value == "true"
+		case MaxRunsKey:
+			maxRuns = row.Value
 		}
 	}
 	confirm := ui.NewConfirm(pausedField, "Pause the daemon?").Default(paused)
-	form := ui.NewForm(t, profile, confirm).
+	limit := ui.NewText(maxRunsField, "Run limit").Default(maxRuns).Validator(validateMaxRuns)
+	form := ui.NewForm(t, profile, confirm, limit).
 		WithSubtitle("Daemon").
 		WithThemeFunc(func(color.Color) theme.Theme { return t })
-	return &App{Component: modalshell.Form(form), run: run, paused: paused}, nil
+	return &App{Component: modalshell.Form(form), run: run, paused: paused, maxRuns: maxRuns}, nil
 }
 
 // Paused is the value the app opened with.
 func (a *App) Paused() bool { return a.paused }
+
+// MaxRuns is the run limit the app opened with.
+func (a *App) MaxRuns() string { return a.maxRuns }
 
 // Update writes a submitted change and reports the app done; every other
 // message goes to the form.
@@ -73,10 +101,18 @@ func (a *App) Update(msg tea.Msg) tea.Cmd {
 	if !ok {
 		return a.Component.Update(msg)
 	}
-	v := sub.Values.Bool(pausedField)
-	if v == a.paused {
-		return modalshell.Done(nil, nil)
+	var out []byte
+	if v := sub.Values.Bool(pausedField); v != a.paused {
+		var err error
+		if out, err = a.run("daemon.set", []string{"--", PausedKey, fmt.Sprint(v)}); err != nil {
+			return modalshell.Done(out, err)
+		}
 	}
-	out, err := a.run("daemon.set", []string{"--", PausedKey, fmt.Sprint(v)})
-	return modalshell.Done(out, err)
+	if v := sub.Values.String(maxRunsField); v != a.maxRuns {
+		var err error
+		if out, err = a.run("daemon.set", []string{"--", MaxRunsKey, v}); err != nil {
+			return modalshell.Done(out, err)
+		}
+	}
+	return modalshell.Done(out, nil)
 }
