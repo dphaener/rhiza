@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/web"
 )
 
 // The sources of a setting's value.
@@ -75,6 +76,11 @@ var settingDefs = []settingDef{
 			return fmt.Errorf("must be a whole number from 0 to 100")
 		}
 		return nil
+	}},
+	// The web UI's port on 127.0.0.1, or off.
+	{key: web.PortKey, def: web.DefaultPort, validate: func(v string) error {
+		_, err := web.ParsePort(v)
+		return err
 	}},
 	{key: "rhiza.autonomy.plan", def: AutonomyOwner, validate: validateChoice(AutonomyAuto, AutonomyOwner)},
 	// accept governs every plan run's gate, autonomous or owner-run, which
@@ -151,6 +157,7 @@ type daemonConf struct {
 	paused      bool
 	selfUpdate  bool
 	trimGoCache bool
+	webPort     string
 }
 
 // daemonConfOf resolves the settings for a poll: config, then the request's
@@ -180,6 +187,7 @@ func daemonConfOf(ctx *Ctx, r DaemonRequest) (daemonConf, error) {
 	c.selfUpdate = settingValue(rows, "rhiza.daemon.selfUpdate") == "true"
 	c.trimGoCache = settingValue(rows, "rhiza.daemon.trimGoCache") != "false"
 	c.mode = settingValue(rows, "rhiza.daemon.permissionMode")
+	c.webPort = settingValue(rows, web.PortKey)
 	return c, nil
 }
 
@@ -233,8 +241,8 @@ func runDaemonSettings(ctx *Ctx, req any) (any, error) {
 
 // DaemonSetRequest names a setting and its new value.
 type DaemonSetRequest struct {
-	Key   string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, or rhiza.autonomy.plan, accept, ship or signoff"`
-	Value string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, or auto or owner, as the key takes"`
+	Key   string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.web.port, or rhiza.autonomy.plan, accept, ship or signoff"`
+	Value string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, a port number or off, or auto or owner, as the key takes"`
 }
 
 // DaemonSetResponse is the setting written.

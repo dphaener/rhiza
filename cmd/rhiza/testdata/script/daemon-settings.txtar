@@ -31,6 +31,7 @@ stdout 'rhiza.daemon.paused = false \(default\)'
 stdout 'rhiza.daemon.maxRuns = 2 \(default\)'
 stdout 'rhiza.daemon.minFree = 10G \(default\)'
 stdout 'rhiza.daemon.permissionMode = "" \(default\)'
+stdout 'rhiza.web.port = 7787 \(default\)'
 stdout 'rhiza.autonomy.plan = owner \(default\)'
 stdout 'rhiza.autonomy.accept = auto \(default\)'
 stdout 'rhiza.autonomy.ship = auto \(default\)'
@@ -42,6 +43,23 @@ exec rhiza daemon settings
 stdout 'rhiza.daemon.maxRuns = 1 \(git config\)'
 exec git config --get rhiza.daemon.maxRuns
 stdout '^1$'
+
+# The web UI port: a port number or off.
+exec rhiza daemon set rhiza.web.port 8080
+exec rhiza daemon settings
+stdout 'rhiza.web.port = 8080 \(git config\)'
+exec rhiza daemon set rhiza.web.port off
+exec git config --get rhiza.web.port
+stdout '^off$'
+! exec rhiza daemon set rhiza.web.port 0
+stderr 'rhiza.web.port'
+! exec rhiza daemon set rhiza.web.port 70000
+stderr 'rhiza.web.port'
+! exec rhiza daemon set rhiza.web.port abc
+stderr 'rhiza.web.port'
+exec git config --get rhiza.web.port
+stdout '^off$'
+exec rhiza daemon set rhiza.web.port 7787
 
 # Unknown key and bad values exit 2 and write nothing.
 ! exec rhiza daemon set rhiza.daemon.nope 1

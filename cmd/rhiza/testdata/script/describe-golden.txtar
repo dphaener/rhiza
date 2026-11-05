@@ -1741,11 +1741,11 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, or rhiza.autonomy.plan, accept, ship or signoff",
+            "description": "The setting: rhiza.daemon.paused, selfUpdate, maxRuns, minFree, permissionMode, usage.session, usage.weekly or usage.reserve, rhiza.web.port, or rhiza.autonomy.plan, accept, ship or signoff",
             "type": "string"
           },
           "value": {
-            "description": "The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, or auto or owner, as the key takes",
+            "description": "The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, a port number or off, or auto or owner, as the key takes",
             "type": "string"
           }
         },

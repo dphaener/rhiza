@@ -25,6 +25,7 @@ import (
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/usage"
+	"github.com/dphaener/rhiza/internal/web"
 )
 
 func init() {
@@ -146,6 +147,13 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		daemon.WriteState(common, state)
 	}()
 	selfUpdateOn := false
+	// The web UI listener follows rhiza.web.port from poll to poll. A single
+	// poll (--once) and a test run (RHIZA_TEST_NOW) bind nothing.
+	var webUI *web.Manager
+	if !r.Once && ctxGetenv(ctx)("RHIZA_TEST_NOW") == "" {
+		webUI = &web.Manager{Factory: webFactory}
+		defer webUI.Close()
+	}
 	var sweep daemon.SweepSchedule
 	poll := func() error {
 		var skips []daemon.Skip
@@ -155,6 +163,11 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			return err
 		}
 		minFree := conf.minFree
+		if webUI != nil {
+			if werr := webUI.Apply(conf.webPort); werr != nil && ctx.Stderr != nil {
+				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %v\n", werr)
+			}
+		}
 		selfUpdateOn = conf.selfUpdate
 		if conf.trimGoCache {
 			daemonSweepGoCache(ctx, &sweep, minFree)
@@ -316,6 +329,9 @@ var daemonTicker = func() (<-chan time.Time, func()) {
 	t := time.NewTicker(daemonPoll)
 	return t.C, t.Stop
 }
+
+// webFactory starts the web UI listener; tests replace it.
+var webFactory web.Factory = web.NetFactory
 
 // daemonReexec is how the daemon re-executes itself; tests replace it.
 var daemonReexec = daemon.NewReexec
