@@ -1,7 +1,10 @@
-# After the merge, ship-change confirms main with git alone: when the
-# merge commit's tree differs from the tree of the head whose checks
-# passed, the main step fails with a stop: line naming both commits, and
-# the run stops there. The fake gh squashes onto an empty tree.
+# When the merge commit's tree differs from the tested head's (the fake gh
+# squashes onto main's own tree), wait-main dispatches CI on the merge
+# commit instead of stopping: the workflow declaring pull_request and
+# workflow_dispatch with a sha input is dispatched on main exactly once
+# across the wait's polls, the one declaring only push is not, the wait
+# keeps waiting while the run whose title holds the merge commit is in
+# progress, and the run reaches close-out once it succeeds.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -16,14 +19,12 @@ exec rhiza init
 mkdir .rhiza/workflows
 cp $WORK/ship.sh .rhiza/workflows/ship.sh
 cp $WORK/review.toml .rhiza/workflows/review.toml
-
-# An accepted change set of two leaves, second depending on first,
-# committed on main and pushed, as a reviewed change set would be.
+exec mkdir -p .github/workflows
+cp $WORK/ci.yml .github/workflows/ci.yml
+cp $WORK/push.yml .github/workflows/push.yml
 exec rhiza change new 'Ship it' --title 'Ship it' --json
 stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
-exec rhiza add capability second --field 'statement=Does second'
 exec rhiza add capability first --field 'statement=Does first'
-exec rhiza link second depends-on first
 exec rhiza propose
 exec rhiza accept --reason ok
 exec git add -A
@@ -33,12 +34,16 @@ exec git push -q -u origin main
 exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 exec sh -c 'rhiza run approve --foreground; echo exit=$?'
-! stdout '^Run \S+ succeeded$'
-stderr 'stop: merge commit [0-9a-f]{7} has tree [0-9a-f]{7}, but the tested head [0-9a-f]{7} has tree [0-9a-f]{7}'
+stdout 'Run \S+ succeeded'
+exec sh -c 'grep -c "^workflow run ci.yml --ref main -f sha=$(cat $WORK/merge.sha)$" $WORK/gh.log'
+stdout '^1$'
+exec sh -c 'grep -c "^workflow run" $WORK/gh.log'
+stdout '^1$'
+! grep 'push.yml' $WORK/gh.log
+! grep '^run rerun' $WORK/gh.log
+exec sh -c 'test "$(grep -c "^run list" $WORK/gh.log)" -ge 3'
 exec rhiza run status
-! stdout 'close-out'
-! grep '^run ' $WORK/gh.log
-
+stdout 'close-out'
 -- review.toml --
 # The repo's own review, as the built-in one but with two fake checks.
 # Its code step runs rhiza check, which passes only because ship-change
@@ -76,11 +81,6 @@ kind = "signoff"
 max_visits = 3
 on.pass = "done"
 on.changes = "review"
--- want.log --
-role=builder leaf=first
-role=verifier leaf=first
-role=builder leaf=second
-role=verifier leaf=second
 -- ship.sh --
 #!/bin/sh
 echo shipped >> "$WORK/ship.log"
@@ -159,12 +159,65 @@ case "$1 $2" in
 		echo "head branch was modified" >&2
 		exit 1
 	fi
-	sha=$(git -C "$o" commit-tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904 -p refs/heads/main -m 'Ship it (#7)')
+	sha=$(git -C "$o" commit-tree "$(git -C "$o" rev-parse refs/heads/main^{tree})" -p refs/heads/main -m 'Ship it (#7)')
 	git -C "$o" update-ref refs/heads/main "$sha"
 	echo "$sha" > "$WORK/merge.sha"
+	;;
+"workflow run")
+	if [ -f "$WORK/dispatched" ]; then
+		echo "fake gh: dispatched twice" >&2
+		exit 1
+	fi
+	touch "$WORK/dispatched"
+	;;
+"run rerun")
+	touch "$WORK/rerun.done"
+	;;
+"run list")
+	if [ ! -f "$WORK/dispatched" ]; then
+		echo "[]"
+		exit 0
+	fi
+	n=$(cat "$WORK/polls" 2>/dev/null || echo 0)
+	n=$((n + 1))
+	echo $n > "$WORK/polls"
+	status=in_progress
+	concl=
+	if [ $n -gt 2 ]; then
+		status=completed
+		concl=success
+		if [ "$(cat "$WORK/mode")" = fail ]; then concl=failure; fi
+	fi
+	printf '[{"databaseId":42,"name":"CI","displayTitle":"CI %s","status":"%s","conclusion":"%s"}]\n' "$(cat "$WORK/merge.sha")" "$status" "$concl"
 	;;
 *)
 	echo "fake gh: unexpected: $*" >&2
 	exit 1
 	;;
 esac
+-- ci.yml --
+name: CI
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      sha:
+        required: true
+run-name: CI ${{ inputs.sha || github.event.pull_request.title }}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - run: true
+-- push.yml --
+name: Push
+on:
+  push:
+    branches: [ main ]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - run: true
+-- mode --
+pass

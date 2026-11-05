@@ -1,0 +1,133 @@
+# When the merge commit's tree differs from the tested head's, ship check
+# --main selects the workflows at origin/main's tip that declare both
+# pull_request and workflow_dispatch, and stops, before dispatching
+# anything, when none is found or one cannot be pinned to the merge commit
+# by a sha input and a run-name that shows it. A workflow is dispatched on
+# main, so it is read at origin/main's tip, not at the merge commit.
+
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+exec rhiza change new 'Ship it' --title 'Ship it'
+exec git add -A
+exec git commit -qm 'Start'
+exec git push -q -u origin main
+
+# The tested head: a branch with one file.
+exec git checkout -q -b cs/ship-it
+exec sh -c 'echo head > head.txt'
+exec git add head.txt
+exec git commit -qm 'The head'
+exec git push -q origin cs/ship-it
+exec git checkout -q main
+
+# (c) A merge commit whose tree differs, and no workflow with both
+# triggers on main.
+exec mkdir -p .github/workflows .git/rhiza/ship
+cp $WORK/push.yml .github/workflows/push.yml
+exec git add -A
+exec git commit -qm 'Merge one'
+exec git push -q origin main
+exec sh -c 'printf "{\"pr\":7,\"url\":\"u\",\"branch\":\"cs/ship-it\",\"head\":\"%s\",\"merge_commit\":\"%s\"}\n" "$(git rev-parse cs/ship-it)" "$(git rev-parse main)" > .git/rhiza/ship/01M5PWGEF85Y185JZ2ZGCNH40N.json'
+! exec rhiza ship check --main --settled
+stdout 'stop: merge commit [0-9a-f]{7}: .*no dispatchable workflow was found'
+! exec grep '^workflow run' $WORK/gh.log
+
+# (e) pull_request and workflow_dispatch, but no sha input.
+cp $WORK/nosha.yml .github/workflows/ci.yml
+exec git add -A
+exec git commit -qm 'Merge two'
+exec git push -q origin main
+exec sh -c 'printf "{\"pr\":7,\"url\":\"u\",\"branch\":\"cs/ship-it\",\"head\":\"%s\",\"merge_commit\":\"%s\"}\n" "$(git rev-parse cs/ship-it)" "$(git rev-parse main)" > .git/rhiza/ship/01M5PWGEF85Y185JZ2ZGCNH40N.json'
+! exec rhiza ship check --main --settled
+stdout 'stop: merge commit [0-9a-f]{7}: workflow ci.yml lacks the sha input'
+! exec grep '^workflow run' $WORK/gh.log
+
+# (e) a sha input, but a run-name without inputs.sha.
+cp $WORK/norunname.yml .github/workflows/ci.yml
+exec git add -A
+exec git commit -qm 'Merge three'
+exec git push -q origin main
+exec sh -c 'git rev-parse main > $WORK/m3.sha; printf "{\"pr\":7,\"url\":\"u\",\"branch\":\"cs/ship-it\",\"head\":\"%s\",\"merge_commit\":\"%s\"}\n" "$(git rev-parse cs/ship-it)" "$(git rev-parse main)" > .git/rhiza/ship/01M5PWGEF85Y185JZ2ZGCNH40N.json'
+! exec rhiza ship check --main --settled
+stdout 'stop: merge commit [0-9a-f]{7}: workflow ci.yml lacks a run-name referencing inputs.sha'
+! exec grep '^workflow run' $WORK/gh.log
+
+# (f) Main moves past the merge commit with a commit that fixes the
+# workflow: it is read at the tip and dispatched, pinned to the merge commit.
+cp $WORK/good.yml .github/workflows/ci.yml
+exec git add -A
+exec git commit -qm 'Fix the workflow'
+exec git push -q origin main
+exec sh -c 'printf "[{\"databaseId\":5,\"name\":\"CI\",\"displayTitle\":\"CI %s\",\"status\":\"in_progress\",\"conclusion\":\"\"}]\n" "$(cat $WORK/m3.sha)" > $WORK/runs.json'
+! exec rhiza ship check --main --settled
+stdout 'not settled'
+exec sh -c 'grep -c "^workflow run ci.yml --ref main -f sha=$(cat $WORK/m3.sha)$" $WORK/gh.log'
+stdout '^1$'
+exec sh -c 'printf "[{\"databaseId\":5,\"name\":\"CI\",\"displayTitle\":\"CI %s\",\"status\":\"completed\",\"conclusion\":\"success\"}]\n" "$(cat $WORK/m3.sha)" > $WORK/runs.json'
+exec rhiza ship check --main --settled
+stdout 'main at [0-9a-f]{7}: 1 check passed'
+exec sh -c 'grep -c "^workflow run" $WORK/gh.log'
+stdout '^1$'
+-- bin/gh --
+#!/bin/sh
+echo "$@" >> "$WORK/gh.log"
+case "$1 $2" in
+"workflow run") ;;
+"run list") cat "$WORK/runs.json" ;;
+*) echo "fake gh: unexpected: $*" >&2; exit 1 ;;
+esac
+-- push.yml --
+name: Push
+on:
+  push:
+    branches: [ main ]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - run: true
+-- nosha.yml --
+name: CI
+on:
+  pull_request:
+  workflow_dispatch:
+run-name: CI ${{ github.event.pull_request.title }}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - run: true
+-- norunname.yml --
+name: CI
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      sha:
+        required: true
+run-name: CI ${{ github.sha }}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - run: true
+-- good.yml --
+name: CI
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      sha:
+        required: true
+run-name: CI ${{ inputs.sha || github.event.pull_request.title }}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - run: true

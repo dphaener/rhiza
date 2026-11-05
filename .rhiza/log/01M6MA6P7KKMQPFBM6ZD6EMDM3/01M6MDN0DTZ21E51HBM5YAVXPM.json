@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MD0V0Q5D3FPMMPVC2X00RG",
+  "after": [
+    "01M6MDAFHJQZGZTRHNFD4E2M6V"
+  ],
+  "at": "2026-11-04T23:17:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at fc79973e by claude-code-d0a17d19 (verifier). run-ship-merge-tree-differs.txtar is gone (renamed to run-ship-main-dispatch-fail). go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship-main-dispatch|run-ship-main-dispatch-fail|run-ship-main-dispatch-resume|ship-main-dispatch-select)$' -count=1 -v: all four PASS, plus describe-golden and every run-ship* script; go test ./internal/api/... and ./internal/workflow/... ok. (a) run-ship-main-dispatch: local bare origin and fake gh; exactly one 'workflow run ci.yml --ref main -f sha=<merge commit>' across >=3 run-list polls with the run in_progress for the first two, push.yml (push only) never dispatched, no rerun, run reaches close-out. (b) run-ship-main-dispatch-fail: one 'run rerun 42 --failed', then 'stop: merge commit <sha>: CI failed on main: CI', no close-out. (c) ship-main-dispatch-select and run-ship-main-dispatch-resume: 'no dispatchable workflow was found' stop with no workflow run call. (d) resume script: hand-written pre-#256 state file (pr,url,branch,head,checks,merge_commit), rhiza run resume --retry dispatches once and reaches close-out. (e) select script: stops naming ci.yml for a missing sha input and, separately, for a run-name without inputs.sha, no workflow run call. (f) select script covers a tip fixing the run-name; I also reproduced (f) exactly as written by hand with a scratch build and fake gh: merge commit whose ci.yml lacks the sha input stops (exit 75), then after main gains a commit adding the sha input, ship check --main --settled dispatches 'workflow run ci.yml --ref main -f sha=<merge commit>' and passes (exit 0). Read the diff: ship check --main fetches origin first, selection reads refs/remotes/origin/main, dispatch is recorded in the state file before gh runs, reruns are keyed on the merge commit."
+        },
+        "handle": "ship-main-dispatches-ci-verified",
+        "id": "01M6MDMV4JBPWPJBCGGBQAG8FC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MDMV4JBPWPJBCGG9X7KYCJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MDMV4JBPWPJBCGG9X7KYCJ",
+        "id": "01M6MDMXC5VPY4C86EH8GVEXQP",
+        "link": "01M6MDMXC5VPY4C86EH57QEFJR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MAKAEANQJBCM1WFMTKWJ7P",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MA6P7KKMQPFBM6ZD6EMDM3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MDN0DTZ21E51HBM5YAVXPM",
+  "type": "ops",
+  "v": 1
+}

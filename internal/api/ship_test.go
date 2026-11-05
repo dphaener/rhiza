@@ -329,14 +329,17 @@ func TestShipCheckGreenThenMerge(t *testing.T) {
 		t.Errorf("second merge: %+v, %v, calls %q", resp, err, g.calls[n:])
 	}
 
-	// Main is confirmed by the trees alone, never by asking gh for runs.
+	// Main is confirmed by the trees alone, never by asking gh for runs,
+	// unless they differ: then CI is dispatched on the merge commit, and
+	// with no workflow to dispatch the step stops.
 	g.answers[gitMergeTree] = "tree1111"
 	g.answers[gitHeadTree] = "tree2222"
+	g.answers["git ls-tree --name-only refs/remotes/origin/main .github/workflows/"] = ""
 	r = shipCheck(t, f, `{"main":true,"settled":true}`)
-	if r.Passed || r.ExitCode() != 75 || !strings.Contains(r.Stop, "fff0000") || !strings.Contains(r.Stop, "abc1234") {
+	if r.Passed || r.ExitCode() != 75 || !strings.Contains(r.Stop, "fff0000") || !strings.Contains(r.Stop, "no dispatchable workflow was found") {
 		t.Errorf("trees differ: %+v", r)
 	}
-	if got := human(t, r); !strings.HasPrefix(got, "stop: merge commit fff0000 ") || !strings.Contains(got, "abc1234") {
+	if got := human(t, r); !strings.HasPrefix(got, "stop: merge commit fff0000: ") {
 		t.Errorf("human = %q", got)
 	}
 	g.answers[gitHeadTree] = "tree1111"

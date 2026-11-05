@@ -19367,7 +19367,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "main": {
-            "description": "Check, locally with git and no wait on CI, that the merge commit rhiza ship merge recorded has the tree of the head whose checks passed, instead of checking the pull request; a differing tree exits 75 with a stop: line",
+            "description": "Check that the merge commit rhiza ship merge recorded has the tree of the head whose checks passed, locally with git and no wait on CI, instead of checking the pull request; a differing tree dispatches CI on the merge commit (once) and checks its runs as it does a pull request's, and a stop that cannot be waited out exits 75 with a stop: line",
             "type": "boolean"
           },
           "pr_open": {
@@ -19481,7 +19481,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "stop": {
-            "description": "With --main: why the merge commit's tree differs from the tested head's; the command exits 75",
+            "description": "With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75",
             "type": "string"
           },
           "url": {

@@ -34,8 +34,9 @@ const workflowTemplate = `# Written by ` + "`rhiza ci install`" + `. Rerun ` + "
 # replace it with the current template.
 #
 # It checks the Rhiza model on every pull request against its base branch
-# and on every push to main against the commit before the push. The go
-# install step needs read access to github.com/dphaener/rhiza: while that
+# and on every push to main against the commit before the push. A manual
+# dispatch on a commit (Ship runs one on a merge commit) checks it against
+# its first parent. The go install step needs read access to github.com/dphaener/rhiza: while that
 # repository is private, set GOPRIVATE and give git a token that can read it.
 name: Rhiza
 
@@ -43,14 +44,21 @@ on:
   push:
     branches: [ main ]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Commit to check
+        required: true
+
+run-name: Rhiza ${{ inputs.sha || github.event.pull_request.title || github.sha }}
 
 # A newer push to a pull request cancels its in-progress run. A push to main
 # never cancels: its check is incremental from github.event.before, so a
 # cancelled run would leave that push's changes unchecked. Each push to main
 # gets its own group (its commit), since GitHub cancels a group's pending run
-# when a newer one queues.
+# when a newer one queues. A dispatched run is keyed on its sha too.
 concurrency:
-  group: rhiza-${{ github.event.pull_request.number || github.sha }}
+  group: rhiza-${{ github.event.pull_request.number || inputs.sha || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -60,6 +68,7 @@ jobs:
     steps:
     - uses: actions/checkout@v7
       with:
+        ref: ${{ inputs.sha || github.sha }}
         fetch-depth: 0
 
     - name: Set up Go
@@ -77,6 +86,10 @@ jobs:
     - name: Check against the commit before the push
       if: github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000'
       run: rhiza check --base ${{ github.event.before }}
+
+    - name: Check a dispatched commit against its first parent
+      if: github.event_name == 'workflow_dispatch'
+      run: rhiza check --base HEAD~1
 
     # A branch's first push has no commit before it: github.event.before is
     # all zeros, so check runs with its default base.

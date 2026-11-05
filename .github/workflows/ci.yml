@@ -1,14 +1,23 @@
 name: CI
 
-# Pull requests only: a push to main re-runs what the pull request already
-# passed. A newer push to a pull request cancels that pull request's
-# in-progress run.
+# Pull requests, and a manual dispatch on a given commit: a push to main
+# re-runs what the pull request already passed, so Ship dispatches CI on a
+# main commit only when its tree differs from the tested head's. A newer push
+# to a pull request cancels that pull request's in-progress run; dispatched
+# runs are keyed on their sha, so they never cancel each other.
 on:
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Commit to test
+        required: true
+
+run-name: CI ${{ inputs.sha || github.event.pull_request.title }}
 
 concurrency:
-  group: ci-${{ github.event.pull_request.number }}
+  group: ci-${{ github.event.pull_request.number || inputs.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -20,6 +29,7 @@ jobs:
     # which a shallow pull-request checkout does not have.
     - uses: actions/checkout@v7
       with:
+        ref: ${{ inputs.sha || github.sha }}
         fetch-depth: 0
 
     - name: Set up Go
