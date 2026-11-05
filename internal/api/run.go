@@ -580,6 +580,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		Workflow: def.Name, WorkflowPath: path, Definition: string(data), Includes: def.Includes,
 		Change: t.cs.String(), Title: t.title, Worktree: t.worktree, Branch: t.branch,
 		PermissionMode: r.PermissionMode, Agent: r.Agent, Autonomous: r.Autonomous, Milestone: reqMilestone,
+		MilestonePlan: r.Milestone,
 	}
 	if ctx.DryRun {
 		if err := refuseLiveRun(rs, started.Change, ""); err != nil {
@@ -1498,7 +1499,8 @@ func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode
 		e.Log = func(line string) { fmt.Fprintf(ctx.Stderr, "rhiza: %s\n", line) }
 	}
 	if ctx.Rex != nil {
-		reportToRex(e, ctx.Rex)
+		x := reportToRex(e, ctx.Rex)
+		e.Runner.(*stepRunner).launched = func(sid string) { x.launchBlocked(change, sid) }
 	}
 	// Under the run's lock and the change set's, check that no other run of
 	// it is live before the run is reopened or continued.
@@ -1582,6 +1584,9 @@ type stepRunner struct {
 	// environment tells it the owner is not there.
 	autonomous bool
 	sessions   *session.Store
+	// launched, when set, is told the session of a milestone request's
+	// interview as it launches (see milestoneInterview).
+	launched func(sid string)
 	// blockPending holds the rejoined sessions whose Rex block check Rex
 	// has not answered yet (see run_lost.go).
 	lostMu       sync.Mutex
@@ -1739,21 +1744,41 @@ func (r *stepRunner) StartAgent(step workflow.Step, model string, _ []string) (s
 	if err != nil {
 		return "", err
 	}
-	return resp.(SessionStartResponse).Session.ID, nil
+	sid := resp.(SessionStartResponse).Session.ID
+	if r.launched != nil && milestoneInterviewLaunch(r.runState(), step.Name, r.autonomous) {
+		r.launched(sid)
+	}
+	return sid, nil
+}
+
+// milestoneInterviewStep is the plan workflow's step whose session
+// interviews the owner.
+const milestoneInterviewStep = "interview"
+
+// milestoneInterviewLaunch reports whether the agent step's session that
+// launches is a milestone request's interview, which waits on the owner
+// from launch: not a feature's plan run, not an autonomous run.
+func milestoneInterviewLaunch(st run.State, step string, autonomous bool) bool {
+	return step == milestoneInterviewStep && st.MilestonePlan && !autonomous && !st.Autonomous
 }
 
 // milestoneOf is the milestone the run's request names, from its journal;
 // empty for none or when the journal cannot be read.
 func (r *stepRunner) milestoneOf() string {
+	return r.runState().Milestone
+}
+
+// runState is the run's state from its journal; zero when it cannot be read.
+func (r *stepRunner) runState() run.State {
 	common, err := gitCommonDir(r.ctx)
 	if err != nil {
-		return ""
+		return run.State{}
 	}
 	j, err := run.NewStore(run.Dir(common)).Read(r.run)
 	if err != nil {
-		return ""
+		return run.State{}
 	}
-	return j.State().Milestone
+	return j.State()
 }
 
 // arbiterPrompt is the arbiter's whole prompt, over the question node's
@@ -2271,13 +2296,28 @@ type runRex struct {
 	order  []string
 	// leaves are the child records written, by ID, until cleared.
 	leaves map[string][]byte
+	// launch is the session of an open launch block (launchBlocked).
+	launch string
 }
 
 // reportToRex has e's notices and status written to Rex, w, by one runRex.
-func reportToRex(e *run.Engine, w io.Writer) {
+func reportToRex(e *run.Engine, w io.Writer) *runRex {
 	x := &runRex{w: w, blocks: map[string][]byte{}}
 	e.Notify = x.notice
 	e.Status = x.status
+	return x
+}
+
+// launchBlocked reports the interview session of a milestone request's
+// plan run as blocked on the owner from its launch, as a notice for the
+// session: the agent's own first block replaces it, and the run's next
+// status that is not working clears it.
+func (x *runRex) launchBlocked(change, sid string) {
+	x.launch = sid
+	x.notice(run.Notice{
+		Change: change, Step: milestoneInterviewStep, Session: sid, Blocked: true,
+		Block: &run.Block{Kind: session.KindQuestion, Question: "the milestone interview waits on you"},
+	})
 }
 
 func (x *runRex) write(b []byte) {
@@ -2321,6 +2361,11 @@ func (x *runRex) notice(n run.Notice) {
 func (x *runRex) status(rep run.StatusReport) {
 	if x.leaves == nil {
 		x.leaves = map[string][]byte{}
+	}
+	if x.launch != "" && rep.Step != milestoneInterviewStep {
+		delete(x.blocks, x.launch)
+		x.order = slices.DeleteFunc(x.order, func(s string) bool { return s == x.launch })
+		x.launch = ""
 	}
 	for _, l := range rep.Ended {
 		x.write(rexRecord(rexLeafID(l), "clear", "", "", "", nil))

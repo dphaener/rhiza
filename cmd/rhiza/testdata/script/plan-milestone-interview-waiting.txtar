@@ -1,0 +1,69 @@
+# A milestone plan run's interview session is reported blocked, waiting on
+# the owner (OSC 7501), as it launches, before the agent asks anything: the
+# fake claude only exits. A feature plan run's interview tab carries no such
+# report, and neither does an autonomous milestone run's.
+#
+# The fake rex runs the tab's command; inside Rex a run's reports go to
+# stderr.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+env REX_BLOCK=block:root
+env REX_SESSION=session:s1
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/plan.toml .rhiza/workflows/plan.toml
+exec git add -A
+exec git commit -qm init
+
+# A milestone run: working first, then the launch's blocked report, naming
+# the milestone interview (decoded: "... the milestone interview waits on you").
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Backlog empty" --milestone --permission-mode manual --json 2>$WORK/milestone.err'
+stdout '"state": "succeeded"'
+exec sh -c 'grep -c "state=blocked:kind=question:app=rhiza:" $WORK/milestone.err'
+stdout '^1$'
+exec sh -c 'sed -n "s/.*state=blocked:kind=question:app=rhiza:msg=\([A-Za-z0-9+\/=]*\).*/\1/p" $WORK/milestone.err | base64 -d'
+stdout 'interview waits on you in tab .*: the milestone interview waits on you'
+# The launch report comes after the run's working status and before it ends.
+exec sh -c 'grep -o "state=[a-z]*" $WORK/milestone.err | tr "\n" " "'
+stdout '^state=working state=blocked state=done $'
+
+# A feature plan run: none.
+exec rhiza run start --foreground --workflow plan --new 'Add exports' --permission-mode manual --json
+stdout '"state": "succeeded"'
+! stderr 'state=blocked'
+
+# An autonomous milestone run: none.
+exec rhiza run start --foreground --workflow plan --new 'Backlog again' --milestone --autonomous --permission-mode manual --json
+stdout '"state": "succeeded"'
+! stderr 'state=blocked'
+
+-- plan.toml --
+name = "plan"
+
+[step.interview]
+kind = "agent"
+prompt = "Plan {change}"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+exit 0
