@@ -2,6 +2,7 @@ package web
 
 import (
 	"errors"
+	"html/template"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -124,5 +125,46 @@ func TestHandlerRendersPageAndScript(t *testing.T) {
 	h.ServeHTTP(rec, httptest.NewRequest("GET", "/nope", nil))
 	if rec.Code != 404 {
 		t.Errorf("/nope: %d", rec.Code)
+	}
+}
+
+func TestLiveSectionAndFragment(t *testing.T) {
+	RegisterFragment("sample", &Fragment{
+		Events:   []string{EventRun, EventLog},
+		Template: template.Must(template.New("sample").Parse(`<p>runs: {{.}}</p>`)),
+		Data:     func(*http.Request) any { return 3 },
+	})
+	defer delete(fragments, "sample")
+	got, err := section("sample", 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{`data-rz-fragment="/fragments/sample"`, `data-rz-events="run log"`, `<p>runs: 3</p>`} {
+		if !strings.Contains(string(got), want) {
+			t.Errorf("section lacks %q: %s", want, got)
+		}
+	}
+	h := Handler(nil)
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest("GET", FragmentURL("sample"), nil))
+	if rec.Code != 200 || rec.Body.String() != `<p>runs: 3</p>` {
+		t.Errorf("fragment: %d %q", rec.Code, rec.Body.String())
+	}
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest("GET", FragmentURL("nope"), nil))
+	if rec.Code != 404 {
+		t.Errorf("unknown fragment: %d", rec.Code)
+	}
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest("POST", FragmentURL("sample"), nil))
+	if rec.Code != 405 {
+		t.Errorf("POST fragment: %d", rec.Code)
+	}
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest("GET", "/static/app.js", nil))
+	for _, want := range []string{"data-rz-fragment", "/events", "setStale(true)"} {
+		if !strings.Contains(rec.Body.String(), want) {
+			t.Errorf("app.js lacks %q", want)
+		}
 	}
 }

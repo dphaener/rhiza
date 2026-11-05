@@ -47,7 +47,7 @@ Copy the exact markup from `pages/*.html`. Dark is the default; light follows th
 
 ## Live updates
 
-`app.js` opens an `EventSource` on `/events`. Each message is a JSON array of `{ "target": "#css-selector", "html": "<server-rendered fragment>" }`; each target is replaced in place (`outerHTML`). Give anything that changes an `id` and re-render that fragment on the server.
+`app.js` opens an `EventSource` on `/events`. A live section is an element with `data-rz-fragment` (a URL serving just its content) and `data-rz-events` (event kinds it listens to). When a matching event arrives, only those sections are re-fetched and their content swapped. Pages place one with `{{section "name" .}}` after `RegisterFragment`.
 
 - `<time datetime="…" data-rel>` elements are re-labelled ("4s ago") every 15s.
 - If the stream errors, the page goes stale: `.is-stale` on `.rz-app`, the banner shows, every pulse stops and running states fall back to neutral. It reconnects with backoff (1s → 30s) and clears itself on reconnect.

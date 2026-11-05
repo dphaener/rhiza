@@ -57,7 +57,7 @@ var templateFS embed.FS
 // pages holds each page's template set: the shared layout plus the page's
 // own "content". They are parsed once, from the binary.
 var pages = map[string]*template.Template{
-	"overview": template.Must(template.ParseFS(templateFS, "templates/layout.html", "templates/overview.html")),
+	"overview": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/overview.html")),
 }
 
 // page is what a template is rendered with.
@@ -86,6 +86,7 @@ func Handler(api http.Handler, events ...http.Handler) http.Handler {
 	if api != nil {
 		mux.Handle("/api/", api)
 	}
+	mux.HandleFunc("GET "+FragmentPrefix+"{name}", serveFragment)
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		render(w, "overview", page{Title: "Overview", Nav: "overview"})
 	})
