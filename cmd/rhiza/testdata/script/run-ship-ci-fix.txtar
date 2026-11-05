@@ -15,7 +15,7 @@
 #
 # The fakes are run-ship-change.txtar's, except that gh's PR is red until
 # the branch holds as many fix-N.txt files as $WORK/need says, and its
-# failed-job log names TestScripts/x (or an infra error, with $WORK/infra).
+# failed-job log names TestScripts/x and its subtest x/sub (or an infra error, with $WORK/infra).
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -211,7 +211,8 @@ check)
 	*) exit 0 ;;
 	esac
 	rhiza ship check --json > "$WORK/fix-input.json" 2>&1
-	grep -q 'TestScripts/x' "$WORK/fix-input.json" || exit 1
+	grep -q 'TestScripts/x/sub' "$WORK/fix-input.json" || exit 1
+	grep -q '"TestScripts/x"' "$WORK/fix-input.json" && exit 1
 	run=$(printf '%s' "$last" | sed -n 's/.*in run \([^:]*\):.*/\1/p')
 	n=$(( $(ls fix-*.txt 2>/dev/null | wc -l) + 1 ))
 	echo "fix $n" > "fix-$n.txt"

@@ -632,14 +632,21 @@ var failLine = regexp.MustCompile(`--- FAIL: (\S+)`)
 
 // parseFailedTests returns the distinct tests named by '--- FAIL:' lines in
 // a gh run view --log-failed output, in order of appearance. A failing
-// subtest's parent fails too: both are named.
+// subtest's parent fails too, but only the leaves are kept: rerunning the
+// parent (TestScripts, say) would rerun its whole suite.
 func parseFailedTests(log string) []string {
-	var out []string
+	var names []string
 	seen := map[string]bool{}
 	for _, m := range failLine.FindAllStringSubmatch(log, -1) {
 		if !seen[m[1]] {
 			seen[m[1]] = true
-			out = append(out, m[1])
+			names = append(names, m[1])
+		}
+	}
+	var out []string
+	for _, name := range names {
+		if !slices.ContainsFunc(names, func(o string) bool { return strings.HasPrefix(o, name+"/") }) {
+			out = append(out, name)
 		}
 	}
 	return out
