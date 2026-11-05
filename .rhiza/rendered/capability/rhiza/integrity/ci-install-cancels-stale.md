@@ -24,7 +24,9 @@ The workflow rhiza ci install writes cancels a pull request's in-progress run wh
 - verifies [ci-install-cancels-stale-verified-2](../../../evidence/ci-install-cancels-stale-verified-2.md)
 - verifies [ci-install-cancels-stale-verified-3](../../../evidence/ci-install-cancels-stale-verified-3.md)
 - verifies [pr-256-update-github-runner-to](../../../evidence/pr-256-update-github-runner-to.md)
+- verifies [pr-265-fix-ship-s-new-main-tree-check](../../../evidence/pr-265-fix-ship-s-new-main-tree-check.md)
 
 ## History
 
 - `01M6HW7MG0ZVWWHYP903FXV9YF` Update github runner to: Cancel stale runs, and stop re-testing on main
+- `01M6MA6P7KKMQPFBM6ZD6EMDM3` Fix Ship's new main-tree check (ship-main-tree-check, #256) stops every run whose PR merged after another PR: GitHub's squash merge onto an advanced main gives a merge commit whose tree differs from the tested head's tree (run 01M6KXGZYGRY stopped at wait-main: 'merge commit b9229f0 has tree 6b107af, but the tested head ab3969c has tree 0e2c59e'), and with CI no longer running on push to main nothing ever turns it green. Keep the no-retest rule for the common case (trees equal: no CI on main), and when they differ dispatch CI on that main commit (add workflow_dispatch to .github/workflows/ci.yml and the ci install template; gh workflow run ci.yml --ref <sha>) and wait for it, so the owner's ask holds: "Update github runner to: Cancel stale runs, and stop re-testing on main". Runs started before #256 (old wait-main on push CI) must also finish: on resume they should take the new path
