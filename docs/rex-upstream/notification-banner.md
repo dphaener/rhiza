@@ -87,3 +87,16 @@ when opened. iOS Settings has no notification entry for Rex, so the app has
 never asked for notification permission. Request: notifications on iOS for
 blocked programs, which while the app is suspended means push (APNs) from
 the server.
+
+## iPhone: no floating layers (2026-11-05)
+
+On the same iPhone build (Rex Dev 0.1.0 (1779)), apps that open as Rex
+floating layers don't work. Rhiza's five apps (inbox, request, runs, daemon
+and autonomy) each open as a rexuikit `surface` Modal over the current pane.
+On the phone there is no modal: the app's content renders briefly, and
+control goes straight back to the terminal. Owner, 2026-11-05: "Things kind
+of render, but there aren't modals, control is just handed right back to the
+terminal." The phone app also caches the server's action list until it is
+reopened, so new actions don't appear after a reload. Request: support
+floating layers (Modal, Drawer, Split) in the iOS app, or report that they
+are unsupported, so a program can fall back to drawing in its own pane.
