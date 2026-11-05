@@ -346,6 +346,55 @@ func TestAnswerEscAndEmptyCallNothing(t *testing.T) {
 	}
 }
 
+func TestAnswerEmptyThenAnswerSends(t *testing.T) {
+	var calls []call
+	m := NewModel(fake(full, &calls))
+	enter(m)
+	if isQuit(typeAndSubmit(m, "")) || len(calls) != 1 {
+		t.Fatalf("empty answer went through: %+v", calls)
+	}
+	if !strings.Contains(m.View().Content, "an answer needs words") {
+		t.Fatalf("no refusal shown:\n%s", m.View().Content)
+	}
+	if !isQuit(typeAndSubmit(m, "Use sqlite")) {
+		t.Fatal("answer after an empty Enter did not go through")
+	}
+	last := calls[len(calls)-1]
+	if last.op != "session.message" || !slices.Equal(last.args, []string{"S1", "Use sqlite"}) {
+		t.Fatalf("calls: %+v", calls)
+	}
+}
+
+func TestAnswerSendFailureReopensForm(t *testing.T) {
+	var calls []call
+	fail := true
+	m := NewModel(func(op string, args []string) ([]byte, error) {
+		calls = append(calls, call{op, args})
+		if op == Name {
+			return []byte(full), nil
+		}
+		if fail {
+			fail = false
+			return nil, errors.New("no session")
+		}
+		return []byte("{}"), nil
+	})
+	enter(m)
+	if isQuit(typeAndSubmit(m, "Use sqlite")) {
+		t.Fatal("failed send quit")
+	}
+	if !strings.Contains(m.View().Content, "send failed: no session") {
+		t.Fatalf("no failure shown:\n%s", m.View().Content)
+	}
+	if !isQuit(typeAndSubmit(m, "Use pg")) {
+		t.Fatal("retry after a failed send did not go through")
+	}
+	last := calls[len(calls)-1]
+	if len(calls) != 3 || last.op != "session.message" || !slices.Equal(last.args, []string{"S1", "Use pg"}) {
+		t.Fatalf("calls: %+v", calls)
+	}
+}
+
 func signoffModel(calls *[]call) *Model {
 	m := NewModel(fake(full, calls))
 	press(m, "down")

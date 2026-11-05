@@ -333,8 +333,15 @@ func (m *Model) accept(ok bool) tea.Cmd {
 
 // openAnswer shows a form with one TextArea for the owner's words.
 func (m *Model) openAnswer(it api.InboxItem) tea.Cmd {
+	return m.answerForm(it, waits(it))
+}
+
+// answerForm opens a fresh answer form whose subtitle carries msg. A
+// submitted Form takes no more keys, so a refused or failed send reopens
+// one rather than reusing it.
+func (m *Model) answerForm(it api.InboxItem, msg string) tea.Cmd {
 	f := ui.NewForm(theme.Dark(), colorprofile.TrueColor,
-		ui.NewTextArea("answer", "Your answer")).WithSubtitle(title(it) + " · " + waits(it))
+		ui.NewTextArea("answer", "Your answer")).WithSubtitle(title(it) + " · " + msg)
 	m.form, m.asked = f, &it
 	m.cur = f
 	return f.Init()
@@ -442,11 +449,14 @@ func (m *Model) abandon(ok bool) tea.Cmd {
 // run's question, question.answer for a blocker. An empty answer sends
 // nothing and leaves the form open; success closes the app.
 func (m *Model) send(text string) tea.Cmd {
-	text = strings.TrimSpace(text)
-	if text == "" || m.asked == nil {
+	if m.asked == nil {
 		return nil
 	}
 	it := *m.asked
+	text = strings.TrimSpace(text)
+	if text == "" {
+		return m.answerForm(it, "an answer needs words")
+	}
 	var err error
 	if it.Kind == api.InboxBlocker {
 		_, err = m.run("question.answer", []string{it.Handle, it.Change, text})
@@ -457,8 +467,7 @@ func (m *Model) send(text string) tea.Cmd {
 	}
 	if err != nil {
 		m.note = fmt.Sprintf("send failed: %v", err)
-		m.form.WithSubtitle(title(it) + " · " + m.note)
-		return nil
+		return m.answerForm(it, m.note)
 	}
 	return tea.Quit
 }
