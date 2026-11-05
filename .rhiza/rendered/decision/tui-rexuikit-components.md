@@ -23,6 +23,8 @@ Every app draws its UI with rexuikit's ui components (Form with its Text, TextAr
 ### In
 
 - decided-by [milestone-26](../intent/milestone-26.md)
+- decided-by [modal-shell-hosts-component](../capability/rhiza/modal-shell-hosts-component.md)
+- decided-by [modal-sized-to-content](../capability/rhiza/modal-sized-to-content.md)
 
 ## History
 
