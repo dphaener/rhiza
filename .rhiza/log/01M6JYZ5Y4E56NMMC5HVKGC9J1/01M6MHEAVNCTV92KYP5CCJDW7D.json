@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MHC59D6TZBBJDD7H861081",
+  "after": [
+    "01M6JZFN3V0HE0SCY724J55C20"
+  ],
+  "at": "2026-11-05T00:23:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 9ce21088, verifier ran go test -trimpath -count=1 ./internal/machine/... -v: TestMachineNeverWritesFiles, TestMachineExportsOnlyReaders and TestNothingElseTouchesMachineFile (go/parser over non-test source; os/ioutil writers incl. WriteFile/Create/OpenFile without O_RDONLY/Mkdir*/Rename/Remove*/Chmod/Symlink/Link/Truncate; exports limited to Config, Daily, Dedicated, Load, Path, Read; no machine.toml literal passed to os/filepath/path calls outside internal/machine, aliased imports included) all PASS. go test -trimpath -count=1 ./cmd/rhiza -run TestScripts/machine-trust-unwritten PASS: with XDG_CONFIG_HOME set it runs machine show, api call machine.show, health and the refused session start --permission-mode bypassPermissions, first with no config (file and dir stay absent) then with trust = \"daily\" (cmp byte-identical against the kept copy, trust still daily). Mutation check in a scratch git-archive copy: adding os.WriteFile and an exported Write to internal/machine and an aliased filepath.Join(h, \"rhiza\", \"machine.toml\") in another package made all three guard tests fail with the expected messages."
+        },
+        "handle": "machine-trust-unwritten-verified",
+        "id": "01M6MHE0RWRTD3CZZ9QK8CE312",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MHE0RHZ6QK52Q518TD8TRA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MHE0RHZ6QK52Q518TD8TRA",
+        "id": "01M6MHE5EPBBP0RZ3V68G7ACAD",
+        "link": "01M6MHE5EPBBP0RZ3V686JKJS7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JZ8TSXBYMDF1G4PBXH3MRB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6JYZ5Y4E56NMMC5HVKGC9J1",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MHEAVNCTV92KYP5CCJDW7D",
+  "type": "ops",
+  "v": 1
+}
