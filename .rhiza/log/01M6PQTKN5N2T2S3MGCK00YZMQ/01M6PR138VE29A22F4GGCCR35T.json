@@ -1,0 +1,96 @@
+{
+  "actor": "01M6PQTZZ74P1ZJFAQFBD0ZBYN",
+  "after": [
+    "01M6PR0PPT9DBRE4CGS6PAXGRG"
+  ],
+  "at": "2026-11-05T20:57:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "cmd/rhiza/testdata/script/run-gate.txtar (or a new owner-run-gate-accept.txtar) shows a non-autonomous plan run's gate with accept auto and a passed review accepting each proposed change set under rule autonomy and journalling an accepted entry each; with accept owner, and with accept auto but a confirmed finding left without a question, the same gate leaves them proposed with the owner accept next; autonomous-run gate behaviour is unchanged; go test -trimpath ./internal/api/... passes",
+          "statement": "An owner-run (non-autonomous) plan run's gate, after proposing its plan's drafts, accepts each proposed change set under rule autonomy when rhiza.autonomy.accept is auto and the plan's review has passed by gateReview's check; when accept is owner or the review has not passed, it accepts nothing and leaves each proposal with rhiza accept --rule owner as its next step; the rhiza.autonomy.accept setting's description says it governs every plan run's gate"
+        },
+        "handle": "owner-run-gate-accepts",
+        "id": "01M6PR133TKYZKSJRVT1844RJK",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6PR133TKYZKSJRVSXNQ4Y9T",
+        "op": "node.create",
+        "parent": "01M5WSGDEE854PFE4BXJM13CWS"
+      },
+      {
+        "decision": null,
+        "from": "01M6PR133TKYZKSJRVSXNQ4Y9T",
+        "id": "01M6PR134MR50F38BW0ME7GJ63",
+        "link": "01M6PR134MR50F38BW0JRDWJYH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PQZSD9GN7MMRNFBNK03TGE",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript (extend autonomous-gate-rule.txtar or add autonomy-accept-rule.txtar) shows rhiza accept --rule autonomy refused as usage while rhiza.autonomy.accept is owner and accepted (the log entry records rule autonomy) while it is auto; rule autonomous outside an autonomous run is still refused as before",
+          "statement": "rhiza accept and reject take rule autonomy, recording that the owner's standing rhiza.autonomy.accept setting made the move; it is refused as usage unless rhiza.autonomy.accept is auto, and rule autonomous keeps meaning a move an unfinished autonomous run made"
+        },
+        "handle": "autonomy-accept-rule",
+        "id": "01M6PR135E00DF7NHH48VEJ4PM",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6PR135E00DF7NHH46BYZF87",
+        "op": "node.create",
+        "parent": "01M5WRHD790X47F8VK7RQEHEHX"
+      },
+      {
+        "decision": null,
+        "from": "01M6PR135E00DF7NHH46BYZF87",
+        "id": "01M6PR1361B03BAPCWTKD3R2PB",
+        "link": "01M6PR1361B03BAPCWTK6X6CXT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PQZSD9GN7MMRNFBNK03TGE",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript (extend inbox-list.txtar or add inbox-owner-run-accept.txtar) gates a non-autonomous plan run with rhiza.autonomy.accept owner and shows rhiza inbox listing each proposed change set as an accept item with next rhiza accept --rule owner --change <id>; once accepted, the item is gone; existing autonomous accept items still list",
+          "statement": "rhiza inbox lists each change set any plan run's gate proposed that is still proposed as an accept item waiting for acceptance, owner-run plan runs as well as autonomous ones, so a planned milestone never stalls unseen"
+        },
+        "handle": "inbox-lists-owner-run-proposals",
+        "id": "01M6PR136HA6VBMENMEAG0WJBS",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M6PR136HA6VBMENME6VDFANQ",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "decision": null,
+        "from": "01M6PR136HA6VBMENME6VDFANQ",
+        "id": "01M6PR1375PC0J3M9JDT9CJ9SA",
+        "link": "01M6PR1375PC0J3M9JDSJSVK20",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PQZSD9GN7MMRNFBNK03TGE",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6PQZSD9GN7MMRNFBNK03TGE",
+        "id": "01M6PR1381M50XA7TY6CPV7G3P",
+        "link": "01M6PR1381M50XA7TY69TXHF2P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PR0PP63YAFMJWV8M41DNNK",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6PQTKN5N2T2S3MGCK00YZMQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PR138VE29A22F4GGCCR35T",
+  "type": "ops",
+  "v": 1
+}

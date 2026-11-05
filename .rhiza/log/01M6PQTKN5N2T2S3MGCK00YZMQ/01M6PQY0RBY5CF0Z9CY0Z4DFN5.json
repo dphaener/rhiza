@@ -1,0 +1,30 @@
+{
+  "actor": "01M6PQTZZ74P1ZJFAQFBD0ZBYN",
+  "after": [
+    "01M6PQTKN5N2T2S3MGCN8C92TY"
+  ],
+  "at": "2026-11-05T20:55:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "627fef4e-be7d-42fa-908e-01a1ad7d72e6",
+          "statement": "Change set 'Fix An owner-run plan's gate' serves no intent yet. Which should it serve? (Recent Fix change sets serve milestone-25, 'The backlog is empty… bugs and polish'.) / When an owner-run (non-autonomous) plan's gate auto-accepts because rhiza.autonomy.accept is auto, which rule does the accept use? Rule 'autonomous' today is allowed only inside an unfinished autonomous run. / Before an owner-run plan's gate auto-accepts (accept auto), must the plan's review have passed, as the autonomous gate requires (gateReview: a review round, no confirmed finding without a question, no open review question)?"
+        },
+        "handle": "question-627fef4e-1",
+        "id": "01M6PQXYWRF7FEA88EHNA887PT",
+        "key": null,
+        "kind": "question",
+        "node": "01M6PQXYWRF7FEA88EHHHBHDDG",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6PQTKN5N2T2S3MGCK00YZMQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PQY0RBY5CF0Z9CY0Z4DFN5",
+  "type": "ops",
+  "v": 1
+}
