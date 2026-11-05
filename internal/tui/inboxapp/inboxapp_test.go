@@ -87,35 +87,102 @@ func TestRowPerItemInOrder(t *testing.T) {
 }
 
 func TestEnterOpensActionPerKind(t *testing.T) {
-	for i, want := range []Action{ActionAnswer, ActionSignoff, ActionResolve} {
-		if i <= 2 {
-			continue // a question, a sign-off and a failed run open their own views, not the Open hook
-		}
+	gate := `{"items":[{"id":"g1","kind":"open","change":"C4","change_title":"Four","run":"R4","detail":"open questions: which-db, how-many; answer each with a Decision, then rhiza run resume R4"}]}`
+	for _, c := range []struct {
+		name, out string
+		downs     int
+		want      []string
+	}{
+		{"question", full, 0, []string{"Your answer"}},
+		{"signoff", full, 1, []string{"Sign off", "a approve"}},
+		{"failed", full, 2, []string{"Retry", "Abandon"}},
+		{"accept", full, 5, []string{"Accept this change set?", "Seven"}},
+		{"open", gate, 0, []string{"which-db", "how-many", "Four"}},
+	} {
 		var calls []call
-		m := NewModel(fake(full, &calls))
-		var opened []Pick
-		m.Open = func(p Pick) tea.Cmd { opened = append(opened, p); return nil }
-		for range i {
+		m := NewModel(fake(c.out, &calls))
+		for range c.downs {
 			press(m, "down")
 		}
 		enter(m)
-		if len(opened) != 1 || opened[0].Action != want {
-			t.Fatalf("row %d: opened %+v, want %s", i, opened, want)
+		v := m.View().Content
+		for _, w := range c.want {
+			if !strings.Contains(v, w) {
+				t.Errorf("%s: action view lacks %q:\n%s", c.name, w, v)
+			}
 		}
 		if len(calls) != 1 {
-			t.Errorf("row %d: runner called for an action: %+v", i, calls)
+			t.Errorf("%s: runner called before the action: %+v", c.name, calls)
 		}
 	}
+}
+
+func TestAcceptConfirmedCallsAccept(t *testing.T) {
 	var calls []call
 	m := NewModel(fake(full, &calls))
-	var opened []Pick
-	m.Open = func(p Pick) tea.Cmd { opened = append(opened, p); return nil }
 	for range 5 {
 		press(m, "down")
 	}
 	enter(m)
-	if len(opened) != 1 || opened[0].Action != ActionAccept || opened[0].Item.ID != "j1" {
-		t.Fatalf("accept: %+v", opened)
+	if p, _ := m.Picked(); p.Action != ActionAccept || p.Item.ID != "j1" {
+		t.Fatalf("picked %+v", p)
+	}
+	m.Update(tea.KeyPressMsg{Code: 'y', Text: "y"})
+	if !isQuit(submit(m)) {
+		t.Fatal("app did not quit")
+	}
+	last := calls[len(calls)-1]
+	if last.op != "accept" || !slices.Equal(last.args, []string{"C7"}) {
+		t.Fatalf("calls: %+v", calls)
+	}
+}
+
+func TestAcceptDeclinedCallsNothing(t *testing.T) {
+	var calls []call
+	m := NewModel(fake(full, &calls))
+	for range 5 {
+		press(m, "down")
+	}
+	enter(m)
+	if !isQuit(submit(m)) || len(calls) != 1 {
+		t.Fatalf("calls: %+v", calls)
+	}
+}
+
+func TestGateAnswersEachThenResumes(t *testing.T) {
+	var calls []call
+	gate := `{"items":[{"id":"g1","kind":"open","change":"C4","change_title":"Four","run":"R4","detail":"open questions: which-db, how-many; answer each with a Decision, then rhiza run resume R4"}]}`
+	m := NewModel(fake(gate, &calls))
+	enter(m)
+	if isQuit(typeAndSubmit(m, "sqlite")) {
+		t.Fatal("quit after the first answer")
+	}
+	if !isQuit(typeAndSubmit(m, "three")) {
+		t.Fatal("app did not quit")
+	}
+	want := []call{
+		{Name, nil},
+		{"question.answer", []string{"which-db", "C4", "sqlite"}},
+		{"question.answer", []string{"how-many", "C4", "three"}},
+		{"run.resume", []string{"R4"}},
+	}
+	if len(calls) != len(want) {
+		t.Fatalf("calls: %+v", calls)
+	}
+	for i := range want {
+		if calls[i].op != want[i].op || !slices.Equal(calls[i].args, want[i].args) {
+			t.Fatalf("call %d = %+v, want %+v", i, calls[i], want[i])
+		}
+	}
+}
+
+func TestGateBlankAnswerSendsNothing(t *testing.T) {
+	var calls []call
+	gate := `{"items":[{"id":"g1","kind":"open","change":"C4","change_title":"Four","run":"R4","detail":"open questions: which-db; answer each with a Decision, then rhiza run resume R4"}]}`
+	m := NewModel(fake(gate, &calls))
+	enter(m)
+	if isQuit(typeAndSubmit(m, "")) || len(calls) != 1 {
+		t.Fatalf("blank answer went through: %+v", calls)
 	}
 }
 

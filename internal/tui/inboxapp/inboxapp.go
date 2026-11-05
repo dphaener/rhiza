@@ -4,7 +4,7 @@
 // registry, so --once prints what `rhiza inbox --json` prints.
 //
 // Enter picks an item. A question, gate, sign-off, failed run or accept
-// item opens that item's action (the Open hook); any other kind shows its
+// item opens that item's action in the app; any other kind shows its
 // detail and asks the runner to open its run's tab.
 package inboxapp
 
@@ -20,6 +20,7 @@ import (
 	"github.com/dphaener/rexuikit/ui/theme"
 
 	"github.com/dphaener/rhiza/internal/api"
+	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/tui/launcher"
 )
 
@@ -95,12 +96,12 @@ type Model struct {
 	form  *ui.Form
 	asked *api.InboxItem
 	dlg   *ui.Dialog
-	back  bool   // the form asks for a send-back note
-	stage string // "choose" or "confirm" while the retry/abandon form is up
-
-	// Open, when set, is called with each pick of an actionable kind and
-	// returns the command that opens its action.
-	Open func(Pick) tea.Cmd
+	back  bool // the form asks for a send-back note
+	// stage is "choose" or "confirm" while the retry/abandon form is up,
+	// "gate" while a gate's answer form is up, "accept" while the accept
+	// confirm is up.
+	stage  string
+	gateQs []string // the gate's open questions, by handle, in form order
 }
 
 // NewModel returns the model over run, loaded once.
@@ -181,6 +182,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.stage == "confirm" {
 			return m, m.abandon(msg.Values.Bool("confirm"))
 		}
+		if m.stage == "gate" {
+			return m, m.answerGate(msg.Values)
+		}
+		if m.stage == "accept" {
+			return m, m.accept(msg.Values.Bool("accept"))
+		}
 		if m.back {
 			return m, m.sendBack(msg.Values.String("note"))
 		}
@@ -219,12 +226,19 @@ func (m *Model) choose(i int) tea.Cmd {
 	if p.Action == ActionResolve {
 		return m.openResolve(it)
 	}
-	if p.Action != ActionShow {
-		if m.Open != nil {
-			return m.Open(p)
+	if it.Kind == api.InboxOpen {
+		if qs := gateQuestions(it.Detail); len(qs) > 0 {
+			return m.openGate(it, qs, "")
 		}
-		return nil
 	}
+	if p.Action == ActionAccept {
+		return m.openAccept(it)
+	}
+	return m.show(it)
+}
+
+// show shows item it's detail and asks the runner to open its run's tab.
+func (m *Model) show(it api.InboxItem) tea.Cmd {
 	m.note = ""
 	if it.Run != "" {
 		if _, err := m.run(Name+".open", []string{it.ID}); err != nil {
@@ -235,6 +249,86 @@ func (m *Model) choose(i int) tea.Cmd {
 		return detail(it, m.note)
 	})
 	return m.cur.(*ui.InfoPanel).Init()
+}
+
+// gateQuestions are the handles of the open questions a gate stopped on,
+// from the stop detail "open questions: a, b; answer each ...".
+func gateQuestions(detail string) []string {
+	rest, ok := strings.CutPrefix(detail, run.OpenStop)
+	if !ok {
+		return nil
+	}
+	rest, _, _ = strings.Cut(rest, ";")
+	var qs []string
+	for _, q := range strings.Split(rest, ",") {
+		if q = strings.TrimSpace(q); q != "" {
+			qs = append(qs, q)
+		}
+	}
+	return qs
+}
+
+// openGate shows a form with one TextArea per open question of the gate.
+func (m *Model) openGate(it api.InboxItem, qs []string, msg string) tea.Cmd {
+	fields := make([]ui.Field, len(qs))
+	for i, q := range qs {
+		fields[i] = ui.NewTextArea(fmt.Sprintf("q%d", i), q)
+	}
+	sub := title(it) + " · answer each, then the run resumes"
+	if msg != "" {
+		sub = title(it) + " · " + msg
+	}
+	f := ui.NewForm(theme.Dark(), colorprofile.TrueColor, fields...).WithSubtitle(sub)
+	m.form, m.asked, m.stage, m.gateQs, m.cur = f, &it, "gate", qs, f
+	return f.Init()
+}
+
+// answerGate answers each open question through question.answer into the
+// run's change set, then queues the run's continuation with run.resume and
+// quits. A blank answer sends nothing and asks again.
+func (m *Model) answerGate(v ui.Values) tea.Cmd {
+	it, qs := *m.asked, m.gateQs
+	texts := make([]string, len(qs))
+	for i := range qs {
+		texts[i] = strings.TrimSpace(v.String(fmt.Sprintf("q%d", i)))
+		if texts[i] == "" {
+			return m.openGate(it, qs, "answer each question")
+		}
+	}
+	for i, q := range qs {
+		if _, err := m.run("question.answer", []string{q, it.Change, texts[i]}); err != nil {
+			return m.openGate(it, qs[i:], "answer failed: "+err.Error())
+		}
+	}
+	if _, err := m.run("run.resume", []string{it.Run}); err != nil {
+		m.note = "answered; resume failed: " + err.Error()
+		return m.show(it)
+	}
+	return tea.Quit
+}
+
+// openAccept asks to confirm accepting the item's change set.
+func (m *Model) openAccept(it api.InboxItem) tea.Cmd {
+	f := ui.NewForm(theme.Dark(), colorprofile.TrueColor,
+		ui.NewConfirm("accept", "Accept this change set?")).WithSubtitle(title(it) + " · " + waits(it))
+	m.form, m.asked, m.stage, m.cur = f, &it, "accept", f
+	return f.Init()
+}
+
+// accept accepts the change set through accept (rule owner) once
+// confirmed; without the Confirm nothing is called and the app quits.
+func (m *Model) accept(ok bool) tea.Cmd {
+	if !ok {
+		return tea.Quit
+	}
+	it := *m.asked
+	if _, err := m.run("accept", []string{it.Change}); err != nil {
+		f := ui.NewForm(theme.Dark(), colorprofile.TrueColor,
+			ui.NewConfirm("accept", "Accept this change set?")).WithSubtitle(title(it) + " · accept failed: " + err.Error())
+		m.form, m.cur = f, f
+		return f.Init()
+	}
+	return tea.Quit
 }
 
 // openAnswer shows a form with one TextArea for the owner's words.
