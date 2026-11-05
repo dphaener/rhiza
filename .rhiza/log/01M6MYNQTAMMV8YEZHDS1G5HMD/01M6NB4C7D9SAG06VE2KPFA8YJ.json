@@ -1,0 +1,63 @@
+{
+  "actor": "01M6NAPCW0SVY5N873WAW21N2E",
+  "after": [
+    "01M6NAG0XNVEHP44EP6WKPGXW7"
+  ],
+  "at": "2026-11-05T07:52:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f06d3d29 built rhiza with go build -trimpath and a throwaway harness that opens daemonapp.New in modalshell with a runner exec'ing that built binary (rhiza daemon settings --json / rhiza daemon set --json -- <key> <value>) in a scratch git repo. Opened at paused=false, the Confirm rendered No selected; y, Enter, Enter ran 'daemon set -- rhiza.daemon.paused true', the shell closed with the set result, and git config rhiza.daemon.paused became true. Reopened, it opened at paused=true; n, Enter, Enter wrote false. Enter, Enter unchanged and y then Esc each closed the app with no daemon set and git config unchanged. go test -trimpath ./internal/tui/daemonapp/... also passes."
+        },
+        "handle": "daemon-app-pause-qa-1",
+        "id": "01M6NB1HHYAP4KT1ZSAQHVEKQC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NB1HHYAP4KT1ZSAPY57HSJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NB1HHYAP4KT1ZSAPY57HSJ",
+        "id": "01M6NB2CJYFD9SZX5T30NMBS54",
+        "link": "01M6NB2CJYFD9SZX5T2WNZ2MEW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZC0J2KTTEAQ16DF31DZBV",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f06d3d29, same built binary and harness against a scratch git repo: the Run limit field opened at maxRuns=2 (daemon.settings' default); Enter, Backspace, 7, Enter ran 'daemon set -- rhiza.daemon.maxRuns 7', closed the app and git config read 7; the next open started at 7. Flipping pause and typing 12 wrote both settings (paused true, maxRuns 12). Typing 0, x or an empty value and Enter showed '✗ must be a whole number of at least 1', kept the app open, ran no daemon set and left git config at 12."
+        },
+        "handle": "daemon-app-run-limit-qa-1",
+        "id": "01M6NB2SXEQR6K2D9NKE86V541",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NB2SXEQR6K2D9NKDDP0CZ6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NB2SXEQR6K2D9NKDDP0CZ6",
+        "id": "01M6NB37AWK0JTPSCNDP4XH5Z5",
+        "link": "01M6NB37AWK0JTPSCNDMRP38Q8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZC8G897NPM4BYCBAFE5MP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYNQTAMMV8YEZHDS1G5HMD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NB4C7D9SAG06VE2KPFA8YJ",
+  "type": "ops",
+  "v": 1
+}

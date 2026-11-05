@@ -14,7 +14,7 @@ At 12d4691c ran go test -trimpath ./internal/tui/requestsapp/... -run Milestone 
 
 ### Out
 
-- verifies [requests-app-milestone](../capability/rhiza/orchestration/daemon/plan-requests/requests-app-milestone.md)
+- verifies requests-app-milestone (retired)
 
 ## History
 

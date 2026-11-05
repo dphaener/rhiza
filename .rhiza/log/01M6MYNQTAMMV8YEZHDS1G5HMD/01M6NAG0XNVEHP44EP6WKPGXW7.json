@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NA9XWJNZ8KPMCBQDZWKE81",
+  "after": [
+    "01M6NABB7J4QGCSWQ5PV6MQWQP"
+  ],
+  "at": "2026-11-05T07:41:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 770e2293: ran go test -trimpath -count=1 -v ./internal/tui/daemonapp/... with the package's fake runner; all 7 tests PASS, go vet and gofmt clean. TestRunLimitStartsFromSettings shows the app opens with maxRuns 3 from daemon.settings, and TestUnchangedSubmitSetsNothing (submit untouched closes with no daemon.set) shows the Text field itself holds the valid prefilled 3. TestValidLimitSetsAndQuits types 8 and sees exactly one call, daemon.set -- rhiza.daemon.maxRuns 8, and the shell closed. TestInvalidLimitCallsNothing types 0, x and empty: no daemon.set and the app stays open, refused by validateMaxRuns (strconv.Atoi, n >= 1) attached via ui.NewText(...).Validator. Read the diff: only internal/tui/daemonapp plus the builder's actor record; the paused Confirm flow still writes rhiza.daemon.paused as before."
+        },
+        "handle": "daemon-app-run-limit-verified",
+        "id": "01M6NAECMVHE6DE9FY2K035W4F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NAECMVHE6DE9FY2J6BF0RY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NAECMVHE6DE9FY2J6BF0RY",
+        "id": "01M6NAF0G2FVXV9VJ6REHB22CY",
+        "link": "01M6NAF0G2FVXV9VJ6RCDM9GSX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZC8G897NPM4BYCBAFE5MP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYNQTAMMV8YEZHDS1G5HMD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NAG0XNVEHP44EP6WKPGXW7",
+  "type": "ops",
+  "v": 1
+}

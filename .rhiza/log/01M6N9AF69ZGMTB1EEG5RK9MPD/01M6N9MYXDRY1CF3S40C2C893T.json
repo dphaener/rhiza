@@ -1,0 +1,125 @@
+{
+  "actor": "01M6N9AXYY7SR7VER4RYMW39JX",
+  "after": [
+    "01M6N9J7H2B8J108PTXS79WSZ0"
+  ],
+  "at": "2026-11-05T07:26:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6N9FFNSVCXW4GGGDGXERBZC",
+        "id": "01M6N9M3VXCWJWX2BNQ0DJ17GR",
+        "link": "01M6N9M3VXCWJWX2BNPWG24KWD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N9HSK7PYCPQ0V1P3Z4KNNG",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test of session.Stalled: an idle hook report at 19 minutes is not stalled and at 21 minutes is; at 21 minutes an idle or working session with the done mark, with Status.Asked set, paused at its usage limit, blocked, or exited is not; inbox-stalled.txtar gains an idle record without done that gives a stalled item at T+21m and none at T+19m, and run status shows it stalled; an idle record with the done mark gives none",
+          "statement": "rhiza run status and rhiza inbox count a live run-step session as stalled once its hook status, working or idle, has gone unchanged for more than 20 minutes and it has not said `rhiza session done`, whether or not it holds a background shell; a session waiting on the arbiter's answer, paused at its usage limit, blocked or exited never stalls"
+        },
+        "handle": "run-session-idle-stall",
+        "id": "01M6N9M6BMS0XZBJDD1A6SWN7F",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6N9M6BMS0XZBJDD16M2B0Z2",
+        "op": "node.create",
+        "parent": "01M5TYGK04WT4AH5KMH4RF82YD"
+      },
+      {
+        "decision": null,
+        "from": "01M6N9M6BMS0XZBJDD16M2B0Z2",
+        "id": "01M6N9M8VHJ71W4CXE29PCX6DR",
+        "link": "01M6N9M8VHJ71W4CXE260KJ62F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N9FFNSVCXW4GGGDGXERBZC",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test of the daemon poll on a fake clock, session store and message sender: with --autonomous, a session idle without done for 21 minutes gets one message naming background shells and `rhiza session done`; a second poll at the same stall sends nothing; a new hook report followed by another 21 silent minutes gets a second message; without --autonomous no poll sends any; the inbox still lists the stalled session after the nudge",
+          "statement": "A daemon running with --autonomous sends each stalled session of its live runs one message per stall, keyed on the report time it stalled at, telling it to check any background shell's result and carry on, or run `rhiza session done` if its work is finished; a session still stalled after the nudge gets no further one and stays in the inbox, and a daemon without --autonomous never nudges"
+        },
+        "handle": "daemon-nudges-stalled",
+        "id": "01M6N9MBXAAWMHC53536FFEN14",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M6N9MBXAAWMHC53534PGKQ4H",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6N9MBXAAWMHC53534PGKQ4H",
+        "id": "01M6N9MEB2TE2MAYERBA9WPMAR",
+        "link": "01M6N9MEB2TE2MAYERB7ZQJ9KR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N9FFNSVCXW4GGGDGXERBZC",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6N9MBXAAWMHC53534PGKQ4H",
+        "id": "01M6N9MGK129MDFW8SX96NQ8BK",
+        "link": "01M6N9MGK129MDFW8SX88KAWR2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N9M6BMS0XZBJDD16M2B0Z2",
+        "type": "depends-on"
+      },
+      {
+        "base": "01M6A0NWP7AH4JGMDT3B1CYKB1",
+        "handle": null,
+        "id": "01M6N9MJYMFSEPSAHBCYS17SXN",
+        "node": "01M6A0NWP7AH4JGMDT37F6X7DG",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A Go test of the stall cutoff: working at 19 minutes is not stalled, at 21 minutes is; blocked, usage-paused and exited sessions never are, and an idle one stalls only as run-session-idle-stall says; a testscript with a hand-written session record and RHIZA_TEST_NOW shows 'stalled' in run status only past the cutoff"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6A0NY4FZ07ZQMR23F686Z61",
+        "handle": null,
+        "id": "01M6N9MN6DDB6MX8XKDJGZ7CBK",
+        "node": "01M6A0NY4FZ07ZQMR23E700DTQ",
+        "op": "node.update",
+        "set": {
+          "acceptance": "inbox-stalled.txtar: with a working session record last reported at T and a live run journal, rhiza inbox --json has no stalled item at T+19m and one of kind stalled at T+21m; a blocked record gives none, and an idle one only as run-session-idle-stall says; the inbox app test shows the stalled group"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6A0NWP7AH4JGMDT37F6X7DG",
+        "id": "01M6N9MQPCJS1D7ARW0J657CAG",
+        "link": "01M6N9MQPCJS1D7ARW0H3WFH3N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N9FFNSVCXW4GGGDGXERBZC",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6A0NY4FZ07ZQMR23E700DTQ",
+        "id": "01M6N9MTDW4DCPBGX02NN2ZAA2",
+        "link": "01M6N9MTDW4DCPBGX02N7RXTEW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N9FFNSVCXW4GGGDGXERBZC",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6N9AF69ZGMTB1EEG5RK9MPD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N9MYXDRY1CF3S40C2C893T",
+  "type": "ops",
+  "v": 1
+}
