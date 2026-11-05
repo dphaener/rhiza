@@ -1,0 +1,73 @@
+{
+  "actor": "01M6NR6XRSHXMQTKQDG5WV9SVD",
+  "after": [
+    "01M6NRDWVSZQJJV3HRKS27GP9M"
+  ],
+  "at": "2026-11-05T11:45:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6NRBD14M482Q2BXT8XNQ1W5",
+        "id": "01M6NREDHQGNZSZ130WRW92QA2",
+        "link": "01M6NREDHQGNZSZ130WQ04TYT1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NRDB9DHGAJD2E5PAQSCRK0",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test with a fake GOCACHE and TMPDIR holding back-dated (os.Chtimes) and fresh cache entries, an old and a fresh go-build* folder and an old folder with another prefix shows only the stale cache entries and the old go-build* folder go, with the bytes and counts freed reported; with GOCACHE=off no cache entry is touched",
+          "statement": "A sweep removes Go build cache entries whose mtime is over 3 hours old, from $GOCACHE or os.UserCacheDir()/go-build when GOCACHE is unset (none when GOCACHE=off), and go-build* folders directly under os.TempDir() whose mtime is over 2 hours old, and reports the bytes and entries it freed"
+        },
+        "handle": "go-build-cache-sweep",
+        "id": "01M6NREHKHFKZWMXYWG2JA555M",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M6NREHKHFKZWMXYWG2F38AM5",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6NREHKHFKZWMXYWG2F38AM5",
+        "id": "01M6NREQ2PVT4487SXQQM7JBPA",
+        "link": "01M6NREQ2PVT4487SXQQFMWYCA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NRBD14M482Q2BXT8XNQ1W5",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A unit test of the sweep schedule with an injected clock and free space shows a sweep is due at start, again after an hour, at once under 2x minFree and not again within 10 minutes; a daemon test with a fake GOCACHE holding a back-dated entry shows daemon --once removes it and logs the freed line, and with rhiza.daemon.trimGoCache false leaves it; daemon settings lists rhiza.daemon.trimGoCache with default true; describe-golden.txtar is regenerated",
+          "statement": "The daemon runs the Go build cache sweep when it starts, then hourly, and at once when free space drops under 2x rhiza.daemon.minFree (at most once every 10 minutes), unless rhiza.daemon.trimGoCache is off, writing one stderr line with what was freed only when something was"
+        },
+        "handle": "daemon-trims-go-cache",
+        "id": "01M6NRETPP5SJ8RMGV9148Q6VG",
+        "key": "zzzzi",
+        "kind": "capability",
+        "node": "01M6NRETPP5SJ8RMGV901X4G33",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M6NRETPP5SJ8RMGV901X4G33",
+        "id": "01M6NREXRMRHJF3JW9WPCHWG6N",
+        "link": "01M6NREXRMRHJF3JW9WM3T6R0J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NRBD14M482Q2BXT8XNQ1W5",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6NR6EK065HB06P15DYMB0XX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NRF2VPM4PJNXJ7C4BG1P1K",
+  "type": "ops",
+  "v": 1
+}
