@@ -1,9 +1,11 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -98,5 +100,37 @@ func TestInboxReadsChangeSetsOnce(t *testing.T) {
 	}
 	if f.logReads != 1 {
 		t.Errorf("the log fold read the log %d times, want 1", f.logReads)
+	}
+}
+
+// An overlap between change sets with no run is notified by the change
+// sets' titles from the fold, never by either ID.
+func TestDaemonNotifyOverlapByTitle(t *testing.T) {
+	f := newDaemonFoldFix(t)
+	var rex bytes.Buffer
+	f.ctx.Rex = &rex
+	var sets []string
+	for i := range 2 {
+		cs := f.call("change.new", fmt.Sprintf(`{"intent":"Rename %d"}`, i)).(ChangeNewResponse).ChangeSet
+		sets = append(sets, cs.String())
+		f.call("set", fmt.Sprintf(`{"ref":"done-0","fields":["statement=Done %d"]}`, i))
+		f.call("propose", `{}`)
+	}
+	if err := daemonNotify(f.ctx, f.rs, &f.state, ""); err != nil {
+		t.Fatal(err)
+	}
+	var notices []string
+	for _, r := range rexReports(t, rex.String()) {
+		if r["state"] == "blocked" && strings.Contains(r["msg"], "an overlap with") {
+			notices = append(notices, r["msg"])
+		}
+	}
+	if len(notices) != 1 || !strings.HasPrefix(notices[0], "Rename ") || !strings.Contains(notices[0], "an overlap with Rename ") {
+		t.Fatalf("overlap notices %q, want one naming both change sets by title", notices)
+	}
+	for _, cs := range sets {
+		if strings.Contains(notices[0], cs) {
+			t.Errorf("notice %q names change set %s by ID", notices[0], cs)
+		}
 	}
 }

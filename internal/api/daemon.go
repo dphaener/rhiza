@@ -334,7 +334,8 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 	host, _ := os.Hostname()
 	stateOf := func(string) (string, bool) { return "", false }
 	var overlaps []InboxItem
-	if fold, err := daemonFoldOf(ctx); err == nil {
+	fold, ferr := daemonFoldOf(ctx)
+	if ferr == nil {
 		stateOf = fold.stateOf
 		for _, ov := range fold.overlaps {
 			if o, err := id.Parse(ov.Other); err == nil {
@@ -359,6 +360,20 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 			titles[st.Change] = st.Title
 		}
 	}
+	// A change set with no run, such as either side of an overlap, takes
+	// its title from the fold: a notice never names a change set by ID.
+	if ferr == nil {
+		for _, it := range items {
+			if _, ok := titles[it.Change]; ok || it.Change == "" {
+				continue
+			}
+			if cs, err := id.Parse(it.Change); err == nil {
+				if c, ok := fold.changeSet(cs); ok {
+					titles[it.Change] = c.Open.DisplayTitle()
+				}
+			}
+		}
+	}
 	for i := range items {
 		if items[i].Kind == InboxOpen && items[i].Questions == nil {
 			if j := slices.IndexFunc(runs, func(j run.Journal) bool { return j.ID == items[i].Run }); j >= 0 {
@@ -375,16 +390,22 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 		}
 		if ctx.Rex != nil {
 			kept = append(kept, it.ID)
-			what := titles[it.Change]
-			if what == "" {
-				what = it.Change
-			}
+			what := noticeSubject(titles, it.Change)
 			ctx.Rex.Write(rexReport("working", "", "", ""))
 			ctx.Rex.Write(rexReport("blocked", "", "", inboxNotice(what, it)))
 		}
 	}
 	state.Notified = kept
 	return nil
+}
+
+// noticeSubject is what a notice calls change set change: its title, or
+// "a change set" when no title is known, never its ID.
+func noticeSubject(titles map[string]string, change string) string {
+	if t := titles[change]; t != "" {
+		return t
+	}
+	return "a change set"
 }
 
 // inboxNotice is the notification text for item it of the change set called

@@ -27,7 +27,7 @@ exec grep -c '"kind":"question"' $HOOKOUT
 exec grep -c '"kind":"signoff"' $HOOKOUT
 exec grep -c '"kind":"failed"' $HOOKOUT
 exec grep -c '"kind":"gave-up"' $HOOKOUT
-exec grep -c 'env=question:.*:CSQUESTION:CSQUESTION: a question waits on you: Which store?' $HOOKOUT
+exec grep -c 'env=question:.*:CSQUESTION:a change set: a question waits on you: Which store?' $HOOKOUT
 exec grep -c 'env=signoff:.*:CSSIGNOFF:' $HOOKOUT
 
 # Nothing new: nothing written.
