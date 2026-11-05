@@ -1,0 +1,41 @@
+{
+  "actor": "01M6NQEXC1XHRG98SHNBB0DP9H",
+  "after": [
+    "01M6NQEP6YD825NG1K4NBPKJXZ"
+  ],
+  "at": "2026-11-05T11:29:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent is to delete changesapp, healthapp, modelapp, readapps, roadmapapp and writeapps, retire their capabilities, and keep every CLI command. The branch already does this in code: internal/tui keeps only autonomyapp, daemonapp, inboxapp, requestapp and runsapp, and text-refs-display.txtar now checks rhiza show, slice and why in place of the read app. Review cycles 2 and 3 confirmed that f1 (text-ref-display) and f2 (roadmap-paged) are the same defect as one the fixer already corrected for question-answer-op and run-start-through-daemon: the capabilities still promise app behaviour the intent removes. The CLI parts of these capabilities stay valid and tested, so retiring them would lose real behaviour, and loosening old-apps-deleted would go against the intent. The fix is to revise both fields of each affected capability within this change set.",
+          "statement": "Fix the model, not the leaf: old-apps-deleted stays as written. In this change set, revise text-ref-display to drop 'and the read apps' from its statement and the 'a read app's --once JSON (rhiza tui app <read app> --once) shows @renamed' clause from its acceptance. Also revise roadmap-paged to drop the roadmap TUI app and the model app's roadmap tab from its statement, and 'and the roadmap app' from its acceptance, so only health's roadmap check remains. Every other live capability that still names a deleted app (for example run-status-open-cycle's 'the live app counts it running') gets the same treatment: keep only its CLI behaviour, without retiring the capability or changing that behaviour.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "old-apps-model-clauses-dropped",
+        "id": "01M6NQG8RNZPRTDB3VHC0P3QXE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6NQG8RNZPRTDB3VHB0V9PDT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NQG8RNZPRTDB3VHB0V9PDT",
+        "id": "01M6NQGE8EYAVRCSEFGA49K92G",
+        "link": "01M6NQGE8EYAVRCSEFG6V8CYF3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NQE2PZG8YV8MPE3ZKQM3N5",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NQGMWQP6EREKMM80TGSCQV",
+  "type": "ops",
+  "v": 1
+}
