@@ -1,0 +1,63 @@
+{
+  "actor": "01M6MN3D8EA0FAWWDYDQXZJW6F",
+  "after": [
+    "01M6MN1FWWKSZJP1XY6A0N9SJA"
+  ],
+  "at": "2026-11-05T01:30:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at 628808db with a scratch build (go build -trimpath) in a hermetic scratch repo (own HOME, fake rex, a 3-question AskUserQuestion transcript). In the change set: Decision question='Which port?' (verbatim), 'Which log format? ' (trailing space), and 'Retry count?' (live). session interview --dry-run and --json proposed only answer-<sid8>-2 (Which log format?) and listed answers 1 and 3 under skipped ('Skipped ...: already recorded'); a rerun proposed nothing. After retiring the 'Retry count?' Decision, rhiza session done on a new session wrote only answer-<sid8>-3, so retired Decisions do not stop capture. Landed path: record change set with source add --raw-session, a Decision 'Which port?' derived-from that Source, then rhiza land; session interview skipped the port answer and proposed only the unrecorded one. But session done's response (decisions, warnings) carries no skipped list (captureAfterRun in session_run.go:458 drops got.Skipped), so session done never reports a skipped answer as the statement and acceptance ask. go test ./cmd/rhiza -run 'TestScripts/session-(interview|done)': ok."
+        },
+        "handle": "capture-skips-recorded-answers-qa-1",
+        "id": "01M6MN7ASPTCTYTHRJEXHD4CZP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MN7ASPTCTYTHRJEV4Q7NET",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MN7ASPTCTYTHRJEV4Q7NET",
+        "id": "01M6MN7EFPDGF04Y2R7XK4N6G7",
+        "link": "01M6MN7EFPDGF04Y2R7X61BSS0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J7B10MH74CTH61H69ETSDW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 628808db: ran rhiza guide plan from a scratch build. It has a 'Who records a pick' section saying the run's capture records the owner's AskUserQuestion picks and the planner writes no Decision for a plain owner pick; it writes one only when a proxy such as an orchestrator or arbiter answered or the answer carries a ruling the capture cannot word, with the proxy's wording and the asked question copied verbatim into its question field. The interview bullet now says 'For a plain owner pick you write no Decision', and the old 'A picked option instead' recipe is replaced by the proxy recipe. No line tells the planner to write a Decision for a plain pick. go test -trimpath ./internal/guide/...: ok."
+        },
+        "handle": "plan-guide-who-records-qa-1",
+        "id": "01M6MN7K5J08Q6STAQ65ECWKZW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MN7K5J08Q6STAQ6360XCMG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MN7K5J08Q6STAQ6360XCMG",
+        "id": "01M6MN7R8XKNXKR2C1DSAN867G",
+        "link": "01M6MN7R8XKNXKR2C1DPEF5KCH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6J7BMWSJXFQXYYDNRV7XD66",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6J6FDD9GXDW4AENMS6YNY63",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MN7Y0VWD7BS752KV9E633K",
+  "type": "ops",
+  "v": 1
+}

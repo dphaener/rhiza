@@ -93,6 +93,7 @@ type SessionRunResponse struct {
 	Env       []string    `json:"env" desc:"The variables set over this terminal's environment for the agent"`
 	Code      int         `json:"code" desc:"The agent's exit code, which is also this command's; 128 plus the signal number if a signal ended it"`
 	Decisions []string    `json:"decisions,omitempty" desc:"Handles of the Decisions proposed from the questions the owner answered (see session.interview)"`
+	Skipped   []string    `json:"skipped,omitempty" desc:"Handles of answers already recorded as Decisions, left alone (see session.interview)"`
 	Warnings  []string    `json:"warnings,omitempty" desc:"Status reports that could not be copied while the agent ran, token use that could not be recorded, and a failed capture of the owner's answers"`
 	DryRun    bool        `json:"dry_run,omitempty" desc:"True if nothing was started or written"`
 }
@@ -265,7 +266,7 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 		rec = updated
 	}
 	resp.Session = sessionInfo(rec)
-	resp.Decisions, resp.Warnings = captureAfterRun(ctx, rec, resp.Warnings)
+	resp.Decisions, resp.Skipped, resp.Warnings = captureAfterRun(ctx, rec, resp.Warnings)
 	return resp, nil
 }
 
@@ -454,12 +455,12 @@ func runTokenUse(u session.TokenUse) run.TokenUse {
 }
 
 // captureAfterRun proposes the session's answered questions as Decisions
-// once its agent has exited, and returns their handles and warnings with a
-// failure appended. A caller that gives neither a home folder nor an
+// once its agent has exited, and returns their handles, the handles of the
+// answers skipped as already recorded, and warnings with a failure appended. A caller that gives neither a home folder nor an
 // environment has no transcript to find, so nothing is captured.
-func captureAfterRun(ctx *Ctx, rec session.Record, warnings []string) ([]string, []string) {
+func captureAfterRun(ctx *Ctx, rec session.Record, warnings []string) (proposed, skipped, _ []string) {
 	if ctx.Home == "" && ctx.Getenv == nil {
-		return nil, warnings
+		return nil, nil, warnings
 	}
 	got, err := captureInterview(ctx, rec)
 	if err != nil {
@@ -468,13 +469,15 @@ func captureAfterRun(ctx *Ctx, rec session.Record, warnings []string) ([]string,
 		if e.Next != "" {
 			msg += " (next: " + e.Next + ")"
 		}
-		return nil, append(warnings, msg)
+		return nil, nil, append(warnings, msg)
 	}
-	var handles []string
 	for _, p := range got.Proposed {
-		handles = append(handles, p.Handle)
+		proposed = append(proposed, p.Handle)
 	}
-	return handles, warnings
+	if len(got.Skipped) > 0 {
+		skipped = got.Skipped
+	}
+	return proposed, skipped, warnings
 }
 
 // launchEnv is what the agent's environment gets over the terminal's: the
@@ -939,6 +942,9 @@ func (r SessionRunResponse) Human(w io.Writer) {
 	fmt.Fprintf(w, "Session %s ended: the agent exited with code %d.\n", s.ID, r.Code)
 	for _, h := range r.Decisions {
 		fmt.Fprintf(w, "- Proposed decision %s\n", h)
+	}
+	for _, h := range r.Skipped {
+		fmt.Fprintf(w, "- Skipped %s: already recorded\n", h)
 	}
 	for _, warn := range r.Warnings {
 		fmt.Fprintf(w, "- Warning: %s\n", warn)
