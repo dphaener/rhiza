@@ -76,11 +76,11 @@ grep 'keys = \{\},' conf/rhiza.lua
 grep '^  \["session-ls"\] = "rhiza_app_session_ls",$' conf/rhiza.lua
 grep 'rex.bind\(MODE .. "/" .. k, APP_ACTIONS\[app\]\)' conf/rhiza.lua
 
-# The requests app has an action on a key no other app had; no existing key
+# The request app has an action on a key no other app had; no existing key
 # moved.
-grep 'name = "rhiza_app_requests"' conf/rhiza.lua
-grep 'open_argv\("requests"\)' conf/rhiza.lua
-grep '^  \["requests"\] = "q",$' conf/rhiza.lua
+grep 'name = "rhiza_app_request"' conf/rhiza.lua
+grep 'open_argv\("request"\)' conf/rhiza.lua
+grep '^  \["request"\] = "q",$' conf/rhiza.lua
 grep '^  \["roadmap"\] = "b",$' conf/rhiza.lua
 grep '^  \["ready"\] = "r",$' conf/rhiza.lua
 grep '^  \["live"\] = "v",$' conf/rhiza.lua
@@ -91,7 +91,7 @@ grep '^  \["inbox"\] = "i",$' conf/rhiza.lua
 grep 'name = "rhiza_app_autonomy"' conf/rhiza.lua
 grep 'open_argv\("autonomy"\)' conf/rhiza.lua
 grep '^  \["autonomy"\] = "y",$' conf/rhiza.lua
-grep '^  \["requests"\] = "q",$' conf/rhiza.lua
+grep '^  \["request"\] = "q",$' conf/rhiza.lua
 grep '^  \["health"\] = "t",$' conf/rhiza.lua
 grep '^  \["roadmap"\] = "b",$' conf/rhiza.lua
 grep '^  \["inbox"\] = "i",$' conf/rhiza.lua
