@@ -1,0 +1,63 @@
+{
+  "actor": "01M6NK9SPR2FKSXTHEW0YC2F29",
+  "after": [
+    "01M6NK7VS26WWX1GPH1Z62W68G"
+  ],
+  "at": "2026-11-05T10:20:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built the branch head with go build -trimpath, then ran go vet ./... (clean). In a scratch repo, rhiza tui app roadmap, model, health, changes, show, live, why, slice, requests, read and write --once each exited 4 with 'unknown app'. inbox and runs --once exited 0. roadmap, health, change ls, show, why and slice ran on this repo's model (health exits 1 only for real reported problems). internal/tui now holds only autonomyapp, daemonapp, inboxapp, launcher, modalopen, modalshell, requestapp and runsapp, and no Go file, Makefile or txtar names the old packages. The health, roadmap, show, why, slice, tui-* and rex-install scripts pass (25), and the scripts of the wrapped commands are unchanged."
+        },
+        "handle": "old-apps-deleted-qa-1",
+        "id": "01M6NKHNAW9V5P7YGY5X2E3P64",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NKHNAW9V5P7YGY5TX2E564",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NKHNAW9V5P7YGY5TX2E564",
+        "id": "01M6NKHR6E4GRATHPA3ZYY6VJV",
+        "link": "01M6NKHR6E4GRATHPA3X4309J3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZD2ER8DDHNYK3W3C04SYB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Ran the built rhiza rex install with a fake rex on PATH and REX_CONFIG in a scratch dir. It exited 0 and reloaded the config once. rhiza.lua holds exactly 5 rex.action entries: rhiza_app_autonomy, rhiza_app_daemon, rhiza_app_inbox, rhiza_app_request and rhiza_app_runs, on keys y, d, i, q and v, with no old app names. go test ./internal/api -run TestRexInstallRegistersExactlyFiveApps and the rex-install testscript pass. tui app daemon --once exits 2 with a usage error; daemon is a form app."
+        },
+        "handle": "rex-install-five-apps-qa-1",
+        "id": "01M6NKHV4M98CVVHVA14DHDYA5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NKHV4M98CVVHVA11W40ZAA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NKHV4M98CVVHVA11W40ZAA",
+        "id": "01M6NKHYV6CW7MYWVTQTH76W2Z",
+        "link": "01M6NKHYV6CW7MYWVTQPXRK7P6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZD7XSJD2ENEG7W98BKDJV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NKJ6WVD9Z16KRH5ME5A91Y",
+  "type": "ops",
+  "v": 1
+}
