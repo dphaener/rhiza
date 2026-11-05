@@ -98,6 +98,7 @@ type SetRequest struct {
 	Fields     []string `json:"fields,omitempty" flag:"field" desc:"Set a text field, name=text"`
 	JSONFields []string `json:"json_fields,omitempty" flag:"json-field" desc:"Set a JSON field, name=<json>"`
 	Unset      []string `json:"unset,omitempty" desc:"Remove a field by name"`
+	Rebase     bool     `json:"rebase,omitempty" desc:"When the change set already updates the node, move that update onto the node's landed version; refused unless this call sets or unsets every field the update writes"`
 
 	// lenient is as on AddRequest.
 	lenient bool
@@ -243,6 +244,22 @@ func buildSet(b writeBase, r SetRequest) (edit, error) {
 		o.Fields = mergeFields(c.Fields, set, unset)
 	} else if u, ok := b.pendingOp(n.Pending, op.TypeNodeUpdate); ok {
 		o = u
+		if r.Rebase {
+			// Moving the update onto the landed version clears a stale
+			// base, but only safely when this call restates everything the
+			// update writes: a field it left alone would silently replace
+			// landed work.
+			for _, name := range append(slices.Collect(maps.Keys(u.Set)), u.Unset...) {
+				_, isSet := set[name]
+				if !isSet && !slices.Contains(unset, name) {
+					return edit{}, Usagef("--rebase needs every field the pending update writes; set or unset %q too", name)
+				}
+			}
+			if n.Version.IsZero() {
+				return edit{}, Errorf("node %s has no landed version to rebase onto", n.ID)
+			}
+			o.Base = n.Version
+		}
 		if r.Handle != "" {
 			o.Handle = r.Handle
 		}

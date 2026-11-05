@@ -352,6 +352,10 @@ cmp stdout describe.golden.json
                       "const": "set",
                       "description": "The operation this item is a request of"
                     },
+                    "rebase": {
+                      "description": "When the change set already updates the node, move that update onto the node's landed version; refused unless this call sets or unsets every field the update writes",
+                      "type": "boolean"
+                    },
                     "ref": {
                       "description": "The node: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
                       "type": "string"
@@ -20857,6 +20861,10 @@ cmp stdout describe.golden.json
               "type": "string"
             },
             "type": "array"
+          },
+          "rebase": {
+            "description": "When the change set already updates the node, move that update onto the node's landed version; refused unless this call sets or unsets every field the update writes",
+            "type": "boolean"
           },
           "ref": {
             "description": "The node: an ID, a unique ID prefix of 4+ characters, or a live node's handle",
