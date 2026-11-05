@@ -92,6 +92,8 @@ type Model struct {
 	cur   component
 	pick  *Pick
 	note  string
+	form  *ui.Form
+	asked *api.InboxItem
 
 	// Open, when set, is called with each pick of an actionable kind and
 	// returns the command that opens its action.
@@ -167,6 +169,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	case ui.ListSelectedMsg:
 		return m, m.choose(msg.Index)
+	case ui.FormCancelledMsg:
+		return m, tea.Quit
+	case ui.FormSubmittedMsg:
+		return m, m.send(msg.Values.String("answer"))
 	case tea.KeyPressMsg:
 		if k := msg.String(); k == "ctrl+c" || (k == "esc" && m.cur != component(m.list)) {
 			return m, tea.Quit
@@ -184,6 +190,9 @@ func (m *Model) choose(i int) tea.Cmd {
 	it := m.items[i]
 	p := Pick{Item: it, Action: ActionFor(it.Kind)}
 	m.pick = &p
+	if it.Kind == api.InboxQuestion || it.Kind == api.InboxBlocker {
+		return m.openAnswer(it)
+	}
 	if p.Action != ActionShow {
 		if m.Open != nil {
 			return m.Open(p)
@@ -200,6 +209,40 @@ func (m *Model) choose(i int) tea.Cmd {
 		return detail(it, m.note)
 	})
 	return m.cur.(*ui.InfoPanel).Init()
+}
+
+// openAnswer shows a form with one TextArea for the owner's words.
+func (m *Model) openAnswer(it api.InboxItem) tea.Cmd {
+	f := ui.NewForm(theme.Dark(), colorprofile.TrueColor,
+		ui.NewTextArea("answer", "Your answer")).WithSubtitle(title(it) + " · " + waits(it))
+	m.form, m.asked = f, &it
+	m.cur = f
+	return f.Init()
+}
+
+// send sends the typed words: session.message to the asking session for a
+// run's question, question.answer for a blocker. An empty answer sends
+// nothing and leaves the form open; success closes the app.
+func (m *Model) send(text string) tea.Cmd {
+	text = strings.TrimSpace(text)
+	if text == "" || m.asked == nil {
+		return nil
+	}
+	it := *m.asked
+	var err error
+	if it.Kind == api.InboxBlocker {
+		_, err = m.run("question.answer", []string{it.Handle, it.Change, text})
+	} else if it.Session == "" {
+		err = fmt.Errorf("the question has no session to answer")
+	} else {
+		_, err = m.run("session.message", []string{it.Session, text})
+	}
+	if err != nil {
+		m.note = fmt.Sprintf("send failed: %v", err)
+		m.form.WithSubtitle(title(it) + " · " + m.note)
+		return nil
+	}
+	return tea.Quit
 }
 
 func (m *Model) View() tea.View {

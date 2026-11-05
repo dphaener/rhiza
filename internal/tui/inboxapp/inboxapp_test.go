@@ -88,6 +88,9 @@ func TestRowPerItemInOrder(t *testing.T) {
 
 func TestEnterOpensActionPerKind(t *testing.T) {
 	for i, want := range []Action{ActionAnswer, ActionSignoff, ActionResolve} {
+		if i == 0 {
+			continue // a question opens the answer form, not the Open hook
+		}
 		var calls []call
 		m := NewModel(fake(full, &calls))
 		var opened []Pick
@@ -204,4 +207,74 @@ func TestRegisteredWithLauncher(t *testing.T) {
 		}
 	}
 	t.Fatal("inbox is not in the launcher registry")
+}
+
+func typeAndSubmit(m *Model, text string) tea.Cmd {
+	for _, r := range text {
+		m.Update(tea.KeyPressMsg{Code: r, Text: string(r)})
+	}
+	_, cmd := m.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	if cmd == nil {
+		return nil
+	}
+	msg := cmd()
+	if _, ok := msg.(ui.FormSubmittedMsg); ok {
+		_, c := m.Update(msg)
+		return c
+	}
+	return nil
+}
+
+func isQuit(cmd tea.Cmd) bool {
+	if cmd == nil {
+		return false
+	}
+	_, ok := cmd().(tea.QuitMsg)
+	return ok
+}
+
+func TestAnswerQuestionSendsSessionMessage(t *testing.T) {
+	var calls []call
+	m := NewModel(fake(full, &calls))
+	enter(m)
+	if !strings.Contains(m.View().Content, "Your answer") {
+		t.Fatalf("no form:\n%s", m.View().Content)
+	}
+	if !isQuit(typeAndSubmit(m, "Use sqlite")) {
+		t.Fatal("app did not quit")
+	}
+	last := calls[len(calls)-1]
+	if last.op != "session.message" || !slices.Equal(last.args, []string{"S1", "Use sqlite"}) {
+		t.Fatalf("calls: %+v", calls)
+	}
+}
+
+func TestAnswerBlockerCallsQuestionAnswer(t *testing.T) {
+	var calls []call
+	out := `{"items":[{"id":"b1","kind":"blocker","change":"C5","change_title":"Five","handle":"which-db","question":"Which db?"}]}`
+	m := NewModel(fake(out, &calls))
+	enter(m)
+	if !isQuit(typeAndSubmit(m, "sqlite")) {
+		t.Fatal("app did not quit")
+	}
+	last := calls[len(calls)-1]
+	if last.op != "question.answer" || !slices.Equal(last.args, []string{"which-db", "C5", "sqlite"}) {
+		t.Fatalf("calls: %+v", calls)
+	}
+}
+
+func TestAnswerEscAndEmptyCallNothing(t *testing.T) {
+	var calls []call
+	m := NewModel(fake(full, &calls))
+	enter(m)
+	if isQuit(typeAndSubmit(m, "")) {
+		t.Fatal("empty answer quit")
+	}
+	_, cmd := m.Update(ui.FormCancelledMsg{})
+	if !isQuit(cmd) {
+		t.Fatal("esc did not quit")
+	}
+	if len(calls) != 1 {
+		t.Fatalf("calls: %+v", calls)
+	}
 }
