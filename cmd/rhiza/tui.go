@@ -135,17 +135,27 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		}, nil)
 	}
 	autonomyModel := func() *autonomyapp.Model {
-		am := autonomyapp.NewModel(func(op string, args []string) ([]byte, error) {
+		return autonomyapp.NewModel(func(op string, args []string) ([]byte, error) {
 			return call(op, false, false, args)
 		})
-		return am
 	}
 	var m tea.Model
 	var result func() ([]byte, error)
 	switch {
 	case isAutonomy:
 		am := autonomyModel()
-		m, result = am, am.Result
+		result = am.Result
+		if once {
+			break
+		}
+		sh := am.Shell()
+		if _, err := sh.Run(); err != nil {
+			return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
+		}
+		if _, err := sh.Result(); err != nil {
+			return writeError(stdout, stderr, err, false)
+		}
+		return 0
 	case isInbox:
 		im := inboxModel()
 		m, result = im, im.Result
@@ -162,7 +172,7 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 			case liveapp.Name:
 				return liveModel(), nil
 			case autonomyapp.Name:
-				return autonomyModel(), nil
+				return autonomyModel().Shell(), nil
 			}
 			return nil, api.NotFoundf("unknown app %q", app)
 		})
