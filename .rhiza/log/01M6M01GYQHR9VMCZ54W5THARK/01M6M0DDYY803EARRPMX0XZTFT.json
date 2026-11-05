@@ -1,0 +1,39 @@
+{
+  "actor": "01M6M01VN00V21JZA7QZXS3CKW",
+  "after": [
+    "01M6M0BYRXCN1KDA8AW3SYYJM6"
+  ],
+  "at": "2026-11-04T19:26:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [
+            {
+              "by": "owner",
+              "text": "Yes the test suites make sense, since we're going to run full CI anyway on GitHub before merge.",
+              "where": "2026-11-04, the change set's opening request"
+            }
+          ],
+          "raw_sha256": "ee12b52948a7cd532a4dc0571299c03d4f38ddf42d7acd244669a1c9af50a972",
+          "session": "c2063c96-e994-4af5-babc-01a1a800e15c",
+          "summary": "Autonomous plan of change set 01M6M01G. The owner asked, when opening it, that agents in runs (builders, verifiers, review checks, critics, fixers) run only the tests their change touches, since the PR's GitHub CI runs the full suite before every merge and the VM's CPU is over-committed (~35% steal). The planner found that only this repo's CLAUDE.md tells agents to run make check; the build, review and plan guide topics (the rhiza-build, rhiza-review and rhiza-plan skills) and the built-in workflows' role prompts say nothing about test scope. Two questions went to the arbiter: which intent the change set serves, and how specific the guides' wording should be. The arbiter ruled (Decision scoped-tests-serve-m25-generic-rule): it serves milestone-25, and the guides and role prompts state the rule repo-agnostically, naming no Go, make or testscript command; this repo's concrete commands go in CLAUDE.md and the leaves' acceptance checks. Four leaves: the build/review guides, the plan guides' acceptance advice, the built-in role prompts, and CLAUDE.md. Nothing is left open.",
+          "title": "Plan: agents in runs stop running the full test suite"
+        },
+        "handle": "scoped-tests-plan",
+        "id": "01M6M0DB1TN7FAD4K48QGN7PMD",
+        "key": null,
+        "kind": "source",
+        "node": "01M6M0DB1S00W14FAP15T97J8T",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6M01GYQHR9VMCZ54W5THARK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M0DDYY803EARRPMX0XZTFT",
+  "type": "ops",
+  "v": 1
+}

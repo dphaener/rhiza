@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MTJCC297QN4BBV569NWVVS",
+  "after": [
+    "01M6MTEFCDE58D6X9JX1PFXQ3A"
+  ],
+  "at": "2026-11-05T03:04:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d01d4252 (attempt 2): go test -trimpath -count=1 ./internal/guide/... passes; build_test.go, review_test.go and plan_test.go assert the `- <<'EOF'` form (plus closing EOF) of every rhiza run findings / rhiza run verdict in build.md, review.md and plan-review.md, and TestGuidesFeedFindingsFromStdin fails on any remaining <file> form. git grep finds no `run findings|verdict ... <file>` left outside .rhiza. The attempt-1 blocker is fixed: go test -trimpath ./cmd/rhiza -run 'TestScripts/guide$' passes with guide.txtar expecting the heredoc forms. Diff read: flags (--leaf, --check, --json) and JSON shapes unchanged."
+        },
+        "handle": "guides-stdin-findings-verified-2",
+        "id": "01M6MTKW0005NJ0Z9PPE7663GA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MTKW0005NJ0Z9PPD8RWJMJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MTKW0005NJ0Z9PPD8RWJMJ",
+        "id": "01M6MTKZM93DB896HHX8NG3MXR",
+        "link": "01M6MTKZM93DB896HHX7B0NZJS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MMAF8Z4XWD1JD9WG5PRYBR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MM3MAXFA2ARM9GAF4RV1ZW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MTM3E3D4QSPPHEB2SBBCQT",
+  "type": "ops",
+  "v": 1
+}

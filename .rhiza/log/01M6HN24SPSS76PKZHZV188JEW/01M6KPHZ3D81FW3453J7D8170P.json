@@ -1,0 +1,40 @@
+{
+  "actor": "01M6KNQJW5EMTED21JYR3D15G6",
+  "after": [
+    "01M6KK4Z9NVQ11XER7Z4KZ99JR"
+  ],
+  "at": "2026-11-04T16:33:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d30ad3cf (attempt 2): go test -trimpath ./cmd/rhiza -run TestScripts/workflow- passed (workflow-new.txtar forks ship-change with --from, name line aside a fork of the fork is byte-identical and passes workflow check; the skeleton passes workflow check and run start --dry-run; an existing file gives exit 3 and stays byte-for-byte unchanged, including with --from and --json conflict; sub/x and x.toml give exit 2; --dry-run writes nothing; --json matches api call). TestWithNameDiffersOnlyInName and TestWithNameAddsMissing pass. Read the fix diff: the skeleton drops agent = \"claude-code\" and permission_mode, so nothing in internal/api/workflow_new*.go names an agent. A scratch build's skeleton passed workflow check, and like the built-in build workflow it asks for --permission-mode at run start."
+        },
+        "handle": "workflow-new-verified-2",
+        "id": "01M6KPHA44QYV9KAV4KMZFFYSW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KPHA44QYV9KAV4KJ11H8VW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KPHA44QYV9KAV4KJ11H8VW",
+        "id": "01M6KPHHD4CRZF9MKBW0BXMV3Z",
+        "link": "01M6KPHHD4CRZF9MKBVY25H7RS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HNBHR1P4N0M34NBQD7V10H",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HN24SPSS76PKZHZV188JEW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KPHZ3D81FW3453J7D8170P",
+  "type": "ops",
+  "v": 1
+}

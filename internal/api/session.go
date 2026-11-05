@@ -92,6 +92,9 @@ type SessionStartRequest struct {
 	// autonomous marks the session as launched by an autonomous run. Only
 	// a run's StartAgent sets it, so it stays off the request schema.
 	autonomous bool
+	// milestone is the session record's Milestone. Only a plan run's
+	// StartAgent sets it.
+	milestone string
 	// writes and writesRecord are the session record's Writes and
 	// WritesRecord. Only a run's StartArbiter sets them.
 	writes       string
@@ -267,7 +270,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 	tab := session.Tab{Session: rexSession, Title: tabTitle}
 	reuse := t.reuse
 	rec := session.Record{
-		ID: sid, Agent: a.Name(), Change: cs.String(), Title: title, Step: step, Run: r.Run, Autonomous: r.autonomous,
+		ID: sid, Agent: a.Name(), Change: cs.String(), Title: title, Step: step, Run: r.Run, Autonomous: r.autonomous, Milestone: r.milestone,
 		Actor: handleSlug(a.Name() + "-" + sid[:8]), PermissionMode: r.PermissionMode, Prompt: r.Prompt,
 		Worktree: worktree, Branch: branch, Tab: tab, StartedAt: ctx.Now().UTC().Truncate(time.Second),
 		Advises: r.advises, Writes: r.writes, WritesRecord: r.writesRecord, Leaf: r.leaf, Attempt: r.attempt, Role: r.role, Commit: r.commit, Model: r.model,
@@ -304,8 +307,16 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if rec.Actor, err = recordAgentActor(ww, a.Name(), sid, cs, launcher, forID); err != nil {
+	var actorCS id.ID
+	if rec.Actor, actorCS, err = recordAgentActor(ww, a.Name(), sid, cs, launcher, forID); err != nil {
 		return nil, err
+	}
+	if r.dir != "" {
+		// The session has its own checkout: give it the same record, so the
+		// actor resolves there and a later merge brings the same files.
+		if err := copyChangeSetLog(ww.root, filepath.Join(r.dir, t.prefix), actorCS); err != nil {
+			return nil, err
+		}
 	}
 	rec.For = launcher.String()
 
@@ -609,14 +620,26 @@ func worktreeWorkspace(ctx *Ctx, w *workspace, root string, cs id.ID) (*workspac
 	if _, ok := ww.changeSet(cs); ok {
 		return ww, nil
 	}
-	src := filepath.Join(w.root, store.Dir, store.LogDir, cs.String())
-	dst := filepath.Join(root, store.Dir, store.LogDir, cs.String())
+	if err := copyChangeSetLog(w.root, root, cs); err != nil {
+		return nil, err
+	}
+	if _, ok := ww.changeSet(cs); !ok {
+		return nil, Errorf("change set %s is not in the worktree's log at %s after copying it", cs, root)
+	}
+	return ww, nil
+}
+
+// copyChangeSetLog copies the log entries of change set cs from the Rhiza
+// repository at srcRoot into the one at dstRoot, those it lacks.
+func copyChangeSetLog(srcRoot, dstRoot string, cs id.ID) error {
+	src := filepath.Join(srcRoot, store.Dir, store.LogDir, cs.String())
+	dst := filepath.Join(dstRoot, store.Dir, store.LogDir, cs.String())
 	files, err := os.ReadDir(src)
 	if err != nil {
-		return nil, Errorf("read change set %s: %v", cs, err)
+		return Errorf("read change set %s: %v", cs, err)
 	}
 	if err := os.MkdirAll(dst, 0o755); err != nil {
-		return nil, Errorf("copy change set %s: %v", cs, err)
+		return Errorf("copy change set %s: %v", cs, err)
 	}
 	for _, f := range files {
 		name := f.Name()
@@ -624,13 +647,10 @@ func worktreeWorkspace(ctx *Ctx, w *workspace, root string, cs id.ID) (*workspac
 			continue
 		}
 		if err := copyNewFile(filepath.Join(src, name), filepath.Join(dst, name)); err != nil {
-			return nil, Errorf("copy change set %s: %v", cs, err)
+			return Errorf("copy change set %s: %v", cs, err)
 		}
 	}
-	if _, ok := ww.changeSet(cs); !ok {
-		return nil, Errorf("change set %s is not in the worktree's log at %s after copying it", cs, root)
-	}
-	return ww, nil
+	return nil
 }
 
 // copyNewFile copies src to dst unless dst exists, through a temp file and
@@ -665,19 +685,37 @@ func copyNewFile(src, dst string) error {
 // recordAgentActor records the agent's actor node in the worktree's model,
 // in a landed record change set written by the launcher, and returns its
 // handle: <agent>-<first 8 hex of the session ID>, made unique.
-func recordAgentActor(ww *workspace, agent, sid string, cs, launcher, forID id.ID) (string, error) {
+//
+// A live actor node already carrying this session ID is reused: its handle
+// and the change set that recorded it come back and nothing is written, so
+// stamping a session twice never adds a second record.
+func recordAgentActor(ww *workspace, agent, sid string, cs, launcher, forID id.ID) (string, id.ID, error) {
 	m := ww.model(id.ID{})
+	for _, n := range m.Children(op.KindActor, id.ID{}) {
+		var got string
+		raw, ok := n.Fields["session"]
+		if !ok || json.Unmarshal(raw, &got) != nil || got != sid {
+			continue
+		}
+		for _, c := range ww.changeSets() {
+			for _, o := range c.Ops {
+				if o.Type == op.TypeNodeCreate && o.Node == n.ID {
+					return n.Handle, c.ID, nil
+				}
+			}
+		}
+	}
 	handle := uniqueHandle(handleSlug(agent+"-"+sid[:8]), func(h string) bool {
 		_, taken := m.HandleTaken(h)
 		return taken
 	})
 	node, err := ww.ids.New()
 	if err != nil {
-		return "", Errorf("%s", err.Error())
+		return "", id.ID{}, Errorf("%s", err.Error())
 	}
 	opID, err := ww.ids.New()
 	if err != nil {
-		return "", Errorf("%s", err.Error())
+		return "", id.ID{}, Errorf("%s", err.Error())
 	}
 	fields, err := textFields(map[string]string{
 		"name":    handle,
@@ -687,13 +725,14 @@ func recordAgentActor(ww *workspace, agent, sid string, cs, launcher, forID id.I
 		"role":    "runs change set " + cs.String(),
 	})
 	if err != nil {
-		return "", err
+		return "", id.ID{}, err
 	}
 	c := op.Op{ID: opID, Type: op.TypeNodeCreate, Node: node, Kind: op.KindActor, Handle: handle, Fields: fields}
-	if _, _, err := ww.writeRecord("Record agent actor "+handle+" for session "+sid, []op.Op{c}, launcher, forID); err != nil {
-		return "", err
+	recCS, _, err := ww.writeRecord("Record agent actor "+handle+" for session "+sid, []op.Op{c}, launcher, forID)
+	if err != nil {
+		return "", id.ID{}, err
 	}
-	return handle, nil
+	return handle, recCS, nil
 }
 
 // rexWindowArgs is the argv after "rex" that opens the session's tab in

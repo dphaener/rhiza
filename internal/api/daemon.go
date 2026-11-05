@@ -585,7 +585,10 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	}
 	var resumable []string
 	if !stopped && !paused {
-		resumable = daemon.Resumable(runs, host, nil, rs.Live, accepted, ctx.Now())
+		resumable = daemon.Resumable(runs, host, nil, rs.Live, func(change string) string {
+			st, _ := fold.stateOf(change)
+			return st
+		}, planWorkflow, ctx.Now())
 	}
 	// The owner's queued continuations are started below, within max; the
 	// daemon's own resume of an interrupted run leaves those runs to them.
@@ -721,7 +724,13 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		return started, resumed, nil, err
 	}
 	running += len(continued)
-	queued, err := daemonQueuedStarts(ctx, rs, pending, runs, running, max, mode)
+	// While a plan request could start, queued starts leave it one slot
+	// (when max > 1), as ship picks do.
+	startMax := max
+	if max > 1 && daemonRequestWaits(ctx) {
+		startMax--
+	}
+	queued, err := daemonQueuedStarts(ctx, rs, pending, runs, running, startMax, mode)
 	started = append(started, queued...)
 	if err != nil {
 		return started, resumed, nil, err

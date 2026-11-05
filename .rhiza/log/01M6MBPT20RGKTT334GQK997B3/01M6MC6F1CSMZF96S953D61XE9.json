@@ -1,0 +1,83 @@
+{
+  "actor": "01M6MBQ8TZMND06Y7H3E1WJXS5",
+  "after": [
+    "01M6MC300T5H9R6200TVKYVWZY"
+  ],
+  "at": "2026-11-04T22:52:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6MBZWS89JM6422AY2D9Z5CP",
+        "id": "01M6MC454RMV2BXZQV29361JCV",
+        "link": "01M6MC454RMV2BXZQV27EJ0S8N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MC26DA3HZ8V0PDTPQ93122",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/api parses sample --log-failed output (a nested TestScripts/review-check-worktree failure, two failing tests in one package, and an infra-only log with no '--- FAIL:' line) into the expected test names and none for the infra log; a testscript with a fake gh whose check fails again after its rerun and whose 'run view 42 --log-failed' prints a '--- FAIL: TestScripts/x' line shows ship check --json listing that test as a failure and finding; run with go test -trimpath ./internal/api/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/run-ship' only",
+          "statement": "When a PR head's checks still fail after their once-per-head rerun, rhiza ship check reads each failed Actions run's log (gh run view <run> --log-failed), reports the failing Go tests and testscripts it names ('--- FAIL: TestX[/sub]' lines) as test failures, and records each as a finding with no leaf for the next fix step; a failed check with no Actions run id, no parsable failing test, or only an infra/setup error stays a plain failure, as today"
+        },
+        "handle": "ship-check-ci-test-findings",
+        "id": "01M6MC4GXTJ7SWF8NV4VMZDJ9N",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M6MC4GXTJ7SWF8NV4SYXD3F9",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M6MC4GXTJ7SWF8NV4SYXD3F9",
+        "id": "01M6MC4WMYG8C5F8PN19CMHQAX",
+        "link": "01M6MC4WMYG8C5F8PN196YC28T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MBZWS89JM6422AY2D9Z5CP",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/workflow loads the built-in ship-change workflow and asserts pr-green and rebased-green fail to ci-fix, ci-fix passes to render-pr with max_visits 2, the raised max_visits, and no on.fail on landed-green or rebased-merge-green; a testscript run-ship-ci-fix with a fake gh and a fake fixer agent goes red with a parsed test failure, through one ci-fix commit carrying a Review: trailer, back to green and signoff, and a second case red after two fixes fails the run with the failing tests in the step output, while an infra-only failure fails at pr-green with no ci-fix visit; run with go test -trimpath ./internal/workflow/... and go test -trimpath ./cmd/rhiza -run 'TestScripts/run-ship' only",
+          "statement": "The built-in ship-change workflow routes a test failure at pr-green or rebased-green to a ci-fix step: one fixer session on the run worktree, given the CI test findings appended to the review fixer's prompt and told to re-run only the failing tests and their packages, makes one new commit with a Review: <run> trailer, then the run goes on through render-pr, open-pr, wait-pr, pr-green and signoff; ci-fix runs at most twice per run (max_visits 2), max_visits on render-pr, open-pr, wait-pr, pr-green and signoff are raised so two CI fixes plus the owner's request-changes still fit, and landed-green and rebased-merge-green still fail the run as today"
+        },
+        "handle": "ship-change-ci-fix-step",
+        "id": "01M6MC56XH2VTXCYDT1GB8RKKB",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M6MC56XH2VTXCYDT1G5WD55E",
+        "op": "node.create",
+        "parent": "01M5TYKPJ0FNX289H8PNJRM1TT"
+      },
+      {
+        "decision": null,
+        "from": "01M6MC56XH2VTXCYDT1G5WD55E",
+        "id": "01M6MC5F381E1F55RM5FGPFC20",
+        "link": "01M6MC5F381E1F55RM5DRS98QJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MBZWS89JM6422AY2D9Z5CP",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MC56XH2VTXCYDT1G5WD55E",
+        "id": "01M6MC5TE3TP5GBPWYJ4PZAV26",
+        "link": "01M6MC5TE3TP5GBPWYJ4JKR90T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MC4GXTJ7SWF8NV4SYXD3F9",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6MBPT20RGKTT334GQK997B3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MC6F1CSMZF96S953D61XE9",
+  "type": "ops",
+  "v": 1
+}

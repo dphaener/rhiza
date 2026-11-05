@@ -7,7 +7,9 @@ package api
 // entry ID the page before ended at.
 
 import (
+	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"reflect"
@@ -17,6 +19,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/canon"
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
@@ -51,12 +54,17 @@ type FeedRequest struct {
 	Cursor string `json:"cursor,omitempty" desc:"Where to go on: the next_cursor of the page before"`
 	Since  string `json:"since,omitempty" desc:"Keep the change sets landed at or after this time, RFC 3339"`
 	All    bool   `json:"all,omitempty" flag:"all" desc:"Include the change sets whose ops only create or update actor nodes, which are left out by default"`
+	Follow bool   `json:"follow,omitempty" flag:"follow" desc:"Stream each change set as it lands until interrupted: with neither cursor nor since only those landing after the start, else the backlog after that point first; one FeedItem per line with --json; limit then stops after that many, default unlimited"`
 }
 
 // FeedResponse is one page of the feed.
 type FeedResponse struct {
 	ChangeSets []FeedItem `json:"change_sets" desc:"The landed change sets, oldest land first"`
 	NextCursor string     `json:"next_cursor,omitempty" desc:"The cursor of the next page; absent when no more remain"`
+
+	// streamed is set when the page went to Ctx.Out line by line (follow):
+	// callers print nothing more.
+	streamed bool
 
 	// command is the feed command line of this page, without --cursor, for
 	// the next line.
@@ -83,7 +91,11 @@ func runFeed(ctx *Ctx, req any) (any, error) {
 	if limit == 0 {
 		limit = feedDefaultLimit
 	}
-	if limit < 0 || limit > feedMaxLimit {
+	if q.Follow {
+		if limit < 0 {
+			return nil, Usagef("limit %d is out of range: give 1 or more", q.Limit).WithNext(feedDescribeNext)
+		}
+	} else if limit < 0 || limit > feedMaxLimit {
 		return nil, Usagef("limit %d is out of range: give 1 to %d", q.Limit, feedMaxLimit).WithNext(feedDescribeNext)
 	}
 	var after id.ID
@@ -102,6 +114,26 @@ func runFeed(ctx *Ctx, req any) (any, error) {
 		}
 		since = t
 	}
+	if q.Follow {
+		return runFeedFollow(ctx, q, after, since)
+	}
+	items, err := feedItems(ctx, q.All, since, after)
+	if err != nil {
+		return nil, err
+	}
+	resp := FeedResponse{ChangeSets: []FeedItem{}, command: feedCommand(q)}
+	if len(items) > limit {
+		items = items[:limit]
+		resp.NextCursor = feedEncodeCursor(items[limit-1].LandEntry)
+	}
+	resp.ChangeSets = append(resp.ChangeSets, items...)
+	return resp, nil
+}
+
+// feedItems folds the log and returns the landed change sets at their latest
+// land entry, past land entry after and not landed before since (zero for
+// either: no bound), ordered by land entry.
+func feedItems(ctx *Ctx, all bool, since time.Time, after id.ID) ([]FeedItem, error) {
 	w, err := openCtxWorkspace(ctx)
 	if err != nil {
 		return nil, err
@@ -112,7 +144,7 @@ func runFeed(ctx *Ctx, req any) (any, error) {
 		if c.State != changeset.StateLanded {
 			continue
 		}
-		if !q.All && feedActorOnly(m, c) {
+		if !all && feedActorOnly(m, c) {
 			continue
 		}
 		land, ok := latestLand(c)
@@ -129,13 +161,7 @@ func runFeed(ctx *Ctx, req any) (any, error) {
 		})
 	}
 	slices.SortFunc(items, func(a, b FeedItem) int { return id.Compare(a.LandEntry, b.LandEntry) })
-	resp := FeedResponse{ChangeSets: []FeedItem{}, command: feedCommand(q)}
-	if len(items) > limit {
-		items = items[:limit]
-		resp.NextCursor = feedEncodeCursor(items[limit-1].LandEntry)
-	}
-	resp.ChangeSets = append(resp.ChangeSets, items...)
-	return resp, nil
+	return items, nil
 }
 
 // feedActorOnly reports whether every op of c creates or updates an actor
@@ -267,11 +293,7 @@ func (r FeedResponse) Human(w io.Writer) {
 		return
 	}
 	for _, c := range r.ChangeSets {
-		line := fmt.Sprintf("- %s %s %s %s: %s (%d %s)", c.LandedAt, c.ID, c.Kind, c.Actor, oneLine(c.Title), c.Leaves, feedPlural(c.Leaves))
-		if c.PR > 0 {
-			line += fmt.Sprintf(" #%d", c.PR)
-		}
-		fmt.Fprintln(w, line)
+		fmt.Fprintln(w, feedLine(c))
 	}
 	if r.NextCursor != "" {
 		cmd := r.command
@@ -287,4 +309,93 @@ func feedPlural(n int) string {
 		return "leaf"
 	}
 	return "leaves"
+}
+
+// feedLine is the line of change set c in human output.
+func feedLine(c FeedItem) string {
+	line := fmt.Sprintf("- %s %s %s %s: %s (%d %s)", c.LandedAt, c.ID, c.Kind, c.Actor, oneLine(c.Title), c.Leaves, feedPlural(c.Leaves))
+	if c.PR > 0 {
+		line += fmt.Sprintf(" #%d", c.PR)
+	}
+	return line
+}
+
+// feedPoll is the interval at which follow refolds the log.
+const feedPoll = 2 * time.Second
+
+// feedTicker ticks once per follow poll; tests replace it.
+var feedTicker = func() (<-chan time.Time, func()) {
+	t := time.NewTicker(feedPoll)
+	return t.C, t.Stop
+}
+
+// Streamed reports that the response went to Ctx.Out as it happened, so a
+// caller prints nothing for it.
+func (r FeedResponse) Streamed() bool { return r.streamed }
+
+// runFeedFollow streams the change sets landing past the last one emitted
+// to ctx.Out, one line each (a FeedItem as one line of JSON when ctx.JSON,
+// else feed's '- ' line), at once and then on each tick, until interrupted
+// or q.Limit change sets are out. With neither cursor nor since it starts at
+// the current end of the feed.
+func runFeedFollow(ctx *Ctx, q FeedRequest, after id.ID, since time.Time) (any, error) {
+	if ctx.Out == nil {
+		return nil, Usagef("feed --follow needs somewhere to stream to").WithNext(feedDescribeNext)
+	}
+	if q.Cursor == "" && q.Since == "" {
+		// The end of the feed counts every landed change set, hidden or not.
+		items, err := feedItems(ctx, true, time.Time{}, id.ID{})
+		if err != nil {
+			return nil, err
+		}
+		if len(items) > 0 {
+			after = items[len(items)-1].LandEntry
+		}
+	}
+	var interrupted <-chan struct{}
+	if ctx.Interrupts != nil {
+		ch, stop := ctx.Interrupts()
+		defer stop()
+		interrupted = ch
+	}
+	ticks, stopTicks := feedTicker()
+	defer stopTicks()
+	done := FeedResponse{ChangeSets: []FeedItem{}, streamed: true}
+	emitted := 0
+	for {
+		items, err := feedItems(ctx, q.All, since, after)
+		if err != nil {
+			return nil, err
+		}
+		for _, c := range items {
+			var line []byte
+			if ctx.JSON {
+				b, err := canon.Marshal(c)
+				if err != nil {
+					return nil, Errorf("encode feed item: %v", err)
+				}
+				var buf bytes.Buffer
+				if err := json.Compact(&buf, bytes.TrimSpace(b)); err != nil {
+					return nil, Errorf("encode feed item: %v", err)
+				}
+				buf.WriteByte('\n')
+				line = buf.Bytes()
+			} else {
+				line = []byte(feedLine(c) + "\n")
+			}
+			if _, err := ctx.Out.Write(line); err != nil {
+				return nil, Errorf("write feed: %v", err)
+			}
+			after = c.LandEntry
+			emitted++
+			if q.Limit > 0 && emitted >= q.Limit {
+				return done, nil
+			}
+		}
+		select {
+		case <-interrupted:
+			return done, nil
+		case <-ticks:
+		}
+	}
 }

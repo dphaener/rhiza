@@ -1,0 +1,40 @@
+{
+  "actor": "01M6M67YECN0XWH3KSY65YZ72G",
+  "after": [
+    "01M6M11FED7CEWAAQ979NVKNAJ"
+  ],
+  "at": "2026-11-04T21:09:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier claude-code-c5bebbed at f99ccf13: read the diff (CLAUDE.md replaces the unqualified 'Run `make check` before calling any change done.' with the agents-in-runs rule: never run make check, make test or a bare go test ./..., since GitHub CI runs make check before every merge; scoped commands go test -trimpath ./internal/<pkg>/..., go test -trimpath ./cmd/rhiza -run TestScripts/<name>, make self-check; make check kept for people outside a run). Ran `go test -trimpath ./cmd/rhiza -run 'TestClaudeMDScopedTests$' -count=1 -v`: PASS. Mutation: same test in an archive of HEAD with CLAUDE.md swapped for HEAD~1's version FAILS on all four missing phrases and on the still-present unqualified line. gofmt clean."
+        },
+        "handle": "claude-md-scoped-tests-verified",
+        "id": "01M6M69TN3F8P9HPV11WEX0QJE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M69TN3F8P9HPV11V1827K4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M69TN3F8P9HPV11V1827K4",
+        "id": "01M6M69ZMZ61CRNBH7GWDC5Q01",
+        "link": "01M6M69ZMZ61CRNBH7GVJNDR70",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0FK7XV5HMP0A70DZFF188",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6M01GYQHR9VMCZ54W5THARK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M6AE6XFXMHEDMBQSWVXNTA",
+  "type": "ops",
+  "v": 1
+}

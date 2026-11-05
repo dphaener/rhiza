@@ -1,0 +1,40 @@
+{
+  "actor": "01M6M1SRVCGGJ52M04E3EKWPKS",
+  "after": [
+    "01M6M1V413J4HSED6DNDNFZ92W"
+  ],
+  "at": "2026-11-04T19:53:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At cd64d73f ran go test ./cmd/rhiza -run 'TestScripts/ci-install$' -count=1: ok. The script cmps .github/workflows/rhiza.yml against its expected workflow, which holds concurrency group rhiza-${{ github.event.pull_request.number || github.sha }} with cancel-in-progress ${{ github.event_name == 'pull_request' }} (true only for pull_request, never for pushes to main), and keeps the push: branches [ main ] trigger and all three check steps (base branch, github.event.before, first push). internal/api/ci.go's template matches byte for byte. Read the diff: the fallback moved from github.ref to github.sha, departing from the acceptance's 'falling back to the ref' wording, to fix confirmed review finding f1 (GitHub cancels a group's pending run when a newer one queues, so one shared push group could drop a push and skip its changes in the incremental check). The sha fallback gives each push its own group, which is what the leaf statement requires: no push to main cancels an earlier push's check."
+        },
+        "handle": "ci-install-cancels-stale-verified-2",
+        "id": "01M6M1YN4XR1RB7RWV3F8RR4EY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M1YN4V8TQVRP0C6PZ3QKAN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M1YN4V8TQVRP0C6PZ3QKAN",
+        "id": "01M6M1YS7PVJ01STHVGQA6WEMW",
+        "link": "01M6M1YS7PVJ01STHVGPM8SGYQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HWZ4ZMHV1Q7BYEZF4MPFP7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HW7MG0ZVWWHYP903FXV9YF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M1YZQ6W4E5A72Y826E0AQP",
+  "type": "ops",
+  "v": 1
+}

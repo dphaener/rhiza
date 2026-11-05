@@ -89,7 +89,7 @@ fold-ok
 {"title":"Planning interview","summary":"An autonomous planner planned the exports milestone.","quotes":[]}
 -- record.json --
 {"writes":[
-  {"op":"add","kind":"intent","handle":"exports","fields":["statement=Users take their reports out of the product"]},
+  {"op":"add","kind":"intent","handle":"exports","fields":["statement=Users take their reports out of the product","milestone=1"]},
   {"op":"add","kind":"decision","handle":"keep-flat","fields":["statement=Exports keep memory flat","wording=Keep it flat","reasoning=Reports are large"]}
 ]}
 -- leaf.json --

@@ -1,0 +1,86 @@
+{
+  "actor": "01M6KEDFJG8H6K2R5CT8GNS9BB",
+  "after": [
+    "01M6KEAPC7KZ64QM13HC7S9TS2"
+  ],
+  "at": "2026-11-04T14:19:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 0bee2696 with a scratch build (go build -o $TMPDIR/rhiza-x ./cmd/rhiza) on a scratch git repo with rhiza init, a real change set and untrailered code commits. rhiza check with no .rhiza/check.json and with check.json {} printed ok, no unclaimed line, exit 0. unclaimed_since 0123456789012345678901234567890123456789 exited 1 with 'rhiza: .rhiza/check.json: unclaimed_since \"0123...\" is not a commit in this git repository'; '-h' and malformed JSON also exited 1 naming .rhiza/check.json. repo.json was not touched."
+        },
+        "handle": "unclaimed-cutoff-qa-1",
+        "id": "01M6KERKPMWMAK21SHJ1VRCJ30",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KERKPMWMAK21SHJ14YY8WG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KERKPMWMAK21SHJ14YY8WG",
+        "id": "01M6KES3V166VS5SXP0HP0BYJF",
+        "link": "01M6KES3V166VS5SXP0F9JTVPN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HM2WJCT93N5GDJ35P10P4B",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 0bee2696 with a scratch build on a scratch repo: cutoff at an untrailered commit, then commits 'no trailer', 'unknown change' (Change: 01M5ZZZ...), 'known before coauthor' (Change/Actor paragraph then Co-Authored-By), a GitHub-squash shape (bullets, two Change/Actor paragraphs, '---------', Co-authored-by), 'prose only' (see Change: <id> in prose), a .rhiza/-only commit, 'actor only' (Actor:/Leaf:), a lowercase change: trailer and a --no-ff merge of a claimed side commit. rhiza check printed ok, exit 0, and exactly 4 'warn unclaimed' lines, each with a 12-char hash and subject: no trailer, prose only, actor only (missing) and unknown change (names unknown change set 01M5ZZZ...). None for the squash, the known commit, .rhiza/-only, the merge, side or the pre-cutoff commit; check --json listed the same 4 with rule unclaimed, severity warn."
+        },
+        "handle": "unclaimed-commits-qa-1",
+        "id": "01M6KESJJ44W94983RW0D57QQ3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KESJJ44W94983RVX75A36B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KESJJ44W94983RVX75A36B",
+        "id": "01M6KESY126RJQH3YP2YM2VHVX",
+        "link": "01M6KESY126RJQH3YP2YJT15E3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HM30GNXZNEK2YGYEBWFK54",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 0bee2696: .rhiza/check.json holds unclaimed_since 18e33781c268cf557f5309e13d2402706ac67881, a commit (git cat-file), an ancestor of HEAD and of origin/main, equal to merge-base HEAD origin/main. With RHIZA_* unset, make self-check exits 0 (ok) and scratch-build rhiza check --json has no findings. In a clone of this checkout with an added untrailered code commit, rhiza check reported 'warn unclaimed: commit ... \"stray code\" ... has no Change: trailer (missing)', so the rule is on here; an added empty commit raised nothing."
+        },
+        "handle": "unclaimed-on-here-qa-1",
+        "id": "01M6KET8BK20TKYJF933A3CD46",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6KET8BK20TKYJF932Y22FA0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6KET8BK20TKYJF932Y22FA0",
+        "id": "01M6KETJ76Y68EMF4H0JHD9VZK",
+        "link": "01M6KETJ76Y68EMF4H0JEYZRGF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HM36F6SPZGNYW6GEQKAGZW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6HKRVC93TGX0ZC40QZ2GW9J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6KEV6FJ6KV068NPY95KPKDZ",
+  "type": "ops",
+  "v": 1
+}

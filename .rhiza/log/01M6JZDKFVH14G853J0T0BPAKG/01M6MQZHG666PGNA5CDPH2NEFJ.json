@@ -1,0 +1,63 @@
+{
+  "actor": "01M6MQR17EQVNBW3V3RZJ7K8JS",
+  "after": [
+    "01M6MQNTNTXWN2APACQBJAJCS5"
+  ],
+  "at": "2026-11-05T02:18:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at dfff1995 with a binary built from the branch (go build -trimpath ./cmd/rhiza), in a scratch git repo with RHIZA_*/REX_* unset and a fake rex on PATH. Started a one-step wait workflow on a record change set, rewrote its journal's workflow to plan, ran rhiza land, then made the stop an interruption (dropped the stopped entry, appended a dead pid). rhiza daemon --permission-mode manual --once printed 'Resumed run <id>', journaled one daemon-resumed entry, and its real detached rhiza run resume --foreground process (no test hook) recorded its own process and ran the run to succeeded. Interrupted again (dead pid after daemon-resumed), a second daemon --once resumed nothing ('resumed': []) and daemon-resumed stayed at 1. A failed plan run on the landed record was not resumed. A ship-change run interrupted on a proposed, accepted and landed change set that never reached land, and a plan run interrupted on a withdrawn change set, were both left unresumed by daemon --once. Scoped tests: go test ./internal/daemon/... and the daemon-resume* testscripts pass."
+        },
+        "handle": "daemon-resumes-landed-plan-run-qa-1",
+        "id": "01M6MQYPZVQQ0QHPBEA3TNASCX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MQYPZVQQ0QHPBEA0BPP88P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MQYPZVQQ0QHPBEA0BPP88P",
+        "id": "01M6MQYTE5CGSZHYHXSC7RT63N",
+        "link": "01M6MQYTE5CGSZHYHXSA8R18CP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JZNFW03AN8AXVQSKVJ00RG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at dfff1995 with a binary built from the branch, in the same scratch repo (fake rex, RHIZA_*/REX_* unset). An interrupted plan run on a landed record: rhiza inbox printed 'Nothing waits on you' (no skipped item). Interrupted again after the daemon's one resume: rhiza inbox listed 'gave-up run <id> ... interrupted again after the daemon's one resume, next: rhiza run resume <id>', and --json gave kind gave-up with that next. With the journal ending failed ('boom'): inbox listed 'failed run <id> ... next: rhiza run resume --retry <id>', and running that command really retried the step, after which the run succeeded. Negative cases: a ship-change run interrupted on a landed change set whose journal never reached land was listed 'skipped ... its change set is landed, next: rhiza run abandon <id>', and a plan run on a withdrawn change set 'skipped ... its change set is withdrawn, next: rhiza run abandon <id>'. Scoped tests: go test ./internal/api -run Inbox and the inbox*, unaccepted* and run-resume* testscripts pass."
+        },
+        "handle": "inbox-landed-plan-run-in-flight-qa-1",
+        "id": "01M6MQZ0CZJ23Y8EXN7KJS0CQ2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MQZ0CZJ23Y8EXN7HHDQ6K2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MQZ0CZJ23Y8EXN7HHDQ6K2",
+        "id": "01M6MQZ6TG9TBAPXSBZZ0B4ENH",
+        "link": "01M6MQZ6TG9TBAPXSBZXV3GQ1Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JZNSXJ5QSSEAJF7QWJ62XT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6JZDKFVH14G853J0T0BPAKG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MQZHG666PGNA5CDPH2NEFJ",
+  "type": "ops",
+  "v": 1
+}

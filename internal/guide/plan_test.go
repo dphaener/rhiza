@@ -60,6 +60,10 @@ func TestPlanText(t *testing.T) {
 			`rhiza link "$RHIZA_CHANGE" serves <intent>`, "before any leaf",
 			"`\"serves\": []` in `rhiza change show --json`", "own serves links",
 		},
+		"plan-serves-milestone": {
+			"RHIZA_MILESTONE", "reach one, directly or through an intent under one",
+			"umbrella or area intent under no", "milestone",
+		},
 		"plan-interview": {
 			"rhiza slice", "rhiza why", "Never ask a fact", "One topic per message",
 			"recommendation", "AskUserQuestion", "Only typed words are quoted",
@@ -90,10 +94,31 @@ func TestPlanReviewText(t *testing.T) {
 			"missing-acceptance", "missing-provenance", "unreal-depends-on",
 			"outside-intent", "contradiction",
 			"rhiza overlaps --change <cs> --json", "naming the other change set",
-			"rhiza run findings", `{"findings":[{"node":"`, `"kind":`, `"reason":`, `{"findings":[]}`,
-			"rhiza run verdict", `{"verdicts":[{"finding":"f1","verdict":`, "`confirmed` or `dropped`",
+			"rhiza run findings - --json <<'EOF'", "\nEOF\n", `{"findings":[{"node":"`, `"kind":`, `"reason":`, `{"findings":[]}`,
+			"rhiza run verdict - --json <<'EOF'", `{"verdicts":[{"finding":"f1","verdict":`, "`confirmed` or `dropped`",
 			"serving an intent it adds", "rhiza change show", "rhiza slice", "rhiza why",
 			"Never add a finding", "confirmed finding", "--record", "rhiza session done",
 		},
 	})
+}
+
+func TestPlanAcceptanceScoped(t *testing.T) {
+	checkPhrases(t, "plan", map[string][]string{
+		"plan-acceptance-scoped": {
+			"the tests covering that leaf, never the repo's full suite",
+		},
+	})
+	checkPhrases(t, "plan-review", map[string][]string{
+		"plan-review-acceptance-scoped": {
+			"runs the repo's full suite", "tests covering that leaf",
+		},
+	})
+	for _, name := range []string{"plan", "plan-review"} {
+		tx, _ := Lookup(name)
+		for _, bad := range []string{"go test", "make check", "make test", "testscript"} {
+			if strings.Contains(tx.Body, bad) {
+				t.Errorf("%s names %q", name, bad)
+			}
+		}
+	}
 }

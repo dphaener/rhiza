@@ -1,0 +1,30 @@
+{
+  "actor": "01M6MAV2Q5P2D1Z2YW0BV66RB1",
+  "after": [
+    "01M6MAM9RPSHB2G6R35E4SYZ0Y"
+  ],
+  "at": "2026-11-04T22:29:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Testscripts with a local bare origin and a fake gh, replacing run-ship-merge-tree-differs: (a) differing trees: wait-main calls gh workflow run <file> --ref main -f sha=<merge commit> exactly once across its polls, for a workflow on origin/main's tip declaring pull_request and workflow_dispatch with a sha input and a run-name referencing inputs.sha, and not for one declaring only push, keeps waiting while the fake run whose title holds that sha is in progress, and the run reaches close-out once it succeeds; (b) the fake dispatched run fails, is rerun once and fails again: main-green fails with a stop: line naming the merge commit and the failed check, and the run never reaches close-out; (c) differing trees and no dispatchable workflow: a stop: line naming the merge commit and saying no dispatchable workflow was found, with no gh workflow run call; (d) a run failed at wait-main by the old tree-differs stop, with a hand-written pre-#256 state file (pr, url, branch, head, checks, merge_commit only), dispatches and reaches close-out after rhiza run resume; (e) differing trees and a workflow declaring pull_request and workflow_dispatch but no sha input (and, separately, one whose run-name lacks inputs.sha): a stop: line naming the merge commit and that workflow file, with no gh workflow run call; (f) main advanced past the merge commit with a commit that adds the sha input to a workflow lacking it at the merge commit: the workflow is selected from origin/main's tip and dispatched, so selection follows the dispatched ref, not the merge commit.",
+          "statement": "When the merge commit's tree differs from the tested head's (main moved between the checks and the merge, or the PR was merged by a ship from before #256), ship-change's wait-main step runs CI on the merge commit instead of stopping: it selects the workflows under .github/workflows at origin/main's tip (the ref it dispatches on, whose definitions GitHub runs) that declare both a pull_request and a workflow_dispatch trigger, and dispatches each of them, once and recorded in the ship state file (`gh workflow run <file> --ref main -f sha=<merge commit>`), finds each dispatched run by the merge commit's sha in its display title (event workflow_dispatch) and waits for it to finish; a failed run's failed jobs are rerun once per merge commit as PR checks are, and a second failure fails main-green with a stop: line naming the merge commit and the failed checks, with no revert and no close-out. A selected workflow whose workflow_dispatch declares no `sha` input, or whose run-name does not reference inputs.sha, cannot pin or be found by the merge commit: the main step stops, before dispatching anything, with a stop: line naming the merge commit and that workflow file and saying it lacks the sha input or run-name. Differing trees with no selected workflow stop the main step with a stop: line naming the merge commit and saying no dispatchable workflow was found. A run stopped at, or still waiting in, wait-main whose ship state file was written before this change (pr, head, checks, merge_commit, no dispatch record) takes the same path when resumed."
+        },
+        "handle": "ship-main-dispatches-ci",
+        "id": "01M6MAKAEANQJBCM1WFRHDVNPM",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M6MAKAEANQJBCM1WFMTKWJ7P",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      }
+    ]
+  },
+  "change_set": "01M6MA6P7KKMQPFBM6ZD6EMDM3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MAWSR3W8JGG8AGTB5H23VQ",
+  "type": "ops",
+  "v": 1
+}

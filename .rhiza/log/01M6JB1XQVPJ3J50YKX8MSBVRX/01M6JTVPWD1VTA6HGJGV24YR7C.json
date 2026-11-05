@@ -1,0 +1,40 @@
+{
+  "actor": "01M6JRK5Y0HMVHE3RF09D552QB",
+  "after": [
+    "01M6JP2YJN4H8Q6PPFTZ6FF2AP"
+  ],
+  "at": "2026-11-04T08:29:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 48276c56. docs/rex-upstream/notification-banner.md is committed. Its Rex server version matches rex version run on the VM (0.0.1793645657-gd018d2, commit d018d2de). Its OSC 7501 bytes match the passing session-run-blocked-notice testscript (go test ./cmd/rhiza -run TestScripts/session-run-blocked-notice -count=1: ok), and end with ST (ESC \\), which rexRecord in internal/api/run.go writes (attempt-1 finding f2 fixed). It holds a rex events --json program_status_changed record for Claude Code 2.1.316 blocked on a permission prompt on the VM (finding f1 fixed), plus the VM host setup, the symptom (chime, no banner) and blank OWNER Mac fields: app version, whether a banner shows, focus and notification permission. rhiza show rex-banner-report-ready --json gives an open question written in a record-kind change set (apply --record). Its statement names the doc and asks the owner to check the Mac, fill the fields and file with Rex if the banner is still missing. make self-check: ok. The commit changes no Go files. make check's go test hit only timing and timeout failures (TestReadBudget, slice TestBudget, a plan-workflow timeout) under VM load averages of 13 to 17, none in code this leaf touches."
+        },
+        "handle": "rex-banner-upstream-draft-verified",
+        "id": "01M6JTVFX02PHEBYD74QPRRXND",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6JTVFX02PHEBYD74P6XPR88",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6JTVFX02PHEBYD74P6XPR88",
+        "id": "01M6JTVJKQNNB7N7C3HX5480YA",
+        "link": "01M6JTVJKQNNB7N7C3HSS238BZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JBGRYGYVYDZ0VC01N3941H",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6JB1XQVPJ3J50YKX8MSBVRX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6JTVPWD1VTA6HGJGV24YR7C",
+  "type": "ops",
+  "v": 1
+}

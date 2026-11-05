@@ -397,6 +397,16 @@ func TestParseTrailerLog(t *testing.T) {
 		// A folded trailer is unfolded; blank lines may hold spaces.
 		"jjj\x1fSubject\n\nprose\n \t\nChange: CS9\nLeaf: long\n  name\x1e\n"
 	got := parseTrailerLog(out)
+	claims := map[string][]string{}
+	for i := range got {
+		claims[got[i].Hash] = got[i].Claims
+		got[i].Subject, got[i].Claims = "", nil
+	}
+	// Claims are the Change: values of every wholly-trailer paragraph after
+	// the subject, where Changes are those of the trailing run only.
+	if c := claims["iii"]; !reflect.DeepEqual(c, []string{"CS8", "CS8"}) {
+		t.Errorf("squash claims = %v", c)
+	}
 	want := []check.Commit{
 		{Hash: "aaa", Changes: []string{"CS1"}, Actors: []string{"builder"}, Leaves: []string{"leaf", "other"}},
 		{Hash: "bbb"},
@@ -432,7 +442,7 @@ func TestGitCommits(t *testing.T) {
 		t.Errorf("no commits: %#v", got)
 	}
 	g := &fakeGit{out: map[string]string{gitWorkTree: "true\n", logArgs: "abc\x1fSubject\n\nActor: x\x1e\n"}}
-	want := []check.Commit{{Hash: "abc", Actors: []string{"x"}}}
+	want := []check.Commit{{Hash: "abc", Actors: []string{"x"}, Subject: "Subject"}}
 	if got := gitCommits(g.run); !reflect.DeepEqual(got, want) {
 		t.Errorf("gitCommits = %+v, want %+v (calls %q)", got, want, g.calls)
 	}

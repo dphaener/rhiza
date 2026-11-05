@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MK61P8G5QQ4PKEYEJK6C3R",
+  "after": [
+    "01M6MK44969WKEH81QSBRT4YV7"
+  ],
+  "at": "2026-11-05T00:55:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 78269c0d, hands-on with the built test binaries: in a scratch TMPDIR made, for each of rhiza-api-budget-, rhiza-index-budget-, rhiza-slice-budget- and rhiza-quiet-, a prefixed folder with content back-dated 2h (touch -d) and a fresh prefixed one, plus an old other-old folder. Built go test -c binaries for internal/api, internal/index and internal/slice and ran each with TMPDIR set and -test.run '^$' (TestMain only): all exit 0, and afterwards the three old budget folders were gone while their fresh ones and other-old stayed. Built internal/quiettest's binary and ran TestTakeTurnOneAtATime (calls takeTurn) with the same TMPDIR: PASS, rhiza-quiet-old gone, rhiza-quiet-fresh and other-old kept, and the run's own rhiza-quiet-<ppid> removed on exit. go test -trimpath -count=1 ./internal/tmpsweep/ ./internal/quiettest/ ok."
+        },
+        "handle": "test-temp-folders-swept-qa-1",
+        "id": "01M6MK86SK8Y2R7QC6QY1MYDHP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MK86SK8Y2R7QC6QV2AWCT5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MK86SK8Y2R7QC6QV2AWCT5",
+        "id": "01M6MK8B0YVSEB4Z8NTERD9BA7",
+        "link": "01M6MK8B0YVSEB4Z8NTCRW6N51",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M1S9S4QNBMCMDWPDM62T6M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6M1M10N7AP6F0DHGANKXEA1",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MK8GDXSW9WPSHDMDGFDCZ6",
+  "type": "ops",
+  "v": 1
+}

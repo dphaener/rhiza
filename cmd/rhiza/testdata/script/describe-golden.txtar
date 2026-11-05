@@ -1489,7 +1489,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "findings": {
-            "description": "Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, anchor, text-ref, render, append-only), then path and IDs",
+            "description": "Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, unclaimed, anchor, text-ref, render, append-only), then path and IDs",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -1531,6 +1531,7 @@ cmp stdout describe.golden.json
                     "link",
                     "depends-on",
                     "evidence-actor",
+                    "unclaimed",
                     "anchor",
                     "text-ref",
                     "render",
@@ -2259,6 +2260,10 @@ cmp stdout describe.golden.json
           "cursor": {
             "description": "Where to go on: the next_cursor of the page before",
             "type": "string"
+          },
+          "follow": {
+            "description": "Stream each change set as it lands until interrupted: with neither cursor nor since only those landing after the start, else the backlog after that point first; one FeedItem per line with --json; limit then stops after that many, default unlimited",
+            "type": "boolean"
           },
           "limit": {
             "description": "The most change sets to return, 1 to 1000; default 100",
@@ -7109,6 +7114,10 @@ cmp stdout describe.golden.json
             ],
             "type": "string"
           },
+          "milestone": {
+            "description": "A milestone intent, by handle or ID, the request's plan should serve; default none (the planner serves the open milestone it fits)",
+            "type": "string"
+          },
           "text": {
             "description": "What to plan, in one line",
             "type": "string"
@@ -7144,6 +7153,10 @@ cmp stdout describe.golden.json
               },
               "kind": {
                 "description": "feature, bug or milestone",
+                "type": "string"
+              },
+              "milestone": {
+                "description": "The ID of the milestone intent the request names; absent if none",
                 "type": "string"
               },
               "run": {
@@ -7207,6 +7220,10 @@ cmp stdout describe.golden.json
                 },
                 "kind": {
                   "description": "feature, bug or milestone",
+                  "type": "string"
+                },
+                "milestone": {
+                  "description": "The ID of the milestone intent the request names; absent if none",
                   "type": "string"
                 },
                 "run": {
@@ -10667,7 +10684,7 @@ cmp stdout describe.golden.json
                 "type": "string"
               },
               "findings": {
-                "description": "Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, anchor, text-ref, render, append-only), then path and IDs",
+                "description": "Every finding, sorted by rule (log, fold, model, in-flight, link, depends-on, evidence-actor, unclaimed, anchor, text-ref, render, append-only), then path and IDs",
                 "items": {
                   "additionalProperties": false,
                   "properties": {
@@ -10709,6 +10726,7 @@ cmp stdout describe.golden.json
                         "link",
                         "depends-on",
                         "evidence-actor",
+                        "unclaimed",
                         "anchor",
                         "text-ref",
                         "render",
@@ -11250,6 +11268,38 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "List the repository's runs newest first, each with its ID, change set, title, state, current step, start time and whether it is live",
+      "write": false
+    },
+    {
+      "name": "run.milestone-check",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change_sets": {
+            "description": "The plan's change sets checked, by ID, each serving a milestone",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change_sets",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Check that each change set the plan of the run RHIZA_RUN names makes serves a milestone, directly or through an intent under one: pass, or fail naming each that does not",
       "write": false
     },
     {
@@ -14516,7 +14566,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "workflow": {
-            "description": "The workflow: a .toml file (a path with a / or ending in .toml), else a name: .rhiza/workflows/<name>.toml, else a built-in; default ship-change",
+            "description": "The workflow: a .toml file (a path with a / or ending in .toml), else a name: your personal $XDG_CONFIG_HOME/rhiza/workflows/<name>.toml, else .rhiza/workflows/<name>.toml, else a built-in; default ship-change",
             "type": "string"
           }
         },
@@ -19363,7 +19413,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "main": {
-            "description": "Check the CI runs on the merge commit that rhiza ship merge recorded, instead of the pull request",
+            "description": "Check that the merge commit rhiza ship merge recorded has the tree of the head whose checks passed, locally with git and no wait on CI, instead of checking the pull request; a differing tree dispatches CI on the merge commit (once) and checks its runs as it does a pull request's, and a stop that cannot be waited out exits 75 with a stop: line",
             "type": "boolean"
           },
           "pr_open": {
@@ -19476,6 +19526,10 @@ cmp stdout describe.golden.json
             "description": "The pull request's state, such as OPEN or MERGED",
             "type": "string"
           },
+          "stop": {
+            "description": "With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75",
+            "type": "string"
+          },
           "url": {
             "description": "The pull request's URL",
             "type": "string"
@@ -19495,7 +19549,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Check that a change set's pull request, or main after its merge, has every CI check passed; with --settled, rebase a pull request GitHub reports conflicting",
+      "summary": "Check that a change set's pull request has every CI check passed, or that main after its merge has the tested head's tree; with --settled, rebase a pull request GitHub reports conflicting",
       "write": true
     },
     {
@@ -19721,6 +19775,10 @@ cmp stdout describe.golden.json
             "description": "The squash commit on main",
             "type": "string"
           },
+          "moved": {
+            "description": "True if nothing was merged because origin/main is not in the checked head: another change set merged after its checks; the command exits 1 and the run goes back to rebase and check again",
+            "type": "boolean"
+          },
           "pr": {
             "description": "The pull request merged",
             "type": "integer"
@@ -19734,7 +19792,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Squash merge a change set's pull request, pinned to the head whose checks passed",
+      "summary": "Squash merge a change set's pull request, pinned to the head whose checks passed; merges nothing if origin/main is not in that head",
       "write": false
     },
     {
@@ -21763,6 +21821,327 @@ cmp stdout describe.golden.json
       },
       "summary": "Withdraw a change set that has not landed",
       "write": true
+    },
+    {
+      "name": "workflow.check",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "workflow": {
+            "description": "A workflow name (personal, repo, then built-in) or a .toml file path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workflow"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "description": "The workflow's name",
+            "type": "string"
+          },
+          "path": {
+            "description": "The file it resolved from, or builtin:<name>",
+            "type": "string"
+          },
+          "problems": {
+            "description": "Every problem found; empty when valid",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "message": {
+                  "description": "What is wrong and what is wanted",
+                  "type": "string"
+                },
+                "step": {
+                  "description": "The step the problem is in; empty for a problem of the whole file",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "message",
+                "step"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "valid": {
+            "description": "True when run start would accept the workflow",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "path",
+          "problems",
+          "valid"
+        ],
+        "type": "object"
+      },
+      "summary": "Validate a workflow as run start would, with includes expanded, and report every problem with the step it is in; starts nothing",
+      "write": false
+    },
+    {
+      "name": "workflow.describe",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "workflow": {
+            "description": "A workflow name (personal, repo, then built-in) or a .toml file path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workflow"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "includes": {
+            "description": "The workflows it includes, directly or through another, sorted",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "layer": {
+            "description": "personal, repo, builtin or file",
+            "type": "string"
+          },
+          "name": {
+            "description": "The workflow's name",
+            "type": "string"
+          },
+          "path": {
+            "description": "The file it resolved from, or builtin:<name>",
+            "type": "string"
+          },
+          "shadows": {
+            "description": "The lower layers the winner hides, highest first; empty when none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "layer": {
+                  "description": "personal, repo or builtin",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "The file, or builtin:<name> for a built-in",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "layer",
+                "path"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "start": {
+            "description": "The step a run enters first",
+            "type": "string"
+          },
+          "steps": {
+            "description": "Every step in order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "description": "agent, wait, command, arbiter, leaves, checks or signoff",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "The step's name; <workflow>/<step> for a step of an included workflow",
+                  "type": "string"
+                },
+                "on": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "The next step (or done or failed) by outcome",
+                  "type": "object"
+                },
+                "roles": {
+                  "description": "The step's sessions, with their model ladders and prompts",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "models": {
+                        "description": "The model ladder by attempt or cycle; empty means the agent's default",
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "prompt": {
+                        "description": "The role's first prompt template",
+                        "type": "string"
+                      },
+                      "role": {
+                        "description": "The role: agent, builder, verifier, critic, fixer or a check's name",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "models",
+                      "prompt",
+                      "role"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "kind",
+                "name",
+                "on",
+                "roles"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "includes",
+          "layer",
+          "name",
+          "path",
+          "shadows",
+          "start",
+          "steps"
+        ],
+        "type": "object"
+      },
+      "summary": "Show a workflow as run start resolves it: where it comes from, the layers it shadows, its start step, each step with its targets and roles, and the workflows it includes; starts nothing",
+      "write": false
+    },
+    {
+      "name": "workflow.ls",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "workflows": {
+            "description": "Every reachable workflow, sorted by name",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "layer": {
+                  "description": "The layer a bare name resolves to: personal, repo or builtin",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "The workflow's bare name",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "The winning file, or builtin:<name>",
+                  "type": "string"
+                },
+                "shadows": {
+                  "description": "The lower layers the winner hides, highest first; empty when none",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "layer": {
+                        "description": "personal, repo or builtin",
+                        "type": "string"
+                      },
+                      "path": {
+                        "description": "The file, or builtin:<name> for a built-in",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "layer",
+                      "path"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "layer",
+                "name",
+                "path",
+                "shadows"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "workflows"
+        ],
+        "type": "object"
+      },
+      "summary": "List every workflow a bare name can reach (personal, repo, built-in), each with the layer and path it comes from and the layers it shadows",
+      "write": false
+    },
+    {
+      "name": "workflow.new",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "description": "A workflow name to fork (personal, repo, then built-in) or a .toml file path; without it a skeleton is written",
+            "type": "string"
+          },
+          "name": {
+            "description": "The new workflow's bare name (no / and no .toml)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "from": {
+            "description": "Where the copy came from; empty for a skeleton",
+            "type": "string"
+          },
+          "name": {
+            "description": "The new workflow's name",
+            "type": "string"
+          },
+          "path": {
+            "description": "The file written",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "path"
+        ],
+        "type": "object"
+      },
+      "summary": "Write .rhiza/workflows/<name>.toml: a copy of a resolved workflow with its name set (--from), else a minimal commented skeleton; refuses an existing file and validates the result as workflow check does",
+      "write": false
     }
   ]
 }

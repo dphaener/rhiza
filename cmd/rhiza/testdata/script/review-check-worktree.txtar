@@ -57,7 +57,8 @@ exec sh -c 'grep -c "\"type\":\"check-session\",.*\"detail\":\"[^\"]*/rhiza/chec
 stdout '^4$'
 
 # alpha's finding is in the run's journal, its Evidence in the run
-# worktree's log; the checkout stayed clean.
+# worktree's log; the checkout stayed clean but for the session's actor
+# record, copied into it.
 exec sh -c 'grep -c "\"type\":\"findings\",.*\"reason\":\"panics on empty input\"}\],\"check\":\"alpha\",\"cycle\":1}" .git/rhiza/runs/$(cat $WORK/runid).jsonl'
 stdout '^1$'
 exec sh -c 'grep -rl "alpha-ok" "$(cat $WORK/run.pwd)/.rhiza/log"'
@@ -164,7 +165,10 @@ alpha-critic-1)
 alpha-check-1)
 	rhiza run findings --check alpha "$WORK/alpha.json" >&2 || exit 1
 	rhiza add evidence alpha-ok --field "statement=alpha looked" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
-	[ -z "$(git status --porcelain)" ] && echo "alpha clean" >> "$WORK/checkout-status.log"
+	# The session's actor record is copied into the checkout on purpose;
+	# apart from it, the checkout stays clean.
+	cs=$(grep -l "Record agent actor $RHIZA_ACTOR " .rhiza/log/*/*.json | head -n1 | xargs dirname | xargs basename)
+	[ -n "$cs" ] && [ -z "$(git status --porcelain -- . ":!.rhiza/log/$cs")" ] && echo "alpha clean" >> "$WORK/checkout-status.log"
 	;;
 beta-check-1)
 	exit 1

@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"runtime/debug"
+	"runtime/pprof"
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/api"
@@ -187,7 +188,11 @@ func call(g globals, o api.Operation, req any, stdin io.Reader, stdout, stderr i
 	if err != nil {
 		return writeError(stdout, stderr, err, g.json)
 	}
+	ctx.Out, ctx.JSON = stdout, g.json
 	resp, err := o.Run(ctx, req)
+	if s, ok := resp.(api.Streamer); ok && err == nil && s.Streamed() {
+		return 0
+	}
 	if err == nil {
 		err = writeResponse(stdout, resp, g.json)
 	}
@@ -209,5 +214,28 @@ func describeOp() api.Operation {
 }
 
 func main() {
-	os.Exit(run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr, os.Getenv))
+	os.Exit(profiled(os.Getenv("RHIZA_CPUPROFILE"), func() int {
+		return run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr, os.Getenv)
+	}))
+}
+
+// profiled runs f, writing a CPU profile to path when path is set. It is
+// a hidden diagnostic: RHIZA_CPUPROFILE=<file> rhiza <cmd>, then
+// go tool pprof -top <file>.
+func profiled(path string, f func() int) int {
+	if path == "" {
+		return f()
+	}
+	out, err := os.Create(path)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "rhiza: cpu profile: %v\n", err)
+		return f()
+	}
+	defer out.Close()
+	if err := pprof.StartCPUProfile(out); err != nil {
+		fmt.Fprintf(os.Stderr, "rhiza: cpu profile: %v\n", err)
+		return f()
+	}
+	defer pprof.StopCPUProfile()
+	return f()
 }

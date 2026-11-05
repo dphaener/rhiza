@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MFWRN7DTF31MDG0H20S4MT",
+  "after": [
+    "01M6MF6DSK3KAKC3JE2XG29PKY"
+  ],
+  "at": "2026-11-04T23:58:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 12d4691c ran go test -trimpath ./internal/tui/requestsapp/... -run Milestone -v: TestMilestoneFieldDefaultsToAutoAndIsFiledWhenChosen PASS. It files a request with the milestone left at auto and gets argv [--kind feature -- dark mode] (no --milestone), then chooses milestone-25 via ctrl+o and gets [--kind feature --milestone milestone-25 -- paging]; the entry view shows 'milestone: auto' and then 'milestone: milestone-25'. Also ran the requestsapp package and cmd/rhiza unit tests (TestScripts skipped): ok, incl. TestRequestsAppArgsKeepDashLeadingText. Read the diff: RequestArgs adds --milestone only when non-empty, before '--'; api.RequestRequest has flag:\"milestone\"; gofmt clean."
+        },
+        "handle": "requests-app-milestone-verified",
+        "id": "01M6MFYQ6ZG70B1MFHNHX90VP8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MFYQ6ZG70B1MFHNHGE2SY3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MFYQ6ZG70B1MFHNHGE2SY3",
+        "id": "01M6MFZ0AEHE0J8FV0250QSWC2",
+        "link": "01M6MFZ0AEHE0J8FV023VB22C5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JE40PG6Z1ZG27N7DMFH3FF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6JDMJTSMFWS7FC804Z9FT76",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MFZDRY4QDGH5RBRZ5ZZYHY",
+  "type": "ops",
+  "v": 1
+}

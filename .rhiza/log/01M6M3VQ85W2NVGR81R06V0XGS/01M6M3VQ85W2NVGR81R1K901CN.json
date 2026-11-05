@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-04T20:26:29Z",
+  "body": {
+    "intent": "Fix Plan-review runs of drafts bypass the kept slots: the daemon reserves a slot for a waiting plan request or queued continuation (#226, #243), but its plan-review starts (milestone 26's drafts 01M6J375, 01M6J37D on 2026-11-04) took freed slots while the request queue's head waited. Count plan-review starts as ship picks under the same shipMax, or give queued requests priority over them",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M6M3VQ85W2NVGR81R06V0XGS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M3VQ85W2NVGR81R1K901CN",
+  "type": "open",
+  "v": 1
+}

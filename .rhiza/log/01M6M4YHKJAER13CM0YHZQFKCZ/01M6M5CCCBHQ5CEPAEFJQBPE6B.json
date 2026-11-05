@@ -1,0 +1,30 @@
+{
+  "actor": "01M6M5BDC49F9CP7FTE5GA8S5M",
+  "after": [
+    "01M6M57JJKYN3DMDJDVWW7F1JE"
+  ],
+  "at": "2026-11-04T20:53:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A testscript resumes a review run whose journalled change-set fixer session has a SessionEnd hook report and no exit report, and another whose fake rex answers that the fixer's block is not found: in each the session record gets a 'lost' exit naming the reason, the fixer is judged failed, a fresh fixer attempt starts and the run goes on instead of waiting; an engine test shows a session whose record gains the SessionEnd mark with no exit mid-run is judged lost on the next poll with no rex call.",
+          "statement": "A run finds an in-flight agent session that ended while no run watched it: when it rejoins a journalled session (a resume), before its first poll, it reads the session record and asks Rex whether the session's block still exists, and on every later poll it reads the record alone, except that a rejoin block check Rex did not answer (an error that is not a 'not found' answer) is retried on later polls until Rex answers; a record with the SessionEnd hook mark and no exit report, or a block Rex answers is not found, gets an exit of state 'lost' written into the session record with a detail naming why, so the run stops polling it. This holds for every session a run polls: agent steps, leaf builders, verifiers and fixers, checks and critics, change-set fixers and arbiters."
+        },
+        "handle": "run-finds-sessions-ended-unseen",
+        "id": "01M6M5728P8TFP8BH3N3CAQ91B",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M6M5728P8TFP8BH3N3B7WJ16",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      }
+    ]
+  },
+  "change_set": "01M6M4YHKJAER13CM0YHZQFKCZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M5CCCBHQ5CEPAEFJQBPE6B",
+  "type": "ops",
+  "v": 1
+}

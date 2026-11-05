@@ -1,0 +1,40 @@
+{
+  "actor": "01M6M1T0FFCF100ZZKND4FHNEZ",
+  "after": [
+    "01M6M05DXWBWH28446EDR346XB"
+  ],
+  "at": "2026-11-04T19:51:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M5TYKQ3V9NFPG905CN91MCFV",
+        "handle": null,
+        "id": "01M6M1TVKATES5EKVBE97SKT5G",
+        "node": "01M5TYKQ3V9NFPG905CN1RWR3B",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A testscript with fakes ends with no branch, no worktree, the session's Rex tab closed and main confirmed by the merge commit's tree.",
+          "statement": "After the merge the branch is deleted locally and on GitHub, the worktree is removed, and main is confirmed by checking that the merge commit's tree on main matches the shipped branch head's tree."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M5TYKQB1VWPAN3DBN08P52JR",
+        "handle": null,
+        "id": "01M6M1TZRG6YSNNA2N112EEK2M",
+        "node": "01M5TYKQB1VWPAN3DBN01K0BB0",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A testscript's repo ship command runs once, after main is confirmed by the merge commit's tree."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6HW7MG0ZVWWHYP903FXV9YF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M1V413J4HSED6DNDNFZ92W",
+  "type": "ops",
+  "v": 1
+}

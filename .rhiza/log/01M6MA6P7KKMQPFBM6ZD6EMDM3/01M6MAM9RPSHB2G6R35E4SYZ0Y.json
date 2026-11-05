@@ -1,0 +1,156 @@
+{
+  "actor": "01M6MA6ZEKHCJCVCYYB9RYKGCS",
+  "after": [
+    "01M6MAGFGDCDP7Q1X3TWJZM6HN"
+  ],
+  "at": "2026-11-04T22:24:46Z",
+  "body": {
+    "drop": [
+      "01M6MAG6T3DSK7WNCE59NTX9M6",
+      "01M6MAG961Q7AXY40VDWBNAV9Y",
+      "01M6MAGBZ78922A4ZBBWZSBNQJ"
+    ],
+    "ops": [
+      {
+        "base": "01M6HWX807SBGNFEPCEE7KVWJ2",
+        "handle": null,
+        "id": "01M6MAFWGPX79WH3J9Y3M8JZJS",
+        "node": "01M6HWX807SBGNFEPCEAHVK0QM",
+        "op": "node.update",
+        "set": {
+          "acceptance": "Testscripts with a local bare origin and a fake gh: a ship-change run merges and passes the main step straight to close-out with no gh run list or gh workflow run call for the merge commit; when origin/main moves after the PR head's checks pass, ship merge makes no gh pr merge call and the run goes back to rebase-merge, rebases, waits on the new head's checks and then merges it; no step waits on push CI for main.",
+          "statement": "After merging, ship-change confirms main by checking locally with git that the merge commit's tree equals the tree of the PR head whose checks passed, instead of waiting for CI runs on main; a differing tree is confirmed by CI dispatched on the merge commit (ship-main-dispatches-ci). So that a base that moved after the checks never yields an untested main: `rhiza ship merge` first fetches origin and, when origin/main is not an ancestor of the tested head (another change set merged after the head's checks), merges nothing and fails with an outcome that sends ship-change back to its rebase-merge step, which rebases onto the new main and waits on the PR's checks again. A head that holds origin/main squashes to a merge commit whose tree is the tested head's tree."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6HX48DQR5E1PQ4JM8NYSZ5Z",
+        "handle": null,
+        "id": "01M6MAFZ3GSAB8EJ4580ZXGMC4",
+        "node": "01M6HX48DQR5E1PQ4JM4QN5H0C",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A Go test in the build parses .github/workflows/ci.yml and asserts that push is not among its triggers and pull_request is, and that it has a concurrency group keyed on the pull request number (github.event.pull_request.number) with cancel-in-progress: true; make check runs it.",
+          "statement": "Rhiza's own CI never runs on pushes to main: it runs on pull requests (and on dispatch, see ci-yml-dispatchable), and a newer push to a pull request cancels that pull request's in-progress run."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6HWZ4ZMHV1Q7BYEZJE8KQVG",
+        "handle": null,
+        "id": "01M6MAG1E8S5JR8PBKQ9HNVBJT",
+        "node": "01M6HWZ4ZMHV1Q7BYEZF4MPFP7",
+        "op": "node.update",
+        "set": {
+          "acceptance": "The ci-install testscript's expected workflow holds a concurrency group keyed on the pull request number, falling back to the commit (github.sha) for pushes to main, whose cancel-in-progress is ${{ github.event_name == 'pull_request' }}, true only for pull_request events and never for pushes to main, and keeps the push-to-main trigger and its check steps.",
+          "statement": "The workflow rhiza ci install writes cancels a pull request's in-progress run when a newer push to it starts one, through a per-pull-request concurrency group with cancel-in-progress limited to pull_request events, and still checks every push to main: each push to main gets its own group keyed on its commit, since GitHub cancels a group's pending run when a newer one queues even without cancel-in-progress, and a push to main never cancels an earlier push's check, since the push check is incremental from github.event.before and a cancelled run would leave that push's changes unchecked."
+        },
+        "unset": []
+      },
+      {
+        "fields": {
+          "acceptance": "Testscripts with a local bare origin and a fake gh, replacing run-ship-merge-tree-differs: (a) differing trees: wait-main calls gh workflow run <file> --ref main -f sha=<merge commit> exactly once across its polls, for a workflow declaring pull_request and workflow_dispatch and not for one declaring only push, keeps waiting while the fake run whose title holds that sha is in progress, and the run reaches close-out once it succeeds; (b) the fake dispatched run fails, is rerun once and fails again: main-green fails with a stop: line naming the merge commit and the failed check, and the run never reaches close-out; (c) differing trees and no dispatchable workflow: a stop: line naming the merge commit and saying no dispatchable workflow was found, with no gh workflow run call; (d) a run failed at wait-main by the old tree-differs stop, with a hand-written pre-#256 state file (pr, url, branch, head, checks, merge_commit only), dispatches and reaches close-out after rhiza run resume.",
+          "statement": "When the merge commit's tree differs from the tested head's (main moved between the checks and the merge, or the PR was merged by a ship from before #256), ship-change's wait-main step runs CI on the merge commit instead of stopping: it dispatches, once and recorded in the ship state file, every workflow under .github/workflows at the merge commit that declares both a pull_request and a workflow_dispatch trigger (`gh workflow run <file> --ref main -f sha=<merge commit>`), finds each dispatched run by the merge commit's sha in its display title (event workflow_dispatch) and waits for it to finish; a failed run's failed jobs are rerun once per merge commit as PR checks are, and a second failure fails main-green with a stop: line naming the merge commit and the failed checks, with no revert and no close-out. Differing trees with no dispatchable workflow stop the main step with a stop: line naming the merge commit and saying no dispatchable workflow was found. A run stopped at, or still waiting in, wait-main whose ship state file was written before this change (pr, head, checks, merge_commit, no dispatch record) takes the same path when resumed."
+        },
+        "handle": "ship-main-dispatches-ci",
+        "id": "01M6MAKAEANQJBCM1WFRHDVNPM",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M6MAKAEANQJBCM1WFMTKWJ7P",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "fields": {
+          "acceptance": "The Go test that pins .github/workflows/ci.yml asserts that its triggers are exactly pull_request and workflow_dispatch, that workflow_dispatch declares a required input sha, that the checkout step's ref is ${{ inputs.sha || github.sha }}, that run-name includes inputs.sha, and that the concurrency group is keyed on github.event.pull_request.number falling back to inputs.sha; make check runs it.",
+          "statement": "Rhiza's own CI can be dispatched on a given commit: .github/workflows/ci.yml gains a workflow_dispatch trigger with a required sha input, its checkout step checks out ${{ inputs.sha || github.sha }}, its run-name carries the sha on a dispatch, and its concurrency group falls back to inputs.sha when there is no pull request, so dispatched runs never cancel each other."
+        },
+        "handle": "ci-yml-dispatchable",
+        "id": "01M6MAKD15PZYXSTNV3KSW08RN",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M6MAKD15PZYXSTNV3FX2SQCN",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "fields": {
+          "acceptance": "The ci-install testscript's expected workflow keeps the push-to-main and pull_request triggers and their check steps, adds a workflow_dispatch trigger with a required sha input, checks out ${{ inputs.sha || github.sha }}, has a run-name holding inputs.sha on dispatch, keys its concurrency group on the pull request number, then inputs.sha, then github.sha, with cancel-in-progress ${{ github.event_name == 'pull_request' }}, and has a step run only on workflow_dispatch that runs rhiza check --base HEAD~1.",
+          "statement": "The workflow rhiza ci install writes can be dispatched on a given commit, so ship can run it on a merge commit: it gains a workflow_dispatch trigger with a required sha input; a dispatched run checks out that sha, carries it in its run-name, runs in a concurrency group keyed on the sha, and checks the commit against its first parent with rhiza check --base HEAD~1, while pull request and push-to-main runs behave as before."
+        },
+        "handle": "ci-install-dispatchable",
+        "id": "01M6MAKF848SVSTKWG67Q45VR8",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M6MAKF848SVSTKWG667GY87T",
+        "op": "node.create",
+        "parent": "01M5SWRH24XWT6HVZH28QQEFYX"
+      },
+      {
+        "decision": null,
+        "from": "01M6MAKAEANQJBCM1WFMTKWJ7P",
+        "id": "01M6MAKHR636XV6KZY1QZ6D3X6",
+        "link": "01M6MAKHR636XV6KZY1Q8NJ4RT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MABYJY48N0S4D6DM9GJE8Q",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MAKD15PZYXSTNV3FX2SQCN",
+        "id": "01M6MAKM2798E912ZM0MF2QT0P",
+        "link": "01M6MAKM2798E912ZM0HSGYRRM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MABYJY48N0S4D6DM9GJE8Q",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MAKF848SVSTKWG667GY87T",
+        "id": "01M6MAKPE77E7X6MZ9Q2HVD6NS",
+        "link": "01M6MAKPE77E7X6MZ9Q0PG6F2T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MABYJY48N0S4D6DM9GJE8Q",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6MAKAEANQJBCM1WFMTKWJ7P",
+        "id": "01M6MAKRQG5K3QAP749F86B1TZ",
+        "link": "01M6MAKRQG5K3QAP749BFPC9MP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MAEGNV4GZK5WJC2RP1VMRT",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6MAKD15PZYXSTNV3FX2SQCN",
+        "id": "01M6MAKV93PE7W1QMZ6V0KP6H2",
+        "link": "01M6MAKV93PE7W1QMZ6Q0Q26VE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MAEGNV4GZK5WJC2RP1VMRT",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M6MAKF848SVSTKWG667GY87T",
+        "id": "01M6MAKXPKC39B1Q2T5W3BQ309",
+        "link": "01M6MAKXPKC39B1Q2T5VZTCVVZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MAEGNV4GZK5WJC2RP1VMRT",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M6MA6P7KKMQPFBM6ZD6EMDM3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MAM9RPSHB2G6R35E4SYZ0Y",
+  "type": "ops",
+  "v": 1
+}

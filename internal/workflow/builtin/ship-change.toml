@@ -96,6 +96,7 @@ on.pass = "rebase-merge"
 [step.rebase-merge]
 kind = "command"
 run = "rhiza ship rebase"
+max_visits = 3
 on.pass = "wait-rebased-merge"
 
 [step.wait-rebased-merge]
@@ -103,18 +104,29 @@ kind = "wait"
 until = "rhiza ship check --settled"
 timeout = "2h"
 interval = "30s"
+max_visits = 3
 on.pass = "rebased-merge-green"
 
 [step.rebased-merge-green]
 kind = "command"
 run = "rhiza ship check"
+max_visits = 3
 on.pass = "merge"
 
+# Merges nothing when origin/main moved after the head's checks passed:
+# the step fails and the run rebases and waits on the new head again.
 [step.merge]
 kind = "command"
 run = "rhiza ship merge"
+max_visits = 3
 on.pass = "wait-main"
+on.fail = "rebase-merge"
 
+# Main is confirmed locally with git, not by waiting for CI on it, when the
+# merge commit's tree equals the tested head's: the wait passes at its first
+# check. When main moved between the checks and the merge the trees differ,
+# and the wait dispatches CI on the merge commit (once) and waits for it;
+# main-green then stops, with a stop: line, if it failed after a rerun.
 [step.wait-main]
 kind = "wait"
 until = "rhiza ship check --main --settled"

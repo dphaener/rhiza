@@ -1,0 +1,116 @@
+{
+  "actor": "01M6M4YSTTBTW4XAZQGFP0BBC0",
+  "after": [
+    "01M6M56G5H66VP7520D8PHMMK2"
+  ],
+  "at": "2026-11-04T20:50:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M6M55170XRKXHGVJWQJ9CEAQ",
+        "id": "01M6M570ATNWQYB1AR61MJQ90M",
+        "link": "01M6M570ATNWQYB1AR60VWW791",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M568QNCQ3EJAG6XH8HJ73Z",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A testscript resumes a review run whose journalled change-set fixer session has a SessionEnd hook report and no exit report, and another whose fake rex answers that the fixer's block is not found: in each the session record gets a 'lost' exit naming the reason, the fixer is judged failed, a fresh fixer attempt starts and the run goes on instead of waiting; an engine test shows a session whose record gains the SessionEnd mark with no exit mid-run is judged lost on the next poll with no rex call.",
+          "statement": "A run finds an in-flight agent session that ended while no run watched it: when it rejoins a journalled session (a resume), before its first poll, it reads the session record and asks Rex whether the session's block still exists, and on every later poll it reads the record alone; a record with the SessionEnd hook mark and no exit report, or a block Rex answers is not found, gets an exit of state 'lost' written into the session record with a detail naming why, so the run stops polling it. This holds for every session a run polls: agent steps, leaf builders, verifiers and fixers, checks and critics, change-set fixers and arbiters."
+        },
+        "handle": "run-finds-sessions-ended-unseen",
+        "id": "01M6M5728P8TFP8BH3N3CAQ91B",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M6M5728P8TFP8BH3N3B7WJ16",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M6M5728P8TFP8BH3N3B7WJ16",
+        "id": "01M6M5744PYS84PPCPM3PW5V6S",
+        "link": "01M6M5744PYS84PPCPM10ENY71",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M55170XRKXHGVJWQJ9CEAQ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Engine tests rejoin a lost session on a plain agent step (the step fails, detail naming the lost reason), on an until_when = done step with the done mark and the until holding (passes), and with the done mark but the until not holding (fails); in each the Runner is asked to close the session's pane.",
+          "statement": "A session with a 'lost' exit is judged as an exit whose code is unknown, never as exit 0: its step or attempt fails, except that a step with an until that waits for done passes when the record has the agent's done mark and the until holds now, and its pane, if Rex still has one, is closed as any finished session's is."
+        },
+        "handle": "lost-session-judged",
+        "id": "01M6M57611NNTDR13MVB8ZP7KP",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M6M57611NNTDR13MV8N9Z7GT",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M6M57611NNTDR13MV8N9Z7GT",
+        "id": "01M6M577WQNX60SCGWQNM20R0H",
+        "link": "01M6M577WQNX60SCGWQHXZ285H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M55170XRKXHGVJWQJ9CEAQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6M57611NNTDR13MV8N9Z7GT",
+        "id": "01M6M579SKE45WT8AAVTQ5A0WR",
+        "link": "01M6M579SKE45WT8AAVQ4K4FY1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M5728P8TFP8BH3N3B7WJ16",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "An engine test rejoins a live session while the fake Rex fails with a non-'not found' error: the run logs the failure, the session stays unjudged with no exit written, and once the fake Rex answers 'not found' on a later poll the session gets its 'lost' exit; with Rex answering the block exists, the session is polled as today.",
+          "statement": "When Rex cannot be reached on a rejoin's block check (any error that is not a 'not found' answer), the run logs it, judges nothing from it, keeps polling the session record as before, and retries the block check on later polls until Rex answers; Rex being down never fails or ends a step."
+        },
+        "handle": "rejoin-rex-unreachable",
+        "id": "01M6M57BMKN39KDPQSDWPKQQ0P",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M6M57BMKN39KDPQSDWK8D6M7",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M6M57BMKN39KDPQSDWK8D6M7",
+        "id": "01M6M57DJ2XNXD53QNH77HNYS4",
+        "link": "01M6M57DJ2XNXD53QNH4HBCK8F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M55170XRKXHGVJWQJ9CEAQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6M57BMKN39KDPQSDWK8D6M7",
+        "id": "01M6M57FKDK3G6ESRYHFBT02VP",
+        "link": "01M6M57FKDK3G6ESRYHBJ8KPN8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M5728P8TFP8BH3N3B7WJ16",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6M4YHKJAER13CM0YHZQFKCZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M57JJKYN3DMDJDVWW7F1JE",
+  "type": "ops",
+  "v": 1
+}

@@ -18,6 +18,10 @@ the plan, and tasks belong to the work layer.
      (`"kind":"intent"`, under its parent) into `RHIZA_CHANGE`, with the owner. Then write
      the `serves` link: `rhiza link "$RHIZA_CHANGE" serves <intent> --change "$RHIZA_CHANGE"`.
      Only then write leaves.
+     The daemon builds only a change set that serves a milestone, so the `serves` link must
+     reach one, directly or through an intent under one: the milestone in `RHIZA_MILESTONE`
+     when set, else the open milestone it fits. Never an umbrella or area intent under no
+     milestone.
    - `record`: a draft opened for the plan, so you plan a milestone (see Milestone).
 3. Interview the owner (see Interview) until every leaf has a statement and an acceptance
    check, and every choice is a Decision or a parked question.
@@ -69,6 +73,10 @@ A question parked during the interview:
   {"op":"link","from":"csv-encoding","type":"blocks","to":"export-csv"}
 ]}
 ```
+
+Write each leaf's acceptance as the tests covering that leaf, never the repo's full suite:
+the whole suite runs in CI before merge, so an acceptance check that runs all of it is
+wrong.
 
 A write can only refer to landed nodes and nodes of its own change set. Pass `--change <id>`
 to write into a change set other than `RHIZA_CHANGE`.

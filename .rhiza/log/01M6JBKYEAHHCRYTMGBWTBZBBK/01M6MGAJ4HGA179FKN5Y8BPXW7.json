@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6MF344TH7D1BMEC98EW3YQK"
+  ],
+  "at": "2026-11-05T00:04:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "9096eb26248d13d96d3eca7b0f93e5b39adc1add",
+          "pr": "https://github.com/dphaener/rhiza/pull/266",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #266 (https://github.com/dphaener/rhiza/pull/266) passed CI at 9096eb2",
+          "status": "verified"
+        },
+        "handle": "pr-266-fix-rhiza-rex-install-bakes",
+        "id": "01M6MGAB4C3DC857AMPYPKVA2F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MGAB4C3DC857AMPWJC097D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MGAB4C3DC857AMPWJC097D",
+        "id": "01M6MGADQ7WVZR212J5PPY0VRW",
+        "link": "01M6MGADQ7WVZR212J5KCZCP42",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JBWYEG2NS37GRDPKMSWJ7D",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6JBKYEAHHCRYTMGBWTBZBBK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MGAJ4HGA179FKN5Y8BPXW7",
+  "type": "ops",
+  "v": 1
+}

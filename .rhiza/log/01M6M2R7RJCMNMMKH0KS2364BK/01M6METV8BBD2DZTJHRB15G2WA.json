@@ -1,0 +1,53 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6M9MMX3AWSGXQT4S8QG6VEA"
+  ],
+  "at": "2026-11-04T23:38:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "acc61ca6071591d79e07fbd0957351ea9532000c",
+          "pr": "https://github.com/dphaener/rhiza/pull/260",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #260 (https://github.com/dphaener/rhiza/pull/260) passed CI at acc61ca",
+          "status": "verified"
+        },
+        "handle": "pr-260-fix-an-agent-session-s-actor",
+        "id": "01M6METKM1KH4MRQFXBXX98X8D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6METKM1KH4MRQFXBV2AVB8Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6METKM1KH4MRQFXBV2AVB8Y",
+        "id": "01M6METNZX03GHVN9PX8AJTN1Q",
+        "link": "01M6METNZX03GHVN9PX7S5NMJ8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M2ZMM64QSSKQTP1FKH76NJ",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6METKM1KH4MRQFXBV2AVB8Y",
+        "id": "01M6METR0NHRR3QKC2NVPSXVPR",
+        "link": "01M6METR0NHRR3QKC2NV5NRWW5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M2ZS1VT4ZWAMBM148Z3RG6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6M2R7RJCMNMMKH0KS2364BK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6METV8BBD2DZTJHRB15G2WA",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6MHE2PSEX893JJ58HG69CNF"
+  ],
+  "at": "2026-11-05T01:07:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "bcb75e8e403c6a91f61513244da0ba829851d9e8",
+          "pr": "https://github.com/dphaener/rhiza/pull/269",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #269 (https://github.com/dphaener/rhiza/pull/269) passed CI at bcb75e8",
+          "status": "verified"
+        },
+        "handle": "pr-269-fix-the-daemon-behaves-the",
+        "id": "01M6MKYYF493C64HBQJC6S6TP1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MKYYF493C64HBQJC1QTJVB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MKYYF493C64HBQJC1QTJVB",
+        "id": "01M6MKZ0RR8CS1JS8EVVGBNTJ8",
+        "link": "01M6MKZ0RR8CS1JS8EVSAK8DRB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JYBE226RWZVG1N6CCTS81F",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6JY2NZESHV22Y931D7XMBEE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MKZ4H3REAT6S52FCC59EA4",
+  "type": "ops",
+  "v": 1
+}

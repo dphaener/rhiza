@@ -71,7 +71,7 @@ fold-ok
 {"title":"Planning interview","summary":"The owner planned the reports milestone.","quotes":[{"text":"Stream it, reports get huge","by":"owner"}]}
 -- record.json --
 {"writes":[
-  {"op":"add","kind":"intent","handle":"reports","fields":["statement=Users take their reports out of the product"]},
+  {"op":"add","kind":"intent","handle":"reports","fields":["statement=Users take their reports out of the product","milestone=1"]},
   {"op":"add","kind":"decision","handle":"csv-streaming","fields":[
     "statement=Stream CSV rows instead of building the file in memory",
     "quote=Stream it, reports get huge"]},

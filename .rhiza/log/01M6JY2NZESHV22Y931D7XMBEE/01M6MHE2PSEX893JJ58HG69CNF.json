@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MH90W2AARG5VT25JAWQVAZ",
+  "after": [
+    "01M6MH71QS0DSTMM4XYG99SCSN"
+  ],
+  "at": "2026-11-05T00:23:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza from the branch head and ran `rhiza daemon install` in a scratch repo (scratch HOME, fake systemctl/loginctl on PATH, TMPDIR holding a space). The unit carried Environment=\"PATH=...\" and Environment=\"TMPDIR=.../tmp dir\" above ExecStart=... daemon --autonomous; a second install with the same env printed 'nothing changed' and did not daemon-reload; adding a dir to PATH rewrote the unit and called daemon-reload. A TMPDIR of `t \"q\" 100% \\b $X` was written as `\"TMPDIR=t \\\"q\\\" 100%% \\\\b $X\"`; loading those Environment= lines into a throwaway real systemd user unit, systemctl --user show read back exactly the original value. daemon-install testscript passes."
+        },
+        "handle": "daemon-service-env-qa-1",
+        "id": "01M6MHDQQPQ7Q0RW6PK8GB88DZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MHDQQPQ7Q0RW6PK78XMGF7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MHDQQPQ7Q0RW6PK78XMGF7",
+        "id": "01M6MHDVN09HDDKDYQVPD5D303",
+        "link": "01M6MHDVN09HDDKDYQVNQWR4FX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JYBE226RWZVG1N6CCTS81F",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6JY2NZESHV22Y931D7XMBEE",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MHE2PSEX893JJ58HG69CNF",
+  "type": "ops",
+  "v": 1
+}

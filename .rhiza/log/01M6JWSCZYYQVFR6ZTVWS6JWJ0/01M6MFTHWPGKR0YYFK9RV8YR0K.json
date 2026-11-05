@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MFS7JPCZAFQN2WAZ0NR2V1",
+  "after": [
+    "01M6JX8HJ40NJRB5NBEW563WBG"
+  ],
+  "at": "2026-11-04T23:55:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3ebbaa2d, cmd/rhiza/testdata/script/run-abandon-unpushed.txtar sits beside run-abandon-unmerged.txtar. It runs a build that commits on cs/abandon-built, pushes it with -u to a bare origin.git, runs a second build whose commit is never pushed, fails a third run, abandons it, and asserts stdout 'delete-branch kept: it has commits merged into neither its upstream nor HEAD', that git log cs/abandon-built still shows both 'built' commits, and that origin/cs/abandon-built..cs/abandon-built counts 1. go test -trimpath ./cmd/rhiza -run 'TestScripts/run-abandon-(unpushed|unmerged)$' -count=1 -v: both PASS. The message comes from internal/api/run.go's git branch -d guard, which refuses a branch not merged into its upstream or HEAD."
+        },
+        "handle": "abandon-keeps-unpushed-branch-verified",
+        "id": "01M6MFT7KCRSTWW0QMYMCPPQWY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MFT7KCRSTWW0QMYJQZB1WR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MFT7KCRSTWW0QMYJQZB1WR",
+        "id": "01M6MFTAXH57CR12RAY4QPTRC8",
+        "link": "01M6MFTAXH57CR12RAY3TDDQC1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JX3902A2MVZQSQQJVYCGBZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6JWSCZYYQVFR6ZTVWS6JWJ0",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MFTHWPGKR0YYFK9RV8YR0K",
+  "type": "ops",
+  "v": 1
+}

@@ -43,6 +43,12 @@ On a retry (`RHIZA_ATTEMPT` above 1), read the earlier attempts' findings in
 `rhiza run status --json` first, then add one fix commit with the same `Leaf:` trailer.
 Never rewrite the earlier commits.
 
+## Tests
+
+Builders and verifiers run only the tests covering what the change touches, with the
+repo's own scoped commands (its contributor guide names them), never the repo's full
+suite: the PR's CI runs it before merge.
+
 ## Outside work
 
 - Needed outside work, without which the leaf cannot pass: raise a question (the recipe in
@@ -69,10 +75,12 @@ agents or `gh`. End with exactly one of:
   ]}
   ```
 
-- Findings, one per failed point, recorded with `rhiza run findings --leaf <leaf> <file>`:
+- Findings, one per failed point, recorded from stdin with a heredoc, no temp file:
 
   ```
+  rhiza run findings --leaf <leaf> - <<'EOF'
   {"findings":[{"reason":"<what failed and how you ran it>"}]}
+  EOF
   ```
 
 Then `rhiza session done`. An attempt with neither Evidence nor findings fails, and Evidence

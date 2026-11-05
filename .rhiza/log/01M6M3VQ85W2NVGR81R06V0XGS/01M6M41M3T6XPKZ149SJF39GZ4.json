@@ -1,0 +1,41 @@
+{
+  "actor": "01M6M3ZYAEZ38M1XTD5530315Q",
+  "after": [
+    "01M6M3ZT2PMKEFYVRF6RAP3EZS"
+  ],
+  "at": "2026-11-04T20:29:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "In daemonPoll1 (internal/api/daemon.go) ship picks are capped at shipMax = max - kept, with one slot kept when max > 1 and a request waits (#226) and one per startable continuation (#243). daemonQueuedContinues then runs before daemonQueuedStarts, so continuations already take their kept slots; only the plan-request slot is unprotected, because daemonQueuedStarts fills up to max before daemonPlanRequests runs. Applying the same max-1 cap to queued starts reuses the existing rule and its one predicate, is bounded (a queued start loses at most one slot, never starves) and fixes every queued start, not only plan-review ones. The other option, running daemonPlanRequests before queued starts, would let several requests take every free slot (it loops while running < max) and starve the owner's own queued starts, which the kept-slot model was built to avoid. Counting plan-review starts as ship picks would need the daemon to tell plan-review workflows apart from other owner starts, a special case the one-slot rule does not need. For the intent: this is a daemon scheduling fix found while emptying the request queue, like 01M6M1M1 (Fix Test temp folders leak), which serves milestone-25 (the daemon builds and ships the planned backlog on its own); a plan request starved of its slot blocks exactly that, so milestone-25 is the fit.",
+          "statement": "Owner-queued starts (daemonQueuedStarts, which includes the plan-review runs) leave the same kept slot ship picks leave: while a queued plan request could start (daemonRequestWaits) and max > 1, queued starts start only while running < max-1, so one slot stays for daemonPlanRequests. Queued continuations keep running before them, as now. The poll order (picks, continuations, queued starts, plan requests) is unchanged. This change set serves milestone-25.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "queued-starts-keep-request-slot",
+        "id": "01M6M41F92YJYEJYTFA1HW8FEV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6M41F92YJYEJYTF9XMK2NKM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M41F92YJYEJYTF9XMK2NKM",
+        "id": "01M6M41H6A2HBG6QATFE75Z36F",
+        "link": "01M6M41H6A2HBG6QATFCXPNVH9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M3ZS1WHXPTCRBWMWD168EH",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6M3VQ85W2NVGR81R06V0XGS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M41M3T6XPKZ149SJF39GZ4",
+  "type": "ops",
+  "v": 1
+}

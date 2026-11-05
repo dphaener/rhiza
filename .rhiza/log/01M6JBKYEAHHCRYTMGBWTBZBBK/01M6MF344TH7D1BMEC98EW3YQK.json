@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MEZPXJV2CNFWWN76P16C1F",
+  "after": [
+    "01M6MEXV1NCQH5Q3R3C3JSZ9DM"
+  ],
+  "at": "2026-11-04T23:42:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at a6c27bb4 with the built binary (go build -trimpath ./cmd/rhiza), REX_CONFIG pointing at a scratch folder and a fake rex on PATH for the reload: `rhiza rex install` wrote rhiza.lua with `local BIN = \"rhiza\"` plus the settings.bin guard and a commented `-- bin` example in the settings block; the binary's own scratch path appears nowhere in the file. A second install reported both files unchanged and cmp showed rhiza.lua byte-identical. With bin = \"/home/me/go/bin/rhiza\" and launch_key \"ctrl+a g\" set in the settings block, a reinstall left the file byte-identical (cmp). An old-style rhiza.lua with `local BIN = \"/Users/darinhaener/bin/rhiza\"` was rewritten on reinstall to the PATH form, keeping the owner's settings. The real Rex (`rex config check` with REX_CONFIG on the scratch init.lua) loads the generated file (24 bindings, 1 mode, 22 actions). A probe copy raising error(\"PROBE BIN=\"..BIN) after the guard, loaded by real Rex, gave BIN=rhiza for a missing bin, \"\", 42 and false, and BIN=/home/me/go/bin/rhiza when that string is set. go test ./internal/api -run TestRexInstall and TestScripts/rex-install pass."
+        },
+        "handle": "rex-actions-rhiza-from-path-qa-1",
+        "id": "01M6MF2RQWRMQYXPC67JBE7YPM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MF2RQWRMQYXPC67G64Y44Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MF2RQWRMQYXPC67G64Y44Q",
+        "id": "01M6MF2W598VAWWH7BX4S16PM7",
+        "link": "01M6MF2W598VAWWH7BX4R8Y8R5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JBWYEG2NS37GRDPKMSWJ7D",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6JBKYEAHHCRYTMGBWTBZBBK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MF344TH7D1BMEC98EW3YQK",
+  "type": "ops",
+  "v": 1
+}
