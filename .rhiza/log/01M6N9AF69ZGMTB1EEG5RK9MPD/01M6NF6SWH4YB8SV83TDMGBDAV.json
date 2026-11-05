@@ -1,0 +1,44 @@
+{
+  "actor": "01M6NF2E2H53HKK2FKC43KWWWV",
+  "after": [
+    "01M6NAJVVND10F17W73YYAKWZZ"
+  ],
+  "at": "2026-11-05T09:04:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "internal/session/status.go Stalled returns false for every hook state but working, so a session that hit Stop (idle) while its background shell ran is invisible to runStalledAll in internal/api/run.go and to the inbox; that is the bug the change set's intent names. A run step waits only for `rhiza session done`, so idle without done means the run waits; the shell is not observable from hook status, so the rule keys on idle-without-done rather than on detecting a shell. Exclusions mirror the existing ones (usage-limit pause) plus states that already have an owner or arbiter path (Asked, blocked). Today nudging exists only as the inbox's manual n (internal/tui/inboxapp nudge sending carryOn via session.message), so keeping that path covers attended runs; the intent says the session should be nudged, and the owner's stated goal is that the daemon does all orchestration in autonomous mode, so the daemon nudges there. One nudge per stall avoids a loop of messages to a session that is genuinely stuck, leaving that case to the owner.",
+          "statement": "A live run-step session that has not said `rhiza session done` counts as stalled once its hook status has gone unchanged for more than StallAfter (20 min): working in any run, or idle in a session an autonomous run launched (session.Record.Autonomous), whether or not it holds a background shell. Never stalled: an idle session of an owner-attended run (it may wait on the owner, per idle-stall-autonomous-only), a session waiting on the arbiter (Status.Asked set), one paused at its usage limit, one blocked on a permission prompt (already its own inbox item), and an exited one. A stalled session shows in the inbox as today, where the owner nudges it with n. When the run itself is autonomous (the run's own Autonomous, decided per run by the autonomy config, not the daemon's --autonomous flag, which every shipped daemon carries), the daemon nudges it itself, once per stall (keyed on the report time it stalled at), with a message that tells it to check any background shell's result and carry on, or run `rhiza session done` if its work is finished; a session still stalled after that stays in the inbox for the owner and gets no repeat nudges. A session of an owner-attended run is never nudged by the daemon.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "idle-run-session-stalls",
+        "id": "01M6N9FFNSVCXW4GGGDJNFS88F",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6N9FFNSVCXW4GGGDGXERBZC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test of session.Stalled: an idle hook report of an autonomous session at 19 minutes is not stalled and at 21 minutes is; at 21 minutes an idle session with Autonomous false is not stalled while a working one is; at 21 minutes an idle or working session with the done mark, with Status.Asked set, paused at its usage limit, blocked, or exited is not; inbox-stalled.txtar gains an idle record without done and with Autonomous false that gives no stalled item at T+21m in the inbox or run status, then the same record marked autonomous gives a stalled item at T+21m and none at T+19m, and run status shows it stalled; an idle record with the done mark gives none",
+          "statement": "rhiza run status and rhiza inbox count a live run-step session as stalled once its hook status has gone unchanged for more than 20 minutes and it has not said `rhiza session done`: working in any run, or idle in a session an autonomous run launched, whether or not it holds a background shell; an idle session of an owner-attended run, a session waiting on the arbiter's answer, paused at its usage limit, blocked or exited never stalls"
+        },
+        "handle": "run-session-idle-stall",
+        "id": "01M6N9M6BMS0XZBJDD1A6SWN7F",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M6N9M6BMS0XZBJDD16M2B0Z2",
+        "op": "node.create",
+        "parent": "01M5TYGK04WT4AH5KMH4RF82YD"
+      }
+    ]
+  },
+  "change_set": "01M6N9AF69ZGMTB1EEG5RK9MPD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NF6SWH4YB8SV83TDMGBDAV",
+  "type": "ops",
+  "v": 1
+}

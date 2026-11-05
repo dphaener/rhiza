@@ -1,0 +1,86 @@
+{
+  "actor": "01M6NFSE1RR6856KBQGTVS3RYZ",
+  "after": [
+    "01M6NFQVC7AT5PB55G97NYGDGM"
+  ],
+  "at": "2026-11-05T09:17:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1 with the built binary (go build at 1bae8c32) in a scratch repo, fake rex/claude on PATH: two live runs of a one-agent-step workflow, one started with run start --autonomous, one owner-attended; session records' hook reports hand-set, clock moved with RHIZA_TEST_NOW. Autonomous session idle since 00:00, owner session working since 00:00: rhiza daemon --once at 00:19 sent nothing; at 00:21 rex.log showed one send to the autonomous session's block pointing at messages/<sid>/0001.md, whose text names a background shell and `rhiza session done`; daemon.state.json nudged=[<sid>@2030-01-01T00:00:00Z]; poll at 00:25 sent nothing and rhiza inbox still listed both runs stalled; a new hook report at 00:30 then polls at 00:31 (nothing) and 00:51 sent 0002.md; 00:55 nothing. The owner-attended run's stalled session was never sent to, including under rhiza daemon --once --autonomous. An autonomous session marked done got no nudge."
+        },
+        "handle": "daemon-nudges-stalled-qa-1",
+        "id": "01M6NFYX5NCNY1GEZGZTNSXESM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NFYX5NCNY1GEZGZQNWEHK6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NFYX5NCNY1GEZGZQNWEHK6",
+        "id": "01M6NFYZJ3Y2KAV3NF4YAKK39B",
+        "link": "01M6NFYZJ3Y2KAV3NF4XQ4GNWE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N9MBXAAWMHC53534PGKQ4H",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1 with the built binary (go build at 1bae8c32) in a scratch repo, fake rex/claude on PATH: two live runs of a one-agent-step workflow, one started with run start --autonomous, one owner-attended; session records' hook reports hand-set, clock moved with RHIZA_TEST_NOW. Both sessions idle at 00:00: rhiza inbox at 00:19 empty; at 00:21 one stalled item, the autonomous run's (the owner-attended idle one gave none); rhiza run status <auto run> --json showed stalled {session, since 2030-01-01T00:00:00Z, step build}. After adding a done mark to the autonomous idle record, inbox at +30m listed no stall for it. Scoped tests: go test ./internal/session ./internal/api -run 'TestStalled|TestDaemonNudge|TestRunStalled' ok."
+        },
+        "handle": "run-session-idle-stall-qa-1",
+        "id": "01M6NFZ1P972BJT9CVP9K9KNJA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NFZ1P972BJT9CVP6DSVYZY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NFZ1P972BJT9CVP6DSVYZY",
+        "id": "01M6NFZ406MBC40R6EBZY4JDKX",
+        "link": "01M6NFZ406MBC40R6EBXEPTMEV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N9M6BMS0XZBJDD16M2B0Z2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1 with the built binary (go build at 1bae8c32) in a scratch repo, fake rex/claude on PATH: two live runs of a one-agent-step workflow, one started with run start --autonomous, one owner-attended; session records' hook reports hand-set, clock moved with RHIZA_TEST_NOW. rhiza inbox (text) at 00:21 printed 'stalled run <id>, change set <id>, step build', 'has not reported since 2030-01-01T00:00:00Z' and 'next: rhiza session message <sid> <text>' for the autonomous idle session, none at 00:19; a working owner-attended session also listed stalled at 00:25. go test ./cmd/rhiza -run TestScripts/inbox-stalled ok."
+        },
+        "handle": "inbox-stalled-items-qa-01m6n9af-1",
+        "id": "01M6NFZ6672EJ4J6CBC8QZ3KKN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NFZ6672EJ4J6CBC8E7GBG9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NFZ6672EJ4J6CBC8E7GBG9",
+        "id": "01M6NFZ8E8XRV0YBNPZYNFS5ST",
+        "link": "01M6NFZ8E8XRV0YBNPZY1KWH9E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6A0NY4FZ07ZQMR23E700DTQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6N9AF69ZGMTB1EEG5RK9MPD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NFZCEYWX0NHKV7Z78WS2DW",
+  "type": "ops",
+  "v": 1
+}

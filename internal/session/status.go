@@ -111,13 +111,22 @@ const StallAfter = 20 * time.Minute
 // at its usage limit gets in place of idle.
 const LimitPausedDetail = "paused at its usage limit"
 
-// Stalled reports whether the session works but has been silent for more
-// than StallAfter at now. Only a live session whose hook status resolves to
-// working can stall; blocked, idle, exited and usage-paused sessions never
-// do.
+// Stalled reports whether the session has been silent for more than
+// StallAfter at now. Only a live session whose hook status resolves to
+// working, or idle in a session an autonomous run launched, which has not
+// said it is done and is not waiting on an answer, can stall: an idle
+// prompt counts even when a background shell is open. An idle session of
+// an owner-attended run never stalls, as it may be waiting on the owner.
+// Blocked, exited and usage-paused sessions never do.
 func Stalled(r Record, now time.Time) bool {
 	rep, src := Resolve(r)
-	if src != SourceHook || rep.State != StateWorking {
+	if src != SourceHook {
+		return false
+	}
+	if rep.State != StateWorking && (rep.State != StateIdle || !r.Autonomous) {
+		return false
+	}
+	if r.Status.SaidDone() || r.Status.Asked != nil {
 		return false
 	}
 	if strings.HasPrefix(rep.Detail, LimitPausedDetail) {
