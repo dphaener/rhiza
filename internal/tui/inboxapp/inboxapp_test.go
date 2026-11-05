@@ -668,3 +668,43 @@ func TestNoSurfaceShowsAnIDOrHandle(t *testing.T) {
 	m.Update(tea.WindowSizeMsg{Width: 80, Height: 30})
 	check("resolve form", m.View().Content)
 }
+
+func TestGateFormShowsEachQuestionNoHandleAndAnswersRightOne(t *testing.T) {
+	var calls []call
+	gate := `{"items":[{"id":"g1","kind":"open","change":"C4","change_title":"Four","run":"R4","questions":[` +
+		`{"handle":"review-01m6pf30-r3-f1","statement":"Keep Operation.Write?","restatement":"Should we keep the write operation as it is?","recommendation":"Keep it"},` +
+		`{"handle":"claude-design-output","statement":"Is the design output final?"}]}]}`
+	m := NewModel(fake(gate, &calls))
+	enter(m)
+	m.Update(tea.WindowSizeMsg{Width: 70, Height: 30})
+	v := plain(m.View().Content)
+	for _, w := range []string{"1 of 2: Should we keep the write operation as it is?", "Recommended: Keep it", "Your answer to question 1 of 2"} {
+		if !strings.Contains(v, w) {
+			t.Errorf("view lacks %q:\n%s", w, v)
+		}
+	}
+	if strings.Index(v, "Should we keep") > strings.Index(v, "Your answer to question 1") {
+		t.Errorf("question is not above its text box:\n%s", v)
+	}
+	for _, h := range []string{"review-01m6pf30-r3-f1", "claude-design-output"} {
+		if strings.Contains(v, h) {
+			t.Errorf("view shows handle %q:\n%s", h, v)
+		}
+	}
+	typeAndSubmit(m, "yes")
+	v = plain(m.View().Content)
+	if !strings.Contains(v, "2 of 2: Is the design output final?") || strings.Contains(v, "claude-design-output") {
+		t.Errorf("second question view:\n%s", v)
+	}
+	typeAndSubmit(m, "no")
+	want := [][]string{{"review-01m6pf30-r3-f1", "yes", "--run", "R4"}, {"claude-design-output", "no", "--run", "R4"}}
+	var got [][]string
+	for _, c := range calls {
+		if c.op == "question.answer" {
+			got = append(got, c.args)
+		}
+	}
+	if len(got) != 2 || !slices.Equal(got[0], want[0]) || !slices.Equal(got[1], want[1]) {
+		t.Errorf("answers = %v", got)
+	}
+}
