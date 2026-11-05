@@ -59,7 +59,7 @@ grep '^  \["health"\] = "t",$' conf/rhiza.lua
 grep '^  \["accept"\] = "a",$' conf/rhiza.lua
 grep '^  \["inbox"\] = "i",$' conf/rhiza.lua
 grep '^  \["land"\] = "l",$' conf/rhiza.lua
-grep '^  \["live"\] = "v",$' conf/rhiza.lua
+grep '^  \["runs"\] = "v",$' conf/rhiza.lua
 grep '^  \["model"\] = "m",$' conf/rhiza.lua
 grep '^  \["propose"\] = "p",$' conf/rhiza.lua
 grep '^  \["ready"\] = "r",$' conf/rhiza.lua
@@ -83,7 +83,7 @@ grep 'open_argv\("request"\)' conf/rhiza.lua
 grep '^  \["request"\] = "q",$' conf/rhiza.lua
 grep '^  \["roadmap"\] = "b",$' conf/rhiza.lua
 grep '^  \["ready"\] = "r",$' conf/rhiza.lua
-grep '^  \["live"\] = "v",$' conf/rhiza.lua
+grep '^  \["runs"\] = "v",$' conf/rhiza.lua
 grep '^  \["inbox"\] = "i",$' conf/rhiza.lua
 
 # The autonomy app has an action on key y, which no app had; no existing key

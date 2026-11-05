@@ -2,7 +2,7 @@
 // each marked ok, warn or bad. It runs the api operation health in-process
 // through the registry, so --once prints what `rhiza health --json` prints.
 // r reloads; enter opens the app that shows more of the part under the
-// cursor (the inbox app for inbox, the live app for daemon, the autonomy
+// cursor (the inbox app for inbox, the runs app for daemon, the autonomy
 // app for autonomy) in place of the report, until that app quits.
 package healthapp
 
@@ -37,7 +37,7 @@ type Opener func(app string) (tea.Model, error)
 // apps maps a part to the app that shows more of it.
 var apps = map[string]string{
 	api.HealthInbox:    "inbox",
-	api.HealthDaemon:   "live",
+	api.HealthDaemon:   "runs",
 	api.HealthAutonomy: "autonomy",
 }
 
