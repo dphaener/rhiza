@@ -1,0 +1,132 @@
+{
+  "actor": "01M6ND5D1K80MSZCGW9SG6M0DN",
+  "after": [
+    "01M6ND3AFC9K5ZBAV8VS352YZY"
+  ],
+  "at": "2026-11-05T08:35:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 433db495 with the built binary (rhiza tui app inbox) in tmux on scratch repos made by testscripts with fake rex/claude. Question item: Enter opens a one-TextArea form; an empty Enter shows 'an answer needs words' and the form stays live; typing 'Use sqlite' and Enter calls session.message and, with no session S1 in the fake, shows 'send failed: no session matches \"S1\"' in a fresh live form that accepts typing again; Esc then quits (exit 0) with nothing sent. Blocker item: empty Enter refused, then 'Use a file' + Enter wrote Decision answer-store-q (quote 'Use a file', answers store-q) into the blocker's change set via question.answer and the app exited 0. Cycle 1's frozen-form finding is fixed."
+        },
+        "handle": "inbox-app-answer-qa-2",
+        "id": "01M6NDGV2GBZM4RYS5MT2E0F28",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NDGV2GBZM4RYS5MR1HC4G4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NDGV2GBZM4RYS5MR1HC4G4",
+        "id": "01M6NDGXVZ39NN5P30AS1P1E7X",
+        "link": "01M6NDGXVZ39NN5P30ANGF984D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZA0N04GRKJ6486V5XRAX9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 433db495 with the built binary in tmux on a real review run stopped at signoff (testscript scratch repo, fake claude): Enter opens 'Sign off · Approve me' with the run ID, what it waits for and 'a approve · s send back · esc close'. 's' opens a note form; an empty Enter shows 'a send-back needs a note'; 'tighten the tests' + Enter journalled 'signoff (visit 1): changes' with finding 'alpha f1 major at owner: tighten the tests' and the app exited 0. On a fresh copy 'a' journalled 'approved by test', queued the run in continues.json, the signoff left rhiza inbox and the app exited 0."
+        },
+        "handle": "inbox-app-signoff-qa-2",
+        "id": "01M6NDH0VCFBWFD2N6GAVAEMY2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NDH0VCFBWFD2N6G9V899JW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NDH0VCFBWFD2N6G9V899JW",
+        "id": "01M6NDH3J6XSEZKGYYYNAEB92V",
+        "link": "01M6NDH3J6XSEZKGYYYK2D7N8S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZA8WT3TB8HWR4D33QMMQ5",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 433db495: send-back from the built inbox app on a real review run waiting at signoff journalled the note as a finding; rhiza run status lists it under Sign-offs as 'changes asked by test' with 'alpha f1 major at owner: tighten the tests', and no approval is journalled. go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-send-back|inbox-signoff)$' passes."
+        },
+        "handle": "run-send-back-qa-2",
+        "id": "01M6NDH68VZE1RXZC37XVFVVVD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NDH68VZE1RXZC37XCSKEED",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NDH68VZE1RXZC37XCSKEED",
+        "id": "01M6NDH95MZ8VBS6MXNA98PGX8",
+        "link": "01M6NDH95MZ8VBS6MXN9XJBAAG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N099H464KP7VPM9TVD8RAZ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 433db495 with the built binary in tmux: on a failed run Enter opens 'What to do with the run' with a Retry/Abandon Select; Abandon then the Confirm left at its default No re-showed the choice ('abandon needs the confirm') with the journal unchanged; Esc quit with nothing done; Abandon then Yes appended finished 'abandoned by test' and exited 0. On a real failed review run (fake claude exiting 1) Retry queued it in continues.json with retry:true and exited 0. On a skipped run (change set landed) the same Select shows and Retry surfaces run.resume's refusal ('is not resumed: its change set ... is landed') in a live form. Neither choice shows on question, signoff, blocker, accept or open items."
+        },
+        "handle": "inbox-app-retry-abandon-qa-2",
+        "id": "01M6NDHBHHBPCGPHXWGKPD4P2Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NDHBHHBPCGPHXWGK21BSPF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NDHBHHBPCGPHXWGK21BSPF",
+        "id": "01M6NDHECA8C4P9BXKQPMR1ZQZ",
+        "link": "01M6NDHECA8C4P9BXKQPADWDTA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZAFPVHK2JM4JJAP4953HC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at 433db495 with the built binary in tmux on testscript scratch repos: one List row per item in rhiza inbox order with kind, change set title, step and what it waits for (failed, question, signoff, blocker, disk-low; skipped and accept; open); rhiza tui app inbox --once is byte-identical (cmp) to rhiza inbox --json on the accept and open repos; an empty inbox shows 'Nothing waits on you'. Enter opens the action on question, blocker, signoff, failed, skipped and accept (Confirm, default No; Yes accepted the change set and it left the inbox); Enter on disk-low shows its detail view. But on an open (gate) item from a real stopped plan run, the per-question form submits question.answer against the main repo and the run's record change set and always fails ('answer failed: no question \"park-disk\"'): the parked question lives only in the plan run's worktree and planned change set, so a gate can never be answered from the app."
+        },
+        "handle": "inbox-app-pick-list-qa-2",
+        "id": "01M6NDHH0R41172WECTXA51HQA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NDHH0R41172WECTTGPPMRC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NDHH0R41172WECTTGPPMRC",
+        "id": "01M6NDHM3MWBTT2P7XQCZ74WG1",
+        "link": "01M6NDHM3MWBTT2P7XQBVN98JS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZ9RZ8M65B2FB58A75WYZ2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYN9GRWHRJSHA31D9S838H",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NDHSFD549NV52AF3C82EAX",
+  "type": "ops",
+  "v": 1
+}
