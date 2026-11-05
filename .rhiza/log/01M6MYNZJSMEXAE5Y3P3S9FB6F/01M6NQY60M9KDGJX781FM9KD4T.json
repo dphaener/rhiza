@@ -1,0 +1,40 @@
+{
+  "actor": "01M6NQTT1EZ3SG0J44GDT891F5",
+  "after": [
+    "01M6NQT14KYP4G1BMKT070966P"
+  ],
+  "at": "2026-11-05T11:36:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 510159ce: go build ./... and go vet ./... pass. internal/tui now holds only autonomyapp, daemonapp, inboxapp, launcher, modalopen, modalshell, requestapp, runsapp; no Go file or the Makefile references changesapp, healthapp, modelapp, readapp, roadmapapp, writeapps, liveapp or requestsapp, and BUDGET_PKGS no longer lists internal/tui/modelapp. cmd/rhiza/tui.go accepts only inbox, runs, request, autonomy and daemon. A built binary run as `rhiza tui app <x> --once` for roadmap, model, health, changes, show and live exits 4 with 'unknown app' each; testscript tui-old-apps-gone passes. The wrapped commands' scripts (roadmap, roadmap-milestones, roadmap-paged, roadmap-umbrella, show, why, why-paged, slice, slice-change, slice-errors, slice-budget, health, health-machine-part, change, change-title) are unchanged against the merge-base and pass with go test -trimpath ./cmd/rhiza -count=1 -run TestScripts/...; go test ./internal/tui/... passes."
+        },
+        "handle": "old-apps-deleted-verified-8",
+        "id": "01M6NQXYG8VRGQVVQK9Q23SQMG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NQXYG8VRGQVVQK9M57CV4G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NQXYG8VRGQVVQK9M57CV4G",
+        "id": "01M6NQY1A95DVSSCAB81DMH4NY",
+        "link": "01M6NQY1A95DVSSCAB80VVWXM3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZD2ER8DDHNYK3W3C04SYB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NQY60M9KDGJX781FM9KD4T",
+  "type": "ops",
+  "v": 1
+}
