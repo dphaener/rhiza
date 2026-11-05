@@ -395,10 +395,34 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if _, ok := def.Steps["review/signoff"]; ok {
 		t.Error("review's signoff step is not skipped")
 	}
-	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "open-pr", "wait-pr", "pr-green", "signoff", "rebase", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
+	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "open-pr", "wait-pr", "pr-green", "ci-triage", "ci-fix", "signoff", "rebase", "wait-rebased", "rebased-green", "land", "wait-landed", "landed-green",
 		"rebase-merge", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
+	}
+	for _, n := range []string{"pr-green", "rebased-green"} {
+		if got := def.Steps[n].On[OutcomeFail]; got != "ci-triage" {
+			t.Errorf("%s on.fail = %q; want ci-triage", n, got)
+		}
+	}
+	for _, n := range []string{"landed-green", "rebased-merge-green"} {
+		if got, ok := def.Steps[n].On[OutcomeFail]; ok {
+			t.Errorf("%s on.fail = %q; want none", n, got)
+		}
+	}
+	triage := def.Steps["ci-triage"]
+	if triage.Kind != KindCommand || triage.Run != "rhiza ship check --test-failures" || triage.On[OutcomePass] != "ci-fix" || len(triage.On) != 1 {
+		t.Errorf("ci-triage = %+v; want a command step running ship check --test-failures, pass to ci-fix, no on.fail", triage)
+	}
+	fix := def.Steps["ci-fix"]
+	if fix.Kind != KindAgent || fix.On[OutcomePass] != "render-pr" || !strings.Contains(fix.Prompt, "Review: {run}") || !strings.Contains(fix.Prompt, "rhiza ship check --json") {
+		t.Errorf("ci-fix = %+v; want an agent step passing to render-pr, told the Review: trailer and ship check --json", fix)
+	}
+	caps := map[string]int{"ci-fix": 2, "ci-triage": 3, "render-pr": 5, "open-pr": 5, "wait-pr": 5, "pr-green": 5, "signoff": 5, "rebase": 3, "wait-rebased": 3, "rebased-green": 3}
+	for n, c := range caps {
+		if got := def.Steps[n].MaxVisits; got != c {
+			t.Errorf("%s max_visits = %d; want %d", n, got, c)
+		}
 	}
 }
 

@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MN44TPKP3WKYEFJWRCRMWJ",
+  "after": [
+    "01M6MD4WWY6EYQ002PJXEVQ2T0"
+  ],
+  "at": "2026-11-05T01:42:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 91caa11e. go test -trimpath ./internal/api/... passed, including the parseFailedTests test in ship_test.go: a nested TestScripts/review-check-worktree failure gives TestScripts and TestScripts/review-check-worktree, two failures in one package give TestA and TestB, and an infra-only log gives none. go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship|ship-check-ci-test-findings|describe-golden)' -v passed all 14 scripts. ship-check-ci-test-findings.txtar uses a fake gh whose check fails again after its rerun and whose 'run view 42 --log-failed' prints '--- FAIL: TestScripts/x'. ship check --settled --json lists TestScripts/x under tests and findings and records ci_findings in the state file. With an infra-only log the test is a plain failure and ci_findings is cleared, and a green check clears it too. This fixes attempt 1's stale-findings finding. I read the diff in internal/api/ship.go: shipReadFailures replaces st.CIFindings on each read and clears it for a head that was not rerun, shipRerunFailed clears it on a new rerun, and the green branch clears it. Note: the acceptance's -run 'TestScripts/run-ship' pattern does not match the script's name, so I ran it by name."
+        },
+        "handle": "ship-check-ci-test-findings-verified",
+        "id": "01M6MNXVV84CZWVST1RPENK7Y3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MNXVV84CZWVST1RK2QK1MH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MNXVV84CZWVST1RK2QK1MH",
+        "id": "01M6MNXYS204JB4VGFVZN7X3HV",
+        "link": "01M6MNXYS204JB4VGFVYGX5PS3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MC4GXTJ7SWF8NV4SYXD3F9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MBPT20RGKTT334GQK997B3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MNY5X9PG393EYW5349HQ3Q",
+  "type": "ops",
+  "v": 1
+}
