@@ -342,7 +342,8 @@ func stateOf(infos []index.ChangeSetInfo, cs id.ID) changeset.State {
 	return ""
 }
 
-// landedSets is what prefetchLanded loads: folded change sets by ID.
+// landedSets is what prefetchLanded loads: change sets by ID, with only
+// their ID, state and ops (index.OpsOf), all that the diff reads of them.
 type landedSets struct {
 	sets map[id.ID]changeset.ChangeSet
 	err  error
@@ -384,7 +385,7 @@ func prefetchLanded(x *index.Index, mine changeset.ChangeSet) <-chan landedSets 
 			out <- landedSets{}
 			return
 		}
-		got, err := x.FoldedOf(slices.Collect(maps.Keys(want)))
+		got, err := x.OpsOf(slices.Collect(maps.Keys(want)))
 		out <- landedSets{sets: got, err: err}
 	}()
 	return out
@@ -437,7 +438,7 @@ func indexedDiff(x *index.Index, m *indexModel, mine changeset.ChangeSet, loaded
 		if len(need) == 0 || fail != nil {
 			return
 		}
-		got, err := x.FoldedOf(need)
+		got, err := x.OpsOf(need)
 		if err != nil {
 			fail = err
 			return

@@ -452,17 +452,20 @@ func (x *Index) writeFoldedSets(tx *sql.Tx, ids []id.ID, sets []changeset.Change
 	if err := writeChangeSets(tx, sets); err != nil {
 		return err
 	}
-	st, err := tx.Prepare(`INSERT INTO folded (change_set, data) VALUES (?, ?)`)
+	st, err := tx.Prepare(`INSERT INTO folded (change_set, ops, data) VALUES (?, ?, ?)`)
 	if err != nil {
 		return err
 	}
 	defer st.Close()
 	for _, s := range sets {
-		var buf bytes.Buffer
-		if err := gob.NewEncoder(&buf).Encode(s); err != nil {
+		var ops, data bytes.Buffer
+		if err := gob.NewEncoder(&ops).Encode(opsOnly{ID: s.ID, State: s.State, Ops: s.Ops}); err != nil {
 			return fmt.Errorf("encode folded %s: %w", s.ID, err)
 		}
-		if _, err := st.Exec(idText(s.ID), buf.Bytes()); err != nil {
+		if err := gob.NewEncoder(&data).Encode(s); err != nil {
+			return fmt.Errorf("encode folded %s: %w", s.ID, err)
+		}
+		if _, err := st.Exec(idText(s.ID), ops.Bytes(), data.Bytes()); err != nil {
 			return err
 		}
 	}
@@ -504,9 +507,38 @@ func storedSets(q querier) ([]changeset.ChangeSet, error) {
 // the change sets css; a change set with no entries has no key. The result
 // equals what changeset.FoldLog gives for them over the whole log.
 func (x *Index) FoldedOf(css []id.ID) (map[id.ID]changeset.ChangeSet, error) {
+	return x.foldedOf(css, "data", decodeFolded)
+}
+
+// OpsOf is FoldedOf with only the ID, State and Ops of each change set
+// set, read from their own stored copy: the rest of the stored state, the
+// history above all, is not read, which makes it several times cheaper.
+func (x *Index) OpsOf(css []id.ID) (map[id.ID]changeset.ChangeSet, error) {
+	return x.foldedOf(css, "ops", decodeOps)
+}
+
+// opsOnly is the part of a folded change set stored as its ops.
+type opsOnly struct {
+	ID    id.ID
+	State changeset.State
+	Ops   []op.Op
+}
+
+// decodeOps decodes the stored ops of one folded change set.
+func decodeOps(data []byte) (changeset.ChangeSet, error) {
+	var c opsOnly
+	if err := gob.NewDecoder(bytes.NewReader(data)).Decode(&c); err != nil {
+		return changeset.ChangeSet{}, fmt.Errorf("decode folded change set: %w", err)
+	}
+	return changeset.ChangeSet{ID: c.ID, State: c.State, Ops: c.Ops}, nil
+}
+
+// foldedOf reads column col of the stored folded change sets css, each
+// through decode.
+func (x *Index) foldedOf(css []id.ID, col string, decode func([]byte) (changeset.ChangeSet, error)) (map[id.ID]changeset.ChangeSet, error) {
 	var blobs [][]byte
 	for _, chunk := range batchChunks(css) {
-		rows, err := x.db.Query(`SELECT f.data FROM json_each(?1) j CROSS JOIN folded f ON f.change_set = j.value`, idJSON(chunk))
+		rows, err := x.db.Query(`SELECT f.`+col+` FROM json_each(?1) j CROSS JOIN folded f ON f.change_set = j.value`, idJSON(chunk))
 		if err != nil {
 			return nil, err
 		}
@@ -532,7 +564,7 @@ func (x *Index) FoldedOf(css []id.ID) (map[id.ID]changeset.ChangeSet, error) {
 	for range min(decodeWorkers, len(blobs)) {
 		wg.Go(func() {
 			for i := range next {
-				sets[i], errs[i] = decodeFolded(blobs[i])
+				sets[i], errs[i] = decode(blobs[i])
 			}
 		})
 	}

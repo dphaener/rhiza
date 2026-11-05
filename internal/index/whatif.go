@@ -328,6 +328,10 @@ func whatIfSets(tx *sql.Tx, cs id.ID, over *changeset.ChangeSet) ([]changeset.Ch
 			return nil, err
 		}
 	}
+	// The landed bucket is built again only when extraCreates is set,
+	// which happens once at most.
+	var bucket []op.Op
+	bucketExtra := false
 	build := func() []changeset.ChangeSet {
 		out := make([]changeset.ChangeSet, 0, len(stubs)+1)
 		for _, s := range stubs {
@@ -336,18 +340,34 @@ func whatIfSets(tx *sql.Tx, cs id.ID, over *changeset.ChangeSet) ([]changeset.Ch
 			}
 			out = append(out, s)
 		}
-		ops := slices.Concat(landed, extraCreates)
-		return append(out, changeset.ChangeSet{State: changeset.StateLanded, Ops: ops})
+		if bucket == nil || bucketExtra != (extraCreates != nil) {
+			bucket, bucketExtra = slices.Concat(landed, extraCreates), extraCreates != nil
+		}
+		return append(out, changeset.ChangeSet{State: changeset.StateLanded, Ops: bucket})
+	}
+	states := make(map[id.ID]changeset.State, len(stubs))
+	for _, s := range stubs {
+		states[s.ID] = s.State
 	}
 	state := func(c id.ID) (changeset.State, bool) {
-		for _, s := range stubs {
-			if s.ID == c {
-				return s.State, true
-			}
-		}
-		return "", false
+		st, ok := states[c]
+		return st, ok
 	}
 
+	// cs is always wanted: fold it first, so the analysis below starts
+	// from its ops rather than finding it needed on a pass of its own.
+	if st, ok := state(cs); ok && inFlightState(st) {
+		if _, ok := full[cs]; !ok {
+			c, err := foldOne(tx, cs)
+			if err != nil {
+				return nil, err
+			}
+			full[cs] = c
+			if extraCreates, err = createdByLanded(tx, c.Ops); err != nil {
+				return nil, err
+			}
+		}
+	}
 	for {
 		if st, ok := state(cs); !ok || !inFlightState(st) {
 			break

@@ -99,7 +99,7 @@ import (
 // SchemaVersion is the schema this package writes, kept in PRAGMA
 // user_version. Bump it on any change to the tables or what they hold: an
 // index of another version is deleted and rebuilt.
-const SchemaVersion = 4
+const SchemaVersion = 5
 
 // busyTimeout is how long a connection waits for a lock another connection
 // holds. Tests shorten it.
@@ -358,9 +358,13 @@ var schema = []string{
 		superseded_by  TEXT NOT NULL,
 		terminal_entry TEXT NOT NULL
 	) WITHOUT ROWID`,
-	// folded is each change set's folded state, history included, as gob.
+	// folded is each change set's folded state, history included, as gob
+	// (data), and its ID, state and ops alone, also as gob (ops): reading
+	// the ops of a landed change set costs a fraction of its whole state.
+	// ops comes first, so reading it does not walk data's pages.
 	`CREATE TABLE folded (
 		change_set TEXT PRIMARY KEY,
+		ops        BLOB NOT NULL,
 		data       BLOB NOT NULL
 	) WITHOUT ROWID`,
 	// nodes and links hold the as-is ("asis") and to-be ("tobe") views.
