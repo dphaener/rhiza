@@ -15,6 +15,7 @@ import (
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
 	"github.com/dphaener/rhiza/internal/model"
+	"github.com/dphaener/rhiza/internal/tmpsweep"
 )
 
 // sliceBudget is the most a slice's median may take, open to printed.
@@ -42,6 +43,8 @@ var (
 )
 
 func TestMain(m *testing.M) {
+	// A run killed by a go test timeout never reached the RemoveAll below.
+	tmpsweep.StaleTemp("rhiza-slice-budget-")
 	code := m.Run()
 	if genDir != "" {
 		os.RemoveAll(genDir)
