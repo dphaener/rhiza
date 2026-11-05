@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MT8EBCKQVDHRSKVY60Y31R",
+  "after": [
+    "01M6MMG28ZYEBKQQC8ZN8DGKTY"
+  ],
+  "at": "2026-11-05T02:58:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c0ce8402 ran go test -trimpath -count=1 ./internal/guide/... (ok). build_test.go, review_test.go and plan_test.go assert the `- <<'EOF'` heredoc form (and closing EOF) for each rhiza run findings / rhiza run verdict the build, review and plan-review guides name, and TestGuidesFeedFindingsFromStdin fails on any remaining `<file>` form. grep of the three guide texts shows five commands, all heredoc on stdin with their existing flags (--leaf, --check, --json) and the unchanged JSON shapes. readReviewFile in internal/api/run_review.go reads stdin for `-` for both findings and verdict, so the shown commands work."
+        },
+        "handle": "guides-stdin-findings-verified",
+        "id": "01M6MT9MD2RQDPES6QGFP70R3A",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MT9MD2RQDPES6QGDTBW357",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MT9MD2RQDPES6QGDTBW357",
+        "id": "01M6MT9PTKWFAJHC03MRATPPS9",
+        "link": "01M6MT9PTKWFAJHC03MPJMSP6X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MMAF8Z4XWD1JD9WG5PRYBR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MM3MAXFA2ARM9GAF4RV1ZW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MT9V2PBX978RRDZP3K9V5T",
+  "type": "ops",
+  "v": 1
+}

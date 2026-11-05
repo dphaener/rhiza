@@ -1,6 +1,7 @@
 package guide
 
 import (
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -26,7 +27,7 @@ func TestBuildText(t *testing.T) {
 		},
 		"evidence-or-findings": {
 			"detached checkout", "Never edit code", "Evidence written as yourself",
-			`"type":"verifies","to":"<leaf>"`, "rhiza run findings --leaf <leaf> <file>",
+			`"type":"verifies","to":"<leaf>"`, "rhiza run findings --leaf <leaf> - <<'EOF'", "\n  EOF\n",
 			`{"findings":[{"reason":`, "neither Evidence nor findings fails",
 			"Evidence\nwritten by anyone else does not count",
 		},
@@ -79,6 +80,26 @@ func TestBuildTrailersInOneFinalParagraph(t *testing.T) {
 	for _, tr := range []string{"Change: ", "Actor: ", "Leaf: export-csv", "Co-Authored-By: "} {
 		if !strings.Contains(last, tr) {
 			t.Errorf("build example: final paragraph %q lacks %q", last, tr)
+		}
+	}
+}
+
+func TestGuidesFeedFindingsFromStdin(t *testing.T) {
+	re := regexp.MustCompile(`rhiza run (findings|verdict)[^\n]*`)
+	for _, name := range []string{"build", "review", "plan-review"} {
+		g, ok := Lookup(name)
+		if !ok {
+			t.Fatalf("no guide %q", name)
+		}
+		body := g.Body
+		hits := re.FindAllString(body, -1)
+		for _, h := range hits {
+			if strings.Contains(h, "<file>") {
+				t.Errorf("%s: file form remains: %q", name, h)
+			}
+		}
+		if strings.Count(body, "<<'EOF'") == 0 {
+			t.Errorf("%s: no stdin heredoc form", name)
 		}
 	}
 }
