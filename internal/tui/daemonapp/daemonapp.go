@@ -21,11 +21,28 @@ import (
 	"github.com/dphaener/rexuikit/ui/theme"
 
 	"github.com/dphaener/rhiza/internal/api"
+	"github.com/dphaener/rhiza/internal/tui/launcher"
 	"github.com/dphaener/rhiza/internal/tui/modalshell"
 )
 
 // Name is the app's name.
 const Name = "daemon"
+
+func init() {
+	launcher.Register(launcher.App{
+		Name:    Name,
+		Key:     "d",
+		Summary: "Pause the daemon and set its run limit",
+		Component: func() modalshell.Component {
+			a, err := New(func(string, []string) ([]byte, error) { return []byte("{}"), nil },
+				theme.Dark(), colorprofile.TrueColor)
+			if err != nil {
+				return nil
+			}
+			return a
+		},
+	})
+}
 
 // PausedKey is the setting the pause Confirm writes.
 const PausedKey = "rhiza.daemon.paused"

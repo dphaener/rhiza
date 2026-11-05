@@ -18,16 +18,20 @@ grep '^-- mine$' conf/init.lua
 grep -count=1 '^config reload$' rex.log
 
 # Every registered app is a Rex action of its own, titled with its name and
-# starting `rhiza tui open <name>`: exactly the apps inbox, request, runs and
-# autonomy, and none of the old ones.
+# starting `rhiza tui open <name>`: exactly the apps inbox, request, runs, daemon
+# and autonomy, and none of the old ones.
 grep 'name = "rhiza_app_inbox"' conf/rhiza.lua
 grep 'open_argv\("inbox"\)' conf/rhiza.lua
 grep 'name = "rhiza_app_request"' conf/rhiza.lua
 grep 'open_argv\("request"\)' conf/rhiza.lua
 grep 'name = "rhiza_app_runs"' conf/rhiza.lua
 grep 'open_argv\("runs"\)' conf/rhiza.lua
+grep 'name = "rhiza_app_daemon"' conf/rhiza.lua
+grep 'open_argv\("daemon"\)' conf/rhiza.lua
 grep 'name = "rhiza_app_autonomy"' conf/rhiza.lua
 grep 'open_argv\("autonomy"\)' conf/rhiza.lua
+grep -count=5 'rex\.action' conf/rhiza.lua
+grep -count=5 'name = "rhiza_app_' conf/rhiza.lua
 ! grep 'rhiza_app_(roadmap|model|health|changes|show|why|slice|ready|live|session_ls|run_status|accept|land|propose|record|change_show)' conf/rhiza.lua
 ! grep 'name = "rhiza_app_[a-z0-9_]*[^a-z0-9_"]' conf/rhiza.lua
 # No action opens a layer itself: each starts `rhiza tui open <app>`
@@ -45,6 +49,7 @@ grep '"tui", "open", app' conf/rhiza.lua
 # that app's action; the keys did not move.
 grep 'client.mode.enter", \{ name = MODE' conf/rhiza.lua
 grep '^  \["autonomy"\] = "y",$' conf/rhiza.lua
+grep '^  \["daemon"\] = "d",$' conf/rhiza.lua
 grep '^  \["inbox"\] = "i",$' conf/rhiza.lua
 grep '^  \["request"\] = "q",$' conf/rhiza.lua
 grep '^  \["runs"\] = "v",$' conf/rhiza.lua

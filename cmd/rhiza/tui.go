@@ -11,10 +11,12 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/colorprofile"
+	"github.com/dphaener/rexuikit/ui/theme"
 
 	"github.com/dphaener/rhiza/internal/api"
 	"github.com/dphaener/rhiza/internal/canon"
 	"github.com/dphaener/rhiza/internal/tui/autonomyapp"
+	"github.com/dphaener/rhiza/internal/tui/daemonapp"
 	"github.com/dphaener/rhiza/internal/tui/inboxapp"
 	"github.com/dphaener/rhiza/internal/tui/modalshell"
 	"github.com/dphaener/rhiza/internal/tui/requestapp"
@@ -53,7 +55,8 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 	isRuns := name == runsapp.Name
 	isRequests := name == requestapp.Name
 	isAutonomy := name == autonomyapp.Name
-	if !isInbox && !isRuns && !isRequests && !isAutonomy {
+	isDaemon := name == daemonapp.Name
+	if !isInbox && !isRuns && !isRequests && !isAutonomy && !isDaemon {
 		return writeError(stdout, stderr, api.NotFoundf("unknown app %q", name), false)
 	}
 	once := false
@@ -133,6 +136,22 @@ func tuiApp(g globals, name string, args []string, stdout, stderr io.Writer, get
 		if _, err := sh.Result(); err != nil {
 			return writeError(stdout, stderr, err, false)
 		}
+		return 0
+	case isDaemon:
+		if once {
+			return writeError(stdout, stderr, api.Usagef("tui app daemon has no --once: it writes the daemon settings from its form"), false)
+		}
+		da, err := daemonapp.New(func(op string, args []string) ([]byte, error) {
+			return call(op, false, false, args)
+		}, theme.Dark(), colorprofile.Detect(os.Stdout, os.Environ()))
+		if err != nil {
+			return writeError(stdout, stderr, err, false)
+		}
+		out, err := modalshell.New(da).Run()
+		if err != nil {
+			return writeError(stdout, stderr, fmt.Errorf("tui app: %w", err), false)
+		}
+		stdout.Write(out)
 		return 0
 	case isInbox:
 		im := inboxModel()
