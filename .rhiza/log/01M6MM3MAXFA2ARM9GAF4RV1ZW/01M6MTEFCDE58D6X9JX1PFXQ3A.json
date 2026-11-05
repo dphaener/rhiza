@@ -1,0 +1,40 @@
+{
+  "actor": "01M6MTBPQGJVK2CX1JNFVMF66N",
+  "after": [
+    "01M6MT9V2PBX978RRDZP3K9V5T"
+  ],
+  "at": "2026-11-05T03:01:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6521b137 built ./cmd/rhiza (go build -trimpath) and ran its guide build, guide review and guide plan-review: all five rhiza run findings / rhiza run verdict commands show the `- <<'EOF'` ... `EOF` heredoc form with their flags (--leaf, --check, --json) and unchanged JSON shapes; no `<file>` form of either remains. Hands-on, ran the review guide's exact command `rhiza run findings --check \"$RHIZA_CHECK\" - <<'EOF'` with the built binary in this qa session: it recorded round 1 of check qa (exit 0). The plan-review form `rhiza run findings - --json <<'EOF'` parses (reaches the RHIZA_RUN check) in a scratch repo. go test -trimpath -count=1 ./internal/guide/... ok."
+        },
+        "handle": "guides-stdin-findings-qa-1",
+        "id": "01M6MTE66PQX4XQHCCZSQPVS58",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MTE66PQX4XQHCCZPG1NZHR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MTE66PQX4XQHCCZPG1NZHR",
+        "id": "01M6MTEB1GRTS06AAZK1JMX6NC",
+        "link": "01M6MTEB1GRTS06AAZJYV024H9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MMAF8Z4XWD1JD9WG5PRYBR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MM3MAXFA2ARM9GAF4RV1ZW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MTEFCDE58D6X9JX1PFXQ3A",
+  "type": "ops",
+  "v": 1
+}

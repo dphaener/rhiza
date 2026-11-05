@@ -75,10 +75,12 @@ agents or `gh`. End with exactly one of:
   ]}
   ```
 
-- Findings, one per failed point, recorded with `rhiza run findings --leaf <leaf> <file>`:
+- Findings, one per failed point, recorded from stdin with a heredoc, no temp file:
 
   ```
+  rhiza run findings --leaf <leaf> - <<'EOF'
   {"findings":[{"reason":"<what failed and how you ran it>"}]}
+  EOF
   ```
 
 Then `rhiza session done`. An attempt with neither Evidence nor findings fails, and Evidence

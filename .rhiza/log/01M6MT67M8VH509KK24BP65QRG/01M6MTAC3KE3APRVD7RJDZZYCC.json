@@ -1,0 +1,63 @@
+{
+  "actor": "01M6MT6KZT3TJJEW96RXPHBFRF",
+  "after": [
+    "01M6MT9GEJ9R4PVDRV3ZBNBCVM"
+  ],
+  "at": "2026-11-05T02:58:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A plan run's merge step that merges nothing because origin/main moved past the checked head goes back to the rebase step, rebases, waits for the new head's CI and merges again, as ship-change's merge goes back to rebase-merge; the rebase, wait-rebased, rebased-green and merge steps are capped at 3 visits each, ship-change's cap, after which the run ends failed",
+          "wording": "(assumed, would have escalated) the change set's intent asks for the loop within a cap; the cap is ship-change's"
+        },
+        "handle": "plan-merge-loops-to-rebase",
+        "id": "01M6MT9X3ZK7259TEX988BX681",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6MT9X3ZK7259TEX95FVYW4W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MT9X3ZK7259TEX95FVYW4W",
+        "id": "01M6MT9ZV4783GRWQWF39E2W90",
+        "link": "01M6MT9ZV4783GRWQWEZDC266A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MT96GM8XF44X2PX1WS17Y1",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go workflow test shows the built-in plan workflow's merge step routing a fail to rebase and rebase, wait-rebased, rebased-green and merge each having max_visits 3; a testscript modelled on run-ship-merge-main-moved.txtar runs a plan run whose fake origin/main gains a commit once after rebased-green: the first merge makes no gh pr merge call and fails, the run's log shows merge (visit 1) fail then rebase, rebase (visit 2) pushes the rebased head, and merge (visit 2) calls gh pr merge pinned to the new head and the run reaches close-out and ends passed",
+          "statement": "When a plan run's merge finds origin/main has moved past the PR's checked head, the run goes back to rebase onto the new main (settling rendered-only conflicts by rendering again), waits for the rebased head's CI and merges it, up to 3 times, instead of ending the run with 'Not merged'"
+        },
+        "handle": "plan-run-merge-rebases",
+        "id": "01M6MTA2NY5E0GWS0NDX3FCPJV",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M6MTA2NY5E0GWS0NDWVNEA6D",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M6MTA2NY5E0GWS0NDWVNEA6D",
+        "id": "01M6MTA5Y23ASGJBA7CXEVXDBE",
+        "link": "01M6MTA5Y23ASGJBA7CW7PE2FC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MT9X3ZK7259TEX95FVYW4W",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M6MT67M8VH509KK24BP65QRG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MTAC3KE3APRVD7RJDZZYCC",
+  "type": "ops",
+  "v": 1
+}

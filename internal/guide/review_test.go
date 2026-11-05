@@ -28,12 +28,12 @@ func TestReviewText(t *testing.T) {
 		},
 		"severities": {"`blocker`", "`major`", "`minor`", "`nit`"},
 		"findings": {
-			`rhiza run findings --check "$RHIZA_CHECK" <file>`,
+			`rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'`, "\nEOF\n",
 			`{"findings":[{"severity":"major","leaf":"<leaf>","place":"path:line","reason":`,
 			`{"findings":[]}`, "rhiza describe run.findings",
 		},
 		"verdict": {
-			`rhiza run verdict --check "$RHIZA_CHECK" <file>`,
+			`rhiza run verdict --check "$RHIZA_CHECK" - <<'EOF'`, "\nEOF\n",
 			`{"verdicts":[{"finding":"f1","verdict":"confirmed","reason":`,
 			"`confirmed` or `dropped`",
 		},

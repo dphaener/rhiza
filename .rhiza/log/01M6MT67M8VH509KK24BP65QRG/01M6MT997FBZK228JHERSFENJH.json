@@ -1,0 +1,33 @@
+{
+  "actor": "01M6MT6KZT3TJJEW96RXPHBFRF",
+  "after": [
+    "01M6MT67M8VH509KK24CENC9TA"
+  ],
+  "at": "2026-11-05T02:58:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "5735dda0b4cdec9aa5f1221631fee2ab62bb7e6e92113fcb1b08debec3c73ad6",
+          "session": "912154e0-797e-473f-8c79-01a1a9a34415",
+          "summary": "Autonomous plan run, no owner present. The change set's intent names the fix: the plan workflow's merge step, which fails when origin/main moved past the checked head, should loop back to rebase within a cap, as ship-change's merge does (on.fail = rebase-merge, max_visits = 3). The planner placed the change set under milestone 25 (empty backlog: bugs and polish), as the sibling fix 01M6M1M1 is, and planned one leaf under plan-workflow: plan.toml's merge step goes back to rebase on fail, the rebase/wait-rebased/rebased-green/merge loop capped at 3 visits like ship-change, proven by a Go workflow transition test and a testscript modelled on run-ship-merge-main-moved.txtar. Nothing left open.",
+          "title": "Plan of Fix Plan runs fail at merge (autonomous)"
+        },
+        "handle": "plan-merge-rebases-interview",
+        "id": "01M6MT96GM8XF44X2PX4S2H4SB",
+        "key": null,
+        "kind": "source",
+        "node": "01M6MT96GM8XF44X2PX1WS17Y1",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M6MT67M8VH509KK24BP65QRG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MT997FBZK228JHERSFENJH",
+  "type": "ops",
+  "v": 1
+}

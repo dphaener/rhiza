@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6MTM3E3D4QSPPHEB2SBBCQT"
+  ],
+  "at": "2026-11-05T03:42:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "91d4413a498425dfcef546143c8c23d8c5bc7096",
+          "pr": "https://github.com/dphaener/rhiza/pull/282",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #282 (https://github.com/dphaener/rhiza/pull/282) passed CI at 91d4413",
+          "status": "verified"
+        },
+        "handle": "pr-282-fix-agents-in-runs-hit-claude",
+        "id": "01M6MWSM9GJ8YMFC7Z62ECPX0T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MWSM9GJ8YMFC7Z5ZF4XK8Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MWSM9GJ8YMFC7Z5ZF4XK8Y",
+        "id": "01M6MWSP8DB14W4G20HVAAHE7G",
+        "link": "01M6MWSP8DB14W4G20HTYP6FGV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MMAF8Z4XWD1JD9WG5PRYBR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MM3MAXFA2ARM9GAF4RV1ZW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MWSSFFJY3FTT3K0MZTWW18",
+  "type": "ops",
+  "v": 1
+}
