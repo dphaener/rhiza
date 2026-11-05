@@ -245,8 +245,12 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 	}
 	resp.Warnings = append(follow.stop(), paused...)
 	resp.Code = code
+	// An exit already recorded (a run that judged the session lost) is
+	// final: the run has acted on it, so the record keeps it.
 	updated, err := st.Update(rec.ID, func(r *session.Record) {
-		r.Status.Exit = &session.Report{State: session.StateExited, Code: &code, At: ctx.Now().UTC()}
+		if !r.Status.Exited() {
+			r.Status.Exit = &session.Report{State: session.StateExited, Code: &code, At: ctx.Now().UTC()}
+		}
 	})
 	if err != nil {
 		resp.Warnings = append(resp.Warnings, fmt.Sprintf("record the exit: %v", err))

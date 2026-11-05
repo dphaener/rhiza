@@ -1,0 +1,40 @@
+{
+  "actor": "01M6M8SJ6YBBE038F68J9K4WQF",
+  "after": [
+    "01M6M8QV4D0CJNXMGE7A2PJE0H"
+  ],
+  "at": "2026-11-04T22:10:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d1e34cea (a model-only commit; the code landed in 7fd9c685), ran go test -count=1 -run TestAgentLostSession -v ./internal/run: all 4 subtests PASS. Each one rejoins journalled session S-earlier (Entered+Session entries, not started by this process) whose AgentStatus is Lost with Outcome fail. In 'plain' (agentWF) the step is Failed with detail containing 'lost: SessionEnd'. In 'done and until holds' (agentDoneWF, until_when = done, SaidDone, until true) it is Succeeded with 'until held'. In 'done, until fails' it is Failed with 'until did not hold'. In 'until step without done mark' it is Failed without checking until. Every case asserts r.closed == [S-earlier], so the Runner was asked to close the pane. Read pollAgent in internal/run/engine.go: a Lost status passes only through exitedUntil when step.Until is set, WaitsForDone is true and SaidDone is true; otherwise its fail outcome stands. stepRunner.AgentStatus in internal/api/run.go maps a lost exit to Done, OutcomeFail, Lost and never to exit 0. go test ./internal/run ./internal/session pass and go vet is clean. ./internal/api passed on a rerun (387s); its first run failed one timing budget under CPU contention (539s), which is unrelated to this leaf."
+        },
+        "handle": "lost-session-judged-verified",
+        "id": "01M6M9T5CA6ZMKHA23EZBY7SJ7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6M9T5CA6ZMKHA23EXC232T8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6M9T5CA6ZMKHA23EXC232T8",
+        "id": "01M6M9T8HYMCQQXY5M995VJ59D",
+        "link": "01M6M9T8HYMCQQXY5M95JZF859",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M57611NNTDR13MV8N9Z7GT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6M4YHKJAER13CM0YHZQFKCZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6M9TCZSNA8K65FYWMZE4T2P",
+  "type": "ops",
+  "v": 1
+}
