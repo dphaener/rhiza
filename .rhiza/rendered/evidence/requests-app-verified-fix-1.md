@@ -14,7 +14,7 @@ Verified at 99c050d8 (review fixer, quality f1): Submit now builds argv with Req
 
 ### Out
 
-- verifies [requests-app](../capability/rhiza/orchestration/daemon/plan-requests/requests-app.md)
+- verifies requests-app (retired)
 
 ## History
 

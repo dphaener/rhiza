@@ -376,7 +376,6 @@
       - [daemon-pause](capability/rhiza/orchestration/daemon/daemon-pause.md)
       - [plan-requests](capability/rhiza/orchestration/daemon/plan-requests.md)
         - [roadmap-new-work-requests](capability/rhiza/orchestration/daemon/plan-requests/roadmap-new-work-requests.md)
-        - [requests-app](capability/rhiza/orchestration/daemon/plan-requests/requests-app.md)
         - [request-queue](capability/rhiza/orchestration/daemon/plan-requests/request-queue.md)
           - [bug-request-titles](capability/rhiza/orchestration/daemon/plan-requests/request-queue/bug-request-titles.md)
           - [milestone-request-owner-plan](capability/rhiza/orchestration/daemon/plan-requests/request-queue/milestone-request-owner-plan.md)
@@ -386,7 +385,6 @@
         - [plan-run-hands-milestone](capability/rhiza/orchestration/daemon/plan-requests/plan-run-hands-milestone.md)
         - [planner-serves-milestone](capability/rhiza/orchestration/daemon/plan-requests/planner-serves-milestone.md)
         - [plan-step-milestone-check](capability/rhiza/orchestration/daemon/plan-requests/plan-step-milestone-check.md)
-        - [requests-app-milestone](capability/rhiza/orchestration/daemon/plan-requests/requests-app-milestone.md)
       - [daemon-service-install](capability/rhiza/orchestration/daemon/daemon-service-install.md)
       - [daemon-self-update](capability/rhiza/orchestration/daemon/daemon-self-update.md)
       - [daemon-repo-session](capability/rhiza/orchestration/daemon/daemon-repo-session.md)
@@ -453,6 +451,7 @@
   - [modal-shell-hosts-component](capability/rhiza/modal-shell-hosts-component.md)
   - [modal-shell-closes](capability/rhiza/modal-shell-closes.md)
   - [modal-sized-to-content](capability/rhiza/modal-sized-to-content.md)
+  - [request-app-form](capability/rhiza/request-app-form.md)
   - [daemon-app-pause](capability/rhiza/daemon-app-pause.md)
   - [daemon-app-run-limit](capability/rhiza/daemon-app-run-limit.md)
 - [ship-through-rhiza](capability/ship-through-rhiza.md)
@@ -1988,6 +1987,7 @@
 - [pr-289-milestone-planning-always](evidence/pr-289-milestone-planning-always.md)
 - [pr-290-modal-shell-for-rex-apps](evidence/pr-290-modal-shell-for-rex-apps.md)
 - [pr-293-daemon-app-on-the-modal-shell](evidence/pr-293-daemon-app-on-the-modal-shell.md)
+- [pr-294-request-app-on-the-modal-shell](evidence/pr-294-request-app-on-the-modal-shell.md)
 - [pr-35-reopening-a-change-set](evidence/pr-35-reopening-a-change-set.md)
 - [pr-36-leaf-dependencies-and](evidence/pr-36-leaf-dependencies-and.md)
 - [pr-38-session-messages-and-token-use](evidence/pr-38-session-messages-and-token-use.md)
@@ -2048,6 +2048,9 @@
 - [reopen-verified](evidence/reopen-verified.md)
 - [reopen-views-verified](evidence/reopen-views-verified.md)
 - [repo-ship-command-tests](evidence/repo-ship-command-tests.md)
+- [request-app-form-qa-1](evidence/request-app-form-qa-1.md)
+- [request-app-form-qa-2](evidence/request-app-form-qa-2.md)
+- [request-app-form-verified](evidence/request-app-form-verified.md)
 - [request-names-milestone-qa-1](evidence/request-names-milestone-qa-1.md)
 - [request-names-milestone-qa-2](evidence/request-names-milestone-qa-2.md)
 - [request-names-milestone-verified](evidence/request-names-milestone-verified.md)
@@ -4763,5 +4766,7 @@
 - capability agent-steps-tile-run-window `01M6857JXB8B7WXBN5VHE7MV1K` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
 - capability question-sessions-tile-run-window `01M6857KVT0NRCTAY6EZ2DH209` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
 - capability roadmap-app-new-work `01M686V49K74FDKG4YV2BDJCSN` — Superseded by roadmap-new-work-requests: m and n now file a plan request (rhiza request) for the daemon to plan, and no longer ask y/n or open a Rex tab running run start --workflow plan --new
+- capability requests-app `01M6CS27ZCVXPWK3GXS8B8PQ2C` — Replaced by the request app on the modal shell (change set 01M6MYNDJ4HAJF028CEAE7SYQN): internal/tui/requestsapp and tui-requests-app.txtar are deleted, the requests app and its listing are gone
+- capability requests-app-milestone `01M6JE40PG6Z1ZG27N7DMFH3FF` — Replaced by the request app on the modal shell (change set 01M6MYNDJ4HAJF028CEAE7SYQN): the old requests app and its milestone field are deleted; the new request form has no milestone field
 - actor claude-code-a463ece8 `01M6HYXRR6ZXYF68BAC8X0KEEQ` — Duplicate of actor claude-code-a463ece8 (node 01M6HV8Y05D3EMPSARA4H5VJ15) that landed on main from another branch while this run was building; the same session recorded itself twice
 - actor claude-code-83858632 `01M6KFM58RDZ5KSG59GP1005QZ` — Duplicate actor record: session claude-code-83858632 recorded itself in a verifier checkout (change set 01M6KFMJ) after already recording in the run worktree (01M6KE23); keep the first

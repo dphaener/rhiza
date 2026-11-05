@@ -14,7 +14,7 @@ At 5201981a (verifier, attempt 2): the fix commit only drops the stray rendered 
 
 ### Out
 
-- verifies [requests-app](../capability/rhiza/orchestration/daemon/plan-requests/requests-app.md)
+- verifies requests-app (retired)
 
 ## History
 
