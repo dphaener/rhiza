@@ -173,7 +173,7 @@ type RunInfo struct {
 	Steps          []RunStep       `json:"steps" desc:"The steps done, in order"`
 	StartedAt      string          `json:"started_at" desc:"When it started, RFC 3339 UTC"`
 	Blocked        *RunBlocked     `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
-	Stalled        *RunStalled     `json:"stalled,omitempty" desc:"A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working or idle without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise"`
+	Stalled        *RunStalled     `json:"stalled,omitempty" desc:"A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working, or idle in an autonomous run, without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise"`
 	Amendments     []RunAmendment  `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
 	Messages       []RunMessage    `json:"messages" desc:"The messages its sessions sent each other, in order"`
 	Sessions       []RunSession    `json:"sessions" desc:"The sessions it launched or read token use for, in order of first appearance, each with its latest reading"`

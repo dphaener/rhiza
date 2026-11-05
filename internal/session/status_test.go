@@ -88,6 +88,7 @@ func TestSaidDoneLeavesResolveAlone(t *testing.T) {
 func TestStalled(t *testing.T) {
 	at := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	rec := func(s Status) Record { return Record{StartedAt: at, Status: s} }
+	auto := func(s Status) Record { return Record{StartedAt: at, Status: s, Autonomous: true} }
 	hook := func(state, detail string) Status {
 		return Status{Hook: &Report{State: state, Detail: detail, At: at}}
 	}
@@ -102,13 +103,17 @@ func TestStalled(t *testing.T) {
 		{"working at 20m", rec(hook(StateWorking, "")), 20 * time.Minute, false},
 		{"working at 21m", rec(hook(StateWorking, "")), 21 * time.Minute, true},
 		{"blocked", rec(hook(StateBlocked, "")), 3 * time.Hour, false},
-		{"idle at 19m", rec(hook(StateIdle, "")), 19 * time.Minute, false},
-		{"idle at 21m", rec(hook(StateIdle, "")), 21 * time.Minute, true},
-		{"idle done", rec(Status{Hook: &Report{State: StateIdle, At: at}, Done: &Report{At: at}}), 21 * time.Minute, false},
-		{"working done", rec(Status{Hook: &Report{State: StateWorking, At: at}, Done: &Report{At: at}}), 21 * time.Minute, false},
-		{"idle asked", rec(Status{Hook: &Report{State: StateIdle, At: at}, Asked: &Report{At: at}}), 21 * time.Minute, false},
-		{"working asked", rec(Status{Hook: &Report{State: StateWorking, At: at}, Asked: &Report{At: at}}), 21 * time.Minute, false},
-		{"idle usage paused", rec(hook(StateIdle, LimitPausedDetail)), 21 * time.Minute, false},
+		{"idle at 19m", auto(hook(StateIdle, "")), 19 * time.Minute, false},
+		{"idle at 21m", auto(hook(StateIdle, "")), 21 * time.Minute, true},
+		{"attended idle at 21m", rec(hook(StateIdle, "")), 21 * time.Minute, false},
+		{"attended working at 21m", rec(hook(StateWorking, "")), 21 * time.Minute, true},
+		{"idle done", auto(Status{Hook: &Report{State: StateIdle, At: at}, Done: &Report{At: at}}), 21 * time.Minute, false},
+		{"working done", auto(Status{Hook: &Report{State: StateWorking, At: at}, Done: &Report{At: at}}), 21 * time.Minute, false},
+		{"idle asked", auto(Status{Hook: &Report{State: StateIdle, At: at}, Asked: &Report{At: at}}), 21 * time.Minute, false},
+		{"working asked", auto(Status{Hook: &Report{State: StateWorking, At: at}, Asked: &Report{At: at}}), 21 * time.Minute, false},
+		{"idle usage paused", auto(hook(StateIdle, LimitPausedDetail)), 21 * time.Minute, false},
+		{"autonomous blocked", auto(hook(StateBlocked, "")), 21 * time.Minute, false},
+		{"autonomous exited", auto(Status{Hook: &Report{State: StateIdle, At: at}, Exit: &Report{State: StateExited, Code: &code, At: at}}), 21 * time.Minute, false},
 		{"usage paused", rec(hook(StateWorking, LimitPausedDetail+" until 2026-01-01T05:00:00Z")), 3 * time.Hour, false},
 		{"exited", rec(Status{Hook: &Report{State: StateWorking, At: at}, Exit: &Report{State: StateExited, Code: &code, At: at}}), 3 * time.Hour, false},
 		{"no report", rec(Status{}), 3 * time.Hour, false},

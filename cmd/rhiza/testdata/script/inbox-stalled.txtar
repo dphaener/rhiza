@@ -1,5 +1,6 @@
-# The inbox lists a live run's working session as stalled only once its last
-# hook report is more than 20 minutes old. The session record is written by
+# The inbox lists a live run's working session, or an autonomous run's idle
+# one that has not said it is done, as stalled only once its last hook report
+# is more than 20 minutes old. The session record is written by
 # hand: its hook report is set to a fixed time and the clock moved.
 
 chmod 755 bin/rex
@@ -46,8 +47,17 @@ exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/(\
 exec rhiza inbox --json
 ! stdout '"stalled"'
 
-# An idle one stalls like a working one: it may hold a background shell.
+# An idle one of an owner-attended run never stalls: it may wait on the owner.
 exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/(\"hook\": \{.*?\"state\": \")blocked/\${1}idle/s" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+exec sh -c '! grep -q autonomous "$WORK"/repo/.git/rhiza/sessions/*.json'
+exec rhiza inbox --json
+! stdout '"stalled"'
+exec rhiza run status --json
+! stdout '"stalled"'
+
+# One an autonomous run launched stalls like a working one: it may hold a
+# background shell.
+exec sh -c 'for f in "$WORK"/repo/.git/rhiza/sessions/*.json; do perl -0pe "s/\A\{/{\"autonomous\": true, /" "$f" > "$f.new" && mv "$f.new" "$f"; done'
 env RHIZA_TEST_NOW=2030-01-01T00:19:00Z
 exec rhiza inbox --json
 ! stdout '"stalled"'
