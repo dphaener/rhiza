@@ -372,7 +372,6 @@
       - [daemon-reexec-new-binary](capability/rhiza/orchestration/daemon/daemon-reexec-new-binary.md)
         - [daemon-state-at-start](capability/rhiza/orchestration/daemon/daemon-reexec-new-binary/daemon-state-at-start.md)
       - [daemon-settings](capability/rhiza/orchestration/daemon/daemon-settings.md)
-        - [autonomy-app](capability/rhiza/orchestration/daemon/daemon-settings/autonomy-app.md)
       - [daemon-pause](capability/rhiza/orchestration/daemon/daemon-pause.md)
       - [plan-requests](capability/rhiza/orchestration/daemon/plan-requests.md)
         - [roadmap-new-work-requests](capability/rhiza/orchestration/daemon/plan-requests/roadmap-new-work-requests.md)
@@ -453,6 +452,7 @@
   - [modal-sized-to-content](capability/rhiza/modal-sized-to-content.md)
   - [request-app-form](capability/rhiza/request-app-form.md)
   - [daemon-app-pause](capability/rhiza/daemon-app-pause.md)
+  - [autonomy-app-toggles](capability/rhiza/autonomy-app-toggles.md)
   - [daemon-app-run-limit](capability/rhiza/daemon-app-run-limit.md)
 - [ship-through-rhiza](capability/ship-through-rhiza.md)
   - [workflow-step](capability/ship-through-rhiza/workflow-step.md)
@@ -1461,6 +1461,9 @@
 - [autonomy-app-daemon-keys-qa-1](evidence/autonomy-app-daemon-keys-qa-1.md)
 - [autonomy-app-qa-1](evidence/autonomy-app-qa-1.md)
 - [autonomy-app-qa-2](evidence/autonomy-app-qa-2.md)
+- [autonomy-app-toggles-qa-1](evidence/autonomy-app-toggles-qa-1.md)
+- [autonomy-app-toggles-verified](evidence/autonomy-app-toggles-verified.md)
+- [autonomy-app-toggles-verified-2](evidence/autonomy-app-toggles-verified-2.md)
 - [autonomy-app-verified](evidence/autonomy-app-verified.md)
 - [autonomy-app-verified-2](evidence/autonomy-app-verified-2.md)
 - [backlog-group-tested](evidence/backlog-group-tested.md)
@@ -1988,6 +1991,7 @@
 - [pr-290-modal-shell-for-rex-apps](evidence/pr-290-modal-shell-for-rex-apps.md)
 - [pr-293-daemon-app-on-the-modal-shell](evidence/pr-293-daemon-app-on-the-modal-shell.md)
 - [pr-294-request-app-on-the-modal-shell](evidence/pr-294-request-app-on-the-modal-shell.md)
+- [pr-295-autonomy-app-on-modal-shell](evidence/pr-295-autonomy-app-on-modal-shell.md)
 - [pr-35-reopening-a-change-set](evidence/pr-35-reopening-a-change-set.md)
 - [pr-36-leaf-dependencies-and](evidence/pr-36-leaf-dependencies-and.md)
 - [pr-38-session-messages-and-token-use](evidence/pr-38-session-messages-and-token-use.md)
@@ -4783,6 +4787,7 @@
 - capability question-sessions-tile-run-window `01M6857KVT0NRCTAY6EZ2DH209` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
 - capability roadmap-app-new-work `01M686V49K74FDKG4YV2BDJCSN` — Superseded by roadmap-new-work-requests: m and n now file a plan request (rhiza request) for the daemon to plan, and no longer ask y/n or open a Rex tab running run start --workflow plan --new
 - capability requests-app `01M6CS27ZCVXPWK3GXS8B8PQ2C` — Replaced by the request app on the modal shell (change set 01M6MYNDJ4HAJF028CEAE7SYQN): internal/tui/requestsapp and tui-requests-app.txtar are deleted, the requests app and its listing are gone
+- capability autonomy-app `01M6CS2HRAWMCTPDHFXBHFCX1C` — Replaced by autonomy-app-toggles: the autonomy app is now one form of the plan, accept, ship and sign-off toggles; it no longer lists daemon settings, toggles paused, edits numbers or starts/stops the daemon
 - capability requests-app-milestone `01M6JE40PG6Z1ZG27N7DMFH3FF` — Replaced by the request app on the modal shell (change set 01M6MYNDJ4HAJF028CEAE7SYQN): the old requests app and its milestone field are deleted; the new request form has no milestone field
 - actor claude-code-a463ece8 `01M6HYXRR6ZXYF68BAC8X0KEEQ` — Duplicate of actor claude-code-a463ece8 (node 01M6HV8Y05D3EMPSARA4H5VJ15) that landed on main from another branch while this run was building; the same session recorded itself twice
 - actor claude-code-83858632 `01M6KFM58RDZ5KSG59GP1005QZ` — Duplicate actor record: session claude-code-83858632 recorded itself in a verifier checkout (change set 01M6KFMJ) after already recording in the run worktree (01M6KE23); keep the first

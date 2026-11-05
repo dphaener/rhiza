@@ -1,0 +1,53 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6NBJJ24HY3VNHQJKA21K7YV"
+  ],
+  "at": "2026-11-05T08:33:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "863c557c99fa98152ac785959789fd750f2953da",
+          "pr": "https://github.com/dphaener/rhiza/pull/295",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #295 (https://github.com/dphaener/rhiza/pull/295) passed CI at 863c557",
+          "status": "verified"
+        },
+        "handle": "pr-295-autonomy-app-on-modal-shell",
+        "id": "01M6NDDZNBKP1244X60K9K6X4E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NDDZNBKP1244X60H14D458",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NDDZNBKP1244X60H14D458",
+        "id": "01M6NDE3DYEY6S571P9CMCY878",
+        "link": "01M6NDE3DYEY6S571P9ASDGP5N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZCNKTRF4KEY30SV1J4YHD",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6NDDZNBKP1244X60H14D458",
+        "id": "01M6NDE6DMSZTG5J8V8ANFP9NH",
+        "link": "01M6NDE6DMSZTG5J8V87NG9P22",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FES4J3E8VXG2KW0Y9Z1C96",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYPA335J1S3952RJAGZJN9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NDEBB0EFJ62FT5Y6CTKY20",
+  "type": "ops",
+  "v": 1
+}
