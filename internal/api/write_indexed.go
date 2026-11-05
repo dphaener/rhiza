@@ -30,6 +30,12 @@ type writeIndex struct {
 	x     *index.Index
 	stale bool
 	err   error
+	// models, when set (a driver's reads, see run_model_cache.go), keeps
+	// the model of each change set until the caller clears it.
+	models map[id.ID]Model
+	// relevant, kept with models, is the change sets each model reads: the
+	// change set and its in-flight dependencies.
+	relevant map[id.ID][]id.ID
 }
 
 // openWriteIndex opens the index of ctx's repository for a write.
@@ -141,6 +147,21 @@ func (ix *writeIndex) changeSets(w *workspace) []changeset.ChangeSet {
 // create gone with a retirement in the change set, or a move under a node
 // created later), which the interim model keeps.
 func (ix *writeIndex) model(w *workspace, current id.ID) Model {
+	if ix.models != nil && len(w.pending) == 0 {
+		if m, ok := ix.models[current]; ok {
+			return m
+		}
+		m := ix.buildModel(w, current)
+		if ix.err == nil {
+			ix.models[current] = m
+		}
+		return m
+	}
+	return ix.buildModel(w, current)
+}
+
+// buildModel is model without the memo.
+func (ix *writeIndex) buildModel(w *workspace, current id.ID) Model {
 	m := &writeModel{ix: ix, cs: current}
 	var over *changeset.ChangeSet
 	if !current.IsZero() {
@@ -156,6 +177,9 @@ func (ix *writeIndex) model(w *workspace, current id.ID) Model {
 			over = &c
 		}
 	}
+	if ix.relevant != nil {
+		ix.relevant[current] = []id.ID{current}
+	}
 	l := &writeLayer{ix: ix, nodes: map[id.ID]*gmodel.Node{}, links: map[id.ID]*gmodel.Link{}}
 	if over != nil && inFlightState(over.State) {
 		sets, err := ix.index().WhatIfSets(current, over)
@@ -164,7 +188,11 @@ func (ix *writeIndex) model(w *workspace, current id.ID) Model {
 		for _, c := range sets {
 			byID[c.ID] = c
 		}
-		for _, d := range dependencyOrder(sets, current) {
+		order := dependencyOrder(sets, current)
+		if ix.relevant != nil {
+			ix.relevant[current] = append([]id.ID{current}, order...)
+		}
+		for _, d := range order {
 			for _, o := range byID[d].Ops {
 				l.apply(d, o)
 			}

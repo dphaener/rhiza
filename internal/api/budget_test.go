@@ -339,6 +339,10 @@ func TestReadBudget(t *testing.T) {
 		t.Log(line)
 		timingLog(line)
 	})
+	driverPollBudget(t, g, func(line string) {
+		t.Log(line)
+		timingLog(line)
+	})
 }
 
 // landedChangeSet returns a landed change set of g's index.

@@ -36,15 +36,24 @@ func (r *stepRunner) Leaves(ref string) ([]run.Leaf, error) {
 	if err != nil {
 		return nil, fmt.Errorf("run %s names change set %q: %v", r.run, ref, err)
 	}
-	var w *workspace
-	if _, serr := os.Stat(r.worktree); serr == nil {
-		w, err = r.worktreeWorkspace(false)
-	} else {
-		w, err = openCtxWorkspace(r.ctx)
+	if _, serr := os.Stat(r.worktree); serr != nil {
+		w, err := openCtxWorkspace(r.ctx)
+		if err != nil {
+			return nil, err
+		}
+		return r.leavesOf(w, cs)
 	}
+	v, err := r.readModel("leaves:"+cs.String(), cs, func(w *workspace) (any, error) {
+		return r.leavesOf(w, cs)
+	})
 	if err != nil {
 		return nil, err
 	}
+	return slices.Clone(v.([]run.Leaf)), nil
+}
+
+// leavesOf is Leaves over workspace w.
+func (r *stepRunner) leavesOf(w *workspace, cs id.ID) ([]run.Leaf, error) {
 	c, ok := w.changeSet(cs)
 	if !ok {
 		return nil, fmt.Errorf("change set %s is not in the log", cs)
@@ -301,17 +310,24 @@ func (r *stepRunner) LeafAnswer(question string) (string, string, bool, error) {
 	if err != nil {
 		return "", "", false, fmt.Errorf("run %s names change set %q: %v", r.run, r.change, err)
 	}
-	ww, err := r.worktreeWorkspace(false)
+	type found struct {
+		handle, statement string
+		ok                bool
+	}
+	v, err := r.readModel("leafanswer:"+cs.String()+":"+q.String(), cs, func(ww *workspace) (any, error) {
+		m := ww.model(cs)
+		for _, l := range m.LinksTo(q, op.LinkAnswers) {
+			if d, ok := m.Node(l.From); ok && !d.Retired && d.Kind == op.KindDecision {
+				return found{d.Handle, fieldText(d.Fields["statement"]), true}, nil
+			}
+		}
+		return found{}, nil
+	})
 	if err != nil {
 		return "", "", false, err
 	}
-	m := ww.model(cs)
-	for _, l := range m.LinksTo(q, op.LinkAnswers) {
-		if d, ok := m.Node(l.From); ok && !d.Retired && d.Kind == op.KindDecision {
-			return d.Handle, fieldText(d.Fields["statement"]), true, nil
-		}
-	}
-	return "", "", false, nil
+	f := v.(found)
+	return f.handle, f.statement, f.ok, nil
 }
 
 // Head is the commit at HEAD of the run's worktree, where builders work.
@@ -413,17 +429,24 @@ func (r *stepRunner) Evidence(leaf run.Leaf, session string) (bool, string, erro
 	if err != nil {
 		return false, "", fmt.Errorf("read session %s: %v", session, err)
 	}
-	w, err := r.worktreeWorkspace(false)
+	type judged struct {
+		ok     bool
+		detail string
+	}
+	v, err := r.readModel("evidence:"+cs.String()+":"+lid.String()+":"+rec.Actor, id.ID{}, func(w *workspace) (any, error) {
+		m := w.model(cs)
+		actor, err := liveActor(m, rec.Actor)
+		if err != nil {
+			return nil, fmt.Errorf("session %s's actor %s: %s", session, rec.Actor, AsError(err).Message)
+		}
+		ok, detail := leafEvidence(m, w.changeSets(), lid, actor)
+		return judged{ok, detail}, nil
+	})
 	if err != nil {
 		return false, "", err
 	}
-	m := w.model(cs)
-	actor, err := liveActor(m, rec.Actor)
-	if err != nil {
-		return false, "", fmt.Errorf("session %s's actor %s: %s", session, rec.Actor, AsError(err).Message)
-	}
-	ok, detail := leafEvidence(m, w.changeSets(), lid, actor)
-	return ok, detail, nil
+	j := v.(judged)
+	return j.ok, j.detail, nil
 }
 
 // leafEvidence is Evidence's judgement over view m and the change sets

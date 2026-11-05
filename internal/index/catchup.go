@@ -788,3 +788,64 @@ func parseID(s string) id.ID {
 	}
 	return i
 }
+
+// Stamp names the log state the index is level with: the fingerprint of
+// the listing it last caught up with. It changes whenever an entry file is
+// added, so a value computed from the index stays good while the stamp does.
+func (x *Index) Stamp() (string, error) {
+	return metaOf(x.db, metaListing)
+}
+
+// Refresh catches the index up with the log again, as Open does: a log
+// that has not changed costs a read of log/ and a stat per change set
+// folder, with no listing, no read and no write. It stats the folders in
+// the caller's goroutine: a long-lived reader that refreshes often cares
+// for CPU more than time.
+func (x *Index) Refresh() error {
+	return x.catchUpFrom(takeStatsBy(x.fsys, time.Now(), 1))
+}
+
+// CatchUp describes what the last Open or Refresh did.
+type CatchUp struct {
+	// Fresh is true when the index was already level with the log.
+	Fresh bool
+	// Rebuilt is true when every table was emptied first.
+	Rebuilt bool
+	// Read is the number of entry files read; Decoded the number of stored
+	// entries decoded and Folded the number of change sets folded.
+	Read, Decoded, Folded int
+}
+
+// LastCatchUp reports what the last Open or Refresh did.
+func (x *Index) LastCatchUp() CatchUp {
+	s := x.stats
+	return CatchUp{Fresh: s.fresh, Rebuilt: s.rebuilt, Read: s.read, Decoded: s.decoded, Folded: s.folded}
+}
+
+// Signature digests what a what-if view of the change sets in sets reads
+// of the log: those sets' entries (their number and the newest) and the
+// change sets that are no longer in flight (their number and the newest
+// terminal entry), which make up as-is. It is equal for two calls when the
+// view over sets is, whatever else the log gained between them, a draft's
+// new entry say.
+func (x *Index) Signature(sets []id.ID) (string, error) {
+	var landed int
+	var last string
+	if err := x.db.QueryRow(`SELECT count(*), coalesce(max(terminal_entry), '') FROM change_sets
+		WHERE state NOT IN ('draft', 'proposed', 'accepted')`).Scan(&landed, &last); err != nil {
+		return "", err
+	}
+	h := sha256.New()
+	fmt.Fprintf(h, "%d %s\n", landed, last)
+	sorted := slices.Clone(sets)
+	slices.SortFunc(sorted, id.Compare)
+	for _, cs := range slices.Compact(sorted) {
+		var n int
+		var newest string
+		if err := x.db.QueryRow(`SELECT count(*), coalesce(max(id), '') FROM entries WHERE change_set = ?`, idText(cs)).Scan(&n, &newest); err != nil {
+			return "", err
+		}
+		fmt.Fprintf(h, "%s %d %s\n", cs, n, newest)
+	}
+	return hex.EncodeToString(h.Sum(nil)), nil
+}
