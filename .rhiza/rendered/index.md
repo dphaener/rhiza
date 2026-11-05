@@ -405,7 +405,6 @@
       - [inbox-list](capability/rhiza/orchestration/inbox/inbox-list.md)
         - [inbox-failed-step-output](capability/rhiza/orchestration/inbox/inbox-list/inbox-failed-step-output.md)
         - [inbox-stalled-items](capability/rhiza/orchestration/inbox/inbox-list/inbox-stalled-items.md)
-          - [inbox-nudge-stalled](capability/rhiza/orchestration/inbox/inbox-list/inbox-stalled-items/inbox-nudge-stalled.md)
         - [inbox-disk-low](capability/rhiza/orchestration/inbox/inbox-list/inbox-disk-low.md)
       - [unaccepted-run-in-inbox](capability/rhiza/orchestration/inbox/unaccepted-run-in-inbox.md)
       - [inbox-open](capability/rhiza/orchestration/inbox/inbox-open.md)
@@ -438,10 +437,7 @@
   - [builder-actor-in-leaf-commit](capability/rhiza/builder-actor-in-leaf-commit.md)
   - [roadmap-app-list](capability/rhiza/roadmap-app-list.md)
     - [roadmap-app-umbrella-row](capability/rhiza/roadmap-app-list/roadmap-app-umbrella-row.md)
-  - [inbox-app-list](capability/rhiza/inbox-app-list.md)
   - [roadmap-app-detail](capability/rhiza/roadmap-app-detail.md)
-  - [inbox-app-actions](capability/rhiza/inbox-app-actions.md)
-    - [inbox-app-answer-question](capability/rhiza/inbox-app-actions/inbox-app-answer-question.md)
   - [roadmap-app-start-runs](capability/rhiza/roadmap-app-start-runs.md)
     - [run-start-new-intent](capability/rhiza/roadmap-app-start-runs/run-start-new-intent.md)
     - [plan-guide-new-change-set](capability/rhiza/roadmap-app-start-runs/plan-guide-new-change-set.md)
@@ -452,11 +448,16 @@
   - [modal-shell-hosts-component](capability/rhiza/modal-shell-hosts-component.md)
   - [modal-shell-closes](capability/rhiza/modal-shell-closes.md)
   - [modal-sized-to-content](capability/rhiza/modal-sized-to-content.md)
+  - [inbox-app-pick-list](capability/rhiza/inbox-app-pick-list.md)
   - [request-app-form](capability/rhiza/request-app-form.md)
   - [runs-app-glance](capability/rhiza/runs-app-glance.md)
   - [daemon-app-pause](capability/rhiza/daemon-app-pause.md)
   - [autonomy-app-toggles](capability/rhiza/autonomy-app-toggles.md)
+  - [inbox-app-answer](capability/rhiza/inbox-app-answer.md)
   - [daemon-app-run-limit](capability/rhiza/daemon-app-run-limit.md)
+  - [inbox-app-signoff](capability/rhiza/inbox-app-signoff.md)
+  - [inbox-app-retry-abandon](capability/rhiza/inbox-app-retry-abandon.md)
+  - [run-send-back](capability/rhiza/run-send-back.md)
 - [ship-through-rhiza](capability/ship-through-rhiza.md)
   - [workflow-step](capability/ship-through-rhiza/workflow-step.md)
   - [ship-open-pr](capability/ship-through-rhiza/ship-open-pr.md)
@@ -1261,6 +1262,7 @@
 - [trust-shown](decision/trust-shown.md)
 - [tui-delete-old-apps](decision/tui-delete-old-apps.md)
 - [tui-five-apps](decision/tui-five-apps.md)
+- [tui-inbox-all-items](decision/tui-inbox-all-items.md)
 - [tui-launch-key](decision/tui-launch-key.md)
 - [tui-many-mini-apps](decision/tui-many-mini-apps.md)
 - [tui-milestone-first](decision/tui-milestone-first.md)
@@ -1271,6 +1273,7 @@
 - [tui-plan-all-now](decision/tui-plan-all-now.md)
 - [tui-rexuikit-components](decision/tui-rexuikit-components.md)
 - [tui-run-actions](decision/tui-run-actions.md)
+- [tui-signoff-approve-or-send-back](decision/tui-signoff-approve-or-send-back.md)
 - [tui-single-purpose-apps](decision/tui-single-purpose-apps.md)
 - [tui-small-modal](decision/tui-small-modal.md)
 - [twelve-areas](decision/twelve-areas.md)
@@ -1315,7 +1318,9 @@
 - [health-app-needs-health-report](question/health-app-needs-health-report.md)
 - [hook-context-injected](question/hook-context-injected.md)
 - [idle-step-blocked](question/idle-step-blocked.md)
+- [inbox-app-kinds](question/inbox-app-kinds.md)
 - [inbox-change-set-intent](question/inbox-change-set-intent.md)
+- [inbox-signoff-request-changes](question/inbox-signoff-request-changes.md)
 - [key-per-app](question/key-per-app.md)
 - [leaf-commit-scope](question/leaf-commit-scope.md)
 - [leaf-failed-01m60atz-1](question/leaf-failed-01m60atz-1.md)
@@ -1719,10 +1724,26 @@
 - [inbox-app-actions-qa-2](evidence/inbox-app-actions-qa-2.md)
 - [inbox-app-actions-verified](evidence/inbox-app-actions-verified.md)
 - [inbox-app-actions-verified-2](evidence/inbox-app-actions-verified-2.md)
+- [inbox-app-answer-qa-1](evidence/inbox-app-answer-qa-1.md)
+- [inbox-app-answer-qa-2](evidence/inbox-app-answer-qa-2.md)
 - [inbox-app-answer-question-qa-1](evidence/inbox-app-answer-question-qa-1.md)
 - [inbox-app-answer-question-verified](evidence/inbox-app-answer-question-verified.md)
+- [inbox-app-answer-verified](evidence/inbox-app-answer-verified.md)
+- [inbox-app-answer-verified-2](evidence/inbox-app-answer-verified-2.md)
 - [inbox-app-list-qa-1](evidence/inbox-app-list-qa-1.md)
 - [inbox-app-list-verified](evidence/inbox-app-list-verified.md)
+- [inbox-app-pick-list-qa-1](evidence/inbox-app-pick-list-qa-1.md)
+- [inbox-app-pick-list-qa-2](evidence/inbox-app-pick-list-qa-2.md)
+- [inbox-app-pick-list-qa-3](evidence/inbox-app-pick-list-qa-3.md)
+- [inbox-app-pick-list-verified](evidence/inbox-app-pick-list-verified.md)
+- [inbox-app-pick-list-verified-2](evidence/inbox-app-pick-list-verified-2.md)
+- [inbox-app-pick-list-verified-3](evidence/inbox-app-pick-list-verified-3.md)
+- [inbox-app-retry-abandon-qa-1](evidence/inbox-app-retry-abandon-qa-1.md)
+- [inbox-app-retry-abandon-qa-2](evidence/inbox-app-retry-abandon-qa-2.md)
+- [inbox-app-retry-abandon-verified](evidence/inbox-app-retry-abandon-verified.md)
+- [inbox-app-signoff-qa-1](evidence/inbox-app-signoff-qa-1.md)
+- [inbox-app-signoff-qa-2](evidence/inbox-app-signoff-qa-2.md)
+- [inbox-app-signoff-verified](evidence/inbox-app-signoff-verified.md)
 - [inbox-blocking-questions-qa-1](evidence/inbox-blocking-questions-qa-1.md)
 - [inbox-blocking-questions-verified](evidence/inbox-blocking-questions-verified.md)
 - [inbox-clears-stale-qa-1](evidence/inbox-clears-stale-qa-1.md)
@@ -2010,6 +2031,7 @@
 - [pr-294-request-app-on-the-modal-shell](evidence/pr-294-request-app-on-the-modal-shell.md)
 - [pr-295-autonomy-app-on-modal-shell](evidence/pr-295-autonomy-app-on-modal-shell.md)
 - [pr-296-runs-app-on-the-modal-shell](evidence/pr-296-runs-app-on-the-modal-shell.md)
+- [pr-299-inbox-app-on-the-modal-shell](evidence/pr-299-inbox-app-on-the-modal-shell.md)
 - [pr-35-reopening-a-change-set](evidence/pr-35-reopening-a-change-set.md)
 - [pr-36-leaf-dependencies-and](evidence/pr-36-leaf-dependencies-and.md)
 - [pr-38-session-messages-and-token-use](evidence/pr-38-session-messages-and-token-use.md)
@@ -2194,6 +2216,10 @@
 - [run-resume-refuses-agent-session-qa-1](evidence/run-resume-refuses-agent-session-qa-1.md)
 - [run-resume-refuses-agent-session-verified](evidence/run-resume-refuses-agent-session-verified.md)
 - [run-resume-tested](evidence/run-resume-tested.md)
+- [run-send-back-qa-1](evidence/run-send-back-qa-1.md)
+- [run-send-back-qa-2](evidence/run-send-back-qa-2.md)
+- [run-send-back-verified](evidence/run-send-back-verified.md)
+- [run-send-back-verified-2](evidence/run-send-back-verified-2.md)
 - [run-sessions-one-window-qa-1](evidence/run-sessions-one-window-qa-1.md)
 - [run-sessions-one-window-qa-2](evidence/run-sessions-one-window-qa-2.md)
 - [run-sessions-one-window-verified](evidence/run-sessions-one-window-verified.md)
@@ -4890,13 +4916,17 @@
 - capability run-sessions-one-window `01M651M8TNJKY76E8G6KMV3V3Y` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
 - capability anchor-gone-splits-run-window `01M651MBGX79H2AV7N9YA0EC9X` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
 - capability checks-and-fixes-anchored `01M651ME1N3KVWZ1D6M8BYFHBQ` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
+- capability inbox-app-list `01M6734GPG3SZCY93EBRDS1CA8` — Replaced by inbox-app-pick-list: the rebuilt app is one rexuikit List of items, with no kind grouping, advisor recommendation or periodic and r reload
+- capability inbox-app-actions `01M6734J6ESHFYKFJ09YK6TEWT` — Replaced by inbox-app-pick-list, inbox-app-answer, inbox-app-signoff and inbox-app-retry-abandon: the rebuilt app picks one item and does its one action, with no o/t/y/c/R/x keys
 - capability agent-steps-tile-run-window `01M6857JXB8B7WXBN5VHE7MV1K` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
 - capability question-sessions-tile-run-window `01M6857KVT0NRCTAY6EZ2DH209` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
+- capability inbox-app-answer-question `01M686TSHQQ5XJ0YAZ3Z538821` — Replaced by inbox-app-answer: the rebuilt inbox app answers a blocker through question.answer from a one-TextArea form
 - capability roadmap-app-new-work `01M686V49K74FDKG4YV2BDJCSN` — Superseded by roadmap-new-work-requests: m and n now file a plan request (rhiza request) for the daemon to plan, and no longer ask y/n or open a Rex tab running run start --workflow plan --new
 - capability live-app-runs `01M686V969FDV2SVYM7P244E86` — internal/tui/liveapp is deleted; the runs app (runs-app-glance) replaces the live app's glance
 - capability live-app-focus `01M686VAPN2NBZCGV4T968DYTD` — internal/tui/liveapp and its enter-to-focus are deleted; the read-only runs app replaces it
 - capability requests-app `01M6CS27ZCVXPWK3GXS8B8PQ2C` — Replaced by the request app on the modal shell (change set 01M6MYNDJ4HAJF028CEAE7SYQN): internal/tui/requestsapp and tui-requests-app.txtar are deleted, the requests app and its listing are gone
 - capability autonomy-app `01M6CS2HRAWMCTPDHFXBHFCX1C` — Replaced by autonomy-app-toggles: the autonomy app is now one form of the plan, accept, ship and sign-off toggles; it no longer lists daemon settings, toggles paused, edits numbers or starts/stops the daemon
+- capability inbox-nudge-stalled `01M6CS2KAT7R41TVN9WFDEFBRF` — The rebuilt inbox app has no n nudge: a stalled item shows its detail and opens its run's tab (inbox-app-pick-list)
 - capability requests-app-milestone `01M6JE40PG6Z1ZG27N7DMFH3FF` — Replaced by the request app on the modal shell (change set 01M6MYNDJ4HAJF028CEAE7SYQN): the old requests app and its milestone field are deleted; the new request form has no milestone field
 - actor claude-code-a463ece8 `01M6HYXRR6ZXYF68BAC8X0KEEQ` — Duplicate of actor claude-code-a463ece8 (node 01M6HV8Y05D3EMPSARA4H5VJ15) that landed on main from another branch while this run was building; the same session recorded itself twice
 - actor claude-code-83858632 `01M6KFM58RDZ5KSG59GP1005QZ` — Duplicate actor record: session claude-code-83858632 recorded itself in a verifier checkout (change set 01M6KFMJ) after already recording in the run worktree (01M6KE23); keep the first

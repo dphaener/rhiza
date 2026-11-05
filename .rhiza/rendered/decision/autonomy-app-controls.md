@@ -19,7 +19,7 @@ The autonomy app (key y) lists every setting with its value and source, toggles 
 ### In
 
 - decided-by autonomy-app (retired)
-- decided-by [inbox-nudge-stalled](../capability/rhiza/orchestration/inbox/inbox-list/inbox-stalled-items/inbox-nudge-stalled.md)
+- decided-by inbox-nudge-stalled (retired)
 
 ## History
 

@@ -23,7 +23,7 @@ Roadmap + Inbox (Recommended): the roadmap becomes a cursor list where you plan,
 - decided-by [roadmap-app-list](../capability/rhiza/roadmap-app-list.md)
 - decided-by [roadmap-app-detail](../capability/rhiza/roadmap-app-detail.md)
 - decided-by [roadmap-app-accept-answer](../capability/rhiza/roadmap-app-accept-answer.md)
-- decided-by [inbox-app-list](../capability/rhiza/inbox-app-list.md)
+- decided-by inbox-app-list (retired)
 
 ## History
 

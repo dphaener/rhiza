@@ -14,7 +14,7 @@ Built the binary at 8f9c3b9 with go build, outside PATH. In a scratch repo (RHIZ
 
 ### Out
 
-- verifies [inbox-app-list](../capability/rhiza/inbox-app-list.md)
+- verifies inbox-app-list (retired)
 
 ## History
 
