@@ -1,0 +1,64 @@
+{
+  "actor": "01M6MRMN57H00KNZ9XPRBF1E72",
+  "after": [
+    "01M6MQZHG666PGNA5CDPH2NEFJ"
+  ],
+  "at": "2026-11-05T02:35:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6J9PXJQ88TK790C0PW640ST",
+        "handle": null,
+        "id": "01M6K023FV19QQXYGYE0HY422J",
+        "node": "01M62RH3705M0GA17WVVXKBGM8",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A test resumes an interrupted run on an accepted change set, an interrupted plan run on a landed change set, and an interrupted non-plan run on a landed change set whose journal reached land, and leaves an interrupted non-plan run on a landed change set that never reached land and runs on rejected, withdrawn, proposed and draft change sets unresumed",
+          "statement": "The daemon resumes an interrupted run only while its change set is accepted, except two runs on a landed change set: a plan-workflow run, which it resumes as in flight (daemon-resumes-landed-plan-run), and a non-plan run whose journal reached its land step (daemon-resumes-landed-past-land)"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6JXFFKEAZH4B206TJ4TYQJW",
+        "handle": null,
+        "id": "01M6K029XNRAA8N3YK86273Y9A",
+        "node": "01M61R7MP3HGEB60GJV4M3CWQA",
+        "op": "node.update",
+        "set": {
+          "statement": "The daemon resumes an interrupted run whose change set is accepted, or whose change set has landed when it is a plan-workflow run (daemon-resumes-landed-plan-run) or a non-plan run whose journal reached its land step (daemon-resumes-landed-past-land), once, as a detached rhiza run resume --foreground <run> process outside Rex (daemon-headless-run-drivers), and journals that resume in the run's journal; it leaves alone every other interrupted run whose change set is not accepted, a run interrupted again after that resume, which the inbox lists as a run the daemon gave up on, and every failed run, which the inbox lists as failed."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6JXFCRNQYDTQX0GVKK9PM0X",
+        "handle": null,
+        "id": "01M6K02JQV6WTFADHVXD77NVXT",
+        "node": "01M62RH3PBJ12H0CYSMCMV7KAS",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A test with an interrupted build run on a landed change set whose journal never reached land lists it in rhiza inbox with the state and the abandon command, and the daemon does not resume it; an interrupted plan run on a landed change set and an interrupted non-plan run on a landed change set whose journal reached land are not listed as skipped",
+          "statement": "An interrupted run on a change set no longer accepted waits in the inbox, naming the change set's state and rhiza run abandon as the next step, except two runs on a landed change set, which the daemon resumes: a plan-workflow run, which counts as in flight (inbox-landed-plan-run-in-flight), and a non-plan run whose journal reached its land step (inbox-omits-resumable-landed-run)"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M6JXPVAZAXBA95R19RQ0KH3N",
+        "handle": null,
+        "id": "01M6K02TH01SVYR742ZT7214Z0",
+        "node": "01M62S5BN8M65JXT1672T8GVEF",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A testscript with fixture journals and change sets: a failed run and a gave-up run each on a landed, a withdrawn, a rejected and a superseded change set, and one of each on an accepted change set, lists exactly the accepted-change-set items in text and --json; a failed and a gave-up plan run on a landed change set stay listed, and so do a failed and a gave-up non-plan run on a landed change set whose journal reached land; a run on a change set the log does not know stays listed; a question and a sign-off on a landed change set stay listed",
+          "statement": "rhiza inbox leaves out a failed run or a run the daemon gave up on whose change set has landed, been withdrawn, rejected or superseded, so every item it lists names a next command that can succeed on its change set; two runs on a landed change set are not left out: a plan-workflow run, since rhiza run resume works on it (inbox-landed-plan-run-in-flight), and a non-plan run whose journal reached its land step (inbox-omits-resumable-landed-run); questions and sign-offs stay listed"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M6JZDKFVH14G853J0T0BPAKG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MS018H1JBMVW1EMVK5QHH7",
+  "type": "ops",
+  "v": 1
+}
