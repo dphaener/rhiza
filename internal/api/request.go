@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"reflect"
 	"slices"
 	"strings"
@@ -227,8 +228,12 @@ func requestInfo(q daemon.Request, runs []run.Journal) RequestInfo {
 // back in the queue, not started again until daemonUnjournaledHold after
 // that start. The run is autonomous when plan autonomy is auto. Every read
 // and write of the queue holds its lock (daemon.UpdateRequests), the tab's
-// opening does not. It returns the requests started.
-func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, max int, mode string) ([]string, error) {
+// opening does not. With onlyKind milestone it starts only the oldest
+// queued milestone request, whether or not a slot is free and none while
+// another milestone request's run is live or unjournaled: the owner's own
+// interactive start. Any other call leaves milestone requests to that one.
+// It returns the requests started.
+func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, max int, mode string, onlyKind string) ([]string, error) {
 	common, err := gitCommonDir(ctx)
 	if err != nil {
 		return nil, err
@@ -248,6 +253,8 @@ func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, ma
 		return false, Errorf("read run %s: %v", rid, err)
 	}
 	now := ctx.Now()
+	host, _ := os.Hostname()
+	milestoneLive := false
 	err = daemon.UpdateRequests(common, func(reqs []daemon.Request) ([]daemon.Request, error) {
 		for i, q := range reqs {
 			if q.Run == "" {
@@ -258,11 +265,19 @@ func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, ma
 			case err != nil:
 				return nil, err
 			case ok:
+				if q.Kind == daemon.KindMilestone {
+					for _, j := range runs {
+						if j.ID == q.Run && j.State().Liveness(host, nil) == run.LiveRunning {
+							milestoneLive = true
+						}
+					}
+				}
 				continue
 			case now.Sub(q.StartedAt) < daemonStartGrace:
 				// A started request whose run has not journaled yet takes
 				// a slot.
 				running++
+				milestoneLive = milestoneLive || q.Kind == daemon.KindMilestone
 			default:
 				reqs[i].Run, reqs[i].RetryAt = "", q.StartedAt.Add(daemonUnjournaledHold).UTC()
 				reqs[i].StartedAt = time.Time{}
@@ -278,11 +293,12 @@ func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, ma
 		return nil, err
 	}
 	var started []string
-	for running < max {
+	milestone := onlyKind == daemon.KindMilestone
+	for milestone && !milestoneLive || !milestone && running < max {
 		var q daemon.Request
 		err := daemon.UpdateRequests(common, func(reqs []daemon.Request) ([]daemon.Request, error) {
 			for i := range reqs {
-				if reqs[i].Run != "" || now.Before(reqs[i].RetryAt) {
+				if reqs[i].Run != "" || now.Before(reqs[i].RetryAt) || (reqs[i].Kind == daemon.KindMilestone) != milestone {
 					continue
 				}
 				rid, err := newRequestRunID(ctx, rs, reqs)
@@ -317,6 +333,9 @@ func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, ma
 		}
 		started = append(started, q.ID)
 		running++
+		if milestone {
+			break
+		}
 	}
 	return started, nil
 }

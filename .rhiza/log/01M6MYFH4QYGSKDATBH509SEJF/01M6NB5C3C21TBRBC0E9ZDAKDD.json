@@ -1,0 +1,40 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6N9X0667NE5B95MBNP263EN"
+  ],
+  "at": "2026-11-05T07:53:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Resolve the a-milestone-request rebase conflicts by merging origin/main into cs/a-milestone-request: plan-requests.txtar keeps both sides (the milestone request starts first with --milestone and never --autonomous; the auto pass starts the feature, bug and search requests with --autonomous), plan-milestone-interview-waiting.txtar now expects run start --milestone --autonomous to be refused per milestone-planning-always (#289), and .rhiza/rendered is regenerated; merge commit 60a44d2c, scoped tests and rhiza check green",
+          "wording": "stated by the orchestrator acting as arbiter"
+        },
+        "handle": "rebase-conflict-a-milestone-request-resolved",
+        "id": "01M6NB42XNHYMYMK7P0V55FS6J",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6NB42XNHYMYMK7P0S8T730W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NB42XNHYMYMK7P0S8T730W",
+        "id": "01M6NB4M4AHDFYPBGKB37C7JRA",
+        "link": "01M6NB4M4AHDFYPBGKB07CEH06",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N9WSQ04DB780K6M2QH4VAB",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6MYFH4QYGSKDATBH509SEJF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NB5C3C21TBRBC0E9ZDAKDD",
+  "type": "ops",
+  "v": 1
+}

@@ -71,28 +71,31 @@ exec rhiza daemon --permission-mode manual --once
 exec rhiza request ls --json
 stdout -count=3 '"state": "queued"'
 
-# Unpaused, one slot: the oldest request's plan run starts, not autonomous.
+# Unpaused, one slot: the milestone request's plan run starts first, not
+# autonomous, whatever the queue order.
 exec rhiza daemon set rhiza.daemon.paused false
 exec rhiza daemon --permission-mode manual --max-runs 1 --once
 stdout -count=1 '^Started the plan run of request '
 exec cat $WORK/detach.log
 stdout -count=1 '^REX_SESSION=.* rhiza '
-stdout 'run start --foreground --workflow plan --new Add exports --request [0-9A-Z]{26} --permission-mode manual$'
+stdout 'run start --foreground --workflow plan --new Ship v2 --request [0-9A-Z]{26} --permission-mode manual --milestone$'
 exec rhiza request ls
-stdout 'feature planning: Add exports \(run [0-9A-Z]{26}\)$'
+stdout 'milestone planning: Ship v2'
+stdout 'feature queued: Add exports$'
 stdout 'bug queued: Login fails$'
 
 # A second feature request, queued after the first pass started.
 exec rhiza request 'Add search'
 
-# Plan autonomy auto, four slots: the first start, not journaled yet, holds
-# one; the bug and the new feature start autonomous, the milestone (always
-# the owner's) not.
+# Plan autonomy auto, four slots: the milestone's start, not journaled yet,
+# holds one; the feature, the bug and the new feature start autonomous. The
+# milestone (always the owner's) never does.
 exec rhiza daemon set rhiza.autonomy.plan auto
 exec rhiza daemon --permission-mode manual --max-runs 4 --once
 stdout -count=3 '^Started the plan run of request '
 exec cat $WORK/detach.log
 stdout -count=4 '^REX_SESSION=.* rhiza '
+stdout 'run start --foreground --workflow plan --new Add exports --request [0-9A-Z]{26} --permission-mode manual --autonomous$'
 stdout 'run start --foreground --workflow plan --new Fix Login fails --request [0-9A-Z]{26} --permission-mode manual --autonomous$'
 stdout 'run start --foreground --workflow plan --new Add search --request [0-9A-Z]{26} --permission-mode manual --autonomous$'
 stdout 'run start --foreground --workflow plan --new Ship v2 --request [0-9A-Z]{26} --permission-mode manual --milestone$'

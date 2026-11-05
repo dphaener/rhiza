@@ -328,7 +328,7 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 	if fold, err := daemonFoldOf(ctx); err == nil {
 		stateOf, overlaps = fold.stateOf, fold.overlaps
 	}
-	items := inboxItems(runs, host, nil, rs.Live, stateOf, nil)
+	items := inboxItems(runs, host, nil, rs.Live, stateOf, nil, nil)
 	items = append(items, overlaps...)
 	// This poll's disk-low state, not the one saved after the last poll.
 	items = append(items, diskLowItems(state.DiskLow)...)
@@ -373,6 +373,8 @@ func inboxNotice(what string, it InboxItem) string {
 			msg += ": " + q
 		}
 		return msg
+	case InboxInterview:
+		return what + ": a milestone interview waits on you"
 	case InboxSignoff:
 		return what + ": a sign-off waits on you"
 	case InboxOpen:
@@ -540,9 +542,10 @@ func daemonContinuesWaiting(ctx *Ctx, rs *run.Store, runs []run.Journal) int {
 	return n
 }
 
-// daemonRequestWaits reports whether a queued plan request could start now:
-// one with no run whose retry time has passed, as daemonPlanRequests picks
-// them. An unreadable queue reports false.
+// daemonRequestWaits reports whether a queued feature or bug plan request
+// could start now: one with no run whose retry time has passed, as
+// daemonPlanRequests picks them. A milestone request starts without a slot,
+// so it never counts. An unreadable queue reports false.
 func daemonRequestWaits(ctx *Ctx) bool {
 	common, err := gitCommonDir(ctx)
 	if err != nil {
@@ -554,7 +557,7 @@ func daemonRequestWaits(ctx *Ctx) bool {
 	}
 	now := ctx.Now()
 	return slices.ContainsFunc(reqs, func(q daemon.Request) bool {
-		return q.Run == "" && !now.Before(q.RetryAt)
+		return q.Kind != daemon.KindMilestone && q.Run == "" && !now.Before(q.RetryAt)
 	})
 }
 
@@ -577,7 +580,8 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	}
 	host, _ := os.Hostname()
 	low, free := daemonDiskLow(ctx, minFree)
-	// A usage hold stops everything the daemon would launch, as low disk does.
+	// A usage hold stops everything the daemon would launch but a milestone
+	// request's plan run; low disk stops all.
 	stopped := low || hold != nil
 	accepted := func(change string) bool {
 		st, ok := fold.stateOf(change)
@@ -644,6 +648,17 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	if signoffMode == AutonomyOwner {
 		autonomous = false
 	}
+	// A milestone request's plan run is the owner's own interactive start:
+	// it goes first, whether or not a run slot is free, and keeps no ship
+	// slot; the later picks (continuations, queued starts, plan requests)
+	// count it as a running run.
+	var milestoned []string
+	if !paused && !low {
+		milestoned, err = daemonPlanRequests(ctx, rs, runs, 0, max, mode, daemon.KindMilestone)
+		if err != nil {
+			return nil, resumed, milestoned, err
+		}
+	}
 	var picked []string
 	if paused {
 		var ps []daemon.Skip
@@ -704,19 +719,24 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	}
 	for _, cs := range picked {
 		if err := daemonStart(ctx, cs, autonomous, mode); err != nil {
-			return started, resumed, nil, err
+			return started, resumed, milestoned, err
 		}
 		pending[cs] = daemonPending{at: ctx.Now(), runs: daemonRunsOf(runs, cs)}
 		started = append(started, cs)
 	}
-	if paused || stopped {
+	if paused || low {
 		return started, resumed, nil, nil
 	}
-	running := len(held) + len(started)
+	running := len(held) + len(started) + len(milestoned)
 	for _, j := range runs {
 		if j.State().Liveness(host, nil) == run.LiveRunning {
 			running++
 		}
+	}
+	if hold != nil {
+		// A usage hold stops every launch but a milestone request's plan
+		// run, started above.
+		return started, resumed, milestoned, nil
 	}
 	continued, err := daemonQueuedContinues(ctx, rs, runs, running, max)
 	resumed = append(resumed, continued...)
@@ -735,8 +755,8 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	if err != nil {
 		return started, resumed, nil, err
 	}
-	planned, err = daemonPlanRequests(ctx, rs, runs, running+len(queued), max, mode)
-	return started, resumed, planned, err
+	planned, err = daemonPlanRequests(ctx, rs, runs, running+len(queued), max, mode, "")
+	return started, resumed, append(milestoned, planned...), err
 }
 
 // daemonQueuedStarts starts the runs the owner queued with rhiza run start,

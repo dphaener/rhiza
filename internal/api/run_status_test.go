@@ -432,3 +432,44 @@ func TestProgramStatusReviewQuestions(t *testing.T) {
 		}
 	}
 }
+
+// A milestone request's interview is reported blocked, naming the milestone
+// interview, as it launches; a feature's plan run and an autonomous run get
+// no such report, and the report ends with the step.
+func TestProgramStatusMilestoneInterview(t *testing.T) {
+	for _, c := range []struct {
+		name       string
+		st         run.State
+		step       string
+		autonomous bool
+		want       bool
+	}{
+		{"milestone", run.State{MilestonePlan: true}, "interview", false, true},
+		{"feature", run.State{}, "interview", false, false},
+		{"autonomous", run.State{MilestonePlan: true}, "interview", true, false},
+		{"autonomous journal", run.State{MilestonePlan: true, Autonomous: true}, "interview", false, false},
+		{"other step", run.State{MilestonePlan: true}, "land", false, false},
+	} {
+		if got := milestoneInterviewLaunch(c.st, c.step, c.autonomous); got != c.want {
+			t.Errorf("%s: launch report = %t, want %t", c.name, got, c.want)
+		}
+	}
+
+	var out bytes.Buffer
+	x := reportToRex(&run.Engine{}, &out)
+	x.status(run.StatusReport{Change: "CS1", Step: "interview", State: run.StatusWorking})
+	x.launchBlocked("CS1", "S1")
+	reports := rexReports(t, out.String())
+	if len(reports) != 2 || reports[0]["state"] != "working" {
+		t.Fatalf("reports %v, want working then blocked", reports)
+	}
+	b := reports[1]
+	if b["state"] != "blocked" || b["kind"] != "question" || b["app"] != "rhiza" || !strings.Contains(b["msg"], "milestone interview") {
+		t.Errorf("launch report %v, want blocked question naming the milestone interview", b)
+	}
+	x.status(run.StatusReport{Change: "CS1", Step: "land", State: run.StatusWorking})
+	reports = rexReports(t, out.String())
+	if last := reports[len(reports)-1]; last["state"] != "working" || last["msg"] != "step land" {
+		t.Errorf("last report %v, want the next step working", last)
+	}
+}

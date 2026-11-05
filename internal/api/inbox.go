@@ -81,6 +81,7 @@ const (
 	InboxUsageReserve = "usage-reserve"
 	InboxMainStale    = "main-stale"
 	InboxAccept       = "accept"
+	InboxInterview    = "interview"
 )
 
 // InboxRequest takes nothing.
@@ -89,17 +90,17 @@ type InboxRequest struct{}
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
 	ID             string `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, usage-reserve, main-stale or accept"`
+	Kind           string `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, blocker, overlap, disk-low, usage-reserve, main-stale, accept or interview"`
 	At             string `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
 	Run            string `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker and an overlap"`
 	Change         string `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)"`
 	ChangeTitle    string `json:"change_title,omitempty" desc:"The change set's title; absent when the log has no such change set"`
 	Step           string `json:"step,omitempty" desc:"The step: the asking session's, the sign-off's, the failed step, or where the run was interrupted"`
 	Question       string `json:"question,omitempty" desc:"A question: what the agent asked; a blocker: the question's statement"`
-	Tab            string `json:"tab,omitempty" desc:"A question: the title of the session's tab"`
-	TabBlock       string `json:"tab_block,omitempty" desc:"A question: the Rex block of the session's tab"`
-	TabSession     string `json:"tab_session,omitempty" desc:"A question: the Rex session of the session's tab"`
-	Session        string `json:"session,omitempty" desc:"A question: the asking session; a stalled item: the stalled session"`
+	Tab            string `json:"tab,omitempty" desc:"A question or an interview: the title of the session's tab"`
+	TabBlock       string `json:"tab_block,omitempty" desc:"A question or an interview: the Rex block of the session's tab"`
+	TabSession     string `json:"tab_session,omitempty" desc:"A question or an interview: the Rex session of the session's tab"`
+	Session        string `json:"session,omitempty" desc:"A question: the asking session; an interview: the interview's session; a stalled item: the stalled session"`
 	Recommendation string `json:"recommendation,omitempty" desc:"A question: what the advisor recommends answering; absent while it has not, or when it failed"`
 	Reasons        string `json:"reasons,omitempty" desc:"A question: why the advisor recommends it"`
 	Handle         string `json:"handle,omitempty" desc:"A blocker: the question's handle"`
@@ -164,6 +165,11 @@ func (r InboxResponse) Human(w io.Writer) {
 		}
 		fmt.Fprintln(w)
 		switch it.Kind {
+		case InboxInterview:
+			if it.Tab != "" {
+				fmt.Fprintf(w, "  tab: %s\n", it.Tab)
+			}
+			fmt.Fprintf(w, "  %s\n", it.Detail)
 		case InboxQuestion:
 			if it.Tab != "" {
 				fmt.Fprintf(w, "  tab: %s\n", it.Tab)
@@ -195,9 +201,13 @@ func (r InboxResponse) Human(w io.Writer) {
 // locked reports a run another process holds. changeState gives the state
 // of a change set and whether the log has it at all.
 //
+// tabOf gives the Rex tab of a session, nil for none. A live milestone
+// request's plan run, not autonomous, is an interview item from the
+// interview session's launch until the run ends.
+//
 // stalled gives the stalled session of a run, nil when it has none; a nil
 // stalled lists none. Only a run another process holds can have one.
-func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, changeState func(change string) (string, bool), stalled func(st run.State) []RunStalled) []InboxItem {
+func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, changeState func(change string) (string, bool), stalled func(st run.State) []RunStalled, tabOf func(sid string) session.Tab) []InboxItem {
 	// gone reports a change set that is landed, withdrawn, rejected or
 	// superseded: a failed or given-up run on one is left out, as its next
 	// command could only fail.
@@ -279,6 +289,17 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 					})
 				}
 			}
+			if sid := st.Session[milestoneInterviewStep]; live && st.MilestonePlan && !st.Autonomous && sid != "" {
+				it := InboxItem{
+					Step: milestoneInterviewStep, Session: sid,
+					Detail: "the milestone interview waits on you",
+				}
+				if tabOf != nil {
+					t := tabOf(sid)
+					it.Tab, it.TabBlock, it.TabSession = t.Title, t.Block, t.Session
+				}
+				add(InboxInterview, sid, st.StartedAt, it)
+			}
 			// Only questions are the orchestrator's in an autonomous run.
 			if st.Autonomous {
 				continue
@@ -323,6 +344,19 @@ func inboxStalledOf(ctx *Ctx, common string) func(st run.State) []RunStalled {
 	sessions := session.NewStore(session.Dir(common))
 	now := ctx.Now()
 	return func(st run.State) []RunStalled { return runStalledAll(st, true, sessions, now) }
+}
+
+// inboxTabOf reads a session's Rex tab from its record; the zero tab when
+// there is none.
+func inboxTabOf(ctx *Ctx, common string) func(sid string) session.Tab {
+	sessions := session.NewStore(session.Dir(common))
+	return func(sid string) session.Tab {
+		rec, err := sessions.Read(sid)
+		if err != nil {
+			return session.Tab{}
+		}
+		return rec.Tab
+	}
 }
 
 // failedDetail is why a failed run failed, followed by the detail of the
@@ -529,7 +563,7 @@ func runInbox(ctx *Ctx, req any) (any, error) {
 	host, _ := os.Hostname()
 	fold := newInboxFold(ctx)
 	defer fold.close()
-	items := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common))
+	items := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxTabOf(ctx, common))
 	blockers, err := inboxBlockers(ctx)
 	if err != nil {
 		return nil, err
@@ -766,7 +800,7 @@ func (r InboxOpenResponse) Human(w io.Writer) {
 // Rex session is empty when the journal has none (one written before it
 // was recorded, or by a process with no REX_SESSION).
 func itemTab(item InboxItem, st run.State) (rexSession, block string) {
-	if item.Kind == InboxQuestion {
+	if item.Kind == InboxQuestion || item.Kind == InboxInterview {
 		return item.TabSession, item.TabBlock
 	}
 	if st.Process != nil {
@@ -791,7 +825,7 @@ func findInboxItem(ctx *Ctx, ref string) (InboxItem, run.State, error) {
 	var found []InboxItem
 	fold := newInboxFold(ctx)
 	defer fold.close()
-	all := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common))
+	all := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxTabOf(ctx, common))
 	blockers, err := inboxBlockers(ctx)
 	if err != nil {
 		return InboxItem{}, run.State{}, err

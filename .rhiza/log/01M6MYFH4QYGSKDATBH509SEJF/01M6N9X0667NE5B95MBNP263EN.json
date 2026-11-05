@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6N4T8WMSQNERKZ03BDMR6SN"
+  ],
+  "at": "2026-11-05T07:31:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Rebasing branch cs/a-milestone-request onto origin/main conflicts outside the rendered files, so ship-change stopped. How should these conflicts be resolved: cmd/rhiza/testdata/script/plan-requests.txtar?"
+        },
+        "handle": "rebase-conflict-a-milestone-request",
+        "id": "01M6N9WSQ04DB780K6M67DM3CE",
+        "key": null,
+        "kind": "question",
+        "node": "01M6N9WSQ04DB780K6M2QH4VAB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N9WSQ04DB780K6M2QH4VAB",
+        "id": "01M6N9WWV14YC36WJANR8T455J",
+        "link": "01M6N9WWV14YC36WJANMZG6XCW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYFH4QYGSKDATBH509SEJF",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6MYFH4QYGSKDATBH509SEJF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N9X0667NE5B95MBNP263EN",
+  "type": "ops",
+  "v": 1
+}
