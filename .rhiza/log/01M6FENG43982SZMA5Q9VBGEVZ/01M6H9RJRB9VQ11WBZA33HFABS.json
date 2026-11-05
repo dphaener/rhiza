@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6H8YNYV9E3KNMM65K7JKWNV"
+  ],
+  "at": "2026-11-03T18:11:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Leaf rhiza-on-vm failed all 3 attempts of round 1: attempt 1 builder failed: no new commit since ebee728a8cbf; attempt 2 verifier failed: verifier found 2 problem(s) (f1 Acceptance point 'a question asked in an agent tab on the VM raised a Rex notification on the Mac, or a report was filed with Rex upstream' has no evidence. Co…; f2 Acceptance point 'rhiza daemon status on the Mac shows no daemon running' has no evidence. It can only be read on the Mac, and it is still pending in the unans…); attempt 3 verifier failed: verifier found 2 problem(s) (f1 Acceptance point 'a question asked in an agent tab on the VM raised a Rex notification on the Mac, or a report was filed with Rex upstream' still has no eviden…; f2 Acceptance point 'rhiza daemon status on the Mac shows no daemon running' still has no evidence at c4e83e8e: it is pending in the unanswered question vm-move-m…). How should it be built, or should it change?"
+        },
+        "handle": "leaf-failed-01m6h8hy-1",
+        "id": "01M6H9RDH30JQ52W1QFF2AZ9SH",
+        "key": null,
+        "kind": "question",
+        "node": "01M6H9RDH30JQ52W1QFDTT254S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6H9RDH30JQ52W1QFDTT254S",
+        "id": "01M6H9RH4NQT0V09BBW7QA64RC",
+        "link": "01M6H9RH4NQT0V09BBW6YKRWPX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESPV5PW1DHSM7HQC0F4CP",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6FENG43982SZMA5Q9VBGEVZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6H9RJRB9VQ11WBZA33HFABS",
+  "type": "ops",
+  "v": 1
+}

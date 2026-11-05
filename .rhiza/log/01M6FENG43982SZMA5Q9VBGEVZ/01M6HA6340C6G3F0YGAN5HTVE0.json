@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6HA3THP2FGBWW2CTWXH2ZCY"
+  ],
+  "at": "2026-11-03T18:19:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Leaf rhiza-on-vm failed all 3 attempts of round 2: attempt 4 verifier failed: verifier found 2 problem(s) (f1 Acceptance point 'a question asked in an agent tab on the VM raised a Rex notification on the Mac, or a report was filed with Rex upstream' still has no eviden…; f2 Acceptance point 'rhiza daemon status on the Mac shows no daemon running' still has no evidence at 87e72fcf: vm-move-mac-checks is unanswered and the Mac can't…); attempt 5 verifier failed: verifier found 2 problem(s) (f1 Acceptance point 'a question asked in an agent tab on the VM raised a Rex notification on the Mac, or a report was filed with Rex upstream' still has no eviden…; f2 Acceptance point 'rhiza daemon status on the Mac shows no daemon running' still has no evidence at faa0c4c4: pending in unanswered question vm-move-mac-checks,…); attempt 6 verifier failed: verifier found 2 problem(s) (f1 Acceptance point 'a question asked in an agent tab on the VM raised a Rex notification on the Mac, or a report was filed with Rex upstream' still has no eviden…; f2 Acceptance point 'rhiza daemon status on the Mac shows no daemon running' still has no evidence at e714b8b7: vm-move-mac-checks is unanswered and the Mac is un…). How should it be built, or should it change?"
+        },
+        "handle": "leaf-failed-01m6h8hy-2",
+        "id": "01M6HA5YHASASNDPG09M4GWE2H",
+        "key": null,
+        "kind": "question",
+        "node": "01M6HA5YHASASNDPG09HE3S0S5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6HA5YHASASNDPG09HE3S0S5",
+        "id": "01M6HA61R832H7R7DA3AGS5TM0",
+        "link": "01M6HA61R832H7R7DA36P0MTST",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6FESPV5PW1DHSM7HQC0F4CP",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M6FENG43982SZMA5Q9VBGEVZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6HA6340C6G3F0YGAN5HTVE0",
+  "type": "ops",
+  "v": 1
+}
