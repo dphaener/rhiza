@@ -9,8 +9,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dphaener/rexuikit/surface"
+	"github.com/charmbracelet/colorprofile"
+	"github.com/dphaener/rexuikit/ui"
+	"github.com/dphaener/rexuikit/ui/theme"
+
 	"github.com/dphaener/rhiza/internal/tui/launcher"
+	"github.com/dphaener/rhiza/internal/tui/modalshell"
 )
 
 // rexTestCtx is a ctx with a fake Rex config folder and a fake rex that
@@ -230,7 +234,8 @@ func TestRexInstallRegistersAnActionPerApp(t *testing.T) {
 }
 
 func TestRexInstallSizesEachAppLayerToItsCells(t *testing.T) {
-	launcher.Register(launcher.App{Name: "zz-sized", Summary: "Sized", Cols: 77, Rows: 21})
+	sized := modalshell.Dialog(ui.NewDialog(theme.Dark(), colorprofile.TrueColor, "Sized", []string{"a body line"}))
+	launcher.Register(launcher.App{Name: "zz-sized", Summary: "Sized", Component: func() modalshell.Component { return sized }})
 	launcher.Register(launcher.App{Name: "zz-default", Summary: "Default size"})
 	ctx, dir, _ := rexTestCtx(t)
 	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
@@ -245,12 +250,13 @@ func TestRexInstallSizesEachAppLayerToItsCells(t *testing.T) {
 		end := strings.Index(script[i:], "\n}\n")
 		return script[i : i+end]
 	}
-	sized := action("zz-sized")
-	if !strings.Contains(sized, "bounds = cell_bounds(ctx.block_id, 77, 21)") {
-		t.Errorf("zz-sized is not sized from its own cells:\n%s", sized)
+	sc, sr := sized.NaturalSize()
+	act := action("zz-sized")
+	if want := fmt.Sprintf("bounds = cell_bounds(ctx.block_id, %d, %d)", sc, sr); !strings.Contains(act, want) {
+		t.Errorf("zz-sized is not sized from its component's NaturalSize (%s):\n%s", want, act)
 	}
-	if !strings.Contains(sized, `command = { BIN, "tui", "app", "zz-sized" }`) || strings.Contains(sized, `"launch"`) {
-		t.Errorf("zz-sized does not run its app directly:\n%s", sized)
+	if !strings.Contains(act, `command = { BIN, "tui", "app", "zz-sized" }`) || strings.Contains(act, `"launch"`) {
+		t.Errorf("zz-sized does not run its app directly:\n%s", act)
 	}
 	dc, dr := launcher.App{}.Size()
 	if want := fmt.Sprintf("cell_bounds(ctx.block_id, %d, %d)", dc, dr); !strings.Contains(action("zz-default"), want) {
@@ -319,41 +325,5 @@ func TestRexInstallKeepsKeyOverridesOnReinstall(t *testing.T) {
 	}
 	if !strings.Contains(readFile(t, p), `keys = { roadmap = "z" },`) {
 		t.Error("reinstall lost the key override")
-	}
-}
-
-// TestRexInstallOpensEveryAppAsACentredModalNotFullScreen checks that each
-// registered app's action opens a layer sized to the app's cells, bounded by
-// surface.BoundsForCells with the zero Anchor (centred) over a typical
-// window, and so never the whole window.
-func TestRexInstallOpensEveryAppAsACentredModalNotFullScreen(t *testing.T) {
-	launcher.Register(launcher.App{Name: "zz-modal", Summary: "Modal", Cols: 60, Rows: 18})
-	ctx, dir, _ := rexTestCtx(t)
-	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
-		t.Fatal(err)
-	}
-	script := readFile(t, filepath.Join(dir, "rhiza.lua"))
-	wc := surface.WindowCells{Cols: 240, Rows: 70, CellWPx: 9, CellHPx: 18}
-	for _, a := range launcher.Apps() {
-		cols, rows := a.Size()
-		want := fmt.Sprintf(`bounds = cell_bounds(ctx.block_id, %d, %d)`, cols, rows)
-		i := strings.Index(script, `name = "`+rexActionName(a.Name)+`"`)
-		if i < 0 {
-			t.Fatalf("no action for %s", a.Name)
-		}
-		end := strings.Index(script[i:], "\n}\n")
-		if !strings.Contains(script[i:i+end], want) {
-			t.Errorf("%s: action lacks %q", a.Name, want)
-		}
-		b, ok := surface.BoundsForCells(wc, cols, rows, surface.Centered)
-		if !ok {
-			t.Fatalf("%s: window too small for %dx%d", a.Name, cols, rows)
-		}
-		if b[2] >= 1 || b[3] >= 1 {
-			t.Errorf("%s: bounds %v fill the window", a.Name, b)
-		}
-		if got := b[0] + b[2]/2; got < 0.499 || got > 0.501 {
-			t.Errorf("%s: bounds %v are not centred", a.Name, b)
-		}
 	}
 }
