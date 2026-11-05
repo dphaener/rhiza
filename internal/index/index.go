@@ -52,9 +52,11 @@
 // error wraps. What-if views are not stored; they are computed on demand
 // from the stored entries.
 //
-// When something new is read, catch-up refolds the change sets from every
-// stored entry with changeset.FoldLog, so the stored change sets and fold
-// problems always equal FoldLog over the whole log. A view is recomputed
+// When something new is read, catch-up refolds only the change sets the
+// new entries touch, from their own stored entries, and keeps the stored
+// folded state (gob, history included) of every other; so the stored
+// change sets and fold problems always equal FoldLog over the whole log,
+// at a cost in proportion to the touched change sets. A view is recomputed
 // only when its inputs changed: as-is when a touched change set was or now
 // is landed, to-be when one was or is landed or accepted, and both when a
 // change set new to the index appears (it may be the endpoint of a link).
@@ -97,7 +99,7 @@ import (
 // SchemaVersion is the schema this package writes, kept in PRAGMA
 // user_version. Bump it on any change to the tables or what they hold: an
 // index of another version is deleted and rebuilt.
-const SchemaVersion = 3
+const SchemaVersion = 4
 
 // busyTimeout is how long a connection waits for a lock another connection
 // holds. Tests shorten it.
@@ -133,6 +135,9 @@ type stats struct {
 	rebuilt bool
 	// read is the number of entry files read.
 	read int
+	// decoded is the number of stored entries decoded and folded the number
+	// of change sets folded, by the refold.
+	decoded, folded int
 	// asIs and toBe are true when the view was recomputed.
 	asIs, toBe bool
 	// writes counts node and link rows upserted or deleted, per view.
@@ -352,6 +357,11 @@ var schema = []string{
 		open_entry     TEXT NOT NULL,
 		superseded_by  TEXT NOT NULL,
 		terminal_entry TEXT NOT NULL
+	) WITHOUT ROWID`,
+	// folded is each change set's folded state, history included, as gob.
+	`CREATE TABLE folded (
+		change_set TEXT PRIMARY KEY,
+		data       BLOB NOT NULL
 	) WITHOUT ROWID`,
 	// nodes and links hold the as-is ("asis") and to-be ("tobe") views.
 	// fields is a JSON object of raw values or NULL when empty; history a
