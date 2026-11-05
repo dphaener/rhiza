@@ -1,0 +1,63 @@
+{
+  "actor": "01M6NNVKJQ7PQJ9KW5K6DGWV0G",
+  "after": [
+    "01M6NNTNX781WCT67JF02Q3N36"
+  ],
+  "at": "2026-11-05T11:02:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built the branch head (go build -trimpath) and ran go vet ./... clean. With the built binary, rhiza tui app roadmap, model, health, changes, show and live --once each printed 'unknown app' and exited 4; inbox, runs and autonomy --once printed JSON and exited 0, request and daemon gave their no --once usage error (exit 2). The wrapped CLI commands still work: roadmap, slice and change ls exit 0, health prints its parts. The slice shows all 14 old-app capabilities (roadmap-app-*, model-tree-app, model-app-search, modelapp-timing-alone, changes-app, health-app, read-apps-match-cli, write-apps-previewed, runs-sessions-apps) retired, and show no longer finds them. TestScripts/tui-old-apps-gone passes."
+        },
+        "handle": "old-apps-deleted-qa-2",
+        "id": "01M6NNZSQ77AV6DTQTVDS322V9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NNZSQ77AV6DTQTVA2RK2MP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NNZSQ77AV6DTQTVA2RK2MP",
+        "id": "01M6NNZXBYBEGYN27THADZ4BMC",
+        "link": "01M6NNZXBYBEGYN27TH6P6D64C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZD2ER8DDHNYK3W3C04SYB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Ran the built binary's rhiza rex install with a fake rex on PATH and REX_CONFIG in a scratch folder: it wrote rhiza.lua and the require line and logged one 'config reload'. rhiza.lua holds exactly 5 rex.action entries, rhiza_app_autonomy, daemon, inbox, request and runs, with one key each (y, d, i, q, v) and no old app. rex-app-actions' acceptance now names the five apps. TestScripts/rex-install and internal/api -run RexInstall pass."
+        },
+        "handle": "rex-install-five-apps-qa-2",
+        "id": "01M6NP01TV2M23MSNAFWRZVRVE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6NP01TV2M23MSNAFRY33GJB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NP01TV2M23MSNAFRY33GJB",
+        "id": "01M6NP059ZNN22QPCH5X1NH9EJ",
+        "link": "01M6NP059ZNN22QPCH5VQPEX12",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MZD7XSJD2ENEG7W98BKDJV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MYNZJSMEXAE5Y3P3S9FB6F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NP098RX80P02EQTCMCWQ9D",
+  "type": "ops",
+  "v": 1
+}
