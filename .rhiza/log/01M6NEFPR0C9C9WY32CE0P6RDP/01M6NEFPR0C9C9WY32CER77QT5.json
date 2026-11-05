@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-05T08:51:24Z",
+  "body": {
+    "intent": "Record agent actor claude-code-deb16192 for session deb16192-9594-4caf-b3a1-01a1aae7cd09",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M6NEFPR0C9C9WY32CE0P6RDP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NEFPR0C9C9WY32CER77QT5",
+  "type": "open",
+  "v": 1
+}

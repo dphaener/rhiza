@@ -1,0 +1,110 @@
+{
+  "actor": "01M6NEXJBKBWH449SNWTQPGKHR",
+  "after": [
+    "01M6NEMWCBV0T0H3N8RM7FFX6N"
+  ],
+  "at": "2026-11-05T09:00:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent asks to poll cheaply (file mtimes or the run journal) and cache the fold. internal/index already does both: it is a disposable SQLite index derived from the log, catch-up is input-incremental (a seen entry path is never read again), it stores each entry's canonical bytes and each change set's folded state, and Open has a stat fingerprint so the fresh case costs one read of log/ and a stat per folder. Read operations already use it through openReader. The ~5 s read and ~1.5 s fold the question measured come from the paths that still call workspace.log() / store.ReadLog (writes such as apply, change show, the ship check subprocess, driver polls). Routing those through the index fixes the cost where it is paid, reuses tested freshness and rebuild rules, and fits CLAUDE.md's direction that the interim FoldLog model is to be replaced by projection. A separate fold cache would duplicate the index and its invalidation rules. Full reads stay where correctness needs every byte: check (finds edited entries, which the index does not notice) and render.",
+          "statement": "Model reads in drivers, 'rhiza change show', 'rhiza ship check --settled' and 'rhiza apply' go through the existing per-worktree SQLite index (internal/index) instead of reading and folding the whole log. Catch-up reads only entry files it has not seen, and is made incremental where it is not yet: today refold decodes every stored entry and runs changeset.FoldLog over the whole log on any catch-up that reads something new, and the change_sets table holds no history; this change set makes catch-up refold only the change sets its new entries touch and store their folded history, so stored canonical bytes and folded change sets are reused rather than decoded and re-canonicalized again. A poll whose stat fingerprint is unchanged does no model work, and a poll after another run appends an unrelated entry costs only that entry's change set. Writes validate against the index's folded state plus their own new entries. Only 'rhiza check' and 'rhiza render' still read the whole log. No second cache (no separate fold file or in-memory fold kept across commands) is added. An idle driver gets a CPU budget test",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "model-reads-go-through-the-index",
+        "id": "01M6NEHG641TR9VC8NXJSYWS6J",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6NEHG641TR9VC8NXJ78M4GA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api/... : a Go test builds a repo with a large log (100+ change sets, several in flight) and its index (IndexPath set), drives a run's leaves and checks steps through the stepRunner with live sessions, polls repeatedly with nothing changed and asserts, through the ctx.readLog counter and decode and fold counters, that those polls read the log zero times, decode nothing and fold nothing; it then appends an entry to an unrelated change set and asserts the next poll reads the log zero times and decodes and folds only that change set; it then adds an entry to the run's change set and a session done mark and asserts the next poll sees both. A CPU budget test (quiettest, median, like TestReadBudget) measures the process CPU time of idle driver polls on the 50,000-node budget model, and of a poll after one unrelated appended entry, and asserts each costs under 5 ms and 50 ms of CPU respectively",
+          "statement": "A run driver's poll (agent, leaves and checks steps, and their arbiter waits) reads the model through the worktree's index, and a poll where the log's stat fingerprint, the run journal and the polled session records are unchanged does no model work: no log read, no decode and no fold"
+        },
+        "handle": "run-driver-idle-poll-cheap",
+        "id": "01M6NEKX4E0HFPHC9ZT2TREYWW",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M6NEKX4E0HFPHC9ZSZKPE7KX",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run 'TestReadBudget' and go test -trimpath ./internal/api/... : TestReadBudget times rhiza change show of an in-flight change set on the 50,000-node budget model under the 50 ms median, both with the index fresh and after one entry is appended to an unrelated change set; a Go test with a counting log reader and a fresh index asserts change show (including its notes from the change set's history) and ship check --settled read the log zero times, also after an unrelated entry is appended; the existing change show and ship testscripts pass unchanged",
+          "statement": "rhiza change show and rhiza ship check --settled take the model and change sets from the worktree's index, caught up incrementally, instead of reading and folding the whole log, with the same answers as before"
+        },
+        "handle": "change-show-ship-check-from-index",
+        "id": "01M6NEM5KT6HR07M515SVCSHP4",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M6NEM5KT6HR07M515NWRDSRD",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/index/... : a property test over generated logs appends entries one at a time and asserts after each catch-up that the stored change sets (with history) and fold problems equal changeset.FoldLog over the whole log; a Go test with decode and fold counters appends one entry to an unrelated change set of a 100+ change set log and asserts catch-up decodes only that change set's entries and folds only that change set; a budget test times catch-up after one appended entry on the 50,000-node budget model under 50 ms median",
+          "statement": "The index's catch-up decodes and folds only the entries it newly reads: the change sets they touch are refolded from their own stored entries (index.EntriesOf) and the rest keep their stored folded state, so appending one entry costs work in proportion to that entry's change set, not a whole-log decode (entry.Decode with canon.Check) and changeset.FoldLog; the index stores each change set's folded history and entries, so change show's notes and apply's validation can take whole change sets from it; stored change sets and fold problems still equal FoldLog over the whole log"
+        },
+        "handle": "index-catchup-refolds-incrementally",
+        "id": "01M6NEZN44VV5TKPM24HMV72XG",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M6NEZN44VV5TKPM24EY59X4R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NEZN44VV5TKPM24EY59X4R",
+        "id": "01M6NF014QBVC8TWQF1PE380GR",
+        "link": "01M6NF014QBVC8TWQF1KSS9TCM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEHG641TR9VC8NXJ78M4GA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M6NEKX4E0HFPHC9ZSZKPE7KX",
+        "id": "01M6NF05DF4E6CXETD5KE6S1Q8",
+        "link": "01M6NF05DF4E6CXETD5FTDQD9Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEZN44VV5TKPM24EY59X4R",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6NEM5KT6HR07M515NWRDSRD",
+        "id": "01M6NF094X4BR6J5F7WEJ0GQH1",
+        "link": "01M6NF094X4BR6J5F7WB45EP7H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEZN44VV5TKPM24EY59X4R",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M6NEMD8NQT1DE0SEYVGE7X2X",
+        "id": "01M6NF0C39X9TM8G9036EPRV4V",
+        "link": "01M6NF0C39X9TM8G90369FBVY3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEZN44VV5TKPM24EY59X4R",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M6NE0XK2H70R52C5JAPWK71M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NF0RGNKX8AJHAPX28Y40M2",
+  "type": "ops",
+  "v": 1
+}

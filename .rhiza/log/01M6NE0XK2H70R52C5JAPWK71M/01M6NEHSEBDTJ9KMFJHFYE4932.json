@@ -1,0 +1,41 @@
+{
+  "actor": "01M6NEFPR0C9C9WY32C8HC592G",
+  "after": [
+    "01M6NEFFGJRA7E7YD5R5JKQBZA"
+  ],
+  "at": "2026-11-05T08:52:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent asks to poll cheaply (file mtimes or the run journal) and cache the fold. internal/index already does both: it is a disposable SQLite index derived from the log, catch-up is input-incremental (a seen entry path is never read again), it stores each entry's canonical bytes and each change set's folded state, and Open has a stat fingerprint so the fresh case costs one read of log/ and a stat per folder. Read operations already use it through openReader. The ~5 s read and ~1.5 s fold the question measured come from the paths that still call workspace.log() / store.ReadLog (writes such as apply, change show, the ship check subprocess, driver polls). Routing those through the index fixes the cost where it is paid, reuses tested freshness and rebuild rules, and fits CLAUDE.md's direction that the interim FoldLog model is to be replaced by projection. A separate fold cache would duplicate the index and its invalidation rules. Full reads stay where correctness needs every byte: check (finds edited entries, which the index does not notice) and render.",
+          "statement": "Model reads in drivers, 'rhiza change show', 'rhiza ship check --settled' and 'rhiza apply' go through the existing per-worktree SQLite index (internal/index) instead of reading and folding the whole log: catch-up reads only entry files it has not seen, the stored canonical bytes and folded change sets are reused rather than decoded and re-canonicalized again, and a poll whose stat fingerprint is unchanged does no model work. Writes validate against the index's folded state plus their own new entries. Only 'rhiza check' and 'rhiza render' still read the whole log. No second cache (no separate fold file or in-memory fold kept across commands) is added. An idle driver gets a CPU budget test",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "model-reads-go-through-the-index",
+        "id": "01M6NEHG641TR9VC8NXJSYWS6J",
+        "key": null,
+        "kind": "decision",
+        "node": "01M6NEHG641TR9VC8NXJ78M4GA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6NEHG641TR9VC8NXJ78M4GA",
+        "id": "01M6NEHM7Y5PC9VQA2KB0F3MRD",
+        "link": "01M6NEHM7Y5PC9VQA2K9D6PZRP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEFDS6ZHEKC2RFK7QRFPEE",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M6NE0XK2H70R52C5JAPWK71M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6NEHSEBDTJ9KMFJHFYE4932",
+  "type": "ops",
+  "v": 1
+}
