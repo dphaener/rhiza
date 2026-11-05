@@ -1,7 +1,9 @@
-# A milestone plan run's interview session is reported blocked, waiting on
-# the owner (OSC 7501), as it launches, before the agent asks anything: the
-# fake claude only exits. A feature plan run's interview tab carries no such
-# report, and neither does an autonomous milestone run's.
+# Inside Rex (REX_BLOCK set), a milestone plan run's driver reports its
+# status blocked, waiting on the owner (OSC 7501), as the interview session
+# launches, before the agent asks anything: the fake claude only exits. A
+# feature plan run's driver writes no such report, and neither does an
+# autonomous milestone run's. A daemon-started run's driver runs outside Rex
+# and writes none; the daemon's inbox notification covers it.
 #
 # The fake rex runs the tab's command; inside Rex a run's reports go to
 # stderr.
