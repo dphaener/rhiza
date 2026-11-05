@@ -1,0 +1,63 @@
+{
+  "actor": "01M6MHGRVTQX6SS6WQFNKE1BEH",
+  "after": [
+    "01M6MHEAVNCTV92KYP5CCJDW7D"
+  ],
+  "at": "2026-11-05T00:27:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza from the branch head and, in a scratch repo with its own HOME and XDG_CONFIG_HOME, ran machine show, api call machine.show, health and session start --permission-mode bypassPermissions (refused, naming machine.toml) with no machine config: XDG_CONFIG_HOME stayed empty (no rhiza dir, no file). Then with machine.toml trust = \"daily\": the same ops plus machine show --json left the file byte-identical (cmp), same mtime and mode, trust still daily. go test ./internal/machine and TestScripts/machine-trust-unwritten pass. Mutations: an aliased xos.WriteFile and an O_RDWR OpenFile in internal/machine plus a new export Raise fail TestMachineNeverWritesFiles and TestMachineExportsOnlyReaders; fp.Join(..., \"machine.toml\") in internal/api fails TestNothingElseTouchesMachineFile. A const-held \"machine.toml\" passed to filepath.Join outside internal/machine is not caught."
+        },
+        "handle": "machine-trust-unwritten-qa-1",
+        "id": "01M6MHN610Z2J83DM2Z83A92EN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MHN610Z2J83DM2Z51DAD65",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MHN610Z2J83DM2Z51DAD65",
+        "id": "01M6MHN9GRMFRFWRCW71W624FK",
+        "link": "01M6MHN9GRMFRFWRCW70JJQ1PV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6JZ8TSXBYMDF1G4PBXH3MRB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "With the branch-head build, rhiza machine show printed 'trust: daily (no machine config; it would be <path>)' with no file and 'trust: daily (from <path>)' with a daily file; machine show --json and api call machine.show printed the same bytes ({file,path,trust}); describe --json names only the read op machine.show; neither run wrote the config."
+        },
+        "handle": "machine-show-trust-unwritten-qa-1",
+        "id": "01M6MHNE2ZETT9XHFXCWA5WHFA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6MHNE2ZETT9XHFXCVA1BNBE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6MHNE2ZETT9XHFXCVA1BNBE",
+        "id": "01M6MHNHCF0YMHM1X0YN7G0F1C",
+        "link": "01M6MHNHCF0YMHM1X0YK5H79A9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6G0FSSB90F7DHTX1VVZQ86N",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6JYZ5Y4E56NMMC5HVKGC9J1",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6MHNQ6YAXYMD2NHCEAQSMNB",
+  "type": "ops",
+  "v": 1
+}
