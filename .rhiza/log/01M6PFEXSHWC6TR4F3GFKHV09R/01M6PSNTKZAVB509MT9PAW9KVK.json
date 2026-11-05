@@ -1,0 +1,40 @@
+{
+  "actor": "01M6PSKPJ0EH68XHYWNAJ34C22",
+  "after": [
+    "01M6PQRFAXE88CEYPK29JGJVGK"
+  ],
+  "at": "2026-11-05T21:26:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 29d12aca. go test -trimpath -count=1 ./internal/web/... passes: TestAPIAnswersTheHandlersJSON compares GET /api/run.ls, /api/run.ls?limit=5 and /api/roadmap bodies byte-for-byte with canon.Marshal of the api handlers' responses on a fixture repo (init + change.new), the same bytes cmd/rhiza writeResponse prints for --json; TestAPIRefusesWrites shows GET of land, accept, daemon.set, daemon.start, render, ship.merge, add, apply answers 404/405, POST/PUT/DELETE/PATCH answer 405, an unknown query key 400. go test ./internal/api -run TestReadOnlyMarker passes: it asserts ReadOnly on the 16 operations the web UI uses, on no other operation, never with Write or Record, and not on daemon.set, daemon.start, render, ship.merge, the ship/run/session/inbox writes or any log write. Read the diff: Operation.ReadOnly is a new explicit flag separate from Write; ReadOnlyHandler refuses non-GET/HEAD with 405 and any op lacking the marker with 404, builds the request from the query via DecodeRequest, and strips Record/DryRun/Rex/Start/Stdin from a copied Ctx. Spot-read the marked handlers (search, inbox, daemon.status) and found no writes to the log, settings, Rex or GitHub. go vet and gofmt clean; describe-golden testscript passes."
+        },
+        "handle": "web-api-read-only-verified",
+        "id": "01M6PSNTH4DZX94GVK3YB1Z7XT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PSNTH4DZX94GVK3TX5FHH1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PSNTH4DZX94GVK3TX5FHH1",
+        "id": "01M6PSNTJRRNKSMF1ZGPGHMMJJ",
+        "link": "01M6PSNTJRRNKSMF1ZGK9P55WY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJ9736AS6TE510QA5VVBS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFEXSHWC6TR4F3GFKHV09R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PSNTKZAVB509MT9PAW9KVK",
+  "type": "ops",
+  "v": 1
+}
