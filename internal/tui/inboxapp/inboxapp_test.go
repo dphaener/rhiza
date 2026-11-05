@@ -88,8 +88,8 @@ func TestRowPerItemInOrder(t *testing.T) {
 
 func TestEnterOpensActionPerKind(t *testing.T) {
 	for i, want := range []Action{ActionAnswer, ActionSignoff, ActionResolve} {
-		if i <= 1 {
-			continue // a question and a sign-off open their own views, not the Open hook
+		if i <= 2 {
+			continue // a question, a sign-off and a failed run open their own views, not the Open hook
 		}
 		var calls []call
 		m := NewModel(fake(full, &calls))
@@ -333,5 +333,91 @@ func TestSignoffEscCallsNothing(t *testing.T) {
 	}
 	if len(calls) != 1 {
 		t.Fatalf("calls: %+v", calls)
+	}
+}
+
+func resolveModel(calls *[]call) *Model {
+	m := NewModel(fake(full, calls))
+	press(m, "down")
+	press(m, "down")
+	enter(m)
+	return m
+}
+
+// submit presses Enter in the open form and feeds its message back.
+func submit(m *Model) tea.Cmd {
+	_, cmd := m.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	if cmd == nil {
+		return nil
+	}
+	msg := cmd()
+	if _, ok := msg.(ui.FormSubmittedMsg); !ok {
+		return nil
+	}
+	_, c := m.Update(msg)
+	return c
+}
+
+func TestResolveRetryCallsRunResume(t *testing.T) {
+	var calls []call
+	m := resolveModel(&calls)
+	if v := m.View().Content; !strings.Contains(v, "Retry") || !strings.Contains(v, "Abandon") {
+		t.Fatalf("no choice:\n%s", v)
+	}
+	if !isQuit(submit(m)) {
+		t.Fatal("app did not quit")
+	}
+	last := calls[len(calls)-1]
+	if last.op != "run.resume" || !slices.Equal(last.args, []string{"--retry", "R3"}) {
+		t.Fatalf("calls: %+v", calls)
+	}
+}
+
+func TestResolveAbandonNeedsConfirm(t *testing.T) {
+	var calls []call
+	m := resolveModel(&calls)
+	press(m, "down")
+	if isQuit(submit(m)) {
+		t.Fatal("quit before the confirm")
+	}
+	if isQuit(submit(m)) || len(calls) != 1 {
+		t.Fatalf("abandon without confirm went through: %+v", calls)
+	}
+}
+
+func TestResolveAbandonConfirmed(t *testing.T) {
+	var calls []call
+	m := resolveModel(&calls)
+	press(m, "down")
+	submit(m)
+	m.Update(tea.KeyPressMsg{Code: 'y', Text: "y"})
+	if !isQuit(submit(m)) {
+		t.Fatal("app did not quit")
+	}
+	last := calls[len(calls)-1]
+	if last.op != "run.abandon" || !slices.Equal(last.args, []string{"R3"}) {
+		t.Fatalf("calls: %+v", calls)
+	}
+}
+
+func TestResolveEscCallsNothing(t *testing.T) {
+	var calls []call
+	m := resolveModel(&calls)
+	_, cmd := m.Update(ui.FormCancelledMsg{})
+	if !isQuit(cmd) || len(calls) != 1 {
+		t.Fatalf("calls: %+v", calls)
+	}
+}
+
+func TestResolveOnlyForFailedKinds(t *testing.T) {
+	for _, k := range []string{api.InboxQuestion, api.InboxSignoff, api.InboxAccept, api.InboxStalled} {
+		if ActionFor(k) == ActionResolve {
+			t.Errorf("%s offers retry/abandon", k)
+		}
+	}
+	for _, k := range []string{api.InboxFailed, api.InboxGaveUp, api.InboxSkipped} {
+		if ActionFor(k) != ActionResolve {
+			t.Errorf("%s does not offer retry/abandon", k)
+		}
 	}
 }

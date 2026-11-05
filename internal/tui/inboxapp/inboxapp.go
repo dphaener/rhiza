@@ -95,7 +95,8 @@ type Model struct {
 	form  *ui.Form
 	asked *api.InboxItem
 	dlg   *ui.Dialog
-	back  bool // the form asks for a send-back note
+	back  bool   // the form asks for a send-back note
+	stage string // "choose" or "confirm" while the retry/abandon form is up
 
 	// Open, when set, is called with each pick of an actionable kind and
 	// returns the command that opens its action.
@@ -174,6 +175,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ui.FormCancelledMsg:
 		return m, tea.Quit
 	case ui.FormSubmittedMsg:
+		if m.stage == "choose" {
+			return m, m.chosen(msg.Values.String("choice"))
+		}
+		if m.stage == "confirm" {
+			return m, m.abandon(msg.Values.Bool("confirm"))
+		}
 		if m.back {
 			return m, m.sendBack(msg.Values.String("note"))
 		}
@@ -208,6 +215,9 @@ func (m *Model) choose(i int) tea.Cmd {
 	}
 	if p.Action == ActionSignoff {
 		return m.openSignoff(it)
+	}
+	if p.Action == ActionResolve {
+		return m.openResolve(it)
 	}
 	if p.Action != ActionShow {
 		if m.Open != nil {
@@ -282,6 +292,54 @@ func (m *Model) sendBack(note string) tea.Cmd {
 	}
 	if _, err := m.run("run.send-back", []string{m.asked.Run, note}); err != nil {
 		return m.openNote("send back failed: " + err.Error())
+	}
+	return tea.Quit
+}
+
+// openResolve offers retry or abandon for a failed, gave-up or skipped run.
+func (m *Model) openResolve(it api.InboxItem) tea.Cmd {
+	return m.resolveForm(it, "")
+}
+
+func (m *Model) resolveForm(it api.InboxItem, msg string) tea.Cmd {
+	sub := title(it) + " · " + waits(it)
+	if msg != "" {
+		sub = title(it) + " · " + msg
+	}
+	sel := ui.NewSelect("choice", "What to do with the run").Options(
+		ui.Option{Label: "Retry", Value: "retry"},
+		ui.Option{Label: "Abandon", Value: "abandon"},
+	)
+	f := ui.NewForm(theme.Dark(), colorprofile.TrueColor, sel).WithSubtitle(sub)
+	m.form, m.asked, m.stage, m.cur = f, &it, "choose", f
+	return f.Init()
+}
+
+// chosen acts on the Select: retry queues run.resume and quits; abandon
+// asks for the Confirm first.
+func (m *Model) chosen(choice string) tea.Cmd {
+	it := *m.asked
+	if choice == "abandon" {
+		f := ui.NewForm(theme.Dark(), colorprofile.TrueColor,
+			ui.NewConfirm("confirm", "Abandon this run?")).WithSubtitle(title(it) + " · " + it.Run)
+		m.form, m.stage, m.cur = f, "confirm", f
+		return f.Init()
+	}
+	if _, err := m.run("run.resume", []string{"--retry", it.Run}); err != nil {
+		return m.resolveForm(it, "retry failed: "+err.Error())
+	}
+	return tea.Quit
+}
+
+// abandon runs run.abandon once confirmed; without the Confirm nothing is
+// called and the choice comes back.
+func (m *Model) abandon(ok bool) tea.Cmd {
+	it := *m.asked
+	if !ok {
+		return m.resolveForm(it, "abandon needs the confirm")
+	}
+	if _, err := m.run("run.abandon", []string{it.Run}); err != nil {
+		return m.resolveForm(it, "abandon failed: "+err.Error())
 	}
 	return tea.Quit
 }
