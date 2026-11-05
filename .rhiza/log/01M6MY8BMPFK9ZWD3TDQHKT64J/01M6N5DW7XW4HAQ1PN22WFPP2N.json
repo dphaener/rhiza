@@ -1,0 +1,40 @@
+{
+  "actor": "01M6N4TRC80NSETZBD631QB1QW",
+  "after": [
+    "01M6N3YTY7XWK353HM9K5ZSX96"
+  ],
+  "at": "2026-11-05T06:13:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 4c99a781 (attempt 2). Read the diff: runRunStart refuses --autonomous on a plan run with --milestone, with --request naming a milestone-kind request (new: requestRun now returns the request and its Kind is checked before any draft opens, --milestone or not), or on a record change set (planIsMilestone); runRunResume refuses a plan run journaled autonomous on a record change set; all use milestoneNeedsOwner, a usage error saying milestone planning needs the owner. Ran go test -trimpath ./cmd/rhiza -run TestScripts/(run-start-milestone-autonomous|plan-workflow-autonomous|plan-workflow-autonomous-left|plan-requests|describe-golden) -v: all PASS. run-start-milestone-autonomous checks exit 2 with the rule for --new --milestone, a record change set, and a milestone request without --milestone (dry run and real), no new draft and no journal; the record start without --autonomous succeeds, an autonomous --new intention succeeds with autonomous true, and run resume of the record run edited to autonomous exits 2 with the rule. plan-workflow-autonomous and -left now start on an intention (--new, no --milestone), the fake claude asserts RHIZA_AUTONOMOUS=1, and the gate accepts with rule autonomous. go test -trimpath ./internal/api/... ok."
+        },
+        "handle": "milestone-plan-refuses-autonomous-verified-2",
+        "id": "01M6N5DN8W3DD3P3QKKDSGN4CD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6N5DN8W3DD3P3QKKBBS4FWP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6N5DN8W3DD3P3QKKBBS4FWP",
+        "id": "01M6N5DRCF4HQ7S93WCFG6KAH8",
+        "link": "01M6N5DRCF4HQ7S93WCD7A1Z07",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MYGJT14RGWC73S0V3A5YEB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6MY8BMPFK9ZWD3TDQHKT64J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6N5DW7XW4HAQ1PN22WFPP2N",
+  "type": "ops",
+  "v": 1
+}
