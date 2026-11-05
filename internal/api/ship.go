@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -485,6 +486,12 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		if err := shipReadFailures(ctx, t, &st, &resp, path); err != nil {
 			return nil, err
 		}
+	} else if resp.Settled && len(st.CIFindings) > 0 {
+		// Green: the failing tests recorded for an earlier head are fixed.
+		st.CIFindings = nil
+		if err := writeShipState(path, st); err != nil {
+			return nil, err
+		}
 	}
 	if !resp.Settled {
 		if resp.Detail == "" {
@@ -568,7 +575,7 @@ func shipRerunFailed(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckRespo
 	}
 	// Record before rerunning: a crash between the two then costs a
 	// missed rerun, never a second one.
-	st.RerunHead, st.Reruns = resp.Commit, runs
+	st.RerunHead, st.Reruns, st.CIFindings = resp.Commit, runs, nil
 	if err := writeShipState(path, *st); err != nil {
 		return err
 	}
@@ -607,10 +614,16 @@ func parseFailedTests(log string) []string {
 // rerun, the log of each failed Actions run and turns the failing tests it
 // names into findings, in resp and the state file. Checks with no run ID,
 // logs gh cannot give, and logs with no '--- FAIL:' line add nothing: the
-// failure stays a plain one.
+// failure stays a plain one. The state file's findings are always this
+// head's, so a head that failed with no failing test (or was never rerun)
+// clears those an earlier read recorded.
 func shipReadFailures(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckResponse, path string) error {
 	if st.RerunHead != resp.Commit {
-		return nil
+		if len(st.CIFindings) == 0 {
+			return nil
+		}
+		st.CIFindings = nil
+		return writeShipState(path, *st)
 	}
 	seenRun := map[string]bool{}
 	seen := map[string]bool{}
@@ -632,7 +645,7 @@ func shipReadFailures(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckResp
 			resp.Findings = append(resp.Findings, ShipFinding{Test: name, Reason: fmt.Sprintf("Test %s failed in CI run %s (check %s) on %s; rerun it alone and fix it", name, c.RunID, c.Name, shortSHA(resp.Commit))})
 		}
 	}
-	if len(resp.Findings) == 0 {
+	if slices.Equal(st.CIFindings, resp.Findings) {
 		return nil
 	}
 	st.CIFindings = resp.Findings
