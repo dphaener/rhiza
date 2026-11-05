@@ -2760,6 +2760,10 @@ cmp stdout describe.golden.json
                   "description": "An overlap: the second change set (B)",
                   "type": "string"
                 },
+                "other_title": {
+                  "description": "An overlap: the second change set's title; absent when the log has no such change set",
+                  "type": "string"
+                },
                 "question": {
                   "description": "A question: what the agent asked; a blocker: the question's statement",
                   "type": "string"

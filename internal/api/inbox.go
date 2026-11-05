@@ -109,6 +109,7 @@ type InboxItem struct {
 	BlocksTitle    string              `json:"blocks_title,omitempty" desc:"A blocker: what the question blocks by name, the node's statement or the change set's title; absent when it has none"`
 	Questions      []InboxGateQuestion `json:"questions,omitempty" desc:"An open item at a plan run's gate: each open question it stopped on, in the order it names them; absent when the run has no worktree to read them from"`
 	Other          string              `json:"other,omitempty" desc:"An overlap: the second change set (B)"`
+	OtherTitle     string              `json:"other_title,omitempty" desc:"An overlap: the second change set's title; absent when the log has no such change set"`
 	Target         string              `json:"target,omitempty" desc:"An overlap: the node or link both change sets write, its handle when it has one"`
 	Detail         string              `json:"detail,omitempty" desc:"A failed run: why it failed; a sign-off: what it waits for"`
 	Next           string              `json:"next,omitempty" desc:"The command that clears it, when one does"`
@@ -613,6 +614,9 @@ func runInbox(ctx *Ctx, req any) (any, error) {
 	}
 	for i := range items {
 		items[i].ChangeTitle = fold.titleOf(items[i].Change)
+		if items[i].Other != "" {
+			items[i].OtherTitle = fold.titleOf(items[i].Other)
+		}
 		switch {
 		case items[i].Kind == InboxBlocker && items[i].Blocks == "this change set":
 			items[i].BlocksTitle = items[i].ChangeTitle
