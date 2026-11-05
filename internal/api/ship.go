@@ -69,25 +69,34 @@ type ShipCheckRequest struct {
 
 // ShipCheckResponse is what ship.check found.
 type ShipCheckResponse struct {
-	Change    string      `json:"change" desc:"The change set"`
-	Branch    string      `json:"branch" desc:"The change set's branch"`
-	Main      bool        `json:"main,omitempty" desc:"True if it checked the merge commit on main rather than the pull request"`
-	PR        int         `json:"pr,omitempty" desc:"The pull request's number; 0 if none was found"`
-	URL       string      `json:"url,omitempty" desc:"The pull request's URL"`
-	State     string      `json:"state,omitempty" desc:"The pull request's state, such as OPEN or MERGED"`
-	Commit    string      `json:"commit,omitempty" desc:"The commit checked: the PR's head, or the merge commit"`
-	Checks    []ShipCheck `json:"checks" desc:"The checks reported for the commit"`
-	Settled   bool        `json:"settled" desc:"True if there is an open PR (or a merge commit) and every check on it has finished"`
-	Green     bool        `json:"green" desc:"True if settled and every check passed (success, neutral or skipped)"`
-	Failed    []string    `json:"failed,omitempty" desc:"The names of the settled checks that did not pass"`
-	Passed    bool        `json:"passed" desc:"True if the check asked for holds: open with --pr-open, settled with --settled, else green; the command exits 1 otherwise"`
-	Detail    string      `json:"detail,omitempty" desc:"Why it did not pass, such as no open pull request"`
-	Written   bool        `json:"written,omitempty" desc:"True if the result was recorded in the state file for the next steps"`
-	Rebased   string      `json:"rebased,omitempty" desc:"With --settled on a conflicting pull request: the head pushed after rebasing the branch onto main"`
-	Conflicts []string    `json:"conflicts,omitempty" desc:"With --settled on a conflicting pull request: the files whose conflict outside the rendered files stopped the rebase; the command exits 75"`
-	Question  string      `json:"question,omitempty" desc:"The handle of the question raised about those conflicts"`
-	Stop      string      `json:"stop,omitempty" desc:"With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75"`
-	Reran     []string    `json:"reran,omitempty" desc:"The GitHub Actions run IDs whose failed jobs this check reran, once per head, instead of failing; the check then reports not settled"`
+	Change    string        `json:"change" desc:"The change set"`
+	Branch    string        `json:"branch" desc:"The change set's branch"`
+	Main      bool          `json:"main,omitempty" desc:"True if it checked the merge commit on main rather than the pull request"`
+	PR        int           `json:"pr,omitempty" desc:"The pull request's number; 0 if none was found"`
+	URL       string        `json:"url,omitempty" desc:"The pull request's URL"`
+	State     string        `json:"state,omitempty" desc:"The pull request's state, such as OPEN or MERGED"`
+	Commit    string        `json:"commit,omitempty" desc:"The commit checked: the PR's head, or the merge commit"`
+	Checks    []ShipCheck   `json:"checks" desc:"The checks reported for the commit"`
+	Settled   bool          `json:"settled" desc:"True if there is an open PR (or a merge commit) and every check on it has finished"`
+	Green     bool          `json:"green" desc:"True if settled and every check passed (success, neutral or skipped)"`
+	Failed    []string      `json:"failed,omitempty" desc:"The names of the settled checks that did not pass"`
+	Passed    bool          `json:"passed" desc:"True if the check asked for holds: open with --pr-open, settled with --settled, else green; the command exits 1 otherwise"`
+	Detail    string        `json:"detail,omitempty" desc:"Why it did not pass, such as no open pull request"`
+	Written   bool          `json:"written,omitempty" desc:"True if the result was recorded in the state file for the next steps"`
+	Rebased   string        `json:"rebased,omitempty" desc:"With --settled on a conflicting pull request: the head pushed after rebasing the branch onto main"`
+	Conflicts []string      `json:"conflicts,omitempty" desc:"With --settled on a conflicting pull request: the files whose conflict outside the rendered files stopped the rebase; the command exits 75"`
+	Question  string        `json:"question,omitempty" desc:"The handle of the question raised about those conflicts"`
+	Stop      string        `json:"stop,omitempty" desc:"With --main: why main cannot be confirmed, such as no workflow to dispatch CI on a merge commit whose tree differs from the tested head's, or CI on it failing again after a rerun; the command exits 75"`
+	Tests     []string      `json:"tests,omitempty" desc:"The Go tests and testscripts, such as TestScripts/x, that the failed Actions runs' logs name with a '--- FAIL:' line, once the failed jobs were rerun and failed again"`
+	Findings  []ShipFinding `json:"findings,omitempty" desc:"One finding, with no leaf, per failing test, for a fix step; recorded in the state file as well"`
+	Reran     []string      `json:"reran,omitempty" desc:"The GitHub Actions run IDs whose failed jobs this check reran, once per head, instead of failing; the check then reports not settled"`
+}
+
+// ShipFinding is a failing test read from a CI log, as a finding with no
+// leaf.
+type ShipFinding struct {
+	Test   string `json:"test" desc:"The failing test or testscript"`
+	Reason string `json:"reason" desc:"What failed and where it was read"`
 }
 
 // ShipCheck is one CI check on a commit, normalised from gh's check runs,
@@ -231,6 +240,9 @@ type shipState struct {
 	// once, so a second failure on it fails.
 	RerunHead string   `json:"rerun_head,omitempty"`
 	Reruns    []string `json:"reruns,omitempty"`
+	// CIFindings are the failing tests read from the logs of the failed
+	// runs of RerunHead, for the step that fixes them.
+	CIFindings []ShipFinding `json:"ci_findings,omitempty"`
 	// DispatchCommit is the merge commit CI was dispatched on, and
 	// Dispatched the workflow files dispatched for it, once each.
 	DispatchCommit string   `json:"dispatch_commit,omitempty"`
@@ -469,6 +481,11 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 			return nil, err
 		}
 	}
+	if resp.Settled && !resp.Green {
+		if err := shipReadFailures(ctx, t, &st, &resp, path); err != nil {
+			return nil, err
+		}
+	}
 	if !resp.Settled {
 		if resp.Detail == "" {
 			resp.Detail = notSettled(resp.Checks)
@@ -565,6 +582,61 @@ func shipRerunFailed(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckRespo
 	resp.Detail = fmt.Sprintf("not settled: reran the failed jobs of %s %s after %s failed", shipPlural(len(runs), "run", "runs"), strings.Join(runs, ", "), strings.Join(resp.Failed, ", "))
 	resp.Failed = nil
 	return nil
+}
+
+// failLine matches a Go test's failure line in a log, as go test prints it
+// (possibly after a CI timestamp and indentation for a subtest).
+var failLine = regexp.MustCompile(`--- FAIL: (\S+)`)
+
+// parseFailedTests returns the distinct tests named by '--- FAIL:' lines in
+// a gh run view --log-failed output, in order of appearance. A failing
+// subtest's parent fails too: both are named.
+func parseFailedTests(log string) []string {
+	var out []string
+	seen := map[string]bool{}
+	for _, m := range failLine.FindAllStringSubmatch(log, -1) {
+		if !seen[m[1]] {
+			seen[m[1]] = true
+			out = append(out, m[1])
+		}
+	}
+	return out
+}
+
+// shipReadFailures reads, for a settled failed head that was already
+// rerun, the log of each failed Actions run and turns the failing tests it
+// names into findings, in resp and the state file. Checks with no run ID,
+// logs gh cannot give, and logs with no '--- FAIL:' line add nothing: the
+// failure stays a plain one.
+func shipReadFailures(ctx *Ctx, t shipTarget, st *shipState, resp *ShipCheckResponse, path string) error {
+	if st.RerunHead != resp.Commit {
+		return nil
+	}
+	seenRun := map[string]bool{}
+	seen := map[string]bool{}
+	for _, c := range resp.Checks {
+		if c.RunID == "" || seenRun[c.RunID] || passingConclusions[strings.ToUpper(c.Conclusion)] {
+			continue
+		}
+		seenRun[c.RunID] = true
+		out, err := gh(ctx, t.dir(), "run", "view", c.RunID, "--log-failed")
+		if err != nil {
+			continue
+		}
+		for _, name := range parseFailedTests(string(out)) {
+			if seen[name] {
+				continue
+			}
+			seen[name] = true
+			resp.Tests = append(resp.Tests, name)
+			resp.Findings = append(resp.Findings, ShipFinding{Test: name, Reason: fmt.Sprintf("Test %s failed in CI run %s (check %s) on %s; rerun it alone and fix it", name, c.RunID, c.Name, shortSHA(resp.Commit))})
+		}
+	}
+	if len(resp.Findings) == 0 {
+		return nil
+	}
+	st.CIFindings = resp.Findings
+	return writeShipState(path, *st)
 }
 
 // shipSettleConflict runs the ship rebase logic for a pull request GitHub

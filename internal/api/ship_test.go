@@ -1506,3 +1506,20 @@ func TestShipCloseOutRecordsStaleMain(t *testing.T) {
 		t.Errorf("health main after a successful pull = %+v", h)
 	}
 }
+
+func TestParseFailedTests(t *testing.T) {
+	nested := `test	Run tests	2026-11-04T10:00:00Z --- FAIL: TestScripts (12.00s)
+test	Run tests	2026-11-04T10:00:00Z     --- FAIL: TestScripts/review-check-worktree (1.20s)
+test	Run tests	2026-11-04T10:00:00Z FAIL	github.com/dphaener/rhiza/cmd/rhiza	13.1s
+`
+	if got, want := parseFailedTests(nested), []string{"TestScripts", "TestScripts/review-check-worktree"}; !slices.Equal(got, want) {
+		t.Errorf("nested = %v, want %v", got, want)
+	}
+	two := "--- FAIL: TestA (0.00s)\n--- FAIL: TestB (0.01s)\n--- FAIL: TestA (0.00s)\n"
+	if got, want := parseFailedTests(two), []string{"TestA", "TestB"}; !slices.Equal(got, want) {
+		t.Errorf("two = %v, want %v", got, want)
+	}
+	if got := parseFailedTests("Error: setup-go failed\nprocess completed with exit code 1\n"); len(got) != 0 {
+		t.Errorf("infra log = %v, want none", got)
+	}
+}
