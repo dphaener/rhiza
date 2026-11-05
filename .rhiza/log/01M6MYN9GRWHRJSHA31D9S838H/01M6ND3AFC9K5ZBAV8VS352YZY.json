@@ -1,0 +1,68 @@
+{
+  "actor": "01M6ND1XX5ZN02TBTYPPDXK5Q7",
+  "after": [
+    "01M6ND2ZN0NQ7EE83KZM3PQDAH"
+  ],
+  "at": "2026-11-05T08:27:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M686TSHQQ5XJ0YAZ40XWXZSN",
+        "id": "01M6ND2VQTPH7BPG4JX46TJ4YM",
+        "node": "01M686TSHQQ5XJ0YAZ3Z538821",
+        "op": "node.retire",
+        "reason": "Replaced by inbox-app-answer: the rebuilt inbox app answers a blocker through question.answer from a one-TextArea form"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3cfa418a ran go test -trimpath ./cmd/rhiza -run 'TestScripts/run-send-back$' -count=1: PASS. The script drives a shiptest run with fake claude/rex/gh to signoff_waiting, refuses a blank note (exit 2, status unchanged), then run send-back --note 'say more' exits 0; claude.log shows the fixer (cycle 2) and check running next; run status shows the changes round with '1 finding' and now asserts the line '  - alpha f1 major at owner: say more' (fixing finding f2), current step back at signoff, and no order.log (nothing landed/approved). After approve, send-back exits 2 and only the approve's landing is recorded; fold-ok passes. Read the fix diff: one added assertion line."
+        },
+        "handle": "run-send-back-verified-2",
+        "id": "01M6ND2PFSNC52GZEQKAQ7SFGN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6ND2PFSNC52GZEQK75V9E19",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6ND2PFSNC52GZEQK75V9E19",
+        "id": "01M6ND2SSBE4XBW48DVBMRGA1V",
+        "link": "01M6ND2SSBE4XBW48DVBEKMJXM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6N099H464KP7VPM9TVD8RAZ",
+        "type": "verifies"
+      },
+      {
+        "base": "01M6GFSEFRZ230DATXNAATT96E",
+        "id": "01M6ND2ZN97J9A9SYYGXSBHE37",
+        "node": "01M6734J6ESHFYKFJ09YK6TEWT",
+        "op": "node.retire",
+        "reason": "Replaced by inbox-app-pick-list, inbox-app-answer, inbox-app-signoff and inbox-app-retry-abandon: the rebuilt app picks one item and does its one action, with no o/t/y/c/R/x keys"
+      },
+      {
+        "base": "01M6734GPG3SZCY93EBS9XQFEV",
+        "id": "01M6ND32E89X22WGZHE07B54P6",
+        "node": "01M6734GPG3SZCY93EBRDS1CA8",
+        "op": "node.retire",
+        "reason": "Replaced by inbox-app-pick-list: the rebuilt app is one rexuikit List of items, with no kind grouping, advisor recommendation or periodic and r reload"
+      },
+      {
+        "base": "01M6CS2KAT7R41TVN9WGRS1321",
+        "id": "01M6ND35XQXB8JYW0W06SJ9AHV",
+        "node": "01M6CS2KAT7R41TVN9WFDEFBRF",
+        "op": "node.retire",
+        "reason": "The rebuilt inbox app has no n nudge: a stalled item shows its detail and opens its run's tab (inbox-app-pick-list)"
+      }
+    ]
+  },
+  "change_set": "01M6MYN9GRWHRJSHA31D9S838H",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6ND3AFC9K5ZBAV8VS352YZY",
+  "type": "ops",
+  "v": 1
+}
