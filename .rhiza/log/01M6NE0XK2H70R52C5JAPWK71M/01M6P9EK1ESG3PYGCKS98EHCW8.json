@@ -1,0 +1,73 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M6P044BRQ42NBNJ7T9M6EWRQ"
+  ],
+  "at": "2026-11-05T16:42:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "95e5f29ed00ae26f0ea1f7c413a94862328fb3a7",
+          "pr": "https://github.com/dphaener/rhiza/pull/304",
+          "result": "1 check passed: check SUCCESS",
+          "statement": "Pull request #304 (https://github.com/dphaener/rhiza/pull/304) passed CI at 95e5f29",
+          "status": "verified"
+        },
+        "handle": "pr-304-fix-run-drivers-burn-cpu-while",
+        "id": "01M6P9E5H2HYBC5T4T87WGFHR3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6P9E5H2HYBC5T4T85A8SN8Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6P9E5H2HYBC5T4T85A8SN8Y",
+        "id": "01M6P9E7ZYCDZAZX3ZY7YD4YHX",
+        "link": "01M6P9E7ZYCDZAZX3ZY71PTFMY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEKX4E0HFPHC9ZSZKPE7KX",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6P9E5H2HYBC5T4T85A8SN8Y",
+        "id": "01M6P9EAF6XJENZWMMNFW6PRJF",
+        "link": "01M6P9EAF6XJENZWMMNCBJD12Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEM5KT6HR07M515NWRDSRD",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6P9E5H2HYBC5T4T85A8SN8Y",
+        "id": "01M6P9ECZ1YYDA2GHPZ8DNC112",
+        "link": "01M6P9ECZ1YYDA2GHPZ7RNPCSP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEMD8NQT1DE0SEYVGE7X2X",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M6P9E5H2HYBC5T4T85A8SN8Y",
+        "id": "01M6P9EFC8197SFTNVPCBXXE5P",
+        "link": "01M6P9EFC8197SFTNVPATXAYAD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6NEZN44VV5TKPM24EY59X4R",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6NE0XK2H70R52C5JAPWK71M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6P9EK1ESG3PYGCKS98EHCW8",
+  "type": "ops",
+  "v": 1
+}
