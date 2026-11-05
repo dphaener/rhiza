@@ -1,0 +1,155 @@
+{
+  "actor": "01M6PWCYW2F59QCVRNZ80KS2WR",
+  "after": [
+    "01M6PWAY3EVT58N89PC2GH6CQQ"
+  ],
+  "at": "2026-11-05T22:23:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at dfd42a2b: a scratch build (go build ./cmd/rhiza) ran a real long-running rhiza daemon (paused, --max-runs 0) in a fresh scratch repo with the run env unset, and curl hit it. With rhiza.web.port unset the daemon listened on 127.0.0.1:7787 only (ss) and GET / gave 200. rhiza daemon set rhiza.web.port rejected 0, 70000 and abc (must be a port number from 1 to 65535, or off) and accepted 18787. With the daemon running, setting 18788, then off, then 18787 moved, stopped and restarted the listener within 4-5 s each (ss shows only 127.0.0.1:<port>). A port already held by another process was logged (bind: address already in use), the daemon stayed up and bound it once freed. strace -e bind shows rhiza daemon --once and a long-running daemon with RHIZA_TEST_NOW set make no bind call."
+        },
+        "handle": "web-serve-loopback-qa-1",
+        "id": "01M6PWYQV2J46MFZT12AY6E3QF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PWYQV2J46MFZT128F0E1RB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PWYQV2J46MFZT128F0E1RB",
+        "id": "01M6PWYQW2AYTDAJN78SYN9J7P",
+        "link": "01M6PWYQW2AYTDAJN78SJ3G1YT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJ960GFE6G98GN9GVTABG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at dfd42a2b: a scratch build (go build ./cmd/rhiza) ran a real long-running rhiza daemon (paused, --max-runs 0) in a fresh scratch repo with the run env unset, and curl hit it. GET /api/run.ls, /api/roadmap, /api/ls and /api/status were byte-identical (cmp) to rhiza run ls/roadmap/ls/status --json; ?limit=1 was honoured, ?bogus=1 gave 400 with a usage error, HEAD /api/ls 200. GET /api/land, accept, daemon.set, daemon.start, render, ship.merge, add, apply and change.new all gave 404; POST, PUT, DELETE and PATCH on /api/run.ls gave 405."
+        },
+        "handle": "web-api-read-only-qa-1",
+        "id": "01M6PWYQWWFZENP0VXCNT9Q6ZN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PWYQWWFZENP0VXCNKF4ZP9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PWYQWWFZENP0VXCNKF4ZP9",
+        "id": "01M6PWYQY4X0F80K2BPA0R90H8",
+        "link": "01M6PWYQY4X0F80K2BP8DBB05G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJ9736AS6TE510QA5VVBS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at dfd42a2b: a scratch build (go build ./cmd/rhiza) ran a real long-running rhiza daemon (paused, --max-runs 0) in a fresh scratch repo with the run env unset, and curl hit it. curl -N /events answered text/event-stream with a ready comment and keep-alives. rhiza add to an existing change set and rhiza change new each produced event: change with that change set ID; toggling rhiza.daemon.paused produced event: daemon; raising rhiza.daemon.minFree to 1000T raised a disk-low inbox item and an event: inbox, and lowering it back sent event: inbox again as the item left. Run journal and driver log events were not exercised hands-on (no agent run was started); the package test covers them."
+        },
+        "handle": "web-events-stream-qa-1",
+        "id": "01M6PWYQZ6QK13CSAV9QJ7GP9E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PWYQZ6QK13CSAV9PVH2JXC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PWYQZ6QK13CSAV9PVH2JXC",
+        "id": "01M6PWYR02HAWBK57B50ZA3C1N",
+        "link": "01M6PWYR02HAWBK57B4YZRAKKX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJ98BKT1ES8F6WJTVJ893",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at dfd42a2b: a scratch build (go build ./cmd/rhiza) ran a real long-running rhiza daemon (paused, --max-runs 0) in a fresh scratch repo with the run env unset, and curl hit it. GET / gave 200 text/html with the rendered Overview layout (header, nav, stale banner, /static/app.js). /static/app.js (text/javascript), /static/css/rhiza-tokens.css and rhiza.css (text/css), favicon.svg and .ico, a woff2 font and /site.webmanifest were all served from the binary with no files on disk beside it."
+        },
+        "handle": "web-templates-embedded-qa-1",
+        "id": "01M6PWYR13H5SB9VSNVNQ424X0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PWYR13H5SB9VSNVN7WWQWG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PWYR13H5SB9VSNVN7WWQWG",
+        "id": "01M6PWYR1VTEW6N967JDJZZWPW",
+        "link": "01M6PWYR1VTEW6N967JCZB0SC4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJ9A1H6A1YBM55VS6HDQG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at dfd42a2b: a scratch build (go build ./cmd/rhiza) ran a real long-running rhiza daemon (paused, --max-runs 0) in a fresh scratch repo with the run env unset, and curl hit it. After rhiza daemon --once with the setting unset, rhiza daemon status showed Web UI: http://127.0.0.1:7787 and --json web http://127.0.0.1:7787; after rhiza daemon set rhiza.web.port off and another --once it showed Web UI: off and web off. A running daemon status followed the 18787, 18788 and off moves."
+        },
+        "handle": "web-url-in-daemon-status-qa-1",
+        "id": "01M6PWYR2KTTYTY02Q27YHVQ7Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PWYR2KTTYTY02Q26XKBKHB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PWYR2KTTYTY02Q26XKBKHB",
+        "id": "01M6PWYR3DYFFRCT1NPH0K834B",
+        "link": "01M6PWYR3DYFFRCT1NPG53YAZ2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJ9CD8XKQZK2PNA3B6973",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at dfd42a2b: a scratch build (go build ./cmd/rhiza) ran a real long-running rhiza daemon (paused, --max-runs 0) in a fresh scratch repo with the run env unset, and curl hit it. /static/app.js is served, subscribes to /events, swaps sections by data-rz-events and data-rz-fragment, and toggles is-stale and the #rz-stale banner when the stream drops; the rendered page carries the #rz-stale banner. /fragments/nope gave 404. No page yet declares a live section, so no swap was seen in a browser (the leaf asks for no browser test)."
+        },
+        "handle": "web-live-sections-qa-1",
+        "id": "01M6PWYR3ZAF6PYAR6HS620Z5K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M6PWYR3ZAF6PYAR6HRH1D0GQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M6PWYR3ZAF6PYAR6HRH1D0GQ",
+        "id": "01M6PWYR4N6JWQ84048KYBSYX5",
+        "link": "01M6PWYR4N6JWQ84048JSKDHE3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFJ9BEWSJ8QDFFK8NR8N48",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M6PFEXSHWC6TR4F3GFKHV09R",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M6PWYR59J9RJPWKAKV9XK2T8",
+  "type": "ops",
+  "v": 1
+}
