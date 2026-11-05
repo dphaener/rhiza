@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -100,4 +101,28 @@ func TestManagerFollowsSetting(t *testing.T) {
 	}
 	fail = false
 	step("7787", "127.0.0.1:7787", 4) // retried at the next poll
+}
+
+func TestHandlerRendersPageAndScript(t *testing.T) {
+	h := Handler(nil)
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest("GET", "/", nil))
+	if rec.Code != 200 || !strings.HasPrefix(rec.Header().Get("Content-Type"), "text/html") {
+		t.Fatalf("/: %d %q", rec.Code, rec.Header().Get("Content-Type"))
+	}
+	for _, want := range []string{"<title>Overview · Rhiza</title>", `href="/static/css/rhiza.css"`, `src="/static/app.js"`} {
+		if !strings.Contains(rec.Body.String(), want) {
+			t.Errorf("/ lacks %q", want)
+		}
+	}
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest("GET", "/static/app.js", nil))
+	if rec.Code != 200 || !strings.Contains(rec.Header().Get("Content-Type"), "javascript") || rec.Body.Len() == 0 {
+		t.Errorf("app.js: %d %q", rec.Code, rec.Header().Get("Content-Type"))
+	}
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest("GET", "/nope", nil))
+	if rec.Code != 404 {
+		t.Errorf("/nope: %d", rec.Code)
+	}
 }

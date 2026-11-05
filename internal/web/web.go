@@ -4,8 +4,10 @@
 package web
 
 import (
+	"bytes"
 	"embed"
 	"fmt"
+	"html/template"
 	"io/fs"
 	"net"
 	"net/http"
@@ -49,6 +51,28 @@ func Addr(v string) (string, error) {
 //go:embed site.webmanifest static
 var assets embed.FS
 
+//go:embed templates
+var templateFS embed.FS
+
+// pages holds each page's template set: the shared layout plus the page's
+// own "content". They are parsed once, from the binary.
+var pages = map[string]*template.Template{
+	"overview": template.Must(template.ParseFS(templateFS, "templates/layout.html", "templates/overview.html")),
+}
+
+// page is what a template is rendered with.
+type page struct{ Title, Nav string }
+
+func render(w http.ResponseWriter, name string, p page) {
+	var buf bytes.Buffer
+	if err := pages[name].ExecuteTemplate(&buf, "layout", p); err != nil {
+		http.Error(w, "render: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write(buf.Bytes())
+}
+
 // Handler serves the UI's embedded assets, read-only: GET and HEAD only.
 // api, if not nil, serves /api/ (see api.ReadOnlyHandler); without it
 // /api/ is not found. events, if given, serves /events (see Events).
@@ -62,6 +86,9 @@ func Handler(api http.Handler, events ...http.Handler) http.Handler {
 	if api != nil {
 		mux.Handle("/api/", api)
 	}
+	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
+		render(w, "overview", page{Title: "Overview", Nav: "overview"})
+	})
 	static, _ := fs.Sub(assets, "static")
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(static)))
 	mux.HandleFunc("GET /site.webmanifest", func(w http.ResponseWriter, r *http.Request) {
