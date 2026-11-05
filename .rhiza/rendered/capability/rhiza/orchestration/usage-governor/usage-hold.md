@@ -8,7 +8,7 @@ Tests in internal/api's daemon tests with a fake clock and fake token use show: 
 
 ## statement
 
-At each poll the daemon holds everything it would launch (picks, resumes of interrupted runs, queued starts and continues, plan requests) while a window's use so far plus the mean tokens of the last 10 finished runs, once for each live run and once for the next, exceeds its limit minus the reserve. A window's limit is its setting when set, else its learned limit, and a window with neither never holds. Live runs and runs the owner starts directly are untouched, and the hold clears at the first poll after the window resets
+At each poll the daemon holds everything it would launch (picks, resumes of interrupted runs, queued starts and continues, feature and bug plan requests) while a window's use so far plus the mean tokens of the last 10 finished runs, once for each live run and once for the next, exceeds its limit minus the reserve. A window's limit is its setting when set, else its learned limit, and a window with neither never holds. Live runs, runs the owner starts directly and milestone requests' plan runs (milestone-request-past-usage-hold) are untouched, and the hold clears at the first poll after the window resets
 
 ## Links
 
@@ -18,6 +18,7 @@ At each poll the daemon holds everything it would launch (picks, resumes of inte
 - depends-on [usage-settings](usage-settings.md)
 - depends-on [usage-learned-limit](usage-learned-limit.md)
 - decided-by [usage-governor-hold-rules](../../../../decision/usage-governor-hold-rules.md)
+- decided-by [milestone-interview-starts-at-once](../../../../decision/milestone-interview-starts-at-once.md)
 
 ### In
 
@@ -28,7 +29,9 @@ At each poll the daemon holds everything it would launch (picks, resumes of inte
 - verifies [usage-hold-qa-2](../../../../evidence/usage-hold-qa-2.md)
 - verifies [usage-hold-qa-3](../../../../evidence/usage-hold-qa-3.md)
 - verifies [pr-238-usage-governor](../../../../evidence/pr-238-usage-governor.md)
+- verifies [pr-291-a-milestone-request](../../../../evidence/pr-291-a-milestone-request.md)
 
 ## History
 
 - `01M6HHMTEDFK2AWQKX50EB77DD` Usage governor: the daemon paces itself to a usage reserve. It reads usage per window from the Claude Code adapter's token records, holds new picks (with a skip reason in daemon status, health and inbox) when projected use would eat into a configured reserve (a daemon setting), and resumes when the window resets (internal/api/daemon.go, internal/adapter/claudecode). Carve the existing leaf capability usage-governor out of umbrella 01M5SWTC1923N3 (Area orchestration) into this change set rather than adding a duplicate
+- `01M6MYFH4QYGSKDATBH509SEJF` A milestone request automatically launches an interactive Claude planning session for the owner: when a request of kind milestone is queued (from the CLI or the Request app), the daemon opens a Rex tab running a Claude session in the plan step with the owner as interviewer, not an autonomous plan, and notifies the owner that it is waiting. Builds on change set 01M6MY8BMPFK9ZWD3TDQHKT64J (milestone planning always needs a human). Owner, 2026-11-05: "a milestone request should automatically launch a Claude session to begin the planning"

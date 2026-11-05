@@ -8,7 +8,7 @@ plan-requests.txtar with a fake rex: request queues an item shown queued by requ
 
 ## statement
 
-rhiza request <text> [--kind feature|bug|milestone] queues a plan request in the clone's .git/rhiza/requests.json, rhiza request ls shows each request's state, and the daemon, when not paused and a slot is free, starts a plan run for the oldest queued request, autonomous when rhiza.autonomy.plan is auto unless the request is of kind milestone (a milestone's plan run always waits on the owner), marking the request with its run and later the change set it planned
+rhiza request <text> [--kind feature|bug|milestone] queues a plan request in the clone's .git/rhiza/requests.json, rhiza request ls shows each request's state, and the daemon, when not paused and a slot is free, starts a plan run for the oldest queued feature or bug request, autonomous when rhiza.autonomy.plan is auto, marking the request with its run and later the change set it planned; a queued milestone request instead starts at the next poll, first and without a free slot (milestone-request-starts-at-once), and its plan run always waits on the owner, never autonomous
 
 ## Links
 
@@ -16,6 +16,7 @@ rhiza request <text> [--kind feature|bug|milestone] queues a plan request in the
 
 - decided-by [requests-queue-local](../../../../../decision/requests-queue-local.md)
 - decided-by [bug-intent-fix-no-colon](../../../../../decision/bug-intent-fix-no-colon.md)
+- decided-by [milestone-interview-starts-at-once](../../../../../decision/milestone-interview-starts-at-once.md)
 
 ### In
 
@@ -23,9 +24,11 @@ rhiza request <text> [--kind feature|bug|milestone] queues a plan request in the
 - verifies [request-queue-qa-1](../../../../../evidence/request-queue-qa-1.md)
 - verifies [pr-192-request-queue](../../../../../evidence/pr-192-request-queue.md)
 - verifies [pr-289-milestone-planning-always](../../../../../evidence/pr-289-milestone-planning-always.md)
+- verifies [pr-291-a-milestone-request](../../../../../evidence/pr-291-a-milestone-request.md)
 
 ## History
 
 - `01M6D4SB0D8F9SPGK471DF9RV6` The request queue and the daemon turning requests into plan runs, as a leaf of plan requests
 - `01M6GDJW3R8PXW7QBAZVH0QS4W` Bug requests' change sets get distinct titles: a bug's plan run opens its change set with the intent 'Fix <text>' rather than 'Fix: <text>', so its display title, branch and worktree name the bug instead of all being 'Fix'
 - `01M6MY8BMPFK9ZWD3TDQHKT64J` Milestone planning always needs a human: a plan run for a milestone (a record change set, or a request of kind milestone) never runs autonomously, even when the daemon or run is autonomous (rhiza.autonomy.plan=auto); it waits for the owner's interview instead of the arbiter answering. Owner, 2026-11-05: "milestone planning should never be autonomous even in autonomous mode. that always requires a human."
+- `01M6MYFH4QYGSKDATBH509SEJF` A milestone request automatically launches an interactive Claude planning session for the owner: when a request of kind milestone is queued (from the CLI or the Request app), the daemon opens a Rex tab running a Claude session in the plan step with the owner as interviewer, not an autonomous plan, and notifies the owner that it is waiting. Builds on change set 01M6MY8BMPFK9ZWD3TDQHKT64J (milestone planning always needs a human). Owner, 2026-11-05: "a milestone request should automatically launch a Claude session to begin the planning"
