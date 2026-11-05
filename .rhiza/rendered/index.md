@@ -444,13 +444,12 @@
   - [roadmap-app-accept-answer](capability/rhiza/roadmap-app-accept-answer.md)
     - [question-answer-op](capability/rhiza/roadmap-app-accept-answer/question-answer-op.md)
       - [answer-refuses-closed-or-unblocking](capability/rhiza/roadmap-app-accept-answer/question-answer-op/answer-refuses-closed-or-unblocking.md)
-  - [live-app-runs](capability/rhiza/live-app-runs.md)
-  - [live-app-focus](capability/rhiza/live-app-focus.md)
   - [roadmap-detail-run-tick](capability/rhiza/roadmap-detail-run-tick.md)
   - [modal-shell-hosts-component](capability/rhiza/modal-shell-hosts-component.md)
   - [modal-shell-closes](capability/rhiza/modal-shell-closes.md)
   - [modal-sized-to-content](capability/rhiza/modal-sized-to-content.md)
   - [request-app-form](capability/rhiza/request-app-form.md)
+  - [runs-app-glance](capability/rhiza/runs-app-glance.md)
   - [daemon-app-pause](capability/rhiza/daemon-app-pause.md)
   - [autonomy-app-toggles](capability/rhiza/autonomy-app-toggles.md)
   - [daemon-app-run-limit](capability/rhiza/daemon-app-run-limit.md)
@@ -1992,6 +1991,7 @@
 - [pr-293-daemon-app-on-the-modal-shell](evidence/pr-293-daemon-app-on-the-modal-shell.md)
 - [pr-294-request-app-on-the-modal-shell](evidence/pr-294-request-app-on-the-modal-shell.md)
 - [pr-295-autonomy-app-on-modal-shell](evidence/pr-295-autonomy-app-on-modal-shell.md)
+- [pr-296-runs-app-on-the-modal-shell](evidence/pr-296-runs-app-on-the-modal-shell.md)
 - [pr-35-reopening-a-change-set](evidence/pr-35-reopening-a-change-set.md)
 - [pr-36-leaf-dependencies-and](evidence/pr-36-leaf-dependencies-and.md)
 - [pr-38-session-messages-and-token-use](evidence/pr-38-session-messages-and-token-use.md)
@@ -2159,6 +2159,7 @@
 - [run-journal-file-tested](evidence/run-journal-file-tested.md)
 - [run-log-qa-1](evidence/run-log-qa-1.md)
 - [run-log-qa-2](evidence/run-log-qa-2.md)
+- [run-log-runs-app-qa-2](evidence/run-log-runs-app-qa-2.md)
 - [run-log-verified](evidence/run-log-verified.md)
 - [run-log-verified-2](evidence/run-log-verified-2.md)
 - [run-ls-qa-1](evidence/run-ls-qa-1.md)
@@ -2200,6 +2201,10 @@
 - [run-status-tested](evidence/run-status-tested.md)
 - [run-status-tokens-tests](evidence/run-status-tokens-tests.md)
 - [runner-headroom-runs](evidence/runner-headroom-runs.md)
+- [runs-app-glance-qa-1](evidence/runs-app-glance-qa-1.md)
+- [runs-app-glance-qa-2](evidence/runs-app-glance-qa-2.md)
+- [runs-app-glance-verified](evidence/runs-app-glance-verified.md)
+- [runs-app-glance-verified-2](evidence/runs-app-glance-verified-2.md)
 - [runs-sessions-apps-qa-1](evidence/runs-sessions-apps-qa-1.md)
 - [runs-sessions-apps-verified](evidence/runs-sessions-apps-verified.md)
 - [scripts-free-disk-hermetic-qa-1](evidence/scripts-free-disk-hermetic-qa-1.md)
@@ -4802,6 +4807,8 @@
 - capability agent-steps-tile-run-window `01M6857JXB8B7WXBN5VHE7MV1K` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
 - capability question-sessions-tile-run-window `01M6857KVT0NRCTAY6EZ2DH209` — Replaced by headless-run-agent-tabs: every run is now headless and every agent session opens its own Rex tab, so no session splits a run window (m24-only-agent-tabs).
 - capability roadmap-app-new-work `01M686V49K74FDKG4YV2BDJCSN` — Superseded by roadmap-new-work-requests: m and n now file a plan request (rhiza request) for the daemon to plan, and no longer ask y/n or open a Rex tab running run start --workflow plan --new
+- capability live-app-runs `01M686V969FDV2SVYM7P244E86` — internal/tui/liveapp is deleted; the runs app (runs-app-glance) replaces the live app's glance
+- capability live-app-focus `01M686VAPN2NBZCGV4T968DYTD` — internal/tui/liveapp and its enter-to-focus are deleted; the read-only runs app replaces it
 - capability requests-app `01M6CS27ZCVXPWK3GXS8B8PQ2C` — Replaced by the request app on the modal shell (change set 01M6MYNDJ4HAJF028CEAE7SYQN): internal/tui/requestsapp and tui-requests-app.txtar are deleted, the requests app and its listing are gone
 - capability autonomy-app `01M6CS2HRAWMCTPDHFXBHFCX1C` — Replaced by autonomy-app-toggles: the autonomy app is now one form of the plan, accept, ship and sign-off toggles; it no longer lists daemon settings, toggles paused, edits numbers or starts/stops the daemon
 - capability requests-app-milestone `01M6JE40PG6Z1ZG27N7DMFH3FF` — Replaced by the request app on the modal shell (change set 01M6MYNDJ4HAJF028CEAE7SYQN): the old requests app and its milestone field are deleted; the new request form has no milestone field

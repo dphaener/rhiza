@@ -14,7 +14,7 @@ At 85f19c7 ran go test ./internal/tui/liveapp -run TestEnter -v -count=1: TestEn
 
 ### Out
 
-- verifies [live-app-focus](../capability/rhiza/live-app-focus.md)
+- verifies live-app-focus (retired)
 
 ## History
 

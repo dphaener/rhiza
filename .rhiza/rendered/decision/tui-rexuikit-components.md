@@ -26,6 +26,7 @@ Every app draws its UI with rexuikit's ui components (Form with its Text, TextAr
 - decided-by [modal-shell-hosts-component](../capability/rhiza/modal-shell-hosts-component.md)
 - decided-by [modal-sized-to-content](../capability/rhiza/modal-sized-to-content.md)
 - decided-by [request-app-form](../capability/rhiza/request-app-form.md)
+- decided-by [runs-app-glance](../capability/rhiza/runs-app-glance.md)
 - decided-by [daemon-app-pause](../capability/rhiza/daemon-app-pause.md)
 - decided-by [daemon-app-run-limit](../capability/rhiza/daemon-app-run-limit.md)
 - decided-by [autonomy-app-toggles](../capability/rhiza/autonomy-app-toggles.md)
