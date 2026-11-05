@@ -1,0 +1,50 @@
+# Rhiza never writes a machine's trust: the ops that read it leave the machine
+# config byte-identical, and create none when there is none.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+env XDG_CONFIG_HOME=$WORK/xdg
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Trust the machine' --title 'Trust' --json
+exec git add -A
+exec git commit -qm change
+
+# No machine config: every op leaves it absent.
+! exists $WORK/xdg/rhiza/machine.toml
+exec rhiza machine show
+exec rhiza api call machine.show
+exec sh -c 'rhiza health >/dev/null 2>&1 || true'
+! exec rhiza session start --permission-mode bypassPermissions
+stderr 'bypasses the agent''s permission checks'
+! exists $WORK/xdg/rhiza/machine.toml
+! exists $WORK/xdg/rhiza
+
+# Daily: the file stays byte-identical and trust stays daily.
+mkdir $WORK/xdg/rhiza
+cp $WORK/daily.toml $WORK/xdg/rhiza/machine.toml
+exec rhiza machine show
+stdout 'trust: daily'
+exec rhiza api call machine.show
+exec sh -c 'rhiza health >/dev/null 2>&1 || true'
+! exec rhiza session start --permission-mode bypassPermissions
+stderr 'bypasses the agent''s permission checks'
+cmp $WORK/xdg/rhiza/machine.toml $WORK/daily.toml
+exec rhiza machine show
+stdout 'trust: daily'
+
+-- bin/rex --
+#!/bin/sh
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+echo "$@" >> "$WORK/rex.log"
+-- bin/claude --
+#!/bin/sh
+echo "$@" >> "$WORK/claude.log"
+exit 0
+-- daily.toml --
+trust = "daily"
