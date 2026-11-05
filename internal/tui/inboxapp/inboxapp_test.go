@@ -1,86 +1,197 @@
 package inboxapp
 
 import (
+	"errors"
+	"slices"
 	"strings"
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/dphaener/rexuikit/ui"
+
+	"github.com/dphaener/rhiza/internal/api"
 	"github.com/dphaener/rhiza/internal/tui/launcher"
 )
 
 const full = `{"items":[
-{"id":"a1","kind":"skipped","change":"C5","change_title":"Five","step":"build","detail":"interrupted, and not resumed"},
-{"id":"b2","kind":"gave-up","change":"C4","change_title":"Four","step":"review","detail":"interrupted again"},
-{"id":"c3","kind":"failed","change":"C3","change_title":"Three","step":"verify","detail":"boom"},
-{"id":"d4","kind":"signoff","change":"C2","change_title":"Two","step":"signoff","detail":"signoff-wait"},
-{"id":"e5","kind":"question","change":"C1","change_title":"One","step":"build","question":"Which db?","recommendation":"sqlite","reasons":"simple"}
+{"id":"e5","kind":"question","change":"C1","change_title":"One","step":"build","run":"R1","session":"S1","question":"Which db?"},
+{"id":"d4","kind":"signoff","change":"C2","change_title":"Two","step":"signoff","run":"R2","detail":"signoff-wait"},
+{"id":"c3","kind":"failed","change":"C3","change_title":"Three","step":"verify","run":"R3","detail":"boom"},
+{"id":"h8","kind":"stalled","change":"C9","change_title":"Nine","step":"build","run":"R9","session":"S1","detail":"session S1 is silent"},
+{"id":"i9","kind":"disk-low","detail":"1.0 GiB free"},
+{"id":"j1","kind":"accept","change":"C7","change_title":"Seven","detail":"ready to accept"}
 ]}`
 
-func fake(out *string, calls *int) Runner {
+type call struct {
+	op   string
+	args []string
+}
+
+func fake(out string, calls *[]call) Runner {
 	return func(op string, args []string) ([]byte, error) {
-		*calls++
-		return []byte(*out), nil
+		*calls = append(*calls, call{op, args})
+		if op == Name {
+			return []byte(out), nil
+		}
+		return []byte("{}"), nil
 	}
 }
 
-func TestViewGroupsByKind(t *testing.T) {
-	out, calls := full, 0
-	m := NewModel(fake(&out, &calls))
-	v := m.View().Content
-	last := -1
-	for _, h := range []string{"Questions", "Sign-offs", "Failed runs", "Gave up", "Skipped"} {
-		i := strings.Index(v, h)
-		if i < 0 || i < last {
-			t.Fatalf("heading %q missing or out of order in:\n%s", h, v)
-		}
-		last = i
+func press(m *Model, key string) tea.Cmd {
+	var msg tea.KeyPressMsg
+	switch key {
+	case "enter":
+		msg = tea.KeyPressMsg{Code: tea.KeyEnter}
+	case "down":
+		msg = tea.KeyPressMsg{Code: tea.KeyDown}
+	case "esc":
+		msg = tea.KeyPressMsg{Code: tea.KeyEscape}
 	}
-	for _, want := range []string{"One · build", "Which db?", "recommends: sqlite", "Two · signoff", "Three · verify", "boom", "Four · review", "Five · build"} {
-		if !strings.Contains(v, want) {
-			t.Errorf("view lacks %q:\n%s", want, v)
+	_, cmd := m.Update(msg)
+	return cmd
+}
+
+// enter presses Enter and feeds the resulting selection back in.
+func enter(m *Model) tea.Cmd {
+	cmd := press(m, "enter")
+	if cmd == nil {
+		return nil
+	}
+	msg := cmd()
+	if _, ok := msg.(ui.ListSelectedMsg); !ok {
+		return cmd
+	}
+	_, cmd = m.Update(msg)
+	return cmd
+}
+
+func TestRowPerItemInOrder(t *testing.T) {
+	var calls []call
+	m := NewModel(fake(full, &calls))
+	rows := m.Rows()
+	if len(rows) != 6 {
+		t.Fatalf("rows = %d: %q", len(rows), rows)
+	}
+	for i, want := range []string{"question · One · build  Which db?", "signoff · Two · signoff  signoff-wait", "failed · Three · verify  boom", "stalled · Nine · build", "disk-low · Daemon holds starts  1.0 GiB free", "accept · Seven  ready to accept"} {
+		if !strings.HasPrefix(rows[i], want) {
+			t.Errorf("row %d = %q, want prefix %q", i, rows[i], want)
 		}
+	}
+	v := m.View().Content
+	for _, w := range []string{"question", "One", "Which db?"} {
+		if !strings.Contains(v, w) {
+			t.Errorf("view lacks %q:\n%s", w, v)
+		}
+	}
+}
+
+func TestEnterOpensActionPerKind(t *testing.T) {
+	for i, want := range []Action{ActionAnswer, ActionSignoff, ActionResolve} {
+		var calls []call
+		m := NewModel(fake(full, &calls))
+		var opened []Pick
+		m.Open = func(p Pick) tea.Cmd { opened = append(opened, p); return nil }
+		for range i {
+			press(m, "down")
+		}
+		enter(m)
+		if len(opened) != 1 || opened[0].Action != want {
+			t.Fatalf("row %d: opened %+v, want %s", i, opened, want)
+		}
+		if len(calls) != 1 {
+			t.Errorf("row %d: runner called for an action: %+v", i, calls)
+		}
+	}
+	var calls []call
+	m := NewModel(fake(full, &calls))
+	var opened []Pick
+	m.Open = func(p Pick) tea.Cmd { opened = append(opened, p); return nil }
+	for range 5 {
+		press(m, "down")
+	}
+	enter(m)
+	if len(opened) != 1 || opened[0].Action != ActionAccept || opened[0].Item.ID != "j1" {
+		t.Fatalf("accept: %+v", opened)
+	}
+}
+
+func TestActionFor(t *testing.T) {
+	for kind, want := range map[string]Action{
+		api.InboxQuestion: ActionAnswer, api.InboxOpen: ActionAnswer, api.InboxBlocker: ActionAnswer,
+		api.InboxSignoff: ActionSignoff,
+		api.InboxFailed:  ActionResolve, api.InboxGaveUp: ActionResolve, api.InboxSkipped: ActionResolve,
+		api.InboxAccept:  ActionAccept,
+		api.InboxStalled: ActionShow, api.InboxOverlap: ActionShow, api.InboxDiskLow: ActionShow,
+		api.InboxUsageReserve: ActionShow, api.InboxMainStale: ActionShow,
+	} {
+		if got := ActionFor(kind); got != want {
+			t.Errorf("ActionFor(%s) = %s, want %s", kind, got, want)
+		}
+	}
+}
+
+func TestOtherKindShowsDetailAndOpensTab(t *testing.T) {
+	var calls []call
+	m := NewModel(fake(full, &calls))
+	for range 3 {
+		press(m, "down")
+	}
+	enter(m)
+	if !slices.Equal(calls[len(calls)-1].args, []string{"h8"}) || calls[len(calls)-1].op != "inbox.open" {
+		t.Fatalf("calls: %+v", calls)
+	}
+	v := m.View().Content
+	for _, w := range []string{"stalled", "Nine", "session S1 is silent"} {
+		if !strings.Contains(v, w) {
+			t.Errorf("detail lacks %q:\n%s", w, v)
+		}
+	}
+	if p, _ := m.Picked(); p.Action != ActionShow {
+		t.Errorf("pick = %+v", p)
+	}
+}
+
+func TestOpenTabFailureShown(t *testing.T) {
+	run := func(op string, args []string) ([]byte, error) {
+		if op == Name {
+			return []byte(full), nil
+		}
+		return nil, errors.New("no tab")
+	}
+	m := NewModel(run)
+	for range 3 {
+		press(m, "down")
+	}
+	enter(m)
+	if !strings.Contains(m.View().Content, "no tab") {
+		t.Fatalf("view: %s", m.View().Content)
 	}
 }
 
 func TestEmptyInbox(t *testing.T) {
-	out, calls := `{"items":[]}`, 0
-	m := NewModel(fake(&out, &calls))
-	if !strings.Contains(m.View().Content, "Nothing waits on you") {
-		t.Fatalf("view: %q", m.View().Content)
+	var calls []call
+	m := NewModel(fake(`{"items":[]}`, &calls))
+	if got := strings.TrimSpace(m.View().Content); got != emptyLine {
+		t.Fatalf("view: %q", got)
 	}
 }
 
-func TestTickAndRReload(t *testing.T) {
-	out, calls := `{"items":[]}`, 0
-	m := NewModel(fake(&out, &calls))
-	out = full
-	m.Update(TickMsg{})
-	if calls != 2 || !strings.Contains(m.View().Content, "Which db?") {
-		t.Fatalf("tick did not reload: calls=%d", calls)
+func TestEscQuits(t *testing.T) {
+	var calls []call
+	m := NewModel(fake(full, &calls))
+	_, cmd := m.Update(ui.ListCancelledMsg{})
+	if cmd == nil {
+		t.Fatal("no quit")
 	}
-	m.Update(tea.KeyPressMsg{Code: 'r', Text: "r"})
-	if calls != 3 {
-		t.Fatalf("r did not reload: calls=%d", calls)
-	}
-}
-
-func TestCursorMovesAndSurvivesReload(t *testing.T) {
-	out, calls := full, 0
-	m := NewModel(fake(&out, &calls))
-	m.Update(tea.KeyPressMsg{Code: 'j', Text: "j"})
-	if it, _ := m.Selected(); it.ID != "d4" {
-		t.Fatalf("selected %q", it.ID)
-	}
-	m.Reload()
-	if it, _ := m.Selected(); it.ID != "d4" {
-		t.Fatalf("after reload selected %q", it.ID)
+	if _, ok := cmd().(tea.QuitMsg); !ok {
+		t.Fatal("not a quit")
 	}
 }
 
 func TestResultIsOperationOutput(t *testing.T) {
-	out, calls := full, 0
-	got, err := NewModel(fake(&out, &calls)).Result()
+	var calls []call
+	got, err := NewModel(fake(full, &calls)).Result()
 	if err != nil || string(got) != full {
 		t.Fatalf("Result() = %q, %v", got, err)
 	}
@@ -93,56 +204,4 @@ func TestRegisteredWithLauncher(t *testing.T) {
 		}
 	}
 	t.Fatal("inbox is not in the launcher registry")
-}
-
-func TestViewListsOpenStop(t *testing.T) {
-	out, calls := `{"items":[
-{"id":"f6","kind":"open","change":"C6","change_title":"Six","step":"gate","detail":"open questions: park-disk"}
-]}`, 0
-	m := NewModel(fake(&out, &calls))
-	v := m.View().Content
-	for _, want := range []string{"Open questions", "Six · gate", "open questions: park-disk"} {
-		if !strings.Contains(v, want) {
-			t.Errorf("view lacks %q:\n%s", want, v)
-		}
-	}
-}
-
-func TestViewGroupsOverlaps(t *testing.T) {
-	out, calls := `{"items":[
-{"id":"g7","kind":"overlap","change":"C7","other":"C8","change_title":"Seven","target":"thing","detail":"both write field:statement"}
-]}`, 0
-	m := NewModel(fake(&out, &calls))
-	v := m.View().Content
-	for _, want := range []string{"Overlaps", "Seven · with C8 · thing", "both write field:statement"} {
-		if !strings.Contains(v, want) {
-			t.Errorf("view lacks %q:\n%s", want, v)
-		}
-	}
-}
-
-func TestViewGroupsStalled(t *testing.T) {
-	out, calls := `{"items":[
-{"id":"h8","kind":"stalled","change":"C9","change_title":"Nine","step":"build","session":"S1","detail":"session S1 has not reported since 2030-01-01T00:00:00Z","next":"rhiza session message S1 <text>"}
-]}`, 0
-	m := NewModel(fake(&out, &calls))
-	v := m.View().Content
-	for _, want := range []string{"Stalled", "Nine · build", "session S1 has not reported"} {
-		if !strings.Contains(v, want) {
-			t.Errorf("view lacks %q:\n%s", want, v)
-		}
-	}
-}
-
-func TestViewGroupsDiskLow(t *testing.T) {
-	out, calls := `{"items":[
-{"id":"i9","kind":"disk-low","detail":"1.0 GiB free, under the minimum of 10.0 GiB: the daemon holds new starts and resumes"}
-]}`, 0
-	m := NewModel(fake(&out, &calls))
-	v := m.View().Content
-	for _, want := range []string{"Disk space", "Daemon holds starts", "1.0 GiB free"} {
-		if !strings.Contains(v, want) {
-			t.Errorf("view lacks %q:\n%s", want, v)
-		}
-	}
 }

@@ -1,17 +1,23 @@
-// Package inboxapp is the inbox app: the items of `rhiza inbox` as a cursor
-// list grouped by kind. It runs the api operation in-process through the
-// registry, so --once prints what `rhiza inbox --json` prints. The list
-// reloads every few seconds and on r.
+// Package inboxapp is the inbox app: the items of `rhiza inbox` as one
+// rexuikit List in the modal shell, a row per item in the order the
+// operation returns them. It runs the api operation in-process through the
+// registry, so --once prints what `rhiza inbox --json` prints.
+//
+// Enter picks an item. A question, gate, sign-off, failed run or accept
+// item opens that item's action (the Open hook); any other kind shows its
+// detail and asks the runner to open its run's tab.
 package inboxapp
 
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
-	"time"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/charmbracelet/colorprofile"
+
+	"github.com/dphaener/rexuikit/ui"
+	"github.com/dphaener/rexuikit/ui/theme"
 
 	"github.com/dphaener/rhiza/internal/api"
 	"github.com/dphaener/rhiza/internal/tui/launcher"
@@ -20,403 +26,244 @@ import (
 // Name is the app's name, and the api operation it runs.
 const Name = "inbox"
 
-// Interval is how often the list reloads.
-const Interval = 3 * time.Second
-
 func init() {
 	launcher.Register(launcher.App{Name: Name, Summary: "What waits on you: questions, sign-offs and failed runs"})
 }
 
-// Runner runs the inbox operation and returns its result as
-// `rhiza inbox --json` prints it.
+// Runner runs an operation and returns its result as `rhiza <op> --json`
+// prints it.
 type Runner func(op string, args []string) ([]byte, error)
 
-// The finding an owner's typed changes become: the review step's quality
-// check, at major severity, placed on the owner's own words.
+// Action is what picking an item offers to do.
+type Action string
+
 const (
-	changesCheck    = "quality"
-	changesSeverity = "major"
-	changesPlace    = "owner"
+	// ActionAnswer answers a question, a gate or a blocker.
+	ActionAnswer Action = "answer"
+	// ActionSignoff signs a run off or sends it back.
+	ActionSignoff Action = "signoff"
+	// ActionResolve retries or abandons a failed, gave-up or skipped run.
+	ActionResolve Action = "resolve"
+	// ActionAccept accepts a change set.
+	ActionAccept Action = "accept"
+	// ActionShow shows the item's detail and opens its run's tab.
+	ActionShow Action = "show"
 )
 
-// The modes the app takes typed text or a y/n in.
-const (
-	modeNone    = ""
-	modeAnswer  = "answer"
-	modeChanges = "changes"
-	modeAbandon = "abandon"
-)
-
-// TickMsg is the reload timer firing.
-type TickMsg struct{}
-
-// groups are the kinds in the order the list shows them, with their headings.
-var groups = []struct{ kind, heading string }{
-	{api.InboxQuestion, "Questions"},
-	{api.InboxSignoff, "Sign-offs"},
-	{api.InboxOpen, "Open questions"},
-	{api.InboxBlocker, "Blocking questions"},
-	{api.InboxOverlap, "Overlaps"},
-	{api.InboxFailed, "Failed runs"},
-	{api.InboxGaveUp, "Gave up"},
-	{api.InboxSkipped, "Skipped"},
-	{api.InboxStalled, "Stalled"},
-	{api.InboxDiskLow, "Disk space"},
-	{api.InboxMainStale, "Main checkout"},
+// ActionFor is the action picking an item of kind offers.
+func ActionFor(kind string) Action {
+	switch kind {
+	case api.InboxQuestion, api.InboxOpen, api.InboxBlocker:
+		return ActionAnswer
+	case api.InboxSignoff:
+		return ActionSignoff
+	case api.InboxFailed, api.InboxGaveUp, api.InboxSkipped:
+		return ActionResolve
+	case api.InboxAccept:
+		return ActionAccept
+	}
+	return ActionShow
 }
 
-// Model is the app's bubbletea program. q or esc quits.
-type Model struct {
-	run    Runner
-	out    []byte
-	items  []api.InboxItem // in display order, grouped by kind
-	err    error
-	cursor int
+// Pick is an item picked with Enter and the action it opens.
+type Pick struct {
+	Item   api.InboxItem
+	Action Action
+}
 
-	mode  string
-	input string
+// emptyLine is the one line an empty inbox shows.
+const emptyLine = "Nothing waits on you"
+
+// component is what the model currently shows.
+type component interface {
+	Update(tea.Msg) (tea.Model, tea.Cmd)
+	View() tea.View
+	NaturalSize() (int, int)
+	Theme() theme.Theme
+}
+
+// Model is the app's bubbletea program. Esc quits.
+type Model struct {
+	run   Runner
+	out   []byte
+	err   error
+	items []api.InboxItem // in the operation's order
+	list  *ui.List
+	cur   component
+	pick  *Pick
 	note  string
-	// target is the item the mode was entered on, which the mode acts on
-	// whatever the cursor is on by then.
-	target api.InboxItem
+
+	// Open, when set, is called with each pick of an actionable kind and
+	// returns the command that opens its action.
+	Open func(Pick) tea.Cmd
 }
 
 // NewModel returns the model over run, loaded once.
 func NewModel(run Runner) *Model {
 	m := &Model{run: run}
-	m.Reload()
+	m.load()
 	return m
 }
 
-// Reload runs the operation again. The cursor stays on the same item when it
-// still waits, else on the nearest row. A mode whose item no longer waits
-// is cancelled.
-func (m *Model) Reload() {
-	var kept string
-	if it, ok := m.Selected(); ok {
-		kept = it.ID
-	}
+func (m *Model) load() {
 	out, err := m.run(Name, nil)
 	m.out, m.err = out, err
-	if err != nil {
-		return
-	}
-	var resp api.InboxResponse
-	if err := json.Unmarshal(out, &resp); err != nil {
-		m.err = err
-		return
-	}
-	m.items = m.items[:0]
-	for _, g := range groups {
-		for _, it := range resp.Items {
-			if it.Kind == g.kind {
-				m.items = append(m.items, it)
-			}
+	var rows []ui.Row
+	if err == nil {
+		var resp api.InboxResponse
+		if err := json.Unmarshal(out, &resp); err != nil {
+			m.err = err
+		} else {
+			m.items = resp.Items
 		}
 	}
-	for i, it := range m.items {
-		if it.ID == kept {
-			m.cursor = i
-		}
-	}
-	m.cursor = max(0, min(m.cursor, len(m.items)-1))
-	if m.mode != modeNone && !m.waits(m.target.ID) {
-		m.mode, m.input = modeNone, ""
-		m.note = "that item no longer waits"
-	}
-}
-
-// waits says whether the item with ID id is in the list.
-func (m *Model) waits(id string) bool {
 	for _, it := range m.items {
-		if it.ID == id {
-			return true
-		}
+		rows = append(rows, row(it))
 	}
-	return false
+	m.list = ui.NewList(theme.Dark(), colorprofile.TrueColor, rows)
+	m.cur = m.list
 }
 
-// Result is what the app shows: the operation's output, byte for byte, or
+// Result is what --once prints: the operation's output, byte for byte, or
 // the error it ran into.
 func (m *Model) Result() ([]byte, error) { return m.out, m.err }
 
-// Selected is the item under the cursor.
-func (m *Model) Selected() (api.InboxItem, bool) {
-	if m.cursor < 0 || m.cursor >= len(m.items) {
-		return api.InboxItem{}, false
+// Items are the inbox items in row order.
+func (m *Model) Items() []api.InboxItem { return m.items }
+
+// Picked is the item Enter picked and its action, once one was.
+func (m *Model) Picked() (Pick, bool) {
+	if m.pick == nil {
+		return Pick{}, false
 	}
-	return m.items[m.cursor], true
+	return *m.pick, true
 }
 
-func tick() tea.Cmd {
-	return tea.Tick(Interval, func(time.Time) tea.Msg { return TickMsg{} })
+// Note is the outcome of the last pick that was not an action: an error
+// from opening a tab, or empty.
+func (m *Model) Note() string { return m.note }
+
+// Rows is the text of the rows as the list shows them.
+func (m *Model) Rows() []string {
+	var out []string
+	for _, it := range m.items {
+		r := row(it)
+		out = append(out, strings.TrimSpace(r.Label+"  "+r.Detail))
+	}
+	return out
 }
 
-func (m *Model) Init() tea.Cmd { return tick() }
+// Theme is the shown component's theme.
+func (m *Model) Theme() theme.Theme { return m.cur.Theme() }
+
+// NaturalSize is the shown component's size in cells.
+func (m *Model) NaturalSize() (int, int) { return m.cur.NaturalSize() }
+
+func (m *Model) Init() tea.Cmd { return tea.RequestBackgroundColor }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case TickMsg:
-		m.Reload()
-		return m, tick()
+	case ui.ListCancelledMsg, ui.InfoClosedMsg:
+		return m, tea.Quit
+	case ui.ListSelectedMsg:
+		return m, m.choose(msg.Index)
 	case tea.KeyPressMsg:
-		if m.mode == modeNone {
-			return m, m.normalKey(msg)
+		if k := msg.String(); k == "ctrl+c" || (k == "esc" && m.cur != component(m.list)) {
+			return m, tea.Quit
 		}
-		m.modeKey(msg)
 	}
-	return m, nil
+	_, cmd := m.cur.Update(msg)
+	return m, cmd
 }
 
-// normalKey handles a key outside a mode.
-func (m *Model) normalKey(msg tea.KeyPressMsg) tea.Cmd {
-	it, has := m.Selected()
-	switch msg.String() {
-	case "q", "esc", "ctrl+c":
-		return tea.Quit
-	case "down", "j":
-		m.cursor = max(0, min(m.cursor+1, len(m.items)-1))
-	case "up", "k":
-		m.cursor = max(0, m.cursor-1)
-	case "r":
-		m.note = ""
-		m.Reload()
-	case "enter", "o":
-		if has {
-			m.act("open", Name+".open", it.ID)
+// choose handles Enter on item i.
+func (m *Model) choose(i int) tea.Cmd {
+	if i < 0 || i >= len(m.items) {
+		return nil
+	}
+	it := m.items[i]
+	p := Pick{Item: it, Action: ActionFor(it.Kind)}
+	m.pick = &p
+	if p.Action != ActionShow {
+		if m.Open != nil {
+			return m.Open(p)
 		}
-	case "a":
-		if has && (it.Kind == api.InboxQuestion || it.Kind == api.InboxBlocker) {
-			m.mode, m.input, m.target = modeAnswer, "", it
-		}
-	case "t":
-		if has && it.Kind == api.InboxQuestion {
-			if it.Recommendation == "" {
-				m.note = "the advisor has no recommendation yet"
-			} else {
-				m.act("answer", "session.message", it.Session, it.Recommendation)
-			}
-		}
-	case "y":
-		if has && it.Kind == api.InboxSignoff {
-			m.act("approve", "run.approve", it.Run)
-		}
-	case "c":
-		if has && it.Kind == api.InboxSignoff {
-			m.mode, m.input, m.target = modeChanges, "", it
-		}
-	case "n":
-		if has && it.Kind == api.InboxStalled {
-			m.nudge(it)
-		}
-	case "R":
-		if has && retryable(it) {
-			m.resume(it)
-		}
-	case "x":
-		if has && retryable(it) {
-			m.mode, m.target = modeAbandon, it
+		return nil
+	}
+	m.note = ""
+	if it.Run != "" {
+		if _, err := m.run(Name+".open", []string{it.ID}); err != nil {
+			m.note = fmt.Sprintf("open failed: %v", err)
 		}
 	}
-	return nil
-}
-
-// carryOn is the message a nudge sends a stalled session.
-const carryOn = "You have been silent for a while. Please carry on with your task, or say what is blocking you."
-
-// nudge asks a stalled session to carry on. A session parked on a usage-limit
-// prompt (its pane text, as its adapter reads it) gets Escape first.
-func (m *Model) nudge(it api.InboxItem) {
-	out, err := m.run("session.pane", []string{it.Session})
-	if err != nil {
-		m.note = fmt.Sprintf("nudge failed: %v", err)
-		return
-	}
-	var pane api.SessionPaneResponse
-	if err := json.Unmarshal(out, &pane); err != nil {
-		m.note = fmt.Sprintf("nudge failed: %v", err)
-		return
-	}
-	if pane.UsageLimit {
-		if _, err := m.run("session.key", []string{it.Session, "escape"}); err != nil {
-			m.note = fmt.Sprintf("nudge failed: %v", err)
-			return
-		}
-	}
-	m.act("nudge", "session.message", it.Session, carryOn)
-}
-
-// retryable says whether R and x work on the item: a failed, gave-up or
-// skipped run.
-func retryable(it api.InboxItem) bool {
-	return it.Kind == api.InboxFailed || it.Kind == api.InboxGaveUp || it.Kind == api.InboxSkipped
-}
-
-// modeKey handles a key while typing an answer or changes, or at the
-// y/n of an abandon. It acts on the item the mode was entered on.
-func (m *Model) modeKey(msg tea.KeyPressMsg) {
-	it, has := m.target, m.waits(m.target.ID)
-	if m.mode == modeAbandon {
-		m.mode = modeNone
-		if msg.String() == "y" && has {
-			m.act("abandon", "run.abandon", it.Run)
-		} else {
-			m.note = "not abandoned"
-		}
-		return
-	}
-	switch msg.String() {
-	case "esc", "ctrl+c":
-		m.mode, m.input = modeNone, ""
-	case "backspace":
-		if r := []rune(m.input); len(r) > 0 {
-			m.input = string(r[:len(r)-1])
-		}
-	case "enter":
-		mode, text := m.mode, strings.TrimSpace(m.input)
-		m.mode, m.input = modeNone, ""
-		if text == "" || !has {
-			m.note = "nothing typed, nothing sent"
-			return
-		}
-		if mode == modeAnswer && it.Kind == api.InboxBlocker {
-			// A blocker has no asking session: the words become a Decision
-			// in the blocked change set, which question.answer writes.
-			m.act("answer", "question.answer", it.Handle, it.Change, text)
-		} else if mode == modeAnswer {
-			m.act("answer", "session.message", it.Session, text)
-		} else {
-			m.requestChanges(it, text)
-		}
-	default:
-		m.input += msg.Text
-	}
-}
-
-// act runs an operation for an action, reports its outcome and reloads
-// the list.
-func (m *Model) act(what, op string, args ...string) {
-	if _, err := m.run(op, args); err != nil {
-		m.note = fmt.Sprintf("%s failed: %v", what, err)
-	} else {
-		m.note = what + " done"
-	}
-	m.Reload()
-}
-
-// requestChanges asks for changes with the typed text as the one finding.
-// run.request-changes reads its findings from a file, so they go in a
-// temporary one for the call. Like approve and resume it only records the
-// owner's action and queues the run's continuation for the daemon.
-func (m *Model) requestChanges(it api.InboxItem, text string) {
-	body, err := json.Marshal(map[string]any{"findings": []map[string]string{{
-		"check": changesCheck, "severity": changesSeverity, "place": changesPlace, "reason": text,
-	}}})
-	if err != nil {
-		m.note = fmt.Sprintf("request changes failed: %v", err)
-		return
-	}
-	f, err := os.CreateTemp("", "rhiza-changes-*.json")
-	if err != nil {
-		m.note = fmt.Sprintf("request changes failed: %v", err)
-		return
-	}
-	defer os.Remove(f.Name())
-	_, werr := f.Write(body)
-	if cerr := f.Close(); werr == nil {
-		werr = cerr
-	}
-	if werr != nil {
-		m.note = fmt.Sprintf("request changes failed: %v", werr)
-		return
-	}
-	m.act("request changes", "run.request-changes", f.Name(), it.Run)
-}
-
-// resume queues the continuation of the item's run for the daemon. A failed
-// run has ended, so its resume restarts it at the step that failed.
-func (m *Model) resume(it api.InboxItem) {
-	args := []string{it.Run}
-	if it.Kind == api.InboxFailed {
-		args = append(args, "--retry")
-	}
-	m.act("retry", "run.resume", args...)
+	m.cur = ui.NewInfoPanel(theme.Dark(), colorprofile.TrueColor, title(it), func(int) []string {
+		return detail(it, m.note)
+	})
+	return m.cur.(*ui.InfoPanel).Init()
 }
 
 func (m *Model) View() tea.View {
-	var b strings.Builder
 	if m.err != nil {
-		fmt.Fprintf(&b, "rhiza: %v\n", m.err)
+		return tea.NewView(fmt.Sprintf("rhiza: %v\n", m.err))
 	}
-	if len(m.items) == 0 && m.err == nil {
-		b.WriteString("Nothing waits on you\n")
+	if len(m.items) == 0 {
+		return tea.NewView(emptyLine + "\n")
 	}
-	i := 0
-	for _, g := range groups {
-		first := true
-		for _, it := range m.items {
-			if it.Kind != g.kind {
-				continue
-			}
-			if first {
-				fmt.Fprintf(&b, "\n%s\n", g.heading)
-				first = false
-			}
-			mark := "  "
-			if i == m.cursor {
-				mark = "> "
-			}
-			b.WriteString(mark + row(it))
-			i++
-		}
-	}
-	switch m.mode {
-	case modeAnswer:
-		b.WriteString("\nanswer: " + m.input + "▏ · enter send · esc cancel")
-	case modeChanges:
-		b.WriteString("\nchanges: " + m.input + "▏ · enter send · esc cancel")
-	case modeAbandon:
-		b.WriteString("\nAbandon this run? y/n")
-	default:
-		if m.note != "" {
-			b.WriteString("\n" + m.note)
-		}
-		b.WriteString("\n" + Name + " · j/k move · o open · a answer · t take advice · n nudge · y approve · c changes · R retry · x abandon · r reload · q quit")
-	}
-	return tea.NewView(b.String())
+	return m.cur.View()
 }
 
-// row is one item: its change set's title and step, then what it asks or
-// why it failed, and a question's recommendation.
-func row(it api.InboxItem) string {
-	title := it.ChangeTitle
-	if title == "" {
-		title = it.Change
+// title is the change set's title, or what the item is about when it has
+// no change set.
+func title(it api.InboxItem) string {
+	switch it.Kind {
+	case api.InboxDiskLow:
+		return "Daemon holds starts"
+	case api.InboxMainStale:
+		return "Main not updated"
+	case api.InboxUsageReserve:
+		return "Usage reserve"
 	}
-	if it.Kind == api.InboxDiskLow {
-		title = "Daemon holds starts"
+	if it.ChangeTitle != "" {
+		return it.ChangeTitle
 	}
-	if it.Kind == api.InboxMainStale {
-		title = "Main not updated"
+	return it.Change
+}
+
+// waits is what the item waits for.
+func waits(it api.InboxItem) string {
+	switch it.Kind {
+	case api.InboxQuestion, api.InboxBlocker:
+		if it.Question != "" {
+			return it.Question
+		}
+	case api.InboxOverlap:
+		return strings.TrimSpace("with " + it.Other + " · " + it.Target + " " + it.Detail)
 	}
-	var b strings.Builder
-	b.WriteString(title)
+	return it.Detail
+}
+
+// row is one item: its kind and change set title, then what it waits for.
+func row(it api.InboxItem) ui.Row {
+	label := it.Kind + " · " + title(it)
 	if it.Step != "" {
-		b.WriteString(" · " + it.Step)
+		label += " · " + it.Step
 	}
-	if it.Kind == api.InboxOverlap {
-		b.WriteString(" · with " + it.Other + " · " + it.Target)
+	return ui.Row{Label: label, Detail: waits(it)}
+}
+
+// detail is the lines of an item's detail panel.
+func detail(it api.InboxItem, note string) []string {
+	lines := []string{it.Kind + " · " + title(it)}
+	add := func(k, v string) {
+		if v != "" {
+			lines = append(lines, k+": "+v)
+		}
 	}
-	b.WriteString("\n")
-	text := it.Detail
-	if it.Kind == api.InboxQuestion {
-		text = it.Question
-	}
-	if text != "" {
-		b.WriteString("    " + text + "\n")
-	}
-	if it.Recommendation != "" {
-		b.WriteString("    recommends: " + it.Recommendation + "\n")
-	}
-	return b.String()
+	add("step", it.Step)
+	add("since", it.At)
+	add("run", it.Run)
+	add("waits for", waits(it))
+	add("next", it.Next)
+	add("", note)
+	return lines
 }
